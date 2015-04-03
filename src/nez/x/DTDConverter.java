@@ -16,8 +16,8 @@ public class DTDConverter extends GrammarConverter {
 	int attDefCount = 0;
 	int elementCount = 0;
 	int entityCount = 0;
-	Map<Integer, String> elementNameMap = new HashMap<>();
-	Map<String, Integer> attributeMap = new HashMap<>();
+	Map<Integer, String> elementNameMap = new HashMap<Integer, String>();
+	Map<String, Integer> attributeMap = new HashMap<String, Integer>();
 	List<Integer> reqList;
 	List<Integer> impList;
 	

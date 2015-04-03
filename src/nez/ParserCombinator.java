@@ -19,7 +19,7 @@ public class ParserCombinator {
 	public final Grammar load(GrammarChecker checker) {
 		Class<?> c = this.getClass();
 		for(Method m : c.getDeclaredMethods()) {
-			if(m.getReturnType() == Expression.class && m.getParameterCount() == 0) {
+			if(m.getReturnType() == Expression.class && m.getParameterTypes().length == 0) {
 				String name = m.getName();
 				//System.out.println("rule name: " + name);
 				if(name.equals("SPACING")) {

@@ -36,7 +36,7 @@ public class DTDCommand extends Command {
 		DTDConverter conv = new DTDConverter(new Grammar(file.getResourceName()), outputfile);
 		conv.convert(dtdNode);
 		config.GrammarFile = outputfile;
-		config.InputFileLists = new UList<>(new String[1]);
+		config.InputFileLists = new UList<String>(new String[1]);
 		config.InputFileLists.add(inputXMLFile);
 		rec = config.getRecorder();
 		p = conv.grammar.newProduction(config.StartingPoint);
@@ -46,7 +46,7 @@ public class DTDCommand extends Command {
 	private final void setupConfig(CommandConfigure config) {
 		DTDFile = config.GrammarFile;
 		inputXMLFile = config.InputFileLists.get(0);
-		config.InputFileLists = new UList<>(new String[1]);
+		config.InputFileLists = new UList<String>(new String[1]);
 		config.InputFileLists.add(DTDFile);
 		config.GrammarFile = DTDNEZ;
 

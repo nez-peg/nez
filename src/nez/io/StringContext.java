@@ -5,17 +5,17 @@ import java.io.UnsupportedEncodingException;
 import nez.SourceContext;
 import nez.util.StringUtils;
 
-public class StringSourceContext extends SourceContext {
+public class StringContext extends SourceContext {
 	private byte[] utf8;
 	long textLength;
 
-	public StringSourceContext(String sourceText) {
+	public StringContext(String sourceText) {
 		super("(string)", 1);
 		this.utf8 = toZeroTerminalByteSequence(sourceText);
 		this.textLength = utf8.length-1;
 	}
 
-	public StringSourceContext(String resource, long linenum, String sourceText) {
+	public StringContext(String resource, long linenum, String sourceText) {
 		super(resource, linenum);
 		this.utf8 = toZeroTerminalByteSequence(sourceText);
 		this.textLength = utf8.length-1;
@@ -44,16 +44,10 @@ public class StringSourceContext extends SourceContext {
 	}
 
 	@Override
-	public final boolean match(long pos, byte[] text) {
-		if(pos + text.length > this.textLength) {
-			return false;
-		}
-		for(int i = 0; i < text.length; i++) {
-			if(text[i] != this.utf8[(int)pos + i]) {
-				return false;
-			}
-		}
-		return true;
+	public final byte[] subbyte(long startIndex, long endIndex) {
+		byte[] b = new byte[(int)(endIndex - startIndex)];
+		System.arraycopy(this.utf8, (int)(startIndex), b, 0, b.length);
+		return b;
 	}
 
 	@Override
@@ -63,13 +57,6 @@ public class StringSourceContext extends SourceContext {
 		} catch (UnsupportedEncodingException e) {
 		}
 		return null;
-	}
-
-	@Override
-	public final byte[] subbyte(long startIndex, long endIndex) {
-		byte[] b = new byte[(int)(endIndex - startIndex)];
-		System.arraycopy(this.utf8, (int)(startIndex), b, 0, b.length);
-		return b;
 	}
 
 	@Override
@@ -86,4 +73,18 @@ public class StringSourceContext extends SourceContext {
 		}
 		return count;
 	}
+	
+	@Override
+	public final boolean match(long pos, byte[] text) {
+		if(pos + text.length > this.textLength) {
+			return false;
+		}
+		for(int i = 0; i < text.length; i++) {
+			if(text[i] != this.utf8[(int)pos + i]) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 }

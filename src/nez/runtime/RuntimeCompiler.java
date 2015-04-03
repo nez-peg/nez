@@ -514,7 +514,7 @@ public class RuntimeCompiler {
 			predictAll(p.get(i), dfas[i], next, nextAcceptCache);
 		}
 		//System.out.println("start .. " + p);
-		HashMap<Integer, Instruction> m = new HashMap<>();
+		HashMap<Integer, Instruction> m = new HashMap<Integer, Instruction>();
 		IDfaDispatch dispatch = new IDfaDispatch(p, null);
 		for(int c = 0; c < 257; c++) {
 			Expression merged = null;
@@ -612,7 +612,7 @@ public class RuntimeCompiler {
 	}
 	
 	private final Instruction encodePrefetchChoice(Choice p, Instruction next) {
-		HashMap<Integer, Instruction> m = new HashMap<>();
+		HashMap<Integer, Instruction> m = new HashMap<Integer, Instruction>();
 		IDfaDispatch dispatch = new IDfaDispatch(p, null);
 		for(int ch = 0; ch < p.matchCase.length; ch++) {
 			Expression merged = p.matchCase[ch];

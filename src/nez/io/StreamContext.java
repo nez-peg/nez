@@ -9,7 +9,7 @@ import java.util.Map;
 import nez.SourceContext;
 import nez.util.StringUtils;
 
-public class FileSourceContext extends SourceContext {
+public class StreamContext extends SourceContext {
 	public final static int PageSize = 4096;
 
 	private RandomAccessFile file;
@@ -21,7 +21,7 @@ public class FileSourceContext extends SourceContext {
 	private final int FifoSize = 8; 
 	private LinkedHashMap<Long, byte[]> fifoMap = null;
 
-	public FileSourceContext(String fileName) throws IOException {
+	public StreamContext(String fileName) throws IOException {
 		super(fileName, 1);
 		this.file = new RandomAccessFile(fileName, "r");
 		this.fileLength = this.file.length();
@@ -72,7 +72,7 @@ public class FileSourceContext extends SourceContext {
 	public final int EOF() {
 		return 0;  //
 	}
-	
+
 	@Override
 	public final boolean match(long pos, byte[] text) {
 		int offset = (int)(pos - this.buffer_offset);
@@ -141,7 +141,7 @@ public class FileSourceContext extends SourceContext {
 		}
 		return "";
 	}
-	
+
 	@Override
 	public final byte[] subbyte(long startIndex, long endIndex) {
 		byte[] b = null;
@@ -262,30 +262,4 @@ public class FileSourceContext extends SourceContext {
 			this.readBuffer(pos, buf);
 		}
 	}
-
-	//public final String substringDebug(long startIndex, long endIndex) {
-	//	String s= this.substring(startIndex, endIndex);
-	//	if(this.debug != null) {
-	//		String s2= this.debug.substring(startIndex, endIndex);
-	//		if(!s.equals(s2)) {
-	//			System.out.println("s1: " + s);
-	//			System.out.println("s2: " + s2);
-	//			Main._Exit(1, "different " + this.fileName + " pos=" + startIndex + " end=" + endIndex);
-	//		}
-	//	}
-	//	return s;
-	//}
-	//
-	//public final int charAtDebug(long n) {
-	//	//assert(n < this.fileLength);
-	//	int c = this.charAt(n);
-	//	if(this.debug != null) {
-	//		int c2 = this.debug.charAt(n);
-	//		if(c != c2) {
-	//			Main._Exit(1, "different " + this.fileName + " pos=" + n + "c='"+c+"', c2='"+c2+"'");
-	//		}
-	//	}
-	//	return c;
-	//}
-
 }

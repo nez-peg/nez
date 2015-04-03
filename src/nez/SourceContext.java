@@ -6,9 +6,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
 
-import nez.io.FileSourceContext;
-import nez.io.StringSourceContext;
+import nez.io.FileContext;
+import nez.io.StringContext;
 import nez.runtime.Context;
 import nez.util.StringUtils;
 
@@ -193,35 +194,36 @@ public abstract class SourceContext extends Context {
 	}
 	
 	public final static SourceContext newStringSourceContext(String str) {
-		return new StringSourceContext(str);
+		return new StringContext(str);
 	}
 
 	public final static SourceContext newStringSourceContext(String resource, long linenum, String str) {
-		return new StringSourceContext(resource, linenum, str);
+		return new StringContext(resource, linenum, str);
 	}
 
 	public final static SourceContext loadSource(String fileName) throws IOException {
-		InputStream Stream = SourceContext.class.getResourceAsStream("/" + fileName);
-		if (Stream == null) {
-			File f = new File(fileName);
-			if(f.length() > 16 * 1024) {
-				return new FileSourceContext(fileName);
+		File f = new File(fileName);
+		System.out.println("file: " + fileName + " " + f.isFile());
+		if(!f.isFile()) {
+//			URL url = new URL(SourceContext.class.getResource("."), fileName);
+//			System.out.println("url: " + url);
+//			Stream = url.openStream();
+			InputStream Stream = SourceContext.class.getResourceAsStream("/nez/dist/" + fileName);
+			BufferedReader reader = new BufferedReader(new InputStreamReader(Stream));
+			StringBuilder builder = new StringBuilder();
+			String line = reader.readLine();
+			while(true) {
+				builder.append(line);
+				line = reader.readLine();
+				if (line == null) {
+					break;
+				}
+				builder.append("\n");
 			}
-			Stream = new FileInputStream(fileName);
+			reader.close();
+			return new StringContext(fileName, 1, builder.toString());
 		}
-		BufferedReader reader = new BufferedReader(new InputStreamReader(Stream));
-		StringBuilder builder = new StringBuilder();
-		String line = reader.readLine();
-		while(true) {
-			builder.append(line);
-			line = reader.readLine();
-			if (line == null) {
-				break;
-			}
-			builder.append("\n");
-		}
-		reader.close();
-		return new StringSourceContext(fileName, 1, builder.toString());
+		return new FileContext(fileName);
 	}
 }
 

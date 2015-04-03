@@ -41,7 +41,7 @@
 	<target name="jar" depends="build">
 		<jar jarfile="${BinaryName}.jar">
 			<fileset dir="${build_dir}" includes="**/*.class" />
-			<fileset dir="${source_dir}" includes="**/*.p4d" />
+			<fileset dir="${source_dir}" includes="**/*.nez" />
 			<fileset dir="." includes="lib/**" />
 			<exclude name="**/*Test.class" />
 			<manifest>
