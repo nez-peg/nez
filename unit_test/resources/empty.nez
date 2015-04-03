@@ -1,0 +1,6 @@
+
+// A bug found in the Nez grammar
+
+File = { A }
+A = 'a'
+
