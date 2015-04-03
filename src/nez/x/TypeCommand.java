@@ -15,7 +15,7 @@ public class TypeCommand extends Command {
 
 	@Override
 	public void exec(CommandConfigure config) {
-		Grammar peg = config.getGrammar();
+		Grammar peg = config.getGrammar(false);
 		for(Rule r : peg.getDefinedRuleList()) {
 			if(r.inferTypestate() == Typestate.ObjectType) {
 				Type t = Type.inferType(r, r.getExpression());

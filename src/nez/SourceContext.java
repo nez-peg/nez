@@ -193,7 +193,7 @@ public abstract class SourceContext extends Context {
 		return delim + source.toString() + delim + marker.toString();
 	}
 	
-	public final static SourceContext newStringSourceContext(String str) {
+	public final static SourceContext newStringContext(String str) {
 		return new StringContext(str);
 	}
 
@@ -201,7 +201,7 @@ public abstract class SourceContext extends Context {
 		return new StringContext(resource, linenum, str);
 	}
 
-	public final static SourceContext loadSource(String fileName) throws IOException {
+	public final static SourceContext newFileContext(String fileName) throws IOException {
 		File f = new File(fileName);
 		System.out.println("file: " + fileName + " " + f.isFile());
 		if(!f.isFile()) {

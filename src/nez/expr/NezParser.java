@@ -20,7 +20,7 @@ public class NezParser extends CommonTreeVisitor {
 		product = NezCombinator.newGrammar().newProduction("Chunk", Production.SafeOption);
 	}
 	
-	public Grammar load(SourceContext sc, GrammarChecker checker) {
+	public final Grammar loadGrammar(SourceContext sc, GrammarChecker checker) {
 		this.loaded = new Grammar(sc.getResourceName());
 		this.checker = checker;
 		while(sc.hasUnconsumed()) {
@@ -34,6 +34,10 @@ public class NezParser extends CommonTreeVisitor {
 		}
 		checker.verify(loaded);
 		return loaded;
+	}
+
+	public final Grammar loadGrammar(SourceContext sc) {
+		return this.loadGrammar(sc, new GrammarChecker());
 	}
 
 	public Rule parseRule(Grammar peg, String res, int linenum, String text) {

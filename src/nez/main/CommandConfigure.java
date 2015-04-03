@@ -233,50 +233,38 @@ public class CommandConfigure {
 		return com;
 	}
 	
-	public final Grammar getGrammar() {
+	public final Grammar getGrammar(boolean newGrammar) {
 		if(GrammarFile != null) {
 			try {
-				NezParser p = new NezParser();
-				return p.load(SourceContext.loadSource(GrammarFile), new GrammarChecker(this.CheckerLevel));
+				return Grammar.loadGrammar(GrammarFile, new GrammarChecker(this.CheckerLevel));
 			} catch (IOException e) {
 				ConsoleUtils.exit(1, "cannot open " + GrammarFile + "; " + e.getMessage());
 			}
 		}
 		if(GrammarText != null) {
 			NezParser p = new NezParser();
-			return p.load(SourceContext.newStringSourceContext(GrammarText), new GrammarChecker(this.CheckerLevel));
+			return p.loadGrammar(SourceContext.newStringContext(GrammarText), new GrammarChecker(this.CheckerLevel));
 		}
-		ConsoleUtils.println("unspecifed grammar");
-		return NezCombinator.newGrammar();
-	}
-
-	public final Grammar newGrammar() {
-		if(GrammarFile != null) {
-			try {
-				NezParser p = new NezParser();
-				return p.load(SourceContext.loadSource(GrammarFile), new GrammarChecker(this.CheckerLevel));
-			} catch (IOException e) {
-				ConsoleUtils.exit(1, "cannot open " + GrammarFile + "; " + e.getMessage());
-			}
+		if(newGrammar) {
+			return new Grammar("my");
 		}
-		if(GrammarText != null) {
-			NezParser p = new NezParser();
-			return p.load(SourceContext.newStringSourceContext(GrammarText), new GrammarChecker(this.CheckerLevel));
+		else {
+			ConsoleUtils.println("unspecifed grammar");
+			return NezCombinator.newGrammar();
 		}
-		return new Grammar("my");
 	}
 
 	public final Production getProduction(String start, int option) {
 		if(start == null) {
 			start = this.StartingPoint;
 		}
-		return getGrammar().newProduction(start, option);
+		return getGrammar(false).newProduction(start, option);
 	}
 
 	private int ProductionOption = Production.DefaultOption;
 	
 	public final Production getProduction(String start) {
-		Production p = getGrammar().newProduction(start, ProductionOption);
+		Production p = getGrammar(false).newProduction(start, ProductionOption);
 		if(p == null) {
 			ConsoleUtils.exit(1, "undefined nonterminal: " + start);
 		}
@@ -301,22 +289,26 @@ public class CommandConfigure {
 		this.InputFileLists = list;
 	}
 
+	public final UList<String> getInputFileList() {
+		return this.InputFileLists;
+	}
+
 	public final SourceContext getInputSourceContext() {
 		if(this.InputText != null) {
 			String text = this.InputText;
 			this.InputText = null;
-			return SourceContext.newStringSourceContext(text);
+			return SourceContext.newStringContext(text);
 		}
 		if(this.InputFileIndex < this.InputFileLists.size()) {
 			String f = this.InputFileLists.ArrayValues[this.InputFileIndex];
 			this.InputFileIndex ++;
 			try {
-				return SourceContext.loadSource(f);
+				return SourceContext.newFileContext(f);
 			} catch (IOException e) {
 				ConsoleUtils.exit(1, "cannot open: " + f);
 			}
 		}
-		return SourceContext.newStringSourceContext(""); // empty input
+		return SourceContext.newStringContext(""); // empty input
 	}
 
 	public String getOutputFileName(SourceContext input) {

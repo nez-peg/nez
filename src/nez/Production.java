@@ -208,7 +208,7 @@ public class Production {
 	/* --------------------------------------------------------------------- */
 		
 	public final boolean match(String str) {
-		SourceContext sc = SourceContext.newStringSourceContext(str);
+		SourceContext sc = SourceContext.newStringContext(str);
 		if(match(sc)) {
 			return (!sc.hasUnconsumed());
 		}
@@ -236,7 +236,7 @@ public class Production {
 	}
 
 	public final CommonTree parseAST(String str) {
-		SourceContext sc = SourceContext.newStringSourceContext(str);
+		SourceContext sc = SourceContext.newStringContext(str);
 		return (CommonTree)this.parse(sc, new CommonTreeFactory());
 	}
 

@@ -18,7 +18,7 @@ public class GrammarCommand extends Command {
 
 	@Override
 	public void exec(CommandConfigure config) {
-		Grammar peg = config.getGrammar();
+		Grammar peg = config.getGrammar(false);
 		GrammarGenerator gen = loadGenerator(config.getOutputFileName());
 		gen.generate(peg);
 	}

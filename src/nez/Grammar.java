@@ -1,10 +1,16 @@
 package nez;
 
+import java.io.IOException;
+
 import nez.ast.SourcePosition;
 import nez.ast.Tag;
 import nez.expr.Expression;
 import nez.expr.Factory;
+import nez.expr.GrammarChecker;
+import nez.expr.NezParser;
 import nez.expr.Rule;
+import nez.peg.dtd.DTDConverter;
+import nez.util.ConsoleUtils;
 import nez.util.UList;
 import nez.util.UMap;
 
@@ -93,9 +99,37 @@ public class Grammar {
 
 	public void dump() {
 		for(Rule r : this.getRuleList()) {
-			System.out.println(r);
+			ConsoleUtils.println(r);
 		}
 	}
+	
+	// static 
+	
+	public final static Grammar load(String file) throws IOException {
+		return load(file, new GrammarChecker());
+	}
+
+	public final static Grammar load(String file, GrammarChecker checker) throws IOException {
+		NezParser parser = new NezParser();
+		return parser.loadGrammar(SourceContext.newFileContext(file), checker);
+	}
+	
+	public final static Grammar loadGrammar(String file) throws IOException {
+		return loadGrammar(file, new GrammarChecker());
+	}
+	
+	public final static Grammar loadGrammar(String file, GrammarChecker checker) throws IOException {
+		if(file.endsWith(".dtd")) {
+			return DTDConverter.loadGrammar(file, checker);
+		}
+		return load(file, checker);
+	}
+
+	
+	
+	
+	
+	
 	
 	// Grammar
 	
