@@ -1,4 +1,4 @@
-package nez.x;
+package nez.peg.regex;
 
 import nez.Grammar;
 import nez.ast.CommonTree;

@@ -12,6 +12,7 @@ import nez.main.Command;
 import nez.main.CommandConfigure;
 import nez.main.Recorder;
 import nez.main.Verbose;
+import nez.peg.regex.GrammarConverter;
 import nez.util.ConsoleUtils;
 
 public class ConverterCommand extends Command {

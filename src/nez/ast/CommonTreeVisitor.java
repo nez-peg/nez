@@ -4,21 +4,22 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 
+import nez.main.Verbose;
+
 public class CommonTreeVisitor {
-	HashMap<Integer, Method> methodMap = new HashMap<Integer, Method>();
+	private HashMap<Integer, Method> methodMap = new HashMap<Integer, Method>();
 	public final Object visit(String method, CommonTree node) {
 		Tag tag = node.getTag();
-		Method m = invokeMethod(method, tag.id);
+		Method m = findMethod(method, tag);
 		if(m != null) {
 			try {
 				return m.invoke(this, node);
 			} catch (IllegalAccessException e) {
-				e.printStackTrace();
+				Verbose.traceException(e);
 			} catch (IllegalArgumentException e) {
-				e.printStackTrace();
+				Verbose.traceException(e);
 			} catch (InvocationTargetException e) {
-				System.err.println(node);
-				e.printStackTrace();
+				Verbose.traceException(e);
 			}
 		}
 		return null;
@@ -27,26 +28,27 @@ public class CommonTreeVisitor {
 	public final Object visit(CommonTree node) {
 		return visit("to", node);
 	}
-
-	public final boolean isSupported(String method, String tagName) {
-		return invokeMethod(method, Tag.tag(tagName).id) != null;
-	}
 	
-	protected Method invokeMethod(String method, int tagId) {
-		Integer key = tagId;
+	protected final Method findMethod(String method, Tag tag) {
+		Integer key = tag.id;
 		Method m = this.methodMap.get(key);
 		if(m == null) {
-			String name = method + Tag.tag(tagId).getName();
 			try {
-				m = this.getClass().getMethod(name, CommonTree.class);
+				m = getClassMethod(method, tag);
 			} catch (NoSuchMethodException e) {
-				e.printStackTrace();
+				Verbose.printNoSuchMethodException(e);
 				return null;
 			} catch (SecurityException e) {
+				Verbose.traceException(e);
 				return null;
 			}
 			this.methodMap.put(key, m);
 		}
 		return m;
+	}
+	
+	protected Method getClassMethod(String method, Tag tag) throws NoSuchMethodException, SecurityException {
+		String name = method + tag.getName();
+		return this.getClass().getMethod(name, CommonTree.class);
 	}
 }

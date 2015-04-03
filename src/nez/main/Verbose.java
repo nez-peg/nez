@@ -1,5 +1,7 @@
 package nez.main;
 
+import java.io.IOException;
+
 import nez.expr.Expression;
 import nez.util.ConsoleUtils;
 
@@ -14,6 +16,7 @@ public class Verbose {
 	public static boolean Backtrack = false;
 	public static boolean SelfTesting = true;
 	public static boolean NFA = true;
+	public static boolean TraceException = true;
 	
 	
 	public static void setAll() {
@@ -83,6 +86,19 @@ public class Verbose {
 			ConsoleUtils.println("NFA: " + s);
 		}
 	}
+
+	public static void traceException(Exception e) {
+		if(TraceException) {
+			e.printStackTrace();
+		}
+	}
+
+	public static void printNoSuchMethodException(NoSuchMethodException e) {
+		if(General) {
+			ConsoleUtils.println(e);
+		}		
+	}
+
 
 	
 }

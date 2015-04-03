@@ -1,4 +1,4 @@
-package nez.x;
+package nez.peg.regex;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
