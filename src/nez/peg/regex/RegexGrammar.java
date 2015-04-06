@@ -56,12 +56,12 @@ public class RegexGrammar extends CommonTreeVisitor {
 		return null;
 	}
 
-	public RegexGrammar() {
+	RegexGrammar() {
 	}
 	
 	private Grammar grammar;
 
-	public void convert(CommonTree e, Grammar grammar) {
+	void convert(CommonTree e, Grammar grammar) {
 		this.grammar = grammar;
 		grammar.defineRule(e, "File", pi(e, null));
 		grammar.defineRule(e, "Chunk", grammar.newNonTerminal("File"));
@@ -72,7 +72,7 @@ public class RegexGrammar extends CommonTreeVisitor {
 		return this.getClass().getMethod(name, CommonTree.class, Expression.class);
 	}
 
-	public final Expression pi(CommonTree expr, Expression k) {
+	final Expression pi(CommonTree expr, Expression k) {
 		Tag tag = expr.getTag();
 		Method m = findMethod("pi", tag);
 		if(m != null) {
@@ -83,7 +83,6 @@ public class RegexGrammar extends CommonTreeVisitor {
 			} catch (IllegalArgumentException e) {
 				e.printStackTrace();
 			} catch (InvocationTargetException e) {
-				System.err.println(expr);
 				e.printStackTrace();
 			}
 		}
