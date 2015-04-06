@@ -90,15 +90,14 @@ public abstract class Command {
 	static {
 		load("check", "nez.main.CheckCommand");
 		load("parse", "nez.main.ParseCommand");
-//		load("rel", "nez.x.RelationCommand");
 		load("cc", "nez.cc.GeneratorCommand");
 		load("peg", "nez.cc.GrammarCommand");
-//		load("conv", "nez.x.ConverterCommand");
-//		load("regex", "nez.x.RegexCommand");
 		load("demo", "nez.x.DemoCommand");
 		load("type", "nez.x.TypeCommand");
-//		load("dtd", "nez.x.DTDCommand");
 		load("find", "nez.main.FindCommand");
+//		load("dtd", "nez.x.DTDCommand");
+//		load("conv", "nez.x.ConverterCommand");
+//		load("regex", "nez.x.RegexCommand");
 	}
 	
 	public static final Command getCommand(String name) {

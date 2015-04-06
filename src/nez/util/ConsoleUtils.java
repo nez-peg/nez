@@ -47,7 +47,7 @@ public class ConsoleUtils {
 			if(line.equals("")) {
 				break;
 			}
-			sb.append(line.substring(0, line.length() - 1));
+			sb.append(line);
 			sb.append("\n");
 			prompt = prompt2;
 		}

@@ -1,18 +1,33 @@
-export
-	= JSONObject
+
 File
 	= S* (JSONObject / Array) S*
+
 Chunk
 	= Value S*
 
-JSONObject
-	= { '{' (S* @Member (VALUESEP @Member )* )? S* '}' #JSON }
+/* Tokens */
+
+S = [ \t\n\r]
+"[" = '[' S*
+"]" = ']' S*
+"{" = '{' S*
+"}" = '}' S*
+"," = ',' S*
+":" = ':' S*
+
+public Object
+	= { "{" (@Member ("," @Member )* )? "}" #JSON }
+
 Member
-        = { @String NAMESEP @Value #KeyValue }
+	= { @String S* ":" @Value S* #KeyValue }
+
+Key
+	= String #Key
+
 Value
 	= String
 	/ Number
-	/ JSONObject
+	/ Object
 	/ Array
 	/ Null
 	/ True
@@ -20,38 +35,34 @@ Value
 	/ ObjectId
 
 ObjectId 
-        = 'ObjectId' '("' { [0-9a-z]+ #ObjectId } '")'
-
-ID
-        = [0-9a-z]+
+        = 'ObjectId' '("' { ID #ObjectId } '")'
 
 Array
-	= { '[' (S* @Value (VALUESEP @Value)* )? S* ']' #List }
+	= { "[" (@Value S* ("," @Value S* )* )? "]" #List }
 
 String
 	= '"' { ('\\"' / '\\\\' / !'"' .)* #String } '"'
 
-Number
-        = { '-'? INT (FRAC EXP? #Float / '' #Integer) }
 True
         = { 'true'  #True }
+
 False
         = { 'false' #False }
+
 Null
         = { 'null'  #Null }
 
-S
-	= [ \t\n\r]
-NAMESEP
-	= S* ':' S*
-VALUESEP
-	= S* ',' S*
+Number
+        = { '-'? INT (FRAC EXP? #Float / '' #Integer) }
 
 INT
 	= '0' / [1-9] DIGIT*
+
 DIGIT
 	= [0-9]
+
 FRAC
 	= '.' DIGIT+
+
 EXP
 	= [Ee] ('-' / '+')? DIGIT+

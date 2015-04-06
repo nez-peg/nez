@@ -22,7 +22,7 @@ public class FindCommand extends Command {
 	public void exec(CommandConfigure config) {
 		String text = null;
 		UList<Production> pList = load(config.getInputFileList());
-		while( (text = ConsoleUtils.readMultiLine(">>>", "   ")) != null) {
+		while( (text = ConsoleUtils.readMultiLine(">>> ", "    ")) != null) {
 			ConsoleUtils.println(text);
 			for(Production p: pList) {
 				if(p.match(text)) {
@@ -35,6 +35,7 @@ public class FindCommand extends Command {
 
 	UList<Production> load(UList<String> fileList) {
 		UList<Production> pList = new UList<Production>(new Production[fileList.size()*2]);
+		Verbose.print("Loading ..");
 		try {
 			for(String f : fileList) {
 				Grammar g = Grammar.load(f);
@@ -44,6 +45,7 @@ public class FindCommand extends Command {
 						Production p = g.newProduction(r.getLocalName());
 						p.compile();
 						pList.add(p);
+						Verbose.print(" " + r.getUniqueName());
 					}
 				}
 			}
@@ -51,6 +53,7 @@ public class FindCommand extends Command {
 		catch(IOException e) {
 			ConsoleUtils.exit(1, e.getMessage());
 		}
+		Verbose.println(" " + pList.size() + " rules");
 		return pList;
 	}
 	
