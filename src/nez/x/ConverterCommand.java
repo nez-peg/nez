@@ -3,8 +3,8 @@ package nez.x;
 import java.lang.reflect.Constructor;
 import java.util.TreeMap;
 
-import nez.Grammar;
-import nez.Production;
+import nez.NameSpace;
+import nez.Grammar2;
 import nez.SourceContext;
 import nez.ast.CommonTree;
 import nez.ast.CommonTreeWriter;
@@ -24,7 +24,7 @@ public class ConverterCommand extends Command {
 	@Override
 	public void exec(CommandConfigure config) {
 		Recorder rec = config.getRecorder();
-		Production p = config.getProduction(config.StartingPoint);
+		Grammar2 p = config.getProduction(config.StartingPoint);
 		p.record(rec);
 		while(config.hasInput()) {
 			SourceContext file = config.getInputSourceContext();
@@ -52,7 +52,7 @@ public class ConverterCommand extends Command {
 				}
 				outputfile = "gen/" + outputfile;
 			}
-			GrammarConverter conv = loadConverter(new Grammar(file.getResourceName()), outputfile);
+			GrammarConverter conv = loadConverter(NameSpace.newNameSpace(file.getResourceName()), outputfile);
 			conv.convert(node);
 		}
 	}
@@ -72,8 +72,8 @@ public class ConverterCommand extends Command {
 		regist("dtd", "nez.x.DTDConverter");
 	}
 	
-	final GrammarConverter loadConverter(Grammar peg, String name) {
-		String input = peg.getResourceName();
+	final GrammarConverter loadConverter(NameSpace peg, String name) {
+		String input = peg.getURN();
 		if(input != null) {
 			GrammarConverter conv = null;
 			String type = input;
@@ -90,7 +90,7 @@ public class ConverterCommand extends Command {
 				}
 			}
 			try {
-				Constructor<?> ct = c.getConstructor(Grammar.class, String.class);
+				Constructor<?> ct = c.getConstructor(NameSpace.class, String.class);
 				conv = (GrammarConverter)ct.newInstance(peg, name);
 			}
 			catch(Exception e) {
@@ -107,7 +107,7 @@ public class ConverterCommand extends Command {
 		try {
 			for(String n : this.classMap.keySet()) {
 				Class<?> c = this.classMap.get(n);
-				Constructor<?> ct = c.getConstructor(Grammar.class, String.class);
+				Constructor<?> ct = c.getConstructor(NameSpace.class, String.class);
 				GrammarConverter g = (GrammarConverter)ct.newInstance(null, null);
 				String s = String.format("%8s - %s", n, g.getDesc());
 				ConsoleUtils.println(s);

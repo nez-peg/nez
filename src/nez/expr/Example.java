@@ -1,7 +1,7 @@
 package nez.expr;
 
-import nez.Grammar;
-import nez.Production;
+import nez.NameSpace;
+import nez.Grammar2;
 import nez.SourceContext;
 import nez.ast.CommonTree;
 import nez.util.ConsoleUtils;
@@ -15,8 +15,8 @@ public class Example {
 		this.text = text;
 		this.result = result;
 	}
-	boolean test(Grammar grammar) {
-		Production p = grammar.newProduction(this.ruleName, Production.ExampleOption);
+	boolean test(NameSpace grammar) {
+		Grammar2 p = grammar.newProduction(this.ruleName, Grammar2.ExampleOption);
 		SourceContext c = text.newSourceContext();
 		if(this.result) {
 			ConsoleUtils.print("testing " + this.ruleName + " ");

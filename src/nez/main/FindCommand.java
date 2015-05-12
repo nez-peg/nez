@@ -2,12 +2,12 @@ package nez.main;
 
 import java.io.IOException;
 
-import nez.Grammar;
-import nez.Production;
+import nez.NameSpace;
+import nez.Grammar2;
 import nez.SourceContext;
 import nez.expr.GrammarChecker;
 import nez.expr.NezParser;
-import nez.expr.Rule;
+import nez.expr.Production;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
 
@@ -21,10 +21,10 @@ public class FindCommand extends Command {
 	@Override
 	public void exec(CommandConfigure config) {
 		String text = null;
-		UList<Production> pList = load(config.getInputFileList());
+		UList<Grammar2> pList = load(config.getInputFileList());
 		while( (text = ConsoleUtils.readMultiLine(">>> ", "    ")) != null) {
 			ConsoleUtils.println(text);
-			for(Production p: pList) {
+			for(Grammar2 p: pList) {
 				if(p.match(text)) {
 					ConsoleUtils.println(p.getStartRule().getLocalName());
 				}
@@ -33,16 +33,16 @@ public class FindCommand extends Command {
 		
 	}
 
-	UList<Production> load(UList<String> fileList) {
-		UList<Production> pList = new UList<Production>(new Production[fileList.size()*2]);
+	UList<Grammar2> load(UList<String> fileList) {
+		UList<Grammar2> pList = new UList<Grammar2>(new Grammar2[fileList.size()*2]);
 		Verbose.print("Loading ..");
 		try {
 			for(String f : fileList) {
-				Grammar g = Grammar.load(f);
-				UList<Rule> rules = g.getDefinedRuleList();
-				for(Rule r : rules) {
+				NameSpace g = NameSpace.load(f);
+				UList<Production> rules = g.getDefinedRuleList();
+				for(Production r : rules) {
 					if(r.isPublic()) {
-						Production p = g.newProduction(r.getLocalName());
+						Grammar2 p = g.newProduction(r.getLocalName());
 						p.compile();
 						pList.add(p);
 						Verbose.print(" " + r.getUniqueName());

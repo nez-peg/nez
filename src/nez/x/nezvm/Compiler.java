@@ -6,8 +6,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 
-import nez.Grammar;
-import nez.Production;
+import nez.NameSpace;
+import nez.Grammar2;
 import nez.expr.And;
 import nez.expr.AnyChar;
 import nez.expr.ByteChar;
@@ -25,7 +25,7 @@ import nez.expr.Option;
 import nez.expr.Prediction;
 import nez.expr.Repetition;
 import nez.expr.Replace;
-import nez.expr.Rule;
+import nez.expr.Production;
 import nez.expr.Sequence;
 import nez.expr.Tagging;
 import nez.expr.Unary;
@@ -47,7 +47,7 @@ public class Compiler extends GrammarVisitor {
 	
 	boolean PatternMatching = false;
 	
-	Grammar peg;
+	NameSpace peg;
 	Module module;
 	Function func;
 	BasicBlock currentBB;
@@ -114,7 +114,7 @@ public class Compiler extends GrammarVisitor {
 	
 	int codeIndex;
 	
-	public void writeByteCode(String grammerfileName, String outputFileName, Grammar peg) {
+	public void writeByteCode(String grammerfileName, String outputFileName, NameSpace peg) {
 		//generateProfileCode(peg);
 		//System.out.println("choiceCase: " + choiceCaseCount + "\nconstructor: " + constructorCount);
 		byte[] byteCode = new byte[this.codeIndex * 256];
@@ -409,7 +409,7 @@ public class Compiler extends GrammarVisitor {
 		this.fLabel = new FailureBB(bb, this.fLabel);
 	}
 	
-	private void popFailureJumpPoint(Rule r) {
+	private void popFailureJumpPoint(Production r) {
 		this.fLabel = this.fLabel.prev;
 	}
 	
@@ -774,7 +774,7 @@ public class Compiler extends GrammarVisitor {
 			else {
 				// FIXME:
 				// AnyChar behaves differently in cases of Binary
-				short r = e.acceptByte(c, Production.Binary); 
+				short r = e.acceptByte(c, Grammar2.Binary); 
 				if(r != Prediction.Reject) {
 					l.add(e);
 				}
@@ -1365,7 +1365,7 @@ public class Compiler extends GrammarVisitor {
 		return false;
 	}
 
-	public void visitRule(Rule e) {
+	public void visitRule(Production e) {
 		this.func = new Function(this.module, e.getLocalName());
 		this.setCurrentBasicBlock(new BasicBlock(this.func));
 		BasicBlock fbb = new BasicBlock();
@@ -1400,10 +1400,10 @@ public class Compiler extends GrammarVisitor {
 				for(int i = index; i < size; i++) {
 					this.func.remove(index);
 				}
-				System.out.println("inlining miss: " + e.ruleName);
+				System.out.println("inlining miss: " + e.localName);
 				BasicBlock rbb = new BasicBlock();
 				this.setCurrentBasicBlock(currentBB);
-				this.createCALL(e, currentBB, e.ruleName);
+				this.createCALL(e, currentBB, e.localName);
 				rbb.setInsertPoint(this.func);
 				this.createCONDBRANCH(e, rbb, this.jumpFailureJump(), 1);
 				BasicBlock bb = new BasicBlock(this.func);
@@ -1412,7 +1412,7 @@ public class Compiler extends GrammarVisitor {
 		}
 		else {
 			BasicBlock rbb = new BasicBlock();
-			this.createCALL(e, this.getCurrentBasicBlock(), e.ruleName);
+			this.createCALL(e, this.getCurrentBasicBlock(), e.localName);
 			rbb.setInsertPoint(this.func);
 			this.createCONDBRANCH(e, rbb, this.jumpFailureJump(), 1);
 			BasicBlock bb = new BasicBlock(this.func);

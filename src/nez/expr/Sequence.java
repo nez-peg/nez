@@ -2,7 +2,7 @@ package nez.expr;
 
 import java.util.TreeMap;
 
-import nez.Production;
+import nez.Grammar2;
 import nez.ast.SourcePosition;
 import nez.runtime.Instruction;
 import nez.runtime.RuntimeCompiler;
@@ -116,14 +116,14 @@ public class Sequence extends SequentialExpression {
 	
 	@Override
 	void optimizeImpl(int option) {
-		if(UFlag.is(option, Production.Optimization) && this.get(this.size() - 1) instanceof AnyChar) {
+		if(UFlag.is(option, Grammar2.Optimization) && this.get(this.size() - 1) instanceof AnyChar) {
 			boolean byteMap[] = ByteMap.newMap(false);
 			if(isByteMap(option, byteMap)) {
 				this.optimized = Factory.newByteMap(s, byteMap);
 				return;
 			}
 			// (!'ab' !'ac' .) => (^[a]) / (!'ab' !'ac' .)
-			if(UFlag.is(option, Production.Prediction)) {
+			if(UFlag.is(option, Grammar2.Prediction)) {
 				ByteMap.clear(byteMap);
 				if(isPredictedNotByteMap(0, this.size() - 1, byteMap, option)) {
 					this.optimized = Factory.newChoice(s, Factory.newByteMap(s, byteMap), this);
@@ -131,7 +131,7 @@ public class Sequence extends SequentialExpression {
 				}
 			}
 		}
-		if(UFlag.is(option, Production.DFA) && needsReplaceOperation(option)) {
+		if(UFlag.is(option, Grammar2.DFA) && needsReplaceOperation(option)) {
 			this.optimized = operationReplacedSequence(option);
 			//System.out.println("replaced: " + this + "\n => " + this.optimized);
 		}

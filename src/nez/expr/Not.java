@@ -1,6 +1,6 @@
 package nez.expr;
 
-import nez.Production;
+import nez.Grammar2;
 import nez.ast.Source;
 import nez.ast.SourcePosition;
 import nez.runtime.Instruction;
@@ -67,7 +67,7 @@ public class Not extends Unary {
 		}
 		if(p instanceof AnyChar) {
 			if(ch == Source.BinaryEOF) return Prediction.Accept;
-			if(ch == 0 && !UFlag.is(option, Production.Binary)) return Prediction.Accept;
+			if(ch == 0 && !UFlag.is(option, Grammar2.Binary)) return Prediction.Accept;
 			return Prediction.Reject;
 		}
 		return Prediction.Unconsumed;

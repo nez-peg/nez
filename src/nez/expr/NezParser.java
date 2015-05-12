@@ -1,7 +1,7 @@
 package nez.expr;
 
-import nez.Grammar;
-import nez.Production;
+import nez.NameSpace;
+import nez.Grammar2;
 import nez.SourceContext;
 import nez.ast.CommonTree;
 import nez.ast.CommonTreeVisitor;
@@ -12,16 +12,16 @@ import nez.util.StringUtils;
 import nez.util.UList;
 
 public class NezParser extends CommonTreeVisitor {
-	Production product;
-	Grammar loaded;
+	Grammar2 product;
+	NameSpace loaded;
 	GrammarChecker checker;
 	
 	public NezParser() {
-		product = NezCombinator.newGrammar().newProduction("Chunk", Production.SafeOption);
+		product = NezCombinator.newGrammar().newProduction("Chunk", Grammar2.SafeOption);
 	}
 	
-	public final Grammar loadGrammar(SourceContext sc, GrammarChecker checker) {
-		this.loaded = new Grammar(sc.getResourceName());
+	public final NameSpace loadGrammar(SourceContext sc, GrammarChecker checker) {
+		this.loaded = NameSpace.newNameSpace(sc.getResourceName());
 		this.checker = checker;
 		while(sc.hasUnconsumed()) {
 			CommonTree ast = product.parse(sc);
@@ -36,11 +36,11 @@ public class NezParser extends CommonTreeVisitor {
 		return loaded;
 	}
 
-	public final Grammar loadGrammar(SourceContext sc) {
+	public final NameSpace loadGrammar(SourceContext sc) {
 		return this.loadGrammar(sc, new GrammarChecker());
 	}
 
-	public Rule parseRule(Grammar peg, String res, int linenum, String text) {
+	public Production parseRule(NameSpace peg, String res, int linenum, String text) {
 		SourceContext sc = SourceContext.newStringSourceContext(res, linenum, text);
 		this.loaded = peg;
 		this.checker = null;
@@ -96,20 +96,20 @@ public class NezParser extends CommonTreeVisitor {
 		return (Expression)this.visit(po);
 	}
 	
-	public Rule parseRule(CommonTree ast) {
+	public Production parseRule(CommonTree ast) {
 		String ruleName = ast.textAt(0, "");
 		boolean isTerminal = false;
 		if(ast.get(0).is(NezTag.String)) {
 			ruleName = quote(ruleName);
 			isTerminal = true;
 		}
-		Rule rule = loaded.getRule(ruleName);
+		Production rule = loaded.getProduction(ruleName);
 		Expression e = toExpression(ast.get(1));
 		if(rule != null) {
 			checker.reportWarning(ast, "duplicated rule name: " + ruleName);
 			rule = null;
 		}
-		rule = loaded.defineRule(ast.get(0), ruleName, e);
+		rule = loaded.defineProduction(ast.get(0), ruleName, e);
 		rule.isTerminal = isTerminal;
 		if(ast.size() == 3) {
 			CommonTree attrs = ast.get(2);
@@ -147,7 +147,7 @@ public class NezParser extends CommonTreeVisitor {
 
 	public Expression toString(CommonTree ast) {
 		String name = quote(ast.getText());
-		Rule r = this.loaded.getRule(name);
+		Production r = this.loaded.getProduction(name);
 		if(r != null) {
 			return r.getExpression();
 		}

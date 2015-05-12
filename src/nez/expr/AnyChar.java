@@ -2,7 +2,7 @@ package nez.expr;
 
 import java.util.TreeMap;
 
-import nez.Production;
+import nez.Grammar2;
 import nez.ast.Source;
 import nez.ast.SourcePosition;
 import nez.runtime.Instruction;
@@ -46,7 +46,7 @@ public class AnyChar extends Terminal {
 	
 	@Override
 	public short acceptByte(int ch, int option) {
-		if(UFlag.is(option, Production.Binary)) {
+		if(UFlag.is(option, Grammar2.Binary)) {
 			return (ch == Source.BinaryEOF) ? Prediction.Reject : Prediction.Accept;
 		}
 		else {

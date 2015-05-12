@@ -19,7 +19,7 @@ public class GrammarFormatter extends GrammarVisitor {
 		return sb.toString();
 	}
 
-	public void visitRule(Rule rule) {
+	public void visitRule(Production rule) {
 		Expression e = rule.getExpression();
 		sb.append(rule.getLocalName());
 		sb.append(NewIndent);

@@ -7,30 +7,30 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import nez.Grammar;
+import nez.NameSpace;
 import nez.NezException;
-import nez.Production;
+import nez.Grammar2;
 import nez.SourceContext;
 import nez.ast.CommonTree;
 import nez.ast.CommonTreeVisitor;
 import nez.expr.Expression;
 import nez.expr.GrammarChecker;
-import nez.expr.Rule;
+import nez.expr.Production;
 import nez.util.ConsoleUtils;
 
 public class DTDConverter extends CommonTreeVisitor {
 
-	static Grammar dtdGrammar = null;
-	public final static Grammar loadGrammar(String filePath, GrammarChecker checker) throws IOException {
+	static NameSpace dtdGrammar = null;
+	public final static NameSpace loadGrammar(String filePath, GrammarChecker checker) throws IOException {
 		if(dtdGrammar == null) {
 			try {
-				dtdGrammar = Grammar.loadGrammar("xmldtd.nez");
+				dtdGrammar = NameSpace.loadGrammar("xmldtd.nez");
 			}
 			catch(IOException e) {
 				ConsoleUtils.exit(1, "can't load xmldtd.nez");
 			}
 		}
-		Production p = dtdGrammar.newProduction("File");
+		Grammar2 p = dtdGrammar.newProduction("File");
 		SourceContext dtdFile = SourceContext.newFileContext(filePath);
 		CommonTree node = p.parse(dtdFile);
 		if (node == null) {
@@ -40,18 +40,18 @@ public class DTDConverter extends CommonTreeVisitor {
 			throw new NezException(dtdFile.getUnconsumedMessage());
 		}
 		DTDConverter conv = new DTDConverter();
-		Grammar grammar = new Grammar(filePath);
+		NameSpace grammar = NameSpace.newNameSpace(filePath);
 		conv.convert(node, grammar);
 		checker.verify(grammar);
 		return grammar;
 	}
 
-	private Grammar grammar;
+	private NameSpace grammar;
 	
 	DTDConverter() {
 	}
 	
-	void convert(CommonTree node, Grammar grammar) {
+	void convert(CommonTree node, NameSpace grammar) {
 		this.grammar = grammar;
 		this.loadPredfinedRules(node);
 		this.visit("visit", node);
@@ -110,16 +110,16 @@ public class DTDConverter extends CommonTreeVisitor {
 		}
 		for (int elementID = 0; elementID < elementCount; elementID++) {
 			String elementName = "Element_" + elementNameMap.get(elementID);
-			grammar.defineRule(node, elementName, genElement(node, elementID));
+			grammar.defineProduction(node, elementName, genElement(node, elementID));
 		}
-		grammar.defineRule(node, "entity", genEntityList(node));
+		grammar.defineProduction(node, "entity", genEntityList(node));
 	}
 
 	public void visitElement(CommonTree node) {
 		String elementName = node.textAt(0, "");
 		elementNameMap.put(elementCount, elementName);
 		//		elementIDMap.put(elementName, elementCount);
-		grammar.defineRule(node, "Content" + elementCount, toExpression(node.get(1)));
+		grammar.defineProduction(node, "Content" + elementCount, toExpression(node.get(1)));
 		elementCount++;
 	}
 
@@ -161,42 +161,42 @@ public class DTDConverter extends CommonTreeVisitor {
 		int[] attDefList = initAttDefList();
 		// generate Complete / Proximate Attribute list
 		if (impList.isEmpty()) {
-			grammar.defineRule(node, attListName, genCompAtt(node, attDefList));
+			grammar.defineProduction(node, attListName, genCompAtt(node, attDefList));
 		} else {
 			int[] requiredRules = extractRequiredRule(attDefList);
-			grammar.defineRule(node, choiceListName, genImpliedChoice(node));
-			grammar.defineRule(node, attListName, genProxAtt(node, requiredRules));
+			grammar.defineProduction(node, choiceListName, genImpliedChoice(node));
+			grammar.defineProduction(node, attListName, genProxAtt(node, requiredRules));
 		}
 	}
 
 	public void visitREQUIRED(CommonTree node) {
 		String name = "AttDef" + attID + "_" + attDefCount;
 		reqList.add(attDefCount++);
-		grammar.defineRule(node, name, toExpression(node.get(1)));
+		grammar.defineProduction(node, name, toExpression(node.get(1)));
 	}
 
 	public void visitIMPLIED(CommonTree node) {
 		String name = "AttDef" + attID + "_" + attDefCount;
 		impList.add(attDefCount++);
-		grammar.defineRule(node, name, toExpression(node.get(1)));
+		grammar.defineProduction(node, name, toExpression(node.get(1)));
 	}
 
 	public void visitFIXED(CommonTree node) {
 		String name = "AttDef" + attID + "_" + attDefCount;
 		impList.add(attDefCount++);
-		grammar.defineRule(node, name, genFixedAtt(node));
+		grammar.defineProduction(node, name, genFixedAtt(node));
 	}
 
 
 	public void visitDefault(CommonTree node) {
 		String name = "AttDef" + attID + "_" + attDefCount;
 		impList.add(attDefCount++);
-		grammar.defineRule(node, name, toExpression(node.get(1)));
+		grammar.defineProduction(node, name, toExpression(node.get(1)));
 	}
 
 	public void visitEntity(CommonTree node) {
 		String name = "ENT_" + entityCount++;
-		grammar.defineRule(node, name, toExpression(node.get(1)));
+		grammar.defineProduction(node, name, toExpression(node.get(1)));
 	}
 	
 	private Expression toExpression(CommonTree node) {

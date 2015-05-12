@@ -16,7 +16,7 @@ import nez.expr.New;
 import nez.expr.Not;
 import nez.expr.Prediction;
 import nez.expr.Replace;
-import nez.expr.Rule;
+import nez.expr.Production;
 import nez.expr.Sequence;
 import nez.expr.Tagging;
 import nez.util.ConsoleUtils;
@@ -224,9 +224,9 @@ class IFailCheckSkip extends IFailSkip {
 }
 
 class ICallPush extends Instruction implements StackOperation {
-	Rule rule;
+	Production rule;
 	public Instruction jump = null;
-	ICallPush(Rule rule, Instruction next) {
+	ICallPush(Production rule, Instruction next) {
 		super(rule, next);
 		this.rule = rule;
 	}
@@ -262,7 +262,7 @@ class ICallPush extends Instruction implements StackOperation {
 }
 
 class IRet extends Instruction implements StackOperation {
-	IRet(Rule e) {
+	IRet(Production e) {
 		super(e, null);
 	}
 	@Override
@@ -275,7 +275,7 @@ class IRet extends Instruction implements StackOperation {
 	}
 	@Override
 	protected String getOperand() {
-		return "  ## " + ((Rule)e).getLocalName();
+		return "  ## " + ((Production)e).getLocalName();
 	}
 }
 

@@ -1,18 +1,18 @@
 package nez.expr;
 
-import nez.Grammar;
+import nez.NameSpace;
 import nez.ParserCombinator;
 
 public class NezCombinator extends ParserCombinator {
 
-	NezCombinator(Grammar grammar) {
+	NezCombinator(NameSpace grammar) {
 		super(grammar);
 	}
 	
-	private static Grammar peg = null;
-	public final static Grammar newGrammar() {
+	private static NameSpace peg = null;
+	public final static NameSpace newGrammar() {
 		if(peg == null) {
-			peg = new NezCombinator(new Grammar("nez")).load();
+			peg = new NezCombinator(NameSpace.newNameSpace("nez")).load();
 		}
 		return peg;
 	}

@@ -1,6 +1,6 @@
 package nez.expr;
 
-import nez.Production;
+import nez.Grammar2;
 import nez.ast.SourcePosition;
 import nez.runtime.Instruction;
 import nez.runtime.RuntimeCompiler;
@@ -54,7 +54,7 @@ public class ByteMap extends Terminal {
 		for(int i = 0; i < 256; i++) {
 			byteMap[i] = !byteMap[i];
 		}
-		if(!UFlag.is(option, Production.Binary)) {
+		if(!UFlag.is(option, Grammar2.Binary)) {
 			byteMap[0] = false;
 		}
 	}

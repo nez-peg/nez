@@ -3,7 +3,7 @@ package nez.cc;
 import java.lang.reflect.Constructor;
 import java.util.TreeMap;
 
-import nez.Grammar;
+import nez.NameSpace;
 import nez.main.Command;
 import nez.main.CommandConfigure;
 import nez.main.Verbose;
@@ -18,7 +18,7 @@ public class GrammarCommand extends Command {
 
 	@Override
 	public void exec(CommandConfigure config) {
-		Grammar peg = config.getGrammar(false);
+		NameSpace peg = config.getGrammar(false);
 		GrammarGenerator gen = loadGenerator(config.getOutputFileName());
 		gen.generate(peg);
 	}

@@ -11,12 +11,12 @@ import nez.expr.GrammarChecker;
 import nez.util.UList;
 
 public class ParserCombinator {
-	Grammar grammar;
-	protected ParserCombinator(Grammar grammar) {
+	NameSpace grammar;
+	protected ParserCombinator(NameSpace grammar) {
 		this.grammar = grammar;
 	}
 	
-	public final Grammar load(GrammarChecker checker) {
+	public final NameSpace load(GrammarChecker checker) {
 		Class<?> c = this.getClass();
 		for(Method m : c.getDeclaredMethods()) {
 			if(m.getReturnType() == Expression.class && m.getParameterTypes().length == 0) {
@@ -27,7 +27,7 @@ public class ParserCombinator {
 				}
 				try {
 					Expression e = (Expression)m.invoke(this);
-					grammar.defineRule(e.getSourcePosition(), name, e);
+					grammar.defineProduction(e.getSourcePosition(), name, e);
 				} catch (IllegalAccessException e1) {
 					e1.printStackTrace();
 				} catch (IllegalArgumentException e1) {
@@ -43,7 +43,7 @@ public class ParserCombinator {
 		return grammar;
 	}
 
-	public final Grammar load() {
+	public final NameSpace load() {
 		return this.load(new GrammarChecker());
 	}
 

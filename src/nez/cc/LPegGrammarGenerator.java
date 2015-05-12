@@ -1,6 +1,6 @@
 package nez.cc;
 
-import nez.Grammar;
+import nez.NameSpace;
 import nez.expr.And;
 import nez.expr.AnyChar;
 import nez.expr.ByteChar;
@@ -18,7 +18,7 @@ import nez.expr.Option;
 import nez.expr.Repetition;
 import nez.expr.Repetition1;
 import nez.expr.Replace;
-import nez.expr.Rule;
+import nez.expr.Production;
 import nez.expr.Sequence;
 import nez.expr.SequentialExpression;
 import nez.expr.Tagging;
@@ -28,7 +28,7 @@ import nez.util.UList;
 
 public class LPegGrammarGenerator extends GrammarGenerator {
 
-	Grammar peg;
+	NameSpace peg;
 	
 	
 	public LPegGrammarGenerator(String fileName) {
@@ -41,13 +41,13 @@ public class LPegGrammarGenerator extends GrammarGenerator {
 	}
 
 	@Override
-	public void generate(Grammar grammar) {
+	public void generate(NameSpace grammar) {
 		peg = grammar;
 		makeHeader();
 		file.writeIndent("G = lpeg.P{ File,");
 		file.incIndent();
-		UList<Rule> list = grammar.getDefinedRuleList();
-		for(Rule r: list) {
+		UList<Production> list = grammar.getDefinedRuleList();
+		for(Production r: list) {
 			if(!r.getLocalName().startsWith("\"")) {
 				visitRule(r);
 			}
@@ -63,8 +63,8 @@ public class LPegGrammarGenerator extends GrammarGenerator {
 	@Override
 	public void makeHeader() {
 		file.writeIndent("local lpeg = require \"lpeg\"");
-		UList<Rule> list = peg.getDefinedRuleList();
-		for(Rule r: list) {
+		UList<Production> list = peg.getDefinedRuleList();
+		for(Production r: list) {
 			if(!r.getLocalName().startsWith("\"")) {
 				String localName = r.getLocalName();
 				file.writeIndent("local " + localName + " = lpeg.V\"" + localName + "\"");
@@ -73,7 +73,7 @@ public class LPegGrammarGenerator extends GrammarGenerator {
 	}
 
 	@Override
-	public void visitRule(Rule rule) {
+	public void visitRule(Production rule) {
 		Expression e = rule.getExpression();
 		file.incIndent();
 		file.writeIndent(rule.getLocalName() + " = ");

@@ -2,7 +2,7 @@ package nez.expr;
 
 import java.util.TreeMap;
 
-import nez.Grammar;
+import nez.NameSpace;
 import nez.ast.SourcePosition;
 import nez.main.Verbose;
 import nez.util.ConsoleUtils;
@@ -60,10 +60,10 @@ public class GrammarChecker {
 		return n.equalsIgnoreCase("FILE") || n.equalsIgnoreCase("CHUNK");
 	}
 	
-	public void verify(Grammar grammar) {
+	public void verify(NameSpace grammar) {
 		UList<String> stack = new UList<String>(new String[64]);
 		UMap<String> visited = new UMap<String>();
-		for(Rule r: grammar.getDefinedRuleList()) {
+		for(Production r: grammar.getDefinedRuleList()) {
 			if(r.isTerminal) {
 				continue;
 			}
@@ -76,7 +76,7 @@ public class GrammarChecker {
 			ConsoleUtils.exit(1, "FatalGrammarError");
 		}
 		// type check
-		for(Rule r: grammar.getRuleList()) {
+		for(Production r: grammar.getRuleList()) {
 			if(r.isTerminal) {
 				continue;
 			}
@@ -87,7 +87,7 @@ public class GrammarChecker {
 			r.checkTypestate(this, new Typestate());
 		}		
 		// interning
-		for(Rule r: grammar.getRuleList()) {
+		for(Production r: grammar.getRuleList()) {
 			if(r.isTerminal) {
 				continue;
 			}
@@ -98,7 +98,7 @@ public class GrammarChecker {
 		}
 		if(this.foundFlag) {
 			TreeMap<String,String> undefedFlags = new TreeMap<String,String>();
-			for(Rule r: grammar.getRuleList()) {
+			for(Production r: grammar.getRuleList()) {
 				r.removeExpressionFlag(undefedFlags);
 			}
 		}
@@ -144,7 +144,7 @@ public class GrammarChecker {
 		exampleList.add(ex);
 	}
 	
-	final void testExample(Grammar grammar) {
+	final void testExample(NameSpace grammar) {
 		if(strictMode && exampleList != null) {
 			for(Example ex : exampleList) {
 				ex.test(grammar);

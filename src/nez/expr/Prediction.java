@@ -1,6 +1,6 @@
 package nez.expr;
 
-import nez.Production;
+import nez.Grammar2;
 import nez.ast.Source;
 import nez.util.UFlag;
 
@@ -14,7 +14,7 @@ public class Prediction {
 	public static boolean predictAnyChar(int option, int ch, boolean k) {
 		switch(ch) {
 		case 0:
-			return UFlag.is(option, Production.Binary);
+			return UFlag.is(option, Grammar2.Binary);
 		case Source.BinaryEOF:
 			return false;
 		}
@@ -25,7 +25,7 @@ public class Prediction {
 		for(int c = 1; c < dfa.length - 1; c++) {
 			dfa[c] = true;
 		}
-		dfa[0] = UFlag.is(option, Production.Binary);
+		dfa[0] = UFlag.is(option, Grammar2.Binary);
 		dfa[Source.BinaryEOF] = false;
 	}
 

@@ -13,7 +13,7 @@ import nez.expr.NonTerminal;
 import nez.expr.Option;
 import nez.expr.Repetition;
 import nez.expr.Repetition1;
-import nez.expr.Rule;
+import nez.expr.Production;
 import nez.expr.Sequence;
 import nez.expr.Tagging;
 import nez.expr.Typestate;
@@ -21,7 +21,7 @@ import nez.util.UList;
 
 public abstract class Type {
 	abstract Type dup();
-	abstract void ref(Rule p);
+	abstract void ref(Production p);
 	abstract void tag(Tag t);
 	abstract void link(Link p, Type t);
 	abstract boolean isRepetition();
@@ -35,11 +35,11 @@ public abstract class Type {
 		return sb.toString();
 	}
 	
-	public static Type inferType(Rule name, Expression e) {
+	public static Type inferType(Production name, Expression e) {
 		return inferType(name, e, new AtomType());
 	}
 
-	static Type inferType(Rule name, Expression e, Type inf) {
+	static Type inferType(Production name, Expression e, Type inf) {
 		if(e instanceof Tagging) {
 			inf.tag(((Tagging) e).tag);
 			return inf;
@@ -169,7 +169,7 @@ class LinkLog {
 
 class AtomType extends Type {
 	Tag tag = null;
-	Rule p = null;
+	Production p = null;
 	LinkLog link = null;
 	int size = 0;
 	Type right = null;;
@@ -244,7 +244,7 @@ class AtomType extends Type {
 		}
 	}
 	@Override
-	void ref(Rule p) {
+	void ref(Production p) {
 		assert(this.p == null);
 		this.p = p;
 	}
@@ -360,7 +360,7 @@ class UnionType extends Type {
 		}
 	}
 	@Override
-	void ref(Rule p) {
+	void ref(Production p) {
 		for(AtomType t : this.union) {
 			t.ref(p);
 		}

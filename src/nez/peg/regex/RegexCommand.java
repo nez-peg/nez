@@ -1,7 +1,7 @@
 package nez.peg.regex;
 
-import nez.Grammar;
-import nez.Production;
+import nez.NameSpace;
+import nez.Grammar2;
 import nez.SourceContext;
 import nez.ast.CommonTree;
 import nez.main.Command;
@@ -25,7 +25,7 @@ public class RegexCommand extends Command {
 	public void exec(CommandConfigure config) {
 		init(config);
 		Recorder rec = config.getRecorder();
-		Production p = config.getProduction(config.StartingPoint);
+		Grammar2 p = config.getProduction(config.StartingPoint);
 		CommonTree node = parse(config, rec, p, false);
 		String outputfile = config.getOutputFileName();
 		if (outputfile == null) {
@@ -37,12 +37,12 @@ public class RegexCommand extends Command {
 			}
 			outputfile = "gen/" + outputfile;
 		}
-		GrammarConverter conv = new RegexConverter(new Grammar(file.getResourceName()), outputfile);
+		GrammarConverter conv = new RegexConverter(NameSpace.newNameSpace(file.getResourceName()), outputfile);
 		conv.convert(node);
 		config.GrammarFile = outputfile;
 		config.setInputFileList(inputFileList);
 		rec = config.getRecorder();
-		p = conv.grammar.newProduction(config.StartingPoint, Production.RegexOption);
+		p = conv.grammar.newProduction(config.StartingPoint, Grammar2.RegexOption);
 		parse(config, rec, p, true);
 	}
 	
@@ -54,7 +54,7 @@ public class RegexCommand extends Command {
 		config.InputFileLists.add(RegexFile);
 	}
 
-	private CommonTree parse(CommandConfigure config, Recorder rec, Production p, boolean writeAST) {
+	private CommonTree parse(CommandConfigure config, Recorder rec, Grammar2 p, boolean writeAST) {
 		if(p == null) {
 			ConsoleUtils.exit(1, "undefined nonterminal: " + config.StartingPoint);
 		}

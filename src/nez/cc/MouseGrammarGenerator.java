@@ -17,7 +17,7 @@ import nez.expr.Option;
 import nez.expr.Repetition;
 import nez.expr.Repetition1;
 import nez.expr.Replace;
-import nez.expr.Rule;
+import nez.expr.Production;
 import nez.expr.Sequence;
 import nez.expr.SequentialExpression;
 import nez.expr.Tagging;
@@ -48,7 +48,7 @@ public class MouseGrammarGenerator extends GrammarGenerator {
 	}
 	
 	@Override
-	public void visitRule(Rule rule) {
+	public void visitRule(Production rule) {
 		Expression e = rule.getExpression();
 		file.writeIndent(stringfyName(rule.getLocalName()));
 		file.incIndent();

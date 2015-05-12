@@ -1,14 +1,14 @@
 package nez.peg.regex;
 
-import nez.Grammar;
+import nez.NameSpace;
 import nez.ast.CommonTree;
 import nez.ast.CommonTreeVisitor;
 import nez.util.FileBuilder;
 
 public abstract class GrammarConverter extends CommonTreeVisitor {
 	final protected FileBuilder file;
-	final protected Grammar grammar;
-	public GrammarConverter(Grammar peg, String name) {
+	final protected NameSpace grammar;
+	public GrammarConverter(NameSpace peg, String name) {
 		this.file = new FileBuilder(name);
 		this.grammar = peg;
 	}

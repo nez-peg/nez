@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
-import nez.Production;
+import nez.Grammar2;
 import nez.expr.And;
 import nez.expr.AnyChar;
 import nez.expr.Block;
@@ -27,7 +27,7 @@ import nez.expr.Prediction;
 import nez.expr.Repetition;
 import nez.expr.Repetition1;
 import nez.expr.Replace;
-import nez.expr.Rule;
+import nez.expr.Production;
 import nez.expr.Sequence;
 import nez.expr.Tagging;
 import nez.main.Verbose;
@@ -61,11 +61,11 @@ public class RuntimeCompiler {
 	}
 	
 	protected final boolean enablePackratParsing() {
-		return UFlag.is(this.option, Production.PackratParsing);
+		return UFlag.is(this.option, Grammar2.PackratParsing);
 	}
 
 	protected final boolean enableASTConstruction() {
-		return UFlag.is(this.option, Production.ASTConstruction);
+		return UFlag.is(this.option, Grammar2.ASTConstruction);
 	}
 
 	MemoPoint issueMemoPoint(String label, Expression e) {
@@ -124,19 +124,19 @@ public class RuntimeCompiler {
 		return null;
 	}
 	
-	public final Instruction encode(UList<Rule> ruleList) {
+	public final Instruction encode(UList<Production> ruleList) {
 		long t = System.nanoTime();
-		for(Rule r : ruleList) {
+		for(Production r : ruleList) {
 			String uname = r.getUniqueName();
 			if(Verbose.Debug) {
 				Verbose.debug("compiling .. " + r);
 			}
 			Expression e = r.getExpression();
-			if(UFlag.is(option, Production.Inlining)  && this.ruleMap.size() > 0 && r.isInline() ) {
+			if(UFlag.is(option, Grammar2.Inlining)  && this.ruleMap.size() > 0 && r.isInline() ) {
 				//System.out.println("skip .. " + r.getLocalName() + "=" + e);
 				continue;
 			}
-			if(!UFlag.is(option, Production.ASTConstruction)) {
+			if(!UFlag.is(option, Grammar2.ASTConstruction)) {
 				e = e.removeASTOperator(Expression.RemoveOnly);
 			}
 			CodeBlock block = new CodeBlock();
@@ -210,8 +210,8 @@ public class RuntimeCompiler {
 		}
 	}
 	
-	public void dump(UList<Rule> ruleList) {
-		for(Rule r : ruleList) {
+	public void dump(UList<Production> ruleList) {
+		for(Production r : ruleList) {
 			String uname = r.getUniqueName();
 			ConsoleUtils.println(uname + ":");
 			CodeBlock block = this.ruleMap.get(uname);
@@ -316,7 +316,7 @@ public class RuntimeCompiler {
 	
 	
 	public final Instruction encodeOption(Option p, Instruction next) {
-		if(UFlag.is(option, Production.DFA) && checkInstruction(next)) {
+		if(UFlag.is(option, Grammar2.DFA) && checkInstruction(next)) {
 			boolean[] dfa = predictNext(next);
 			boolean[] optdfa = predictInner(p.get(0), dfa);
 			if(isDisjoint(dfa, optdfa)) {
@@ -341,7 +341,7 @@ public class RuntimeCompiler {
 //			System.out.println("NFA: " + p + " " + next.e);
 //			System.out.println("NFA: " + StringUtils.stringfyCharClass(and(dfa, optdfa)));
 		}
-		if(UFlag.is(option, Production.Specialization)) {
+		if(UFlag.is(option, Grammar2.Specialization)) {
 			Expression inner = p.get(0).optimize(option);
 			if(inner instanceof ByteChar) {
 				Verbose.noticeOptimize("Specialization", p, inner);
@@ -352,7 +352,7 @@ public class RuntimeCompiler {
 				return new IOptionByteMap((ByteMap)inner, next);
 			}
 		}
-		if(UFlag.is(option, Production.DFA)) {
+		if(UFlag.is(option, Grammar2.DFA)) {
 			Verbose.printNFA(p + " " + next.e);
 		}
 
@@ -361,7 +361,7 @@ public class RuntimeCompiler {
 	}
 	
 	public final Instruction encodeRepetition(Repetition p, Instruction next) {
-		if(UFlag.is(option, Production.DFA) && !p.possibleInfiniteLoop && checkInstruction(next)) {
+		if(UFlag.is(option, Grammar2.DFA) && !p.possibleInfiniteLoop && checkInstruction(next)) {
 			boolean[] dfa = predictNext(next);
 			boolean[] optdfa = predictInner(p.get(0), dfa);
 			if(isDisjoint(dfa, optdfa)) {
@@ -383,7 +383,7 @@ public class RuntimeCompiler {
 				return match;
 			}
 		}
-		if(UFlag.is(option, Production.Specialization)) {
+		if(UFlag.is(option, Grammar2.Specialization)) {
 			Expression inner = p.get(0).optimize(option);
 			if(inner instanceof ByteChar) {
 				Verbose.noticeOptimize("Specialization", p, inner);
@@ -394,7 +394,7 @@ public class RuntimeCompiler {
 				return new IRepeatedByteMap((ByteMap)inner, next);
 			}
 		}
-		if(UFlag.is(option, Production.DFA)) {
+		if(UFlag.is(option, Grammar2.DFA)) {
 			Verbose.printNFA(p + " " + next.e);
 		}
 		IFailSkip skip = p.possibleInfiniteLoop ? new IFailCheckSkip(p) : new IFailCheckSkip(p);
@@ -413,7 +413,7 @@ public class RuntimeCompiler {
 	}
 
 	public final Instruction encodeNot(Not p, Instruction next) {
-		if(UFlag.is(option, Production.Specialization)) {
+		if(UFlag.is(option, Grammar2.Specialization)) {
 			Expression inn = p.get(0).optimize(option);
 			if(inn instanceof ByteMap) {
 				Verbose.noticeOptimize("Specilization", p);
@@ -425,7 +425,7 @@ public class RuntimeCompiler {
 			}
 			if(inn instanceof AnyChar) {
 				Verbose.noticeOptimize("Specilization", p);
-				return new INotAnyChar(inn, UFlag.is(this.option, Production.Binary), next);
+				return new INotAnyChar(inn, UFlag.is(this.option, Grammar2.Binary), next);
 			}
 			if(inn instanceof Sequence && ((Sequence)inn).isMultiChar()) {
 				Verbose.noticeOptimize("Specilization", p);
@@ -474,7 +474,7 @@ public class RuntimeCompiler {
 			Verbose.noticeOptimize("ByteMap", p, pp);
 			return encodeByteMap((ByteMap)pp, next);
 		}
-		if(UFlag.is(option, Production.DFA)) {
+		if(UFlag.is(option, Grammar2.DFA)) {
 			if(pp instanceof Choice) {
 				p = (Choice)pp;
 			}
@@ -745,7 +745,7 @@ public class RuntimeCompiler {
 	}
 
 	private final Expression makeCommonPrefix(Choice p) {
-		if(!UFlag.is(this.option, Production.CommonPrefix)) {
+		if(!UFlag.is(this.option, Grammar2.CommonPrefix)) {
 			return null;
 		}
 		int start = 0;
@@ -813,13 +813,13 @@ public class RuntimeCompiler {
 	}
 
 	public final Instruction encodeNonTerminal(NonTerminal p, Instruction next) {
-		Rule r = p.getRule();
+		Production r = p.getRule();
 		Expression pp = p.optimize(option);
 		if(pp instanceof ByteChar || pp instanceof ByteMap || pp instanceof AnyChar) {
 			Verbose.noticeOptimize("Inlining", p, pp);
 			return encodeExpression(pp, next);
 		}
-		if(r.isInline() && UFlag.is(option, Production.Inlining)) {
+		if(r.isInline() && UFlag.is(option, Grammar2.Inlining)) {
 			Verbose.noticeOptimize("Inlining", p, r.getExpression());
 			return encodeExpression(r.getExpression(), next);
 		}
@@ -828,7 +828,7 @@ public class RuntimeCompiler {
 				Expression ref = Factory.resolveNonTerminal(r.getExpression());
 				MemoPoint m = this.issueMemoPoint(r.getUniqueName(), ref);
 				if(m != null) {
-					if(UFlag.is(option, Production.Tracing)) {
+					if(UFlag.is(option, Grammar2.Tracing)) {
 						IMonitoredSwitch monitor = new IMonitoredSwitch(p, new ICallPush(p.getRule(), next));
 						Instruction inside = new ICallPush(r, newMemoize(p, monitor, m, next));
 						monitor.setActivatedNext(newLookup(p, monitor, m, inside, next, newMemoizeFail(p, monitor, m)));
@@ -872,7 +872,7 @@ public class RuntimeCompiler {
 				Expression inner = Factory.resolveNonTerminal(p.get(0));
 				MemoPoint m = this.issueMemoPoint(p.toString(), inner);
 				if(m != null) {
-					if(UFlag.is(option, Production.Tracing)) {
+					if(UFlag.is(option, Grammar2.Tracing)) {
 						IMonitoredSwitch monitor = new IMonitoredSwitch(p, encodeExpression(p.get(0), next));
 						Instruction inside = encodeExpression(p.get(0), newMemoizeNode(p, monitor, m, next));
 						monitor.setActivatedNext(newLookupNode(p, monitor, m, inside, next, new IMemoizeFail(p, monitor, m)));

@@ -1,6 +1,6 @@
 package nez.expr;
 
-import nez.Grammar;
+import nez.NameSpace;
 import nez.ast.SourcePosition;
 import nez.ast.Tag;
 import nez.util.StringUtils;
@@ -44,7 +44,7 @@ public class Factory {
 //	private static boolean StringSpecialization = true;
 //	private static boolean CharacterChoice      = true;
 	
-	public final static Expression newNonTerminal(SourcePosition s, Grammar peg, String name) {
+	public final static Expression newNonTerminal(SourcePosition s, NameSpace peg, String name) {
 		return internImpl(s, new NonTerminal(s, peg, name));
 	}
 	

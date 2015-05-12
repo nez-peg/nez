@@ -17,7 +17,7 @@ import nez.expr.Option;
 import nez.expr.Repetition;
 import nez.expr.Repetition1;
 import nez.expr.Replace;
-import nez.expr.Rule;
+import nez.expr.Production;
 import nez.expr.Sequence;
 import nez.expr.Tagging;
 
@@ -44,12 +44,12 @@ class JavaParserGenerator extends GrammarGenerator {
 		file.writeIndent("}");
 	}
 
-	String name(Rule rule) {
+	String name(Production rule) {
 		return rule.getLocalName();
 	}
 	
 	@Override
-	public void visitRule(Rule rule) {
+	public void visitRule(Production rule) {
 		file.writeIndent("public final static boolean " + name(rule) + "(SourceContext c) {");
 		file.incIndent();
 		visit(rule.getExpression());

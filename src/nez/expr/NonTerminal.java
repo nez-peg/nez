@@ -2,7 +2,7 @@ package nez.expr;
 
 import java.util.TreeMap;
 
-import nez.Grammar;
+import nez.NameSpace;
 import nez.ast.SourcePosition;
 import nez.runtime.Instruction;
 import nez.runtime.RuntimeCompiler;
@@ -10,14 +10,15 @@ import nez.util.UList;
 import nez.util.UMap;
 
 public class NonTerminal extends Expression {
-	public Grammar peg;
-	public String  ruleName;
+	public NameSpace ns;
+	public String  localName;
 	String  uniqueName;
-	public NonTerminal(SourcePosition s, Grammar peg, String ruleName) {
+
+	public NonTerminal(SourcePosition s, NameSpace ns, String ruleName) {
 		super(s);
-		this.peg = peg;
-		this.ruleName = ruleName;
-		this.uniqueName = this.peg.uniqueName(this.ruleName);
+		this.ns = ns;
+		this.localName = ruleName;
+		this.uniqueName = this.ns.uniqueName(this.localName);
 	}
 
 	@Override
@@ -41,19 +42,19 @@ public class NonTerminal extends Expression {
 	}
 
 	public final String getLocalName() {
-		return ruleName;
+		return localName;
 	}
 
 	public final String getUniqueName() {
 		return this.uniqueName;
 	}
 	
-	public final Rule getRule() {
-		return this.peg.getRule(this.ruleName);
+	public final Production getRule() {
+		return this.ns.getProduction(this.localName);
 	}
 	
 	public final Expression deReference() {
-		Rule r = this.peg.getRule(this.ruleName);
+		Production r = this.ns.getProduction(this.localName);
 		return (r != null) ? r.getExpression() : null;
 	}
 	
@@ -62,12 +63,12 @@ public class NonTerminal extends Expression {
 		if(checker != null) {
 //			checkPhase1(checker, ruleName, visited);
 			if(startNonTerminal != null && startNonTerminal.equals(this.uniqueName)) {
-				checker.reportError(s, "left recursion: " + this.ruleName);
+				checker.reportError(s, "left recursion: " + this.localName);
 				checker.foundFatalError();
 				return false;
 			}
 		}
-		Rule r = this.getRule();
+		Production r = this.getRule();
 		if(r != null) {
 			return r.checkAlwaysConsumed(checker, startNonTerminal, stack);
 		}
@@ -75,10 +76,10 @@ public class NonTerminal extends Expression {
 	}
 
 	@Override void checkPhase1(GrammarChecker checker, String ruleName, UMap<String> visited, int depth) {
-		Rule r = this.getRule();
+		Production r = this.getRule();
 		if(r == null) {
-			checker.reportWarning(s, "undefined rule: " + this.ruleName + " => created empty rule!!");
-			r = this.peg.newRule(this.ruleName, Factory.newEmpty(s));
+			checker.reportWarning(s, "undefined rule: " + this.localName + " => created empty rule!!");
+			r = this.ns.newRule(this.localName, Factory.newEmpty(s));
 		}
 		if(depth == 0) {
 			r.refCount += 1;
@@ -101,12 +102,12 @@ public class NonTerminal extends Expression {
 
 	@Override
 	public int inferTypestate(UMap<String> visited) {
-		Rule r = this.getRule();
+		Production r = this.getRule();
 		return r.inferTypestate(visited);
 	}
 	@Override
 	public Expression checkTypestate(GrammarChecker checker, Typestate c) {
-		Rule r = this.getRule();
+		Production r = this.getRule();
 		int t = r.inferTypestate();
 		if(t == Typestate.BooleanType) {
 			return this;
@@ -130,18 +131,18 @@ public class NonTerminal extends Expression {
 	@Override
 	public Expression removeASTOperator(boolean newNonTerminal) {
 		if(newNonTerminal) {
-			Rule r = (Rule)this.getRule().removeASTOperator(newNonTerminal);
-			if(!this.ruleName.equals(r.getLocalName())) {
-				return Factory.newNonTerminal(this.s, peg, r.getLocalName());
+			Production r = (Production)this.getRule().removeASTOperator(newNonTerminal);
+			if(!this.localName.equals(r.getLocalName())) {
+				return Factory.newNonTerminal(this.s, ns, r.getLocalName());
 			}
 		}
 		return this;
 	}
 	@Override
 	public Expression removeFlag(TreeMap<String,String> undefedFlags) {
-		Rule r = (Rule)this.getRule().removeFlag(undefedFlags);
-		if(!this.ruleName.equals(r.getLocalName())) {
-			return Factory.newNonTerminal(this.s, peg, r.getLocalName());
+		Production r = (Production)this.getRule().removeFlag(undefedFlags);
+		if(!this.localName.equals(r.getLocalName())) {
+			return Factory.newNonTerminal(this.s, ns, r.getLocalName());
 		}
 		return this;
 	}

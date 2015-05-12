@@ -1,6 +1,6 @@
 package nez.main;
 
-import nez.Production;
+import nez.Grammar2;
 import nez.SourceContext;
 import nez.ast.CommonTree;
 import nez.ast.CommonTreeWriter;
@@ -16,7 +16,7 @@ class ParseCommand extends Command {
 	@Override
 	public void exec(CommandConfigure config) {
 		Recorder rec = config.getRecorder();
-		Production p = config.getProduction();
+		Grammar2 p = config.getProduction();
 		p.record(rec);
 		while(config.hasInput()) {
 			SourceContext file = config.getInputSourceContext();
@@ -63,8 +63,8 @@ class CheckCommand extends Command {
 	void exec(CommandConfigure config) {
 		UList<String> failedInput = new UList<String>(new String[4]);
 		Recorder rec = config.getRecorder();
-		Production product = config.getProduction();
-		product.disable(Production.ASTConstruction);
+		Grammar2 product = config.getProduction();
+		product.disable(Grammar2.ASTConstruction);
 		product.record(rec);
 		int totalCount = 0, failureCount = 0, unconsumedCount = 0;
 		while(config.hasInput()) {

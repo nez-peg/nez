@@ -2,7 +2,7 @@ package nez.expr;
 import java.util.AbstractList;
 import java.util.TreeMap;
 
-import nez.Production;
+import nez.Grammar2;
 import nez.ast.SourcePosition;
 import nez.runtime.Instruction;
 import nez.runtime.RuntimeCompiler;
@@ -83,7 +83,7 @@ public abstract class Expression extends AbstractList<Expression> {
 			String un = ne.getUniqueName();
 			if(!visited.hasKey(un)) {
 				visited.put(un, un);
-				Rule r = ne.getRule();
+				Production r = ne.getRule();
 				return hasReachableFlag(r.body, flagName, visited);
 			}
 		}
@@ -99,7 +99,7 @@ public abstract class Expression extends AbstractList<Expression> {
 //	public abstract void predict(int option, boolean[] dfa);
 	
 	public final Expression optimize(int option) {
-		option = Production.mask(option);
+		option = Grammar2.mask(option);
 		if(this.optimizedOption != option) {
 			optimizeImpl(option);
 			this.optimizedOption = option;

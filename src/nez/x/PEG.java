@@ -1,6 +1,6 @@
 package nez.x;
 
-import nez.Grammar;
+import nez.NameSpace;
 import nez.ParserCombinator;
 import nez.ast.Tag;
 import nez.expr.Expression;
@@ -8,14 +8,14 @@ import nez.expr.GrammarChecker;
 
 public class PEG extends ParserCombinator {
 
-	PEG(Grammar grammar) {
+	PEG(NameSpace grammar) {
 		super(grammar);
 	}
 	
-	private static Grammar peg = null;
-	public final static Grammar newGrammar() {
+	private static NameSpace peg = null;
+	public final static NameSpace newGrammar() {
 		if(peg == null) {
-			peg = new PEG(new Grammar("peg")).load(new GrammarChecker());
+			peg = new PEG(NameSpace.newNameSpace("peg")).load(new GrammarChecker());
 		}
 		return peg;
 	}

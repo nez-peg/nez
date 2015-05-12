@@ -5,12 +5,12 @@ import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.HashMap;
 
-import nez.Grammar;
+import nez.NameSpace;
 import nez.ast.CommonTree;
 import nez.ast.Tag;
 import nez.expr.Expression;
 import nez.expr.Factory;
-import nez.expr.Rule;
+import nez.expr.Production;
 import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
 import nez.util.UList;
@@ -18,7 +18,7 @@ import nez.util.UList;
 public class RegexConverter extends GrammarConverter{
 	HashMap<Integer, Method> methodMap = new HashMap<Integer, Method>();
 	int NonTerminalCount = 0;
-	public RegexConverter(Grammar grammar, String name) {
+	public RegexConverter(NameSpace grammar, String name) {
 		super(grammar, name);
 	}
 	
@@ -60,7 +60,7 @@ public class RegexConverter extends GrammarConverter{
 	
 	@Override
 	public void convert(CommonTree e) {
-		grammar.defineRule(e, "File", pi(e, null));
+		grammar.defineProduction(e, "File", pi(e, null));
 		//System.out.println("\nConverted Rule: " + grammar.getResourceName());
 		//grammar.dump();
 		makeFile(e);
@@ -71,7 +71,7 @@ public class RegexConverter extends GrammarConverter{
 		file.writeIndent("// Generate Date: " + new Date().toString());
 		file.writeIndent("// Input regex :  " + e.getText());
 		file.writeIndent("\n");
-		for(Rule r : grammar.getRuleList()) {
+		for(Production r : grammar.getRuleList()) {
 			file.write(r.toString());
 			file.writeIndent("\n");
 		}
@@ -117,7 +117,7 @@ public class RegexConverter extends GrammarConverter{
 	public Expression piLazyQuantifiers(CommonTree e, Expression k) {
 		String ruleName = "Repetition" + NonTerminalCount++;
 		Expression ne = Factory.newNonTerminal(e, this.grammar, ruleName);
-		grammar.defineRule(e, ruleName, toChoice(e, k, pi(e.get(0), ne)));
+		grammar.defineProduction(e, ruleName, toChoice(e, k, pi(e.get(0), ne)));
 		return ne;
 	}
 
@@ -125,7 +125,7 @@ public class RegexConverter extends GrammarConverter{
 	public Expression piRepetition(CommonTree e, Expression k) {
 		String ruleName = "Repetition" + NonTerminalCount++;
 		Expression ne = Factory.newNonTerminal(e, this.grammar, ruleName);
-		grammar.defineRule(e, ruleName, toChoice(e, pi(e.get(0), ne), k));
+		grammar.defineProduction(e, ruleName, toChoice(e, pi(e.get(0), ne), k));
 		return ne;
 	}
 	

@@ -2,7 +2,7 @@ package nez.expr;
 
 import java.util.TreeMap;
 
-import nez.Production;
+import nez.Grammar2;
 import nez.ast.SourcePosition;
 import nez.runtime.Instruction;
 import nez.runtime.RuntimeCompiler;
@@ -97,14 +97,14 @@ public class Choice extends SequentialExpression {
 	@Override
 	void optimizeImpl(int option) {
 		this.optimized = flatten();
-		if(UFlag.is(option, Production.Optimization) && this.optimized instanceof Choice) {
+		if(UFlag.is(option, Grammar2.Optimization) && this.optimized instanceof Choice) {
 			Expression p = ((Choice)this.optimized).toByteMap(option);
 			if(p != null) {
 				this.optimized = p;
 				return;
 			}
 		}
-		if(UFlag.is(option, Production.Prediction) && !UFlag.is(option, Production.DFA)) {
+		if(UFlag.is(option, Grammar2.Prediction) && !UFlag.is(option, Grammar2.DFA)) {
 			Expression fails = Factory.newFailure(s);
 			this.matchCase = new Expression[257];
 			for(int ch = 0; ch <= 256; ch++) {

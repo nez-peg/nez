@@ -1,6 +1,6 @@
 package nez.cc;
 
-import nez.Production;
+import nez.Grammar2;
 import nez.main.Command;
 import nez.main.CommandConfigure;
 
@@ -13,7 +13,7 @@ public class GeneratorCommand extends Command {
 
 	@Override
 	public void exec(CommandConfigure config) {
-		Production p = config.getProduction();
+		Grammar2 p = config.getProduction();
 //		int labelId = 0;
 //		for(Instruction inst: cc.codeList) {
 //			if(inst.label) {

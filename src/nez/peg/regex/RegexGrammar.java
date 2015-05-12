@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import nez.Grammar;
+import nez.NameSpace;
 import nez.NezException;
-import nez.Production;
+import nez.Grammar2;
 import nez.SourceContext;
 import nez.ast.CommonTree;
 import nez.ast.CommonTreeVisitor;
@@ -21,17 +21,17 @@ import nez.util.UList;
 
 public class RegexGrammar extends CommonTreeVisitor {
 
-	static Grammar regexGrammar = null;
-	public final static Grammar loadGrammar(SourceContext regex, GrammarChecker checker) throws IOException {
+	static NameSpace regexGrammar = null;
+	public final static NameSpace loadGrammar(SourceContext regex, GrammarChecker checker) throws IOException {
 		if(regexGrammar == null) {
 			try {
-				regexGrammar = Grammar.loadGrammar("regex.nez");
+				regexGrammar = NameSpace.loadGrammar("regex.nez");
 			}
 			catch(IOException e) {
 				ConsoleUtils.exit(1, "can't load regex.nez");
 			}
 		}
-		Production p = regexGrammar.newProduction("File");
+		Grammar2 p = regexGrammar.newProduction("File");
 		CommonTree node = p.parse(regex);
 		if (node == null) {
 			throw new NezException(regex.getSyntaxErrorMessage());
@@ -40,15 +40,15 @@ public class RegexGrammar extends CommonTreeVisitor {
 			throw new NezException(regex.getUnconsumedMessage());
 		}
 		RegexGrammar conv = new RegexGrammar();
-		Grammar grammar = new Grammar("re");
+		NameSpace grammar = NameSpace.newNameSpace("re");
 		conv.convert(node, grammar);
 		checker.verify(grammar);
 		return grammar;
 	}
 	
-	public final static Production newProduction(String pattern) {
+	public final static Grammar2 newProduction(String pattern) {
 		try {
-			Grammar grammar = loadGrammar(SourceContext.newStringContext(pattern), new GrammarChecker());
+			NameSpace grammar = loadGrammar(SourceContext.newStringContext(pattern), new GrammarChecker());
 			return grammar.newProduction("File");
 		} catch (IOException e) {
 			Verbose.traceException(e);
@@ -59,12 +59,12 @@ public class RegexGrammar extends CommonTreeVisitor {
 	RegexGrammar() {
 	}
 	
-	private Grammar grammar;
+	private NameSpace grammar;
 
-	void convert(CommonTree e, Grammar grammar) {
+	void convert(CommonTree e, NameSpace grammar) {
 		this.grammar = grammar;
-		grammar.defineRule(e, "File", pi(e, null));
-		grammar.defineRule(e, "Chunk", grammar.newNonTerminal("File"));
+		grammar.defineProduction(e, "File", pi(e, null));
+		grammar.defineProduction(e, "Chunk", grammar.newNonTerminal("File"));
 	}
 	
 	protected Method getClassMethod(String method, Tag tag) throws NoSuchMethodException, SecurityException {
@@ -130,7 +130,7 @@ public class RegexGrammar extends CommonTreeVisitor {
 	public Expression piLazyQuantifiers(CommonTree e, Expression k) {
 		String ruleName = "Repetition" + NonTerminalCount++;
 		Expression ne = Factory.newNonTerminal(e, this.grammar, ruleName);
-		grammar.defineRule(e, ruleName, toChoice(e, k, pi(e.get(0), ne)));
+		grammar.defineProduction(e, ruleName, toChoice(e, k, pi(e.get(0), ne)));
 		return ne;
 	}
 
@@ -138,7 +138,7 @@ public class RegexGrammar extends CommonTreeVisitor {
 	public Expression piRepetition(CommonTree e, Expression k) {
 		String ruleName = "Repetition" + NonTerminalCount++;
 		Expression ne = Factory.newNonTerminal(e, this.grammar, ruleName);
-		grammar.defineRule(e, ruleName, toChoice(e, pi(e.get(0), ne), k));
+		grammar.defineProduction(e, ruleName, toChoice(e, pi(e.get(0), ne), k));
 		return ne;
 	}
 	
