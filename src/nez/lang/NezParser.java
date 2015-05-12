@@ -17,18 +17,22 @@ public class NezParser extends CommonTreeVisitor {
 	GrammarChecker checker;
 	
 	public NezParser() {
-		nezGrammar = NezCombinator.newGrammar("Chunk", Grammar.SafeOption);
+		this.nezGrammar = NezCombinator.newGrammar("Chunk", Grammar.SafeOption);
 	}
 	
-	public Production eval(NameSpace ns, String urn, int linenum, String text) {
+	public void eval(NameSpace ns, String urn, int linenum, String text) {
 		SourceContext sc = SourceContext.newStringSourceContext(urn, linenum, text);
 		this.loaded = ns;
-		this.checker = null;
-		CommonTree ast = nezGrammar.parse(sc);
-		if(ast == null || !ast.is(NezTag.Rule)) {
-			return null;
+		this.checker = new GrammarChecker();
+		while(sc.hasUnconsumed()) {
+			CommonTree ast = nezGrammar.parse(sc);
+			if(ast == null) {
+				ConsoleUtils.println(sc.getSyntaxErrorMessage());
+			}
+			if(!this.parseStatement(ast)) {
+				break;
+			}
 		}
-		return parseRule(ast);
 	}
 
 	public final void load(NameSpace ns, String urn, GrammarChecker checker) throws IOException {
@@ -75,7 +79,7 @@ public class NezParser extends CommonTreeVisitor {
 	private boolean parseStatement(CommonTree ast) {
 		//System.out.println("DEBUG? parsed: " + ast);
 		if(ast.is(NezTag.Rule)) {
-			parseRule(ast);
+			parseProduction(ast);
 			return true;
 		}
 		if(ast.is(NezTag.Example)) {
@@ -99,42 +103,27 @@ public class NezParser extends CommonTreeVisitor {
 //		}
 		//ConsoleUtils.exit(1, ast.formatSourceMessage("error", "syntax error: " + ast));
 		Verbose.todo("undefined: " + ast);
-		return true;
+		return false;
 	}
 	
-//	private String searchPegFilePath(Source s, String filePath) {
-//		String f = s.getFilePath(filePath);
-//		if(new File(f).exists()) {
-//			return f;
-//		}
-//		if(new File(filePath).exists()) {
-//			return filePath;
-//		}
-//		return "lib/"+filePath;
-//	}
-
-	Expression toExpression(CommonTree po) {
-		return (Expression)this.visit(po);
-	}
-	
-	public Production parseRule(CommonTree ast) {
-		String ruleName = ast.textAt(0, "");
+	public Production parseProduction(CommonTree node) {
+		String ruleName = node.textAt(0, "");
 		boolean isTerminal = false;
-		if(ast.get(0).is(NezTag.String)) {
-			ruleName = quote(ruleName);
+		if(node.get(0).is(NezTag.String)) {
+			ruleName = NameSpace.nameTerminalProduction(ruleName);
 			isTerminal = true;
 		}
 		Production rule = loaded.getProduction(ruleName);
-		Expression e = toExpression(ast.get(1));
 		if(rule != null) {
-			checker.reportWarning(ast, "duplicated rule name: " + ruleName);
+			checker.reportWarning(node, "duplicated rule name: " + ruleName);
 			rule = null;
 		}
-		rule = loaded.defineProduction(ast.get(0), ruleName, e);
+		
+		Expression e = toExpression(node.get(1));
+		rule = loaded.defineProduction(node.get(0), ruleName, e);
 		rule.isTerminal = isTerminal;
-		if(ast.size() == 3) {
-			CommonTree attrs = ast.get(2);
-			//Verbose.todo(attrs);
+		if(node.size() == 3) {
+			CommonTree attrs = node.get(2);
 			if(attrs.containsToken("public")) {
 				rule.isPublic = true;
 			}
@@ -144,11 +133,12 @@ public class NezParser extends CommonTreeVisitor {
 		}
 		return rule;
 	}
-	
-	private String quote(String t) {
-		return "\"" + t + "\"";
+
+
+	Expression toExpression(CommonTree po) {
+		return (Expression)this.visit(po);
 	}
-		
+	
 	public Expression toNonTerminal(CommonTree ast) {
 		String symbol = ast.getText();
 //		if(ruleName.equals(symbol)) {
@@ -167,7 +157,7 @@ public class NezParser extends CommonTreeVisitor {
 	}
 
 	public Expression toString(CommonTree ast) {
-		String name = quote(ast.getText());
+		String name = NameSpace.nameTerminalProduction(ast.getText());
 		Production r = this.loaded.getProduction(name);
 		if(r != null) {
 			return r.getExpression();
@@ -177,7 +167,6 @@ public class NezParser extends CommonTreeVisitor {
 		}
 		return Factory.newString(ast, StringUtils.unquoteString(ast.getText()));
 	}
-
 
 	public Expression toCharacter(CommonTree ast) {
 		return Factory.newString(ast, StringUtils.unquoteString(ast.getText()));

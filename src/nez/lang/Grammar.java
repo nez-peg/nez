@@ -18,11 +18,11 @@ import nez.util.UMap;
 public class Grammar {
 	Production start;
 	UMap<Production>           ruleMap;
-	UList<Production>          ruleList;
+	UList<Production>          subProductionList;
 
 	Grammar(Production start, int option) {
 		this.start = start;
-		this.ruleList = new UList<Production>(new Production[4]);
+		this.subProductionList = new UList<Production>(new Production[4]);
 		this.ruleMap = new UMap<Production>();
 		this.setOption(option);
 		add(0, start);
@@ -33,13 +33,13 @@ public class Grammar {
 		return this.start;
 	}
 
-	public UList<Production> getRuleList() {
-		return this.ruleList;
+	public UList<Production> getSubProductionList() {
+		return this.subProductionList;
 	}
 	
 	private void add(int pos, Production r) {
 		if(!ruleMap.hasKey(r.getUniqueName())) {
-			ruleList.add(r);
+			subProductionList.add(r);
 			ruleMap.put(r.getUniqueName(), r);
 			add(pos, r.getExpression());
 		}
@@ -167,14 +167,14 @@ public class Grammar {
 	public final Instruction compile() {
 		if(compiledCode == null) {
 			RuntimeCompiler bc = new RuntimeCompiler(this.option);
-			compiledCode = bc.encode(this.ruleList);
+			compiledCode = bc.encode(this.subProductionList);
 			this.InstructionSize  = bc.getInstructionSize();
 			this.memoPointSize = bc.getMemoPointSize();
 			if(Verbose.PackratParsing) {
 				this.memoPointList = bc.getMemoPointList();
 			}
 			if(Verbose.VirtualMachine) {
-				bc.dump(this.ruleList);
+				bc.dump(this.subProductionList);
 			}
 		}
 		return compiledCode;
@@ -182,7 +182,7 @@ public class Grammar {
 	
 	public RuntimeCompiler cc() {
 		RuntimeCompiler bc = new RuntimeCompiler(this.option);
-		bc.encode(ruleList);
+		bc.encode(subProductionList);
 		return bc;
 	}
 		

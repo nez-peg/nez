@@ -1,7 +1,11 @@
 package nez.lang;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 
 import nez.SourceContext;
 import nez.ast.SourcePosition;
@@ -61,6 +65,18 @@ public class NameSpace {
 		return loadGrammarFile(file, new GrammarChecker());
 	}
 
+	public final static String nameUniqueName(String ns, String name) {
+		return ns + ":" + name;
+	}
+	
+	public final static String nameNamespaceName(String ns, String name) {
+		return ns == null ? name :  ns + "." + name;
+	}
+
+	public final static String nameTerminalProduction(String t) {
+		return "\"" + t + "\"";
+	}
+
 	// static 
 	
 	
@@ -113,13 +129,7 @@ public class NameSpace {
 	}
 
 	public final Production inportProduction(String ns, Production p) {
-		if(ns != null) {
-			String nsName = ns + "." + p.getLocalName();
-			this.ruleMap.put(nsName, p);
-		}
-		else {
-			this.ruleMap.put(p.getLocalName(), p);
-		}
+		this.ruleMap.put(nameNamespaceName(ns, p.getLocalName()), p);
 		addProduction(p);
 		return p;
 	}
@@ -128,6 +138,16 @@ public class NameSpace {
 		return this.ruleMap.get(ruleName);
 	}
 	
+	public final List<String> getNonterminalList() {
+		ArrayList<String> l = new ArrayList<String>();
+		for(String s : this.ruleMap.keys()) {
+			if(s.indexOf(':') > 0) continue;
+			l.add(s);
+			System.out.println("listing " + s);
+		}
+		Collections.sort(l);
+		return l;
+	}
 	
 		
 //	public int getRuleSize() {

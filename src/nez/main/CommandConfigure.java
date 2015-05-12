@@ -233,7 +233,7 @@ public class CommandConfigure {
 		return com;
 	}
 	
-	public final NameSpace getNameSpace(boolean newGrammar) {
+	public final NameSpace getNameSpace(boolean NameSpaceCreation) {
 		if(GrammarFile != null) {
 			try {
 				return NameSpace.loadGrammarFile(GrammarFile, new GrammarChecker(this.CheckerLevel));
@@ -245,7 +245,7 @@ public class CommandConfigure {
 //			NezParser p = new NezParser();
 //			return p.loadGrammarFile(SourceContext.newStringContext(GrammarText), new GrammarChecker(this.CheckerLevel));
 //		}
-		if(newGrammar) {
+		if(NameSpaceCreation) {
 			return NameSpace.newNameSpace();
 		}
 		else {
