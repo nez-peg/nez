@@ -21,6 +21,7 @@ class ParseCommand extends Command {
 		while(config.hasInput()) {
 			SourceContext file = config.getInputSourceContext();
 			file.start(rec);
+//			CommonTree.gcCount = 0;
 			CommonTree node = p.parse(file);
 			file.done(rec);
 			if(node == null) {
@@ -30,12 +31,25 @@ class ParseCommand extends Command {
 			if(file.hasUnconsumed()) {
 				ConsoleUtils.println(file.getUnconsumedMessage());
 			}
+			file = null;
 			if(rec != null) {
+				record(rec, node);
 				rec.log();
 			}
 			new CommonTreeWriter().transform(config.getOutputFileName(file), node);
 		}
 	}
+	
+	private void record(Recorder rec, CommonTree node) {
+		rec.setCount("O.Size", node.count());
+		System.gc();
+		long t1 = System.nanoTime();
+		CommonTree t = node.dup();
+		long t2 = System.nanoTime();
+		Recorder.recordLatencyMS(rec, "O.Overhead", t1, t2);
+//		rec.setCount("O.GC", CommonTree.gcCount);
+	}
+
 }
 
 class CheckCommand extends Command {

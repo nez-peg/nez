@@ -397,7 +397,7 @@ public class RuntimeCompiler {
 		if(UFlag.is(option, Production.DFA)) {
 			Verbose.printNFA(p + " " + next.e);
 		}
-		IFailSkip skip = p.possibleInfiniteLoop ? new IFailCheckSkip(p) : new IFailSkip(p);
+		IFailSkip skip = p.possibleInfiniteLoop ? new IFailCheckSkip(p) : new IFailCheckSkip(p);
 		Instruction start = encodeExpression(p.get(0), skip);
 		skip.next = start;
 		return new IFailPush(p, next, start);

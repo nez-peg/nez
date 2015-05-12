@@ -678,10 +678,6 @@ public abstract class Context implements Source {
 		this.popSymbolTable((int)top.pos);
 		return op.next;
 	}
-
-	//<scan T 0 e>
-	//<repeat T e>
-
 	
 	// Profiling
 	private Prof prof;

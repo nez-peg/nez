@@ -188,7 +188,7 @@ public class CommandConfigure {
 					this.ProductionOption = UFlag.unsetFlag(this.ProductionOption, Production.DFA);
 				}
 			}
-			else if(argument.startsWith("-Xrec")) {
+			else if(argument.startsWith("-Xrec") || argument.startsWith("--log") ) {
 				RecorderFileName = "nezrec.csv";
 				if(argument.endsWith(".csv")) {
 					RecorderFileName = argument.substring(6);

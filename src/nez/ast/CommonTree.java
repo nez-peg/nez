@@ -6,6 +6,11 @@ import nez.SourceContext;
 import nez.util.StringUtils;
 
 public class CommonTree extends AbstractList<CommonTree> implements SourcePosition {
+//	public static long gcCount = 0;
+//	protected void finalize() {
+//		//System.out.print(".");
+//		gcCount++;
+//	}
 	private Source    source;
 	private Tag       tag;
 	private long      pos;
@@ -24,7 +29,49 @@ public class CommonTree extends AbstractList<CommonTree> implements SourcePositi
 		}
 		this.value = value;
 	}
+	
+	CommonTree(Tag tag, Source source, long pos, int length, int size, Object value) {
+		this.tag        = tag;
+		this.source     = source;
+		this.pos        = pos;
+		this.length     = length;
+		this.subTree = new CommonTree[size];
+		this.value = value;
+	}
 
+	CommonTree(Tag tag, Source source, long pos, int length, Object value) {
+		this.tag        = tag;
+		this.source     = source;
+		this.pos        = pos;
+		this.length     = length;
+		this.value = value;
+	}
+
+	public CommonTree dup() {
+		if(this.subTree != null) {
+			CommonTree t = new CommonTree(this.tag, this.source, pos, this.length, this.subTree.length, value);
+			for(int i = 0; i < subTree.length; i++) {
+				if(this.subTree[i]!=null) {
+					t.subTree[i] = this.subTree[i].dup();
+				}
+			}
+			return t;
+		}
+		else {
+			return new CommonTree(this.tag, this.source, pos, this.length, value);
+		}
+	}
+
+	public int count() {
+		int c = 1;
+		for(CommonTree t: this) {
+			if(t != null) {
+				c += t.count();
+			}
+		}
+		return c;
+	}
+	
 	void link(int index, CommonTree child) {
 		this.set(index, child);
 	}
