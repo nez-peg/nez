@@ -3,20 +3,20 @@ package nez.x;
 import java.util.ArrayList;
 
 import nez.ast.Tag;
-import nez.expr.And;
-import nez.expr.Capture;
-import nez.expr.Choice;
-import nez.expr.Expression;
-import nez.expr.Link;
-import nez.expr.New;
-import nez.expr.NonTerminal;
-import nez.expr.Option;
-import nez.expr.Repetition;
-import nez.expr.Repetition1;
-import nez.expr.Production;
-import nez.expr.Sequence;
-import nez.expr.Tagging;
-import nez.expr.Typestate;
+import nez.lang.And;
+import nez.lang.Capture;
+import nez.lang.Choice;
+import nez.lang.Expression;
+import nez.lang.Link;
+import nez.lang.New;
+import nez.lang.NonTerminal;
+import nez.lang.Option;
+import nez.lang.Production;
+import nez.lang.Repetition;
+import nez.lang.Repetition1;
+import nez.lang.Sequence;
+import nez.lang.Tagging;
+import nez.lang.Typestate;
 import nez.util.UList;
 
 public abstract class Type {

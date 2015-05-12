@@ -1,8 +1,8 @@
 package nez.peg.regex;
 
-import nez.NameSpace;
 import nez.ast.CommonTree;
 import nez.ast.CommonTreeVisitor;
+import nez.lang.NameSpace;
 import nez.util.FileBuilder;
 
 public abstract class GrammarConverter extends CommonTreeVisitor {

@@ -1,10 +1,10 @@
 package nez.x;
 
-import nez.NameSpace;
 import nez.ParserCombinator;
 import nez.ast.Tag;
-import nez.expr.Expression;
-import nez.expr.GrammarChecker;
+import nez.lang.Expression;
+import nez.lang.GrammarChecker;
+import nez.lang.NameSpace;
 
 public class PEG extends ParserCombinator {
 

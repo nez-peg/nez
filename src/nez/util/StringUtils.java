@@ -2,7 +2,7 @@ package nez.util;
 
 import java.io.UnsupportedEncodingException;
 
-import nez.expr.ByteMap;
+import nez.lang.ByteMap;
 
 public abstract class StringUtils {
 

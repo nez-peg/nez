@@ -2,7 +2,7 @@ package nez.main;
 
 import java.io.IOException;
 
-import nez.expr.Expression;
+import nez.lang.Expression;
 import nez.util.ConsoleUtils;
 
 public class Verbose {

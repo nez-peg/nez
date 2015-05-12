@@ -1,12 +1,12 @@
 package nez.x;
 
-import nez.NameSpace;
-import nez.Grammar2;
 import nez.SourceContext;
 import nez.ast.CommonTree;
-import nez.expr.GrammarChecker;
-import nez.expr.NezParser;
-import nez.expr.Production;
+import nez.lang.Grammar;
+import nez.lang.GrammarChecker;
+import nez.lang.NameSpace;
+import nez.lang.NezParser;
+import nez.lang.Production;
 import nez.main.Command;
 import nez.main.CommandConfigure;
 import nez.util.ConsoleUtils;
@@ -19,7 +19,7 @@ public class DemoCommand extends Command {
 
 	@Override
 	public void exec(CommandConfigure config) {
-		Grammar2 product = config.getProduction();
+		Grammar product = config.getProduction();
 		NameSpace peg = product.getStartRule().getNameSpace();
 		String start = config.StartingPoint;
 		NezParser parser = new NezParser();
@@ -30,7 +30,7 @@ public class DemoCommand extends Command {
 			linenum++;
 			if(line.startsWith("\\")) {
 				String s = line.substring(1);
-				Grammar2 p = peg.newProduction(s);
+				Grammar p = peg.newGrammar(s);
 				if(p == null) {
 					ConsoleUtils.println("Undefined Rule: " + s);
 					ConsoleUtils.println("Rules: " + peg.getDefinedRuleList());
@@ -46,7 +46,7 @@ public class DemoCommand extends Command {
 			}
 			int loc = line.indexOf("=");
 			if(loc > 0) {
-				Production r = parser.parseRule(peg, "<stdin>", linenum, line);
+				Production r = parser.eval(peg, "<stdin>", linenum, line);
 				if(r != null) {
 					grammarAdded = true;
 					start = r.getLocalName();
@@ -55,7 +55,7 @@ public class DemoCommand extends Command {
 			}
 			if(grammarAdded) {
 				new GrammarChecker().verify(peg);
-				product = peg.newProduction(start);
+				product = peg.newGrammar(start);
 				assert(product != null);
 				grammarAdded = false;
 			}

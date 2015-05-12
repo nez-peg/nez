@@ -4,9 +4,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 
-import nez.NameSpace;
-import nez.expr.Expression;
-import nez.expr.Production;
+import nez.lang.Expression;
+import nez.lang.NameSpace;
+import nez.lang.Production;
 import nez.util.FileBuilder;
 import nez.util.UList;
 

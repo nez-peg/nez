@@ -6,29 +6,29 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 
-import nez.NameSpace;
-import nez.Grammar2;
-import nez.expr.And;
-import nez.expr.AnyChar;
-import nez.expr.ByteChar;
-import nez.expr.ByteMap;
-import nez.expr.Choice;
-import nez.expr.Empty;
-import nez.expr.Expression;
-import nez.expr.Factory;
-import nez.expr.Failure;
-import nez.expr.GrammarVisitor;
-import nez.expr.Link;
-import nez.expr.NonTerminal;
-import nez.expr.Not;
-import nez.expr.Option;
-import nez.expr.Prediction;
-import nez.expr.Repetition;
-import nez.expr.Replace;
-import nez.expr.Production;
-import nez.expr.Sequence;
-import nez.expr.Tagging;
-import nez.expr.Unary;
+import nez.lang.And;
+import nez.lang.AnyChar;
+import nez.lang.ByteChar;
+import nez.lang.ByteMap;
+import nez.lang.Choice;
+import nez.lang.Empty;
+import nez.lang.Expression;
+import nez.lang.Factory;
+import nez.lang.Failure;
+import nez.lang.Grammar;
+import nez.lang.GrammarVisitor;
+import nez.lang.Link;
+import nez.lang.NameSpace;
+import nez.lang.NonTerminal;
+import nez.lang.Not;
+import nez.lang.Option;
+import nez.lang.Prediction;
+import nez.lang.Production;
+import nez.lang.Repetition;
+import nez.lang.Replace;
+import nez.lang.Sequence;
+import nez.lang.Tagging;
+import nez.lang.Unary;
 import nez.util.UList;
 
 
@@ -774,7 +774,7 @@ public class Compiler extends GrammarVisitor {
 			else {
 				// FIXME:
 				// AnyChar behaves differently in cases of Binary
-				short r = e.acceptByte(c, Grammar2.Binary); 
+				short r = e.acceptByte(c, Grammar.Binary); 
 				if(r != Prediction.Reject) {
 					l.add(e);
 				}

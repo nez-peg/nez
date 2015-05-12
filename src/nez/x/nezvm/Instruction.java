@@ -3,7 +3,7 @@ package nez.x.nezvm;
 import java.util.ArrayList;
 import java.util.List;
 
-import nez.expr.Expression;
+import nez.lang.Expression;
 
 
 public abstract class Instruction {

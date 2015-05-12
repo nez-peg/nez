@@ -5,9 +5,10 @@ import java.lang.reflect.Method;
 
 import nez.ast.SourcePosition;
 import nez.ast.Tag;
-import nez.expr.Expression;
-import nez.expr.Factory;
-import nez.expr.GrammarChecker;
+import nez.lang.Expression;
+import nez.lang.Factory;
+import nez.lang.GrammarChecker;
+import nez.lang.NameSpace;
 import nez.util.UList;
 
 public class ParserCombinator {

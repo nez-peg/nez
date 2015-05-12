@@ -1,9 +1,9 @@
 package nez.peg.regex;
 
-import nez.NameSpace;
-import nez.Grammar2;
 import nez.SourceContext;
 import nez.ast.CommonTree;
+import nez.lang.Grammar;
+import nez.lang.NameSpace;
 import nez.main.Command;
 import nez.main.CommandConfigure;
 import nez.main.Recorder;
@@ -25,7 +25,7 @@ public class RegexCommand extends Command {
 	public void exec(CommandConfigure config) {
 		init(config);
 		Recorder rec = config.getRecorder();
-		Grammar2 p = config.getProduction(config.StartingPoint);
+		Grammar p = config.getProduction(config.StartingPoint);
 		CommonTree node = parse(config, rec, p, false);
 		String outputfile = config.getOutputFileName();
 		if (outputfile == null) {
@@ -42,7 +42,7 @@ public class RegexCommand extends Command {
 		config.GrammarFile = outputfile;
 		config.setInputFileList(inputFileList);
 		rec = config.getRecorder();
-		p = conv.grammar.newProduction(config.StartingPoint, Grammar2.RegexOption);
+		p = conv.grammar.newGrammar(config.StartingPoint, Grammar.RegexOption);
 		parse(config, rec, p, true);
 	}
 	
@@ -54,7 +54,7 @@ public class RegexCommand extends Command {
 		config.InputFileLists.add(RegexFile);
 	}
 
-	private CommonTree parse(CommandConfigure config, Recorder rec, Grammar2 p, boolean writeAST) {
+	private CommonTree parse(CommandConfigure config, Recorder rec, Grammar p, boolean writeAST) {
 		if(p == null) {
 			ConsoleUtils.exit(1, "undefined nonterminal: " + config.StartingPoint);
 		}

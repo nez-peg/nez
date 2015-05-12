@@ -1,7 +1,7 @@
 package nez.peg.dtd;
 
-import nez.NameSpace;
-import nez.expr.Expression;
+import nez.lang.Expression;
+import nez.lang.NameSpace;
 
 public class PredefinedRules {
 	NameSpace grammar;

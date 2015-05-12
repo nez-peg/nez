@@ -3,7 +3,7 @@ package nez.runtime;
 import nez.ast.ParsingFactory;
 import nez.ast.Source;
 import nez.ast.Tag;
-import nez.expr.NezTag;
+import nez.lang.NezTag;
 import nez.main.Recorder;
 import nez.main.Verbose;
 import nez.util.ConsoleUtils;

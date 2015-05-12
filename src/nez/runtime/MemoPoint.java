@@ -1,6 +1,6 @@
 package nez.runtime;
 
-import nez.expr.Expression;
+import nez.lang.Expression;
 
 public final class MemoPoint {
 	public final int id;

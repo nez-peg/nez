@@ -2,12 +2,12 @@ package nez.main;
 
 import java.io.IOException;
 
-import nez.NameSpace;
-import nez.Grammar2;
 import nez.SourceContext;
-import nez.expr.GrammarChecker;
-import nez.expr.NezCombinator;
-import nez.expr.NezParser;
+import nez.lang.Grammar;
+import nez.lang.GrammarChecker;
+import nez.lang.NameSpace;
+import nez.lang.NezCombinator;
+import nez.lang.NezParser;
 import nez.runtime.MemoTable;
 import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
@@ -135,7 +135,7 @@ public class CommandConfigure {
 			}
 			else if(argument.startsWith("--memo")) {
 				if(argument.equals("--memo:none")) {
-					ProductionOption = UFlag.unsetFlag(ProductionOption, Grammar2.PackratParsing);
+					ProductionOption = UFlag.unsetFlag(ProductionOption, Grammar.PackratParsing);
 				}
 				else if(argument.equals("--memo:packrat")) {
 					defaultTable = MemoTable.newPackratHashTable(0, 0, 0);
@@ -152,20 +152,20 @@ public class CommandConfigure {
 			}
 			else if(argument.startsWith("--enable:")) {
 				if(argument.endsWith("packrat")) {
-					this.ProductionOption |= Grammar2.PackratParsing;
+					this.ProductionOption |= Grammar.PackratParsing;
 					defaultTable = MemoTable.newPackratHashTable(0, 0, 0);
 				}
 				else if(argument.endsWith(":prediction") || argument.endsWith(":predict")) {
-					this.ProductionOption |= Grammar2.Prediction;
+					this.ProductionOption |= Grammar.Prediction;
 				}
 				else if(argument.endsWith(":tracing") || argument.endsWith(":trace")) {
-					this.ProductionOption |= Grammar2.Tracing;
+					this.ProductionOption |= Grammar.Tracing;
 				}
 				else if(argument.endsWith(":inline")) {
-					this.ProductionOption |= Grammar2.Inlining;
+					this.ProductionOption |= Grammar.Inlining;
 				}
 				else if(argument.endsWith(":dfa")) {
-					this.ProductionOption |= Grammar2.DFA;
+					this.ProductionOption |= Grammar.DFA;
 				}
 				else if(argument.endsWith(":log")) {
 					RecorderFileName = "nezrec.csv";  // -Xrec
@@ -173,19 +173,19 @@ public class CommandConfigure {
 			}
 			else if(argument.startsWith("--disable:")) {
 				if(argument.endsWith(":packrat") || argument.endsWith(":memo")) {
-					this.ProductionOption = UFlag.unsetFlag(this.ProductionOption, Grammar2.PackratParsing);
+					this.ProductionOption = UFlag.unsetFlag(this.ProductionOption, Grammar.PackratParsing);
 				}
 				else if(argument.endsWith(":tracing") || argument.endsWith(":trace")) {
-					this.ProductionOption = UFlag.unsetFlag(this.ProductionOption, Grammar2.Tracing);
+					this.ProductionOption = UFlag.unsetFlag(this.ProductionOption, Grammar.Tracing);
 				}
 				else if(argument.endsWith(":prediction") || argument.endsWith(":predict")) {
-					this.ProductionOption = UFlag.unsetFlag(this.ProductionOption, Grammar2.Prediction);
+					this.ProductionOption = UFlag.unsetFlag(this.ProductionOption, Grammar.Prediction);
 				}
 				else if(argument.endsWith(":inline")) {
-					this.ProductionOption = UFlag.unsetFlag(this.ProductionOption, Grammar2.Inlining);
+					this.ProductionOption = UFlag.unsetFlag(this.ProductionOption, Grammar.Inlining);
 				}
 				else if(argument.endsWith(":dfa")) {
-					this.ProductionOption = UFlag.unsetFlag(this.ProductionOption, Grammar2.DFA);
+					this.ProductionOption = UFlag.unsetFlag(this.ProductionOption, Grammar.DFA);
 				}
 			}
 			else if(argument.startsWith("-Xrec") || argument.startsWith("--log") ) {
@@ -233,38 +233,38 @@ public class CommandConfigure {
 		return com;
 	}
 	
-	public final NameSpace getGrammar(boolean newGrammar) {
+	public final NameSpace getNameSpace(boolean newGrammar) {
 		if(GrammarFile != null) {
 			try {
-				return NameSpace.loadGrammar(GrammarFile, new GrammarChecker(this.CheckerLevel));
+				return NameSpace.loadGrammarFile(GrammarFile, new GrammarChecker(this.CheckerLevel));
 			} catch (IOException e) {
 				ConsoleUtils.exit(1, "cannot open " + GrammarFile + "; " + e.getMessage());
 			}
 		}
-		if(GrammarText != null) {
-			NezParser p = new NezParser();
-			return p.loadGrammar(SourceContext.newStringContext(GrammarText), new GrammarChecker(this.CheckerLevel));
-		}
+//		if(GrammarText != null) {
+//			NezParser p = new NezParser();
+//			return p.loadGrammarFile(SourceContext.newStringContext(GrammarText), new GrammarChecker(this.CheckerLevel));
+//		}
 		if(newGrammar) {
-			return NameSpace.newNameSpace("my");
+			return NameSpace.newNameSpace();
 		}
 		else {
 			ConsoleUtils.println("unspecifed grammar");
-			return NezCombinator.newGrammar();
+			return NezCombinator.newNameSpace();
 		}
 	}
 
-	public final Grammar2 getProduction(String start, int option) {
+	public final Grammar getProduction(String start, int option) {
 		if(start == null) {
 			start = this.StartingPoint;
 		}
-		return getGrammar(false).newProduction(start, option);
+		return getNameSpace(false).newGrammar(start, option);
 	}
 
-	private int ProductionOption = Grammar2.DefaultOption;
+	private int ProductionOption = Grammar.DefaultOption;
 	
-	public final Grammar2 getProduction(String start) {
-		Grammar2 p = getGrammar(false).newProduction(start, ProductionOption);
+	public final Grammar getProduction(String start) {
+		Grammar p = getNameSpace(false).newGrammar(start, ProductionOption);
 		if(p == null) {
 			ConsoleUtils.exit(1, "undefined nonterminal: " + start);
 		}
@@ -272,7 +272,7 @@ public class CommandConfigure {
 		return p;
 	}
 
-	public final Grammar2 getProduction() {
+	public final Grammar getProduction() {
 		return this.getProduction(this.StartingPoint);
 	}
 
@@ -325,7 +325,7 @@ public class CommandConfigure {
 		if(RecorderFileName != null) {
 			Recorder rec = new Recorder(RecorderFileName);
 			rec.setText("nez", Command.Version);
-			rec.setText("config", Grammar2.stringfyOption(ProductionOption, ";"));
+			rec.setText("config", Grammar.stringfyOption(ProductionOption, ";"));
 			return rec;
 		}
 		return null;

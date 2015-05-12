@@ -7,15 +7,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import nez.NameSpace;
 import nez.NezException;
-import nez.Grammar2;
 import nez.SourceContext;
 import nez.ast.CommonTree;
 import nez.ast.CommonTreeVisitor;
-import nez.expr.Expression;
-import nez.expr.GrammarChecker;
-import nez.expr.Production;
+import nez.lang.Expression;
+import nez.lang.Grammar;
+import nez.lang.GrammarChecker;
+import nez.lang.NameSpace;
+import nez.lang.Production;
 import nez.util.ConsoleUtils;
 
 public class DTDConverter extends CommonTreeVisitor {
@@ -24,13 +24,13 @@ public class DTDConverter extends CommonTreeVisitor {
 	public final static NameSpace loadGrammar(String filePath, GrammarChecker checker) throws IOException {
 		if(dtdGrammar == null) {
 			try {
-				dtdGrammar = NameSpace.loadGrammar("xmldtd.nez");
+				dtdGrammar = NameSpace.loadGrammarFile("xmldtd.nez");
 			}
 			catch(IOException e) {
 				ConsoleUtils.exit(1, "can't load xmldtd.nez");
 			}
 		}
-		Grammar2 p = dtdGrammar.newProduction("File");
+		Grammar p = dtdGrammar.newGrammar("File");
 		SourceContext dtdFile = SourceContext.newFileContext(filePath);
 		CommonTree node = p.parse(dtdFile);
 		if (node == null) {

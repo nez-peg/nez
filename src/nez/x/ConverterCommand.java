@@ -3,11 +3,11 @@ package nez.x;
 import java.lang.reflect.Constructor;
 import java.util.TreeMap;
 
-import nez.NameSpace;
-import nez.Grammar2;
 import nez.SourceContext;
 import nez.ast.CommonTree;
 import nez.ast.CommonTreeWriter;
+import nez.lang.Grammar;
+import nez.lang.NameSpace;
 import nez.main.Command;
 import nez.main.CommandConfigure;
 import nez.main.Recorder;
@@ -24,7 +24,7 @@ public class ConverterCommand extends Command {
 	@Override
 	public void exec(CommandConfigure config) {
 		Recorder rec = config.getRecorder();
-		Grammar2 p = config.getProduction(config.StartingPoint);
+		Grammar p = config.getProduction(config.StartingPoint);
 		p.record(rec);
 		while(config.hasInput()) {
 			SourceContext file = config.getInputSourceContext();

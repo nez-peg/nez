@@ -5,12 +5,12 @@ import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.HashMap;
 
-import nez.NameSpace;
 import nez.ast.CommonTree;
 import nez.ast.Tag;
-import nez.expr.Expression;
-import nez.expr.Factory;
-import nez.expr.Production;
+import nez.lang.Expression;
+import nez.lang.Factory;
+import nez.lang.NameSpace;
+import nez.lang.Production;
 import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
 import nez.util.UList;

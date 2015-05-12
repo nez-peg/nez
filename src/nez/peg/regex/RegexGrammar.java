@@ -4,16 +4,16 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import nez.NameSpace;
 import nez.NezException;
-import nez.Grammar2;
 import nez.SourceContext;
 import nez.ast.CommonTree;
 import nez.ast.CommonTreeVisitor;
 import nez.ast.Tag;
-import nez.expr.Expression;
-import nez.expr.Factory;
-import nez.expr.GrammarChecker;
+import nez.lang.Expression;
+import nez.lang.Factory;
+import nez.lang.Grammar;
+import nez.lang.GrammarChecker;
+import nez.lang.NameSpace;
 import nez.main.Verbose;
 import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
@@ -25,13 +25,13 @@ public class RegexGrammar extends CommonTreeVisitor {
 	public final static NameSpace loadGrammar(SourceContext regex, GrammarChecker checker) throws IOException {
 		if(regexGrammar == null) {
 			try {
-				regexGrammar = NameSpace.loadGrammar("regex.nez");
+				regexGrammar = NameSpace.loadGrammarFile("regex.nez");
 			}
 			catch(IOException e) {
 				ConsoleUtils.exit(1, "can't load regex.nez");
 			}
 		}
-		Grammar2 p = regexGrammar.newProduction("File");
+		Grammar p = regexGrammar.newGrammar("File");
 		CommonTree node = p.parse(regex);
 		if (node == null) {
 			throw new NezException(regex.getSyntaxErrorMessage());
@@ -46,10 +46,10 @@ public class RegexGrammar extends CommonTreeVisitor {
 		return grammar;
 	}
 	
-	public final static Grammar2 newProduction(String pattern) {
+	public final static Grammar newProduction(String pattern) {
 		try {
 			NameSpace grammar = loadGrammar(SourceContext.newStringContext(pattern), new GrammarChecker());
-			return grammar.newProduction("File");
+			return grammar.newGrammar("File");
 		} catch (IOException e) {
 			Verbose.traceException(e);
 		}

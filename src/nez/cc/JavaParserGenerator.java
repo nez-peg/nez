@@ -1,25 +1,25 @@
 package nez.cc;
 
-import nez.expr.And;
-import nez.expr.AnyChar;
-import nez.expr.ByteChar;
-import nez.expr.ByteMap;
-import nez.expr.Capture;
-import nez.expr.Choice;
-import nez.expr.Empty;
-import nez.expr.Expression;
-import nez.expr.Failure;
-import nez.expr.Link;
-import nez.expr.New;
-import nez.expr.NonTerminal;
-import nez.expr.Not;
-import nez.expr.Option;
-import nez.expr.Repetition;
-import nez.expr.Repetition1;
-import nez.expr.Replace;
-import nez.expr.Production;
-import nez.expr.Sequence;
-import nez.expr.Tagging;
+import nez.lang.And;
+import nez.lang.AnyChar;
+import nez.lang.ByteChar;
+import nez.lang.ByteMap;
+import nez.lang.Capture;
+import nez.lang.Choice;
+import nez.lang.Empty;
+import nez.lang.Expression;
+import nez.lang.Failure;
+import nez.lang.Link;
+import nez.lang.New;
+import nez.lang.NonTerminal;
+import nez.lang.Not;
+import nez.lang.Option;
+import nez.lang.Production;
+import nez.lang.Repetition;
+import nez.lang.Repetition1;
+import nez.lang.Replace;
+import nez.lang.Sequence;
+import nez.lang.Tagging;
 
 class JavaParserGenerator extends GrammarGenerator {
 	JavaParserGenerator(String fileName) {
