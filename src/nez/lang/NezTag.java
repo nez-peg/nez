@@ -53,6 +53,6 @@ public class NezTag {
 	static final Tag Import       = Tag.tag("Import");
 	static final Tag Example      = Tag.tag("Example");
 	static final Tag Rebut        = Tag.tag("Rebut");
-	
+	static final Tag Format       = Tag.tag("Format");
 
 }

@@ -71,6 +71,10 @@ public class ParserCombinator {
 		return Factory.newNonTerminal(src(), this.grammar, ruleName);
 	}
 
+	protected final Expression t(char c) {
+		return Factory.newString(src(), String.valueOf(c));
+	}
+
 	protected final Expression t(String token) {
 		return Factory.newString(src(), token);
 	}
@@ -127,6 +131,10 @@ public class ParserCombinator {
 		return Factory.newRepetition1(src(), Sequence(e));
 	}
 
+	protected final Expression Not(String t) {
+		return Factory.newNot(src(), Factory.newString(src(), t));
+	}
+
 	protected final Expression Not(Expression ... e) {
 		return Factory.newNot(src(), Sequence(e));
 	}
@@ -167,12 +175,20 @@ public class ParserCombinator {
 //		return Factory.newLeftNew(src(), l);
 //	}
 	
+	protected Expression Link(String nonterminal) {
+		return Factory.newLink(src(), P(nonterminal), -1);
+	}
+
 	protected Expression Link(Expression ... e) {
 		return Factory.newLink(src(), Sequence(e), -1);
 	}
 	
 	protected Expression Link(int index, Expression ... e) {
 		return Factory.newLink(src(), Sequence(e), index);
+	}
+
+	protected Expression Link(int index, String nonterminal) {
+		return Factory.newLink(src(), P(nonterminal), index);
 	}
 
 	protected final Expression Tag(Tag t) {
@@ -183,4 +199,14 @@ public class ParserCombinator {
 		return Factory.newTagging(src(), Tag.tag(tag));
 	}
 
+	protected final Expression Replace(char c) {
+		return Factory.newReplace(src(), String.valueOf(c));
+	}
+
+	protected final Expression Replace(String value) {
+		return Factory.newReplace(src(), value);
+	}
+
+	
+	
 }

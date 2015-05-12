@@ -60,8 +60,8 @@ public class NezCombinator extends ParserCombinator {
 	public Expression KEYWORD() {
 		return Sequence(
 			Choice(t("public"), t("inline"), 
-				t("import"), t("syntaxtree"), t("grammar"), 
-				t("example"), t("rebut")),
+				t("import"), t("type"), t("grammar"), 
+				t("example"), t("format")), t("define"),
 			Not(P("W"))
 		);
 	}
@@ -119,11 +119,7 @@ public class NezCombinator extends ParserCombinator {
 	}
 
 	public Expression NonTerminal() {
-		return New(
-			P("NAME"), 
-			//ZeroMore(c("A-Za-z0-9_:")), 
-			Tag(NezTag.NonTerminal)
-		);
+		return New(P("LETTER"), ZeroMore(c("A-Za-z0-9_.")), Tag(NezTag.NonTerminal));
 	}
 	
 	public Expression CHAR() {
@@ -254,42 +250,6 @@ public class NezCombinator extends ParserCombinator {
 		);
 	}
 		
-//
-//	public Expression Annotation() {
-//		return Sequence(
-//			t("["),
-//			New(
-//				Link(P("HyphenName")),
-//				Option(
-//					t(":"),  P("_"), 
-//					Link(New(P("DOC"), Tag(NezTag.Text))),
-//					Tag(NezTag.Annotation)
-//				)
-//			),
-//			t("]"),
-//			P("_")
-//		);
-//	}
-//
-//	public Expression Annotations() {
-//		return New(
-//			Link(P("Annotation")),
-//			ZeroMore(Link(P("Annotation"))),
-//			Tag(NezTag.List) 
-//		);	
-//	}
-//	
-//	public Expression Rule0() {
-//		return New(
-//			Link(0, Choice(P("Name"), P("String"))), P("_"), 
-////			Optional(Sequence(Link(3, P("Param_")), P("_"))),
-//			Option(Sequence(Link(2, P("Annotations")), P("_"))),
-//			t("="), P("_"), 
-//			Link(1, P("Expr")),
-//			Tag(NezTag.Rule) 
-//		);
-//	}
-	
 	public Expression RuleHead() {
 		return New(
 			P("addQualifers"), 
@@ -336,12 +296,20 @@ public class NezCombinator extends ParserCombinator {
 		return ZeroMore(P("ANNOTATION"));
 	}
 
+	public Expression ImportName() {
+		return New(Choice(
+			t("*"), 
+			Sequence(P("NAME"), Option(t("."), Choice(t("*"), P("NAME"))))
+		), Tag(NezTag.NonTerminal));
+	}
+
+	// import 
+	// import x.Xml
 	public Expression Import() {
 		return New(
-			t("import"), P("S"), Link(P("NonTerminal")),
-			ZeroMore(P("_"), t(","), P("_"),  Link(P("NonTerminal"))), P("_"), 
-			t("from"), P("S"), 
-			Link(Choice(P("SingleQuotedString"), P("String"), P("DotName"))), 
+			t("import"), P("S"), Link(P("ImportName")),
+			P("S"), t("from"), P("S"), 
+			Link(Choice(P("SingleQuotedString"), P("String"))), 
 			Tag(NezTag.Import)
 		);
 	}
@@ -349,9 +317,10 @@ public class NezCombinator extends ParserCombinator {
 	
 	public Expression Example() {
 		return New(
-			Choice(Sequence(t("example"), Tag(NezTag.Example)), 
-					Sequence(t("rebut"), Tag(NezTag.Rebut))),
-			P("S"), Link(P("NonTerminal")), ZeroMore(c(" \t")), 
+			t("example"), 
+			P("S"), 
+			Choice(Sequence(t("!"), Tag(NezTag.Rebut)), Tag(NezTag.Example)),
+			Tag(NezTag.Example), Link(P("NonTerminal")), ZeroMore(c(" \t")), 
 			Choice(
 				Sequence(t("'''"), P("EOL"), Link(New(ZeroMore(NotAny("\n'''")))), t("\n'''")),
 				Sequence(t("```"), P("EOL"), Link(New(ZeroMore(NotAny("\n```")))), t("\n```")),
@@ -361,12 +330,46 @@ public class NezCombinator extends ParserCombinator {
 		);
 	}
 	
+	public Expression Index() {
+		return New(Option("-"), P("INT"), Tag(NezTag.Integer));
+	}
+
+	public Expression Formatter() {
+		return New(
+				Tag(NezTag.Format), 
+				ZeroMore( Not("`"), Link(Choice(
+					Sequence(t("${"), P("Name"), t("}")),
+					Sequence(t("$["), P("_"), P("Index"), P("_"), 
+						LeftNewOption(t('`'), Link("Formatter"), t('`'), P("_"), Link("Index"), P("_"), Tag(NezTag.Format)), t("]")),
+					New(Choice(
+						Sequence(t("$$"), Replace('$')), 
+						Sequence(t("\\`"), Replace('`')),
+						ZeroMore(Not("$$"), Not("${"), Not("$["), Not("\\`"), Not("`"), AnyChar())
+					))
+				)))
+		);
+	}
+
+	public Expression FormatSize() {
+		return New(Choice(t('*'), P("INT")), Tag(NezTag.Integer));
+	}
+
+	public Expression Format() {
+		return New(
+				t("format"), Tag(NezTag.Format), 
+				P("_"), t("#"), Link("Name"), 
+				t("["), P("_"), Link("FormatSize"), P("_"), t("]"), P("_"),
+				t("`"), Link("Formatter"), t("`")
+			);
+	}
+	
 	public Expression Chunk() {
 		return Sequence(
 			P("_"), 
 			Choice(
 				P("Example"),
 				P("Import"),
+				P("Format"),
 				P("Rule")
 			), 
 			P("_"), 

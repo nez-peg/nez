@@ -1,10 +1,12 @@
 package nez.lang;
 
+import java.io.File;
 import java.io.IOException;
 
 import nez.SourceContext;
 import nez.ast.CommonTree;
 import nez.ast.CommonTreeVisitor;
+import nez.ast.Source;
 import nez.ast.Tag;
 import nez.main.Verbose;
 import nez.util.ConsoleUtils;
@@ -76,35 +78,96 @@ public class NezParser extends CommonTreeVisitor {
 //	}
 
 	
-	private boolean parseStatement(CommonTree ast) {
+	private boolean parseStatement(CommonTree node) {
 		//System.out.println("DEBUG? parsed: " + ast);
-		if(ast.is(NezTag.Rule)) {
-			parseProduction(ast);
+		if(node.is(NezTag.Rule)) {
+			parseProduction(node);
 			return true;
 		}
-		if(ast.is(NezTag.Example)) {
-			Example ex = new Example(ast.textAt(0, ""), ast.get(1), true);
+		if(node.is(NezTag.Example)) {
+			Example ex = new Example(node.textAt(0, ""), node.get(1), true);
 			this.checker.addExample(ex);
 			return true;
 		}
-//		if(ast.is(NezTag.Import)) {
-//			UList<AST> l = new UList<AST>(new AST[ast.size()-1]);
-//			for(int i = 0; i < ast.size()-1;i++) {
-//				l.add(ast.get(i));
-//			}
-//			String filePath = searchPegFilePath(ast.getSource(), ast.textAt(ast.size()-1, ""));
-//			peg.imastrtGrammar(l, filePath);
-//			return true;
-//		}
-//		if(ast.is(Tag.CommonError)) {
-//			int c = ast.getSource().byteAt(ast.getSourcePosition());
-//			System.out.println(ast.formatSourceMessage("error", "syntax error: ascii=" + c));
-//			return false;
-//		}
-		//ConsoleUtils.exit(1, ast.formatSourceMessage("error", "syntax error: " + ast));
-		Verbose.todo("undefined: " + ast);
+		if(node.is(NezTag.Import)) {
+			return importProduction(node);
+		}
+		if(node.is(NezTag.Format)) {
+			return defineFormat(node);
+		}
+		Verbose.todo("undefined: " + node);
 		return false;
 	}
+	
+	private boolean defineFormat(CommonTree node) {
+		System.out.println("node: " + node);
+		return true;
+	}
+
+	/* import */
+	private boolean importProduction(CommonTree node) {
+		System.out.println("DEBUG? parsed: " + node);
+		String ns = null;
+		String name = node.textAt(0, "*");
+		int loc = name.indexOf('.');
+		if(loc >= 0) {
+			ns = name.substring(0, loc);
+			name = name.substring(loc+1);
+		}
+		String urn = path(node.getSource().getResourceName(), node.textAt(1, ""));
+		try {
+			NameSpace source = NameSpace.loadNezFile(urn);
+			if(name.equals("*")) {
+				int c = 0;
+				for(String n : source.getNonterminalList()) {
+					Production p = source.getProduction(n);
+					if(p.isPublic) {
+						checkDuplicatedName(node.get(0));
+						loaded.inportProduction(ns, p);
+						c++;
+					}
+				}
+				if(c == 0) {
+					checker.reportError(node.get(0), "nothing imported (no public production exisits)");
+				}
+			}
+			else {
+				Production p = source.getProduction(name);
+				if(p == null) {
+					checker.reportError(node.get(0), "undefined production: " + name);
+					return false;
+				}
+				loaded.inportProduction(ns, p);
+			}
+			return true;
+		}
+		catch(IOException e) {
+			checker.reportError(node.get(1), "unloaded: " + urn);
+		}
+		catch(NullPointerException e) {
+			/* This is for a bug unhandling IOException at java.io.Reader.<init>(Reader.java:78) */
+			checker.reportError(node.get(1), "unloaded: " + urn);
+		}
+		return false;
+	}
+
+	private void checkDuplicatedName(CommonTree errorNode) {
+		String name = errorNode.getText();
+		if(loaded.hasProduction(name)) {
+			checker.reportWarning(errorNode, "duplicated production: " + name);
+		}
+	}
+
+	private String path(String path, String path2) {
+		if(path != null) {
+			int loc = path.lastIndexOf('/');
+			if(loc > 0) {
+				return path.substring(0, loc+1) + path2;
+			}
+		}
+		return path2;
+	}
+
 	
 	public Production parseProduction(CommonTree node) {
 		String ruleName = node.textAt(0, "");

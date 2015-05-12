@@ -143,7 +143,6 @@ public class NameSpace {
 		for(String s : this.ruleMap.keys()) {
 			if(s.indexOf(':') > 0) continue;
 			l.add(s);
-			System.out.println("listing " + s);
 		}
 		Collections.sort(l);
 		return l;
