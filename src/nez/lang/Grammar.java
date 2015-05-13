@@ -29,7 +29,7 @@ public class Grammar {
 		//dump();
 	}
 
-	public Production getStartRule() {
+	public Production getStartProduction() {
 		return this.start;
 	}
 

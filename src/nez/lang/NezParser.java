@@ -2,6 +2,7 @@ package nez.lang;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import nez.SourceContext;
 import nez.ast.CommonTree;
@@ -77,31 +78,68 @@ public class NezParser extends CommonTreeVisitor {
 //		return this.loadGrammar(sc, new GrammarChecker());
 //	}
 
-	
 	private boolean parseStatement(CommonTree node) {
-		//System.out.println("DEBUG? parsed: " + ast);
-		if(node.is(NezTag.Rule)) {
-			parseProduction(node);
-			return true;
+		//System.out.println("DEBUG? parsed: " + node);
+		if(node != null) {
+			if(node.is(NezTag.Rule)) {
+				parseProduction(node);
+				return true;
+			}
+			if(node.is(NezTag.Example)) {
+				return defineExample(node);
+			}
+			if(node.is(NezTag.Import)) {
+				return importProduction(node);
+			}
+			if(node.is(NezTag.Format)) {
+				return defineFormat(node);
+			}
+			Verbose.todo("undefined: " + node);
 		}
-		if(node.is(NezTag.Example)) {
-			Example ex = new Example(node.textAt(0, ""), node.get(1), true);
-			this.checker.addExample(ex);
-			return true;
-		}
-		if(node.is(NezTag.Import)) {
-			return importProduction(node);
-		}
-		if(node.is(NezTag.Format)) {
-			return defineFormat(node);
-		}
-		Verbose.todo("undefined: " + node);
 		return false;
 	}
 	
-	private boolean defineFormat(CommonTree node) {
-		System.out.println("node: " + node);
+	private boolean defineExample(CommonTree node) {
+		Example ex = new Example(node.textAt(0, ""), node.get(1), true);
+		this.loaded.addExample(ex);
 		return true;
+	}
+
+	private boolean defineFormat(CommonTree node) {
+		//System.out.println("node: " + node);
+		String tag = node.textAt(0, "token");
+		int index = StringUtils.parseInt(node.textAt(1, "*"), -1);
+		Formatter fmt = toFormatter(node.get(2));
+		this.loaded.addFormatter(tag, index, fmt);
+		return true;
+	}
+	
+	Formatter toFormatter(CommonTree node) {
+		if(node.is(NezTag.List)) {
+			ArrayList<Formatter> l = new ArrayList<Formatter>(node.size());
+			for(CommonTree t : node) {
+				l.add(toFormatter(t));
+			}
+			return Formatter.newFormatter(l);
+		}
+		if(node.is(NezTag.Integer)) {
+			return Formatter.newFormatter(StringUtils.parseInt(node.getText(), 0));
+		}
+		if(node.is(NezTag.Format)) {
+			int s = StringUtils.parseInt(node.textAt(0, "*"), -1);
+			int e = StringUtils.parseInt(node.textAt(2, "*"), -1);
+			Formatter fmt = toFormatter(node.get(1));
+			return Formatter.newFormatter(s, fmt, e);
+		}
+		if(node.is(NezTag.Name)) {
+			Formatter fmt = Formatter.newAction(node.getText());
+			if(fmt == null) {
+				checker.reportWarning(node, "undefined formatter action");
+				fmt = Formatter.newFormatter("${"+node.getText()+"}");
+			}
+			return fmt;
+		}
+		return Formatter.newFormatter(node.getText());
 	}
 
 	/* import */

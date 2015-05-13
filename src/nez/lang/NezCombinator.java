@@ -29,10 +29,6 @@ public class NezCombinator extends ParserCombinator {
 		return Choice(t("\n"), Sequence(t("\r"), Option("\n")), P("EOT"));
 	}
 
-//	public Expression SEMI() {
-//		return Option(";");
-//	}
-
 	public Expression S() {
 		return Choice(c(" \\t\\r\\n"), t("\u3000"));
 	}
@@ -61,7 +57,7 @@ public class NezCombinator extends ParserCombinator {
 		return Sequence(
 			Choice(t("public"), t("inline"), 
 				t("import"), t("type"), t("grammar"), 
-				t("example"), t("format")), t("define"),
+				t("example"), t("format"), t("define")),
 			Not(P("W"))
 		);
 	}
@@ -89,14 +85,6 @@ public class NezCombinator extends ParserCombinator {
 		return New(P("NAME"), Tag(NezTag.Name));
 	}
 
-	public Expression DotName() {
-		return New(P("LETTER"), ZeroMore(c("A-Za-z0-9_.")), Tag(NezTag.Name));
-	}
-
-//	public Expression HyphenName() {
-//		return New(P("LETTER"), ZeroMore(Choice(P("W"), t("-"))), Tag(NezTag.Name));
-//	}
-
 	public Expression String() {
 		Expression StringContent  = ZeroMore(Choice(
 			t("\\\""), t("\\\\"), Sequence(Not(t("\"")), AnyChar())
@@ -119,9 +107,9 @@ public class NezCombinator extends ParserCombinator {
 	}
 
 	public Expression NonTerminal() {
-		return New(P("LETTER"), ZeroMore(c("A-Za-z0-9_.")), Tag(NezTag.NonTerminal));
+		return New(P("NAME"), Option(t('.'), P("NAME")), Tag(NezTag.NonTerminal));
 	}
-	
+
 	public Expression CHAR() {
 		return Choice( 
 			Sequence(t("\\u"), P("HEX"), P("HEX"), P("HEX"), P("HEX")),
@@ -147,25 +135,40 @@ public class NezCombinator extends ParserCombinator {
 				Tag(NezTag.New)
 			), 
 			P("_"), 
-			Option(Link(P("Expr")), P("_")),
+			Option(Link("Expr"), P("_")),
 			t("}")
 		);
+	}
+	
+	public Expression FlagName() {
+		return New(Option("!"), P("LETTER"), ZeroMore(P("W")), Tag(NezTag.Name));
+	}
+
+	public Expression TableName() {
+		return New(P("LETTER"), ZeroMore(P("W")), Tag(NezTag.Name));
 	}
 
 	public Expression Func() {
 		return Sequence(t("<"), 
 			New(Choice(
-			Sequence(t("match"),   P("S"), Link(P("Expr")), P("_"), t(">"), Tag(NezTag.Match)),
-			Sequence(t("if"), P("S"), Option(t("!")), Link(P("Name")), Tag(NezTag.If)),
-			Sequence(t("with"),  P("S"), Link(P("Name")), P("S"), Link(P("Expr")), Tag(NezTag.With)),
-			Sequence(t("without"), P("S"), Link(P("Name")), P("S"), Link(P("Expr")), Tag(NezTag.Without)),
-			Sequence(t("block"), Option(Sequence(P("S"), Link(P("Expr")))), Tag(NezTag.Block)),
+			Sequence(t("if"), P("S"), Link("FlagName"), Tag(NezTag.If)),
+			Sequence(t("on"), P("S"), Link("FlagName"), P("S"), Link("Expr"), Tag(NezTag.With)),
+			
+			Sequence(t("block"), P("S"), Link("Expr"), Tag(NezTag.Block)),
+			Sequence(t("def"),   P("S"), Link("TableName"), P("S"), Link("Expr"), Tag(NezTag.Def)),
+			Sequence(t("is"),    P("S"), Link("TableName"), Tag(NezTag.Is)),
+			Sequence(t("isa"),   P("S"), Link("TableName"), Tag(NezTag.Isa)),
+			Sequence(t("exists"), P("S"), Link("TableName"), Tag(NezTag.Exists)),
+			Sequence(t("local"), P("S"), Link("TableName"), P("S"), Link("Expr"), Tag(NezTag.Local)),
+
+			Sequence(t("scan"), P("S"), Link("TableName"), P("S"), Option(Link("Integer"), P("S")), Link("Expr"), Tag(NezTag.Scan)),
+			Sequence(t("repeat"), P("S"), Link("TableName"), P("S"), Link("Expr"), Tag(NezTag.Repeat)),
+			/* Deprecated */
+			Sequence(t("with"),  P("S"), Link(P("Name")), P("S"), Link("Expr"), Tag(NezTag.With)),
+			Sequence(t("without"), P("S"), Link(P("Name")), P("S"), Link("Expr"), Tag(NezTag.Without)),
 			Sequence(t("indent"), Tag(NezTag.Indent)),
-			Sequence(t("is"), P("S"), Link(P("Name")), Tag(NezTag.Is)),
-			Sequence(t("isa"), P("S"), Link(P("Name")), Tag(NezTag.Isa)),
-			Sequence(t("def"),  P("S"), Link(P("Name")), P("S"), Link(P("Expr")), Tag(NezTag.Def)),
-			Sequence(t("scan"), P("S"), Link(New(DIGIT(), ZeroMore(DIGIT()))), t(","), P("S"), Link(P("Expr")), t(","), P("S"), Link(P("Expr")), Tag(NezTag.Scan)),
-			Sequence(t("repeat"), P("S"), Link(P("Expr")), Tag(NezTag.Repeat))
+			Sequence(t("match"),   P("S"), Link("Expr"), P("_"), t(">"), Tag(NezTag.Match))
+
 			)), P("_"), t(">")
 		);
 	}
@@ -211,7 +214,8 @@ public class NezCombinator extends ParserCombinator {
 					Sequence(t("&"), Tag(NezTag.And)),
 					Sequence(t("!"), Tag(NezTag.Not)),
 					Sequence(t("@["), P("_"), Link(1, P("Integer")), P("_"), t("]"), Tag(NezTag.Link)),							
-					Sequence(t("@"), Tag(NezTag.Link))
+					Sequence(t("@"), Tag(NezTag.Link)),
+					Sequence(t("~"), Tag(NezTag.Match))
 				), 
 				Link(0, P("SuffixTerm"))
 			), 
@@ -254,7 +258,7 @@ public class NezCombinator extends ParserCombinator {
 		return New(
 			P("addQualifers"), 
 			Link(0, Choice(P("Name"), P("String"))), P("_"), 
-			P("SKIP"), P("_"), t("=")  
+			P("SKIP"), t("=")  
 		);
 	}
 
@@ -336,7 +340,7 @@ public class NezCombinator extends ParserCombinator {
 
 	public Expression Formatter() {
 		return New(
-				Tag(NezTag.Format), 
+				Tag(NezTag.List), 
 				ZeroMore( Not("`"), Link(Choice(
 					Sequence(t("${"), P("Name"), t("}")),
 					Sequence(t("$["), P("_"), P("Index"), P("_"), 
@@ -344,7 +348,7 @@ public class NezCombinator extends ParserCombinator {
 					New(Choice(
 						Sequence(t("$$"), Replace('$')), 
 						Sequence(t("\\`"), Replace('`')),
-						ZeroMore(Not("$$"), Not("${"), Not("$["), Not("\\`"), Not("`"), AnyChar())
+						OneMore(Not("$$"), Not("${"), Not("$["), Not("\\`"), Not("`"), AnyChar())
 					))
 				)))
 		);

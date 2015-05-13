@@ -35,13 +35,17 @@ public class NezTag {
 //	static final Tag Debug       = Tag.tag("Debug");
 //	static final Tag Memo        = Tag.tag("Memo");
 	static final Tag If          = Tag.tag("If");
-	static final Tag Without     = Tag.tag("Without");
+	static final Tag On          = Tag.tag("On");
 	static final Tag With        = Tag.tag("With");
+	static final Tag Without     = Tag.tag("Without");
 	
 	static final Tag Block       = Tag.tag("Block");
 	static final Tag Def         = Tag.tag("Def");
 	static final Tag Is          = Tag.tag("Is");
 	static final Tag Isa         = Tag.tag("Isa");
+	static final Tag Exists      = Tag.tag("Exists");
+	static final Tag Local       = Tag.tag("Local");
+	
 	static final Tag DefIndent      = Tag.tag("DefIndent");
 	public static final Tag Indent      = Tag.tag("Indent");
 	

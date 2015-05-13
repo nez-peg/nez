@@ -101,7 +101,7 @@ public class GrammarChecker {
 				r.removeExpressionFlag(undefedFlags);
 			}
 		}
-		testExample(grammar);
+//		testExample(grammar);
 	}
 	
 	void checkPhase1(Expression p, String ruleName, UMap<String> visited, int depth) {
@@ -132,23 +132,6 @@ public class GrammarChecker {
 			return tableMap.get(tableName);
 		}
 		return null;
-	}
-
-	private UList<Example> exampleList;
-	
-	final void addExample(Example ex) {
-		if(exampleList == null) {
-			exampleList = new UList<Example>(new Example[2]);
-		}
-		exampleList.add(ex);
-	}
-	
-	final void testExample(NameSpace grammar) {
-		if(strictMode && exampleList != null) {
-			for(Example ex : exampleList) {
-				ex.test(grammar);
-			}
-		}
 	}
 	
 }

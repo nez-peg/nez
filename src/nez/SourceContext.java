@@ -203,7 +203,7 @@ public abstract class SourceContext extends Context {
 
 	public final static SourceContext newFileContext(String fileName) throws IOException {
 		File f = new File(fileName);
-		System.out.println("file: " + fileName + " " + f.isFile());
+		//System.out.println("file: " + fileName + " " + f.isFile());
 		if(!f.isFile()) {
 //			URL url = new URL(SourceContext.class.getResource("."), fileName);
 //			System.out.println("url: " + url);

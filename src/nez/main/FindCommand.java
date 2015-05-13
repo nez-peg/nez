@@ -26,7 +26,7 @@ public class FindCommand extends Command {
 			ConsoleUtils.println(text);
 			for(Grammar p: pList) {
 				if(p.match(text)) {
-					ConsoleUtils.println(p.getStartRule().getLocalName());
+					ConsoleUtils.println(p.getStartProduction().getLocalName());
 				}
 			}
 		}

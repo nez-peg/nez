@@ -80,13 +80,13 @@ public class ConsoleUtils {
 	}
 	
 	public final static void addCompleter(List<String> list) {
-		Object console = getConsoleReader();
-		if(console != null) {
+		Object con = getConsoleReader();
+		if(con != null) {
 			try {
 				Class<?> c = Class.forName("jline.console.completer.StringsCompleter");
 				Constructor<?> nc = c.getConstructor(Collection.class);
-				Method m = console.getClass().getMethod("addCompletor");
-				 m.invoke(console, nc.newInstance(list));
+				Method m = con.getClass().getMethod("addCompletor");
+				 m.invoke(con, nc.newInstance(list));
 				 return;
 			}
 			catch(Exception e) {
@@ -96,7 +96,7 @@ public class ConsoleUtils {
 //				Constructor<?> nc = c.getConstructor(String[].class);
 //				Method m = console.getClass().getMethod("addCompletor", jline.Completor.class);
 				String[] s = list.toArray(new String[list.size()]);
-				((ConsoleReader)console).addCompletor(new jline.SimpleCompletor(s));
+				((ConsoleReader)con).addCompletor(new jline.SimpleCompletor(s));
 				//m.invoke(console, nc.newInstance((Object[])s));
 			}
 			catch(Exception e) {

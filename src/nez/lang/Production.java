@@ -284,7 +284,7 @@ public class Production extends Expression {
 		sb.append("accept" + StringUtils.stringfyCharClass(b) + " ");
 		
 		ConsoleUtils.println(sb.toString());
-		ConsoleUtils.println(this.getUniqueName() + " = " + this.getExpression());
+		ConsoleUtils.println(this.getLocalName() + " = " + this.getExpression());
 	}
 
 }

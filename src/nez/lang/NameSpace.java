@@ -196,7 +196,40 @@ public class NameSpace {
 		}
 	}
 	
+
+	FormatterMap fmtMap;
 	
+	public final void addFormatter(String tag, int size, Formatter fmt) {
+		if(fmtMap == null) {
+			fmtMap = new FormatterMap();
+		}
+		fmtMap.set(tag, size, fmt);
+	}
+
+	public final Formatter getFormatter(String tag, int size) {
+		if(fmtMap != null) {
+			return fmtMap.get(tag, size);
+		}
+		return null;
+	}
+	
+	private UList<Example> exampleList;
+	
+	final void addExample(Example ex) {
+		if(exampleList == null) {
+			exampleList = new UList<Example>(new Example[2]);
+		}
+		exampleList.add(ex);
+	}
+	
+	final void testExample() {
+		if(exampleList != null) {
+			for(Example ex : exampleList) {
+				ex.test(this);
+			}
+		}
+	}
+
 	// Grammar
 	
 	private SourcePosition src() {
@@ -355,6 +388,8 @@ public class NameSpace {
 	public final Expression newIndent(SourcePosition s) {
 		return Factory.newIndent(src());
 	}
+
+
 
 
 

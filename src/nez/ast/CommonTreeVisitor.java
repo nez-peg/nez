@@ -30,7 +30,7 @@ public class CommonTreeVisitor {
 	}
 	
 	protected final Method findMethod(String method, Tag tag) {
-		Integer key = tag.id;
+		Integer key = tag.tagId;
 		Method m = this.methodMap.get(key);
 		if(m == null) {
 			try {

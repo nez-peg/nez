@@ -5,6 +5,7 @@ import java.io.IOException;
 import nez.SourceContext;
 import nez.ast.CommonTree;
 import nez.ast.CommonTreeWriter;
+import nez.lang.Formatter;
 import nez.lang.Grammar;
 import nez.lang.NameSpace;
 import nez.lang.NezParser;
@@ -37,7 +38,7 @@ public class NezShell extends Command {
 					continue;
 				}
 				if(text == null) {
-					ConsoleUtils.println(g);
+					displayGrammar(command, g);
 				}
 				else {
 					SourceContext sc = SourceContext.newStringSourceContext("<stdio>", linenum, text);
@@ -51,11 +52,16 @@ public class NezShell extends Command {
 					}
 					sc = null;
 					new CommonTreeWriter().transform(null, node);
+					ConsoleUtils.println("Formatted " + Formatter.format(ns, node));
 				}
 			}
 		}
 	}
 	
+	private void displayGrammar(String command, Grammar g) {
+		g.getStartProduction().dump();
+	}
+
 	private boolean readLine(String prompt) {
 		Object console = ConsoleUtils.getConsoleReader();
 		String line = ConsoleUtils.readSingleLine(console, prompt);
@@ -126,7 +132,7 @@ public class NezShell extends Command {
 	}
 	
 	private void defineProduction(NameSpace ns, String text) {
-		ConsoleUtils.println("--\n"+text+"--");
+		//ConsoleUtils.println("--\n"+text+"--");
 		NezParser parser = new NezParser();
 		parser.eval(ns, "<stdio>", linenum, text);
 		ConsoleUtils.addCompleter(ns.getNonterminalList());

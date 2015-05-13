@@ -24,7 +24,7 @@ public class RegexConverter extends GrammarConverter{
 	
 	public final Expression pi(CommonTree expr, Expression k) {
 		Tag tag = expr.getTag();
-		Method m = lookupPiMethod("pi", tag.id);
+		Method m = lookupPiMethod("pi", tag.tagId);
 		if(m != null) {
 			try {
 				return (Expression)m.invoke(this, expr, k);
