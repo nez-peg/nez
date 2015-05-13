@@ -70,10 +70,6 @@ public class New extends Unconsumed {
 		return this;
 	}
 	@Override
-	public Expression removeFlag(TreeMap<String, String> undefedFlags) {
-		return this;
-	}
-	@Override
 	public Instruction encode(RuntimeCompiler bc, Instruction next) {
 		return bc.encodeNew(this, next);
 	}

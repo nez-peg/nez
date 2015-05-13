@@ -61,15 +61,6 @@ public class Sequence extends SequentialExpression {
 		}
 		return Factory.newSequence(s, l);
 	}
-	@Override
-	public Expression removeFlag(TreeMap<String, String> undefedFlags) {
-		UList<Expression> l = newList();
-		for(int i = 0; i < this.size(); i++) {
-			Expression e = get(i).removeFlag(undefedFlags);
-			Factory.addSequence(l, e);
-		}
-		return Factory.newSequence(s, l);
-	}
 
 	@Override
 	public short acceptByte(int ch, int option) {

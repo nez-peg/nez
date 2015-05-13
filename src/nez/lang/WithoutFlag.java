@@ -38,19 +38,6 @@ public class WithoutFlag extends Unary {
 		return this;
 	}
 	@Override
-	public Expression removeFlag(TreeMap<String,String> undefedFlags) {
-		boolean addWithout = false;
-		if(undefedFlags != null && !undefedFlags.containsKey(flagName)) {
-			undefedFlags.put(flagName, flagName);
-			addWithout = true;
-		}
-		Expression e = inner.removeFlag(undefedFlags);
-		if(addWithout) {
-			undefedFlags.remove(flagName);
-		}
-		return e;
-	}
-	@Override
 	public short acceptByte(int ch, int option) {
 		return this.inner.acceptByte(ch, option);
 	}

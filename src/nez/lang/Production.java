@@ -189,38 +189,38 @@ public class Production extends Expression {
 		}
 		return firstUpperCase ? Typestate.BooleanType : Typestate.Undefined;
 	}
-
-	public final void removeExpressionFlag(TreeMap<String, String> undefedFlags) {
-		this.body = this.body.removeFlag(undefedFlags).intern();
-	}
-	
-	@Override
-	public Expression removeFlag(TreeMap<String, String> undefedFlags) {
-		if(undefedFlags.size() > 0) {
-			StringBuilder sb = new StringBuilder();
-			int loc = name.indexOf('!');
-			if(loc > 0) {
-				sb.append(this.name.substring(0, loc));
-			}
-			else {
-				sb.append(this.name);
-			}
-			for(String flag: undefedFlags.keySet()) {
-				if(ConditionAnlysis.hasReachableFlag(this.body, flag)) {
-					sb.append("!");
-					sb.append(flag);
-				}
-			}
-			String rName = sb.toString();
-			Production rRule = ns.getProduction(rName);
-			if(rRule == null) {
-				rRule = ns.newRule(rName, Factory.newEmpty(null));
-				rRule.body = body.removeFlag(undefedFlags).intern();
-			}
-			return rRule;
-		}
-		return this;
-	}
+//
+//	public final void removeExpressionFlag(TreeMap<String, String> undefedFlags) {
+//		this.body = this.body.removeFlag(undefedFlags).intern();
+//	}
+//	
+//	@Override
+//	public Expression removeFlag(TreeMap<String, String> undefedFlags) {
+//		if(undefedFlags.size() > 0) {
+//			StringBuilder sb = new StringBuilder();
+//			int loc = name.indexOf('!');
+//			if(loc > 0) {
+//				sb.append(this.name.substring(0, loc));
+//			}
+//			else {
+//				sb.append(this.name);
+//			}
+//			for(String flag: undefedFlags.keySet()) {
+//				if(ConditionAnlysis.hasReachableFlag(this.body, flag)) {
+//					sb.append("!");
+//					sb.append(flag);
+//				}
+//			}
+//			String rName = sb.toString();
+//			Production rRule = ns.getProduction(rName);
+//			if(rRule == null) {
+//				rRule = ns.newRule(rName, Factory.newEmpty(null));
+//				rRule.body = body.removeFlag(undefedFlags).intern();
+//			}
+//			return rRule;
+//		}
+//		return this;
+//	}
 	
 	@Override
 	public String getInterningKey() {

@@ -141,14 +141,14 @@ public class NonTerminal extends Expression {
 //		}
 //		return this;
 //	}
-	@Override
-	public Expression removeFlag(TreeMap<String,String> undefedFlags) {
-		Production r = (Production)this.getProduction().removeFlag(undefedFlags);
-		if(!this.localName.equals(r.getLocalName())) {
-			return Factory.newNonTerminal(this.s, ns, r.getLocalName());
-		}
-		return this;
-	}
+//	@Override
+//	public Expression removeFlag(TreeMap<String,String> undefedFlags) {
+//		Production r = (Production)this.getProduction().removeFlag(undefedFlags);
+//		if(!this.localName.equals(r.getLocalName())) {
+//			return Factory.newNonTerminal(this.s, ns, r.getLocalName());
+//		}
+//		return this;
+//	}
 	
 	@Override
 	public short acceptByte(int ch, int option) {

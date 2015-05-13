@@ -24,9 +24,5 @@ public abstract class Terminal extends Expression {
 	public Expression checkTypestate(GrammarChecker checker, Typestate c) {
 		return this;
 	}
-	@Override
-	public Expression removeFlag(TreeMap<String, String> undefedFlags) {
-		return this;
-	}
 
 }

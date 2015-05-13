@@ -36,14 +36,6 @@ public abstract class ASTOperation extends Expression {
 		}
 		return this;
 	}
-//	@Override
-//	public Expression removeASTOperator(boolean newNonTerminal) {
-//		return Factory.newEmpty(s);
-//	}
-	@Override
-	public Expression removeFlag(TreeMap<String, String> undefedFlags) {
-		return this;
-	}
 	@Override
 	public short acceptByte(int ch, int option) {
 		return Prediction.Unconsumed;

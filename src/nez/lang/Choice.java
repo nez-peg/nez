@@ -57,14 +57,6 @@ public class Choice extends SequentialExpression {
 		return Factory.newChoice(this.s, l);
 	}
 	@Override
-	public Expression removeFlag(TreeMap<String, String> undefedFlags) {
-		UList<Expression> l = new UList<Expression>(new Expression[this.size()]);
-		for(Expression e : this) {
-			Factory.addChoice(l, e.removeFlag(undefedFlags));
-		}
-		return Factory.newChoice(this.s, l);
-	}
-	@Override
 	public short acceptByte(int ch, int option) {
 		boolean hasUnconsumed = false;
 		for(int i = 0; i < this.size(); i++) {

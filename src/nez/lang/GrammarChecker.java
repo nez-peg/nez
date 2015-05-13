@@ -95,12 +95,12 @@ public class GrammarChecker {
 			}
 			r.internRule();
 		}
-		if(this.foundFlag) {
-			TreeMap<String,String> undefedFlags = new TreeMap<String,String>();
-			for(Production r: grammar.getRuleList()) {
-				r.removeExpressionFlag(undefedFlags);
-			}
-		}
+//		if(this.foundFlag) {
+//			TreeMap<String,String> undefedFlags = new TreeMap<String,String>();
+//			for(Production r: grammar.getRuleList()) {
+//				r.removeExpressionFlag(undefedFlags);
+//			}
+//		}
 //		testExample(grammar);
 	}
 	

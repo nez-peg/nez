@@ -38,10 +38,6 @@ public class AnyChar extends Terminal {
 	public Expression checkTypestate(GrammarChecker checker, Typestate c) {
 		return this;
 	}
-	@Override
-	public Expression removeFlag(TreeMap<String, String> undefedFlags) {
-		return this;
-	}
 	
 	@Override
 	public short acceptByte(int ch, int option) {

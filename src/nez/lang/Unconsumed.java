@@ -35,10 +35,6 @@ abstract class Unconsumed extends Expression {
 		return this;
 	}
 	@Override
-	public Expression removeFlag(TreeMap<String, String> undefedFlags) {
-		return this;
-	}
-	@Override
 	public short acceptByte(int ch, int option) {
 		return Prediction.Unconsumed;
 	}

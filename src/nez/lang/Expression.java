@@ -57,14 +57,12 @@ public abstract class Expression extends AbstractList<Expression> {
 	
 	public abstract int inferTypestate(UMap<String> visited);
 	public abstract Expression checkTypestate(GrammarChecker checker, Typestate c);
-
 	
-	
-	public final static boolean CreateNonTerminal = true;
-	public final static boolean RemoveOnly = false;
+//	public final static boolean CreateNonTerminal = true;
+//	public final static boolean RemoveOnly = false;
 
-	//public abstract Expression removeASTOperator(boolean newNonTerminal);
-	public abstract Expression removeFlag(TreeMap<String, String> undefedFlags);
+//  public abstract Expression removeASTOperator(boolean newNonTerminal);
+//	public abstract Expression removeFlag(TreeMap<String, String> undefedFlags);
 	
 	public abstract short acceptByte(int ch, int option);
 //	public  boolean predict(int option, int ch, boolean k) {return false;}  // 

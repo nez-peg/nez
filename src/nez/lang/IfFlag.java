@@ -31,14 +31,6 @@ public class IfFlag extends Unconsumed {
 	public Expression reshape(Manipulator m) {
 		return m.reshapeIfFlag(this);
 	}
-
-	@Override
-	public Expression removeFlag(TreeMap<String,String> undefedFlags) {
-		if(undefedFlags != null && undefedFlags.containsKey(flagName)) {
-			return Factory.newFailure(this.s);
-		}
-		return this;
-	}
 	@Override
 	public Instruction encode(RuntimeCompiler bc, Instruction next) {
 		return next;

@@ -52,33 +52,6 @@ public class OnFlag extends Unary {
 		this.inner = this.inner.checkTypestate(checker, c);
 		return this;
 	}
-	@Override
-	public Expression removeFlag(TreeMap<String,String> undefedFlags) {
-		boolean removeWithout = false;
-		if(this.predicate) {
-			if(undefedFlags != null && undefedFlags.containsKey(flagName)) {
-				undefedFlags.remove(flagName);
-				removeWithout = true;
-			}
-			Expression e = inner.removeFlag(undefedFlags);
-			if(removeWithout) {
-				undefedFlags.put(flagName, flagName);
-			}
-			return e;
-		}
-		else {
-			boolean addWithout = false;
-			if(undefedFlags != null && !undefedFlags.containsKey(flagName)) {
-				undefedFlags.put(flagName, flagName);
-				addWithout = true;
-			}
-			Expression e = inner.removeFlag(undefedFlags);
-			if(addWithout) {
-				undefedFlags.remove(flagName);
-			}
-			return e;
-		}
-	}
 
 	@Override
 	public short acceptByte(int ch, int option) {

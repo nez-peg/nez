@@ -29,11 +29,6 @@ public abstract class Unary extends Expression {
 		return this.getPredicate();
 	}
 	
-	@Override
-	public Expression removeFlag(TreeMap<String,String> undefedFlags) {
-		return this.dupUnary(inner.removeFlag(undefedFlags));
-	}
-
 	abstract Expression dupUnary(Expression inner);
 
 }
