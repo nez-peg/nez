@@ -27,6 +27,10 @@ public class New extends Unconsumed {
 		return (shift != 0) ? s + "[" + shift + "]" : s;
 	}
 	@Override
+	public Expression reshape(Manipulator m) {
+		return m.reshapeNew(this);
+	}
+	@Override
 	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
 		return false;
 	}
@@ -44,11 +48,6 @@ public class New extends Unconsumed {
 			checker.reportError(s, "expected repetition for " + this);
 		}
 	}
-
-	@Override
-	public Expression removeASTOperator(boolean newNonTerminal) {
-		return Factory.newEmpty(s);
-	}
 	@Override
 	public int inferTypestate(UMap<String> visited) {
 		return Typestate.ObjectType;
@@ -58,7 +57,7 @@ public class New extends Unconsumed {
 		if(this.lefted) {
 			if(c.required != Typestate.OperationType) {
 				checker.reportWarning(s, "unexpected {@ .. => removed!!");
-				return this.removeASTOperator(Expression.CreateNonTerminal);
+				return this.reshape(Manipulator.RemoveASTandRename);
 			}
 		}
 		else {

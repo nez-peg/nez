@@ -152,7 +152,7 @@ public class NezCombinator extends ParserCombinator {
 		return Sequence(t("<"), 
 			New(Choice(
 			Sequence(t("if"), P("S"), Link("FlagName"), Tag(NezTag.If)),
-			Sequence(t("on"), P("S"), Link("FlagName"), P("S"), Link("Expr"), Tag(NezTag.With)),
+			Sequence(t("on"), P("S"), Link("FlagName"), P("S"), Link("Expr"), Tag(NezTag.On)),
 			
 			Sequence(t("block"), P("S"), Link("Expr"), Tag(NezTag.Block)),
 			Sequence(t("def"),   P("S"), Link("TableName"), P("S"), Link("Expr"), Tag(NezTag.Def)),
@@ -167,8 +167,8 @@ public class NezCombinator extends ParserCombinator {
 			Sequence(t("with"),  P("S"), Link(P("Name")), P("S"), Link("Expr"), Tag(NezTag.With)),
 			Sequence(t("without"), P("S"), Link(P("Name")), P("S"), Link("Expr"), Tag(NezTag.Without)),
 			Sequence(t("indent"), Tag(NezTag.Indent)),
-			Sequence(t("match"),   P("S"), Link("Expr"), P("_"), t(">"), Tag(NezTag.Match))
-
+			Sequence(t("match"),   P("S"), Link("Expr"), P("_"), t(">"), Tag(NezTag.Match)),
+			Sequence(OneMore(Not(">"), AnyChar()), Tag(NezTag.Undefined))
 			)), P("_"), t(">")
 		);
 	}

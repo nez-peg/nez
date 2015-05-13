@@ -15,6 +15,11 @@ public class And extends Unary {
 		return "&";
 	}
 	@Override
+	public Expression reshape(Manipulator m) {
+		return m.reshapeAnd(this);
+	}
+
+	@Override
 	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
 		return false;
 	}

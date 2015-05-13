@@ -35,10 +35,6 @@ abstract class Unconsumed extends Expression {
 		return this;
 	}
 	@Override
-	public Expression removeASTOperator(boolean newNonTerminal) {
-		return this;
-	}
-	@Override
 	public Expression removeFlag(TreeMap<String, String> undefedFlags) {
 		return this;
 	}

@@ -28,11 +28,6 @@ public abstract class Unary extends Expression {
 	public String getInterningKey() {
 		return this.getPredicate();
 	}
-
-	@Override
-	public Expression removeASTOperator(boolean newNonTerminal) {
-		return this.dupUnary(inner.removeASTOperator(newNonTerminal));
-	}
 	
 	@Override
 	public Expression removeFlag(TreeMap<String,String> undefedFlags) {

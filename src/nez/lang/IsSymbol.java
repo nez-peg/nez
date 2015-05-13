@@ -28,6 +28,10 @@ public class IsSymbol extends Terminal {
 		return this.getPredicate();
 	}
 	@Override
+	public Expression reshape(Manipulator m) {
+		return m.reshapeIsSymbol(this);
+	}
+	@Override
 	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
 		return true;
 	}

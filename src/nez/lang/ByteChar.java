@@ -20,6 +20,10 @@ public class ByteChar extends Terminal {
 		return "'" + byteChar;
 	}
 	@Override
+	public Expression reshape(Manipulator m) {
+		return m.reshapeByteChar(this);
+	}
+	@Override
 	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
 		return true;
 	}

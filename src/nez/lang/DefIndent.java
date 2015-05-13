@@ -25,5 +25,9 @@ public class DefIndent extends Unconsumed {
 		String token = gep.addIndent();
 		sb.append(token);
 	}
+	@Override
+	public Expression reshape(Manipulator m) {
+		return m.reshapeUndefined(this);
+	}
 
 }

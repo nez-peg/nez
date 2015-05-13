@@ -24,6 +24,10 @@ public class Repetition extends Unary {
 		return "*";
 	}
 	@Override
+	public Expression reshape(Manipulator m) {
+		return m.reshapeRepetition(this);
+	}
+	@Override
 	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
 //		if(checker != null) {
 //			this.inner.checkAlwaysConsumed(checker, startNonTerminal, stack);
@@ -54,7 +58,7 @@ public class Repetition extends Unary {
 		Expression inn = this.inner.checkTypestate(checker, c);
 		if(required != Typestate.OperationType && c.required == Typestate.OperationType) {
 			checker.reportWarning(s, "unable to create objects in repetition => removed!!");
-			this.inner = inn.removeASTOperator(Expression.CreateNonTerminal);
+			this.inner = inn.reshape(Manipulator.RemoveASTandRename);
 			c.required = required;
 		}
 		else {

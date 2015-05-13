@@ -22,6 +22,11 @@ public class Choice extends SequentialExpression {
 		return "/";
 	}
 	@Override
+	public Expression reshape(Manipulator m) {
+		return m.reshapeChoice(this);
+	}
+
+	@Override
 	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
 		boolean afterAll = true;
 		for(Expression e: this) {
@@ -48,14 +53,6 @@ public class Choice extends SequentialExpression {
 		for(Expression e : this) {
 			c.required = required;
 			Factory.addChoice(l, e.checkTypestate(checker, c));
-		}
-		return Factory.newChoice(this.s, l);
-	}
-	@Override
-	public Expression removeASTOperator(boolean newNonTerminal) {
-		UList<Expression> l = newList();
-		for(Expression e : this) {
-			Factory.addChoice(l, e.removeASTOperator(newNonTerminal));
 		}
 		return Factory.newChoice(this.s, l);
 	}

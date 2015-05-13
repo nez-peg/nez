@@ -22,6 +22,10 @@ public class DefSymbol extends Unary {
 		return "def " + table.getName();
 	}
 	@Override
+	public Expression reshape(Manipulator m) {
+		return m.reshapeDefSymbol(this);
+	}
+	@Override
 	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
 		this.inner.checkAlwaysConsumed(checker, startNonTerminal, stack);
 		return true;
@@ -42,7 +46,7 @@ public class DefSymbol extends Unary {
 	public Expression checkTypestate(GrammarChecker checker, Typestate c) {
 		int t = this.inner.inferTypestate(null);
 		if(t != Typestate.BooleanType) {
-			this.inner = this.inner.removeASTOperator(Expression.CreateNonTerminal);
+			this.inner = this.inner.reshape(Manipulator.RemoveASTandRename);
 		}
 		return this;
 	}
@@ -69,7 +73,7 @@ public class DefSymbol extends Unary {
 			String un = ((NonTerminal) e).getUniqueName();
 			if(visitedMap.get(un) == null) {
 				visitedMap.put(un, un);
-				return checkContextSensitivity(((NonTerminal) e).getRule().getExpression(), visitedMap);
+				return checkContextSensitivity(((NonTerminal) e).getProduction().getExpression(), visitedMap);
 			}
 			return false;
 		}

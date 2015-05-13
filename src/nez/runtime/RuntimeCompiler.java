@@ -19,6 +19,7 @@ import nez.lang.Grammar;
 import nez.lang.IsIndent;
 import nez.lang.IsSymbol;
 import nez.lang.Link;
+import nez.lang.Manipulator;
 import nez.lang.New;
 import nez.lang.NonTerminal;
 import nez.lang.Not;
@@ -90,7 +91,7 @@ public class RuntimeCompiler {
 			String un = ((NonTerminal) e).getUniqueName();
 			if(visitedMap.get(un) == null) {
 				visitedMap.put(un, un);
-				return isContextSensitive(((NonTerminal) e).getRule().getExpression());
+				return isContextSensitive(((NonTerminal) e).getProduction().getExpression());
 			}
 			return false;
 		}
@@ -137,7 +138,7 @@ public class RuntimeCompiler {
 				continue;
 			}
 			if(!UFlag.is(option, Grammar.ASTConstruction)) {
-				e = e.removeASTOperator(Expression.RemoveOnly);
+				e = e.reshape(Manipulator.RemoveAST);
 			}
 			CodeBlock block = new CodeBlock();
 			block.head = encodeExpression(e, new IRet(r));
@@ -813,7 +814,7 @@ public class RuntimeCompiler {
 	}
 
 	public final Instruction encodeNonTerminal(NonTerminal p, Instruction next) {
-		Production r = p.getRule();
+		Production r = p.getProduction();
 		Expression pp = p.optimize(option);
 		if(pp instanceof ByteChar || pp instanceof ByteMap || pp instanceof AnyChar) {
 			Verbose.noticeOptimize("Inlining", p, pp);
@@ -829,7 +830,7 @@ public class RuntimeCompiler {
 				MemoPoint m = this.issueMemoPoint(r.getUniqueName(), ref);
 				if(m != null) {
 					if(UFlag.is(option, Grammar.Tracing)) {
-						IMonitoredSwitch monitor = new IMonitoredSwitch(p, new ICallPush(p.getRule(), next));
+						IMonitoredSwitch monitor = new IMonitoredSwitch(p, new ICallPush(p.getProduction(), next));
 						Instruction inside = new ICallPush(r, newMemoize(p, monitor, m, next));
 						monitor.setActivatedNext(newLookup(p, monitor, m, inside, next, newMemoizeFail(p, monitor, m)));
 						return monitor;

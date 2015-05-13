@@ -23,6 +23,10 @@ public class AnyChar extends Terminal {
 		return ".";
 	}
 	@Override
+	public Expression reshape(Manipulator m) {
+		return m.reshapeAnyChar(this);
+	}
+	@Override
 	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
 		return true;
 	}
@@ -32,10 +36,6 @@ public class AnyChar extends Terminal {
 	}
 	@Override
 	public Expression checkTypestate(GrammarChecker checker, Typestate c) {
-		return this;
-	}
-	@Override
-	public Expression removeASTOperator(boolean newNonTerminal) {
 		return this;
 	}
 	@Override

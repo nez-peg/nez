@@ -6,6 +6,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import nez.SourceContext;
 import nez.ast.SourcePosition;
@@ -148,6 +150,23 @@ public class NameSpace {
 		return l;
 	}
 	
+	public Production newReducedProduction(String localName, Production p, Manipulator m) {
+		Production r = p.newProduction(localName);
+		this.ruleMap.put(localName, r);
+		m.updateProductionAttribute(p, r);
+		addProduction(r);
+		r.setExpression(p.getExpression().reshape(m));
+		return r;
+	}
+	
+	public Production newProduction(String localName, Production p, TreeMap<String, Boolean> undefedFlags) {
+		Production r = p.newProduction(localName);
+		this.ruleMap.put(localName, r);
+		addProduction(r);
+		r.setExpression(Analysis.elminateFlag(r.getExpression(), undefedFlags));
+		return r;
+	}
+
 		
 //	public int getRuleSize() {
 //		return this.ruleMap.size();
@@ -196,8 +215,28 @@ public class NameSpace {
 		}
 	}
 	
+	private Map<String, Expression> tableMap; 
 
-	FormatterMap fmtMap;
+	final void setSymbolExpresion(String tableName, Expression e) {
+		if(tableMap == null) {
+			tableMap = new HashMap<String, Expression>();
+		}
+		tableMap.put(tableName, e);
+	}
+
+	final Expression getSymbolExpresion(String tableName) {
+		if(tableMap != null) {
+			Expression e = tableMap.get(tableName);
+			if(e != null && !e.isInterned()) {
+				e = e.intern();
+				tableMap.put(tableName, e);
+			}
+			return e;
+		}
+		return null;
+	}
+
+	private FormatterMap fmtMap;
 	
 	public final void addFormatter(String tag, int size, Formatter fmt) {
 		if(fmtMap == null) {
@@ -388,6 +427,7 @@ public class NameSpace {
 	public final Expression newIndent(SourcePosition s) {
 		return Factory.newIndent(src());
 	}
+
 
 
 

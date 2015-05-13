@@ -7,15 +7,31 @@ import nez.runtime.RuntimeCompiler;
 import nez.runtime.Instruction;
 
 public class IfFlag extends Unconsumed {
+	boolean predicate;
 	String flagName;
-	IfFlag(SourcePosition s, String flagName) {
+	IfFlag(SourcePosition s, boolean predicate, String flagName) {
 		super(s);
+		if(flagName.startsWith("!")) {
+			predicate = false;
+			flagName = flagName.substring(1);
+		}
+		this.predicate = predicate;
 		this.flagName = flagName;
 	}
+	
+	public final String getFlagName() {
+		return this.flagName;
+	}
+	
 	@Override
 	public String getPredicate() {
-		return "if " + this.flagName;
+		return predicate ? "if " + this.flagName : "if !" + this.flagName;
 	}
+	@Override
+	public Expression reshape(Manipulator m) {
+		return m.reshapeIfFlag(this);
+	}
+
 	@Override
 	public Expression removeFlag(TreeMap<String,String> undefedFlags) {
 		if(undefedFlags != null && undefedFlags.containsKey(flagName)) {

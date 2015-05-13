@@ -17,6 +17,10 @@ public class Failure extends Unconsumed {
 		return "!!";
 	}
 	@Override
+	public Expression reshape(Manipulator m) {
+		return m.reshapeFailure(this);
+	}
+	@Override
 	public short acceptByte(int ch, int option) {
 		return Prediction.Reject;
 	}

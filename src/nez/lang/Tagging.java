@@ -24,6 +24,10 @@ public class Tagging extends ASTOperation {
 		return "#" + this.tag.getName();
 	}
 	@Override
+	public Expression reshape(Manipulator m) {
+		return m.reshapeTagging(this);
+	}
+	@Override
 	public Expression checkTypestate(GrammarChecker checker, Typestate c) {
 		return this.checkTypestate(checker, c, "#" + tag.getName());
 	}

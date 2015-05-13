@@ -20,6 +20,10 @@ public class Replace extends ASTOperation {
 		return "`" + this.value;
 	}
 	@Override
+	public Expression reshape(Manipulator m) {
+		return m.reshapeReplace(this);
+	}
+	@Override
 	public Expression checkTypestate(GrammarChecker checker, Typestate c) {
 		return this.checkTypestate(checker, c, "`" + value + "`");
 	}

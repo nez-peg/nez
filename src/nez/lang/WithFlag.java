@@ -8,6 +8,7 @@ import nez.runtime.RuntimeCompiler;
 import nez.util.UList;
 import nez.util.UMap;
 
+@Deprecated
 public class WithFlag extends Unary {
 	String flagName;
 	WithFlag(SourcePosition s, String flagName, Expression inner) {
@@ -67,6 +68,11 @@ public class WithFlag extends Unary {
 	@Override
 	protected void examplfy(GEP gep, StringBuilder sb, int p) {
 		this.inner.examplfy(gep, sb, p);
+	}
+	@Override
+	public Expression reshape(Manipulator m) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	

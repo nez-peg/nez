@@ -67,7 +67,7 @@ class JavaParserGenerator extends GrammarGenerator {
 	}
 
 	public void visitNonTerminal(NonTerminal e) {
-		file.writeIndent("if("+ name(e.getRule()) + "(c)) return true;");
+		file.writeIndent("if("+ name(e.getProduction()) + "(c)) return true;");
 	}
 	
 	public void visitByteChar(ByteChar e) {

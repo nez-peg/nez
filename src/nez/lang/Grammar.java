@@ -51,7 +51,7 @@ public class Grammar {
 		if(expr instanceof NonTerminal) {
 			//System.out.println("call " + ((NonTerminal) expr).getUniqueName() + " pos=" + pos + " redundant? " + checkRedundantCall(expr, pos));
 			path.add(new Trace(expr, pos));
-			add(pos, ((NonTerminal) expr).getRule());
+			add(pos, ((NonTerminal) expr).getProduction());
 		}
 		if(rep == null && expr instanceof nez.lang.Repetition) {
 			rep = expr;

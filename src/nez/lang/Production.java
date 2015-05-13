@@ -22,7 +22,7 @@ public class Production extends Expression {
 	int     refCount  = 0;
 	boolean isTerminal = false;
 	
-	private Production definedRule;  // defined
+	Production original;
 
 	public Production(SourcePosition s, NameSpace ns, String name, Expression body) {
 		super(s);
@@ -30,9 +30,27 @@ public class Production extends Expression {
 		this.name = name;
 		this.uname = ns.uniqueName(name);
 		this.body = (body == null) ? Factory.newEmpty(s) : body;
-		this.definedRule = this;
+		this.original = this;
+	}
+
+	private Production(String name, Production original, Expression body) {
+		super(original.s);
+		this.ns = original.getNameSpace();
+		this.name = name;
+		this.uname = ns.uniqueName(name);
+		this.body = (body == null) ? Factory.newEmpty(s) : body;
+		this.original = original;
+	}
+
+	Production newProduction(String localName) {
+		return new Production(name, this, this.getExpression());
 	}
 	
+	@Override
+	public Expression reshape(Manipulator m) {
+		return this;
+	}
+
 	public final NameSpace getNameSpace() {
 		return this.ns;
 	}
@@ -66,9 +84,17 @@ public class Production extends Expression {
 	public final String getUniqueName() {
 		return this.uname;
 	}
+
+	public final String getOriginalLocalName() {
+		return this.original.getLocalName();
+	}
 	
 	public final Expression getExpression() {
 		return this.body;
+	}
+
+	final void setExpression(Expression e) {
+		this.body = e;
 	}
 
 	public int minlen = -1;
@@ -162,22 +188,6 @@ public class Production extends Expression {
 			}
 		}
 		return firstUpperCase ? Typestate.BooleanType : Typestate.Undefined;
-	}
-
-	@Override
-	public Expression removeASTOperator(boolean newNonTerminal) {
-		if(this.inferTypestate(null) == Typestate.BooleanType) {
-			return this;
-		}
-		String name = "~" + this.name;
-		Production r = this.ns.getProduction(name);
-		if(r == null) {
-			r = this.ns.newRule(name, this.body);
-			r.definedRule = this;
-			r.transType = Typestate.BooleanType;
-			r.body = this.body.removeASTOperator(newNonTerminal);
-		}
-		return r;
 	}
 
 	public final void removeExpressionFlag(TreeMap<String, String> undefedFlags) {
@@ -286,5 +296,6 @@ public class Production extends Expression {
 		ConsoleUtils.println(sb.toString());
 		ConsoleUtils.println(this.getLocalName() + " = " + this.getExpression());
 	}
+
 
 }

@@ -19,6 +19,11 @@ public class Capture extends ASTOperation {
 		return shift == 0 ? "}" : "}["+shift+"]";
 	}
 	@Override
+	public Expression reshape(Manipulator m) {
+		return m.reshapeCapture(this);
+	}
+
+	@Override
 	public Expression checkTypestate(GrammarChecker checker, Typestate c) {
 		return this.checkTypestate(checker, c, "}");
 	}

@@ -473,9 +473,13 @@ public class Factory {
 	// <without FLAG e>
 	
 	public final static Expression newIfFlag(SourcePosition s, String flagName) {
-		return internImpl(s, new IfFlag(s, flagName));
+		return internImpl(s, new IfFlag(s, true, flagName));
 	}
-	
+
+	public final static Expression newOnFlag(SourcePosition s, boolean predicate, String flagName, Expression e) {
+		return internImpl(s, new OnFlag(s, predicate, flagName, e));
+	}
+
 	public final static Expression newWithFlag(SourcePosition s, String flagName, Expression e) {
 		return internImpl(s, new WithFlag(s, flagName, e));
 	}

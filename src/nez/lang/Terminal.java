@@ -25,10 +25,6 @@ public abstract class Terminal extends Expression {
 		return this;
 	}
 	@Override
-	public Expression removeASTOperator(boolean newNonTerminal) {
-		return this;
-	}
-	@Override
 	public Expression removeFlag(TreeMap<String, String> undefedFlags) {
 		return this;
 	}

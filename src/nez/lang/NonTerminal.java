@@ -39,6 +39,10 @@ public class NonTerminal extends Expression {
 	public String getPredicate() {
 		return getUniqueName();
 	}
+	@Override
+	public Expression reshape(Manipulator m) {
+		return m.reshapeNonTerminal(this);
+	}
 
 	public final String getLocalName() {
 		return localName;
@@ -48,7 +52,7 @@ public class NonTerminal extends Expression {
 		return this.uniqueName;
 	}
 	
-	public final Production getRule() {
+	public final Production getProduction() {
 		return this.ns.getProduction(this.localName);
 	}
 	
@@ -67,7 +71,7 @@ public class NonTerminal extends Expression {
 				return false;
 			}
 		}
-		Production r = this.getRule();
+		Production r = this.getProduction();
 		if(r != null) {
 			return r.checkAlwaysConsumed(checker, startNonTerminal, stack);
 		}
@@ -75,7 +79,7 @@ public class NonTerminal extends Expression {
 	}
 
 	@Override void checkPhase1(GrammarChecker checker, String ruleName, UMap<String> visited, int depth) {
-		Production r = this.getRule();
+		Production r = this.getProduction();
 		if(r == null) {
 			checker.reportWarning(s, "undefined rule: " + this.localName + " => created empty rule!!");
 			r = this.ns.newRule(this.localName, Factory.newEmpty(s));
@@ -101,12 +105,12 @@ public class NonTerminal extends Expression {
 
 	@Override
 	public int inferTypestate(UMap<String> visited) {
-		Production r = this.getRule();
+		Production r = this.getProduction();
 		return r.inferTypestate(visited);
 	}
 	@Override
 	public Expression checkTypestate(GrammarChecker checker, Typestate c) {
-		Production r = this.getRule();
+		Production r = this.getProduction();
 		int t = r.inferTypestate();
 		if(t == Typestate.BooleanType) {
 			return this;
@@ -114,7 +118,7 @@ public class NonTerminal extends Expression {
 		if(c.required == Typestate.ObjectType) {
 			if(t == Typestate.OperationType) {
 				checker.reportWarning(s, "unexpected AST operations => removed!!");
-				return this.removeASTOperator(Expression.CreateNonTerminal);
+				return this.reshape(Manipulator.RemoveASTandRename);
 			}
 			c.required = Typestate.OperationType;
 			return this;
@@ -127,19 +131,19 @@ public class NonTerminal extends Expression {
 		}
 		return this;
 	}
-	@Override
-	public Expression removeASTOperator(boolean newNonTerminal) {
-		if(newNonTerminal) {
-			Production r = (Production)this.getRule().removeASTOperator(newNonTerminal);
-			if(!this.localName.equals(r.getLocalName())) {
-				return Factory.newNonTerminal(this.s, ns, r.getLocalName());
-			}
-		}
-		return this;
-	}
+//	@Override
+//	public Expression removeASTOperator(boolean newNonTerminal) {
+//		if(newNonTerminal) {
+//			Production r = (Production)this.getProduction().removeASTOperator(newNonTerminal);
+//			if(!this.localName.equals(r.getLocalName())) {
+//				return Factory.newNonTerminal(this.s, ns, r.getLocalName());
+//			}
+//		}
+//		return this;
+//	}
 	@Override
 	public Expression removeFlag(TreeMap<String,String> undefedFlags) {
-		Production r = (Production)this.getRule().removeFlag(undefedFlags);
+		Production r = (Production)this.getProduction().removeFlag(undefedFlags);
 		if(!this.localName.equals(r.getLocalName())) {
 			return Factory.newNonTerminal(this.s, ns, r.getLocalName());
 		}

@@ -15,6 +15,10 @@ public class Block extends Unary {
 		return "block";
 	}
 	@Override
+	public Expression reshape(Manipulator m) {
+		return m.reshapeBlock(this);
+	}
+	@Override
 	Expression dupUnary(Expression e) {
 		return (this.inner != e) ? Factory.newBlock(this.s, e) : this;
 	}

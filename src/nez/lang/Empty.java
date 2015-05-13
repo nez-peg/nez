@@ -12,11 +12,15 @@ public class Empty extends Unconsumed {
 	public String getPredicate() {
 		return "empty";
 	}
-	
 	@Override
 	public String getInterningKey() {
 		return "";
 	}
+	@Override
+	public Expression reshape(Manipulator m) {
+		return m.reshapeEmpty(this);
+	}
+
 	@Override
 	public Instruction encode(RuntimeCompiler bc, Instruction next) {
 		return next;

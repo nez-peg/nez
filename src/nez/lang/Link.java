@@ -21,6 +21,10 @@ public class Link extends Unary {
 		return (index != -1) ? "@" + index : "@";
 	}
 	@Override
+	public Expression reshape(Manipulator m) {
+		return m.reshapeLink(this);
+	}
+	@Override
 	Expression dupUnary(Expression e) {
 		return (this.inner != e) ? Factory.newLink(this.s, e, this.index) : this;
 	}
@@ -36,7 +40,7 @@ public class Link extends Unary {
 	public Expression checkTypestate(GrammarChecker checker, Typestate c) {
 		if(c.required != Typestate.OperationType) {
 			checker.reportWarning(s, "unexpected @ => removed");
-			return this.inner.removeASTOperator(Expression.CreateNonTerminal);
+			this.inner = this.inner.reshape(Manipulator.RemoveASTandRename);
 		}
 		c.required = Typestate.ObjectType;
 		Expression inn = inner.checkTypestate(checker, c);
@@ -48,10 +52,6 @@ public class Link extends Unary {
 		c.required = Typestate.OperationType;
 		this.inner = inn;
 		return this;
-	}
-	@Override
-	public Expression removeASTOperator(boolean newNonTerminal) {
-		return inner.removeASTOperator(newNonTerminal);
 	}
 	@Override
 	public short acceptByte(int ch, int option) {

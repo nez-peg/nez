@@ -78,6 +78,7 @@ public class NezParser extends CommonTreeVisitor {
 //		return this.loadGrammar(sc, new GrammarChecker());
 //	}
 
+	
 	private boolean parseStatement(CommonTree node) {
 		//System.out.println("DEBUG? parsed: " + node);
 		if(node != null) {
@@ -413,7 +414,7 @@ public class NezParser extends CommonTreeVisitor {
 	public Expression toIf(CommonTree ast) {
 		return Factory.newIfFlag(ast, ast.textAt(0, ""));
 	}
-
+	
 	public Expression toWith(CommonTree ast) {
 		return Factory.newWithFlag(ast, ast.textAt(0, ""), toExpression(ast.get(1)));
 	}
@@ -446,6 +447,11 @@ public class NezParser extends CommonTreeVisitor {
 		return Factory.newIndent(ast);
 	}
 
+	public Expression toUndefined(CommonTree ast) {
+		checker.reportError(ast, "undefined or deprecated notation");
+		return Factory.newEmpty(ast);
+	}
+	
 //	public Expression toScan(AST ast) {
 //		return Factory.newScan(Integer.parseInt(ast.get(0).getText()), toExpression(ast.get(1)), toExpression(ast.get(2)));
 //	}

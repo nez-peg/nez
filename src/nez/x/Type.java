@@ -59,11 +59,11 @@ public abstract class Type {
 		}
 		if(e instanceof NonTerminal) {
 			if(e.inferTypestate() == Typestate.ObjectType) {
-				inf.ref(((NonTerminal)e).getRule());
+				inf.ref(((NonTerminal)e).getProduction());
 				return inf;
 			}
 			if(e.inferTypestate() == Typestate.OperationType) {
-				inf = inferType(name, ((NonTerminal) e).getRule().getExpression(), inf);
+				inf = inferType(name, ((NonTerminal) e).getProduction().getExpression(), inf);
 				return inf;
 			}
 		}

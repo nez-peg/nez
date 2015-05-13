@@ -51,7 +51,8 @@ public class NezTag {
 	
 	static final Tag Scan        = Tag.tag("Scan");
 	static final Tag Repeat      = Tag.tag("Repeat");
-
+	static final Tag Undefined   = Tag.tag("Undefined");
+	
 	
 	static final Tag Rule         = Tag.tag("Rule");
 	static final Tag Import       = Tag.tag("Import");

@@ -17,7 +17,11 @@ public class Match extends Unary {
 	@Override
 	public String getInterningKey() { 
 		return "~";
-	}	
+	}
+	@Override
+	public Expression reshape(Manipulator m) {
+		return m.reshapeMatch(this);
+	}
 	@Override
 	Expression dupUnary(Expression e) {
 		return (this.inner != e) ? Factory.newMatch(this.s, e) : this;
@@ -32,7 +36,7 @@ public class Match extends Unary {
 	}
 	@Override
 	public Expression checkTypestate(GrammarChecker checker, Typestate c) {
-		return this.inner.removeASTOperator(Expression.CreateNonTerminal);
+		return this.inner.reshape(Manipulator.RemoveASTandRename);
 	}
 	@Override
 	public short acceptByte(int ch, int option) {

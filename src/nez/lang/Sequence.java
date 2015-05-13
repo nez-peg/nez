@@ -22,6 +22,10 @@ public class Sequence extends SequentialExpression {
 		return " ";
 	}
 	@Override
+	public Expression reshape(Manipulator m) {
+		return m.reshapeSequence(this);
+	}
+	@Override
 	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
 		for(Expression e: this) {
 			if(e.checkAlwaysConsumed(checker, startNonTerminal, stack)) {
@@ -38,15 +42,6 @@ public class Sequence extends SequentialExpression {
 			}
 		}
 		return false;
-	}
-
-	@Override
-	public Expression removeASTOperator(boolean newNonTerminal) {
-		UList<Expression> l = new UList<Expression>(new Expression[this.size()]);
-		for(Expression e : this) {
-			Factory.addSequence(l, e.removeASTOperator(newNonTerminal));
-		}
-		return Factory.newSequence(s, l);
 	}
 	@Override
 	public int inferTypestate(UMap<String> visited) {

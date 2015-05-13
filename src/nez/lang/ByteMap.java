@@ -18,7 +18,11 @@ public class ByteMap extends Terminal {
 		super(s);
 		this.byteMap = b;
 	}
-	
+	@Override
+	public Expression reshape(Manipulator m) {
+		return m.reshapeByteMap(this);
+	}
+
 	public final static boolean[] newMap(boolean initValue) {
 		boolean[] b = new boolean[257];
 		if(initValue) {

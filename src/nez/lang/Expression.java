@@ -40,6 +40,7 @@ public abstract class Expression extends AbstractList<Expression> {
 
 	public abstract String getPredicate();
 	public abstract String getInterningKey();
+	public abstract Expression reshape(Manipulator m);
 	
 	public final boolean isAlwaysConsumed() {
 		return this.checkAlwaysConsumed(null, null, null);
@@ -53,14 +54,16 @@ public abstract class Expression extends AbstractList<Expression> {
 	public final int inferTypestate() {
 		return this.inferTypestate(null);
 	}
-
+	
 	public abstract int inferTypestate(UMap<String> visited);
 	public abstract Expression checkTypestate(GrammarChecker checker, Typestate c);
 
+	
+	
 	public final static boolean CreateNonTerminal = true;
 	public final static boolean RemoveOnly = false;
 
-	public abstract Expression removeASTOperator(boolean newNonTerminal);
+	//public abstract Expression removeASTOperator(boolean newNonTerminal);
 	public abstract Expression removeFlag(TreeMap<String, String> undefedFlags);
 	
 	public static boolean hasReachableFlag(Expression e, String flagName, UMap<String> visited) {
@@ -82,7 +85,7 @@ public abstract class Expression extends AbstractList<Expression> {
 			String un = ne.getUniqueName();
 			if(!visited.hasKey(un)) {
 				visited.put(un, un);
-				Production r = ne.getRule();
+				Production r = ne.getProduction();
 				return hasReachableFlag(r.body, flagName, visited);
 			}
 		}

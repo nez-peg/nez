@@ -21,6 +21,11 @@ public class Not extends Unary {
 		return "!";
 	}
 	@Override
+	public Expression reshape(Manipulator m) {
+		return m.reshapeNot(this);
+	}
+
+	@Override
 	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
 //		if(checker != null) {
 //			this.inner.checkAlwaysConsumed(checker, startNonTerminal, stack);
@@ -35,7 +40,7 @@ public class Not extends Unary {
 	public Expression checkTypestate(GrammarChecker checker, Typestate c) {
 		int t = this.inner.inferTypestate(null);
 		if(t == Typestate.ObjectType || t == Typestate.OperationType) {
-			this.inner = this.inner.removeASTOperator(Expression.CreateNonTerminal);
+			this.inner = this.inner.reshape(Manipulator.RemoveASTandRename);
 		}
 		return this;
 	}
