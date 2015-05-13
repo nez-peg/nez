@@ -1,6 +1,10 @@
 package nez.lang;
 
+import java.util.Map;
+import java.util.TreeMap;
+
 import nez.util.UList;
+import nez.util.UMap;
 
 public class Manipulator {
 	public final static Manipulator RemoveASTandRename = new ASTConstructionEliminator(true);
@@ -136,6 +140,10 @@ public class Manipulator {
 		return Factory.newEmpty(null);
 	}
 
+	protected final Expression fail(Expression e) {
+		return Factory.newFailure(null);
+	}
+
 }
 
 class ASTConstructionEliminator extends Manipulator {
@@ -143,12 +151,10 @@ class ASTConstructionEliminator extends Manipulator {
 	ASTConstructionEliminator(boolean renaming) {
 		this.renaming = renaming;
 	}
-
 	public void updateProductionAttribute(Production origProduction, Production newProduction) {
 		newProduction.transType = Typestate.BooleanType;
 		newProduction.minlen = origProduction.minlen;
 	}
-
 	@Override
 	public Expression reshapeNonTerminal(NonTerminal e) {
 		if(renaming) {
@@ -159,7 +165,6 @@ class ASTConstructionEliminator extends Manipulator {
 		}
 		return e;
 	}
-	
 	private Production removeASTOperator(Production p) {
 		if(p.inferTypestate(null) == Typestate.BooleanType) {
 			return p;
@@ -173,14 +178,13 @@ class ASTConstructionEliminator extends Manipulator {
 	}
 	
 	public Expression reshapeMatch(Match e) {
-		Expression inner = e.get(0).reshape(this);
-		return (e.get(0) != inner) ? Factory.newMatch(e.s, inner) : e;
+		return e.get(0).reshape(this);
 	}
-
+	
 	public Expression reshapeNew(New e) {
 		return empty(e);
 	}
-
+	
 	public Expression reshapeLink(Link e) {
 		return e.get(0).reshape(this);
 	}
@@ -196,14 +200,113 @@ class ASTConstructionEliminator extends Manipulator {
 	public Expression reshapeCapture(Capture e) {
 		return empty(e);
 	}
-
 	
-//	@Override
-//	public Expression removeASTOperator(boolean newNonTerminal) {
-//		return Factory.newEmpty(s);
-//	}
+}
 
-
+class ConditionAnlysis extends Manipulator {
+	Map<String, Boolean> undefedFlags;
+	ConditionAnlysis() {
+		undefedFlags = new TreeMap<String, Boolean> ();
+	}
 	
+	public Expression reshapeOnFlag(OnFlag p) {
+		String flagName = p.getFlagName();
+		if(p.predicate) {
+			if(undefedFlags.containsKey(flagName)) {
+				undefedFlags.remove(flagName);
+				Expression newe = p.get(0).reshape(this);
+				undefedFlags.put(flagName, false);
+				return newe;
+			}
+		}
+		else {
+			if(!undefedFlags.containsKey(flagName)) {
+				undefedFlags.put(flagName, false);
+				Expression newe = p.get(0).reshape(this);
+				undefedFlags.remove(flagName);
+				return newe;
+			}
+		}
+		return p.get(0).reshape(this);
+	}
+
+	public Expression reshapeIfFlag(IfFlag p) {
+		String flagName = p.getFlagName();
+		if(p.predicate) {
+			if(undefedFlags.containsKey(flagName)) {
+				return fail(p);
+			}
+			return empty(p);
+		}
+		if(!undefedFlags.containsKey(flagName)) {
+			return fail(p);
+		}
+		return empty(p);
+	}
+
+	public Expression reshapeNonTerminal(NonTerminal n) {
+		Production r = elminateFlag(n.getProduction());
+		if(r != n.getProduction()) {
+			return Factory.newNonTerminal(n.s, r.getNameSpace(), r.getLocalName());
+		}
+		return n;
+	}
+	
+	private Production elminateFlag(Production p) {
+		if(undefedFlags.size() > 0) {
+			StringBuilder sb = new StringBuilder();
+			String localName = p.getLocalName();
+			int loc = localName.indexOf('!');
+			if(loc > 0) {
+				sb.append(localName.substring(0, loc));
+			}
+			else {
+				sb.append(localName);
+			}
+			for(String flagName: undefedFlags.keySet()) {
+				if(hasReachableFlag(p.getExpression(), flagName)) {
+					sb.append("!");
+					sb.append(flagName);
+				}
+			}
+			localName = sb.toString();
+			Production newp = p.getNameSpace().getProduction(localName);
+			if(newp == null) {
+				newp = p.getNameSpace().newReducedProduction(localName, p, this);
+			}
+			return newp;
+		}
+		return p;
+	}
+
+	public static boolean hasReachableFlag(Expression e, String flagName) {
+		return hasReachableFlag(e, flagName, new UMap<String>());
+	}
+
+	public static boolean hasReachableFlag(Expression e, String flagName, UMap<String> visited) {
+		if(e instanceof OnFlag) {
+			if(flagName.equals(((OnFlag) e).flagName)) {
+				return false;
+			}
+		}
+		for(Expression se : e) {
+			if(hasReachableFlag(se, flagName, visited)) {
+				return true;
+			}
+		}
+		if(e instanceof IfFlag) {
+			return flagName.equals(((IfFlag) e).flagName);
+		}
+		if(e instanceof NonTerminal) {
+			NonTerminal ne = (NonTerminal)e;
+			String un = ne.getUniqueName();
+			if(!visited.hasKey(un)) {
+				visited.put(un, un);
+				Production r = ne.getProduction();
+				return hasReachableFlag(r.body, flagName, visited);
+			}
+		}
+		return false;
+	}
 
 }

@@ -66,36 +66,6 @@ public abstract class Expression extends AbstractList<Expression> {
 	//public abstract Expression removeASTOperator(boolean newNonTerminal);
 	public abstract Expression removeFlag(TreeMap<String, String> undefedFlags);
 	
-	public static boolean hasReachableFlag(Expression e, String flagName, UMap<String> visited) {
-		if(e instanceof WithFlag) {
-			if(flagName.equals(((WithFlag) e).flagName)) {
-				return false;
-			}
-		}
-		for(Expression se : e) {
-			if(hasReachableFlag(se, flagName, visited)) {
-				return true;
-			}
-		}
-		if(e instanceof IfFlag) {
-			return flagName.equals(((IfFlag) e).flagName);
-		}
-		if(e instanceof NonTerminal) {
-			NonTerminal ne = (NonTerminal)e;
-			String un = ne.getUniqueName();
-			if(!visited.hasKey(un)) {
-				visited.put(un, un);
-				Production r = ne.getProduction();
-				return hasReachableFlag(r.body, flagName, visited);
-			}
-		}
-		return false;
-	}
-
-	public static boolean hasReachableFlag(Expression e, String flagName) {
-		return hasReachableFlag(e, flagName, new UMap<String>());
-	}
-
 	public abstract short acceptByte(int ch, int option);
 //	public  boolean predict(int option, int ch, boolean k) {return false;}  // 
 //	public abstract void predict(int option, boolean[] dfa);

@@ -159,14 +159,6 @@ public class NameSpace {
 		return r;
 	}
 	
-	public Production newProduction(String localName, Production p, TreeMap<String, Boolean> undefedFlags) {
-		Production r = p.newProduction(localName);
-		this.ruleMap.put(localName, r);
-		addProduction(r);
-		r.setExpression(Analysis.elminateFlag(r.getExpression(), undefedFlags));
-		return r;
-	}
-
 		
 //	public int getRuleSize() {
 //		return this.ruleMap.size();

@@ -206,7 +206,7 @@ public class Production extends Expression {
 				sb.append(this.name);
 			}
 			for(String flag: undefedFlags.keySet()) {
-				if(Expression.hasReachableFlag(this.body, flag)) {
+				if(ConditionAnlysis.hasReachableFlag(this.body, flag)) {
 					sb.append("!");
 					sb.append(flag);
 				}
