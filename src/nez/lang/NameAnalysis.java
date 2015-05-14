@@ -103,6 +103,4 @@ class StructualAnalysis extends Manipulator {
 		}
 		return r;
 	}
-
-	
 }
