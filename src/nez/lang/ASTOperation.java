@@ -29,13 +29,6 @@ public abstract class ASTOperation extends Expression {
 	public int inferTypestate(UMap<String> visited) {
 		return Typestate.OperationType;
 	}
-	public Expression checkTypestate(GrammarChecker checker, Typestate c, String operator) {
-		if(c.required != Typestate.OperationType) {
-			checker.reportWarning(s, "unexpected " + operator + " .. => removed!");
-			return Factory.newEmpty(s);
-		}
-		return this;
-	}
 	@Override
 	public short acceptByte(int ch, int option) {
 		return Prediction.Unconsumed;

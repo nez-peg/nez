@@ -37,23 +37,6 @@ public class Link extends Unary {
 		return Typestate.OperationType;
 	}
 	@Override
-	public Expression checkTypestate(GrammarChecker checker, Typestate c) {
-		if(c.required != Typestate.OperationType) {
-			checker.reportWarning(s, "unexpected @ => removed");
-			this.inner = this.inner.reshape(Manipulator.RemoveASTandRename);
-		}
-		c.required = Typestate.ObjectType;
-		Expression inn = inner.checkTypestate(checker, c);
-		if(c.required != Typestate.OperationType) {
-			checker.reportWarning(s, "no object created at @ => removed");
-			c.required = Typestate.OperationType;
-			return inn;
-		}
-		c.required = Typestate.OperationType;
-		this.inner = inn;
-		return this;
-	}
-	@Override
 	public short acceptByte(int ch, int option) {
 		return inner.acceptByte(ch, option);
 	}

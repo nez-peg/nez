@@ -510,16 +510,16 @@ public class Factory {
 		return internImpl(s, new Block(s, e));
 	}
 
-	public static Expression newDefSymbol(SourcePosition s, Tag table, Expression e) {
-		return internImpl(s, new DefSymbol(s, table, e));
+	public static Expression newDefSymbol(SourcePosition s, NameSpace ns, Tag tableName, Expression e) {
+		return internImpl(s, new DefSymbol(s, ns, tableName, e));
 	}
 
-	public static Expression newIsSymbol(SourcePosition s, Tag table) {
-		return internImpl(s, new IsSymbol(s, /*checkLastSymbolOnly*/true, table));
+	public static Expression newIsSymbol(SourcePosition s, NameSpace ns,  Tag tableName) {
+		return internImpl(s, new IsSymbol(s, ns, tableName, /*checkLastSymbolOnly*/true));
 	}
 	
-	public static Expression newIsaSymbol(SourcePosition s, Tag table) {
-		return internImpl(s, new IsSymbol(s, /*checkLastSymbolOnly*/false, table));
+	public static Expression newIsaSymbol(SourcePosition s, NameSpace ns, Tag tableName) {
+		return internImpl(s, new IsSymbol(s, ns, tableName, /*checkLastSymbolOnly*/false));
 	}
 
 	public static Expression newDefIndent(SourcePosition s) {

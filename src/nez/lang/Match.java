@@ -35,10 +35,6 @@ public class Match extends Unary {
 		return Typestate.BooleanType;
 	}
 	@Override
-	public Expression checkTypestate(GrammarChecker checker, Typestate c) {
-		return this.inner.reshape(Manipulator.RemoveASTandRename);
-	}
-	@Override
 	public short acceptByte(int ch, int option) {
 		return this.inner.acceptByte(ch, option);
 	}

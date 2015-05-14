@@ -37,14 +37,6 @@ public class Not extends Unary {
 		return Typestate.BooleanType;
 	}
 	@Override
-	public Expression checkTypestate(GrammarChecker checker, Typestate c) {
-		int t = this.inner.inferTypestate(null);
-		if(t == Typestate.ObjectType || t == Typestate.OperationType) {
-			this.inner = this.inner.reshape(Manipulator.RemoveASTandRename);
-		}
-		return this;
-	}
-	@Override
 	public short acceptByte(int ch, int option) {
 		/* The code below works only if a single character in !(e) */
 		/* we must accept 'i' for !'int' 'i' */

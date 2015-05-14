@@ -108,29 +108,6 @@ public class NonTerminal extends Expression {
 		Production r = this.getProduction();
 		return r.inferTypestate(visited);
 	}
-	@Override
-	public Expression checkTypestate(GrammarChecker checker, Typestate c) {
-		Production r = this.getProduction();
-		int t = r.inferTypestate();
-		if(t == Typestate.BooleanType) {
-			return this;
-		}
-		if(c.required == Typestate.ObjectType) {
-			if(t == Typestate.OperationType) {
-				checker.reportWarning(s, "unexpected AST operations => removed!!");
-				return this.reshape(Manipulator.RemoveASTandRename);
-			}
-			c.required = Typestate.OperationType;
-			return this;
-		}
-		if(c.required == Typestate.OperationType) {
-			if(t == Typestate.ObjectType) {
-				checker.reportWarning(s, "expected @ => inserted!!");
-				return Factory.newLink(this.s, this, -1);
-			}
-		}
-		return this;
-	}
 //	@Override
 //	public Expression removeASTOperator(boolean newNonTerminal) {
 //		if(newNonTerminal) {

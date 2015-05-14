@@ -1,7 +1,5 @@
 package nez.lang;
 
-import java.util.TreeMap;
-
 import nez.ast.SourcePosition;
 import nez.runtime.Instruction;
 import nez.runtime.RuntimeCompiler;
@@ -51,23 +49,6 @@ public class New extends Unconsumed {
 	@Override
 	public int inferTypestate(UMap<String> visited) {
 		return Typestate.ObjectType;
-	}
-	@Override
-	public Expression checkTypestate(GrammarChecker checker, Typestate c) {
-		if(this.lefted) {
-			if(c.required != Typestate.OperationType) {
-				checker.reportWarning(s, "unexpected {@ .. => removed!!");
-				return this.reshape(Manipulator.RemoveASTandRename);
-			}
-		}
-		else {
-			if(c.required != Typestate.ObjectType) {
-				checker.reportWarning(s, "unexpected { .. => removed!");
-				return Factory.newEmpty(s);
-			}
-		}
-		c.required = Typestate.OperationType;
-		return this;
 	}
 	@Override
 	public Instruction encode(RuntimeCompiler bc, Instruction next) {

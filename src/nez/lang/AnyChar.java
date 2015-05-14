@@ -34,10 +34,6 @@ public class AnyChar extends Terminal {
 	public int inferTypestate(UMap<String> visited) {
 		return Typestate.BooleanType;
 	}
-	@Override
-	public Expression checkTypestate(GrammarChecker checker, Typestate c) {
-		return this;
-	}
 	
 	@Override
 	public short acceptByte(int ch, int option) {

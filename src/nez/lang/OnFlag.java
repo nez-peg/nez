@@ -47,11 +47,6 @@ public class OnFlag extends Unary {
 	public int inferTypestate(UMap<String> visited) {
 		return this.inner.inferTypestate(visited);
 	}
-	@Override
-	public Expression checkTypestate(GrammarChecker checker, Typestate c) {
-		this.inner = this.inner.checkTypestate(checker, c);
-		return this;
-	}
 
 	@Override
 	public short acceptByte(int ch, int option) {

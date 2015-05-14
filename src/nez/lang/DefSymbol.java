@@ -8,18 +8,34 @@ import nez.util.UList;
 import nez.util.UMap;
 
 public class DefSymbol extends Unary {
-	public final Tag table;
-	DefSymbol(SourcePosition s, Tag table, Expression inner) {
+	public final Tag tableName;
+	public final NameSpace ns;
+	
+	DefSymbol(SourcePosition s, NameSpace ns, Tag table, Expression inner) {
 		super(s, inner);
-		this.table = table;
+		this.ns = ns;
+		this.tableName = table;
 	}
+
+	public final NameSpace getNameSpace() {
+		return ns;
+	}
+	
+	public final Tag getTable() {
+		return tableName;
+	}
+
+	public final String getTableName() {
+		return tableName.getName();
+	}
+
 	@Override
 	public String getPredicate() {
-		return "def " + table.name;
+		return "def " + tableName.getName();
 	}
 	@Override
 	public String getInterningKey() {
-		return "def " + table.getName();
+		return "def " + tableName.getName();
 	}
 	@Override
 	public Expression reshape(Manipulator m) {
@@ -31,28 +47,17 @@ public class DefSymbol extends Unary {
 		return true;
 	}
 	@Override void checkPhase1(GrammarChecker checker, String ruleName, UMap<String> visited, int depth) {
-		checker.setSymbolExpresion(table.getName(), this.inner);
+		checker.setSymbolExpresion(tableName.getName(), this.inner);
 	}
 	@Override void checkPhase2(GrammarChecker checker) {
-		if(!this.inner.isAlwaysConsumed()) {
-			checker.reportWarning(s, "possible zero-length symbol: " + this.inner);
-		}
 	}
 	@Override
 	public int inferTypestate(UMap<String> visited) {
 		return Typestate.BooleanType;
 	}
 	@Override
-	public Expression checkTypestate(GrammarChecker checker, Typestate c) {
-		int t = this.inner.inferTypestate(null);
-		if(t != Typestate.BooleanType) {
-			this.inner = this.inner.reshape(Manipulator.RemoveASTandRename);
-		}
-		return this;
-	}
-	@Override
 	Expression dupUnary(Expression e) {
-		return (this.inner != e) ? Factory.newDefSymbol(this.s, this.table, e) : this;
+		return (this.inner != e) ? Factory.newDefSymbol(this.s, this.ns, this.tableName, e) : this;
 	}
 	@Override
 	public short acceptByte(int ch, int option) {
@@ -97,7 +102,7 @@ public class DefSymbol extends Unary {
 		StringBuilder sb2 = new StringBuilder();
 		inner.examplfy(gep, sb2, p);
 		String token = sb2.toString();
-		gep.addTable(table, token);
+		gep.addTable(tableName, token);
 		sb.append(token);
 	}
 	

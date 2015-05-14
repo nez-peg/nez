@@ -26,10 +26,6 @@ public class IsIndent extends Terminal {
 		return false;
 	}
 	@Override
-	public Expression checkTypestate(GrammarChecker checker, Typestate c) {
-		return this;
-	}
-	@Override
 	public short acceptByte(int ch, int option) {
 		if (ch == '\t' || ch == ' ') {
 			return Prediction.Accept;

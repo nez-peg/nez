@@ -48,7 +48,7 @@ public class Production extends Expression {
 	
 	@Override
 	public Expression reshape(Manipulator m) {
-		return this;
+		return m.reshapeProduction(this);
 	}
 
 	public final NameSpace getNameSpace() {
@@ -155,40 +155,6 @@ public class Production extends Expression {
 		return this.transType;
 	}
 
-	@Override
-	public Expression checkTypestate(GrammarChecker checker, Typestate c) {
-		int t = checkNamingConvention(this.name);
-		c.required = this.inferTypestate(null);
-		if(t != Typestate.Undefined && c.required != t) {
-			checker.reportNotice(s, "invalid naming convention: " + this.name);
-		}
-		this.body = this.getExpression().checkTypestate(checker, c);
-		return this;
-	}
-
-	public final static int checkNamingConvention(String ruleName) {
-		int start = 0;
-		if(ruleName.startsWith("~") || ruleName.startsWith("\"")) {
-			return Typestate.BooleanType;
-		}
-		for(;ruleName.charAt(start) == '_'; start++) {
-			if(start + 1 == ruleName.length()) {
-				return Typestate.BooleanType;
-			}
-		}
-		boolean firstUpperCase = Character.isUpperCase(ruleName.charAt(start));
-		for(int i = start+1; i < ruleName.length(); i++) {
-			char ch = ruleName.charAt(i);
-			if(ch == '!') break; // option
-			if(Character.isUpperCase(ch) && !firstUpperCase) {
-				return Typestate.OperationType;
-			}
-			if(Character.isLowerCase(ch) && firstUpperCase) {
-				return Typestate.ObjectType;
-			}
-		}
-		return firstUpperCase ? Typestate.BooleanType : Typestate.Undefined;
-	}
 //
 //	public final void removeExpressionFlag(TreeMap<String, String> undefedFlags) {
 //		this.body = this.body.removeFlag(undefedFlags).intern();

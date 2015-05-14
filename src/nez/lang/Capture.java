@@ -23,10 +23,6 @@ public class Capture extends ASTOperation {
 		return m.reshapeCapture(this);
 	}
 
-	@Override
-	public Expression checkTypestate(GrammarChecker checker, Typestate c) {
-		return this.checkTypestate(checker, c, "}");
-	}
 	
 	@Override
 	public Instruction encode(RuntimeCompiler bc, Instruction next) {

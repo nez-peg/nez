@@ -47,16 +47,6 @@ public class Choice extends SequentialExpression {
 		return Typestate.BooleanType;
 	}
 	@Override
-	public Expression checkTypestate(GrammarChecker checker, Typestate c) {
-		int required = c.required;
-		UList<Expression> l = newList();
-		for(Expression e : this) {
-			c.required = required;
-			Factory.addChoice(l, e.checkTypestate(checker, c));
-		}
-		return Factory.newChoice(this.s, l);
-	}
-	@Override
 	public short acceptByte(int ch, int option) {
 		boolean hasUnconsumed = false;
 		for(int i = 0; i < this.size(); i++) {

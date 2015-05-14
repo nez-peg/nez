@@ -31,18 +31,6 @@ public class And extends Unary {
 		}
 		return t;
 	}
-	@Override
-	public Expression checkTypestate(GrammarChecker checker, Typestate c) {
-		if(c.required == Typestate.ObjectType) {
-			c.required = Typestate.BooleanType;
-			this.inner = this.inner.checkTypestate(checker, c);
-			c.required = Typestate.ObjectType;
-		}
-		else {
-			this.inner = this.inner.checkTypestate(checker, c);
-		}
-		return this;
-	}
 
 	@Override
 	public short acceptByte(int ch, int option) {

@@ -17,6 +17,10 @@ public class Manipulator {
 	public void updateProductionAttribute(Production origProduction, Production newProduction) {
 		
 	}
+	
+	public Expression reshapeProduction(Production p) {
+		return p;
+	}
 
 	public Expression reshapeEmpty(Empty e) {
 		return e;
@@ -58,34 +62,35 @@ public class Manipulator {
 		return Factory.newChoice(e.s, l);
 	}
 
+
 	public Expression reshapeOption(Option e) {
 		Expression inner = e.get(0).reshape(this);
-		return (e.get(0) != inner) ? Factory.newOption(e.s, inner) : e;
+		return update(e, inner);
 	}
 
 	public Expression reshapeRepetition(Repetition e) {
 		Expression inner = e.get(0).reshape(this);
-		return (e.get(0) != inner) ? Factory.newRepetition(e.s, inner) : e;
+		return update(e, inner);
 	}
 
 	public Expression reshapeRepetition1(Repetition1 e) {
 		Expression inner = e.get(0).reshape(this);
-		return (e.get(0) != inner) ? Factory.newRepetition1(e.s, inner) : e;
+		return update(e, inner);
 	}
 
 	public Expression reshapeAnd(And e) {
 		Expression inner = e.get(0).reshape(this);
-		return (e.get(0) != inner) ? Factory.newAnd(e.s, inner) : e;
+		return update(e, inner);
 	}
 
 	public Expression reshapeNot(Not e) {
 		Expression inner = e.get(0).reshape(this);
-		return (e.get(0) != inner) ? Factory.newNot(e.s, inner) : e;
+		return update(e, inner);
 	}
 
 	public Expression reshapeMatch(Match e) {
 		Expression inner = e.get(0).reshape(this);
-		return (e.get(0) != inner) ? Factory.newMatch(e.s, inner) : e;
+		return update(e, inner);
 	}
 
 	public Expression reshapeNew(New e) {
@@ -94,7 +99,7 @@ public class Manipulator {
 
 	public Expression reshapeLink(Link e) {
 		Expression inner = e.get(0).reshape(this);
-		return (e.get(0) != inner) ? Factory.newLink(e.s, inner, e.index) : e;
+		return update(e, inner);
 	}
 
 	public Expression reshapeTagging(Tagging e) {
@@ -111,12 +116,12 @@ public class Manipulator {
 	
 	public Expression reshapeBlock(Block e) {
 		Expression inner = e.get(0).reshape(this);
-		return (e.get(0) != inner) ? Factory.newBlock(e.s, inner) : e;
+		return update(e, inner);
 	}
 
 	public Expression reshapeDefSymbol(DefSymbol e) {
 		Expression inner = e.get(0).reshape(this);
-		return (e.get(0) != inner) ? Factory.newDefSymbol(e.s, e.table, inner) : e;
+		return update(e, inner);
 	}
 
 	public Expression reshapeIsSymbol(IsSymbol e) {
@@ -133,7 +138,7 @@ public class Manipulator {
 	
 	public Expression reshapeOnFlag(OnFlag e) {
 		Expression inner = e.get(0).reshape(this);
-		return (e.get(0) != inner) ? Factory.newOnFlag(e.s, e.predicate, e.flagName, inner) : e;
+		return update(e, inner);
 	}
 
 	protected final Expression empty(Expression e) {
@@ -144,7 +149,47 @@ public class Manipulator {
 		return Factory.newFailure(null);
 	}
 
+	protected final Expression update(Option e, Expression inner) {
+		return (e.get(0) != inner) ? Factory.newOption(e.s, inner) : e;
+	}
+
+	protected final Expression update(Repetition e, Expression inner) {
+		return (e.get(0) != inner) ? Factory.newRepetition(e.s, inner) : e;
+	}
+
+	protected final Expression update(Repetition1 e, Expression inner) {
+		return (e.get(0) != inner) ? Factory.newRepetition1(e.s, inner) : e;
+	}
+
+	protected final Expression update(And e, Expression inner) {
+		return (e.get(0) != inner) ? Factory.newAnd(e.s, inner) : e;
+	}
+
+	protected final Expression update(Not e, Expression inner) {
+		return (e.get(0) != inner) ? Factory.newNot(e.s, inner) : e;
+	}
+	
+	protected final Expression update(Match e, Expression inner) {
+		return (e.get(0) != inner) ? Factory.newMatch(e.s, inner) : e;
+	}
+
+	protected final Expression update(Link e, Expression inner) {
+		return (e.get(0) != inner) ? Factory.newLink(e.s, inner, e.index) : e;
+	}
+	protected final Expression update(Block e, Expression inner) {
+		return (e.get(0) != inner) ? Factory.newBlock(e.s, inner) : e;
+	}
+	protected final Expression update(DefSymbol e, Expression inner) {
+		return (e.get(0) != inner) ? Factory.newDefSymbol(e.s, e.getNameSpace(), e.getTable(), inner) : e;
+	}
+	protected final Expression update(OnFlag e, Expression inner) {
+		return (e.get(0) != inner) ? Factory.newOnFlag(e.s, e.predicate, e.flagName, inner) : e;
+	}
+
+
 }
+
+
 
 class ASTConstructionEliminator extends Manipulator {
 	boolean renaming ;

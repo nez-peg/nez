@@ -83,7 +83,7 @@ public class GrammarChecker {
 			if(r.refCount == 0 && !r.isPublic && !specialRuleName(r.getLocalName())) {
 				this.reportWarning(r.s, "unused nonterminal definition");
 			}
-			r.checkTypestate(this, new Typestate());
+			r.reshape(new Typestate(this));
 		}		
 		// interning
 		for(Production r: grammar.getRuleList()) {

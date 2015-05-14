@@ -53,14 +53,6 @@ public class Sequence extends SequentialExpression {
 		}
 		return Typestate.BooleanType;
 	}
-	@Override
-	public Expression checkTypestate(GrammarChecker checker, Typestate c) {
-		UList<Expression> l = newList();
-		for(Expression e : this) {
-			Factory.addSequence(l, e.checkTypestate(checker, c));
-		}
-		return Factory.newSequence(s, l);
-	}
 
 	@Override
 	public short acceptByte(int ch, int option) {

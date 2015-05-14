@@ -24,10 +24,6 @@ public class Replace extends ASTOperation {
 		return m.reshapeReplace(this);
 	}
 	@Override
-	public Expression checkTypestate(GrammarChecker checker, Typestate c) {
-		return this.checkTypestate(checker, c, "`" + value + "`");
-	}
-	@Override
 	public Instruction encode(RuntimeCompiler bc, Instruction next) {
 		return bc.encodeReplace(this, next);
 	}

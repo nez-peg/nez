@@ -56,7 +56,7 @@ public abstract class Expression extends AbstractList<Expression> {
 	}
 	
 	public abstract int inferTypestate(UMap<String> visited);
-	public abstract Expression checkTypestate(GrammarChecker checker, Typestate c);
+//	public abstract Expression checkTypestate(GrammarChecker checker, Typestate c);
 	
 //	public final static boolean CreateNonTerminal = true;
 //	public final static boolean RemoveOnly = false;

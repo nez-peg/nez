@@ -33,11 +33,6 @@ public class WithoutFlag extends Unary {
 		return this.inner.inferTypestate(visited);
 	}
 	@Override
-	public Expression checkTypestate(GrammarChecker checker, Typestate c) {
-		this.inner = this.inner.checkTypestate(checker, c);
-		return this;
-	}
-	@Override
 	public short acceptByte(int ch, int option) {
 		return this.inner.acceptByte(ch, option);
 	}

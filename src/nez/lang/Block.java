@@ -22,19 +22,17 @@ public class Block extends Unary {
 	Expression dupUnary(Expression e) {
 		return (this.inner != e) ? Factory.newBlock(this.s, e) : this;
 	}
+	
 	@Override
 	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
 		return this.inner.checkAlwaysConsumed(checker, startNonTerminal, stack);
 	}
+	
 	@Override
 	public int inferTypestate(UMap<String> visited) {
 		return this.inner.inferTypestate(visited);
 	}
-	@Override
-	public Expression checkTypestate(GrammarChecker checker, Typestate c) {
-		this.inner = this.inner.checkTypestate(checker, c);
-		return this;
-	}
+
 	@Override
 	public short acceptByte(int ch, int option) {
 		return this.inner.acceptByte(ch, option);

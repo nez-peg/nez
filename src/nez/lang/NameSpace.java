@@ -401,15 +401,15 @@ public class NameSpace {
 	}
 
 	public final Expression newDefSymbol(SourcePosition s, String table, Expression ... seq) {
-		return Factory.newDefSymbol(src(), Tag.tag(table), newSequence(seq));
+		return Factory.newDefSymbol(src(), this, Tag.tag(table), newSequence(seq));
 	}
 
 	public final Expression newIsSymbol(SourcePosition s, String table) {
-		return Factory.newIsSymbol(src(), Tag.tag(table));
+		return Factory.newIsSymbol(src(), this, Tag.tag(table));
 	}
 	
 	public final Expression newIsaSymbol(SourcePosition s, String table) {
-		return Factory.newIsaSymbol(src(), Tag.tag(table));
+		return Factory.newIsaSymbol(src(), this, Tag.tag(table));
 	}
 
 	public final Expression newDefIndent(SourcePosition s) {

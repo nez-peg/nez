@@ -52,20 +52,6 @@ public class Repetition extends Unary {
 		}
 		return t;
 	}
-	@Override
-	public Expression checkTypestate(GrammarChecker checker, Typestate c) {
-		int required = c.required;
-		Expression inn = this.inner.checkTypestate(checker, c);
-		if(required != Typestate.OperationType && c.required == Typestate.OperationType) {
-			checker.reportWarning(s, "unable to create objects in repetition => removed!!");
-			this.inner = inn.reshape(Manipulator.RemoveASTandRename);
-			c.required = required;
-		}
-		else {
-			this.inner = inn;
-		}
-		return this;
-	}
 
 	@Override public short acceptByte(int ch, int option) {
 		return Prediction.acceptOption(this, ch, option);

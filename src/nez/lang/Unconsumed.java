@@ -31,10 +31,6 @@ abstract class Unconsumed extends Expression {
 		return Typestate.BooleanType;
 	}
 	@Override
-	public Expression checkTypestate(GrammarChecker checker, Typestate c) {
-		return this;
-	}
-	@Override
 	public short acceptByte(int ch, int option) {
 		return Prediction.Unconsumed;
 	}
