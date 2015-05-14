@@ -36,6 +36,11 @@ public class OnFlag extends Unary {
 	}
 
 	@Override
+	public boolean isConsumed(Stacker stacker) {
+		return this.inner.isConsumed(stacker);
+	}
+
+	@Override
 	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
 		return inner.checkAlwaysConsumed(checker, startNonTerminal, stack);
 	}

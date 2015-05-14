@@ -20,7 +20,7 @@ public class New extends Unconsumed {
 		return "new";
 	}
 	@Override
-	public String getInterningKey() {
+	public String key() {
 		String s = lefted ? "{@" : "{";
 		return (shift != 0) ? s + "[" + shift + "]" : s;
 	}
@@ -28,6 +28,12 @@ public class New extends Unconsumed {
 	public Expression reshape(Manipulator m) {
 		return m.reshapeNew(this);
 	}
+
+	@Override
+	public boolean isConsumed(Stacker stacker) {
+		return false;
+	}
+
 	@Override
 	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
 		return false;
@@ -40,11 +46,6 @@ public class New extends Unconsumed {
 			return false;
 		}
 		return false; 
-	}
-	@Override void checkPhase2(GrammarChecker checker) {
-		if(this.lefted && this.outer == null) {
-			checker.reportError(s, "expected repetition for " + this);
-		}
 	}
 	@Override
 	public int inferTypestate(UMap<String> visited) {

@@ -18,12 +18,23 @@ public class Choice extends SequentialExpression {
 		return "/";
 	}
 	@Override
-	public String getInterningKey() {
+	public String key() {
 		return "/";
 	}
 	@Override
 	public Expression reshape(Manipulator m) {
 		return m.reshapeChoice(this);
+	}
+	
+	@Override
+	public boolean isConsumed(Stacker stacker) {
+		boolean afterAll = true;
+		for(Expression e: this) {
+			if(!e.isConsumed(stacker)) {
+				afterAll = false;
+			}
+		}
+		return afterAll;
 	}
 
 	@Override

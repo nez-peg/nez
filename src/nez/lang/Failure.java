@@ -13,13 +13,18 @@ public class Failure extends Unconsumed {
 		return "fail";
 	}
 	@Override
-	public String getInterningKey() {
+	public String key() {
 		return "!!";
 	}
 	@Override
 	public Expression reshape(Manipulator m) {
 		return m.reshapeFailure(this);
 	}
+	@Override
+	public boolean isConsumed(Stacker stacker) {
+		return true;
+	}
+
 	@Override
 	public short acceptByte(int ch, int option) {
 		return Prediction.Reject;

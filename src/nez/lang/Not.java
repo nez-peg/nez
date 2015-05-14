@@ -17,12 +17,17 @@ public class Not extends Unary {
 		return "!";
 	}
 	@Override
-	public String getInterningKey() { 
+	public String key() { 
 		return "!";
 	}
 	@Override
 	public Expression reshape(Manipulator m) {
 		return m.reshapeNot(this);
+	}
+
+	@Override
+	public boolean isConsumed(Stacker stacker) {
+		return false;
 	}
 
 	@Override

@@ -10,34 +10,32 @@ public class Repetition extends Unary {
 	public boolean possibleInfiniteLoop = false;
 	Repetition(SourcePosition s, Expression e) {
 		super(s, e);
+		e.setOuterLefted(this);
 	}
 	@Override
 	public String getPredicate() { 
 		return "*";
 	}
 	@Override
-	public String getInterningKey() { 
+	public String key() { 
 		return "*";
 	}
 	@Override
 	public Expression reshape(Manipulator m) {
 		return m.reshapeRepetition(this);
 	}
+
+	@Override
+	public boolean isConsumed(Stacker stacker) {
+		return false;
+	}
+
 	@Override
 	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
 //		if(checker != null) {
 //			this.inner.checkAlwaysConsumed(checker, startNonTerminal, stack);
 //		}
 		return false;
-	}
-	@Override void checkPhase1(GrammarChecker checker, String ruleName, UMap<String> visited, int depth) {
-		this.inner.setOuterLefted(this);
-	}
-	@Override void checkPhase2(GrammarChecker checker) {
-		if(!this.inner.checkAlwaysConsumed(checker, null, null)) {
-			checker.reportError(s, "unconsumed repetition");
-			this.possibleInfiniteLoop = true;
-		}
 	}
 
 	@Override

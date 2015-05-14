@@ -38,13 +38,23 @@ public class IsSymbol extends Terminal {
 		return (checkLastSymbolOnly ? "is " : "isa ") + tableName.getName();
 	}
 	@Override
-	public String getInterningKey() {
+	public String key() {
 		return this.getPredicate();
 	}
 	@Override
 	public Expression reshape(Manipulator m) {
 		return m.reshapeIsSymbol(this);
 	}
+	
+	@Override
+	public boolean isConsumed(Stacker stacker) {
+		Expression inner = this.getSymbolExpression();
+		if(inner != null) {
+			return inner.isConsumed(stacker);
+		}
+		return false;
+	}
+
 	@Override
 	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
 		return true;

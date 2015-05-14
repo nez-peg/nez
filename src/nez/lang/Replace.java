@@ -16,8 +16,12 @@ public class Replace extends ASTOperation {
 		return "replace " + StringUtils.quoteString('"', value, '"');
 	}
 	@Override
-	public String getInterningKey() {
+	public String key() {
 		return "`" + this.value;
+	}
+	@Override
+	public boolean isConsumed(Stacker stacker) {
+		return false;
 	}
 	@Override
 	public Expression reshape(Manipulator m) {

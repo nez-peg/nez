@@ -81,7 +81,6 @@ public class NameSpace {
 
 	// static 
 	
-	
 	final int             id;
 	final String          urn;
 	final String          ns;
@@ -420,8 +419,29 @@ public class NameSpace {
 		return Factory.newIndent(src());
 	}
 
+	// reporting errors
+	
+	boolean strictMode = true;
+	
+	public final void reportError(Expression p, String message) {
+		if(p.s != null) {
+			ConsoleUtils.println(p.s.formatSourceMessage("error", message));
+		}
+	}
 
+	public final void reportWarning(Expression p, String message) {
+		if(p.s != null) {
+			ConsoleUtils.println(p.s.formatSourceMessage("warning", message));
+		}
+	}
 
+	public final void reportNotice(Expression p, String message) {
+		if(this.strictMode) {
+			if(p.s != null) {
+				ConsoleUtils.println(p.s.formatSourceMessage("notice", message));
+			}
+		}
+	}
 
 
 

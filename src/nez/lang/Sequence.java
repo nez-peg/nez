@@ -18,13 +18,24 @@ public class Sequence extends SequentialExpression {
 		return "seq";
 	}	
 	@Override
-	public String getInterningKey() {
+	public String key() {
 		return " ";
 	}
 	@Override
 	public Expression reshape(Manipulator m) {
 		return m.reshapeSequence(this);
 	}
+
+	@Override
+	public boolean isConsumed(Stacker stacker) {
+		for(Expression e: this) {
+			if(e.isConsumed(stacker)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	@Override
 	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
 		for(Expression e: this) {

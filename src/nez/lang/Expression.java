@@ -39,7 +39,7 @@ public abstract class Expression extends AbstractList<Expression> {
 	}
 
 	public abstract String getPredicate();
-	public abstract String getInterningKey();
+	public abstract String key();
 	public abstract Expression reshape(Manipulator m);
 	
 	public final boolean isAlwaysConsumed() {
@@ -47,8 +47,11 @@ public abstract class Expression extends AbstractList<Expression> {
 	}
 	public abstract boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack);
 	
-	void checkPhase1(GrammarChecker checker, String ruleName, UMap<String> visited, int depth) {}
-	void checkPhase2(GrammarChecker checker) {}
+	public abstract boolean isConsumed(Stacker stacker);
+	
+	
+//	void checkPhase1(GrammarChecker checker, String ruleName, UMap<String> visited, int depth) {}
+//	void checkPhase2(GrammarChecker checker) {}
 	boolean setOuterLefted(Expression outer) { return false; }
 	
 	public final int inferTypestate() {

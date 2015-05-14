@@ -11,22 +11,32 @@ public class ByteChar extends Terminal {
 		super(s);
 		this.byteChar = ch;
 	}
+	
 	@Override
 	public String getPredicate() {
 		return "byte " + byteChar;
 	}
+	
 	@Override
-	public String getInterningKey() { 
+	public String key() { 
 		return "'" + byteChar;
 	}
+	
 	@Override
 	public Expression reshape(Manipulator m) {
 		return m.reshapeByteChar(this);
 	}
+	
+	@Override
+	public boolean isConsumed(Stacker stacker) {
+		return true;
+	}
+
 	@Override
 	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
 		return true;
 	}
+	
 	@Override
 	public short acceptByte(int ch, int option) {
 		return (byteChar == ch) ? Prediction.Accept : Prediction.Reject;

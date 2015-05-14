@@ -33,24 +33,28 @@ public class DefSymbol extends Unary {
 	public String getPredicate() {
 		return "def " + tableName.getName();
 	}
+	
 	@Override
-	public String getInterningKey() {
+	public String key() {
 		return "def " + tableName.getName();
 	}
+
 	@Override
 	public Expression reshape(Manipulator m) {
 		return m.reshapeDefSymbol(this);
 	}
+	
+	@Override
+	public boolean isConsumed(Stacker stacker) {
+		return this.inner.isConsumed(stacker);
+	}
+
 	@Override
 	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
 		this.inner.checkAlwaysConsumed(checker, startNonTerminal, stack);
 		return true;
 	}
-	@Override void checkPhase1(GrammarChecker checker, String ruleName, UMap<String> visited, int depth) {
-		//checker.setSymbolExpresion(tableName.getName(), this.inner);
-	}
-	@Override void checkPhase2(GrammarChecker checker) {
-	}
+	
 	@Override
 	public int inferTypestate(UMap<String> visited) {
 		return Typestate.BooleanType;

@@ -18,7 +18,12 @@ public class Block extends Unary {
 	public Expression reshape(Manipulator m) {
 		return m.reshapeBlock(this);
 	}
-	
+
+	@Override
+	public boolean isConsumed(Stacker stacker) {
+		return this.inner.isConsumed(stacker);
+	}
+
 	@Override
 	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
 		return this.inner.checkAlwaysConsumed(checker, startNonTerminal, stack);

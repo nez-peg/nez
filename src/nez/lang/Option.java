@@ -9,25 +9,29 @@ import nez.util.UMap;
 public class Option extends Unary {
 	Option(SourcePosition s, Expression e) {
 		super(s, e);
+		e.setOuterLefted(this);
 	}
 	@Override
 	public String getPredicate() { 
 		return "?";
 	}
 	@Override
-	public String getInterningKey() { 
+	public String key() { 
 		return "?";
 	}
 	@Override
 	public Expression reshape(Manipulator m) {
 		return m.reshapeOption(this);
 	}
+
+	@Override
+	public boolean isConsumed(Stacker stacker) {
+		return false;
+	}
+
 	@Override
 	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
 		return false;
-	}
-	@Override void checkPhase1(GrammarChecker checker, String ruleName, UMap<String> visited, int depth) {
-		this.inner.setOuterLefted(this);
 	}
 
 	@Override

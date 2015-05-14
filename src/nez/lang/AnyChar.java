@@ -1,7 +1,5 @@
 package nez.lang;
 
-import java.util.TreeMap;
-
 import nez.ast.Source;
 import nez.ast.SourcePosition;
 import nez.runtime.Instruction;
@@ -14,18 +12,27 @@ public class AnyChar extends Terminal {
 	AnyChar(SourcePosition s) {
 		super(s);
 	}
+	
 	@Override
 	public String getPredicate() {
 		return "any";
 	}
+	
 	@Override
-	public String getInterningKey() { 
+	public String key() { 
 		return ".";
 	}
+	
 	@Override
 	public Expression reshape(Manipulator m) {
 		return m.reshapeAnyChar(this);
 	}
+
+	@Override
+	public boolean isConsumed(Stacker stacker) {
+		return true;
+	}
+
 	@Override
 	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
 		return true;

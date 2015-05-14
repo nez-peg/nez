@@ -60,16 +60,30 @@ public class GrammarChecker {
 	}
 	
 	public void verify(NameSpace grammar) {
-		UList<String> stack = new UList<String>(new String[64]);
-		UMap<String> visited = new UMap<String>();
+		NameAnalysis nameAnalyzer = new NameAnalysis();
+		for(Production p: grammar.getDefinedRuleList()) {
+			nameAnalyzer.reshapeProduction(p);
+		}
+		
+//		UList<String> stack = new UList<String>(new String[64]);
+//		UMap<String> visited = new UMap<String>();
 		for(Production r: grammar.getDefinedRuleList()) {
 			if(r.isTerminal) {
 				continue;
 			}
-			r.minlen = -1;  // reset for all checking
-			r.checkAlwaysConsumed(this, null, stack);
-			visited.clear();
-			checkPhase1(r.getExpression(), r.getUniqueName(), visited, 0);
+			if(AnalysisCache.hasRecursion(r)) {
+				if(r.minlen > 0) {
+					continue;
+				}
+				r.minlen = -1;  // reset for all checking
+				r.isConsumed(new Stacker(r, null));
+//				visited.clear();
+//				r.checkAlwaysConsumed(this, null, stack);
+			}
+//			if(r.minlen == -1) {
+////				visited.clear();
+//				r.checkAlwaysConsumed(this, null, stack);
+//			}
 		}
 		if(this.foundError) {
 			ConsoleUtils.exit(1, "FatalGrammarError");
@@ -79,10 +93,10 @@ public class GrammarChecker {
 			if(r.isTerminal) {
 				continue;
 			}
-			this.checkPhase2(r.getExpression());
-			if(r.refCount == 0 && !r.isPublic && !specialRuleName(r.getLocalName())) {
-				this.reportWarning(r.s, "unused nonterminal definition");
-			}
+//			this.checkPhase2(r.getExpression());
+//			if(r.refCount == 0 && !r.isPublic && !specialRuleName(r.getLocalName())) {
+//				this.reportWarning(r.s, "unused nonterminal definition");
+//			}
 			r.reshape(new Typestate(this));
 		}		
 		// interning
@@ -104,19 +118,19 @@ public class GrammarChecker {
 //		testExample(grammar);
 	}
 	
-	void checkPhase1(Expression p, String ruleName, UMap<String> visited, int depth) {
-		p.checkPhase1(this, ruleName, visited, depth);
-		for(Expression e: p) {
-			this.checkPhase1(e, ruleName, visited, depth);
-		}
-	}
-
-	void checkPhase2(Expression p) {
-		p.checkPhase2(this);
-		for(Expression e: p) {
-			this.checkPhase2(e);
-		}
-	}
+//	void checkPhase1(Expression p, String ruleName, UMap<String> visited, int depth) {
+//		p.checkPhase1(this, ruleName, visited, depth);
+//		for(Expression e: p) {
+//			this.checkPhase1(e, ruleName, visited, depth);
+//		}
+//	}
+//
+//	void checkPhase2(Expression p) {
+//		p.checkPhase2(this);
+//		for(Expression e: p) {
+//			this.checkPhase2(e);
+//		}
+//	}
 	
 //	private UMap<Expression> tableMap; 
 //

@@ -9,9 +9,9 @@ import nez.util.UList;
 import nez.util.UMap;
 
 public class NonTerminal extends Expression {
-	public NameSpace ns;
-	public String  localName;
-	String  uniqueName;
+	private NameSpace ns;
+	private String  localName;
+	private String  uniqueName;
 
 	public NonTerminal(SourcePosition s, NameSpace ns, String ruleName) {
 		super(s);
@@ -19,33 +19,17 @@ public class NonTerminal extends Expression {
 		this.localName = ruleName;
 		this.uniqueName = this.ns.uniqueName(this.localName);
 	}
-
-	@Override
-	public int size() {
-		return 0;
-	}
-
-	@Override
-	public Expression get(int index) {
-		return null;
-	}
 	
-	@Override
-	public String getInterningKey() {
-		return getUniqueName();
-	}
-
-	@Override
-	public String getPredicate() {
-		return getUniqueName();
-	}
-	@Override
-	public Expression reshape(Manipulator m) {
-		return m.reshapeNonTerminal(this);
+	public final NameSpace getNameSpace() {
+		return ns;
 	}
 
 	public final String getLocalName() {
 		return localName;
+	}
+
+	public final boolean isTerminal() {
+		return localName.startsWith("\"");
 	}
 
 	public final String getUniqueName() {
@@ -60,6 +44,46 @@ public class NonTerminal extends Expression {
 		Production r = this.ns.getProduction(this.localName);
 		return (r != null) ? r.getExpression() : null;
 	}
+
+	@Override
+	public int size() {
+		return 0;
+	}
+
+	@Override
+	public Expression get(int index) {
+		return null;
+	}
+	
+	@Override
+	public String key() {
+		return getUniqueName();
+	}
+
+	@Override
+	public String getPredicate() {
+		return getUniqueName();
+	}
+	@Override
+	public Expression reshape(Manipulator m) {
+		return m.reshapeNonTerminal(this);
+	}
+	
+	@Override
+	public boolean isConsumed(Stacker stacker) {
+		Production p = this.getProduction();
+		if(stacker != null) {
+			if(stacker.isVisited(p)) {
+				this.ns.reportError(this, "left recursion: " + this.localName);
+				return false;
+			}
+		}
+		if(p.minlen == -1) {
+			return p.isConsumed(new Stacker(p, stacker));
+		}
+		return p.isConsumed(stacker);
+	}
+
 	
 	@Override
 	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
@@ -76,31 +100,6 @@ public class NonTerminal extends Expression {
 			return r.checkAlwaysConsumed(checker, startNonTerminal, stack);
 		}
 		return false;
-	}
-
-	@Override void checkPhase1(GrammarChecker checker, String ruleName, UMap<String> visited, int depth) {
-		Production r = this.getProduction();
-		if(r == null) {
-			checker.reportWarning(s, "undefined rule: " + this.localName + " => created empty rule!!");
-			r = this.ns.newRule(this.localName, Factory.newEmpty(s));
-		}
-		if(depth == 0) {
-			r.refCount += 1;
-		}
-		if(!r.isRecursive) {
-			String u = r.getUniqueName();
-			if(u.equals(ruleName)) {
-				r.isRecursive = true;
-				if(r.isInline) {
-					checker.reportError(s, "recursion disallows inlining " + r.getLocalName());
-					r.isInline = false;
-				}
-			}
-			if(!visited.hasKey(u)) {
-				visited.put(u, ruleName);
-				checker.checkPhase1(r.getExpression(), ruleName, visited, depth+1);
-			}
-		}
 	}
 
 	@Override
@@ -159,6 +158,7 @@ public class NonTerminal extends Expression {
 	protected void examplfy(GEP gep, StringBuilder sb, int p) {
 		this.deReference().examplfy(gep, sb, p);
 	}
+
 
 
 }

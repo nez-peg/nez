@@ -17,13 +17,19 @@ public class Link extends Unary {
 		return (index != -1) ? "link " + index : "link";
 	}
 	@Override
-	public String getInterningKey() {
+	public String key() {
 		return (index != -1) ? "@" + index : "@";
 	}
 	@Override
 	public Expression reshape(Manipulator m) {
 		return m.reshapeLink(this);
 	}
+
+	@Override
+	public boolean isConsumed(Stacker stacker) {
+		return this.inner.isConsumed(stacker);
+	}
+
 	@Override
 	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
 		return this.inner.checkAlwaysConsumed(checker, startNonTerminal, stack);

@@ -31,6 +31,7 @@ public class Production extends Expression {
 		this.uname = ns.uniqueName(name);
 		this.body = (body == null) ? Factory.newEmpty(s) : body;
 		this.original = this;
+		this.minlen = StructualAnalysis.quickConsumedCheck(body);
 	}
 
 	private Production(String name, Production original, Expression body) {
@@ -40,16 +41,13 @@ public class Production extends Expression {
 		this.uname = ns.uniqueName(name);
 		this.body = (body == null) ? Factory.newEmpty(s) : body;
 		this.original = original;
+		this.minlen = StructualAnalysis.quickConsumedCheck(body);
 	}
 
 	Production newProduction(String localName) {
 		return new Production(name, this, this.getExpression());
 	}
 	
-	@Override
-	public Expression reshape(Manipulator m) {
-		return m.reshapeProduction(this);
-	}
 
 	public final NameSpace getNameSpace() {
 		return this.ns;
@@ -66,6 +64,8 @@ public class Production extends Expression {
 	public final boolean isRecursive() {
 		return this.isRecursive;
 	}
+
+
 	
 	@Override
 	public Expression get(int index) {
@@ -97,7 +97,20 @@ public class Production extends Expression {
 		this.body = e;
 	}
 
-	public int minlen = -1;
+	@Override
+	public Expression reshape(Manipulator m) {
+		return m.reshapeProduction(this);
+	}
+	
+	int minlen = -1;
+
+	@Override
+	public boolean isConsumed(Stacker stacker) {
+		if(minlen == -1) {
+			this.minlen = this.getExpression().isConsumed(stacker) ? 1 : 0;
+		}
+		return minlen > 0;
+	}
 	
 	@Override
 	public final boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
@@ -189,7 +202,7 @@ public class Production extends Expression {
 //	}
 	
 	@Override
-	public String getInterningKey() {
+	public String key() {
 		return this.getUniqueName() + "=";
 	}
 	
@@ -263,5 +276,24 @@ public class Production extends Expression {
 		ConsoleUtils.println(this.getLocalName() + " = " + this.getExpression());
 	}
 
-
 }
+
+class Stacker {
+	Stacker prev;
+	Production p;
+	Stacker(Production p, Stacker prev) {
+		this.prev = prev;
+		this.p = p;
+	}
+	boolean isVisited(Production p) {
+		Stacker d = this;
+		while(d != null) {
+			if(d.p == p) {
+				return true;
+			}
+			d = d.prev;
+		}
+		return false;
+	}
+}
+

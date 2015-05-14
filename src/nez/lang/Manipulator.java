@@ -19,7 +19,7 @@ public class Manipulator {
 	}
 	
 	public Expression reshapeProduction(Production p) {
-		return p;
+		return p.getExpression().reshape(this);
 	}
 
 	public Expression reshapeEmpty(Empty e) {

@@ -1400,10 +1400,10 @@ public class Compiler extends GrammarVisitor {
 				for(int i = index; i < size; i++) {
 					this.func.remove(index);
 				}
-				System.out.println("inlining miss: " + e.localName);
+				System.out.println("inlining miss: " + e.getLocalName());
 				BasicBlock rbb = new BasicBlock();
 				this.setCurrentBasicBlock(currentBB);
-				this.createCALL(e, currentBB, e.localName);
+				this.createCALL(e, currentBB, e.getLocalName());
 				rbb.setInsertPoint(this.func);
 				this.createCONDBRANCH(e, rbb, this.jumpFailureJump(), 1);
 				BasicBlock bb = new BasicBlock(this.func);
@@ -1412,7 +1412,7 @@ public class Compiler extends GrammarVisitor {
 		}
 		else {
 			BasicBlock rbb = new BasicBlock();
-			this.createCALL(e, this.getCurrentBasicBlock(), e.localName);
+			this.createCALL(e, this.getCurrentBasicBlock(), e.getLocalName());
 			rbb.setInsertPoint(this.func);
 			this.createCONDBRANCH(e, rbb, this.jumpFailureJump(), 1);
 			BasicBlock bb = new BasicBlock(this.func);

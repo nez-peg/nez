@@ -31,6 +31,12 @@ public class IfFlag extends Unconsumed {
 	public Expression reshape(Manipulator m) {
 		return m.reshapeIfFlag(this);
 	}
+
+	@Override
+	public boolean isConsumed(Stacker stacker) {
+		return false;
+	}
+
 	@Override
 	public Instruction encode(RuntimeCompiler bc, Instruction next) {
 		return next;

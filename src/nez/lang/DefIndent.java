@@ -3,6 +3,7 @@ package nez.lang;
 import nez.ast.SourcePosition;
 import nez.runtime.Instruction;
 import nez.runtime.RuntimeCompiler;
+import nez.util.StringUtils;
 
 public class DefIndent extends Unconsumed {
 	DefIndent(SourcePosition s) {
@@ -12,6 +13,12 @@ public class DefIndent extends Unconsumed {
 	public String getPredicate() {
 		return "defindent";
 	}
+
+	@Override
+	public boolean isConsumed(Stacker stacker) {
+		return false;
+	}
+
 	@Override
 	public Instruction encode(RuntimeCompiler bc, Instruction next) {
 		return bc.encodeDefIndent(this, next);

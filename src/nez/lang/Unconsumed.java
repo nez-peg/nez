@@ -19,7 +19,7 @@ abstract class Unconsumed extends Expression {
 		return null;
 	}
 	@Override
-	public String getInterningKey() {
+	public String key() {
 		return this.getPredicate();
 	}
 	@Override

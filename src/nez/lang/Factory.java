@@ -12,7 +12,7 @@ public class Factory {
 	static Expression intern(Expression e) {
 		if(e.internId == 0) {
 			StringBuilder sb = new StringBuilder();
-			sb.append(e.getInterningKey());
+			sb.append(e.key());
 			for(int i = 0; i < e.size(); i++) {
 				Expression sube = e.get(i);
 				if(!sube.isInterned()) {

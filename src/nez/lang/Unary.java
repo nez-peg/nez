@@ -25,7 +25,7 @@ public abstract class Unary extends Expression {
 		return old;
 	}
 	@Override
-	public String getInterningKey() {
+	public String key() {
 		return this.getPredicate();
 	}
 

@@ -14,9 +14,15 @@ public class And extends Unary {
 	public String getPredicate() {
 		return "&";
 	}
+
 	@Override
 	public Expression reshape(Manipulator m) {
 		return m.reshapeAnd(this);
+	}
+
+	@Override
+	public boolean isConsumed(Stacker stacker) {
+		return false;
 	}
 
 	@Override

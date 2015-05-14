@@ -9,17 +9,17 @@ import java.util.TreeMap;
 
 import nez.util.UList;
 
-public class Analysis {
+public class AnalysisCache {
 	/* this must be LRU Cache in the future */
 	/* ProductionName : Production */
 	/* "!" + flagName : Boolean */
 	
-	private static Map<String,Analysis> cache = new HashMap<String, Analysis>();
+	private static Map<String,AnalysisCache> cache = new HashMap<String, AnalysisCache>();
 
-	public static Analysis get(Production p) {
-		Analysis a = cache.get(p.getUniqueName());
+	public static AnalysisCache get(Production p) {
+		AnalysisCache a = cache.get(p.getUniqueName());
 		if(a == null) {
-			a = new Analysis(p);
+			a = new AnalysisCache(p);
 			cache.put(p.getUniqueName(), a);
 		}
 		return a;
@@ -44,13 +44,13 @@ public class Analysis {
 	private Production self;
 	Map<String,Object> map = new HashMap<String, Object>();
 	
-	Analysis(Production p) {
+	AnalysisCache(Production p) {
 		this.self = p;
 		analyze(p.getExpression());
 	}
 	
 	private static boolean isDefined(Production p, String key) {
-		Analysis a = Analysis.get(p);
+		AnalysisCache a = AnalysisCache.get(p);
 		return a.isDefined(key);
 	}
 
@@ -65,6 +65,9 @@ public class Analysis {
 	private void analyze(Expression e) {
 		if(e instanceof NonTerminal) {
 			Production p = ((NonTerminal)e).getProduction();
+			if(p == null) {
+				System.out.println("undefined name: " + e);
+			}
 			if(!IsNonTerminalReachable(p.getUniqueName())) {
 				map.put(p.getUniqueName(), p);
 				if(this.self != p) {
@@ -76,38 +79,12 @@ public class Analysis {
 			analyze(sub);
 		}
 	}
-	
-//	private boolean quickCheckConsumed(Expression e) {
-//		if(e instanceof NonTerminal ) {
-//			Production p = ((NonTerminal) e).getProduction();
-//			Analysis a = Analysis.get(p);
-//			String key = consumedKey(p);
-//			return (Boolean)a.map.get(key);  // NullPointerException
-//		}
-//		if(e instanceof ConsumedProperty) {
-//			return true; /* next*/
-//		}
-//		if(e instanceof UnconsumedProperty) {
-//			return false;
-//		}
-//		if(e instanceof InnerConsumedProperty) {
-//			for(Expression sub: e) {
-//				if(quickCheckConsumed(sub)) {
-//					return true;
-//				}
-//			}
-//			return false;
-//		}
-//		if(e instanceof Choice) {
-//			for(Expression sub: e) {
-//				if(!quickCheckConsumed(sub)) {
-//					return false;
-//				}
-//			}
-//			return true;
-//		}
-//		return false;
-//	}
+
+	public final static boolean hasRecursion(Production p) {
+		AnalysisCache a = AnalysisCache.get(p);
+		return a.map.containsKey(p.getUniqueName());
+	}
+
 //
 //	public final static boolean checkLeftRecursion(Production p) {
 //		if(!hasRecursion(p)) {
@@ -117,10 +94,6 @@ public class Analysis {
 //		return a.reachConditionalFlag(flagName);
 //	}
 //
-//	public final static boolean hasRecursion(Production p) {
-//		Analysis a = Analysis.get(p);
-//		return a.map.containsKey(p.getUniqueName());
-//	}
 //
 //	private boolean checkLeftRecursion(Expression e) {
 //		if(e instanceof NonTerminal) {
@@ -140,24 +113,6 @@ public class Analysis {
 //		}
 //	}
 //
-//	class Determinism {
-//		Determinism prev;
-//		Production p;
-//		Determinism(Production p, Determinism prev) {
-//			this.prev = prev;
-//			this.p = p;
-//		}
-//		boolean isVisited(Production p) {
-//			Determinism d = this;
-//			while(d != null) {
-//				if(d.p == p) {
-//					return true;
-//				}
-//				d = d.prev;
-//			}
-//			return false;
-//		}
-//	}
 //	
 //	public final static boolean isAlwaysConsumed(Production p, Determinism d) {
 //		Analysis a = Analysis.get(p);
@@ -214,7 +169,7 @@ public class Analysis {
 	 */
 	
 	public final static boolean isConditionalFlag(Production p, String flagName) {
-		Analysis a = Analysis.get(p);
+		AnalysisCache a = AnalysisCache.get(p);
 		return a.reachConditionalFlag(flagName);
 	}
 
@@ -266,7 +221,7 @@ public class Analysis {
 	}
 
 	private static void updateProductionSet(Production p, Set<Production> set) {
-		Analysis a = Analysis.get(p);
+		AnalysisCache a = AnalysisCache.get(p);
 		for(Entry<String,Object> entry: a.map.entrySet()) {
 			set.add(ProductionFilter(entry));
 		}

@@ -18,10 +18,27 @@ public class ByteMap extends Terminal {
 		super(s);
 		this.byteMap = b;
 	}
+
+	@Override
+	public String getPredicate() {
+		return "byte " + StringUtils.stringfyByteMap(this.byteMap);
+	}
+
+	@Override
+	public String key() { 
+		return "[" +  StringUtils.stringfyByteMap(this.byteMap);
+	}
+
 	@Override
 	public Expression reshape(Manipulator m) {
 		return m.reshapeByteMap(this);
 	}
+
+	@Override
+	public boolean isConsumed(Stacker stacker) {
+		return true;
+	}
+
 
 	public final static boolean[] newMap(boolean initValue) {
 		boolean[] b = new boolean[257];
@@ -62,15 +79,6 @@ public class ByteMap extends Terminal {
 		}
 	}
 	
-
-	@Override
-	public String getPredicate() {
-		return "byte " + StringUtils.stringfyByteMap(this.byteMap);
-	}
-	@Override
-	public String getInterningKey() { 
-		return "[" +  StringUtils.stringfyByteMap(this.byteMap);
-	}
 	
 	@Override
 	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {

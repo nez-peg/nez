@@ -15,7 +15,7 @@ public class Capture extends ASTOperation {
 		return "}";
 	}
 	@Override
-	public String getInterningKey() {
+	public String key() {
 		return shift == 0 ? "}" : "}["+shift+"]";
 	}
 	@Override
@@ -23,6 +23,10 @@ public class Capture extends ASTOperation {
 		return m.reshapeCapture(this);
 	}
 
+	@Override
+	public boolean isConsumed(Stacker stacker) {
+		return false;
+	}
 	
 	@Override
 	public Instruction encode(RuntimeCompiler bc, Instruction next) {

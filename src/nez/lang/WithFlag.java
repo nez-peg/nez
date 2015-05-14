@@ -21,6 +21,11 @@ public class WithFlag extends Unary {
 		return "with " + this.flagName;
 	}
 	@Override
+	public boolean isConsumed(Stacker stacker) {
+		return this.inner.isConsumed(stacker);
+	}
+
+	@Override
 	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
 		return inner.checkAlwaysConsumed(checker, startNonTerminal, stack);
 	}
