@@ -28,7 +28,5 @@ public abstract class Unary extends Expression {
 	public String getInterningKey() {
 		return this.getPredicate();
 	}
-	
-	abstract Expression dupUnary(Expression inner);
 
 }

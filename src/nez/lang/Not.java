@@ -70,11 +70,6 @@ public class Not extends Unary {
 	}
 
 	@Override
-	Expression dupUnary(Expression e) {
-		return (this.inner != e) ? Factory.newNot(this.s, e) : this;
-	}
-
-	@Override
 	public Instruction encode(RuntimeCompiler bc, Instruction next) {
 		return bc.encodeNot(this, next);
 	}

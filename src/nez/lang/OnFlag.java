@@ -36,10 +36,6 @@ public class OnFlag extends Unary {
 	}
 
 	@Override
-	Expression dupUnary(Expression e) {
-		return (this.inner != e) ? Factory.newOnFlag(this.s, this.predicate, this.flagName, e) : this;
-	}
-	@Override
 	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
 		return inner.checkAlwaysConsumed(checker, startNonTerminal, stack);
 	}

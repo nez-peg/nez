@@ -17,10 +17,6 @@ public class WithoutFlag extends Unary {
 		this.optimized = inner.optimized;
 	}
 	@Override
-	Expression dupUnary(Expression e) {
-		return (this.inner != e) ? Factory.newWithoutFlag(this.s, this.flagName, e) : this;
-	}
-	@Override
 	public String getPredicate() {
 		return "without " + this.flagName;
 	}

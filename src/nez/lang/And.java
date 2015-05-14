@@ -40,11 +40,6 @@ public class And extends Unary {
 		}
 		return r;
 	}
-
-	@Override
-	Expression dupUnary(Expression e) {
-		return (this.inner != e) ? Factory.newAnd(this.s, e) : this;
-	}
 	
 	@Override
 	public Instruction encode(RuntimeCompiler bc, Instruction next) {

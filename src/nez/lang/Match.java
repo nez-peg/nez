@@ -23,10 +23,6 @@ public class Match extends Unary {
 		return m.reshapeMatch(this);
 	}
 	@Override
-	Expression dupUnary(Expression e) {
-		return (this.inner != e) ? Factory.newMatch(this.s, e) : this;
-	}
-	@Override
 	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
 		return this.inner.checkAlwaysConsumed(checker, startNonTerminal, stack);
 	}

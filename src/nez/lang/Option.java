@@ -11,10 +11,6 @@ public class Option extends Unary {
 		super(s, e);
 	}
 	@Override
-	Expression dupUnary(Expression e) {
-		return (this.inner != e) ? Factory.newOption(this.s, e) : this;
-	}
-	@Override
 	public String getPredicate() { 
 		return "?";
 	}

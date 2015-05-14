@@ -21,10 +21,6 @@ public class WithFlag extends Unary {
 		return "with " + this.flagName;
 	}
 	@Override
-	Expression dupUnary(Expression e) {
-		return (this.inner != e) ? Factory.newWithFlag(this.s, this.flagName, e) : this;
-	}
-	@Override
 	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
 		return inner.checkAlwaysConsumed(checker, startNonTerminal, stack);
 	}

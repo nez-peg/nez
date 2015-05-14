@@ -118,20 +118,20 @@ public class GrammarChecker {
 		}
 	}
 	
-	private UMap<Expression> tableMap; 
-
-	final void setSymbolExpresion(String tableName, Expression e) {
-		if(tableMap == null) {
-			tableMap = new UMap<Expression>();
-		}
-		tableMap.put(tableName, e);
-	}
-
-	final Expression getSymbolExpresion(String tableName) {
-		if(tableMap != null) {
-			return tableMap.get(tableName);
-		}
-		return null;
-	}
+//	private UMap<Expression> tableMap; 
+//
+//	final void setSymbolExpresion(String tableName, Expression e) {
+//		if(tableMap == null) {
+//			tableMap = new UMap<Expression>();
+//		}
+//		tableMap.put(tableName, e);
+//	}
+//
+//	final Expression getSymbolExpresion(String tableName) {
+//		if(tableMap != null) {
+//			return tableMap.get(tableName);
+//		}
+//		return null;
+//	}
 	
 }

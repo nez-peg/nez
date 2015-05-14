@@ -47,17 +47,13 @@ public class DefSymbol extends Unary {
 		return true;
 	}
 	@Override void checkPhase1(GrammarChecker checker, String ruleName, UMap<String> visited, int depth) {
-		checker.setSymbolExpresion(tableName.getName(), this.inner);
+		//checker.setSymbolExpresion(tableName.getName(), this.inner);
 	}
 	@Override void checkPhase2(GrammarChecker checker) {
 	}
 	@Override
 	public int inferTypestate(UMap<String> visited) {
 		return Typestate.BooleanType;
-	}
-	@Override
-	Expression dupUnary(Expression e) {
-		return (this.inner != e) ? Factory.newDefSymbol(this.s, this.ns, this.tableName, e) : this;
 	}
 	@Override
 	public short acceptByte(int ch, int option) {

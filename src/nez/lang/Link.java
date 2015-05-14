@@ -25,10 +25,6 @@ public class Link extends Unary {
 		return m.reshapeLink(this);
 	}
 	@Override
-	Expression dupUnary(Expression e) {
-		return (this.inner != e) ? Factory.newLink(this.s, e, this.index) : this;
-	}
-	@Override
 	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
 		return this.inner.checkAlwaysConsumed(checker, startNonTerminal, stack);
 	}

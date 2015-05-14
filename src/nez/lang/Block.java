@@ -18,10 +18,6 @@ public class Block extends Unary {
 	public Expression reshape(Manipulator m) {
 		return m.reshapeBlock(this);
 	}
-	@Override
-	Expression dupUnary(Expression e) {
-		return (this.inner != e) ? Factory.newBlock(this.s, e) : this;
-	}
 	
 	@Override
 	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {

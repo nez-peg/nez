@@ -10,10 +10,6 @@ public class Repetition1 extends Repetition {
 		super(s, e);
 	}
 	@Override
-	Expression dupUnary(Expression e) {
-		return (this.inner != e) ? Factory.newRepetition1(this.s, e) : this;
-	}
-	@Override
 	public String getPredicate() { 
 		return "+";
 	}
