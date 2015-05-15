@@ -27,7 +27,7 @@ import nez.lang.Unary;
 import nez.util.StringUtils;
 import nez.util.UList;
 
-public class LPegGrammarGenerator extends GrammarGenerator {
+public class LPegGrammarGenerator extends NezGenerator {
 
 	public LPegGrammarGenerator() {
 		super(null);

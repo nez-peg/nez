@@ -6,7 +6,7 @@ import java.util.HashMap;
 import nez.SourceContext;
 import nez.ast.CommonTree;
 import nez.ast.CommonTreeWriter;
-import nez.generator.GrammarGenerator;
+import nez.generator.NezGenerator;
 import nez.generator.NezGrammarGenerator;
 import nez.lang.Formatter;
 import nez.lang.Grammar;
@@ -41,7 +41,7 @@ public class NezShell extends Command {
 				defineProduction(ns, text);
 				continue;
 			}
-			if(text != null && GrammarGenerator.hasGenerator(command)) {
+			if(text != null && NezGenerator.supportedGenerator(command)) {
 				Grammar g = getGrammar(ns, text);
 				if(g != null) {
 					execCommand(command, g);
@@ -168,7 +168,7 @@ public class NezShell extends Command {
 	}
 	
 	static void execCommand(String cmd, Grammar g) {
-		GrammarGenerator gen = GrammarGenerator.newGenerator(cmd);
+		NezGenerator gen = NezGenerator.newNezGenerator(cmd);
 		gen.generate(g);
 		ConsoleUtils.println("");
 	}

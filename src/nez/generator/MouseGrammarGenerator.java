@@ -24,7 +24,7 @@ import nez.lang.Tagging;
 import nez.lang.Unary;
 import nez.util.StringUtils;
 
-public class MouseGrammarGenerator extends GrammarGenerator {
+public class MouseGrammarGenerator extends NezGenerator {
 	public MouseGrammarGenerator(String fileName) {
 		super(fileName);
 	}

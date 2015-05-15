@@ -40,8 +40,8 @@ public class NezGrammarGenerator extends GrammarGenerator {
 	
 	@Override
 	public void makeHeader() {
-		file.writeIndent("// Parsing Expression Grammars for Nez");
-		file.writeIndent("// ");
+		L("// Parsing Expression Grammars for Nez");
+		L("// ");
 	}
 
 	String stringfyName(String s) {
@@ -52,18 +52,18 @@ public class NezGrammarGenerator extends GrammarGenerator {
 	public void visitProduction(Production rule) {
 		Expression e = rule.getExpression();
 		if(rule.isPublic()) {
-			file.writeIndent("public ");
-			file.write(stringfyName(rule.getLocalName()));
+			L("public ");
+			W(stringfyName(rule.getLocalName()));
 		}
 		else {
-			file.writeIndent(stringfyName(rule.getLocalName()));
+			L(stringfyName(rule.getLocalName()));
 		}
-		file.incIndent();
-		file.writeIndent("= ");
+		inc();
+		L("= ");
 		if(e instanceof Choice) {
 			for(int i = 0; i < e.size(); i++) {
 				if(i > 0) {
-					file.writeIndent("/ ");
+					L("/ ");
 				}
 				visit(e.get(i));
 			}
@@ -71,47 +71,47 @@ public class NezGrammarGenerator extends GrammarGenerator {
 		else {
 			visit(e);
 		}
-		file.decIndent();
+		dec();
 	}	
 	
 	public void visitEmpty(Empty e) {
-		file.write("''");
+		W("''");
 	}
 
 	public void visitFailure(Failure e) {
-		file.write("!''/*failure*/");
+		W("!''");
 	}
 
 	public void visitNonTerminal(NonTerminal e) {
-		file.write(stringfyName(e.getLocalName()));
+		W(stringfyName(e.getLocalName()));
 	}
 	
 	public void visitByteChar(ByteChar e) {
-		file.write(StringUtils.stringfyByte(e.byteChar));
+		W(StringUtils.stringfyByte(e.byteChar));
 	}
 
 	public void visitByteMap(ByteMap e) {
-		file.write(StringUtils.stringfyCharClass(e.byteMap));
+		W(StringUtils.stringfyCharClass(e.byteMap));
 	}
 	
 	public void visitAnyChar(AnyChar e) {
-		file.write(".");
+		W(".");
 	}
 
 	protected void visit(String prefix, Unary e, String suffix) {
 		if(prefix != null) {
-			file.write(prefix);
+			W(prefix);
 		}
-		if(/*e.get(0) instanceof String ||*/ e.get(0) instanceof NonTerminal/* || e.get(0) instanceof NewClosure*/) {
+		if(e.get(0) instanceof NonTerminal) {
 			this.visit(e.get(0));
 		}
 		else {
-			file.write("(");
+			W("(");
 			this.visit(e.get(0));
-			file.write(")");
+			W(")");
 		}
 		if(suffix != null) {
-			file.write(suffix);
+			W(suffix);
 		}
 	}
 
@@ -138,7 +138,7 @@ public class NezGrammarGenerator extends GrammarGenerator {
 	protected void visitSequenceImpl(SequentialExpression l) {
 		for(int i = 0; i < l.size(); i++) {
 			if(i > 0) {
-				file.write(" ");
+				W(" ");
 			}
 			int n = appendAsString(l, i);
 			if(n > i) {
@@ -147,9 +147,9 @@ public class NezGrammarGenerator extends GrammarGenerator {
 			}
 			Expression e = l.get(i);
 			if(e instanceof Choice || e instanceof Sequence) {
-				file.write("( ");
+				W("( ");
 				visit(e);
-				file.write(" )");
+				W(" )");
 				continue;
 			}
 			visit(e);
@@ -172,7 +172,7 @@ public class NezGrammarGenerator extends GrammarGenerator {
 			break;
 		}
 		if(s.length() > 1) {
-			file.write(StringUtils.quoteString('\'', s, '\''));
+			W(StringUtils.quoteString('\'', s, '\''));
 		}
 		return end - 1;
 	}
@@ -184,27 +184,27 @@ public class NezGrammarGenerator extends GrammarGenerator {
 	public void visitChoice(Choice e) {
 		for(int i = 0; i < e.size(); i++) {
 			if(i > 0) {
-				file.write(" / ");
+				W(" / ");
 			}
 			visit(e.get(i));
 		}
 	}
 	
 	public void visitNew(New e) {
-		file.write(e.lefted ? "{@" : "{");
+		W(e.lefted ? "{@" : "{");
 	}
 
 	public void visitCapture(Capture e) {
-		file.write("}");
+		W("}");
 	}
 
 	public void visitTagging(Tagging e) {
-		file.write("#");
-		file.write(e.tag.getName());
+		W("#");
+		W(e.tag.getName());
 	}
 	
 	public void visitValue(Replace e) {
-		file.write(StringUtils.quoteString('`', e.value, '`'));
+		W(StringUtils.quoteString('`', e.value, '`'));
 	}
 	
 	public void visitLink(Link e) {
@@ -217,13 +217,13 @@ public class NezGrammarGenerator extends GrammarGenerator {
 
 	@Override
 	public void visitUndefined(Expression e) {
-		file.write("<");
-		file.write(e.getPredicate());
+		W("<");
+		W(e.getPredicate());
 		for(Expression se : e) {
-			file.write(" ");
+			W(" ");
 			visit(se);
 		}
-		file.write(">");
+		W(">");
 	}
 
 }

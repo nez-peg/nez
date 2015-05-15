@@ -27,7 +27,7 @@ import nez.lang.Tagging;
 import nez.lang.Typestate;
 import nez.util.StringUtils;
 
-public class ParserGenerator extends GrammarGenerator {
+public class ParserGenerator extends NezGenerator {
 	
 	ParserGenerator() {
 		super(null);
