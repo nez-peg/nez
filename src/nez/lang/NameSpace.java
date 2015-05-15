@@ -27,7 +27,6 @@ public class NameSpace {
 
 	public static NameSpace newNameSpace() {
 		return new NameSpace(nsid++, null);
-
 	}
 
 	public final static NameSpace newNameSpace(String urn) {
@@ -104,7 +103,7 @@ public class NameSpace {
 	}
 
 	public final String uniqueName(String localName) {
-		return this.ns + ":" + localName;
+		return this.ns + this.id + ":" + localName;
 	}
 
 	public final String getURN() {

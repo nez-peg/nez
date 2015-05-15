@@ -48,7 +48,7 @@ public class MouseGrammarGenerator extends GrammarGenerator {
 	}
 	
 	@Override
-	public void visitRule(Production rule) {
+	public void visitProduction(Production rule) {
 		Expression e = rule.getExpression();
 		file.writeIndent(stringfyName(rule.getLocalName()));
 		file.incIndent();

@@ -655,62 +655,62 @@ public class RuntimeCompiler {
 		return dispatch;
 	}
 	
-	private final boolean checkStartingTerminal(Expression e, int ch) {
-		e = Factory.resolveNonTerminal(e);
-		if(e instanceof ByteChar) {
-			return (((ByteChar) e).byteChar == ch);
-		}
-		if(e instanceof Sequence) {
-			return checkStartingTerminal(e.get(0), ch);
-		}
-		if(e instanceof Choice) {
-			for(Expression p: e) {
-				if(!checkStartingTerminal(p, ch)) {
-					return false;
-				}
-			}
-			return true;
-		}
-		return false;
-	}
-
-	private final Expression trimStartingTerminal(Expression e, int ch) {
-		if(e instanceof Sequence) {
-			UList<Expression> l = new UList<Expression>(new Expression[e.size()-1]);
-			for(int i = 1; i < e.size(); i++) {
-				l.add(e.get(i));
-			}
-			return Factory.newSequence(null, l);
-		}
-		if(e instanceof Choice) {
-			UList<Expression> l = new UList<Expression>(new Expression[e.size()]);
-			for(Expression p: e) {
-				Factory.addChoice(l, p);
-			}
-			return Factory.newChoice(null, l);
-		}
-		assert(e instanceof ByteChar);
-		return Factory.newEmpty(null);
-	}
-
-	private final Expression trimStartingTerminal(Expression e) {
-		if(e instanceof Sequence) {
-			UList<Expression> l = new UList<Expression>(new Expression[e.size()-1]);
-			for(int i = 1; i < e.size(); i++) {
-				l.add(e.get(i));
-			}
-			return Factory.newSequence(null, l);
-		}
-		if(e instanceof Choice) {
-			UList<Expression> l = new UList<Expression>(new Expression[e.size()]);
-			for(Expression p: e) {
-				Factory.addChoice(l, p);
-			}
-			return Factory.newChoice(null, l);
-		}
-		assert(e instanceof ByteChar);
-		return Factory.newEmpty(null);
-	}
+//	private final boolean checkStartingTerminal(Expression e, int ch) {
+//		e = Factory.resolveNonTerminal(e);
+//		if(e instanceof ByteChar) {
+//			return (((ByteChar) e).byteChar == ch);
+//		}
+//		if(e instanceof Sequence) {
+//			return checkStartingTerminal(e.get(0), ch);
+//		}
+//		if(e instanceof Choice) {
+//			for(Expression p: e) {
+//				if(!checkStartingTerminal(p, ch)) {
+//					return false;
+//				}
+//			}
+//			return true;
+//		}
+//		return false;
+//	}
+//
+//	private final Expression trimStartingTerminal(Expression e, int ch) {
+//		if(e instanceof Sequence) {
+//			UList<Expression> l = new UList<Expression>(new Expression[e.size()-1]);
+//			for(int i = 1; i < e.size(); i++) {
+//				l.add(e.get(i));
+//			}
+//			return Factory.newSequence(null, l);
+//		}
+//		if(e instanceof Choice) {
+//			UList<Expression> l = new UList<Expression>(new Expression[e.size()]);
+//			for(Expression p: e) {
+//				Factory.addChoice(l, p);
+//			}
+//			return Factory.newChoice(null, l);
+//		}
+//		assert(e instanceof ByteChar);
+//		return Factory.newEmpty(null);
+//	}
+//
+//	private final Expression trimStartingTerminal(Expression e) {
+//		if(e instanceof Sequence) {
+//			UList<Expression> l = new UList<Expression>(new Expression[e.size()-1]);
+//			for(int i = 1; i < e.size(); i++) {
+//				l.add(e.get(i));
+//			}
+//			return Factory.newSequence(null, l);
+//		}
+//		if(e instanceof Choice) {
+//			UList<Expression> l = new UList<Expression>(new Expression[e.size()]);
+//			for(Expression p: e) {
+//				Factory.addChoice(l, p);
+//			}
+//			return Factory.newChoice(null, l);
+//		}
+//		assert(e instanceof ByteChar);
+//		return Factory.newEmpty(null);
+//	}
 
 	private final Expression trimCommonPrefix(Expression e, Expression e2) {
 		int min = sizeAsSequence(e) < sizeAsSequence(e2) ? sizeAsSequence(e) : sizeAsSequence(e2);
@@ -805,6 +805,7 @@ public class RuntimeCompiler {
 	}
 
 	public final Instruction encodeUnoptimizedChoice(Choice p, Instruction next) {
+		//System.out.println("@@@@@" + p);
 		Instruction nextChoice = encodeExpression(p.get(p.size()-1), next);
 		for(int i = p.size() -2; i >= 0; i--) {
 			Expression e = p.get(i);

@@ -72,6 +72,7 @@ public class GrammarChecker {
 				continue;
 			}
 			if(AnalysisCache.hasRecursion(r)) {
+				r.isRecursive = true;
 				if(r.minlen > 0) {
 					continue;
 				}

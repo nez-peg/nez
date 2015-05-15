@@ -9,6 +9,7 @@ import nez.lang.Choice;
 import nez.lang.Empty;
 import nez.lang.Expression;
 import nez.lang.Failure;
+import nez.lang.Grammar;
 import nez.lang.Link;
 import nez.lang.NameSpace;
 import nez.lang.New;
@@ -28,9 +29,10 @@ import nez.util.UList;
 
 public class LPegGrammarGenerator extends GrammarGenerator {
 
-	NameSpace peg;
-	
-	
+	public LPegGrammarGenerator() {
+		super(null);
+	}
+
 	public LPegGrammarGenerator(String fileName) {
 		super(fileName);
 	}
@@ -41,15 +43,19 @@ public class LPegGrammarGenerator extends GrammarGenerator {
 	}
 
 	@Override
-	public void generate(NameSpace grammar) {
-		peg = grammar;
-		makeHeader();
+	public void generate(Grammar grammar) {
+		file.writeIndent("local lpeg = require \"lpeg\"");
+		for(Production r: grammar.getSubProductionList()) {
+			if(!r.getLocalName().startsWith("\"")) {
+				String localName = r.getLocalName();
+				file.writeIndent("local " + localName + " = lpeg.V\"" + localName + "\"");
+			}
+		}
 		file.writeIndent("G = lpeg.P{ File,");
 		file.incIndent();
-		UList<Production> list = grammar.getDefinedRuleList();
-		for(Production r: list) {
+		for(Production r: grammar.getSubProductionList()) {
 			if(!r.getLocalName().startsWith("\"")) {
-				visitRule(r);
+				visitProduction(r);
 			}
 		}
 		file.decIndent();
@@ -62,18 +68,10 @@ public class LPegGrammarGenerator extends GrammarGenerator {
 
 	@Override
 	public void makeHeader() {
-		file.writeIndent("local lpeg = require \"lpeg\"");
-		UList<Production> list = peg.getDefinedRuleList();
-		for(Production r: list) {
-			if(!r.getLocalName().startsWith("\"")) {
-				String localName = r.getLocalName();
-				file.writeIndent("local " + localName + " = lpeg.V\"" + localName + "\"");
-			}
-		}
 	}
 
 	@Override
-	public void visitRule(Production rule) {
+	public void visitProduction(Production rule) {
 		Expression e = rule.getExpression();
 		file.incIndent();
 		file.writeIndent(rule.getLocalName() + " = ");

@@ -20,7 +20,7 @@ public class GrammarCommand extends Command {
 	public void exec(CommandConfigure config) {
 		NameSpace peg = config.getNameSpace(false);
 		GrammarGenerator gen = loadGenerator(config.getOutputFileName());
-		gen.generate(peg);
+//		gen.generate(peg);
 	}
 	
 	static private TreeMap<String, Class<?>> classMap = new TreeMap<String, Class<?>>();

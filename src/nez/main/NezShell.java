@@ -1,10 +1,13 @@
 package nez.main;
 
 import java.io.IOException;
+import java.util.HashMap;
 
 import nez.SourceContext;
 import nez.ast.CommonTree;
 import nez.ast.CommonTreeWriter;
+import nez.cc.GrammarGenerator;
+import nez.cc.NezGrammarGenerator;
 import nez.lang.Formatter;
 import nez.lang.Grammar;
 import nez.lang.NameSpace;
@@ -29,37 +32,62 @@ public class NezShell extends Command {
 		NameSpace ns = config.getNameSpace(true);
 		ConsoleUtils.addCompleter(ns.getNonterminalList());
 		while(readLine(">>> ")) {
+			if((command != null && command.equals(""))) {
+				continue;
+			}
+//			System.out.println("command: " + command);
+//			System.out.println("text: " + text);
 			if(command == null) {
 				defineProduction(ns, text);
+				continue;
+			}
+			if(text != null && GrammarGenerator.hasGenerator(command)) {
+				Grammar g = getGrammar(ns, text);
+				if(g != null) {
+					execCommand(command, g);
+				}
+				continue;
+			}
+			Grammar g = getGrammar(ns, command);
+			if(g == null) {
+				continue;
+			}
+			if(text == null) {
+				displayGrammar(command, g);
 			}
 			else {
-				Grammar g = getGrammar(ns, command);
-				if(g == null) {
+				SourceContext sc = SourceContext.newStringSourceContext("<stdio>", linenum, text);
+				CommonTree node = g.parse(sc);
+				if(node == null) {
+					ConsoleUtils.println(sc.getSyntaxErrorMessage());
 					continue;
 				}
-				if(text == null) {
-					displayGrammar(command, g);
+				if(sc.hasUnconsumed()) {
+					ConsoleUtils.println(sc.getUnconsumedMessage());
 				}
-				else {
-					SourceContext sc = SourceContext.newStringSourceContext("<stdio>", linenum, text);
-					CommonTree node = g.parse(sc);
-					if(node == null) {
-						ConsoleUtils.println(sc.getSyntaxErrorMessage());
-						continue;
-					}
-					if(sc.hasUnconsumed()) {
-						ConsoleUtils.println(sc.getUnconsumedMessage());
-					}
-					sc = null;
-					new CommonTreeWriter().transform(null, node);
-					ConsoleUtils.println("Formatted " + Formatter.format(ns, node));
-				}
+				sc = null;
+				new CommonTreeWriter().transform(null, node);
+				ConsoleUtils.println("Formatted " + Formatter.format(ns, node));
 			}
 		}
 	}
 	
 	private void displayGrammar(String command, Grammar g) {
 		g.getStartProduction().dump();
+	}
+	
+	private int indexOfOperator(String line) {
+		int index = -1;
+		for(int i = 0; i < line.length(); i++) {
+			char c = line.charAt(i);
+			if(c == '|' || c == '<' || c == '=') {
+				return i;
+			}
+			if(c == ' ' && index == -1) {
+				index = i;
+			}
+		}
+		return index;
 	}
 
 	private boolean readLine(String prompt) {
@@ -68,25 +96,17 @@ public class NezShell extends Command {
 		if(line == null) {
 			return false;
 		}
-		int loc = line.indexOf(' ');
+		int loc = indexOfOperator(line);
 		if(loc != -1) {
 			command = line.substring(0, loc).trim();
-			text = line.substring(loc+1).trim();
+			text = line.substring(loc).trim();
 			ConsoleUtils.addHistory(console, line);
 		}
 		else {
-			loc = line.indexOf('=');
-			if(loc == -1) {
-				loc = line.indexOf('<');
-			}
-			if(loc == -1) {
-				command = line.trim();
-				text = null;
-				ConsoleUtils.addHistory(console, line);
-				return true;
-			}
-			command = line.substring(0, loc).trim();
-			text = line.substring(loc).trim();
+			command = line.trim();
+			text = null;
+			ConsoleUtils.addHistory(console, line);
+			return true;
 		}
 		linenum++;
 		if(text.startsWith("<")) {
@@ -138,4 +158,35 @@ public class NezShell extends Command {
 		ConsoleUtils.addCompleter(ns.getNonterminalList());
 	}
 	
+	static HashMap<String, ShellCommand> cmdMap = new HashMap<String,ShellCommand>();
+	static {
+		cmdMap.put("nez", new NezCommand());
+	}
+	
+	static boolean hasCommand(String cmd) {
+		return cmdMap.containsKey(cmd);
+	}
+	
+	static void execCommand(String cmd, Grammar g) {
+		GrammarGenerator gen = GrammarGenerator.newGenerator(cmd);
+		gen.generate(g);
+		ConsoleUtils.println("");
+	}
 }
+
+abstract class ShellCommand {
+	public abstract void perform(Grammar g);
+}
+
+class NezCommand extends ShellCommand {
+
+	@Override
+	public void perform(Grammar g) {
+		NezGrammarGenerator gen  = new NezGrammarGenerator(null);
+		for(Production p: g.getSubProductionList()) {
+			gen.visitProduction(p);
+		}
+	}
+	
+}
+

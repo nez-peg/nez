@@ -25,13 +25,17 @@ import nez.lang.Unary;
 import nez.util.StringUtils;
 
 public class NezGrammarGenerator extends GrammarGenerator {
-	public NezGrammarGenerator(String fileName) {
-		super(fileName);
-	}
-	
 	@Override
 	public String getDesc() {
 		return "a Nez grammar" ;
+	}
+
+	public NezGrammarGenerator() {
+		super(null);
+	}
+
+	public NezGrammarGenerator(String fileName) {
+		super(fileName);
 	}
 	
 	@Override
@@ -45,12 +49,15 @@ public class NezGrammarGenerator extends GrammarGenerator {
 	}
 	
 	@Override
-	public void visitRule(Production rule) {
+	public void visitProduction(Production rule) {
 		Expression e = rule.getExpression();
 		if(rule.isPublic()) {
-			file.writeIndent("public");
+			file.writeIndent("public ");
+			file.write(stringfyName(rule.getLocalName()));
 		}
-		file.writeIndent(stringfyName(rule.getLocalName()));
+		else {
+			file.writeIndent(stringfyName(rule.getLocalName()));
+		}
 		file.incIndent();
 		file.writeIndent("= ");
 		if(e instanceof Choice) {
