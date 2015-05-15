@@ -98,87 +98,24 @@ public class NezGrammarGenerator extends GrammarGenerator {
 		W(".");
 	}
 
-	protected void visit(String prefix, Unary e, String suffix) {
-		if(prefix != null) {
-			W(prefix);
-		}
-		if(e.get(0) instanceof NonTerminal) {
-			this.visit(e.get(0));
-		}
-		else {
-			W("(");
-			this.visit(e.get(0));
-			W(")");
-		}
-		if(suffix != null) {
-			W(suffix);
-		}
-	}
-
 	public void visitOption(Option e) {
-		this.visit( null, e, "?");
+		Unary( null, e, "?");
 	}
 	
 	public void visitRepetition(Repetition e) {
-		this.visit(null, e, "*");
+		Unary(null, e, "*");
 	}
 	
 	public void visitRepetition1(Repetition1 e) {
-		this.visit(null, e, "+");
+		Unary(null, e, "+");
 	}
 
 	public void visitAnd(And e) {
-		this.visit( "&", e, null);
+		Unary( "&", e, null);
 	}
 	
 	public void visitNot(Not e) {
-		this.visit( "!", e, null);
-	}
-
-	protected void visitSequenceImpl(SequentialExpression l) {
-		for(int i = 0; i < l.size(); i++) {
-			if(i > 0) {
-				W(" ");
-			}
-			int n = appendAsString(l, i);
-			if(n > i) {
-				i = n;
-				continue;
-			}
-			Expression e = l.get(i);
-			if(e instanceof Choice || e instanceof Sequence) {
-				W("( ");
-				visit(e);
-				W(" )");
-				continue;
-			}
-			visit(e);
-		}
-	}
-
-	private int appendAsString(SequentialExpression l, int start) {
-		int end = l.size();
-		String s = "";
-		for(int i = start; i < end; i++) {
-			Expression e = l.get(i);
-			if(e instanceof ByteChar) {
-				char c = (char)(((ByteChar) e).byteChar);
-				if(c >= ' ' && c < 127) {
-					s += c;
-					continue;
-				}
-			}
-			end = i;
-			break;
-		}
-		if(s.length() > 1) {
-			W(StringUtils.quoteString('\'', s, '\''));
-		}
-		return end - 1;
-	}
-	
-	public void visitSequence(Sequence e) {
-		this.visitSequenceImpl(e);
+		Unary( "!", e, null);
 	}
 	
 	public void visitChoice(Choice e) {
@@ -212,7 +149,7 @@ public class NezGrammarGenerator extends GrammarGenerator {
 		if(e.index != -1) {
 			predicate += "[" + e.index + "]";
 		}
-		this.visit(predicate, e, null);
+		Unary(predicate, e, null);
 	}
 
 	@Override
