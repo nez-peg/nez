@@ -1,4 +1,4 @@
-package nez.cc;
+package nez.generator;
 
 import java.lang.reflect.Constructor;
 import java.util.TreeMap;

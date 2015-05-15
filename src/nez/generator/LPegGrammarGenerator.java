@@ -1,4 +1,4 @@
-package nez.cc;
+package nez.generator;
 
 import nez.lang.And;
 import nez.lang.AnyChar;

@@ -1,4 +1,4 @@
-package nez.cc;
+package nez.generator;
 
 import java.util.ArrayList;
 import java.util.HashMap;
