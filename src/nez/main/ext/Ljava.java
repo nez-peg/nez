@@ -4,9 +4,9 @@ import nez.generator.GrammarGenerator;
 
 public class Ljava {
 	static {
-		GrammarGenerator.regist("java", nez.generator.JavaParserGenerator.class);
+		GrammarGenerator.regist("java", nez.generator.ParserGenerator.class);
 		// File Extension
-		GrammarGenerator.regist(".java", nez.generator.JavaParserGenerator.class);
+		GrammarGenerator.regist(".java", nez.generator.ParserGenerator.class);
 	}
 
 }
