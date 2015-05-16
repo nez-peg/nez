@@ -2,7 +2,7 @@ package nez.lang;
 
 import nez.ast.SourcePosition;
 import nez.runtime.Instruction;
-import nez.runtime.RuntimeCompiler;
+import nez.runtime.NezCompiler;
 import nez.util.StringUtils;
 import nez.util.UFlag;
 import nez.util.UList;
@@ -90,7 +90,7 @@ public class ByteMap extends Terminal {
 	}
 	
 	@Override
-	public Instruction encode(RuntimeCompiler bc, Instruction next) {
+	public Instruction encode(NezCompiler bc, Instruction next) {
 		return bc.encodeByteMap(this, next);
 	}
 	@Override

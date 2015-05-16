@@ -161,6 +161,10 @@ public class NezCombinator extends ParserCombinator {
 			Sequence(t("exists"), P("S"), Link("TableName"), Tag(NezTag.Exists)),
 			Sequence(t("local"), P("S"), Link("TableName"), P("S"), Link("Expr"), Tag(NezTag.Local)),
 
+			Sequence(t("x"),  P("S"), Link("NonTerminal"), P("S"), Link("NonTerminal"), P("S"), Link("Expr"), P("S"), 
+					ZeroMore(t(","), P("S"), Link("NonTerminal"), P("S"), Link("Expr"), P("S")),
+					t(">"), Tag(NezTag.Match)),
+
 			Sequence(t("scan"), P("S"), Link("TableName"), P("S"), Option(Link("Integer"), P("S")), Link("Expr"), Tag(NezTag.Scan)),
 			Sequence(t("repeat"), P("S"), Link("TableName"), P("S"), Link("Expr"), Tag(NezTag.Repeat)),
 			/* Deprecated */
@@ -323,7 +327,7 @@ public class NezCombinator extends ParserCombinator {
 		return New(
 			t("example"), 
 			P("S"), 
-			Choice(Sequence(t("!"), Tag(NezTag.Rebut)), Tag(NezTag.Example)),
+			Choice(Sequence(t("!"), Tag(NezTag.Rebuttal)), Tag(NezTag.Example)),
 			Tag(NezTag.Example), Link(P("NonTerminal")), ZeroMore(c(" \t")), 
 			Choice(
 				Sequence(t("'''"), P("EOL"), Link(New(ZeroMore(NotAny("\n'''")))), t("\n'''")),

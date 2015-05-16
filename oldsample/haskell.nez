@@ -1,0 +1,524 @@
+File
+  = {<block TopLevel> #Source}
+
+NL
+  = '\n' / '\r\n' / '\r'
+
+EOS
+  = SC* ';'
+  / SC* SINGLE_LINE_COMMENT? NL
+  / SC* &'}'
+  / __ EOF
+
+EOF
+    = !.
+
+DIGIT
+  = [0-9]
+
+W
+  = [a-zA-Z0-9'_]
+
+S
+  = [ \t]
+
+SC
+  = (S / MULTI_LINE_COMMENT_SINGLE_LINE)
+
+_
+  = (S / SINGLE_LINE_COMMENT? NL <indent> S+ / MULTI_LINE_COMMENT_SINGLE_LINE)*
+
+__
+  = (S / NL / COMMENT)*
+
+COMMENT
+  = MULTI_LINE_COMMENT / SINGLE_LINE_COMMENT
+
+MULTI_LINE_COMMENT
+  = '{-' (MULTI_LINE_COMMENT/(!'-}' .))* '-}'
+
+MULTI_LINE_COMMENT_SINGLE_LINE
+  = '{-' (MULTI_LINE_COMMENT_SINGLE_LINE/(!('-}' / NL) .))* '-}'
+
+SINGLE_LINE_COMMENT
+  = '--' (!NL .)*
+
+CPreprocessor
+	= "#" "include" { (!'\n' .)* #Include }
+	/ "#" "define"  { (&'\\\n' .. / !'\n' .)* #Define }
+	/ "#" { (&'\\\n' .. / !'\n' .)* #TODO }
+
+"case"   = 'case'   !W
+"class"   = 'class'   !W
+"data"   = 'data'   !W
+"default"   = 'default'   !W
+"deriving"   = 'deriving'   !W
+"do"   = 'do'   !W
+"else"   = 'else'   !W
+"if"   = 'if'   !W
+"import"   = 'import'   !W
+"in"   = 'in'   !W
+"infix"   = 'infix'   !W
+"infixl"   = 'infixl'   !W
+"instance"   = 'instance'   !W
+"let"   = 'let'   !W
+"module"   = 'module'   !W
+"newtype"   = 'newtype'   !W
+"of"   = 'of'   !W
+"then"   = 'then'   !W
+"type"   = 'type'   !W
+"where"   = 'where'   !W
+"_"   = '_'   !W
+"qualified"   = 'qualified'   !W
+"hiding"   = 'hiding'   !W
+"as"   = 'as'   !W
+
+".."   = '..'   !OperatorName
+":"   = ':'   !OperatorName
+"::"   = '::'   !OperatorName
+"="   = '='   !OperatorName
+"\\"   = '\\'   !OperatorName
+"|"   = '|'   !OperatorName
+"<-"   = '<-'   !OperatorName
+"->"   = '->'   !OperatorName
+"@"   = '@'   !OperatorName
+"~"   = '~'   !OperatorName
+"=>"   = '=>'   !OperatorName
+
+"$" = '$' !OperatorName
+"$!" = '$!' !OperatorName
+"`seq`" = '`seq`' !OperatorName
+">>=" = '>>=' !OperatorName
+">>" = '>>' !OperatorName
+"&&" = '&&' !OperatorName
+"||" = '||' !OperatorName
+"==" = '==' !OperatorName
+"/=" = '/=' !OperatorName
+"<" = '<' !OperatorName
+"<=" = '<=' !OperatorName
+">" = '>' !OperatorName
+">=" = '>=' !OperatorName
+"`elem`" = '`elem`' !OperatorName
+"`notElem`" = '`notelem`' !OperatorName
+":" = ':' !OperatorName
+"++" = '++' !OperatorName
+"+" = '+' !OperatorName
+"-" = '-' !OperatorName
+"*" = '*' !OperatorName
+"/" = '/' !OperatorName
+"`div`" = '`div`' !OperatorName
+"`mod`" = '`mod`' !OperatorName
+"`rem`" = '`rem`' !OperatorName
+"`quot`" = '`quot`' !OperatorName
+"^^" = '^^' !OperatorName
+"^" = '^' !OperatorName
+"**" = '**' !OperatorName
+"." = '.' !OperatorName
+"!!" = '!!' !OperatorName
+"<$>" = '<$>' !OperatorName
+"<*>" = '<*>' !OperatorName
+
+"elem" = 'elem' !W
+"notElem" = 'notelem' !W
+"div" = 'div' !W
+"mod" = 'mod' !W
+"rem" = 'rem' !W
+"quot" = 'quot' !W
+
+KEYWORD
+  = "case" / "class" / "data" / "default" / "deriving" / "do" / "else"
+  / "if" / "import" / "in" / "infix" / "infixl" / "infixr" / "instance"
+  / "let" / "module" / "newtype" / "of" / "then" / "type" / "where" / "_"
+
+OPERATOR_KEYWORD
+  = ".." / ":" / "::" / "=" / "\\" / "|" / "<-" / "->" / "@" / "~" / "=>"
+
+DEFINE_OPERATOR
+  = "$" / "$!" / "`seq`" / ">>=" / ">>" / "&&" / "||" / "==" / "/=" / "<" / "<=" / ">" / ">="
+  / "`elem`" / "`notElem`" / ":" / "++" / "+" / "-" / "*" / "/" / "`div`" / "`mod`" / "`rem`"
+  / "`quot`" / "^^" / "^" / "**" / "." / "!!" / "<$>" / "<*>"
+
+DEFINE_OPERATOR_FUNC
+  = "elem" / "notElem" / "div" / "mod" / "rem" / "quot"
+Chunk
+  = {<block ChunkElement> #Chunk}
+
+ChunkElement
+  = @ModuleDecl
+  / @ImportDecl
+  / SourceElement
+
+
+TopLevel
+  = (__ @ModuleDecl)? (__ @ImportDecl)* (__ SourceElement)* __
+
+ModuleDecl
+  [example: module Mod where]
+  = {"module" __ @ModuleName __ @IdList? __ "where" #Module}
+
+ImportDecl
+  [example: import Mod hiding as A (Type(..))]
+  = {"import" __ "qualified"? __ @ModuleName __ "hiding"? (__ "as" __ @ComponentName)? (__ @IdList)? #Import}
+
+InstanceDecl
+  = {"instance" _ @ComponentName _ @TypeVariableName _ <with Instance @WhereClause> #Instance}
+
+ClassDecl
+  = {"class" _ @ClassName (_ "=>" _ @ClassName)? _  @WhereClause #Class}
+
+ClassName
+  = {@ComponentName _ @TypeVariableName #ClassName}
+  / '(' _ ClassName _ ')'
+
+ModuleName
+  = {@ComponentName ('.' @ModuleName)? #Module}
+
+IdList
+  = {'(' __ (@IdName (__ ',' __ @IdName)*)? __ ','? __ ')' #IdList}
+
+IdName
+  = {@ComponentName (__ '(' __ ('..' / @IdName (__ ',' __ @IdName)*)? __ ')')? #Component}
+  / {@VariableName #Variable}
+  / '(' _ (OPERATOR_KEYWORD / OperatorName) _ ')'
+
+ComponentList
+  = {(@ComponentName (_ ',' _ @ComponentName)+) #ComponentList}
+
+VariableList
+  = {(@VariableName (_ ',' _ @VariableName)+) #VariableList}
+
+ComponentName
+  = {!KEYWORD [A-Z] W* #Name}
+
+Variable
+  = {('!' #StrictVar / #Variable) @TypeVariableName}
+
+VariableName
+  = {!KEYWORD [a-z_] W* #Name}
+
+FuncElement
+  = {@VariableName #Function}
+  / {'('_ (@VariableName/@Literal)? _ (@OperatorName / @{DEFINE_OPERATOR #OP}) _ ')' #Function}
+  / {'(' _ (@OperatorName / @{DEFINE_OPERATOR #OP}) _ (@VariableName/@Literal)? _ ')' #Function}
+  / {'(' _ @LambdaExpression _ ')' #Function}
+
+TypeName
+  [example: Int]
+  [example: [Int]]
+  [example: (Int,Int)]
+  [example: ((Int,Int) -> Int)]
+  = {@ComponentName #Type}
+  / {'[' _ @TypeName? _ ']' #List}
+  / {'(' _ @TypeName? (_ ',' _ @TypeName?)* _ ')' #Tuple}
+  / {'(' _ @TypeName( _ '->' _ @TypeName)+ _ ')' #Function}
+  / '(' _ FunctorTypeName _ ')'
+
+ParenthesesFreeTypeName
+  = FunctorTypeName
+  / { @VariableName _ @ParenthesesFreeTypeName #Functor}
+  / {@VariableName #TypeVariable}
+  / TypeName
+  / {'[' _ @ParenthesesFreeTypeName? _ ']' #List}
+  / {'(' _ @ParenthesesFreeTypeName? (_ ',' _ @ParenthesesFreeTypeName?)* _ ')' #Tuple}
+  / {'(' _ @ParenthesesFreeTypeName (_ '->' _ @ParenthesesFreeTypeName)+ _ ')' #Function}
+
+FunctorTypeName
+  = { @ComponentName _ @ParenthesesFreeTypeName #Functor}
+
+DataTypeVariableName
+  = {@Variable #TypeVariable}
+  / TypeName
+  / {'[' _ @TypeVariableName? _ ']' #List}
+  / {'(' _ @TypeVariableName? (_ ',' @TypeVariableName?)* _ ')' #Tuple}
+  / {'(' _ @TypeVariableName (_ '->' _ @TypeVariableName)+ _ ')' #Function}
+  / { @ComponentName _ @TypeVariableName #Functor}
+
+
+TypeVariableName
+  = { (@ComponentName/@VariableName) _ @TypeVariableName #Functor}
+  / {@{@VariableName #First} _ ":" _ @FuncParamElement #ListParameter}
+  / {@VariableName #TypeVariable}
+  / TypeName
+  / {'[' _ (@TypeVariableName _ )* ']' #List}
+  / {'(' _ @{@TypeVariableName #First} _ ":" _ @TypeVariableName _ ')' #ListParameter}
+  / {'(' _ @TypeVariableName? (_ ',' _ @TypeVariableName?)* _ ')' #Tuple}
+  / {'(' _ @TypeVariableName (_ '->' _ @TypeVariableName)+ _ ')' #Function}
+
+SourceElement
+  = Statement
+
+Statement
+  = @DataTypeDecl
+  / @WhereClause
+  / @InstanceDecl
+  / @ClassDecl
+  / @FuncDecl
+  / @VarDecl
+  / @FixitySignature
+  / @TypeSignature
+  / @TypeSynonym
+  / @CPreprocessor
+
+VarDecl
+  [example: a = 5]
+  = {(@TypeVariableName / '('_ @OperatorName _ ')') _ "=" _ Initializer #VarDecl}
+
+Initializer
+  = AssignmentExpression
+
+AssignmentExpression
+  = @DoExpression
+  / @WhereClause
+  / @LetExpression
+  / @LambdaExpression
+  / @ConstructorExpression
+  / @P0OPExpression
+
+ConstructorExpression
+  = {@ComponentName _ '{' _ @VarDecl (_',' _ @VarDecl)* _ '}' #Constructor}
+
+P0OPExpression
+  = {@P1OPExpression _ ('$' #Group/ '$!' #GroupStrictEval / '`seq`' #StrictEval) _ @P0OPExpression }  //right
+  / P1OPExpression
+
+P1OPExpression
+  = P2OPExpression _ {@ ('>>=' #Bind / '>>' #Then) _ @P2OPExpression }* //left
+  / P2OPExpression
+
+P2OPExpression
+  = {@P3OPExpression _ ('&&'#AA) _ @P2OPExpression }  //right
+  / P3OPExpression
+
+P3OPExpression
+  = {@P4OPExpression _  ('||'#II) _ @P3OPExpression }  //right
+  / P4OPExpression
+
+P4OPExpression
+  = {@P5OPExpression _ ('==' #Equals / '/=' #NotEquals / "<=" #LessThanEquals / '<' #LessThan / '>=' #GreaterThanEquals / '>' #GreaterThan / '`elem`' #OP/ '`notElem`' #OP) _ @P5OPExpression} //no join
+  / P5OPExpression
+
+P5OPExpression
+  = {@P6OPExpression _ (':' #PrependToList / '++' #ListJoin) _ @P5OPExpression }  //right
+  / P6OPExpression
+
+P6OPExpression
+  = P7OPExpression _ {@ ( '+' #Add / '-' #Sub ) _ @P7OPExpression }* //left
+  / P7OPExpression
+
+P7OPExpression
+  = P8OPExpression _ {@ ( '*' #Mul / '/' #Div / '`div`' #Div/ '`mod`' #Mod/ '`rem`' #Rem/ '`quot`' #Quot ) _ @P8OPExpression }* //left
+  / P8OPExpression
+
+P8OPExpression
+  = {@P9OPExpression _ ('^^' #OP / '^' #Pow / '**' #OP) _ @P8OPExpression } //right
+  / P9OPExpression
+
+P9OPExpression
+  = {@IfExpression _ ('.' #FuncJoin / !DEFINE_OPERATOR !OPERATOR_KEYWORD @OperatorName #Operator) _ @P9OPExpression } //right
+  / IfExpression _ {@ ( '!!' #ListAccess /( '`' @{!DEFINE_OPERATOR_FUNC @VariableName #FuncName} '`') #DefaultInfixFunc) _ @IfExpression }* //left
+  / IfExpression
+
+IfExpression
+  = {'if' _ @{@P0OPExpression #If} _ 'then' _ @{@P0OPExpression #Then} _ 'else' _ @{@P0OPExpression #Else} #If}
+  / FuncExpression
+
+FuncExpression
+  ={@FuncElement (@{(_ @OPExpression)+ #Parameter}) #Function}
+  / {@OPExpression _ ('<$>' #Fmap / '<*>' #Ap ) _ @OPExpression}
+  / OPExpression
+
+OPExpression
+  = ConstructorExpression
+  / CaseExpression
+  / ComponentName
+  / {@VariableName _ '::'  _ @TypeVariableName #TypedVariable}
+  / {@VariableName #Variable}
+  / {@FuncElement #Function}
+  / '(' _ P0OPExpression _ ')'
+  / Literal
+
+DoExpression
+  = {'do' SC* <with DoBlock @Block> #Do}
+
+InDoExpression
+  = {@VariableName _ '<-' _  (  @FuncExpression) #Bind}
+
+LetExpression
+  = {<block "let" _ <block @StrictVarDecl ((SC* EOS)+ <indent> @StrictVarDecl)*> (SC* EOS <indent>/ _) "in"> _ @{@P0OPExpression #In} #Let}
+  / <if DoBlock> {"let" _ <block @StrictVarDecl ((SC* EOS)+ <indent> @StrictVarDecl)*> #Let}
+  / {"let" _ @StrictVarDecl _ "in" _ @{@P0OPExpression #In} #Let}
+
+StrictVarDecl
+  [example: a = 5]
+  = {(@FuncParam / @Variable / '('_ @OperatorName _ ')') _ "=" _ Initializer #VarDecl}
+
+CaseExpression
+  = {"case" _ @{@P0OPExpression #Condition} _ "of" _ @CaseBlock #CaseBlock}
+
+CaseBlock
+  = (EOS SC+)? {<block @InCase ((SC* EOS)+ <indent> @InCase)*> #Cases}
+
+InCase
+  = {@{(@FuncParam / @Literal) #Condition} _ "->" _ @{AssignmentExpression #Body} #Case}
+
+WhereClause
+  = {"where" SC* @WhereBlock #Where}
+
+WhereBlock
+  = { _ '{' (__ InWhere EOS)* _ '}' #Block}
+  / (EOS SC+)? {<block InWhere? ((SC* EOS)+ <indent> InWhere )*> #Block}
+
+InWhere
+  = Statement
+
+Block
+  = { _ '{' (__ BlockExpression EOS)* _ '}' #Block}
+  / (EOS SC+)? {<block BlockExpression? ((SC* EOS)+ <indent> BlockExpression)*> #Block}
+
+BlockExpression
+  = <if DoBlock> @InDoExpression
+  / <if Instance> @{@P0OPExpression _ "=" _ @P0OPExpression #VarDecl}
+  / AssignmentExpression
+
+Literal
+  = TypedLiteral
+  / UntypedLiteral
+  / <if Pattern> WildCard
+
+UntypedLiteral
+  = {@Literals ("#" #MagicHash/ #Literal) }
+
+Literals
+  = NumberLiteral
+  / CharLiteral
+  / StringLiteral
+  / TupleLiteral
+  / ListLiteral
+  / '(' _ LambdaExpression _ ')'
+
+NumberLiteral
+  = {"-"? [0-9]+ '.' [0-9]+ #Num}
+  / {"-"?  [0-9]+ #Num}
+
+CharLiteral
+  [example: 'a']
+  =['] {("\\" . / !['] .) #Char} [']
+
+StringLiteral
+  [example: "test"]
+  = ["] {(!["] .)* #String} ["]
+
+TupleLiteral
+  [example: (1, ("abc", 2.0))]
+  = {'(' _ @P0OPExpression? ( _ ',' _ @P0OPExpression? )* _ ')' #Tuple}
+  / {'(' _ ')' #Tuple}
+
+ListLiteral
+  [example: [1,2,3]]
+  = {'[' _ @P0OPExpression ( _ ',' _ @P0OPExpression )* _ ']' #List}
+  / {'[' _ @{ @P0OPExpression ( _ ',' _ @P0OPExpression )? #Start} _ '..' _  @{@P0OPExpression? #End} _ ']' #SerialList}
+  / {'[' _ @{(@DataTypeConstructor / @P0OPExpression) #Expression} _ '|' _ @{@FuncParam _ '<-' _ @P0OPExpression #Pattern} (_ ',' _ (@{@FuncParam _ '<-' _ @P0OPExpression #Pattern} / @{@P0OPExpression #Condition}))* ']' #ListComprehensions}
+  / {'[' _ ']' #List}
+
+TypedLiteral
+  = {@UntypedLiteral _ '::'  _ @TypeVariableName #TypedLiteral}
+
+WildCard
+  = {"_" #WildCard}
+
+DataTypeConstructor
+  = {@ComponentName (_ @DataTypeVariableName)+ #Constructor}
+
+LambdaExpression
+  = {'\\' _ (@{("~" #LazyParam / #Param) @FuncParam } _ )+ _ '->' _ @{@P0OPExpression #Body} #Lambda}
+
+DataTypeDecl
+  [example: data Type = A|B deriving (Eq, Ord)]
+  [example: data Type = A Int Int deriving Show]
+  [example: data Type = Leaf | Branch Tree Tree deriving Show]
+  = {"data" _ @ComponentName (_ @TypeVariableName)* _ "=" _  @DataType (@{_ "deriving" _ ('(' _ @ComponentList _ ')' / @ComponentName) #Deriving})? #DataTypeDecl}
+
+DataType
+  = { @ComponentName _ '{' _ @TypeSignature (_ ',' _ @TypeSignature)* _ '}' #Field}
+  / DataTypeEnum
+
+DataTypeEnum
+  = {@DataTypeProduct (_ '|' _ @DataTypeProduct)* #Enum}
+
+DataTypeProduct
+  = {@ComponentName #Product} (_ @TypeName)+
+  / DataTypeConstructor
+  / {@ComponentName #Type}
+
+FixitySignature
+  [example: infixl 3 ++##&]
+  [example: infixr !?]
+  = {@Fixity _ @Priority? _ @OperatorName (_ ',' _ @OperatorName)* #FixitySignature}
+
+Priority
+  = { @DIGIT #Priority}
+
+Fixity
+  = {('infixl' / 'infixr' / 'infix') #Fixity}
+
+FuncDecl
+  = {(@VariableName (_ @{("~" #LazyParam / #Param) @FuncParam })+ _ "=" _ @{@CaseExpression #Body} #FuncDecl
+  / @VariableName (_ @{("~" #LazyParam / #Param) @FuncParam })+ _ "=" _ @{(_ AssignmentExpression)+ #Body} #FuncDecl
+  / @VariableName (_ @{("~" #LazyParam / #Param) @FuncParam })+ SC* @GuardBlock #FuncDecl
+  / @{("~" #LazyParam / #Param) @FuncParam } _ (@OperatorName / '`' @{@VariableName #FuncName} '`') _ @{("~" #LazyParam / #Param) @FuncParam } _ "=" _ @{AssignmentExpression #Body} #OperatorDecl)
+  (_ @WhereClause?) }
+
+FuncName
+  = @VariableName
+  / '('_ @OperatorName _ ')'
+
+FuncParam
+  = {@{@VariableName #PatternName} "@" @{@FuncParam #Pattern} #AsPattern}
+  / FuncParamElement
+  / Literal
+  / '(' _ FuncParam _ ')'
+
+FuncParamElement
+  = { @ComponentName _ @TypeVariableName #Functor}
+  / {@{(@VariableName / @WildCard) #First} _ ":" _ @FuncParamElement #ListParameter}
+  / {@VariableName #Variable}
+  / WildCard
+  / TypeVariableName
+  / {'[' _ (@FuncParamElement _ )* ']' #List}
+  / {'(' _ @{@FuncParamElement #First} _ ":" _ @FuncParamElement _ ')' #ListParameter}
+  / {'(' _ @FuncParamElement? (_ ',' _ @FuncParamElement?)* _ ')' #Tuple}
+  / {'(' _ @FuncParamElement (_ '->' _ @FuncParamElement)+ _ ')' #Function}
+
+GuardBlock
+  = (EOS SC+)? {<block "|" _ @GuardBody ((SC* EOS)+ <indent> "|" _ @GuardBody)*> #Guards}
+
+GuardBody
+[example:_ = 1]
+[example:x > 0 = 1]
+  = {@GuardCondition _ "=" _ @{BlockExpression #Body} #Guard}
+
+GuardCondition
+  = {(@WildCard / @P0OPExpression) #Condition}
+
+TypeSynonym
+  = {"type" _ @ComponentName _ "=" _ @TypeName #TypeSynonym}
+
+TypeSignature
+  [example: func :: Int -> Int]
+  [example: func :: Floating a => a -> a]
+  [example: func :: (Floating a , Number b) => a -> b]
+  [example: (+*) :: (Floating a , Number b) => a -> b]
+  = {('(' _ @OperatorName _ ')' / @VariableName) (_ ',' _ ('(' _ @OperatorName _ ')' / @VariableName))* _ '::'  _ @ParenthesesFreeTypeName (_ '->' _ @ParenthesesFreeTypeName)+ #FuncTypeSignature}
+  / {('(' _ @OperatorName _ ')' / @VariableName) (_ ',' _ ('(' _ @OperatorName _ ')' / @VariableName))* _ '::' _ @TypeVariableList _ '=>' _ @TypeVariableName (_ '->' _ @TypeVariableName)+ #FuncTypeSignature}
+  / {(@VariableList / @VariableName) _ '::'  _ @ParenthesesFreeTypeName #VariableTypeSignature}
+
+TypeVariableList
+  = TypeVariable
+  / {'(' _ @TypeVariable (_ ',' _ @TypeVariable)* _ ')' #TypeVariableDeclList}
+
+TypeVariable
+  = {@{@ComponentName #Type} _ @{@VariableName #TypeVariable} #TypeVariableDecl}
+
+OperatorName
+  [example: +!=%]
+  = {(!W ![(),;[\]`{}_:"'\n\r\t ] .)+ #OperatorName}

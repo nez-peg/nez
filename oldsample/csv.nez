@@ -1,0 +1,9 @@
+File
+	= { (@Line)* #array }
+	
+Line
+	= { @Csv (',' @Csv)* ( '\n' / !. ) #array }
+	
+Csv
+	= [ \t]* { (![,\n] .)* #value }
+	

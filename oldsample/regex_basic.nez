@@ -1,0 +1,36 @@
+// Simple regular expression grammar
+// author: Kimio Kuramitsu
+
+File
+	= Expr _ !.
+
+Chunk
+	= _ Expr _ 
+
+Expr
+	= Sequence {@ ('|' @Sequence)+ #Choice }?
+
+Sequence
+	= Suffix {@ (@Suffix)+ #Sequence }?
+
+Suffix
+	= Term {@ &'' addQualifier }*
+
+addQualifier
+        = '*' #ZeroMore
+        / '+' #OneMore
+        / '?' #Option
+
+Term
+	= { LETTER+ #Terminal }
+	/ '(' Expr ')'
+
+LETTER
+	= [A-Za-z0-9] / SYMBOL
+
+SYMBOL
+        = '&' !'&' / '/' / '@' / '_' / '#' / '%' / ',' / '-'
+        / ':' / ';' / '<' / '>' / '=' / '~' / '`' / '"'
+_
+	= [ \t]*
+

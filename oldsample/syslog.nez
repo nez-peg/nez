@@ -1,0 +1,58 @@
+// NEZ PEG4d format 
+// Syslog format
+// http://peg4d.org/
+
+
+/** Sample
+Jul 25 00:36:36 konoha13.local coreaudiod[198]: Disabled automatic stack shots because audio IO is active
+ **/
+
+File
+ = { #Array (@Log)* }
+
+Log 
+ = { #Log 
+     @{ MONTH    #Month      } ' ' 
+     @{ DAY      #Day        } ' '
+     @{ TIME     #Time       } ' '
+     @{ HOST     #Host       } ' '
+     @{ PROCESS  #Name       } '['
+     @{ PID      #ProcessId  } ']'
+     @Misc    @Level             ': '    
+     @{ DATA     #Data       } '\n'?
+   }
+
+MONTH
+ = 'Jan' / 'Feb' / 'Mar' / 'Apr' / 'May' / 'Jun'
+ / 'Jul' / 'Aug' / 'Sep' / 'Oct' / 'Nov' / 'Dec'
+
+DAY
+ = [0-3 ] [0-9]
+
+TIME
+ = [0-9] [0-9] ':' [0-9] [0-9] ':' [0-9] [0-9]
+
+HOST
+ = (!' ' .)*
+
+PROCESS
+ = (!'[' .)*
+
+PID
+ = [0-9]+
+
+Misc
+ = (' (' { (!')' .)* #Misc } ')')
+ / { `` #Misc }
+
+Level
+ = (' <' { (!'>' .)* #Level } '>') 
+   / { `Unknown` #Level }
+
+DATA
+ = (!('\n' (MONTH / !.)) .)*
+
+
+
+
+

@@ -13,12 +13,14 @@ import nez.lang.Capture;
 import nez.lang.Choice;
 import nez.lang.DefIndent;
 import nez.lang.DefSymbol;
+import nez.lang.ExistsSymbol;
 import nez.lang.Expression;
 import nez.lang.Factory;
 import nez.lang.Grammar;
 import nez.lang.IsIndent;
 import nez.lang.IsSymbol;
 import nez.lang.Link;
+import nez.lang.LocalTable;
 import nez.lang.Manipulator;
 import nez.lang.New;
 import nez.lang.NonTerminal;
@@ -38,8 +40,7 @@ import nez.util.UFlag;
 import nez.util.UList;
 import nez.util.UMap;
 
-public class RuntimeCompiler {
-	final int option;
+public class NezCompiler0 extends NezCompiler {
 	
 	class CodeBlock {
 		Instruction head;
@@ -51,22 +52,14 @@ public class RuntimeCompiler {
 	UMap<CodeBlock> ruleMap;
 	HashMap<Integer, MemoPoint> memoMap;
 	
-	public RuntimeCompiler(int option) {
-		this.option = option;
+	public NezCompiler0(int option) {
+		super(option);
 		this.codeList = new UList<Instruction>(new Instruction[64]);
 		this.ruleMap = new UMap<CodeBlock>();
 		if(this.enablePackratParsing()) {
 			this.memoMap = new HashMap<Integer, MemoPoint>();
 			this.visitedMap = new UMap<String>();
 		}
-	}
-	
-	protected final boolean enablePackratParsing() {
-		return UFlag.is(this.option, Grammar.PackratParsing);
-	}
-
-	protected final boolean enableASTConstruction() {
-		return UFlag.is(this.option, Grammar.ASTConstruction);
 	}
 
 	MemoPoint issueMemoPoint(String label, Expression e) {
@@ -969,5 +962,16 @@ public class RuntimeCompiler {
 	public final Instruction encodeIsIndent(IsIndent p, Instruction next) {
 		return new IIsIndent(p, next);
 	}
+
+	public Instruction encodeExistsSymbol(ExistsSymbol existsSymbol, Instruction next) {
+		// TODO Auto-generated method stub
+		return next;
+	}
+
+	public Instruction encodeLocalTable(LocalTable localTable, Instruction next) {
+		// TODO Auto-generated method stub
+		return next;
+	}
+
 
 }

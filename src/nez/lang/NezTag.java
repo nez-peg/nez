@@ -31,13 +31,15 @@ public class NezTag {
 	static final Tag Tagging     = Tag.tag("Tagging");
 	static final Tag Replace     = Tag.tag("Replace");
 	
-
 //	static final Tag Debug       = Tag.tag("Debug");
 //	static final Tag Memo        = Tag.tag("Memo");
 	static final Tag If          = Tag.tag("If");
 	static final Tag On          = Tag.tag("On");
 	static final Tag With        = Tag.tag("With");
 	static final Tag Without     = Tag.tag("Without");
+
+	static final Tag Expand      = Tag.tag("Expand");
+	static final Tag Times       = Tag.tag("Times");
 	
 	static final Tag Block       = Tag.tag("Block");
 	static final Tag Def         = Tag.tag("Def");
@@ -45,6 +47,7 @@ public class NezTag {
 	static final Tag Isa         = Tag.tag("Isa");
 	static final Tag Exists      = Tag.tag("Exists");
 	static final Tag Local       = Tag.tag("Local");
+
 	
 	static final Tag DefIndent      = Tag.tag("DefIndent");
 	public static final Tag Indent      = Tag.tag("Indent");
@@ -57,7 +60,7 @@ public class NezTag {
 	static final Tag Rule         = Tag.tag("Rule");
 	static final Tag Import       = Tag.tag("Import");
 	static final Tag Example      = Tag.tag("Example");
-	static final Tag Rebut        = Tag.tag("Rebut");
+	static final Tag Rebuttal        = Tag.tag("Rebut");
 	static final Tag Format       = Tag.tag("Format");
 
 }

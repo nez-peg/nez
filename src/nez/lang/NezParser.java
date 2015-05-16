@@ -395,13 +395,17 @@ public class NezParser extends CommonTreeVisitor {
 	public Expression toIf(CommonTree ast) {
 		return Factory.newIfFlag(ast, ast.textAt(0, ""));
 	}
-	
+
+	public Expression toOn(CommonTree ast) {
+		return Factory.newOnFlag(ast, true, ast.textAt(0, ""), toExpression(ast.get(1)));
+	}
+
 	public Expression toWith(CommonTree ast) {
-		return Factory.newWithFlag(ast, ast.textAt(0, ""), toExpression(ast.get(1)));
+		return Factory.newOnFlag(ast, true, ast.textAt(0, ""), toExpression(ast.get(1)));
 	}
 
 	public Expression toWithout(CommonTree ast) {
-		return Factory.newWithoutFlag(ast, ast.textAt(0, ""), toExpression(ast.get(1)));
+		return Factory.newOnFlag(ast, false, ast.textAt(0, ""), toExpression(ast.get(1)));
 	}
 
 	public Expression toBlock(CommonTree ast) {

@@ -115,7 +115,7 @@ public abstract class NezGenerator {
 	
 	public void generate(Grammar grammar) {
 		makeHeader();
-		for(Production p: grammar.getSubProductionList()) {
+		for(Production p: grammar.getProductionList()) {
 			visitProduction(p);
 		}
 		makeFooter();

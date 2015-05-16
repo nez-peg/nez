@@ -2,7 +2,7 @@ package nez.lang;
 
 import nez.ast.SourcePosition;
 import nez.runtime.Instruction;
-import nez.runtime.RuntimeCompiler;
+import nez.runtime.NezCompiler;
 import nez.util.UList;
 
 public class ByteChar extends Terminal {
@@ -43,7 +43,7 @@ public class ByteChar extends Terminal {
 	}
 	
 	@Override
-	public Instruction encode(RuntimeCompiler bc, Instruction next) {
+	public Instruction encode(NezCompiler bc, Instruction next) {
 		return bc.encodeByteChar(this, next);
 	}
 	

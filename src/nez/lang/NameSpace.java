@@ -371,21 +371,19 @@ public class NameSpace {
 	
 	// Conditional Parsing
 	// <if FLAG>
-	// <with FLAG e>
-	// <without FLAG e>
+	// <on FLAG e>
+	// <on !FLAG e>
 	
 	public final Expression newIfFlag(String flagName) {
 		return Factory.newIfFlag(src(), flagName);
 	}
+
+	public final Expression newOnFlag(String flagName, Expression ... seq) {
+		return Factory.newOnFlag(src(), true, flagName, newSequence(seq));
+	}
+
 	
-	public final Expression newWithFlag(String flagName, Expression ... seq) {
-		return Factory.newWithFlag(src(), flagName, newSequence(seq));
-	}
-
-	public final Expression newWithoutFlag(String flagName, Expression ... seq) {
-		return Factory.newWithoutFlag(src(), flagName, newSequence(seq));
-	}
-
+	
 	public final Expression newScan(SourcePosition s, int number, Expression scan, Expression repeat) {
 		return null;
 	}
@@ -410,6 +408,16 @@ public class NameSpace {
 		return Factory.newIsaSymbol(src(), this, Tag.tag(table));
 	}
 
+	public final Expression newExists(SourcePosition s, String table) {
+		return Factory.newExists(src(), this, Tag.tag(table));
+	}
+
+	public final Expression newLocal(SourcePosition s, String table, Expression ... seq) {
+		return Factory.newLocal(src(), this, Tag.tag(table), newSequence(seq));
+	}
+
+	
+	
 	public final Expression newDefIndent(SourcePosition s) {
 		return Factory.newDefIndent(src());
 	}

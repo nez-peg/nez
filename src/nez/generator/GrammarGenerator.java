@@ -19,7 +19,7 @@ import nez.lang.Repetition;
 import nez.lang.Repetition1;
 import nez.lang.Replace;
 import nez.lang.Sequence;
-import nez.lang.SequentialExpression;
+import nez.lang.Multinary;
 import nez.lang.Tagging;
 import nez.lang.Unary;
 import nez.util.StringUtils;
@@ -234,7 +234,7 @@ public abstract class GrammarGenerator extends NezGenerator {
 		}
 	}
 
-	private int appendAsString(SequentialExpression l, int start) {
+	private int appendAsString(Multinary l, int start) {
 		int end = l.size();
 		String s = "";
 		for(int i = start; i < end; i++) {

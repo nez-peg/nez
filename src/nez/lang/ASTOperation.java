@@ -12,16 +12,6 @@ public abstract class ASTOperation extends Expression {
 	}
 
 	@Override
-	public Expression get(int index) {
-		return null;
-	}
-
-	@Override
-	public int size() {
-		return 0;
-	}
-
-	@Override
 	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
 		return false;
 	}
@@ -33,16 +23,4 @@ public abstract class ASTOperation extends Expression {
 	public short acceptByte(int ch, int option) {
 		return Prediction.Unconsumed;
 	}
-
-	@Override
-	protected int pattern(GEP gep) {
-		return 0;
-	}
-
-	@Override
-	protected void examplfy(GEP gep, StringBuilder sb, int p) {
-
-	}
-
-
 }

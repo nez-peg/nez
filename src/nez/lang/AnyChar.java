@@ -3,7 +3,7 @@ package nez.lang;
 import nez.ast.Source;
 import nez.ast.SourcePosition;
 import nez.runtime.Instruction;
-import nez.runtime.RuntimeCompiler;
+import nez.runtime.NezCompiler;
 import nez.util.UFlag;
 import nez.util.UList;
 import nez.util.UMap;
@@ -12,7 +12,7 @@ public class AnyChar extends Terminal {
 	AnyChar(SourcePosition s) {
 		super(s);
 	}
-	
+
 	@Override
 	public String getPredicate() {
 		return "any";
@@ -53,7 +53,7 @@ public class AnyChar extends Terminal {
 	}
 	
 	@Override
-	public Instruction encode(RuntimeCompiler bc, Instruction next) {
+	public Instruction encode(NezCompiler bc, Instruction next) {
 		return bc.encodeMatchAny(this, next);
 	}
 	@Override

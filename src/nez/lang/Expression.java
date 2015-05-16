@@ -4,7 +4,7 @@ import java.util.TreeMap;
 
 import nez.ast.SourcePosition;
 import nez.runtime.Instruction;
-import nez.runtime.RuntimeCompiler;
+import nez.runtime.NezCompiler;
 import nez.util.UList;
 import nez.util.UMap;
 
@@ -39,7 +39,17 @@ public abstract class Expression extends AbstractList<Expression> {
 	}
 
 	public abstract String getPredicate();
-	public abstract String key();
+	public String key() { return this.getPredicate(); }
+	
+	@Override
+	public Expression get(int index) {
+		return null;
+	}
+	@Override
+	public int size() {
+		return 0;
+	}
+	
 	public abstract Expression reshape(Manipulator m);
 	
 	public final boolean isAlwaysConsumed() {
@@ -50,8 +60,6 @@ public abstract class Expression extends AbstractList<Expression> {
 	public abstract boolean isConsumed(Stacker stacker);
 	
 	
-//	void checkPhase1(GrammarChecker checker, String ruleName, UMap<String> visited, int depth) {}
-//	void checkPhase2(GrammarChecker checker) {}
 	boolean setOuterLefted(Expression outer) { return false; }
 	
 	public final int inferTypestate() {
@@ -59,17 +67,8 @@ public abstract class Expression extends AbstractList<Expression> {
 	}
 	
 	public abstract int inferTypestate(UMap<String> visited);
-//	public abstract Expression checkTypestate(GrammarChecker checker, Typestate c);
-	
-//	public final static boolean CreateNonTerminal = true;
-//	public final static boolean RemoveOnly = false;
-
-//  public abstract Expression removeASTOperator(boolean newNonTerminal);
-//	public abstract Expression removeFlag(TreeMap<String, String> undefedFlags);
 	
 	public abstract short acceptByte(int ch, int option);
-//	public  boolean predict(int option, int ch, boolean k) {return false;}  // 
-//	public abstract void predict(int option, boolean[] dfa);
 	
 	public final Expression optimize(int option) {
 		option = Grammar.mask(option);
@@ -106,11 +105,21 @@ public abstract class Expression extends AbstractList<Expression> {
 		visitor.visit(this);
 	}
 
-	public abstract Instruction encode(RuntimeCompiler bc, Instruction next);
+	public abstract Instruction encode(NezCompiler bc, Instruction next);
 
-	protected abstract int pattern(GEP gep);
-	protected abstract void examplfy(GEP gep, StringBuilder sb, int p);
 
+	protected int pattern(GEP gep) {
+		return 0;
+	}
+
+	protected void examplfy(GEP gep, StringBuilder sb, int p) {
+
+	}
+//
+//	protected abstract int pattern(GEP gep);
+//	protected abstract void examplfy(GEP gep, StringBuilder sb, int p);
+
+	
 	// test
 	
 	public static final boolean isByteConsumed(Expression e) {

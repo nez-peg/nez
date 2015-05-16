@@ -1,0 +1,53 @@
+// Nez
+// Nested CDATA Section
+
+export
+        = Xml
+File
+	= PROLOG? S* DTD? S* Xml S*
+Chunk
+	= Xml
+
+Expr
+	= Xml
+
+PROLOG
+	= '<?xml' (!'?>' .)* '?>'
+
+DTD
+	= '<!' (!'>' .)* '>'
+
+Xml
+	= { '<' @Name (S+ @Attribute)* S* ( '/>' / '>' S* (@Content / COMMENT)* '</' NAME '>' ) #Element } S*
+
+Name
+	= { NAME #Name }
+
+NAME
+	= [A-Z_a-z:] ('-' / [.0-9:A-Z_a-z])*
+
+Attribute
+	= { @Name S* '=' S* @String #Attr }
+
+String
+	= '"' { (!'"' .)* #Value } '"'
+
+Content
+	= Xml 
+	/ CDataSec 
+	/ Text
+
+CDataSec
+	= '<![CDATA[' { CDATA #CDATA } ']]>' S*
+CDATA
+	= (!']]>' !'<![CDATA[' .)*
+	  ('<![CDATA[' CDATA ']]>' CDATA)?
+
+COMMENT
+	= '<!--' (!'-->' .)* '-->' S*
+
+Text
+	= { (!'<' .)+ #Text }
+
+S
+	= [ \t\r\n]

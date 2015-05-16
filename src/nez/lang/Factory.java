@@ -82,14 +82,14 @@ public class Factory {
 		return internImpl(s, new Repetition1(s, p));
 	}
 
-	public final static Expression newAnd(SourcePosition s, Expression p) {
+	public final static And newAnd(SourcePosition s, Expression p) {
 		s = p.isInterned() ? null : s;
-		return internImpl(s, new And(s, p));
+		return (And)internImpl(s, new And(s, p));
 	}
 	
-	public final static Expression newNot(SourcePosition s, Expression p) {
+	public final static Not newNot(SourcePosition s, Expression p) {
 		s = p.isInterned() ? null : s;
-		return internImpl(s, new Not(s, p));
+		return (Not)internImpl(s, new Not(s, p));
 	}
 
 	final static boolean isInterned(UList<Expression> l) {
@@ -480,13 +480,13 @@ public class Factory {
 		return internImpl(s, new OnFlag(s, predicate, flagName, e));
 	}
 
-	public final static Expression newWithFlag(SourcePosition s, String flagName, Expression e) {
-		return internImpl(s, new WithFlag(s, flagName, e));
-	}
-
-	public final static Expression newWithoutFlag(SourcePosition s, String flagName, Expression e) {
-		return internImpl(s, new WithoutFlag(s, flagName, e));
-	}
+//	public final static Expression newWithFlag(SourcePosition s, String flagName, Expression e) {
+//		return internImpl(s, new WithFlag(s, flagName, e));
+//	}
+//
+//	public final static Expression newWithoutFlag(SourcePosition s, String flagName, Expression e) {
+//		return internImpl(s, new WithoutFlag(s, flagName, e));
+//	}
 
 	public final static Expression newScan(SourcePosition s, int number, Expression scan, Expression repeat) {
 		return null;
@@ -510,6 +510,10 @@ public class Factory {
 		return internImpl(s, new Block(s, e));
 	}
 
+	public static Expression newLocal(SourcePosition s, NameSpace ns, Tag tableName, Expression e) {
+		return internImpl(s, new LocalTable(s, ns, tableName, e));
+	}
+
 	public static Expression newDefSymbol(SourcePosition s, NameSpace ns, Tag tableName, Expression e) {
 		return internImpl(s, new DefSymbol(s, ns, tableName, e));
 	}
@@ -520,6 +524,10 @@ public class Factory {
 	
 	public static Expression newIsaSymbol(SourcePosition s, NameSpace ns, Tag tableName) {
 		return internImpl(s, new IsSymbol(s, ns, tableName, /*checkLastSymbolOnly*/false));
+	}
+
+	public static Expression newExists(SourcePosition s, NameSpace ns, Tag tableName) {
+		return internImpl(s, new ExistsSymbol(s, ns, tableName));
 	}
 
 	public static Expression newDefIndent(SourcePosition s) {

@@ -185,7 +185,7 @@ class NezCommand extends ShellCommand {
 	@Override
 	public void perform(Grammar g) {
 		NezGrammarGenerator gen  = new NezGrammarGenerator(null);
-		for(Production p: g.getSubProductionList()) {
+		for(Production p: g.getProductionList()) {
 			gen.visitProduction(p);
 		}
 	}

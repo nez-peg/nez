@@ -2,7 +2,7 @@ package nez.lang;
 
 import nez.ast.SourcePosition;
 import nez.runtime.Instruction;
-import nez.runtime.RuntimeCompiler;
+import nez.runtime.NezCompiler;
 import nez.util.UList;
 import nez.util.UMap;
 
@@ -52,7 +52,7 @@ public class New extends Unconsumed {
 		return Typestate.ObjectType;
 	}
 	@Override
-	public Instruction encode(RuntimeCompiler bc, Instruction next) {
+	public Instruction encode(NezCompiler bc, Instruction next) {
 		return bc.encodeNew(this, next);
 	}
 	@Override

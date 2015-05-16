@@ -1,0 +1,174 @@
+// XML Document Type Declaration
+// author Shinya Yamaguchi
+
+TopLevel
+    = Document
+    
+Chunk 
+    = Document
+    
+File 
+    = Document
+
+Document
+    = { (PROLOG)? (MISC* (@Dtd)+  MISC* )+ #Doc}
+    
+    
+PROLOG
+    =  '<?xml' (_* NAME '=' STRING)*  _* '?>' 
+//DocType
+//    = '<!DOCTYPE' _* {@DocTypeName '[' (@Dtd)* #doctype } ']>'
+    
+
+Dtd
+    = ( ( '<!' (element/attlist/entity/condsect) '>') / MISC)  _*
+
+IGNORESECT
+	= ( '<!' (![>] .)* '>' _*)/ (_* '%' NAME ';' _*) / ( (!']' .)+) / MISC
+
+condsect
+	= IGNORE / include
+	
+include	
+	= '[' _* ('INCLUDE'/NAME) _* '[' _* (@Dtd)* _*  NAME? _* MISC*  ']]' _*
+	
+IGNORE
+	= '[' _* 'IGNORE' _* '[' _* IGNORESECT* _* ']]' _*
+
+element
+	= 'ELEMENT' _* {@Name _* contentSpec _* #Element} _*
+
+contentSpec
+	=  @SpContent / topMember 
+	
+SpContent
+	= {'EMPTY' #Empty} / {'ANY' #Any}
+
+topMember
+	=   ('(' _* @Data _* ')' {@ &'' addQualifier}? ) / @ElName / @Choice / @Seq
+	
+member
+	=   (@Data / @ElName / @Choice / @Seq) 
+
+Choice 
+	= { '(' _* member (_* OR _* member)+ _* ')'  #Choice}{@ &'' addQualifier}?
+
+Seq 
+	= { '(' _* member (_* VS _* member)* _* ')' #Seq} {@ &'' addQualifier}?
+
+addQualifier
+	= 	'+' #OneMore
+		/ '*' #ZeroMore
+		/ '?' #Option 
+
+Data
+	= { '#PCDATA' #Data}
+	
+
+	
+OR
+	= _* '|' _* 
+	
+
+attlist
+	= 'ATTLIST' _* {@Name _* (@AttDef)* #Attlist} _*
+
+AttDef
+	= { @Name _* attType _* defaultDecl _* }
+	 
+attType
+	=  @{'CDATA' #CDATA} / tokenized / @Enumerated
+
+ATTVAL
+	= (![<&"].)*
+
+tokenized
+	= 
+		  @{'IDREFS' #IDREFS}		
+		/ @{'IDREF' #IDREF}
+		/ @{'ID' #ID}  
+		/ @{'ENTITY' #ENTITY} 
+		/ @{'ENTITIES' #ENTITIES} 
+		/ @{'NMTOKENS' #NMTOKENS} 
+		/ @{'NMTOKEN' #NMTOKEN} 
+
+Enumerated
+	= { '(' _* @{ [-A-Za-z0-9:._%;]* #Name } _* ( OR  @{ [-A-Za-z0-9:._%;]* #Name } )*   _* ')'  _* #Enum }
+	
+defaultDecl
+	=  '#REQUIRED' #REQUIRED / '#IMPLIED' #IMPLIED /  '#FIXED' _* @DefaultValue #FIXED / DEFAULTVALUE #Default 
+	
+DefaultValue
+	= ('"'{ (![<&"].)*#Value} '"') / ('\''{ (![<&"].)*#Value} '\'')
+	
+DEFAULTVALUE
+	= ('"' (![<&"].)* '"') / ('\'' (![<&"].)* '\'')
+
+entity
+	= 'ENTITY' _*  (gedecl/pedecl) _*
+
+gedecl
+	= { @Name _* entitydef _* #Entity}
+
+pedecl
+	= { '%' _* NAME _* PEDEF _* #Pedecl}
+
+entitydef
+	=  @EntityValue / (EXID NDATADECL?)
+
+PEDEF
+	= STRING / EXID
+
+EntityValue
+	= '"'{ (!["].)* #EntValue}'"'
+
+EXID 
+	= ('SYSTEM' _* SLITERAL)
+		/ ('PUBLIC' _* PUBIDLITERAL _* SLITERAL)
+
+NDATADECL
+	= 'NDATA' _* NAME
+	
+SLITERAL
+	= (  '\'' ( !'\'' . )* '\'') / ( '"' ( !'"' . )* '"')
+
+PUBIDLITERAL
+	= '"' PUBLICCHAR* '"'
+	
+PUBLICCHAR
+	=  [a-zA-Z0-9] / [-'()+,./:=?;!*#@$_% ]  / [\xD] / [\xA] 
+
+
+ElName
+	= { [A-Za-z:%_] ([-A-Za-z0-9:._%;])* #ElName } {@ &'' addQualifier}?
+
+Name
+	= { [A-Za-z:%_] ([-A-Za-z0-9:._%;])* #Name }
+	
+NAME
+	=  [A-Za-z:%_] ([-A-Za-z0-9:._%;])*
+
+String
+    =  '"' { ( !'"' . )*  #String } '"'
+    
+STRING
+	=  '"' ( !'"' . )* '"'
+    
+
+
+//Spacing etc
+
+
+MISC
+    = COMMENT / _+
+    
+
+COMMENT
+    = '<!--' (!'-->' . )* '-->'
+    
+    
+VS
+	= _* ',' _*
+	
+
+_ = [ \t\r\n]

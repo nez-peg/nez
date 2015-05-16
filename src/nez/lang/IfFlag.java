@@ -3,7 +3,7 @@ package nez.lang;
 import java.util.TreeMap;
 
 import nez.ast.SourcePosition;
-import nez.runtime.RuntimeCompiler;
+import nez.runtime.NezCompiler;
 import nez.runtime.Instruction;
 
 public class IfFlag extends Unconsumed {
@@ -38,7 +38,7 @@ public class IfFlag extends Unconsumed {
 	}
 
 	@Override
-	public Instruction encode(RuntimeCompiler bc, Instruction next) {
+	public Instruction encode(NezCompiler bc, Instruction next) {
 		return next;
 	}
 	@Override

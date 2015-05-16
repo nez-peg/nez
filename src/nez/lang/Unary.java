@@ -24,9 +24,4 @@ public abstract class Unary extends Expression {
 		this.inner = e;
 		return old;
 	}
-	@Override
-	public String key() {
-		return this.getPredicate();
-	}
-
 }

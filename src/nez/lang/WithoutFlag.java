@@ -4,7 +4,7 @@ import java.util.TreeMap;
 
 import nez.ast.SourcePosition;
 import nez.runtime.Instruction;
-import nez.runtime.RuntimeCompiler;
+import nez.runtime.NezCompiler;
 import nez.util.UList;
 import nez.util.UMap;
 
@@ -38,7 +38,7 @@ public class WithoutFlag extends Unary {
 		return this.inner.acceptByte(ch, option);
 	}
 	@Override
-	public Instruction encode(RuntimeCompiler bc, Instruction next) {
+	public Instruction encode(NezCompiler bc, Instruction next) {
 		return this.inner.encode(bc, next);
 	}
 	@Override

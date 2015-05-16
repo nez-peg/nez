@@ -1,0 +1,449 @@
+// PEG4d Bash file
+
+// Naming rule:
+// 1. The rule that creating a object is named in UpperCamelCase
+// 2. The rule that contains # or @ expression is named in lowerCamelCase
+// 3. Otherwise, it named in UPPER_CASE
+
+
+File
+	= Block
+
+Chunk
+	= Block
+
+S
+	= ([ \t] / COMMENT)
+
+_
+    = S*
+
+COMMENT
+	= '#' (!BREAK .)*
+
+BREAK
+   = '\n' / '\r\n' / '\r'
+
+NL
+	= ';' / BREAK / !.
+
+W
+	= [a-zA-Z0-9_]
+
+FILENAME
+	= (ESCAPED_CHAR / (!FORBIDDEN_CHAR ![\x00] . ))+
+
+Statement
+	= IfStatement
+	/ WhileStatement
+	/ UntilStatement
+	/ ForStatement
+	/ CaseStatement
+	/ DeclareStatement
+	/ LetStatement
+	/ !KEYWORD FunctionStatement
+	/ !KEYWORD Command
+    / Expression
+
+Block
+    = { (_ @Statement _)* #Block }
+
+conditionalExpression
+    = _ @Expression _ NL _
+
+IfStatement
+    [example:if 1; then; echo "A"; fi;]
+    [example:if 1; then; echo "A"; else; echo "B"; fi;]
+    [example:if 1; then; echo "A"; elif 2; then; echo "B"; else; echo "C"; fi;]
+	= { 'if' conditionalExpression 'then' _ NL
+		@Block
+		(elseClause / elifClause)?
+		_ 'fi' _ NL #IfStatement }
+
+elifClause
+    = @ElifBlock
+
+ElifBlock
+    = { @ElifBody #Block }
+
+ElifBody
+    [example:elif 1; then; echo;]
+    = { 'elif' conditionalExpression 'then' _ NL
+        @Block
+		(elseClause / elifClause)? #IfStatement }
+
+elseClause
+    [example:else;echo;]
+    = _ 'else' _ NL @Block
+
+doDoneBlock 
+    = 'do' _ NL @Block 'done' _
+
+WhileStatement
+    [example:while 1 -lt 2; do; echo; done]
+	= { 'while' conditionalExpression doDoneBlock NL _ #WhileStatement }
+
+UntilStatement
+    [example:until 1 -lt 2; do; echo; done]
+	= { 'until' conditionalExpression doDoneBlock NL _ #UntilStatement }
+
+ForStatement
+    [example:for x in $A; do; echo; done]
+    [example:for ((1;1;1)); do; echo; done]
+    [example:for(( i=0; $i -lt 5 ; ++i )); do; echo; done]
+	= { 'for' _ ( (@Literal _ 'in' _ @Expression) / ('((' _ @Expression _ NL _ @Expression _ NL _ @Expression _ '))') ) _ NL _
+		doDoneBlock NL _ #ForStatement }
+
+CaseStatement
+	= { 'case' _ addCase #CaseStatement }
+
+addCase
+	= @PrimaryExpression _ 'in' _ @CaseMember _ (@CaseMember _)* (@LastCaseMember / 'esac' ) _
+
+CaseMember
+	= { @Expression ')' _ @Statement _ (@Statement _)* ';;' #CaseMember }
+
+LastCaseMember
+	= { @Defualt _ ((@Statement) _) ((( 'esac' / @Statement) _)*)  #LastCaseMember }
+
+Defualt
+	= { '*' #DefualtExpression } ')'
+
+DeclareStatement
+    [example:declare str]
+    [example:declare -i num]
+    [example:declare -a array]
+	= { 'declare' _ ( '-i' #Num / '-a' #Array ) _ @Name _ NL }
+	/ { 'declare' _ @Name _ NL #String }
+
+postfixExpression
+	= '++' #PrefixInc
+	/ '--' #PrefixDec
+
+LetStatement
+    [example:let ++x]
+    [example:let --x]
+	= { 'let' _ postfixExpression _ @Name _ NL }
+
+FunctionStatement
+	= { ( @FunctionDecl / @FunctionCall ) #functionStatement }
+	
+FunctionDecl
+	= { 'function'? S* @FunctionName '()' S* '{' S* @Block  S* '}' #functionDecl }
+
+FunctionCall
+	= { @FunctionName S* @ArgList S* #functionCall }
+
+FunctionName
+	= { Name #functionName }
+
+ArgList
+	= { ( @Arg S+ )+ #Args }
+
+Arg
+	= { W+ #arg }
+
+Command
+    [example: ls -l]
+    [example: echo "test"]
+    [example: echo "test" > dump.txt]
+    [example: echo "test">dump.txt]
+    [example: echo 2> /dev/null "test" > dump.txt]
+    [example: cat log.txt | grep "1900/01/01" > old_log.txt]
+    [example: cat log.txt|grep "1900/01/01" > old_log.txt]
+	= CommandExpr _ NL	// <new line>, ';', '&'
+
+CommandExpr
+	= { @CommandList _ @Background? #command }
+
+Background
+	= { '&' #background } _
+
+CommandList
+	= OrList
+
+OrList
+	= AndList {@ _ '||' _ @AndList #or}*
+
+AndList
+	= PipedCommand {@ _ '&&' _ @PipedCommand #and}*
+
+PipedCommand
+	= SingleCommand {@ _ '|' _ @SingleCommand #pipe}*
+
+SingleCommand
+	= { @CmdSymbolSeq (S* @Redirect / S* @HereDoc / S+ @CommandArg)* #singleCommand }
+
+Redirect
+	= { @RedirectOpArgLess / @RedirectOp _ @CommandArg #redirect }
+
+RedirectOp
+	= {
+		NUMBER? '>>'
+		/ NUMBER? '>'
+		/ '&>>'
+		/ '&>'
+		/ '<<<'	// here string
+		/ '<'
+	 #redirectOp }
+
+RedirectOpArgLess
+	= { NUMBER '>&' NUMBER #redirectOp }
+
+NUMBER
+	= '0'
+	/ [1-9][0-9]*
+
+CmdSymbolSeq
+	= { (@CmdSymbol)+ #commandName }
+
+CommandArg
+	= { (@CmdSymbolEQ)+ #commandArg }
+
+CmdSymbol
+	= CString
+	/ SubCmd
+	/ SubExpr
+	/ PathExpression
+	/ Identifier
+
+CmdSymbolEQ
+	= CString
+	/ SubCmd
+	/ SubExpr
+	/ IdentifierEQ
+	/ Identifier
+
+SubCmd
+	= '`' S? { @CommandExpr S? NL? #backquoteSubstitution } S? '`'
+	/ '$(' S? { @CommandExpr S? NL? #substitution } S? ')'
+
+SubExpr
+	= '$' { @SubExprSuffix #subExpr}
+	/ '${' { @VarName '[' addINDEX ']' #arraySubExpr} '}'
+	/ '${' { @SubExprSuffix #subExpr} '}'
+
+addINDEX
+	= NUMBER / '@' / '*'
+
+SubExprSuffix
+	= VarName
+	/ { '?' / '*' / '@' / '#' /NUMBER #specialChar }
+
+VarName
+	= { '_' ('_' / LETTER / NUMBER)+ 
+		/ LETTER ('_' / LETTER / NUMBER)* #varName }
+
+LETTER
+	= [a-zA-Z]+
+
+Identifier	//TODO: utf8
+	= { '$' / (ESCAPED_CHAR / !FORBIDDEN_CHAR . )+ #identifier }
+
+IdentifierEQ	//TODO: utf8
+	= { '$' / (ESCAPED_CHAR / !FORBIDDEN_CHAR_WITHOUT_EQUAL . )+ #identifier }
+
+FORBIDDEN_CHAR
+	= '\t' / ' ' / '\n' / '\r' / '{' / '}' / '(' / ')' / ';'
+	/ '!' / '`' / '\'' / '"' / '&' / '|' / '#' / '$' / '<' / '>' / '='
+
+FORBIDDEN_CHAR_WITHOUT_EQUAL
+	= '\t' / ' ' / '\n' / '\r' / '{' / '}' / '(' / ')' / ';'
+	/ '!' / '`' / '\'' / '"' / '&' / '|' / '#' / '$' / '<' / '>'
+
+ESCAPED_CHAR
+	= '\\' (FORBIDDEN_CHAR / . )
+
+Expression
+	[example:COMMAND=echo COMMAND "test" > dump.txt]
+	[example:A=B B=C]
+	[example:A=B=C]
+	= { (@AssignmentExpression _)+ (@Command)? #CommandWithAssign }
+	/ !KEYWORD (TestCommand / ExprCommand / EqualityExpression)
+
+TestCommand
+	= { 'test' S+ @EqualityExpression #Test}
+
+ExprCommand
+	= { 'expr' S+ @EqualityExpression #Test}
+
+AssignmentExpression
+    [example:A=1+2]
+    [example:A=$var]
+    [example:A=prefix$var]
+    [example:AB=${array[@]}suffix]
+    [example:array=(1 2 3)]
+    [example:array[0]=1]
+	= { @LeftValueExpression '=' (@CommandArg / @Literal) #Assign }
+
+LeftValueExpression
+    [example:1]
+    [example:A]
+    [example:A[1]]
+    = { @Name '[' addINDEX ']' #Variable }
+    / Name
+    / CInteger
+
+EqualityExpression
+    [example:1 -eq 1]
+    [example:1 -ne 2 - 1]
+	= RelationalExpression {@ _ ( "-eq" #Equals / "-ne" #NotEquals) _ @RelationalExpression }*
+
+RelationalExpression
+    [example:1 -gt 2]
+    [example:1 -lt 2 + 1]
+	= AdditiveExpression {@ _ ( "-le" #LessThanEquals / "-ge" #GreaterThanEquals / "-lt" #LessThan / "-gt" #GreaterThan ) _ @AdditiveExpression }*
+
+AdditiveExpression
+    [example:1 - 2]
+    [example:10 + 20]
+	= MultiplicativeExpression {@ _ ( "+" #Add / "-" !("le" / "ge" / "lt" / "gt" / "eq" / "ne") #Sub ) _ @MultiplicativeExpression }*
+
+MultiplicativeExpression
+    [example:10 * 2]
+    [example:10 * 2]
+    [example:10 % 2]
+	= PrimaryExpression {@ _ ( "*" #Mul / "/" #Div / "%" #Mod ) _ @PrimaryExpression }*
+
+PrimaryExpression
+	= { '$(' _ (@Expression / @Command) _ ')' #SubCommand }
+	/ { '${' @Name '}' #Variable }
+	/ { '$' @Name #Variable }
+	/ { '((' @Expression '))' #Variable }
+	/ { '[' S+ @Expression S+ ']' #Variable }
+	/ { '#' @Name '[' addINDEX ']' #Variable }
+	/ Literal
+	/ PathExpression
+
+Literal
+	= CFloat
+	/ CInteger
+	/ Name
+	/ CString
+	/ ArrayLiteral
+
+ArrayLiteral
+    [example:(1)]
+    [example:(1 2 3)]
+	= { '(' _ (@Param (S+ @Param)*)? _ ')' #Array }
+
+Param
+    = Literal
+
+CString
+	=  '"' { STRING_CONTENT* #String } '"'
+	/ "'" { STRING_CONTENT* #String } "'"
+
+STRING_CONTENT
+	= ESCAPE
+	/ ![\"\n\\] .
+
+ESCAPE
+	= SIMPLE_ESCAPE
+	/ OCTAL_ESCAPE
+	/ HEX_ESCAPE
+	/ UCHAR
+
+UCHAR
+	= '\\u' HEX4
+	/ '\\U' HEX4 HEX4
+
+HEX4
+	= HEX HEX HEX HEX
+
+SIMPLE_ESCAPE
+	=	 '\\' ['\"?\\abfnrtv]
+
+OCTAL_ESCAPE
+	= '\\' [0-7] [0-7]? [0-7]?
+
+HEX_ESCAPE
+	= '\\x' HEX+
+
+KEYWORD
+	= 'for' / 'while' / 'do' / 'done' / 'if' / 'elif' / 'else' / 'fi' / 'case'
+
+DIGIT
+	= [0-9]
+
+CInteger
+	= { ( DECIMAL / HEXICAL / OCTAL ) #Integer } INT_SUFFIX?
+
+CFloat
+	= { ( DECIMAL_FLOAT / HEX_FLOAT )  #Float } FLOAT_SUFFIX?
+
+DECIMAL
+	= [1-9] DIGIT*
+
+HEXICAL
+	= HEX_PREFIX HEX+
+
+OCTAL
+	= '0' [0-7]*
+
+INT_SUFFIX
+	= [uU] LONG_SUFFIX?
+	/ LONG_SUFFIX [uU]?
+
+LONG_SUFFIX
+	= 'll'
+	/ 'LL'
+	/ [lL]
+
+DECIMAL_FLOAT
+	= FRACTION EXPONENT?
+	/ DIGIT+ EXPONENT
+
+HEX_FRACTION
+	= HEX* '.' HEX+
+	/ HEX+ '.'
+
+FRACTION
+	= DIGIT* '.' DIGIT+
+	/ DIGIT+ '.'
+
+BINARY_EXPONENT
+	= [pP] [+\-]? DIGIT+
+
+FLOAT_SUFFIX
+	= [flFL]
+
+EXPONENT
+	= [eE] [+\-]? DIGIT+
+
+HEX_FLOAT
+	= HEX_PREFIX HEX_FRACTION BINARY_EXPONENT?
+	/ HEX_PREFIX HEX+ BINARY_EXPONENT
+
+HEX_PREFIX
+	= '0' [xX]
+
+HereDoc
+    [example:<< EOF
+hoge
+EOF]
+    =  { #HereDoc @HereDocStart _ @HereDocDelim _ @Redirect? BREAK @HereDocBody _ }
+
+HereDocStart
+    = { #IgnoreTab ("<<-" `true` / "<<" `false`) }
+
+HereDocBody
+    = { #Body (!( BREAK DELIM_KEYWORD) .)+ } BREAK DELIM_KEYWORD
+
+HereDocDelim
+    = { ( "\"" DELIM_KEYWORD "\"" / "\'" DELIM_KEYWORD "\'")  #IgnoreArgs `true` }
+    / { DELIM_KEYWORD #IgnoreArgs `false` }
+
+DELIM_KEYWORD
+    = "EOF"
+
+FilePath
+	[example: /dir/file]
+	[example: dir\ name/file]
+	= { (FILENAME / '/')+ #FilePath }
+
+PathExpression
+	[example: "dir name/file"]
+	[example: /"dir name"/$var]
+	[example: /dir/$var]
+	= { ( @SubExpr / @FilePath / @Literal )+ #PathExpression }

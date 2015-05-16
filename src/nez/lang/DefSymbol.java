@@ -3,7 +3,7 @@ package nez.lang;
 import nez.ast.SourcePosition;
 import nez.ast.Tag;
 import nez.runtime.Instruction;
-import nez.runtime.RuntimeCompiler;
+import nez.runtime.NezCompiler;
 import nez.util.UList;
 import nez.util.UMap;
 
@@ -90,7 +90,7 @@ public class DefSymbol extends Unary {
 	}
 	
 	@Override
-	public Instruction encode(RuntimeCompiler bc, Instruction next) {
+	public Instruction encode(NezCompiler bc, Instruction next) {
 		return bc.encodeDefSymbol(this, next);
 	}
 

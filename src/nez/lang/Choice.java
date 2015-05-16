@@ -4,12 +4,12 @@ import java.util.TreeMap;
 
 import nez.ast.SourcePosition;
 import nez.runtime.Instruction;
-import nez.runtime.RuntimeCompiler;
+import nez.runtime.NezCompiler;
 import nez.util.UFlag;
 import nez.util.UList;
 import nez.util.UMap;
 
-public class Choice extends SequentialExpression {
+public class Choice extends Multinary {
 	Choice(SourcePosition s, UList<Expression> l, int size) {
 		super(s, l, size);
 	}
@@ -73,7 +73,7 @@ public class Choice extends SequentialExpression {
 	}
 
 	@Override
-	public Instruction encode(RuntimeCompiler bc, Instruction next) {
+	public Instruction encode(NezCompiler bc, Instruction next) {
 		return bc.encodeChoice(this, next);
 	}
 	

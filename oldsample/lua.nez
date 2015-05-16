@@ -1,0 +1,478 @@
+/*
+
+  PEG4d Lua Grammar
+
+  Based on eBNF grammar for Lua[1]
+
+  [1] http://www.lua.org/manual/5.1/
+
+  Author:
+    Tetsuro Matsumura (https://github.com/tetsurom/)
+
+*/
+
+File
+    = Chunk
+
+Chunk
+    = { __ @Block __ #Source }
+
+SPACE
+    = [\t\v\f ]
+
+// Space including line terminator
+__
+    = (SPACE / LINE_TERMINATOR_SEQUENCE / COMMENT)*
+
+// Space without line terminator
+_
+    = (SPACE / MULTI_LINE_COMMENT_SINGLE_LINE)*
+
+LINE_TERMINATOR
+    = [\n\r\u2028\u2029]
+
+LINE_TERMINATOR_SEQUENCE
+    = '\n' / '\r\n' / '\r'
+
+COMMENT
+    = MULTI_LINE_COMMENT / SINGLE_LINE_COMMENT
+
+MULTI_LINE_COMMENT
+    = '--' BRACKET_STRING_COMMENT
+
+MULTI_LINE_COMMENT_SINGLE_LINE
+    = '--' <without MultiLineBracketString BRACKET_STRING_COMMENT>
+
+SINGLE_LINE_COMMENT
+    = '--' (!LINE_TERMINATOR .)*
+
+Identifier
+    = !KEYWORD { [a-zA-Z_] W* #Name }
+
+W
+  = [a-zA-Z0-9_]
+
+//Automatic Semicolon Insertion
+
+EOS
+    = __ ';'
+    / _ SINGLE_LINE_COMMENT? LINE_TERMINATOR_SEQUENCE
+    / _ &("end" / "elseif" / "else" / "until")
+    / __ EOF
+
+EOF
+    = !.
+
+HEX
+    = [A-Fa-f0-9]
+
+DIGIT
+    = [0-9]
+
+//Operator
+//==========
+
+"."  = '.' !"."
+".." = '..' !"."
+"<"  = '<' ![=]
+">"  = '>' ![=]
+"="  = '=' ![=]
+
+//KeyWords
+//==========
+
+"and"      = 'and' !W
+"break"    = 'break' !W
+"do"       = 'do' !W
+"else"     = 'else' !W
+"elseif"   = 'elseif' !W
+"end"      = 'end' !W
+"false"    = 'false' !W
+"for"      = 'for' !W
+"function" = 'function' !W
+"if"       = 'if' !W
+"in"       = 'in' !W
+"local"    = 'local' !W
+"nil"      = 'nil' !W
+"not"      = 'not' !W
+"or"       = 'or' !W
+"repeat"   = 'repeat' !W
+"return"   = 'return' !W
+"then"     = 'then' !W
+"true"     = 'true' !W
+"until"    = 'until' !W
+"while"    = 'while' !W
+
+KEYWORD
+    = "and" / "break" / "do" / "else" / "elseif" / "end"
+    / "false" / "for" / "function" / "if" / "in" / "local"
+    / "nil" / "not" / "or" / "repeat" / "return" / "then"
+    / "true" / "until" / "while"
+
+//Expression
+//==========
+
+/*
+exp ::= prefixexp
+exp ::= nil | false | true
+exp ::= Number
+exp ::= String
+exp ::= function
+exp ::= tableconstructor
+exp ::= `...´
+exp ::= exp binop exp
+exp ::= unop exp
+prefixexp ::= var | functioncall | `(´ exp `)´
+
+Operator precedences
+(LOW)
+or
+and
+<     >     <=    >=    ~=    ==
+..
++     -
+*     /     %
+not   #     - (unary)
+^
+(HIGH)
+*/
+
+PrimaryExpression
+    = Identifier
+    / Literal
+    / TableConstructor
+    / '(' __ Expression __ ')'
+
+TableConstructor
+    [example: { [f(1)] = g; "x", "y"; x = 1, f(x), [30] = 23; 45 }]
+    [example: {[1+2]=2, a = 3, ...}]
+    = { "{" __ (addFieldList __)? "}" #Table }
+
+addFieldList
+    = @Field (__ [,;] __ @Field)* (__ [,;])?
+
+Field
+    = { "[" __ @Expression __ "]" __ "=" __ @Expression #TableSetterApply }
+    / { @Identifier __ "=" __ @Expression #TableProperty }
+    / VariadicParameter
+    / Expression
+
+ReceiverExpression
+    = PrimaryExpression / FunctionExpression
+
+MemberExpression
+    [example:a.b.c.d]
+    [example:a.b[0]]
+    [example:a.b[0][0]]
+    = ReceiverExpression {@ __ addMemberOperator }*
+
+addMemberOperator
+    = '[' __ @Expression __ ']' #Index
+    / '.' __ @Identifier #Field
+
+CallExpression
+    [example:func()]
+    [example:func(1)]
+    [example:func(1,2,3)]
+    [example:func(1,2,3).a]
+    [example:func(1,2,3)[0]]
+    [example:func(1,2,3).a.b.c(2)[1].s]
+    = MemberExpression {@ addCallOrMemberOperator }*
+
+CallStatement
+    = MemberExpression {@ addCallOperator }+ EOS
+
+addCallOperator
+    = __ ":" __ @Identifier _ @Arguments #Method
+    / _ @Arguments #Apply
+    / _ @TableArgument #Apply
+    / _ @StringArgument #Apply
+
+addCallOrMemberOperator
+    = addCallOperator
+    / __ addMemberOperator
+
+Arguments
+    = '(' __ UnpackExpressionList __ ')'
+
+TableArgument
+    = { @TableConstructor #List } 
+
+StringArgument
+    = { @StringLiteral #List } 
+
+LeftHandSideExpression
+    = CallExpression
+
+PowerExpression
+    = { @LeftHandSideExpression __ "^" #Power __ @PowerExpression }
+    / LeftHandSideExpression
+
+UnaryExpression
+    = PowerExpression
+    / { addUnaryOperator _ @UnaryExpression }
+
+addUnaryOperator
+    = "+"      #Plus
+    / "-"      #Minus
+    / "#"      #Count
+    / "not"    #LogicalNot
+
+MultiplicativeExpression
+    = UnaryExpression {@ __ ( "*" #Mul / "/" #Div / "%" #Mod ) __ @UnaryExpression }*
+
+AdditiveExpression
+    = MultiplicativeExpression {@ __ ( "+" #Add / "-" #Sub ) __ @MultiplicativeExpression }*
+  
+ConcatExpression
+    = { @AdditiveExpression __ ".." #Concat __ @ConcatExpression }
+    / AdditiveExpression
+  
+EqualityExpression
+    = ConcatExpression {@ __ addEqualityOperator __ @ConcatExpression }*
+
+addEqualityOperator
+    = "<=" #LessThanEquals
+    / ">=" #GreaterThanEquals
+    / "<" #LessThan
+    / ">" #GreaterThan
+    / "=="  #Equals
+    / "~="  #NotEquals
+
+LogicalANDExpression
+    = EqualityExpression {@ __ "and" __ @EqualityExpression #LogicalAnd }*
+
+LogicalORExpression
+    = LogicalANDExpression {@ __ "or" __ @LogicalANDExpression #LogicalOr }*
+
+Expression
+    = FunctionExpression
+    / LogicalORExpression
+
+ExpressionListItem
+    = VariadicParameter
+    / Expression
+
+VariadicParameter
+    = { "..." #VariadicParameter }
+
+ExpressionList
+    = { (@ExpressionListItem (__ ',' __ @ExpressionListItem)*)? #List }
+
+UnpackExpressionList
+    = { (@ExpressionListItem (__ ',' __ @ExpressionListItem)*)? #UnpackList }
+
+IdentifierList
+    = { (@Identifier (__ ',' __ @Identifier)*)? #List }
+
+LeftHandSideExpressionList
+    = { (@LeftHandSideExpression (__ ',' __ @LeftHandSideExpression)*)? #List }
+
+//Statement
+//==========
+
+Statement
+    = BlockStatement
+    / VariableStatement
+    / AssignmentStatement
+    / IfStatement
+    / RepeatStatement
+    / WhileStatement
+    / ForStatement
+    / ForEachStatement
+    / CallStatement
+
+LastOnlyStatement
+    = ReturnStatement
+    / BreakStatement
+
+BlockStatement
+    = "do" __ Block __ "end" EOS?
+
+VariableStatement
+    [example: local a,b,c = 1,2,3;]
+    = { "local" __ @IdentifierList (__ "=" __ @ExpressionList)? EOS #MultiVarDecl }
+
+AssignmentStatement
+    [example: x, y = y, x;]
+    [example: a.b = 1;]
+    = { @LeftHandSideExpressionList __ "=" __ @ExpressionList EOS #MultiAssign }
+
+IfStatement
+    [example: if n < 10 then return n end]
+    [example: if n < 10 then return n else return 0 end]
+    [example: if n < 10 then return n elseif n == 0 then return 0 else return -1 end]
+    = { "if" __ @Expression __ "then" __ @Block __
+        (elseClause / elsifClause)? __ "end" EOS? #If }
+
+elsifClause
+    = @{ "elseif" __ @Expression __ "then"__ @Block
+        (elseClause / elsifClause)? #If }
+
+elseClause
+    = "else" __ @Block
+
+RepeatStatement
+    = { "repeat" __ @Statement __ "until" __ @Expression EOS #DoWhile }
+
+WhileStatement
+    = { "while" __ @Expression __ @BlockStatement #While }
+
+ForStatement
+    [example: for var = e1, e2, e3 do break end]
+    = { "for" __ @Identifier __ "=" __ @Expression __ "," __ @Expression __ ("," __ @Expression __)? @[4]BlockStatement #ForInRange }
+
+ForEachStatement
+    [example: for k,v in list do end]
+    = { "for" __ @IdentifierList __ "in" __ @ExpressionList __ @BlockStatement #Foreach }
+
+BreakStatement
+    [example: break;]
+    = { "break" EOS #Break }
+
+ReturnStatement
+    [example: return;]
+    [example: return 1;]
+    = { "return" (_ @ExpressionList)? EOS #Return }
+
+//Program
+//==========
+
+FunctionExpression
+    [example: function (a, b) end]
+    [example: function (a, b, ...) end]
+    [example: function () return 1,2,3 end]
+    = { "function" __ addFuncBody "end" EOS? #FuncDecl }
+
+FunctionDeclaration
+    [example: function f(a, b) end]
+    [example: function g:m(a, b, ...) end]
+    [example: function r() return 1,2,3 end]
+    = { "function" __ addMethodName __ @FunctionDeclarationBody __ "end" EOS? #Method }
+    / { "function" __ @FuncName __ @FunctionDeclarationBody __ "end" EOS? #Assign }
+
+addLocalFunction
+    [example: local function f(a, b) end]
+    = @LocalFunctionVarDeclPart @LocalFunctionBody __ "end" EOS?
+
+LocalFunctionVarDeclPart
+    = { "local" __ "function" __ @LocalFunctionName #VarDecl }
+
+LocalFunctionName
+    = { &(@Identifier) #List }
+
+LocalFunctionBody
+    = { @Identifier __ @FunctionDeclarationBody #Assign }
+
+FuncName
+    = Identifier {@ __ "." __ @Identifier #Field }*
+
+addMethodName
+    = @FuncName __ ":" __ @Identifier
+
+FunctionDeclarationBody
+    = { addFuncBody #FuncDecl }
+
+addFuncBody
+    = @[4]ParameterList __ @[6]Block
+
+ParameterList
+    = { '(' __ addParameterList? __ ')' #List }
+
+addParameterList
+    = @VariadicParameter
+    / @Identifier (__ ',' __ @Identifier)* (__ ',' __ @VariadicParameter)?
+
+Block
+    = { (__ addSourceElement)* (__ @LastOnlyStatement)? #Block }
+
+addSourceElement
+    = @FunctionDeclaration
+    / addLocalFunction
+    / @Statement
+
+//Literal
+//==========
+Literal
+    = NilLiteral / BooleanLiteral / NumericLiteral / StringLiteral
+
+NilLiteral
+    = { "nil" #Null }
+
+BooleanLiteral
+    [example: true]
+    = { "true" #True }
+    / { "false" #False }
+
+NumericLiteral
+    [example: 0x1F]
+    [example: 0.12]
+    [example: 1234]
+    = HexIntegerLiteral / FloatingPointLiteral / DecimalIntergerLiteral
+
+DecimalIntergerLiteral
+    [example: 123]
+    = { DECIMAL_INTEGER #DecimalInteger }
+
+HexIntegerLiteral
+    [example: 0xa12]
+    = { '0' [xX] HEX* #HexInteger }
+
+FloatingPointLiteral
+    [example: 12.456]
+    [example: 12.456e-78]
+    [example: 0.12]
+    [example: .12]
+    [example: .12]
+    [example: .12e3]
+    [example: 5e3]
+    = { DECIMAL_INTEGER? '.' DIGIT+ EXPONENT_PART? #FloatingPointNumber }
+    / { DECIMAL_INTEGER EXPONENT_PART #FloatingPointNumber }
+
+DECIMAL_INTEGER
+    = [1-9] DIGIT* / "0"
+
+EXPONENT_PART
+    = [eE] SIGN? DECIMAL_INTEGER
+
+SIGN
+    = '+' / '-'
+
+StringLiteral
+    [example: '\97lo\10\04923"']
+    [example: [[foobar123]]]
+    [example: [==[foo[bar]123]==]]
+    = ["] { (!["] QUOTED_STRING_CHAR)* #String } ["]
+    / ['] { (!['] QUOTED_STRING_CHAR)* #String } [']
+    / '[[' LINE_TERMINATOR_SEQUENCE? { BS_CHAR_NOBLOCK* #String } ']]'
+    / <block '[' <def BracketStringEquals [=]+> '[' LINE_TERMINATOR_SEQUENCE? { BS_CHAR* #String } BS_TERMINATOR >
+
+BRACKET_STRING_COMMENT
+    = '[[' LINE_TERMINATOR_SEQUENCE? BS_COMMENT_CHAR_NOBLOCK* ']]'
+    / <block '[' <def BracketStringEquals [=]+> '[' LINE_TERMINATOR_SEQUENCE? BS_COMMENT_CHAR* BS_TERMINATOR >
+
+QUOTED_STRING_CHAR
+    = !('\\' / LINE_TERMINATOR) . / '\\' ESCAPE_SEQUENCE
+
+BS_CHAR_NOBLOCK
+    = !']]' (LINE_TERMINATOR_SEQUENCE / .)
+
+BS_CHAR
+    = !BS_TERMINATOR (LINE_TERMINATOR_SEQUENCE / .)
+
+BS_COMMENT_CHAR_NOBLOCK
+    = !']]' (!LINE_TERMINATOR_SEQUENCE . / <if MultiLineBracketString> LINE_TERMINATOR_SEQUENCE)
+
+BS_COMMENT_CHAR
+    = !BS_TERMINATOR (!LINE_TERMINATOR_SEQUENCE . / <if MultiLineBracketString> LINE_TERMINATOR_SEQUENCE)
+
+BS_TERMINATOR
+    = ']' <isa BracketStringEquals> ']'
+
+ESCAPE_SEQUENCE
+    = '\\' / ["'abfnrtv] / CODE_ESCAPE_SEQUENCE / LINE_TERMINATOR_SEQUENCE
+
+CODE_ESCAPE_SEQUENCE
+    = DIGIT DIGIT DIGIT
+    / DIGIT DIGIT
+    / DIGIT

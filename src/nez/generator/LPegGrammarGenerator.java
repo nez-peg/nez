@@ -21,7 +21,7 @@ import nez.lang.Repetition;
 import nez.lang.Repetition1;
 import nez.lang.Replace;
 import nez.lang.Sequence;
-import nez.lang.SequentialExpression;
+import nez.lang.Multinary;
 import nez.lang.Tagging;
 import nez.lang.Unary;
 import nez.util.StringUtils;
@@ -45,7 +45,7 @@ public class LPegGrammarGenerator extends NezGenerator {
 	@Override
 	public void generate(Grammar grammar) {
 		file.writeIndent("local lpeg = require \"lpeg\"");
-		for(Production r: grammar.getSubProductionList()) {
+		for(Production r: grammar.getProductionList()) {
 			if(!r.getLocalName().startsWith("\"")) {
 				String localName = r.getLocalName();
 				file.writeIndent("local " + localName + " = lpeg.V\"" + localName + "\"");
@@ -53,7 +53,7 @@ public class LPegGrammarGenerator extends NezGenerator {
 		}
 		file.writeIndent("G = lpeg.P{ File,");
 		file.incIndent();
-		for(Production r: grammar.getSubProductionList()) {
+		for(Production r: grammar.getProductionList()) {
 			if(!r.getLocalName().startsWith("\"")) {
 				visitProduction(r);
 			}
@@ -248,7 +248,7 @@ public class LPegGrammarGenerator extends NezGenerator {
 		this.visit(e.get(0));
 	}
 
-	protected void visitSequenceImpl(SequentialExpression l) {
+	protected void visitSequenceImpl(Multinary l) {
 		for(int i = 0; i < l.size(); i++) {
 			if(i > 0) {
 				file.write(" ");
@@ -276,7 +276,7 @@ public class LPegGrammarGenerator extends NezGenerator {
 		}
 	}
 
-	private int appendAsString(SequentialExpression l, int start) {
+	private int appendAsString(Multinary l, int start) {
 		int end = l.size();
 		String s = "";
 		for(int i = start; i < end; i++) {
