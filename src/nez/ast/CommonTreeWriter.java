@@ -17,11 +17,10 @@ public class CommonTreeWriter {
 			fb.writeIndent("null");
 			return;
 		}
-		fb.writeIndent("(#" + node.getTag().toString()); 
+		fb.writeIndent("#" + node.getTag().toString() + "["); 
 		if(node.size() == 0) {
-			fb.write(" "); 
 			fb.write(StringUtils.quoteString('\'', node.getText(), '\''));
-			fb.write(")");
+			fb.write("]");
 		}
 		else {
 			fb.incIndent();
@@ -29,7 +28,7 @@ public class CommonTreeWriter {
 				this.writeCommonTree(fb, node.get(i));
 			}
 			fb.decIndent();
-			fb.writeIndent(")"); 
+			fb.writeIndent("]"); 
 		}
 	}
 	

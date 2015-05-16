@@ -16,10 +16,10 @@ import nez.lang.Production;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
 
-public class NezShell extends Command {
+public class NezInteractiveParser extends Command {
 	@Override
 	public final String getDesc() {
-		return "an interactive parser";
+		return "starts an interactive parser";
 	}
 
 	String command = null;
@@ -67,7 +67,9 @@ public class NezShell extends Command {
 				}
 				sc = null;
 				new CommonTreeWriter().transform(null, node);
-				ConsoleUtils.println("Formatted " + Formatter.format(ns, node));
+				if(Formatter.isSupported(ns, node)) {
+					ConsoleUtils.println("Formatted: " + Formatter.format(ns, node));
+				}
 			}
 		}
 	}

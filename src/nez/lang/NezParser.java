@@ -409,15 +409,15 @@ public class NezParser extends CommonTreeVisitor {
 	}
 
 	public Expression toDef(CommonTree ast) {
-		return Factory.newDefSymbol(ast, loaded, Tag.tag(ast.textAt(0, "")), toExpression(ast.get(1)));
+		return Factory.newDefSymbol(ast, this.loaded, Tag.tag(ast.textAt(0, "")), toExpression(ast.get(1)));
 	}
 
 	public Expression toIs(CommonTree ast) {
-		return Factory.newIsSymbol(ast, loaded, Tag.tag(ast.textAt(0, "")));
+		return Factory.newIsSymbol(ast, this.loaded, Tag.tag(ast.textAt(0, "")));
 	}
 
 	public Expression toIsa(CommonTree ast) {
-		return Factory.newIsaSymbol(ast, loaded, Tag.tag(ast.textAt(0, "")));
+		return Factory.newIsaSymbol(ast, this.loaded, Tag.tag(ast.textAt(0, "")));
 	}
 
 	public Expression toDefIndent(CommonTree ast) {

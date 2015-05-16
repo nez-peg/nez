@@ -161,15 +161,15 @@ public class Factory {
 //		return internImpl(s, new Sequence(s, l));
 //	}
 
-	private New shift(New n, int shift) {
-		n.shift += shift;
-		return n;
-	}
-
-	private Capture shift(Capture n, int shift) {
-		n.shift += shift;
-		return n;
-	}
+//	private New shift(New n, int shift) {
+//		n.shift += shift;
+//		return n;
+//	}
+//
+//	private Capture shift(Capture n, int shift) {
+//		n.shift += shift;
+//		return n;
+//	}
 
 	
 	public final static Expression newChoice(SourcePosition s, UList<Expression> l) {

@@ -64,6 +64,9 @@ class StructualAnalysis extends Manipulator {
 //	}
 
 	public static int quickConsumedCheck(Expression e) {
+		if(e == null) {
+			return -1;
+		}
 		if(e instanceof NonTerminal ) {
 			NonTerminal n = (NonTerminal)e;
 			Production p = n.getProduction();

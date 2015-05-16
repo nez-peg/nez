@@ -8,11 +8,12 @@ import nez.util.UList;
 import nez.util.UMap;
 
 public class IsSymbol extends Terminal {
-	public Tag tableName;
-	NameSpace ns;
-	public boolean checkLastSymbolOnly = false;
+	public final Tag tableName;
+	final NameSpace ns;
+	public final boolean checkLastSymbolOnly;
 	IsSymbol(SourcePosition s, NameSpace ns, Tag tableName, boolean checkLastSymbolOnly) {
 		super(s);
+		this.ns = ns;
 		this.tableName = tableName;
 		this.checkLastSymbolOnly = false;
 	}

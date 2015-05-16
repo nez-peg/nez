@@ -15,6 +15,7 @@ public class DefSymbol extends Unary {
 		super(s, inner);
 		this.ns = ns;
 		this.tableName = table;
+		ns.setSymbolExpresion(tableName.getName(), inner);
 	}
 
 	public final NameSpace getNameSpace() {

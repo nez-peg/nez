@@ -42,7 +42,12 @@ public abstract class Formatter {
 	}
 
 	public static int index(int index, int size) {
-		return (index < 0) ? size + index : index;
+		return (index < 0) ? size + index + 1: index;
+	}
+	
+	public static boolean isSupported(NameSpace ns, CommonTree node) {
+		Formatter fmt = ns.getFormatter(node.getTag().getName(), node.size());
+		return fmt != null;
 	}
 
 	public static String format(NameSpace ns, CommonTree node) {
@@ -63,6 +68,7 @@ public abstract class Formatter {
 
 	
 	public abstract void write(FormatterStream stream, CommonTree node);
+
 
 }
 

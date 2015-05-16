@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 
 import nez.main.Verbose;
+import nez.util.ConsoleUtils;
 
 public class CommonTreeVisitor {
 	private HashMap<Integer, Method> methodMap = new HashMap<Integer, Method>();
@@ -22,7 +23,7 @@ public class CommonTreeVisitor {
 				Verbose.traceException(e);
 			}
 		}
-		return null;
+		return toUndefinedNode(node);
 	}
 	
 	public final Object visit(CommonTree node) {
@@ -50,5 +51,10 @@ public class CommonTreeVisitor {
 	protected Method getClassMethod(String method, Tag tag) throws NoSuchMethodException, SecurityException {
 		String name = method + tag.getName();
 		return this.getClass().getMethod(name, CommonTree.class);
+	}
+	
+	protected Object toUndefinedNode(CommonTree node) {
+		ConsoleUtils.exit(1, "undefined node:" + node);
+		return null;
 	}
 }
