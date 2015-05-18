@@ -48,7 +48,5 @@ public abstract class NezCompiler2 extends NezCompiler {
 //		//Verbose.printElapsedTime("CompilingTime", t, t2);
 //		return this.codeList.ArrayValues[0];
 //	}
-	
-	
 
 }
