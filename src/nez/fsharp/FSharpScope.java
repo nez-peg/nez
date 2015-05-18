@@ -76,7 +76,7 @@ public class FSharpScope {
 		if(node.is(JSTag.TAG_APPLY)){
 			res = this.getFieldText(node.get(0)).contentEquals(name);
 			if(res){
-				node.get(0).setValue("_" + name);
+				node.set(0, new CommonTree(node.get(0).getTag(), node.getSource(), node.getSourcePosition(), node.getSourcePosition() + node.getSource().length(), node.getLength(), "_" + name));
 			}
 		} else {
 			res = false;
