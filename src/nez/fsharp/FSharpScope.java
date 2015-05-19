@@ -3,6 +3,7 @@ package nez.fsharp;
 import java.util.ArrayList;
 
 import nez.ast.CommonTree;
+import nez.ast.Tag;
 
 public class FSharpScope {
 	public String name;
@@ -83,7 +84,11 @@ public class FSharpScope {
 		}
 		if(node.size() >= 1 && !result){
 			for(int i = 0; i < node.size(); i++){
-				result = this.isRecursiveFunc(node.get(i), name, result);
+				if(node.get(i) == null){
+					node.set(i, new CommonTree(Tag.tag("Text"), null, 0, 0, 0, null));
+				} else {
+					result = this.isRecursiveFunc(node.get(i), name, result);
+				}
 			}
 		}
 		if(result){

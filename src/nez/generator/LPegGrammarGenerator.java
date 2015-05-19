@@ -61,13 +61,13 @@ public class LPegGrammarGenerator extends NezGenerator {
 		file.decIndent();
 		file.writeIndent("}");
 		file.writeIndent();
-		makeFooter();
+		makeFooter(grammar);
 		file.writeNewLine();
 		file.flush();
 	}
 
 	@Override
-	public void makeHeader() {
+	public void makeHeader(Grammar g) {
 	}
 
 	@Override
@@ -91,7 +91,7 @@ public class LPegGrammarGenerator extends NezGenerator {
 	}
 	
 	@Override
-	public void makeFooter() {
+	public void makeFooter(Grammar g) {
 		file.writeIndent("function evalExp (s)");
 		file.incIndent();
 		file.writeIndent("for i = 0, 5 do");

@@ -95,7 +95,7 @@ public class FSharpGenerator extends SourceGenerator {
 					parent.set(this.indexOf(node), nameNode);
 				}
 				CommonTree scopeNameNode = node.get(2);
-				node.set(2, new CommonTree(scopeNameNode.getTag(), scopeNameNode.getSource(), scopeNameNode.getSourcePosition(), scopeNameNode.getSourcePosition() + scopeNameNode.getSource().length(), scopeNameNode.size(), scopeName));
+				node.set(2, new CommonTree(Tag.tag("Name"), null, 0, 0, 0, scopeName));
 			} else if(node.get(2).is(this.TAG_LAMBDA_NAME)){
 				//node.get(2).setTag(new Tag("Name"));
 				CommonTree parent = node.getParent();
@@ -191,7 +191,7 @@ public class FSharpGenerator extends SourceGenerator {
 					String prototypeName = pNameNode.getText();
 					CommonTree valueNode = pNameNode.getParent().getParent().get(1);
 					if(valueNode.is(JSTag.TAG_FUNC_DECL)){
-						valueNode.get(2).setValue(prototypeName);
+						((ModifiableCommonTree)(valueNode.get(2))).setValue(prototypeName);
 					}
 					fs.funcList.add(new FSharpFunc(prototypeName, fs.getPathName(), false, valueNode));
 				}
@@ -202,7 +202,7 @@ public class FSharpGenerator extends SourceGenerator {
 		}
 	}
 	
-	public void visitObjectName(CommonTree node){
+	public void toObjectName(CommonTree node){
 		this.currentBuilder.append(node.getText());
 	}
 	
@@ -244,8 +244,8 @@ public class FSharpGenerator extends SourceGenerator {
 						FSharpVar fv = new FSharpVar(varDeclNode.get(0).getText(), fs.getPathName());
 						this.varList.add(fv);
 						fs.varList.add(fv);
-						varDeclNode.setTag(new Tag("Assign"));
-						node.getParent().insert(this.indexOf(node) + i, varDeclNode);
+						((ModifiableCommonTree)varDeclNode).setTag(Tag.tag("Assign"));
+						((ModifiableCommonTree)node.getParent()).insert(this.indexOf(node) + i, varDeclNode);
 					} else {
 						FSharpFunc ff = new FSharpFunc(varDeclNode.get(0).getText(), fs.getPathName(), false, varDeclNode.get(1));
 						fs.funcList.add(ff);
@@ -260,8 +260,8 @@ public class FSharpGenerator extends SourceGenerator {
 		if(node.is(JSTag.TAG_FUNC_DECL)){
 			CommonTree nameNode = node.get(2);
 			if(nameNode.getText().isEmpty()){
-				nameNode.setValue("lambda" + this.lambdaKey++);
-				nameNode.setTag(new Tag("LambdaName"));
+				((ModifiableCommonTree)nameNode).setValue("lambda" + this.lambdaKey++);
+				((ModifiableCommonTree)nameNode).setTag(Tag.tag("LambdaName"));
 			}
 			FSharpFunc ff = new FSharpFunc(nameNode.getText(), fs.getPathName(), false, node);
 			fs.funcList.add(ff);
@@ -365,13 +365,13 @@ public class FSharpGenerator extends SourceGenerator {
 	protected void checkAssignVarName(CommonTree node, FSharpVar targetVar){
 		if(node.size() < 1){
 			if(targetVar.getTrueName().contentEquals(node.getText())){
-				node.setValue(targetVar.getCurrentName());
+				((ModifiableCommonTree)node).setValue(targetVar.getCurrentName());
 			}
 		} else {
 			for(int i = 0; i < node.size(); i++){
 				if(node.get(i).size() == 0){
 					if(targetVar.getTrueName().contentEquals(node.get(i).getText())){
-						node.get(i).setValue(targetVar.getCurrentName());
+						((ModifiableCommonTree)(node.get(i))).setValue(targetVar.getCurrentName());
 					}
 				} else {
 					checkAssignVarName(node.get(i), targetVar);
@@ -472,13 +472,13 @@ public class FSharpGenerator extends SourceGenerator {
 			targetVar.addChild();
 		}
 		varName = targetVar.getCurrentName();
-		node.get(0).setValue(varName);
+		((ModifiableCommonTree)(node.get(0))).setValue(varName);
 	}
 
 /*
-	public void visitThrow(CommonTree node) {
+	public void toThrow(CommonTree node) {
 		this.currentBuilder.append("throw ");
-		this.visit(node.get(0));
+		this.to(node.get(0));
 	}
 	*/
 	
@@ -663,11 +663,11 @@ public class FSharpGenerator extends SourceGenerator {
 		for(int i = 0; i < objNode.size(); i++){
 			this.currentBuilder.appendNewLine();
 			varName = objNode.get(i).get(0).getText();
-			objNode.get(i).setTag(Tag.tag("VarDecl"));
-			objNode.get(i).get(0).setValue(varName + "0");
+			((ModifiableCommonTree)(objNode.get(i))).setTag(Tag.tag("VarDecl"));
+			((ModifiableCommonTree)(objNode.get(i).get(0))).setValue(varName + "0");
 			varDeclStmtNode.get(2).set(0, objNode.get(i));
 			this.visit(varDeclStmtNode);
-			objNode.get(i).get(0).setValue(varName);
+			((ModifiableCommonTree)(objNode.get(i).get(0))).setValue(varName);
 			this.objFlag = true;
 		}
 		for(String addedGetterName: this.addedGetterList){
@@ -765,7 +765,7 @@ public class FSharpGenerator extends SourceGenerator {
 		this.currentScope = null;
 	}
 	
-	public void visitSource(CommonTree node) {
+	public void toSource(CommonTree node) {
 		this.initialSetting(node);
 		this.generateScope(this.scopeList.get(0), true);
 		for(int i = 1; i < this.scopeList.size(); i++){
@@ -774,7 +774,7 @@ public class FSharpGenerator extends SourceGenerator {
 		this.generateTypeCode();
 	}
 	
-	public void visitName(CommonTree node) {
+	public void toName(CommonTree node) {
 		String varName = node.getText();
 		FSharpVar targetVar = searchVarFromList(varName, false);
 		FSharpScope fs = null;
@@ -799,92 +799,92 @@ public class FSharpGenerator extends SourceGenerator {
 		}
 	}
 	
-	public void visitInteger(CommonTree node) {
+	public void toInteger(CommonTree node) {
 		this.currentBuilder.append(node.getText() + ".0");
 	}
 	
-	public void visitDecimalInteger(CommonTree node) {
+	public void toDecimalInteger(CommonTree node) {
 		this.currentBuilder.append(node.getText());
 	}
 	
-	public void visitOctalInteger(CommonTree node) {
+	public void toOctalInteger(CommonTree node) {
 		this.currentBuilder.append(node.getText());
 		if(node.getText().contentEquals("0") && !forFlag){
 			this.currentBuilder.append(".0");
 		}
 	}
 	
-	public void visitHexInteger(CommonTree node) {
+	public void toHexInteger(CommonTree node) {
 		this.currentBuilder.append(node.getText());
 	}
 	
-	public void visitLong(CommonTree node) {
+	public void toLong(CommonTree node) {
 		this.currentBuilder.append(node.getText());
 	}
 	
-	public void visitDecimalLong(CommonTree node) {
+	public void toDecimalLong(CommonTree node) {
 		this.currentBuilder.append(node.getText());
 	}
 	
-	public void visitOctalLong(CommonTree node) {
+	public void toOctalLong(CommonTree node) {
 		this.currentBuilder.append(node.getText());
 	}
 	
-	public void visitHexLong(CommonTree node) {
+	public void toHexLong(CommonTree node) {
 		this.currentBuilder.append(node.getText());
 	}
 	
-	public void visitFloat(CommonTree node) {
+	public void toFloat(CommonTree node) {
 		this.currentBuilder.append(node.getText());
 	}
 
-	public void visitDouble(CommonTree node) {
+	public void toDouble(CommonTree node) {
 		this.currentBuilder.append(node.getText());
 	}
 	
-	public void visitHexFloat(CommonTree node) {
+	public void toHexFloat(CommonTree node) {
 		this.currentBuilder.append(node.getText());
 	}
 
-	public void visitHexDouble(CommonTree node) {
+	public void toHexDouble(CommonTree node) {
 		this.currentBuilder.append(node.getText());
 	}
 	
-	public void visitString(CommonTree node) {
+	public void toString(CommonTree node) {
 		this.currentBuilder.appendChar('"');
 		this.currentBuilder.append(node.getText());
 		this.currentBuilder.appendChar('"');
 	}
 	
-	public void visitRegularExp(CommonTree node) {
+	public void toRegularExp(CommonTree node) {
 		this.currentBuilder.append(node.getText());
 	}
 	
-	public void visitText(CommonTree node) {
+	public void toText(CommonTree node) {
 		/* do nothing */
 	}
 	
-	public void visitThis(CommonTree node) {
+	public void toThis(CommonTree node) {
 		this.currentBuilder.append("this");
 	}
 	
-	public void visitTrue(CommonTree node) {
+	public void toTrue(CommonTree node) {
 		this.currentBuilder.append("true");
 	}
 	
-	public void visitFalse(CommonTree node) {
+	public void toFalse(CommonTree node) {
 		this.currentBuilder.append("false");
 	}
 	
-	public void visitNull(CommonTree node) {
+	public void toNull(CommonTree node) {
 		this.currentBuilder.append("null");
 	}
 	
-	public void visitList(CommonTree node) {
+	public void toList(CommonTree node) {
 		generateList(node, ", ");
 	}
 	
-	public void visitBlock(CommonTree node) {
+	public void toBlock(CommonTree node) {
 		for(CommonTree element : node){
 			this.currentBuilder.appendNewLine();
 			this.visit(element);
@@ -900,156 +900,156 @@ public class FSharpGenerator extends SourceGenerator {
 		this.currentBuilder.unIndent();
 	}
 	
-	public void visitArray(CommonTree node){
+	public void toArray(CommonTree node){
 		this.currentBuilder.append("[|");
 		this.generateList(node, "; ");
 		this.currentBuilder.append("|]");
 	}
 	
 	@Deprecated
-	public void visitObject(CommonTree node){
+	public void toObject(CommonTree node){
 		
 		//this.generateClass(node.getParent());
 	}
 	
-	public void visitProperty(CommonTree node) {
+	public void toProperty(CommonTree node) {
 		this.generateBinary(node, ": ");
 	}
 
-	public void visitSuffixInc(CommonTree node) {
+	public void toSuffixInc(CommonTree node) {
 		//this.genarateSuffixUnary(node, "++");
 	}
 
-	public void visitSuffixDec(CommonTree node) {
+	public void toSuffixDec(CommonTree node) {
 		//this.genarateSuffixUnary(node, "--");
 	}
 
-	public void visitPrefixInc(CommonTree node) {
+	public void toPrefixInc(CommonTree node) {
 		//this.genaratePrefixUnary(node, "++");
 	}
 
-	public void visitPrefixDec(CommonTree node) {
+	public void toPrefixDec(CommonTree node) {
 		//this.genaratePrefixUnary(node, "--");
 	}
 
-	public void visitPlus(CommonTree node) {
+	public void toPlus(CommonTree node) {
 		this.visit(node.get(0));
 	}
 
-	public void visitMinus(CommonTree node) {
+	public void toMinus(CommonTree node) {
 		this.genaratePrefixUnary(node, "-");
 	}
 
-	public void visitAdd(CommonTree node) {
+	public void toAdd(CommonTree node) {
 		this.currentBuilder.append("(");
 		this.generateBinary(node, ")+(");
 		this.currentBuilder.append(")");
 	}
 
-	public void visitSub(CommonTree node) {
+	public void toSub(CommonTree node) {
 		this.currentBuilder.append("(");
 		this.generateBinary(node, ")-(");
 		this.currentBuilder.append(")");
 	}
 
-	public void visitMul(CommonTree node) {
+	public void toMul(CommonTree node) {
 		this.currentBuilder.append("(");
 		this.generateBinary(node, ")*(");
 		this.currentBuilder.append(")");
 	}
 
-	public void visitDiv(CommonTree node) {
+	public void toDiv(CommonTree node) {
 		this.currentBuilder.append("(");
 		this.generateBinary(node, ")/(");
 		this.currentBuilder.append(")");
 	}
 
-	public void visitMod(CommonTree node) {
+	public void toMod(CommonTree node) {
 		this.currentBuilder.append("(");
 		this.generateBinary(node, ")%(");
 		this.currentBuilder.append(")");
 	}
 
-	public void visitLeftShift(CommonTree node) {
+	public void toLeftShift(CommonTree node) {
 		this.currentBuilder.append("(");
 		this.generateBinary(node, ")<<<(");
 		this.currentBuilder.append(")");
 	}
 
-	public void visitRightShift(CommonTree node) {
+	public void toRightShift(CommonTree node) {
 		this.currentBuilder.append("(");
 		this.generateBinary(node, ")>>>(");
 		this.currentBuilder.append(")");
 	}
 
-	public void visitLogicalLeftShift(CommonTree node) {
+	public void toLogicalLeftShift(CommonTree node) {
 		this.currentBuilder.append("(");
 		this.generateBinary(node, ")<<<(");
 		this.currentBuilder.append(")");
 	}
 
-	public void visitLogicalRightShift(CommonTree node) {
+	public void toLogicalRightShift(CommonTree node) {
 		this.currentBuilder.append("(");
 		this.generateBinary(node, ")>>>(");
 		this.currentBuilder.append(")");
 	}
 
-	public void visitGreaterThan(CommonTree node) {
+	public void toGreaterThan(CommonTree node) {
 		this.currentBuilder.append("(");
 		this.generateBinary(node, ")>(");
 		this.currentBuilder.append(")");
 	}
 
-	public void visitGreaterThanEquals(CommonTree node) {
+	public void toGreaterThanEquals(CommonTree node) {
 		this.currentBuilder.append("(");
 		this.generateBinary(node, ")>=(");
 		this.currentBuilder.append(")");
 	}
 
-	public void visitLessThan(CommonTree node) {
+	public void toLessThan(CommonTree node) {
 		this.currentBuilder.append("(");
 		this.generateBinary(node, ")<(");
 		this.currentBuilder.append(")");
 	}
 
-	public void visitLessThanEquals(CommonTree node) {
+	public void toLessThanEquals(CommonTree node) {
 		this.currentBuilder.append("(");
 		this.generateBinary(node, ")<=(");
 		this.currentBuilder.append(")");
 	}
 
-	public void visitEquals(CommonTree node) {
+	public void toEquals(CommonTree node) {
 		this.currentBuilder.append("(");
 		this.generateBinary(node, ")=(");
 		this.currentBuilder.append(")");
 	}
 
-	public void visitNotEquals(CommonTree node) {
+	public void toNotEquals(CommonTree node) {
 		this.currentBuilder.append("(");
 		this.generateBinary(node, ")<>(");
 		this.currentBuilder.append(")");
 	}
 	
-	public void visitStrictEquals(CommonTree node) {
+	public void toStrictEquals(CommonTree node) {
 		this.currentBuilder.append("(");
 		this.generateBinary(node, ")=(");
 		this.currentBuilder.append(")");
 	}
 
-	public void visitStrictNotEquals(CommonTree node) {
+	public void toStrictNotEquals(CommonTree node) {
 		this.currentBuilder.append("(");
 		this.generateBinary(node, ")<>(");
 		this.currentBuilder.append(")");
 	}
 
 	//none
-	public void visitCompare(CommonTree node) {
+	public void toCompare(CommonTree node) {
 		this.currentBuilder.append("(");
 		this.generateBinary(node, ")-(");
 		this.currentBuilder.append(")");
 	}
 	
-	public void visitInstanceOf(CommonTree node) {
+	public void toInstanceOf(CommonTree node) {
 		this.currentBuilder.append("(");
 		this.visit(node.get(0));
 		this.currentBuilder.append(").constructor.name === ");
@@ -1057,47 +1057,47 @@ public class FSharpGenerator extends SourceGenerator {
 		this.currentBuilder.append(".name");
 	}
 	
-	public void visitStringInstanceOf(CommonTree node) {
+	public void toStringInstanceOf(CommonTree node) {
 		//this.generateBinary(node, " instanceof ");
 	}
 	
-	public void visitHashIn(CommonTree node) {
+	public void toHashIn(CommonTree node) {
 		//this.generateBinary(node, " in ");
 	}
 
-	public void visitBitwiseAnd(CommonTree node) {
+	public void toBitwiseAnd(CommonTree node) {
 		this.generateBinary(node, "&&&");
 	}
 
-	public void visitBitwiseOr(CommonTree node) {
+	public void toBitwiseOr(CommonTree node) {
 		this.generateBinary(node, "|||");
 	}
 
-	public void visitBitwiseNot(CommonTree node) {
+	public void toBitwiseNot(CommonTree node) {
 		this.generateBinary(node, "not");
 	}
 
-	public void visitBitwiseXor(CommonTree node) {
+	public void toBitwiseXor(CommonTree node) {
 		this.generateBinary(node, "^");
 	}
 
-	public void visitLogicalAnd(CommonTree node) {
+	public void toLogicalAnd(CommonTree node) {
 		this.generateBinary(node, "&&");
 	}
 
-	public void visitLogicalOr(CommonTree node) {
+	public void toLogicalOr(CommonTree node) {
 		this.generateBinary(node, "||");
 	}
 
-	public void visitLogicalNot(CommonTree node) {
+	public void toLogicalNot(CommonTree node) {
 		this.genaratePrefixUnary(node, "not");
 	}
 
-	public void visitLogicalXor(CommonTree node) {
+	public void toLogicalXor(CommonTree node) {
 		this.generateBinary(node, "^^^");
 	}
 
-	public void visitConditional(CommonTree node) {
+	public void toConditional(CommonTree node) {
 		this.generateTrinaryAddHead(node, "if", "then", "else");
 	}
 	
@@ -1182,11 +1182,11 @@ public class FSharpGenerator extends SourceGenerator {
 					if(this.currentScope.searchVar(trueName) != null && !this.currentScope.isArgumentVar(trueName)){
 						name = "self." + name;
 					}
-					node.setValue("(!(" + name + ")).Value");
+					((ModifiableCommonTree)node).setValue("(!(" + name + ")).Value");
 				} else {
 					FSharpScope tScope = this.currentScope.getAvailableScope(name);
 					if(tScope != null){
-						node.setValue("new " + tScope.getScopeName() + "()");
+						((ModifiableCommonTree)node).setValue("new " + tScope.getScopeName() + "()");
 					}
 				}
 			}
@@ -1231,7 +1231,7 @@ public class FSharpGenerator extends SourceGenerator {
 		return result;
 	}
 	
-	public void visitAssign(CommonTree node) {
+	public void toAssign(CommonTree node) {
 		this.assignFlag = true;
 		this.formatRightSide(node.get(1));
 		//this.setVarNameInBinary(node, true);
@@ -1250,7 +1250,7 @@ public class FSharpGenerator extends SourceGenerator {
 		this.assignFlag = false;
 	}
 
-	public void visitMultiAssign(CommonTree node) {
+	public void toMultiAssign(CommonTree node) {
 		CommonTree lhs = node.get(0);
 		CommonTree rhs = node.get(1);
 		if(lhs.size() == 1 && rhs.size() == 1 && !rhs.get(0).is(JSTag.TAG_APPLY) && !rhs.get(0).is(JSTag.TAG_APPLY)){
@@ -1271,76 +1271,76 @@ public class FSharpGenerator extends SourceGenerator {
 		CommonTree lexpr = node.get(0).dup();
 		rexpr.add(lexpr);
 		rexpr.add(node.get(1));
-		node.setTag(new Tag("Assign"));
+		((ModifiableCommonTree)node).setTag(Tag.tag("Assign"));
 		node.set(1, rexpr);
-		this.visitAssign(node);
+		this.toAssign(node);
 	}
 	
-	public void visitAssignAdd(CommonTree node) {
+	public void toAssignAdd(CommonTree node) {
 		this.generateAssignCalc(node, "Add");
 	}
 
-	public void visitAssignSub(CommonTree node) {
+	public void toAssignSub(CommonTree node) {
 		this.generateAssignCalc(node, "Sub");
 	}
 
-	public void visitAssignMul(CommonTree node) {
+	public void toAssignMul(CommonTree node) {
 		this.generateAssignCalc(node, "Mul");
 	}
 
-	public void visitAssignDiv(CommonTree node) {
+	public void toAssignDiv(CommonTree node) {
 		this.generateAssignCalc(node, "Div");
 	}
 
-	public void visitAssignMod(CommonTree node) {
+	public void toAssignMod(CommonTree node) {
 		this.generateAssignCalc(node, "Mod");
 	}
 
-	public void visitAssignLeftShift(CommonTree node) {
+	public void toAssignLeftShift(CommonTree node) {
 		this.generateBinary(node, "<<=");
 	}
 
-	public void visitAssignRightShift(CommonTree node) {
+	public void toAssignRightShift(CommonTree node) {
 		this.generateBinary(node, ">>=");
 	}
 
-	public void visitAssignLogicalLeftShift(CommonTree node) {
+	public void toAssignLogicalLeftShift(CommonTree node) {
 		this.generateBinary(node, "<<<=");
 	}
 
-	public void visitAssignLogicalRightShift(CommonTree node) {
+	public void toAssignLogicalRightShift(CommonTree node) {
 		this.generateBinary(node, ">>>=");
 	}
 
-	public void visitAssignBitwiseAnd(CommonTree node) {
+	public void toAssignBitwiseAnd(CommonTree node) {
 		this.generateBinary(node, "&=");
 	}
 
-	public void visitAssignBitwiseOr(CommonTree node) {
+	public void toAssignBitwiseOr(CommonTree node) {
 		this.generateBinary(node, "|=");
 	}
 
-	public void visitAssignBitwiseXor(CommonTree node) {
+	public void toAssignBitwiseXor(CommonTree node) {
 		this.generateBinary(node, "^=");
 	}
 
-	public void visitAssignLogicalAnd(CommonTree node) {
+	public void toAssignLogicalAnd(CommonTree node) {
 		this.generateBinary(node, "&&=");
 	}
 
-	public void visitAssignLogicalOr(CommonTree node) {
+	public void toAssignLogicalOr(CommonTree node) {
 		this.generateBinary(node, "||=");
 	}
 
-	public void visitAssignLogicalXor(CommonTree node) {
+	public void toAssignLogicalXor(CommonTree node) {
 		this.generateBinary(node, "^=");
 	}
 
-//	public void visitMultipleAssign(CommonTree node) {
+//	public void toMultipleAssign(CommonTree node) {
 //		
 //	}
 
-	public void visitComma(CommonTree node) {
+	public void toComma(CommonTree node) {
 		if(node.size() > 2){
 			this.currentBuilder.appendChar('(');
 			this.generateList(node, ", ");
@@ -1351,31 +1351,31 @@ public class FSharpGenerator extends SourceGenerator {
 	}
 	
 	//none
-	public void visitConcat(CommonTree node) {
+	public void toConcat(CommonTree node) {
 		this.generateBinary(node, " + ");
 	}
 
-	public void visitField(CommonTree node) {
+	public void toField(CommonTree node) {
 		CommonTree field;
 		FSharpScope fs;
 		for(int i = 0; i < node.size()-1; i++){
 			field = node.get(i);
 			fs = this.searchScopeFromList(field.getText());
 			if(fs != null){
-				field.setValue(fs.getScopeName());
+				((ModifiableCommonTree)field).setValue(fs.getScopeName());
 			}
 			fs = null;
 		}
 		this.generateBinary(node, ".");
 	}
 
-	public void visitIndex(CommonTree node) {
+	public void toIndex(CommonTree node) {
 		generateExpression(node.get(0));
 		this.visit(node.get(1), ".[(int (", "))]");
 	}
 
 	//none
-	public void visitMultiIndex(CommonTree node) {
+	public void toMultiIndex(CommonTree node) {
 		generateExpression(node.get(0));
 		for(CommonTree indexNode : node.get(1)){
 			this.visit(indexNode, '[', ']');
@@ -1421,12 +1421,12 @@ public class FSharpGenerator extends SourceGenerator {
 			fs = this.searchVarOrFuncFromScopeList(this.currentScope, node.getText());
 			fs = this.currentScope.getAvailableScope(node.getText());
 			if(fs != null){
-				node.setValue("(new " + fs.getScopeName() + "())" + "." + node.getText());
+				((ModifiableCommonTree)node).setValue("(new " + fs.getScopeName() + "())" + "." + node.getText());
 			}
 		}
 	}
 	
-	public void visitApply(CommonTree node) {
+	public void toApply(CommonTree node) {
 		CommonTree func = node.get(0);
 		CommonTree arguments = node.get(1);
 		if(this.assignFlag){
@@ -1453,21 +1453,21 @@ public class FSharpGenerator extends SourceGenerator {
 	}
 
 	//none
-	public void visitMethod(CommonTree node) {
+	public void toMethod(CommonTree node) {
 		this.generateBinary(node, ".");
 		this.currentBuilder.appendChar('(');
 		this.generateList(node.get(2), ", ");
 		this.currentBuilder.appendChar(')');
 	}
 	
-	public void visitTypeOf(CommonTree node) {
+	public void toTypeOf(CommonTree node) {
 		this.currentBuilder.append("(");
 		generateExpression(node.get(0));
 		this.currentBuilder.append(")");
 		this.currentBuilder.append(".GetType().GetMethod().[0].toString()");
 	}
 
-	public void visitIf(CommonTree node) {
+	public void toIf(CommonTree node) {
 		String thenBlock;
 		this.assignFlag = true;
 		this.visit(node.get(0), "if (", ")");
@@ -1518,7 +1518,7 @@ public class FSharpGenerator extends SourceGenerator {
 		}
 	}
 
-	public void visitWhile(CommonTree node) {
+	public void toWhile(CommonTree node) {
 		int begin, end;
 		String thenBlock;
 		this.visit(node.get(0), "if ", "");
@@ -1534,7 +1534,7 @@ public class FSharpGenerator extends SourceGenerator {
 //		this.currentBuilder.unIndent();
 	}
 
-	public void visitFor(CommonTree node) {
+	public void toFor(CommonTree node) {
 		int begin, end;
 		String thenBlock;
 		this.forFlag = true;
@@ -1566,7 +1566,7 @@ public class FSharpGenerator extends SourceGenerator {
 		this.forConunter = "";
 	}
 	
-	public void visitForCounter(CommonTree node){
+	public void toForCounter(CommonTree node){
 		this.currentBuilder.append(node.getText());
 	}
 	
@@ -1582,7 +1582,7 @@ public class FSharpGenerator extends SourceGenerator {
 		}
 	}
 	
-	public void visitJSForeach(CommonTree node) {
+	public void toJSForeach(CommonTree node) {
 		CommonTree param1 = node.get(0);
 		if(param1.is(JSTag.TAG_LIST)){
 			this.currentBuilder.append("for " + param1.get(0).get(0).getText() + " in ");
@@ -1599,7 +1599,7 @@ public class FSharpGenerator extends SourceGenerator {
 		}
 	}
 
-	public void visitDoWhile(CommonTree node) {
+	public void toDoWhile(CommonTree node) {
 		this.currentBuilder.append("do");
 		this.generateBlock(node.get(0));
 		this.visit(node.get(1), "while (", ")");
@@ -1620,30 +1620,30 @@ public class FSharpGenerator extends SourceGenerator {
 		}
 	}
 
-	public void visitReturn(CommonTree node) {
+	public void toReturn(CommonTree node) {
 		this.assignFlag = true;
 		this.formatRightSide(node.get(0));
 		this.visit(node.get(0), "ref(", ")");
 		this.assignFlag = false;
 	}
 
-	public void visitBreak(CommonTree node) {
+	public void toBreak(CommonTree node) {
 		//this.generateJump(node, "break");
 	}
 
-	public void visitYield(CommonTree node) {
+	public void toYield(CommonTree node) {
 		//this.generateJump(node, "yield");
 	}
 
-	public void visitContinue(CommonTree node) {
+	public void toContinue(CommonTree node) {
 		//this.generateJump(node, "continue");
 	}
 
-	public void visitRedo(CommonTree node) {
+	public void toRedo(CommonTree node) {
 		this.generateJump(node, "/*redo*/");
 	}
 
-	public void visitSwitch(CommonTree node) {
+	public void toSwitch(CommonTree node) {
 		this.visit(node.get(0), "match ", " with");
 		
 		this.currentBuilder.indent();
@@ -1656,7 +1656,7 @@ public class FSharpGenerator extends SourceGenerator {
 		this.currentBuilder.unIndent();
 	}
 
-	public void visitCase(CommonTree node) {
+	public void toCase(CommonTree node) {
 		this.visit(node.get(0), "| ", "->");
 		this.currentBuilder.indent();
 		this.currentBuilder.appendNewLine();
@@ -1669,14 +1669,14 @@ public class FSharpGenerator extends SourceGenerator {
 		this.currentBuilder.unIndent();
 	}
 
-	public void visitDefault(CommonTree node) {
+	public void toDefault(CommonTree node) {
 		this.currentBuilder.append("| _ ->");
 		this.currentBuilder.indent();
 		this.visit(node.get(0));
 		this.currentBuilder.unIndent();
 	}
 
-	public void visitTry(CommonTree node) {
+	public void toTry(CommonTree node) {
 		this.currentBuilder.append("try");
 		this.generateBlock(node.get(0));
 		
@@ -1692,12 +1692,12 @@ public class FSharpGenerator extends SourceGenerator {
 	}
 
 	//TODO
-	public void visitCatch(CommonTree node) {
+	public void toCatch(CommonTree node) {
 		this.visit(node.get(0), "with(", ")");
 		this.generateBlock(node.get(1));
 	}
 	
-	public void visitVarDeclStmt(CommonTree node) {
+	public void toVarDeclStmt(CommonTree node) {
 		boolean objLet = this.objFlag;
 		CommonTree listNode = node.get(2);
 		CommonTree varDeclNode = listNode.get(0);
@@ -1723,7 +1723,7 @@ public class FSharpGenerator extends SourceGenerator {
 		}
 	}
 	
-	public void visitVarDecl(CommonTree node) {
+	public void toVarDecl(CommonTree node) {
 		this.varList.add(new FSharpVar(node.get(0).getText(), this.prefixName));
 		this.visit(node.get(0));
 		if(node.size() > 1){
@@ -1750,7 +1750,7 @@ public class FSharpGenerator extends SourceGenerator {
 		return res;
 	}
 	
-	public void visitFuncDecl(CommonTree node) {
+	public void toFuncDecl(CommonTree node) {
 		//boolean mustWrap = this.currentBuilder.isStartOfLine();
 //		boolean mustWrap = false;
 //		boolean notLambda = node.get(2).is(JSTag.TAG_NAME);
@@ -1839,23 +1839,23 @@ public class FSharpGenerator extends SourceGenerator {
 //		this.prefixName = this.prefixName.substring(0, this.prefixName.length() - addName.length());
 	}
 	
-	public void visitDeleteProperty(CommonTree node) {
+	public void toDeleteProperty(CommonTree node) {
 		this.currentBuilder.append("delete ");
 		this.visit(node.get(0));
 	}
 	
-	public void visitVoidExpression(CommonTree node) {
+	public void toVoidExpression(CommonTree node) {
 		this.currentBuilder.append("void(");
 		this.visit(node.get(0));
 		this.currentBuilder.append(")");
 	}
 	
-	public void visitThrow(CommonTree node) {
+	public void toThrow(CommonTree node) {
 		this.currentBuilder.append("throw ");
 		this.visit(node.get(0));
 	}
 	
-	public void visitNew(CommonTree node) {
+	public void toNew(CommonTree node) {
 		this.currentBuilder.append("new ");
 		this.visit(node.get(0));
 		this.currentBuilder.appendChar('(');
@@ -1865,15 +1865,15 @@ public class FSharpGenerator extends SourceGenerator {
 		this.currentBuilder.appendChar(')');
 	}
 
-	public void visitEmpty(CommonTree node) {
+	public void toEmpty(CommonTree node) {
 		this.currentBuilder.appendChar(';');
 	}
 	
-	public void visitVariadicParameter(CommonTree node){
+	public void toVariadicParameter(CommonTree node){
 		this.currentBuilder.append("__variadicParams");
 	}
 	
-	public void visitCount(CommonTree node){
+	public void toCount(CommonTree node){
 		this.visit(node.get(0));
 		this.currentBuilder.append(".length");
 	}

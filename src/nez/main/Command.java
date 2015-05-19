@@ -90,12 +90,13 @@ public abstract class Command {
 	static {
 		load("check", "nez.main.CheckCommand");
 		load("parse", "nez.main.ParseCommand");
-		load("type", "nez.x.TypeCommand");
+//		load("type", "nez.x.TypeCommand");
 //		load("find", "nez.main.FindCommand");
 		load("shell", "nez.main.NezInteractiveParser");
 //		load("dtd", "nez.x.DTDCommand");
 //		load("conv", "nez.x.ConverterCommand");
 //		load("regex", "nez.x.RegexCommand");
+		load("typecheck", "nez.fsharp.TypeCheckCommand");
 	}
 	
 	public static final Command getCommand(String name) {
