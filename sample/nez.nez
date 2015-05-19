@@ -1,0 +1,228 @@
+/* Nez format */
+ 
+public File
+   = { S* (@Statement)* #List }
+
+public Statement
+   = ( Document / Example / Import / Format / Production ) _ (';' _)?
+
+Document
+   = { COMMENT (S* COMMENT)* #Comment }
+
+/* Production */
+
+example Production '''
+public p 
+	= ''
+	/ 'p'
+	/ [Pp]
+	/ [P-p]
+	/ P   /* nonterminal */
+	/ p p
+	/ ( p / p)
+	/ &p
+	/ !p
+'''
+
+public Production
+   = { (@[2]Qualifers)? @[0](Name / String) _ '=' _ @[1]Expression #Production }
+
+QUALIFERS
+   = ( 'public' / 'inline' ) !W
+
+Qualifers
+   = { (@({ QUALIFERS }) S)* #List }
+
+Name
+   = { NAME #Name }
+
+_SKIP_
+   = _ANNOTATION_*
+
+_ANNOTATION_
+   = '[' _DOC_ ']' _
+
+_DOC_
+   = (!(']' / '[') .)* ('[' _DOC_ ']' _DOC_)?
+
+/* Expression */
+
+public Expression
+   = Sequence ({@ (_ '/' _ @Sequence)+ #Choice })?
+
+Sequence
+   = Prefix ({@ (_ NOTRULE @Prefix)+ #Sequence })?
+
+NOTRULE
+   = !(';' / RuleHead / Import)
+
+RuleHead
+   = { (@[2]Qualifers)? @[0](Name / String) _ _SKIP_ '=' }
+
+Prefix
+   = { ( '&' #And / '!' #Not / '@[' _ @[1]Integer _ ']' #Link / '@' #Link / '~' #Match ) @[0]Suffix }
+   / Suffix
+
+Suffix
+   = Primary ({@ ( '*' (@[1]Integer)? #Repetition / '+' #Repetition1 / '?' #Option ) })?
+
+Integer
+   = { INT #Integer }
+
+Primary
+   = Character
+   / Charset
+   / { '.' #Any }
+   / { '0x' HEX HEX #Byte }
+   / { 'U+' HEX HEX HEX HEX #Byte }
+   / '(' _ Expression _ ')'
+   / Constructor
+   / Replace
+   / Tagging
+   / String
+   / Extension
+   / NonTerminal
+
+NonTerminal
+   = { NAME ('.' NAME)? #NonTerminal }
+
+Character
+   = '\'' { ('\\\'' / '\\\\' / !('\'') .)* #Character } '\''
+
+String
+   = '"' { ('\\"' / '\\\\' / !('"') .)* #String } '"'
+
+Charset
+   = '[' { (@({ CHAR #Class } ({@ '-' @({ CHAR #Class }) #List })?))* #Class } ']'
+
+CHAR
+   = '\\u' HEX HEX HEX HEX
+   / '\\x' HEX HEX
+   / '\\n'
+   / '\\t'
+   / '\\\\'
+   / '\\r'
+   / '\\v'
+   / '\\f'
+   / '\\-'
+   / '\\]'
+   / !(']') .
+
+Constructor
+   = { '{' ( '@' S #LeftNew / #New ) _ (@Expression _)? '}' }
+
+Tagging
+	= '#' { [0-9A-Za-z] ([.0-9A-Z_a-z])* #Tagging }
+	
+Replace
+   = '`' { ('\\`' / '\\\\' / !('`') .)* #Replace } '`'
+
+Extension
+   = '<' { addExtension } S* '>'
+
+addExtension
+	= 'if' S+ @FlagName #If
+	/ 'on' S+ @FlagName S+ @Expression #On
+	/ 'block' S+ @Expression #Block
+	/ 'def' S+ @TableName S+ @Expression #Def
+	/ 'is' S+ @TableName #Is
+	/ 'isa' S+ @TableName #Isa
+	/ 'exists' S+ @TableName #Exists
+	/ 'local' S+ @TableName S+ @Expression #Local
+	/ 'x' S+ @NonTerminal S+ @NonTerminal S+ @Expression S* (',' S* @NonTerminal S+ @Expression S*)* #Expand
+	/ (!('>') .)+ #Undefined
+
+FlagName
+   = { ('!')? LETTER W* #Name }
+
+TableName
+   = { LETTER W* #Name }
+
+/* Statement */
+
+Example
+   = { 'example' S+ ( '!' #Rebut / #Example ) @NonTerminal S+ addInputText }
+
+addInputText
+   = '\'\'\'' EOL @({ (!('\n' '\'\'\'') .)* }) '\n' '\'\'\''
+   / '```' EOL @({ (!('\n' '```') .)* }) '\n' '```'
+   / '"""' EOL @({ (!('\n' '"""') .)* }) '\n' '"""'
+   / @({ (!EOL .)* }) EOL
+
+Import
+   = { 'import' S+ @ImportName S+ 'from' S+ @(Character / String) #Import }
+
+ImportName
+   = { ( '*' / NAME ('.' ( '*' / NAME ))? ) #Name }
+
+Format
+   = { 'format' S+ '#' @Name '[' _ @FormatSize _ ']' _ '`' @Formatter '`' #Format }
+
+FormatSize
+   = { ( '*' / INT ) #Integer }
+
+Formatter
+   = { #List (!('`') @('${' Name '}' 
+   / '$[' _ Index _ ({@ '`' @Formatter '`' _ @Index _ #Format })? ']' 
+   / { ( '$$' `$` / '\\`' `\`` 
+   / (!('$$' / '${' / '$[' / '\\`' / '`') .)+ ) }))* }
+
+Index
+   = { ('-')? INT #Integer }
+
+
+
+
+
+
+/* Lexical Patterns */
+
+_
+   = (S / COMMENT)*
+
+S
+   = [\t\n\r ]
+   / 0xe3 0x80 0x80
+
+COMMENT
+   = '/*' (!('*/') .)* '*/'
+   / '//' (!EOL .)* EOL
+
+EOL
+   = '\n'
+   / '\r' ('\n')?
+   / EOT
+
+EOT
+   = !(.)
+   
+LETTER
+   = [A-Z_a-z]
+
+W
+   = [0-9A-Z_a-z]
+
+HEX
+   = [0-9A-Fa-f]
+
+NAME
+   = !KEYWORD LETTER W*
+
+KEYWORD
+   = 'public' !W
+   / 'inline' !W
+   / 'import' !W
+   / 'type' !W
+   / 'grammar' !W
+   / 'example' !W
+   / 'format' !W
+   / 'define' !W
+
+INT
+   = DIGIT DIGIT*
+
+DIGIT
+   = [0-9]
+
+
+
