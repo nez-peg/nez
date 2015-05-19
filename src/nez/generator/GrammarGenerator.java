@@ -282,20 +282,24 @@ public abstract class GrammarGenerator extends NezGenerator {
 	}
 	
 	public void visitSequence(Sequence e) {
+		int c = 0;
 		for(int i = 0; i < e.size(); i++) {
-			if(i > 0) {
+			if(c > 0) {
 				W(_Delim());
 			}
 			Expression s = e.get(i);
 			if(s instanceof ByteChar && i+1 < e.size() && e.get(i+1) instanceof ByteChar) {
 				i = checkString(e, i);
+				c++;
 				continue;
 			}
 			if(s instanceof Choice || s instanceof Sequence) {
 				visitGrouping(s);
+				c++;
 			}
 			else {
 				visit(s);
+				c++;
 			}
 		}
 	}

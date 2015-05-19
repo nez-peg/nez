@@ -9,6 +9,7 @@ import nez.lang.Choice;
 import nez.lang.Empty;
 import nez.lang.Expression;
 import nez.lang.Failure;
+import nez.lang.Grammar;
 import nez.lang.Link;
 import nez.lang.New;
 import nez.lang.NonTerminal;
@@ -39,7 +40,7 @@ public class NezGrammarGenerator extends GrammarGenerator {
 	}
 	
 	@Override
-	public void makeHeader() {
+	public void makeHeader(Grammar g) {
 		L("// Parsing Expression Grammars for Nez");
 		L("// ");
 	}

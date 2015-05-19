@@ -114,16 +114,16 @@ public abstract class NezGenerator {
 	// ---------------------------------------------------------------------
 	
 	public void generate(Grammar grammar) {
-		makeHeader();
+		makeHeader(grammar);
 		for(Production p: grammar.getProductionList()) {
 			visitProduction(p);
 		}
-		makeFooter();
+		makeFooter(grammar);
 		file.writeNewLine();
 		file.flush();
 	}
 	
-	public void makeHeader() {
+	public void makeHeader(Grammar g) {
 
 	}
 	
@@ -131,7 +131,7 @@ public abstract class NezGenerator {
 		//L(r.toString());
 	}
 
-	public void makeFooter() {
+	public void makeFooter(Grammar g) {
 		
 	}
 
