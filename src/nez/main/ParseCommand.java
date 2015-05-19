@@ -16,7 +16,7 @@ class ParseCommand extends Command {
 	@Override
 	public void exec(CommandConfigure config) {
 		Recorder rec = config.getRecorder();
-		Grammar p = config.getProduction();
+		Grammar p = config.getGrammar();
 		p.record(rec);
 		while(config.hasInput()) {
 			SourceContext file = config.getInputSourceContext();
@@ -63,7 +63,7 @@ class CheckCommand extends Command {
 	void exec(CommandConfigure config) {
 		UList<String> failedInput = new UList<String>(new String[4]);
 		Recorder rec = config.getRecorder();
-		Grammar product = config.getProduction();
+		Grammar product = config.getGrammar();
 		product.disable(Grammar.ASTConstruction);
 		product.record(rec);
 		int totalCount = 0, failureCount = 0, unconsumedCount = 0;

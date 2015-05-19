@@ -49,13 +49,24 @@ public abstract class GrammarGenerator extends NezGenerator {
 		file.decIndent();
 		return this;
 	}
+	
+	protected GrammarGenerator Begin() {
+		W("{").inc();
+		return this;
+	}
+
+	protected GrammarGenerator End() {
+		dec().L("}");
+		return this;
+	}
+
 
 	protected GrammarGenerator L(String line) {
 		file.writeIndent(line);
 		return this;
 	}
-	
-	protected char _LiteralQuote() {
+
+	protected char Quoatation() {
 		return '\'';
 	}
 
@@ -63,36 +74,96 @@ public abstract class GrammarGenerator extends NezGenerator {
 		return "=";
 	}
 
-	protected String _Choice() {
-		return "/";
+	protected String _Choice() { return "/"; }
+
+	protected String _Option() { return "?"; }
+
+	protected String _ZeroAndMore() { return "*"; }
+
+	protected String _OneAndMore() { return "+"; }
+	protected String _And() { return "&"; }
+	protected String _Not() { return "!"; }
+	protected String _Any() { return "."; }
+
+	protected String _OpenGrouping() { return "("; }
+	protected String _CloseGrouping() { return ")"; };
+	
+	public void visitGrouping(Expression e) {
+		W(_OpenGrouping());
+		visit(e);
+		W(_CloseGrouping());
 	}
 
-	protected String _Option() {
-		return "?";
+	protected String _Open() { return "("; }
+	protected String _Delim() { return " "; }
+	protected String _Close() { return ")"; };
+
+	protected String _Name(Production p) {
+		return p.getLocalName().replace("~", "_").replace("!", "_W");
 	}
 
-	protected String _ZeroAndMore() {
-		return "*";
+	protected GrammarGenerator C(String name, Expression e) {
+		int c = 0;
+		W(name).W(_Open());
+		for(Expression sub: e) {
+			if(c > 0) {
+				W(_Delim());
+			}
+			visit(sub);
+			c++;
+		}	
+		W(_Close());
+		return this;
 	}
 
-	protected String _OneAndMore() {
-		return "+";
+	protected GrammarGenerator C(String name, String first, Expression e) {
+		W(name).W(_Open());
+		W(first).W(_Delim());
+		for(Expression sub: e) {
+			visit(sub);
+		}	
+		W(_Close());
+		return this;
 	}
 
-	protected String _And() {
-		return "&";
+	protected GrammarGenerator C(String name) {
+		W(name).W(_Open()).W(_Close());
+		return this;
 	}
 
-	protected String _Not() {
-		return "!";
+	protected GrammarGenerator C(String name, String arg) {
+		if(arg.length() > 1 && arg.startsWith("\"") && arg.endsWith("\"")) {
+		}
+		else {
+			arg = StringUtils.quoteString('"', arg, '"');
+		}
+		W(name).W(_Open()).W(arg).W(_Close());
+		return this;
 	}
 
-	protected String _Any() {
-		return ".";
+	protected GrammarGenerator C(String name, int arg) {
+		W(name).W(_Open()).W(String.valueOf(arg)).W(_Close());
+		return this;
+	}
+
+	protected GrammarGenerator C(String name, boolean[] arg) {
+		int cnt = 0;
+		W(name).W(_Open());
+		for(int c = 0; c < arg.length; c++) {
+			if(arg[c]) {
+				if(cnt > 0) {
+					W(_Delim());
+				}
+				W(String.valueOf(c));
+				cnt++;
+			}
+		}
+		W(_Close());
+		return this;
 	}
 
 	protected String _NonTerminal(Production p) {
-		return p.getLocalName().replace("~", "_").replace("!", "_Off");
+		return p.getLocalName().replace("~", "_").replace("!", "NOT").replace(".", "DOT");
 	}
 	
 	protected GrammarGenerator Unary(String prefix, Unary e, String suffix) {
@@ -103,9 +174,7 @@ public abstract class GrammarGenerator extends NezGenerator {
 			this.visit(e.get(0));
 		}
 		else {
-			W("(");
-			this.visit(e.get(0));
-			W(")");
+			visitGrouping(e.get(0));
 		}
 		if(suffix != null) {
 			W(suffix);
@@ -133,13 +202,12 @@ public abstract class GrammarGenerator extends NezGenerator {
 		dec();
 	}	
 
-	
 	public void visitEmpty(Empty e) {
-		W(""+ _LiteralQuote()+_LiteralQuote());
+		W(""+ Quoatation()+Quoatation());
 	}
 
 	public void visitFailure(Failure e) {
-		W(_Not()+ _LiteralQuote()+_LiteralQuote());
+		W(_Not()+ Quoatation()+Quoatation());
 	}
 
 	public void visitNonTerminal(NonTerminal e) {
@@ -147,7 +215,7 @@ public abstract class GrammarGenerator extends NezGenerator {
 	}
 	
 	public void visitByteChar(ByteChar e) {
-		W(StringUtils.stringfyByte(_LiteralQuote(), e.byteChar, _LiteralQuote()));
+		W(StringUtils.stringfyByte(Quoatation(), e.byteChar, Quoatation()));
 	}
 
 	public void visitByteMap(ByteMap e) {
@@ -212,47 +280,46 @@ public abstract class GrammarGenerator extends NezGenerator {
 //		Unary(predicate, e, null);
 		visit(e.get(0));
 	}
-
+	
 	public void visitSequence(Sequence e) {
 		for(int i = 0; i < e.size(); i++) {
 			if(i > 0) {
-				W(" ");
-			}
-			int n = appendAsString(e, i);
-			if(n > i) {
-				i = n;
-				continue;
+				W(_Delim());
 			}
 			Expression s = e.get(i);
-			if(s instanceof Choice || s instanceof Sequence) {
-				W("( ");
-				visit(s);
-				W(" )");
+			if(s instanceof ByteChar && i+1 < e.size() && e.get(i+1) instanceof ByteChar) {
+				i = checkString(e, i);
 				continue;
 			}
-			visit(s);
+			if(s instanceof Choice || s instanceof Sequence) {
+				visitGrouping(s);
+			}
+			else {
+				visit(s);
+			}
 		}
 	}
 
-	private int appendAsString(Multinary l, int start) {
-		int end = l.size();
-		String s = "";
-		for(int i = start; i < end; i++) {
+	private int checkString(Sequence l, int start) {
+		int n = 0;
+		for(int i = start; i < l.size(); i++) {
 			Expression e = l.get(i);
 			if(e instanceof ByteChar) {
-				char c = (char)(((ByteChar) e).byteChar);
-				if(c >= ' ' && c < 127) {
-					s += c;
-					continue;
-				}
+				n++;
+				continue;
 			}
-			end = i;
 			break;
 		}
-		if(s.length() > 1) {
-			W(StringUtils.quoteString(_LiteralQuote(), s, _LiteralQuote()));
+		byte[] utf8 = new byte[n];
+		for(int i = 0; i < n; i++) {
+			utf8[i] = (byte)(((ByteChar) l.get(start+i)).byteChar);
 		}
-		return end - 1;
+		visitString(StringUtils.newString(utf8));
+		return start + n - 1;
+	}
+	
+	public void visitString(String text) {
+		W(StringUtils.quoteString('\'', text, '\''));
 	}
 
 	@Override

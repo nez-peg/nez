@@ -24,7 +24,7 @@ public class ConverterCommand extends Command {
 	@Override
 	public void exec(CommandConfigure config) {
 		Recorder rec = config.getRecorder();
-		Grammar p = config.getProduction(config.StartingPoint);
+		Grammar p = config.getGrammar(config.StartingPoint);
 		p.record(rec);
 		while(config.hasInput()) {
 			SourceContext file = config.getInputSourceContext();

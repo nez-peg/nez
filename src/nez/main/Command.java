@@ -15,7 +15,7 @@ public abstract class Command {
 	public final static int     PatchLevel   = 0;
 	public final static String  Version = "" + MajorVersion + "." + MinerVersion + "." + PatchLevel;
 	public final static String  Copyright = "Copyright (c) 2014-2015, Nez project authors";
-	public final static String  License = "BSD-Style Open Source";
+	public final static String  License = "BSD-License Open Source";
 
 	public final static void main(String[] args) {
 		CommandConfigure config = new CommandConfigure();

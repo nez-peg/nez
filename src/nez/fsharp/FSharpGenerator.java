@@ -94,10 +94,10 @@ public class FSharpGenerator extends SourceGenerator {
 //					nameNode.add(new CommonTree(new Tag("Name"), null, 0));
 					parent.set(this.indexOf(node), nameNode);
 				}
-				node.get(2).setValue(scopeName);
+				CommonTree scopeNameNode = node.get(2);
+				node.set(2, new CommonTree(scopeNameNode.getTag(), scopeNameNode.getSource(), scopeNameNode.getSourcePosition(), scopeNameNode.getSourcePosition() + scopeNameNode.getSource().length(), scopeNameNode.size(), scopeName));
 			} else if(node.get(2).is(this.TAG_LAMBDA_NAME)){
-				node.get(2).setTag(new Tag("Name"));
-				CommonTree nameNode = new CommonTree(Tag.tag("Name"), null, 0, 0, 0, null);
+				//node.get(2).setTag(new Tag("Name"));
 				CommonTree parent = node.getParent();
 				String fullName = "";
 				String lambdaName = node.get(2).getText();
@@ -105,7 +105,7 @@ public class FSharpGenerator extends SourceGenerator {
 					fullName += pathElement + "_";
 				}
 				fullName += lambdaName;
-				nameNode.setValue("(new ScopeOf" + fullName + "())." + lambdaName);
+				CommonTree nameNode = new CommonTree(Tag.tag("Name"), null, 0, 0, 0, "(new ScopeOf" + fullName + "())." + lambdaName);
 				parent.set(this.indexOf(node), nameNode);
 			}
 		} else if(isObject){

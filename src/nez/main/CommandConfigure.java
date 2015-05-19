@@ -3,6 +3,7 @@ package nez.main;
 import java.io.IOException;
 
 import nez.SourceContext;
+import nez.generator.NezGenerator;
 import nez.lang.Grammar;
 import nez.lang.GrammarChecker;
 import nez.lang.NameSpace;
@@ -135,7 +136,7 @@ public class CommandConfigure {
 			}
 			else if(argument.startsWith("--memo")) {
 				if(argument.equals("--memo:none")) {
-					ProductionOption = UFlag.unsetFlag(ProductionOption, Grammar.PackratParsing);
+					GrammarOption = UFlag.unsetFlag(GrammarOption, Grammar.PackratParsing);
 				}
 				else if(argument.equals("--memo:packrat")) {
 					defaultTable = MemoTable.newPackratHashTable(0, 0, 0);
@@ -152,20 +153,20 @@ public class CommandConfigure {
 			}
 			else if(argument.startsWith("--enable:")) {
 				if(argument.endsWith("packrat")) {
-					this.ProductionOption |= Grammar.PackratParsing;
+					this.GrammarOption |= Grammar.PackratParsing;
 					defaultTable = MemoTable.newPackratHashTable(0, 0, 0);
 				}
 				else if(argument.endsWith(":prediction") || argument.endsWith(":predict")) {
-					this.ProductionOption |= Grammar.Prediction;
+					this.GrammarOption |= Grammar.Prediction;
 				}
 				else if(argument.endsWith(":tracing") || argument.endsWith(":trace")) {
-					this.ProductionOption |= Grammar.Tracing;
+					this.GrammarOption |= Grammar.Tracing;
 				}
 				else if(argument.endsWith(":inline")) {
-					this.ProductionOption |= Grammar.Inlining;
+					this.GrammarOption |= Grammar.Inlining;
 				}
 				else if(argument.endsWith(":dfa")) {
-					this.ProductionOption |= Grammar.DFA;
+					this.GrammarOption |= Grammar.DFA;
 				}
 				else if(argument.endsWith(":log")) {
 					RecorderFileName = "nezrec.csv";  // -Xrec
@@ -173,19 +174,19 @@ public class CommandConfigure {
 			}
 			else if(argument.startsWith("--disable:")) {
 				if(argument.endsWith(":packrat") || argument.endsWith(":memo")) {
-					this.ProductionOption = UFlag.unsetFlag(this.ProductionOption, Grammar.PackratParsing);
+					this.GrammarOption = UFlag.unsetFlag(this.GrammarOption, Grammar.PackratParsing);
 				}
 				else if(argument.endsWith(":tracing") || argument.endsWith(":trace")) {
-					this.ProductionOption = UFlag.unsetFlag(this.ProductionOption, Grammar.Tracing);
+					this.GrammarOption = UFlag.unsetFlag(this.GrammarOption, Grammar.Tracing);
 				}
 				else if(argument.endsWith(":prediction") || argument.endsWith(":predict")) {
-					this.ProductionOption = UFlag.unsetFlag(this.ProductionOption, Grammar.Prediction);
+					this.GrammarOption = UFlag.unsetFlag(this.GrammarOption, Grammar.Prediction);
 				}
 				else if(argument.endsWith(":inline")) {
-					this.ProductionOption = UFlag.unsetFlag(this.ProductionOption, Grammar.Inlining);
+					this.GrammarOption = UFlag.unsetFlag(this.GrammarOption, Grammar.Inlining);
 				}
 				else if(argument.endsWith(":dfa")) {
-					this.ProductionOption = UFlag.unsetFlag(this.ProductionOption, Grammar.DFA);
+					this.GrammarOption = UFlag.unsetFlag(this.GrammarOption, Grammar.DFA);
 				}
 			}
 			else if(argument.startsWith("-Xrec") || argument.startsWith("--log") ) {
@@ -228,6 +229,9 @@ public class CommandConfigure {
 	public final Command getCommand() {
 		Command com = Command.getCommand(this.CommandName);
 		if(com == null) {
+			if(GrammarFile != null && NezGenerator.supportedGenerator(this.CommandName)) {
+				return new GeneratorCommand(NezGenerator.newNezGenerator(this.CommandName));
+			}
 			this.showUsage("unknown command: " + this.CommandName);
 		}
 		return com;
@@ -235,6 +239,9 @@ public class CommandConfigure {
 	
 	public final NameSpace getNameSpace(boolean NameSpaceCreation) {
 		if(GrammarFile != null) {
+			if(GrammarFile.equals("nez")) {
+				return NezCombinator.newNameSpace();
+			}
 			try {
 				return NameSpace.loadGrammarFile(GrammarFile, new GrammarChecker(this.CheckerLevel));
 			} catch (IOException e) {
@@ -254,26 +261,26 @@ public class CommandConfigure {
 		}
 	}
 
-	public final Grammar getProduction(String start, int option) {
+	public final Grammar getGrammar(String start, int option) {
 		if(start == null) {
 			start = this.StartingPoint;
 		}
 		return getNameSpace(false).newGrammar(start, option);
 	}
 
-	private int ProductionOption = Grammar.DefaultOption;
+	private int GrammarOption = Grammar.DefaultOption;
 	
-	public final Grammar getProduction(String start) {
-		Grammar p = getNameSpace(false).newGrammar(start, ProductionOption);
+	public final Grammar getGrammar(String start) {
+		Grammar p = getNameSpace(false).newGrammar(start, GrammarOption);
 		if(p == null) {
-			ConsoleUtils.exit(1, "undefined nonterminal: " + start);
+			ConsoleUtils.exit(1, "undefined production: " + start);
 		}
 		p.config(this.defaultTable, WindowSize);
 		return p;
 	}
 
-	public final Grammar getProduction() {
-		return this.getProduction(this.StartingPoint);
+	public final Grammar getGrammar() {
+		return this.getGrammar(this.StartingPoint);
 	}
 
 	public final boolean hasInput() {
@@ -325,7 +332,7 @@ public class CommandConfigure {
 		if(RecorderFileName != null) {
 			Recorder rec = new Recorder(RecorderFileName);
 			rec.setText("nez", Command.Version);
-			rec.setText("config", Grammar.stringfyOption(ProductionOption, ";"));
+			rec.setText("config", Grammar.stringfyOption(GrammarOption, ";"));
 			return rec;
 		}
 		return null;

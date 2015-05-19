@@ -11,13 +11,13 @@ public class CommonTree extends AbstractList<CommonTree> implements SourcePositi
 //		//System.out.print(".");
 //		gcCount++;
 //	}
-	private Source    source;
-	private Tag       tag;
-	private long      pos;
-	private int       length;
-	private Object    value;
-	CommonTree             parent = null;
-	private CommonTree     subTree[] = null;
+	protected Source    source;
+	protected Tag       tag;
+	protected long      pos;
+	protected int       length;
+	protected Object    value;
+	protected CommonTree     parent = null;
+	protected CommonTree     subTree[] = null;
 
 	public CommonTree(Tag tag, Source source, long pos, long epos, int size, Object value) {
 		this.tag        = tag;

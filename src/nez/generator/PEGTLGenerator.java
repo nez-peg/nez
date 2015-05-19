@@ -3,6 +3,7 @@ package nez.generator;
 import nez.lang.ByteChar;
 import nez.lang.Expression;
 import nez.lang.Production;
+import nez.lang.Sequence;
 import nez.util.StringUtils;
 
 public class PEGTLGenerator extends GrammarGenerator {
@@ -38,12 +39,27 @@ public class PEGTLGenerator extends GrammarGenerator {
 		L("struct " + p.getLocalName() + " : ");
 		inc();
 		visit(e);
+		W(" {};");
 		dec();
 	}	
 
 	@Override
 	public void visitByteChar(ByteChar e) {
-		L("pegtl::one<" + StringUtils.formatChar(e.byteChar) + ">");
+		W("pegtl::one<" + StringUtils.stringfyByte(e.byteChar) + ">");
+	}	
+
+	@Override
+	public void visitSequence(Sequence e) {
+		int c = 0;
+		W("pegtl::seq<");
+		for(Expression sub: e) {
+			if(c > 0) {
+				W(", ");
+			}
+			visit(sub);
+			c++;
+		}
+		W(">");
 	}	
 
 }

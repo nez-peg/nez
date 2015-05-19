@@ -19,137 +19,134 @@ import nez.lang.Repetition;
 import nez.lang.Repetition1;
 import nez.lang.Replace;
 import nez.lang.Sequence;
-import nez.lang.Multinary;
 import nez.lang.Tagging;
-import nez.lang.Unary;
 import nez.util.StringUtils;
 
-public class NezGrammarGenerator extends GrammarGenerator {
+public class CombinatorGenerator extends GrammarGenerator {
 	@Override
 	public String getDesc() {
-		return "a Nez grammar" ;
+		return "a Nez combinator for Java" ;
 	}
 
-	public NezGrammarGenerator() {
+	public CombinatorGenerator() {
 		super(null);
 	}
 
-	public NezGrammarGenerator(String fileName) {
+	public CombinatorGenerator(String fileName) {
 		super(fileName);
 	}
 	
+	protected String _Delim() { return ", "; }
+	
 	@Override
 	public void makeHeader() {
-		L("// Parsing Expression Grammars for Nez");
-		L("// ");
-	}
-
-	String stringfyName(String s) {
-		return s;
+		L("/* Parsing Expression Grammars for Nez */");
+		L("import nez.ParserCombinator;");
+		L("import nez.lang.Expression;");
+		L("");
+		L("class G extends ParserCombinator").Begin();
 	}
 	
+	public void makeFooter() {
+		End();
+	}
+
 	@Override
 	public void visitProduction(Production rule) {
 		Expression e = rule.getExpression();
-		if(rule.isPublic()) {
-			L("public ");
-			W(stringfyName(rule.getLocalName()));
-		}
-		else {
-			L(stringfyName(rule.getLocalName()));
-		}
-		inc();
-		L("= ");
-		if(e instanceof Choice) {
-			for(int i = 0; i < e.size(); i++) {
-				if(i > 0) {
-					L("/ ");
-				}
-				visit(e.get(i));
-			}
-		}
-		else {
-			visit(e);
-		}
-		dec();
+		L("public Expression p").W(_NonTerminal(rule)).W("() ").Begin();
+		L("return ");
+		visit(e);
+		W(";");
+		End();
 	}	
 	
 	public void visitEmpty(Empty e) {
-		W("''");
+		C("Empty");
 	}
 
 	public void visitFailure(Failure e) {
-		W("!''");
+		C("Failure");
 	}
 
 	public void visitNonTerminal(NonTerminal e) {
-		W(stringfyName(e.getLocalName()));
+		C("P", _NonTerminal(e.getProduction()));
 	}
 	
 	public void visitByteChar(ByteChar e) {
-		W(StringUtils.stringfyByte(e.byteChar));
+		C("t", StringUtils.stringfyByte('"', e.byteChar, '"'));
 	}
 
 	public void visitByteMap(ByteMap e) {
-		W(StringUtils.stringfyCharClass(e.byteMap));
+		C("c", e.byteMap);
 	}
-	
+
+	public void visitString(String s) {
+		C("t", s);
+	}
+
 	public void visitAnyChar(AnyChar e) {
-		W(".");
+		C("AnyChar");
 	}
 
 	public void visitOption(Option e) {
-		Unary( null, e, "?");
+		C("Option", e);
 	}
 	
 	public void visitRepetition(Repetition e) {
-		Unary(null, e, "*");
+		C("ZeroMore", e);
 	}
 	
 	public void visitRepetition1(Repetition1 e) {
-		Unary(null, e, "+");
+		C("OneMore", e);
 	}
 
 	public void visitAnd(And e) {
-		Unary( "&", e, null);
+		C("And", e);
 	}
 	
 	public void visitNot(Not e) {
-		Unary( "!", e, null);
+		C("Not", e);
 	}
 	
 	public void visitChoice(Choice e) {
-		for(int i = 0; i < e.size(); i++) {
-			if(i > 0) {
-				W(" / ");
-			}
-			visit(e.get(i));
-		}
+		C("Choice", e);
+	}
+	
+	public void visitSequence(Sequence e) {
+		W("Sequence(");
+		super.visitSequence(e);
+		W(")");
 	}
 	
 	public void visitNew(New e) {
-		W(e.lefted ? "{@" : "{");
+		if(e.lefted) {
+			C("LCapture", e.shift);
+		}
+		else {
+			C("NCapture", e.shift);
+		}
 	}
 
 	public void visitCapture(Capture e) {
-		W("}");
+		C("Capture", e.shift);
 	}
 
 	public void visitTagging(Tagging e) {
-		W("#");
-		W(e.tag.getName());
+		C("Tagging", e.getTagName());
 	}
 	
 	public void visitReplace(Replace e) {
-		W(StringUtils.quoteString('`', e.value, '`'));
+		C("Replace", StringUtils.quoteString('"', e.value, '"'));
 	}
 	
 	public void visitLink(Link e) {
-		String predicate = "@";
 		if(e.index != -1) {
-			predicate += "[" + e.index + "]";
+			C("Link", String.valueOf(e.index), e);
 		}
-		Unary(predicate, e, null);
+		else {
+			C("Link", e);
+		}
 	}
 
 	@Override
