@@ -3,6 +3,7 @@ package nez.util;
 import java.io.UnsupportedEncodingException;
 
 import nez.lang.ByteMap;
+import nez.main.Verbose;
 
 public abstract class StringUtils {
 
@@ -29,6 +30,15 @@ public abstract class StringUtils {
 		0 /* EOF */
 	};
 
+	public final static String newString(byte[] utf8) {
+		try {
+			return new String(utf8, DefaultEncoding);
+		} catch (UnsupportedEncodingException e) {
+			Verbose.traceException(e);
+		}
+		return new String(utf8);
+	}
+	
 	public final static byte[] toUtf8(String text) {
 		try {
 			return text.getBytes(DefaultEncoding);
@@ -195,6 +205,9 @@ public abstract class StringUtils {
 		case '\r' : return("'\\r'"); 
 		case '\'' : return("'\\''"); 
 		case '\\' : return("'\\\\'"); 
+		}
+		if(oc == ch) {
+			return "" + oc + "\\" + ch + ec;
 		}
 		if(Character.isISOControl(c) || c > 127) {
 			return(String.format("0x%02x", (int)c));

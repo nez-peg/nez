@@ -8,17 +8,13 @@ public class NezCombinator extends ParserCombinator {
 	
 	public final static NameSpace newNameSpace() {
 		if(ns == null) {
-			ns = new NezCombinator(NameSpace.newNameSpace()).load();
+			ns = new NezCombinator().load();
 		}
 		return ns;
 	}
 	
 	public final static Grammar newGrammar(String name, int option) {
 		return newNameSpace().newGrammar(name, option);
-	}
-
-	NezCombinator(NameSpace grammar) {
-		super(grammar);
 	}
 	
 	public Expression EOT() {
@@ -73,7 +69,7 @@ public class NezCombinator extends ParserCombinator {
 		);
 	}
 
-	public Expression SPACING() {
+	public Expression p_() {
 		return ZeroMore(Choice(P("S"), P("COMMENT")));
 	}
 	

@@ -15,6 +15,9 @@ public class Tagging extends ASTOperation {
 	Tagging(SourcePosition s, String name) {
 		this(s, Tag.tag(name));
 	}
+	public final String getTagName() {
+		return tag.getName();
+	}
 	@Override
 	public String getPredicate() {
 		return "tag " + StringUtils.quoteString('"', tag.getName(), '"');

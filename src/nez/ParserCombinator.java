@@ -5,47 +5,57 @@ import java.lang.reflect.Method;
 
 import nez.ast.SourcePosition;
 import nez.ast.Tag;
+import nez.lang.ByteMap;
 import nez.lang.Expression;
 import nez.lang.Factory;
+import nez.lang.Grammar;
 import nez.lang.GrammarChecker;
 import nez.lang.NameSpace;
+import nez.main.Verbose;
 import nez.util.UList;
 
 public class ParserCombinator {
-	NameSpace grammar;
-	protected ParserCombinator(NameSpace grammar) {
-		this.grammar = grammar;
-	}
-	
+
+	protected NameSpace ns = null;
+		
 	public final NameSpace load(GrammarChecker checker) {
-		Class<?> c = this.getClass();
-		for(Method m : c.getDeclaredMethods()) {
-			if(m.getReturnType() == Expression.class && m.getParameterTypes().length == 0) {
-				String name = m.getName();
-				//System.out.println("rule name: " + name);
-				if(name.equals("SPACING")) {
-					name = "_";
-				}
-				try {
-					Expression e = (Expression)m.invoke(this);
-					grammar.defineProduction(e.getSourcePosition(), name, e);
-				} catch (IllegalAccessException e1) {
-					e1.printStackTrace();
-				} catch (IllegalArgumentException e1) {
-					e1.printStackTrace();
-				} catch (InvocationTargetException e1) {
-					e1.printStackTrace();
+		if(this.ns == null) {
+			Class<?> c = this.getClass();
+			this.ns = NameSpace.newNameSpace(c.getName());
+			for(Method m : c.getDeclaredMethods()) {
+				if(m.getReturnType() == Expression.class && m.getParameterTypes().length == 0) {
+					String name = m.getName();
+					if(name.startsWith("p")) {
+						name = name.substring(1);
+					}
+//					if(name.equals("SPACING")) {
+//						name = "_";
+//					}
+					try {
+						Expression e = (Expression)m.invoke(this);
+						ns.defineProduction(e.getSourcePosition(), name, e);
+					} catch (IllegalAccessException e1) {
+						Verbose.traceException(e1);
+					} catch (IllegalArgumentException e1) {
+						Verbose.traceException(e1);
+					} catch (InvocationTargetException e1) {
+						Verbose.traceException(e1);
+					}
 				}
 			}
+			if(checker != null) {
+				checker.verify(ns);
+			}
 		}
-		if(checker != null) {
-			checker.verify(grammar);
-		}
-		return grammar;
+		return ns;
 	}
 
 	public final NameSpace load() {
 		return this.load(new GrammarChecker());
+	}
+
+	public final Grammar newGrammar(String name) {
+		return this.load(new GrammarChecker()).newGrammar(name);
 	}
 
 	private SourcePosition src() {
@@ -67,8 +77,8 @@ public class ParserCombinator {
 		return new JavaSourcePosition(stacks[2]);
 	}
 	
-	protected final Expression P(String ruleName) {
-		return Factory.newNonTerminal(src(), this.grammar, ruleName);
+	protected final Expression P(String name) {
+		return Factory.newNonTerminal(src(), this.ns, name);
 	}
 
 	protected final Expression t(char c) {
@@ -81,6 +91,14 @@ public class ParserCombinator {
 
 	protected final Expression c(String text) {
 		return Factory.newCharSet(src(), text);
+	}
+
+	protected final Expression c(int ... chars) {
+		boolean[] b = ByteMap.newMap(false);
+		for(int c : chars) {
+			b[c] = true;
+		}
+		return Factory.newByteMap(src(), b);
 	}
 
 	protected final Expression ByteChar(int byteChar) {
@@ -143,6 +161,18 @@ public class ParserCombinator {
 		return Factory.newAnd(src(), Sequence(e));
 	}
 
+	protected final Expression NCapture(int shift) {
+		return Factory.newNew(src(), false, shift);
+	}
+
+	protected final Expression LCapture(int shift) {
+		return Factory.newNew(src(), true, shift);
+	}
+
+	protected final Expression Capture(int shift) {
+		return Factory.newCapture(src(), shift);
+	}
+
 	protected final Expression New(Expression ... e) {
 		return Factory.newNew(src(), false, Sequence(e));
 	}
@@ -158,23 +188,7 @@ public class ParserCombinator {
 	protected final Expression LeftNewOneMore(Expression ... e) {
 		return Factory.newLeftNewRepetition1(src(), Sequence(e));
 	}
-	
-//	protected final Expression NewClosure(Expression ... elist) {
-//		UList<Expression> l = new UList<Expression>(new Expression[8]);
-//		for(Expression e : elist) {
-//			Factory.addSequence(l, e);
-//		}
-//		return Factory.newNew(src(), l);
-//	}
-//	
-//	protected Expression LeftNewClosure(Expression ... elist) {
-//		UList<Expression> l = new UList<Expression>(new Expression[8]);
-//		for(Expression e : elist) {
-//			Factory.addSequence(l, e);
-//		}
-//		return Factory.newLeftNew(src(), l);
-//	}
-	
+		
 	protected Expression Link(String nonterminal) {
 		return Factory.newLink(src(), P(nonterminal), -1);
 	}
@@ -195,7 +209,7 @@ public class ParserCombinator {
 		return Factory.newTagging(src(), t);
 	}
 
-	protected final Expression Tag(String tag) {
+	protected final Expression Tagging(String tag) {
 		return Factory.newTagging(src(), Tag.tag(tag));
 	}
 

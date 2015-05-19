@@ -25,7 +25,7 @@ public class RegexCommand extends Command {
 	public void exec(CommandConfigure config) {
 		init(config);
 		Recorder rec = config.getRecorder();
-		Grammar p = config.getProduction(config.StartingPoint);
+		Grammar p = config.getGrammar(config.StartingPoint);
 		CommonTree node = parse(config, rec, p, false);
 		String outputfile = config.getOutputFileName();
 		if (outputfile == null) {

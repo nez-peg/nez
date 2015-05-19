@@ -9,9 +9,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import nez.ParserCombinator;
 import nez.SourceContext;
 import nez.ast.SourcePosition;
 import nez.ast.Tag;
+import nez.main.Verbose;
 import nez.peg.dtd.DTDConverter;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
@@ -44,9 +46,24 @@ public class NameSpace {
 		if(nsMap.containsKey(urn)) {
 			return nsMap.get(urn);
 		}
-		NameSpace ns = new NameSpace(nsid++, urn);
-		NezParser parser = new NezParser();
-		parser.load(ns, urn, checker);
+		NameSpace ns = null;
+		if(urn != null && !urn.endsWith(".nez")) {
+			try {
+				Class<?> c = Class.forName(urn);
+				ParserCombinator p = (ParserCombinator)c.newInstance();
+				 ns = p.load();
+			}
+			catch(ClassNotFoundException e) {
+			}
+			catch(Exception e) {
+				Verbose.traceException(e);
+			}
+		}
+		if(ns == null) {
+			ns = new NameSpace(nsid++, urn);
+			NezParser parser = new NezParser();
+			parser.load(ns, urn, checker);
+		}
 		nsMap.put(urn, ns);
 		return ns;
 	}
@@ -55,11 +72,11 @@ public class NameSpace {
 		return loadNezFile(urn, new GrammarChecker());
 	}
 	
-	public final static NameSpace loadGrammarFile(String file, GrammarChecker checker) throws IOException {
-		if(file.endsWith(".dtd")) {
-			return DTDConverter.loadGrammar(file, checker);
+	public final static NameSpace loadGrammarFile(String urn, GrammarChecker checker) throws IOException {
+		if(urn.endsWith(".dtd")) {
+			return DTDConverter.loadGrammar(urn, checker);
 		}
-		return loadNezFile(file, checker);
+		return loadNezFile(urn, checker);
 	}
 
 	public final static NameSpace loadGrammarFile(String file) throws IOException {

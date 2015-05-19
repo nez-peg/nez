@@ -1,6 +1,7 @@
 package nez.main;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 
 import nez.lang.Expression;
 import nez.util.ConsoleUtils;
@@ -89,6 +90,12 @@ public class Verbose {
 
 	public static void traceException(Exception e) {
 		if(TraceException) {
+			if(e instanceof InvocationTargetException) {
+				Throwable e2 = ((InvocationTargetException) e).getTargetException();
+				if(e2 instanceof RuntimeException) {
+					throw (RuntimeException)e2;
+				}
+			}
 			e.printStackTrace();
 		}
 	}
