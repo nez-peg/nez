@@ -1,0 +1,39 @@
+// RNA Structure
+// Author: Maskaki Ishii
+
+File = { (@Sequence)+ #Root} S* EOT
+
+Sequence = PSeq
+         / (LSeq / Element)
+
+PSeq     = {A @Sequence U #AU}
+         / {U @Sequence A #UA}
+         / {C @Sequence G #CG}
+         / {G @Sequence C #GC}
+
+
+LSeq     = {A (@Element / @LSeq / @Sequence) #ASeq}
+         / {U (@Element / @LSeq / @Sequence) #USeq}
+         / {C (@Element / @LSeq / @Sequence) #CSeq}
+         / {G (@Element / @LSeq / @Sequence) #GSeq}
+
+Element  = {A #A}
+         / {U #U}
+         / {C #C}
+         / {G #G}
+
+A = 'A'
+U = 'U'
+C = 'C'
+G = 'G'
+
+_
+	= S*
+
+S
+	= [ \n\r\t]
+
+EOL
+	= ('\r'? '\n' / !.)
+
+EOT	= !.

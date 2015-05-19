@@ -186,7 +186,22 @@ public abstract class StringUtils {
 		}
 		return("'" + c + "'");
 	}
-	
+
+	public final static String stringfyByte(char oc, int ch, char ec) {
+		char c = (char)ch;
+		switch(c) {
+		case '\n' : return("'\\n'"); 
+		case '\t' : return("'\\t'"); 
+		case '\r' : return("'\\r'"); 
+		case '\'' : return("'\\''"); 
+		case '\\' : return("'\\\\'"); 
+		}
+		if(Character.isISOControl(c) || c > 127) {
+			return(String.format("0x%02x", (int)c));
+		}
+		return("" + oc + c + ec);
+	}
+
 	// The below are used in ByteMap
 	
 	public final static String stringfyCharClass(int startChar, int endChar) {

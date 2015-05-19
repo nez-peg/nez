@@ -2,7 +2,7 @@ package nez.lang;
 
 import nez.ast.SourcePosition;
 import nez.runtime.Instruction;
-import nez.runtime.RuntimeCompiler;
+import nez.runtime.NezCompiler;
 import nez.util.UList;
 import nez.util.UMap;
 
@@ -10,18 +10,27 @@ public class Match extends Unary {
 	Match(SourcePosition s, Expression inner) {
 		super(s, inner);
 	}
+	
 	@Override
 	public String getPredicate() { 
 		return "~";
 	}
+	
 	@Override
-	public String getInterningKey() { 
+	public String key() { 
 		return "~";
-	}	
-	@Override
-	Expression dupUnary(Expression e) {
-		return (this.inner != e) ? Factory.newMatch(this.s, e) : this;
 	}
+	
+	@Override
+	public Expression reshape(Manipulator m) {
+		return m.reshapeMatch(this);
+	}
+
+	@Override
+	public boolean isConsumed(Stacker stacker) {
+		return this.inner.isConsumed(stacker);
+	}
+
 	@Override
 	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
 		return this.inner.checkAlwaysConsumed(checker, startNonTerminal, stack);
@@ -31,15 +40,11 @@ public class Match extends Unary {
 		return Typestate.BooleanType;
 	}
 	@Override
-	public Expression checkTypestate(GrammarChecker checker, Typestate c) {
-		return this.inner.removeASTOperator(Expression.CreateNonTerminal);
-	}
-	@Override
 	public short acceptByte(int ch, int option) {
 		return this.inner.acceptByte(ch, option);
 	}
 	@Override
-	public Instruction encode(RuntimeCompiler bc, Instruction next) {
+	public Instruction encode(NezCompiler bc, Instruction next) {
 		return this.inner.encode(bc, next);
 	}
 

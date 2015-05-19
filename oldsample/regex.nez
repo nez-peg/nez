@@ -1,0 +1,91 @@
+/*
+
+  Nez Regex Grammar
+
+  Author:
+    Shun Honda (https://github.com/shun-honda)
+    
+*/
+
+File
+	= Chunk
+
+Chunk
+	= Pattern
+
+Pattern
+	= { @Expr #Pattern }
+
+Expr
+	= Concatenation {@ ('|' @Concatenation) #Or }*
+
+Concatenation
+	= IndependentExpr {@ (@IndependentExpr) #Concatenation }*
+
+IndependentExpr
+	= { '(?>' @Concatenation ')' #IndependentExpr }
+	/ Predicate
+
+Predicate
+	= { '(' ('?=' #And / '?!' #Not) @Concatenation ')' }
+	/ SuffixTerminal
+
+SuffixTerminal
+	= Terminal {@ addQuantifiers }?
+
+addQuantifiers
+	= '*+' #PossessiveRepetition
+	/ '*?' #LazyQuantifiers
+	/ '*' #Repetition
+	/ '+' #OneMoreRepetition
+	/ '?' #Option
+
+Terminal
+	= CharacterSet
+	/ { '.' #Any }
+	/ '(' { @Expr #Capture } ')'
+	/ Character
+
+CharacterSet
+	= '[^' { @CharacterRange (@CharacterRange)* #NegativeCharacterSet} ']'
+	/'[' !'^' CharacterRange {@ (@CharacterRange)+ #CharacterSet}? ']' 
+
+CharacterRange
+	= CharacterSetItem {@ '-' @CharacterSetItem #CharacterRange }?
+
+CharacterSetItem
+	= { CHARACTER_SET_ITEM #Character }
+
+CHARACTER_SET_ITEM
+	= '\\u' HEX HEX HEX HEX
+	/ '\\n'
+	/ '\\t'
+	/ '\\\\'
+	/ '\\r'
+	/ '\\f'
+	/ '\\['
+	/ '\\]'
+	/ '\\-'
+	/ !('-'/'['/']') .
+
+HEX
+	= [0-9A-Fa-f]
+
+Character
+	= { CHARACTER #Character }
+
+CHARACTER
+	= '\\u' HEX HEX HEX HEX
+	/ '\\n'
+	/ '\\t'
+	/ '\\\\'
+	/ '\\r'
+	/ '\\f'
+	/ '\\' METACHARACTER
+	/ !METACHARACTER !'\n' .
+
+METACHARACTER
+	= '+' / '*' / '?' / '.' / '^' / '$' / '|' / '/'
+	/ '(' / ')' / '[' / ']' / '{' / '}' / '-'
+
+

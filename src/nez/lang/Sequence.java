@@ -4,12 +4,12 @@ import java.util.TreeMap;
 
 import nez.ast.SourcePosition;
 import nez.runtime.Instruction;
-import nez.runtime.RuntimeCompiler;
+import nez.runtime.NezCompiler;
 import nez.util.UFlag;
 import nez.util.UList;
 import nez.util.UMap;
 
-public class Sequence extends SequentialExpression {
+public class Sequence extends Multinary {
 	Sequence(SourcePosition s, UList<Expression> l) {
 		super(s, l, l.size());
 	}
@@ -18,9 +18,24 @@ public class Sequence extends SequentialExpression {
 		return "seq";
 	}	
 	@Override
-	public String getInterningKey() {
+	public String key() {
 		return " ";
 	}
+	@Override
+	public Expression reshape(Manipulator m) {
+		return m.reshapeSequence(this);
+	}
+
+	@Override
+	public boolean isConsumed(Stacker stacker) {
+		for(Expression e: this) {
+			if(e.isConsumed(stacker)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	@Override
 	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
 		for(Expression e: this) {
@@ -39,15 +54,6 @@ public class Sequence extends SequentialExpression {
 		}
 		return false;
 	}
-
-	@Override
-	public Expression removeASTOperator(boolean newNonTerminal) {
-		UList<Expression> l = new UList<Expression>(new Expression[this.size()]);
-		for(Expression e : this) {
-			Factory.addSequence(l, e.removeASTOperator(newNonTerminal));
-		}
-		return Factory.newSequence(s, l);
-	}
 	@Override
 	public int inferTypestate(UMap<String> visited) {
 		for(Expression e: this) {
@@ -57,23 +63,6 @@ public class Sequence extends SequentialExpression {
 			}
 		}
 		return Typestate.BooleanType;
-	}
-	@Override
-	public Expression checkTypestate(GrammarChecker checker, Typestate c) {
-		UList<Expression> l = newList();
-		for(Expression e : this) {
-			Factory.addSequence(l, e.checkTypestate(checker, c));
-		}
-		return Factory.newSequence(s, l);
-	}
-	@Override
-	public Expression removeFlag(TreeMap<String, String> undefedFlags) {
-		UList<Expression> l = newList();
-		for(int i = 0; i < this.size(); i++) {
-			Expression e = get(i).removeFlag(undefedFlags);
-			Factory.addSequence(l, e);
-		}
-		return Factory.newSequence(s, l);
 	}
 
 	@Override
@@ -236,39 +225,8 @@ public class Sequence extends SequentialExpression {
 		}
 	}
 	
-	//			if(is(O_SpecString)) {
-//				byte[] u = new byte[holder.size()];
-//				for(int i = 0; i < holder.size(); i++) {
-//					ParsingExpression inner = resolveNonTerminal(holder.get(i));				
-//					if(inner instanceof ParsingByte) {
-//						u[i] = (byte)((ParsingByte) inner).byteChar;
-//						continue;
-//					}
-//					return;
-//				}
-//				holder.matcher = new StringMatcher(u);
-//				CountSpecString += 1;
-//				return;
-//			}
-//		}
-//
-//		return this;
-//	}
-//	@Override
-//	public boolean match(SourceContext context) {
-//		long pos = context.getPosition();
-//		int mark = context.startConstruction();
-//		for(int i = 0; i < this.size(); i++) {
-//			if(!(this.get(i).optimized.match(context))) {
-//				context.abortConstruction(mark);
-//				context.rollback(pos);
-//				return false;
-//			}
-//		}
-//		return true;
-//	}
 	@Override
-	public Instruction encode(RuntimeCompiler bc, Instruction next) {
+	public Instruction encode(NezCompiler bc, Instruction next) {
 		return bc.encodeSequence(this, next);
 	}
 	

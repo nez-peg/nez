@@ -24,21 +24,4 @@ public abstract class Unary extends Expression {
 		this.inner = e;
 		return old;
 	}
-	@Override
-	public String getInterningKey() {
-		return this.getPredicate();
-	}
-
-	@Override
-	public Expression removeASTOperator(boolean newNonTerminal) {
-		return this.dupUnary(inner.removeASTOperator(newNonTerminal));
-	}
-	
-	@Override
-	public Expression removeFlag(TreeMap<String,String> undefedFlags) {
-		return this.dupUnary(inner.removeFlag(undefedFlags));
-	}
-
-	abstract Expression dupUnary(Expression inner);
-
 }

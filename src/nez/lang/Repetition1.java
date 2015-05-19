@@ -2,35 +2,53 @@ package nez.lang;
 
 import nez.ast.SourcePosition;
 import nez.runtime.Instruction;
-import nez.runtime.RuntimeCompiler;
+import nez.runtime.NezCompiler;
 import nez.util.UList;
+import nez.util.UMap;
 
 public class Repetition1 extends Repetition {
 	Repetition1(SourcePosition s, Expression e) {
 		super(s, e);
-	}
-	@Override
-	Expression dupUnary(Expression e) {
-		return (this.inner != e) ? Factory.newRepetition1(this.s, e) : this;
+		e.setOuterLefted(this);
 	}
 	@Override
 	public String getPredicate() { 
 		return "+";
 	}
 	@Override
-	public String getInterningKey() { 
+	public String key() { 
 		return "+";
 	}
+	@Override
+	public Expression reshape(Manipulator m) {
+		return m.reshapeRepetition1(this);
+	}
+
+	@Override
+	public boolean isConsumed(Stacker stacker) {
+		return this.inner.isConsumed(stacker);
+	}
+
 	@Override
 	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
 		return this.inner.checkAlwaysConsumed(checker, startNonTerminal, stack);
 	}
+
+	@Override
+	public int inferTypestate(UMap<String> visited) {
+		int t = this.inner.inferTypestate(visited);
+		if(t == Typestate.ObjectType) {
+			return Typestate.BooleanType;
+		}
+		return t;
+	}
+
 	@Override public short acceptByte(int ch, int option) {
 		return Prediction.acceptUnary(this, ch, option);
 	}
 	
 	@Override
-	public Instruction encode(RuntimeCompiler bc, Instruction next) {
+	public Instruction encode(NezCompiler bc, Instruction next) {
 		return bc.encodeRepetition1(this, next);
 	}
 

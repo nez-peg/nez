@@ -78,6 +78,7 @@ public class NezParser extends CommonTreeVisitor {
 //		return this.loadGrammar(sc, new GrammarChecker());
 //	}
 
+	
 	private boolean parseStatement(CommonTree node) {
 		//System.out.println("DEBUG? parsed: " + node);
 		if(node != null) {
@@ -208,20 +209,20 @@ public class NezParser extends CommonTreeVisitor {
 
 	
 	public Production parseProduction(CommonTree node) {
-		String ruleName = node.textAt(0, "");
+		String localName = node.textAt(0, "");
 		boolean isTerminal = false;
 		if(node.get(0).is(NezTag.String)) {
-			ruleName = NameSpace.nameTerminalProduction(ruleName);
+			localName = NameSpace.nameTerminalProduction(localName);
 			isTerminal = true;
 		}
-		Production rule = loaded.getProduction(ruleName);
+		Production rule = loaded.getProduction(localName);
 		if(rule != null) {
-			checker.reportWarning(node, "duplicated rule name: " + ruleName);
+			checker.reportWarning(node, "duplicated rule name: " + localName);
 			rule = null;
 		}
-		
+
 		Expression e = toExpression(node.get(1));
-		rule = loaded.defineProduction(node.get(0), ruleName, e);
+		rule = loaded.defineProduction(node.get(0), localName, e);
 		rule.isTerminal = isTerminal;
 		if(node.size() == 3) {
 			CommonTree attrs = node.get(2);
@@ -242,31 +243,12 @@ public class NezParser extends CommonTreeVisitor {
 	
 	public Expression toNonTerminal(CommonTree ast) {
 		String symbol = ast.getText();
-//		if(ruleName.equals(symbol)) {
-//			Expression e = peg.getExpression(ruleName);
-//			if(e != null) {
-//				// self-redefinition
-//				return e;  // FIXME
-//			}
-//		}
-//		if(symbol.length() > 0 && !symbol.endsWith("_") && !peg.hasRule(symbol)
-//				&& GrammarFactory.Grammar.hasRule(symbol)) { // comment
-//			Main.printVerbose("implicit importing", symbol);
-//			peg.setRule(symbol, GrammarFactory.Grammar.getRule(symbol));
-//		}
 		return Factory.newNonTerminal(ast, this.loaded, symbol);
 	}
 
 	public Expression toString(CommonTree ast) {
 		String name = NameSpace.nameTerminalProduction(ast.getText());
-		Production r = this.loaded.getProduction(name);
-		if(r != null) {
-			return r.getExpression();
-		}
-		else {
-			this.checker.reportNotice(ast, "undefined terminal: " + name);
-		}
-		return Factory.newString(ast, StringUtils.unquoteString(ast.getText()));
+		return Factory.newNonTerminal(ast, this.loaded, name);
 	}
 
 	public Expression toCharacter(CommonTree ast) {
@@ -414,12 +396,16 @@ public class NezParser extends CommonTreeVisitor {
 		return Factory.newIfFlag(ast, ast.textAt(0, ""));
 	}
 
+	public Expression toOn(CommonTree ast) {
+		return Factory.newOnFlag(ast, true, ast.textAt(0, ""), toExpression(ast.get(1)));
+	}
+
 	public Expression toWith(CommonTree ast) {
-		return Factory.newWithFlag(ast, ast.textAt(0, ""), toExpression(ast.get(1)));
+		return Factory.newOnFlag(ast, true, ast.textAt(0, ""), toExpression(ast.get(1)));
 	}
 
 	public Expression toWithout(CommonTree ast) {
-		return Factory.newWithoutFlag(ast, ast.textAt(0, ""), toExpression(ast.get(1)));
+		return Factory.newOnFlag(ast, false, ast.textAt(0, ""), toExpression(ast.get(1)));
 	}
 
 	public Expression toBlock(CommonTree ast) {
@@ -427,15 +413,15 @@ public class NezParser extends CommonTreeVisitor {
 	}
 
 	public Expression toDef(CommonTree ast) {
-		return Factory.newDefSymbol(ast, Tag.tag(ast.textAt(0, "")), toExpression(ast.get(1)));
+		return Factory.newDefSymbol(ast, this.loaded, Tag.tag(ast.textAt(0, "")), toExpression(ast.get(1)));
 	}
 
 	public Expression toIs(CommonTree ast) {
-		return Factory.newIsSymbol(ast, Tag.tag(ast.textAt(0, "")));
+		return Factory.newIsSymbol(ast, this.loaded, Tag.tag(ast.textAt(0, "")));
 	}
 
 	public Expression toIsa(CommonTree ast) {
-		return Factory.newIsaSymbol(ast, Tag.tag(ast.textAt(0, "")));
+		return Factory.newIsaSymbol(ast, this.loaded, Tag.tag(ast.textAt(0, "")));
 	}
 
 	public Expression toDefIndent(CommonTree ast) {
@@ -446,6 +432,11 @@ public class NezParser extends CommonTreeVisitor {
 		return Factory.newIndent(ast);
 	}
 
+	public Expression toUndefined(CommonTree ast) {
+		checker.reportError(ast, "undefined or deprecated notation");
+		return Factory.newEmpty(ast);
+	}
+	
 //	public Expression toScan(AST ast) {
 //		return Factory.newScan(Integer.parseInt(ast.get(0).getText()), toExpression(ast.get(1)), toExpression(ast.get(2)));
 //	}

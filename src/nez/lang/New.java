@@ -1,10 +1,8 @@
 package nez.lang;
 
-import java.util.TreeMap;
-
 import nez.ast.SourcePosition;
 import nez.runtime.Instruction;
-import nez.runtime.RuntimeCompiler;
+import nez.runtime.NezCompiler;
 import nez.util.UList;
 import nez.util.UMap;
 
@@ -22,10 +20,20 @@ public class New extends Unconsumed {
 		return "new";
 	}
 	@Override
-	public String getInterningKey() {
+	public String key() {
 		String s = lefted ? "{@" : "{";
 		return (shift != 0) ? s + "[" + shift + "]" : s;
 	}
+	@Override
+	public Expression reshape(Manipulator m) {
+		return m.reshapeNew(this);
+	}
+
+	@Override
+	public boolean isConsumed(Stacker stacker) {
+		return false;
+	}
+
 	@Override
 	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
 		return false;
@@ -39,43 +47,12 @@ public class New extends Unconsumed {
 		}
 		return false; 
 	}
-	@Override void checkPhase2(GrammarChecker checker) {
-		if(this.lefted && this.outer == null) {
-			checker.reportError(s, "expected repetition for " + this);
-		}
-	}
-
-	@Override
-	public Expression removeASTOperator(boolean newNonTerminal) {
-		return Factory.newEmpty(s);
-	}
 	@Override
 	public int inferTypestate(UMap<String> visited) {
 		return Typestate.ObjectType;
 	}
 	@Override
-	public Expression checkTypestate(GrammarChecker checker, Typestate c) {
-		if(this.lefted) {
-			if(c.required != Typestate.OperationType) {
-				checker.reportWarning(s, "unexpected {@ .. => removed!!");
-				return this.removeASTOperator(Expression.CreateNonTerminal);
-			}
-		}
-		else {
-			if(c.required != Typestate.ObjectType) {
-				checker.reportWarning(s, "unexpected { .. => removed!");
-				return Factory.newEmpty(s);
-			}
-		}
-		c.required = Typestate.OperationType;
-		return this;
-	}
-	@Override
-	public Expression removeFlag(TreeMap<String, String> undefedFlags) {
-		return this;
-	}
-	@Override
-	public Instruction encode(RuntimeCompiler bc, Instruction next) {
+	public Instruction encode(NezCompiler bc, Instruction next) {
 		return bc.encodeNew(this, next);
 	}
 	@Override

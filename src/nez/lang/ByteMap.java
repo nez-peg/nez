@@ -2,7 +2,7 @@ package nez.lang;
 
 import nez.ast.SourcePosition;
 import nez.runtime.Instruction;
-import nez.runtime.RuntimeCompiler;
+import nez.runtime.NezCompiler;
 import nez.util.StringUtils;
 import nez.util.UFlag;
 import nez.util.UList;
@@ -18,7 +18,28 @@ public class ByteMap extends Terminal {
 		super(s);
 		this.byteMap = b;
 	}
-	
+
+	@Override
+	public String getPredicate() {
+		return "byte " + StringUtils.stringfyByteMap(this.byteMap);
+	}
+
+	@Override
+	public String key() { 
+		return "[" +  StringUtils.stringfyByteMap(this.byteMap);
+	}
+
+	@Override
+	public Expression reshape(Manipulator m) {
+		return m.reshapeByteMap(this);
+	}
+
+	@Override
+	public boolean isConsumed(Stacker stacker) {
+		return true;
+	}
+
+
 	public final static boolean[] newMap(boolean initValue) {
 		boolean[] b = new boolean[257];
 		if(initValue) {
@@ -58,15 +79,6 @@ public class ByteMap extends Terminal {
 		}
 	}
 	
-
-	@Override
-	public String getPredicate() {
-		return "byte " + StringUtils.stringfyByteMap(this.byteMap);
-	}
-	@Override
-	public String getInterningKey() { 
-		return "[" +  StringUtils.stringfyByteMap(this.byteMap);
-	}
 	
 	@Override
 	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
@@ -78,7 +90,7 @@ public class ByteMap extends Terminal {
 	}
 	
 	@Override
-	public Instruction encode(RuntimeCompiler bc, Instruction next) {
+	public Instruction encode(NezCompiler bc, Instruction next) {
 		return bc.encodeByteMap(this, next);
 	}
 	@Override

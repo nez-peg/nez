@@ -117,7 +117,7 @@ public class GrammarFormatter extends GrammarVisitor {
 		this.format(predicate, e, null);
 	}
 
-	protected void appendSequence(SequentialExpression l) {
+	protected void appendSequence(Multinary l) {
 		for(int i = 0; i < l.size(); i++) {
 			if(i > 0) {
 				sb.append(" ");
@@ -138,7 +138,7 @@ public class GrammarFormatter extends GrammarVisitor {
 		}
 	}
 
-	private int appendAsString(SequentialExpression l, int start) {
+	private int appendAsString(Multinary l, int start) {
 		int end = l.size();
 		String s = "";
 		for(int i = start; i < end; i++) {

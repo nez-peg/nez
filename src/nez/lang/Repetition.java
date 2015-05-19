@@ -2,7 +2,7 @@ package nez.lang;
 
 import nez.ast.SourcePosition;
 import nez.runtime.Instruction;
-import nez.runtime.RuntimeCompiler;
+import nez.runtime.NezCompiler;
 import nez.util.UList;
 import nez.util.UMap;
 
@@ -10,34 +10,32 @@ public class Repetition extends Unary {
 	public boolean possibleInfiniteLoop = false;
 	Repetition(SourcePosition s, Expression e) {
 		super(s, e);
-	}
-	@Override
-	Expression dupUnary(Expression e) {
-		return (this.inner != e) ? Factory.newRepetition(this.s, e) : this;
+		e.setOuterLefted(this);
 	}
 	@Override
 	public String getPredicate() { 
 		return "*";
 	}
 	@Override
-	public String getInterningKey() { 
+	public String key() { 
 		return "*";
 	}
+	@Override
+	public Expression reshape(Manipulator m) {
+		return m.reshapeRepetition(this);
+	}
+
+	@Override
+	public boolean isConsumed(Stacker stacker) {
+		return false;
+	}
+
 	@Override
 	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
 //		if(checker != null) {
 //			this.inner.checkAlwaysConsumed(checker, startNonTerminal, stack);
 //		}
 		return false;
-	}
-	@Override void checkPhase1(GrammarChecker checker, String ruleName, UMap<String> visited, int depth) {
-		this.inner.setOuterLefted(this);
-	}
-	@Override void checkPhase2(GrammarChecker checker) {
-		if(!this.inner.checkAlwaysConsumed(checker, null, null)) {
-			checker.reportError(s, "unconsumed repetition");
-			this.possibleInfiniteLoop = true;
-		}
 	}
 
 	@Override
@@ -48,27 +46,13 @@ public class Repetition extends Unary {
 		}
 		return t;
 	}
-	@Override
-	public Expression checkTypestate(GrammarChecker checker, Typestate c) {
-		int required = c.required;
-		Expression inn = this.inner.checkTypestate(checker, c);
-		if(required != Typestate.OperationType && c.required == Typestate.OperationType) {
-			checker.reportWarning(s, "unable to create objects in repetition => removed!!");
-			this.inner = inn.removeASTOperator(Expression.CreateNonTerminal);
-			c.required = required;
-		}
-		else {
-			this.inner = inn;
-		}
-		return this;
-	}
 
 	@Override public short acceptByte(int ch, int option) {
 		return Prediction.acceptOption(this, ch, option);
 	}
 			
 	@Override
-	public Instruction encode(RuntimeCompiler bc, Instruction next) {
+	public Instruction encode(NezCompiler bc, Instruction next) {
 		return bc.encodeRepetition(this, next);
 	}
 

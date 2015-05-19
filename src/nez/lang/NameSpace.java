@@ -6,6 +6,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import nez.SourceContext;
 import nez.ast.SourcePosition;
@@ -25,7 +27,6 @@ public class NameSpace {
 
 	public static NameSpace newNameSpace() {
 		return new NameSpace(nsid++, null);
-
 	}
 
 	public final static NameSpace newNameSpace(String urn) {
@@ -79,7 +80,6 @@ public class NameSpace {
 
 	// static 
 	
-	
 	final int             id;
 	final String          urn;
 	final String          ns;
@@ -103,7 +103,7 @@ public class NameSpace {
 	}
 
 	public final String uniqueName(String localName) {
-		return this.ns + ":" + localName;
+		return this.ns + this.id + ":" + localName;
 	}
 
 	public final String getURN() {
@@ -146,6 +146,15 @@ public class NameSpace {
 		}
 		Collections.sort(l);
 		return l;
+	}
+	
+	public Production newReducedProduction(String localName, Production p, Manipulator m) {
+		Production r = p.newProduction(localName);
+		this.ruleMap.put(localName, r);
+		m.updateProductionAttribute(p, r);
+		addProduction(r);
+		r.setExpression(p.getExpression().reshape(m));
+		return r;
 	}
 	
 		
@@ -196,8 +205,28 @@ public class NameSpace {
 		}
 	}
 	
+	private Map<String, Expression> tableMap; 
 
-	FormatterMap fmtMap;
+	final void setSymbolExpresion(String tableName, Expression e) {
+		if(tableMap == null) {
+			tableMap = new HashMap<String, Expression>();
+		}
+		tableMap.put(tableName, e);
+	}
+
+	final Expression getSymbolExpresion(String tableName) {
+		if(tableMap != null) {
+			Expression e = tableMap.get(tableName);
+			if(e != null && !e.isInterned()) {
+				e = e.intern();
+				tableMap.put(tableName, e);
+			}
+			return e;
+		}
+		return null;
+	}
+
+	private FormatterMap fmtMap;
 	
 	public final void addFormatter(String tag, int size, Formatter fmt) {
 		if(fmtMap == null) {
@@ -342,21 +371,19 @@ public class NameSpace {
 	
 	// Conditional Parsing
 	// <if FLAG>
-	// <with FLAG e>
-	// <without FLAG e>
+	// <on FLAG e>
+	// <on !FLAG e>
 	
 	public final Expression newIfFlag(String flagName) {
 		return Factory.newIfFlag(src(), flagName);
 	}
+
+	public final Expression newOnFlag(String flagName, Expression ... seq) {
+		return Factory.newOnFlag(src(), true, flagName, newSequence(seq));
+	}
+
 	
-	public final Expression newWithFlag(String flagName, Expression ... seq) {
-		return Factory.newWithFlag(src(), flagName, newSequence(seq));
-	}
-
-	public final Expression newWithoutFlag(String flagName, Expression ... seq) {
-		return Factory.newWithoutFlag(src(), flagName, newSequence(seq));
-	}
-
+	
 	public final Expression newScan(SourcePosition s, int number, Expression scan, Expression repeat) {
 		return null;
 	}
@@ -370,17 +397,27 @@ public class NameSpace {
 	}
 
 	public final Expression newDefSymbol(SourcePosition s, String table, Expression ... seq) {
-		return Factory.newDefSymbol(src(), Tag.tag(table), newSequence(seq));
+		return Factory.newDefSymbol(src(), this, Tag.tag(table), newSequence(seq));
 	}
 
 	public final Expression newIsSymbol(SourcePosition s, String table) {
-		return Factory.newIsSymbol(src(), Tag.tag(table));
+		return Factory.newIsSymbol(src(), this, Tag.tag(table));
 	}
 	
 	public final Expression newIsaSymbol(SourcePosition s, String table) {
-		return Factory.newIsaSymbol(src(), Tag.tag(table));
+		return Factory.newIsaSymbol(src(), this, Tag.tag(table));
 	}
 
+	public final Expression newExists(SourcePosition s, String table) {
+		return Factory.newExists(src(), this, Tag.tag(table));
+	}
+
+	public final Expression newLocal(SourcePosition s, String table, Expression ... seq) {
+		return Factory.newLocal(src(), this, Tag.tag(table), newSequence(seq));
+	}
+
+	
+	
 	public final Expression newDefIndent(SourcePosition s) {
 		return Factory.newDefIndent(src());
 	}
@@ -389,7 +426,29 @@ public class NameSpace {
 		return Factory.newIndent(src());
 	}
 
+	// reporting errors
+	
+	boolean strictMode = true;
+	
+	public final void reportError(Expression p, String message) {
+		if(p.s != null) {
+			ConsoleUtils.println(p.s.formatSourceMessage("error", message));
+		}
+	}
 
+	public final void reportWarning(Expression p, String message) {
+		if(p.s != null) {
+			ConsoleUtils.println(p.s.formatSourceMessage("warning", message));
+		}
+	}
+
+	public final void reportNotice(Expression p, String message) {
+		if(this.strictMode) {
+			if(p.s != null) {
+				ConsoleUtils.println(p.s.formatSourceMessage("notice", message));
+			}
+		}
+	}
 
 
 

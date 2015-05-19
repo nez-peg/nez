@@ -2,7 +2,7 @@ package nez.lang;
 
 import nez.ast.SourcePosition;
 import nez.runtime.Instruction;
-import nez.runtime.RuntimeCompiler;
+import nez.runtime.NezCompiler;
 import nez.util.UList;
 
 public class IsIndent extends Terminal {
@@ -14,16 +14,24 @@ public class IsIndent extends Terminal {
 		return "indent";
 	}
 	@Override
-	public String getInterningKey() {
+	public String key() {
 		return "indent";
 	}
+	
+	@Override
+	public Expression reshape(Manipulator m) {
+		return m.reshapeIsIndent(this);
+	}
+	
+	@Override
+	public boolean isConsumed(Stacker stacker) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 	@Override
 	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
 		return false;
-	}
-	@Override
-	public Expression checkTypestate(GrammarChecker checker, Typestate c) {
-		return this;
 	}
 	@Override
 	public short acceptByte(int ch, int option) {
@@ -34,7 +42,7 @@ public class IsIndent extends Terminal {
 	}
 
 	@Override
-	public Instruction encode(RuntimeCompiler bc, Instruction next) {
+	public Instruction encode(NezCompiler bc, Instruction next) {
 		return bc.encodeIsIndent(this, next);
 	}
 	@Override

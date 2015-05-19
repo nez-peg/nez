@@ -3,7 +3,7 @@ package nez.lang;
 import nez.ast.SourcePosition;
 import nez.ast.Tag;
 import nez.runtime.Instruction;
-import nez.runtime.RuntimeCompiler;
+import nez.runtime.NezCompiler;
 import nez.util.StringUtils;
 
 public class Tagging extends ASTOperation {
@@ -20,12 +20,16 @@ public class Tagging extends ASTOperation {
 		return "tag " + StringUtils.quoteString('"', tag.getName(), '"');
 	}
 	@Override
-	public String getInterningKey() {
+	public String key() {
 		return "#" + this.tag.getName();
 	}
 	@Override
-	public Expression checkTypestate(GrammarChecker checker, Typestate c) {
-		return this.checkTypestate(checker, c, "#" + tag.getName());
+	public boolean isConsumed(Stacker stacker) {
+		return false;
+	}
+	@Override
+	public Expression reshape(Manipulator m) {
+		return m.reshapeTagging(this);
 	}
 //	@Override
 //	public boolean match(SourceContext context) {
@@ -33,7 +37,7 @@ public class Tagging extends ASTOperation {
 //		return true;
 //	}
 	@Override
-	public Instruction encode(RuntimeCompiler bc, Instruction next) {
+	public Instruction encode(NezCompiler bc, Instruction next) {
 		return bc.encodeTagging(this, next);
 	}
 }

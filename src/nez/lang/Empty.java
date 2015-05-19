@@ -2,7 +2,7 @@ package nez.lang;
 
 import nez.ast.SourcePosition;
 import nez.runtime.Instruction;
-import nez.runtime.RuntimeCompiler;
+import nez.runtime.NezCompiler;
 
 public class Empty extends Unconsumed {
 	Empty(SourcePosition s) {
@@ -12,13 +12,23 @@ public class Empty extends Unconsumed {
 	public String getPredicate() {
 		return "empty";
 	}
-	
 	@Override
-	public String getInterningKey() {
+	public String key() {
 		return "";
 	}
 	@Override
-	public Instruction encode(RuntimeCompiler bc, Instruction next) {
+	public Expression reshape(Manipulator m) {
+		return m.reshapeEmpty(this);
+	}
+
+	@Override
+	public boolean isConsumed(Stacker stacker) {
+		return false;
+	}
+
+
+	@Override
+	public Instruction encode(NezCompiler bc, Instruction next) {
 		return next;
 	}
 

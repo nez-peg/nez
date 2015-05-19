@@ -1,0 +1,57 @@
+export
+	= JSONObject
+File
+	= S* (JSONObject / Array) S*
+Chunk
+	= Value S*
+
+JSONObject
+	= { '{' (S* @Member (VALUESEP @Member )* )? S* '}' #JSON }
+Member
+        = { @String NAMESEP @Value #KeyValue }
+Value
+	= String
+	/ Number
+	/ JSONObject
+	/ Array
+	/ Null
+	/ True
+	/ False
+	/ ObjectId
+
+ObjectId 
+        = 'ObjectId' '("' { [0-9a-z]+ #ObjectId } '")'
+
+ID
+        = [0-9a-z]+
+
+Array
+	= { '[' (S* @Value (VALUESEP @Value)* )? S* ']' #List }
+
+String
+	= '"' { ('\\"' / '\\\\' / !'"' .)* #String } '"'
+
+Number
+        = { '-'? INT (FRAC EXP? #Float / '' #Integer) }
+True
+        = { 'true'  #True }
+False
+        = { 'false' #False }
+Null
+        = { 'null'  #Null }
+
+S
+	= [ \t\n\r]
+NAMESEP
+	= S* ':' S*
+VALUESEP
+	= S* ',' S*
+
+INT
+	= '0' / [1-9] DIGIT*
+DIGIT
+	= [0-9]
+FRAC
+	= '.' DIGIT+
+EXP
+	= [Ee] ('-' / '+')? DIGIT+

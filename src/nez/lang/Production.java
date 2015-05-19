@@ -4,7 +4,7 @@ import java.util.TreeMap;
 
 import nez.ast.SourcePosition;
 import nez.runtime.Instruction;
-import nez.runtime.RuntimeCompiler;
+import nez.runtime.NezCompiler;
 import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
 import nez.util.UList;
@@ -22,7 +22,7 @@ public class Production extends Expression {
 	int     refCount  = 0;
 	boolean isTerminal = false;
 	
-	private Production definedRule;  // defined
+	Production original;
 
 	public Production(SourcePosition s, NameSpace ns, String name, Expression body) {
 		super(s);
@@ -30,9 +30,25 @@ public class Production extends Expression {
 		this.name = name;
 		this.uname = ns.uniqueName(name);
 		this.body = (body == null) ? Factory.newEmpty(s) : body;
-		this.definedRule = this;
+		this.original = this;
+		this.minlen = StructualAnalysis.quickConsumedCheck(body);
+	}
+
+	private Production(String name, Production original, Expression body) {
+		super(original.s);
+		this.ns = original.getNameSpace();
+		this.name = name;
+		this.uname = ns.uniqueName(name);
+		this.body = (body == null) ? Factory.newEmpty(s) : body;
+		this.original = original;
+		this.minlen = StructualAnalysis.quickConsumedCheck(body);
+	}
+
+	Production newProduction(String localName) {
+		return new Production(name, this, this.getExpression());
 	}
 	
+
 	public final NameSpace getNameSpace() {
 		return this.ns;
 	}
@@ -48,6 +64,8 @@ public class Production extends Expression {
 	public final boolean isRecursive() {
 		return this.isRecursive;
 	}
+
+
 	
 	@Override
 	public Expression get(int index) {
@@ -66,12 +84,33 @@ public class Production extends Expression {
 	public final String getUniqueName() {
 		return this.uname;
 	}
+
+	public final String getOriginalLocalName() {
+		return this.original.getLocalName();
+	}
 	
 	public final Expression getExpression() {
 		return this.body;
 	}
 
-	public int minlen = -1;
+	final void setExpression(Expression e) {
+		this.body = e;
+	}
+
+	@Override
+	public Expression reshape(Manipulator m) {
+		return m.reshapeProduction(this);
+	}
+	
+	int minlen = -1;
+
+	@Override
+	public boolean isConsumed(Stacker stacker) {
+		if(minlen == -1) {
+			this.minlen = this.getExpression().isConsumed(stacker) ? 1 : 0;
+		}
+		return minlen > 0;
+	}
 	
 	@Override
 	public final boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
@@ -129,91 +168,41 @@ public class Production extends Expression {
 		return this.transType;
 	}
 
-	@Override
-	public Expression checkTypestate(GrammarChecker checker, Typestate c) {
-		int t = checkNamingConvention(this.name);
-		c.required = this.inferTypestate(null);
-		if(t != Typestate.Undefined && c.required != t) {
-			checker.reportNotice(s, "invalid naming convention: " + this.name);
-		}
-		this.body = this.getExpression().checkTypestate(checker, c);
-		return this;
-	}
-
-	public final static int checkNamingConvention(String ruleName) {
-		int start = 0;
-		if(ruleName.startsWith("~") || ruleName.startsWith("\"")) {
-			return Typestate.BooleanType;
-		}
-		for(;ruleName.charAt(start) == '_'; start++) {
-			if(start + 1 == ruleName.length()) {
-				return Typestate.BooleanType;
-			}
-		}
-		boolean firstUpperCase = Character.isUpperCase(ruleName.charAt(start));
-		for(int i = start+1; i < ruleName.length(); i++) {
-			char ch = ruleName.charAt(i);
-			if(ch == '!') break; // option
-			if(Character.isUpperCase(ch) && !firstUpperCase) {
-				return Typestate.OperationType;
-			}
-			if(Character.isLowerCase(ch) && firstUpperCase) {
-				return Typestate.ObjectType;
-			}
-		}
-		return firstUpperCase ? Typestate.BooleanType : Typestate.Undefined;
-	}
-
-	@Override
-	public Expression removeASTOperator(boolean newNonTerminal) {
-		if(this.inferTypestate(null) == Typestate.BooleanType) {
-			return this;
-		}
-		String name = "~" + this.name;
-		Production r = this.ns.getProduction(name);
-		if(r == null) {
-			r = this.ns.newRule(name, this.body);
-			r.definedRule = this;
-			r.transType = Typestate.BooleanType;
-			r.body = this.body.removeASTOperator(newNonTerminal);
-		}
-		return r;
-	}
-
-	public final void removeExpressionFlag(TreeMap<String, String> undefedFlags) {
-		this.body = this.body.removeFlag(undefedFlags).intern();
-	}
+//
+//	public final void removeExpressionFlag(TreeMap<String, String> undefedFlags) {
+//		this.body = this.body.removeFlag(undefedFlags).intern();
+//	}
+//	
+//	@Override
+//	public Expression removeFlag(TreeMap<String, String> undefedFlags) {
+//		if(undefedFlags.size() > 0) {
+//			StringBuilder sb = new StringBuilder();
+//			int loc = name.indexOf('!');
+//			if(loc > 0) {
+//				sb.append(this.name.substring(0, loc));
+//			}
+//			else {
+//				sb.append(this.name);
+//			}
+//			for(String flag: undefedFlags.keySet()) {
+//				if(ConditionAnlysis.hasReachableFlag(this.body, flag)) {
+//					sb.append("!");
+//					sb.append(flag);
+//				}
+//			}
+//			String rName = sb.toString();
+//			Production rRule = ns.getProduction(rName);
+//			if(rRule == null) {
+//				rRule = ns.newRule(rName, Factory.newEmpty(null));
+//				rRule.body = body.removeFlag(undefedFlags).intern();
+//			}
+//			return rRule;
+//		}
+//		return this;
+//	}
 	
 	@Override
-	public Expression removeFlag(TreeMap<String, String> undefedFlags) {
-		if(undefedFlags.size() > 0) {
-			StringBuilder sb = new StringBuilder();
-			int loc = name.indexOf('!');
-			if(loc > 0) {
-				sb.append(this.name.substring(0, loc));
-			}
-			else {
-				sb.append(this.name);
-			}
-			for(String flag: undefedFlags.keySet()) {
-				if(Expression.hasReachableFlag(this.body, flag)) {
-					sb.append("!");
-					sb.append(flag);
-				}
-			}
-			String rName = sb.toString();
-			Production rRule = ns.getProduction(rName);
-			if(rRule == null) {
-				rRule = ns.newRule(rName, Factory.newEmpty(null));
-				rRule.body = body.removeFlag(undefedFlags).intern();
-			}
-			return rRule;
-		}
-		return this;
-	}
-	
-	@Override
-	public String getInterningKey() {
+	public String key() {
 		return this.getUniqueName() + "=";
 	}
 	
@@ -246,7 +235,7 @@ public class Production extends Expression {
 
 	
 	@Override
-	public Instruction encode(RuntimeCompiler bc, Instruction next) {
+	public Instruction encode(NezCompiler bc, Instruction next) {
 		return this.getExpression().encode(bc, next);
 	}
 
@@ -288,3 +277,23 @@ public class Production extends Expression {
 	}
 
 }
+
+class Stacker {
+	Stacker prev;
+	Production p;
+	Stacker(Production p, Stacker prev) {
+		this.prev = prev;
+		this.p = p;
+	}
+	boolean isVisited(Production p) {
+		Stacker d = this;
+		while(d != null) {
+			if(d.p == p) {
+				return true;
+			}
+			d = d.prev;
+		}
+		return false;
+	}
+}
+

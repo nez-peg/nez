@@ -187,12 +187,13 @@ public class CommonTree extends AbstractList<CommonTree> implements SourcePositi
 	final void stringfy(String indent, StringBuilder sb) {
 		sb.append("\n");
 		sb.append(indent);
-		sb.append("(#");
-		sb.append(this.tag.name);
+		sb.append("#");
+		sb.append(this.getTag().getName());
+		sb.append("[");
 		if(this.subTree == null) {
 			sb.append(" ");
 			StringUtils.formatQuoteString(sb, '\'', this.getText(), '\'');
-			sb.append(")");
+			sb.append("]");
 		}
 		else {
 			String nindent = "   " + indent;
@@ -208,7 +209,7 @@ public class CommonTree extends AbstractList<CommonTree> implements SourcePositi
 			}
 			sb.append("\n");
 			sb.append(indent);
-			sb.append(")");
+			sb.append("]");
 		}
 	}
 	

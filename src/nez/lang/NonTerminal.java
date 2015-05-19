@@ -4,20 +4,45 @@ import java.util.TreeMap;
 
 import nez.ast.SourcePosition;
 import nez.runtime.Instruction;
-import nez.runtime.RuntimeCompiler;
+import nez.runtime.NezCompiler;
 import nez.util.UList;
 import nez.util.UMap;
 
 public class NonTerminal extends Expression {
-	public NameSpace ns;
-	public String  localName;
-	String  uniqueName;
+	private NameSpace ns;
+	private String  localName;
+	private String  uniqueName;
 
 	public NonTerminal(SourcePosition s, NameSpace ns, String ruleName) {
 		super(s);
 		this.ns = ns;
 		this.localName = ruleName;
 		this.uniqueName = this.ns.uniqueName(this.localName);
+	}
+	
+	public final NameSpace getNameSpace() {
+		return ns;
+	}
+
+	public final String getLocalName() {
+		return localName;
+	}
+
+	public final boolean isTerminal() {
+		return localName.startsWith("\"");
+	}
+
+	public final String getUniqueName() {
+		return this.uniqueName;
+	}
+	
+	public final Production getProduction() {
+		return this.ns.getProduction(this.localName);
+	}
+	
+	public final Expression deReference() {
+		Production r = this.ns.getProduction(this.localName);
+		return (r != null) ? r.getExpression() : null;
 	}
 
 	@Override
@@ -31,7 +56,7 @@ public class NonTerminal extends Expression {
 	}
 	
 	@Override
-	public String getInterningKey() {
+	public String key() {
 		return getUniqueName();
 	}
 
@@ -39,23 +64,26 @@ public class NonTerminal extends Expression {
 	public String getPredicate() {
 		return getUniqueName();
 	}
-
-	public final String getLocalName() {
-		return localName;
-	}
-
-	public final String getUniqueName() {
-		return this.uniqueName;
+	@Override
+	public Expression reshape(Manipulator m) {
+		return m.reshapeNonTerminal(this);
 	}
 	
-	public final Production getRule() {
-		return this.ns.getProduction(this.localName);
+	@Override
+	public boolean isConsumed(Stacker stacker) {
+		Production p = this.getProduction();
+		if(stacker != null) {
+			if(stacker.isVisited(p)) {
+				this.ns.reportError(this, "left recursion: " + this.localName);
+				return false;
+			}
+		}
+		if(p.minlen == -1) {
+			return p.isConsumed(new Stacker(p, stacker));
+		}
+		return p.isConsumed(stacker);
 	}
-	
-	public final Expression deReference() {
-		Production r = this.ns.getProduction(this.localName);
-		return (r != null) ? r.getExpression() : null;
-	}
+
 	
 	@Override
 	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
@@ -67,84 +95,36 @@ public class NonTerminal extends Expression {
 				return false;
 			}
 		}
-		Production r = this.getRule();
+		Production r = this.getProduction();
 		if(r != null) {
 			return r.checkAlwaysConsumed(checker, startNonTerminal, stack);
 		}
 		return false;
 	}
 
-	@Override void checkPhase1(GrammarChecker checker, String ruleName, UMap<String> visited, int depth) {
-		Production r = this.getRule();
-		if(r == null) {
-			checker.reportWarning(s, "undefined rule: " + this.localName + " => created empty rule!!");
-			r = this.ns.newRule(this.localName, Factory.newEmpty(s));
-		}
-		if(depth == 0) {
-			r.refCount += 1;
-		}
-		if(!r.isRecursive) {
-			String u = r.getUniqueName();
-			if(u.equals(ruleName)) {
-				r.isRecursive = true;
-				if(r.isInline) {
-					checker.reportError(s, "recursion disallows inlining " + r.getLocalName());
-					r.isInline = false;
-				}
-			}
-			if(!visited.hasKey(u)) {
-				visited.put(u, ruleName);
-				checker.checkPhase1(r.getExpression(), ruleName, visited, depth+1);
-			}
-		}
-	}
-
 	@Override
 	public int inferTypestate(UMap<String> visited) {
-		Production r = this.getRule();
+		Production r = this.getProduction();
 		return r.inferTypestate(visited);
 	}
-	@Override
-	public Expression checkTypestate(GrammarChecker checker, Typestate c) {
-		Production r = this.getRule();
-		int t = r.inferTypestate();
-		if(t == Typestate.BooleanType) {
-			return this;
-		}
-		if(c.required == Typestate.ObjectType) {
-			if(t == Typestate.OperationType) {
-				checker.reportWarning(s, "unexpected AST operations => removed!!");
-				return this.removeASTOperator(Expression.CreateNonTerminal);
-			}
-			c.required = Typestate.OperationType;
-			return this;
-		}
-		if(c.required == Typestate.OperationType) {
-			if(t == Typestate.ObjectType) {
-				checker.reportWarning(s, "expected @ => inserted!!");
-				return Factory.newLink(this.s, this, -1);
-			}
-		}
-		return this;
-	}
-	@Override
-	public Expression removeASTOperator(boolean newNonTerminal) {
-		if(newNonTerminal) {
-			Production r = (Production)this.getRule().removeASTOperator(newNonTerminal);
-			if(!this.localName.equals(r.getLocalName())) {
-				return Factory.newNonTerminal(this.s, ns, r.getLocalName());
-			}
-		}
-		return this;
-	}
-	@Override
-	public Expression removeFlag(TreeMap<String,String> undefedFlags) {
-		Production r = (Production)this.getRule().removeFlag(undefedFlags);
-		if(!this.localName.equals(r.getLocalName())) {
-			return Factory.newNonTerminal(this.s, ns, r.getLocalName());
-		}
-		return this;
-	}
+//	@Override
+//	public Expression removeASTOperator(boolean newNonTerminal) {
+//		if(newNonTerminal) {
+//			Production r = (Production)this.getProduction().removeASTOperator(newNonTerminal);
+//			if(!this.localName.equals(r.getLocalName())) {
+//				return Factory.newNonTerminal(this.s, ns, r.getLocalName());
+//			}
+//		}
+//		return this;
+//	}
+//	@Override
+//	public Expression removeFlag(TreeMap<String,String> undefedFlags) {
+//		Production r = (Production)this.getProduction().removeFlag(undefedFlags);
+//		if(!this.localName.equals(r.getLocalName())) {
+//			return Factory.newNonTerminal(this.s, ns, r.getLocalName());
+//		}
+//		return this;
+//	}
 	
 	@Override
 	public short acceptByte(int ch, int option) {
@@ -166,7 +146,7 @@ public class NonTerminal extends Expression {
 		this.optimized = e;
 	}
 	@Override
-	public Instruction encode(RuntimeCompiler bc, Instruction next) {
+	public Instruction encode(NezCompiler bc, Instruction next) {
 		return bc.encodeNonTerminal(this, next);
 	}
 	@Override
@@ -178,6 +158,7 @@ public class NonTerminal extends Expression {
 	protected void examplfy(GEP gep, StringBuilder sb, int p) {
 		this.deReference().examplfy(gep, sb, p);
 	}
+
 
 
 }

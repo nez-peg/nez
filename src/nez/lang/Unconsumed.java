@@ -19,7 +19,7 @@ abstract class Unconsumed extends Expression {
 		return null;
 	}
 	@Override
-	public String getInterningKey() {
+	public String key() {
 		return this.getPredicate();
 	}
 	@Override
@@ -29,18 +29,6 @@ abstract class Unconsumed extends Expression {
 	@Override
 	public int inferTypestate(UMap<String> visited) {
 		return Typestate.BooleanType;
-	}
-	@Override
-	public Expression checkTypestate(GrammarChecker checker, Typestate c) {
-		return this;
-	}
-	@Override
-	public Expression removeASTOperator(boolean newNonTerminal) {
-		return this;
-	}
-	@Override
-	public Expression removeFlag(TreeMap<String, String> undefedFlags) {
-		return this;
 	}
 	@Override
 	public short acceptByte(int ch, int option) {

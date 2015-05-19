@@ -1,11 +1,9 @@
 package nez.lang;
 
-import java.util.TreeMap;
-
 import nez.ast.Source;
 import nez.ast.SourcePosition;
 import nez.runtime.Instruction;
-import nez.runtime.RuntimeCompiler;
+import nez.runtime.NezCompiler;
 import nez.util.UFlag;
 import nez.util.UList;
 import nez.util.UMap;
@@ -14,14 +12,27 @@ public class AnyChar extends Terminal {
 	AnyChar(SourcePosition s) {
 		super(s);
 	}
+
 	@Override
 	public String getPredicate() {
 		return "any";
 	}
+	
 	@Override
-	public String getInterningKey() { 
+	public String key() { 
 		return ".";
 	}
+	
+	@Override
+	public Expression reshape(Manipulator m) {
+		return m.reshapeAnyChar(this);
+	}
+
+	@Override
+	public boolean isConsumed(Stacker stacker) {
+		return true;
+	}
+
 	@Override
 	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
 		return true;
@@ -29,18 +40,6 @@ public class AnyChar extends Terminal {
 	@Override
 	public int inferTypestate(UMap<String> visited) {
 		return Typestate.BooleanType;
-	}
-	@Override
-	public Expression checkTypestate(GrammarChecker checker, Typestate c) {
-		return this;
-	}
-	@Override
-	public Expression removeASTOperator(boolean newNonTerminal) {
-		return this;
-	}
-	@Override
-	public Expression removeFlag(TreeMap<String, String> undefedFlags) {
-		return this;
 	}
 	
 	@Override
@@ -54,7 +53,7 @@ public class AnyChar extends Terminal {
 	}
 	
 	@Override
-	public Instruction encode(RuntimeCompiler bc, Instruction next) {
+	public Instruction encode(NezCompiler bc, Instruction next) {
 		return bc.encodeMatchAny(this, next);
 	}
 	@Override

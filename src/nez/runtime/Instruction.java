@@ -764,7 +764,7 @@ class IDefSymbol extends Instruction {
 	Tag tableName;
 	IDefSymbol(DefSymbol e, Instruction next) {
 		super(e, next);
-		this.tableName = e.table;
+		this.tableName = e.tableName;
 	}
 	@Override
 	protected String getOperand() {
@@ -781,7 +781,7 @@ class IIsSymbol extends Instruction {
 	boolean checkLastSymbolOnly;
 	IIsSymbol(IsSymbol e, boolean checkLastSymbolOnly, Instruction next) {
 		super(e, next);
-		this.tableName = e.table;
+		this.tableName = e.tableName;
 		this.checkLastSymbolOnly = checkLastSymbolOnly;
 	}
 	@Override

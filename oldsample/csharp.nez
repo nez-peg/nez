@@ -1,0 +1,1609 @@
+
+/*
+
+  PEG4d C# 5.0 Grammar
+
+  Based on C# Language Specification 5.0 [1]
+
+  [1] http://www.microsoft.com/en-us/download/confirmation.aspx?id=7029
+
+  Author:
+    Tetsuro Matsumura (https://github.com/tetsurom/)
+
+*/
+
+//--------------------------------------------------
+// Peg4d+L Toplevels
+//--------------------------------------------------
+
+File
+    = CompilationUnit
+
+Chunk
+    = Expression
+    / Statement
+    / ClassMemberDeclaration
+    / InterfaceMemberDeclaration
+    / NamespaceMemberDeclaration
+    / CompilationUnit
+
+//--------------------------------------------------
+// B.1 Lexical grammar
+//--------------------------------------------------
+
+// B.1.1 Line terminators
+
+NEW_LINE
+    = '\n' / '\r\n' / '\r' / [\u2028\u2029\u2085]
+
+// B.1.2 Comments
+
+COMMENT
+    = SINGLE_LINE_COMMENT
+    / DELIMITTED_COMMENT
+
+SINGLE_LINE_COMMENT
+    = '//' INPUT_CHARACTER*
+
+INPUT_CHARACTER
+    = !NEW_LINE_CHARACTER .
+
+NEW_LINE_CHARACTER
+    = '\n' / '\r' / [\u2028\u2029\u2085]
+
+DELIMITTED_COMMENT
+    = '/*' DELIMITTED_COMMENT_TEXT? '*'+ '/'
+
+DELIMITTED_COMMENT_TEXT
+    = DELIMITTED_COMMENT_SECTION+
+
+DELIMITTED_COMMENT_SECTION
+    = '/'
+    / '*'* (!'/' !'*' .)
+
+// B.1.3 White space
+
+WHITESPACE
+    = ' ' / '\u0009' / '\u000b' / '\u000c' // / UNICODE_ZS
+    / '\uFEFF'
+
+_ = WHITESPACE*
+__ = (WHITESPACE / NEW_LINE / COMMENT)*
+
+// B.1.4 Tokens
+
+// B.1.5 Unicode character escape sequences
+
+DIGIT
+    = [0-9]
+
+HEX
+    = [A-Fa-f0-9]
+
+HEX4
+    = HEX HEX HEX HEX
+
+UNICODE_ESCAPE_SEQUENCE
+    = '\\u' HEX4
+    / '\\U' HEX4 HEX4
+
+// B.1.6 Identifiers
+
+IDENTIFIER
+    = '@' IDENTIFIER_OR_KEYWORD
+    / !KEYWORD IDENTIFIER_OR_KEYWORD
+
+Identifier
+    = { IDENTIFIER #Name }
+
+DestructorIdentifier
+    = { '~' IDENTIFIER #Name }
+
+IDENTIFIER_OR_KEYWORD
+    = IDENTIFIER_START_CHARACTER IDENTIFIER_PART_CHARACTER*
+
+IDENTIFIER_START_CHARACTER
+    = [_A-Za-z]
+//    / A Unicode character of classes Lu, Ll, Lt, Lm, Lo, or Nl
+//    / A unicode-escape-sequence representing a character of classes Lu, Ll, Lt, Lm, Lo, or Nl
+
+IDENTIFIER_PART_CHARACTER
+    = DIGIT
+    / IDENTIFIER_START_CHARACTER
+//    / A Unicode character of the classes Nd, Pe or Cf
+
+// B.1.7 Keywords
+
+W = IDENTIFIER_PART_CHARACTER
+"abstract" = 'abstract' !W
+"byte" = 'byte' !W
+"class" = 'class' !W
+"delegate" = 'delegate' !W
+"event" = 'event' !W
+"fixed" = 'fixed' !W
+"if" = 'if' !W
+"internal" = 'internal' !W
+"new" = 'new' !W
+"override" = 'override' !W
+"readonly" = 'readonly' !W
+"short" = 'short' !W
+"struct" = 'struct' !W
+"try" = 'try' !W
+"unsafe" = 'unsafe' !W
+"volatile" = 'volatile' !W
+"as" = 'as' !W
+"case" = 'case' !W
+"const" = 'const' !W
+"do" = 'do' !W
+"explicit" = 'explicit' !W
+"float" = 'float' !W
+"implicit" = 'implicit' !W
+"is" = 'is' !W
+"null" = 'null' !W
+"params" = 'params' !W
+"ref" = 'ref' !W
+"sizeof" = 'sizeof' !W
+"switch" = 'switch' !W
+"typeof" = 'typeof' !W
+"ushort" = 'ushort' !W
+"while" = 'while' !W
+"base" = 'base' !W
+"bool" = 'bool' !W
+"catch" = 'catch' !W
+"char" = 'char' !W
+"continue" = 'continue' !W
+"decimal" = 'decimal' !W
+"double" = 'double' !W
+"else" = 'else' !W
+"extern" = 'extern' !W
+"false" = 'false' !W
+"for" = 'for' !W
+"foreach" = 'foreach' !W
+"in" = 'in' !W
+"int" = 'int' !W
+"lock" = 'lock' !W
+"long" = 'long' !W
+"object" = 'object' !W
+"operator" = 'operator' !W
+"private" = 'private' !W
+"protected" = 'protected' !W
+"return" = 'return' !W
+"sbyte" = 'sbyte' !W
+"stackalloc" = 'stackalloc' !W
+"static" = 'static' !W
+"this" = 'this' !W
+"throw" = 'throw' !W
+"uint" = 'uint' !W
+"ulong" = 'ulong' !W
+"using" = 'using' !W
+"virtual" = 'virtual' !W
+"break" = 'break' !W
+"checked" = 'checked' !W
+"default" = 'default' !W
+"enum" = 'enum' !W
+"finally" = 'finally' !W
+"goto" = 'goto' !W
+"interface" = 'interface' !W
+"namespace" = 'namespace' !W
+"out" = 'out' !W
+"public" = 'public' !W
+"sealed" = 'sealed' !W
+"string" = 'string' !W
+"true" = 'true' !W
+"unchecked" = 'unchecked' !W
+"void" = 'void' !W
+"await" = 'await' !W
+"async" = 'async' !W
+
+KEYWORD
+    = "abstract" / "byte" / "class" / "delegate" / "event"
+    / "fixed" / "if" / "internal" / "new" / "override"
+    / "readonly" / "short" / "struct" / "try" / "unsafe"
+    / "volatile" / "as" / "case" / "const" / "do" / "explicit"
+    / "float" / "implicit" / "is" / "null" / "params"
+    / "ref" / "sizeof" / "switch" / "typeof" / "ushort"
+    / "while" / "base" / "bool" / "catch" / "char"
+    / "continue" / "decimal" / "double" / "else" / "extern"
+    / "false" / "for" / "foreach" / "in" / "int" / "lock"
+    / "long" / "object" / "operator" / "private" / "protected"
+    / "return" / "sbyte" / "stackalloc" / "static" / "this"
+    / "throw" / "uint" / "ulong" / "using" / "virtual"
+    / "break" / "checked" / "default" / "enum" / "finally"
+    / "goto" / "interface" / "namespace" / "out" / "public"
+    / "sealed" / "string" / "true" / "unchecked" / "void"
+    / <if AwaitKeyword> "await"
+
+// B.1.8 Literals
+
+Literal
+    = BooleanLiteral
+    / RealLiteral
+    / IntegerLiteral
+    / CharacterLiteral
+    / StringLiteral
+    / NullLiteral
+
+BooleanLiteral
+    = { "true" #True } / { "false" #False }
+
+IntegerLiteral
+    = HexadecimalIntegerLiteral
+    / DecimalIntegerLiteral
+
+DecimalIntegerLiteral
+    = { DIGIT+ INTEGER_TYPE_SUFFIX? #Integer }
+
+INTEGER_TYPE_SUFFIX
+    = [Uu] [Ll]? / [Ll] [Uu]?
+
+HexadecimalIntegerLiteral
+    = { '0' [Xx] HEX+ INTEGER_TYPE_SUFFIX? #HexInteger }
+
+RealLiteral
+    = { DIGIT* '.' DIGIT+ EXPONENT_PART? addRealTypeSuffix }
+    / { DIGIT+ EXPONENT_PART addRealTypeSuffix }
+    / { DIGIT+ addRealTypeSuffix2 }
+
+EXPONENT_PART
+    = [Ee] [+-]? DIGIT+
+
+addRealTypeSuffix
+    = [Ff] #Float
+    / [Mm] #Decimal
+    / [Dd]? #Double
+
+addRealTypeSuffix2
+    = [Ff] #Float
+    / [Mm] #Decimal
+    / [Dd] #Double
+
+CharacterLiteral
+    = ['] { CHARACTER #Character } [']
+
+CHARACTER
+    = SINGLE_CHARACTER
+    / SIMPLE_ESCAPE_SEQUENCE
+    / HEXADECIMAL_ESCAPE_SEQUENCE
+    / UNICODE_ESCAPE_SEQUENCE
+
+SINGLE_CHARACTER
+    = !NEW_LINE_CHARACTER !'\\' !['].
+
+SIMPLE_ESCAPE_SEQUENCE
+    = '\\\\' / '\\' ['"0abfnrtv]
+
+HEXADECIMAL_ESCAPE_SEQUENCE
+    = '\\x' HEX HEX? HEX? HEX?
+
+StringLiteral
+    = RegularStringLiteral
+    / VerbatimStringLiteral
+
+RegularStringLiteral
+    = '"' { REGULAR_STRING_LITERAL_CHARACTER* #String } '"'
+
+REGULAR_STRING_LITERAL_CHARACTER
+    = SINGLE_REGULAR_STRING_LITERAL_CHARACTER
+    / SIMPLE_ESCAPE_SEQUENCE
+    / HEXADECIMAL_ESCAPE_SEQUENCE
+    / UNICODE_ESCAPE_SEQUENCE
+
+SINGLE_REGULAR_STRING_LITERAL_CHARACTER
+    = !NEW_LINE_CHARACTER !'\\' !'"' .
+
+VerbatimStringLiteral
+    = '@"' { VERBATIM_STRING_LITERAL_CHARACTER* #String } '"'
+
+VERBATIM_STRING_LITERAL_CHARACTER
+    = SINGLE_VERBATIM_STRING_LITERAL_CHARACTER
+    / QUOTE_ESCAPE_SEQUENCE  
+
+SINGLE_VERBATIM_STRING_LITERAL_CHARACTER
+    = !'"' .
+
+QUOTE_ESCAPE_SEQUENCE
+    = '""'
+
+NullLiteral
+    = { "null" #Null }
+
+// B.1.9 Operators and punctuators
+
+"&"  = '&' !'&'
+"*"  = '*' !'='
+"+"  = '+' ![+=]
+"-"  = '-' ![-=]
+"!"  = '!' !'='
+":"  = ':' !':'
+"/"  = '/' !'='
+"%"  = '%' !'='
+"<<" = '<<' !'='
+">>" = '>>' !'='
+"<"  = '<' !'='
+">"  = '>' !'='
+"^"  = '^' !'='
+"|"  = '|' !'='
+"="  = '=' ![=>]
+
+// B.1.10 Pre-processing directives
+
+PPDerective
+    = PPConditional
+    / PPLine
+    / PPDiagnostic
+    / PPRegion
+    / PPPragma
+
+ConditionalSymbol
+    = { !"true" !"false" IDENTIFIER_OR_KEYWORD #Name }
+
+PPExpression
+    = PPOrExpression
+
+PPOrExpression
+    = PPAndExpression {@ _ "||" _ @PPAndExpression #LogicalOr }*
+
+PPAndExpression
+    = PPEqualityExpression {@ _ "&&" _ @PPEqualityExpression #LogicalAnd }*
+
+PPEqualityExpression
+    = PPUnaryExpression {@ _ addEqualityOperator _ @PPUnaryExpression }*
+
+PPUnaryExpression
+    = { "!" @PPUnaryExpression #LogicalNot }
+    / PPPrimaryExpression
+
+PPPrimaryExpression
+    = BooleanLiteral
+    / ConditionalSymbol
+    / '(' _ PPExpression _ ')'
+
+// used in CompilationUnit
+PPDeclaration
+    = { _ '#' _ "define" _ @ConditionalSymbol PP_NEWLINE #PPDefine }
+    / { _ '#' _ "undef" _ @ConditionalSymbol PP_NEWLINE #PPUndef }
+
+PP_NEWLINE
+    = _ SINGLE_LINE_COMMENT? NEW_LINE
+
+PPConditional
+    = { @PPIfSection (@PPElifSection)* (@PPElseSection)? PP_ENDIF #PPConditional }
+
+PPIfSection
+    = { _ '#' _ "if" WHITESPACE+ @PPExpression PP_NEWLINE (@ConditionalSection)? #PPIfSection }
+
+PPElifSection
+    = { _ '#' _ "elif" WHITESPACE+ @PPExpression PP_NEWLINE (@ConditionalSection)? #PPElifSection }
+
+PPElseSection
+    = { _ '#' _ "else" PP_NEWLINE (@ConditionalSection)? #PPElifSection }
+
+PP_ENDIF
+    = _ '#' _ "endif" PP_NEWLINE
+
+ConditionalSection
+    = <if PPInBlock> { __ (@StatementList)? __ #Block }
+    / <if PPInClass> { (__ @ClassMemberDeclaration)* __ #List }
+    / <if PPInTopLevel> { __ (@ExternAliasDerective __)* (@UsingDirective __)* (@TopLevelAttributes __)* (@NamespaceMemberDeclaration __)* #Source }
+
+PPDiagnostic
+    = { _ '#' _ "error" @PPMessage #PPError }
+    / { _ '#' _ "warning" @PPMessage #PPWarning }
+
+PP_MESSAGE
+    = NEW_LINE
+    / WHITESPACE+ INPUT_CHARACTER* NEW_LINE
+
+PPMessage
+    = { #PPMessage } NEW_LINE
+    / WHITESPACE+ { INPUT_CHARACTER* #PPMessage } NEW_LINE
+
+PPRegion
+    = { @PPStartRegion @ConditionalSection PP_END_REGION #PPRegion }
+
+PPStartRegion
+    = _ '#' _ "region" PPMessage
+
+PP_END_REGION
+    = _ '#' _ "endregion" PP_MESSAGE
+
+PPLine
+    = _ '#' _ "line" _ LineIndicator
+
+LineIndicator
+    = { DIGIT+ (WHITESPACE+ FILE_NAME)? #PPLine }
+    / { "default" #PPLine }
+    / { "hidden" #PPLine }
+
+FILE_NAME
+    = '"' FILE_NAME_CHARACTER+ '"'
+
+FILE_NAME_CHARACTER
+    = !'"' .
+
+PPPragma
+    = _ '#' _ "pragma" WHITESPACE+ PragmaBody PP_NEWLINE
+
+PragmaBody
+    = PragmaWarningBody
+
+PragmaWarningBody
+    = { "warning" WHITESPACE+ WARNING_ACTION (WHITESPACE+ WARNING_LIST)? #PPPragma }
+
+WARNING_ACTION
+    = "disable" / "restore"
+
+WARNING_LIST
+    = "CS"? DIGIT+ (_ ',' _ "CS"? DIGIT+)*
+
+//--------------------------------------------------
+// B.2 Syntactic grammar
+//--------------------------------------------------
+
+// B.2.1 Basic concepts
+
+NamespaceName
+    = NamespaceOrTypeName
+
+TypeName
+    = NamespaceOrTypeName
+
+NamespaceOrTypeName
+    = SimpleName {@ __ "." __ @SimpleName #Field }*
+    / QualifiedAliasMember
+
+SimpleName
+    = { @[1]Identifier @[0]TypeArgumentList #Type }
+    / Identifier
+
+Left1TypeName
+    = SimpleName {@ __ "." __ @SimpleName #Field &(__ "." __ SimpleName) }*
+    / QualifiedAliasMember
+
+// B.2.2 Types
+
+Type
+    [example: int]
+    [example: int?]
+    [example: int?[]]
+    [example: System.Collection.List]
+    [example: System.Collection.List<int>]
+    [example: System.Collection.List<int?>]
+    [example: IDicionary<string, int>]
+    = SimpleType {@ addTypeSuffix }*
+
+NonArrayType
+    = SimpleType {@ @{ `Nullable` #Name } '?' #Type }*
+
+ArrayType
+    = NonArrayType {@ @{ `Array` #Name } @RankSpecifier #Type }+
+
+addTypeSuffix
+    = @{ `Nullable` #Name } '?' #Type
+    / @{ `Array`  #Name } @RankSpecifier #Type
+
+SimpleType
+    = PredefinedType
+    / TypeName
+
+PredefinedType
+    = IntegralType
+    / { @{ ( "float"
+           / "double"
+           / "object"
+           / "dynamic"
+           / "string"
+           / "bool"
+           / "decimal"
+           ) #Name }
+     #Type }
+
+IntegralType
+    = { @{ ( "sbyte"
+           / "byte"
+           / "short"
+           / "ushort"
+           / "int"
+           / "uint"
+           / "long"
+           / "ulong"
+           / "char"
+           ) #Name }
+     #Type }
+
+RankSpecifier
+    = { '[' __ (@DimensionSeparator __)* ']' #Rank }
+
+DimensionSeparator
+    = { ',' #Dimension }
+
+TypeArgumentList
+    = { "<" __ @Type (__ "," __ @Type)* __ ">" #List }
+
+TypeParameter
+    = Identifier
+
+// B.2.3 Variables
+
+VariableReference
+    = Expression
+
+// B.2.4 Expressions
+
+ArgumentList
+    = { @Argument (__ "," __ @Argument)* #List }
+
+Argument
+    = { @Identifier __ ":" __ @ArgumentValue #NamedArgument }
+    / ArgumentValue
+
+ArgumentValue
+    = { "ref" __ @Expression #Reference }
+    / { "out" __ @Expression #OutputArgument }
+    / Expression
+
+FunctionStyleArgList
+    = "(" __ ArgumentList __ ")"
+    / "(" __ ")" { #List }
+
+PrimaryNoArrayCreationExpression
+    = Literal
+    / SimpleName
+//    / '(' __ !(Type __ ')') Expression __ ')' !(__ PrimaryNoArrayCreationExpression)
+    / '(' __ Expression __ ')'
+    / ThisAccess
+    / BaseAccess
+    / ObjectCreationExpression
+    / DelegateCreationExpression
+    / AnonymousObjectCreationExpression
+    / TypeOfExpression
+    / SizeOfExpression
+    / CheckedExpression
+    / UncheckedExpression
+    / DefaultValueExpression
+    / AnonymousMethodExpression
+
+PrimaryExpression
+    = PrimaryNoArrayCreationExpression
+    / ArrayCreationExpression
+
+MemberAccessExpression
+    = { @PrimaryExpression __ "." __ @SimpleName #Field }
+    / { @PredefinedType __ "." __ @SimpleName #Field }
+    / { @QualifiedAliasMember __ "." __ @Identifier #Field }
+
+ElementAccessExpression
+    = { @PrimaryNoArrayCreationExpression __ "[" __ @ArgumentList __ "]" #MultiIndex }
+
+PostfixExpressionLeftSide
+    = MemberAccessExpression
+    / ElementAccessExpression
+    / PrimaryExpression
+
+PostfixExpression
+    = PostfixExpressionLeftSide {@ __ addPostfixOperator }*
+
+addPostfixOperator
+    = @FunctionStyleArgList #Apply
+    / "[" __ @ArgumentList __ "]" #MultiIndex
+    / "." __ @SimpleName #Field
+    / "++" #SuffixInc
+    / "--" #SuffixDec
+
+InvocationExpression
+      = PostfixExpression
+//    = PostfixExpressionLeftSide {@ __ @FunctionStyleArgList #Apply }+
+
+PostIncrementExpression
+      = PostfixExpression
+//    = PostfixExpressionLeftSide {@ __ "++" #SuffixInc }+
+
+PostDecrementExpression
+      = PostfixExpression
+//    = PostfixExpressionLeftSide {@ __ "--" #SuffixDec }+
+
+ThisAccess
+    = { "this" #This }
+
+BaseAccess
+    = { @{ "base" #Super } __ addBaseAccessOperator }
+
+addBaseAccessOperator
+    = "[" __ @ArgumentList __ "]" #MultiIndex
+    / "." __ @Identifier #Field
+
+ObjectCreationExpression
+    = { "new" __ @[0]Type __ @[1]FunctionStyleArgList (__ @[2]ObjectOrCollectionInitializer)? #New }
+    / { "new" __ @[0]Type __ @[2]ObjectOrCollectionInitializer #New }
+
+ObjectOrCollectionInitializer
+    = ObjectInitializer
+    / CollectionInitializer
+
+ObjectInitializer
+    = { "{" __ (@MemberInitializerList __)? "}" #ObjectInitializer }
+    / { "{" __ @MemberInitializerList __ "," __ "}" #ObjectInitializer }
+
+MemberInitializerList
+    = { @MemberInitializer (__ "," __ @MemberInitializer)* #List }
+
+MemberInitializer
+    = { @Identifier __ "=" __ @InitializerValue #Assign }
+
+InitializerValue
+    = Expression
+    / ObjectOrCollectionInitializer
+
+CollectionInitializer
+    = { "{" __ (@ElementInitializerList __)? "}" #CollectionInitializer }
+    / { "{" __ @ElementInitializerList __ "," __ "}" #CollectionInitializer }
+
+ElementInitializerList
+    = { @ElementInitializer (__ "," __ @ElementInitializer)* #List }
+
+ElementInitializer
+    = <without Assignment Expression>
+    / "{" __ ExpressionList __ "}"
+
+ExpressionList
+    = { @Expression (__ "," __ @Expression)* #List }
+
+ArrayCreationExpression
+    = { "new" __ @NonArrayType __ "[" __ @ExpressionList __ "]" (__ @[2]RankSpecifier)? (__ @[3]ArrayInitializer)? #NewArray }
+    / { "new" __ @ArrayType __ @[3]ArrayInitializer #NewArray }
+    / { "new" __ @[2]RankSpecifier __ @[3]ArrayInitializer #NewArray }
+
+DelegateCreationExpression
+    = { "new" __ @TypeName __ "(" __ @Expression __ ")" #NewDelegate }
+
+AnonymousObjectCreationExpression
+    = { "new" __ @AnonymousObjectInitializer #Object }
+
+AnonymousObjectInitializer
+    = "{" __ MemberDeclaratorList __ "}"
+
+MemberDeclaratorList
+    = { @MemberDeclarator (__ "," __ @MemberDeclarator)* #List }
+
+MemberDeclarator
+    = { @Identifier __ "=" __ @Expression #Assign }
+    / MemberAccessExpression
+    / SimpleName
+
+TypeOfExpression
+    = { "typeof" __ "(" __ "void" __ ")" #TypeOf }
+    / { "typeof" __ "(" __ @Type __ ")" #TypeOf }
+    / { "typeof" __ "(" __ @UnboundTypeName __ ")" #TypeOf }
+
+SizeOfExpression
+    = { "sizeof" __ "(" __ @Type __ ")" #SizeOf }
+    / { "sizeof" __ "(" __ @UnboundTypeName __ ")" #SizeOf }
+
+UnboundTypeName
+    = UnboundTypeNameHead {@ __ "." __ @DimensionSpecifiedIdentifier #Field }*
+
+UnboundTypeNameHead
+    = { @Identifier __ "::" __ @DimensionSpecifiedIdentifier #Field }
+    / DimensionSpecifiedIdentifier
+
+DimensionSpecifiedIdentifier
+    = { @[1]Identifier __ @[0]GenericDimensionSpecifier #Type }
+    / { @Identifier #Type }
+
+GenericDimensionSpecifier
+    = { "<" __ (@Comma __)* ">" #Dimension }
+
+Comma
+    = { "," #Text }
+
+CheckedExpression
+    = { "checked" __ "(" __ @Expression __ ")" #Checked }
+
+UncheckedExpression
+    = { "unchecked" __ "(" __ @Expression __ ")" #Unchecked }
+
+DefaultValueExpression
+    = { "default" __ "(" __ @Type __ ")" #DefaultValue }
+
+UnaryExpression
+    [example: ++i]
+    = { addUnaryOperator __ @UnaryExpression } / PostfixExpression
+
+addUnaryOperator
+    = "+"      #Plus
+    / "-"      #Minus
+    / "!"      #LogicalNot
+    / "~"      #BitwiseNot
+    / "++"     #PrefixInc
+    / "--"     #PrefixDec
+    / "(" __ @[1]Type __ ")" #Cast
+    / <if AwaitKeyword> "await" #Await
+
+PreIncrementExpression
+    = { "++" #PrefixInc __ @UnaryExpression }
+
+PreDecrementExpression
+    = { "--" #PrefixDec __ @UnaryExpression }
+
+AwaitExpression
+    = { "await" #Await __ @UnaryExpression }
+
+MultiplicativeExpression
+    = UnaryExpression {@ __ ( "*" #Mul / "/" #Div / "%" #Mod ) __ @UnaryExpression }*
+
+AdditiveExpression
+    = MultiplicativeExpression {@ __ ( "+" #Add / "-" #Sub ) __ @MultiplicativeExpression }*
+  
+ShiftExpression
+    = AdditiveExpression {@ __ addShiftOperator __ @AdditiveExpression }*
+
+addShiftOperator
+    = "<<" #LeftShift 
+    / ">>" #RightShift
+
+RelationalExpression
+    = ShiftExpression {@ __ addRelationalOperator }*
+
+addRelationalOperator
+    = '<' ('=' #LessThanEquals / #LessThan) __ @ShiftExpression
+    / '>' ('=' #GreaterThanEquals / #GreaterThan) __ @ShiftExpression
+    / "is" #InstanceOf __ @Type
+    / "as" #As __ @Type
+
+EqualityExpression
+    = RelationalExpression {@ __ addEqualityOperator __ @RelationalExpression }*
+
+addEqualityOperator
+    = '==' ('=' #StrictEquals / #Equals)
+    / '!=' ('=' #StrictNotEquals / #NotEquals)
+
+AndExpression
+    = EqualityExpression {@ __ "&" __ @EqualityExpression #BitwiseAnd }*
+
+ExclusiveOrExpression
+    = AndExpression {@ __ "^" __ @AndExpression #BitwiseXor }*
+
+InclusiveOrExpression
+    = ExclusiveOrExpression {@ __ "|" __ @ExclusiveOrExpression #BitwiseOr }*
+
+ConditionalAndExpression
+    = InclusiveOrExpression {@ __ "&&" __ @InclusiveOrExpression #LogicalAnd }*
+
+ConditionalOrExpression
+    = ConditionalAndExpression {@ __ "||" __ @ConditionalAndExpression #LogicalOr }*
+
+NullCoalescingExpression
+    = ConditionalOrExpression {@ __ "??" __ @ConditionalOrExpression #NullCoalescing }*
+
+ConditionalExpression
+    = NullCoalescingExpression {@ __ '?' __ @Expression __ ':' __ @Expression #Conditional }*
+
+// Lambda
+
+LambdaExpression
+    [example: x => x*x]
+    = { (addLambdaModifier __)? @[4]AnonymousFunctionSignature __ "=>" __ @[6]AnonymousFunctionBody #FuncDecl }
+
+AnonymousMethodExpression
+    = { (addLambdaModifier __)? "delegate" __ (@[4]ExplicitAnonymousFunctionSignature)? @[6]Block #FuncDecl }
+
+addLambdaModifier
+    = @[0]{ @{ "async" #Text } #List }
+
+AnonymousFunctionSignature
+    = ExplicitAnonymousFunctionSignature
+    / ImplicitAnonymousFunctionSignature
+
+ExplicitAnonymousFunctionSignature
+    = "(" __ ExplicitAnonymousFunctionParameterList __ ")"
+    / "(" __ ")" { #List }
+
+ExplicitAnonymousFunctionParameterList
+    = { @ExplicitAnonymousFunctionParameter (__ "," __ @ExplicitAnonymousFunctionParameter)* #List }
+
+ExplicitAnonymousFunctionParameter
+    = { (@[0]AnonymousFunctionParameterModifier)? __ @[1]Type __ @[2]Identifier #Parameter }
+
+AnonymousFunctionParameterModifier
+    = { @{ "ref" #Text } #List }
+    / { @{ "out" #Text } #List }
+
+ImplicitAnonymousFunctionSignature
+    = "(" __ ImplicitAnonymousFunctionParameterList __ ")"
+    / "(" __ ")" { #List }
+    / { @ImplicitAnonymousFunctionParameter #List }
+
+ImplicitAnonymousFunctionParameterList
+    = { @ImplicitAnonymousFunctionParameter (__ "," __ @ImplicitAnonymousFunctionParameter)* #List }
+
+ImplicitAnonymousFunctionParameter
+    = Identifier
+
+AnonymousFunctionBody
+    = Block
+    / Expression
+
+// Query
+
+QueryExpression
+    [example: from person in people where person.age < 20 select person.name]
+    = { @FromClause __ @QueryBody #Query }
+
+FromClause
+    = { "from" __ @[0]Type __ @[1]Identifier __ "in" __ @[2]Expression #QueryFrom }
+    / { "from" __ @[1]Identifier __ "in" __ @[2]Expression #QueryFrom }
+
+QueryBody
+    = { (@QueryBodyClause __)* @SelectOrGroupClause (__ @QueryContinuation)? #QueryBody }
+
+QueryBodyClause
+    = FromClause
+    / LetClause
+    / WhereClause
+    / JoinClause
+    / JoinIntoClause
+    / OrderByClause
+
+LetClause
+    = { "let" __ @Identifier __ "=" __ @Expression #QueryLet }
+
+WhereClause
+    = { "where" __ @BooleanExpression #QueryWhere }
+
+JoinClause
+    = { "join" __ addJoinBody #QueryJoin }
+
+JoinIntoClause
+    = { "join" __ addJoinBody __ "into" __ @[5]Identifier #QueryJoinInto }
+
+addJoinBody
+    = (@Type __)? @[1]Identifier __ "in" __ @[2]Expression __ "on" __ @[3]Expression __ "equals" __ @[4]Expression
+
+OrderByClause
+    = { "orderby" (__ @Ordering)+ #QueryOrderBy }
+
+Ordering
+    = { @Expression (__ @OrderingDirection)? #QueryOrdering }
+
+OrderingDirection
+    = { "ascending" #QueryAscending }
+    / { "descending" #QueryDescending }
+
+SelectOrGroupClause
+    = SelectClause
+    / GroupClause
+
+SelectClause
+    = { "select" __ @Expression #QuerySelect }
+
+GroupClause
+    = { "group" __ @Expression __ "by" __ @Expression #QueryGroup }
+
+QueryContinuation
+    = { "into" __ @Identifier __ @QueryBody #QueryBody }
+
+Assignment
+    = { @UnaryExpression __ addAssignmentOperator __ @Expression }
+
+addAssignmentOperator
+    = '='   #Assign
+    / '+='  #AssignAdd
+    / '-='  #AssignSub
+    / '*='  #AssignMul
+    / '/='  #AssignDiv
+    / '%='  #AssignMod
+    / '&='  #AssignBitwiseAnd
+    / '|='  #AssignBitwiseOr
+    / '^='  #AssignBitwiseXOr 
+    / '<<=' #AssignLeftShift
+    / '>>=' #AssignRightShift
+
+Expression
+    = QueryExpression
+    / LambdaExpression
+    / <if Assignment> Assignment
+    / ConditionalExpression
+
+ConstantExpression
+    = Expression
+
+BooleanExpression
+    = Expression
+
+// B.2.5 Statements
+
+Statement
+    = LabeledStatement
+    / DeclarationStatement
+    / EmbeddedStatement
+    / PPStatement
+
+EmbeddedStatement
+    = Block
+    / EmptyStatement
+    / ExpressionStatement
+    / SelectionStatement
+    / IterationStatement
+    / JumpStatement
+    / TryStatement
+    / CheckedStatement
+    / UncheckedStatement
+    / LockStatement
+    / UsingStatement
+    / YieldStatement
+
+Block
+    = { "{" __ (@Statement __)* "}" #Block }
+
+StatementList
+    = { @Statement (__ @Statement)* #List }
+
+EmptyStatement
+    = { ";" #Empty }
+
+LabeledStatement
+    = { @Identifier __ ':' __ @Statement #Label }
+
+DeclarationStatement
+    [example: var names = from person in people select person.name;]
+    = LocalVariableDeclaration __ ";"
+    / LocalConstantDeclaration __ ";"
+
+LocalVariableDeclaration
+    = { @[1]LocalVariableType __ @[2]LocalVariableDeclarators #VarDeclStmt }
+
+LocalVariableType
+    = Type
+    / { @{ "var" #Name } #Type }
+
+LocalVariableDeclarators
+    = { @LocalVariableDeclarator (__ "," __ @LocalVariableDeclarator)* #List }
+
+LocalVariableDeclarator
+    = { @Identifier (__ "=" __ @LocalVariableInitializer)? #VarDecl }
+
+LocalVariableInitializer
+    = Expression
+    / ArrayInitializer
+
+LocalConstantDeclaration
+    = { "const" __ @[1]Type __ @[2]{ @ConstantDeclarator #List } #ConstDeclStmt }
+
+ConstantDeclarator
+    = { @Identifier __ "=" __ @ConstantExpression #VarDecl }
+
+ExpressionStatement
+    = StatementExpression __ ";"
+
+StatementExpression
+    = ObjectCreationExpression
+    / Assignment
+    / PostfixExpression
+    / PreIncrementExpression
+    / PreDecrementExpression
+    / AwaitExpression
+
+SelectionStatement
+    = IfStatement
+    / SwitchStatement
+
+IfStatement
+    [example:if(1 + 1){;}]
+    = { 'if' __ addCondition __ @EmbeddedStatement (__ "else" __ @EmbeddedStatement)? #If }
+
+addCondition
+    = "(" __ @BooleanExpression __ ")"
+
+SwitchStatement
+    [example: switch(n) { case 0: break; case 1: return 0; default: throw 0; }]
+    = { 'switch' __ addCondition __ @SwitchBlock #Switch }
+
+SwitchBlock
+    = { '{' __ (@SwitchSection __)* '}' #List }
+
+SwitchSection
+    [example: case 2: break;]
+    [example: default: break;]
+    = { @SwitchLabels __ @StatementList }
+
+SwitchLabels
+    = { @SwitchLabel (__ @SwitchLabel)* #List }
+
+SwitchLabel
+    = { "case" __ @ConstantExpression __ ':' #Case }
+    / { 'default' __ ':' #Default }
+
+IterationStatement
+    = WhileStatement
+    / DoStatement
+    / ForStatement
+    / ForeachStatement
+
+WhileStatement
+    [example:while(1){;}]
+    = { 'while' __ addCondition __ @EmbeddedStatement #While }
+
+DoStatement
+    [example:do{;}while(2 > 1);]
+    = { "do" __ @EmbeddedStatement __ 'while' __ addCondition __ ";" #DoWhile }
+
+ForStatement
+    [example:for(;;);]
+    [example:for(i=0;i<5;);]
+    [example:for(;i<5;);]
+    [example:for(i=0;i<5;i++);]
+    [example:for(var i=0;i<5;i++);]
+    = { "for" __ '(' __ addForStatementPart __ ')' __ @[3]Statement #For }
+
+addForStatementPart
+    = (@[0]ForInitializer)? __ ';' __ (@[1]ForCondition)? __ ';' __ (@[2]ForIterator)?
+
+ForInitializer
+    = LocalVariableDeclaration
+    / StatementExpressionList
+
+ForCondition
+    = BooleanExpression
+
+ForIterator
+    = StatementExpressionList
+
+StatementExpressionList
+    = { @StatementExpression (__ "," __ @StatementExpression)* #List }
+
+ForeachStatement
+    = { "foreach" __ '(' __ addForEachPart __ ')' __ @EmbeddedStatement #Foreach }
+
+addForEachPart
+    = @{ @[1]LocalVariableType __ @[2]{ @{ @Identifier #VarDecl } #List } #VarDeclStmt} __ "in" __ @Expression
+
+JumpStatement
+    = BreakStatement
+    / ContinueStatement
+    / GotoStatement
+    / ReturnStatement
+    / ThrowStatement
+
+BreakStatement
+    [example: break;]
+    = { "break" __ ";" #Break }
+
+ContinueStatement
+    [example: continue;]
+    = { "continue" __ ";" #Continue }
+
+GotoStatement
+    = { "goto" __ @Identifier __ ";" #Goto }
+    / { "goto" __ "case" __ @ConstantExpression __ ";" #GotoCase }
+    / { "goto" __ "default" __ ";" #GotoDefault }
+
+ReturnStatement
+    [example: return;]
+    [example: return 1;]
+    = { "return" __ (@Expression __)? ";" #Return }
+
+ThrowStatement
+    = { "throw" __ (@Expression __)? ";" #Throw }
+
+TryStatement
+    = { "try" __ @[0]Block __ ( @[1]CatchClauses (__ addFinally)? / addFinally ) #Try }
+
+CatchClauses
+    = { addSpecificCatchClauses __ (@GeneralCatchClause)? #List }
+    / { @GeneralCatchClause #List }
+
+addSpecificCatchClauses
+    = @SpecificCatchClause (__ @SpecificCatchClause)*
+
+SpecificCatchClause
+    = { "catch" __ "(" __ @Type (__ @[1]Identifier )? __ ")" __ @[2]Block #Catch }
+
+GeneralCatchClause
+    = { "catch" __ @[2]Block #Catch }
+
+addFinally
+    [example: finally{}]
+    = "finally" __ @[2]Block
+
+CheckedStatement
+    = { "checked" __ @Block #Checked }
+
+UncheckedStatement
+    = { "unchecked" __ @Block #Unchecked }
+
+LockStatement
+    = { "lock" __ "(" __ @Expression __ ")" __ @EmbeddedStatement #Lock }
+
+UsingStatement
+    = { "using" __ "(" __ @ResourceAcquisition __ ")" __ @EmbeddedStatement #Using }
+
+ResourceAcquisition
+    = LocalVariableDeclaration
+    / Expression
+
+YieldStatement
+    = { "yield" __ @{ "return" __ @Expression __ ";" #Return } #Yield }
+    / { "yield" __ @{ "break" __ ";" #Break } #Yield }
+
+PPStatement
+    = <with PPInBlock <without PPInTopLevel <without PPInClass PPDerective > > >
+
+// B.2.6 Namespaces
+
+PPInTopLevel
+    = <without PPInBlock <with PPInTopLevel <without PPInClass PPDerective > > >
+
+CompilationUnit
+    = { __ (@PPDeclaration __)* (@ExternAliasDerective __)* (@UsingDirective __)* (@TopLevelAttributes __)* (@NamespaceMemberDeclaration __)* #Source }
+
+TopLevelAttributes
+    = GlobalAttributes
+    / PPInTopLevel
+
+NamespaceDeclaration
+    = { "namespace" __ @QualifiedIdentifier __ @NamespaceBody (__ ";")? #Namespace }
+
+QualifiedIdentifier
+    = Identifier {@ __ "." __ @Identifier #Field }*
+
+NamespaceBody
+    = { "{" __ (@ExternAliasDerective __)* (@UsingDirective __)* (@NamespaceMemberDeclaration __)* "}" #Source }
+
+ExternAliasDerective
+    = { "extern" __ "alias" __ @Identifier __ ";" #CSExtern }
+    / PPInTopLevel
+
+UsingDirective
+    = { "using" __ @Identifier __ "=" __ @NamespaceOrTypeName __ ";" #UsingDirective }
+    / { "using" __ @NamespaceName __ ";" #UsingDirective }
+    / PPInTopLevel
+
+NamespaceMemberDeclaration
+    = NamespaceDeclaration
+    / TypeDeclaration
+    / PPInTopLevel
+
+TypeDeclaration
+    = ClassDeclaration
+    / StructDeclaration
+    / InterfaceDeclaration
+    / EnumDeclaration
+    / DelegateDeclaration
+
+QualifiedAliasMember
+    = { @Identifier __ "::" __ @SimpleName #Field }
+
+// B.2.7 Classes
+
+ClassDeclaration
+    = { (@[0]ClassModifierAndAttributes __)? "class" __ @[1]Identifier __
+        (@[2]TypeParameterList __)? (addClassBase __)? (@[5]TypeParameterConstraintsClauses __)?
+        @[6]ClassBody (__ ";")? #Class }
+
+ClassModifierAndAttributes
+    = { (addAttributes __)? (@ClassModifier __)* (@{ "partial" #Text})? #List }
+
+ClassModifier
+    = ConstantModifier
+    / { ( "abstract" / "sealed" / "static" ) #Text }
+
+TypeParameterList
+    = { "<" __ @TypeParameterWithAttribute (__ @TypeParameterWithAttribute)* __ ">" #List }
+
+TypeParameterWithAttribute
+    = { (@Attributes __)? @[1]TypeParameter #Parameter }
+
+addClassBase
+    = ":" __ @[3]{ @TypeName #List } @[4]{ (__ "," __ @TypeName)* #List }
+
+TypeParameterConstraintsClauses
+    = { @TypeParameterConstraintsClause (__ @TypeParameterConstraintsClause)* #List }
+
+TypeParameterConstraintsClause
+    = { "where" __ @TypeParameter __ ":" __ @TypeParameterConstraints #TypeParameterConstraint }
+
+TypeParameterConstraints
+    = { addSecondaryConstraints (__ @ConstructorConstraint)? #List }
+    / { @ConstructorConstraint #List }
+    / { @PrimaryConstraint __ addSecondaryConstraints (__ @ConstructorConstraint)? #List }
+    / { @PrimaryConstraint (__ @ConstructorConstraint)? #List }
+
+PrimaryConstraint
+    = TypeName
+    / { "class" #ClassConstraint }
+    / { "struct" #StructConstraint }
+
+addSecondaryConstraints
+    = @SecondaryConstraint (__ @SecondaryConstraint)*
+
+SecondaryConstraint
+    = TypeName
+    / TypeParameter
+
+ConstructorConstraint
+    = { "new" __ "(" __ ")" #ConstructorConstraint }
+
+ClassBody
+    = "{" ClassMemberDeclarationList __ "}"
+
+ClassMemberDeclarationList
+    = { (__ @ClassMemberDeclaration)* #List }
+
+ClassMemberDeclaration
+    = ConstantDeclaration
+    / FieldDeclaration
+    / MethodDeclaration
+    / PropertyDeclaration
+    / EventDeclaration
+    / IndexerDeclaration
+    / OperatorDeclaration
+    / ConstructorDeclaration
+    / DestructorDeclaration
+    / StaticConstructorDeclaration
+    / TypeDeclaration
+    / PPInClass
+
+ConstantDeclaration
+    = { (@ConstantModifierAndAttributes __)? "const" __ @[1]Type __ @[2]{ @ConstantDeclarator #List } __ ";" #ConstDeclStmt }
+
+ConstantModifierAndAttributes
+    = { (addAttributes __)? (@ConstantModifier __)* #List }
+
+ConstantModifier
+    = { ( "new" / "public" / "protected" / "internal" / "private" ) #Text }
+
+FieldDeclaration
+    = { (@FieldModifierAndAttributes __)? @[1]Type __ @[2]LocalVariableDeclarators __ ";" #VarDeclStmt }
+
+FieldModifierAndAttributes
+    = { (addAttributes __)? (@FieldModifier __)* #List }
+
+FieldModifier
+    = ConstantModifier
+    / { ( "static" / "readonly" / "volatile" ) #Text }
+
+MethodDeclaration
+//    = { @[0]MethodModifierAndAttributesAsync __ <with AwaitKeyword addMethodDecl> }
+//    / { (@[0]MethodModifierAndAttributes __)? <without AwaitKeyword addMethodDecl> }
+    = { @[0]MethodModifierAndAttributes __ <with AwaitKeyword addMethodDecl> }
+
+addMethodDecl
+    = @[1]ReturnType __ @[2]MemberName __ (@[3]TypeParameterList __)?
+        "(" __ (@[4]FormalParameterList __)? ")" __ (@[7]TypeParameterConstraintsClauses __)?
+            @[6]MethodBody #FuncDecl
+
+MethodModifierAndAttributes
+    = { (addAttributes __)? (@MethodModifier __)* (@{ "partial" #Text})? #List }
+
+MethodModifierAndAttributesAsync
+    = { (addAttributes __)? (@MethodModifier __)* @{ "async" #Text }
+            (__ @MethodModifier)* (__ @{ "partial" #Text })? #List }
+
+MethodModifier
+    = PropertyModifier
+    / { "async" #Text } // FIXME: remove this line 
+
+ReturnType
+    = { @{ "void" #Name } #Type }
+    / Type
+
+MemberName
+    = { @Left1TypeName __ "." __ @Identifier #Field }
+    / Identifier
+
+MethodBody
+    = { ";" #Empty }
+    / Block
+
+FormalParameterList
+    = { @FixedParameter (__ "," __ @FixedParameter)* (__ "," __ @FormalParameter)? #List }
+    / { @FormalParameter #List }
+
+FormalParameter
+    = ParameterArray
+    / FixedParameter
+
+FixedParameter
+    = { (@ParameterModifierAndAttributes __)? @[1]Type __ @[2]Identifier (__ @DefaultArgument)? #Parameter }
+
+DefaultArgument
+    = "=" __ Expression
+
+ParameterModifierAndAttributes
+    = { (addAttributes __)? (@ParameterModifier __)* #List }
+
+ParameterModifier
+    = { ( "ref" / "out" / "this" ) #Text }
+
+ParameterArray
+    = { (@Attributes __)? "params" __ @[1]Type __ @[2]Identifier #VariadicParameter }
+
+PropertyDeclaration
+    = { (@PropertyModifierAndAttributes __)? @[1]Type __ @[2]MemberName __ @[3]AccessorDeclaration #Property }
+
+PropertyModifierAndAttributes
+    = { (addAttributes __)? (@PropertyModifier __)* #List }
+
+PropertyModifier
+    = ConstantModifier
+    / { ( "static" / "virtual" / "sealed" / "override" / "abstract" / "extern" ) #Text }
+
+AccessorDeclaration
+    = { "{" __ @GetAccessorDeclaration __ (@SetAccessorDeclaration __)? "}" #List }
+    / { "{" __ @SetAccessorDeclaration __ (@GetAccessorDeclaration __)? "}" #List }
+
+GetAccessorDeclaration
+    = { (@AccessorModifierAndAttributes __)? "get" __ @MethodBody #Getter }
+
+SetAccessorDeclaration
+    = { (@AccessorModifierAndAttributes __)? "set" __ @MethodBody #Setter }
+
+AccessorModifierAndAttributes
+    = { (addAttributes __)? (@AccessorModifier __)* #List }
+
+AccessorModifier
+    = { ( "protected" / "internal" / "private" ) #Text }
+
+EventDeclaration
+    = { (@[0]MethodModifierAndAttributes __)? "event" __ @[1]TypeName __
+            (@[2]LocalVariableDeclarators __ ";"
+            / @[2]MemberName __ @EventAccessorDeclaration) #Event }
+
+EventAccessorDeclaration
+    = { "{" __ @AddAccessorDeclaration __ (@RemoveAccessorDeclaration __)? "}" #List }
+    / { "{" __ @RemoveAccessorDeclaration __ (@AddAccessorDeclaration __)? "}" #List }
+
+AddAccessorDeclaration
+    = { (@AccessorModifierAndAttributes __)? "add" __ @MethodBody #Adder }
+
+RemoveAccessorDeclaration
+    = { (@AccessorModifierAndAttributes __)? "remove" __ @MethodBody #Remover }
+
+IndexerDeclaration
+    = { (@PropertyModifierAndAttributes __)? @[1]Type __ @[2]IndexerDeclarator __ "[" __ @[3]FormalParameterList __ "]" __ @[4]AccessorDeclaration #Indexer }
+
+IndexerDeclarator
+    = ThisAccess
+    / { @Identifier __ "." __ @ThisAccess #Field }
+
+OperatorDeclaration
+    = { (@OperatorModifierAndAttributes __)? addOperatorDeclarator __ @[7]MethodBody #Operator }
+
+OperatorModifierAndAttributes
+    = { (addAttributes __)? (@OperatorModifier __)* #List }
+
+OperatorModifier
+    = { ( "public" / "static" / "extern") #Text }
+
+addOperatorDeclarator
+    = addUnaryOperatorDeclarator
+    / addBinaryOperatorDeclarator
+    / addConversionOperatorDeclarator
+
+addUnaryOperatorDeclarator
+    = @[1]Type __ "operator" __ @[2]OverloadableUnaryOperator __
+        "(" __ @[4]{ @OperatorParameter #List } __ ")"
+
+OperatorParameter
+    = { @[1]Type __ @[2]Identifier #Parameter }
+
+OverloadableUnaryOperator
+    = { ("+" / "-" / "!" / "~" / "++" / "--" / "true" / "false") #Name }
+
+addBinaryOperatorDeclarator
+    = @[1]Type __ "operator" __ @[2]OverloadableBinaryOperator __
+        "(" __ @[4]{ @OperatorParameter __ "," __ @OperatorParameter #List } __ ")"
+
+OverloadableBinaryOperator
+    = { ("+" / "-" / "*" / "/" / "%" / "&" / "|" / "^"/ "<<" / ">>" / "==" / "!=" / ">" / "<" / ">=" / "<=") #Name }
+
+addConversionOperatorDeclarator
+    = ("im" / "ex") "plicit" __ "operator" __ @[1]Type __ "(" __ @[4]{ @OperatorParameter #List } __ ")"
+
+ConstructorDeclaration
+    = { (@ConstructorModifierAndAttributes __)? addConstructorDeclarator __ @[6]MethodBody #FuncDecl }
+
+ConstructorModifierAndAttributes
+    = { (addAttributes __)? (@ConstructorModifier __)* #List }
+
+ConstructorModifier
+    = { ("public" / "protected" / "internal" / "private" / "extern") #Text }
+
+addConstructorDeclarator
+    = @[2]Identifier __ "(" __ (@[4]FormalParameterList __)? ")" (__ @[6]{ @ConstructorInitializer #List })?
+
+ConstructorInitializer
+    = ":" __ { (@{ "base" #Super } / @ThisAccess) __ @FunctionStyleArgList #Apply }
+
+StaticConstructorDeclaration
+    = { (@StaticConstructorModifierAndAttributes __)? @[2]Identifier __ "(" __ ")" __ @[6]MethodBody #FuncDecl }
+
+StaticConstructorModifierAndAttributes
+    = { (addAttributes __)? (@StaticConstructorModifier __)* #List }
+
+StaticConstructorModifier
+    = { ("static" / "extern") #Text }
+
+DestructorDeclaration
+    = { (@DestructorModifierAndAttributes __)? @[2]DestructorIdentifier __ "(" __ ")" __ @[6]MethodBody #FuncDecl }
+
+DestructorModifierAndAttributes
+    = { (addAttributes __)? (@DestructorModifier __)? #List }
+
+DestructorModifier
+    = { "extern" #Text }
+
+PPInClass
+    = <without PPInBlock <without PPInTopLevel <with PPInClass PPDerective > > >
+
+// B.2.8 Structs
+
+StructDeclaration
+    = { (@[0]StructModifierAndAttributes __)? "struct" __ @[1]Identifier __
+        (@[2]TypeParameterList __)? (@[4]StructInterfaces __)? (@[5]TypeParameterConstraintsClauses __)?
+        @[6]StructBody (__ ";")? #Struct }
+
+StructModifierAndAttributes
+    = { (addAttributes __)? (@StructModifier __)* (@{ "partial" #Text})? #List }
+
+StructModifier
+    = ConstantModifier
+
+StructInterfaces
+    = ":" __ { @TypeName (__ "," __ @TypeName)* #List }
+
+StructBody
+    = { "{" (__ @StructMemberDeclaration)* __ "}" #List }
+
+StructMemberDeclaration
+    = ConstantDeclaration
+    / FieldDeclaration
+    / MethodDeclaration
+    / PropertyDeclaration
+    / EventDeclaration
+    / IndexerDeclaration
+    / OperatorDeclaration
+    / ConstructorDeclaration
+    / StaticConstructorDeclaration
+    / TypeDeclaration
+
+// B.2.9 Arrays
+
+ArrayInitializer
+    = { "{" __ (addVariableInitializerList __)? "}" #Array }
+    / { "{" __ addVariableInitializerList __ ("," __)? "}" #Array }
+
+addVariableInitializerList
+    = @VariableInitializer (__ "," __ @VariableInitializer)*
+
+VariableInitializer
+    = Expression
+    / ArrayInitializer
+
+// B.2.10 Interfaces
+
+InterfaceDeclaration
+    = { (@[0]StructModifierAndAttributes __)? "interface" __ @[1]Identifier __
+        (@[2]VariantTypeParameterList __)? (@[3]StructInterfaces __)? (@[4]TypeParameterConstraintsClauses __)?
+        @[5]InterfaceBody (__ ";")? #Interface }
+
+VariantTypeParameterList
+    = { "<" __ @VariantTypeParameterWithAttribute (__ @VariantTypeParameterWithAttribute)* __ ">" #List }
+
+VariantTypeParameterWithAttribute
+    = { (@Attributes __)? @[1]TypeParameter #Parameter }
+
+VariantTypeParamModifier
+    = { (addAttributes __)? (addVarianceAnnotation __)? #List }
+
+addVarianceAnnotation
+    = @{ "in" #Text }
+    / @{ "out" #Text }
+
+InterfaceBody
+    = { "{" (__ @InterfaceMemberDeclaration)* __ "}" #List }
+
+InterfaceMemberDeclaration
+    = InterfaceMethodDeclaration
+    / InterfacePropertyDeclaration
+    / InterfaceEventDeclaration
+    / InterfaceIndexerDeclaration
+
+InterfaceMethodDeclaration
+    = { (@[0]InterfaceMemberModifierAndAttributes __)? @[1]ReturnType __ @[2]MemberName __ (@[3]TypeParameterList __)?
+    	"(" __ (@[4]FormalParameterList __)? ")" __ (@[7]TypeParameterConstraintsClauses __)?
+    	";" #FuncDecl }
+
+InterfaceMemberModifierAndAttributes
+    = { (addAttributes __)? (@{ "new" #Text})? #List }
+
+InterfacePropertyDeclaration
+    = { (@InterfaceMemberModifierAndAttributes __)? @[1]Type __ @[2]MemberName __ @[3]InterfaceAccessorDeclaration #Property }
+
+InterfaceAccessorDeclaration
+    = { "{" __ @InterfaceGetAccessorDeclaration __ (@InterfaceSetAccessorDeclaration __)? "}" #List }
+    / { "{" __ @InterfaceSetAccessorDeclaration __ (@InterfaceGetAccessorDeclaration __)? "}" #List }
+
+InterfaceGetAccessorDeclaration
+    = { (@Attributes __)? "get" __ ";" #Getter }
+
+InterfaceSetAccessorDeclaration
+    = { (@Attributes __)? "set" __ ";" #Setter }
+
+InterfaceEventDeclaration
+    = { (@[0]InterfaceMemberModifierAndAttributes __)? "event" __ @[1]TypeName __ @[2]{ @{ @Identifier #VarDecl } #List } __ ";" #Event }
+
+InterfaceIndexerDeclaration
+    = { (@InterfaceMemberModifierAndAttributes __)? @[1]Type __ @[2]ThisAccess __ "[" __ @[3]FormalParameterList __ "]" __ @[4]InterfaceAccessorDeclaration #Indexer }
+
+// B.2.11 Enums
+
+EnumDeclaration
+    = { (@[0]ConstantModifierAndAttributes __)? "enum" __ @[1]Identifier __
+        (":" __ @[2]EnumBase __)?
+        @[3]EnumBody (__ ";")? #Enum }
+
+EnumBase
+    = IntegralType
+
+EnumBody
+    = { "{" __ @EnumMemberDeclaration (__ "," __ @EnumMemberDeclaration)* (__ ",")? __ "}" #List }
+    / { "{" __ "}" #List }
+
+EnumMemberDeclaration
+    = { (@[0]Attributes __)? @[2]Identifier __ (@[3]DefaultArgument __)? #Parameter }
+
+// B.2.12 Delegates
+
+DelegateDeclaration
+    = { (@[0]ConstantModifierAndAttributes __)? "delegate" __
+        @[1]ReturnType __ @[2]Identifier __ (@[3]VariantTypeParameterList __)?
+    	"(" __ (@[4]FormalParameterList __)? ")" __ (@[6]TypeParameterConstraintsClauses __)?
+        ";" #Delegate }
+
+// B.2.13 Attributes
+
+GlobalAttributes
+    = <with GlobalAttributeFlag { addAttributes #List } >
+
+Attributes
+    = <without GlobalAttributeFlag { addAttributes #List } >
+
+addAttributes
+    = @AttributeSection (__ @AttributeSection)*
+
+AttributeSection
+    = { "[" __ (@AttributeTarget __ ":" __)? @[1]AttributeList (__ ",")? "]" #AttributeSection }
+
+AttributeTarget
+    = !<if GlobalAttributeFlag> { ("field" / "event" / "method" / "param" / "property"/ "return" / "type") #Text }
+    / <if GlobalAttributeFlag> { ("assembly" / "module") #Text }
+
+AttributeList
+    = { @Attribute (__ "," __ @Attribute)* #List }
+
+Attribute
+    = { @TypeName (__ @AttributeArguments)? #Attribute }
+
+AttributeArguments
+    = { "(" __ (addPositionalArgumentList __)? (addNamedArgumentList __)? ")" #List }
+
+addPositionalArgumentList
+    = @PositionalArgument (__ "," __ @PositionalArgument)*
+
+PositionalArgument
+    = { @Identifier __ @Expression #Assign }
+    / Expression
+
+addNamedArgumentList
+    = @NamedArgument (__ "," __ @NamedArgument)*
+
+NamedArgument
+    = { @Identifier __ "=" __ @Expression #Assign }
+
+//--------------------------------------------------
+// B.3 Grammar extensions for unsafe code
+//--------------------------------------------------
+
+// This section is not supported now due to time restriction.
+
