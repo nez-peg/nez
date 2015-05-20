@@ -50,7 +50,6 @@ __
 _
     = (SPACE / MULTI_LINE_COMMENT_SINGLE_LINE)*
 
-
 //Automatic Semicolon Insertion
 
 EOS
@@ -62,8 +61,7 @@ EOS
 EOF
     = !.
 
-//Operator
-//==========
+/* Keywords, Operator */
 
 "&"   = '&' !'&'
 "*"   = '*' !'='
@@ -160,7 +158,6 @@ FunctionBody
 SourceElement
     = Statement
     / FunctionDeclaration
-
 
 /*Statement*/
 
@@ -325,7 +322,6 @@ addFinally
 
 DebuggerStatement
     = "debugger" EOS { #Debugger }
-
 
 /* Expression */
 
