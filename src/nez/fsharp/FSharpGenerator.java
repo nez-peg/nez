@@ -191,7 +191,7 @@ public class FSharpGenerator extends SourceGenerator {
 					String prototypeName = pNameNode.getText();
 					CommonTree valueNode = pNameNode.getParent().getParent().get(1);
 					if(valueNode.is(JSTag.TAG_FUNC_DECL)){
-						((ModifiableCommonTree)(valueNode.get(2))).setValue(prototypeName);
+						valueNode.get(2).setValue(prototypeName);
 					}
 					fs.funcList.add(new FSharpFunc(prototypeName, fs.getPathName(), false, valueNode));
 				}
@@ -244,8 +244,8 @@ public class FSharpGenerator extends SourceGenerator {
 						FSharpVar fv = new FSharpVar(varDeclNode.get(0).getText(), fs.getPathName());
 						this.varList.add(fv);
 						fs.varList.add(fv);
-						((ModifiableCommonTree)varDeclNode).setTag(Tag.tag("Assign"));
-						((ModifiableCommonTree)node.getParent()).insert(this.indexOf(node) + i, varDeclNode);
+						varDeclNode.setTag(Tag.tag("Assign"));
+						node.getParent().insert(this.indexOf(node) + i, varDeclNode);
 					} else {
 						FSharpFunc ff = new FSharpFunc(varDeclNode.get(0).getText(), fs.getPathName(), false, varDeclNode.get(1));
 						fs.funcList.add(ff);
@@ -260,8 +260,8 @@ public class FSharpGenerator extends SourceGenerator {
 		if(node.is(JSTag.TAG_FUNC_DECL)){
 			CommonTree nameNode = node.get(2);
 			if(nameNode.getText().isEmpty()){
-				((ModifiableCommonTree)nameNode).setValue("lambda" + this.lambdaKey++);
-				((ModifiableCommonTree)nameNode).setTag(Tag.tag("LambdaName"));
+				nameNode.setValue("lambda" + this.lambdaKey++);
+				nameNode.setTag(Tag.tag("LambdaName"));
 			}
 			FSharpFunc ff = new FSharpFunc(nameNode.getText(), fs.getPathName(), false, node);
 			fs.funcList.add(ff);
@@ -365,13 +365,13 @@ public class FSharpGenerator extends SourceGenerator {
 	protected void checkAssignVarName(CommonTree node, FSharpVar targetVar){
 		if(node.size() < 1){
 			if(targetVar.getTrueName().contentEquals(node.getText())){
-				((ModifiableCommonTree)node).setValue(targetVar.getCurrentName());
+				node.setValue(targetVar.getCurrentName());
 			}
 		} else {
 			for(int i = 0; i < node.size(); i++){
 				if(node.get(i).size() == 0){
 					if(targetVar.getTrueName().contentEquals(node.get(i).getText())){
-						((ModifiableCommonTree)(node.get(i))).setValue(targetVar.getCurrentName());
+						node.get(i).setValue(targetVar.getCurrentName());
 					}
 				} else {
 					checkAssignVarName(node.get(i), targetVar);
@@ -472,7 +472,7 @@ public class FSharpGenerator extends SourceGenerator {
 			targetVar.addChild();
 		}
 		varName = targetVar.getCurrentName();
-		((ModifiableCommonTree)(node.get(0))).setValue(varName);
+		node.get(0).setValue(varName);
 	}
 
 /*
@@ -663,11 +663,11 @@ public class FSharpGenerator extends SourceGenerator {
 		for(int i = 0; i < objNode.size(); i++){
 			this.currentBuilder.appendNewLine();
 			varName = objNode.get(i).get(0).getText();
-			((ModifiableCommonTree)(objNode.get(i))).setTag(Tag.tag("VarDecl"));
-			((ModifiableCommonTree)(objNode.get(i).get(0))).setValue(varName + "0");
+			objNode.get(i).setTag(Tag.tag("VarDecl"));
+			objNode.get(i).get(0).setValue(varName + "0");
 			varDeclStmtNode.get(2).set(0, objNode.get(i));
 			this.visit(varDeclStmtNode);
-			((ModifiableCommonTree)(objNode.get(i).get(0))).setValue(varName);
+			objNode.get(i).get(0).setValue(varName);
 			this.objFlag = true;
 		}
 		for(String addedGetterName: this.addedGetterList){
@@ -1182,11 +1182,11 @@ public class FSharpGenerator extends SourceGenerator {
 					if(this.currentScope.searchVar(trueName) != null && !this.currentScope.isArgumentVar(trueName)){
 						name = "self." + name;
 					}
-					((ModifiableCommonTree)node).setValue("(!(" + name + ")).Value");
+					node.setValue("(!(" + name + ")).Value");
 				} else {
 					FSharpScope tScope = this.currentScope.getAvailableScope(name);
 					if(tScope != null){
-						((ModifiableCommonTree)node).setValue("new " + tScope.getScopeName() + "()");
+						node.setValue("new " + tScope.getScopeName() + "()");
 					}
 				}
 			}
@@ -1271,7 +1271,7 @@ public class FSharpGenerator extends SourceGenerator {
 		CommonTree lexpr = node.get(0).dup();
 		rexpr.add(lexpr);
 		rexpr.add(node.get(1));
-		((ModifiableCommonTree)node).setTag(Tag.tag("Assign"));
+		node.setTag(Tag.tag("Assign"));
 		node.set(1, rexpr);
 		this.toAssign(node);
 	}
@@ -1362,7 +1362,7 @@ public class FSharpGenerator extends SourceGenerator {
 			field = node.get(i);
 			fs = this.searchScopeFromList(field.getText());
 			if(fs != null){
-				((ModifiableCommonTree)field).setValue(fs.getScopeName());
+				field.setValue(fs.getScopeName());
 			}
 			fs = null;
 		}
@@ -1421,7 +1421,7 @@ public class FSharpGenerator extends SourceGenerator {
 			fs = this.searchVarOrFuncFromScopeList(this.currentScope, node.getText());
 			fs = this.currentScope.getAvailableScope(node.getText());
 			if(fs != null){
-				((ModifiableCommonTree)node).setValue("(new " + fs.getScopeName() + "())" + "." + node.getText());
+				node.setValue("(new " + fs.getScopeName() + "())" + "." + node.getText());
 			}
 		}
 	}

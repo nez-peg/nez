@@ -287,5 +287,27 @@ public class CommonTree extends AbstractList<CommonTree> implements SourcePositi
 //		return null;
 //	}
 	
+	//Modify Method
+	public void setValue(Object value){
+		this.value = value;
+	}
+	
+	public void setTag(Tag tag){
+		this.tag = tag;
+	}
+	
+	public void insert(int index, CommonTree node){
+		CommonTree[] modifiedSubTree = new CommonTree[this.size() + 1];
+		for(int i = 0; i < modifiedSubTree.length; i++){
+			if(i < index){
+				modifiedSubTree[i] = subTree[i];
+			} else if(i == index){
+				modifiedSubTree[index] = node;
+			} else {
+				modifiedSubTree[i] = subTree[i - 1];
+			}
+		}
+		subTree = modifiedSubTree;
+	}
 }
 
