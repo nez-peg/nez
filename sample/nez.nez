@@ -22,6 +22,18 @@ public p
 	/ ( p / p)
 	/ &p
 	/ !p
+	/ { p }
+	/ {@ p }
+	/ @p
+	/ #t
+	/ `p`
+	/ <if P>
+	/ <on P p>
+	/ <block p>
+	/ <def P p>
+	/ <is p>
+	/ <isa p>
+	/ <exists p>
 '''
 
 public Production
