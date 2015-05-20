@@ -1,13 +1,13 @@
 /**
- * JavaScript Grammar
+ * Java Grammar
  *
- *  Based on grammar from Rats!, Mouse and Java-8 langauge specification
+ *  Based on grammar from Java8 langauge specification
  *
- * [1] http://www.ecma-international.org/publications/standards/Ecma-262.htm
- * [2] https://github.com/dmajda/pegjs/blob/master/examples/javascript.pegjs
+ * [1] https://docs.oracle.com/javase/specs/jls/se8/html/jls-2.html#jls-2.4
  *
  * Authors:
- *   Tetsuro Matsumura (https://github.com/tetsurom/)
+ *   Kimio Kuramitsu (https://github.com/kkuramitsu/)
+ *   Kohei Moriya
  */
 
 File
@@ -16,7 +16,7 @@ File
 	  (@ImportDeclaration)* 
 	  (@TypeDeclaration)* #Source } _ EOT
 
-/* Lexical Pattern */
+/* Code Layout (Whitespace) */
 
 _
 	= (S / BLOCKCOMMENT / LINECOMMENT )*
@@ -54,7 +54,8 @@ EOT = !.
 "]"    = ']' _
 ","    = ',' _
 "..."  = '...' _
-":"    = ':' ![>] _
+":"    = ':' ![>:] _
+"::"   = '::' _
 "/"    = '/' !'=' _
 "%"    = '%' ![=>] _
 "<<"   = '<<' !'=' _
@@ -212,7 +213,7 @@ ElementValuePairList
 	= { @ElementValuePair ("," @ElementValuePair)* #CommaList }
 
 ElementValuePair
-	= { @Name "=" @ElementValue #KeyValue }
+	= { @Identifier "=" @ElementValue #KeyValue }
 
 ElementValue
 	= ElementValueArrayInitializer
@@ -237,7 +238,7 @@ format #Array[*] `{$[0 `, ` -1]}`
 //local variable
 
 VariableDeclaration
-	= { (@VariableModifiers)? @Type @VarDeclList #Declaration }
+	= { (@VariableModifiers)? @Type @InitDeclList #Declaration }
 
 VariableModifier
 	= Annotation
@@ -246,14 +247,14 @@ VariableModifier
 VariableModifiers
 	= { @VariableModifier (@VariableModifier)* #Modifiers }
 
-VarDeclList
+InitDeclList
 	= { @InitDecl ("," @InitDecl)* #CommaList }
 
 InitDecl
 	= { @VarName ("=" @Initializer)? #VarDecl }
 
 VarName
-	= Name {@ "[" (@ConstantExpression)? "]" #VarName }*
+	= Identifier {@ "[" (@ConstantExpression)? "]" #VarName }*
 
 Initializer
 	= Expression
@@ -266,8 +267,8 @@ ArrayInitializer
 
 //class type, enum type
 ClassDeclaration
-	= { (@ClassModifiers)? "class" @Name (@TypeParameters)? (@SuperClass)? (@SuperInterfaces)* @ClassBody #ClassDeclaration }
-	/ { (@ClassModifiers)? "enum" @Name (@SuperInterfaces )* @EnumBody #EnumDeclaration }
+	= { (@ClassModifiers)? "class" @Identifier (@TypeParameters)? (@SuperClass)? (@SuperInterfaces)* @ClassBody #ClassDeclaration }
+	/ { (@ClassModifiers)? "enum" @Identifier (@SuperInterfaces )* @EnumBody #EnumDeclaration }
 
 ClassModifiers
 	= { @ClassModifier (@ClassModifier)* #Modifiers }
@@ -296,7 +297,7 @@ EnumeratorList
 	= { @Enumerator ( "," @Enumerator)* #List }
 
 Enumerator
-	= { (@Annotations )? @Name (@{ "(" addArgumentExpressionList? ")" #List })? ( @ClassBody)? #Enumerator }
+	= { (@Annotations )? @Identifier (@{ "(" addArgumentExpressionList? ")" #List })? ( @ClassBody)? #Enumerator }
 
 
 
@@ -319,8 +320,8 @@ ClassMemberDeclaration
 //interface, annotation type
 
 InterfaceDeclaration
-	= { (@InterfaceModifiers )? "interface" @Name (@TypeParameters)? (@ExtendsInterfaces )* @InterfaceBody #InterfaceDeclaration }
-	/ { (@InterfaceModifiers )? "@" "interface" @Name @AnnotationTypeBody #AnnotationTypeDeclaration }
+	= { (@InterfaceModifiers )? "interface" @Identifier (@TypeParameters)? (@ExtendsInterfaces )* @InterfaceBody #InterfaceDeclaration }
+	/ { (@InterfaceModifiers )? "@" "interface" @Identifier @AnnotationTypeBody #AnnotationTypeDeclaration }
 
 InterfaceModifier
 	= Annotation
@@ -358,7 +359,7 @@ AnnotationTypeMemberDeclaration
 	/ { ";" #Empty }
 
 AnnotationTypeElementDeclaration
-	= { (@AnnotationTypeElementModifiers )? @Type @Name "(" ")" (@AnnotationTypeElementDefaultValue)? ";" #AnnotationTypeElement }
+	= { (@AnnotationTypeElementModifiers )? @Type @Identifier "(" ")" (@AnnotationTypeElementDefaultValue)? ";" #AnnotationTypeElement }
 
 AnnotationTypeElementModifier
 	= Annotation
@@ -387,7 +388,7 @@ FieldModifier
 	/ { "final"      #Final }
 	/ { "static"     #Static }
 	/ { "transient"  #Transient }
-	/ { "violate"    #Violate }
+	/ { "volatile"    #Volatile }
 
 ConstantDeclaration  /* used in interface */
 	= { (@ConstantModifiers)? @Type @InitDeclList #Constant } ";"
@@ -407,7 +408,7 @@ ConstantModifier
 MethodDeclaration
 	= { (@MethodModifiers)? 
 	    (@TypeParameters (@Annotations )? )? 
-	     @TypeOrVoid @Name "(" @MethodParamList ")" (@Throws)? (@Block / ";" ) #Method }
+	     @TypeOrVoid @Identifier "(" @MethodParamList ")" (@Throws)? (@Block / ";" ) #Method }
 
 MethodModifiers
 	= { @MethodModifier (@MethodModifier)* #Modifiers }
@@ -421,19 +422,19 @@ MethodModifier
 	/ { "static"     #Static }
 	/ { "synchronized"  #Synchronized }
 	/ { "transient"  #Transient }
-	/ { "violate"    #Violate }
+	/ { "volatile"    #Volatile }
 
 
 InterfaceMethodDeclaration
 	= { (@InterfaceMethodModifiers)? 
 	    (@TypeParameters (@Annotations )? )? 
-	     @TypeOrVoid @Name "(" @MethodParamList ")" (@Throws)? (@Block / ";" ) #Method }
+	     @TypeOrVoid @Identifier "(" @MethodParamList ")" (@Throws)? (@Block / ";" ) #Method }
 
 InterfaceMethodModifier
 	= Annotation
 	/ { "public"     #Public }
 	/ { "protected"  #Protected }
-	/ { "defailt"    #Default }
+	/ { "default"    #Default }
 	/ { "static"     #Static }
 
 InterfaceMethodModifiers
@@ -474,57 +475,114 @@ ExplicitConstructorInvocation
 	/ { (@TypeArguments)? @{ @Super "(" addArgumentExpressionList? ")" #List } #ExplicitConstructorInvocation } ";"
 	/ { @PostfixExpression "." (@TypeArguments )? @Super @{ "(" addArgumentExpressionList? ")" #List } #ExplicitConstructorInvocation  } ";"
 
-//Type
-//====
+/* Types, Values, Variables */
+
+format #Annotated[2]  `$[0] $[1]`
+format #Tvoid[0]      `void`
+format #Tbyte[0]      `byte`
+format #Tshort[0]     `short`
+format #Tint[0]       `int`
+format #Tlong[0]      `long`
+format #Tfloat[0]     `float`
+format #Tdouble[0]    `double`
+
+format #Tarray[1]     `$[0][]`
+format #Tarray[2]     `$[0] $[1] []`
 
 Type
-	= ReferenceType / PrimaryType
+	= ReferenceType    /* to accept int[] */
+	/ PrimitiveType
 
-TypeOrVoid
-	= Type / Void
+PrimitiveType
+	= { @Annotations @UnannoPrimitiveType #Annotated }
+	/ UnannoPrimitiveType 
 
-NonArrayType
-	= ClassOrInterfaceType / PrimaryType
+UnannoPrimitiveType
+	= NumericType
+	/ BooleanType
 
-ReferenceType
-	= ArrayType
-	/ ClassOrInterfaceType
+NumericType
+	= IntegralType 
+	/ FloatingPointType
 
-ArrayType
-	= (PrimaryType / ClassOrInterfaceType) {@ "[" "]" #TArray }+
-
-ClassOrInterfaceType
-	= QualifiedName {@ @TypeArguments #TGenerics }?
-
-ClassOrInterfaceTypes
-	= { @ClassOrInterfaceType ("," @ClassOrInterfaceType)* #TypeList }
-
-TypeParameters
-	= { "<" @TypeParameter ("," @TypeParameter)* ">" #TypeParameters }
-
-TypeParameter
-	= ReferenceType {@ "extends" @ReferenceType ( "&" @ReferenceType)* #SuperTypes }?
-
-TypeArguments
-	= { "<" @TypeArgument ("," @TypeArgument )* ">" #TypeArguments }
-	/ { "<" ">" #Diamond }
-
-TypeArgument
-	= ReferenceType
-	/ { "?" #TWildCard } {@ ("extends" #UpperBound / "super" #LowerBound) @ReferenceType }?
-
-PrimaryType
+IntegralType
 	= { "byte"    #Tbyte }
 	/ { "char"    #Tchar }
 	/ { "short"   #Tshort }
 	/ { "int"     #Tint }
 	/ { "long"    #Tlong }
-	/ { "float"   #Tfloat }
+
+FloatingPointType
+	= { "float"   #Tfloat }
 	/ { "double"  #Tdouble }
-	/ { "boolean" #Tboolean }
+
+BooleanType
+	= { "boolean" #Tboolean }
+
+ReferenceType
+	= ArrayType
+	/ ClassOrInterfaceType
+	/ TypeVariable
+
+ArrayType
+	= (PrimitiveType / ClassOrInterfaceType / TypeVariable) 
+	  {@ (@Annotations)? "[" "]" #Tarray }+
+
+ClassOrInterfaceType
+	= ClassType 
+	/ InterfaceType
+
+/* FIXME
+ * ClassType
+ *  {Annotation} Identifier [TypeArguments]
+ *  ClassOrInterfaceType . {Annotation} Identifier [TypeArguments] */
+	
+ClassType
+	= QualifiedName {@ @TypeArguments #Tparam }?
+
+InterfaceType
+	= ClassType
+
+TypeVariable
+	= { @Annotations @Identifier #Annotated }
+	/ Identifier
+
+TypeParameter
+	= { @Annotations @UnannoTypeParameter #Annotated }
+	/ UnannoTypeParameter
+
+UnannoTypeParameter
+	= Identifier {@ "extends" @ClassOrInterfaceType ( "&" @InterfaceType)* #TypeBound }?
+
+format #TypeBound[*] `$[0] extends $[1] $[2 ` & ` -1]`
+format #TypeArguments[*] `<$[0 `,` -1]>`
+
+TypeParameters
+	= { "<" @TypeParameter ("," @TypeParameter)* ">" #TypeParameters }
+
+TypeArgument
+	= ReferenceType
+	/ { (@Annotations)? "?" #TWildCard } {@ ("extends" #UpperBound / "super" #LowerBound) @ReferenceType }?
+
+TypeArguments
+	= { "<" (@TypeArgument ("," @TypeArgument )*)? ">" #TypeArguments }
+
+
 
 Void
 	= { "void" #Tvoid }
+
+
+TypeOrVoid
+	= Type 
+	/ Void
+
+NonArrayType
+	= ClassOrInterfaceType 
+	/ PrimitiveType
+
+ClassOrInterfaceTypes
+	= { @ClassOrInterfaceType ("," @ClassOrInterfaceType)* #TypeList }
 
 
 // Block, Statement
@@ -546,10 +604,10 @@ Statement
 	/ { "do" @Statement "while" "(" @Expression ")" ";" #DoWhile }
 	/ { "for" "(" (@Expressions)?  ";" (@Expression)? ";" (@Expressions)? ")" @Statement #For }
 	/ { "for" "(" @VariableDeclaration ";" (@Expression)? ";" (@Expressions)? ")" @Statement #For }
-	/ { "for" "(" (@VariableModifiers)? @Type @Name ":" @Expression ")" @Statement #ForEach }
-	/ { "goto" @Name ";" #Goto }
-	/ { "continue" (@Name)? ";" #Continue }
-	/ { "break" (@Name)? ";" #Break }
+	/ { "for" "(" (@VariableModifiers)? @Type @Identifier ":" @Expression ")" @Statement #ForEach }
+	/ { "goto" @Identifier ";" #Goto }
+	/ { "continue" (@Identifier)? ";" #Continue }
+	/ { "break" (@Identifier)? ";" #Break }
 	/ { "return" (@Expression)? ";" #Return }
 	/ { "try" @ResourceStatement @Block ( @CatchBlock)* ( @{ "finally" @Block #Finally })? #Try }
 	/ { "try" @Block (@CatchBlock )* @{ "finally" @Block #Finally } #Try }
@@ -558,7 +616,7 @@ Statement
 	/ { "synchronized" "(" @Expression ")" @Block #Synchronized }
 	/ { "case" @ConstantExpression ":" (!"case" !"default" @Statement)* #SwitchCase }
 	/ { "default" ":" (!"case" @Statement)* #SwitchDefault }
-	/ { @Name ":" #Label }
+	/ { @Identifier ":" #Label }
 	/ { @Expression ";" #ExpressionStatement }
 	/ { ";" #Empty }
 
@@ -567,17 +625,76 @@ ResourceStatement
 	= "(" { @Resource ( ";" @Resource)* #ResourceList } ";"? ")"
 
 Resource
-	= { (@VariableModifiers)? @Type @Name "=" @Expression #Declaration }
+	= { (@VariableModifiers)? @Type @Identifier "=" @Expression #Declaration }
 
 CatchBlock
 	= { "catch" "(" @CatchParameter ")" @Block #Catch }
 
 CatchParameter
-	= { (@VariableModifiers)? @ClassOrInterfaceType @Name ( "|" @Name )* #Declaration }
+	= { (@VariableModifiers)? @ClassOrInterfaceType @Identifier ( "|" @Identifier )* #Declaration }
 
 
-//Expression
-//==========
+/* Expression */
+
+format #Comma[2] `$[0], $[1]`
+format #Assign[2] `$[0] = $[1]`
+format #AssignMul[2] `$[0] *= $[1]`
+format #AssignDiv[2] `$[0] /= $[1]`
+format #AssignMod[2] `$[0] %= $[1]`
+format #AssignAdd[2] `$[0] += $[1]`
+format #AssignSub[2] `$[0] -= $[1]`
+format #AssignLeftShift[2] `$[0] <<= $[1]`
+format #AssignRightShift[2] `$[0] >>= $[1]`
+format #AssignLogicalRightShift[2] `$[0] >>>= $[1]`
+format #AssignBitwiseAnd[2] `$[0] &= $[1]`
+format #AssignBitwiseXOr[2] `$[0] ^= $[1]`
+format #AssignBitwiseOr[2] `$[0] != $[1]`
+format #Conditional[3] `$[0] ? $[1] : $[2]`
+format #LogicalAnd[2] `$[0] && $[1]`
+format #LogicalOr[2] `$[0] || $[1]`
+format #BitwiseOr[2] `($[0] | $[1])`
+format #BitwiseXor[2] `($[0] ^ $[1])`
+format #BitwiseAnd[2] `($[0] & $[1])`
+format #Equals[2] `$[0] == $[1]`
+format #NotEquals[2] `$[0] != $[1]`
+format #LessThanEquals[2] `$[0] <= $[1]`
+format #LessThan[2] `$[0] < $[1]`
+format #GreaterThanEquals[2] `$[0] >= $[1]`
+format #GreaterThan[2] `$[0] > $[1]`
+format #InstanceOf[2] `$[0] instanceof $[1]`
+format #HashIn[2] `$[0] in $[1]`
+format #LeftShift[2] `($[0] << $[1])`
+format #RightShift[2] `($[0] >> $[1])`
+format #LogicalRightShift[2] `($[0] >>> $[1])`
+format #Add[2] `($[0] + $[1])`
+format #Sub[2] `($[0] - $[1])`
+format #Mul[2] `($[0] * $[1])`
+format #Div[2] `($[0] / $[1])`
+format #Mod[2] `($[0] % $[1])`
+
+/* Unary Operator */
+format #PrefixInc[1] `++$[0]`
+format #PrefixDec[1] `--$[0]`
+format #Plus[1] `+$[0]`
+format #Minus[1] `-$[0]`
+format #BitwiseNot[1] `~$[0]`
+format #LogicalNot[1] `!$[0]`
+format #Delete[1] `delete($[0])`
+format #Void[1] `void($[0])`
+format #TypeOf[1] `typeof($[0])`
+format #SuffixInc[1] `$[0]++`
+format #SuffixDec[1] `$[0]--`
+
+/* Primary */
+
+format #This[0] `this`
+format #Array[*] `[$[0 `,` -1]]`
+format #Object[*] `{$[0 `,` -1]}`
+format #Property[2] `$[0]: $[1]`
+format #Field[2] `$[0].$[1]`
+format #Index[2] `$[0][$[1]]`
+format #List[*] `($[0 `, ` -1])`
+
 
 Expression
 	= LambdaExpression
@@ -609,19 +726,19 @@ ConstantExpression
 	= ConditionalExpression
 
 ConditionalExpression
-	= LogicalOrExpression {@ "?"  @Expression ":" @LogicalORExpression #Trinary }*
+	= LogicalOrExpression {@ "?"  @Expression ":" @LogicalOrExpression #Trinary }*
 
 LogicalOrExpression
-	= LogicalAndExpression {@ "||" @LogicalANDExpression #Or }*
+	= LogicalAndExpression {@ "||" @LogicalAndExpression #Or }*
 
 LogicalAndExpression
-	= InclusiveOrExpression {@ "&&" @InclusiveORExpression #And }*
+	= InclusiveOrExpression {@ "&&" @InclusiveOrExpression #And }*
 
 InclusiveOrExpression
-	= ExclusiveOrExpression {@ "|" @ExclusiveORExpression #BitwiseOr }*
+	= ExclusiveOrExpression {@ "|" @ExclusiveOrExpression #BitwiseOr }*
 
 ExclusiveOrExpression
-	= AndExpression {@ "^" @ANDExpression #BitwiseXor }*
+	= AndExpression {@ "^" @AndExpression #BitwiseXor }*
 
 AndExpression
 	= EqualityExpression {@ "&" @EqualityExpression #BitwiseAnd }*
@@ -664,7 +781,7 @@ PostfixExpression
 	= PrimaryExpression {@ (addMethodCall / addInstanceCreation / addIndex / addField / addMethodReference / addInc / addDec ) }*
 
 addMethodCall
-	= "." (@TypeArguments)? @Name @{ "(" addArgumentExpressionList? ")" #List } #Method
+	= "." (@TypeArguments)? @Identifier @{ "(" addArgumentExpressionList? ")" #List } #Method
 
 addInstanceCreation
 	= "." "new" (@TypeArguments)? (@Annotations )? @ClassOrInterfaceType @{ "(" addArgumentExpressionList? ")" #List } ( @ClassBody)? #InstanceCreation
@@ -676,10 +793,10 @@ addIndex
 	= "[" @Expression "]" #Index
 
 addField
-	= "." @Name !'(' #Field
+	= "." @Identifier !'(' #Field
 
 addMethodReference
-	= "::" (@TypeArguments)? @Name #MethodReference
+	= "::" (@TypeArguments)? @Identifier #MethodReference
 
 addInc
 	= "++" #Inc
@@ -699,7 +816,7 @@ public PrimaryExpression
 	/ InstanceCreationExpression
 	/ ArrayCreationExpression
 	/ MethodReference
-	/ Name
+	/ Identifier
 
 This
 	= { "this" #This }
@@ -708,7 +825,7 @@ Super
 	= { "super" #Super }
 
 MethodInvocationExpression
-	= { @Name @{ "(" addArgumentExpressionList? ")" #List } #Method }
+	= { @Identifier @{ "(" addArgumentExpressionList? ")" #List } #Method }
 
 InstanceCreationExpression
 	= { "new" (@TypeArguments)? (@Annotations )? @ClassOrInterfaceType @{ "(" addArgumentExpressionList? ")" #List } ( @ClassBody)? #InstanceCreation }
@@ -718,7 +835,7 @@ ArrayCreationExpression
 	/ { "new" (@Annotations )? @(NonArrayType {@ (@Annotations )? "[" "]" #ArraySize }+ ) @ArrayInitializer #ArrayCreation }
 
 MethodReference
-	= { @ReferenceType "::" (@TypeArguments)? @(Name / { "new" #Name } ) #MethodReference }
+	= { @ReferenceType "::" (@TypeArguments)? @(Identifier / { "new" #Name } ) #MethodReference }
 
 
 
@@ -726,13 +843,13 @@ LambdaExpression
 	= { @LambdaParameters "->" @LambdaBody #Lambda }
 
 LambdaParameters
-	= { ( @Name
+	= { ( @Identifier
 		/ @{ "(" addArgumentExpressionList? ")" #AddArgumentExpressionList }
 		/ "(" @InferredFormalParameterList ")"
 		) #LambdaParameters }
 
 InferredFormalParameterList
-	= { @Name ( "," @Name)* #InferredFormalParameterList }
+	= { @Identifier ( "," @Identifier)* #InferredFormalParameterList }
 
 LambdaBody
 	= Expression
@@ -741,11 +858,17 @@ LambdaBody
 
 /* Identifier */
 
-Name
+format #Name[0] `${text}`
+format #QualifiedName[2] `$[0].$[1]`
+
+//Name
+//	= { NAME #Name } _
+
+Identifier
 	= { NAME #Name } _
 
 QualifiedName
-	= Name {@ "." @Name #QualifiedName }*
+	= Identifier {@ "." @Identifier #QualifiedName }*
 
 W
 	= [a-zA-Z0-9_$]
@@ -771,14 +894,16 @@ format #String[0] `"${text}"`
 format #Character[0] `'${text}'`
 //format #RegExp[0] `${text}`
 
+Literal
+	= FloatingPointLiteral 
+	/ IntegerLiteral 
+	/ BooleanLiteral 
+	/ CharacterLiteral 
+	/ StringLiteral 
+	/ NullLiteral
 
 Constant
-	= FloatLiteral
-	/ IntegerLiteral
-	/ BooleanLiteral
-	/ StringLiteral
-	/ CharLiteral
-	/ NullLiteral
+	= Literal
 
 NullLiteral
 	= { "null" #Null }
@@ -812,7 +937,7 @@ HEX
 INT_SUFFIX
 	= [lL]
 
-FloatLiteral
+FloatingPointLiteral
 	= { FLOAT #Float } FLOAT_SUFFIX? _
 	/ { DECIMAL #Float } FLOAT_SUFFIX _
 
@@ -833,7 +958,7 @@ EXPONENT
 StringLiteral
 	= '"' { STRING_CONTENT* #String } '"' _
 
-CharLiteral
+CharacterLiteral
 	= '\'' { CHAR_CONTENT* #Character } '\'' _
 
 STRING_CONTENT
