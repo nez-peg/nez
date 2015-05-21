@@ -9,6 +9,7 @@ import nez.util.ConsoleUtils;
 public class Verbose {
 	public static final String BugsReport1 = "kimio@ynu.ac.jp";
 	public static boolean General = true;
+	public static boolean Example = false;
 	public static boolean Grammar = false;
 	public static boolean Expression = false;
 	public static boolean VirtualMachine = false;
@@ -22,6 +23,7 @@ public class Verbose {
 	
 	public static void setAll() {
 		General = true;
+		Example = true;
 		Grammar = true;
 		Expression = true;
 		VirtualMachine = true;

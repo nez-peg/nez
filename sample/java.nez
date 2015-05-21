@@ -679,9 +679,9 @@ format #Plus[1] `+$[0]`
 format #Minus[1] `-$[0]`
 format #BitwiseNot[1] `~$[0]`
 format #LogicalNot[1] `!$[0]`
-format #Delete[1] `delete($[0])`
-format #Void[1] `void($[0])`
-format #TypeOf[1] `typeof($[0])`
+//format #Delete[1] `delete($[0])`
+//format #Void[1] `void($[0])`
+//format #TypeOf[1] `typeof($[0])`
 format #SuffixInc[1] `$[0]++`
 format #SuffixDec[1] `$[0]--`
 
@@ -726,7 +726,7 @@ ConstantExpression
 	= ConditionalExpression
 
 ConditionalExpression
-	= LogicalOrExpression {@ "?"  @Expression ":" @LogicalOrExpression #Trinary }*
+	= LogicalOrExpression {@ "?"  @Expression ":" @LogicalOrExpression #Conditional }*
 
 LogicalOrExpression
 	= LogicalAndExpression {@ "||" @LogicalAndExpression #Or }*
@@ -809,7 +809,7 @@ public PrimaryExpression
 	/ This
 	/ Super
 	/ "(" Expression ")"
-	/ { @TypeOrVoid "." "class" #Class }
+	/ ClassLiteral
 	/ { @QualifiedName "." "this" #This }
 	/ { @QualifiedName "." "super" #Super }
 	/ MethodInvocationExpression
@@ -817,6 +817,9 @@ public PrimaryExpression
 	/ ArrayCreationExpression
 	/ MethodReference
 	/ Identifier
+
+ClassLiteral
+	= { @TypeOrVoid  "." "class" #ClassLiteral }
 
 This
 	= { "this" #This }
@@ -838,7 +841,6 @@ MethodReference
 	= { @ReferenceType "::" (@TypeArguments)? @(Identifier / { "new" #Name } ) #MethodReference }
 
 
-
 LambdaExpression
 	= { @LambdaParameters "->" @LambdaBody #Lambda }
 
@@ -854,7 +856,6 @@ InferredFormalParameterList
 LambdaBody
 	= Expression
 	/ Block
-
 
 /* Identifier */
 

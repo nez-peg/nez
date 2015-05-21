@@ -270,8 +270,13 @@ public class NameSpace {
 	
 	final void testExample() {
 		if(exampleList != null) {
+			long t1 = System.nanoTime();
 			for(Example ex : exampleList) {
 				ex.test(this);
+			}
+			long t2 = System.nanoTime();
+			if(Verbose.Example) {
+				Verbose.println("Elapsed time (Example Tests): " + ((t2 - t1) / 10000000) + "ms"); 
 			}
 		}
 	}
@@ -433,8 +438,6 @@ public class NameSpace {
 		return Factory.newLocal(src(), this, Tag.tag(table), newSequence(seq));
 	}
 
-	
-	
 	public final Expression newDefIndent(SourcePosition s) {
 		return Factory.newDefIndent(src());
 	}

@@ -197,7 +197,10 @@ public class CommandConfigure {
 				Verbose.println("recording " + RecorderFileName);
 			}
 			else if(argument.startsWith("--verbose")) {
-				if(argument.equals("--verbose:memo")) {
+				if(argument.equals("--verbose:example")) {
+					Verbose.Example = true;
+				}
+				else if(argument.equals("--verbose:memo")) {
 					Verbose.PackratParsing = true;
 				}
 				else if(argument.equals("--verbose:peg")) {

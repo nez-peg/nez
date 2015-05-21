@@ -1,13 +1,119 @@
 /* Nez format */
  
 public File
-   = { S* (@Statement)* #List }
+   = { S* (@Statement )* #List }
+
+
+
+/* Code Layout  */
+
+_
+   = (S / COMMENT)*
+
+S
+   = [\t\n\r ]
+   / 0xe3 0x80 0x80
+
+COMMENT
+   = '/*' (!('*/') .)* '*/'
+   / '//' (!EOL .)* EOL
+
+EOL
+   = '\n'
+   / '\r' ('\n')?
+   / EOT
+
+EOT
+   = !(.)
+
+/* Operators */
+
+"<" = '<' _
+">" = '>' _
+"," = ',' _
+";" = ';' _
+"=" = '=' _
+"(" = '(' _
+")" = ')' _
+"[" = '[' _
+"]" = ']' _
+"{" = '{' !'@' _
+"}" = '}' _
+"/" = '/' _
+"|" = '|' _ 
+
+/* Keywords */   
+
+"public"   = 'public'   !W _
+"inline"   = 'inline'   !W _
+"import"   = 'import'   !W _
+"from"     = 'from'     !W _
+"grammar"  = 'grammar'  !W _
+"example"  = 'example'  !W _
+"template" = 'template' !W _
+"format"   = 'format'   !W _
+"true"     = 'true'     !W _
+"false"    = 'false'    !W _
+
+"if"       = 'if'       !W _
+"on"       = 'on'       !W _
+"block"    = 'block'    !W _
+"def"      = 'def'      !W _
+"is"       = 'is'       !W _
+"isa"      = 'isa'      !W _
+"exists"   = 'exists'   !W _
+"local"    = 'local'    !W _
+
+/* reserved */
+
+"type"     = 'type'    !W _
+"define"   = 'define'  !W _
+
+KEYWORD
+   = "public"
+   / "inline"
+   / "import"
+   / "from"
+   / "grammar"
+   / "example"
+   / "template"
+   / "format"
+   / "true"
+   / "false"
+   / "define"
+   / "type"
+
+NAME
+   = !KEYWORD LETTER W*
+   
+LETTER
+   = [A-Z_a-z]
+
+W
+   = [0-9A-Z_a-z]
+
+Identifier
+   = { NAME #Name } _
+
+
+/* Statement */
 
 public Statement
-   = ( Document / Example / Import / Format / Production ) _ (';' _)?
+   = Document 
+   / ExampleStatement 
+   / ImportStatement 
+   / FormatStatement 
+   / TemplateStatement 
+   / Production
+
+ImportStatement
+   = { "import" @ImportName "from" @(Character / String) #Import }
+
+ImportName
+   = { ( '*' / NAME ('.' ( '*' / NAME ))? ) #Name } _
 
 Document
-   = { COMMENT (S* COMMENT)* #Comment }
+   = { COMMENT (S* COMMENT)* #Comment } _
 
 /* Production */
 
@@ -37,16 +143,14 @@ public p
 '''
 
 public Production
-   = { (@[2]Qualifers)? @[0](Name / String) _ '=' _ @[1]Expression #Production }
+   = { (@[2]Modifiers)? @[0](Identifier / String) _SKIP_ "=" @[1]Expression #Production }
 
-QUALIFERS
-   = ( 'public' / 'inline' ) !W
+Modifiers
+	= { (@Modifier)* #Sequence }
 
-Qualifers
-   = { (@({ QUALIFERS }) S)* #List }
-
-Name
-   = { NAME #Name }
+Modifier
+	= { "public" `public` }
+	/ { "inline" `inline` }
 
 _SKIP_
    = _ANNOTATION_*
@@ -60,52 +164,54 @@ _DOC_
 /* Expression */
 
 public Expression
-   = Sequence ({@ (_ '/' _ @Sequence)+ #Choice })?
+   = Sequence ({@ ("/" @Sequence)+ #Choice })?
 
 Sequence
-   = Prefix ({@ (_ NOTRULE @Prefix)+ #Sequence })?
+   = Prefix ({@ (/* NOTRULE */ @Prefix)+ #Sequence })?
 
 NOTRULE
-   = !(';' / RuleHead / Import)
+   = !(';' / RuleHead )
 
 RuleHead
-   = { (@[2]Qualifers)? @[0](Name / String) _ _SKIP_ '=' }
+   = { (@[2]Modifiers)? @[0](Identifier / String) _ _SKIP_ '=' }
 
 Prefix
    = { ( '&' #And / '!' #Not / '@[' _ @[1]Integer _ ']' #Link / '@' #Link / '~' #Match ) @[0]Suffix }
    / Suffix
 
 Suffix
-   = Primary ({@ ( '*' (@[1]Integer)? #Repetition / '+' #Repetition1 / '?' #Option ) })?
+   = Primary ({@ ( '*' (@[1]Integer)? #Repetition / '+' #Repetition1 / '?' #Option ) })? _
 
 Integer
    = { INT #Integer }
 
 Primary
-   = Character
+   = { "true" #Empty }
+   / { "false" #Failure }
+   / Character
    / Charset
-   / { '.' #Any }
-   / { '0x' HEX HEX #Byte }
-   / { 'U+' HEX HEX HEX HEX #Byte }
-   / '(' _ Expression _ ')'
+   / { '.' #Any } _
+   / { '0x' HEX HEX #Byte } _
+   / { 'U+' HEX HEX HEX HEX #Byte } _
+   / "(" Expression ")"
    / Constructor
    / Replace
    / Tagging
-   / String
+   / String !"="
    / Extension
-   / NonTerminal
+   / NonTerminal !"="
 
 NonTerminal
-   = { NAME ('.' NAME)? #NonTerminal }
+   = { NAME ('.' NAME)? #NonTerminal } _ 
 
 Character
-   = '\'' { ('\\\'' / '\\\\' / !('\'') .)* #Character } '\''
+   = '\'' { ('\\\'' / '\\\\' / !['\n\r] .)* #Character } '\'' _
 
 String
-   = '"' { ('\\"' / '\\\\' / !('"') .)* #String } '"'
+   = '"' { ('\\"' / '\\\\' / !["\n\r] .)* #String } '"' _
 
 Charset
-   = '[' { (@({ CHAR #Class } ({@ '-' @({ CHAR #Class }) #List })?))* #Class } ']'
+   = '[' { (@({ CHAR #Class } ({@ '-' @({ CHAR #Class }) #List })?))* #Class } ']' _
 
 CHAR
    = '\\u' HEX HEX HEX HEX
@@ -120,40 +226,49 @@ CHAR
    / '\\]'
    / !(']') .
 
+HEX
+   = [0-9A-Fa-f]
+
 Constructor
-   = { '{' ( '@' S #LeftNew / #New ) _ (@Expression _)? '}' }
+   = { ('{@' S #LeftNew / '{' #New ) _ (@Expression)? '}' } _
 
 Tagging
-	= '#' { [0-9A-Za-z] ([.0-9A-Z_a-z])* #Tagging }
+	= '#' { LETTER W* #Tagging } _
 	
 Replace
-   = '`' { ('\\`' / '\\\\' / !('`') .)* #Replace } '`'
+   = '`' { ('\\`' / '\\\\' / ![`\n\r] .)* #Replace } '`' _
 
 Extension
-   = '<' { addExtension } S* '>'
+   = "<" { addExtension } S* ">"
 
 addExtension
-	= 'if' S+ @FlagName #If
-	/ 'on' S+ @FlagName S+ @Expression #On
-	/ 'block' S+ @Expression #Block
-	/ 'def' S+ @TableName S+ @Expression #Def
-	/ 'is' S+ @TableName #Is
-	/ 'isa' S+ @TableName #Isa
-	/ 'exists' S+ @TableName #Exists
-	/ 'local' S+ @TableName S+ @Expression #Local
-	/ 'x' S+ @NonTerminal S+ @NonTerminal S+ @Expression S* (',' S* @NonTerminal S+ @Expression S*)* #Expand
+	= "if"        @FlagName #If
+	/ "on"        @FlagName @Expression #On
+	/ "block"     @Expression #Block
+	/ "def"       @TableName  @Expression #Def
+	/ "is"        @TableName #Is
+	/ "isa"       @TableName #Isa
+	/ "exists"    @TableName #Exists
+	/ "local"     @TableName @Expression #Local
+	/ @Identifier @Expression ("," @Expression)* #Expand
 	/ (!('>') .)+ #Undefined
 
 FlagName
-   = { ('!')? LETTER W* #Name }
+   = { ('!')? LETTER W* #Name } _
 
 TableName
-   = { LETTER W* #Name }
+   = { LETTER W* #Name } _
 
-/* Statement */
+/* Other Statements */
 
-Example
-   = { 'example' S+ ( '!' #Rebut / #Example ) @NonTerminal S+ addInputText }
+TemplateStatement
+	= { "template" @Identifier "<" @TemplateParameter ">" "=" @Expression #Template } _
+
+TemplateParameter
+	= { @Identifier ("," @Identifier)* }
+
+ExampleStatement
+   = { "example" ( '!' #Rebut / #Example ) @NonTerminal addInputText } _
 
 addInputText
    = '\'\'\'' EOL @({ (!('\n' '\'\'\'') .)* }) '\n' '\'\'\''
@@ -161,20 +276,14 @@ addInputText
    / '"""' EOL @({ (!('\n' '"""') .)* }) '\n' '"""'
    / @({ (!EOL .)* }) EOL
 
-Import
-   = { 'import' S+ @ImportName S+ 'from' S+ @(Character / String) #Import }
-
-ImportName
-   = { ( '*' / NAME ('.' ( '*' / NAME ))? ) #Name }
-
-Format
-   = { 'format' S+ '#' @Name '[' _ @FormatSize _ ']' _ '`' @Formatter '`' #Format }
+FormatStatement
+   = { "format" '#' @Identifier "[" @FormatSize "]" '`' @Formatter '`' #Format } _
 
 FormatSize
    = { ( '*' / INT ) #Integer }
 
 Formatter
-   = { #List (!('`') @('${' Name '}' 
+   = { #List (!('`') @('${' Identifier '}' 
    / '$[' _ Index _ ({@ '`' @Formatter '`' _ @Index _ #Format })? ']' 
    / { ( '$$' `$` / '\\`' `\`` 
    / (!('$$' / '${' / '$[' / '\\`' / '`') .)+ ) }))* }
@@ -182,59 +291,9 @@ Formatter
 Index
    = { ('-')? INT #Integer }
 
-
-
-
-
-
-/* Lexical Patterns */
-
-_
-   = (S / COMMENT)*
-
-S
-   = [\t\n\r ]
-   / 0xe3 0x80 0x80
-
-COMMENT
-   = '/*' (!('*/') .)* '*/'
-   / '//' (!EOL .)* EOL
-
-EOL
-   = '\n'
-   / '\r' ('\n')?
-   / EOT
-
-EOT
-   = !(.)
-   
-LETTER
-   = [A-Z_a-z]
-
-W
-   = [0-9A-Z_a-z]
-
-HEX
-   = [0-9A-Fa-f]
-
-NAME
-   = !KEYWORD LETTER W*
-
-KEYWORD
-   = 'public' !W
-   / 'inline' !W
-   / 'import' !W
-   / 'type' !W
-   / 'grammar' !W
-   / 'example' !W
-   / 'format' !W
-   / 'define' !W
-
 INT
    = DIGIT DIGIT*
 
 DIGIT
    = [0-9]
-
-
 
