@@ -93,7 +93,7 @@ public class FSharpGenerator extends SourceGenerator {
 //					nameNode.add(new ModifiableTree(new Tag("Name"), null, 0));
 					parent.set(this.indexOf(node), nameNode);
 				}
-				ModifiableTree scopeNameNode = node.get(2);
+				//ModifiableTree scopeNameNode = node.get(2);
 				node.set(2, new ModifiableTree(Tag.tag("Name"), null, 0, 0, 0, scopeName));
 			} else if(node.get(2).is(this.TAG_LAMBDA_NAME)){
 				//node.get(2).setTag(new Tag("Name"));
@@ -680,7 +680,7 @@ public class FSharpGenerator extends SourceGenerator {
 		this.objFlag = false;
 	}
 	
-	protected void generateScope(FSharpScope fs, boolean isTopLevel){
+	private void generateScope(FSharpScope fs, boolean isTopLevel){
 		this.currentScope = fs;
 		this.prefixName = fs.getPathName();
 		String classType = isTopLevel? "type" : "and";
@@ -766,7 +766,7 @@ public class FSharpGenerator extends SourceGenerator {
 	
 	public void toSource(ModifiableTree node) {
 		this.initialSetting(node);
-		this.generateScope(this.scopeList.get(0), true);
+		this.generateScope(this.scopeList.get(0), true);	//scopeList.get(0) is TOPLEVEL
 		for(int i = 1; i < this.scopeList.size(); i++){
 			this.generateScope(this.scopeList.get(i), false);
 		}

@@ -18,6 +18,9 @@ public class ModifiableTree extends AbstractList<ModifiableTree> implements Sour
 	private Object    value;
 	ModifiableTree     parent = null;
 	private ArrayList<ModifiableTree> subTree = null;
+	public enum Role {
+		
+	}
 
 	public ModifiableTree(Tag tag, Source source, long pos, long epos, int size, Object value) {
 		this.tag        = tag;
