@@ -101,8 +101,16 @@ public class NezParser extends CommonTreeVisitor {
 	}
 	
 	private boolean defineExample(CommonTree node) {
-		Example ex = new Example(node.textAt(0, ""), node.get(1), true);
-		this.loaded.addExample(ex);
+		if(node.size() == 2) {
+			Example ex = new Example(node.textAt(0, ""), node.get(1), true);
+			this.loaded.addExample(ex);
+		}
+		else {
+			Example ex = new Example(node.textAt(0, ""), node.get(2), true);
+			this.loaded.addExample(ex);
+			ex = new Example(node.textAt(1, ""), node.get(2), true);
+			this.loaded.addExample(ex);
+		}
 		return true;
 	}
 

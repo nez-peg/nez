@@ -317,14 +317,15 @@ public class NezCombinator extends ParserCombinator {
 			Tag(NezTag.Import)
 		);
 	}
-
 	
 	public Expression Example() {
 		return New(
 			t("example"), 
 			P("S"), 
 			Choice(Sequence(t("!"), Tag(NezTag.Rebuttal)), Tag(NezTag.Example)),
-			Tag(NezTag.Example), Link(P("NonTerminal")), ZeroMore(c(" \t")), 
+			Tag(NezTag.Example), Link(P("NonTerminal")), 
+			Option(t("&"), Link(P("NonTerminal"))),
+			ZeroMore(c(" \t")), 
 			Choice(
 				Sequence(t("'''"), P("EOL"), Link(New(ZeroMore(NotAny("\n'''")))), t("\n'''")),
 				Sequence(t("```"), P("EOL"), Link(New(ZeroMore(NotAny("\n```")))), t("\n```")),

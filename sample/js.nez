@@ -701,10 +701,10 @@ public BooleanLiteral
     = { "true" #True }
     / { "false" #False }
 
-example NumericLiteral 0x1F
-example NumericLiteral 0123
-example NumericLiteral 0.12
-example NumericLiteral 1234
+example NumericLiteral&Expression 0x1F
+example NumericLiteral&Expression 0123
+example NumericLiteral&Expression 0.12
+example NumericLiteral&Expression 1234
 
 public NumericLiteral
     = HexIntegerLiteral 
@@ -761,7 +761,7 @@ UNICODE_ESCAPE_SEQUUENCE
 
 /* Regular Expression */
 
-example RegularExpressionLiteral /.*(?=#[^\s]*$)/
+example RegularExpressionLiteral&Expression /.*(?=#[^\s]*$)/
 
 public RegularExpressionLiteral
     = { '/' REGEX_BODY '/' REGEX_FLAGS #RegExp }
