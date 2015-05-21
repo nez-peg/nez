@@ -1,0 +1,40 @@
+/**
+ * Comma-Separated Value Grammar
+ * ECMA-404 The JSON Data Interchange Standard.
+ *
+ * Reference: 
+ *  RFC4180 http://tools.ietf.org/html/rfc4180
+ *
+ * Authors:
+ *  K. Kuramitsu 
+ */
+
+example File '''
+Year,Make,Model,Description,Price
+1997,Ford,E350,"ac, abs, moon",3000.00
+1999,Chevy,"Venture ""Extended Edition""","",4900.00
+1999,Chevy,"Venture ""Extended Edition, Very Large""",,5000.00
+1996,Jeep,Grand Cherokee,"MUST SELL!
+air, moon roof, loaded",4799.00
+'''
+
+public File
+	= CommaSeparatedValue
+
+public CommaSeparatedValue
+	= { (@Line)* #CSV }
+
+Line
+	= { @Value (',' @Value)* ( NEWLINE / !. ) #Line }
+	
+Value
+	= '"' { ('""' / (!'"' .))* #Value } '"'
+	/ { (![,\r\n] .)* #Value }
+
+NEWLINE
+	= '\r\n' / '\n'
+
+format #CSV[*] `$[0`${NL}`-1]${NL}`
+format #Line[*] `$[0`,`-1]`
+format #Value[0] `"${text}"`
+ 
