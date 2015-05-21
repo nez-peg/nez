@@ -208,7 +208,7 @@ public abstract class SourceContext extends Context {
 //			URL url = new URL(SourceContext.class.getResource("."), fileName);
 //			System.out.println("url: " + url);
 //			Stream = url.openStream();
-			InputStream Stream = SourceContext.class.getResourceAsStream("/nez/dist/" + fileName);
+			InputStream Stream = SourceContext.class.getResourceAsStream("/nez/lib/" + fileName);
 			BufferedReader reader = new BufferedReader(new InputStreamReader(Stream));
 			StringBuilder builder = new StringBuilder();
 			String line = reader.readLine();

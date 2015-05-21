@@ -7,7 +7,10 @@
 
 File
         = { ((!EMAIL .)* (@{ EMAIL #Email })? )* #List }
-EMAIL
+
+example EMAIL mail@address.com
+
+public EMAIL
         = LOCAL '@' DOMAIN
 LOCAL
         = ([A-Za-z0-9] / '-')+ ('.' LOCAL)?
@@ -15,4 +18,3 @@ DOMAIN
         = SUBDOMAIN ('.' SUBDOMAIN)+
 SUBDOMAIN
         = ([A-Za-z0-9] / '-')+
-

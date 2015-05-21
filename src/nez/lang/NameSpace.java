@@ -159,6 +159,10 @@ public class NameSpace {
 		ArrayList<String> l = new ArrayList<String>();
 		for(String s : this.ruleMap.keys()) {
 			if(s.indexOf(':') > 0) continue;
+			char c = s.charAt(0);
+			if(!Character.isUpperCase(c)) {
+				continue;
+			}
 			l.add(s);
 		}
 		Collections.sort(l);
@@ -268,15 +272,15 @@ public class NameSpace {
 		exampleList.add(ex);
 	}
 	
-	final void testExample() {
+	final void testExample(int option) {
 		if(exampleList != null) {
 			long t1 = System.nanoTime();
 			for(Example ex : exampleList) {
-				ex.test(this);
+				ex.test(this, option);
 			}
 			long t2 = System.nanoTime();
 			if(Verbose.Example) {
-				Verbose.println("Elapsed time (Example Tests): " + ((t2 - t1) / 10000000) + "ms"); 
+				Verbose.println("Elapsed time (Example Tests): " + ((t2 - t1) / 1000000) + "ms"); 
 			}
 		}
 	}

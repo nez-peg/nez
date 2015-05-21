@@ -3,7 +3,7 @@ package nez.main;
 import nez.generator.NezGenerator;
 import nez.generator.ParserGenerator;
 import nez.lang.Grammar;
-import nez.x.NezGrammar;
+import nez.lib.NezGrammar;
 
 public class GeneratorCommand extends Command {
 

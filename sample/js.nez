@@ -10,16 +10,13 @@
  *   Tetsuro Matsumura (https://github.com/tetsurom/)
  *   Sudo Takeru (https://github.com/takerusu)
  *   Kensuke Tamura (https://github.com/kensuketamura)
- *
+ *   Kimio Kuramitsu (
  */
 
 public File
     = { (__ @SourceElement)* __ #Source }
 
-Chunk
-    = { (__ @SourceElement)* __ #Source }
-
-/* Lexical Pattern */
+/* Code Layout : Line-sensitive */
 
 SPACE
     = [\t\v\f \u00A0\uFEFF]
@@ -137,27 +134,30 @@ KEYWORD
     / "implements" / "interface" / "let" / "package" / "private" / "protected" / "public"
     / "static" / "yield" / "null" / "true" / "false"
 
+
 /* Program */
 
+SourceElement
+    = Statement
+/* FIXME   / FunctionDeclaration */
+
+example FunctionDeclaration&SourceElement function func(){}
+example FunctionDeclaration&SourceElement function func(n) { return n+1; }
+
 FunctionDeclaration
-    [example: function func(){}]
-    [example: function func(n){ return n+1; }]
-    = { "function" __ @Identifier __ @FormalParameterList __ @FunctionBody #FuncDecl }
+    = { "function" __ @Identifier __ @FunctionParameterList __ @FunctionBody #FuncDecl }
+
+example FunctionExpression&Expression function(){}
+example FunctionExpression&Expression function(n){ return n+1; }
 
 FunctionExpression
-    [example: function func(){}]
-    [example: function (){}]
-    = { "function" __ (@Identifier __)? @FormalParameterList __ @FunctionBody #FuncDecl }
+    = { "function" __ (@Identifier __)? @FunctionParameterList __ @FunctionBody #FuncDecl }
 
-FormalParameterList
+FunctionParameterList
     = '(' __ { ( @Identifier (__ ',' __ @Identifier)* )? #List } __ ')'
 
 FunctionBody
     = '{' { (__ @SourceElement)* #Block } __ '}'
-
-SourceElement
-    = Statement
-    / FunctionDeclaration
 
 /*Statement*/
 
@@ -183,6 +183,9 @@ format #Return[1]       `return $[0];`
 format #With[2]         `with ($[0]) $[1]`
 format #Label[2]        `$[0]:${NL}$[1]`
 
+example Block {}
+example Block {;}
+
 
 Statement
     = Block
@@ -202,11 +205,8 @@ Statement
     / ThrowStatement
     / TryStatement
     / DebuggerStatement
+    / FunctionDeclaration
     / ExpressionStatement
-
-
-example Block {}
-example Block {;}
 
 public Block
     = FunctionBody
@@ -214,7 +214,6 @@ public Block
 EmptyStatement
     = { ';' #Empty }
 
-example VariableStatement var a = 0, b, c = 1 + 3;
 
 public VariableStatement
     = { "var" __ @VariableDeclarationList EOS #VarDeclStmt }
@@ -228,32 +227,43 @@ inline VariableDeclaration
 inline addInitialiser
     = '=' __ @AssignmentExpression
 
+example VariableStatement&Statement var a = 0, b, c = 1 + 3;
+example ExpressionStatement&Statement (function(){})();
+example ExpressionStatement&Statement !(function(){})();
+example IfStatement&Statement  if(c){;}
+example DoWhileStatement&Statement do{;}while(c)
+example WhileStatement&Statement while(c){;}
+
+example ForStatement&Statement for(;;);
+example ForStatement&Statement for(i=0;i<5;);
+
+example ForStatement&Statement for(;i<5;);
+example ForStatement&Statement for(i=0;i<5;i++);
+example ForStatement&Statement for(var i=0;i<5;i++);
+
+example ForEachStatement&Statement for(k in array);
+example ForEachStatement&Statement for(var k in array){;}
+
+example WithStatement&Statement with(a) { a.f(); }
+
 ExpressionStatement
-    [example: (function(){})();]
-    = !('{' / "function") Expression EOS
+    = !('{' /* FIXME / "function" */) Expression EOS
 
 public IfStatement
-    [example:if(1 + 1){;}]
     = { 'if' __ addCondition __ @Statement (__ "else" __ @Statement)? #If }
 
-
 public DoWhileStatement
-    [example:do{;}while(2 > 1)]
     = { "do" __ @Statement __ 'while' __ addCondition EOS #DoWhile }
 
 public WhileStatement
-    [example:while(1){;}]
     = { 'while' __ addCondition __ @Statement #While }
 
 inline addCondition
     = '(' __ @Expression __ ')'
 
+/* For statement */
+
 public ForStatement
-    [example:for(;;);]
-    [example:for(i=0;i<5;);]
-    [example:for(;i<5;);]
-    [example:for(i=0;i<5;i++);]
-    [example:for(var i=0;i<5;i++);]
     = { 'for' __ '(' __ addForStatementPart __ ')' __ @[3]Statement  }
 
 inline addForStatementPart
@@ -261,8 +271,6 @@ inline addForStatementPart
     / #For <on !InOperator @[0]Expression >? __ ';' __ (@[1]Expression)? __ ';' __ (@[2]Expression)?
 
 public ForEachStatement
-    [example:for(k in array);]
-    [example:for(var k in array){ i += 1;}]
     = { 'for' __ '(' __ addForEachPart __ ')' __ @Statement #JSForeach }
 
 inline addForEachPart
@@ -278,11 +286,23 @@ public BreakStatement
 public ReturnStatement
     = { "return" (_ @Expression)? EOS #Return }
 
+public ThrowStatement
+    = { "throw" _ @Expression EOS #Throw }
+
 public WithStatement
-    [example: with(a) { a.f(); }]
     = { 'with' __ addCondition __ @Statement #With }
 
-inline SwitchStatement
+/* Switch Statement */
+
+example SwitchStatement&Statement '''
+switch(c) {
+	case 1:
+	case 2: break;
+	default: break;
+}
+'''
+
+SwitchStatement
     = { 'switch' __ addCondition __ @CaseBlock #Switch }
 
 inline CaseBlock
@@ -292,36 +312,41 @@ inline addCaseClauses
     = @CaseClause (__ @CaseClause)*
 
 CaseClause
-    [example: case 2: break;]
-    [example: default: break;]
     = { "case" __ @Expression __ ':' __ (@Statement __)* #Case }
     / { 'default' __ ':' __ (@Statement __)* #Default }
 
+
+/* Labeled Statement */
+
+example LabelStatement&Statement '''
+label: 
+var a = 1;
+'''
+
 public LabelledStatement
-    [example: label: var a = 1;]
     = { @Identifier __ ':' __ @Statement #Label }
 
-public ThrowStatement
-    [example: throw new Error()]
-    = { "throw" _ @Expression EOS #Throw }
+/* Try/catch/finally statement */
 
-TryStatement
-    [example: try{}finally{}]
-    [example: try{}catch(e){}]
-    [example: try{}catch(e){}finally{}]
+example TryStatement&Statement try{}finally{}
+example TryStatement&Statement try{}catch(e){}
+example TryStatement&Statement try{}catch(e){}finally{}
+
+
+public TryStatement
     = { "try" __ @[0]Block __ ( @[1]Catch (__ addFinally)?
                               / addFinally ) #Try }
 
 Catch
-    [example: catch(e){}]
     = { @{ 'catch' __ '(' __ @Identifier __ ')' __ @Block #Catch } #List }
 
 addFinally
-    [example: finally{}]
     = "finally" __ @[2]Block
+
 
 DebuggerStatement
     = "debugger" EOS { #Debugger }
+
 
 /* Expression */
 
@@ -379,17 +404,9 @@ format #SuffixDec[1] `$[0]--`
 /* Primary */
 
 format #This[0] `this`
-format #Array[*] `[$[0 `,` -1]]`
-format #Object[*] `{$[0 `,` -1]}`
-format #Property[2] `$[0]: $[1]`
 format #Field[2] `$[0].$[1]`
 format #Index[2] `$[0][$[1]]`
 format #List[*] `($[0 `, ` -1])`
-
-
-
-
-  
 
 public Expression
     = AssignmentExpression {@ __ ',' __ @AssignmentExpression #Comma }*
@@ -482,13 +499,12 @@ addPostfixOperator
 Untyped
     = { `Untyped` #Untyped }
 
-
 LeftHandSideExpression
     = CallExpression
     / NewExpression
 
-example CallExpression func()
-example CallExpression func(1,2,3).a.b.c(2)[1].s
+example CallExpression&Expression func()
+example CallExpression&Expression func(1,2,3).a.b.c(2)[1].s
 
 CallExpression
     = MemberExpression {@ __ addCallOrMemberOperator }*
@@ -505,36 +521,45 @@ inline addArgumentList
     = @AssignmentExpression (__ ',' __ @AssignmentExpression)*
 
 MemberExpression
-    = ReceiverExpression {@ __ addMemberOperator }*
+    = PrimaryExpression {@ __ addMemberOperator }*
 
 inline addMemberOperator
     = '.' __ @IdentifierName #Field
     / '[' __ @Expression __ ']' #Index
 
+/** FIXME
 ReceiverExpression
     = PrimaryExpression 
     / FunctionExpression 
     / NewExpressionWithArgs
+**/
+
+example Expression new Klass
+example Expression new Klass()
+example Expression new Klass(1)
 
 NewExpression
-    [example: new Klass]
     = MemberExpression / { "new" __ @NewExpression #New }
-
-NewExpressionWithArgs
-    [example: new Klass()]
-    [example: new Klass(1)]
-    = { "new" __ @MemberExpression __ @Arguments #New }
 
 public PrimaryExpression
     = ThisExpression
-    / Identifier
+    / '(' __ Expression __ ')'
     / Literal
     / ArrayLiteral
     / ObjectLiteral
-    / '(' __ Expression __ ')'
+    / FunctionExpression
+    / NewExpressionWithArgs
+    / Identifier
 
 public ThisExpression
     = { "this" #This }
+
+NewExpressionWithArgs
+    = { "new" __ @MemberExpression __ @Arguments #New }
+
+/* ArrayLietral */
+
+format #Array[*] `[$[0 `, ` -1]]`
 
 public ArrayLiteral
     = {'[' __ ( (addElisionList __)? ']'  
@@ -552,19 +577,31 @@ inline addElisionList
 inline ElisionExpression
     = ',' { #Undefined }
 
+/* ObjectLiteral */
+
+format #Object[*] `{$[0 `, ` -1]}`
+format #Property[2] `$[0]: $[1]`
+format #GetterProperty[2] `get $[0]() $[1]`
+format #SetterProperty[3] `set $[0]($[1]) $[2]`
+ 
+example ObjectLiteral&Expression {}
+example ObjectLiteral&Expression {a: 1, b: 2}
+example ObjectLiteral&Expression '''
+{
+	a: 1,
+	count: function(){ return n; },
+	get a(){ return _a; },
+	set a(val){ _a = val; }
+}
+'''
+
 public ObjectLiteral
-    [example:{}]
-    [example:{ a: 1, b: 2}]
     = { '{' __ ( addPropertyList __ (',' __)? )? '}' #Object }
 
 inline addPropertyList
     = @PropertyAssignment (__ ',' __ @PropertyAssignment)*
 
 PropertyAssignment
-    [example: a: 1]
-    [example: count: function(){ return n; }]
-    [example: get a(){ return _a; }]
-    [example: set a(val){ _a = val; }]
     = { @PropertyName __ ':' __ @AssignmentExpression #Property }
     / { "get" __ @PropertyName __ '(' __ ')' __ @FunctionBody #GetterProperty }
     / { "set" __ @PropertyName __ '(' __ @Identifier __ ')' __ @FunctionBody #SetterProperty }
@@ -573,12 +610,6 @@ PropertyName
     = StringLiteral
     / NumericLiteral
     / IdentifierName
-
-  
-
-
-
-
 
 /* Identifier */
 

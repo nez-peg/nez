@@ -116,7 +116,7 @@ public class GrammarChecker {
 //				r.removeExpressionFlag(undefedFlags);
 //			}
 //		}
-		grammar.testExample();
+		grammar.testExample(Grammar.ExampleOption);
 	}
 	
 //	void checkPhase1(Expression p, String ruleName, UMap<String> visited, int depth) {

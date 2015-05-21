@@ -6,20 +6,24 @@ import nez.main.Verbose;
 import nez.util.ConsoleUtils;
 
 public class Example {
-	String localName;
-	CommonTree text;
+	CommonTree nameNode;
+	CommonTree textNode;
 	boolean result;
-	Example(String ruleName, CommonTree text, boolean result) {
-		this.localName = ruleName;
-		this.text = text;
+	Example(CommonTree nameNode, CommonTree textNode, boolean result) {
+		this.nameNode = nameNode;
+		this.textNode = textNode;
 		this.result = result;
 	}
 	
-	boolean test(NameSpace grammar) {
-		Grammar p = grammar.newGrammar(this.localName, Grammar.ExampleOption);
-		SourceContext c = text.newSourceContext();
-		String name = (this.result ? "" : "!") + this.localName + 
-				" (" + text.getSource().getResourceName() + ":" + text.getSourcePosition() + ")";
+	boolean test(NameSpace grammar, int option) {
+		Grammar p = grammar.newGrammar(nameNode.getText(), option);
+		if(p == null) {
+			System.out.println(nameNode.formatSourceMessage("error", "undefined nonterminal"));
+			return false;
+		}
+		SourceContext c = textNode.newSourceContext();
+		String name = (this.result ? "" : "!") + nameNode.getText() + 
+				" (" + textNode.getSource().getResourceName() + ":" + textNode.getSourcePosition() + ")";
 //		if(Verbose.Example) {
 //			Verbose.println("testing " + name + "...");
 //		}

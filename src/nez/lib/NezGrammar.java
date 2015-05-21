@@ -1,4 +1,4 @@
-package nez.x;
+package nez.lib;
 
 /* Parsing Expression Grammars for Nez */
 import nez.ParserCombinator;
