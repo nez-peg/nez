@@ -431,15 +431,15 @@ class GrammarOptimizer extends Manipulator {
 //		}
 	}
 	
-	private void flatten(Choice p, UList<Expression> l) {
-		for(Expression e: p) {
-			e = e.reshape(this);
+	private void flatten(Choice parentExpression, UList<Expression> l) {
+		for(Expression subExpression: parentExpression) {
+			subExpression = subExpression.reshape(this);
 //			e = resolveNonTerminal(e);
-			if(e instanceof Choice) {
-				flatten((Choice)e, l);
+			if(subExpression instanceof Choice) {
+				flatten((Choice)subExpression, l);
 			}
 			else {
-				l.add(e);
+				l.add(subExpression);
 			}
 		}
 	}
@@ -463,11 +463,10 @@ class GrammarOptimizer extends Manipulator {
 	}
 
 	@Override
-	public Expression reshapeSequence(Sequence seq) {
-		UList<Expression> l = new UList<Expression>(new Expression[seq.size()]);
-		for(Expression sub: seq) {
-			Expression p = sub.reshape(this);
-			Factory.addSequence(l, p);
+	public Expression reshapeSequence(Sequence parentExpression) {
+		UList<Expression> l = new UList<Expression>(new Expression[parentExpression.size()]);
+		for(Expression subExpression: parentExpression) {
+			Factory.addSequence(l, subExpression.reshape(this));
 		}
 		reorderSequence(l);
 		if(UFlag.is(option, Grammar.Optimization)) {
@@ -478,7 +477,7 @@ class GrammarOptimizer extends Manipulator {
 				l = nl;
 			}
 		}
-		return Factory.newSequence(seq.getSourcePosition(), l);
+		return Factory.newSequence(parentExpression.getSourcePosition(), l);
 	}
 	
 	/**
@@ -594,15 +593,16 @@ class GrammarOptimizer extends Manipulator {
 	}
 	
 	public Expression reshapeLink(Link p) {
-		Expression inner = p.get(0).reshape(this);
-		if(inner instanceof Choice) {
+		if(p.get(0) instanceof Choice) {
+			Expression inner = p.get(0);
 			UList<Expression> l = new UList<Expression>(new Expression[inner.size()]);
-			for(Expression sub: inner) {
-				l.add(Factory.newLink(p.getSourcePosition(), sub, p.index));
-			}
+			for(Expression subChoice: inner) {
+				subChoice = subChoice.reshape(this);
+				l.add(Factory.newLink(p.getSourcePosition(), subChoice, p.index));
+			}			
 			return Factory.newChoice(inner.getSourcePosition(), l);
 		}
-		return update(p, inner);
+		return super.reshapeLink(p);
 	}
 	
 	public static Expression newOptimizedByteMap(SourcePosition s, UList<Expression> l) {

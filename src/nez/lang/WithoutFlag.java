@@ -1,7 +1,5 @@
 package nez.lang;
 
-import java.util.TreeMap;
-
 import nez.ast.SourcePosition;
 import nez.runtime.Instruction;
 import nez.runtime.NezCompiler;

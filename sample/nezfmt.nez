@@ -1,4 +1,5 @@
-/* Nez format */
+/* Gramamr for nezfmt */
+/* Develped by K. Kuramitsu */
  
 public File
    = { S* (@Statement)* #List }
@@ -10,31 +11,6 @@ Document
    = { COMMENT (S* COMMENT)* #Comment }
 
 /* Production */
-
-example Production '''
-public p 
-	= ''
-	/ 'p'
-	/ [Pp]
-	/ [P-p]
-	/ P   /* nonterminal */
-	/ p p
-	/ ( p / p)
-	/ &p
-	/ !p
-	/ { p }
-	/ {@ p }
-	/ @p
-	/ #t
-	/ `p`
-	/ <if P>
-	/ <on P p>
-	/ <block p>
-	/ <def P p>
-	/ <is p>
-	/ <isa p>
-	/ <exists p>
-'''
 
 public Production
    = { (@[2]Qualifers)? @[0](Name / String) _ '=' _ @[1]Expression #Production }
@@ -122,6 +98,7 @@ CHAR
 
 Constructor
    = { '{' ( '@' S #LeftNew / #New ) _ (@Expression _)? '}' }
+   / { '<' ( ('@'/'^') S #LeftNew / !W #New) _ (@Expression _)? '>' }
 
 Tagging
 	= '#' { [0-9A-Za-z] ([.0-9A-Z_a-z])* #Tagging }
@@ -142,6 +119,8 @@ addExtension
 	/ 'exists' S+ @TableName #Exists
 	/ 'local' S+ @TableName S+ @Expression #Local
 	/ 'x' S+ @NonTerminal S+ @NonTerminal S+ @Expression S* (',' S* @NonTerminal S+ @Expression S*)* #Expand
+	/ 'with' S+ @FlagName S+ @Expression #On
+	/ 'without' S+ @FlagName S+ @Expression #Without	
 	/ (!('>') .)+ #Undefined
 
 FlagName
@@ -181,10 +160,6 @@ Formatter
 
 Index
    = { ('-')? INT #Integer }
-
-
-
-
 
 
 /* Lexical Patterns */
