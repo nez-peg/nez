@@ -1,9 +1,69 @@
+/**
+ * JSON Grammar
+ * ECMA-404 The JSON Data Interchange Standard.
+ *
+ * Reference: 
+ *  http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf
+ *  http://rfc7159.net/rfc7159
+ * Authors:
+ *  K. Kuramitsu 
+ */
 
+/* This is a JSON object: */
+
+example Object&Value '''
+{
+     "Image": {
+         "Width":  800,
+         "Height": 600,
+         "Title":  "View from 15th Floor",
+         "Thumbnail": {
+             "Url":    "http://www.example.com/image/481989943",
+             "Height": 125,
+             "Width":  100
+         },
+         "Animated" : false,
+         "IDs": [116, 943, 234, 38793]
+       }
+   }
+'''
+
+/* This is a JSON array containing two objects: */
+
+example Array&Value '''
+[
+     {
+        "precision": "zip",
+        "Latitude":  37.7668,
+        "Longitude": -122.3959,
+        "Address":   "",
+        "City":      "SAN FRANCISCO",
+        "State":     "CA",
+        "Zip":       "94107",
+        "Country":   "US"
+     },
+     {
+        "precision": "zip",
+        "Latitude":  37.371991,
+        "Longitude": -122.026020,
+        "Address":   "",
+        "City":      "SUNNYVALE",
+        "State":     "CA",
+        "Zip":       "94085",
+        "Country":   "US"
+     }
+   ]
+'''
+
+/* Here are three small JSON texts containing only values: */
+
+example String&Value "Hello world!" 
+example Number&Value 42 
+example Value        true
+ 
 File
-	= S* (JSONObject / Array) S*
+	= S* Value S* !.
 
-Chunk
-	= Value S*
 
 /* Tokens */
 
@@ -15,16 +75,10 @@ S = [ \t\n\r]
 "," = ',' S*
 ":" = ':' S*
 
-public Object
-	= { "{" (@Member ("," @Member )* )? "}" #JSON }
+public Expression
+	= Value
 
-Member
-	= { @String S* ":" @Value S* #KeyValue }
-
-Key
-	= String #Key
-
-Value
+public Value
 	= String
 	/ Number
 	/ Object
@@ -34,26 +88,40 @@ Value
 	/ False
 	/ ObjectId
 
+
+
+public Object
+	= { "{" (@Member ("," @Member )* )? "}" #JSON }
+
+Member
+	= { @String ":" @Value #keyvalue }
+
+Key
+	= String
+
 ObjectId 
         = 'ObjectId' '("' { ID #ObjectId } '")'
 
+ID
+        = [0-9a-z]+
+
 Array
-	= { "[" (@Value S* ("," @Value S* )* )? "]" #List }
+	= { "[" (@Value ("," @Value )* )? "]" #List }
 
 String
-	= '"' { ('\\"' / '\\\\' / !'"' .)* #String } '"'
+	= '"' { ('\\"' / '\\\\' / !'"' .)* #String } '"' S*
 
 True
-        = { 'true'  #True }
+        = { 'true'  #True } S*
 
 False
-        = { 'false' #False }
+        = { 'false' #False } S*
 
 Null
-        = { 'null'  #Null }
+        = { 'null'  #Null } S*
 
 Number
-        = { '-'? INT (FRAC EXP? #Float / '' #Integer) }
+        = { '-'? INT (FRAC EXP? #Float / '' #Integer) } S*
 
 INT
 	= '0' / [1-9] DIGIT*
@@ -66,3 +134,14 @@ FRAC
 
 EXP
 	= [Ee] ('-' / '+')? DIGIT+
+	
+format #JSON[*]      `{$[0 `,` -1]}`
+format #keyvalue[2]  `$[0]:$[1]`
+format #List[*]     `[$[0 `,` -1]]`
+format #String[0]    `"${text}"`
+format #Integer[0]   `${text}`
+format #Float[0]     `${text}`
+format #True[0]      `true`
+format #False[0]     `false`
+format #Null[0]      `null`
+format #ObjectId[0]  `ObjectId("$[0]")`

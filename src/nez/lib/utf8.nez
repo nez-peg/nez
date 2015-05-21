@@ -2,7 +2,6 @@
 // ==========
 // Based on The Unicode Standard, Version 5.2 and RFC 3629
 
-
 public ASCII
 	= [\x00-\x7F]
 
