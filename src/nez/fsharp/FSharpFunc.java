@@ -1,20 +1,18 @@
 package nez.fsharp;
 
 
-import nez.ast.CommonTree;
-
 public class FSharpFunc {
 	public String name;
 	public String fullname;
 	public String argsStr;
 	public boolean isMember = false;
 	public int uniqueKey = 0;
-	CommonTree node;
+	ModifiableTree node;
 	
 	public FSharpFunc(String name){
 		this.name = name;
 	}
-	public FSharpFunc(String name, String prefixName, boolean isMember, CommonTree node){
+	public FSharpFunc(String name, String prefixName, boolean isMember, ModifiableTree node){
 		this.name = name;
 		if(isMember){
 			this.fullname = prefixName.substring(0, prefixName.length() - 1) + "0." + name;
@@ -46,7 +44,7 @@ public class FSharpFunc {
 	
 	private void setArgsString(){
 		String argsStr = "";
-		CommonTree argsNode = this.node.get(4);
+		ModifiableTree argsNode = this.node.get(4);
 		if(argsNode.is(JSTag.TAG_LIST)){
 			for(int i = 0; i < argsNode.size(); i++){
 				if(i != 0){

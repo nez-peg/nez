@@ -20,7 +20,7 @@ public class TypeCheckCommand extends Command {
 			SourceContext file = config.getInputSourceContext();
 			file.start(rec);
 //			CommonTree.gcCount = 0;
-			CommonTree node = p.parse(file);
+			ModifiableTree node = (ModifiableTree)(p.parse(file, new ModifiableTreeFactory()));
 			file.done(rec);
 			if(node == null) {
 				ConsoleUtils.println(file.getSyntaxErrorMessage());
@@ -45,11 +45,11 @@ public class TypeCheckCommand extends Command {
 		return null;
 	}
 	
-	private void record(Recorder rec, CommonTree node) {
+	private void record(Recorder rec, ModifiableTree node) {
 		rec.setCount("O.Size", node.count());
 		System.gc();
 		long t1 = System.nanoTime();
-		CommonTree t = node.dup();
+		ModifiableTree t = node.dup();
 		long t2 = System.nanoTime();
 		Recorder.recordLatencyMS(rec, "O.Overhead", t1, t2);
 //		rec.setCount("O.GC", CommonTree.gcCount);

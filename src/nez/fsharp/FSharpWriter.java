@@ -1,7 +1,5 @@
 package nez.fsharp;
 
-import nez.ast.CommonTree;
-
 public class FSharpWriter extends ParsingWriter {
 	
 	static {
@@ -9,7 +7,7 @@ public class FSharpWriter extends ParsingWriter {
 	}
 	
 	@Override
-	protected void write(CommonTree po) {
+	protected void write(ModifiableTree po) {
 		SourceGenerator generator = new FSharpGenerator();
 		generator.visit(po);
 		this.out.println(generator.toString());

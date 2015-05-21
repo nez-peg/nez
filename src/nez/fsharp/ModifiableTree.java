@@ -1,45 +1,48 @@
-package nez.ast;
+package nez.fsharp;
 
 import java.util.AbstractList;
+import java.util.ArrayList;
 
 import nez.SourceContext;
+import nez.ast.Source;
+import nez.ast.SourcePosition;
+import nez.ast.Tag;
 import nez.util.StringUtils;
 
-public class CommonTree extends AbstractList<CommonTree> implements SourcePosition {
-//	public static long gcCount = 0;
-//	protected void finalize() {
-//		//System.out.print(".");
-//		gcCount++;
-//	}
+public class ModifiableTree extends AbstractList<ModifiableTree> implements SourcePosition {
+	
 	private Source    source;
 	private Tag       tag;
 	private long      pos;
 	private int       length;
 	private Object    value;
-	CommonTree     parent = null;
-	private CommonTree     subTree[] = null;
+	ModifiableTree     parent = null;
+	private ArrayList<ModifiableTree> subTree = null;
 
-	public CommonTree(Tag tag, Source source, long pos, long epos, int size, Object value) {
+	public ModifiableTree(Tag tag, Source source, long pos, long epos, int size, Object value) {
 		this.tag        = tag;
 		this.source     = source;
 		this.pos        = pos;
 		this.length     = (int)(epos - pos);
 		if(size > 0) {
-			this.subTree = new CommonTree[size];
+			this.subTree = new ArrayList<ModifiableTree>();
+			for(int i = 0; i < size; i++){
+				subTree.add(null);
+			}
 		}
 		this.value = value;
 	}
 	
-	CommonTree(Tag tag, Source source, long pos, int length, int size, Object value) {
+	ModifiableTree(Tag tag, Source source, long pos, int length, int size, Object value) {
 		this.tag        = tag;
 		this.source     = source;
 		this.pos        = pos;
 		this.length     = length;
-		this.subTree = new CommonTree[size];
+		this.subTree = new ArrayList<ModifiableTree>();
 		this.value = value;
 	}
 
-	CommonTree(Tag tag, Source source, long pos, int length, Object value) {
+	ModifiableTree(Tag tag, Source source, long pos, int length, Object value) {
 		this.tag        = tag;
 		this.source     = source;
 		this.pos        = pos;
@@ -47,24 +50,24 @@ public class CommonTree extends AbstractList<CommonTree> implements SourcePositi
 		this.value = value;
 	}
 
-	public CommonTree dup() {
+	public ModifiableTree dup() {
 		if(this.subTree != null) {
-			CommonTree t = new CommonTree(this.tag, this.source, pos, this.length, this.subTree.length, value);
-			for(int i = 0; i < subTree.length; i++) {
-				if(this.subTree[i]!=null) {
-					t.subTree[i] = this.subTree[i].dup();
+			ModifiableTree t = new ModifiableTree(this.tag, this.source, pos, this.length, this.subTree.size(), value);
+			for(int i = 0; i < subTree.size(); i++) {
+				if(this.subTree.get(i)!=null) {
+					t.subTree.set(i, this.subTree.get(i).dup());
 				}
 			}
 			return t;
 		}
 		else {
-			return new CommonTree(this.tag, this.source, pos, this.length, value);
+			return new ModifiableTree(this.tag, this.source, pos, this.length, value);
 		}
 	}
 
 	public int count() {
 		int c = 1;
-		for(CommonTree t: this) {
+		for(ModifiableTree t: this) {
 			if(t != null) {
 				c += t.count();
 			}
@@ -72,7 +75,7 @@ public class CommonTree extends AbstractList<CommonTree> implements SourcePositi
 		return c;
 	}
 	
-	void link(int index, CommonTree child) {
+	void link(int index, ModifiableTree child) {
 		this.set(index, child);
 	}
 
@@ -84,7 +87,7 @@ public class CommonTree extends AbstractList<CommonTree> implements SourcePositi
 		return this.tag == t;
 	}
 
-	public final CommonTree getParent() {
+	public final ModifiableTree getParent() {
 		return this.parent;
 	}
 
@@ -117,66 +120,35 @@ public class CommonTree extends AbstractList<CommonTree> implements SourcePositi
 		if(this.subTree == null) {
 			return 0;
 		}
-		return this.subTree.length;
+		return this.subTree.size();
 	}
 
 	@Override
-	public final CommonTree get(int index) {
-		return this.subTree[index];
+	public final ModifiableTree get(int index) {
+		return this.subTree.get(index);
 	}
 
-	public final CommonTree get(int index, CommonTree defaultValue) {
+	public final ModifiableTree get(int index, ModifiableTree defaultValue) {
 		if(index < this.size()) {
-			return this.subTree[index];
+			return this.subTree.get(index);
 		}
 		return defaultValue;
 	}
 
 	@Override
-	public final CommonTree set(int index, CommonTree node) {
-		CommonTree oldValue = null;
-//		if(!(index < this.size())){
-//			this.expandAstToSize(index+1);
-//		}
-		oldValue = this.subTree[index];
-		this.subTree[index] = node;
+	public final ModifiableTree set(int index, ModifiableTree node) {
 		node.parent = this;
-		return oldValue;
+		return this.subTree.set(index, node);
 	}
 	
-//	private final void expandAstToSize(int newSize) {
-//		if(newSize > this.size()) {
-//			this.resizeAst(newSize);
-//		}
-//	}
-//
-//	
-//	public final void append(AST childNode) {
-//		int size = this.size();
-//		this.expandAstToSize(size+1);
-//		this.subTree[size] = childNode;
-//		childNode.parent = this;
-//	}
-//	
-//	private void resizeAst(int size) {
-//		if(this.subTree == null && size > 0) {
-//			this.subTree = new CommonTree[size];
-//		}
-//		else if(size == 0){
-//			this.subTree = null;
-//		}
-//		else if(this.subTree.length != size) {
-//			CommonTree[] newast = new CommonTree[size];
-//			if(size > this.subTree.length) {
-//				System.arraycopy(this.subTree, 0, newast, 0, this.subTree.length);
-//			}
-//			else {
-//				System.arraycopy(this.subTree, 0, newast, 0, size);
-//			}
-//			this.subTree = newast;
-//		}
-//	}
-
+	public final void insert(int index, ModifiableTree node){
+		this.subTree.add(index, node);
+	}
+	
+	public final ModifiableTree remove(int index){
+		return this.subTree.remove(index);
+	}
+	
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
@@ -198,13 +170,13 @@ public class CommonTree extends AbstractList<CommonTree> implements SourcePositi
 		else {
 			String nindent = "   " + indent;
 			for(int i = 0; i < this.size(); i++) {
-				if(this.subTree[i] == null) {
+				if(this.subTree.get(i) == null) {
 					sb.append("\n");
 					sb.append(nindent);
 					sb.append("null");
 				}
 				else {
-					this.subTree[i].stringfy(nindent, sb);
+					this.subTree.get(i).stringfy(nindent, sb);
 				}
 			}
 			sb.append("\n");
@@ -234,7 +206,7 @@ public class CommonTree extends AbstractList<CommonTree> implements SourcePositi
 	}
 	
 	public final boolean containsToken(String token) {
-		for(CommonTree sub : this) {
+		for(ModifiableTree sub : this) {
 			if(sub.containsToken(token)) {
 				return true;
 			}
@@ -251,40 +223,13 @@ public class CommonTree extends AbstractList<CommonTree> implements SourcePositi
 		return SourceContext.newStringSourceContext(this.source.getResourceName(), 
 				this.source.linenum(this.getSourcePosition()), this.getText());
 	}
+	
+	public void setValue(Object value){
+		this.value = value;
+	}
+	
+	public void setTag(Tag tag){
+		this.tag = tag;
+	}
 
-//
-//	public final AST findParentNode(int tagName) {
-//		AST node = this;
-//		while(node != null) {
-//			if(node.is(tagName)) {
-//				return node;
-//			}
-//			node = node.parent;
-//		}
-//		return null;
-//	}
-//
-//	public final AST getPath(String path) {
-//		int loc = path.indexOf('#', 1);
-//		if(loc == -1) {
-//			return this.getPathByTag(path);
-//		}
-//		else {
-//			String[] paths = path.split("#");
-//			Main._Exit(1, "TODO: path = " + paths.length + ", " + paths[0]);
-//			return null;
-//		}
-//	}
-//	
-//	private final AST getPathByTag(String tagName) {
-//		int tagId = Tag.tagId(tagName);
-//		for(int i = 0; i < this.size(); i++) {
-//			AST p = this.get(i);
-//			if(p.is(tagId)) {
-//				return p;
-//			}
-//		}
-//		return null;
-//	}
 }
-

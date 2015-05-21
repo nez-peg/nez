@@ -2,13 +2,12 @@ package nez.fsharp;
 
 import java.util.ArrayList;
 
-import nez.ast.CommonTree;
 import nez.ast.Tag;
 
 public class FSharpScope {
 	public String name;
 	public ArrayList<String> path;
-	public CommonTree node;
+	public ModifiableTree node;
 	public ArrayList<FSharpVar> varList;
 	public ArrayList<FSharpFunc> funcList;
 	public FSharpScope parent;
@@ -20,18 +19,18 @@ public class FSharpScope {
 		FUNCTION
 	}
 	public ScopeType type;
-	public ArrayList<CommonTree> returnList;
+	public ArrayList<ModifiableTree> returnList;
 	
 	public FSharpScope(String name){
 		this.name = name;
 	}
 	
-	public FSharpScope(String name, CommonTree node, ArrayList<String> path){
+	public FSharpScope(String name, ModifiableTree node, ArrayList<String> path){
 		this.name = name;
 		this.node = node;
 		this.varList = new ArrayList<FSharpVar>();
 		this.funcList = new ArrayList<FSharpFunc>();
-		this.returnList = new ArrayList<CommonTree>();
+		this.returnList = new ArrayList<ModifiableTree>();
 		this.children = new ArrayList<FSharpScope>();
 		this.path = new ArrayList<String>();
 		//deep copy
@@ -72,12 +71,12 @@ public class FSharpScope {
 		return this.recursive;
 	}
 	
-	private boolean isRecursiveFunc(CommonTree node, String name, boolean result){
+	private boolean isRecursiveFunc(ModifiableTree node, String name, boolean result){
 		boolean res = false;
 		if(node.is(JSTag.TAG_APPLY)){
 			res = this.getFieldText(node.get(0)).contentEquals(name);
 			if(res){
-				node.set(0, new CommonTree(node.get(0).getTag(), node.getSource(), node.getSourcePosition(), node.getSourcePosition() + node.getSource().length(), node.getLength(), "_" + name));
+				node.set(0, new ModifiableTree(node.get(0).getTag(), node.getSource(), node.getSourcePosition(), node.getSourcePosition() + node.getSource().length(), node.getLength(), "_" + name));
 			}
 		} else {
 			res = false;
@@ -85,7 +84,7 @@ public class FSharpScope {
 		if(node.size() >= 1 && !result){
 			for(int i = 0; i < node.size(); i++){
 				if(node.get(i) == null){
-					node.set(i, new CommonTree(Tag.tag("Text"), null, 0, 0, 0, null));
+					node.set(i, new ModifiableTree(Tag.tag("Text"), null, 0, 0, 0, null));
 				} else {
 					result = this.isRecursiveFunc(node.get(i), name, result);
 				}
@@ -97,7 +96,7 @@ public class FSharpScope {
 		return res;
 	}
 	
-	protected String getFieldText(CommonTree node){
+	protected String getFieldText(ModifiableTree node){
 		String result = "";
 		if(node.is(JSTag.TAG_FIELD)){
 			for(int i = 0; i < node.size(); i++){

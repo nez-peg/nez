@@ -1,20 +1,19 @@
 package nez.fsharp;
 
-import nez.ast.CommonTree;
 
 public class FSharpVar {
 	public String name;
 	public String fullname;
 	public FSharpVar parent = null;	
 	public int uniqueKey = 0;
-	CommonTree initialValue;
+	ModifiableTree initialValue;
 	
 	public FSharpVar(String name, String prefixName){
 		this.name = name;
 		this.fullname = prefixName + name;
 	}
 	
-	public FSharpVar(String name, String prefixName, CommonTree initialValue){
+	public FSharpVar(String name, String prefixName, ModifiableTree initialValue){
 		this.name = name;
 		this.fullname = prefixName + name;
 		this.initialValue = initialValue;

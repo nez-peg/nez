@@ -5,14 +5,12 @@ import java.io.PrintWriter;
 import java.io.OutputStreamWriter;
 import java.io.FileOutputStream;
 
-import nez.ast.CommonTree;
-import nez.main.Command;
 import nez.util.UMap;
 
 public abstract class ParsingWriter {
 	protected String fileName = null;
 	protected PrintWriter out = null;
-	public void writeTo(String fileName, CommonTree po) throws IOException {
+	public void writeTo(String fileName, ModifiableTree po) throws IOException {
 		this.fileName = fileName;
 		if(fileName != null) {
 			this.out = new PrintWriter(new OutputStreamWriter(new FileOutputStream(fileName),"UTF-8"));
@@ -27,7 +25,7 @@ public abstract class ParsingWriter {
 		}
 		this.out = null;
 	}
-	protected abstract void write(CommonTree po);
+	protected abstract void write(ModifiableTree po);
 	
 	// data
 	private final static UMap<Class<?>> extClassMap = new UMap<Class<?>>();
@@ -59,7 +57,7 @@ public abstract class ParsingWriter {
 		return null; // default 
 	}
 
-	public final static void writeAs( Class<?> defClass, String fileName, CommonTree po) {
+	public final static void writeAs( Class<?> defClass, String fileName, ModifiableTree po) {
 		ParsingWriter w = newInstance(fileName, defClass);
 		if(w != null) {
 			try {

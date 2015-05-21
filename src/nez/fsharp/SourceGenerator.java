@@ -3,10 +3,7 @@ package nez.fsharp;
 import java.util.ArrayList;
 import java.util.List;
 
-import nez.ast.CommonTree;
-import nez.ast.CommonTreeVisitor;
-
-public class SourceGenerator extends CommonTreeVisitor{
+public class SourceGenerator extends ModifiableTreeVisitor{
 	public String tab = "  ";
 	public String newLine = "\n";
 	public String lineComment = "//";
@@ -28,13 +25,13 @@ public class SourceGenerator extends CommonTreeVisitor{
 	protected SourceBuilder headerBuilder;
 	protected SourceBuilder currentBuilder;
 	
-	protected final void visit(CommonTree node, String prefix, String suffix){
+	protected final void visit(ModifiableTree node, String prefix, String suffix){
 		this.currentBuilder.append(prefix);
 		this.visit(node);
 		this.currentBuilder.append(suffix);
 	}
 
-	protected final void visit(CommonTree node, char prefix, char suffix){
+	protected final void visit(ModifiableTree node, char prefix, char suffix){
 		this.currentBuilder.appendChar(prefix);
 		this.visit(node);
 		this.currentBuilder.appendChar(suffix);
@@ -62,9 +59,9 @@ public class SourceGenerator extends CommonTreeVisitor{
 		this.headerBuilder.appendNewLine("require ", LibName, this.eol);
 	}
 	
-	public void onUnsupported(CommonTree po){
+	public void onUnsupported(ModifiableTree po){
 		System.err.println(this.getClass().getName() + ": Unsupported tag: " + po.getTag().toString());
-		for(CommonTree sub : po){
+		for(ModifiableTree sub : po){
 			this.visit(sub);
 		}
 	}
