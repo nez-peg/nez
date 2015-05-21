@@ -1,5 +1,7 @@
 package nez.fsharp;
 
+import java.io.IOException;
+
 import nez.SourceContext;
 import nez.ast.CommonTree;
 import nez.ast.CommonTreeWriter;
@@ -35,7 +37,11 @@ public class TypeCheckCommand extends Command {
 				//rec.log();
 			}
 			//new CommonTreeWriter().transform(config.getOutputFileName(file), node);
-			new FSharpWriter().write(node);
+			try {
+				new FSharpWriter().writeTo(null, node);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 

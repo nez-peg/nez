@@ -4,7 +4,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 
-import nez.ast.CommonTree;
 import nez.ast.Tag;
 import nez.main.Verbose;
 import nez.util.ConsoleUtils;
@@ -52,7 +51,7 @@ public class ModifiableTreeVisitor {
 	
 	protected Method getClassMethod(String method, Tag tag) throws NoSuchMethodException, SecurityException {
 		String name = method + tag.getName();
-		return this.getClass().getMethod(name, CommonTree.class);
+		return this.getClass().getMethod(name, ModifiableTree.class);
 	}
 	
 	protected Object toUndefinedNode(ModifiableTree node) {

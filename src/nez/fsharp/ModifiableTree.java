@@ -142,7 +142,13 @@ public class ModifiableTree extends AbstractList<ModifiableTree> implements Sour
 	}
 	
 	public final void insert(int index, ModifiableTree node){
+		node.parent = this;
 		this.subTree.add(index, node);
+	}
+	
+	public final boolean add(ModifiableTree node){
+		node.parent = this;
+		return this.subTree.add(node);
 	}
 	
 	public final ModifiableTree remove(int index){
