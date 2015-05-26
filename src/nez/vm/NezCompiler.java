@@ -1,8 +1,5 @@
 package nez.vm;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map.Entry;
 
 import nez.lang.And;
 import nez.lang.AnyChar;
@@ -15,30 +12,21 @@ import nez.lang.DefIndent;
 import nez.lang.DefSymbol;
 import nez.lang.ExistsSymbol;
 import nez.lang.Expression;
-import nez.lang.GrammarFactory;
 import nez.lang.Grammar;
 import nez.lang.IsIndent;
 import nez.lang.IsSymbol;
 import nez.lang.Link;
 import nez.lang.LocalTable;
-import nez.lang.GrammarReshaper;
 import nez.lang.New;
 import nez.lang.NonTerminal;
 import nez.lang.Not;
 import nez.lang.Option;
-import nez.lang.Prediction;
-import nez.lang.Production;
 import nez.lang.Repetition;
 import nez.lang.Repetition1;
 import nez.lang.Replace;
-import nez.lang.Sequence;
 import nez.lang.Tagging;
-import nez.main.Verbose;
-import nez.util.ConsoleUtils;
-import nez.util.StringUtils;
 import nez.util.UFlag;
 import nez.util.UList;
-import nez.util.UMap;
 
 public abstract class NezCompiler {
 	final int option;

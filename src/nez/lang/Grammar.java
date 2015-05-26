@@ -35,7 +35,6 @@ public class Grammar {
 		if(conditionMap.size() > 0) {
 			new ConditionalAnalysis(this);
 		}
-		//new GrammarOptimizer(option).optimize(this);
 	}
 
 	public Production getStartProduction() {
@@ -138,7 +137,7 @@ public class Grammar {
 	}
 	
 	public NezCompiler cc() {
-		NezCompiler bc = new DeprecatedNezCompiler(this.option);
+		NezCompiler bc = new NezCompiler1(this.option);
 		bc.encode(this);
 		return bc;
 	}

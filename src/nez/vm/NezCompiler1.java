@@ -101,7 +101,7 @@ public class NezCompiler1 extends NezCompiler {
 		initCodeMap(grammar);
 		UList<Instruction> codeList = new UList<Instruction>(new Instruction[64]);
 		Production start = grammar.getStartProduction();
-		this.encodeProduction(codeList, start, new IExit(true));
+		this.encodeProduction(codeList, start, new IRet(start));
 		for(Production p : grammar.getProductionList()) {
 			if(p != start) {
 				this.encodeProduction(codeList, p, new IRet(p));
@@ -110,9 +110,6 @@ public class NezCompiler1 extends NezCompiler {
 		for(Instruction inst : codeList) {
 			if(inst instanceof ICallPush) {
 				ProductionCode deref = this.codeMap.get(((ICallPush) inst).rule.getUniqueName());
-				if(deref == null) {
-					System.out.println("no code map: " + ((ICallPush) inst).rule.getUniqueName());
-				}
 				((ICallPush) inst).setResolvedJump(deref.codePoint);
 			}
 		}
