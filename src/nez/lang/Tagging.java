@@ -2,9 +2,9 @@ package nez.lang;
 
 import nez.ast.SourcePosition;
 import nez.ast.Tag;
-import nez.runtime.Instruction;
-import nez.runtime.NezCompiler;
 import nez.util.StringUtils;
+import nez.vm.Instruction;
+import nez.vm.NezCompiler;
 
 public class Tagging extends ASTOperation {
 	public Tag tag;

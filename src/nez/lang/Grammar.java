@@ -8,17 +8,17 @@ import nez.ast.CommonTreeFactory;
 import nez.ast.ParsingFactory;
 import nez.main.Recorder;
 import nez.main.Verbose;
-import nez.runtime.Instruction;
-import nez.runtime.Machine;
-import nez.runtime.MemoPoint;
-import nez.runtime.MemoTable;
-import nez.runtime.NezCompiler;
-import nez.runtime.DeprecatedNezCompiler;
-import nez.runtime.NezCompiler1;
 import nez.util.ConsoleUtils;
 import nez.util.UFlag;
 import nez.util.UList;
 import nez.util.UMap;
+import nez.vm.DeprecatedNezCompiler;
+import nez.vm.Instruction;
+import nez.vm.Machine;
+import nez.vm.MemoPoint;
+import nez.vm.MemoTable;
+import nez.vm.NezCompiler;
+import nez.vm.NezCompiler1;
 
 public class Grammar {
 	Production start;

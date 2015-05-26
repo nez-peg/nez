@@ -1,8 +1,8 @@
 package nez.lang;
 
 import nez.ast.SourcePosition;
-import nez.runtime.Instruction;
-import nez.runtime.NezCompiler;
+import nez.vm.Instruction;
+import nez.vm.NezCompiler;
 
 public class Empty extends Unconsumed {
 	Empty(SourcePosition s) {

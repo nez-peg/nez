@@ -10,8 +10,8 @@ import java.net.URL;
 
 import nez.io.FileContext;
 import nez.io.StringContext;
-import nez.runtime.Context;
 import nez.util.StringUtils;
+import nez.vm.Context;
 
 public abstract class SourceContext extends Context {
 	
