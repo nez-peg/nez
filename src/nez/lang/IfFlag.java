@@ -28,7 +28,7 @@ public class IfFlag extends Unconsumed {
 		return predicate ? "if " + this.flagName : "if !" + this.flagName;
 	}
 	@Override
-	public Expression reshape(Manipulator m) {
+	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeIfFlag(this);
 	}
 

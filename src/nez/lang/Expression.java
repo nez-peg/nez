@@ -50,7 +50,7 @@ public abstract class Expression extends AbstractList<Expression> {
 		return 0;
 	}
 	
-	public abstract Expression reshape(Manipulator m);
+	public abstract Expression reshape(GrammarReshaper m);
 	
 	public final boolean isAlwaysConsumed() {
 		return this.checkAlwaysConsumed(null, null, null);

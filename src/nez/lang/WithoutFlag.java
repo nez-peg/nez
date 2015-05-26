@@ -49,7 +49,7 @@ public class WithoutFlag extends Unary {
 		this.inner.examplfy(gep, sb, p);
 	}
 	@Override
-	public Expression reshape(Manipulator m) {
+	public Expression reshape(GrammarReshaper m) {
 		// TODO Auto-generated method stub
 		return null;
 	}

@@ -19,7 +19,7 @@ public class Capture extends ASTOperation {
 		return shift == 0 ? "}" : "}["+shift+"]";
 	}
 	@Override
-	public Expression reshape(Manipulator m) {
+	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeCapture(this);
 	}
 

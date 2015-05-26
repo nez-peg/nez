@@ -2,7 +2,7 @@ package nez.lang;
 
 import nez.util.StringUtils;
 
-public class NameAnalysis extends Manipulator {
+public class NameAnalysis extends GrammarReshaper {
 	// <applay Statement Expr Expr>
 	// <any ![e]> i'hello'
 	
@@ -46,7 +46,7 @@ public class NameAnalysis extends Manipulator {
 	}
 }
 
-class StructualAnalysis extends Manipulator {
+class StructualAnalysis extends GrammarReshaper {
 
 	//New
 //	@Override void checkPhase2(GrammarChecker checker) {

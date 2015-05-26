@@ -65,7 +65,7 @@ public class NonTerminal extends Expression {
 		return getUniqueName();
 	}
 	@Override
-	public Expression reshape(Manipulator m) {
+	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeNonTerminal(this);
 	}
 	

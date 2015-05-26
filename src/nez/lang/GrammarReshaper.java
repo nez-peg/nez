@@ -2,13 +2,9 @@ package nez.lang;
 
 import nez.util.UList;
 
-public class Manipulator {
-	public final static Manipulator RemoveASTandRename = new ASTConstructionEliminator(true);
-	public final static Manipulator RemoveAST = new ASTConstructionEliminator(false);
-
-	public Expression reshapeUndefined(Expression e) {
-		return e;
-	}
+public class GrammarReshaper {
+	public final static GrammarReshaper RemoveASTandRename = new ASTConstructionEliminator(true);
+	public final static GrammarReshaper RemoveAST = new ASTConstructionEliminator(false);
 
 	public Expression reshapeProduction(Production p) {
 		return p.getExpression().reshape(this);
@@ -61,78 +57,61 @@ public class Manipulator {
 		}
 		for(int j = i; j < e.size(); j++) {
 			GrammarFactory.addSequence(l, e.get(j).reshape(this));
-			l.add(e.get(i));
 		}
 		return GrammarFactory.newSequence(e.s, l);
 	}
 
 	public Expression reshapeChoice(Choice e) {
-		UList<Expression> l = e.newList();
+		int i = 0;
 		boolean updated = false;
-		for(Expression s: e) {
-			Expression ns = s.reshape(this);
-			if(s != ns) {
+		for(i = 0; i < e.size(); i++) {
+			Expression s = e.get(i);
+			Expression r = s.reshape(this);
+			if(r != s) {
 				updated = true;
+				break;
 			}
-			GrammarFactory.addChoice(l, ns);
 		}
-		if(updated) {
-			return GrammarFactory.newChoice(e.s, l);
+		if(!updated) {
+			return e;
 		}
-		return e;
+		UList<Expression> l = e.newList();
+		for(int j = 0; j < i; j++) {
+			l.add(e.get(j));
+		}
+		for(int j = i; j < e.size(); j++) {
+			GrammarFactory.addChoice(l, e.get(j).reshape(this));
+		}
+		return GrammarFactory.newChoice(e.s, l);
 	}
 
 	public Expression reshapeOption(Option e) {
 		Expression inner = e.get(0).reshape(this);
-		if(!e.isInterned()) {
-			e.inner = inner;
-			return e;
-		}
 		return updateInner(e, inner);
 	}
 
 	public Expression reshapeRepetition(Repetition e) {
 		Expression inner = e.get(0).reshape(this);
-		if(!e.isInterned()) {
-			e.inner = inner;
-			return e;
-		}
 		return updateInner(e, inner);
 	}
 
 	public Expression reshapeRepetition1(Repetition1 e) {
 		Expression inner = e.get(0).reshape(this);
-		if(!e.isInterned()) {
-			e.inner = inner;
-			return e;
-		}
 		return updateInner(e, inner);
 	}
 
 	public Expression reshapeAnd(And e) {
 		Expression inner = e.get(0).reshape(this);
-		if(!e.isInterned()) {
-			e.inner = inner;
-			return e;
-		}
 		return updateInner(e, inner);
 	}
 
 	public Expression reshapeNot(Not e) {
 		Expression inner = e.get(0).reshape(this);
-		if(!e.isInterned()) {
-			e.inner = inner;
-			return e;
-		}
 		return updateInner(e, inner);
 	}
 
 	public Expression reshapeMatch(Match e) {
 		Expression inner = e.get(0).reshape(this);
-		if(!e.isInterned()) {
-			e.inner = inner;
-			return e;
-		}
 		return updateInner(e, inner);
 	}
 
@@ -142,10 +121,6 @@ public class Manipulator {
 
 	public Expression reshapeLink(Link e) {
 		Expression inner = e.get(0).reshape(this);
-		if(!e.isInterned()) {
-			e.inner = inner;
-			return e;
-		}
 		return updateInner(e, inner);
 	}
 
@@ -163,28 +138,16 @@ public class Manipulator {
 	
 	public Expression reshapeBlock(Block e) {
 		Expression inner = e.get(0).reshape(this);
-		if(!e.isInterned()) {
-			e.inner = inner;
-			return e;
-		}
 		return updateInner(e, inner);
 	}
 
 	public Expression reshapeLocalTable(LocalTable e) {
 		Expression inner = e.get(0).reshape(this);
-		if(!e.isInterned()) {
-			e.inner = inner;
-			return e;
-		}
 		return updateInner(e, inner);
 	}
 
 	public Expression reshapeDefSymbol(DefSymbol e) {
 		Expression inner = e.get(0).reshape(this);
-		if(!e.isInterned()) {
-			e.inner = inner;
-			return e;
-		}
 		return updateInner(e, inner);
 	}
 
@@ -206,12 +169,13 @@ public class Manipulator {
 	
 	public Expression reshapeOnFlag(OnFlag e) {
 		Expression inner = e.get(0).reshape(this);
-		if(!e.isInterned()) {
-			e.inner = inner;
-			return e;
-		}
 		return updateInner(e, inner);
 	}
+	
+	public Expression reshapeUndefined(Expression e) {
+		return e;
+	}
+
 
 	protected final Expression empty(Expression e) {
 		return GrammarFactory.newEmpty(null);
@@ -300,7 +264,7 @@ public class Manipulator {
 	}
 }
 
-class ASTConstructionEliminator extends Manipulator {
+class ASTConstructionEliminator extends GrammarReshaper {
 	boolean renaming ;
 	ASTConstructionEliminator(boolean renaming) {
 		this.renaming = renaming;
@@ -356,5 +320,5 @@ class ASTConstructionEliminator extends Manipulator {
 	public Expression reshapeCapture(Capture e) {
 		return empty(e);
 	}
-	
+		
 }

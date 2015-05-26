@@ -1,7 +1,7 @@
 package nez.runtime;
 
-import nez.lang.Manipulator;
+import nez.lang.GrammarReshaper;
 
-public class DFactoring extends Manipulator {
+public class DFactoring extends GrammarReshaper {
 
 }

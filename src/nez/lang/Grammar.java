@@ -43,7 +43,7 @@ public class Grammar {
 		TreeMap<String, Boolean> conditionMap = new TreeMap<String, Boolean>(); 
 		analyze(start, conditionMap);
 		if(!UFlag.is(option, Grammar.ASTConstruction)) {
-			reshapeAll(Manipulator.RemoveAST);
+			reshapeAll(GrammarReshaper.RemoveAST);
 		}
 		if(conditionMap.size() > 0) {
 			new ConditionalAnalysis(this);
@@ -60,7 +60,7 @@ public class Grammar {
 		return this.productionList;
 	}
 
-	void reshapeAll(Manipulator m) {
+	void reshapeAll(GrammarReshaper m) {
 		for(Production p: productionList) {
 			GProduction gp = this.productionMap.get(p.getUniqueName());
 			gp.e = gp.e.reshape(m);
@@ -396,7 +396,7 @@ public class Grammar {
 	}
 }
 
-class GrammarOptimizer extends Manipulator {
+class GrammarOptimizer extends GrammarReshaper {
 
 	int option;
 	Grammar grammar = null;

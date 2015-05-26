@@ -21,7 +21,7 @@ import nez.lang.IsIndent;
 import nez.lang.IsSymbol;
 import nez.lang.Link;
 import nez.lang.LocalTable;
-import nez.lang.Manipulator;
+import nez.lang.GrammarReshaper;
 import nez.lang.New;
 import nez.lang.NonTerminal;
 import nez.lang.Not;

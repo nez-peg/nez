@@ -5,7 +5,7 @@ import java.util.TreeMap;
 
 import nez.util.UMap;
 
-class ConditionalAnalysis extends Manipulator {
+class ConditionalAnalysis extends GrammarReshaper {
 	Map<String, Boolean> undefedFlags;
 	ConditionalAnalysis(Grammar g) {
 		undefedFlags = new TreeMap<String, Boolean> ();

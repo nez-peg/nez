@@ -41,7 +41,7 @@ public class LocalTable extends Unary {
 	}
 
 	@Override
-	public Expression reshape(Manipulator m) {
+	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeLocalTable(this);
 	}
 	

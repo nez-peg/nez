@@ -42,7 +42,7 @@ public class ExistsSymbol extends Expression {
 		return this.getPredicate();
 	}
 	@Override
-	public Expression reshape(Manipulator m) {
+	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeExistsSymbol(this);
 	}
 	

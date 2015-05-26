@@ -15,7 +15,7 @@ public class Block extends Unary {
 		return "block";
 	}
 	@Override
-	public Expression reshape(Manipulator m) {
+	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeBlock(this);
 	}
 

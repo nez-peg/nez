@@ -33,7 +33,7 @@ public class DefIndent extends Unconsumed {
 		sb.append(token);
 	}
 	@Override
-	public Expression reshape(Manipulator m) {
+	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeUndefined(this);
 	}
 

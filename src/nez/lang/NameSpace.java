@@ -169,7 +169,7 @@ public class NameSpace extends GrammarFactory {
 		return l;
 	}
 	
-	public Production newReducedProduction(String localName, Production p, Manipulator m) {
+	public Production newReducedProduction(String localName, Production p, GrammarReshaper m) {
 		Production r = p.newProduction(localName);
 		this.ruleMap.put(localName, r);
 		m.updateProductionAttribute(p, r);
