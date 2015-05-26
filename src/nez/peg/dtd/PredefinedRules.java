@@ -1,6 +1,7 @@
 package nez.peg.dtd;
 
 import nez.lang.Expression;
+import nez.lang.GrammarFactory;
 import nez.lang.NameSpace;
 
 public class PredefinedRules {
@@ -38,16 +39,19 @@ public class PredefinedRules {
 	}
 
 
-	void defToplevel() {
+	final void defToplevel() {
 		grammar.defineProduction(null, "Toplevel", grammar.newNonTerminal("Document"));
 	}
-	void defChunk() {
+
+	final void defChunk() {
 		grammar.defineProduction(null, "Chunk", grammar.newNonTerminal("Document"));
 	}
-	void defFile() {
+
+	final void defFile() {
 		grammar.defineProduction(null, "File", grammar.newNonTerminal("Document"));
 	}
-	void defDocument() {
+
+	final void defDocument() {
 		Expression[] l = {
 				grammar.newOption(grammar.newNonTerminal("PROLOG")),
 				grammar.newRepetition(grammar.newNonTerminal("MISC")),
@@ -58,7 +62,8 @@ public class PredefinedRules {
 		};
 		grammar.defineProduction(null, "Document", grammar.newSequence(l));
 	}
-	void defProlog() {
+
+	final void defProlog() {
 		Expression[] l = {
 				grammar.newString("<?xml"),
 				grammar.newRepetition(grammar.newNonTerminal("S")),
@@ -68,7 +73,8 @@ public class PredefinedRules {
 		};
 		grammar.defineProduction(null, "PROLOG", grammar.newSequence(l));
 	}
-	void defDoctype() {
+
+	final void defDoctype() {
 		Expression[] l = {
 				grammar.newString("<!DOCTYPE"),
 				grammar.newRepetition(grammar.newNonTerminal("S")),
@@ -82,7 +88,8 @@ public class PredefinedRules {
 		};
 		grammar.defineProduction(null, "DOCTYPE", grammar.newSequence(l));
 	}
-	void defContent() {
+
+	final void defContent() {
 		Expression choice = grammar.newChoice(grammar.newNonTerminal("RootElement"),
 				grammar.newNonTerminal("COMMENT"));
 		Expression[] l = {
@@ -91,14 +98,16 @@ public class PredefinedRules {
 		};
 		grammar.defineProduction(null, "Content", grammar.newSequence(l));
 	}
-	void defName() {
+
+	final void defName() {
 		Expression[] l = {
-				grammar.newCharSet(null, "A-Za-z_:"),
-				grammar.newRepetition(grammar.newCharSet(null, "-A-Za-z0-9:._"))
+				GrammarFactory.newCharSet(null, "A-Za-z_:"),
+				grammar.newRepetition(GrammarFactory.newCharSet(null, "-A-Za-z0-9:._"))
 		};
 		grammar.defineProduction(null, "NAME", grammar.newSequence(l));
 	}
-	void defString() {
+
+	final void defString() {
 		Expression[] l = {
 				grammar.newByteChar('"'),
 				grammar.newRepetition(grammar.newNot(grammar.newByteChar('"')),
@@ -107,7 +116,8 @@ public class PredefinedRules {
 		};
 		grammar.defineProduction(null, "STRING", grammar.newSequence(l));
 	}
-	void defNameToken() {
+
+	final void defNameToken() {
 		Expression[] l = {
 				grammar.newByteChar('"'),
 				grammar.newNonTerminal("NAME"),
@@ -115,23 +125,22 @@ public class PredefinedRules {
 		};
 		grammar.defineProduction(null, "NMTOKEN", grammar.newSequence(l));
 	}
-	void defIdToken() {
+
+	final void defIdToken() {
 		Expression[] l = {
-				grammar.newRepetition(grammar.newCharSet(null, "-A-Za-z0-9:._")),
-				grammar.newCharSet(null, "-A-Za-z0-9:._"),
+				grammar.newRepetition(GrammarFactory.newCharSet(null, "-A-Za-z0-9:._")),
+				GrammarFactory.newCharSet(null, "-A-Za-z0-9:._"),
 		};
 		grammar.defineProduction(null, "IDTOKEN", grammar.newSequence(l));
 	}
-	void defText() {
-		Expression onemoreExpr = grammar
-				.newSequence(grammar.newNot(grammar.newCharSet(null, "<&")), grammar.newAnyChar());
-		Expression[] l = {
-				onemoreExpr,
-				grammar.newRepetition(onemoreExpr)
-		};
-		grammar.defineProduction(null, "TEXT", grammar.newSequence(l));
+
+	final void defText() {
+		Expression onemoreExpr = grammar.newSequence(
+				grammar.newNot(GrammarFactory.newCharSet(null, "<&")), grammar.newAnyChar());
+		grammar.defineProduction(null, "TEXT", GrammarFactory.newRepetition1(null, onemoreExpr));
 	}
-	void defAttribute() {
+
+	final void defAttribute() {
 		Expression[] l = {
 				grammar.newNonTerminal("NAME"),
 				grammar.newRepetition(grammar.newNonTerminal("S")),
@@ -141,7 +150,8 @@ public class PredefinedRules {
 		};
 		grammar.defineProduction(null, "ATTRIBUTE", grammar.newSequence(l));
 	}
-	void defCDATASECT() {
+
+	final void defCDATASECT() {
 		Expression[] l = {
 				grammar.newString("<![CDATA["),
 				grammar.newRepetition(grammar.newNot(grammar.newString("]]>")),
@@ -150,11 +160,13 @@ public class PredefinedRules {
 		};
 		grammar.defineProduction(null, "CDATASECT", grammar.newSequence(l));
 	}
-	void defMISC() {
+
+	final void defMISC() {
 		grammar.defineProduction(null, "MISC",
 				grammar.newChoice(grammar.newNonTerminal("S"), grammar.newNonTerminal("COMMENT")));
 	}
-	void defCOMMENT() {
+
+	final void defCOMMENT() {
 		Expression[] l = {
 				grammar.newString("<!--"),
 				grammar.newRepetition(grammar.newNot(grammar.newString("-->")),
@@ -163,10 +175,12 @@ public class PredefinedRules {
 		};
 		grammar.defineProduction(null, "COMMENT", grammar.newSequence(l));
 	}
-	void defEMPTY() {
+
+	final void defEMPTY() {
 		grammar.defineProduction(null, "EMPTY", grammar.newRepetition(grammar.newNonTerminal("S")));
 	}
-	void defANY() {
+
+	final void defANY() {
 		Expression[] l = {
 				grammar.newRepetition(grammar.newNonTerminal("S")),
 				grammar.newNonTerminal("TEXT"),
@@ -174,19 +188,24 @@ public class PredefinedRules {
 		};
 		grammar.defineProduction(null, "ANY", grammar.newSequence(l));
 	}
-	void defSpacing(){
-		grammar.defineProduction(null, "S", grammar.newCharSet(null, " \t\r\n"));
+
+	final void defSpacing() {
+		Expression e = GrammarFactory.newCharSet(null, " \t\r\n");
+		grammar.defineProduction(null, "S", GrammarFactory.newRepetition(null, e));
 	}
-	void defENDTAG() {
+
+	final void defENDTAG() {
 		Expression l = grammar.newChoice(grammar.newAnd(grammar.newByteChar('>')),
 				grammar.newAnd(grammar.newString("/>")));
 		grammar.defineProduction(null, "ENDTAG", l);
 	}
-	void defNotAny() {
+
+	final void defNotAny() {
 		Expression l = grammar.newNot(grammar.newAnyChar());
 		grammar.defineProduction(null, "NotAny", l);
 	}
-	void defPCDATA() {
+
+	final void defPCDATA() {
 		Expression[] l = {
 				grammar.newNonTerminal("TEXT"),
 				grammar.newSequence(grammar.newByteChar('&'), grammar.newNonTerminal("entity"),
@@ -194,7 +213,8 @@ public class PredefinedRules {
 		};
 		grammar.defineProduction(null, "PCDATA", grammar.newChoice(l));
 	}
-	void defRootElement(){
+
+	final void defRootElement() {
 		String rootElementName = "Element_" + this.rootElement;
 		grammar.defineProduction(null, "RootElement", grammar.newNonTerminal(rootElementName));
 	}
