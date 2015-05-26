@@ -1,5 +1,7 @@
 package nez.fsharp;
 
+import nez.fsharp.FSharpScope.ScopeType;
+
 
 public class FSharpFunc {
 	public String name;
@@ -21,6 +23,17 @@ public class FSharpFunc {
 		}
 		this.isMember = isMember;
 		this.node = node;
+		this.setArgsString();
+	}
+	public FSharpFunc(FSharpScope scope){
+		this.name = scope.getScopeName();
+		this.fullname = scope.getFullname();
+		this.node = scope.node;
+		if(scope.parent.type == ScopeType.OBJECT){
+			this.isMember = true;
+		} else {
+			this.isMember = false;
+		}
 		this.setArgsString();
 	}
 	

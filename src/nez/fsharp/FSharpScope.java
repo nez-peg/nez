@@ -25,19 +25,41 @@ public class FSharpScope {
 		this.name = name;
 	}
 	
-	public FSharpScope(String name, ModifiableTree node, ArrayList<String> path){
+	public FSharpScope(String name, ModifiableTree node, FSharpScope parentScope){
 		this.name = name;
 		this.node = node;
+		this.parent = parentScope;
 		this.varList = new ArrayList<FSharpVar>();
 		this.funcList = new ArrayList<FSharpFunc>();
 		this.returnList = new ArrayList<ModifiableTree>();
 		this.children = new ArrayList<FSharpScope>();
-		this.path = new ArrayList<String>();
-		//deep copy
-		for(int i = 0; i < path.size(); i++){
-			this.path.add(path.get(i));
+		if(parentScope != null){
+			this.path = parentScope.getInnerPath();
+		} else {
+			this.path = new ArrayList<String>();
 		}
 		this.recursive = this.isRecursiveFunc(this.node, this.name, false);
+		if(node.is(JSTag.TAG_FUNC_DECL)){
+			this.type = ScopeType.FUNCTION;
+		} else if(node.is(JSTag.TAG_OBJECT)){
+			this.type = ScopeType.OBJECT;
+		}
+	}
+	
+	public FSharpScope(String funcName, String localName, ModifiableTree node, FSharpScope parentScope){
+		this.name = funcName;
+		this.node = node;
+		this.parent = parentScope;
+		this.varList = new ArrayList<FSharpVar>();
+		this.funcList = new ArrayList<FSharpFunc>();
+		this.returnList = new ArrayList<ModifiableTree>();
+		this.children = new ArrayList<FSharpScope>();
+		if(parentScope != null){
+			this.path = parentScope.getInnerPath();
+		} else {
+			this.path = new ArrayList<String>();
+		}
+		this.recursive = this.isRecursiveFunc(this.node, localName, false);
 		if(node.is(JSTag.TAG_FUNC_DECL)){
 			this.type = ScopeType.FUNCTION;
 		} else if(node.is(JSTag.TAG_OBJECT)){
@@ -65,6 +87,13 @@ public class FSharpScope {
 		}
 		pathName += this.name + ".";
 		return pathName;
+	}
+	
+	public ArrayList<String> getInnerPath(){
+		ArrayList<String> innerPath = new ArrayList<String>();
+		innerPath.addAll(path);
+		innerPath.add(name);
+		return innerPath;
 	}
 	
 	public boolean isRecursive(){
@@ -225,5 +254,20 @@ public class FSharpScope {
 			}
 		}
 		return false;
+	}
+	
+	public String toString(){
+		StringBuilder output = new StringBuilder();
+		output.append("Name: " + path.toString() + " " + name + "\n");
+		output.append("Type: ");
+		if(type == ScopeType.FUNCTION){
+			output.append("Function\n");
+		} else{
+			output.append("Object\n");
+		}
+		output.append("Var: " + varList.toString() + "\n");
+		output.append("Function: " + funcList.toString() + "\n");
+		output.append(node.toString());
+		return output.toString();
 	}
 }
