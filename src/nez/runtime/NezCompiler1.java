@@ -16,6 +16,7 @@ import nez.lang.ExistsSymbol;
 import nez.lang.Expression;
 import nez.lang.GrammarFactory;
 import nez.lang.Grammar;
+import nez.lang.GrammarReshaper;
 import nez.lang.IsIndent;
 import nez.lang.IsSymbol;
 import nez.lang.Link;
@@ -36,15 +37,99 @@ import nez.util.StringUtils;
 import nez.util.UFlag;
 import nez.util.UList;
 
+
 public class NezCompiler1 extends NezCompiler {
+
+	private Instruction commonFailure = new IFail(null);
 
 	public NezCompiler1(int option) {
 		super(option);
 	}
 
-	// encoding
+	HashMap<String, ProductionCode> codeMap = new HashMap<String, ProductionCode>();
+	
+	void count(Production p) {
+		String uname = p.getUniqueName();
+		ProductionCode c = this.codeMap.get(uname);
+		if(c == null) {
+			c = new ProductionCode(p);
+			codeMap.put(uname, c);
+		}
+		c.ref++;
+	}
+	
+	void countNonTerminalReference(Expression e) {
+		if(e instanceof NonTerminal) {
+			Production p = ((NonTerminal) e).getProduction();
+			count(p);
+		}
+		for(Expression sub: e) {
+			countNonTerminalReference(sub);
+		}
+	}
 
-	private Instruction failed = new IFail(null);
+	void initCodeMap(Grammar grammar) {
+		codeMap = new HashMap<String, ProductionCode>();
+		Production start = grammar.getStartProduction();
+		count(start);
+		countNonTerminalReference(start.getExpression());
+		for(Production p : grammar.getProductionList()) {
+			if(p != start) {
+				this.countNonTerminalReference(p.getExpression());
+			}
+		}
+	}
+	
+	protected void encodeProduction(UList<Instruction> codeList, Production p, Instruction next) {
+		String uname = p.getUniqueName();
+		if(Verbose.Debug) {
+			Verbose.debug("compiling .. " + p);
+		}
+		ProductionCode code = this.codeMap.get(uname);
+		if(code != null) {
+	//		Expression e = p.getExpression();
+	//		if(UFlag.is(option, Grammar.Inlining)  && this.ruleMap.size() > 0 && p.isInline() ) {
+	//			//System.out.println("skip .. " + r.getLocalName() + "=" + e);
+	//			continue;
+	//		}
+	//		if(!UFlag.is(option, Grammar.ASTConstruction)) {
+	//			e = e.reshape(Manipulator.RemoveAST);
+	//		}
+			code.codePoint = encodeExpression(code.localExpression, next);
+			code.start = codeList.size();
+			this.layoutCode(codeList, code.codePoint);
+			code.end = codeList.size();
+		}
+	}
+	
+	@Override
+	public NezCode encode(Grammar grammar) {
+		//long t = System.nanoTime();
+		initCodeMap(grammar);
+		UList<Instruction> codeList = new UList<Instruction>(new Instruction[64]);
+		Production start = grammar.getStartProduction();
+		this.encodeProduction(codeList, start, new IExit(true));
+		for(Production p : grammar.getProductionList()) {
+			if(p != start) {
+				this.encodeProduction(codeList, p, new IRet(p));
+			}
+		}
+		for(Instruction inst : codeList) {
+			if(inst instanceof ICallPush) {
+				ProductionCode deref = this.codeMap.get(((ICallPush) inst).rule.getUniqueName());
+				if(deref == null) {
+					System.out.println("no code map: " + ((ICallPush) inst).rule.getUniqueName());
+				}
+				((ICallPush) inst).setResolvedJump(deref.codePoint);
+			}
+		}
+		//long t2 = System.nanoTime();
+		//Verbose.printElapsedTime("CompilingTime", t, t2);
+		this.codeMap = null;
+		return new NezCode(codeList.ArrayValues[0]);
+	}
+	
+	// encoding
 	
 	public final Instruction encodeExpression(Expression e, Instruction next) {
 		return e.encode(this, next);
@@ -63,7 +148,8 @@ public class NezCompiler1 extends NezCompiler {
 	}
 
 	public Instruction encodeFail(Expression p) {
-		return new IFail(p);
+//		return new IFail(p);
+		return this.commonFailure;
 	}
 	
 	public final Instruction encodeOption(Option p, Instruction next) {
@@ -259,5 +345,6 @@ public class NezCompiler1 extends NezCompiler {
 		// TODO Auto-generated method stub
 		return next;
 	}
+
 
 }

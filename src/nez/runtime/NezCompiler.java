@@ -42,19 +42,9 @@ import nez.util.UMap;
 
 public abstract class NezCompiler {
 	final int option;
-	
-//	public UList<Instruction> codeList;
-//	UMap<CodeBlock> ruleMap;
-//	HashMap<Integer, MemoPoint> memoMap;
-	
+		
 	public NezCompiler(int option) {
 		this.option = option;
-//		this.codeList = new UList<Instruction>(new Instruction[64]);
-//		this.ruleMap = new UMap<CodeBlock>();
-//		if(this.enablePackratParsing()) {
-//			this.memoMap = new HashMap<Integer, MemoPoint>();
-//			this.visitedMap = new UMap<String>();
-//		}
 	}
 	
 	protected final boolean enablePackratParsing() {
@@ -64,6 +54,8 @@ public abstract class NezCompiler {
 	protected final boolean enableASTConstruction() {
 		return UFlag.is(this.option, Grammar.ASTConstruction);
 	}
+	
+	public abstract NezCode encode(Grammar grammar);
 
 //	public final Instruction encode(UList<Production> ruleList) {
 //		long t = System.nanoTime();

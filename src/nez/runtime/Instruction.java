@@ -399,6 +399,24 @@ class IConsume extends Instruction {
 	}
 }
 
+class IBacktrack extends Instruction {
+	final int prefetched;
+	IBacktrack(Expression e, int prefetched, Instruction next) {
+		super(e, next);
+		this.prefetched = prefetched;
+	}
+	@Override
+	short isAcceptImpl(int ch) {
+		return Prediction.Accept;
+	}
+	@Override
+	Instruction exec(Context sc) throws TerminationException {
+		sc.consume(-1);
+		return this.next;
+	}
+}
+
+
 class IDfaDispatch extends Instruction {
 	Instruction[] jumpTable;
 	public IDfaDispatch(Expression e, Instruction next) {
@@ -421,6 +439,7 @@ class IDfaDispatch extends Instruction {
 	@Override
 	Instruction exec(Context sc) throws TerminationException {
 		int ch = sc.byteAt(sc.getPosition());
+		sc.consume(1);
 		//System.out.println("ch="+(char)ch + " " + jumpTable[ch]);
 		return jumpTable[ch].exec(sc);
 	}

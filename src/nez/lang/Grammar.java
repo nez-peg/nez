@@ -13,42 +13,29 @@ import nez.runtime.Machine;
 import nez.runtime.MemoPoint;
 import nez.runtime.MemoTable;
 import nez.runtime.NezCompiler;
-import nez.runtime.NezCompiler0;
+import nez.runtime.DeprecatedNezCompiler;
+import nez.runtime.NezCompiler1;
 import nez.util.ConsoleUtils;
 import nez.util.UFlag;
 import nez.util.UList;
 import nez.util.UMap;
 
-class GProduction {
-	int ref = 1;
-	Production p;
-	Expression e;
-	GProduction(Production p) {
-		this.p = p;
-		this.e = p.getExpression();
-	}
-}
-
 public class Grammar {
 	Production start;
-	UMap<GProduction>          productionMap;
 	UList<Production>          productionList;
+	UMap<Production>           productionMap;
 
 	Grammar(Production start, int option) {
 		this.start = start;
 		this.productionList = new UList<Production>(new Production[4]);
-		this.productionMap = new UMap<GProduction>();
+		this.productionMap = new UMap<Production>();
 		this.setOption(option);
 		TreeMap<String, Boolean> conditionMap = new TreeMap<String, Boolean>(); 
 		analyze(start, conditionMap);
-		if(!UFlag.is(option, Grammar.ASTConstruction)) {
-			reshapeAll(GrammarReshaper.RemoveAST);
-		}
 		if(conditionMap.size() > 0) {
 			new ConditionalAnalysis(this);
 		}
-		new GrammarOptimizer(option).optimize(this);
-
+		//new GrammarOptimizer(option).optimize(this);
 	}
 
 	public Production getStartProduction() {
@@ -59,23 +46,24 @@ public class Grammar {
 		return this.productionList;
 	}
 
-	void reshapeAll(GrammarReshaper m) {
-		for(Production p: productionList) {
-			GProduction gp = this.productionMap.get(p.getUniqueName());
-			gp.e = gp.e.reshape(m);
-		}
-	}
+//	void reshapeAll(GrammarReshaper m) {
+//		for(Production p: productionList) {
+//			p = this.productionMap.get(p.getUniqueName());
+//			Expression shaped = p.e.reshape(m);
+//			if(shaped != gp.e) {
+//				//System.out.println(m.getClass().getSimpleName() + ": " + p.getLocalName() + " = " + shaped);
+//				gp.e = shaped;
+//			}
+//		}
+//	}
 	
 	private void analyze(Production p, TreeMap<String, Boolean> conditionMap) {
 		String uname = p.getUniqueName();
-		GProduction gp = productionMap.get(uname);
-		if(gp != null) {
-			gp.ref++;
+		if(productionMap.hasKey(uname)) {
 			return;
 		}
-		gp =  new GProduction(p);
 		productionList.add(p);
-		productionMap.put(p.getUniqueName(), gp);
+		productionMap.put(p.getUniqueName(), p);
 		analyze(p.getExpression(), conditionMap);
 	}
 	
@@ -90,91 +78,6 @@ public class Grammar {
 			analyze(se, conditionMap);
 		}
 	}
-
-//	private void analyze(int pos, Production r) {
-//		if(!productionMap.hasKey(r.getUniqueName())) {
-//			productionList.add(r);
-//			productionMap.put(r.getUniqueName(), new GProduction(r));
-//			add(pos, r.getExpression());
-//		}
-//	}
-//	
-//	private Expression rep = null;
-//	
-//	private void add(int pos, Expression expr) {
-//		if(expr instanceof NonTerminal) {
-//			//System.out.println("call " + ((NonTerminal) expr).getUniqueName() + " pos=" + pos + " redundant? " + checkRedundantCall(expr, pos));
-//			path.add(new Trace(expr, pos));
-//			analyze(pos, ((NonTerminal) expr).getProduction());
-//		}
-//		if(rep == null && expr instanceof nez.lang.Repetition) {
-//			rep = expr;
-//			//System.out.println("top level repetition: " + expr);
-//			add(pos, expr.get(0));
-//			rep = null;
-//		}
-//		for(Expression se : expr) {
-//			add(pos, se);
-//			if(!(expr instanceof nez.lang.Choice)) {
-//				pos += count(se);
-//			}
-//		}
-//	}
-//
-//	class Trace {
-//		Expression e;
-//		int pos;
-//		int count = 0;
-//		boolean redundant = false;
-//		Trace(Expression e, int pos) {
-//			this.e = e;
-//			this.pos = pos;
-//		}
-//		@Override
-//		public String toString() {
-//			return e + " pos=" + pos + " redundant? " + redundant;
-//		}
-//	}
-//
-//	UList<Trace> path = new UList<Trace>(new Trace[128]);
-//	
-//	void dump() {
-//		for(Trace t : this.path) {
-//			System.out.println(t);
-//		}
-//	}
-//
-//	boolean checkRedundantCall(Expression e, int pos) {
-//		boolean r = false;
-//		for(Trace t : this.path) {
-//			if(t.e == e && t.pos >= pos) {
-//				t.redundant = true;
-//				r = true;
-//			}
-//		}
-//		return r;
-//	}
-//	
-////	boolean isRecursivelyVisited(NonTerminal e) {
-////		for(int i = path.size() - 1; i >= 0; i--) {
-////			if(path.ArrayValues[i].e == e) {
-////				path.ArrayValues[i].count += 1;
-////				return true;
-////			}
-////		}
-////		return false;
-////	}
-////	
-////	void push(Expression e, int pos) {
-////		path.add(new Trace(e, pos));
-////	}
-//	
-//	int count(Expression e) {
-//		return (e.isAlwaysConsumed()) ? 1 : 0;
-//	}
-//
-//	void checkBacktrack(Expression e, int pos) {
-//	}
 
 	/* --------------------------------------------------------------------- */
 	/* memoization configuration */
@@ -220,23 +123,23 @@ public class Grammar {
 
 	public final Instruction compile() {
 		if(compiledCode == null) {
-			NezCompiler0 bc = new NezCompiler0(this.option);
-			compiledCode = bc.encode(this.productionList);
-			this.InstructionSize  = bc.getInstructionSize();
-			this.memoPointSize = bc.getMemoPointSize();
-			if(Verbose.PackratParsing) {
-				this.memoPointList = bc.getMemoPointList();
-			}
-			if(Verbose.VirtualMachine) {
-				bc.dump(this.productionList);
-			}
+			NezCompiler bc = new NezCompiler1(this.option);
+			compiledCode = bc.encode(this).startPoint;
+//			this.InstructionSize  = bc.getInstructionSize();
+//			this.memoPointSize = bc.getMemoPointSize();
+//			if(Verbose.PackratParsing) {
+//				this.memoPointList = bc.getMemoPointList();
+//			}
+//			if(Verbose.VirtualMachine) {
+//				bc.dump(this.productionList);
+//			}
 		}
 		return compiledCode;
 	}
 	
 	public NezCompiler cc() {
-		NezCompiler0 bc = new NezCompiler0(this.option);
-		bc.encode(productionList);
+		NezCompiler bc = new NezCompiler1(this.option);
+		bc.encode(this);
 		return bc;
 	}
 		

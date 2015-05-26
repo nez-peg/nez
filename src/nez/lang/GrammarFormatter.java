@@ -165,11 +165,33 @@ public class GrammarFormatter extends GrammarVisitor {
 	}
 	
 	public void visitChoice(Choice e) {
-		for(int i = 0; i < e.size(); i++) {
-			if(i > 0) {
-				sb.append(" / ");
+		if(e.predictedCase != null) {
+			int c = 0;
+			for(int i = 0; i < e.predictedCase.length; i++) {
+				if(e.predictedCase[i] == null) {
+					continue;
+				}
+				if(c > 0) {
+					sb.append("|");
+				}
+				sb.append("&");
+				sb.append(StringUtils.stringfyByte(i));
+				if(e.predictedCase[i] != e) {
+					visit(e.predictedCase[i]);
+				}
+				else {
+					sb.append("...");
+				}
+				c++;
 			}
-			visit(e.get(i));
+		}
+		else {
+			for(int i = 0; i < e.size(); i++) {
+				if(i > 0) {
+					sb.append(" / ");
+				}
+				visit(e.get(i));
+			}
 		}
 	}
 

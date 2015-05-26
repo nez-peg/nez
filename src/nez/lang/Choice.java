@@ -78,7 +78,7 @@ public class Choice extends Multinary {
 	}
 	
 	// optimize
-	public Expression[] matchCase = null;
+	public Expression[] predictedCase = null;
 //	boolean selfChoice = false;
 //	int startIndex = -1;
 //	int endIndex = 257;
@@ -95,10 +95,10 @@ public class Choice extends Multinary {
 		}
 		if(UFlag.is(option, Grammar.Prediction) && !UFlag.is(option, Grammar.DFA)) {
 			Expression fails = GrammarFactory.newFailure(s);
-			this.matchCase = new Expression[257];
+			this.predictedCase = new Expression[257];
 			for(int ch = 0; ch <= 256; ch++) {
 				Expression selected = selectChoice(ch, fails, option);
-				matchCase[ch] = selected;
+				predictedCase[ch] = selected;
 			}
 		}
 	}
