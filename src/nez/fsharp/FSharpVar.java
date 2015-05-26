@@ -1,5 +1,7 @@
 package nez.fsharp;
 
+import java.util.ArrayList;
+
 
 public class FSharpVar {
 	public String name;
@@ -7,15 +9,16 @@ public class FSharpVar {
 	public FSharpVar parent = null;	
 	public int uniqueKey = 0;
 	ModifiableTree initialValue;
+	public ArrayList<String> path;
 	
-	public FSharpVar(String name, String prefixName){
+	public FSharpVar(String name, ArrayList<String> path){
 		this.name = name;
-		this.fullname = prefixName + name;
+		this.path = path;
 	}
 	
-	public FSharpVar(String name, String prefixName, ModifiableTree initialValue){
+	public FSharpVar(String name, ArrayList<String> path, ModifiableTree initialValue){
 		this.name = name;
-		this.fullname = prefixName + name;
+		this.path = path;
 		this.initialValue = initialValue;
 	}
 	

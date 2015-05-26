@@ -44,6 +44,9 @@ public class FSharpScope {
 		} else if(node.is(JSTag.TAG_OBJECT)){
 			this.type = ScopeType.OBJECT;
 		}
+		if(node != null){
+			findLocalVar(node);
+		}
 	}
 	
 	public FSharpScope(String funcName, String localName, ModifiableTree node, FSharpScope parentScope){
@@ -64,6 +67,9 @@ public class FSharpScope {
 			this.type = ScopeType.FUNCTION;
 		} else if(node.is(JSTag.TAG_OBJECT)){
 			this.type = ScopeType.OBJECT;
+		}
+		if(node != null){
+			findLocalVar(node);
 		}
 	}
 	
@@ -254,6 +260,29 @@ public class FSharpScope {
 			}
 		}
 		return false;
+	}
+	
+	//In this scope(function/object), search local variables, and set them to this.varList
+	private boolean findLocalVar(ModifiableTree node){
+		if(node.is(JSTag.TAG_OBJECT) || node.is(JSTag.TAG_FUNC_DECL)){
+			return true;
+		}
+		
+		if(node.is(JSTag.TAG_VAR_DECL)){
+			ModifiableTree nameNode = node.get(0);
+			ModifiableTree valueNode = node.get(1);
+			if(!nameNode.is(JSTag.TAG_NAME) || valueNode.is(JSTag.TAG_OBJECT) || valueNode.is(JSTag.TAG_FUNC_DECL)){
+				return true;
+			}
+			varList.add(new FSharpVar(nameNode.getText(), getInnerPath(), valueNode));
+			return true;
+		}
+		if(node.size() > 0){
+			for(int i = 0; i < node.size(); i++){
+				findLocalVar(node.get(i));
+			}
+		}
+		return true;
 	}
 	
 	public String toString(){
