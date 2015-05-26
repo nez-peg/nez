@@ -54,7 +54,7 @@ class ConditionalAnalysis extends Manipulator {
 	public Expression reshapeNonTerminal(NonTerminal n) {
 		Production r = elminateFlag(n.getProduction());
 		if(r != n.getProduction()) {
-			return Factory.newNonTerminal(n.s, r.getNameSpace(), r.getLocalName());
+			return GrammarFactory.newNonTerminal(n.s, r.getNameSpace(), r.getLocalName());
 		}
 		return n;
 	}

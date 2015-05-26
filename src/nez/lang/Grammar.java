@@ -10,6 +10,7 @@ import nez.ast.SourcePosition;
 import nez.main.Recorder;
 import nez.main.Verbose;
 import nez.runtime.Instruction;
+import nez.runtime.Machine;
 import nez.runtime.MemoPoint;
 import nez.runtime.MemoTable;
 import nez.runtime.NezCompiler;
@@ -245,10 +246,10 @@ public class Grammar {
 		Instruction pc = this.compile();
 		s.initJumpStack(64, getMemoTable(s));
 		if(Verbose.Debug) {
-			matched = Instruction.debug(pc, s);
+			matched = Machine.debug(pc, s);
 		}
 		else {
-			matched = Instruction.run(pc, s);
+			matched = Machine.run(pc, s);
 		}
 		if(matched) {
 			s.newTopLevelNode();
@@ -420,7 +421,7 @@ class GrammarOptimizer extends Manipulator {
 				return o;
 			}
 		}
-		return Factory.newChoice(p.getSourcePosition(), l);
+		return GrammarFactory.newChoice(p.getSourcePosition(), l);
 //		if(UFlag.is(option, Grammar.Prediction) && !UFlag.is(option, Grammar.DFA)) {
 //			Expression fails = Factory.newFailure(s);
 //			this.matchCase = new Expression[257];
@@ -466,7 +467,7 @@ class GrammarOptimizer extends Manipulator {
 	public Expression reshapeSequence(Sequence parentExpression) {
 		UList<Expression> l = new UList<Expression>(new Expression[parentExpression.size()]);
 		for(Expression subExpression: parentExpression) {
-			Factory.addSequence(l, subExpression.reshape(this));
+			GrammarFactory.addSequence(l, subExpression.reshape(this));
 		}
 		reorderSequence(l);
 		if(UFlag.is(option, Grammar.Optimization)) {
@@ -477,7 +478,7 @@ class GrammarOptimizer extends Manipulator {
 				l = nl;
 			}
 		}
-		return Factory.newSequence(parentExpression.getSourcePosition(), l);
+		return GrammarFactory.newSequence(parentExpression.getSourcePosition(), l);
 	}
 	
 	/**
@@ -499,7 +500,7 @@ class GrammarOptimizer extends Manipulator {
 					New n = (New)p;
 					l.ArrayValues[i-1] = e;
 					if(n.isInterned()) {
-						l.ArrayValues[i] =  Factory.newNew(n.s, n.lefted, n.shift - 1);
+						l.ArrayValues[i] =  GrammarFactory.newNew(n.s, n.lefted, n.shift - 1);
 					}
 					else {
 						n.shift -= 1;
@@ -511,7 +512,7 @@ class GrammarOptimizer extends Manipulator {
 					Capture n = (Capture)p;
 					l.ArrayValues[i-1] = e;
 					if(n.isInterned()) {
-						l.ArrayValues[i] =  Factory.newCapture(n.s, n.shift - 1);
+						l.ArrayValues[i] =  GrammarFactory.newCapture(n.s, n.shift - 1);
 					}
 					else {
 						n.shift -= 1;
@@ -560,9 +561,9 @@ class GrammarOptimizer extends Manipulator {
 		if(loc + 1 < e) {
 			UList<Expression> sl = new UList<Expression>(new Expression[4]);
 			for(int i = loc; i < e; i++) {
-				Factory.addChoice(sl, l.ArrayValues[i]);
+				GrammarFactory.addChoice(sl, l.ArrayValues[i]);
 			}
-			not = Factory.newNot(not.s, Factory.newChoice(not.s, sl).reshape(this));
+			not = GrammarFactory.newNot(not.s, GrammarFactory.newChoice(not.s, sl).reshape(this));
 		}
 		if(not.inner instanceof ByteChar) {
 			boolean[] byteMap = ByteMap.newMap(true);
@@ -570,13 +571,13 @@ class GrammarOptimizer extends Manipulator {
 			if(!UFlag.is(option, Grammar.Binary)) {
 				byteMap[0] = false;
 			}
-			nl.add(Factory.newByteMap(not.s, byteMap));
+			nl.add(GrammarFactory.newByteMap(not.s, byteMap));
 		}
 		else if(not.inner instanceof ByteMap) {
 			boolean[] byteMap = ByteMap.newMap(false);
 			ByteMap.appendBitMap(byteMap, ((ByteMap) not.inner).byteMap);
 			ByteMap.reverse(byteMap, option);
-			nl.add(Factory.newByteMap(not.s, byteMap));
+			nl.add(GrammarFactory.newByteMap(not.s, byteMap));
 		}
 		else {
 			nl.add(not);
@@ -598,9 +599,9 @@ class GrammarOptimizer extends Manipulator {
 			UList<Expression> l = new UList<Expression>(new Expression[inner.size()]);
 			for(Expression subChoice: inner) {
 				subChoice = subChoice.reshape(this);
-				l.add(Factory.newLink(p.getSourcePosition(), subChoice, p.index));
+				l.add(GrammarFactory.newLink(p.getSourcePosition(), subChoice, p.index));
 			}			
-			return Factory.newChoice(inner.getSourcePosition(), l);
+			return GrammarFactory.newChoice(inner.getSourcePosition(), l);
 		}
 		return super.reshapeLink(p);
 	}
@@ -621,7 +622,7 @@ class GrammarOptimizer extends Manipulator {
 			}
 			return null;
 		}
-		return (ByteMap)Factory.newByteMap(s, byteMap);
+		return (ByteMap)GrammarFactory.newByteMap(s, byteMap);
 	}
 	
 }

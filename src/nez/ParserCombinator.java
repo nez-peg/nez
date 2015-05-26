@@ -7,7 +7,7 @@ import nez.ast.SourcePosition;
 import nez.ast.Tag;
 import nez.lang.ByteMap;
 import nez.lang.Expression;
-import nez.lang.Factory;
+import nez.lang.GrammarFactory;
 import nez.lang.Grammar;
 import nez.lang.GrammarChecker;
 import nez.lang.NameSpace;
@@ -78,19 +78,19 @@ public class ParserCombinator {
 	}
 	
 	protected final Expression P(String name) {
-		return Factory.newNonTerminal(src(), this.ns, name);
+		return GrammarFactory.newNonTerminal(src(), this.ns, name);
 	}
 
 	protected final Expression t(char c) {
-		return Factory.newString(src(), String.valueOf(c));
+		return GrammarFactory.newString(src(), String.valueOf(c));
 	}
 
 	protected final Expression t(String token) {
-		return Factory.newString(src(), token);
+		return GrammarFactory.newString(src(), token);
 	}
 
 	protected final Expression c(String text) {
-		return Factory.newCharSet(src(), text);
+		return GrammarFactory.newCharSet(src(), text);
 	}
 
 	protected final Expression c(int ... chars) {
@@ -98,15 +98,15 @@ public class ParserCombinator {
 		for(int c : chars) {
 			b[c] = true;
 		}
-		return Factory.newByteMap(src(), b);
+		return GrammarFactory.newByteMap(src(), b);
 	}
 
 	protected final Expression ByteChar(int byteChar) {
-		return Factory.newByteChar(src(), byteChar);
+		return GrammarFactory.newByteChar(src(), byteChar);
 	}
 
 	protected final Expression AnyChar() {
-		return Factory.newAnyChar(src());
+		return GrammarFactory.newAnyChar(src());
 	}
 	
 	protected final Expression NotAny(String token) {
@@ -120,105 +120,105 @@ public class ParserCombinator {
 	protected final Expression Sequence(Expression ... elist) {
 		UList<Expression> l = new UList<Expression>(new Expression[8]);
 		for(Expression e : elist) {
-			Factory.addSequence(l, e);
+			GrammarFactory.addSequence(l, e);
 		}
-		return Factory.newSequence(src(), l);
+		return GrammarFactory.newSequence(src(), l);
 	}
 
 	protected final Expression Choice(Expression ... elist) {
 		UList<Expression> l = new UList<Expression>(new Expression[8]);
 		for(Expression e : elist) {
-			Factory.addChoice(l, e);
+			GrammarFactory.addChoice(l, e);
 		}
-		return Factory.newChoice(src(), l);
+		return GrammarFactory.newChoice(src(), l);
 	}
 	
 	protected final Expression Option(Expression ... e) {
-		return Factory.newOption(src(), Sequence(e));
+		return GrammarFactory.newOption(src(), Sequence(e));
 	}
 
 	protected final Expression Option(String t) {
-		return Factory.newOption(src(), t(t));
+		return GrammarFactory.newOption(src(), t(t));
 	}
 
 	protected final Expression ZeroMore(Expression ... e) {
-		return Factory.newRepetition(src(), Sequence(e));
+		return GrammarFactory.newRepetition(src(), Sequence(e));
 	}
 	
 	protected final Expression OneMore(Expression ... e) {
-		return Factory.newRepetition1(src(), Sequence(e));
+		return GrammarFactory.newRepetition1(src(), Sequence(e));
 	}
 
 	protected final Expression Not(String t) {
-		return Factory.newNot(src(), Factory.newString(src(), t));
+		return GrammarFactory.newNot(src(), GrammarFactory.newString(src(), t));
 	}
 
 	protected final Expression Not(Expression ... e) {
-		return Factory.newNot(src(), Sequence(e));
+		return GrammarFactory.newNot(src(), Sequence(e));
 	}
 
 	protected final Expression And(Expression ... e) {
-		return Factory.newAnd(src(), Sequence(e));
+		return GrammarFactory.newAnd(src(), Sequence(e));
 	}
 
 	protected final Expression NCapture(int shift) {
-		return Factory.newNew(src(), false, shift);
+		return GrammarFactory.newNew(src(), false, shift);
 	}
 
 	protected final Expression LCapture(int shift) {
-		return Factory.newNew(src(), true, shift);
+		return GrammarFactory.newNew(src(), true, shift);
 	}
 
 	protected final Expression Capture(int shift) {
-		return Factory.newCapture(src(), shift);
+		return GrammarFactory.newCapture(src(), shift);
 	}
 
 	protected final Expression New(Expression ... e) {
-		return Factory.newNew(src(), false, Sequence(e));
+		return GrammarFactory.newNew(src(), false, Sequence(e));
 	}
 
 	protected final Expression LeftNewOption(Expression ... e) {
-		return Factory.newLeftNewOption(src(), Sequence(e));
+		return GrammarFactory.newLeftNewOption(src(), Sequence(e));
 	}
 
 	protected final Expression LeftNewZeroMore(Expression ... e) {
-		return Factory.newLeftNewRepetition(src(), Sequence(e));
+		return GrammarFactory.newLeftNewRepetition(src(), Sequence(e));
 	}
 
 	protected final Expression LeftNewOneMore(Expression ... e) {
-		return Factory.newLeftNewRepetition1(src(), Sequence(e));
+		return GrammarFactory.newLeftNewRepetition1(src(), Sequence(e));
 	}
 		
 	protected Expression Link(String nonterminal) {
-		return Factory.newLink(src(), P(nonterminal), -1);
+		return GrammarFactory.newLink(src(), P(nonterminal), -1);
 	}
 
 	protected Expression Link(Expression ... e) {
-		return Factory.newLink(src(), Sequence(e), -1);
+		return GrammarFactory.newLink(src(), Sequence(e), -1);
 	}
 	
 	protected Expression Link(int index, Expression ... e) {
-		return Factory.newLink(src(), Sequence(e), index);
+		return GrammarFactory.newLink(src(), Sequence(e), index);
 	}
 
 	protected Expression Link(int index, String nonterminal) {
-		return Factory.newLink(src(), P(nonterminal), index);
+		return GrammarFactory.newLink(src(), P(nonterminal), index);
 	}
 
 	protected final Expression Tag(Tag t) {
-		return Factory.newTagging(src(), t);
+		return GrammarFactory.newTagging(src(), t);
 	}
 
 	protected final Expression Tagging(String tag) {
-		return Factory.newTagging(src(), Tag.tag(tag));
+		return GrammarFactory.newTagging(src(), Tag.tag(tag));
 	}
 
 	protected final Expression Replace(char c) {
-		return Factory.newReplace(src(), String.valueOf(c));
+		return GrammarFactory.newReplace(src(), String.valueOf(c));
 	}
 
 	protected final Expression Replace(String value) {
-		return Factory.newReplace(src(), value);
+		return GrammarFactory.newReplace(src(), value);
 	}
 
 	

@@ -2,7 +2,6 @@ package nez.runtime;
 
 import java.util.Arrays;
 
-import nez.SourceContext;
 import nez.ast.Tag;
 import nez.lang.ByteChar;
 import nez.lang.ByteMap;
@@ -19,9 +18,7 @@ import nez.lang.Production;
 import nez.lang.Replace;
 import nez.lang.Sequence;
 import nez.lang.Tagging;
-import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
-import nez.util.UList;
 
 public abstract class Instruction {
 	protected Expression  e;
@@ -86,44 +83,6 @@ public abstract class Instruction {
 
 	boolean debug() {
 		return false;
-	}
-			
-	public static boolean run(Instruction code, SourceContext sc) {
-		boolean result = false;
-		try {
-			while(true) {
-				code = code.exec(sc);
-			}
-		}
-		catch (TerminationException e) {
-			result = e.status;
-		}
-		return result;
-	}
-
-	public static boolean debug(Instruction code, SourceContext sc) {
-		boolean result = false;
-		String u = "Start";
-		UList<String> stack = new UList<String>(new String[128]);
-		stack.add("Start");
-		try {
-			while(true) {
-				if(code instanceof ICallPush) {
-					stack.add(u);
-					u = ((ICallPush)code).rule.getLocalName();
-				}
-				if(code instanceof IRet) {
-					u = stack.ArrayValues[stack.size()-1];
-					stack.clear(stack.size()-1);
-				}
-				ConsoleUtils.println(u + "(" + sc.getPosition() + ")  " + code.id + " " + code);
-				code = code.exec(sc);
-			}
-		}
-		catch (TerminationException e) {
-			result = e.status;
-		}
-		return result;
 	}
 }
 

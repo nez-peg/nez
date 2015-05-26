@@ -15,7 +15,7 @@ import nez.lang.DefIndent;
 import nez.lang.DefSymbol;
 import nez.lang.ExistsSymbol;
 import nez.lang.Expression;
-import nez.lang.Factory;
+import nez.lang.GrammarFactory;
 import nez.lang.Grammar;
 import nez.lang.IsIndent;
 import nez.lang.IsSymbol;

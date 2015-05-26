@@ -19,10 +19,10 @@ public class NameAnalysis extends Manipulator {
 		if(r == null) {
 			if(p.isTerminal()) {
 				p.getNameSpace().reportNotice(p, "undefined terminal: " + p.getLocalName());
-				return Factory.newString(p.s, StringUtils.unquoteString(p.getLocalName()));
+				return GrammarFactory.newString(p.s, StringUtils.unquoteString(p.getLocalName()));
 			}
 			p.getNameSpace().reportWarning(p, "undefined rule: " + p.getLocalName());
-			r = p.getNameSpace().defineProduction(p.s, p.getLocalName(), Factory.newEmpty(p.s));
+			r = p.getNameSpace().defineProduction(p.s, p.getLocalName(), GrammarFactory.newEmpty(p.s));
 		}
 		r.refCount += 1;
 		if(p.isTerminal()) {

@@ -35,7 +35,7 @@ public abstract class Expression extends AbstractList<Expression> {
 	}
 	
 	final Expression intern() {
-		return Factory.intern(this);
+		return GrammarFactory.intern(this);
 	}
 
 	public abstract String getPredicate();
@@ -129,5 +129,8 @@ public abstract class Expression extends AbstractList<Expression> {
 	public static final boolean isPositionIndependentOperation(Expression e) {
 		return (e instanceof Tagging || e instanceof Replace);
 	}
+	
+	
+	
 
 }
