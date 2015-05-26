@@ -31,7 +31,7 @@ public class OnFlag extends Unary {
 		return predicate ? "on " + this.flagName : "on !" + this.flagName;
 	}
 	@Override
-	public Expression reshape(Manipulator m) {
+	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeOnFlag(this);
 	}
 

@@ -19,7 +19,7 @@ import nez.util.ConsoleUtils;
 import nez.util.UList;
 import nez.util.UMap;
 
-public class NameSpace {
+public class NameSpace extends GrammarFactory {
 	private static int nsid = 0;
 	private static HashMap<String, NameSpace> nsMap = new HashMap<String, NameSpace>();
 
@@ -169,7 +169,7 @@ public class NameSpace {
 		return l;
 	}
 	
-	public Production newReducedProduction(String localName, Production p, Manipulator m) {
+	public Production newReducedProduction(String localName, Production p, GrammarReshaper m) {
 		Production r = p.newProduction(localName);
 		this.ruleMap.put(localName, r);
 		m.updateProductionAttribute(p, r);
@@ -286,169 +286,15 @@ public class NameSpace {
 	}
 
 	// Grammar
-	
-	private SourcePosition src() {
-		return null; // TODO
-	}
-	
-	public final Expression newNonTerminal(String name) {
-		return Factory.newNonTerminal(src(), this, name);
-	}
-	
-	public final Expression newEmpty() {
-		return Factory.newEmpty(src());
+
+	protected NameSpace getNameSpace() {
+		return this;
 	}
 
-	public final Expression newFailure() {
-		return Factory.newFailure(src());
-	}
-
-	public final Expression newByteChar(int ch) {
-		return Factory.newByteChar(src(), ch);
-	}
-	
-	public final Expression newAnyChar() {
-		return Factory.newAnyChar(src());
-	}
-	
-	public final Expression newString(String text) {
-		return Factory.newString(src(), text);
-	}
-	
-	public final Expression newCharSet(SourcePosition s, String text) {
-		return Factory.newCharSet(src(), text);
-	}
-
-	public final Expression newByteMap(boolean[] byteMap) {
-		return Factory.newByteMap(src(), byteMap);
-	}
-	
-	public final Expression newSequence(Expression ... seq) {
-		UList<Expression> l = new UList<Expression>(new Expression[8]);
-		for(Expression p: seq) {
-			Factory.addSequence(l, p);
-		}
-		return Factory.newSequence(src(), l);
-	}
-
-	public final Expression newChoice(Expression ... seq) {
-		UList<Expression> l = new UList<Expression>(new Expression[8]);
-		for(Expression p: seq) {
-			Factory.addChoice(l, p);
-		}
-		return Factory.newChoice(src(), l);
-	}
-
-	public final Expression newOption(Expression ... seq) {
-		return Factory.newOption(src(), newSequence(seq));
-	}
-		
-	public final Expression newRepetition(Expression ... seq) {
-		return Factory.newRepetition(src(), newSequence(seq));
-	}
-
-	public final Expression newRepetition1(Expression ... seq) {
-		return Factory.newRepetition1(src(), newSequence(seq));
-	}
-
-	public final Expression newAnd(Expression ... seq) {
-		return Factory.newAnd(src(), newSequence(seq));
-	}
-
-	public final Expression newNot(Expression ... seq) {
-		return Factory.newNot(src(), newSequence(seq));
-	}
-	
-//	public final Expression newByteRange(int c, int c2) {
-//		if(c == c2) {
-//			return newByteChar(s, c);
-//		}
-//		return internImpl(s, new ByteMap(s, c, c2));
-//	}
-	
-	// PEG4d
-	public final Expression newMatch(Expression ... seq) {
-		return Factory.newMatch(src(), newSequence(seq));
-	}
-	
-	public final Expression newLink(Expression ... seq) {
-		return Factory.newLink(src(), newSequence(seq), -1);
-	}
-
-	public final Expression newLink(int index, Expression ... seq) {
-		return Factory.newLink(src(), newSequence(seq), index);
-	}
-
-	public final Expression newNew(Expression ... seq) {
-		return Factory.newNew(src(), false, newSequence(seq));
-	}
-
-	public final Expression newLeftNew(Expression ... seq) {
-		return Factory.newNew(src(), true, newSequence(seq));
-	}
-
-	public final Expression newTagging(String tag) {
-		return Factory.newTagging(src(), Tag.tag(tag));
-	}
-
-	public final Expression newReplace(String msg) {
-		return Factory.newReplace(src(), msg);
-	}
-	
-	// Conditional Parsing
-	// <if FLAG>
-	// <on FLAG e>
-	// <on !FLAG e>
-	
-	public final Expression newIfFlag(String flagName) {
-		return Factory.newIfFlag(src(), flagName);
-	}
-
-	public final Expression newOnFlag(String flagName, Expression ... seq) {
-		return Factory.newOnFlag(src(), true, flagName, newSequence(seq));
-	}
-
-	
-	
-	public final Expression newScan(SourcePosition s, int number, Expression scan, Expression repeat) {
+	protected SourcePosition getSourcePosition() {
 		return null;
 	}
 	
-	public final Expression newRepeat(SourcePosition s, Expression e) {
-		return null;
-	}
-	
-	public final Expression newBlock(Expression ... seq) {
-		return Factory.newBlock(src(), newSequence(seq));
-	}
-
-	public final Expression newDefSymbol(SourcePosition s, String table, Expression ... seq) {
-		return Factory.newDefSymbol(src(), this, Tag.tag(table), newSequence(seq));
-	}
-
-	public final Expression newIsSymbol(SourcePosition s, String table) {
-		return Factory.newIsSymbol(src(), this, Tag.tag(table));
-	}
-	
-	public final Expression newIsaSymbol(SourcePosition s, String table) {
-		return Factory.newIsaSymbol(src(), this, Tag.tag(table));
-	}
-
-	public final Expression newExists(SourcePosition s, String table) {
-		return Factory.newExists(src(), this, Tag.tag(table));
-	}
-
-	public final Expression newLocal(SourcePosition s, String table, Expression ... seq) {
-		return Factory.newLocal(src(), this, Tag.tag(table), newSequence(seq));
-	}
-
-	public final Expression newDefIndent(SourcePosition s) {
-		return Factory.newDefIndent(src());
-	}
-
-	public final Expression newIndent(SourcePosition s) {
-		return Factory.newIndent(src());
-	}
 
 	// reporting errors
 	
@@ -473,7 +319,5 @@ public class NameSpace {
 			}
 		}
 	}
-
-
 
 }

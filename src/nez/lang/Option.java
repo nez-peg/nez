@@ -20,7 +20,7 @@ public class Option extends Unary {
 		return "?";
 	}
 	@Override
-	public Expression reshape(Manipulator m) {
+	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeOption(this);
 	}
 

@@ -25,7 +25,7 @@ public class New extends Unconsumed {
 		return (shift != 0) ? s + "[" + shift + "]" : s;
 	}
 	@Override
-	public Expression reshape(Manipulator m) {
+	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeNew(this);
 	}
 

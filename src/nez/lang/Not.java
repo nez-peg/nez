@@ -21,7 +21,7 @@ public class Not extends Unary {
 		return "!";
 	}
 	@Override
-	public Expression reshape(Manipulator m) {
+	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeNot(this);
 	}
 

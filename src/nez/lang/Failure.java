@@ -17,7 +17,7 @@ public class Failure extends Unconsumed {
 		return "!!";
 	}
 	@Override
-	public Expression reshape(Manipulator m) {
+	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeFailure(this);
 	}
 	@Override

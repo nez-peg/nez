@@ -8,7 +8,7 @@ import java.util.HashMap;
 import nez.ast.CommonTree;
 import nez.ast.Tag;
 import nez.lang.Expression;
-import nez.lang.Factory;
+import nez.lang.GrammarFactory;
 import nez.lang.NameSpace;
 import nez.lang.Production;
 import nez.util.ConsoleUtils;
@@ -116,7 +116,7 @@ public class RegexConverter extends GrammarConverter{
 	// pi(e*?, k) = A, A <- k / pi(e, A)
 	public Expression piLazyQuantifiers(CommonTree e, Expression k) {
 		String ruleName = "Repetition" + NonTerminalCount++;
-		Expression ne = Factory.newNonTerminal(e, this.grammar, ruleName);
+		Expression ne = GrammarFactory.newNonTerminal(e, this.grammar, ruleName);
 		grammar.defineProduction(e, ruleName, toChoice(e, k, pi(e.get(0), ne)));
 		return ne;
 	}
@@ -124,7 +124,7 @@ public class RegexConverter extends GrammarConverter{
 	// pi(e*, k) = A, A <- pi(e, A) / k
 	public Expression piRepetition(CommonTree e, Expression k) {
 		String ruleName = "Repetition" + NonTerminalCount++;
-		Expression ne = Factory.newNonTerminal(e, this.grammar, ruleName);
+		Expression ne = GrammarFactory.newNonTerminal(e, this.grammar, ruleName);
 		grammar.defineProduction(e, ruleName, toChoice(e, pi(e.get(0), ne), k));
 		return ne;
 	}
@@ -143,7 +143,7 @@ public class RegexConverter extends GrammarConverter{
 	}
 
 	public Expression piNegativeCharacterSet(CommonTree e, Expression k) {
-		Expression nce = toSeq(e, Factory.newNot(e, toCharacterSet(e)), toAny(e));
+		Expression nce = toSeq(e, GrammarFactory.newNot(e, toCharacterSet(e)), toAny(e));
 		return toSeq(e, nce, k);
 	}
 
@@ -175,7 +175,7 @@ public class RegexConverter extends GrammarConverter{
 		if (utf8.length !=1) {
 			ConsoleUtils.exit(1, "Error: not Character Literal");
 		}
-		return Factory.newByteChar(null, utf8[0]);
+		return GrammarFactory.newByteChar(null, utf8[0]);
 	}
 	
 	boolean byteMap[];
@@ -184,13 +184,13 @@ public class RegexConverter extends GrammarConverter{
 		UList<Expression> l = new UList<Expression>(new Expression[e.size()]);
 		byteMap = new boolean[257];
 		for(CommonTree subnode: e) {
-			Factory.addChoice(l, toExpression(subnode));
+			GrammarFactory.addChoice(l, toExpression(subnode));
 		}
 		if (useByteMap) {
-			return Factory.newByteMap(null, byteMap);
+			return GrammarFactory.newByteMap(null, byteMap);
 		}
 		else {
-			return Factory.newChoice(null, l);
+			return GrammarFactory.newChoice(null, l);
 		}
 	}
 	
@@ -200,59 +200,59 @@ public class RegexConverter extends GrammarConverter{
 		for(byte i = begin[0]; i <= end[0]; i++) {
 			byteMap[i] = true;
 		}
-		return Factory.newCharSet(null, e.get(0).getText(), e.get(1).getText());
+		return GrammarFactory.newCharSet(null, e.get(0).getText(), e.get(1).getText());
 	}
 	
 	public Expression toCharacterSetItem(CommonTree c) {
 		byte[] utf8 = StringUtils.toUtf8(c.getText());
 		byteMap[utf8[0]] = true;
-		return Factory.newByteChar(null, utf8[0]);
+		return GrammarFactory.newByteChar(null, utf8[0]);
 	}
 	
 	public Expression toEmpty(CommonTree node) {
-		return Factory.newEmpty(null);
+		return GrammarFactory.newEmpty(null);
 	}
 
 	public Expression toAny(CommonTree e) {
-		return Factory.newAnyChar(null);
+		return GrammarFactory.newAnyChar(null);
 	}
 	
 	public Expression toAnd(CommonTree e, Expression k) {
-		return toSeq(e, Factory.newAnd(null, pi(e.get(0), toEmpty(e))), k);
+		return toSeq(e, GrammarFactory.newAnd(null, pi(e.get(0), toEmpty(e))), k);
 	}
 	
 	public Expression toNot(CommonTree e, Expression k) {
-		return toSeq(e, Factory.newNot(null, pi(e.get(0), toEmpty(e))), k);
+		return toSeq(e, GrammarFactory.newNot(null, pi(e.get(0), toEmpty(e))), k);
 	}
 
 	public Expression toChoice(CommonTree node, Expression e, Expression k) {
 		UList<Expression> l = new UList<Expression>(new Expression[2]);
-		Factory.addChoice(l, e);
+		GrammarFactory.addChoice(l, e);
 		if (k != null) {
-			Factory.addChoice(l, k);
+			GrammarFactory.addChoice(l, k);
 		}
 		else {
-			Factory.addChoice(l, toEmpty(node));
+			GrammarFactory.addChoice(l, toEmpty(node));
 		}
-		return Factory.newDirectChoice(null, l);
+		return GrammarFactory.newDirectChoice(null, l);
 	}
 
 	public Expression toSeq(CommonTree e, Expression k) {
 		UList<Expression> l = new UList<Expression>(new Expression[2]);
-		Factory.addSequence(l, toExpression(e));
+		GrammarFactory.addSequence(l, toExpression(e));
 		if(k != null) {
-			Factory.addSequence(l, k);
+			GrammarFactory.addSequence(l, k);
 		}
-		return Factory.newSequence(null, l);
+		return GrammarFactory.newSequence(null, l);
 	}
 	
 	public Expression toSeq(CommonTree node, Expression e, Expression k) {
 		UList<Expression> l = new UList<Expression>(new Expression[2]);
-		Factory.addSequence(l, e);
+		GrammarFactory.addSequence(l, e);
 		if (k != null) {
-			Factory.addSequence(l, k);
+			GrammarFactory.addSequence(l, k);
 		}
-		return Factory.newSequence(null, l);
+		return GrammarFactory.newSequence(null, l);
 	}
 
 	@Override

@@ -20,7 +20,7 @@ public class Repetition1 extends Repetition {
 		return "+";
 	}
 	@Override
-	public Expression reshape(Manipulator m) {
+	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeRepetition1(this);
 	}
 

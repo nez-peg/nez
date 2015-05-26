@@ -43,7 +43,7 @@ public class IsSymbol extends Terminal {
 		return this.getPredicate();
 	}
 	@Override
-	public Expression reshape(Manipulator m) {
+	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeIsSymbol(this);
 	}
 	

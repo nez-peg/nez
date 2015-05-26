@@ -19,7 +19,7 @@ public class IsIndent extends Terminal {
 	}
 	
 	@Override
-	public Expression reshape(Manipulator m) {
+	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeIsIndent(this);
 	}
 	

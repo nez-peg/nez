@@ -5,7 +5,7 @@ import java.util.TreeMap;
 
 import nez.util.UMap;
 
-class ConditionalAnalysis extends Manipulator {
+class ConditionalAnalysis extends GrammarReshaper {
 	Map<String, Boolean> undefedFlags;
 	ConditionalAnalysis(Grammar g) {
 		undefedFlags = new TreeMap<String, Boolean> ();
@@ -54,7 +54,7 @@ class ConditionalAnalysis extends Manipulator {
 	public Expression reshapeNonTerminal(NonTerminal n) {
 		Production r = elminateFlag(n.getProduction());
 		if(r != n.getProduction()) {
-			return Factory.newNonTerminal(n.s, r.getNameSpace(), r.getLocalName());
+			return GrammarFactory.newNonTerminal(n.s, r.getNameSpace(), r.getLocalName());
 		}
 		return n;
 	}

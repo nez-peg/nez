@@ -15,13 +15,13 @@ import nez.lang.DefIndent;
 import nez.lang.DefSymbol;
 import nez.lang.ExistsSymbol;
 import nez.lang.Expression;
-import nez.lang.Factory;
+import nez.lang.GrammarFactory;
 import nez.lang.Grammar;
 import nez.lang.IsIndent;
 import nez.lang.IsSymbol;
 import nez.lang.Link;
 import nez.lang.LocalTable;
-import nez.lang.Manipulator;
+import nez.lang.GrammarReshaper;
 import nez.lang.New;
 import nez.lang.NonTerminal;
 import nez.lang.Not;
@@ -131,7 +131,7 @@ public class NezCompiler0 extends NezCompiler {
 				continue;
 			}
 			if(!UFlag.is(option, Grammar.ASTConstruction)) {
-				e = e.reshape(Manipulator.RemoveAST);
+				e = e.reshape(GrammarReshaper.RemoveAST);
 			}
 			CodeBlock block = new CodeBlock();
 			block.head = encodeExpression(e, new IRet(r));
@@ -561,7 +561,7 @@ public class NezCompiler0 extends NezCompiler {
 //		}
 		Expression common = makeCommonChoice(p, p2, true);
 		if(common == null) {
-			return Factory.newChoice(null, p, p2);
+			return GrammarFactory.newChoice(null, p, p2);
 		}
 		return common;
 	}
@@ -599,10 +599,10 @@ public class NezCompiler0 extends NezCompiler {
 			l2.add(retrieveAsList(e2, i));
 		}
 		UList<Expression> l3 = new UList<Expression>(new Expression[2]);
-		Factory.addChoice(l3, Factory.newSequence(null, l1));
-		Factory.addChoice(l3, Factory.newSequence(null, l2));
-		Factory.addSequence(common, Factory.newChoice(null, l3));
-		return Factory.newSequence(null, common);
+		GrammarFactory.addChoice(l3, GrammarFactory.newSequence(null, l1));
+		GrammarFactory.addChoice(l3, GrammarFactory.newSequence(null, l2));
+		GrammarFactory.addSequence(common, GrammarFactory.newChoice(null, l3));
+		return GrammarFactory.newSequence(null, common);
 	}
 	
 	private final Instruction encodePrefetchChoice(Choice p, Instruction next) {
@@ -732,10 +732,10 @@ public class NezCompiler0 extends NezCompiler {
 			l2.add(retrieveAsList(e2, i));
 		}
 		UList<Expression> l3 = new UList<Expression>(new Expression[2]);
-		Factory.addChoice(l3, Factory.newSequence(null, l1));
-		Factory.addChoice(l3, Factory.newSequence(null, l2));
-		Factory.addSequence(common, Factory.newChoice(null, l3));
-		return Factory.newSequence(null, common);
+		GrammarFactory.addChoice(l3, GrammarFactory.newSequence(null, l1));
+		GrammarFactory.addChoice(l3, GrammarFactory.newSequence(null, l2));
+		GrammarFactory.addSequence(common, GrammarFactory.newChoice(null, l3));
+		return GrammarFactory.newSequence(null, common);
 	}
 
 	private final Expression makeCommonPrefix(Choice p) {
@@ -774,12 +774,12 @@ public class NezCompiler0 extends NezCompiler {
 			common = e;
 		}
 		l.add(common);
-		return Factory.newChoice(null, l);
+		return GrammarFactory.newChoice(null, l);
 	}
 
 	private final int sizeAsSequence(Expression e) {
 		if(e instanceof NonTerminal) {
-			e = Factory.resolveNonTerminal(e);
+			e = GrammarFactory.resolveNonTerminal(e);
 		}
 		if(e instanceof Sequence) {
 			return e.size();
@@ -789,7 +789,7 @@ public class NezCompiler0 extends NezCompiler {
 
 	private final Expression retrieveAsList(Expression e, int index) {
 		if(e instanceof NonTerminal) {
-			e = Factory.resolveNonTerminal(e);
+			e = GrammarFactory.resolveNonTerminal(e);
 		}
 		if(e instanceof Sequence) {
 			return e.get(index);
@@ -820,7 +820,7 @@ public class NezCompiler0 extends NezCompiler {
 		}
 		if(this.enablePackratParsing()) {
 			if(!this.enableASTConstruction() || r.isPurePEG()) {
-				Expression ref = Factory.resolveNonTerminal(r.getExpression());
+				Expression ref = GrammarFactory.resolveNonTerminal(r.getExpression());
 				MemoPoint m = this.issueMemoPoint(r.getUniqueName(), ref);
 				if(m != null) {
 					if(UFlag.is(option, Grammar.Tracing)) {
@@ -864,7 +864,7 @@ public class NezCompiler0 extends NezCompiler {
 	public final Instruction encodeLink(Link p, Instruction next) {
 		if(this.enableASTConstruction()) {
 			if(this.enablePackratParsing()) {
-				Expression inner = Factory.resolveNonTerminal(p.get(0));
+				Expression inner = GrammarFactory.resolveNonTerminal(p.get(0));
 				MemoPoint m = this.issueMemoPoint(p.toString(), inner);
 				if(m != null) {
 					if(UFlag.is(option, Grammar.Tracing)) {

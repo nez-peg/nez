@@ -22,7 +22,7 @@ public class Sequence extends Multinary {
 		return " ";
 	}
 	@Override
-	public Expression reshape(Manipulator m) {
+	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeSequence(this);
 	}
 
@@ -107,14 +107,14 @@ public class Sequence extends Multinary {
 		if(UFlag.is(option, Grammar.Optimization) && this.get(this.size() - 1) instanceof AnyChar) {
 			boolean byteMap[] = ByteMap.newMap(false);
 			if(isByteMap(option, byteMap)) {
-				this.optimized = Factory.newByteMap(s, byteMap);
+				this.optimized = GrammarFactory.newByteMap(s, byteMap);
 				return;
 			}
 			// (!'ab' !'ac' .) => (^[a]) / (!'ab' !'ac' .)
 			if(UFlag.is(option, Grammar.Prediction)) {
 				ByteMap.clear(byteMap);
 				if(isPredictedNotByteMap(0, this.size() - 1, byteMap, option)) {
-					this.optimized = Factory.newChoice(s, Factory.newByteMap(s, byteMap), this);
+					this.optimized = GrammarFactory.newChoice(s, GrammarFactory.newByteMap(s, byteMap), this);
 					return;
 				}
 			}
@@ -156,7 +156,7 @@ public class Sequence extends Multinary {
 					New n = (New)p;
 					l.ArrayValues[i-1] = e;
 					if(n.isInterned()) {
-						l.ArrayValues[i] =  Factory.newNew(n.s, n.lefted, n.shift - 1);
+						l.ArrayValues[i] =  GrammarFactory.newNew(n.s, n.lefted, n.shift - 1);
 					}
 					else {
 						n.shift -= 1;
@@ -168,7 +168,7 @@ public class Sequence extends Multinary {
 					Capture n = (Capture)p;
 					l.ArrayValues[i-1] = e;
 					if(n.isInterned()) {
-						l.ArrayValues[i] =  Factory.newCapture(n.s, n.shift - 1);
+						l.ArrayValues[i] =  GrammarFactory.newCapture(n.s, n.shift - 1);
 					}
 					else {
 						n.shift -= 1;
@@ -178,7 +178,7 @@ public class Sequence extends Multinary {
 				}
 			}
 		}
-		return Factory.newSequence(s, l);
+		return GrammarFactory.newSequence(s, l);
 	}
 
 	

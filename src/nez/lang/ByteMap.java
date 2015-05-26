@@ -30,7 +30,7 @@ public class ByteMap extends Terminal {
 	}
 
 	@Override
-	public Expression reshape(Manipulator m) {
+	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeByteMap(this);
 	}
 

@@ -2,7 +2,7 @@ package nez.lang;
 
 import nez.util.UList;
 
-public class Typestate extends Manipulator {
+public class Typestate extends GrammarReshaper {
 	public final static int Undefined         = -1;
 	public final static int BooleanType       = 0;
 	public final static int ObjectType        = 1;
@@ -63,7 +63,7 @@ public class Typestate extends Manipulator {
 		if(p.lefted) {
 			if(this.required != Typestate.OperationType) {
 				this.reportRemoved(p, "{@");
-				return p.reshape(Manipulator.RemoveASTandRename);
+				return p.reshape(GrammarReshaper.RemoveASTandRename);
 			}
 		}
 		else {
@@ -80,22 +80,22 @@ public class Typestate extends Manipulator {
 	public Expression reshapeLink(Link p) {
 		if(this.required != Typestate.OperationType) {
 			reportRemoved(p, "@");
-			p.inner = p.inner.reshape(Manipulator.RemoveASTandRename);
+			p.inner = p.inner.reshape(GrammarReshaper.RemoveASTandRename);
 		}
 		this.required = Typestate.ObjectType;
 		Expression inn = p.inner.reshape(this);
 		if(this.required != Typestate.OperationType) {
 			reportRemoved(p, "@");
 			this.required = Typestate.OperationType;
-			return update(p, inn);
+			return updateInner(p, inn);
 		}
 		this.required = Typestate.OperationType;
-		return update(p, inn);
+		return updateInner(p, inn);
 	}
 	
 	@Override
 	public Expression reshapeMatch(Match p) {
-		return p.inner.reshape(Manipulator.RemoveASTandRename);
+		return p.inner.reshape(GrammarReshaper.RemoveASTandRename);
 	}
 
 	@Override
@@ -135,7 +135,7 @@ public class Typestate extends Manipulator {
 		if(this.required == Typestate.ObjectType) {
 			if(t == Typestate.OperationType) {
 				reportRemoved(p, "AST operations");
-				return p.reshape(Manipulator.RemoveASTandRename);
+				return p.reshape(GrammarReshaper.RemoveASTandRename);
 			}
 			this.required = Typestate.OperationType;
 			return p;
@@ -143,7 +143,7 @@ public class Typestate extends Manipulator {
 		if(this.required == Typestate.OperationType) {
 			if(t == Typestate.ObjectType) {
 				reportInserted(p, "@");
-				return Factory.newLink(p.s, p, -1);
+				return GrammarFactory.newLink(p.s, p, -1);
 			}
 		}
 		return p;
@@ -156,13 +156,13 @@ public class Typestate extends Manipulator {
 		UList<Expression> l = p.newList();
 		for(Expression e : p) {
 			this.required = required;
-			Factory.addChoice(l, e.reshape(this));
+			GrammarFactory.addChoice(l, e.reshape(this));
 			if(this.required != required && this.required != next) {
 				next = this.required;
 			}
 		}
 		this.required = next;
-		return Factory.newChoice(p.s, l);
+		return GrammarFactory.newChoice(p.s, l);
 	}
 	
 	@Override
@@ -171,10 +171,10 @@ public class Typestate extends Manipulator {
 		Expression inn = p.inner.reshape(this);
 		if(required != Typestate.OperationType && this.required == Typestate.OperationType) {
 			checker.reportWarning(p.s, "unable to create objects in repetition => removed!!");
-			inn = inn.reshape(Manipulator.RemoveASTandRename);
+			inn = inn.reshape(GrammarReshaper.RemoveASTandRename);
 			this.required = required;
 		}
-		return update(p, inn);
+		return updateInner(p, inn);
 	}
 
 	@Override
@@ -183,10 +183,10 @@ public class Typestate extends Manipulator {
 		Expression inn = p.inner.reshape(this);
 		if(required != Typestate.OperationType && this.required == Typestate.OperationType) {
 			checker.reportWarning(p.s, "unable to create objects in repetition => removed!!");
-			inn = inn.reshape(Manipulator.RemoveASTandRename);
+			inn = inn.reshape(GrammarReshaper.RemoveASTandRename);
 			this.required = required;
 		}
-		return update(p, inn);
+		return updateInner(p, inn);
 	}
 	
 	@Override
@@ -195,10 +195,10 @@ public class Typestate extends Manipulator {
 		Expression inn = p.inner.reshape(this);
 		if(required != Typestate.OperationType && this.required == Typestate.OperationType) {
 			checker.reportWarning(p.s, "unable to create objects in repetition => removed!!");
-			inn = inn.reshape(Manipulator.RemoveASTandRename);
+			inn = inn.reshape(GrammarReshaper.RemoveASTandRename);
 			this.required = required;
 		}
-		return update(p, inn);
+		return updateInner(p, inn);
 	}
 
 
@@ -208,16 +208,16 @@ public class Typestate extends Manipulator {
 			this.required = Typestate.BooleanType;
 			Expression inn = p.inner.reshape(this);
 			this.required = Typestate.ObjectType;
-			return update(p, inn);
+			return updateInner(p, inn);
 		}
-		return update(p, p.inner.reshape(this));
+		return updateInner(p, p.inner.reshape(this));
 	}
 
 	@Override
 	public Expression reshapeNot(Not p) {
 		int t = p.inner.inferTypestate(null);
 		if(t == Typestate.ObjectType || t == Typestate.OperationType) {
-			update(p, p.inner.reshape(Manipulator.RemoveASTandRename));
+			updateInner(p, p.inner.reshape(GrammarReshaper.RemoveASTandRename));
 		}
 		return p;
 	}
@@ -226,7 +226,7 @@ public class Typestate extends Manipulator {
 	public Expression reshapeDefSymbol(DefSymbol p) {
 		int t = p.inner.inferTypestate(null);
 		if(t != Typestate.BooleanType) {
-			update(p, p.inner.reshape(Manipulator.RemoveASTandRename));
+			updateInner(p, p.inner.reshape(GrammarReshaper.RemoveASTandRename));
 		}
 		return p;
 	}
@@ -236,7 +236,7 @@ public class Typestate extends Manipulator {
 		Expression e = p.getSymbolExpression();
 		if(e == null) {
 			checker.reportError(p.s, "undefined table: " + p.getTableName());
-			return Factory.newFailure(p.s);
+			return GrammarFactory.newFailure(p.s);
 		}
 		return p;
 	}

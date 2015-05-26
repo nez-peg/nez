@@ -29,7 +29,7 @@ public class Production extends Expression {
 		this.ns = ns;
 		this.name = name;
 		this.uname = ns.uniqueName(name);
-		this.body = (body == null) ? Factory.newEmpty(s) : body;
+		this.body = (body == null) ? GrammarFactory.newEmpty(s) : body;
 		this.original = this;
 		this.minlen = StructualAnalysis.quickConsumedCheck(body);
 	}
@@ -39,7 +39,7 @@ public class Production extends Expression {
 		this.ns = original.getNameSpace();
 		this.name = name;
 		this.uname = ns.uniqueName(name);
-		this.body = (body == null) ? Factory.newEmpty(s) : body;
+		this.body = (body == null) ? GrammarFactory.newEmpty(s) : body;
 		this.original = original;
 		this.minlen = StructualAnalysis.quickConsumedCheck(body);
 	}
@@ -98,7 +98,7 @@ public class Production extends Expression {
 	}
 
 	@Override
-	public Expression reshape(Manipulator m) {
+	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeProduction(this);
 	}
 	

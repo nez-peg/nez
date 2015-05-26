@@ -21,7 +21,7 @@ public class Link extends Unary {
 		return (index != -1) ? "@" + index : "@";
 	}
 	@Override
-	public Expression reshape(Manipulator m) {
+	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeLink(this);
 	}
 

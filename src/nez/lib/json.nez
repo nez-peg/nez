@@ -65,7 +65,7 @@ File
 	= S* Value S* !.
 
 
-/* Tokens */
+/* Code Layout, Tokens */
 
 S = [ \t\n\r]
 "[" = '[' S*
@@ -87,8 +87,6 @@ public Value
 	/ True
 	/ False
 	/ ObjectId
-
-
 
 public Object
 	= { "{" (@Member ("," @Member )* )? "}" #JSON }

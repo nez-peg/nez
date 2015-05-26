@@ -24,7 +24,7 @@ public class Replace extends ASTOperation {
 		return false;
 	}
 	@Override
-	public Expression reshape(Manipulator m) {
+	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeReplace(this);
 	}
 	@Override

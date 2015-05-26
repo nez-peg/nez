@@ -13,7 +13,7 @@ import nez.lang.ByteMap;
 import nez.lang.Choice;
 import nez.lang.Empty;
 import nez.lang.Expression;
-import nez.lang.Factory;
+import nez.lang.GrammarFactory;
 import nez.lang.Failure;
 import nez.lang.Grammar;
 import nez.lang.GrammarVisitor;
@@ -762,7 +762,7 @@ public class Compiler extends GrammarVisitor {
 		if(l.size() == 0) {
 			l.add(failed);
 		}
-		return Factory.newChoice(null, l);
+		return GrammarFactory.newChoice(null, l);
 	}
 	
 	private void checkChoice(Choice choice, int c, UList<Expression> l) {
@@ -918,7 +918,7 @@ public class Compiler extends GrammarVisitor {
 		else {
 			Expression[] matchCase = new Expression[257];
 			UList<Expression> caseList = new UList<Expression>(new Expression[257]);
-			Expression fails = Factory.newFailure(null);
+			Expression fails = GrammarFactory.newFailure(null);
 			for(int i = 0; i < 257; i++) {
 				boolean isNotGenerated = true;
 				matchCase[i] = checkChoice(e, i, fails);

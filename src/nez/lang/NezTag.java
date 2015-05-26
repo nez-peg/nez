@@ -60,7 +60,8 @@ public class NezTag {
 	static final Tag Rule         = Tag.tag("Rule");
 	static final Tag Import       = Tag.tag("Import");
 	static final Tag Example      = Tag.tag("Example");
-	static final Tag Rebuttal        = Tag.tag("Rebut");
+	static final Tag Template     = Tag.tag("Template");
+	static final Tag Rebuttal     = Tag.tag("Rebut");
 	static final Tag Format       = Tag.tag("Format");
 
 }

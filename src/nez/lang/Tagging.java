@@ -31,7 +31,7 @@ public class Tagging extends ASTOperation {
 		return false;
 	}
 	@Override
-	public Expression reshape(Manipulator m) {
+	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeTagging(this);
 	}
 //	@Override
