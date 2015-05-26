@@ -90,8 +90,8 @@ public class ByteMap extends Terminal {
 	}
 	
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next) {
-		return bc.encodeByteMap(this, next);
+	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
+		return bc.encodeByteMap(this, next, failjump);
 	}
 	@Override
 	protected int pattern(GEP gep) {

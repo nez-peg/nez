@@ -226,8 +226,8 @@ public class Sequence extends Multinary {
 	}
 	
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next) {
-		return bc.encodeSequence(this, next);
+	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
+		return bc.encodeSequence(this, next, failjump);
 	}
 	
 	@Override

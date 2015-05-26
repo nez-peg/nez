@@ -146,8 +146,8 @@ public class NonTerminal extends Expression {
 		this.optimized = e;
 	}
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next) {
-		return bc.encodeNonTerminal(this, next);
+	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
+		return bc.encodeNonTerminal(this, next, failjump);
 	}
 	@Override
 	protected int pattern(GEP gep) {

@@ -72,8 +72,8 @@ public class IsSymbol extends Terminal {
 		return Prediction.Accept;
 	}
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next) {
-		return bc.encodeIsSymbol(this, next);
+	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
+		return bc.encodeIsSymbol(this, next, failjump);
 	}
 	@Override
 	protected int pattern(GEP gep) {

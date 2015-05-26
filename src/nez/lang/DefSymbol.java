@@ -90,8 +90,8 @@ public class DefSymbol extends Unary {
 	}
 	
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next) {
-		return bc.encodeDefSymbol(this, next);
+	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
+		return bc.encodeDefSymbol(this, next, failjump);
 	}
 
 	@Override

@@ -52,7 +52,7 @@ public class New extends Unconsumed {
 		return Typestate.ObjectType;
 	}
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next) {
+	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
 		return bc.encodeNew(this, next);
 	}
 	@Override

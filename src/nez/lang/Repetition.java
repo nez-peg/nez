@@ -52,7 +52,7 @@ public class Repetition extends Unary {
 	}
 			
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next) {
+	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
 		return bc.encodeRepetition(this, next);
 	}
 

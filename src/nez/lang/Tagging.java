@@ -40,7 +40,7 @@ public class Tagging extends ASTOperation {
 //		return true;
 //	}
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next) {
+	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
 		return bc.encodeTagging(this, next);
 	}
 }

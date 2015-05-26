@@ -179,19 +179,19 @@ public class DeprecatedNezCompiler extends NezCompiler1 {
 //	}
 	
 	
-	public final Instruction encodeExpression(Expression e, Instruction next) {
-		return e.encode(this, next);
+	public final Instruction encodeExpression(Expression e, Instruction next, Instruction failjump) {
+		return e.encode(this, next, failjump);
 	}
 	
-	public final Instruction encodeMatchAny(AnyChar p, Instruction next) {
+	public final Instruction encodeMatchAny(AnyChar p, Instruction next, Instruction failjump) {
 		return new IAnyChar(p, next);
 	}
 
-	public final Instruction encodeByteChar(ByteChar p, Instruction next) {
+	public final Instruction encodeByteChar(ByteChar p, Instruction next, Instruction failjump) {
 		return new IByteChar(p, next);
 	}
 
-	public final Instruction encodeByteMap(ByteMap p, Instruction next) {
+	public final Instruction encodeByteMap(ByteMap p, Instruction next, Instruction failjump) {
 		return new IByteMap(p, next);
 	}
 
@@ -261,31 +261,31 @@ public class DeprecatedNezCompiler extends NezCompiler1 {
 	
 	
 	public final Instruction encodeOption(Option p, Instruction next) {
-		if(UFlag.is(option, Grammar.DFA) && checkInstruction(next)) {
-			boolean[] dfa = predictNext(next);
-			boolean[] optdfa = predictInner(p.get(0), dfa);
-			if(isDisjoint(dfa, optdfa)) {
-				Instruction opt = replaceConsumeInstruction(encodeExpression(p.get(0), next));
-				next = replaceConsumeInstruction(next);
-				IDfaDispatch match = new IDfaDispatch(p, commonFailure);
-				for(int ch = 0; ch < dfa.length; ch++) {
-					if(optdfa[ch]) {
-						dfa[ch] = true;
-						match.setJumpTable(ch, opt);
-						continue;
-					}
-					if(dfa[ch]) {
-						match.setJumpTable(ch, next);
-					}
-				}
-//				if(!(next instanceof IByteChar)) {
-//					System.out.println("DFA: " + p + " " + next.e + "  ## " + next.getClass());
+//		if(UFlag.is(option, Grammar.DFA) && checkInstruction(next)) {
+//			boolean[] dfa = predictNext(next);
+//			boolean[] optdfa = predictInner(p.get(0), dfa);
+//			if(isDisjoint(dfa, optdfa)) {
+//				Instruction opt = replaceConsumeInstruction(encodeExpression(p.get(0), next, failjump));
+//				next = replaceConsumeInstruction(next);
+//				IDfaDispatch match = new IDfaDispatch(p, commonFailure);
+//				for(int ch = 0; ch < dfa.length; ch++) {
+//					if(optdfa[ch]) {
+//						dfa[ch] = true;
+//						match.setJumpTable(ch, opt);
+//						continue;
+//					}
+//					if(dfa[ch]) {
+//						match.setJumpTable(ch, next);
+//					}
 //				}
-				return match;
-			}
+////				if(!(next instanceof IByteChar)) {
+////					System.out.println("DFA: " + p + " " + next.e + "  ## " + next.getClass());
+////				}
+//				return match;
+//			}
 //			System.out.println("NFA: " + p + " " + next.e);
 //			System.out.println("NFA: " + StringUtils.stringfyCharClass(and(dfa, optdfa)));
-		}
+//		}
 		if(UFlag.is(option, Grammar.Specialization)) {
 			Expression inner = p.get(0).optimize(option);
 			if(inner instanceof ByteChar) {
@@ -300,34 +300,33 @@ public class DeprecatedNezCompiler extends NezCompiler1 {
 		if(UFlag.is(option, Grammar.DFA)) {
 			Verbose.printNFA(p + " " + next.e);
 		}
-
 		Instruction pop = new IFailPop(p, next);
-		return new IFailPush(p, next, encodeExpression(p.get(0), pop));
+		return new IFailPush(p, next, encodeExpression(p.get(0), pop, next));
 	}
 	
 	public final Instruction encodeRepetition(Repetition p, Instruction next) {
-		if(UFlag.is(option, Grammar.DFA) && !p.possibleInfiniteLoop && checkInstruction(next)) {
-			boolean[] dfa = predictNext(next);
-			boolean[] optdfa = predictInner(p.get(0), dfa);
-			if(isDisjoint(dfa, optdfa)) {
-				IDfaDispatch match = new IDfaDispatch(p, commonFailure);
-				Instruction opt = replaceConsumeInstruction(encodeExpression(p.get(0), match));
-				next = replaceConsumeInstruction(next);
-				System.out.println("DFA: " + p + " " + next.e);
-				System.out.println("  1 " + p + " " + StringUtils.stringfyCharClass(optdfa));
-				System.out.println("  2 " + next.e + " " + StringUtils.stringfyCharClass(dfa));
-				for(int ch = 0; ch < dfa.length; ch++) {
-					if(optdfa[ch]) {
-						match.setJumpTable(ch, opt);
-						continue;
-					}
-					if(dfa[ch]) {
-						match.setJumpTable(ch, next);
-					}
-				}
-				return match;
-			}
-		}
+//		if(UFlag.is(option, Grammar.DFA) && !p.possibleInfiniteLoop && checkInstruction(next)) {
+//			boolean[] dfa = predictNext(next);
+//			boolean[] optdfa = predictInner(p.get(0), dfa);
+//			if(isDisjoint(dfa, optdfa)) {
+//				IDfaDispatch match = new IDfaDispatch(p, commonFailure);
+//				Instruction opt = replaceConsumeInstruction(encodeExpression(p.get(0), match, failjump));
+//				next = replaceConsumeInstruction(next);
+//				System.out.println("DFA: " + p + " " + next.e);
+//				System.out.println("  1 " + p + " " + StringUtils.stringfyCharClass(optdfa));
+//				System.out.println("  2 " + next.e + " " + StringUtils.stringfyCharClass(dfa));
+//				for(int ch = 0; ch < dfa.length; ch++) {
+//					if(optdfa[ch]) {
+//						match.setJumpTable(ch, opt);
+//						continue;
+//					}
+//					if(dfa[ch]) {
+//						match.setJumpTable(ch, next);
+//					}
+//				}
+//				return match;
+//			}
+//		}
 		if(UFlag.is(option, Grammar.Specialization)) {
 			Expression inner = p.get(0).optimize(option);
 			if(inner instanceof ByteChar) {
@@ -343,21 +342,21 @@ public class DeprecatedNezCompiler extends NezCompiler1 {
 			Verbose.printNFA(p + " " + next.e);
 		}
 		IFailSkip skip = p.possibleInfiniteLoop ? new IFailCheckSkip(p) : new IFailCheckSkip(p);
-		Instruction start = encodeExpression(p.get(0), skip);
+		Instruction start = encodeExpression(p.get(0), skip, next);
 		skip.next = start;
 		return new IFailPush(p, next, start);
 	}
 
-	public final Instruction encodeRepetition1(Repetition1 p, Instruction next) {
-		return encodeExpression(p.get(0), this.encodeRepetition(p, next));
+	public final Instruction encodeRepetition1(Repetition1 p, Instruction next, Instruction failjump) {
+		return encodeExpression(p.get(0), this.encodeRepetition(p, next), failjump);
 	}
 
-	public final Instruction encodeAnd(And p, Instruction next) {
-		Instruction inner = encodeExpression(p.get(0), new IPosBack(p, next));
+	public final Instruction encodeAnd(And p, Instruction next, Instruction failjump) {
+		Instruction inner = encodeExpression(p.get(0), new IPosBack(p, next), failjump);
 		return new IPosPush(p, inner);
 	}
 
-	public final Instruction encodeNot(Not p, Instruction next) {
+	public final Instruction encodeNot(Not p, Instruction next, Instruction failjump) {
 		if(UFlag.is(option, Grammar.Specialization)) {
 			Expression inn = p.get(0).optimize(option);
 			if(inn instanceof ByteMap) {
@@ -378,21 +377,21 @@ public class DeprecatedNezCompiler extends NezCompiler1 {
 			}
 		}
 		Instruction fail = new IFailPop(p, new IFail(p));
-		return new INotFailPush(p, next, encodeExpression(p.get(0), fail));
+		return new INotFailPush(p, next, encodeExpression(p.get(0), fail, failjump));
 	}
 
-	public final Instruction encodeSequence(Expression p, Instruction next) {
+	public final Instruction encodeSequence(Expression p, Instruction next, Instruction failjump) {
 		Expression pp = p.optimize(option);
 		if(pp != p) {
 			if(pp instanceof ByteMap) {
 				Verbose.noticeOptimize("ByteMap", p, pp);
-				return encodeByteMap((ByteMap)pp, next);
+				return encodeByteMap((ByteMap)pp, next, failjump);
 			}
 		}
 		Instruction nextStart = next;
 		for(int i = p.size() -1; i >= 0; i--) {
 			Expression e = p.get(i);
-			nextStart = encodeExpression(e, nextStart);
+			nextStart = encodeExpression(e, nextStart, failjump);
 		}
 //		if(pp != p) { 	// (!'ab' !'ac' .) => (!'a' .) / (!'ab' !'ac' .)
 		if(pp instanceof Choice && pp.get(0) instanceof ByteMap) {
@@ -413,16 +412,16 @@ public class DeprecatedNezCompiler extends NezCompiler1 {
 		return nextStart;
 	}
 
-	public final Instruction encodeChoice(Choice p, Instruction next) {
+	public final Instruction encodeChoice(Choice p, Instruction next, Instruction failjump) {
 		Expression pp = p.optimize(option);
 		if(pp instanceof ByteMap) {
 			Verbose.noticeOptimize("ByteMap", p, pp);
-			return encodeByteMap((ByteMap)pp, next);
+			return encodeByteMap((ByteMap)pp, next, failjump);
 		}
 		if(UFlag.is(option, Grammar.Prediction) && p.predictedCase != null) {
-			return encodePredicatedChoice(p, next);
+			return encodePredicatedChoice(p, next, failjump);
 		}
-		return this.encodeUnoptimizedChoice(p, next);
+		return this.encodeUnoptimizedChoice(p, next, failjump);
 	}
 	
 	private final Instruction encodeBacktrack(Expression e, int ch, Instruction next) {
@@ -430,7 +429,7 @@ public class DeprecatedNezCompiler extends NezCompiler1 {
 		return new IBacktrack(e, ch, next);
 	}
 
-	private final Instruction encodePredicatedChoice(Choice choice, Instruction next) {
+	private final Instruction encodePredicatedChoice(Choice choice, Instruction next, Instruction failjump) {
 		HashMap<Integer, Instruction> m = new HashMap<Integer, Instruction>();
 		IDfaDispatch dispatch = new IDfaDispatch(choice, null);
 		for(int ch = 0; ch < choice.predictedCase.length; ch++) {
@@ -442,17 +441,17 @@ public class DeprecatedNezCompiler extends NezCompiler1 {
 //					if(predicated == choice) {
 						/* this is a rare case where the selected choice is the parent choice */
 						/* this cause the repeated calls of the same matchers */
-						inst = encodeBacktrack(choice, ch, this.encodeUnoptimizedChoice(choice, next));
+						inst = encodeBacktrack(choice, ch, this.encodeUnoptimizedChoice(choice, next, failjump));
 						continue;
 //					}
 				}
 				Expression factored = CharacterFactoring.s.tryFactoringCharacter(predicated);
 				if(factored != null) {
 					//System.out.println("factored("+ch+"): " + factored);
-					inst = encodeExpression(factored, next);
+					inst = encodeExpression(factored, next, failjump);
 				}
 				else {
-					inst = encodeBacktrack(predicated, ch, encodeExpression(predicated, next));
+					inst = encodeBacktrack(predicated, ch, encodeExpression(predicated, next, failjump));
 				}
 				m.put(predicated.getId(), inst);
 			}
@@ -462,26 +461,26 @@ public class DeprecatedNezCompiler extends NezCompiler1 {
 	}
 	
 
-	public final Instruction encodeUnoptimizedChoice(Choice p, Instruction next) {
+	public final Instruction encodeUnoptimizedChoice(Choice p, Instruction next, Instruction failjump) {
 		//System.out.println("@@@@@" + p);
-		Instruction nextChoice = encodeExpression(p.get(p.size()-1), next);
+		Instruction nextChoice = encodeExpression(p.get(p.size()-1), next, failjump);
 		for(int i = p.size() -2; i >= 0; i--) {
 			Expression e = p.get(i);
-			nextChoice = new IFailPush(e, nextChoice, encodeExpression(e, new IFailPop(e, next)));
+			nextChoice = new IFailPush(e, nextChoice, encodeExpression(e, new IFailPop(e, next), failjump));
 		}
 		return nextChoice;
 	}
 
-	public final Instruction encodeNonTerminal(NonTerminal p, Instruction next) {
+	public final Instruction encodeNonTerminal(NonTerminal p, Instruction next, Instruction failjump) {
 		Production r = p.getProduction();
 		Expression pp = p.optimize(option);
 		if(pp instanceof ByteChar || pp instanceof ByteMap || pp instanceof AnyChar) {
 			Verbose.noticeOptimize("Inlining", p, pp);
-			return encodeExpression(pp, next);
+			return encodeExpression(pp, next, failjump);
 		}
 		if(r.isInline() && UFlag.is(option, Grammar.Inlining)) {
 			Verbose.noticeOptimize("Inlining", p, r.getExpression());
-			return encodeExpression(r.getExpression(), next);
+			return encodeExpression(r.getExpression(), next, failjump);
 		}
 		if(this.enablePackratParsing()) {
 			if(!this.enableASTConstruction() || r.isPurePEG()) {
@@ -526,25 +525,25 @@ public class DeprecatedNezCompiler extends NezCompiler1 {
 	
 	// AST Construction
 	
-	public final Instruction encodeLink(Link p, Instruction next) {
+	public final Instruction encodeLink(Link p, Instruction next, Instruction failjump) {
 		if(this.enableASTConstruction()) {
 			if(this.enablePackratParsing()) {
 				Expression inner = GrammarFactory.resolveNonTerminal(p.get(0));
 				MemoPoint m = this.issueMemoPoint(p.toString(), inner);
 				if(m != null) {
 					if(UFlag.is(option, Grammar.Tracing)) {
-						IMonitoredSwitch monitor = new IMonitoredSwitch(p, encodeExpression(p.get(0), next));
-						Instruction inside = encodeExpression(p.get(0), newMemoizeNode(p, monitor, m, next));
+						IMonitoredSwitch monitor = new IMonitoredSwitch(p, encodeExpression(p.get(0), next, failjump));
+						Instruction inside = encodeExpression(p.get(0), newMemoizeNode(p, monitor, m, next), failjump);
 						monitor.setActivatedNext(newLookupNode(p, monitor, m, inside, next, new IMemoizeFail(p, monitor, m)));
 						return monitor;
 					}
-					Instruction inside = encodeExpression(p.get(0), newMemoizeNode(p, IMonitoredSwitch.dummyMonitor, m, next));
+					Instruction inside = encodeExpression(p.get(0), newMemoizeNode(p, IMonitoredSwitch.dummyMonitor, m, next), failjump);
 					return newLookupNode(p, IMonitoredSwitch.dummyMonitor, m, inside, next, new IMemoizeFail(p, IMonitoredSwitch.dummyMonitor, m));
 				}
 			}
-			return new INodePush(p, encodeExpression(p.get(0), new INodeStore(p, next)));
+			return new INodePush(p, encodeExpression(p.get(0), new INodeStore(p, next), failjump));
 		}
-		return encodeExpression(p.get(0), next);
+		return encodeExpression(p.get(0), next, failjump);
 	}
 
 	private Instruction newLookupNode(Link e, IMonitoredSwitch monitor, MemoPoint m, Instruction next, Instruction skip, Instruction failjump) {
@@ -604,36 +603,36 @@ public class DeprecatedNezCompiler extends NezCompiler1 {
 		return next;
 	}
 	
-	public final Instruction encodeBlock(Block p, Instruction next) {
+	public final Instruction encodeBlock(Block p, Instruction next, Instruction failjump) {
 		Instruction failed = new ITablePop(p, new IFail(p));
-		Instruction inner = encodeExpression(p.get(0), new IFailPop(p, new ITablePop(p, next)));
+		Instruction inner = encodeExpression(p.get(0), new IFailPop(p, new ITablePop(p, next)), failjump);
 		return new ITablePush(p, new IFailPush(p, failed, inner));
 	}
 	
-	public final Instruction encodeDefSymbol(DefSymbol p, Instruction next) {
-		Instruction inner = encodeExpression(p.get(0), new IDefSymbol(p, next));
+	public final Instruction encodeDefSymbol(DefSymbol p, Instruction next, Instruction failjump) {
+		Instruction inner = encodeExpression(p.get(0), new IDefSymbol(p, next), failjump);
 		return new IPosPush(p, inner);
 	}
 	
-	public final Instruction encodeIsSymbol(IsSymbol p, Instruction next) {
-		Instruction inner = encodeExpression(p.getSymbolExpression(), new IIsSymbol(p, p.checkLastSymbolOnly, next));
+	public final Instruction encodeIsSymbol(IsSymbol p, Instruction next, Instruction failjump) {
+		Instruction inner = encodeExpression(p.getSymbolExpression(), new IIsSymbol(p, p.checkLastSymbolOnly, next), failjump);
 		return new IPosPush(p, inner);
 	}
 	
-	public final Instruction encodeDefIndent(DefIndent p, Instruction next) {
+	public final Instruction encodeDefIndent(DefIndent p, Instruction next, Instruction failjump) {
 		return new IDefIndent(p, next);
 	}
 	
-	public final Instruction encodeIsIndent(IsIndent p, Instruction next) {
+	public final Instruction encodeIsIndent(IsIndent p, Instruction next, Instruction failjump) {
 		return new IIsIndent(p, next);
 	}
 
-	public Instruction encodeExistsSymbol(ExistsSymbol existsSymbol, Instruction next) {
+	public Instruction encodeExistsSymbol(ExistsSymbol existsSymbol, Instruction next, Instruction failjump) {
 		// TODO Auto-generated method stub
 		return next;
 	}
 
-	public Instruction encodeLocalTable(LocalTable localTable, Instruction next) {
+	public Instruction encodeLocalTable(LocalTable localTable, Instruction next, Instruction failjump) {
 		// TODO Auto-generated method stub
 		return next;
 	}

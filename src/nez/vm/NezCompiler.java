@@ -72,33 +72,35 @@ public abstract class NezCompiler {
 
 //	private Instruction failed = new IFail(null);
 	
-	public abstract Instruction encodeExpression(Expression e, Instruction next);
+	public abstract Instruction encodeExpression(Expression e, Instruction next, Instruction failjump);
 	public abstract Instruction encodeFail(Expression p);
-	public abstract Instruction encodeMatchAny(AnyChar p, Instruction next);
-	public abstract Instruction encodeByteChar(ByteChar p, Instruction next);
-	public abstract Instruction encodeByteMap(ByteMap p, Instruction next);
+	public abstract Instruction encodeMatchAny(AnyChar p, Instruction next, Instruction failjump);
+	public abstract Instruction encodeByteChar(ByteChar p, Instruction next, Instruction failjump);
+	public abstract Instruction encodeByteMap(ByteMap p, Instruction next, Instruction failjump);
 	public abstract Instruction encodeOption(Option p, Instruction next);
 	public abstract Instruction encodeRepetition(Repetition p, Instruction next);
-	public abstract Instruction encodeRepetition1(Repetition1 p, Instruction next);
-	public abstract Instruction encodeAnd(And p, Instruction next);
-	public abstract Instruction encodeNot(Not p, Instruction next);
-	public abstract Instruction encodeSequence(Expression p, Instruction next);
-	public abstract Instruction encodeChoice(Choice p, Instruction next);
-	public abstract Instruction encodeNonTerminal(NonTerminal p, Instruction next);
+	public abstract Instruction encodeRepetition1(Repetition1 p, Instruction next, Instruction failjump);
+	public abstract Instruction encodeAnd(And p, Instruction next, Instruction failjump);
+	public abstract Instruction encodeNot(Not p, Instruction next, Instruction failjump);
+	public abstract Instruction encodeSequence(Expression p, Instruction next, Instruction failjump);
+	public abstract Instruction encodeChoice(Choice p, Instruction next, Instruction failjump);
+	public abstract Instruction encodeNonTerminal(NonTerminal p, Instruction next, Instruction failjump);
 	
 	// AST Construction
-	public abstract Instruction encodeLink(Link p, Instruction next);
+	public abstract Instruction encodeLink(Link p, Instruction next, Instruction failjump);
 	public abstract Instruction encodeNew(New p, Instruction next);
 	public abstract Instruction encodeCapture(Capture p, Instruction next);
 	public abstract Instruction encodeTagging(Tagging p, Instruction next);
 	public abstract Instruction encodeReplace(Replace p, Instruction next);
-	public abstract Instruction encodeBlock(Block p, Instruction next);
-	public abstract Instruction encodeDefSymbol(DefSymbol p, Instruction next);
-	public abstract Instruction encodeIsSymbol(IsSymbol p, Instruction next);	
-	public abstract Instruction encodeDefIndent(DefIndent p, Instruction next);
-	public abstract Instruction encodeIsIndent(IsIndent p, Instruction next);
-	public abstract Instruction encodeExistsSymbol(ExistsSymbol existsSymbol, Instruction next);
-	public abstract Instruction encodeLocalTable(LocalTable localTable, Instruction next);
+	
+	// Symbol Tables
+	public abstract Instruction encodeBlock(Block p, Instruction next, Instruction failjump);
+	public abstract Instruction encodeDefSymbol(DefSymbol p, Instruction next, Instruction failjump);
+	public abstract Instruction encodeIsSymbol(IsSymbol p, Instruction next, Instruction failjump);	
+	public abstract Instruction encodeDefIndent(DefIndent p, Instruction next, Instruction failjump);
+	public abstract Instruction encodeIsIndent(IsIndent p, Instruction next, Instruction failjump);
+	public abstract Instruction encodeExistsSymbol(ExistsSymbol existsSymbol, Instruction next, Instruction failjump);
+	public abstract Instruction encodeLocalTable(LocalTable localTable, Instruction next, Instruction failjump);
 	
 
 }

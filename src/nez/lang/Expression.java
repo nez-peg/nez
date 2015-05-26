@@ -10,12 +10,13 @@ import nez.vm.NezCompiler;
 
 public abstract class Expression extends AbstractList<Expression> {
 	public final static boolean ClassicMode = false;
+
 	SourcePosition s = null;
 	int    internId   = 0;
 	
-	public Expression optimized;
 	int    optimizedOption = -1;
 	
+	public Expression optimized;
 	Expression(SourcePosition s) {
 		this.s = s;
 		this.internId = 0;
@@ -105,7 +106,7 @@ public abstract class Expression extends AbstractList<Expression> {
 		visitor.visit(this);
 	}
 
-	public abstract Instruction encode(NezCompiler bc, Instruction next);
+	public abstract Instruction encode(NezCompiler bc, Instruction next, Instruction failjump);
 
 
 	protected int pattern(GEP gep) {

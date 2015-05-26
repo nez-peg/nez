@@ -40,8 +40,8 @@ public class Block extends Unary {
 	}
 	
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next) {
-		return bc.encodeBlock(this, next);
+	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
+		return bc.encodeBlock(this, next, failjump);
 	}
 	
 	@Override

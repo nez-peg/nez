@@ -235,8 +235,8 @@ public class Production extends Expression {
 
 	
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next) {
-		return this.getExpression().encode(bc, next);
+	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
+		return this.getExpression().encode(bc, next, failjump);
 	}
 
 	@Override

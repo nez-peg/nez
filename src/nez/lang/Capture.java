@@ -29,7 +29,7 @@ public class Capture extends ASTOperation {
 	}
 	
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next) {
+	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
 		return bc.encodeCapture(this, next);
 	}
 }

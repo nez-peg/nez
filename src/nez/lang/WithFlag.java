@@ -39,8 +39,8 @@ public class WithFlag extends Unary {
 	}
 	
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next) {
-		return this.inner.encode(bc, next);
+	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
+		return this.inner.encode(bc, next, failjump);
 	}
 
 	@Override

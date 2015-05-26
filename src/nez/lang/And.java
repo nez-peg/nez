@@ -48,8 +48,8 @@ public class And extends Unary {
 	}
 	
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next) {
-		return bc.encodeAnd(this, next);
+	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
+		return bc.encodeAnd(this, next, failjump);
 	}
 	
 	@Override

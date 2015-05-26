@@ -53,8 +53,8 @@ public class AnyChar extends Terminal {
 	}
 	
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next) {
-		return bc.encodeMatchAny(this, next);
+	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
+		return bc.encodeMatchAny(this, next, failjump);
 	}
 	@Override
 	protected int pattern(GEP gep) {

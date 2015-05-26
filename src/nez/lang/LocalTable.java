@@ -67,8 +67,8 @@ public class LocalTable extends Unary {
 	}
 		
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next) {
-		return bc.encodeLocalTable(this, next);
+	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
+		return bc.encodeLocalTable(this, next, failjump);
 	}
 
 	@Override

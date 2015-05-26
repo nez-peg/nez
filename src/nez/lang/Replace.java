@@ -28,7 +28,7 @@ public class Replace extends ASTOperation {
 		return m.reshapeReplace(this);
 	}
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next) {
+	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
 		return bc.encodeReplace(this, next);
 	}
 }

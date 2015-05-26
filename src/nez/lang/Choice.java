@@ -73,8 +73,8 @@ public class Choice extends Multinary {
 	}
 
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next) {
-		return bc.encodeChoice(this, next);
+	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
+		return bc.encodeChoice(this, next, failjump);
 	}
 	
 	// optimize

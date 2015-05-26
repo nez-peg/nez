@@ -30,7 +30,7 @@ public class Failure extends Unconsumed {
 		return Prediction.Reject;
 	}
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next) {
+	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
 		return bc.encodeFail(this);
 	}
 	@Override

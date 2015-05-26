@@ -48,8 +48,8 @@ public class Repetition1 extends Repetition {
 	}
 	
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next) {
-		return bc.encodeRepetition1(this, next);
+	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
+		return bc.encodeRepetition1(this, next, failjump);
 	}
 
 	@Override

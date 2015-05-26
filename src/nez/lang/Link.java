@@ -43,8 +43,8 @@ public class Link extends Unary {
 		return inner.acceptByte(ch, option);
 	}
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next) {
-		return bc.encodeLink(this, next);
+	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
+		return bc.encodeLink(this, next, failjump);
 	}
 	@Override
 	protected int pattern(GEP gep) {

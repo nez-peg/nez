@@ -42,8 +42,8 @@ public class IsIndent extends Terminal {
 	}
 
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next) {
-		return bc.encodeIsIndent(this, next);
+	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
+		return bc.encodeIsIndent(this, next, failjump);
 	}
 	@Override
 	protected int pattern(GEP gep) {

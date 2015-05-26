@@ -20,8 +20,8 @@ public class DefIndent extends Unconsumed {
 	}
 
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next) {
-		return bc.encodeDefIndent(this, next);
+	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
+		return bc.encodeDefIndent(this, next, failjump);
 	}
 	@Override
 	protected int pattern(GEP gep) {

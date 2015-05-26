@@ -38,7 +38,7 @@ public class IfFlag extends Unconsumed {
 	}
 
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next) {
+	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
 		return next;
 	}
 	@Override

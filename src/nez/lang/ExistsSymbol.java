@@ -71,8 +71,8 @@ public class ExistsSymbol extends Expression {
 		return Prediction.Accept;
 	}
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next) {
-		return bc.encodeExistsSymbol(this, next);
+	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
+		return bc.encodeExistsSymbol(this, next, failjump);
 	}
 	@Override
 	protected int pattern(GEP gep) {
