@@ -138,7 +138,7 @@ public class Grammar {
 	}
 	
 	public NezCompiler cc() {
-		NezCompiler bc = new NezCompiler1(this.option);
+		NezCompiler bc = new DeprecatedNezCompiler(this.option);
 		bc.encode(this);
 		return bc;
 	}

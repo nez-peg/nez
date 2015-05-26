@@ -40,22 +40,12 @@ import nez.util.UFlag;
 import nez.util.UList;
 import nez.util.UMap;
 
-public abstract class DeprecatedNezCompiler extends NezCompiler {
+public class DeprecatedNezCompiler extends NezCompiler1 {
 	
-	class CodeBlock {
-		Instruction head;
-		int start;
-		int end;
-	}
-
-	public UList<Instruction> codeList;
-	UMap<CodeBlock> ruleMap;
 	HashMap<Integer, MemoPoint> memoMap;
 	
 	public DeprecatedNezCompiler(int option) {
 		super(option);
-		this.codeList = new UList<Instruction>(new Instruction[64]);
-		this.ruleMap = new UMap<CodeBlock>();
 		if(this.enablePackratParsing()) {
 			this.memoMap = new HashMap<Integer, MemoPoint>();
 			this.visitedMap = new UMap<String>();
@@ -95,11 +85,7 @@ public abstract class DeprecatedNezCompiler extends NezCompiler {
 		}
 		return (e instanceof IsIndent || e instanceof IsSymbol);
 	}
-	
-	public final int getInstructionSize() {
-		return this.codeList.size();
-	}
-	
+		
 	public final int getMemoPointSize() {
 		if(this.enablePackratParsing()) {
 			return this.memoMap.size();
@@ -118,115 +104,80 @@ public abstract class DeprecatedNezCompiler extends NezCompiler {
 		return null;
 	}
 	
-	public final Instruction encode(UList<Production> ruleList) {
-		long t = System.nanoTime();
-		for(Production r : ruleList) {
-			String uname = r.getUniqueName();
-			if(Verbose.Debug) {
-				Verbose.debug("compiling .. " + r);
-			}
-			Expression e = r.getExpression();
-			if(UFlag.is(option, Grammar.Inlining)  && this.ruleMap.size() > 0 && r.isInline() ) {
-				//System.out.println("skip .. " + r.getLocalName() + "=" + e);
-				continue;
-			}
-			if(!UFlag.is(option, Grammar.ASTConstruction)) {
-				e = e.reshape(GrammarReshaper.RemoveAST);
-			}
-			CodeBlock block = new CodeBlock();
-			block.head = encodeExpression(e, new IRet(r));
-			block.start = codeList.size();
-			this.ruleMap.put(uname, block);
-			verify(block.head);
-			block.end = codeList.size();
-		}
-		for(Instruction inst : codeList) {
-			if(inst instanceof ICallPush) {
-				CodeBlock deref = this.ruleMap.get(((ICallPush) inst).rule.getUniqueName());
-				((ICallPush) inst).setResolvedJump(deref.head);
-			}
-		}
-		long t2 = System.nanoTime();
-		//Verbose.printElapsedTime("CompilingTime", t, t2);
-		return this.codeList.ArrayValues[0];
-	}
 
-	void test(Expression e, Instruction inst) {
-		boolean found = false;
-		for(int c = 0; c < 257; c++) {
-			if(e.acceptByte(c, this.option) != inst.isAcceptImpl(c)) {
-				found = true;
-				break;
-			}
-		}
-		if(found) {
-			Verbose.printSelfTesting("\nTesting prediction " +  e + " .. ");
-			for(int c = 0; c < 256; c++) {
-				short a = e.acceptByte(c, option);
-				short a2 = inst.isAcceptImpl(c);
-				if(a != a2) {
-					if(a == Prediction.Accept) {
-						Verbose.printSelfTestingIndent("[Failed] Accept " + StringUtils.formatChar(c) + ": " + a2);
-						break;
-					}
-					if(a == Prediction.Reject) {
-						Verbose.printSelfTestingIndent("[Failed] Reject " + StringUtils.formatChar(c) + ": " + a2);
-						break;
-					}
-					if(a == Prediction.Unconsumed) {
-						Verbose.printSelfTestingIndent("[Failed] Unconsumed " + StringUtils.formatChar(c) + ": " + a2);
-						break;
-					}
-				}
-			}
-			Verbose.printSelfTesting("\nPlease report the above to " + Verbose.BugsReport1);
-		}	
-	}
+//	void test(Expression e, Instruction inst) {
+//		boolean found = false;
+//		for(int c = 0; c < 257; c++) {
+//			if(e.acceptByte(c, this.option) != inst.isAcceptImpl(c)) {
+//				found = true;
+//				break;
+//			}
+//		}
+//		if(found) {
+//			Verbose.printSelfTesting("\nTesting prediction " +  e + " .. ");
+//			for(int c = 0; c < 256; c++) {
+//				short a = e.acceptByte(c, option);
+//				short a2 = inst.isAcceptImpl(c);
+//				if(a != a2) {
+//					if(a == Prediction.Accept) {
+//						Verbose.printSelfTestingIndent("[Failed] Accept " + StringUtils.formatChar(c) + ": " + a2);
+//						break;
+//					}
+//					if(a == Prediction.Reject) {
+//						Verbose.printSelfTestingIndent("[Failed] Reject " + StringUtils.formatChar(c) + ": " + a2);
+//						break;
+//					}
+//					if(a == Prediction.Unconsumed) {
+//						Verbose.printSelfTestingIndent("[Failed] Unconsumed " + StringUtils.formatChar(c) + ": " + a2);
+//						break;
+//					}
+//				}
+//			}
+//			Verbose.printSelfTesting("\nPlease report the above to " + Verbose.BugsReport1);
+//		}	
+//	}
 	
-	void verify(Instruction inst) {
-		if(inst != null) {
-			if(inst.id == -1) {
-				inst.id = this.codeList.size();
-				this.codeList.add(inst);
-				verify(inst.next);
-				if(inst.next != null && inst.id + 1 != inst.next.id) {
-					Instruction.labeling(inst.next);
-				}
-				verify(inst.branch());
-				if(inst instanceof IDfaDispatch) {
-					IDfaDispatch match = (IDfaDispatch)inst;
-					for(int ch = 0; ch < match.jumpTable.length; ch ++) {
-						verify(match.jumpTable[ch]);
-					}
-				}
-				//encode(inst.branch2());
-			}
-		}
-	}
+//	void verify(Instruction inst) {
+//		if(inst != null) {
+//			if(inst.id == -1) {
+//				inst.id = this.codeList.size();
+//				this.codeList.add(inst);
+//				verify(inst.next);
+//				if(inst.next != null && inst.id + 1 != inst.next.id) {
+//					Instruction.labeling(inst.next);
+//				}
+//				verify(inst.branch());
+//				if(inst instanceof IDfaDispatch) {
+//					IDfaDispatch match = (IDfaDispatch)inst;
+//					for(int ch = 0; ch < match.jumpTable.length; ch ++) {
+//						verify(match.jumpTable[ch]);
+//					}
+//				}
+//				//encode(inst.branch2());
+//			}
+//		}
+//	}
 	
-	public void dump(UList<Production> ruleList) {
-		for(Production r : ruleList) {
-			String uname = r.getUniqueName();
-			ConsoleUtils.println(uname + ":");
-			CodeBlock block = this.ruleMap.get(uname);
-			for(int i = block.start; i < block.end; i++) {
-				Instruction inst = codeList.ArrayValues[i];
-				if(inst.label) {
-					ConsoleUtils.println("" + inst.id + "*\t" + inst);
-				}
-				else {
-					ConsoleUtils.println("" + inst.id + "\t" + inst);
-				}
-				if(inst.next != null && inst.next.id != i+1) {
-					ConsoleUtils.println("\tjump " + Instruction.label(inst.next));
-				}
-			}
-		}
-	}
+//	public void dump(UList<Production> ruleList) {
+//		for(Production r : ruleList) {
+//			String uname = r.getUniqueName();
+//			ConsoleUtils.println(uname + ":");
+//			CodeBlock block = this.ruleMap.get(uname);
+//			for(int i = block.start; i < block.end; i++) {
+//				Instruction inst = codeList.ArrayValues[i];
+//				if(inst.label) {
+//					ConsoleUtils.println("" + inst.id + "*\t" + inst);
+//				}
+//				else {
+//					ConsoleUtils.println("" + inst.id + "\t" + inst);
+//				}
+//				if(inst.next != null && inst.next.id != i+1) {
+//					ConsoleUtils.println("\tjump " + Instruction.label(inst.next));
+//				}
+//			}
+//		}
+//	}
 	
-	// encoding
-
-	private Instruction commonFailure = new IFail(null);
 	
 	public final Instruction encodeExpression(Expression e, Instruction next) {
 		return e.encode(this, next);

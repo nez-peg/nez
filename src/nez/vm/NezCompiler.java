@@ -57,40 +57,6 @@ public abstract class NezCompiler {
 	
 	public abstract NezCode encode(Grammar grammar);
 
-//	public final Instruction encode(UList<Production> ruleList) {
-//		long t = System.nanoTime();
-//		for(Production r : ruleList) {
-//			String uname = r.getUniqueName();
-//			if(Verbose.Debug) {
-//				Verbose.debug("compiling .. " + r);
-//			}
-//			Expression e = r.getExpression();
-//			if(UFlag.is(option, Grammar.Inlining)  && this.ruleMap.size() > 0 && r.isInline() ) {
-//				//System.out.println("skip .. " + r.getLocalName() + "=" + e);
-//				continue;
-//			}
-//			if(!UFlag.is(option, Grammar.ASTConstruction)) {
-//				e = e.reshape(Manipulator.RemoveAST);
-//			}
-//			CodeBlock block = new CodeBlock();
-//			block.head = encodeExpression(e, new IRet(r));
-//			block.start = codeList.size();
-//			this.ruleMap.put(uname, block);
-//			verify(block.head);
-//			block.end = codeList.size();
-//		}
-//		for(Instruction inst : codeList) {
-//			if(inst instanceof ICallPush) {
-//				CodeBlock deref = this.ruleMap.get(((ICallPush) inst).rule.getUniqueName());
-//				((ICallPush) inst).setResolvedJump(deref.head);
-//			}
-//		}
-//		long t2 = System.nanoTime();
-//		//Verbose.printElapsedTime("CompilingTime", t, t2);
-//		return this.codeList.ArrayValues[0];
-//	}
-	
-	
 	
 	public final void layoutCode(UList<Instruction> codeList, Instruction inst) {
 		if(inst == null) {
@@ -119,51 +85,27 @@ public abstract class NezCompiler {
 //	private Instruction failed = new IFail(null);
 	
 	public abstract Instruction encodeExpression(Expression e, Instruction next);
-	
 	public abstract Instruction encodeFail(Expression p);
-	
 	public abstract Instruction encodeMatchAny(AnyChar p, Instruction next);
-
 	public abstract Instruction encodeByteChar(ByteChar p, Instruction next);
-	
-
 	public abstract Instruction encodeByteMap(ByteMap p, Instruction next);
-
-
-	
 	public abstract Instruction encodeOption(Option p, Instruction next);
-	
 	public abstract Instruction encodeRepetition(Repetition p, Instruction next);
-
 	public abstract Instruction encodeRepetition1(Repetition1 p, Instruction next);
-
 	public abstract Instruction encodeAnd(And p, Instruction next);
-
 	public abstract Instruction encodeNot(Not p, Instruction next);
-
 	public abstract Instruction encodeSequence(Expression p, Instruction next);
-
 	public abstract Instruction encodeChoice(Choice p, Instruction next);
-	
-	
 	public abstract Instruction encodeNonTerminal(NonTerminal p, Instruction next);
 	
 	// AST Construction
-	
 	public abstract Instruction encodeLink(Link p, Instruction next);
-
 	public abstract Instruction encodeNew(New p, Instruction next);
-
 	public abstract Instruction encodeCapture(Capture p, Instruction next);
-	
 	public abstract Instruction encodeTagging(Tagging p, Instruction next);
-
 	public abstract Instruction encodeReplace(Replace p, Instruction next);
-	
 	public abstract Instruction encodeBlock(Block p, Instruction next);
-	
 	public abstract Instruction encodeDefSymbol(DefSymbol p, Instruction next);
-	
 	public abstract Instruction encodeIsSymbol(IsSymbol p, Instruction next);	
 	public abstract Instruction encodeDefIndent(DefIndent p, Instruction next);
 	public abstract Instruction encodeIsIndent(IsIndent p, Instruction next);
