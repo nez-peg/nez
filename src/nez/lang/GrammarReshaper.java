@@ -39,23 +39,25 @@ public class GrammarReshaper {
 
 	public Expression reshapeSequence(Sequence e) {
 		int i = 0;
-		boolean updated = false;
+		Expression updated = null;
 		for(i = 0; i < e.size(); i++) {
 			Expression s = e.get(i);
-			Expression r = s.reshape(this);
-			if(r != s) {
-				updated = true;
-				break;
+			updated = s.reshape(this);
+			if(s == updated) {
+				updated = null;
+				continue;
 			}
+			break;
 		}
-		if(!updated) {
+		if(updated == null) {
 			return e;
 		}
 		UList<Expression> l = e.newList();
 		for(int j = 0; j < i; j++) {
 			l.add(e.get(j));
 		}
-		for(int j = i; j < e.size(); j++) {
+		GrammarFactory.addSequence(l, updated);
+		for(int j = i + 1; j < e.size(); j++) {
 			GrammarFactory.addSequence(l, e.get(j).reshape(this));
 		}
 		return GrammarFactory.newSequence(e.s, l);
@@ -63,23 +65,25 @@ public class GrammarReshaper {
 
 	public Expression reshapeChoice(Choice e) {
 		int i = 0;
-		boolean updated = false;
+		Expression updated = null;
 		for(i = 0; i < e.size(); i++) {
 			Expression s = e.get(i);
-			Expression r = s.reshape(this);
-			if(r != s) {
-				updated = true;
-				break;
+			updated = s.reshape(this);
+			if(s == updated) {
+				updated = null;
+				continue;
 			}
+			break;
 		}
-		if(!updated) {
+		if(updated == null) {
 			return e;
 		}
 		UList<Expression> l = e.newList();
 		for(int j = 0; j < i; j++) {
 			l.add(e.get(j));
 		}
-		for(int j = i; j < e.size(); j++) {
+		GrammarFactory.addChoice(l, updated);
+		for(int j = i+1; j < e.size(); j++) {
 			GrammarFactory.addChoice(l, e.get(j).reshape(this));
 		}
 		return GrammarFactory.newChoice(e.s, l);
