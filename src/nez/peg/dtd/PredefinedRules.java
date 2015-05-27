@@ -146,6 +146,7 @@ public class PredefinedRules {
 				grammar.newByteChar('='),
 				grammar.newRepetition(grammar.newNonTerminal("S")),
 				grammar.newNonTerminal("STRING"),
+				grammar.newRepetition(grammar.newNonTerminal("S"))
 		};
 		grammar.defineProduction(null, "ATTRIBUTE", grammar.newSequence(l));
 	}
