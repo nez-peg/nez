@@ -45,7 +45,7 @@ SpContent
 	= {'EMPTY' #Empty} / {'ANY' #Any}
 
 topMember
-	=   ('(' _* @Data _* ')' {@ &'' addQualifier}? ) / @ElName / @Choice / @Seq
+	=   ('(' _* @{'#PCDATA' #OnlyData} _* ')' {@ &'' addQualifier}? ) / @ElName / @Choice / @Seq
 	
 member
 	=   (@Data / @ElName / @Choice / @Seq) 

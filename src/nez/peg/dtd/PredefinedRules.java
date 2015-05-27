@@ -93,8 +93,7 @@ public class PredefinedRules {
 		Expression choice = grammar.newChoice(grammar.newNonTerminal("RootElement"),
 				grammar.newNonTerminal("COMMENT"));
 		Expression[] l = {
-				grammar.newRepetition(grammar.newNonTerminal("S")),
-				grammar.newRepetition(choice, grammar.newNonTerminal("S"))
+			grammar.newRepetition1(choice)
 		};
 		grammar.defineProduction(null, "Content", grammar.newSequence(l));
 	}
@@ -128,8 +127,8 @@ public class PredefinedRules {
 
 	final void defIdToken() {
 		Expression[] l = {
-				grammar.newRepetition(GrammarFactory.newCharSet(null, "-A-Za-z0-9:._")),
 				GrammarFactory.newCharSet(null, "-A-Za-z0-9:._"),
+				grammar.newRepetition(GrammarFactory.newCharSet(null, "\\-A-Za-z0-9:._")),
 		};
 		grammar.defineProduction(null, "IDTOKEN", grammar.newSequence(l));
 	}
@@ -171,7 +170,8 @@ public class PredefinedRules {
 				grammar.newString("<!--"),
 				grammar.newRepetition(grammar.newNot(grammar.newString("-->")),
 						grammar.newAnyChar()),
-				grammar.newString("-->")
+				grammar.newString("-->"),
+				GrammarFactory.newRepetition(null, grammar.newNonTerminal("S"))
 		};
 		grammar.defineProduction(null, "COMMENT", grammar.newSequence(l));
 	}
@@ -190,8 +190,7 @@ public class PredefinedRules {
 	}
 
 	final void defSpacing() {
-		Expression e = GrammarFactory.newCharSet(null, " \t\r\n");
-		grammar.defineProduction(null, "S", GrammarFactory.newRepetition(null, e));
+		grammar.defineProduction(null, "S", GrammarFactory.newCharSet(null, " \t\r\n"));
 	}
 
 	final void defENDTAG() {
