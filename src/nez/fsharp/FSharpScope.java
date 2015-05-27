@@ -41,11 +41,11 @@ public class FSharpScope {
 		this.recursive = this.isRecursiveFunc(this.node, this.name, false);
 		if(node.is(JSTag.TAG_FUNC_DECL)){
 			this.type = ScopeType.FUNCTION;
+			if(node != null){
+				findLocalVar(node.get(6));
+			}
 		} else if(node.is(JSTag.TAG_OBJECT)){
 			this.type = ScopeType.OBJECT;
-		}
-		if(node != null){
-			findLocalVar(node);
 		}
 	}
 	
@@ -65,11 +65,11 @@ public class FSharpScope {
 		this.recursive = this.isRecursiveFunc(this.node, localName, false);
 		if(node.is(JSTag.TAG_FUNC_DECL)){
 			this.type = ScopeType.FUNCTION;
+			if(node != null){
+				findLocalVar(node.get(6));
+			}
 		} else if(node.is(JSTag.TAG_OBJECT)){
 			this.type = ScopeType.OBJECT;
-		}
-		if(node != null){
-			findLocalVar(node);
 		}
 	}
 	
