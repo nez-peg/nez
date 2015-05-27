@@ -10,8 +10,11 @@ class ProductionCode {
 	int start;
 	int end;
 	int ref = 0;
-	ProductionCode(Production p) {
+	boolean inlining = false;
+	MemoPoint memoPoint = null;
+	Instruction memoCodePoint = null;
+	ProductionCode(Production p, Expression deref) {
 		this.production = p;
-		this.localExpression = p.getExpression();
+		this.localExpression = deref;
 	}
 }

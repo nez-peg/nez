@@ -336,7 +336,7 @@ class IBacktrack extends Instruction {
 
 class IDfaDispatch extends Instruction {
 	Instruction[] jumpTable;
-	public IDfaDispatch(Expression e, Instruction next) {
+	IDfaDispatch(Expression e, Instruction next) {
 		super(e, next);
 		jumpTable = new Instruction[257];
 		Arrays.fill(jumpTable, next);
@@ -352,7 +352,7 @@ class IDfaDispatch extends Instruction {
 	@Override
 	Instruction exec(Context sc) throws TerminationException {
 		int ch = sc.byteAt(sc.getPosition());
-		sc.consume(1);
+		//sc.consume(1);
 		//System.out.println("ch="+(char)ch + " " + jumpTable[ch]);
 		return jumpTable[ch].exec(sc);
 	}

@@ -8,6 +8,7 @@ import nez.util.ConsoleUtils;
 
 
 public abstract class Command {
+	public final static boolean ReleasePreview = false;
 	public final static String  ProgName  = "Nez";
 	public final static String  CodeName  = "yokohama";
 	public final static int     MajorVersion = 1;

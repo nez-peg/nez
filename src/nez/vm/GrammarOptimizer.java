@@ -1,33 +1,45 @@
-package nez.lang;
+package nez.vm;
 
 import nez.ast.SourcePosition;
+import nez.lang.AnyChar;
+import nez.lang.ByteChar;
+import nez.lang.ByteMap;
+import nez.lang.Capture;
+import nez.lang.Choice;
+import nez.lang.Empty;
+import nez.lang.Expression;
+import nez.lang.Grammar;
+import nez.lang.GrammarFactory;
+import nez.lang.GrammarReshaper;
+import nez.lang.Link;
+import nez.lang.New;
+import nez.lang.NonTerminal;
+import nez.lang.Not;
+import nez.lang.Prediction;
+import nez.lang.Production;
+import nez.lang.Sequence;
 import nez.util.UFlag;
 import nez.util.UList;
 
-class GrammarOptimizer extends GrammarReshaper {
+public class GrammarOptimizer extends GrammarReshaper {
 
 	int option;
-	Grammar grammar = null;
+//	Grammar grammar = null;
 	
 	public GrammarOptimizer(int option) {
 		this.option = option;
 	}
 
-//	public void optimize(Grammar grammar) {
-//		this.grammar = grammar;
-//		grammar.reshapeAll(this);
-//		this.grammar = null;
-//	}
+	public final Expression optimize(Production p) {
+		return resolveNonTerminal(p.getExpression()).reshape(this);
+	}
 
-	
-	@Override
-	public Expression reshapeNonTerminal(NonTerminal p) {
-		Expression e = p;
-		while(e instanceof NonTerminal) {
-			NonTerminal nterm = (NonTerminal) e;
-			e = nterm.deReference().optimize(option);
+	// used to test inlining
+	public final static boolean isCharacterTerminal(Expression e) {
+		if(e instanceof ByteMap || e instanceof ByteChar || e instanceof AnyChar) {
+			return true;
 		}
-		return e;
+		return false;
 	}
 
 	@Override
@@ -36,7 +48,7 @@ class GrammarOptimizer extends GrammarReshaper {
 		for(Expression subExpression: parentExpression) {
 			GrammarFactory.addSequence(l, subExpression.reshape(this));
 		}
-		reorderSequence(l);
+//		reorderSequence(l);  // FIXME
 		if(UFlag.is(option, Grammar.Optimization)) {
 			int loc = findNotAny(0, l);
 			if(loc != -1) {
@@ -67,7 +79,7 @@ class GrammarOptimizer extends GrammarReshaper {
 					New n = (New)p;
 					l.ArrayValues[i-1] = e;
 					if(n.isInterned()) {
-						l.ArrayValues[i] =  GrammarFactory.newNew(n.s, n.lefted, n.shift - 1);
+						l.ArrayValues[i] =  GrammarFactory.newNew(n.getSourcePosition(), n.lefted, n.shift - 1);
 					}
 					else {
 						n.shift -= 1;
@@ -79,7 +91,7 @@ class GrammarOptimizer extends GrammarReshaper {
 					Capture n = (Capture)p;
 					l.ArrayValues[i-1] = e;
 					if(n.isInterned()) {
-						l.ArrayValues[i] =  GrammarFactory.newCapture(n.s, n.shift - 1);
+						l.ArrayValues[i] =  GrammarFactory.newCapture(n.getSourcePosition(), n.shift - 1);
 					}
 					else {
 						n.shift -= 1;
@@ -130,21 +142,21 @@ class GrammarOptimizer extends GrammarReshaper {
 			for(int i = loc; i < e; i++) {
 				GrammarFactory.addChoice(sl, l.ArrayValues[i]);
 			}
-			not = GrammarFactory.newNot(not.s, GrammarFactory.newChoice(not.s, sl).reshape(this));
+			not = GrammarFactory.newNot(not.getSourcePosition(), GrammarFactory.newChoice(not.getSourcePosition(), sl).reshape(this));
 		}
-		if(not.inner instanceof ByteChar) {
+		if(not.get(0) instanceof ByteChar) {
 			boolean[] byteMap = ByteMap.newMap(true);
-			byteMap[((ByteChar) not.inner).byteChar] = false;
+			byteMap[((ByteChar) not.get(0)).byteChar] = false;
 			if(!UFlag.is(option, Grammar.Binary)) {
 				byteMap[0] = false;
 			}
-			nl.add(GrammarFactory.newByteMap(not.s, byteMap));
+			nl.add(GrammarFactory.newByteMap(not.getSourcePosition(), byteMap));
 		}
-		else if(not.inner instanceof ByteMap) {
+		else if(not.get(0) instanceof ByteMap) {
 			boolean[] byteMap = ByteMap.newMap(false);
-			ByteMap.appendBitMap(byteMap, ((ByteMap) not.inner).byteMap);
+			ByteMap.appendBitMap(byteMap, ((ByteMap) not.get(0)).byteMap);
 			ByteMap.reverse(byteMap, option);
-			nl.add(GrammarFactory.newByteMap(not.s, byteMap));
+			nl.add(GrammarFactory.newByteMap(not.getSourcePosition(), byteMap));
 		}
 		else {
 			nl.add(not);
@@ -179,28 +191,31 @@ class GrammarOptimizer extends GrammarReshaper {
 			UList<Expression> choiceList = new UList<Expression>(new Expression[p.size()]);
 			flattenChoiceList(p, choiceList);
 			if(UFlag.is(option, Grammar.Optimization)) {
-				Expression o = newOptimizedByteMap(p.s, choiceList);
+				Expression o = newOptimizedByteMap(p.getSourcePosition(), choiceList);
 				if(o != null) {
 					return o;
 				}
 			}
-			if(UFlag.is(option, Grammar.Prediction)) {
-				p.predictedCase = new Expression[257];
-				for(int ch = 0; ch <= 256; ch++) {
-					p.predictedCase[ch] = selectChoice(p, choiceList, ch);
-				}
-				Expression singleChoice = null;
-				for(int ch = 0; ch <= 256; ch++) {
-					if(p.predictedCase[ch] != null) {
-						if(singleChoice != null) break;
-						singleChoice = p.predictedCase[ch];
-					}
-				}
-				if(singleChoice != null) {
-					return singleChoice;
-				}
-				System.out.println("PREDICTED: " + p);
+//			if(UFlag.is(option, Grammar.Prediction)) {
+			p.predictedCase = new Expression[257];
+			for(int ch = 0; ch <= 256; ch++) {
+				p.predictedCase[ch] = selectChoice(p, choiceList, ch);
 			}
+			Expression singleChoice = null;
+			for(int ch = 0; ch <= 256; ch++) {
+				if(p.predictedCase[ch] != null) {
+					if(singleChoice != null) {
+						singleChoice = null;
+						break;
+					}
+					singleChoice = p.predictedCase[ch];
+				}
+			}
+			if(singleChoice != null) {
+				return singleChoice;
+			}
+			//System.out.println("PREDICTED: " + p);
+//			}
 		}
 		return p;
 	}
@@ -208,11 +223,14 @@ class GrammarOptimizer extends GrammarReshaper {
 	private void flattenChoiceList(Choice parentExpression, UList<Expression> l) {
 		for(Expression subExpression: parentExpression) {
 			subExpression = resolveNonTerminal(subExpression);
-			subExpression = subExpression.reshape(this);
 			if(subExpression instanceof Choice) {
 				flattenChoiceList((Choice)subExpression, l);
 			}
 			else {
+				subExpression = subExpression.reshape(this);
+				if(subExpression instanceof Sequence) {
+					
+				}
 				l.add(subExpression);
 			}
 		}
@@ -225,6 +243,18 @@ class GrammarOptimizer extends GrammarReshaper {
 		}
 		return e;
 	}
+
+//	public final static Expression resolveSequenceNonTerminal(Expression e) {
+//		while(e instanceof Sequence) {
+//			Sequence s = (Sequence) e;
+//			Expression p = s.get(0);
+//			if(p instanceof NonTerminal) {
+//				p = resolveNonTerminal(p);
+//			}
+//			e = nterm.deReference();
+//		}
+//		return e;
+//	}
 
 	// OptimizerLibrary
 	
@@ -268,6 +298,7 @@ class GrammarOptimizer extends GrammarReshaper {
 					continue;
 				}
 				newChoiceList = new UList<Expression>(new Expression[2]);
+				newChoiceList.add(first);				
 				newChoiceList.add(p);
 			}
 			else {
@@ -279,16 +310,13 @@ class GrammarOptimizer extends GrammarReshaper {
 				}
 				newChoiceList.add(p);
 			}
-			if(p instanceof Empty) {
-				break;
-			}
 		}
 		if(newChoiceList != null) {
 			return GrammarFactory.newChoice(choice.getSourcePosition(), newChoiceList).reshape(this);
 		}
 		return commonPrifixed == true ? first.reshape(this) : first;
 	}
-	
+		
 	public final static Expression tryCommonFactoring(Expression e, Expression e2, boolean ignoredFirstChar) {
 		int min = sequenceSize(e) < sequenceSize(e2) ? sequenceSize(e) : sequenceSize(e2);
 		int commonIndex = -1;
@@ -300,6 +328,7 @@ class GrammarOptimizer extends GrammarReshaper {
 					commonIndex = i + 1;
 					continue;
 				}
+				break;
 			}
 			if(!eaualsExpression(p, p2)) {
 				break;
@@ -442,6 +471,7 @@ class GrammarOptimizer extends GrammarReshaper {
 		}
 		return common;
 	}
+
 	
 	
 

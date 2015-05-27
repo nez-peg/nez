@@ -6,6 +6,7 @@ import nez.SourceContext;
 import nez.ast.CommonTree;
 import nez.ast.CommonTreeFactory;
 import nez.ast.ParsingFactory;
+import nez.main.Command;
 import nez.main.Recorder;
 import nez.main.Verbose;
 import nez.util.ConsoleUtils;
@@ -19,6 +20,7 @@ import nez.vm.MemoPoint;
 import nez.vm.MemoTable;
 import nez.vm.NezCompiler;
 import nez.vm.NezCompiler1;
+import nez.vm.NezCompiler2;
 
 public class Grammar {
 	Production start;
@@ -122,7 +124,7 @@ public class Grammar {
 
 	public final Instruction compile() {
 		if(compiledCode == null) {
-			NezCompiler bc = new NezCompiler1(this.option);
+			NezCompiler bc = Command.ReleasePreview ? new NezCompiler2(this.option) : new NezCompiler1(this.option);
 			compiledCode = bc.encode(this).startPoint;
 //			this.InstructionSize  = bc.getInstructionSize();
 //			this.memoPointSize = bc.getMemoPointSize();
@@ -136,11 +138,11 @@ public class Grammar {
 		return compiledCode;
 	}
 	
-	public NezCompiler cc() {
-		NezCompiler bc = new NezCompiler1(this.option);
-		bc.encode(this);
-		return bc;
-	}
+//	public NezCompiler cc() {
+//		NezCompiler bc = Command.ReleasePreview ? new NezCompiler2(this.option) : new NezCompiler1(this.option);
+//		bc.encode(this);
+//		return bc;
+//	}
 		
 	public final boolean match(SourceContext s) {
 		boolean matched;

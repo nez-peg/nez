@@ -199,64 +199,64 @@ public class DeprecatedNezCompiler extends NezCompiler1 {
 		return new IFail(p);
 	}
 
-	public final boolean isDisjoint(boolean[] dfa, boolean[] dfa2) {
-		for(int i = 0; i < dfa.length; i++) {
-			if(dfa[i] && dfa2[i]) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	public final boolean[] and(boolean[] dfa, boolean[] dfa2) {
-		for(int i = 0; i < dfa.length; i++) {
-			if(dfa[i] && dfa2[i]) {
-				dfa[i] = true;
-			}
-			else {
-				dfa[i] = false;
-			}
-		}
-		return dfa;
-	}
-
-	
-	private boolean[] predictNext(Instruction next) {
-		boolean[] dfa = ByteMap.newMap(true);
-		for(int c = 0; c < dfa.length; c++) {
-			short r = next.isAcceptImpl(c);
-			if(r == Prediction.Reject) {
-				dfa[c] = false;
-			}
-		}
-		return dfa;
-	}
-
-	private boolean[] predictInner(Expression e, boolean[] dfa2) {
-		boolean[] dfa = dfa2.clone();
-		for(int c = 0; c < dfa.length; c++) {
-			short r = e.acceptByte(c, option);
-			if(r == Prediction.Accept) {
-				dfa[c] = true;
-			}
-			if(r == Prediction.Reject) {
-				dfa[c] = false;
-			}		
-		}
-		return dfa;
-	}
-
-	private boolean checkInstruction(Instruction next) {
-		return next instanceof IByteChar || next instanceof IByteMap;
-	}
-
-	private Instruction replaceConsumeInstruction(Instruction inst) {
-		if(inst instanceof IByteChar || inst instanceof IByteMap || inst instanceof IAnyChar) {
-			System.out.println("replaced: " + inst);
-			return new IConsume(inst.e, inst.next);
-		}
-		return inst;
-	}
+//	public final boolean isDisjoint(boolean[] dfa, boolean[] dfa2) {
+//		for(int i = 0; i < dfa.length; i++) {
+//			if(dfa[i] && dfa2[i]) {
+//				return false;
+//			}
+//		}
+//		return true;
+//	}
+//
+//	public final boolean[] and(boolean[] dfa, boolean[] dfa2) {
+//		for(int i = 0; i < dfa.length; i++) {
+//			if(dfa[i] && dfa2[i]) {
+//				dfa[i] = true;
+//			}
+//			else {
+//				dfa[i] = false;
+//			}
+//		}
+//		return dfa;
+//	}
+//
+//	
+//	private boolean[] predictNext(Instruction next) {
+//		boolean[] dfa = ByteMap.newMap(true);
+//		for(int c = 0; c < dfa.length; c++) {
+//			short r = next.isAcceptImpl(c);
+//			if(r == Prediction.Reject) {
+//				dfa[c] = false;
+//			}
+//		}
+//		return dfa;
+//	}
+//
+//	private boolean[] predictInner(Expression e, boolean[] dfa2) {
+//		boolean[] dfa = dfa2.clone();
+//		for(int c = 0; c < dfa.length; c++) {
+//			short r = e.acceptByte(c, option);
+//			if(r == Prediction.Accept) {
+//				dfa[c] = true;
+//			}
+//			if(r == Prediction.Reject) {
+//				dfa[c] = false;
+//			}		
+//		}
+//		return dfa;
+//	}
+//
+//	private boolean checkInstruction(Instruction next) {
+//		return next instanceof IByteChar || next instanceof IByteMap;
+//	}
+//
+//	private Instruction replaceConsumeInstruction(Instruction inst) {
+//		if(inst instanceof IByteChar || inst instanceof IByteMap || inst instanceof IAnyChar) {
+//			System.out.println("replaced: " + inst);
+//			return new IConsume(inst.e, inst.next);
+//		}
+//		return inst;
+//	}
 
 	
 	

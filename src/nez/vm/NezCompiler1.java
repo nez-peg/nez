@@ -27,7 +27,9 @@ import nez.lang.Repetition;
 import nez.lang.Repetition1;
 import nez.lang.Replace;
 import nez.lang.Tagging;
+import nez.lang.Typestate;
 import nez.main.Verbose;
+import nez.util.UFlag;
 import nez.util.UList;
 
 
@@ -39,13 +41,26 @@ public class NezCompiler1 extends NezCompiler {
 		super(option);
 	}
 
+	protected Expression optimizeProduction(Production p) {
+		return GrammarOptimizer.resolveNonTerminal(p.getExpression());
+	}
+
 	HashMap<String, ProductionCode> codeMap = new HashMap<String, ProductionCode>();
 	
 	void count(Production p) {
 		String uname = p.getUniqueName();
 		ProductionCode c = this.codeMap.get(uname);
 		if(c == null) {
-			c = new ProductionCode(p);
+			Expression deref = optimizeProduction(p);
+			String key = "#" + deref.getId();
+			c = this.codeMap.get(key);
+//			if(c != null) {
+//				System.out.println("duplicated production: " + uname + " " + c.production.getLocalName());
+//			}
+			if(c == null) {
+				c = new ProductionCode(p, deref);
+				codeMap.put(key, c);
+			}
 			codeMap.put(uname, c);
 		}
 		c.ref++;
@@ -68,9 +83,36 @@ public class NezCompiler1 extends NezCompiler {
 		countNonTerminalReference(start.getExpression());
 		for(Production p : grammar.getProductionList()) {
 			if(p != start) {
+				ProductionCode code = this.codeMap.get(p.getUniqueName());
 				this.countNonTerminalReference(p.getExpression());
 			}
 		}
+		if(UFlag.is(option, Grammar.Inlining)) {
+			for(Production p : grammar.getProductionList()) {
+				ProductionCode code = this.codeMap.get(p.getUniqueName());
+				if(code != null) {
+					if(code.ref == 1 || GrammarOptimizer.isCharacterTerminal(code.localExpression)) {
+						code.inlining = true;
+						continue;
+					}
+				}
+			}
+		}
+//		if(UFlag.is(option, Grammar.PackratParsing)) {
+			int memoId = 0;
+			for(Production p : grammar.getProductionList()) {
+				ProductionCode code = this.codeMap.get(p.getUniqueName());
+				if(code != null) {
+					if(code.inlining) {
+						continue;
+					}
+					if(code.ref > 3 && p.inferTypestate() != Typestate.OperationType) {
+						code.memoPoint = new MemoPoint(memoId++, p.getLocalName(), code.localExpression, false);
+						Verbose.debug("memo " + p.getLocalName() + " " + code.memoPoint.id + " pure? " + p.isPurePEG());
+					}
+				}
+			}
+//		}
 	}
 	
 	protected void encodeProduction(UList<Instruction> codeList, Production p, Instruction next) {
@@ -110,6 +152,9 @@ public class NezCompiler1 extends NezCompiler {
 		for(Instruction inst : codeList) {
 			if(inst instanceof ICallPush) {
 				ProductionCode deref = this.codeMap.get(((ICallPush) inst).rule.getUniqueName());
+				if(deref == null) {
+					System.out.println("no deref: " + ((ICallPush) inst).rule.getUniqueName());
+				}
 				((ICallPush) inst).setResolvedJump(deref.codePoint);
 			}
 		}
@@ -181,7 +226,7 @@ public class NezCompiler1 extends NezCompiler {
 		Instruction nextChoice = encodeExpression(p.get(p.size()-1), next, failjump);
 		for(int i = p.size() -2; i >= 0; i--) {
 			Expression e = p.get(i);
-			nextChoice = new IFailPush(e, nextChoice, encodeExpression(e, new IFailPop(e, next), failjump));
+			nextChoice = new IFailPush(e, nextChoice, encodeExpression(e, new IFailPop(e, next), nextChoice));
 		}
 		return nextChoice;
 	}
@@ -336,5 +381,13 @@ public class NezCompiler1 extends NezCompiler {
 		return next;
 	}
 
+	
+	public void optimizedUnary(Expression p) {
+		Verbose.noticeOptimize("specialization", p);
+	}
+
+	public void optimizedInline(Production p) {
+		Verbose.noticeOptimize("inlining", p.getExpression());
+	}
 
 }

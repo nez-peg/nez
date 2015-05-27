@@ -31,7 +31,7 @@ public abstract class Expression extends AbstractList<Expression> {
 		return this.internId;
 	}
 	
-	final boolean isInterned() {
+	public final boolean isInterned() {
 		return (this.internId > 0);
 	}
 	
