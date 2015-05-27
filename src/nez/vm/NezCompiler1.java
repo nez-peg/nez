@@ -359,8 +359,7 @@ public class NezCompiler1 extends NezCompiler {
 	}
 	
 	public Instruction encodeIsSymbol(IsSymbol p, Instruction next, Instruction failjump) {
-		Instruction inner = encodeExpression(p.getSymbolExpression(), new IIsSymbol(p, p.checkLastSymbolOnly, next), failjump);
-		return new IPosPush(p, inner);
+		return new IIsSymbol(p, true, next);
 	}
 	
 	public Instruction encodeDefIndent(DefIndent p, Instruction next, Instruction failjump) {
