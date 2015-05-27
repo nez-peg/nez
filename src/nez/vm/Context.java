@@ -188,6 +188,19 @@ public abstract class Context implements Source {
 		}
 		return false;
 	}
+	
+	public final boolean matchSymbolTable(Tag table, byte[] symbol, boolean onlyTop) {
+		for(int i = stackedSymbolTable.size() - 1; i >= 0; i--) {
+			SymbolTableEntry s = stackedSymbolTable.ArrayValues[i];
+			if(s.table == table) {
+				if(s.match(symbol)) {
+					return true;
+				}
+				if(onlyTop) break;
+			}
+		}
+		return false;
+	}
 
 	// ----------------------------------------------------------------------
 	// Instruction 
@@ -835,6 +848,16 @@ class SymbolTableEntry {
 			}
 		}
 		ctx.consume(this.len);
+		return true;
+	}
+	final boolean match(byte[] b) {
+		if(this.len == b.length) {
+			for(int i = 0; i < this.len; i++) {
+				if(utf8[i] != b[i]) {
+					return false;
+				}
+			}
+		}
 		return true;
 	}
 }
