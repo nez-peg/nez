@@ -50,6 +50,9 @@ public abstract class Context implements Source {
 
 	private ParsingFactory treeFactory;
 	private Object left;
+	void setLeftObject(Object left) {
+		this.left = left;
+	}
 
 	public final void setFactory(ParsingFactory treeFactory) {
 		this.treeFactory = treeFactory;
@@ -289,14 +292,14 @@ public abstract class Context implements Source {
 		return stackTop.jump;
 	}
 	
-	private final ContextStack newUnusedLocalStack() {
+	final ContextStack newUnusedLocalStack() {
 		ContextStack stackTop = newUnusedStack();
 		assert(this.failStackTop < this.usedStackTop);
 		stackTop.debugFailStackFlag = false;
 		return stackTop;
 	}
 	
-	private final ContextStack popLocalStack() {
+	final ContextStack popLocalStack() {
 		ContextStack stackTop = contextStacks[this.usedStackTop];
 		usedStackTop--;
 		assert(!stackTop.debugFailStackFlag);
@@ -382,6 +385,7 @@ public abstract class Context implements Source {
 	public final Instruction opNodePush(Instruction op) {
 		ContextStack top = newUnusedLocalStack();
 		top.lastLog = this.lastAppendedLog;
+		this.left = null;
 		return op.next;
 	}
 	
@@ -395,6 +399,34 @@ public abstract class Context implements Source {
 			}
 			this.left = child;
 			//System.out.println("LINK " + this.lastAppendedLog);
+		}
+		return op.next;
+	}
+
+	public final Instruction opICommit(Instruction op) {
+		ContextStack top = popLocalStack();
+		if(top.lastLog.next != null) {
+			Object child = this.logCommit(top.lastLog.next);
+			logAbort(top.lastLog, false);
+			this.left = child;
+			//System.out.println("LINK " + this.lastAppendedLog);
+		}
+		return op.next;
+	}
+
+	public final Instruction opAbort(Instruction op) {
+		ContextStack top = popLocalStack();
+		if(top.lastLog.next != null) {
+			//Object child = this.logCommit(top.lastLog.next);
+			logAbort(top.lastLog, false);
+			this.left = null;
+		}
+		return op.next;
+	}
+	
+	public final Instruction opILink(ILink op) {
+		if(this.left != null) {
+			pushDataLog(OperationLog.LazyLink, op.index, this.left);
 		}
 		return op.next;
 	}
@@ -440,130 +472,167 @@ public abstract class Context implements Source {
 	
 	public final Instruction opILookup(ILookup op) {
 		MemoPoint mp = op.memoPoint;
-		MemoEntry m = memoTable.getMemo(this.pos, mp.id);
-		if(m != null) {
-			op.monitor.used();
-			if(m.failed) {
-				mp.failHit();
-				return opIFail();
-			}
-			mp.memoHit(m.consumed);
-			this.consume(m.consumed);
-			return op.skip;
-		}
-		mp.miss();
-		return this.opIFailPush(op);
-	}
-
-	public final Instruction opIStateLookup(IStateLookup op) {
-		MemoPoint mp = op.memoPoint;
-		MemoEntry m = memoTable.getMemo2(this.pos, mp.id, stateValue);
-		if(m != null) {
-			op.monitor.used();
-			if(m.failed) {
-				mp.failHit();
-				return opIFail();
-			}
-			mp.memoHit(m.consumed);
-			this.consume(m.consumed);
-			return op.skip;
-		}
-		mp.miss();
-		return this.opIFailPush(op);
-	}
-
-	public final Instruction opILookupNode(ILookupNode op) {
-		MemoPoint mp = op.memoPoint;
-		MemoEntry entry = memoTable.getMemo(this.pos, mp.id);
+		MemoEntry entry = op.state ? 
+				memoTable.getMemo2(this.pos, mp.id, stateValue): 
+				memoTable.getMemo(this.pos, mp.id);
 		if(entry != null) {
-			op.monitor.used();
 			if(entry.failed) {
 				mp.failHit();
 				return opIFail();
 			}
 			mp.memoHit(entry.consumed);
 			this.consume(entry.consumed);
-			pushDataLog(OperationLog.LazyLink, op.index, entry.result);
-			return op.skip;
-		}
-		mp.miss();
-		this.opIFailPush(op);
-		return this.opNodePush(op);
-	}
-
-	public final Instruction opIStateLookupNode(ILookupNode op) {
-		MemoPoint mp = op.memoPoint;
-		MemoEntry me = memoTable.getMemo2(pos, mp.id, stateValue);
-		if(me != null) {
-			op.monitor.used();
-			if(me.failed) {
-				mp.failHit();
-				return opIFail();
+			if(op.node) {
+				this.left = entry.result;
 			}
-			mp.memoHit(me.consumed);
-			consume(me.consumed);
-			pushDataLog(OperationLog.LazyLink, op.index, me.result);
 			return op.skip;
 		}
 		mp.miss();
-		this.opIFailPush(op);
-		return this.opNodePush(op);
+		if(op.node) {
+			this.opIFailPush(op);
+			return this.opNodePush(op);
+		}
+		else {
+			return this.opIFailPush(op);
+		}
 	}
-
+	
 	public final Instruction opIMemoize(IMemoize op) {
 		MemoPoint mp = op.memoPoint;
+		if(op.node) {
+			this.opICommit(op);
+		}
 		ContextStack stackTop = contextStacks[this.usedStackTop];
 		int length = (int)(this.pos - stackTop.pos);
-		memoTable.setMemo(stackTop.pos, mp.id, false, null, length, 0);
-		op.monitor.stored();
-		return this.opIFailPop(op);
-	}
-
-	public final Instruction opIStateMemoize(IMemoize op) {
-		MemoPoint mp = op.memoPoint;
-		ContextStack stackTop = contextStacks[this.usedStackTop];
-		int length = (int)(this.pos - stackTop.pos);
-		memoTable.setMemo(stackTop.pos, mp.id, false, null, length, stateValue);
-		op.monitor.stored();
-		return this.opIFailPop(op);
-	}
-
-	public final Instruction opIMemoizeNode(IMemoizeNode op) {
-		MemoPoint mp = op.memoPoint;
-		this.opNodeStore(op);
-		assert(this.usedStackTop == this.failStackTop);
-		ContextStack stackTop = contextStacks[this.failStackTop];
-		int length = (int)(this.pos - stackTop.pos);
-		memoTable.setMemo(stackTop.pos, mp.id, false, this.left, length, 0);
-		op.monitor.stored();
-		return this.opIFailPop(op);
-	}
-
-	public final Instruction opIStateMemoizeNode(IStateMemoizeNode op) {
-		MemoPoint mp = op.memoPoint;
-		this.opNodeStore(op);
-		assert(this.usedStackTop == this.failStackTop);
-		ContextStack stackTop = contextStacks[this.failStackTop];
-		int length = (int)(this.pos - stackTop.pos);
-		memoTable.setMemo(stackTop.pos, mp.id, false, this.left, length, stateValue);
-		op.monitor.stored();
+		memoTable.setMemo(stackTop.pos, mp.id, false, op.node ? this.left :null, length, op.state ? stateValue : 0);
 		return this.opIFailPop(op);
 	}
 
 	public final Instruction opIMemoizeFail(IMemoizeFail op) {
 		MemoPoint mp = op.memoPoint;
-		memoTable.setMemo(pos, mp.id, true, null, 0, 0);
-		op.monitor.stored();
+		memoTable.setMemo(pos, mp.id, true, null, 0, op.state ? stateValue : 0);
 		return opIFail();
 	}
-
-	public final Instruction opIStateMemoizeFail(IMemoizeFail op) {
-		MemoPoint mp = op.memoPoint;
-		memoTable.setMemo(pos, mp.id, true, null, 0, stateValue);
-		op.monitor.stored();
-		return opIFail();
-	}
-
+	
+//	public final Instruction opIMemoize(IStateMemoizeNode op) {
+//		MemoPoint mp = op.memoPoint;
+//		this.opNodeStore(op);
+//		assert(this.usedStackTop == this.failStackTop);
+//		ContextStack stackTop = contextStacks[this.failStackTop];
+//		int length = (int)(this.pos - stackTop.pos);
+//		memoTable.setMemo(stackTop.pos, mp.id, false, this.left, length, stateValue);
+//		op.monitor.stored();
+//		return this.opIFailPop(op);
+//	}
+//
+//
+//	public final Instruction opIStateLookup(IStateLookup op) {
+//		MemoPoint mp = op.memoPoint;
+//		MemoEntry m = memoTable.getMemo2(this.pos, mp.id, stateValue);
+//		if(m != null) {
+//			if(m.failed) {
+//				mp.failHit();
+//				return opIFail();
+//			}
+//			mp.memoHit(m.consumed);
+//			this.consume(m.consumed);
+//			return op.skip;
+//		}
+//		mp.miss();
+//		return this.opIFailPush(op);
+//	}
+//
+//	public final Instruction opILookupNode(ILookupNode op) {
+//		MemoPoint mp = op.memoPoint;
+//		MemoEntry entry = memoTable.getMemo(this.pos, mp.id);
+//		if(entry != null) {
+//			op.monitor.used();
+//			if(entry.failed) {
+//				mp.failHit();
+//				return opIFail();
+//			}
+//			mp.memoHit(entry.consumed);
+//			this.consume(entry.consumed);
+//			pushDataLog(OperationLog.LazyLink, op.index, entry.result);
+//			return op.skip;
+//		}
+//		mp.miss();
+//		this.opIFailPush(op);
+//		return this.opNodePush(op);
+//	}
+//
+//	public final Instruction opIStateLookupNode(ILookupNode op) {
+//		MemoPoint mp = op.memoPoint;
+//		MemoEntry me = memoTable.getMemo2(pos, mp.id, stateValue);
+//		if(me != null) {
+//			op.monitor.used();
+//			if(me.failed) {
+//				mp.failHit();
+//				return opIFail();
+//			}
+//			mp.memoHit(me.consumed);
+//			consume(me.consumed);
+//			pushDataLog(OperationLog.LazyLink, op.index, me.result);
+//			return op.skip;
+//		}
+//		mp.miss();
+//		this.opIFailPush(op);
+//		return this.opNodePush(op);
+//	}
+//
+//	public final Instruction opIMemoize(IMemoize op) {
+//		MemoPoint mp = op.memoPoint;
+//		ContextStack stackTop = contextStacks[this.usedStackTop];
+//		int length = (int)(this.pos - stackTop.pos);
+//		memoTable.setMemo(stackTop.pos, mp.id, false, null, length, 0);
+//		op.monitor.stored();
+//		return this.opIFailPop(op);
+//	}
+//
+//	public final Instruction opIStateMemoize(IMemoize op) {
+//		MemoPoint mp = op.memoPoint;
+//		ContextStack stackTop = contextStacks[this.usedStackTop];
+//		int length = (int)(this.pos - stackTop.pos);
+//		memoTable.setMemo(stackTop.pos, mp.id, false, null, length, stateValue);
+//		op.monitor.stored();
+//		return this.opIFailPop(op);
+//	}
+//
+//	public final Instruction opIMemoizeNode(IMemoizeNode op) {
+//		MemoPoint mp = op.memoPoint;
+//		this.opNodeStore(op);
+//		assert(this.usedStackTop == this.failStackTop);
+//		ContextStack stackTop = contextStacks[this.failStackTop];
+//		int length = (int)(this.pos - stackTop.pos);
+//		memoTable.setMemo(stackTop.pos, mp.id, false, this.left, length, 0);
+//		op.monitor.stored();
+//		return this.opIFailPop(op);
+//	}
+//
+//	public final Instruction opIStateMemoizeNode(IStateMemoizeNode op) {
+//		MemoPoint mp = op.memoPoint;
+//		this.opNodeStore(op);
+//		assert(this.usedStackTop == this.failStackTop);
+//		ContextStack stackTop = contextStacks[this.failStackTop];
+//		int length = (int)(this.pos - stackTop.pos);
+//		memoTable.setMemo(stackTop.pos, mp.id, false, this.left, length, stateValue);
+//		op.monitor.stored();
+//		return this.opIFailPop(op);
+//	}
+//
+//	public final Instruction opIMemoizeFail(IMemoizeFail op) {
+//		MemoPoint mp = op.memoPoint;
+//		memoTable.setMemo(pos, mp.id, true, null, 0, 0);
+//		op.monitor.stored();
+//		return opIFail();
+//	}
+//
+//	public final Instruction opIStateMemoizeFail(IMemoizeFail op) {
+//		MemoPoint mp = op.memoPoint;
+//		memoTable.setMemo(pos, mp.id, true, null, 0, stateValue);
+//		op.monitor.stored();
+//		return opIFail();
+//	}
 
 	// Specialization 
 	

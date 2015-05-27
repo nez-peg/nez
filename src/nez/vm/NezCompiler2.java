@@ -42,68 +42,23 @@ import nez.util.UMap;
 
 public class NezCompiler2 extends NezCompiler1 {
 	
-	HashMap<Integer, MemoPoint> memoMap;
+//	HashMap<Integer, MemoPoint> memoMap;
 	
 	public NezCompiler2(int option) {
 		super(option);
-		if(this.enablePackratParsing()) {
-			this.memoMap = new HashMap<Integer, MemoPoint>();
-			this.visitedMap = new UMap<String>();
-		}
 	}
 
 	protected Expression optimizeProduction(Production p) {
 		return new GrammarOptimizer(this.option).optimize(p);
 	}
 
-	MemoPoint issueMemoPoint(String label, Expression e) {
-		if(this.enablePackratParsing()) {
-			Integer key = e.getId();
-			assert(e.getId() != 0);
-			MemoPoint m = this.memoMap.get(key);
-			if(m == null) {
-				m = new MemoPoint(this.memoMap.size(), label, e, this.isContextSensitive(e));
-				this.visitedMap.clear();
-				this.memoMap.put(key, m);
-			}
-			return m;
-		}
-		return null;
-	}
-
-	private UMap<String> visitedMap = null;
-
-	private boolean isContextSensitive(Expression e) {
-		if(e instanceof NonTerminal) {
-			String un = ((NonTerminal) e).getUniqueName();
-			if(visitedMap.get(un) == null) {
-				visitedMap.put(un, un);
-				return isContextSensitive(((NonTerminal) e).getProduction().getExpression());
-			}
-			return false;
-		}
-		for(int i = 0; i < e.size(); i++) {
-			if(isContextSensitive(e.get(i))) {
-				return true;
-			}
-		}
-		return (e instanceof IsIndent || e instanceof IsSymbol);
-	}
-		
-	public final int getMemoPointSize() {
-		if(this.enablePackratParsing()) {
-			return this.memoMap.size();
-		}
-		return 0;
-	}
-	
-	public final UList<MemoPoint> getMemoPointList() {
-		if(this.memoMap != null) {
-			UList<MemoPoint> l = new UList<MemoPoint>(new MemoPoint[this.memoMap.size()]);
-			for(Entry<Integer,MemoPoint> e : memoMap.entrySet()) {
-				l.add(e.getValue());
-			}
-			return l;
+	protected Instruction encodeMemoizingProduction(ProductionCode code) {
+		if(UFlag.is(this.option, Grammar.PackratParsing)) {
+			Production p = code.production;
+			Instruction next = new IMemoRet(p, null);
+			Instruction inside = new ICallPush(code.production, next);
+			boolean state = false;/* fixme*/
+			return new ILookup(p, code.memoPoint, !p.isPurePEG(), state,  inside, next, new IMemoizeFail(p, state, code.memoPoint));
 		}
 		return null;
 	}
@@ -255,82 +210,41 @@ public class NezCompiler2 extends NezCompiler1 {
 			this.optimizedInline(r);
 			return encodeExpression(code.localExpression, next, failjump);
 		}
-		if(this.enablePackratParsing()) {
+		if(this.enablePackratParsing() && code.memoPoint != null) {
 			if(!this.enableASTConstruction() || r.isPurePEG()) {
-				Expression ref = GrammarFactory.resolveNonTerminal(r.getExpression());
-				MemoPoint m = this.issueMemoPoint(r.getUniqueName(), ref);
-				if(m != null) {
-					if(UFlag.is(option, Grammar.Tracing)) {
-						IMonitoredSwitch monitor = new IMonitoredSwitch(p, new ICallPush(p.getProduction(), next));
-						Instruction inside = new ICallPush(r, newMemoize(p, monitor, m, next));
-						monitor.setActivatedNext(newLookup(p, monitor, m, inside, next, newMemoizeFail(p, monitor, m)));
-						return monitor;
-					}
-					Instruction inside = new ICallPush(r, newMemoize(p, IMonitoredSwitch.dummyMonitor, m, next));
-					return newLookup(p, IMonitoredSwitch.dummyMonitor, m, inside, next, newMemoizeFail(p, IMonitoredSwitch.dummyMonitor, m));
-				}
+				return new IMemoCall(code, next);
 			}
 		}	
 		return new ICallPush(r, next);
 	}
 	
-	private Instruction newLookup(Expression e, IMonitoredSwitch monitor, MemoPoint m, Instruction next, Instruction skip, Instruction failjump) {
-		if(m.contextSensitive) {
-			return new IStateLookup(e, monitor, m, next, skip, failjump);
-		}
-		return new ILookup(e, monitor, m, next, skip, failjump);
-	}
-
-	private Instruction newMemoize(Expression e, IMonitoredSwitch monitor, MemoPoint m, Instruction next) {
-		if(m.contextSensitive) {
-			return new IStateMemoize(e, monitor, m, next);
-		}
-		return new IMemoize(e, monitor, m, next);
-	}
-
-	private Instruction newMemoizeFail(Expression e, IMonitoredSwitch monitor, MemoPoint m) {
-		if(m.contextSensitive) {
-			return new IStateMemoizeFail(e, monitor, m);
-		}
-		return new IMemoizeFail(e, monitor, m);
-	}
-
-	
 	// AST Construction
 	
 	public final Instruction encodeLink(Link p, Instruction next, Instruction failjump) {
 		if(this.enableASTConstruction()) {
-			if(this.enablePackratParsing()) {
-				Expression inner = GrammarFactory.resolveNonTerminal(p.get(0));
-				MemoPoint m = this.issueMemoPoint(p.toString(), inner);
-				if(m != null) {
-					if(UFlag.is(option, Grammar.Tracing)) {
-						IMonitoredSwitch monitor = new IMonitoredSwitch(p, encodeExpression(p.get(0), next, failjump));
-						Instruction inside = encodeExpression(p.get(0), newMemoizeNode(p, monitor, m, next), failjump);
-						monitor.setActivatedNext(newLookupNode(p, monitor, m, inside, next, new IMemoizeFail(p, monitor, m)));
-						return monitor;
-					}
-					Instruction inside = encodeExpression(p.get(0), newMemoizeNode(p, IMonitoredSwitch.dummyMonitor, m, next), failjump);
-					return newLookupNode(p, IMonitoredSwitch.dummyMonitor, m, inside, next, new IMemoizeFail(p, IMonitoredSwitch.dummyMonitor, m));
-				}
+			next = new ICommit(p, new ILink(p, next));
+			if(this.enablePackratParsing() && p.get(0) instanceof NonTerminal) {
+				next = encodeLinkedNonterminal((NonTerminal)p.get(0), next, failjump);
 			}
-			return new INodePush(p, encodeExpression(p.get(0), new INodeStore(p, next), failjump));
+			else {
+				next = encodeExpression(p.get(0), next, failjump);
+			}
+			return new INodePush(p, next);
 		}
 		return encodeExpression(p.get(0), next, failjump);
 	}
 
-	private Instruction newLookupNode(Link e, IMonitoredSwitch monitor, MemoPoint m, Instruction next, Instruction skip, Instruction failjump) {
-		if(m.contextSensitive) {
-			return new IStateLookupNode(e, monitor, m, next, skip, failjump);
+	private Instruction encodeLinkedNonterminal(NonTerminal p, Instruction next, Instruction failjump) {
+		Production r = p.getProduction();
+		ProductionCode code = this.codeMap.get(r.getUniqueName());
+		if(code.inlining) {
+			this.optimizedInline(r);
+			return encodeExpression(code.localExpression, next, failjump);
 		}
-		return new ILookupNode(e, monitor, m, next, skip, failjump);
-	}
-
-	private Instruction newMemoizeNode(Link e, IMonitoredSwitch monitor, MemoPoint m, Instruction next) {
-		if(m.contextSensitive) {
-			return new IStateMemoizeNode(e, monitor, m, next);
-		}
-		return new IMemoizeNode(e, monitor, m, next);
+		if(this.enablePackratParsing() && code.memoPoint != null) {
+			return new IMemoCall(code, next);
+		}	
+		return new ICallPush(r, next);
 	}
 
 }

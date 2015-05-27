@@ -45,6 +45,10 @@ public class NezCompiler1 extends NezCompiler {
 		return GrammarOptimizer.resolveNonTerminal(p.getExpression());
 	}
 
+	protected Instruction encodeMemoizingProduction(ProductionCode code) {
+		return null;
+	}
+
 	HashMap<String, ProductionCode> codeMap = new HashMap<String, ProductionCode>();
 	
 	void count(Production p) {
@@ -122,18 +126,14 @@ public class NezCompiler1 extends NezCompiler {
 		}
 		ProductionCode code = this.codeMap.get(uname);
 		if(code != null) {
-	//		Expression e = p.getExpression();
-	//		if(UFlag.is(option, Grammar.Inlining)  && this.ruleMap.size() > 0 && p.isInline() ) {
-	//			//System.out.println("skip .. " + r.getLocalName() + "=" + e);
-	//			continue;
-	//		}
-	//		if(!UFlag.is(option, Grammar.ASTConstruction)) {
-	//			e = e.reshape(Manipulator.RemoveAST);
-	//		}
 			code.codePoint = encodeExpression(code.localExpression, next, null/*failjump*/);
 			code.start = codeList.size();
 			this.layoutCode(codeList, code.codePoint);
 			code.end = codeList.size();
+			if(code.memoPoint != null) {
+				code.memoCodePoint = this.encodeMemoizingProduction(code);
+				this.layoutCode(codeList, code.memoCodePoint);
+			}
 		}
 	}
 	
@@ -261,7 +261,7 @@ public class NezCompiler1 extends NezCompiler {
 		return new ICallPush(r, next);
 	}
 	
-//	private Instruction newLookup(Expression e, IMonitoredSwitch monitor, MemoPoint m, Instruction next, Instruction skip, Instruction failjump) {
+//	private Instruction encodeMemo(Expression e, IMonitoredSwitch monitor, MemoPoint m, Instruction next, Instruction skip, Instruction failjump) {
 //		if(m.contextSensitive) {
 //			return new IStateLookup(e, monitor, m, next, skip, failjump);
 //		}

@@ -471,94 +471,94 @@ public class DeprecatedNezCompiler extends NezCompiler1 {
 		return nextChoice;
 	}
 
-	public final Instruction encodeNonTerminal(NonTerminal p, Instruction next, Instruction failjump) {
-		Production r = p.getProduction();
-		Expression pp = p.optimize(option);
-		if(pp instanceof ByteChar || pp instanceof ByteMap || pp instanceof AnyChar) {
-			Verbose.noticeOptimize("Inlining", p, pp);
-			return encodeExpression(pp, next, failjump);
-		}
-		if(r.isInline() && UFlag.is(option, Grammar.Inlining)) {
-			Verbose.noticeOptimize("Inlining", p, r.getExpression());
-			return encodeExpression(r.getExpression(), next, failjump);
-		}
-		if(this.enablePackratParsing()) {
-			if(!this.enableASTConstruction() || r.isPurePEG()) {
-				Expression ref = GrammarFactory.resolveNonTerminal(r.getExpression());
-				MemoPoint m = this.issueMemoPoint(r.getUniqueName(), ref);
-				if(m != null) {
-					if(UFlag.is(option, Grammar.Tracing)) {
-						IMonitoredSwitch monitor = new IMonitoredSwitch(p, new ICallPush(p.getProduction(), next));
-						Instruction inside = new ICallPush(r, newMemoize(p, monitor, m, next));
-						monitor.setActivatedNext(newLookup(p, monitor, m, inside, next, newMemoizeFail(p, monitor, m)));
-						return monitor;
-					}
-					Instruction inside = new ICallPush(r, newMemoize(p, IMonitoredSwitch.dummyMonitor, m, next));
-					return newLookup(p, IMonitoredSwitch.dummyMonitor, m, inside, next, newMemoizeFail(p, IMonitoredSwitch.dummyMonitor, m));
-				}
-			}
-		}	
-		return new ICallPush(r, next);
-	}
+//	public final Instruction encodeNonTerminal(NonTerminal p, Instruction next, Instruction failjump) {
+//		Production r = p.getProduction();
+//		Expression pp = p.optimize(option);
+//		if(pp instanceof ByteChar || pp instanceof ByteMap || pp instanceof AnyChar) {
+//			Verbose.noticeOptimize("Inlining", p, pp);
+//			return encodeExpression(pp, next, failjump);
+//		}
+//		if(r.isInline() && UFlag.is(option, Grammar.Inlining)) {
+//			Verbose.noticeOptimize("Inlining", p, r.getExpression());
+//			return encodeExpression(r.getExpression(), next, failjump);
+//		}
+//		if(this.enablePackratParsing()) {
+//			if(!this.enableASTConstruction() || r.isPurePEG()) {
+//				Expression ref = GrammarFactory.resolveNonTerminal(r.getExpression());
+//				MemoPoint m = this.issueMemoPoint(r.getUniqueName(), ref);
+//				if(m != null) {
+//					if(UFlag.is(option, Grammar.Tracing)) {
+//						IMonitoredSwitch monitor = new IMonitoredSwitch(p, new ICallPush(p.getProduction(), next));
+//						Instruction inside = new ICallPush(r, newMemoize(p, monitor, m, next));
+//						monitor.setActivatedNext(newLookup(p, monitor, m, inside, next, newMemoizeFail(p, monitor, m)));
+//						return monitor;
+//					}
+//					Instruction inside = new ICallPush(r, newMemoize(p, IMonitoredSwitch.dummyMonitor, m, next));
+//					return newLookup(p, IMonitoredSwitch.dummyMonitor, m, inside, next, newMemoizeFail(p, IMonitoredSwitch.dummyMonitor, m));
+//				}
+//			}
+//		}	
+//		return new ICallPush(r, next);
+//	}
 	
-	private Instruction newLookup(Expression e, IMonitoredSwitch monitor, MemoPoint m, Instruction next, Instruction skip, Instruction failjump) {
-		if(m.contextSensitive) {
-			return new IStateLookup(e, monitor, m, next, skip, failjump);
-		}
-		return new ILookup(e, monitor, m, next, skip, failjump);
-	}
-
-	private Instruction newMemoize(Expression e, IMonitoredSwitch monitor, MemoPoint m, Instruction next) {
-		if(m.contextSensitive) {
-			return new IStateMemoize(e, monitor, m, next);
-		}
-		return new IMemoize(e, monitor, m, next);
-	}
-
-	private Instruction newMemoizeFail(Expression e, IMonitoredSwitch monitor, MemoPoint m) {
-		if(m.contextSensitive) {
-			return new IStateMemoizeFail(e, monitor, m);
-		}
-		return new IMemoizeFail(e, monitor, m);
-	}
+//	private Instruction newLookup(Expression e, IMonitoredSwitch monitor, MemoPoint m, Instruction next, Instruction skip, Instruction failjump) {
+//		if(m.contextSensitive) {
+//			return new IStateLookup(e, monitor, m, next, skip, failjump);
+//		}
+//		return new ILookup(e, monitor, m, next, skip, failjump);
+//	}
+//
+//	private Instruction newMemoize(Expression e, IMonitoredSwitch monitor, MemoPoint m, Instruction next) {
+//		if(m.contextSensitive) {
+//			return new IStateMemoize(e, monitor, m, next);
+//		}
+//		return new IMemoize(e, monitor, m, next);
+//	}
+//
+//	private Instruction newMemoizeFail(Expression e, IMonitoredSwitch monitor, MemoPoint m) {
+//		if(m.contextSensitive) {
+//			return new IStateMemoizeFail(e, monitor, m);
+//		}
+//		return new IMemoizeFail(e, monitor, m);
+//	}
 
 	
 	// AST Construction
 	
 	public final Instruction encodeLink(Link p, Instruction next, Instruction failjump) {
 		if(this.enableASTConstruction()) {
-			if(this.enablePackratParsing()) {
-				Expression inner = GrammarFactory.resolveNonTerminal(p.get(0));
-				MemoPoint m = this.issueMemoPoint(p.toString(), inner);
-				if(m != null) {
-					if(UFlag.is(option, Grammar.Tracing)) {
-						IMonitoredSwitch monitor = new IMonitoredSwitch(p, encodeExpression(p.get(0), next, failjump));
-						Instruction inside = encodeExpression(p.get(0), newMemoizeNode(p, monitor, m, next), failjump);
-						monitor.setActivatedNext(newLookupNode(p, monitor, m, inside, next, new IMemoizeFail(p, monitor, m)));
-						return monitor;
-					}
-					Instruction inside = encodeExpression(p.get(0), newMemoizeNode(p, IMonitoredSwitch.dummyMonitor, m, next), failjump);
-					return newLookupNode(p, IMonitoredSwitch.dummyMonitor, m, inside, next, new IMemoizeFail(p, IMonitoredSwitch.dummyMonitor, m));
-				}
-			}
+//			if(this.enablePackratParsing()) {
+//				Expression inner = GrammarFactory.resolveNonTerminal(p.get(0));
+//				MemoPoint m = this.issueMemoPoint(p.toString(), inner);
+//				if(m != null) {
+//					if(UFlag.is(option, Grammar.Tracing)) {
+//						IMonitoredSwitch monitor = new IMonitoredSwitch(p, encodeExpression(p.get(0), next, failjump));
+//						Instruction inside = encodeExpression(p.get(0), newMemoizeNode(p, monitor, m, next), failjump);
+//						monitor.setActivatedNext(newLookupNode(p, monitor, m, inside, next, new IMemoizeFail(p, monitor, m)));
+//						return monitor;
+//					}
+//					Instruction inside = encodeExpression(p.get(0), newMemoizeNode(p, IMonitoredSwitch.dummyMonitor, m, next), failjump);
+//					return newLookupNode(p, IMonitoredSwitch.dummyMonitor, m, inside, next, new IMemoizeFail(p, IMonitoredSwitch.dummyMonitor, m));
+//				}
+//			}
 			return new INodePush(p, encodeExpression(p.get(0), new INodeStore(p, next), failjump));
 		}
 		return encodeExpression(p.get(0), next, failjump);
 	}
 
-	private Instruction newLookupNode(Link e, IMonitoredSwitch monitor, MemoPoint m, Instruction next, Instruction skip, Instruction failjump) {
-		if(m.contextSensitive) {
-			return new IStateLookupNode(e, monitor, m, next, skip, failjump);
-		}
-		return new ILookupNode(e, monitor, m, next, skip, failjump);
-	}
-
-	private Instruction newMemoizeNode(Link e, IMonitoredSwitch monitor, MemoPoint m, Instruction next) {
-		if(m.contextSensitive) {
-			return new IStateMemoizeNode(e, monitor, m, next);
-		}
-		return new IMemoizeNode(e, monitor, m, next);
-	}
+//	private Instruction newLookupNode(Link e, IMonitoredSwitch monitor, MemoPoint m, Instruction next, Instruction skip, Instruction failjump) {
+//		if(m.contextSensitive) {
+//			return new IStateLookupNode(e, monitor, m, next, skip, failjump);
+//		}
+//		return new ILookupNode(e, monitor, m, next, skip, failjump);
+//	}
+//
+//	private Instruction newMemoizeNode(Link e, IMonitoredSwitch monitor, MemoPoint m, Instruction next) {
+//		if(m.contextSensitive) {
+//			return new IStateMemoizeNode(e, monitor, m, next);
+//		}
+//		return new IMemoizeNode(e, monitor, m, next);
+//	}
 
 	
 //	public final Instruction encodeNewClosure(NewClosure p, Instruction next) {

@@ -56,7 +56,7 @@ public final class MemoPoint {
 		return this.memoMiss + this.memoFailHit + this.memoHit;
 	}
 
-	protected final boolean checkUseless() {
+	protected final boolean checkDeactivation() {
 		if(this.memoMiss == 32) {
 			if(this.memoHit < 2) {          
 				return true;
