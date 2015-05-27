@@ -1,10 +1,10 @@
 package nez.lang;
 
 import nez.ast.SourcePosition;
-import nez.runtime.Instruction;
-import nez.runtime.NezCompiler;
 import nez.util.UList;
 import nez.util.UMap;
+import nez.vm.Instruction;
+import nez.vm.NezCompiler;
 
 public class Link extends Unary {
 	public int index;
@@ -43,8 +43,8 @@ public class Link extends Unary {
 		return inner.acceptByte(ch, option);
 	}
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next) {
-		return bc.encodeLink(this, next);
+	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
+		return bc.encodeLink(this, next, failjump);
 	}
 	@Override
 	protected int pattern(GEP gep) {

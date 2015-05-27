@@ -2,10 +2,10 @@ package nez.lang;
 
 import nez.ast.SourcePosition;
 import nez.ast.Tag;
-import nez.runtime.Instruction;
-import nez.runtime.NezCompiler;
 import nez.util.UList;
 import nez.util.UMap;
+import nez.vm.Instruction;
+import nez.vm.NezCompiler;
 
 public class ExistsSymbol extends Expression {
 	public final Tag tableName;
@@ -71,8 +71,8 @@ public class ExistsSymbol extends Expression {
 		return Prediction.Accept;
 	}
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next) {
-		return bc.encodeExistsSymbol(this, next);
+	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
+		return bc.encodeExistsSymbol(this, next, failjump);
 	}
 	@Override
 	protected int pattern(GEP gep) {

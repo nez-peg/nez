@@ -1,4 +1,4 @@
-package nez.runtime;
+package nez.vm;
 
 @SuppressWarnings("serial")
 public class TerminationException extends Exception {

@@ -3,12 +3,12 @@ package nez.lang;
 import java.util.TreeMap;
 
 import nez.ast.SourcePosition;
-import nez.runtime.Instruction;
-import nez.runtime.NezCompiler;
 import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
 import nez.util.UList;
 import nez.util.UMap;
+import nez.vm.Instruction;
+import nez.vm.NezCompiler;
 
 public class Production extends Expression {
 	NameSpace  ns;
@@ -235,8 +235,8 @@ public class Production extends Expression {
 
 	
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next) {
-		return this.getExpression().encode(bc, next);
+	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
+		return this.getExpression().encode(bc, next, failjump);
 	}
 
 	@Override

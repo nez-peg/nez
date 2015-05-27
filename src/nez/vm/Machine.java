@@ -1,4 +1,4 @@
-package nez.runtime;
+package nez.vm;
 
 import nez.SourceContext;
 import nez.util.ConsoleUtils;

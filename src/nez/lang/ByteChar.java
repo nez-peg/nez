@@ -1,9 +1,9 @@
 package nez.lang;
 
 import nez.ast.SourcePosition;
-import nez.runtime.Instruction;
-import nez.runtime.NezCompiler;
 import nez.util.UList;
+import nez.vm.Instruction;
+import nez.vm.NezCompiler;
 
 public class ByteChar extends Terminal {
 	public int byteChar;
@@ -43,8 +43,8 @@ public class ByteChar extends Terminal {
 	}
 	
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next) {
-		return bc.encodeByteChar(this, next);
+	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
+		return bc.encodeByteChar(this, next, failjump);
 	}
 	
 	@Override

@@ -2,9 +2,9 @@ package nez.lang;
 
 import nez.ast.SourcePosition;
 import nez.ast.Tag;
-import nez.runtime.Instruction;
-import nez.runtime.NezCompiler;
 import nez.util.StringUtils;
+import nez.vm.Instruction;
+import nez.vm.NezCompiler;
 
 public class Tagging extends ASTOperation {
 	public Tag tag;
@@ -40,7 +40,7 @@ public class Tagging extends ASTOperation {
 //		return true;
 //	}
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next) {
+	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
 		return bc.encodeTagging(this, next);
 	}
 }

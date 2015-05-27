@@ -2,10 +2,10 @@ package nez.lang;
 
 import nez.ast.SourcePosition;
 import nez.ast.Tag;
-import nez.runtime.Instruction;
-import nez.runtime.NezCompiler;
 import nez.util.UList;
 import nez.util.UMap;
+import nez.vm.Instruction;
+import nez.vm.NezCompiler;
 
 public class DefSymbol extends Unary {
 	public final Tag tableName;
@@ -90,8 +90,8 @@ public class DefSymbol extends Unary {
 	}
 	
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next) {
-		return bc.encodeDefSymbol(this, next);
+	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
+		return bc.encodeDefSymbol(this, next, failjump);
 	}
 
 	@Override

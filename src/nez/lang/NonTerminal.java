@@ -3,10 +3,10 @@ package nez.lang;
 import java.util.TreeMap;
 
 import nez.ast.SourcePosition;
-import nez.runtime.Instruction;
-import nez.runtime.NezCompiler;
 import nez.util.UList;
 import nez.util.UMap;
+import nez.vm.Instruction;
+import nez.vm.NezCompiler;
 
 public class NonTerminal extends Expression {
 	private NameSpace ns;
@@ -146,8 +146,8 @@ public class NonTerminal extends Expression {
 		this.optimized = e;
 	}
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next) {
-		return bc.encodeNonTerminal(this, next);
+	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
+		return bc.encodeNonTerminal(this, next, failjump);
 	}
 	@Override
 	protected int pattern(GEP gep) {

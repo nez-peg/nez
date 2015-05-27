@@ -1,10 +1,10 @@
 package nez.lang;
 
 import nez.ast.SourcePosition;
-import nez.runtime.Instruction;
-import nez.runtime.NezCompiler;
 import nez.util.UList;
 import nez.util.UMap;
+import nez.vm.Instruction;
+import nez.vm.NezCompiler;
 
 public class Repetition extends Unary {
 	public boolean possibleInfiniteLoop = false;
@@ -52,7 +52,7 @@ public class Repetition extends Unary {
 	}
 			
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next) {
+	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
 		return bc.encodeRepetition(this, next);
 	}
 

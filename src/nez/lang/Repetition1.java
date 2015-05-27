@@ -1,10 +1,10 @@
 package nez.lang;
 
 import nez.ast.SourcePosition;
-import nez.runtime.Instruction;
-import nez.runtime.NezCompiler;
 import nez.util.UList;
 import nez.util.UMap;
+import nez.vm.Instruction;
+import nez.vm.NezCompiler;
 
 public class Repetition1 extends Repetition {
 	Repetition1(SourcePosition s, Expression e) {
@@ -48,8 +48,8 @@ public class Repetition1 extends Repetition {
 	}
 	
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next) {
-		return bc.encodeRepetition1(this, next);
+	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
+		return bc.encodeRepetition1(this, next, failjump);
 	}
 
 	@Override

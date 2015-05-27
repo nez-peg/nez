@@ -3,11 +3,11 @@ package nez.lang;
 import java.util.TreeMap;
 
 import nez.ast.SourcePosition;
-import nez.runtime.Instruction;
-import nez.runtime.NezCompiler;
 import nez.util.UFlag;
 import nez.util.UList;
 import nez.util.UMap;
+import nez.vm.Instruction;
+import nez.vm.NezCompiler;
 
 public class Choice extends Multinary {
 	Choice(SourcePosition s, UList<Expression> l, int size) {
@@ -73,12 +73,12 @@ public class Choice extends Multinary {
 	}
 
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next) {
-		return bc.encodeChoice(this, next);
+	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
+		return bc.encodeChoice(this, next, failjump);
 	}
 	
 	// optimize
-	public Expression[] matchCase = null;
+	public Expression[] predictedCase = null;
 //	boolean selfChoice = false;
 //	int startIndex = -1;
 //	int endIndex = 257;
@@ -95,10 +95,10 @@ public class Choice extends Multinary {
 		}
 		if(UFlag.is(option, Grammar.Prediction) && !UFlag.is(option, Grammar.DFA)) {
 			Expression fails = GrammarFactory.newFailure(s);
-			this.matchCase = new Expression[257];
+			this.predictedCase = new Expression[257];
 			for(int ch = 0; ch <= 256; ch++) {
 				Expression selected = selectChoice(ch, fails, option);
-				matchCase[ch] = selected;
+				predictedCase[ch] = selected;
 			}
 		}
 	}

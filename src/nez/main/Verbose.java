@@ -20,7 +20,6 @@ public class Verbose {
 	public static boolean NFA = true;
 	public static boolean TraceException = true;
 	
-	
 	public static void setAll() {
 		General = true;
 		Example = true;
@@ -66,8 +65,8 @@ public class Verbose {
 		}
 	}
 
-	public static void debug(Object s) {
-		if(Debug) {
+	public final static void debug(Object s) {
+		if(Command.ReleasePreview) {
 			ConsoleUtils.println("debug: " + s);
 		}
 	}

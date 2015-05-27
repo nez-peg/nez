@@ -1,10 +1,10 @@
 package nez.lang;
 
 import nez.ast.SourcePosition;
-import nez.runtime.Instruction;
-import nez.runtime.NezCompiler;
 import nez.util.UList;
 import nez.util.UMap;
+import nez.vm.Instruction;
+import nez.vm.NezCompiler;
 
 @Deprecated
 public class WithoutFlag extends Unary {
@@ -36,8 +36,8 @@ public class WithoutFlag extends Unary {
 		return this.inner.acceptByte(ch, option);
 	}
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next) {
-		return this.inner.encode(bc, next);
+	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
+		return this.inner.encode(bc, next, failjump);
 	}
 	@Override
 	protected int pattern(GEP gep) {

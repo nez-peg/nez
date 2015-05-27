@@ -9,11 +9,11 @@ import nez.lang.GrammarChecker;
 import nez.lang.NameSpace;
 import nez.lang.NezCombinator;
 import nez.lang.NezParser;
-import nez.runtime.MemoTable;
 import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
 import nez.util.UFlag;
 import nez.util.UList;
+import nez.vm.MemoTable;
 
 public class CommandConfigure {
 	public String CommandName = "shell";

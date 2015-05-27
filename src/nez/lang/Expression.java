@@ -3,19 +3,20 @@ import java.util.AbstractList;
 import java.util.TreeMap;
 
 import nez.ast.SourcePosition;
-import nez.runtime.Instruction;
-import nez.runtime.NezCompiler;
 import nez.util.UList;
 import nez.util.UMap;
+import nez.vm.Instruction;
+import nez.vm.NezCompiler;
 
 public abstract class Expression extends AbstractList<Expression> {
 	public final static boolean ClassicMode = false;
+
 	SourcePosition s = null;
 	int    internId   = 0;
 	
-	public Expression optimized;
 	int    optimizedOption = -1;
 	
+	public Expression optimized;
 	Expression(SourcePosition s) {
 		this.s = s;
 		this.internId = 0;
@@ -30,7 +31,7 @@ public abstract class Expression extends AbstractList<Expression> {
 		return this.internId;
 	}
 	
-	final boolean isInterned() {
+	public final boolean isInterned() {
 		return (this.internId > 0);
 	}
 	
@@ -105,7 +106,7 @@ public abstract class Expression extends AbstractList<Expression> {
 		visitor.visit(this);
 	}
 
-	public abstract Instruction encode(NezCompiler bc, Instruction next);
+	public abstract Instruction encode(NezCompiler bc, Instruction next, Instruction failjump);
 
 
 	protected int pattern(GEP gep) {

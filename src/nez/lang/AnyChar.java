@@ -2,11 +2,11 @@ package nez.lang;
 
 import nez.ast.Source;
 import nez.ast.SourcePosition;
-import nez.runtime.Instruction;
-import nez.runtime.NezCompiler;
 import nez.util.UFlag;
 import nez.util.UList;
 import nez.util.UMap;
+import nez.vm.Instruction;
+import nez.vm.NezCompiler;
 
 public class AnyChar extends Terminal {
 	AnyChar(SourcePosition s) {
@@ -53,8 +53,8 @@ public class AnyChar extends Terminal {
 	}
 	
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next) {
-		return bc.encodeMatchAny(this, next);
+	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
+		return bc.encodeMatchAny(this, next, failjump);
 	}
 	@Override
 	protected int pattern(GEP gep) {

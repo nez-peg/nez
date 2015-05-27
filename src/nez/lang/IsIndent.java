@@ -1,9 +1,9 @@
 package nez.lang;
 
 import nez.ast.SourcePosition;
-import nez.runtime.Instruction;
-import nez.runtime.NezCompiler;
 import nez.util.UList;
+import nez.vm.Instruction;
+import nez.vm.NezCompiler;
 
 public class IsIndent extends Terminal {
 	IsIndent(SourcePosition s) {
@@ -42,8 +42,8 @@ public class IsIndent extends Terminal {
 	}
 
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next) {
-		return bc.encodeIsIndent(this, next);
+	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
+		return bc.encodeIsIndent(this, next, failjump);
 	}
 	@Override
 	protected int pattern(GEP gep) {
