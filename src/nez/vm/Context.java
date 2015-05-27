@@ -176,6 +176,19 @@ public abstract class Context implements Source {
 		this.stackedSymbolTable.clear(stackTop);
 	}
 
+	public final boolean matchSymbolTable(Tag table, boolean onlyTop) {
+		for(int i = stackedSymbolTable.size() - 1; i >= 0; i--) {
+			SymbolTableEntry s = stackedSymbolTable.ArrayValues[i];
+			if(s.table == table) {
+				if(s.match(this)) {
+					return true;
+				}
+				if(onlyTop) break;
+			}
+		}
+		return false;
+	}
+	
 	public final boolean matchSymbolTable(Tag table, byte[] symbol, boolean onlyTop) {
 		for(int i = stackedSymbolTable.size() - 1; i >= 0; i--) {
 			SymbolTableEntry s = stackedSymbolTable.ArrayValues[i];
@@ -610,8 +623,7 @@ public abstract class Context implements Source {
 	}
 
 	public final Instruction opIIsSymbol(IIsSymbol op) {
-		ContextStack top = popLocalStack();
-		if(this.matchSymbolTable(op.tableName, this.subbyte(top.pos, this.pos), op.checkLastSymbolOnly)) {
+		if(this.matchSymbolTable(op.tableName, op.checkLastSymbolOnly)) {
 			return op.next;
 		}
 		return opIFail();
@@ -828,6 +840,15 @@ class SymbolTableEntry {
 		this.table = table;
 		this.utf8 = b == null ? new byte[0] : b;
 		this.len = utf8.length;
+	}
+	final boolean match(Context ctx) {
+		for(int i = 0; i < this.len; i++) {
+			if (utf8[i] != ctx.byteAt(ctx.getPosition())) {
+				return false;
+			}
+		}
+		ctx.consume(this.len);
+		return true;
 	}
 	final boolean match(byte[] b) {
 		if(this.len == b.length) {
