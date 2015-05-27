@@ -236,7 +236,7 @@ public class FSharpScope {
 					return child;
 				}
 				return this.searchChildren(child, name);
-			}	
+			}
 		}
 		return null;
 	}

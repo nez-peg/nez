@@ -66,7 +66,7 @@ public class FSharpGenerator extends SourceGenerator {
 		
 		fsClasses.add(newScope);
 		parentScope.add(newScope);
-		parentScope.varList.add(new FSharpVar(newScope.name, newScope.getPathName()));
+		parentScope.varList.add(new FSharpVar(newScope.name, newScope.getInnerPath(), node));
 		return newScope;
 	}
 	
