@@ -68,4 +68,8 @@ public class FSharpFunc {
 		}
 		this.argsStr = argsStr;
 	}
+	
+	public String toString(){
+		return name;
+	}
 }

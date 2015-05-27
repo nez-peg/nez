@@ -82,7 +82,6 @@ public class FSharpGenerator extends SourceGenerator {
 		for(int child_i = 0; child_i < node.size(); child_i++){
 			findScope(node.get(child_i), nextScope);
 		}
-		//TODO
 	}
 	
 	/**format ModifiedTrees, which is the flow of curerntScope operation in JavaScript program, 
@@ -101,6 +100,7 @@ public class FSharpGenerator extends SourceGenerator {
 	
 	public void toSource(ModifiableTree node){
 		FSharpScope topScope = new FSharpScope("TOPLEVEL", node, null);
+		fsClasses.add(topScope);
 		findScope(node, topScope);
 		//print debug
 		for(FSharpScope fs : fsClasses){

@@ -46,6 +46,9 @@ public class FSharpScope {
 			}
 		} else if(node.is(JSTag.TAG_OBJECT)){
 			this.type = ScopeType.OBJECT;
+			if(node != null){
+				findProperty(node);
+			}
 		}
 	}
 	
@@ -70,6 +73,9 @@ public class FSharpScope {
 			}
 		} else if(node.is(JSTag.TAG_OBJECT)){
 			this.type = ScopeType.OBJECT;
+			if(node != null){
+				findProperty(node);
+			}
 		}
 	}
 	
@@ -285,6 +291,21 @@ public class FSharpScope {
 		return true;
 	}
 	
+	private boolean findProperty(ModifiableTree node){
+		ModifiableTree propertyNode, nameNode, valueNode = null;
+		for(int i = 0; i < node.size(); i++){
+			propertyNode = node.get(i);
+			if(propertyNode.is(JSTag.TAG_PROPERTY)){
+				nameNode = propertyNode.get(0);
+				valueNode = propertyNode.get(1);
+				if(!valueNode.is(JSTag.TAG_FUNC_DECL) && !valueNode.is(JSTag.TAG_OBJECT) ){
+					varList.add(new FSharpVar(nameNode.getText(), getInnerPath(), valueNode));
+				}
+			}
+		}
+		return true;
+	}
+	
 	public String toString(){
 		StringBuilder output = new StringBuilder();
 		output.append("Name: " + path.toString() + " " + name + "\n");
@@ -296,7 +317,7 @@ public class FSharpScope {
 		}
 		output.append("Var: " + varList.toString() + "\n");
 		output.append("Function: " + funcList.toString() + "\n");
-		output.append(node.toString());
+		//output.append(node.toString());
 		return output.toString();
 	}
 }

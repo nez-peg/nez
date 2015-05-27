@@ -39,4 +39,8 @@ public class FSharpVar {
 	public String getFullname(){
 		return this.fullname;
 	}
+	
+	public String toString(){
+		return name;
+	}
 }
