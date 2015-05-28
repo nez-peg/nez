@@ -3,15 +3,19 @@ package nez.vm;
 import java.util.Arrays;
 
 import nez.ast.Tag;
+import nez.lang.Block;
 import nez.lang.ByteChar;
 import nez.lang.ByteMap;
 import nez.lang.DefIndent;
 import nez.lang.DefSymbol;
+import nez.lang.ExistsSymbol;
 import nez.lang.Expression;
 import nez.lang.IsIndent;
 import nez.lang.IsSymbol;
 import nez.lang.Link;
+import nez.lang.LocalTable;
 import nez.lang.New;
+import nez.lang.NezTag;
 import nez.lang.Prediction;
 import nez.lang.Production;
 import nez.lang.Replace;
@@ -750,6 +754,48 @@ class IMemoizeFail extends IFail implements Memoization {
 
 /* Symbol */
 
+class IBeginSymbolScope extends IFailPush {
+	IBeginSymbolScope(Block e, Instruction failjump, Instruction next) {
+		super(e, failjump, next);
+	}
+	@Override
+	Instruction exec(Context sc) throws TerminationException {
+		sc.opIFailPush(this);
+		ContextStack top = sc.newUnusedLocalStack();
+		top.pos = sc.getSymbolTable().savePoint();
+		return this.next;
+	}
+}
+
+class IBeginLocalScope extends IFailPush {
+	final Tag tableName;
+	IBeginLocalScope(LocalTable e, Instruction failjump, Instruction next) {
+		super(e, failjump, next);
+		this.tableName = e.getTable();
+	}
+	@Override
+	Instruction exec(Context sc) throws TerminationException {
+		sc.opIFailPush(this);
+		ContextStack top = sc.newUnusedLocalStack();
+		top.pos = sc.getSymbolTable().saveHiddenPoint(tableName);
+		return this.next;
+	}
+}
+
+class IEndSymbolScope extends Instruction {
+	final boolean fail;
+	IEndSymbolScope(Expression e, boolean fail, Instruction next) {
+		super(e, next);
+		this.fail = fail;
+	}
+	@Override
+	Instruction exec(Context sc) throws TerminationException {
+		ContextStack top = sc.popLocalStack();
+		sc.getSymbolTable().rollBack((int)top.pos);
+		return (fail) ? sc.opIFail() : sc.opIFailPop(this);
+	}
+}
+
 class IDefSymbol extends Instruction {
 	Tag tableName;
 	IDefSymbol(DefSymbol e, Instruction next) {
@@ -762,17 +808,18 @@ class IDefSymbol extends Instruction {
 	}
 	@Override
 	Instruction exec(Context sc) throws TerminationException {
-		return sc.opIDefSymbol(this);
+		ContextStack top = sc.popLocalStack();
+		byte[] captured = sc.subbyte(top.pos, sc.getPosition());
+		sc.getSymbolTable().addTable(this.tableName, captured);
+		return this.next;
 	}
 }
 
-class IIsSymbol extends Instruction {
+class IExistsSymbol extends Instruction {
 	Tag tableName;
-	boolean checkLastSymbolOnly;
-	IIsSymbol(IsSymbol e, boolean checkLastSymbolOnly, Instruction next) {
+	IExistsSymbol(ExistsSymbol e, Instruction next) {
 		super(e, next);
 		this.tableName = e.tableName;
-		this.checkLastSymbolOnly = checkLastSymbolOnly;
 	}
 	@Override
 	protected String getOperand() {
@@ -780,17 +827,91 @@ class IIsSymbol extends Instruction {
 	}
 	@Override
 	Instruction exec(Context sc) throws TerminationException {
-		return sc.opIIsSymbol(this);
+		byte[] t = sc.getSymbolTable().getSymbol(tableName);
+		return t != null ? this.next : sc.opIFail();
 	}
 }
+
+class IIsSymbol extends Instruction {
+	Tag tableName;
+	IIsSymbol(IsSymbol e, Instruction next) {
+		super(e, next);
+		this.tableName = e.tableName;
+	}
+	@Override
+	protected String getOperand() {
+		return tableName.getName();
+	}
+	@Override
+	Instruction exec(Context sc) throws TerminationException {
+		byte[] t = sc.getSymbolTable().getSymbol(tableName);
+		if(t != null && sc.match(sc.getPosition(), t)) {
+			sc.consume(t.length);
+			return this.next;
+		}
+		return sc.opIFail();
+	}
+}
+
+class IIsaSymbol extends Instruction {
+	Tag tableName;
+	IIsaSymbol(IsSymbol e, Instruction next) {
+		super(e, next);
+		this.tableName = e.tableName;
+	}
+	@Override
+	protected String getOperand() {
+		return tableName.getName();
+	}
+	@Override
+	Instruction exec(Context sc) throws TerminationException {
+		ContextStack top = sc.popLocalStack();
+		byte[] captured = sc.subbyte(top.pos, sc.getPosition());
+		if(sc.getSymbolTable().contains2(this.tableName, captured)) {
+			sc.consume(captured.length);
+			return this.next;
+			
+		}
+		return sc.opIFail();
+	}
+}
+
+
 
 class IDefIndent extends Instruction {
 	IDefIndent(DefIndent e, Instruction next) {
 		super(e, next);
 	}
+	final long getLineStartPosition(Context sc, long fromPostion) {
+		long startIndex = fromPostion;
+		if(!(startIndex < sc.length())) {
+			startIndex = sc.length() - 1;
+		}
+		if(startIndex < 0) {
+			startIndex = 0;
+		}
+		while(startIndex > 0) {
+			int ch = sc.byteAt(startIndex);
+			if(ch == '\n') {
+				startIndex = startIndex + 1;
+				break;
+			}
+			startIndex = startIndex - 1;
+		}
+		return startIndex;
+	}
 	@Override
 	Instruction exec(Context sc) throws TerminationException {
-		return sc.opIDefIndent(this);
+		long pos = sc.getPosition();
+		long spos = getLineStartPosition(sc, pos);
+		byte[] b = sc.subbyte(spos, pos);
+		for(int i = 0; i < b.length; i++) {
+			if(b[i] != '\t') {
+				b[i] = ' ';
+			}
+		}
+		sc.getSymbolTable().addTable(NezTag.Indent, b);
+		return this.next;
 	}
 }
 
@@ -800,29 +921,24 @@ class IIsIndent extends Instruction {
 	}
 	@Override
 	Instruction exec(Context sc) throws TerminationException {
-		return sc.opIIsIndent(this);
+		long pos = sc.getPosition();
+		if(pos > 0) {
+			if(sc.byteAt(pos-1) != '\n') {
+				return sc.opIFail();
+			}
+		}
+		byte[] b = sc.getSymbolTable().getSymbol(NezTag.Indent);
+		if(b != null) {
+			if(sc.match(pos, b)) {
+				sc.consume(b.length);
+				return this.next;
+			}
+			return sc.opIFail();
+		}
+		return this.next;  // empty entry is allowable
 	}
 }
 
-class ITablePush extends Instruction {
-	ITablePush(Expression e, Instruction next) {
-		super(e, next);
-	}
-	@Override
-	Instruction exec(Context sc) throws TerminationException {
-		return sc.opITablePush(this);
-	}
-}
-
-class ITablePop extends Instruction {
-	public ITablePop(Expression e, Instruction next) {
-		super(e, next);
-	}
-	@Override
-	Instruction exec(Context sc) throws TerminationException {
-		return sc.opITablePop(this);
-	}
-}
 
 
 /* Specialization */

@@ -48,6 +48,14 @@ public class NezCompiler1 extends NezCompiler {
 	protected Instruction encodeMemoizingProduction(ProductionCode code) {
 		return null;
 	}
+	
+	protected void optimizedUnary(Expression p) {
+		Verbose.noticeOptimize("specialization", p);
+	}
+
+	protected void optimizedInline(Production p) {
+		Verbose.noticeOptimize("inlining", p.getExpression());
+	}
 
 	HashMap<String, ProductionCode> codeMap = new HashMap<String, ProductionCode>();
 	
@@ -87,7 +95,7 @@ public class NezCompiler1 extends NezCompiler {
 		countNonTerminalReference(start.getExpression());
 		for(Production p : grammar.getProductionList()) {
 			if(p != start) {
-				ProductionCode code = this.codeMap.get(p.getUniqueName());
+				//ProductionCode code = this.codeMap.get(p.getUniqueName());
 				this.countNonTerminalReference(p.getExpression());
 			}
 		}
@@ -102,7 +110,7 @@ public class NezCompiler1 extends NezCompiler {
 				}
 			}
 		}
-//		if(UFlag.is(option, Grammar.PackratParsing)) {
+		if(UFlag.is(option, Grammar.PackratParsing)) {
 			int memoId = 0;
 			for(Production p : grammar.getProductionList()) {
 				ProductionCode code = this.codeMap.get(p.getUniqueName());
@@ -116,14 +124,11 @@ public class NezCompiler1 extends NezCompiler {
 					}
 				}
 			}
-//		}
+		}
 	}
 	
 	protected void encodeProduction(UList<Instruction> codeList, Production p, Instruction next) {
 		String uname = p.getUniqueName();
-		if(Verbose.Debug) {
-			Verbose.debug("compiling .. " + p);
-		}
 		ProductionCode code = this.codeMap.get(uname);
 		if(code != null) {
 			code.codePoint = encodeExpression(code.localExpression, next, null/*failjump*/);
@@ -139,7 +144,7 @@ public class NezCompiler1 extends NezCompiler {
 	
 	@Override
 	public NezCode encode(Grammar grammar) {
-		//long t = System.nanoTime();
+		long t = System.nanoTime();
 		initCodeMap(grammar);
 		UList<Instruction> codeList = new UList<Instruction>(new Instruction[64]);
 		Production start = grammar.getStartProduction();
@@ -153,13 +158,13 @@ public class NezCompiler1 extends NezCompiler {
 			if(inst instanceof ICallPush) {
 				ProductionCode deref = this.codeMap.get(((ICallPush) inst).rule.getUniqueName());
 				if(deref == null) {
-					System.out.println("no deref: " + ((ICallPush) inst).rule.getUniqueName());
+					Verbose.debug("no deref: " + ((ICallPush) inst).rule.getUniqueName());
 				}
 				((ICallPush) inst).setResolvedJump(deref.codePoint);
 			}
 		}
-		//long t2 = System.nanoTime();
-		//Verbose.printElapsedTime("CompilingTime", t, t2);
+		long t2 = System.nanoTime();
+		Verbose.printElapsedTime("CompilingTime", t, t2);
 		this.codeMap = null;
 		return new NezCode(codeList.ArrayValues[0]);
 	}
@@ -233,135 +238,77 @@ public class NezCompiler1 extends NezCompiler {
 
 	public Instruction encodeNonTerminal(NonTerminal p, Instruction next, Instruction failjump) {
 		Production r = p.getProduction();
-//		Expression pp = p.optimize(option);
-//		if(pp instanceof ByteChar || pp instanceof ByteMap || pp instanceof AnyChar) {
-//			Verbose.noticeOptimize("Inlining", p, pp);
-//			return encodeExpression(pp, next);
-//		}
-//		if(r.isInline() && UFlag.is(option, Grammar.Inlining)) {
-//			Verbose.noticeOptimize("Inlining", p, r.getExpression());
-//			return encodeExpression(r.getExpression(), next);
-//		}
-//		if(this.enablePackratParsing()) {
-//			if(!this.enableASTConstruction() || r.isPurePEG()) {
-//				Expression ref = Factory.resolveNonTerminal(r.getExpression());
-//				MemoPoint m = this.issueMemoPoint(r.getUniqueName(), ref);
-//				if(m != null) {
-//					if(UFlag.is(option, Grammar.Tracing)) {
-//						IMonitoredSwitch monitor = new IMonitoredSwitch(p, new ICallPush(p.getProduction(), next));
-//						Instruction inside = new ICallPush(r, newMemoize(p, monitor, m, next));
-//						monitor.setActivatedNext(newLookup(p, monitor, m, inside, next, newMemoizeFail(p, monitor, m)));
-//						return monitor;
-//					}
-//					Instruction inside = new ICallPush(r, newMemoize(p, IMonitoredSwitch.dummyMonitor, m, next));
-//					return newLookup(p, IMonitoredSwitch.dummyMonitor, m, inside, next, newMemoizeFail(p, IMonitoredSwitch.dummyMonitor, m));
-//				}
-//			}
-//		}	
 		return new ICallPush(r, next);
 	}
-	
-//	private Instruction encodeMemo(Expression e, IMonitoredSwitch monitor, MemoPoint m, Instruction next, Instruction skip, Instruction failjump) {
-//		if(m.contextSensitive) {
-//			return new IStateLookup(e, monitor, m, next, skip, failjump);
-//		}
-//		return new ILookup(e, monitor, m, next, skip, failjump);
-//	}
-//
-//	private Instruction newMemoize(Expression e, IMonitoredSwitch monitor, MemoPoint m, Instruction next) {
-//		if(m.contextSensitive) {
-//			return new IStateMemoize(e, monitor, m, next);
-//		}
-//		return new IMemoize(e, monitor, m, next);
-//	}
-//
-//	private Instruction newMemoizeFail(Expression e, IMonitoredSwitch monitor, MemoPoint m) {
-//		if(m.contextSensitive) {
-//			return new IStateMemoizeFail(e, monitor, m);
-//		}
-//		return new IMemoizeFail(e, monitor, m);
-//	}
-	
+		
 	// AST Construction
 	
 	public Instruction encodeLink(Link p, Instruction next, Instruction failjump) {
-		if(this.enableASTConstruction()) {
-//			if(this.enablePackratParsing()) {
-//				Expression inner = Factory.resolveNonTerminal(p.get(0));
-//				MemoPoint m = this.issueMemoPoint(p.toString(), inner);
-//				if(m != null) {
-//					if(UFlag.is(option, Grammar.Tracing)) {
-//						IMonitoredSwitch monitor = new IMonitoredSwitch(p, encodeExpression(p.get(0), next));
-//						Instruction inside = encodeExpression(p.get(0), newMemoizeNode(p, monitor, m, next));
-//						monitor.setActivatedNext(newLookupNode(p, monitor, m, inside, next, new IMemoizeFail(p, monitor, m)));
-//						return monitor;
-//					}
-//					Instruction inside = encodeExpression(p.get(0), newMemoizeNode(p, IMonitoredSwitch.dummyMonitor, m, next));
-//					return newLookupNode(p, IMonitoredSwitch.dummyMonitor, m, inside, next, new IMemoizeFail(p, IMonitoredSwitch.dummyMonitor, m));
-//				}
-//			}
+		if(UFlag.is(this.option, Grammar.ASTConstruction)) {
 			return new INodePush(p, encodeExpression(p.get(0), new INodeStore(p, next), failjump));
 		}
 		return encodeExpression(p.get(0), next, failjump);
 	}
 
-//	private Instruction newLookupNode(Link e, IMonitoredSwitch monitor, MemoPoint m, Instruction next, Instruction skip, Instruction failjump) {
-//		if(m.contextSensitive) {
-//			return new IStateLookupNode(e, monitor, m, next, skip, failjump);
-//		}
-//		return new ILookupNode(e, monitor, m, next, skip, failjump);
-//	}
-//
-//	private Instruction newMemoizeNode(Link e, IMonitoredSwitch monitor, MemoPoint m, Instruction next) {
-//		if(m.contextSensitive) {
-//			return new IStateMemoizeNode(e, monitor, m, next);
-//		}
-//		return new IMemoizeNode(e, monitor, m, next);
-//	}
-
 	public Instruction encodeNew(New p, Instruction next) {
-		if(this.enableASTConstruction()) {
+		if(UFlag.is(this.option, Grammar.ASTConstruction)) {
 			return p.lefted ? new ILeftNew(p, next) : new INew(p, next);
 		}
 		return next;
 	}
 
 	public Instruction encodeCapture(Capture p, Instruction next) {
-		if(this.enableASTConstruction()) {
+		if(UFlag.is(this.option, Grammar.ASTConstruction)) {
 			return new ICapture(p, next);
 		}
 		return next;
 	}
 	
 	public Instruction encodeTagging(Tagging p, Instruction next) {
-		if(this.enableASTConstruction()) {
+		if(UFlag.is(this.option, Grammar.ASTConstruction)) {
 			return new ITag(p, next);
 		}
 		return next;
 	}
 
 	public Instruction encodeReplace(Replace p, Instruction next) {
-		if(this.enableASTConstruction()) {
+		if(UFlag.is(this.option, Grammar.ASTConstruction)) {
 			return new IReplace(p, next);
 		}
 		return next;
 	}
 	
 	public Instruction encodeBlock(Block p, Instruction next, Instruction failjump) {
-		Instruction failed = new ITablePop(p, new IFail(p));
-		Instruction inner = encodeExpression(p.get(0), new IFailPop(p, new ITablePop(p, next)), failjump);
-		return new ITablePush(p, new IFailPush(p, failed, inner));
+		Instruction failed = new IEndSymbolScope(p, /*fail*/true, null);
+		next = new IEndSymbolScope(p, /*fail*/false, next);
+		Instruction inner = encodeExpression(p.get(0), next, failjump);
+		return new IBeginSymbolScope(p, failed, inner);
 	}
-	
+
+	public Instruction encodeLocalTable(LocalTable p, Instruction next, Instruction failjump) {
+		Instruction failed = new IEndSymbolScope(p, /*fail*/true, null);
+		next = new IEndSymbolScope(p, /*fail*/false, next);
+		Instruction inner = encodeExpression(p.get(0), next, failjump);
+		return new IBeginLocalScope(p, failed, inner);
+	}
+
 	public Instruction encodeDefSymbol(DefSymbol p, Instruction next, Instruction failjump) {
-		Instruction inner = encodeExpression(p.get(0), new IDefSymbol(p, next), failjump);
-		return new IPosPush(p, inner);
+		return new IPosPush(p, encodeExpression(p.get(0), new IDefSymbol(p, next), failjump));
 	}
 	
+	public Instruction encodeExistsSymbol(ExistsSymbol p, Instruction next, Instruction failjump) {
+		return new IExistsSymbol(p, next);
+	}
+
 	public Instruction encodeIsSymbol(IsSymbol p, Instruction next, Instruction failjump) {
-		return new IIsSymbol(p, true, next);
+		if(p.checkLastSymbolOnly) {
+			return new IIsSymbol(p, next);
+		}
+		else {
+			return new IPosPush(p, encodeExpression(p.getSymbolExpression(), new IIsaSymbol(p, next), failjump));
+		}
 	}
-	
+
 	public Instruction encodeDefIndent(DefIndent p, Instruction next, Instruction failjump) {
 		return new IDefIndent(p, next);
 	}
@@ -370,23 +317,6 @@ public class NezCompiler1 extends NezCompiler {
 		return new IIsIndent(p, next);
 	}
 
-	public Instruction encodeExistsSymbol(ExistsSymbol existsSymbol, Instruction next, Instruction failjump) {
-		// TODO Auto-generated method stub
-		return next;
-	}
-
-	public Instruction encodeLocalTable(LocalTable localTable, Instruction next, Instruction failjump) {
-		// TODO Auto-generated method stub
-		return next;
-	}
-
 	
-	public void optimizedUnary(Expression p) {
-		Verbose.noticeOptimize("specialization", p);
-	}
-
-	public void optimizedInline(Production p) {
-		Verbose.noticeOptimize("inlining", p.getExpression());
-	}
 
 }

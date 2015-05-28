@@ -160,50 +160,60 @@ public abstract class Context implements Source {
 		this.lastAppendedLog.next = null;
 	}
 
-	
 	/* context-sensitivity parsing */
 	/* <block e> <indent> */
 	/* <def T e>, <is T>, <isa T> */
+
+	private final SymbolTable symbolTable = new SymbolTable();
 	
-	public int stateValue = 0;
-	int stateCount = 0;
-	UList<SymbolTableEntry> stackedSymbolTable = new UList<SymbolTableEntry>(new SymbolTableEntry[4]);
-
-	public final void pushSymbolTable(Tag table, byte[] s) {
-		this.stackedSymbolTable.add(new SymbolTableEntry(table, s));
-		this.stateCount += 1;
-		this.stateValue = stateCount;
-	}
-
-	public final void popSymbolTable(int stackTop) {
-		this.stackedSymbolTable.clear(stackTop);
-	}
-
-	public final boolean matchSymbolTable(Tag table, boolean onlyTop) {
-		for(int i = stackedSymbolTable.size() - 1; i >= 0; i--) {
-			SymbolTableEntry s = stackedSymbolTable.ArrayValues[i];
-			if(s.table == table) {
-				if(s.match(this)) {
-					return true;
-				}
-				if(onlyTop) break;
-			}
-		}
-		return false;
+	public final SymbolTable getSymbolTable() {
+		return this.symbolTable;
 	}
 	
-	public final boolean matchSymbolTable(Tag table, byte[] symbol, boolean onlyTop) {
-		for(int i = stackedSymbolTable.size() - 1; i >= 0; i--) {
-			SymbolTableEntry s = stackedSymbolTable.ArrayValues[i];
-			if(s.table == table) {
-				if(s.match(symbol)) {
-					return true;
-				}
-				if(onlyTop) break;
-			}
-		}
-		return false;
+	public final int getState() {
+		return this.symbolTable.getState();
 	}
+
+	
+//	public int stateValue = 0;
+//	int stateCount = 0;
+//	UList<SymbolTableEntry> stackedSymbolTable = new UList<SymbolTableEntry>(new SymbolTableEntry[4]);
+//
+//	public final void pushSymbolTable(Tag table, byte[] s) {
+//		this.stackedSymbolTable.add(new SymbolTableEntry(table, s));
+//		this.stateCount += 1;
+//		this.stateValue = stateCount;
+//	}
+//
+//	public final void popSymbolTable(int stackTop) {
+//		this.stackedSymbolTable.clear(stackTop);
+//	}
+//
+//	public final boolean matchSymbolTable(Tag table, boolean onlyTop) {
+//		for(int i = stackedSymbolTable.size() - 1; i >= 0; i--) {
+//			SymbolTableEntry s = stackedSymbolTable.ArrayValues[i];
+//			if(s.table == table) {
+//				if(s.match(this)) {
+//					return true;
+//				}
+//				if(onlyTop) break;
+//			}
+//		}
+//		return false;
+//	}
+//	
+//	public final boolean matchSymbolTable(Tag table, byte[] symbol, boolean onlyTop) {
+//		for(int i = stackedSymbolTable.size() - 1; i >= 0; i--) {
+//			SymbolTableEntry s = stackedSymbolTable.ArrayValues[i];
+//			if(s.table == table) {
+//				if(s.match(symbol)) {
+//					return true;
+//				}
+//				if(onlyTop) break;
+//			}
+//		}
+//		return false;
+//	}
 
 	// ----------------------------------------------------------------------
 	// Instruction 
@@ -486,7 +496,7 @@ public abstract class Context implements Source {
 	public final Instruction opILookup(ILookup op) {
 		MemoPoint mp = op.memoPoint;
 		MemoEntry entry = op.state ? 
-				memoTable.getMemo2(this.pos, mp.id, stateValue): 
+				memoTable.getMemo2(this.pos, mp.id, symbolTable.getState()): 
 				memoTable.getMemo(this.pos, mp.id);
 		if(entry != null) {
 			if(entry.failed) {
@@ -517,13 +527,13 @@ public abstract class Context implements Source {
 		}
 		ContextStack stackTop = contextStacks[this.usedStackTop];
 		int length = (int)(this.pos - stackTop.pos);
-		memoTable.setMemo(stackTop.pos, mp.id, false, op.node ? this.left :null, length, op.state ? stateValue : 0);
+		memoTable.setMemo(stackTop.pos, mp.id, false, op.node ? this.left :null, length, op.state ? symbolTable.getState() : 0);
 		return this.opIFailPop(op);
 	}
 
 	public final Instruction opIMemoizeFail(IMemoizeFail op) {
 		MemoPoint mp = op.memoPoint;
-		memoTable.setMemo(pos, mp.id, true, null, 0, op.state ? stateValue : 0);
+		memoTable.setMemo(pos, mp.id, true, null, 0, op.state ? symbolTable.getState() : 0);
 		return opIFail();
 	}
 	
@@ -682,83 +692,6 @@ public abstract class Context implements Source {
 		}
 		return op.optional ? op.next : this.opIFail();
 	}
-
-	// symbol table
-
-	public final Instruction opIDefSymbol(IDefSymbol op) {
-		ContextStack top = popLocalStack();
-		this.pushSymbolTable(op.tableName, this.subbyte(top.pos, this.pos));
-		return op.next;
-	}
-
-	public final Instruction opIIsSymbol(IIsSymbol op) {
-		if(this.matchSymbolTable(op.tableName, op.checkLastSymbolOnly)) {
-			return op.next;
-		}
-		return opIFail();
-	}
-
-	public final Instruction opIDefIndent(IDefIndent op) {
-		long spos = this.getLineStartPosition(this.pos);
-		byte[] b = this.subbyte(spos, this.pos);
-		for(int i = 0; i < b.length; i++) {
-			if(b[i] != '\t') {
-				b[i] = ' ';
-			}
-		}
-		this.pushSymbolTable(NezTag.Indent, b);
-		return op.next;
-	}
-
-	private final long getLineStartPosition(long fromPostion) {
-		long startIndex = fromPostion;
-		if(!(startIndex < this.length())) {
-			startIndex = this.length() - 1;
-		}
-		if(startIndex < 0) {
-			startIndex = 0;
-		}
-		while(startIndex > 0) {
-			int ch = byteAt(startIndex);
-			if(ch == '\n') {
-				startIndex = startIndex + 1;
-				break;
-			}
-			startIndex = startIndex - 1;
-		}
-		return startIndex;
-	}
-
-	public final Instruction opIIsIndent(IIsIndent op) {
-		for(int i = stackedSymbolTable.size() - 1; i >= 0; i--) {
-			SymbolTableEntry s = stackedSymbolTable.ArrayValues[i];
-			if(s.table == NezTag.Indent) {
-				if(this.match(this.pos, s.utf8)) {
-					consume(s.len);
-					return op.next;
-				}
-				return opIFail();
-			}
-		}
-		// no indent (unconsumed)
-		return op.next;
-	}
-
-	public final Instruction opITablePush(ITablePush op) {
-		ContextStack top = this.newUnusedLocalStack();
-		top.pos = this.stackedSymbolTable.size();
-		top.prevFailTop = this.stateValue;
-		//System.out.println("pushtable " + top.pos + " " + top.prevFailTop);
-		return op.next;
-	}
-
-	public final Instruction opITablePop(ITablePop op) {
-		ContextStack top = popLocalStack();
-		//System.out.println("poptable " + top.pos + " " + top.prevFailTop);
-		this.stateValue = top.prevFailTop;
-		this.popSymbolTable((int)top.pos);
-		return op.next;
-	}
 	
 	// Profiling
 	private Prof prof;
@@ -894,39 +827,4 @@ class ContextStack {
 	long pos;
 	int  prevFailTop;
 	OperationLog lastLog;
-}
-
-class SymbolTableEntry {
-	Tag table;  // T in <def T e>
-	byte[] utf8;
-	int len;
-	SymbolTableEntry(Tag table, String indent) {
-		this.table = table;
-		this.utf8 = indent.getBytes();
-		this.len = utf8.length;
-	}
-	SymbolTableEntry(Tag table, byte[] b) {
-		this.table = table;
-		this.utf8 = b == null ? new byte[0] : b;
-		this.len = utf8.length;
-	}
-	final boolean match(Context ctx) {
-		for(int i = 0; i < this.len; i++) {
-			if (utf8[i] != ctx.byteAt(ctx.getPosition())) {
-				return false;
-			}
-		}
-		ctx.consume(this.len);
-		return true;
-	}
-	final boolean match(byte[] b) {
-		if(this.len == b.length) {
-			for(int i = 0; i < this.len; i++) {
-				if(utf8[i] != b[i]) {
-					return false;
-				}
-			}
-		}
-		return true;
-	}
 }
