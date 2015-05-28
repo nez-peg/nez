@@ -200,6 +200,9 @@ public class CommandConfigure {
 				if(argument.equals("--verbose:example")) {
 					Verbose.Example = true;
 				}
+				else if(argument.equals("--verbose:time")) {
+					Verbose.Time = true;
+				}
 				else if(argument.equals("--verbose:memo")) {
 					Verbose.PackratParsing = true;
 				}

@@ -19,6 +19,7 @@ public class Verbose {
 	public static boolean SelfTesting = true;
 	public static boolean NFA = true;
 	public static boolean TraceException = true;
+	public static boolean Time = false;
 	
 	public static void setAll() {
 		General = true;
@@ -28,6 +29,7 @@ public class Verbose {
 		VirtualMachine = true;
 		PackratParsing = true;
 		Backtrack = true;
+		Time = true;
 	}
 
 	public final static void print(String msg) {
@@ -49,8 +51,10 @@ public class Verbose {
 	}
 	
 	public final static void printElapsedTime(String msg, long t1, long t2) {
-		double d = (t2 - t1) / 1000000;
-		println(msg + ": " + String.format("%f", d) + "[ms]");
+		if(Time) {
+			double d = (t2 - t1) / 1000000;
+			ConsoleUtils.println(msg + ": " + String.format("%f", d) + "[ms]");
+		}
 	}
 
 	public static void noticeOptimize(String key, Expression p) {
