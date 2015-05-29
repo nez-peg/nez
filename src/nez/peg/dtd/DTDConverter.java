@@ -42,7 +42,6 @@ public class DTDConverter extends CommonTreeVisitor {
 		NameSpace grammar = NameSpace.newNameSpace(filePath);
 		conv.convert(node, grammar);
 		checker.verify(grammar);
-		// grammar.dump();
 		return grammar;
 	}
 
@@ -98,7 +97,7 @@ public class DTDConverter extends CommonTreeVisitor {
 			String elementName = "Element_" + elementNameMap.get(elementID);
 			grammar.defineProduction(node, elementName, genElement(node, elementID));
 		}
-		grammar.defineProduction(node, "entity", genEntityList(node));
+		grammar.defineProduction(node, "Entity", genEntityList(node));
 	}
 
 	public void visitElement(CommonTree node) {
@@ -304,7 +303,7 @@ public class DTDConverter extends CommonTreeVisitor {
 
 	private Expression genFixedAtt(CommonTree node) {
 		String attName = node.textAt(0, "");
-		String fixedValue = node.textAt(2, "");
+		String fixedValue = "\"" + node.textAt(2, "") + "\"";
 		Expression[] l ={
 				grammar.newString(attName),
 				grammar.newRepetition(grammar.newNonTerminal("S")),
@@ -444,8 +443,14 @@ public class DTDConverter extends CommonTreeVisitor {
 	public Expression toEnum(CommonTree node) {
 		String attName = node.getParent().textAt(0, "");
 		Expression[] l = {
-				grammar.newString(attName + "="),
-				toChoice(node)
+				grammar.newString(attName),
+				grammar.newRepetition(grammar.newNonTerminal("S")),
+				grammar.newByteChar('='),
+				grammar.newRepetition(grammar.newNonTerminal("S")),
+				grammar.newByteChar('"'),
+				toChoice(node),
+				grammar.newByteChar('"'),
+				grammar.newRepetition(grammar.newNonTerminal("S")),
 		};
 		return grammar.newSequence(l);
 	}
@@ -460,17 +465,21 @@ public class DTDConverter extends CommonTreeVisitor {
 		return grammar.newNonTerminal(elementName);
 	}
 
+	public Expression toName(CommonTree node) {
+		return grammar.newString(node.getText());
+	}
+
 	public Expression toData(CommonTree node) {
 		return grammar.newNonTerminal("PCDATA");
 	}
 
 	public Expression toOnlyData(CommonTree node) {
-		return grammar.newOption(grammar.newNonTerminal("PCDATA"));
+		return grammar.newRepetition(grammar.newNonTerminal("PCDATA"));
 	}
 
 	private Expression genEntityList(CommonTree node) {
 		if (entityCount == 0) {
-			return GrammarFactory.newEmpty(null);
+			return GrammarFactory.newFailure(null);
 		}
 		else {
 			Expression[] l = new Expression[entityCount];

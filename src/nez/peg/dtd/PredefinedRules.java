@@ -36,6 +36,7 @@ public class PredefinedRules {
 		defENDTAG();
 		defNotAny();
 		defRootElement();
+		defPreEntity();
 	}
 
 
@@ -206,9 +207,12 @@ public class PredefinedRules {
 	}
 
 	final void defPCDATA() {
+		Expression[] seq = {
+				grammar.newNonTerminal("PreEntity"), grammar.newNonTerminal("Entity")
+		};
 		Expression[] l = {
 				grammar.newNonTerminal("TEXT"),
-				grammar.newSequence(grammar.newByteChar('&'), grammar.newNonTerminal("entity"),
+				grammar.newSequence(grammar.newByteChar('&'), grammar.newChoice(seq),
 						grammar.newByteChar(';'))
 		};
 		grammar.defineProduction(null, "PCDATA", grammar.newChoice(l));
@@ -217,5 +221,17 @@ public class PredefinedRules {
 	final void defRootElement() {
 		String rootElementName = "Element_" + this.rootElement;
 		grammar.defineProduction(null, "RootElement", grammar.newNonTerminal(rootElementName));
+	}
+
+	final void defPreEntity() {
+		Expression[] keywords = {
+				grammar.newString("lt"),
+				grammar.newString("gt"),
+				grammar.newString("amp"),
+				grammar.newString("apos"),
+				grammar.newString("quot"),
+				grammar.newRepetition1(grammar.newCharSet("#a-zA-Z0-9"))
+		};
+		grammar.defineProduction(null, "PreEntity", grammar.newChoice(keywords));
 	}
 }
