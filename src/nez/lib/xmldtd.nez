@@ -13,15 +13,13 @@ File
 Document
     = { (PROLOG)? (MISC* (@Dtd)+  MISC* )+ #Doc}
     
-    
 PROLOG
     =  '<?xml' (_* NAME '=' STRING)*  _* '?>' 
-//DocType
-//    = '<!DOCTYPE' _* {@DocTypeName '[' (@Dtd)* #doctype } ']>'
-    
 
 Dtd
     = ( ( '<!' (element/attlist/entity/condsect) '>') / MISC)  _*
+
+// Ignore Section
 
 IGNORESECT
 	= ( '<!' (![>] .)* '>' _*)/ (_* '%' NAME ';' _*) / ( (!']' .)+) / MISC
@@ -35,6 +33,9 @@ include
 IGNORE
 	= '[' _* 'IGNORE' _* '[' _* IGNORESECT* _* ']]' _*
 
+
+// Element Definition
+
 element
 	= 'ELEMENT' _* {@Name _* contentSpec _* #Element} _*
 
@@ -45,7 +46,7 @@ SpContent
 	= {'EMPTY' #Empty} / {'ANY' #Any}
 
 topMember
-	=   ('(' _* @Data _* ')' {@ &'' addQualifier}? ) / @ElName / @Choice / @Seq
+	=   ('(' _* @{'#PCDATA' #OnlyData} _* ')' {@ &'' addQualifier}? ) / @ElName / @Choice / @Seq
 	
 member
 	=   (@Data / @ElName / @Choice / @Seq) 
@@ -64,12 +65,11 @@ addQualifier
 Data
 	= { '#PCDATA' #Data}
 	
-
-	
 OR
 	= _* '|' _* 
-	
 
+// Attribute Definition
+	
 attlist
 	= 'ATTLIST' _* {@Name _* (@AttDef)* #Attlist} _*
 
@@ -103,6 +103,9 @@ DefaultValue
 	
 DEFAULTVALUE
 	= ('"' (![<&"].)* '"') / ('\'' (![<&"].)* '\'')
+
+
+// Entity Definition
 
 entity
 	= 'ENTITY' _*  (gedecl/pedecl) _*
@@ -138,6 +141,7 @@ PUBIDLITERAL
 PUBLICCHAR
 	=  [a-zA-Z0-9] / [-'()+,./:=?;!*#@$_% ]  / [\xD] / [\xA] 
 
+// Literal
 
 ElName
 	= { [A-Za-z:%_] ([-A-Za-z0-9:._%;])* #ElName } {@ &'' addQualifier}?
@@ -154,10 +158,7 @@ String
 STRING
 	=  '"' ( !'"' . )* '"'
     
-
-
 //Spacing etc
-
 
 MISC
     = COMMENT / _+
