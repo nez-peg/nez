@@ -1,7 +1,5 @@
 package nez.lang;
 
-import java.util.TreeMap;
-
 import nez.ast.SourcePosition;
 import nez.util.UList;
 import nez.util.UMap;
@@ -11,6 +9,7 @@ import nez.vm.NezCompiler;
 public class OnFlag extends Unary {
 	boolean predicate;
 	String flagName;
+
 	OnFlag(SourcePosition s, boolean predicate, String flagName, Expression inner) {
 		super(s, inner);
 		if(flagName.startsWith("!")) {
@@ -21,15 +20,20 @@ public class OnFlag extends Unary {
 		this.flagName = flagName;
 		this.optimized = inner.optimized;
 	}
-	
+
 	public final String getFlagName() {
 		return this.flagName;
+	}
+
+	public boolean isPredicate() {
+		return predicate;
 	}
 
 	@Override
 	public String getPredicate() {
 		return predicate ? "on " + this.flagName : "on !" + this.flagName;
 	}
+
 	@Override
 	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeOnFlag(this);
@@ -44,6 +48,7 @@ public class OnFlag extends Unary {
 	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
 		return inner.checkAlwaysConsumed(checker, startNonTerminal, stack);
 	}
+
 	@Override
 	public int inferTypestate(UMap<String> visited) {
 		return this.inner.inferTypestate(visited);
@@ -53,7 +58,7 @@ public class OnFlag extends Unary {
 	public short acceptByte(int ch, int option) {
 		return this.inner.acceptByte(ch, option);
 	}
-	
+
 	@Override
 	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
 		return this.inner.encode(bc, next, failjump);
@@ -69,5 +74,4 @@ public class OnFlag extends Unary {
 		this.inner.examplfy(gep, sb, p);
 	}
 
-	
 }
