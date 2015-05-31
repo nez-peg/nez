@@ -127,9 +127,7 @@ public abstract class NezGenerator {
 
 	}
 	
-	public void visitProduction(Production r) {
-		//L(r.toString());
-	}
+	public abstract void visitProduction(Production r);
 
 	public void makeFooter(Grammar g) {
 		
