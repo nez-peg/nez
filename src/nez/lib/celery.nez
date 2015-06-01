@@ -1,0 +1,185 @@
+// Nez Celery Grammar
+// Author Shinya Yamaguchi
+
+/*////////////////////////////////////////////////
+//////////////////// Toplevel ////////////////////
+////////////////////////////////////////////////*/
+
+File
+	= _ Root _
+
+Root 
+	= { (@ClassDeclaration / @EnumDeclaration)+ #Root }
+
+/*////////////////////////////////////////////////
+////////////////// Declaration ///////////////////
+////////////////////////////////////////////////*/
+
+ClassDeclaration
+	= { 'class' _ @Name _ '{' _ (@ClassMembers)+ _ '}' _ #Class}
+
+ClassMembers
+	= TypedParameter/ EnumDeclaration / UntypedParameter 
+
+TypedParameter
+	=  { @Name qualifier ':' _ @TypeDeclaration @DefaultValue } _ 
+
+qualifier
+	= '?' #Option
+	/ ''  #Required
+
+UntypedParameter 
+	= { @Name untypedqualifier _ @DefaultValue  } _ 
+
+untypedqualifier
+	= '?' #UntypedOption
+	/ ''  #UntypedRequired
+	
+TypeDeclaration
+	= ArrayType
+	/ PrimaryType
+	/ ClassType
+	
+ArrayType
+	= { (@PrimaryType / @ClassType) '[' ']' #TArray }
+
+PrimaryType
+	= 'boolean'{       #TBoolean}
+	/ 'int'    {       #TInteger} 
+	/ 'float'  {       #TFloat}
+	/ 'string' {       #TString}
+	/ 'any'    {       #TAny}
+	/ 'object' {       #TObject}
+
+ClassType 
+	= { NAMETOKEN #TClass }
+
+DefaultValue 
+	= {(  _ '=' _ (@Literal / @FieldReference) (_ ',' _ (@Literal / @FieldReference) )* )? #DefaultValue}
+
+EnumDeclaration
+	= { 'enum' _ @Name _ '{' _ @EnumValue _ (',' _ @EnumValue _ )* '}' _ #TEnum }
+
+FieldReference 
+	= { @Name '.' @Name #FieldReference }
+
+Literal 
+	= Float
+	/ Integer
+	/ Boolean
+	/ String
+
+EnumValue
+	=  {'"' STRING_CONTENT* '"' #EnumValue } 
+
+/*////////////////////////////////////////////////
+//////////////////// Literal /////////////////////
+////////////////////////////////////////////////*/
+
+Float 
+	= { FLOAT #Float } FLOAT_SUFFIX?
+	/ { DECIMAL #Float } FLOAT_SUFFIX
+
+FLOAT
+	= FRACTION EXPONENT?
+	/ DIGIT+ EXPONENT
+
+FRACTION
+	= !'_' ('_'* DIGIT)* '.' DIGIT ('_'* DIGIT)*
+	/ DIGIT ('_'* DIGIT)* '.'
+
+EXPONENT
+	= [eE] [+\-]? DIGIT ('_'* DIGIT)*
+
+FLOAT_SUFFIX
+	= [fFdD]
+
+Integer
+	= { ( DECIMAL / HEXADECIMAL / BINARY / OCTAL ) #Integer } INT_SUFFIX?
+
+DECIMAL
+	= '0' ![bBxX0-9_]
+	/ [1-9] ('_'* DIGIT)*
+
+HEXADECIMAL
+	= '0' [xX] HEX ('_'* HEX)*
+
+BINARY
+	= '0' [bB] [01] ('_'* [01])*
+
+OCTAL
+	= '0' ('_'* [0-7])*
+
+INT_SUFFIX
+	= [lL]
+
+Boolean
+	= { 'true' _  #True }
+	/ { 'false' _ #False }
+
+String
+	= '"' { STRING_CONTENT* #String } '"'
+
+STRING_CONTENT
+	= ESCAPE
+	/ ![\"\n\\] .
+	
+ESCAPE
+	= SIMPLE_ESCAPE
+	/ OCTAL_ESCAPE
+	/ HEX_ESCAPE
+
+SIMPLE_ESCAPE
+	= '\\' ['\"\\bfnrt]
+
+OCTAL_ESCAPE
+	= '\\' [0-3] [0-7] [0-7]
+	/ '\\' [0-7] [0-7]
+	/ '\\' [0-7]
+
+HEX_ESCAPE
+	= '\\' 'u'+ HEX4
+	
+Name
+	= { NAMETOKEN #Name }
+
+NAMETOKEN
+	= [A-Za-z] ( '-' / [A-Za-z0-9_])*
+	
+DIGIT
+	= [0-9]
+
+HEX
+	= [a-fA-F0-9]
+
+HEX4
+	= HEX HEX HEX HEX
+
+/*////////////////////////////////////////////////
+//////////////////// Keyword /////////////////////
+////////////////////////////////////////////////*/
+
+"boolean" = 'boolean' _
+"int"     = 'int' _
+"float"   = 'float' _
+"string"  = 'string' _
+"any"     = 'any' _
+"class"   = 'class' _
+"enum"    = 'enum' _
+
+/*////////////////////////////////////////////////
+//////////////////// Rayout //////////////////////
+////////////////////////////////////////////////*/
+_
+	= (S / BLOCKCOMMENT / LINECOMMENT )*
+
+S
+	= [ \n\r\t\u000B\u000C]
+
+BLOCKCOMMENT
+	= '/*' (!'*/' .)* '*/'
+
+LINECOMMENT
+	= '//' (!'\n' .)*
+	
+	
