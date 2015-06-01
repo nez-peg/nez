@@ -2,18 +2,15 @@ package nez.lang;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 import nez.ParserCombinator;
-import nez.SourceContext;
 import nez.ast.SourcePosition;
-import nez.ast.Tag;
 import nez.main.Verbose;
+import nez.peg.celery.CeleryConverter;
 import nez.peg.dtd.DTDConverter;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
@@ -75,6 +72,9 @@ public class NameSpace extends GrammarFactory {
 	public final static NameSpace loadGrammarFile(String urn, GrammarChecker checker) throws IOException {
 		if(urn.endsWith(".dtd")) {
 			return DTDConverter.loadGrammar(urn, checker);
+		}
+		if (urn.endsWith(".cl")) {
+			return CeleryConverter.loadGrammar(urn, checker);
 		}
 		return loadNezFile(urn, checker);
 	}
