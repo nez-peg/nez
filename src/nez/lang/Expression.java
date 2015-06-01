@@ -85,10 +85,22 @@ public abstract class Expression extends AbstractList<Expression> {
 	}
 
 	@Override
-	public String toString() {
-		return new GrammarFormatter().format(this);
+	public final String toString() {
+		StringBuilder sb = new StringBuilder();
+		format(sb);
+		return sb.toString();
 	}
 
+	protected void format(StringBuilder sb) {
+		sb.append("<");
+		sb.append(this.getPredicate());
+		for(Expression se : this) {
+			sb.append(" ");
+			se.format(sb);
+		}
+		sb.append(">");
+	}
+	
 	public final UList<Expression> toList() {
 		UList<Expression> l = new UList<Expression>(new Expression[this.size()]);
 		if(this.size() > 1) {

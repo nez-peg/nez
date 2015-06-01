@@ -64,8 +64,6 @@ public class Production extends Expression {
 	public final boolean isRecursive() {
 		return this.isRecursive;
 	}
-
-
 	
 	@Override
 	public Expression get(int index) {
@@ -97,6 +95,13 @@ public class Production extends Expression {
 		this.body = e;
 	}
 
+	@Override
+	protected final void format(StringBuilder sb) {
+		sb.append(this.getLocalName());
+		sb.append(" = ");
+		this.getExpression().format(sb);
+	}
+	
 	@Override
 	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeProduction(this);

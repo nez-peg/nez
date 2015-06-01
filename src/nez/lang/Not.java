@@ -21,6 +21,10 @@ public class Not extends Unary {
 		return "!";
 	}
 	@Override
+	protected final void format(StringBuilder sb) {
+		this.formatUnary(sb, "!", this.inner);
+	}
+	@Override
 	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeNot(this);
 	}

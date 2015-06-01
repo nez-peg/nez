@@ -21,6 +21,10 @@ public class Link extends Unary {
 		return (index != -1) ? "@" + index : "@";
 	}
 	@Override
+	protected final void format(StringBuilder sb) {
+		formatUnary(sb, (index != -1) ? "@[" + index +"]" : "@", this.get(0));
+	}
+	@Override
 	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeLink(this);
 	}

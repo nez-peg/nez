@@ -3,6 +3,7 @@ package nez.lang;
 import java.util.TreeMap;
 
 import nez.ast.SourcePosition;
+import nez.util.StringUtils;
 import nez.util.UFlag;
 import nez.util.UList;
 import nez.util.UMap;
@@ -21,6 +22,50 @@ public class Sequence extends Multinary {
 	public String key() {
 		return " ";
 	}
+	
+	@Override
+	protected final void format(StringBuilder sb) {
+		for(int i = 0; i < this.size(); i++) {
+			if(i > 0) {
+				sb.append(" ");
+			}
+			int n = appendAsString(sb, i);
+			if(n > i) {
+				i = n;
+				continue;
+			}
+			Expression e = this.get(i);
+			if(e instanceof Choice || e instanceof Sequence) {
+				sb.append("( ");
+				e.format(sb);
+				sb.append(" )");
+				continue;
+			}
+			e.format(sb);
+		}
+	}
+
+	private int appendAsString(StringBuilder sb, int start) {
+		int end = this.size();
+		String s = "";
+		for(int i = start; i < end; i++) {
+			Expression e = this.get(i);
+			if(e instanceof ByteChar) {
+				char c = (char)(((ByteChar) e).byteChar);
+				if(c >= ' ' && c < 127) {
+					s += c;
+					continue;
+				}
+			}
+			end = i;
+			break;
+		}
+		if(s.length() > 1) {
+			sb.append(StringUtils.quoteString('\'', s, '\''));
+		}
+		return end - 1;
+	}
+
 	@Override
 	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeSequence(this);

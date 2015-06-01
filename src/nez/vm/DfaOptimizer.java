@@ -23,32 +23,43 @@ import nez.util.UMap;
 
 public class DfaOptimizer extends GrammarReshaper {
 
-	UMap<Expression> map = new UMap<Expression>();
-	
-	public DfaOptimizer(Grammar g) {
-		GrammarReshaper firstStep = new RemoveOptionRepetition();
-		GrammarReshaper secondStep = new InliningChoice();
+	public final Grammar optimize(Grammar g) {
+		NameSpace ns = NameSpace.newNameSpace();
+		GrammarReshaper dup = new DuplicateGrammar(ns);
+		GrammarReshaper inlining = new InliningChoice();
 		for(Production p : g.getProductionList()) {
-			System.out.println(p.getLocalName() + "::");
-			System.out.println("1\t" + firstStep.reshapeProduction(p));
-			System.out.println("2\t" + secondStep.reshapeProduction(p));
+			dup.reshapeProduction(p);
 		}
+		for(Production p : ns.getDefinedRuleList()) {
+			inlining.reshapeProduction(p);
+		}
+		
+		return ns.newGrammar(g.getStartProduction().getLocalName());
 	}
-
 
 }
 
-class RemoveOptionRepetition extends GrammarReshaper {
+
+
+class DuplicateGrammar extends GrammarReshaper {
 
 	NameSpace ns;
 	int c = 0;
+
+	DuplicateGrammar(NameSpace ns) {
+		this.ns = ns;
+	}
+	
 	public Expression reshapeProduction(Production p) {
-		this.ns = p.getNameSpace();
 		Expression e = p.getExpression().reshape(GrammarReshaper.RemoveAST).reshape(this);
-		p.setExpression(e);
+		this.ns.defineProduction(p.getSourcePosition(), p.getLocalName(), e);
 		return e;
 	}
 
+	public Expression reshapeNonTerminal(NonTerminal p) {
+		return GrammarFactory.newNonTerminal(p.getSourcePosition(), ns, p.getLocalName());
+	}
+	
 	public Expression reshapeOption(Option e) {
 		Expression inner = e.get(0).reshape(this);
 		return GrammarFactory.newChoice(e.getSourcePosition(), inner, empty(e));
@@ -56,8 +67,16 @@ class RemoveOptionRepetition extends GrammarReshaper {
 
 	public Expression reshapeRepetition(Repetition e) {
 		Expression inner = e.get(0).reshape(this);
-		String name = "r" + (c++);
-		this.ns.defineProduction(e.getSourcePosition(), name, inner);
+		String name = "rr" + (c++);
+		if(inner.isInterned()) {
+			name = "r" + inner.getId();
+			if(!this.ns.hasProduction(name)) {
+				this.ns.defineProduction(e.getSourcePosition(), name, inner);
+			}
+		}
+		else {
+			this.ns.defineProduction(e.getSourcePosition(), name, inner);
+		}
 		Expression p = ns.newNonTerminal(name);
 		Expression seq = GrammarFactory.newSequence(e.getSourcePosition(), inner, p);
 		return GrammarFactory.newChoice(e.getSourcePosition(), seq, empty(e));
@@ -65,11 +84,7 @@ class RemoveOptionRepetition extends GrammarReshaper {
 
 	public Expression reshapeRepetition1(Repetition1 e) {
 		Expression inner = e.get(0).reshape(this);
-		String name = "r" + (c++);
-		this.ns.defineProduction(e.getSourcePosition(), name, inner);
-		Expression p = ns.newNonTerminal(name);
-		Expression seq = GrammarFactory.newSequence(e.getSourcePosition(), inner, p);
-		return GrammarFactory.newSequence(e.getSourcePosition(), inner, GrammarFactory.newChoice(e.getSourcePosition(), seq, empty(e)));
+		return GrammarFactory.newSequence(e.getSourcePosition(), inner, reshapeRepetition(e));
 	}
 
 }

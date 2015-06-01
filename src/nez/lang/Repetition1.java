@@ -20,6 +20,10 @@ public class Repetition1 extends Repetition {
 		return "+";
 	}
 	@Override
+	protected final void format(StringBuilder sb) {
+		this.formatUnary(sb, this.inner, "+");
+	}
+	@Override
 	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeRepetition1(this);
 	}

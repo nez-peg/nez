@@ -12,6 +12,10 @@ public class AnyChar extends Terminal {
 	AnyChar(SourcePosition s) {
 		super(s);
 	}
+	@Override
+	protected final void format(StringBuilder sb) {
+		sb.append(".");
+	}
 
 	@Override
 	public String getPredicate() {

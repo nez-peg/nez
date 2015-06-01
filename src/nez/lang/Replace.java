@@ -20,6 +20,11 @@ public class Replace extends ASTOperation {
 		return "`" + this.value;
 	}
 	@Override
+	protected final void format(StringBuilder sb) {
+		sb.append(StringUtils.quoteString('`', this.value, '`'));
+	}
+
+	@Override
 	public boolean isConsumed(Stacker stacker) {
 		return false;
 	}

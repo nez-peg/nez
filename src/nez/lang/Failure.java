@@ -9,6 +9,10 @@ public class Failure extends Unconsumed {
 		super(s);
 	}
 	@Override
+	protected final void format(StringBuilder sb) {
+		sb.append("!''");
+	}
+	@Override
 	public String getPredicate() {
 		return "fail";
 	}

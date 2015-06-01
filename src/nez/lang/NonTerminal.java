@@ -12,7 +12,6 @@ public class NonTerminal extends Expression {
 	private NameSpace ns;
 	private String  localName;
 	private String  uniqueName;
-
 	public NonTerminal(SourcePosition s, NameSpace ns, String ruleName) {
 		super(s);
 		this.ns = ns;
@@ -54,7 +53,12 @@ public class NonTerminal extends Expression {
 	public Expression get(int index) {
 		return null;
 	}
-	
+
+	@Override
+	protected final void format(StringBuilder sb) {
+		sb.append(this.getLocalName());
+	}
+
 	@Override
 	public String key() {
 		return getUniqueName();

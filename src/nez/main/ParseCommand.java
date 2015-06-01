@@ -112,7 +112,7 @@ class DfaCommand extends Command {
 	@Override
 	public void exec(CommandConfigure config) {
 		Grammar p = config.getGrammar();
-		new DfaOptimizer(p);
+		//DfaOptimizer.class;
 	}
 	
 

@@ -19,6 +19,10 @@ public class Capture extends ASTOperation {
 		return shift == 0 ? "}" : "}["+shift+"]";
 	}
 	@Override
+	protected final void format(StringBuilder sb) {
+		sb.append("}");
+	}
+	@Override
 	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeCapture(this);
 	}

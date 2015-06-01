@@ -25,6 +25,11 @@ public class New extends Unconsumed {
 		return (shift != 0) ? s + "[" + shift + "]" : s;
 	}
 	@Override
+	protected final void format(StringBuilder sb) {
+		sb.append(lefted ? "{@" : "{");
+	}
+
+	@Override
 	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeNew(this);
 	}

@@ -21,6 +21,10 @@ public class Repetition extends Unary {
 		return "*";
 	}
 	@Override
+	protected void format(StringBuilder sb) {
+		this.formatUnary(sb, this.inner, "*");
+	}
+	@Override
 	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeRepetition(this);
 	}

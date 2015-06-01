@@ -18,6 +18,10 @@ public class ByteMap extends Terminal {
 		super(s);
 		this.byteMap = b;
 	}
+	@Override
+	protected final void format(StringBuilder sb) {
+		sb.append(StringUtils.stringfyCharClass(this.byteMap));
+	}
 
 	@Override
 	public String getPredicate() {

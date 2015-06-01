@@ -7,7 +7,6 @@ import nez.vm.NezCompiler;
 public class IfFlag extends Unconsumed {
 	boolean predicate;
 	String flagName;
-
 	IfFlag(SourcePosition s, boolean predicate, String flagName) {
 		super(s);
 		if(flagName.startsWith("!")) {

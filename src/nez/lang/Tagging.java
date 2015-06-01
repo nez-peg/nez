@@ -27,6 +27,10 @@ public class Tagging extends ASTOperation {
 		return "#" + this.tag.getName();
 	}
 	@Override
+	protected final void format(StringBuilder sb) {
+		sb.append("#" + tag.getName());
+	}
+	@Override
 	public boolean isConsumed(Stacker stacker) {
 		return false;
 	}

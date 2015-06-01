@@ -7,7 +7,11 @@ import nez.vm.NezCompiler;
 public class Empty extends Unconsumed {
 	Empty(SourcePosition s) {
 		super(s);
-	}	
+	}
+	@Override
+	protected final void format(StringBuilder sb) {
+		sb.append("''");
+	}
 	@Override
 	public String getPredicate() {
 		return "empty";

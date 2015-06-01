@@ -22,6 +22,11 @@ public class Match extends Unary {
 	}
 	
 	@Override
+	protected final void format(StringBuilder sb) {
+		this.formatUnary(sb, "~", inner);
+	}
+
+	@Override
 	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeMatch(this);
 	}

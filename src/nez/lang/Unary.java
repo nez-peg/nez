@@ -24,4 +24,27 @@ public abstract class Unary extends Expression {
 		this.inner = e;
 		return old;
 	}
+	protected final void formatUnary(StringBuilder sb, String prefix, Expression inner, String suffix) {
+		if(prefix != null) {
+			sb.append(prefix);
+		}
+		if(inner instanceof NonTerminal || inner instanceof ByteChar || inner instanceof ByteMap) {
+			inner.format(sb);
+		}
+		else {
+			sb.append("(");
+			inner.format(sb);
+			sb.append(")");
+		}
+		if(suffix != null) {
+			sb.append(suffix);
+		}
+	}
+	protected final void formatUnary(StringBuilder sb, String prefix, Expression inner) {
+		this.formatUnary(sb, prefix, inner, null);
+	}
+	protected final void formatUnary(StringBuilder sb, Expression inner, String suffix) {
+		this.formatUnary(sb, null, inner, suffix);
+	}
+
 }

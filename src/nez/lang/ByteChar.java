@@ -1,6 +1,7 @@
 package nez.lang;
 
 import nez.ast.SourcePosition;
+import nez.util.StringUtils;
 import nez.util.UList;
 import nez.vm.Instruction;
 import nez.vm.NezCompiler;
@@ -11,12 +12,14 @@ public class ByteChar extends Terminal {
 		super(s);
 		this.byteChar = ch;
 	}
-	
+	@Override
+	protected final void format(StringBuilder sb) {
+		sb.append(StringUtils.stringfyByte(this.byteChar));
+	}
 	@Override
 	public String getPredicate() {
 		return "byte " + byteChar;
 	}
-	
 	@Override
 	public String key() { 
 		return "'" + byteChar;
