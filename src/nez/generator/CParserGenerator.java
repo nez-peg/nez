@@ -1,6 +1,7 @@
 package nez.generator;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Stack;
 
 import nez.ast.Tag;
@@ -27,6 +28,7 @@ import nez.lang.Repetition1;
 import nez.lang.Replace;
 import nez.lang.Sequence;
 import nez.lang.Tagging;
+import nez.vm.GrammarOptimizer;
 
 public class CParserGenerator extends ParserGenerator {
 
@@ -44,6 +46,18 @@ public class CParserGenerator extends ParserGenerator {
 	}
 
 	boolean PatternMatch = false;
+	int option = Grammar.ASTConstruction | Grammar.Prediction;
+
+	@Override
+	public void generate(Grammar grammar) {
+		makeHeader(grammar);
+		for(Production p : grammar.getProductionList()) {
+			visitProduction(p);
+		}
+		makeFooter(grammar);
+		file.writeNewLine();
+		file.flush();
+	}
 
 	@Override
 	public void makeHeader(Grammar grammar) {
@@ -51,7 +65,7 @@ public class CParserGenerator extends ParserGenerator {
 		this.file.writeNewLine();
 		this.file.writeIndent("#include \"libnez/libnez.h\"");
 		this.file.writeIndent("#include <stdio.h>");
-		for (Production r : grammar.getProductionList()) {
+		for(Production r : grammar.getProductionList()) {
 			if(!r.getLocalName().startsWith("\"")) {
 				this.file.writeIndent("int p" + r.getLocalName() + "(ParsingContext ctx);");
 			}
@@ -167,21 +181,16 @@ public class CParserGenerator extends ParserGenerator {
 		this.file.writeIndent("ctx->cur++;");
 	}
 
-	private void dec() {
-		this.file.writeIndent("dec();");
-	}
-
 	@Override
 	public void visitProduction(Production rule) {
 		this.initFalureJumpPoint();
 		this.file.writeIndent("int p" + rule.getLocalName() + "(ParsingContext ctx)");
 		this.openBlock();
 		this.pushFailureJumpPoint();
-		visit(rule.getExpression());
-		this.dec();
+		Expression e = new GrammarOptimizer(this.option).optimize(rule);
+		visit(e);
 		this.file.writeIndent("return 0;");
 		this.popFailureJumpPoint(rule);
-		this.dec();
 		this.file.writeIndent("return 1;");
 		this.closeBlock();
 		this.file.writeNewLine();
@@ -223,7 +232,7 @@ public class CParserGenerator extends ParserGenerator {
 
 	@Override
 	public void visitByteChar(ByteChar e) {
-		this.file.writeIndent("if(*ctx->cur != (char)" + e.byteChar + ")");
+		this.file.writeIndent("if((int)*ctx->cur != " + e.byteChar + ")");
 		this.openBlock();
 		this.jumpFailureJump();
 		this.closeBlock();
@@ -231,7 +240,7 @@ public class CParserGenerator extends ParserGenerator {
 	}
 
 	private int searchEndChar(boolean[] b, int s) {
-		for (; s < 256; s++) {
+		for(; s < 256; s++) {
 			if(!b[s]) {
 				return s - 1;
 			}
@@ -244,18 +253,18 @@ public class CParserGenerator extends ParserGenerator {
 		int fid = this.fid++;
 		String label = "EXIT_BYTEMAP" + fid;
 		boolean b[] = e.byteMap;
-		for (int start = 0; start < 256; start++) {
+		for(int start = 0; start < 256; start++) {
 			if(b[start]) {
 				int end = searchEndChar(b, start + 1);
 				if(start == end) {
-					this.file.writeIndent("if(*ctx->cur ==(char)" + start + ")");
+					this.file.writeIndent("if((int)*ctx->cur == " + start + ")");
 					this.openBlock();
 					this.consume();
 					this.gotoLabel(label);
 					this.closeBlock();
 				}
 				else {
-					this.file.writeIndent("if((char)" + start + "<= *ctx->cur" + " && *ctx->cur <=(char)" + end + ")");
+					this.file.writeIndent("if(" + start + "<= (int)*ctx->cur" + " && (int)*ctx->cur <= " + end + ")");
 					this.openBlock();
 					this.consume();
 					this.gotoLabel(label);
@@ -348,26 +357,68 @@ public class CParserGenerator extends ParserGenerator {
 
 	@Override
 	public void visitSequence(Sequence e) {
-		for (int i = 0; i < e.size(); i++) {
+		for(int i = 0; i < e.size(); i++) {
 			visit(e.get(i));
 		}
 	}
 
+	boolean isPrediction = true;
+
 	@Override
 	public void visitChoice(Choice e) {
-		this.fid++;
-		String label = "EXIT_CHOICE" + this.fid;
-		String backtrack = "c" + this.fid;
-		this.let("char*", backtrack, "ctx->cur");
-		for (int i = 0; i < e.size(); i++) {
-			this.pushFailureJumpPoint();
-			visit(e.get(i));
-			this.gotoLabel(label);
-			this.popFailureJumpPoint(e.get(i));
-			this.let(null, "ctx->cur", backtrack);
+		if(e.predictedCase != null && isPrediction) {
+			isPrediction = false;
+			System.out.println("Prediction");
+			int fid = this.fid++;
+			String label = "EXIT_CHOICE" + fid;
+			HashMap<Integer, Expression> m = new HashMap<Integer, Expression>();
+			ArrayList<Expression> l = new ArrayList<Expression>();
+			this.file.writeIndent("void* jump_table" + fid + "[] = {");
+			for(int ch = 0; ch < e.predictedCase.length; ch++) {
+				Expression pCase = e.predictedCase[ch];
+				if(pCase != null) {
+					Expression me = m.get(pCase.getId());
+					if(me == null) {
+						m.put(pCase.getId(), pCase);
+						l.add(pCase);
+					}
+					this.file.write("&&PREDICATE_JUMP" + fid + pCase.getId());
+				}
+				else {
+					this.file.write("&&PREDICATE_JUMP" + fid + 0);
+				}
+				if(ch < e.predictedCase.length - 1) {
+					this.file.write(", ");
+				}
+			}
+			this.file.write("};");
+			this.file.writeIndent("goto *jump_table" + fid + "[(unsigned int)*ctx->cur];");
+			for(int i = 0; i < l.size(); i++) {
+				Expression pe = l.get(i);
+				this.exitLabel("PREDICATE_JUMP" + fid + pe.getId());
+				visit(pe);
+				this.gotoLabel(label);
+			}
+			this.exitLabel("PREDICATE_JUMP" + fid + 0);
+			this.jumpFailureJump();
+			this.exitLabel(label);
+			isPrediction = true;
 		}
-		this.jumpFailureJump();
-		this.exitLabel(label);
+		else {
+			this.fid++;
+			String label = "EXIT_CHOICE" + this.fid;
+			String backtrack = "c" + this.fid;
+			this.let("char*", backtrack, "ctx->cur");
+			for(int i = 0; i < e.size(); i++) {
+				this.pushFailureJumpPoint();
+				visit(e.get(i));
+				this.gotoLabel(label);
+				this.popFailureJumpPoint(e.get(i));
+				this.let(null, "ctx->cur", backtrack);
+			}
+			this.jumpFailureJump();
+			this.exitLabel(label);
+		}
 	}
 
 	Stack<String> markStack = new Stack<String>();
