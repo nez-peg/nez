@@ -52,7 +52,7 @@ public class GrammarReshaper {
 		if(updated == null) {
 			return e;
 		}
-		UList<Expression> l = e.newList();
+		UList<Expression> l = GrammarFactory.newList(2);
 		for(int j = 0; j < i; j++) {
 			l.add(e.get(j));
 		}
@@ -78,7 +78,7 @@ public class GrammarReshaper {
 		if(updated == null) {
 			return e;
 		}
-		UList<Expression> l = e.newList();
+		UList<Expression> l = GrammarFactory.newList(e.size());
 		for(int j = 0; j < i; j++) {
 			l.add(e.get(j));
 		}

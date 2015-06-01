@@ -248,7 +248,28 @@ public class LPegGrammarGenerator extends NezGenerator {
 		this.visit(e.get(0));
 	}
 
-	protected void visitSequenceImpl(Multinary l) {
+	private int appendAsString(Sequence l, int start) {
+		int end = l.size();
+		String s = "";
+		for(int i = start; i < end; i++) {
+			Expression e = l.get(i);
+			if(e instanceof ByteChar) {
+				char c = (char)(((ByteChar) e).byteChar);
+				if(c >= ' ' && c < 127) {
+					s += c;
+					continue;
+				}
+			}
+			end = i;
+			break;
+		}
+		if(s.length() > 1) {
+			file.write("lpeg.P" + StringUtils.quoteString('"', s, '"'));
+		}
+		return end - 1;
+	}
+	
+	public void visitSequence(Sequence l) {
 		for(int i = 0; i < l.size(); i++) {
 			if(i > 0) {
 				file.write(" ");
@@ -274,31 +295,6 @@ public class LPegGrammarGenerator extends NezGenerator {
 				file.write(" * ");
 			}
 		}
-	}
-
-	private int appendAsString(Multinary l, int start) {
-		int end = l.size();
-		String s = "";
-		for(int i = start; i < end; i++) {
-			Expression e = l.get(i);
-			if(e instanceof ByteChar) {
-				char c = (char)(((ByteChar) e).byteChar);
-				if(c >= ' ' && c < 127) {
-					s += c;
-					continue;
-				}
-			}
-			end = i;
-			break;
-		}
-		if(s.length() > 1) {
-			file.write("lpeg.P" + StringUtils.quoteString('"', s, '"'));
-		}
-		return end - 1;
-	}
-	
-	public void visitSequence(Sequence e) {
-		this.visitSequenceImpl(e);
 	}
 	
 	public void visitChoice(Choice e) {

@@ -25,8 +25,5 @@ public abstract class Multinary extends Expression {
 		this.inners[index] = e;
 		return oldExpresion;
 	}
-	protected final UList<Expression> newList() {
-		return new UList<Expression>(new Expression[this.size()]);
-	}
 	
 }

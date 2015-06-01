@@ -221,11 +221,7 @@ public class MouseGrammarGenerator extends NezGenerator {
 		}
 		return end - 1;
 	}
-	
-	public void visitSequence(Sequence e) {
-		this.visitSequenceImpl(e);
-	}
-	
+		
 	public void visitChoice(Choice e) {
 		for(int i = 0; i < e.size(); i++) {
 			if(i > 0) {

@@ -51,52 +51,31 @@ public class GrammarFactory {
 		return e;
 	}
 	
-//	public final static UList<Expression> toSequenceList(Expression e) {
-//		UList<Expression> l = null;
-//		if(e instanceof Sequence) {
-//			l = ((Sequence) e).newList();
-//			for(Expression se : e) {
-//				l.add(se);
-//			}
-//			return l;
-//		}
-//		else {
-//			l = new UList<Expression>(new Expression[1]);
-//			l.add(e);
-//		}
-//		return l;
-//	}
-
+	public final static UList<Expression> newList(int size) {
+		return new UList<Expression>(new Expression[size]);
+	}
+	
 	public final static void addSequence(UList<Expression> l, Expression e) {
-		if(e instanceof Empty) {
-			return;
-		}
 		if(e instanceof Sequence) {
 			for(int i = 0; i < e.size(); i++) {
 				addSequence(l, e.get(i));
 			}
 			return;
 		}
+		if(e instanceof Empty) {
+			return;
+		}
 		if(l.size() > 0) {
-			Expression pe = l.ArrayValues[l.size()-1];
-			if(e instanceof Not && pe instanceof Not) {
-				((Not) pe).inner = appendAsChoice(((Not) pe).inner, ((Not) e).inner);
-				return;
-			}
-			if(pe instanceof Failure) {
+			Expression prev = l.ArrayValues[l.size()-1];
+//			if(e instanceof Not && pe instanceof Not) {
+//				((Not) pe).inner = appendAsChoice(((Not) pe).inner, ((Not) e).inner);
+//				return;
+//			}
+			if(prev instanceof Failure) {
 				return;
 			}
 		}
 		l.add(e);
-	}
-	
-	private final static Expression appendAsChoice(Expression e, Expression e2) {
-		if(e == null) return e2;
-		if(e2 == null) return e;
-		UList<Expression> l = new UList<Expression>(new Expression[e.size()+e2.size()]);
-		addChoice(l, e);
-		addChoice(l, e2);
-		return newChoice(null, l);
 	}
 
 	public final static void addChoice(UList<Expression> l, Expression e) {
@@ -105,9 +84,25 @@ public class GrammarFactory {
 				addChoice(l, e.get(i));
 			}
 		}
-		else if (!(e instanceof Failure)) {
-			l.add(e);
+		if(e instanceof Failure) {
+			return ;
 		}
+		if(l.size() > 0) {
+			Expression prev = l.ArrayValues[l.size()-1];
+			if(prev instanceof Empty) {
+				return ;
+			}
+		}
+		l.add(e);
+	}
+
+	private final static Expression appendAsChoice(Expression e, Expression e2) {
+		if(e == null) return e2;
+		if(e2 == null) return e;
+		UList<Expression> l = new UList<Expression>(new Expression[e.size()+e2.size()]);
+		addChoice(l, e);
+		addChoice(l, e2);
+		return newChoice(null, l);
 	}
 
 	// -----------------------------------------------------------------------
@@ -290,22 +285,27 @@ public class GrammarFactory {
 		if(l.size() == 0) {
 			return internImpl(s, newEmpty(s));
 		}
-		if(l.size() == 1) {
-			return internImpl(s, l.ArrayValues[0]);
-		}
 		if(s != null && isInterned(l)) {
 			s = null;
 		}
-		return internImpl(s, new Sequence(s, l));
+		return internImpl(s, newSequence(s, 0, l));
 	}
-	
+
+	private final static Expression newSequence(SourcePosition s, int start, UList<Expression> l) {
+		Expression first = internImpl(s, l.ArrayValues[start]);
+		if(start + 1 ==  l.size()) {
+			return first;
+		}
+		Expression seq = new Sequence(s, first, newSequence(s, start+1, l));
+		return internImpl(s, seq);
+	}
+
 	public final static Expression newSequence(SourcePosition s, Expression p, Expression p2) {
 		UList<Expression> l = new UList<Expression>(new Expression[2]);
 		addSequence(l, p);
 		addSequence(l, p2);
 		return newSequence(s, l);
 	}
-
 
 	public final static Expression newChoice(SourcePosition s, UList<Expression> l) {
 		int size = l.size();

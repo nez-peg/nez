@@ -3,6 +3,9 @@ package nez.util;
 import java.io.UnsupportedEncodingException;
 
 import nez.lang.ByteMap;
+import nez.lang.Choice;
+import nez.lang.Expression;
+import nez.lang.Sequence;
 import nez.main.Verbose;
 
 public abstract class StringUtils {
@@ -181,7 +184,23 @@ public abstract class StringUtils {
 		return (char)c;
 	}
 
-	
+	public static void appendByteChar(StringBuilder sb, int ch, String quote) {
+		switch(ch) {
+			case '\n' : sb.append("\\n"); return;
+			case '\t' : sb.append("\\t"); return;
+			case '\r' : sb.append("\\r"); return;
+			case '\\' : sb.append("\\\\"); return;
+		}
+		if(Character.isISOControl(ch) || ch > 127) {
+			sb.append(String.format("0x%02x", ch));
+			return;
+		}
+		if(quote.indexOf(ch) != -1) {
+			sb.append("\\");
+		}
+		sb.append((char)ch);
+	}
+
 	public final static String stringfyByte(int ch) {
 		char c = (char)ch;
 		switch(c) {

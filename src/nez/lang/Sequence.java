@@ -1,7 +1,5 @@
 package nez.lang;
 
-import java.util.TreeMap;
-
 import nez.ast.SourcePosition;
 import nez.util.StringUtils;
 import nez.util.UFlag;
@@ -10,10 +8,33 @@ import nez.util.UMap;
 import nez.vm.Instruction;
 import nez.vm.NezCompiler;
 
-public class Sequence extends Multinary {
-	Sequence(SourcePosition s, UList<Expression> l) {
-		super(s, l, l.size());
+public class Sequence extends Expression {
+	Expression first;
+	Expression last;
+	Sequence(SourcePosition s, Expression first, Expression last) {
+		super(s);
+		this.first = first;
+		this.last  = last;
 	}
+	@Override
+	public final int size() {
+		return 2;
+	}
+	@Override
+	public final Expression get(int index) {
+		return index == 0 ? this.first : this.last;
+	}
+	public Expression getFirst() {
+		return this.first;
+	}
+
+	public Expression getLast() {
+		return this.last;
+	}
+
+//	Sequence(SourcePosition s, UList<Expression> l) {
+//		super(s, l, l.size());
+//	}
 	@Override
 	public String getPredicate() {
 		return "seq";
@@ -22,25 +43,45 @@ public class Sequence extends Multinary {
 	public String key() {
 		return " ";
 	}
-	
 	@Override
 	protected final void format(StringBuilder sb) {
-		for(int i = 0; i < this.size(); i++) {
-			if(i > 0) {
-				sb.append(" ");
+		if(this.first instanceof ByteChar && this.last.getFirst() instanceof ByteChar) {
+			sb.append("'");
+			formatString(sb, (ByteChar)this.first, this.last);
+		}
+		else {
+			formatInner(sb, this.first);
+			sb.append(" ");
+			formatInner(sb, this.last);
+		}
+	}
+	
+	private void formatString(StringBuilder sb,  ByteChar b, Expression next) {
+		while(b != null) {
+			StringUtils.appendByteChar(sb, b.byteChar, "'");
+			if(next == null) {
+				sb.append("'");
+				return;
 			}
-			int n = appendAsString(sb, i);
-			if(n > i) {
-				i = n;
-				continue;
+			Expression first = next.getFirst();
+			b = null;
+			if(first instanceof ByteChar) {
+				b = (ByteChar)first;
+				next = next.getLast();
 			}
-			Expression e = this.get(i);
-			if(e instanceof Choice || e instanceof Sequence) {
-				sb.append("( ");
-				e.format(sb);
-				sb.append(" )");
-				continue;
-			}
+		}
+		sb.append("'");
+		sb.append(" ");
+		formatInner(sb, next);
+	}
+
+	private void formatInner(StringBuilder sb, Expression e) {
+		if(e instanceof Choice || e instanceof Sequence) {
+			sb.append("( ");
+			e.format(sb);
+			sb.append(" )");
+		}
+		else {	
 			e.format(sb);
 		}
 	}

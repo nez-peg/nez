@@ -153,7 +153,7 @@ public class Typestate extends GrammarReshaper {
 	public Expression reshapeChoice(Choice p) {
 		int required = this.required;
 		int next = this.required;
-		UList<Expression> l = p.newList();
+		UList<Expression> l = GrammarFactory.newList(p.size());
 		for(Expression e : p) {
 			this.required = required;
 			GrammarFactory.addChoice(l, e.reshape(this));

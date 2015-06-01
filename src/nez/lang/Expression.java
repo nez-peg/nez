@@ -17,6 +17,7 @@ public abstract class Expression extends AbstractList<Expression> {
 	int    optimizedOption = -1;
 	
 	public Expression optimized;
+	
 	Expression(SourcePosition s) {
 		this.s = s;
 		this.internId = 0;
@@ -46,10 +47,21 @@ public abstract class Expression extends AbstractList<Expression> {
 	public Expression get(int index) {
 		return null;
 	}
+
 	@Override
 	public int size() {
 		return 0;
 	}
+
+	public Expression getFirst() {
+		return this;
+	}
+
+	public Expression getLast() {
+		return null;
+	}
+
+	
 	
 	public abstract Expression reshape(GrammarReshaper m);
 	
