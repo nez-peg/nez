@@ -93,7 +93,7 @@ public class Production extends Expression {
 		return this.body;
 	}
 
-	final void setExpression(Expression e) {
+	public final void setExpression(Expression e) {
 		this.body = e;
 	}
 

@@ -165,34 +165,57 @@ public class GrammarFormatter extends GrammarVisitor {
 	}
 	
 	public void visitChoice(Choice e) {
-		if(e.predictedCase != null) {
-			int c = 0;
-			for(int i = 0; i < e.predictedCase.length; i++) {
-				if(e.predictedCase[i] == null) {
-					continue;
-				}
-				if(c > 0) {
-					sb.append("|");
-				}
-				sb.append("&");
-				sb.append(StringUtils.stringfyByte(i));
-				if(e.predictedCase[i] != e) {
-					visit(e.predictedCase[i]);
-				}
-				else {
-					sb.append("...");
-				}
-				c++;
-			}
-		}
-		else {
+//		if(e.predictedCase != null) {
+//			int c = 0;
+//			boolean[] printed = ByteMap.newMap(false);
+//			for(int i = 0; i < e.predictedCase.length; i++) {
+//				if(e.predictedCase[i] == null || printed[i] == true) {
+//					continue;
+//				}
+//				if(c > 0) {
+//					sb.append("|");
+//				}
+//				sb.append("&");
+//				boolean[] m = checkRange(e.predictedCase, i, printed);
+//				if(m == null) {
+//					sb.append(StringUtils.stringfyByte(i));
+//				}
+//				else {
+//					sb.append(StringUtils.stringfyCharClass(m));
+//				}
+//				if(e.predictedCase[i] != e) {
+//					visit(e.predictedCase[i]);
+//				}
+//				else {
+//					sb.append("...");
+//				}
+//				c++;
+//			}
+//		}
+//		else {
 			for(int i = 0; i < e.size(); i++) {
 				if(i > 0) {
 					sb.append(" / ");
 				}
 				visit(e.get(i));
 			}
+//		}
+	}
+
+	private boolean[] checkRange(Expression[] predictedCase, int start, boolean[] printed) {
+		Expression e = predictedCase[start];
+		boolean[] result = null;
+		for(int i = start + 1; i < predictedCase.length; i++) {
+			if(predictedCase[i] == e) {
+				if(result == null) {
+					result = ByteMap.newMap(false);
+					result[start] = true;
+				}
+				result[i] = true;
+				printed[i] = true;
+			}
 		}
+		return result;
 	}
 
 	public void visitNew(New e) {

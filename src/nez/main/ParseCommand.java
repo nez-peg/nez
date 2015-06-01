@@ -6,6 +6,7 @@ import nez.ast.CommonTreeWriter;
 import nez.lang.Grammar;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
+import nez.vm.DfaOptimizer;
 
 class ParseCommand extends Command {
 	@Override
@@ -99,6 +100,21 @@ class CheckCommand extends Command {
 			ConsoleUtils.exit(1, "failed: " + failedInput);
 		}
 	}
+
+}
+
+class DfaCommand extends Command {
+	@Override
+	public String getDesc() {
+		return "DFA";
+	}
+
+	@Override
+	public void exec(CommandConfigure config) {
+		Grammar p = config.getGrammar();
+		new DfaOptimizer(p);
+	}
+	
 
 }
 

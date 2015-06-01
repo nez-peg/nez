@@ -298,6 +298,14 @@ public class GrammarFactory {
 		}
 		return internImpl(s, new Sequence(s, l));
 	}
+	
+	public final static Expression newSequence(SourcePosition s, Expression p, Expression p2) {
+		UList<Expression> l = new UList<Expression>(new Expression[2]);
+		addSequence(l, p);
+		addSequence(l, p2);
+		return newSequence(s, l);
+	}
+
 
 	public final static Expression newChoice(SourcePosition s, UList<Expression> l) {
 		int size = l.size();
@@ -313,9 +321,9 @@ public class GrammarFactory {
 		if(s != null && isInterned(l)) {
 			s = null;
 		}
-		if(l.ArrayValues[size - 1] instanceof Empty) {
-			return newOption(s, new Choice(s, l, size-1));  //     e / '' => e?
-		}
+//		if(l.ArrayValues[size - 1] instanceof Empty) {
+//			return newOption(s, new Choice(s, l, size-1));  //     e / '' => e?
+//		}
 		return internImpl(s, new Choice(s, l, size));
 	}
 

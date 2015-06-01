@@ -94,6 +94,7 @@ public abstract class Command {
 		load("type", "nez.x.TypeCommand");
 //		load("find", "nez.main.FindCommand");
 		load("shell", "nez.main.NezInteractiveParser");
+		load("dfa", "nez.main.DfaCommand");
 //		load("dtd", "nez.x.DTDCommand");
 //		load("conv", "nez.x.ConverterCommand");
 //		load("regex", "nez.x.RegexCommand");
