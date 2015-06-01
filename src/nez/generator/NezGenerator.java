@@ -1,5 +1,6 @@
 package nez.generator;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -7,17 +8,16 @@ import java.util.TreeMap;
 
 import nez.lang.Expression;
 import nez.lang.Grammar;
-import nez.lang.NameSpace;
 import nez.lang.Production;
 import nez.main.Verbose;
 import nez.util.FileBuilder;
-import nez.util.UList;
 
 public abstract class NezGenerator {
 	public abstract String getDesc();
-	
+
 	public final static String GeneratorLoaderPoint = "nez.main.ext.L";
 	static private TreeMap<String, Class<?>> classMap = new TreeMap<String, Class<?>>();
+
 	public static void regist(String key, Class<?> c) {
 		classMap.put(key, c);
 	}
@@ -31,16 +31,39 @@ public abstract class NezGenerator {
 		}
 		return classMap.containsKey(key);
 	}
-	
+
 	public final static NezGenerator newNezGenerator(String key) {
 		Class<?> c = classMap.get(key);
 		if(c != null) {
 			try {
-				return (NezGenerator)c.newInstance();
+				return (NezGenerator) c.newInstance();
 			} catch (InstantiationException e) {
 				Verbose.traceException(e);
 			} catch (IllegalAccessException e) {
 				Verbose.traceException(e);
+			}
+		}
+		return null;
+	}
+
+	public final static NezGenerator newNezGenerator(String key, String fileName) {
+		Class<?> c = classMap.get(key);
+		if(c != null) {
+			try {
+				Constructor<?> ct = c.getConstructor(String.class);
+				return (NezGenerator) ct.newInstance(fileName);
+			} catch (InstantiationException e) {
+				Verbose.traceException(e);
+			} catch (IllegalAccessException e) {
+				Verbose.traceException(e);
+			} catch (NoSuchMethodException e) {
+				e.printStackTrace();
+			} catch (SecurityException e) {
+				e.printStackTrace();
+			} catch (IllegalArgumentException e) {
+				e.printStackTrace();
+			} catch (InvocationTargetException e) {
+				e.printStackTrace();
 			}
 		}
 		return null;
@@ -59,9 +82,8 @@ public abstract class NezGenerator {
 //		}
 //		return null;
 //	}
-
 	final protected FileBuilder file;
-	
+
 	public NezGenerator() {
 		this.file = new FileBuilder();
 	}
@@ -69,10 +91,9 @@ public abstract class NezGenerator {
 	public NezGenerator(String fileName) {
 		this.file = new FileBuilder(fileName);
 	}
-	
-	
+
 	HashMap<Class<?>, Method> methodMap = new HashMap<Class<?>, Method>();
-	
+
 	public final void visit(Expression p) {
 		Method m = lookupMethod("visit", p.getClass());
 		if(m != null) {
@@ -110,29 +131,23 @@ public abstract class NezGenerator {
 		}
 		return m;
 	}
-	
+
 	// ---------------------------------------------------------------------
-	
 	public void generate(Grammar grammar) {
 		makeHeader(grammar);
-		for(Production p: grammar.getProductionList()) {
+		for(Production p : grammar.getProductionList()) {
 			visitProduction(p);
 		}
 		makeFooter(grammar);
 		file.writeNewLine();
 		file.flush();
 	}
-	
-	public void makeHeader(Grammar g) {
 
+	public void makeHeader(Grammar g) {
 	}
-	
-	public void visitProduction(Production r) {
-		//L(r.toString());
-	}
+
+	public abstract void visitProduction(Production r);
 
 	public void makeFooter(Grammar g) {
-		
 	}
-
 }

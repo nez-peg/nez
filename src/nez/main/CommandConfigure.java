@@ -8,7 +8,6 @@ import nez.lang.Grammar;
 import nez.lang.GrammarChecker;
 import nez.lang.NameSpace;
 import nez.lang.NezCombinator;
-import nez.lang.NezParser;
 import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
 import nez.util.UFlag;
@@ -28,10 +27,10 @@ public class CommandConfigure {
 	public String Expression = null;
 
 	// -s, --start
-	public String StartingPoint = "File";  // default
-	
+	public String StartingPoint = "File"; // default
+
 	// -i, --input
-	private int InputFileIndex = -1;  // shell mode
+	private int InputFileIndex = -1; // shell mode
 	public UList<String> InputFileLists = new UList<String>(new String[2]);
 
 	// -t, --text
@@ -42,13 +41,12 @@ public class CommandConfigure {
 
 	// -W
 	public int CheckerLevel = 1;
-	
+
 	// -g
 	public int DebugLevel = 1;
-	
+
 	// --verbose
-	public boolean VerboseMode    = false;
-	
+	public boolean VerboseMode = false;
 
 	void showUsage(String Message) {
 		ConsoleUtils.println("nez <command> optional files");
@@ -73,10 +71,10 @@ public class CommandConfigure {
 		Command.showList();
 		ConsoleUtils.exit(0, Message);
 	}
-	
+
 	private int WindowSize = 32;
 	private MemoTable defaultTable = MemoTable.newElasticTable(0, 0, 0);
-	
+
 	public void parseCommandOption(String[] args) {
 		int index = 0;
 		if(args.length > 0) {
@@ -87,11 +85,11 @@ public class CommandConfigure {
 		}
 		while (index < args.length) {
 			String argument = args[index];
-			if (!argument.startsWith("-")) {
+			if(!argument.startsWith("-")) {
 				break;
 			}
 			index = index + 1;
-			if (argument.equals("-X") && (index < args.length)) {
+			if(argument.equals("-X") && (index < args.length)) {
 				try {
 					Class<?> c = Class.forName(args[index]);
 //					if(ParsingWriter.class.isAssignableFrom(c)) {
@@ -102,36 +100,36 @@ public class CommandConfigure {
 				}
 				index = index + 1;
 			}
-			else if ((argument.equals("-p") || argument.equals("--peg")) && (index < args.length)) {
+			else if((argument.equals("-p") || argument.equals("--peg")) && (index < args.length)) {
 				GrammarFile = args[index];
 				index = index + 1;
 			}
-			else if ((argument.equals("-e") || argument.equals("--expr")) && (index < args.length)) {
+			else if((argument.equals("-e") || argument.equals("--expr")) && (index < args.length)) {
 				GrammarText = args[index];
 				index = index + 1;
 			}
-			else if ((argument.equals("-t") || argument.equals("--text")) && (index < args.length)) {
+			else if((argument.equals("-t") || argument.equals("--text")) && (index < args.length)) {
 				InputText = args[index];
 				index = index + 1;
 				InputFileIndex = 0;
 			}
-			else if ((argument.equals("-i") || argument.equals("--input")) && (index < args.length)) {
+			else if((argument.equals("-i") || argument.equals("--input")) && (index < args.length)) {
 				InputFileLists = new UList<String>(new String[4]);
-				while(index < args.length && !args[index].startsWith("-")) {
+				while (index < args.length && !args[index].startsWith("-")) {
 					InputFileLists.add(args[index]);
 					index = index + 1;
 					InputFileIndex = 0;
 				}
 			}
-			else if ((argument.equals("-o") || argument.equals("--output")) && (index < args.length)) {
+			else if((argument.equals("-o") || argument.equals("--output")) && (index < args.length)) {
 				OutputFileName = args[index];
 				index = index + 1;
 			}
-			else if ((argument.equals("-s") || argument.equals("--start")) && (index < args.length)) {
+			else if((argument.equals("-s") || argument.equals("--start")) && (index < args.length)) {
 				StartingPoint = args[index];
 				index = index + 1;
 			}
-			else if (argument.startsWith("-W")) {
+			else if(argument.startsWith("-W")) {
 				CheckerLevel = StringUtils.parseInt(argument.substring(2), 0);
 			}
 			else if(argument.startsWith("--memo")) {
@@ -144,7 +142,7 @@ public class CommandConfigure {
 				else {
 					int w = StringUtils.parseInt(argument.substring(7), -1);
 					if(w >= 0) {
-						WindowSize  = w;
+						WindowSize = w;
 					}
 					else {
 						showUsage("unknown option: " + argument);
@@ -169,7 +167,7 @@ public class CommandConfigure {
 					this.GrammarOption |= Grammar.DFA;
 				}
 				else if(argument.endsWith(":log")) {
-					RecorderFileName = "nezrec.csv";  // -Xrec
+					RecorderFileName = "nezrec.csv"; // -Xrec
 				}
 			}
 			else if(argument.startsWith("--disable:")) {
@@ -189,7 +187,7 @@ public class CommandConfigure {
 					this.GrammarOption = UFlag.unsetFlag(this.GrammarOption, Grammar.DFA);
 				}
 			}
-			else if(argument.startsWith("-Xrec") || argument.startsWith("--log") ) {
+			else if(argument.startsWith("-Xrec") || argument.startsWith("--log")) {
 				RecorderFileName = "nezrec.csv";
 				if(argument.endsWith(".csv")) {
 					RecorderFileName = argument.substring(6);
@@ -235,6 +233,9 @@ public class CommandConfigure {
 	public final Command getCommand() {
 		Command com = Command.getCommand(this.CommandName);
 		if(com == null) {
+			if(GrammarFile != null && NezGenerator.supportedGenerator(this.CommandName) && this.OutputFileName != null) {
+				return new GeneratorCommand(NezGenerator.newNezGenerator(this.CommandName, this.OutputFileName));
+			}
 			if(GrammarFile != null && NezGenerator.supportedGenerator(this.CommandName)) {
 				return new GeneratorCommand(NezGenerator.newNezGenerator(this.CommandName));
 			}
@@ -242,7 +243,7 @@ public class CommandConfigure {
 		}
 		return com;
 	}
-	
+
 	public final NameSpace getNameSpace(boolean NameSpaceCreation) {
 		if(GrammarFile != null) {
 			if(GrammarFile.equals("nez")) {
@@ -275,7 +276,7 @@ public class CommandConfigure {
 	}
 
 	private int GrammarOption = Grammar.DefaultOption;
-	
+
 	public final Grammar getGrammar(String start) {
 		Grammar p = getNameSpace(false).newGrammar(start, GrammarOption);
 		if(p == null) {
@@ -296,7 +297,7 @@ public class CommandConfigure {
 		}
 		return this.InputText != null || this.InputFileIndex < this.InputFileLists.size();
 	}
-	
+
 	public final void setInputFileList(UList<String> list) {
 		this.InputFileIndex = 0;
 		this.InputFileLists = list;
@@ -314,7 +315,7 @@ public class CommandConfigure {
 		}
 		if(this.InputFileIndex < this.InputFileLists.size()) {
 			String f = this.InputFileLists.ArrayValues[this.InputFileIndex];
-			this.InputFileIndex ++;
+			this.InputFileIndex++;
 			try {
 				return SourceContext.newFileContext(f);
 			} catch (IOException e) {
@@ -343,6 +344,4 @@ public class CommandConfigure {
 		}
 		return null;
 	}
-
 }
-

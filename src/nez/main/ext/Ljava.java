@@ -4,9 +4,9 @@ import nez.generator.NezGenerator;
 
 public class Ljava {
 	static {
-		NezGenerator.regist("java", nez.generator.ParserGenerator.class);
+		NezGenerator.regist("java", nez.generator.JavaParserGenerator.class);
 		// File Extension
-		NezGenerator.regist(".java", nez.generator.ParserGenerator.class);
+		NezGenerator.regist(".java", nez.generator.JavaParserGenerator.class);
 	}
 
 }
