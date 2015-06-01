@@ -1,49 +1,26 @@
 package nez.vm;
 
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Map.Entry;
 
-import nez.lang.And;
 import nez.lang.AnyChar;
-import nez.lang.Block;
 import nez.lang.ByteChar;
 import nez.lang.ByteMap;
-import nez.lang.Capture;
 import nez.lang.Choice;
-import nez.lang.DefIndent;
-import nez.lang.DefSymbol;
-import nez.lang.ExistsSymbol;
 import nez.lang.Expression;
-import nez.lang.GrammarFactory;
 import nez.lang.Grammar;
-import nez.lang.IsIndent;
-import nez.lang.IsSymbol;
 import nez.lang.Link;
-import nez.lang.LocalTable;
-import nez.lang.GrammarReshaper;
-import nez.lang.New;
 import nez.lang.NonTerminal;
 import nez.lang.Not;
 import nez.lang.Option;
-import nez.lang.Prediction;
 import nez.lang.Production;
 import nez.lang.Repetition;
-import nez.lang.Repetition1;
-import nez.lang.Replace;
 import nez.lang.Sequence;
-import nez.lang.Tagging;
-import nez.main.Verbose;
-import nez.util.ConsoleUtils;
-import nez.util.StringUtils;
 import nez.util.UFlag;
-import nez.util.UList;
-import nez.util.UMap;
 
 public class NezCompiler2 extends NezCompiler1 {
-	
+
 //	HashMap<Integer, MemoPoint> memoMap;
-	
+
 	public NezCompiler2(int option) {
 		super(option);
 	}
@@ -58,60 +35,59 @@ public class NezCompiler2 extends NezCompiler1 {
 			Instruction next = new IMemoRet(p, null);
 			Instruction inside = new ICallPush(code.production, next);
 			boolean state = false;/* fixme*/
-			return new ILookup(p, code.memoPoint, !p.isPurePEG(), state,  inside, next, new IMemoizeFail(p, state, code.memoPoint));
+			return new ILookup(p, code.memoPoint, !p.isPurePEG(), state, inside, next, new IMemoizeFail(p, state, code.memoPoint));
 		}
 		return null;
 	}
-	
+
 	public final Instruction encodeOption(Option p, Instruction next) {
 		if(UFlag.is(option, Grammar.Specialization)) {
 			Expression inner = p.get(0);
 			if(inner instanceof ByteChar) {
 				this.optimizedUnary(p);
-				return new IOptionByteChar((ByteChar)inner, next);
+				return new IOptionByteChar((ByteChar) inner, next);
 			}
 			if(inner instanceof ByteMap) {
 				this.optimizedUnary(p);
-				return new IOptionByteMap((ByteMap)inner, next);
+				return new IOptionByteMap((ByteMap) inner, next);
 			}
 		}
 		return super.encodeOption(p, next);
 	}
-	
+
 	public final Instruction encodeRepetition(Repetition p, Instruction next) {
 		if(UFlag.is(option, Grammar.Specialization)) {
 			Expression inner = p.get(0);
 			if(inner instanceof ByteChar) {
 				this.optimizedUnary(p);
-				return new IRepeatedByteMap((ByteChar)inner, next);
+				return new IRepeatedByteMap((ByteChar) inner, next);
 			}
 			if(inner instanceof ByteMap) {
 				this.optimizedUnary(p);
-				return new IRepeatedByteMap((ByteMap)inner, next);
+				return new IRepeatedByteMap((ByteMap) inner, next);
 			}
 		}
 		return super.encodeRepetition(p, next);
 	}
-
 
 	public final Instruction encodeNot(Not p, Instruction next, Instruction failjump) {
 		if(UFlag.is(option, Grammar.Specialization)) {
 			Expression inn = p.get(0);
 			if(inn instanceof ByteMap) {
 				this.optimizedUnary(p);
-				return new INotByteMap((ByteMap)inn, next);
+				return new INotByteMap((ByteMap) inn, next);
 			}
 			if(inn instanceof ByteChar) {
 				this.optimizedUnary(p);
-				return new INotByteMap((ByteChar)inn, next);
+				return new INotByteMap((ByteChar) inn, next);
 			}
 			if(inn instanceof AnyChar) {
 				this.optimizedUnary(p);
 				return new INotAnyChar(inn, UFlag.is(this.option, Grammar.Binary), next);
 			}
-			if(inn instanceof Sequence && ((Sequence)inn).isMultiChar()) {
+			if(inn instanceof Sequence && ((Sequence) inn).isMultiChar()) {
 				this.optimizedUnary(p);
-				return new INotMultiChar((Sequence)inn, next);
+				return new INotMultiChar((Sequence) inn, next);
 			}
 		}
 		return super.encodeNot(p, next, failjump);
@@ -155,7 +131,7 @@ public class NezCompiler2 extends NezCompiler1 {
 		}
 		return this.encodeUnoptimizedChoice(p, next, failjump);
 	}
-	
+
 	private final Instruction encodeBacktrack(Expression e, int ch, Instruction next) {
 		//System.out.println("backtrack("+ch+"): " + e);
 		//return new IBacktrack(e, ch, next);
@@ -175,12 +151,12 @@ public class NezCompiler2 extends NezCompiler1 {
 				//System.out.println("creating '" + (char)ch + "'("+ch+"): " + e);
 				if(predicated instanceof Choice) {
 //					if(predicated == choice) {
-						/* this is a rare case where the selected choice is the parent choice */
-						/* this cause the repeated calls of the same matchers */
-						inst = encodeBacktrack(choice, ch, this.encodeUnoptimizedChoice(choice, next, failjump));
-						m.put(predicated.getId(), inst);
-						dispatch.setJumpTable(ch, inst);
-						continue;
+					/* this is a rare case where the selected choice is the parent choice */
+					/* this cause the repeated calls of the same matchers */
+					inst = encodeBacktrack(choice, ch, this.encodeUnoptimizedChoice(choice, next, failjump));
+					m.put(predicated.getId(), inst);
+					dispatch.setJumpTable(ch, inst);
+					continue;
 //					}
 				}
 //				Expression factored = CharacterFactoring.s.tryFactoringCharacter(predicated);
@@ -197,7 +173,6 @@ public class NezCompiler2 extends NezCompiler1 {
 		}
 		return dispatch;
 	}
-	
 
 	public final Instruction encodeUnoptimizedChoice(Choice p, Instruction next, Instruction failjump) {
 		return super.encodeChoice(p, next, failjump);
@@ -214,17 +189,17 @@ public class NezCompiler2 extends NezCompiler1 {
 			if(!this.enableASTConstruction() || r.isPurePEG()) {
 				return new IMemoCall(code, next);
 			}
-		}	
+		}
 		return new ICallPush(r, next);
 	}
-	
+
 	// AST Construction
-	
+
 	public final Instruction encodeLink(Link p, Instruction next, Instruction failjump) {
 		if(this.enableASTConstruction()) {
 			next = new ICommit(p, new ILink(p, next));
 			if(this.enablePackratParsing() && p.get(0) instanceof NonTerminal) {
-				next = encodeLinkedNonterminal((NonTerminal)p.get(0), next, failjump);
+				next = encodeLinkedNonterminal((NonTerminal) p.get(0), next, failjump);
 			}
 			else {
 				next = encodeExpression(p.get(0), next, failjump);
@@ -243,7 +218,7 @@ public class NezCompiler2 extends NezCompiler1 {
 		}
 		if(this.enablePackratParsing() && code.memoPoint != null) {
 			return new IMemoCall(code, next);
-		}	
+		}
 		return new ICallPush(r, next);
 	}
 

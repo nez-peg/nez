@@ -32,7 +32,6 @@ import nez.main.Verbose;
 import nez.util.UFlag;
 import nez.util.UList;
 
-
 public class NezCompiler1 extends NezCompiler {
 
 	protected final Instruction commonFailure = new IFail(null);
@@ -48,7 +47,7 @@ public class NezCompiler1 extends NezCompiler {
 	protected Instruction encodeMemoizingProduction(ProductionCode code) {
 		return null;
 	}
-	
+
 	protected void optimizedUnary(Expression p) {
 		Verbose.noticeOptimize("specialization", p);
 	}
@@ -58,7 +57,7 @@ public class NezCompiler1 extends NezCompiler {
 	}
 
 	HashMap<String, ProductionCode> codeMap = new HashMap<String, ProductionCode>();
-	
+
 	void count(Production p) {
 		String uname = p.getUniqueName();
 		ProductionCode c = this.codeMap.get(uname);
@@ -77,13 +76,13 @@ public class NezCompiler1 extends NezCompiler {
 		}
 		c.ref++;
 	}
-	
+
 	void countNonTerminalReference(Expression e) {
 		if(e instanceof NonTerminal) {
 			Production p = ((NonTerminal) e).getProduction();
 			count(p);
 		}
-		for(Expression sub: e) {
+		for(Expression sub : e) {
 			countNonTerminalReference(sub);
 		}
 	}
@@ -126,7 +125,7 @@ public class NezCompiler1 extends NezCompiler {
 			}
 		}
 	}
-	
+
 	protected void encodeProduction(UList<Instruction> codeList, Production p, Instruction next) {
 		String uname = p.getUniqueName();
 		ProductionCode code = this.codeMap.get(uname);
@@ -141,7 +140,7 @@ public class NezCompiler1 extends NezCompiler {
 			}
 		}
 	}
-	
+
 	@Override
 	public NezCode encode(Grammar grammar) {
 		long t = System.nanoTime();
@@ -162,19 +161,22 @@ public class NezCompiler1 extends NezCompiler {
 				}
 				((ICallPush) inst).setResolvedJump(deref.codePoint);
 			}
+			if(inst instanceof IMemoCall) {
+				((IMemoCall) inst).resolveJumpAddress();
+			}
 		}
 		long t2 = System.nanoTime();
 		Verbose.printElapsedTime("CompilingTime", t, t2);
 		this.codeMap = null;
 		return new NezCode(codeList.ArrayValues[0]);
 	}
-	
+
 	// encoding
-	
+
 	public Instruction encodeExpression(Expression e, Instruction next, Instruction failjump) {
 		return e.encode(this, next, failjump);
 	}
-	
+
 	public Instruction encodeMatchAny(AnyChar p, Instruction next, Instruction failjump) {
 		return new IAnyChar(p, next);
 	}
@@ -191,12 +193,12 @@ public class NezCompiler1 extends NezCompiler {
 //		return new IFail(p);
 		return this.commonFailure;
 	}
-	
+
 	public Instruction encodeOption(Option p, Instruction next) {
 		Instruction pop = new IFailPop(p, next);
 		return new IFailPush(p, next, encodeExpression(p.get(0), pop, next));
 	}
-	
+
 	public Instruction encodeRepetition(Repetition p, Instruction next) {
 		IFailSkip skip = p.possibleInfiniteLoop ? new IFailCheckSkip(p) : new IFailCheckSkip(p);
 		Instruction start = encodeExpression(p.get(0), skip, next/*FIXME*/);
@@ -220,7 +222,7 @@ public class NezCompiler1 extends NezCompiler {
 
 	public Instruction encodeSequence(Expression p, Instruction next, Instruction failjump) {
 		Instruction nextStart = next;
-		for(int i = p.size() -1; i >= 0; i--) {
+		for(int i = p.size() - 1; i >= 0; i--) {
 			Expression e = p.get(i);
 			nextStart = encodeExpression(e, nextStart, failjump);
 		}
@@ -228,8 +230,8 @@ public class NezCompiler1 extends NezCompiler {
 	}
 
 	public Instruction encodeChoice(Choice p, Instruction next, Instruction failjump) {
-		Instruction nextChoice = encodeExpression(p.get(p.size()-1), next, failjump);
-		for(int i = p.size() -2; i >= 0; i--) {
+		Instruction nextChoice = encodeExpression(p.get(p.size() - 1), next, failjump);
+		for(int i = p.size() - 2; i >= 0; i--) {
 			Expression e = p.get(i);
 			nextChoice = new IFailPush(e, nextChoice, encodeExpression(e, new IFailPop(e, next), nextChoice));
 		}
@@ -240,9 +242,9 @@ public class NezCompiler1 extends NezCompiler {
 		Production r = p.getProduction();
 		return new ICallPush(r, next);
 	}
-		
+
 	// AST Construction
-	
+
 	public Instruction encodeLink(Link p, Instruction next, Instruction failjump) {
 		if(UFlag.is(this.option, Grammar.ASTConstruction)) {
 			return new INodePush(p, encodeExpression(p.get(0), new INodeStore(p, next), failjump));
@@ -263,7 +265,7 @@ public class NezCompiler1 extends NezCompiler {
 		}
 		return next;
 	}
-	
+
 	public Instruction encodeTagging(Tagging p, Instruction next) {
 		if(UFlag.is(this.option, Grammar.ASTConstruction)) {
 			return new ITag(p, next);
@@ -277,7 +279,7 @@ public class NezCompiler1 extends NezCompiler {
 		}
 		return next;
 	}
-	
+
 	public Instruction encodeBlock(Block p, Instruction next, Instruction failjump) {
 		Instruction failed = new IEndSymbolScope(p, /*fail*/true, null);
 		next = new IEndSymbolScope(p, /*fail*/false, next);
@@ -295,7 +297,7 @@ public class NezCompiler1 extends NezCompiler {
 	public Instruction encodeDefSymbol(DefSymbol p, Instruction next, Instruction failjump) {
 		return new IPosPush(p, encodeExpression(p.get(0), new IDefSymbol(p, next), failjump));
 	}
-	
+
 	public Instruction encodeExistsSymbol(ExistsSymbol p, Instruction next, Instruction failjump) {
 		return new IExistsSymbol(p, next);
 	}
@@ -312,11 +314,9 @@ public class NezCompiler1 extends NezCompiler {
 	public Instruction encodeDefIndent(DefIndent p, Instruction next, Instruction failjump) {
 		return new IDefIndent(p, next);
 	}
-	
+
 	public Instruction encodeIsIndent(IsIndent p, Instruction next, Instruction failjump) {
 		return new IIsIndent(p, next);
 	}
-
-	
 
 }
