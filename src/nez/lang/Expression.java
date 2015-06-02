@@ -13,14 +13,10 @@ public abstract class Expression extends AbstractList<Expression> {
 
 	SourcePosition s = null;
 	int    internId   = 0;
-	int    optimizedOption = -1;
-	
-	public Expression optimized;
 	
 	Expression(SourcePosition s) {
 		this.s = s;
 		this.internId = 0;
-		this.optimized = this;
 	}
 	
 	public abstract boolean equalsExpression(Expression o) ;
@@ -89,19 +85,6 @@ public abstract class Expression extends AbstractList<Expression> {
 	
 	public abstract short acceptByte(int ch, int option);
 	
-	public final Expression optimize(int option) {
-		option = Grammar.mask(option);
-		if(this.optimizedOption != option) {
-			optimizeImpl(option);
-			this.optimizedOption = option;
-		}
-		return this.optimized;
-	}
-	
-	void optimizeImpl(int option) {
-		this.optimized = this;
-	}
-
 	@Override
 	public final String toString() {
 		StringBuilder sb = new StringBuilder();

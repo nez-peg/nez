@@ -287,7 +287,7 @@ public class DeprecatedNezCompiler extends NezCompiler1 {
 //			System.out.println("NFA: " + StringUtils.stringfyCharClass(and(dfa, optdfa)));
 //		}
 		if(UFlag.is(option, Grammar.Specialization)) {
-			Expression inner = p.get(0).optimize(option);
+			Expression inner = p.get(0); //optimize(option);
 			if(inner instanceof ByteChar) {
 				Verbose.noticeOptimize("Specialization", p, inner);
 				return new IOptionByteChar((ByteChar)inner, next);
@@ -328,7 +328,7 @@ public class DeprecatedNezCompiler extends NezCompiler1 {
 //			}
 //		}
 		if(UFlag.is(option, Grammar.Specialization)) {
-			Expression inner = p.get(0).optimize(option);
+			Expression inner = p.get(0); //optimize(option);
 			if(inner instanceof ByteChar) {
 				Verbose.noticeOptimize("Specialization", p, inner);
 				return new IRepeatedByteMap((ByteChar)inner, next);
@@ -358,7 +358,7 @@ public class DeprecatedNezCompiler extends NezCompiler1 {
 
 	public final Instruction encodeNot(Not p, Instruction next, Instruction failjump) {
 		if(UFlag.is(option, Grammar.Specialization)) {
-			Expression inn = p.get(0).optimize(option);
+			Expression inn = p.get(0); //optimize(option);
 			if(inn instanceof ByteMap) {
 				Verbose.noticeOptimize("Specilization", p);
 				return new INotByteMap((ByteMap)inn, next);
@@ -381,7 +381,7 @@ public class DeprecatedNezCompiler extends NezCompiler1 {
 	}
 
 	public final Instruction encodeSequence(Expression p, Instruction next, Instruction failjump) {
-		Expression pp = p.optimize(option);
+		Expression pp = p; //optimize(option);
 		if(pp != p) {
 			if(pp instanceof ByteMap) {
 				Verbose.noticeOptimize("ByteMap", p, pp);
@@ -413,7 +413,7 @@ public class DeprecatedNezCompiler extends NezCompiler1 {
 	}
 
 	public final Instruction encodeChoice(Choice p, Instruction next, Instruction failjump) {
-		Expression pp = p.optimize(option);
+		Expression pp = p;//.optimize(option);
 		if(pp instanceof ByteMap) {
 			Verbose.noticeOptimize("ByteMap", p, pp);
 			return encodeByteMap((ByteMap)pp, next, failjump);

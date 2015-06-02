@@ -118,24 +118,6 @@ public class NonTerminal extends Expression {
 		Production r = this.getProduction();
 		return r.inferTypestate(visited);
 	}
-//	@Override
-//	public Expression removeASTOperator(boolean newNonTerminal) {
-//		if(newNonTerminal) {
-//			Production r = (Production)this.getProduction().removeASTOperator(newNonTerminal);
-//			if(!this.localName.equals(r.getLocalName())) {
-//				return Factory.newNonTerminal(this.s, ns, r.getLocalName());
-//			}
-//		}
-//		return this;
-//	}
-//	@Override
-//	public Expression removeFlag(TreeMap<String,String> undefedFlags) {
-//		Production r = (Production)this.getProduction().removeFlag(undefedFlags);
-//		if(!this.localName.equals(r.getLocalName())) {
-//			return Factory.newNonTerminal(this.s, ns, r.getLocalName());
-//		}
-//		return this;
-//	}
 	
 	@Override
 	public short acceptByte(int ch, int option) {
@@ -147,19 +129,12 @@ public class NonTerminal extends Expression {
 			return Acceptance.Accept;
 		}
 	}
-	@Override
-	void optimizeImpl(int option) {
-		Expression e = this;
-		while(e instanceof NonTerminal) {
-			NonTerminal nterm = (NonTerminal) e;
-			e = nterm.deReference().optimize(option);
-		}
-		this.optimized = e;
-	}
+
 	@Override
 	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
 		return bc.encodeNonTerminal(this, next, failjump);
 	}
+	
 	@Override
 	protected int pattern(GEP gep) {
 		return this.deReference().pattern(gep);

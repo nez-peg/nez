@@ -54,7 +54,7 @@ public class Not extends Unary {
 	public short acceptByte(int ch, int option) {
 		/* The code below works only if a single character in !(e) */
 		/* we must accept 'i' for !'int' 'i' */
-		Expression p = this.inner.optimize(option);
+		Expression p = this.inner; //optimize(option);
 		if(p instanceof Choice) {
 			for(Expression pp : p) {
 				short r = acceptByte(pp, ch, option);
