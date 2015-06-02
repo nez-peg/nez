@@ -12,6 +12,13 @@ public class Replace extends ASTOperation {
 		this.value = value;
 	}
 	@Override
+	public final boolean equalsExpression(Expression o) {
+		if(o instanceof Replace) {
+			return this.value.equals(((Replace)o).value);
+		}
+		return false;
+	}
+	@Override
 	public String getPredicate() {
 		return "replace " + StringUtils.quoteString('"', value, '"');
 	}

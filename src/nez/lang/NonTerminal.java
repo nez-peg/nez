@@ -18,7 +18,14 @@ public class NonTerminal extends Expression {
 		this.localName = ruleName;
 		this.uniqueName = this.ns.uniqueName(this.localName);
 	}
-	
+	@Override
+	public final boolean equalsExpression(Expression o) {
+		if(o instanceof NonTerminal) {
+			return this.localName.equals(((NonTerminal) o).getLocalName());
+		}
+		return false;
+	}
+
 	public final NameSpace getNameSpace() {
 		return ns;
 	}
@@ -137,7 +144,7 @@ public class NonTerminal extends Expression {
 		}
 		catch(StackOverflowError e) {
 			System.out.println(e + " at " + this.getLocalName());
-			return Prediction.Accept;
+			return Acceptance.Accept;
 		}
 	}
 	@Override

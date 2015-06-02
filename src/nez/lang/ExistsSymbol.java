@@ -10,13 +10,20 @@ import nez.vm.NezCompiler;
 public class ExistsSymbol extends Expression {
 	public final Tag tableName;
 	final NameSpace ns;
-	
 	ExistsSymbol(SourcePosition s, NameSpace ns, Tag tableName) {
 		super(s);
 		this.ns = ns;
 		this.tableName = tableName;
 	}
-
+	@Override
+	public final boolean equalsExpression(Expression o) {
+		if(o instanceof ExistsSymbol) {
+			ExistsSymbol s = (ExistsSymbol)o;
+			return this.ns == s.ns && this.tableName == s.tableName;
+		}
+		return false;
+	}
+	
 	public final NameSpace getNameSpace() {
 		return ns;
 	}
@@ -68,7 +75,7 @@ public class ExistsSymbol extends Expression {
 		if(this.getSymbolExpression() != null) {
 			return this.getSymbolExpression().acceptByte(ch, option);
 		}
-		return Prediction.Accept;
+		return Acceptance.Accept;
 	}
 	@Override
 	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {

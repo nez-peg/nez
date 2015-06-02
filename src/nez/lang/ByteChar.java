@@ -7,14 +7,26 @@ import nez.vm.Instruction;
 import nez.vm.NezCompiler;
 
 public class ByteChar extends Terminal {
+	boolean binary;
+	public final boolean isBinary() {
+		return this.binary;
+	}
 	public int byteChar;
-	ByteChar(SourcePosition s, int ch) {
+	ByteChar(SourcePosition s, boolean binary, int ch) {
 		super(s);
 		this.byteChar = ch;
+		this.binary = binary;
+	}
+	@Override
+	public final boolean equalsExpression(Expression o) {
+		if(o instanceof ByteChar) {
+			return this.byteChar == ((ByteChar)o).byteChar && this.binary == ((ByteChar)o).isBinary();
+		}
+		return false;
 	}
 	@Override
 	protected final void format(StringBuilder sb) {
-		sb.append(StringUtils.stringfyByte(this.byteChar));
+		sb.append(StringUtils.stringfyCharacter(this.byteChar));
 	}
 	@Override
 	public String getPredicate() {
@@ -22,7 +34,7 @@ public class ByteChar extends Terminal {
 	}
 	@Override
 	public String key() { 
-		return "'" + byteChar;
+		return binary ? "b'" + byteChar : "'" + byteChar;
 	}	
 	@Override
 	public Expression reshape(GrammarReshaper m) {
@@ -38,7 +50,7 @@ public class ByteChar extends Terminal {
 	}
 	@Override
 	public short acceptByte(int ch, int option) {
-		return (byteChar == ch) ? Prediction.Accept : Prediction.Reject;
+		return (byteChar == ch) ? Acceptance.Accept : Acceptance.Reject;
 	}
 	@Override
 	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {

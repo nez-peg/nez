@@ -11,6 +11,14 @@ public class And extends Unary {
 		super(s, e);
 	}
 	@Override
+	public final boolean equalsExpression(Expression o) {
+		if(o instanceof And) {
+			return this.get(0).equalsExpression(o.get(0));
+		}
+		return false;
+	}
+
+	@Override
 	public String getPredicate() {
 		return "&";
 	}
@@ -44,8 +52,8 @@ public class And extends Unary {
 	@Override
 	public short acceptByte(int ch, int option) {
 		short r = this.inner.acceptByte(ch, option);
-		if(r == Prediction.Accept || r == Prediction.Unconsumed) {
-			return Prediction.Unconsumed;
+		if(r == Acceptance.Accept || r == Acceptance.Unconsumed) {
+			return Acceptance.Unconsumed;
 		}
 		return r;
 	}

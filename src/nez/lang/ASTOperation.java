@@ -21,6 +21,6 @@ public abstract class ASTOperation extends Expression {
 	}
 	@Override
 	public short acceptByte(int ch, int option) {
-		return Prediction.Unconsumed;
+		return Acceptance.Unconsumed;
 	}
 }

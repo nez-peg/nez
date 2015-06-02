@@ -175,7 +175,7 @@ public class RegexConverter extends GrammarConverter{
 		if (utf8.length !=1) {
 			ConsoleUtils.exit(1, "Error: not Character Literal");
 		}
-		return GrammarFactory.newByteChar(null, utf8[0]);
+		return GrammarFactory.newByteChar(null, false, utf8[0]);
 	}
 	
 	boolean byteMap[];
@@ -187,7 +187,7 @@ public class RegexConverter extends GrammarConverter{
 			GrammarFactory.addChoice(l, toExpression(subnode));
 		}
 		if (useByteMap) {
-			return GrammarFactory.newByteMap(null, byteMap);
+			return GrammarFactory.newByteMap(null, false, byteMap);
 		}
 		else {
 			return GrammarFactory.newChoice(null, l);
@@ -206,7 +206,7 @@ public class RegexConverter extends GrammarConverter{
 	public Expression toCharacterSetItem(CommonTree c) {
 		byte[] utf8 = StringUtils.toUtf8(c.getText());
 		byteMap[utf8[0]] = true;
-		return GrammarFactory.newByteChar(null, utf8[0]);
+		return GrammarFactory.newByteChar(null, false, utf8[0]);
 	}
 	
 	public Expression toEmpty(CommonTree node) {
@@ -214,7 +214,7 @@ public class RegexConverter extends GrammarConverter{
 	}
 
 	public Expression toAny(CommonTree e) {
-		return GrammarFactory.newAnyChar(null);
+		return GrammarFactory.newAnyChar(null, false);
 	}
 	
 	public Expression toAnd(CommonTree e, Expression k) {

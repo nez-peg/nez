@@ -10,6 +10,10 @@ public class IsIndent extends Terminal {
 		super(s);
 	}
 	@Override
+	public final boolean equalsExpression(Expression o) {
+		return (o instanceof IsIndent);
+	}
+	@Override
 	public String getPredicate() {
 		return "indent";
 	}
@@ -28,7 +32,6 @@ public class IsIndent extends Terminal {
 		// TODO Auto-generated method stub
 		return false;
 	}
-
 	@Override
 	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
 		return false;
@@ -36,9 +39,9 @@ public class IsIndent extends Terminal {
 	@Override
 	public short acceptByte(int ch, int option) {
 		if (ch == '\t' || ch == ' ') {
-			return Prediction.Accept;
+			return Acceptance.Accept;
 		}
-		return Prediction.Unconsumed;
+		return Acceptance.Unconsumed;
 	}
 
 	@Override

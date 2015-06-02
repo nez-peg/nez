@@ -219,7 +219,7 @@ public abstract class GrammarGenerator extends NezGenerator {
 	}
 
 	public void visitByteMap(ByteMap e) {
-		W(StringUtils.stringfyCharClass(e.byteMap));
+		W(StringUtils.stringfyCharacterClass(e.byteMap));
 	}
 	
 	public void visitAnyChar(AnyChar e) {

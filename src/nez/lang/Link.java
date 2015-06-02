@@ -13,6 +13,13 @@ public class Link extends Unary {
 		this.index = index;
 	}
 	@Override
+	public final boolean equalsExpression(Expression o) {
+		if(o instanceof Link && this.index == ((Link)o).index) {
+			return this.get(0).equalsExpression(o.get(0));
+		}
+		return false;
+	}
+	@Override
 	public String getPredicate() { 
 		return (index != -1) ? "link " + index : "link";
 	}

@@ -13,12 +13,19 @@ public class Not extends Unary {
 		super(s, e);
 	}
 	@Override
+	public final boolean equalsExpression(Expression o) {
+		if(o instanceof Not) {
+			return this.get(0).equalsExpression(o.get(0));
+		}
+		return false;
+	}
+	@Override
 	public String getPredicate() { 
 		return "!";
 	}
 	@Override
 	public String key() { 
-		return "!";
+		return "!" ;
 	}
 	@Override
 	protected final void format(StringBuilder sb) {
@@ -28,12 +35,10 @@ public class Not extends Unary {
 	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeNot(this);
 	}
-
 	@Override
 	public boolean isConsumed(Stacker stacker) {
 		return false;
 	}
-
 	@Override
 	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
 //		if(checker != null) {
@@ -53,11 +58,11 @@ public class Not extends Unary {
 		if(p instanceof Choice) {
 			for(Expression pp : p) {
 				short r = acceptByte(pp, ch, option);
-				if(r != Prediction.Unconsumed) {
+				if(r != Acceptance.Unconsumed) {
 					return r;
 				}
 			}
-			return Prediction.Unconsumed;
+			return Acceptance.Unconsumed;
 		}
 		else {
 			return acceptByte(p, ch, option);
@@ -65,17 +70,17 @@ public class Not extends Unary {
 	}
 	private short acceptByte(Expression p, int ch, int option) {
 		if(p instanceof ByteChar) {
-			return ((ByteChar) p).byteChar == ch ? Prediction.Reject : Prediction.Unconsumed;
+			return ((ByteChar) p).byteChar == ch ? Acceptance.Reject : Acceptance.Unconsumed;
 		}
 		if(p instanceof ByteMap) {
-			return ((ByteMap) p).byteMap[ch] ? Prediction.Reject : Prediction.Unconsumed;
+			return ((ByteMap) p).byteMap[ch] ? Acceptance.Reject : Acceptance.Unconsumed;
 		}
 		if(p instanceof AnyChar) {
-			if(ch == Source.BinaryEOF) return Prediction.Accept;
-			if(ch == 0 && !UFlag.is(option, Grammar.Binary)) return Prediction.Accept;
-			return Prediction.Reject;
+			if(ch == Source.BinaryEOF) return Acceptance.Accept;
+			if(ch == 0 && !UFlag.is(option, Grammar.Binary)) return Acceptance.Accept;
+			return Acceptance.Reject;
 		}
-		return Prediction.Unconsumed;
+		return Acceptance.Unconsumed;
 	}
 
 	@Override
@@ -96,6 +101,7 @@ public class Not extends Unary {
 
 	@Override
 	protected void examplfy(GEP gep, StringBuilder sb, int p) {
+		
 	}
 
 

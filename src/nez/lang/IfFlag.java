@@ -16,6 +16,15 @@ public class IfFlag extends Unconsumed {
 		this.predicate = predicate;
 		this.flagName = flagName;
 	}
+	@Override
+	public final boolean equalsExpression(Expression o) {
+		if(o instanceof IfFlag) {
+			IfFlag e = (IfFlag)o;
+			return this.predicate == e.predicate && this.flagName.equals(e.flagName);
+		}
+		return false;
+	}
+
 
 	public final String getFlagName() {
 		return this.flagName;

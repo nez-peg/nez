@@ -11,6 +11,13 @@ public class Block extends Unary {
 		super(s, e);
 	}
 	@Override
+	public final boolean equalsExpression(Expression o) {
+		if(o instanceof Block) {
+			return this.get(0).equalsExpression(o.get(0));
+		}
+		return false;
+	}
+	@Override
 	public String getPredicate() {
 		return "block";
 	}

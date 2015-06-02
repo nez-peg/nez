@@ -17,6 +17,14 @@ public class IsSymbol extends Terminal {
 		this.tableName = tableName;
 		this.checkLastSymbolOnly = false;
 	}
+	@Override
+	public final boolean equalsExpression(Expression o) {
+		if(o instanceof IsSymbol) {
+			IsSymbol e = (IsSymbol)o;
+			return this.tableName == e.tableName && this.ns == e.ns && this.checkLastSymbolOnly == e.checkLastSymbolOnly;
+		}
+		return false;
+	}
 
 	public final NameSpace getNameSpace() {
 		return ns;
@@ -69,7 +77,7 @@ public class IsSymbol extends Terminal {
 		if(this.getSymbolExpression() != null) {
 			return this.getSymbolExpression().acceptByte(ch, option);
 		}
-		return Prediction.Accept;
+		return Acceptance.Accept;
 	}
 	@Override
 	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {

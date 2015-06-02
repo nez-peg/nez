@@ -1,9 +1,6 @@
 package nez.lang;
 
-import java.util.TreeMap;
-
 import nez.ast.SourcePosition;
-import nez.util.UFlag;
 import nez.util.UList;
 import nez.util.UMap;
 import nez.vm.Instruction;
@@ -13,7 +10,18 @@ public class Choice extends Multinary {
 	Choice(SourcePosition s, UList<Expression> l, int size) {
 		super(s, l, size);
 	}
-	
+	@Override
+	public final boolean equalsExpression(Expression o) {
+		if(o instanceof Choice && this.size() == o.size()) {
+			for(int i = 0; i < this.size(); i++) {
+				if(!this.get(i).equalsExpression(o.get(i))) {
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
+	}
 	@Override
 	public String getPredicate() {
 		return "/";
@@ -118,14 +126,14 @@ public class Choice extends Multinary {
 		boolean hasUnconsumed = false;
 		for(int i = 0; i < this.size(); i++) {
 			short r = this.get(i).acceptByte(ch, option);
-			if(r == Prediction.Accept) {
+			if(r == Acceptance.Accept) {
 				return r;
 			}
-			if(r == Prediction.Unconsumed) {
+			if(r == Acceptance.Unconsumed) {
 				hasUnconsumed = true;
 			}
 		}
-		return hasUnconsumed ? Prediction.Unconsumed : Prediction.Reject;
+		return hasUnconsumed ? Acceptance.Unconsumed : Acceptance.Reject;
 	}
 
 	@Override
@@ -138,7 +146,8 @@ public class Choice extends Multinary {
 //	boolean selfChoice = false;
 //	int startIndex = -1;
 //	int endIndex = 257;
-	
+
+	/**
 	@Override
 	void optimizeImpl(int option) {
 		this.optimized = flatten();
@@ -217,12 +226,13 @@ public class Choice extends Multinary {
 			else {
 				short r = e.acceptByte(ch, option);
 				//System.out.println("~ " + GrammarFormatter.stringfyByte(ch) + ": r=" + r + " in " + e);
-				if(r != Prediction.Reject) {
+				if(r != Acceptance.Reject) {
 					l.add(e);
 				}
 			}
 		}
 	}
+	**/
 	
 	@Override
 	protected int pattern(GEP gep) {

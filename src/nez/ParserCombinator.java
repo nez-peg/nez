@@ -95,18 +95,22 @@ public class ParserCombinator {
 
 	protected final Expression c(int ... chars) {
 		boolean[] b = ByteMap.newMap(false);
+		boolean binary = false;
 		for(int c : chars) {
 			b[c] = true;
+			if(c == 0) {
+				binary = true;
+			}
 		}
-		return GrammarFactory.newByteMap(src(), b);
+		return GrammarFactory.newByteMap(src(), binary, b);
 	}
 
 	protected final Expression ByteChar(int byteChar) {
-		return GrammarFactory.newByteChar(src(), byteChar);
+		return GrammarFactory.newByteChar(src(), false, byteChar);
 	}
 
 	protected final Expression AnyChar() {
-		return GrammarFactory.newAnyChar(src());
+		return GrammarFactory.newAnyChar(src(), false);
 	}
 	
 	protected final Expression NotAny(String token) {

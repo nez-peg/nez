@@ -23,6 +23,15 @@ public abstract class Expression extends AbstractList<Expression> {
 		this.optimized = this;
 	}
 	
+	public abstract boolean equalsExpression(Expression o) ;
+	
+	public final boolean equals(Object o) {
+		if(o instanceof Expression) {
+			return this.equalsExpression((Expression)o);
+		}
+		return false;
+	}
+	
 	public final SourcePosition getSourcePosition() {
 		return this.s;
 	}
@@ -154,6 +163,18 @@ public abstract class Expression extends AbstractList<Expression> {
 	
 	// convinient interface
 	
+	public final Expression newEmpty() {
+		return GrammarFactory.newEmpty(this.getSourcePosition());
+	}
+
+	public final Expression newSequence(UList<Expression> l) {
+		return GrammarFactory.newSequence(this.getSourcePosition(), l);
+	}
+
+	public final Expression newChoice(Expression e, Expression e2) {
+		return GrammarFactory.newChoice(this.getSourcePosition(), e, e2);
+	}
+
 	public final Expression newSequence(Expression e, Expression e2) {
 		return GrammarFactory.newSequence(this.getSourcePosition(), e, e2);
 	}

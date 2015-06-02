@@ -9,9 +9,22 @@ import nez.vm.Instruction;
 import nez.vm.NezCompiler;
 
 public class AnyChar extends Terminal {
-	AnyChar(SourcePosition s) {
-		super(s);
+	boolean binary = false;
+	public final boolean isBinary() {
+		return this.binary;
 	}
+	AnyChar(SourcePosition s, boolean binary) {
+		super(s);
+		this.binary = binary;
+	}
+	@Override
+	public final boolean equalsExpression(Expression o) {
+		if(o instanceof AnyChar) {
+			return this.binary == ((AnyChar)o).isBinary();
+		}
+		return false;
+	}
+
 	@Override
 	protected final void format(StringBuilder sb) {
 		sb.append(".");
@@ -24,7 +37,7 @@ public class AnyChar extends Terminal {
 	
 	@Override
 	public String key() { 
-		return ".";
+		return binary ? "b." : ".";
 	}
 	
 	@Override
@@ -48,11 +61,11 @@ public class AnyChar extends Terminal {
 	
 	@Override
 	public short acceptByte(int ch, int option) {
-		if(UFlag.is(option, Grammar.Binary)) {
-			return (ch == Source.BinaryEOF) ? Prediction.Reject : Prediction.Accept;
+		if(binary) {
+			return (ch == Source.BinaryEOF) ? Acceptance.Reject : Acceptance.Accept;
 		}
 		else {
-			return (ch == Source.BinaryEOF || ch == 0) ? Prediction.Reject : Prediction.Accept;
+			return (ch == Source.BinaryEOF || ch == 0) ? Acceptance.Reject : Acceptance.Accept;
 		}
 	}
 	

@@ -16,6 +16,15 @@ public class New extends Unconsumed {
 		this.shift  = shift;
 	}
 	@Override
+	public final boolean equalsExpression(Expression o) {
+		if(o instanceof New) {
+			New s = (New)o;
+			return (this.lefted == s.lefted && this.shift == s.shift);
+		}
+		return false;
+	}
+
+	@Override
 	public String getPredicate() { 
 		return "new";
 	}

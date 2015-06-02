@@ -119,34 +119,4 @@ public class GrammarChecker {
 		grammar.testExample(Grammar.ExampleOption);
 	}
 	
-//	void checkPhase1(Expression p, String ruleName, UMap<String> visited, int depth) {
-//		p.checkPhase1(this, ruleName, visited, depth);
-//		for(Expression e: p) {
-//			this.checkPhase1(e, ruleName, visited, depth);
-//		}
-//	}
-//
-//	void checkPhase2(Expression p) {
-//		p.checkPhase2(this);
-//		for(Expression e: p) {
-//			this.checkPhase2(e);
-//		}
-//	}
-	
-//	private UMap<Expression> tableMap; 
-//
-//	final void setSymbolExpresion(String tableName, Expression e) {
-//		if(tableMap == null) {
-//			tableMap = new UMap<Expression>();
-//		}
-//		tableMap.put(tableName, e);
-//	}
-//
-//	final Expression getSymbolExpresion(String tableName) {
-//		if(tableMap != null) {
-//			return tableMap.get(tableName);
-//		}
-//		return null;
-//	}
-	
 }

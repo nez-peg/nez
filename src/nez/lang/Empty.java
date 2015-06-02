@@ -9,6 +9,10 @@ public class Empty extends Unconsumed {
 		super(s);
 	}
 	@Override
+	public final boolean equalsExpression(Expression o) {
+		return (o instanceof Empty);
+	}
+	@Override
 	protected final void format(StringBuilder sb) {
 		sb.append("''");
 	}

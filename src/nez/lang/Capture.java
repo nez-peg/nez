@@ -11,6 +11,10 @@ public class Capture extends ASTOperation {
 		this.shift = shift;
 	}
 	@Override
+	public final boolean equalsExpression(Expression o) {
+		return (o instanceof Capture && this.shift == ((Capture)o).shift);
+	}
+	@Override
 	public String getPredicate() { 
 		return "}";
 	}

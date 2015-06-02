@@ -10,6 +10,10 @@ public class DefIndent extends Unconsumed {
 		super(s);
 	}
 	@Override
+	public final boolean equalsExpression(Expression o) {
+		return (o instanceof DefSymbol);
+	}
+	@Override
 	public String getPredicate() {
 		return "defindent";
 	}

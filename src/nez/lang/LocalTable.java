@@ -17,6 +17,16 @@ public class LocalTable extends Unary {
 		this.tableName = table;
 		ns.setSymbolExpresion(tableName.getName(), inner);
 	}
+	@Override
+	public final boolean equalsExpression(Expression o) {
+		if(o instanceof LocalTable) {
+			LocalTable s = (LocalTable)o;
+			if(this.ns == s.ns && this.tableName == s.tableName) {
+				return this.get(0).equalsExpression(s.get(0));
+			}
+		}
+		return false;
+	}
 
 	public final NameSpace getNameSpace() {
 		return ns;

@@ -215,7 +215,7 @@ public class NezParser extends CommonTreeVisitor {
 		return path2;
 	}
 
-	
+	private boolean binary = false;
 	public Production parseProduction(CommonTree node) {
 		String localName = node.textAt(0, "");
 		boolean isTerminal = false;
@@ -229,6 +229,13 @@ public class NezParser extends CommonTreeVisitor {
 			rule = null;
 		}
 
+		this.binary = false;
+		if(node.size() == 3) {
+			CommonTree attrs = node.get(2);
+			if(attrs.containsToken("binary")) {
+				this.binary = true;
+			}
+		}
 		Expression e = toExpression(node.get(1));
 		rule = loaded.defineProduction(node.get(0), localName, e);
 		rule.isTerminal = isTerminal;
@@ -238,6 +245,9 @@ public class NezParser extends CommonTreeVisitor {
 				rule.isPublic = true;
 			}
 			if(attrs.containsToken("inline")) {
+				rule.isInline = true;
+			}
+			if(attrs.containsToken("binary")) {
 				rule.isInline = true;
 			}
 		}
@@ -287,17 +297,17 @@ public class NezParser extends CommonTreeVisitor {
 			c = (c * 16) + StringUtils.hex(t.charAt(4));
 			c = (c * 16) + StringUtils.hex(t.charAt(5));
 			if(c < 128) {
-				return GrammarFactory.newByteChar(ast, c);					
+				return GrammarFactory.newByteChar(ast, this.binary, c);					
 			}
 			String t2 = java.lang.String.valueOf((char)c);
 			return GrammarFactory.newString(ast, t2);
 		}
 		int c = StringUtils.hex(t.charAt(t.length()-2)) * 16 + StringUtils.hex(t.charAt(t.length()-1)); 
-		return GrammarFactory.newByteChar(ast, c);
+		return GrammarFactory.newByteChar(ast, this.binary, c);
 	}
 
 	public Expression toAny(CommonTree ast) {
-		return GrammarFactory.newAnyChar(ast);
+		return GrammarFactory.newAnyChar(ast, this.binary);
 	}
 
 	public Expression toChoice(CommonTree ast) {

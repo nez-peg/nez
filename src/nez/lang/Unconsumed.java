@@ -32,6 +32,6 @@ abstract class Unconsumed extends Expression {
 	}
 	@Override
 	public short acceptByte(int ch, int option) {
-		return Prediction.Unconsumed;
+		return Acceptance.Unconsumed;
 	}
 }

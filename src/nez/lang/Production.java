@@ -47,7 +47,13 @@ public class Production extends Expression {
 	Production newProduction(String localName) {
 		return new Production(name, this, this.getExpression());
 	}
-	
+	@Override
+	public final boolean equalsExpression(Expression o) {
+		if(o instanceof Production) {
+			return this.getExpression().equalsExpression(((Production) o).getExpression());
+		}
+		return false;
+	}
 
 	public final NameSpace getNameSpace() {
 		return this.ns;
@@ -270,12 +276,12 @@ public class Production extends Expression {
 		}
 		boolean[] b = ByteMap.newMap(true);
 		for(int c = 0; c < b.length; c++) {
-			if(this.acceptByte(c, 0) == Prediction.Reject) {
+			if(this.acceptByte(c, 0) == Acceptance.Reject) {
 				b[c] = false;
 			}
 		}
 		sb.append("ref(" + this.refCount + ") ");
-		sb.append("accept" + StringUtils.stringfyCharClass(b) + " ");
+		sb.append("accept" + StringUtils.stringfyCharacterClass(b) + " ");
 		
 		ConsoleUtils.println(sb.toString());
 		ConsoleUtils.println(this.getLocalName() + " = " + this.getExpression());

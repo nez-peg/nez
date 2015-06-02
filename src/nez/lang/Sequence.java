@@ -17,6 +17,13 @@ public class Sequence extends Expression {
 		this.last  = last;
 	}
 	@Override
+	public final boolean equalsExpression(Expression o) {
+		if(o instanceof Sequence) {
+			return this.get(0).equalsExpression(o.get(0)) && this.get(1).equalsExpression(o.get(1));
+		}
+		return false;
+	}
+	@Override
 	public final int size() {
 		return 2;
 	}
@@ -165,7 +172,7 @@ public class Sequence extends Expression {
 
 	@Override
 	public short acceptByte(int ch, int option) {
-		return Prediction.acceptSequence(this, ch, option);
+		return Acceptance.acceptSequence(this, ch, option);
 	}
 
 	public final boolean isMultiChar() {
@@ -200,6 +207,7 @@ public class Sequence extends Expression {
 		return b;
 	}
 	
+	/**
 	@Override
 	void optimizeImpl(int option) {
 		if(UFlag.is(option, Grammar.Optimization) && this.get(this.size() - 1) instanceof AnyChar) {
@@ -317,11 +325,12 @@ public class Sequence extends Expression {
 
 	void predictByte(Expression e, boolean[] byteMap, int option) {
 		for(int c = 0; c < 256; c++) {
-			if(e.acceptByte(c, option) != Prediction.Reject) {
+			if(e.acceptByte(c, option) != Acceptance.Reject) {
 				byteMap[c] = true;
 			}
 		}
 	}
+	**/
 	
 	@Override
 	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {

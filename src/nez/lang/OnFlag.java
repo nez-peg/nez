@@ -9,7 +9,6 @@ import nez.vm.NezCompiler;
 public class OnFlag extends Unary {
 	boolean predicate;
 	String flagName;
-
 	OnFlag(SourcePosition s, boolean predicate, String flagName, Expression inner) {
 		super(s, inner);
 		if(flagName.startsWith("!")) {
@@ -19,6 +18,16 @@ public class OnFlag extends Unary {
 		this.predicate = predicate;
 		this.flagName = flagName;
 		this.optimized = inner.optimized;
+	}
+	@Override
+	public final boolean equalsExpression(Expression o) {
+		if(o instanceof OnFlag) {
+			OnFlag e = (OnFlag)o;
+			if(this.predicate == e.predicate && this.flagName.equals(e.flagName)) {
+				return this.get(0).equalsExpression(e.get(0));
+			};
+		}
+		return false;
 	}
 
 	public final String getFlagName() {

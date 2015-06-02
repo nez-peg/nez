@@ -17,6 +17,16 @@ public class DefSymbol extends Unary {
 		this.tableName = table;
 		ns.setSymbolExpresion(tableName.getName(), inner);
 	}
+	@Override
+	public final boolean equalsExpression(Expression o) {
+		if(o instanceof DefSymbol) {
+			DefSymbol e = (DefSymbol)o;
+			if(this.tableName == e.tableName && this.ns == e.ns) {
+				return this.get(0).equalsExpression(e.get(0));
+			}
+		}
+		return false;
+	}
 
 	public final NameSpace getNameSpace() {
 		return ns;

@@ -88,11 +88,11 @@ public class NezGrammarGenerator extends GrammarGenerator {
 	}
 	
 	public void visitByteChar(ByteChar e) {
-		W(StringUtils.stringfyByte(e.byteChar));
+		W(StringUtils.stringfyCharacter(e.byteChar));
 	}
 
 	public void visitByteMap(ByteMap e) {
-		W(StringUtils.stringfyCharClass(e.byteMap));
+		W(StringUtils.stringfyCharacterClass(e.byteMap));
 	}
 	
 	public void visitAnyChar(AnyChar e) {

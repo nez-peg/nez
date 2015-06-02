@@ -9,6 +9,10 @@ public class Failure extends Unconsumed {
 		super(s);
 	}
 	@Override
+	public final boolean equalsExpression(Expression o) {
+		return (o instanceof Empty);
+	}
+	@Override
 	protected final void format(StringBuilder sb) {
 		sb.append("!''");
 	}
@@ -31,7 +35,7 @@ public class Failure extends Unconsumed {
 
 	@Override
 	public short acceptByte(int ch, int option) {
-		return Prediction.Reject;
+		return Acceptance.Reject;
 	}
 	@Override
 	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {

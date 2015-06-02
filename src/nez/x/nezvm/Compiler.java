@@ -22,7 +22,7 @@ import nez.lang.NameSpace;
 import nez.lang.NonTerminal;
 import nez.lang.Not;
 import nez.lang.Option;
-import nez.lang.Prediction;
+import nez.lang.Acceptance;
 import nez.lang.Production;
 import nez.lang.Repetition;
 import nez.lang.Replace;
@@ -775,7 +775,7 @@ public class Compiler extends GrammarVisitor {
 				// FIXME:
 				// AnyChar behaves differently in cases of Binary
 				short r = e.acceptByte(c, Grammar.Binary); 
-				if(r != Prediction.Reject) {
+				if(r != Acceptance.Reject) {
 					l.add(e);
 				}
 			}

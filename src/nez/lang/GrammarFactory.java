@@ -121,12 +121,15 @@ public class GrammarFactory {
 
 	/* Terminal */
 	
-	public final static Expression newAnyChar(SourcePosition s) {
-		return internImpl(s, new AnyChar(s));
+	public final static Expression newAnyChar(SourcePosition s, boolean binary) {
+		return internImpl(s, new AnyChar(s, binary));
 	}
 
-	public final static Expression newByteChar(SourcePosition s, int ch) {
-		return internImpl(s, new ByteChar(s, ch & 0xff));
+	public final static Expression newByteChar(SourcePosition s, boolean binary, int ch) {
+		if(ch == 0) {
+			binary = true;
+		}
+		return internImpl(s, new ByteChar(s, binary, ch & 0xff));
 	}
 	
 	private static int uniqueByteChar(boolean[] byteMap) {
@@ -140,12 +143,12 @@ public class GrammarFactory {
 		return byteChar;
 	}
 	
-	public static Expression newByteMap(SourcePosition s, boolean[] byteMap) {
+	public static Expression newByteMap(SourcePosition s, boolean binary, boolean[] byteMap) {
 		int byteChar = uniqueByteChar(byteMap);
 		if(byteChar != -1) {
-			return newByteChar(s, byteChar);
+			return internImpl(s, newByteChar(s, binary, byteChar));
 		}
-		return internImpl(s, new ByteMap(s, byteMap));
+		return internImpl(s, new ByteMap(s, binary, byteMap));
 	}
 
 	public static final Expression newString(SourcePosition s, String text) {
@@ -154,45 +157,45 @@ public class GrammarFactory {
 			return newEmpty(s);
 		}
 		if(utf8.length == 1) {
-			return newByteChar(s, utf8[0]);
+			return newByteChar(s, false, utf8[0]);
 		}
-		return newByteSequence(s, utf8);
+		return newByteSequence(s, false, utf8);
 	}
 
-	public final static Expression newByteSequence(SourcePosition s, byte[] utf8) {
+	public final static Expression newByteSequence(SourcePosition s, boolean binary, byte[] utf8) {
 		UList<Expression> l = new UList<Expression>(new Expression[utf8.length]);
 		for(int i = 0; i < utf8.length; i++) {
-			l.add(newByteChar(s, utf8[i]));
+			l.add(newByteChar(s, binary, utf8[i]));
 		}
 		return newSequence(s, l);
 	}
 
 	public final static Expression newCharSet(SourcePosition s, String text) {
 		boolean b[] = StringUtils.parseByteMap(text);
-		return internImpl(s, new ByteMap(s, b));
+		return internImpl(s, new ByteMap(s, false, b));
 	}
 
 	public final static Expression newCharSet(SourcePosition s, String t, String t2) {
 		int c = StringUtils.parseAscii(t);
 		int c2 = StringUtils.parseAscii(t2);
 		if(c != -1 && c2 != -1) {
-			return newByteRange(s, c, c2);
+			return newByteRange(s, false, c, c2);
 		}
 		c = StringUtils.parseUnicode(t);
 		c2 = StringUtils.parseUnicode(t2);
 		if(c < 128 && c2 < 128) {
-			return newByteRange(s, c, c2);
+			return newByteRange(s, false, c, c2);
 		}
 		else {
 			return newUnicodeRange(s, c, c2);
 		}
 	}
 
-	public final static Expression newByteRange(SourcePosition s, int c, int c2) {
+	public final static Expression newByteRange(SourcePosition s, boolean binary, int c, int c2) {
 		if(c == c2) {
-			return newByteChar(s, c);
+			return newByteChar(s, binary, c);
 		}
-		return internImpl(s, new ByteMap(s, c, c2));
+		return internImpl(s, new ByteMap(s, binary, c, c2));
 	}
 
 	private final static Expression newUnicodeRange(SourcePosition s, int c, int c2) {
@@ -231,19 +234,17 @@ public class GrammarFactory {
 
 	private final static Expression newUnicodeRange(SourcePosition s, byte[] b, byte[] b2) {
 		if(b[b.length-1] == b2[b.length-1]) {
-			return newByteSequence(s, b);
+			return newByteSequence(s, false, b);
 		}
 		else {
 			UList<Expression> l = new UList<Expression>(new Expression[b.length]);
 			for(int i = 0; i < b.length-1; i++) {
-				l.add(newByteChar(s, b[i]));
+				l.add(newByteChar(s, false, b[i]));
 			}
-			l.add(newByteRange(s, b[b.length-1] & 0xff, b2[b2.length-1] & 0xff));
+			l.add(newByteRange(s, false, b[b.length-1] & 0xff, b2[b2.length-1] & 0xff));
 			return newSequence(s, l);
 		}
 	}
-
-	
 	
 	/* Unary */
 	
@@ -495,11 +496,11 @@ public class GrammarFactory {
 	}
 
 	public final Expression newByteChar(int ch) {
-		return GrammarFactory.newByteChar(getSourcePosition(), ch);
+		return GrammarFactory.newByteChar(getSourcePosition(), false, ch);
 	}
 	
 	public final Expression newAnyChar() {
-		return GrammarFactory.newAnyChar(getSourcePosition());
+		return GrammarFactory.newAnyChar(getSourcePosition(), false);
 	}
 	
 	public final Expression newString(String text) {
@@ -511,7 +512,7 @@ public class GrammarFactory {
 	}
 
 	public final Expression newByteMap(boolean[] byteMap) {
-		return GrammarFactory.newByteMap(getSourcePosition(), byteMap);
+		return GrammarFactory.newByteMap(getSourcePosition(), false, byteMap);
 	}
 	
 	public final Expression newSequence(Expression ... seq) {

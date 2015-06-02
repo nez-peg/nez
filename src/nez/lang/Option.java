@@ -12,6 +12,13 @@ public class Option extends Unary {
 		e.setOuterLefted(this);
 	}
 	@Override
+	public final boolean equalsExpression(Expression o) {
+		if(o instanceof Option) {
+			return this.get(0).equalsExpression(o.get(0));
+		}
+		return false;
+	}
+	@Override
 	public String getPredicate() { 
 		return "?";
 	}
@@ -49,7 +56,7 @@ public class Option extends Unary {
 	}
 	
 	@Override public short acceptByte(int ch, int option) {
-		return Prediction.acceptOption(this, ch, option);
+		return Acceptance.acceptOption(this, ch, option);
 	}
 	
 	@Override

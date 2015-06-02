@@ -201,7 +201,7 @@ public abstract class StringUtils {
 		sb.append((char)ch);
 	}
 
-	public final static String stringfyByte(int ch) {
+	public final static String stringfyCharacter(int ch) {
 		char c = (char)ch;
 		switch(c) {
 		case '\n' : return("'\\n'"); 
@@ -246,7 +246,7 @@ public abstract class StringUtils {
 		return sb.toString();
 	}
 	
-	public final static String stringfyCharClass(boolean[] b) {
+	public final static String stringfyCharacterClass(boolean[] b) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("[");
 		for(int s = 0; s < 256; s++) {
@@ -296,7 +296,7 @@ public abstract class StringUtils {
 		}
 	}
 
-	public final static String stringfyByteMap(boolean[] b) {
+	public final static String stringfyBitmap(boolean[] b) {
 		StringBuilder sb = new StringBuilder();
 		for(int offset = 0; offset < 127; offset += 4) {
 			stringfyByteMapImpl(sb, b, offset);

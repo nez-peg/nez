@@ -12,6 +12,13 @@ public class Repetition1 extends Repetition {
 		e.setOuterLefted(this);
 	}
 	@Override
+	public final boolean equalsExpression(Expression o) {
+		if(o instanceof Repetition1) {
+			return this.get(0).equalsExpression(o.get(0));
+		}
+		return false;
+	}
+	@Override
 	public String getPredicate() { 
 		return "+";
 	}
@@ -48,7 +55,7 @@ public class Repetition1 extends Repetition {
 	}
 
 	@Override public short acceptByte(int ch, int option) {
-		return Prediction.acceptUnary(this, ch, option);
+		return Acceptance.acceptUnary(this, ch, option);
 	}
 	
 	@Override

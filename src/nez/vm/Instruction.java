@@ -16,7 +16,7 @@ import nez.lang.Link;
 import nez.lang.LocalTable;
 import nez.lang.New;
 import nez.lang.NezTag;
-import nez.lang.Prediction;
+import nez.lang.Acceptance;
 import nez.lang.Production;
 import nez.lang.Replace;
 import nez.lang.Sequence;
@@ -40,11 +40,11 @@ public abstract class Instruction {
 	}
 	
 	final short isAcceptImpl(int ch) {
-		return next == null ? Prediction.Accept : this.next.isAcceptImpl(ch);
+		return next == null ? Acceptance.Accept : this.next.isAcceptImpl(ch);
 	}
 
 	boolean isAccept(int ch) {
-		return this.isAcceptImpl(ch) == Prediction.Accept;
+		return this.isAcceptImpl(ch) == Acceptance.Accept;
 	}
 
 	abstract Instruction exec(Context sc) throws TerminationException;
@@ -322,7 +322,7 @@ class IByteChar extends Instruction {
 	}
 	@Override
 	protected String getOperand() {
-		return StringUtils.stringfyByte(byteChar);
+		return StringUtils.stringfyCharacter(byteChar);
 	}
 }
 
@@ -353,7 +353,7 @@ class IByteMap extends Instruction {
 	}
 	@Override
 	protected String getOperand() {
-		return StringUtils.stringfyCharClass(byteMap);
+		return StringUtils.stringfyCharacterClass(byteMap);
 	}
 }
 
@@ -956,7 +956,7 @@ class INotByteMap extends Instruction {
 	}
 	@Override
 	protected String getOperand() {
-		return StringUtils.stringfyCharClass(byteMap);
+		return StringUtils.stringfyCharacterClass(byteMap);
 	}
 	@Override
 	Instruction exec(Context sc) throws TerminationException {
@@ -977,7 +977,7 @@ class IRepeatedByteMap extends Instruction {
 	}
 	@Override
 	protected String getOperand() {
-		return StringUtils.stringfyCharClass(byteMap);
+		return StringUtils.stringfyCharacterClass(byteMap);
 	}
 	@Override
 	Instruction exec(Context sc) throws TerminationException {
@@ -1003,7 +1003,7 @@ class IMultiChar extends Instruction {
 			if(i > 0) {
 				sb.append(" ");
 			}
-			sb.append(StringUtils.stringfyByte(utf8[i] & 0xff));
+			sb.append(StringUtils.stringfyCharacter(utf8[i] & 0xff));
 		}
 		return sb.toString();
 	}

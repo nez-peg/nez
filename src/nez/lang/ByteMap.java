@@ -8,29 +8,51 @@ import nez.vm.Instruction;
 import nez.vm.NezCompiler;
 
 public class ByteMap extends Terminal {
+	boolean binary = false;
+	public final boolean isBinary() {
+		return this.binary;
+	}
 	public boolean[] byteMap; // Immutable
-	ByteMap(SourcePosition s, int beginChar, int endChar) {
+
+	ByteMap(SourcePosition s, boolean binary, int beginChar, int endChar) {
 		super(s);
 		this.byteMap = newMap(false);
+		this.binary = binary;
 		appendRange(this.byteMap, beginChar, endChar);
 	}
-	ByteMap(SourcePosition s, boolean[] b) {
+	ByteMap(SourcePosition s, boolean binary, boolean[] b) {
 		super(s);
+		this.binary = binary;
 		this.byteMap = b;
 	}
 	@Override
+	public final boolean equalsExpression(Expression o) {
+		if(o instanceof ByteMap && this.binary == ((ByteMap)o).isBinary()) {
+			ByteMap e = (ByteMap)o;
+			for(int i = 0; i < this.byteMap.length; i++) {
+				if(this.byteMap[i] != e.byteMap[i]) {
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+
+	@Override
 	protected final void format(StringBuilder sb) {
-		sb.append(StringUtils.stringfyCharClass(this.byteMap));
+		sb.append(StringUtils.stringfyCharacterClass(this.byteMap));
 	}
 
 	@Override
 	public String getPredicate() {
-		return "byte " + StringUtils.stringfyByteMap(this.byteMap);
+		return "byte " + StringUtils.stringfyBitmap(this.byteMap);
 	}
 
 	@Override
-	public String key() { 
-		return "[" +  StringUtils.stringfyByteMap(this.byteMap);
+	public String key() {
+		return binary ? "b[" + StringUtils.stringfyBitmap(this.byteMap)
+				      : "[" +  StringUtils.stringfyBitmap(this.byteMap);
 	}
 
 	@Override
@@ -42,8 +64,45 @@ public class ByteMap extends Terminal {
 	public boolean isConsumed(Stacker stacker) {
 		return true;
 	}
-
-
+	
+	@Override
+	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
+		return true;
+	}
+	@Override
+	public short acceptByte(int ch, int option) {
+		return (byteMap[ch]) ? Acceptance.Accept : Acceptance.Reject;
+	}
+	
+	@Override
+	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
+		return bc.encodeByteMap(this, next, failjump);
+	}
+	@Override
+	protected int pattern(GEP gep) {
+		int c = 0;
+		for(boolean b: this.byteMap) {
+			if(b) {
+				c += 1;
+			}
+		}
+		return c;
+	}
+	@Override
+	protected void examplfy(GEP gep, StringBuilder sb, int p) {
+		int c = 0;
+		for(int ch = 0; ch < 127; ch++) {
+			if(this.byteMap[ch]) {
+				c += 1;
+			}
+			if(c == p) {
+				sb.append((char)ch);
+			}
+		}
+	}
+	
+	// Utils
+	
 	public final static boolean[] newMap(boolean initValue) {
 		boolean[] b = new boolean[257];
 		if(initValue) {
@@ -82,42 +141,4 @@ public class ByteMap extends Terminal {
 			byteMap[0] = false;
 		}
 	}
-	
-	
-	@Override
-	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
-		return true;
-	}
-	@Override
-	public short acceptByte(int ch, int option) {
-		return (byteMap[ch]) ? Prediction.Accept : Prediction.Reject;
-	}
-	
-	@Override
-	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
-		return bc.encodeByteMap(this, next, failjump);
-	}
-	@Override
-	protected int pattern(GEP gep) {
-		int c = 0;
-		for(boolean b: this.byteMap) {
-			if(b) {
-				c += 1;
-			}
-		}
-		return c;
-	}
-	@Override
-	protected void examplfy(GEP gep, StringBuilder sb, int p) {
-		int c = 0;
-		for(int ch = 0; ch < 127; ch++) {
-			if(this.byteMap[ch]) {
-				c += 1;
-			}
-			if(c == p) {
-				sb.append((char)ch);
-			}
-		}
-	}
-
 }
