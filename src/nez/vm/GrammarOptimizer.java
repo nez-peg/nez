@@ -283,18 +283,6 @@ public class GrammarOptimizer extends GrammarReshaper {
 		return e;
 	}
 
-//	public final static Expression resolveSequenceNonTerminal(Expression e) {
-//		while(e instanceof Sequence) {
-//			Sequence s = (Sequence) e;
-//			Expression p = s.get(0);
-//			if(p instanceof NonTerminal) {
-//				p = resolveNonTerminal(p);
-//			}
-//			e = nterm.deReference();
-//		}
-//		return e;
-//	}
-
 	// OptimizerLibrary
 	
 	public final static Expression newOptimizedByteMap(SourcePosition s, UList<Expression> choiceList) {
@@ -355,19 +343,19 @@ public class GrammarOptimizer extends GrammarReshaper {
 			}
 		}
 		if(newChoiceList != null) {
-			return GrammarFactory.newChoice(choice.getSourcePosition(), newChoiceList).reshape(this);
+			return GrammarFactory.newChoice(choice.getSourcePosition(), newChoiceList);
 		}
 		return commonPrifixed == true ? first.reshape(this) : first;
 	}
 		
 	public final static Expression tryCommonFactoring(Choice base, Expression e, Expression e2, boolean ignoredFirstChar) {
-		UList<Expression> l = GrammarFactory.newList(4);
+		UList<Expression> l = null;
 		while(e != null && e2 != null) {
 			Expression f = e.getFirst();
 			Expression f2 = e2.getFirst();
 			if(ignoredFirstChar) {
+				ignoredFirstChar = false;
 				if(Expression.isByteConsumed(f) && Expression.isByteConsumed(f2)) {
-					ignoredFirstChar = false;
 					l = GrammarFactory.newList(4);
 					l.add(f);
 					e = e.getLast();
@@ -376,7 +364,7 @@ public class GrammarOptimizer extends GrammarReshaper {
 				}
 				return null;
 			}
-			if(!eaualsExpression(f, f2)) {
+			if(!f.equalsExpression(f2)) {
 				break;
 			}
 			if(l == null) {
@@ -385,6 +373,7 @@ public class GrammarOptimizer extends GrammarReshaper {
 			l.add(f);
 			e = e.getLast();
 			e2 = e2.getLast();
+			//System.out.println("l="+l.size()+",e="+e);
 		}
 		if(l == null) {
 			return null;
@@ -394,116 +383,13 @@ public class GrammarOptimizer extends GrammarReshaper {
 		}
 		if(e2 == null) {
 			e2 = base.newEmpty();
-		}
-		l.add(base.newChoice(e, e2));
+		}		
+		Expression alt = base.newChoice(e, e2);
+		l.add(alt);
 		return base.newSequence(l);
 	}
-	
-	private static final boolean eaualsExpression(Expression e1, Expression e2) {
-		if(e1.isInterned() && e2.isInterned()) {
-			return e1.getId() == e2.getId();
-		}
-		return e1.key().equals(e2.key());
-	}
-
-//	
-//	private final Expression makeCommonPrefix(Choice p) {
-//		if(!UFlag.is(this.option, Grammar.CommonPrefix)) {
-//			return null;
-//		}
-//		int start = 0;
-//		Expression common = null;
-//		for(int i = 0; i < p.size() - 1; i++) {
-//			Expression e = p.get(i);
-//			Expression e2 = p.get(i+1);
-//			if(retrieveAsList(e,0).getId() == retrieveAsList(e2,0).getId()) {
-//				common = trimCommonPrefix(e, e2);
-//				start = i;
-//				break;
-//			}
-//		}
-//		if(common == null) {
-//			return null;
-//		}
-//		UList<Expression> l = new UList<Expression>(new Expression[p.size()]);
-//		for(int i = 0; i < start; i++) {
-//			Expression e = p.get(i);
-//			l.add(e);
-//		}
-//		for(int i = start + 2; i < p.size(); i++) {
-//			Expression e = p.get(i);
-//			if(retrieveAsList(common, 0).getId() == retrieveAsList(e,0).getId()) {
-//				e = trimCommonPrefix(common, e);
-//				if(e != null) {
-//					common = e;
-//					continue;
-//				}
-//			}
-//			l.add(common);
-//			common = e;
-//		}
-//		l.add(common);
-//		return GrammarFactory.newChoice(null, l);
-//	}
-//
-//
-//	private final Expression trimCommonPrefix(Expression e, Expression e2) {
-//		int min = sizeAsSequence(e) < sizeAsSequence(e2) ? sizeAsSequence(e) : sizeAsSequence(e2);
-//		int commonIndex = -1;
-//		for(int i = 0; i < min; i++) {
-//			Expression p = retrieveAsList(e, i);
-//			Expression p2 = retrieveAsList(e2, i);
-//			if(p.getId() != p2.getId()) {
-//				break;
-//			}
-//			commonIndex = i + 1;
-//		}
-//		if(commonIndex == -1) {
-//			return null;
-//		}
-//		UList<Expression> common = new UList<Expression>(new Expression[commonIndex]);
-//		for(int i = 0; i < commonIndex; i++) {
-//			common.add(retrieveAsList(e, i));
-//		}
-//		UList<Expression> l1 = new UList<Expression>(new Expression[sizeAsSequence(e)]);
-//		for(int i = commonIndex; i < sizeAsSequence(e); i++) {
-//			l1.add(retrieveAsList(e, i));
-//		}
-//		UList<Expression> l2 = new UList<Expression>(new Expression[sizeAsSequence(e2)]);
-//		for(int i = commonIndex; i < sizeAsSequence(e2); i++) {
-//			l2.add(retrieveAsList(e2, i));
-//		}
-//		UList<Expression> l3 = new UList<Expression>(new Expression[2]);
-//		GrammarFactory.addChoice(l3, GrammarFactory.newSequence(null, l1));
-//		GrammarFactory.addChoice(l3, GrammarFactory.newSequence(null, l2));
-//		GrammarFactory.addSequence(common, GrammarFactory.newChoice(null, l3));
-//		return GrammarFactory.newSequence(null, common);
-//	}
-
 
 	
-//	public final static Expression mergeChoice(Expression p, Expression p2) {
-//		if(p == null) {
-//			return p2;
-//		}
-////		if(p instanceof Choice) {
-////			Expression last = p.get(p.size() - 1);
-////			Expression common = makeCommonChoice(last, p2);
-////			if(common == null) {
-////				return Factory.newChoice(null, p, p2);
-////			}
-////		}
-//		Expression common = tryCommonFactoring(p, p2, true);
-//		if(common == null) {
-//			return GrammarFactory.newChoice(null, p, p2);
-//		}
-//		return common;
-//	}
-
-	
-	
-
-
 
 	
 }

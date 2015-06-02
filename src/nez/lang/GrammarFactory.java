@@ -2,6 +2,8 @@ package nez.lang;
 
 import nez.ast.SourcePosition;
 import nez.ast.Tag;
+import nez.main.Command;
+import nez.main.Verbose;
 import nez.util.StringUtils;
 import nez.util.UList;
 import nez.util.UMap;
@@ -30,7 +32,12 @@ public class GrammarFactory {
 				e.internId = uniqueMap.size() + 1;
 				uniqueMap.put(key, e);
 			}
-			assert(u.getClass() == e.getClass());
+			if(Command.ReleasePreview) {
+				if(!u.equalsExpression(e)) {
+					Verbose.debug("Mismatched Interning: " + e.getClass() + "\n\te="+e + "\n\tinterned="+u);
+				}
+				assert(u.equalsExpression(e));
+			}
 			return u;
 		}
 		return e;
@@ -83,6 +90,7 @@ public class GrammarFactory {
 			for(int i = 0; i < e.size(); i++) {
 				addChoice(l, e.get(i));
 			}
+			return;
 		}
 		if(e instanceof Failure) {
 			return ;
@@ -96,14 +104,14 @@ public class GrammarFactory {
 		l.add(e);
 	}
 
-	private final static Expression appendAsChoice(Expression e, Expression e2) {
-		if(e == null) return e2;
-		if(e2 == null) return e;
-		UList<Expression> l = new UList<Expression>(new Expression[e.size()+e2.size()]);
-		addChoice(l, e);
-		addChoice(l, e2);
-		return newChoice(null, l);
-	}
+//	private final static Expression appendAsChoice(Expression e, Expression e2) {
+//		if(e == null) return e2;
+//		if(e2 == null) return e;
+//		UList<Expression> l = new UList<Expression>(new Expression[e.size()+e2.size()]);
+//		addChoice(l, e);
+//		addChoice(l, e2);
+//		return newChoice(null, l);
+//	}
 
 	// -----------------------------------------------------------------------
 		

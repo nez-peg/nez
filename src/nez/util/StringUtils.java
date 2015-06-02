@@ -298,8 +298,14 @@ public abstract class StringUtils {
 
 	public final static String stringfyBitmap(boolean[] b) {
 		StringBuilder sb = new StringBuilder();
-		for(int offset = 0; offset < 127; offset += 4) {
-			stringfyByteMapImpl(sb, b, offset);
+		int end = 0;
+		for(int c = 0; c < b.length; c++) {
+			if(b[c]) {
+				end = c + 1;
+			}
+		}
+		for(int offset = 0; offset < end; offset += 4) {
+			appendBitmap(sb, b, offset);
 		}
 		return sb.toString();
 	}
@@ -308,7 +314,7 @@ public abstract class StringUtils {
 		'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
 	};
 	
-	private static void stringfyByteMapImpl(StringBuilder sb, boolean[] b, int offset) {
+	private static void appendBitmap(StringBuilder sb, boolean[] b, int offset) {
 		int n = 0;
 		if(b[offset+0]) {
 			n |= (1 << 3);
@@ -324,8 +330,6 @@ public abstract class StringUtils {
 		}
 		sb.append(HexChar[n]);
 	}
-
-	
 	
 	public static final boolean[] parseByteMap(String text) {
 		boolean[] b = ByteMap.newMap(false);

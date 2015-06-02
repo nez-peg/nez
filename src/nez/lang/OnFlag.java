@@ -17,7 +17,6 @@ public class OnFlag extends Unary {
 		}
 		this.predicate = predicate;
 		this.flagName = flagName;
-		this.optimized = inner.optimized;
 	}
 	@Override
 	public final boolean equalsExpression(Expression o) {

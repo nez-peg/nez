@@ -150,16 +150,16 @@ public abstract class Expression extends AbstractList<Expression> {
 		return GrammarFactory.newEmpty(this.getSourcePosition());
 	}
 
+	public final Expression newSequence(Expression e, Expression e2) {
+		return GrammarFactory.newSequence(this.getSourcePosition(), e, e2);
+	}
+
 	public final Expression newSequence(UList<Expression> l) {
 		return GrammarFactory.newSequence(this.getSourcePosition(), l);
 	}
 
 	public final Expression newChoice(Expression e, Expression e2) {
 		return GrammarFactory.newChoice(this.getSourcePosition(), e, e2);
-	}
-
-	public final Expression newSequence(Expression e, Expression e2) {
-		return GrammarFactory.newSequence(this.getSourcePosition(), e, e2);
 	}
 
 	public final Expression newChoice(UList<Expression> l) {
