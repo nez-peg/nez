@@ -23,7 +23,7 @@ import nez.util.UMap;
 
 public class DfaOptimizer extends GrammarReshaper {
 
-	public final Grammar optimize(Grammar g) {
+	public static final Grammar optimize(Grammar g) {
 		NameSpace ns = NameSpace.newNameSpace();
 		GrammarReshaper dup = new DuplicateGrammar(ns);
 		GrammarReshaper inlining = new InliningChoice();
@@ -31,40 +31,32 @@ public class DfaOptimizer extends GrammarReshaper {
 			dup.reshapeProduction(p);
 		}
 		for(Production p : ns.getDefinedRuleList()) {
-			inlining.reshapeProduction(p);
+			System.out.println(p.getLocalName() + "::\n\t"+inlining.reshapeProduction(p));
 		}
-		
-		return ns.newGrammar(g.getStartProduction().getLocalName());
+		g = ns.newGrammar(g.getStartProduction().getLocalName());
+		return g;
 	}
 
 }
 
-
-
 class DuplicateGrammar extends GrammarReshaper {
-
 	NameSpace ns;
 	int c = 0;
-
 	DuplicateGrammar(NameSpace ns) {
 		this.ns = ns;
 	}
-	
 	public Expression reshapeProduction(Production p) {
 		Expression e = p.getExpression().reshape(GrammarReshaper.RemoveAST).reshape(this);
 		this.ns.defineProduction(p.getSourcePosition(), p.getLocalName(), e);
 		return e;
 	}
-
 	public Expression reshapeNonTerminal(NonTerminal p) {
 		return GrammarFactory.newNonTerminal(p.getSourcePosition(), ns, p.getLocalName());
 	}
-	
 	public Expression reshapeOption(Option e) {
 		Expression inner = e.get(0).reshape(this);
 		return GrammarFactory.newChoice(e.getSourcePosition(), inner, empty(e));
 	}
-
 	public Expression reshapeRepetition(Repetition e) {
 		Expression inner = e.get(0).reshape(this);
 		String name = "rr" + (c++);
@@ -87,6 +79,34 @@ class DuplicateGrammar extends GrammarReshaper {
 		return GrammarFactory.newSequence(e.getSourcePosition(), inner, reshapeRepetition(e));
 	}
 
+	public Expression reshapeSequence(Sequence e) {
+		Expression first = e.get(0).reshape(this);
+		Expression second = e.get(1).reshape(this);
+		if(isEmptyChoice(first)) {
+			return joinChoice((Choice)first, second);
+		}
+		return e.newSequence(first, second);
+	}
+	
+	private boolean isEmptyChoice(Expression e) {
+		if(e instanceof Choice) {
+			Expression last = e.get(e.size()-1);
+			if(last instanceof Empty) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private Expression joinChoice(Choice e, Expression e2) {
+		System.out.println("join** " + e + "\n\t" + e2);
+		UList<Expression> l = GrammarFactory.newList(e.size());
+		for(Expression se: e) {
+			l.add(e.newSequence(se, e2));
+		}
+		return e.newChoice(l);
+	}
+
 }
 
 class InliningChoice extends GrammarReshaper {
@@ -107,21 +127,20 @@ class InliningChoice extends GrammarReshaper {
 		flattenChoiceList(p, choiceList);
 		this.inlining = stacked;
 		Expression newp = GrammarFactory.newChoice(p.getSourcePosition(), choiceList);
-		if(newp instanceof Choice) {
-			p = (Choice)newp;
-			if(p.predictedCase == null) {
-//				System.out.println("choice: " + p);
-				p.predictedCase = new Expression[257];
-				for(int ch = 0; ch <= 256; ch++) {
-					p.predictedCase[ch] = selectChoice(p, choiceList, ch);
-//					if(p.predictedCase[ch] != null && !(p.predictedCase[ch] instanceof Empty)) {
-//						System.out.println(StringUtils.stringfyByte(ch)+ ":: " + p.predictedCase[ch]);
-//					}
-				}
-			}
-		}
+//		if(newp instanceof Choice) {
+//			p = (Choice)newp;
+//			if(p.predictedCase == null) {
+////				System.out.println("choice: " + p);
+//				p.predictedCase = new Expression[257];
+//				for(int ch = 0; ch <= 256; ch++) {
+//					p.predictedCase[ch] = selectChoice(p, choiceList, ch);
+////					if(p.predictedCase[ch] != null && !(p.predictedCase[ch] instanceof Empty)) {
+////						System.out.println(StringUtils.stringfyByte(ch)+ ":: " + p.predictedCase[ch]);
+////					}
+//				}
+//			}
+//		}
 		return newp;
-		
 	}
 	
 	private void flattenChoiceList(Choice parentExpression, UList<Expression> l) {
@@ -138,13 +157,14 @@ class InliningChoice extends GrammarReshaper {
 	
 	public Expression reshapeNonTerminal(NonTerminal p) {
 		if(this.inlining) {
+			System.out.println(p.getLocalName());
 			return p.deReference().reshape(this);
 		}
-		Expression e = p.deReference().reshape(this);
-		if(isEmptyChoice(e)) {
-			System.out.println("empty: " + p + "," + e);
-			return e;
-		}
+//		Expression e = p.deReference().reshape(this);
+//		if(isEmptyChoice(e)) {
+////			System.out.println("empty: " + p + "," + e);
+//			return e;
+//		}
 		return p;
 	}
 	
@@ -159,24 +179,19 @@ class InliningChoice extends GrammarReshaper {
 	}
 	
 
-	public Expression reshapeSequence(Sequence p) {
+	public Expression reshapeSequence(Sequence e) {
 		if(this.inlining) {
-			boolean consumed = false;
-			UList<Expression> l = new UList<Expression>(new Expression[p.size()]);
-			for(Expression e: p) {
-				GrammarFactory.addSequence(l, e.reshape(this));
-				if(!consumed && e.isAlwaysConsumed()) {
-					this.inlining = false;
-					consumed = true;
-				}
-			}
+			Expression first = e.getFirst().reshape(this);
+			this.inlining = false;
+			Expression last = e.getLast().reshape(this);
 			this.inlining = true;
-			return GrammarFactory.newSequence(p.getSourcePosition(), l);
+			if(first == e.getFirst() && last == e.getLast()) {
+				return e;
+			}
+			return e.newSequence(first, last);
 		}
-		return p;
+		return super.reshapeSequence(e);
 	}
-	
-	
 	
 	// prediction 
 	
@@ -280,6 +295,4 @@ class InliningChoice extends GrammarReshaper {
 		}
 		return e1.key().equals(e2.key());
 	}
-	
-	
 }

@@ -23,33 +23,27 @@ public class ByteChar extends Terminal {
 	@Override
 	public String key() { 
 		return "'" + byteChar;
-	}
-	
+	}	
 	@Override
 	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeByteChar(this);
 	}
-	
 	@Override
 	public boolean isConsumed(Stacker stacker) {
 		return true;
 	}
-
 	@Override
 	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
 		return true;
 	}
-	
 	@Override
 	public short acceptByte(int ch, int option) {
 		return (byteChar == ch) ? Prediction.Accept : Prediction.Reject;
 	}
-	
 	@Override
 	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
 		return bc.encodeByteChar(this, next, failjump);
-	}
-	
+	}	
 	@Override
 	protected int pattern(GEP gep) {
 		return this.size();
@@ -58,5 +52,4 @@ public class ByteChar extends Terminal {
 	protected void examplfy(GEP gep, StringBuilder sb, int p) {
 		sb.append((char)this.byteChar);
 	}
-
 }

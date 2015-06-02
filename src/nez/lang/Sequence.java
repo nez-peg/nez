@@ -24,10 +24,22 @@ public class Sequence extends Expression {
 	public final Expression get(int index) {
 		return index == 0 ? this.first : this.last;
 	}
+	@Override
+	public final Expression set(int index, Expression e) {
+		Expression p = this.first;
+		if(index == 0) {
+			this.first = e;
+		}
+		else {
+			p = this.last;
+			this.last = e;
+		}
+		return p;
+	}
+	
 	public Expression getFirst() {
 		return this.first;
 	}
-
 	public Expression getLast() {
 		return this.last;
 	}

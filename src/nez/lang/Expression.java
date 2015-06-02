@@ -13,7 +13,6 @@ public abstract class Expression extends AbstractList<Expression> {
 
 	SourcePosition s = null;
 	int    internId   = 0;
-	
 	int    optimizedOption = -1;
 	
 	public Expression optimized;
@@ -61,8 +60,6 @@ public abstract class Expression extends AbstractList<Expression> {
 		return null;
 	}
 
-	
-	
 	public abstract Expression reshape(GrammarReshaper m);
 	
 	public final boolean isAlwaysConsumed() {
@@ -155,6 +152,16 @@ public abstract class Expression extends AbstractList<Expression> {
 		return (e instanceof Tagging || e instanceof Replace);
 	}
 	
+	// convinient interface
+	
+	public final Expression newSequence(Expression e, Expression e2) {
+		return GrammarFactory.newSequence(this.getSourcePosition(), e, e2);
+	}
+
+	public final Expression newChoice(UList<Expression> l) {
+		return GrammarFactory.newChoice(this.getSourcePosition(), l);
+	}
+
 	
 	
 
