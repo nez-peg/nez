@@ -45,7 +45,7 @@ public class CParserGenerator extends ParserGenerator {
 		return "a Nez parser generator for C (sample)";
 	}
 
-	boolean PatternMatch = false;
+	boolean PatternMatch = true;
 	int option = Grammar.ASTConstruction | Grammar.Prediction;
 
 	@Override
@@ -81,6 +81,7 @@ public class CParserGenerator extends ParserGenerator {
 		this.file.writeIndent("ParsingContext ctx = nez_CreateParsingContext(argv[1]);");
 		this.file.writeIndent("ctx->flags_size = " + flagTable.size() + ";");
 		this.file.writeIndent("ctx->flags = (int*)calloc(" + flagTable.size() + ", sizeof(int));");
+		this.file.writeIndent("createMemoTable(ctx, " + memoId + ");");
 		this.file.writeIndent("start = timer();");
 		this.file.writeIndent("if(pFile(ctx))");
 		this.openBlock();
@@ -177,9 +178,38 @@ public class CParserGenerator extends ParserGenerator {
 		}
 	}
 
+	private void memoize(Production rule, int id, String pos) {
+		this.file.writeIndent("nez_setMemo(ctx, " + pos + ", " + id + ", 0);");
+	}
+
+	private void memoizeFail(Production rule, int id, String pos) {
+		this.file.writeIndent("nez_setMemo(ctx, " + pos + ", " + id + ", 1);");
+	}
+
+	private void lookup(Production rule, int id) {
+		this.file.writeIndent("MemoEntry memo = nez_getMemo(ctx, ctx->cur, " + id + ");");
+		this.file.writeIndent("if(memo != NULL)");
+		this.openBlock();
+		this.file.writeIndent("if(memo->r)");
+		this.openBlock();
+		this.file.writeIndent("return 1;");
+		this.closeBlock();
+		this.file.writeIndent("else");
+		this.openBlock();
+		if(!PatternMatch) {
+			this.file.writeIndent("nez_pushDataLog(ctx, LazyLink_T, 0, -1, NULL, memo->left);");
+		}
+		this.file.writeIndent("ctx->cur = memo->consumed;");
+		this.file.writeIndent("return 0;");
+		this.closeBlock();
+		this.closeBlock();
+	}
+
 	private void consume() {
 		this.file.writeIndent("ctx->cur++;");
 	}
+
+	int memoId = 0;
 
 	@Override
 	public void visitProduction(Production rule) {
@@ -187,13 +217,19 @@ public class CParserGenerator extends ParserGenerator {
 		this.file.writeIndent("int p" + rule.getLocalName() + "(ParsingContext ctx)");
 		this.openBlock();
 		this.pushFailureJumpPoint();
+		lookup(rule, memoId);
+		String pos = "c" + this.fid;
+		this.let("char*", pos, "ctx->cur");
 		Expression e = new GrammarOptimizer(this.option).optimize(rule);
 		visit(e);
+		memoize(rule, memoId, pos);
 		this.file.writeIndent("return 0;");
 		this.popFailureJumpPoint(rule);
+		memoizeFail(rule, memoId, pos);
 		this.file.writeIndent("return 1;");
 		this.closeBlock();
 		this.file.writeNewLine();
+		memoId++;
 	}
 
 	@Override
