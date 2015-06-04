@@ -26,6 +26,10 @@ import nez.lang.Unary;
 import nez.util.StringUtils;
 
 public class MouseGrammarGenerator extends NezGenerator {
+	public MouseGrammarGenerator(String filename) {
+		super(filename);
+	}
+	
 	public MouseGrammarGenerator() {
 		super();
 	}
