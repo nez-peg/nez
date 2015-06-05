@@ -26,8 +26,12 @@ import nez.lang.Unary;
 import nez.util.StringUtils;
 
 public class MouseGrammarGenerator extends NezGenerator {
-	public MouseGrammarGenerator(String fileName) {
-		super(fileName);
+	public MouseGrammarGenerator(String filename) {
+		super(filename);
+	}
+	
+	public MouseGrammarGenerator() {
+		super();
 	}
 	
 	@Override
@@ -51,7 +55,7 @@ public class MouseGrammarGenerator extends NezGenerator {
 	@Override
 	public void visitProduction(Production rule) {
 		Expression e = rule.getExpression();
-		file.writeIndent(stringfyName(rule.getLocalName()));
+		file.writeIndent(stringfyName(rule.getLocalName().replaceAll("_", "under")));
 		file.incIndent();
 		file.writeIndent("= ");
 		if(e instanceof Choice) {
@@ -74,11 +78,11 @@ public class MouseGrammarGenerator extends NezGenerator {
 	}
 
 	public void visitFailure(Failure e) {
-		file.write("!\"\"/*failure*/");
+		file.write("!_");
 	}
 
 	public void visitNonTerminal(NonTerminal e) {
-		file.write(stringfyName(e.getLocalName()));
+		file.write(stringfyName(e.getLocalName().replaceAll("_", "under")));
 	}
 	
 	public void visitByteChar(ByteChar e) {
@@ -116,7 +120,7 @@ public class MouseGrammarGenerator extends NezGenerator {
 				int e = searchEndChar(b, s+1);
 				if(s == e) {
 					sb.append(delim);
-					sb.append(stringfy("",s,""));
+					sb.append(stringfy("\"",s,"\""));
 					delim = " / ";
 				}
 				else {
@@ -244,9 +248,9 @@ public class MouseGrammarGenerator extends NezGenerator {
 	}
 
 	public void visitTagging(Tagging e) {
-		file.write("/*#");
-		file.write(e.tag.toString());
-		file.write("*/");
+//		file.write("{");
+//		file.write(e.tag.toString().toLowerCase());
+//		file.write("}");
 	}
 	
 	public void visitValue(Replace e) {
