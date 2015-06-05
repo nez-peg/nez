@@ -1,6 +1,7 @@
 package nez.fsharp;
 
 import java.util.ArrayList;
+import java.util.Stack;
 
 import nez.ast.Tag;
 
@@ -87,7 +88,49 @@ public class FSharpGenerator extends SourceGenerator {
 	/**format ModifiedTrees, which is the flow of curerntScope operation in JavaScript program, 
 	 * for F# code generation**/
 	private void formatTree(FSharpScope currentScope){
+		ModifiableTree node = currentScope.node;
+		
+		if(node.is(JSTag.TAG_FIELD)){
+		}
+		
+		if(node.size() > 0){
+			for(int i = 0; i < node.size(); i++){
+				formatTree(currentScope, node.get(i));
+			}
+		}
 		//TODO
+	}
+	
+	private boolean findFieldAssignStmt(ModifiableTree node){
+		//case: object.property = value;
+		if(node.size() > 0){
+			ModifiableTree nameNode = node.get(0);
+			if(node.is(JSTag.TAG_ASSIGN) && nameNode.is(JSTag.TAG_FIELD)){
+				ArrayList<String> field = getFieldElements(nameNode);
+				for(String element : field){
+					if(element == "prototype"){
+						
+					}
+				}
+				return true;
+			}
+		}
+		return true;
+	}
+	
+	private ArrayList<String> getFieldElements(ModifiableTree node){
+		ModifiableTree fieldNode = node;
+		ArrayList<String> fieldElements = new ArrayList<String>();
+		while(fieldNode.is(JSTag.TAG_FIELD)){
+			fieldElements.add(fieldNode.getText());
+			fieldNode = node.get(0);
+		}
+		fieldElements.add(fieldNode.getText());
+		return fieldElements;
+	};
+	
+	private boolean formatTree(FSharpScope currentScope, ModifiableTree node){
+		return true;
 	}
 	
 	private void generateFSCode(FSharpScope currentScope){
@@ -102,6 +145,7 @@ public class FSharpGenerator extends SourceGenerator {
 		FSharpScope topScope = new FSharpScope("TOPLEVEL", node, null);
 		fsClasses.add(topScope);
 		findScope(node, topScope);
+		findFieldAssignStmt(node);
 		//print debug
 		for(FSharpScope fs : fsClasses){
 			System.out.println(fs.toString());
