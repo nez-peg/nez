@@ -2,7 +2,7 @@ package nez.lang;
 
 import nez.ast.SourcePosition;
 import nez.vm.Instruction;
-import nez.vm.NezCompiler;
+import nez.vm.NezEncoder;
 
 public class IfFlag extends Unconsumed {
 	boolean predicate;
@@ -50,7 +50,7 @@ public class IfFlag extends Unconsumed {
 	}
 
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
+	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
 		return next;
 	}
 

@@ -4,7 +4,7 @@ import nez.ast.SourcePosition;
 import nez.util.UList;
 import nez.util.UMap;
 import nez.vm.Instruction;
-import nez.vm.NezCompiler;
+import nez.vm.NezEncoder;
 
 public class Repetition1 extends Repetition {
 	Repetition1(SourcePosition s, Expression e) {
@@ -59,7 +59,7 @@ public class Repetition1 extends Repetition {
 	}
 	
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
+	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
 		return bc.encodeRepetition1(this, next, failjump);
 	}
 

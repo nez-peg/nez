@@ -6,7 +6,7 @@ import nez.ast.SourcePosition;
 import nez.util.UList;
 import nez.util.UMap;
 import nez.vm.Instruction;
-import nez.vm.NezCompiler;
+import nez.vm.NezEncoder;
 
 public abstract class Expression extends AbstractList<Expression> {
 	public final static boolean ClassicMode = false;
@@ -119,7 +119,7 @@ public abstract class Expression extends AbstractList<Expression> {
 		visitor.visit(this);
 	}
 
-	public abstract Instruction encode(NezCompiler bc, Instruction next, Instruction failjump);
+	public abstract Instruction encode(NezEncoder bc, Instruction next, Instruction failjump);
 
 
 	protected int pattern(GEP gep) {
@@ -148,6 +148,10 @@ public abstract class Expression extends AbstractList<Expression> {
 	
 	public final Expression newEmpty() {
 		return GrammarFactory.newEmpty(this.getSourcePosition());
+	}
+
+	public final Expression newFailure() {
+		return GrammarFactory.newFailure(this.getSourcePosition());
 	}
 
 	public final Expression newSequence(Expression e, Expression e2) {

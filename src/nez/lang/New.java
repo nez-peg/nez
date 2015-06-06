@@ -4,7 +4,7 @@ import nez.ast.SourcePosition;
 import nez.util.UList;
 import nez.util.UMap;
 import nez.vm.Instruction;
-import nez.vm.NezCompiler;
+import nez.vm.NezEncoder;
 
 public class New extends Unconsumed {
 	public boolean lefted;
@@ -66,7 +66,7 @@ public class New extends Unconsumed {
 		return Typestate.ObjectType;
 	}
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
+	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
 		return bc.encodeNew(this, next);
 	}
 	@Override

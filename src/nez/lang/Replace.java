@@ -3,7 +3,7 @@ package nez.lang;
 import nez.ast.SourcePosition;
 import nez.util.StringUtils;
 import nez.vm.Instruction;
-import nez.vm.NezCompiler;
+import nez.vm.NezEncoder;
 
 public class Replace extends ASTOperation {
 	public String value;
@@ -40,7 +40,7 @@ public class Replace extends ASTOperation {
 		return m.reshapeReplace(this);
 	}
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
+	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
 		return bc.encodeReplace(this, next);
 	}
 }

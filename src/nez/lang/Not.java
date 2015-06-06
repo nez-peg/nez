@@ -6,7 +6,7 @@ import nez.util.UFlag;
 import nez.util.UList;
 import nez.util.UMap;
 import nez.vm.Instruction;
-import nez.vm.NezCompiler;
+import nez.vm.NezEncoder;
 
 public class Not extends Unary {
 	Not(SourcePosition s, Expression e) {
@@ -84,7 +84,7 @@ public class Not extends Unary {
 	}
 
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
+	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
 		return bc.encodeNot(this, next, failjump);
 	}
 	@Override

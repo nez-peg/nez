@@ -2,7 +2,7 @@ package nez.lang;
 
 import nez.ast.SourcePosition;
 import nez.vm.Instruction;
-import nez.vm.NezCompiler;
+import nez.vm.NezEncoder;
 
 public class Failure extends Unconsumed {
 	Failure(SourcePosition s) {
@@ -10,7 +10,7 @@ public class Failure extends Unconsumed {
 	}
 	@Override
 	public final boolean equalsExpression(Expression o) {
-		return (o instanceof Empty);
+		return (o instanceof Failure);
 	}
 	@Override
 	protected final void format(StringBuilder sb) {
@@ -38,7 +38,7 @@ public class Failure extends Unconsumed {
 		return Acceptance.Reject;
 	}
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
+	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
 		return bc.encodeFail(this);
 	}
 	@Override

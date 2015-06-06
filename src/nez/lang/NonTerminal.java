@@ -6,7 +6,7 @@ import nez.ast.SourcePosition;
 import nez.util.UList;
 import nez.util.UMap;
 import nez.vm.Instruction;
-import nez.vm.NezCompiler;
+import nez.vm.NezEncoder;
 
 public class NonTerminal extends Expression {
 	private NameSpace ns;
@@ -131,7 +131,7 @@ public class NonTerminal extends Expression {
 	}
 
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
+	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
 		return bc.encodeNonTerminal(this, next, failjump);
 	}
 	
@@ -143,6 +143,11 @@ public class NonTerminal extends Expression {
 	@Override
 	protected void examplfy(GEP gep, StringBuilder sb, int p) {
 		this.deReference().examplfy(gep, sb, p);
+	}
+	
+	
+	public final Expression newNonTerminal(String localName) {
+		return GrammarFactory.newNonTerminal(this.getSourcePosition(), this.getNameSpace(), localName);
 	}
 
 

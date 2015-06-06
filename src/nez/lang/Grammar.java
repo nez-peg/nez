@@ -1,5 +1,6 @@
 package nez.lang;
 
+import java.util.List;
 import java.util.TreeMap;
 
 import nez.SourceContext;
@@ -19,6 +20,7 @@ import nez.vm.Machine;
 import nez.vm.MemoPoint;
 import nez.vm.MemoTable;
 import nez.vm.NezCompiler;
+import nez.vm.NezEncoder;
 import nez.vm.NezCompiler1;
 import nez.vm.NezCompiler2;
 
@@ -26,7 +28,8 @@ public class Grammar {
 	Production start;
 	UList<Production>          productionList;
 	UMap<Production>           productionMap;
-
+	TreeMap<String, Boolean>   conditionMap;
+	
 	Grammar(Production start, int option) {
 		this.start = start;
 		this.productionList = new UList<Production>(new Production[4]);
@@ -35,29 +38,27 @@ public class Grammar {
 		TreeMap<String, Boolean> conditionMap = new TreeMap<String, Boolean>(); 
 		analyze(start, conditionMap);
 		if(conditionMap.size() > 0) {
-			new ConditionalAnalysis(this);
+			Verbose.debug("condition flow analysis: " + conditionMap.keySet());
+			start = new ConditionalAnalysis(conditionMap).newStart(start);
+			System.out.println("start " + start);
+			this.productionList = new UList<Production>(new Production[4]);
+			this.productionMap = new UMap<Production>();
+			analyze(start, conditionMap);
+			//System.out.println(this.productionList);
+		}
+		else {
+			this.conditionMap = null;
 		}
 	}
 
-	public Production getStartProduction() {
+	public final Production getStartProduction() {
 		return this.start;
 	}
 
-	public UList<Production> getProductionList() {
+	public final List<Production> getProductionList() {
 		return this.productionList;
 	}
-
-//	void reshapeAll(GrammarReshaper m) {
-//		for(Production p: productionList) {
-//			p = this.productionMap.get(p.getUniqueName());
-//			Expression shaped = p.e.reshape(m);
-//			if(shaped != gp.e) {
-//				//System.out.println(m.getClass().getSimpleName() + ": " + p.getLocalName() + " = " + shaped);
-//				gp.e = shaped;
-//			}
-//		}
-//	}
-	
+		
 	private void analyze(Production p, TreeMap<String, Boolean> conditionMap) {
 		String uname = p.getUniqueName();
 		if(productionMap.hasKey(uname)) {
@@ -73,7 +74,7 @@ public class Grammar {
 			analyze(((NonTerminal) p).getProduction(), conditionMap);
 		}
 		if(p instanceof IfFlag) {
-			conditionMap.put(((IfFlag) p).getFlagName(), false);
+			conditionMap.put(((IfFlag) p).getFlagName(), true);
 		}
 		for(Expression se : p) {
 			analyze(se, conditionMap);
@@ -125,7 +126,7 @@ public class Grammar {
 	public final Instruction compile() {
 		if(compiledCode == null) {
 			NezCompiler bc = Command.ReleasePreview ? new NezCompiler2(this.option) : new NezCompiler1(this.option);
-			compiledCode = bc.encode(this).startPoint;
+			compiledCode = bc.compile(this).startPoint;
 //			this.InstructionSize  = bc.getInstructionSize();
 //			this.memoPointSize = bc.getMemoPointSize();
 //			if(Verbose.PackratParsing) {
@@ -218,7 +219,7 @@ public class Grammar {
 	}
 	
 	/* --------------------------------------------------------------------- */
-	/* Production Option */
+	/* Grammar Option */
 	
 	public final static int ClassicMode = 1;
 	public final static int ASTConstruction = 1 << 1;

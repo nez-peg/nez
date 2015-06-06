@@ -5,7 +5,7 @@ import nez.util.StringUtils;
 import nez.util.UFlag;
 import nez.util.UList;
 import nez.vm.Instruction;
-import nez.vm.NezCompiler;
+import nez.vm.NezEncoder;
 
 public class ByteMap extends Terminal {
 	boolean binary = false;
@@ -75,7 +75,7 @@ public class ByteMap extends Terminal {
 	}
 	
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
+	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
 		return bc.encodeByteMap(this, next, failjump);
 	}
 	@Override

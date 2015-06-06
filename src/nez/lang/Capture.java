@@ -2,7 +2,7 @@ package nez.lang;
 
 import nez.ast.SourcePosition;
 import nez.vm.Instruction;
-import nez.vm.NezCompiler;
+import nez.vm.NezEncoder;
 
 public class Capture extends ASTOperation {
 	public int shift;
@@ -37,7 +37,7 @@ public class Capture extends ASTOperation {
 	}
 	
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
+	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
 		return bc.encodeCapture(this, next);
 	}
 }

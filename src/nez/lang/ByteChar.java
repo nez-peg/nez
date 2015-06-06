@@ -4,7 +4,7 @@ import nez.ast.SourcePosition;
 import nez.util.StringUtils;
 import nez.util.UList;
 import nez.vm.Instruction;
-import nez.vm.NezCompiler;
+import nez.vm.NezEncoder;
 
 public class ByteChar extends Terminal {
 	boolean binary;
@@ -53,7 +53,7 @@ public class ByteChar extends Terminal {
 		return (byteChar == ch) ? Acceptance.Accept : Acceptance.Reject;
 	}
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
+	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
 		return bc.encodeByteChar(this, next, failjump);
 	}	
 	@Override

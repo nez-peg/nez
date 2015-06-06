@@ -30,11 +30,10 @@ import nez.lang.Tagging;
 import nez.util.UCounter;
 import nez.util.UMap;
 
-public class NezInspector extends NezCompiler {
+public class NezInspector extends NezEncoder {
 	
 	public NezInspector(int option) {
 		super(option);
-		// TODO Auto-generated constructor stub
 	}
 
 	UMap<UCounter> statMap = new UMap<UCounter>();
@@ -49,14 +48,14 @@ public class NezInspector extends NezCompiler {
 		u.count();
 	}
 	
-	@Override
-	public NezCode encode(Grammar grammar) {
-		for(Production p: grammar.getProductionList()) {
-			count("Production");
-			encodeExpression(p.getExpression(), null, null);
-		}
-		return null;
-	}
+//	@Override
+//	public NezCode compile(Grammar grammar) {
+//		for(Production p: grammar.getProductionList()) {
+//			count("Production");
+//			encodeExpression(p.getExpression(), null, null);
+//		}
+//		return null;
+//	}
 
 	@Override
 	public Instruction encodeExpression(Expression e, Instruction next,

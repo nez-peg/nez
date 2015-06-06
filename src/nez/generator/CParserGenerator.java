@@ -513,7 +513,7 @@ public class CParserGenerator extends ParserGenerator {
 			flagTable.add(e.getFlagName());
 		}
 		visit(e.get(0));
-		if(e.isPredicate()) {
+		if(e.isPositive()) {
 			this.file.writeIndent("ctx->flags[" + flagTable.indexOf(e.getFlagName()) + "] = 1;");
 		}
 		else {

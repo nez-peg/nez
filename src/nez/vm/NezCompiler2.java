@@ -25,7 +25,7 @@ public class NezCompiler2 extends NezCompiler1 {
 		super(option);
 	}
 
-	protected Expression optimizeProduction(Production p) {
+	protected Expression optimizeLocalProduction(Production p) {
 		return new GrammarOptimizer(this.option).optimize(p);
 	}
 

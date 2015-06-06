@@ -6,7 +6,7 @@ import nez.util.UFlag;
 import nez.util.UList;
 import nez.util.UMap;
 import nez.vm.Instruction;
-import nez.vm.NezCompiler;
+import nez.vm.NezEncoder;
 
 public class Sequence extends Expression {
 	Expression first;
@@ -333,7 +333,7 @@ public class Sequence extends Expression {
 	**/
 	
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
+	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
 		return bc.encodeSequence(this, next, failjump);
 	}
 	

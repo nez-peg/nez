@@ -4,11 +4,18 @@ import nez.ast.SourcePosition;
 import nez.util.UList;
 import nez.util.UMap;
 import nez.vm.Instruction;
-import nez.vm.NezCompiler;
+import nez.vm.NezEncoder;
 
 public class OnFlag extends Unary {
 	boolean predicate;
+	public final boolean isPositive() {
+		return predicate;
+	}
 	String flagName;
+	public final String getFlagName() {
+		return this.flagName;
+	}
+
 	OnFlag(SourcePosition s, boolean predicate, String flagName, Expression inner) {
 		super(s, inner);
 		if(flagName.startsWith("!")) {
@@ -27,14 +34,6 @@ public class OnFlag extends Unary {
 			};
 		}
 		return false;
-	}
-
-	public final String getFlagName() {
-		return this.flagName;
-	}
-
-	public boolean isPredicate() {
-		return predicate;
 	}
 
 	@Override
@@ -68,7 +67,7 @@ public class OnFlag extends Unary {
 	}
 
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
+	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
 		return this.inner.encode(bc, next, failjump);
 	}
 

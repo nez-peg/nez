@@ -4,7 +4,7 @@ import nez.ast.SourcePosition;
 import nez.util.UList;
 import nez.util.UMap;
 import nez.vm.Instruction;
-import nez.vm.NezCompiler;
+import nez.vm.NezEncoder;
 
 public class Match extends Unary {
 	Match(SourcePosition s, Expression inner) {
@@ -56,7 +56,7 @@ public class Match extends Unary {
 		return this.inner.acceptByte(ch, option);
 	}
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
+	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
 		return this.inner.encode(bc, next, failjump);
 	}
 

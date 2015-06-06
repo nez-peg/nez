@@ -40,92 +40,14 @@ public class NezCompiler1 extends NezCompiler {
 		super(option);
 	}
 
-	protected Expression optimizeProduction(Production p) {
+	protected Expression optimizeLocalProduction(Production p) {
 		return GrammarOptimizer.resolveNonTerminal(p.getExpression());
 	}
 
 	protected Instruction encodeMemoizingProduction(ProductionCode code) {
 		return null;
 	}
-
-	protected void optimizedUnary(Expression p) {
-		Verbose.noticeOptimize("specialization", p);
-	}
-
-	protected void optimizedInline(Production p) {
-		Verbose.noticeOptimize("inlining", p.getExpression());
-	}
-
-	HashMap<String, ProductionCode> codeMap = new HashMap<String, ProductionCode>();
-
-	void count(Production p) {
-		String uname = p.getUniqueName();
-		ProductionCode c = this.codeMap.get(uname);
-		if(c == null) {
-			Expression deref = optimizeProduction(p);
-			String key = "#" + deref.getId();
-			c = this.codeMap.get(key);
-//			if(c != null) {
-//				System.out.println("duplicated production: " + uname + " " + c.production.getLocalName());
-//			}
-			if(c == null) {
-				c = new ProductionCode(p, deref);
-				codeMap.put(key, c);
-			}
-			codeMap.put(uname, c);
-		}
-		c.ref++;
-	}
-
-	void countNonTerminalReference(Expression e) {
-		if(e instanceof NonTerminal) {
-			Production p = ((NonTerminal) e).getProduction();
-			count(p);
-		}
-		for(Expression sub : e) {
-			countNonTerminalReference(sub);
-		}
-	}
-
-	void initCodeMap(Grammar grammar) {
-		codeMap = new HashMap<String, ProductionCode>();
-		Production start = grammar.getStartProduction();
-		count(start);
-		countNonTerminalReference(start.getExpression());
-		for(Production p : grammar.getProductionList()) {
-			if(p != start) {
-				//ProductionCode code = this.codeMap.get(p.getUniqueName());
-				this.countNonTerminalReference(p.getExpression());
-			}
-		}
-		if(UFlag.is(option, Grammar.Inlining)) {
-			for(Production p : grammar.getProductionList()) {
-				ProductionCode code = this.codeMap.get(p.getUniqueName());
-				if(code != null) {
-					if(code.ref == 1 || GrammarOptimizer.isCharacterTerminal(code.localExpression)) {
-						code.inlining = true;
-						continue;
-					}
-				}
-			}
-		}
-		if(UFlag.is(option, Grammar.PackratParsing)) {
-			int memoId = 0;
-			for(Production p : grammar.getProductionList()) {
-				ProductionCode code = this.codeMap.get(p.getUniqueName());
-				if(code != null) {
-					if(code.inlining) {
-						continue;
-					}
-					if(code.ref > 3 && p.inferTypestate() != Typestate.OperationType) {
-						code.memoPoint = new MemoPoint(memoId++, p.getLocalName(), code.localExpression, false);
-						Verbose.debug("memo " + p.getLocalName() + " " + code.memoPoint.id + " pure? " + p.isPurePEG());
-					}
-				}
-			}
-		}
-	}
-
+	
 	protected void encodeProduction(UList<Instruction> codeList, Production p, Instruction next) {
 		String uname = p.getUniqueName();
 		ProductionCode code = this.codeMap.get(uname);
@@ -142,7 +64,7 @@ public class NezCompiler1 extends NezCompiler {
 	}
 
 	@Override
-	public NezCode encode(Grammar grammar) {
+	public NezCode compile(Grammar grammar) {
 		long t = System.nanoTime();
 		initCodeMap(grammar);
 		UList<Instruction> codeList = new UList<Instruction>(new Instruction[64]);
@@ -171,6 +93,17 @@ public class NezCompiler1 extends NezCompiler {
 		return new NezCode(codeList.ArrayValues[0]);
 	}
 
+
+	protected void optimizedUnary(Expression p) {
+		Verbose.noticeOptimize("specialization", p);
+	}
+
+	protected void optimizedInline(Production p) {
+		Verbose.noticeOptimize("inlining", p.getExpression());
+	}
+
+	
+	
 	// encoding
 
 	public Instruction encodeExpression(Expression e, Instruction next, Instruction failjump) {

@@ -5,7 +5,7 @@ import nez.ast.Tag;
 import nez.util.UList;
 import nez.util.UMap;
 import nez.vm.Instruction;
-import nez.vm.NezCompiler;
+import nez.vm.NezEncoder;
 
 public class LocalTable extends Unary {
 	public final Tag tableName;
@@ -77,7 +77,7 @@ public class LocalTable extends Unary {
 	}
 		
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
+	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
 		return bc.encodeLocalTable(this, next, failjump);
 	}
 

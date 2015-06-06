@@ -1,37 +1,37 @@
 package nez.lang;
 
-import java.util.Map;
 import java.util.TreeMap;
-
-import nez.util.UMap;
+import nez.main.Verbose;
 
 class ConditionalAnalysis extends GrammarReshaper {
-	Map<String, Boolean> undefedFlags;
-	ConditionalAnalysis(Grammar g) {
-		undefedFlags = new TreeMap<String, Boolean> ();
+	TreeMap<String, Boolean> condMap;
+	ConditionalAnalysis(TreeMap<String, Boolean> condMap) {
+		this.condMap = condMap;
 	}
-	
-	public Expression reshapeProduction(Production p) {
-		p.setExpression(p.getExpression().reshape(this));
-		return p;
+
+	public final Production newStart(Production start) {
+		return eliminateConditionalFlag(start);
 	}
 	
 	public Expression reshapeOnFlag(OnFlag p) {
 		String flagName = p.getFlagName();
-		if(p.predicate) {
-			if(undefedFlags.containsKey(flagName)) {
-				undefedFlags.remove(flagName);
-				Expression newe = p.get(0).reshape(this);
-				undefedFlags.put(flagName, false);
-				return newe;
+		Boolean bool = condMap.get(flagName);
+		if(bool != null) {
+			if(p.isPositive()) {
+				if(!bool) {
+					condMap.put(flagName, true);
+					Expression newe = p.get(0).reshape(this);
+					condMap.put(flagName, false);
+					return newe;
+				}
 			}
-		}
-		else {
-			if(!undefedFlags.containsKey(flagName)) {
-				undefedFlags.put(flagName, false);
-				Expression newe = p.get(0).reshape(this);
-				undefedFlags.remove(flagName);
-				return newe;
+			else {
+				if(bool) {
+					condMap.put(flagName, false);
+					Expression newe = p.get(0).reshape(this);
+					condMap.put(flagName, true);
+					return newe;
+				}
 			}
 		}
 		return p.get(0).reshape(this);
@@ -39,81 +39,92 @@ class ConditionalAnalysis extends GrammarReshaper {
 
 	public Expression reshapeIfFlag(IfFlag p) {
 		String flagName = p.getFlagName();
-		if(p.predicate) {
-			if(undefedFlags.containsKey(flagName)) {
-				return fail(p);
-			}
-			return empty(p);
+		if(condMap.get(flagName)) {
+			return p.isPredicate() ? p.newEmpty() : p.newFailure();
 		}
-		if(!undefedFlags.containsKey(flagName)) {
-			return fail(p);
-		}
-		return empty(p);
+		return p.isPredicate() ? p.newFailure() : p.newEmpty();
 	}
 
 	public Expression reshapeNonTerminal(NonTerminal n) {
-		Production r = elminateFlag(n.getProduction());
+		Production r = eliminateConditionalFlag(n.getProduction());
 		if(r != n.getProduction()) {
-			return GrammarFactory.newNonTerminal(n.s, r.getNameSpace(), r.getLocalName());
+			return n.newNonTerminal(r.getLocalName());
 		}
 		return n;
 	}
 	
-	private Production elminateFlag(Production p) {
-		if(undefedFlags.size() > 0) {
-			StringBuilder sb = new StringBuilder();
-			String localName = p.getLocalName();
-			int loc = localName.indexOf('!');
-			if(loc > 0) {
-				sb.append(localName.substring(0, loc));
-			}
-			else {
-				sb.append(localName);
-			}
-			for(String flagName: undefedFlags.keySet()) {
-				if(hasReachableFlag(p.getExpression(), flagName)) {
-					sb.append("!");
-					sb.append(flagName);
-				}
-			}
-			localName = sb.toString();
-			Production newp = p.getNameSpace().getProduction(localName);
-			if(newp == null) {
-				newp = p.getNameSpace().newReducedProduction(localName, p, this);
-			}
-			return newp;
+	private Production eliminateConditionalFlag(Production p) {
+		String flagedName = nameFlagedProduction(p);
+		Production newp = p.getNameSpace().getProduction(flagedName);
+		if(newp == null) {
+			newp = p.getNameSpace().newReducedProduction(flagedName, p, this);
+			Verbose.debug("creating .. " + flagedName);
 		}
-		return p;
-	}
-	
-	private static boolean hasReachableFlag(Expression e, String flagName) {
-		return hasReachableFlag(e, flagName, new UMap<String>());
+		return newp;
 	}
 
-	private static boolean hasReachableFlag(Expression e, String flagName, UMap<String> visited) {
-		if(e instanceof OnFlag) {
-			if(flagName.equals(((OnFlag) e).flagName)) {
-				return false;
+	private String nameFlagedProduction(Production p) {
+		StringBuilder sb = new StringBuilder();
+		String localName = p.getLocalName();
+		int loc = findCondition(localName);
+		if(loc > 0) {
+			sb.append(localName.substring(0, loc));
+		}
+		else {
+			sb.append(localName);
+		}
+		for(String flagName: condMap.keySet()) {
+			if(condMap.get(flagName)) {
+				sb.append("&");
 			}
-		}
-		for(Expression se : e) {
-			if(hasReachableFlag(se, flagName, visited)) {
-				return true;
+			else {
+				sb.append("!");				
 			}
+			sb.append(flagName);
 		}
-		if(e instanceof IfFlag) {
-			return flagName.equals(((IfFlag) e).flagName);
-		}
-		if(e instanceof NonTerminal) {
-			NonTerminal ne = (NonTerminal)e;
-			String un = ne.getUniqueName();
-			if(!visited.hasKey(un)) {
-				visited.put(un, un);
-				Production r = ne.getProduction();
-				return hasReachableFlag(r.body, flagName, visited);
-			}
-		}
-		return false;
+		return sb.toString();
 	}
+
+	private int findCondition(String s) {
+		for(int i = 0; i < s.length(); i++) {
+			char c = s.charAt(i);
+			if(c == '&' || c == '!') {
+				return i;
+			}
+		}
+		return -1;
+	}
+	
+//	private static boolean hasReachableFlag(Expression e, String flagName) {
+//		return hasReachableFlag(e, flagName, new UMap<String>());
+//	}
+//
+//	private static boolean hasReachableFlag(Expression e, String flagName, UMap<String> visited) {
+//		if(e instanceof OnFlag) {
+//			OnFlag f = (OnFlag)e;
+//			
+//			if(flagName.equals(((OnFlag) e).flagName)) {
+//				return false;
+//			}
+//		}
+//		for(Expression se : e) {
+//			if(hasReachableFlag(se, flagName, visited)) {
+//				return true;
+//			}
+//		}
+//		if(e instanceof IfFlag) {
+//			return flagName.equals(((IfFlag) e).flagName);
+//		}
+//		if(e instanceof NonTerminal) {
+//			NonTerminal ne = (NonTerminal)e;
+//			String un = ne.getUniqueName();
+//			if(!visited.hasKey(un)) {
+//				visited.put(un, un);
+//				Production r = ne.getProduction();
+//				return hasReachableFlag(r.body, flagName, visited);
+//			}
+//		}
+//		return false;
+//	}
 
 }

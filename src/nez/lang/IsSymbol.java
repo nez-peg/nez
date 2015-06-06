@@ -5,7 +5,7 @@ import nez.ast.Tag;
 import nez.util.UList;
 import nez.util.UMap;
 import nez.vm.Instruction;
-import nez.vm.NezCompiler;
+import nez.vm.NezEncoder;
 
 public class IsSymbol extends Terminal {
 	public final Tag tableName;
@@ -80,7 +80,7 @@ public class IsSymbol extends Terminal {
 		return Acceptance.Accept;
 	}
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
+	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
 		return bc.encodeIsSymbol(this, next, failjump);
 	}
 	@Override

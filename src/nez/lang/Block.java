@@ -4,7 +4,7 @@ import nez.ast.SourcePosition;
 import nez.util.UList;
 import nez.util.UMap;
 import nez.vm.Instruction;
-import nez.vm.NezCompiler;
+import nez.vm.NezEncoder;
 
 public class Block extends Unary {
 	Block(SourcePosition s, Expression e) {
@@ -47,7 +47,7 @@ public class Block extends Unary {
 	}
 	
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
+	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
 		return bc.encodeBlock(this, next, failjump);
 	}
 	

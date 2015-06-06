@@ -178,13 +178,6 @@ public class NameSpace extends GrammarFactory {
 		return r;
 	}
 	
-		
-//	public int getRuleSize() {
-//		return this.ruleMap.size();
-//	}
-
-
-
 	public final Production newRule(String name, Expression e) {
 		Production r = new Production(null, this, name, e);
 		this.ruleMap.put(name, r);

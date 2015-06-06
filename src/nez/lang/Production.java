@@ -8,7 +8,7 @@ import nez.util.StringUtils;
 import nez.util.UList;
 import nez.util.UMap;
 import nez.vm.Instruction;
-import nez.vm.NezCompiler;
+import nez.vm.NezEncoder;
 
 public class Production extends Expression {
 	NameSpace  ns;
@@ -45,7 +45,7 @@ public class Production extends Expression {
 	}
 
 	Production newProduction(String localName) {
-		return new Production(name, this, this.getExpression());
+		return new Production(localName, this, this.getExpression());
 	}
 	@Override
 	public final boolean equalsExpression(Expression o) {
@@ -246,7 +246,7 @@ public class Production extends Expression {
 
 	
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
+	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
 		return this.getExpression().encode(bc, next, failjump);
 	}
 

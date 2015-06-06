@@ -5,7 +5,7 @@ import nez.ast.Tag;
 import nez.util.UList;
 import nez.util.UMap;
 import nez.vm.Instruction;
-import nez.vm.NezCompiler;
+import nez.vm.NezEncoder;
 
 public class ExistsSymbol extends Expression {
 	public final Tag tableName;
@@ -78,7 +78,7 @@ public class ExistsSymbol extends Expression {
 		return Acceptance.Accept;
 	}
 	@Override
-	public Instruction encode(NezCompiler bc, Instruction next, Instruction failjump) {
+	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
 		return bc.encodeExistsSymbol(this, next, failjump);
 	}
 	@Override
