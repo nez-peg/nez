@@ -57,10 +57,20 @@ class ConditionalAnalysis extends GrammarReshaper {
 		String flagedName = nameFlagedProduction(p);
 		Production newp = p.getNameSpace().getProduction(flagedName);
 		if(newp == null) {
+			p = this.getBaseProduction(p);
 			newp = p.getNameSpace().newReducedProduction(flagedName, p, this);
-			Verbose.debug("creating .. " + flagedName);
+			//Verbose.debug("creating .. " + flagedName);
 		}
 		return newp;
+	}
+
+	private Production getBaseProduction(Production p) {
+		String localName = p.getLocalName();
+		int loc = findCondition(localName);
+		if(loc > 0) {
+			localName = localName.substring(0, loc);
+		}
+		return p.getNameSpace().getProduction(localName);
 	}
 
 	private String nameFlagedProduction(Production p) {
