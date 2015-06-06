@@ -820,11 +820,3 @@ class OperationLog {
 		return "["+id()+"] nop";
 	}
 }
-
-class ContextStack {
-	boolean debugFailStackFlag;
-	Instruction jump;
-	long pos;
-	int  prevFailTop;
-	OperationLog lastLog;
-}

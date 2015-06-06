@@ -35,16 +35,16 @@ public class Grammar {
 		this.productionList = new UList<Production>(new Production[4]);
 		this.productionMap = new UMap<Production>();
 		this.setOption(option);
-		TreeMap<String, Boolean> conditionMap = new TreeMap<String, Boolean>(); 
+		conditionMap = new TreeMap<String, Boolean>(); 
 		analyze(start, conditionMap);
 		if(conditionMap.size() > 0) {
-			Verbose.debug("condition flow analysis: " + conditionMap.keySet());
-			start = new ConditionalAnalysis(conditionMap).newStart(start);
-			System.out.println("start " + start);
-			this.productionList = new UList<Production>(new Production[4]);
-			this.productionMap = new UMap<Production>();
-			analyze(start, conditionMap);
-			//System.out.println(this.productionList);
+//			Verbose.debug("condition flow analysis: " + conditionMap.keySet());
+//			start = new ConditionalAnalysis(conditionMap).newStart(start);
+//			System.out.println("start " + start);
+//			this.productionList = new UList<Production>(new Production[4]);
+//			this.productionMap = new UMap<Production>();
+//			analyze(start, conditionMap);
+//			//System.out.println(this.productionList);
 		}
 		else {
 			this.conditionMap = null;

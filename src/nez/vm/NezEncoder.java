@@ -97,9 +97,9 @@ public abstract class NezEncoder {
 				c = newProductionCode(p, deref);
 				codeMap.put(key, c);
 			}
-			else {
-				Verbose.debug("alias " + uname + ", " + c.production.getUniqueName());
-			}
+//			else {
+//				Verbose.debug("alias " + uname + ", " + c.production.getUniqueName());
+//			}
 			codeMap.put(uname, c);
 		}
 		c.ref++;
