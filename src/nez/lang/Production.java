@@ -33,7 +33,7 @@ public class Production extends Expression {
 
 	
 	public final static void quickCheck(Production p) {
-		p.flag = p.flag | ConsumedChecked | ConditionalChecked | ContextualChecked;
+		p.flag = p.flag | ConsumedChecked | ConditionalChecked | ContextualChecked | RecursiveChecked | ASTChecked;
 		quickCheck(p, p.getExpression());
 		UList<String> l = new UList<String>(new String[4]);
 		
@@ -63,6 +63,9 @@ public class Production extends Expression {
 		}
 		if(e instanceof NonTerminal) {
 			NonTerminal n = (NonTerminal)e;
+			if(n.getUniqueName().equals(p.getUniqueName())) {
+				p.flag = RecursiveProduction | RecursiveChecked;
+			}
 			Production np = n.getProduction();
 			if(!UFlag.is(p.flag, ConsumedProduction)) {
 				if(np != null && UFlag.is(np.flag, ConsumedChecked)) {
@@ -93,6 +96,9 @@ public class Production extends Expression {
 				else {
 					p.flag = UFlag.unsetFlag(p.flag, ContextualChecked);					
 				}				
+			}
+			if(!UFlag.is(p.flag, RecursiveProduction)) {
+				p.flag = UFlag.unsetFlag(p.flag, RecursiveChecked);					
 			}
 			return;
 		}
