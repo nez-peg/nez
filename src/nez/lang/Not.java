@@ -35,20 +35,15 @@ public class Not extends Unary {
 		return m.reshapeNot(this);
 	}
 	@Override
-	public boolean isConsumed(Stacker stacker) {
+	public boolean isConsumed() {
 		return false;
 	}
-	@Override
-	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
-//		if(checker != null) {
-//			this.inner.checkAlwaysConsumed(checker, startNonTerminal, stack);
-//		}
-		return false;
-	}
+
 	@Override
 	public int inferTypestate(Visa v) {
 		return Typestate.BooleanType;
 	}
+	
 	@Override
 	public short acceptByte(int ch, int option) {
 		/* The code below works only if a single character in !(e) */

@@ -36,14 +36,10 @@ public class Link extends Unary {
 	}
 
 	@Override
-	public boolean isConsumed(Stacker stacker) {
-		return this.inner.isConsumed(stacker);
+	public boolean isConsumed() {
+		return this.inner.isConsumed();
 	}
 
-	@Override
-	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
-		return this.inner.checkAlwaysConsumed(checker, startNonTerminal, stack);
-	}
 	@Override
 	public int inferTypestate(Visa v) {
 		return Typestate.OperationType;

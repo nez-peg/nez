@@ -131,24 +131,13 @@ public class Sequence extends Expression {
 	}
 
 	@Override
-	public boolean isConsumed(Stacker stacker) {
-		for(Expression e: this) {
-			if(e.isConsumed(stacker)) {
-				return true;
-			}
+	public boolean isConsumed() {
+		if(this.get(0).isConsumed()) {
+			return true;
 		}
-		return false;
+		return this.get(1).isConsumed();
 	}
 
-	@Override
-	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
-		for(Expression e: this) {
-			if(e.checkAlwaysConsumed(checker, startNonTerminal, stack)) {
-				return true;
-			}
-		}
-		return false;
-	}
 	@Override
 	boolean setOuterLefted(Expression outer) { 
 		for(Expression e: this) {

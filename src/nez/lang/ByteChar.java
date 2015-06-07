@@ -41,11 +41,7 @@ public class ByteChar extends Terminal implements Consumed {
 		return m.reshapeByteChar(this);
 	}
 	@Override
-	public boolean isConsumed(Stacker stacker) {
-		return true;
-	}
-	@Override
-	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
+	public boolean isConsumed() {
 		return true;
 	}
 	@Override

@@ -45,14 +45,10 @@ public class AnyChar extends Terminal implements Consumed {
 	}
 
 	@Override
-	public boolean isConsumed(Stacker stacker) {
+	public boolean isConsumed() {
 		return true;
 	}
 
-	@Override
-	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
-		return true;
-	}
 	@Override
 	public int inferTypestate(Visa v) {
 		return Typestate.BooleanType;

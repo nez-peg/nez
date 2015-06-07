@@ -22,10 +22,6 @@ abstract class Unconsumed extends Expression {
 		return this.getPredicate();
 	}
 	@Override
-	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
-		return false;
-	}
-	@Override
 	public int inferTypestate(Visa v) {
 		return Typestate.BooleanType;
 	}

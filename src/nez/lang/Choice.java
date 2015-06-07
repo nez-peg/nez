@@ -90,24 +90,10 @@ public class Choice extends Multinary {
 	}
 	
 	@Override
-	public boolean isConsumed(Stacker stacker) {
+	public boolean isConsumed() {
 		boolean afterAll = true;
 		for(Expression e: this) {
-			if(!e.isConsumed(stacker)) {
-				afterAll = false;
-			}
-		}
-		return afterAll;
-	}
-
-	@Override
-	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
-		boolean afterAll = true;
-		for(Expression e: this) {
-			if(!e.checkAlwaysConsumed(checker, startNonTerminal, stack)) {
-				if(stack == null) {  // reconfirm 
-					return false;
-				}
+			if(!e.isConsumed()) {
 				afterAll = false;
 			}
 		}

@@ -46,13 +46,8 @@ public class OnFlag extends Unary implements Conditional {
 	}
 
 	@Override
-	public boolean isConsumed(Stacker stacker) {
-		return this.inner.isConsumed(stacker);
-	}
-
-	@Override
-	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
-		return inner.checkAlwaysConsumed(checker, startNonTerminal, stack);
+	public boolean isConsumed() {
+		return this.inner.isConsumed();
 	}
 
 	@Override

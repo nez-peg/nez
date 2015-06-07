@@ -43,12 +43,7 @@ public class New extends Unconsumed {
 	}
 
 	@Override
-	public boolean isConsumed(Stacker stacker) {
-		return false;
-	}
-
-	@Override
-	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
+	public boolean isConsumed() {
 		return false;
 	}
 	

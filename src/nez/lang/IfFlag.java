@@ -45,7 +45,7 @@ public class IfFlag extends Unconsumed implements Conditional {
 	}
 
 	@Override
-	public boolean isConsumed(Stacker stacker) {
+	public boolean isConsumed() {
 		return false;
 	}
 

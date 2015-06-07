@@ -56,14 +56,8 @@ public class DefSymbol extends Unary {
 	}
 	
 	@Override
-	public boolean isConsumed(Stacker stacker) {
-		return this.inner.isConsumed(stacker);
-	}
-
-	@Override
-	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
-		this.inner.checkAlwaysConsumed(checker, startNonTerminal, stack);
-		return true;
+	public boolean isConsumed() {
+		return this.inner.isConsumed();
 	}
 	
 	@Override

@@ -55,18 +55,14 @@ public class IsSymbol extends Terminal implements Contextual {
 	}
 	
 	@Override
-	public boolean isConsumed(Stacker stacker) {
+	public boolean isConsumed() {
 		Expression inner = this.getSymbolExpression();
 		if(inner != null) {
-			return inner.isConsumed(stacker);
+			return inner.isConsumed();
 		}
 		return false;
 	}
 
-	@Override
-	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
-		return true;
-	}
 	@Override
 	public int inferTypestate(Visa v) {
 		return Typestate.BooleanType;

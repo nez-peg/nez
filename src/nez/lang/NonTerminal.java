@@ -11,6 +11,7 @@ public class NonTerminal extends Expression {
 	private NameSpace ns;
 	private String  localName;
 	private String  uniqueName;
+	private Production deref = null;
 	public NonTerminal(SourcePosition s, NameSpace ns, String ruleName) {
 		super(s);
 		this.ns = ns;
@@ -41,7 +42,17 @@ public class NonTerminal extends Expression {
 		return this.uniqueName;
 	}
 	
+	public final boolean syncProduction() {
+		Production p = this.ns.getProduction(this.localName);
+		boolean sync = (deref != p);
+		this.deref = p;
+		return sync;
+	}
+
 	public final Production getProduction() {
+		if(deref != null) {
+			return deref;
+		}
 		return this.ns.getProduction(this.localName);
 	}
 	
@@ -80,36 +91,8 @@ public class NonTerminal extends Expression {
 	}
 	
 	@Override
-	public boolean isConsumed(Stacker stacker) {
-		Production p = this.getProduction();
-		if(stacker != null) {
-			if(stacker.isVisited(p)) {
-				this.ns.reportError(this, "left recursion: " + this.localName);
-				return false;
-			}
-		}
-		if(p.minlen == -1) {
-			return p.isConsumed(new Stacker(p, stacker));
-		}
-		return p.isConsumed(stacker);
-	}
-
-	
-	@Override
-	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
-		if(checker != null) {
-//			checkPhase1(checker, ruleName, visited);
-			if(startNonTerminal != null && startNonTerminal.equals(this.uniqueName)) {
-				checker.reportError(s, "left recursion: " + this.localName);
-				checker.foundFatalError();
-				return false;
-			}
-		}
-		Production r = this.getProduction();
-		if(r != null) {
-			return r.checkAlwaysConsumed(checker, startNonTerminal, stack);
-		}
-		return false;
+	public boolean isConsumed() {
+		return this.getProduction().isConsumed();
 	}
 
 	@Override

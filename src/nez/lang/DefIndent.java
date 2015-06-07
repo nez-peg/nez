@@ -19,7 +19,7 @@ public class DefIndent extends Unconsumed {
 	}
 
 	@Override
-	public boolean isConsumed(Stacker stacker) {
+	public boolean isConsumed() {
 		return false;
 	}
 

@@ -59,34 +59,48 @@ public class GrammarChecker {
 	public final static boolean specialRuleName(String n) {
 		return n.equalsIgnoreCase("FILE") || n.equalsIgnoreCase("CHUNK");
 	}
-	
+
+////UList<String> stack = new UList<String>(new String[64]);
+////UMap<String> visited = new UMap<String>();
+//for(Production r: grammar.getDefinedRuleList()) {
+//	if(r.isTerminal()) {
+//		continue;
+//	}
+//	if(AnalysisCache.hasRecursion(r)) {
+//		r.setRecursive();
+//		if(r.minlen > 0) {
+//			continue;
+//		}
+//		r.minlen = -1;  // reset for all checking
+//		r.isConsumed(new Stacker(r, null));
+////		visited.clear();
+////		r.checkAlwaysConsumed(this, null, stack);
+//	}
+////	if(r.minlen == -1) {
+//////		visited.clear();
+////		r.checkAlwaysConsumed(this, null, stack);
+////	}
+//}
+
 	public void verify(NameSpace grammar) {
 		NameAnalysis nameAnalyzer = new NameAnalysis();
-		for(Production p: grammar.getDefinedRuleList()) {
-			nameAnalyzer.reshapeProduction(p);
-		}
-		
-//		UList<String> stack = new UList<String>(new String[64]);
-//		UMap<String> visited = new UMap<String>();
-		for(Production r: grammar.getDefinedRuleList()) {
-			if(r.isTerminal()) {
-				continue;
-			}
-			if(AnalysisCache.hasRecursion(r)) {
-				r.setRecursive();
-				if(r.minlen > 0) {
-					continue;
-				}
-				r.minlen = -1;  // reset for all checking
-				r.isConsumed(new Stacker(r, null));
-//				visited.clear();
-//				r.checkAlwaysConsumed(this, null, stack);
-			}
-//			if(r.minlen == -1) {
-////				visited.clear();
-//				r.checkAlwaysConsumed(this, null, stack);
+		nameAnalyzer.analyze(grammar.getDefinedRuleList());
+//		for(Production p: grammar.getDefinedRuleList()) {
+//			nameAnalyzer.reshapeProduction(p);
+//		}
+//		for(Production r: grammar.getDefinedRuleList()) {
+//			if(r.isTerminal()) {
+//				continue;
 //			}
-		}
+//			if(AnalysisCache.hasRecursion(r)) {
+//				r.setRecursive();
+//				if(r.minlen > 0) {
+//					continue;
+//				}
+//				r.minlen = -1;  // reset for all checking
+//				r.isConsumed();
+//			}
+//		}
 		if(this.foundError) {
 			ConsoleUtils.exit(1, "FatalGrammarError");
 		}

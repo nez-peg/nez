@@ -66,13 +66,12 @@ public abstract class Expression extends AbstractList<Expression> {
 
 	public abstract Expression reshape(GrammarReshaper m);
 	
-	public final boolean isAlwaysConsumed() {
-		return this.checkAlwaysConsumed(null, null, null);
-	}
-	public abstract boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack);
+//	public final boolean isAlwaysConsumed() {
+//		return this.checkAlwaysConsumed(null, null, null);
+//	}
+//	public abstract boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack);
 	
-	public abstract boolean isConsumed(Stacker stacker);
-	
+	public abstract boolean isConsumed();
 	
 	boolean setOuterLefted(Expression outer) { return false; }
 	

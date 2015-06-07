@@ -29,14 +29,8 @@ public class And extends Unary {
 	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeAnd(this);
 	}
-
 	@Override
-	public boolean isConsumed(Stacker stacker) {
-		return false;
-	}
-
-	@Override
-	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
+	public boolean isConsumed() {
 		return false;
 	}
 	@Override

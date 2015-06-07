@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.TreeMap;
 
 import nez.ast.SourcePosition;
+import nez.main.Command;
 import nez.main.Verbose;
 import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
@@ -18,6 +19,7 @@ public class Production extends Expression {
 	public final static int PublicProduction           = 1 << 0;
 	public final static int TerminalProduction         = 1 << 1;
 	public final static int InlineProduction           = 1 << 2;
+	public final static int Declared = PublicProduction | TerminalProduction | InlineProduction;
 	
 	public final static int RecursiveChecked           = 1 << 3;
 	public final static int RecursiveProduction        = 1 << 4;
@@ -33,8 +35,22 @@ public class Production extends Expression {
 	public final static int ConditionalProduction      = 1 << 17;
 	public final static int ContextualChecked          = 1 << 18;
 	public final static int ContextualProduction       = 1 << 19;
-	private static final int OptionalProduction = 0;
+	//private static final int OptionalProduction = 0;
 
+	public final static int ResetFlag                  = 1 << 30;
+
+	void resetFlag() {
+		this.flag = (this.flag & Declared) | ResetFlag;
+	}
+
+	void initFlag() {
+		this.flag = this.flag | ConsumedChecked | ConditionalChecked | ContextualChecked | RecursiveChecked;
+		this.flag = UFlag.unsetFlag(this.flag, ResetFlag);
+		quickCheck(this, this.getExpression());
+		//System.out.println(this.getLocalName() + ":: " + flag());
+	}
+
+	
 	public final static void quickCheck(Production p) {
 		p.flag = p.flag | ConsumedChecked | ConditionalChecked | ContextualChecked | RecursiveChecked;
 		quickCheck(p, p.getExpression());
@@ -160,68 +176,7 @@ public class Production extends Expression {
 		}
 		return l;
 	}
-
-	public final static int quickConsumedCheck(Expression e) {
-		if(e == null) {
-			return -1;
-		}
-		if(e instanceof NonTerminal ) {
-			NonTerminal n = (NonTerminal)e;
-			Production p = n.getProduction();
-			if(p != null && p.minlen != -1) {
-				return p.minlen;
-			}
-			return -1;  // unknown
-		}
-		if(e instanceof ByteChar || e instanceof AnyChar || e instanceof ByteMap) {
-			return 1; /* next*/
-		}
-		if(e instanceof Choice) {
-			int r = 1;
-			for(Expression sub: e) {
-				int minlen = quickConsumedCheck(sub);
-				if(minlen == 0) {
-					return 0;
-				}
-				if(minlen == -1) {
-					r = -1;
-				}
-			}
-			return r;
-		}
-		if(e instanceof Not || e instanceof Option || (e instanceof Repetition && !(e instanceof Repetition1)) || e instanceof And) {
-			return 0;
-		}
-		int r = 0;
-		for(Expression sub: e) {
-			int minlen = quickConsumedCheck(sub);
-			if(minlen > 0) {
-				return minlen;
-			}
-			if(minlen == -1) {
-				r = -1;
-			}
-		}
-		return r;
-	}
-	
-	void checkConsumed(int minlen) {
-		if(UFlag.is(this.flag, ConsumedChecked)) {
-			if(minlen == -1) {
-				Verbose.FIXME("must undecided: " + this.getLocalName());
-			}
-			if(minlen == 0 && UFlag.is(this.flag, ConsumedProduction)) {
-				Verbose.FIXME("must unconsumed: " + this.getLocalName());
-			}
-		}
-		else {
-			if(minlen > 0) {
-				Verbose.FIXME("must decided: " + this.getLocalName());
-			}
-		}
-	}
-
-	
+		
 	int        flag;
 	NameSpace  ns;
 	String     name;
@@ -236,7 +191,7 @@ public class Production extends Expression {
 		this.body = (body == null) ? GrammarFactory.newEmpty(s) : body;
 		this.flag = flag;
 		Production.quickCheck(this);
-		this.minlen = Production.quickConsumedCheck(body);
+		//this.minlen = Production.quickConsumedCheck(body);
 		//this.checkConsumed(this.minlen);
 	}
 
@@ -247,7 +202,7 @@ public class Production extends Expression {
 		this.uname = ns.uniqueName(name);
 		this.body = (body == null) ? GrammarFactory.newEmpty(s) : body;
 		Production.quickCheck(this);
-		this.minlen = Production.quickConsumedCheck(body);
+		//this.minlen = Production.quickConsumedCheck(body);
 		//this.checkConsumed(this.minlen);
 	}
 
@@ -280,9 +235,16 @@ public class Production extends Expression {
 	}
 
 	public final boolean isRecursive() {
-		if(!UFlag.is(this.flag, Production.ConditionalChecked)) {
+		if(!UFlag.is(this.flag, Production.RecursiveChecked)) {
 			checkRecursive(this.getExpression(), null);
 			this.flag |= Production.RecursiveChecked;
+//			if(Command.ReleasePreview) {
+//				boolean r = AnalysisCache.hasRecursion(this);
+//				boolean r2 = UFlag.is(this.flag, Production.RecursiveProduction);
+//				if(r != r2) {
+//					Verbose.FIXME("mismatched recursion: " + this.getLocalName() + " " + r + " " + r2);
+//				}
+//			}
 		}
 		return UFlag.is(this.flag, Production.RecursiveProduction);
 	}
@@ -295,6 +257,7 @@ public class Production extends Expression {
 				return;
 			}
 			if(Visa.isVisited(v, p)) {
+				//p.flag |= Production.RecursiveChecked | Production.RecursiveProduction;				
 				return;
 			}
 			v = Visa.visited(v, p);
@@ -302,7 +265,7 @@ public class Production extends Expression {
 			return;
 		}
 		for(Expression sub : e) {
-			this.checkConditional(sub, v);
+			this.checkRecursive(sub, v);
 			if(UFlag.is(this.flag, Production.RecursiveProduction)) {
 				break;
 			}
@@ -470,41 +433,58 @@ public class Production extends Expression {
 		return m.reshapeProduction(this);
 	}
 	
-	int minlen = -1;
+	//int minlen = -1;
 
 	@Override
-	public boolean isConsumed(Stacker stacker) {
-		if(minlen == -1) {
-			this.minlen = this.getExpression().isConsumed(stacker) ? 1 : 0;
+	public boolean isConsumed() {
+		if(!UFlag.is(this.flag, ConsumedChecked)) {
+			checkConsumed(this.getExpression(), new Stacker(this, null));
 		}
-		return minlen > 0;
+		return UFlag.is(this.flag, ConsumedProduction);
 	}
 	
-	@Override
-	public final boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
-		if(stack != null && this.minlen != 0 && stack.size() > 0) {
-			for(String n : stack) { // Check Unconsumed Recursion
-				if(uname.equals(n)) {
-					this.minlen = 0;
-					break;
+	private boolean checkConsumed(Expression e, Stacker s) {
+		if(e instanceof NonTerminal) {
+			NonTerminal n = (NonTerminal)e;
+			Production p = n.getProduction();
+			if(UFlag.is(p.flag, ConsumedChecked)) {
+				return p.isConsumed();
+			}
+			if(s.isVisited(p)) {
+				// left recursion
+				return false;
+			}
+			if(p.isRecursive()) {
+				return checkConsumed(p.getExpression(), new Stacker(p, s));
+			}
+			return p.isConsumed();
+		}
+		if(e instanceof Sequence) {
+			if(checkConsumed(e.get(0), s)) {
+				return true;
+			}
+			return checkConsumed(e.get(1), s);
+		}
+		if(e instanceof Choice) {
+			boolean consumed = true;
+			for(Expression se: e) {
+				if(!checkConsumed(se, s)) {
+					consumed = false;
 				}
 			}
+			return consumed;
 		}
-		if(minlen == -1) {
-			if(stack == null) {
-				stack = new UList<String>(new String[4]);
+		if(e.size() > 0) {
+			if(e instanceof Repetition1) {
+				return checkConsumed(e.get(0), s);
 			}
-			if(startNonTerminal == null) {
-				startNonTerminal = this.uname;
+			if(e instanceof Not || e instanceof Option || e instanceof Repetition || e instanceof And) {
+				return false;
 			}
-			stack.add(this.uname);
-			this.minlen = this.body.checkAlwaysConsumed(checker, startNonTerminal, stack) ? 1 : 0;
-			stack.pop();
+			return checkConsumed(e.get(0), s);
 		}
-		return minlen > 0;
+		return e.isConsumed();
 	}
-	
-	//public int transType = Typestate.Undefined;
 	
 	public final boolean isPurePEG() {
 		if(!UFlag.is(this.flag, ASTChecked)) {
@@ -530,7 +510,7 @@ public class Production extends Expression {
 			if(UFlag.is(this.flag, ObjectProduction)) {
 				return Typestate.ObjectType;
 			}
-			if(UFlag.is(this.flag, OptionalProduction)) {
+			if(UFlag.is(this.flag, OperationalProduction)) {
 				return Typestate.OperationType;
 			}
 			return Typestate.BooleanType;
@@ -609,6 +589,7 @@ public class Production extends Expression {
 		}
 		ConsoleUtils.println(l + "\n" + this.getLocalName() + " = " + this.getExpression());
 	}
+
 	
 }
 

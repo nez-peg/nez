@@ -36,15 +36,10 @@ public class Option extends Unary {
 	}
 
 	@Override
-	public boolean isConsumed(Stacker stacker) {
+	public boolean isConsumed() {
 		return false;
 	}
-
-	@Override
-	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
-		return false;
-	}
-
+	
 	@Override
 	public int inferTypestate(Visa v) {
 		int t = this.inner.inferTypestate(v);

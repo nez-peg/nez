@@ -36,15 +36,7 @@ public class Repetition extends Unary {
 	}
 
 	@Override
-	public boolean isConsumed(Stacker stacker) {
-		return false;
-	}
-
-	@Override
-	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
-//		if(checker != null) {
-//			this.inner.checkAlwaysConsumed(checker, startNonTerminal, stack);
-//		}
+	public boolean isConsumed() {
 		return false;
 	}
 

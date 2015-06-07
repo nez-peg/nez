@@ -9,11 +9,6 @@ public abstract class ASTOperation extends Expression {
 	ASTOperation(SourcePosition s) {
 		super(s);
 	}
-
-	@Override
-	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
-		return false;
-	}
 	@Override
 	public int inferTypestate(Visa v) {
 		return Typestate.OperationType;

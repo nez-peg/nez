@@ -28,14 +28,10 @@ public class IsIndent extends Terminal implements Contextual {
 	}
 	
 	@Override
-	public boolean isConsumed(Stacker stacker) {
-		// TODO Auto-generated method stub
+	public boolean isConsumed() {
 		return false;
 	}
-	@Override
-	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
-		return false;
-	}
+
 	@Override
 	public short acceptByte(int ch, int option) {
 		if (ch == '\t' || ch == ' ') {

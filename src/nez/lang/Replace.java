@@ -32,7 +32,7 @@ public class Replace extends ASTOperation {
 	}
 
 	@Override
-	public boolean isConsumed(Stacker stacker) {
+	public boolean isConsumed() {
 		return false;
 	}
 	@Override
