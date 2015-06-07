@@ -37,7 +37,10 @@ public class Grammar {
 		this.setOption(option);
 		conditionMap = new TreeMap<String, Boolean>(); 
 		analyze(start, conditionMap);
-		if(conditionMap.size() > 0) {
+		if(conditionMap != null && conditionMap.size() > 0) {
+			if(!start.isConditional() ){
+				Verbose.FIXME("mismatched condition: must be conditional :" + start.getLocalName());
+			}
 			//Verbose.debug("condition flow analysis: " + conditionMap.keySet());
 			this.start = new ConditionalAnalysis(conditionMap).newStart(start);
 			this.productionList = new UList<Production>(new Production[4]);
@@ -45,7 +48,10 @@ public class Grammar {
 			analyze(this.start, conditionMap);
 		}
 		else {
-			this.conditionMap = null;
+			if(start.isConditional() ){
+				Verbose.FIXME("mismatched uncondition: " + start);
+			}
+			conditionMap = null;
 		}
 	}
 

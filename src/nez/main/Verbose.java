@@ -75,6 +75,12 @@ public class Verbose {
 		}
 	}
 
+	public final static void FIXME(Object s) {
+		if(Command.ReleasePreview) {
+			ConsoleUtils.println("FIXME: " + s);
+		}
+	}
+
 	public final static void printSelfTesting(Object s) {
 		if(SelfTesting) {
 			ConsoleUtils.println(s);

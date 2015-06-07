@@ -1,8 +1,10 @@
 package nez.lang;
 
+import java.util.List;
 import java.util.TreeMap;
 
 import nez.ast.SourcePosition;
+import nez.main.Verbose;
 import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
 import nez.util.UFlag;
@@ -31,29 +33,9 @@ public class Production extends Expression {
 	public final static int ContextualChecked          = 1 << 18;
 	public final static int ContextualProduction       = 1 << 19;
 
-	
 	public final static void quickCheck(Production p) {
-		p.flag = p.flag | ConsumedChecked | ConditionalChecked | ContextualChecked | RecursiveChecked | ASTChecked;
+		p.flag = p.flag | ConsumedChecked | ConditionalChecked | ContextualChecked | RecursiveChecked /*| ASTChecked */;
 		quickCheck(p, p.getExpression());
-		UList<String> l = new UList<String>(new String[4]);
-		
-		if(UFlag.is(p.flag, RecursiveChecked)) {
-			if(UFlag.is(p.flag, RecursiveProduction)) l.add("recursive");
-			else l.add("nonrecursive");
-		}
-		if(UFlag.is(p.flag, ConsumedChecked)) {
-			if(UFlag.is(p.flag, ConsumedProduction)) l.add("consumed");
-			else l.add("unconsumed");
-		}
-		if(UFlag.is(p.flag, ConditionalChecked)) {
-			if(UFlag.is(p.flag, ConditionalProduction)) l.add("conditional");
-			else l.add("unconditional");
-		}
-		if(UFlag.is(p.flag, ContextualChecked)) {
-			if(UFlag.is(p.flag, ContextualProduction)) l.add("contextual");
-			else l.add("uncontextual");
-		}
-		System.out.println(p.getLocalName() + " " + l);
 	}
 	
 	public final static void quickCheck(Production p, Expression e) {
@@ -154,6 +136,27 @@ public class Production extends Expression {
 		for(Expression sub: e) {
 			quickCheck(p, sub);
 		}
+	}
+	
+	public final List<String> flag() {
+		UList<String> l = new UList<String>(new String[4]);
+		if(UFlag.is(this.flag, RecursiveChecked)) {
+			if(UFlag.is(this.flag, RecursiveProduction)) l.add("recursive");
+			else l.add("nonrecursive");
+		}
+		if(UFlag.is(this.flag, ConsumedChecked)) {
+			if(UFlag.is(this.flag, ConsumedProduction)) l.add("consumed");
+			else l.add("unconsumed");
+		}
+		if(UFlag.is(this.flag, ConditionalChecked)) {
+			if(UFlag.is(this.flag, ConditionalProduction)) l.add("conditional");
+			else l.add("unconditional");
+		}
+		if(UFlag.is(this.flag, ContextualChecked)) {
+			if(UFlag.is(this.flag, ContextualProduction)) l.add("contextual");
+			else l.add("uncontextual");
+		}
+		return l;
 	}
 
 	public final static int quickConsumedCheck(Expression e) {
@@ -276,22 +279,25 @@ public class Production extends Expression {
 		if(!UFlag.is(this.flag, Production.ConditionalChecked)) {
 			checkConditional(this.getExpression(), null);
 			this.flag |= Production.ConditionalChecked;
+			//Verbose.debug("conditional? " + this.getLocalName() + " ? " + this.isConditional());
 		}
 		return UFlag.is(this.flag, Production.ConditionalProduction);
 	}
 
 	private void checkConditional(Expression e, Stacker stacker) {
-		if(e instanceof Contextual) {
+		if(e instanceof Conditional) {
 			this.flag |= Production.ConditionalChecked | Production.ConditionalProduction;
 		}
 		if(e instanceof NonTerminal) {
 			Production p = ((NonTerminal) e).getProduction();
 			if(!UFlag.is(p.flag, Production.ConditionalChecked)) {
 				if(stacker != null && stacker.isVisited(p)) {
+					p.flag |= Production.RecursiveChecked | Production.RecursiveProduction;
 					return;
 				}
 				p.checkConditional(p.getExpression(), new Stacker(p, stacker));
 				p.flag |= Production.ConditionalChecked;
+				//Verbose.debug("conditional? " + p.getLocalName() + " ? " + p.isConditional());
 			}
 			if(UFlag.is(p.flag, Production.ConditionalProduction)) {
 				this.flag |= Production.ConditionalChecked | Production.ConditionalProduction;
@@ -321,6 +327,7 @@ public class Production extends Expression {
 			Production p = ((NonTerminal) e).getProduction();
 			if(!UFlag.is(p.flag, Production.ContextualChecked)) {
 				if(stacker != null && stacker.isVisited(p)) {
+					p.flag |= Production.RecursiveChecked | Production.RecursiveProduction;
 					return;
 				}
 				p.checkContextual(p.getExpression(), new Stacker(p, stacker));
@@ -441,40 +448,6 @@ public class Production extends Expression {
 		}
 		return this.transType;
 	}
-	
-
-//
-//	public final void removeExpressionFlag(TreeMap<String, String> undefedFlags) {
-//		this.body = this.body.removeFlag(undefedFlags).intern();
-//	}
-//	
-//	@Override
-//	public Expression removeFlag(TreeMap<String, String> undefedFlags) {
-//		if(undefedFlags.size() > 0) {
-//			StringBuilder sb = new StringBuilder();
-//			int loc = name.indexOf('!');
-//			if(loc > 0) {
-//				sb.append(this.name.substring(0, loc));
-//			}
-//			else {
-//				sb.append(this.name);
-//			}
-//			for(String flag: undefedFlags.keySet()) {
-//				if(ConditionAnlysis.hasReachableFlag(this.body, flag)) {
-//					sb.append("!");
-//					sb.append(flag);
-//				}
-//			}
-//			String rName = sb.toString();
-//			Production rRule = ns.getProduction(rName);
-//			if(rRule == null) {
-//				rRule = ns.newRule(rName, Factory.newEmpty(null));
-//				rRule.body = body.removeFlag(undefedFlags).intern();
-//			}
-//			return rRule;
-//		}
-//		return this;
-//	}
 	
 	@Override
 	public String key() {

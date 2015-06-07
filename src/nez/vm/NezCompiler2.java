@@ -32,7 +32,7 @@ public class NezCompiler2 extends NezCompiler1 {
 	protected Instruction encodeMemoizingProduction(ProductionCode code) {
 		if(UFlag.is(this.option, Grammar.PackratParsing)) {
 			Production p = code.production;
-			boolean state = false;/* fixme*/
+			boolean state = p.isContextual();
 			Instruction next = new IMemoize(p, code.memoPoint, !p.isPurePEG(), state, new IMemoRet(p, null));
 			Instruction inside = new ICallPush(code.production, next);
 			return new ILookup(p, code.memoPoint, !p.isPurePEG(), state, inside, next, new IMemoizeFail(p, state, code.memoPoint));
