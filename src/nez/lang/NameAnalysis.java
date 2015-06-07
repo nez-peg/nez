@@ -21,7 +21,6 @@ public class NameAnalysis extends GrammarReshaper {
 			if(UFlag.is(p.flag, Production.ResetFlag)) {
 				p.initFlag();
 				if(p.isRecursive()) {
-					System.out.println("rec " + p.getLocalName());
 					checkLeftRecursion(p.getExpression(), new Stacker(p, null));
 				}
 				p.isPurePEG();
