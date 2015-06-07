@@ -7,7 +7,7 @@ import nez.util.UMap;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
-public class IsSymbol extends Terminal {
+public class IsSymbol extends Terminal implements Contextual {
 	public final Tag tableName;
 	final NameSpace ns;
 	public final boolean checkLastSymbolOnly;

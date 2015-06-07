@@ -78,6 +78,8 @@ public class Grammar {
 			analyze(se, conditionMap);
 		}
 	}
+	
+	
 
 	/* --------------------------------------------------------------------- */
 	/* memoization configuration */

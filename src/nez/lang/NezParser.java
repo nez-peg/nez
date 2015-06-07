@@ -168,7 +168,7 @@ public class NezParser extends CommonTreeVisitor {
 				int c = 0;
 				for(String n : source.getNonterminalList()) {
 					Production p = source.getProduction(n);
-					if(p.isPublic) {
+					if(p.isPublic()) {
 						checkDuplicatedName(node.get(0));
 						loaded.inportProduction(ns, p);
 						c++;
@@ -218,39 +218,31 @@ public class NezParser extends CommonTreeVisitor {
 	private boolean binary = false;
 	public Production parseProduction(CommonTree node) {
 		String localName = node.textAt(0, "");
-		boolean isTerminal = false;
+		int productionFlag = 0;
 		if(node.get(0).is(NezTag.String)) {
 			localName = NameSpace.nameTerminalProduction(localName);
-			isTerminal = true;
+			productionFlag |= Production.TerminalProduction;
 		}
-		Production rule = loaded.getProduction(localName);
-		if(rule != null) {
-			checker.reportWarning(node, "duplicated rule name: " + localName);
-			rule = null;
-		}
-
 		this.binary = false;
 		if(node.size() == 3) {
 			CommonTree attrs = node.get(2);
 			if(attrs.containsToken("binary")) {
 				this.binary = true;
 			}
-		}
-		Expression e = toExpression(node.get(1));
-		rule = loaded.defineProduction(node.get(0), localName, e);
-		rule.isTerminal = isTerminal;
-		if(node.size() == 3) {
-			CommonTree attrs = node.get(2);
 			if(attrs.containsToken("public")) {
-				rule.isPublic = true;
+				productionFlag |= Production.PublicProduction;
 			}
 			if(attrs.containsToken("inline")) {
-				rule.isInline = true;
-			}
-			if(attrs.containsToken("binary")) {
-				rule.isInline = true;
+				productionFlag |= Production.InlineProduction;
 			}
 		}
+		Production rule = loaded.getProduction(localName);
+		if(rule != null) {
+			checker.reportWarning(node, "duplicated rule name: " + localName);
+			rule = null;
+		}
+		Expression e = toExpression(node.get(1));
+		rule = loaded.defineProduction(node.get(0), productionFlag, localName, e);
 		return rule;
 	}
 

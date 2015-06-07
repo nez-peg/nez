@@ -1,7 +1,6 @@
 package nez.lang;
 
 import java.util.TreeMap;
-import nez.main.Verbose;
 
 class ConditionalAnalysis extends GrammarReshaper {
 	TreeMap<String, Boolean> condMap;
@@ -83,6 +82,7 @@ class ConditionalAnalysis extends GrammarReshaper {
 		else {
 			sb.append(localName);
 		}
+		
 		for(String flagName: condMap.keySet()) {
 			if(condMap.get(flagName)) {
 				sb.append("&");
@@ -108,7 +108,7 @@ class ConditionalAnalysis extends GrammarReshaper {
 //	private static boolean hasReachableFlag(Expression e, String flagName) {
 //		return hasReachableFlag(e, flagName, new UMap<String>());
 //	}
-//
+
 //	private static boolean hasReachableFlag(Expression e, String flagName, UMap<String> visited) {
 //		if(e instanceof OnFlag) {
 //			OnFlag f = (OnFlag)e;
@@ -136,5 +136,5 @@ class ConditionalAnalysis extends GrammarReshaper {
 //		}
 //		return false;
 //	}
-
+	
 }

@@ -8,7 +8,7 @@ import nez.util.UMap;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
-public class AnyChar extends Terminal {
+public class AnyChar extends Terminal implements Consumed {
 	boolean binary = false;
 	public final boolean isBinary() {
 		return this.binary;

@@ -6,7 +6,7 @@ import nez.util.UList;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
-public class ByteChar extends Terminal {
+public class ByteChar extends Terminal implements Consumed {
 	boolean binary;
 	public final boolean isBinary() {
 		return this.binary;

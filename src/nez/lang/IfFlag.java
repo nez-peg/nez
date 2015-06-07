@@ -4,7 +4,7 @@ import nez.ast.SourcePosition;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
-public class IfFlag extends Unconsumed {
+public class IfFlag extends Unconsumed implements Conditional {
 	boolean predicate;
 	String flagName;
 	IfFlag(SourcePosition s, boolean predicate, String flagName) {

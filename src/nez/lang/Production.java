@@ -5,33 +5,219 @@ import java.util.TreeMap;
 import nez.ast.SourcePosition;
 import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
+import nez.util.UFlag;
 import nez.util.UList;
 import nez.util.UMap;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
 public class Production extends Expression {
+	public final static int PublicProduction           = 1;
+	public final static int TerminalProduction         = 1 << 1;
+	public final static int InlineProduction           = 1 << 2;
+	
+	public final static int RecursiveChecked           = 1 << 3;
+	public final static int RecursiveProduction        = 1 << 4;
+	
+	public final static int ConsumedChecked            = 1 << 5;
+	public final static int ConsumedProduction         = 1 << 6;
+	
+	public final static int ASTChecked                 = 1 << 8;
+	public final static int ObjectProduction           = 1 << 9;
+	public final static int OperationalProduction      = 1 << 10;
+
+	public final static int ConditionalChecked         = 1 << 16;
+	public final static int ConditionalProduction      = 1 << 17;
+	public final static int ContextualChecked          = 1 << 18;
+	public final static int ContextualProduction       = 1 << 19;
+
+	
+	public final static void quickCheck(Production p) {
+		p.flag = p.flag | ConsumedChecked | ConditionalChecked | ContextualChecked;
+		quickCheck(p, p.getExpression());
+		UList<String> l = new UList<String>(new String[4]);
+		
+		if(UFlag.is(p.flag, RecursiveChecked)) {
+			if(UFlag.is(p.flag, RecursiveProduction)) l.add("recursive");
+			else l.add("nonrecursive");
+		}
+		if(UFlag.is(p.flag, ConsumedChecked)) {
+			if(UFlag.is(p.flag, ConsumedProduction)) l.add("consumed");
+			else l.add("unconsumed");
+		}
+		if(UFlag.is(p.flag, ConditionalChecked)) {
+			if(UFlag.is(p.flag, ConditionalProduction)) l.add("conditional");
+			else l.add("unconditional");
+		}
+		if(UFlag.is(p.flag, ContextualChecked)) {
+			if(UFlag.is(p.flag, ContextualProduction)) l.add("contextual");
+			else l.add("uncontextual");
+		}
+		System.out.println(p.getLocalName() + " " + l);
+	}
+	
+	public final static void quickCheck(Production p, Expression e) {
+		if(e instanceof Consumed) {
+			p.flag = p.flag | ConsumedProduction | ConsumedChecked;
+			return;
+		}
+		if(e instanceof NonTerminal) {
+			NonTerminal n = (NonTerminal)e;
+			Production np = n.getProduction();
+			if(!UFlag.is(p.flag, ConsumedProduction)) {
+				if(np != null && UFlag.is(np.flag, ConsumedChecked)) {
+					if(UFlag.is(p.flag, ConsumedProduction)) {
+						p.flag = p.flag | ConsumedProduction | ConsumedChecked;						
+					}
+				}
+				else {
+					p.flag = UFlag.unsetFlag(p.flag, ConsumedChecked);					
+				}				
+			}
+			if(!UFlag.is(p.flag, ConditionalProduction)) {
+				if(np != null && UFlag.is(np.flag, ConditionalChecked)) {
+					if(UFlag.is(p.flag, ConditionalProduction)) {
+						p.flag = p.flag | ConditionalChecked | ConditionalProduction;
+					}
+				}
+				else {
+					p.flag = UFlag.unsetFlag(p.flag, ConditionalChecked);					
+				}				
+			}
+			if(!UFlag.is(p.flag, ContextualProduction)) {
+				if(np != null && UFlag.is(np.flag, ContextualChecked)) {
+					if(UFlag.is(p.flag, ContextualProduction)) {
+						p.flag = p.flag | ContextualChecked | ContextualProduction;
+					}
+				}
+				else {
+					p.flag = UFlag.unsetFlag(p.flag, ContextualChecked);					
+				}				
+			}
+			return;
+		}
+		if(e instanceof Sequence) {
+			quickCheck(p, e.get(0));
+			quickCheck(p, e.get(1));
+			return;
+		}
+		if(e instanceof Repetition1) {
+			quickCheck(p, e.get(0));
+			return;
+		}
+		if(e instanceof Not || e instanceof Option || e instanceof Repetition || e instanceof And) {
+			boolean consumed = UFlag.is(p.flag, ConsumedProduction);
+			quickCheck(p, e.get(0));
+			if(!consumed) {
+				p.flag = UFlag.unsetFlag(p.flag, ConsumedProduction);
+			}
+			return;
+		}
+		if(e instanceof Choice) {
+			boolean checkedConsumed = UFlag.is(p.flag, ConsumedProduction);
+			if(checkedConsumed) {
+				for(Expression sub: e) {
+					quickCheck(p, sub);
+					p.flag = p.flag | ConsumedProduction;
+				}
+			}
+			else {
+				boolean unconsumed = false;
+				for(Expression sub: e) {
+					p.flag = UFlag.unsetFlag(p.flag, ConsumedProduction);					
+					quickCheck(p, sub);
+					if(!UFlag.is(p.flag, ConsumedProduction)) {
+						unconsumed = true;
+					}
+				}
+				if(unconsumed) {
+					p.flag = UFlag.unsetFlag(p.flag, ConsumedProduction);					
+				}
+				else {
+					p.flag = p.flag | ConsumedProduction | ConsumedChecked;
+				}
+			}
+			return;
+		}
+		if(e instanceof Conditional) {
+			p.flag = p.flag | ConditionalChecked | ConditionalProduction;
+		}
+		if(e instanceof Contextual) {
+			p.flag = p.flag | ContextualChecked | ContextualProduction;
+		}
+		for(Expression sub: e) {
+			quickCheck(p, sub);
+		}
+	}
+
+	public final static int quickConsumedCheck(Expression e) {
+		if(e == null) {
+			return -1;
+		}
+		if(e instanceof NonTerminal ) {
+			NonTerminal n = (NonTerminal)e;
+			Production p = n.getProduction();
+			if(p != null && p.minlen != -1) {
+				return p.minlen;
+			}
+			return -1;  // unknown
+		}
+		if(e instanceof ByteChar || e instanceof AnyChar || e instanceof ByteMap) {
+			return 1; /* next*/
+		}
+		if(e instanceof Choice) {
+			int r = 1;
+			for(Expression sub: e) {
+				int minlen = quickConsumedCheck(sub);
+				if(minlen == 0) {
+					return 0;
+				}
+				if(minlen == -1) {
+					r = -1;
+				}
+			}
+			return r;
+		}
+		if(e instanceof Not || e instanceof Option || (e instanceof Repetition && !(e instanceof Repetition1)) || e instanceof And) {
+			return 0;
+		}
+		int r = 0;
+		for(Expression sub: e) {
+			int minlen = quickConsumedCheck(sub);
+			if(minlen > 0) {
+				return minlen;
+			}
+			if(minlen == -1) {
+				r = -1;
+			}
+		}
+		return r;
+	}
+
+	
+	int        flag;
 	NameSpace  ns;
 	String     name;
 	String     uname;
 	Expression body;
 	
-	boolean isPublic  = false;
-	boolean isInline  = false;
-	boolean isRecursive = false;
-	int     refCount  = 0;
-	boolean isTerminal = false;
+//	boolean isPublic      = false;
+//	boolean isTerminal    = false;
+//	boolean isInline      = false;
+//	boolean isUnchecked   = true;
+//	boolean isRecursive   = false;
+//	boolean isContextual  = false;
+//	boolean isConditional = false;
 	
-	Production original;
-
-	public Production(SourcePosition s, NameSpace ns, String name, Expression body) {
+	public Production(SourcePosition s, int flag, NameSpace ns, String name, Expression body) {
 		super(s);
 		this.ns = ns;
 		this.name = name;
 		this.uname = ns.uniqueName(name);
 		this.body = (body == null) ? GrammarFactory.newEmpty(s) : body;
-		this.original = this;
-		this.minlen = StructualAnalysis.quickConsumedCheck(body);
+		this.minlen = Production.quickConsumedCheck(body);
+		this.flag = flag;
+		Production.quickCheck(this);
 	}
 
 	private Production(String name, Production original, Expression body) {
@@ -40,13 +226,14 @@ public class Production extends Expression {
 		this.name = name;
 		this.uname = ns.uniqueName(name);
 		this.body = (body == null) ? GrammarFactory.newEmpty(s) : body;
-		this.original = original;
-		this.minlen = StructualAnalysis.quickConsumedCheck(body);
+		this.minlen = Production.quickConsumedCheck(body);
+		Production.quickCheck(this);
 	}
 
 	Production newProduction(String localName) {
 		return new Production(localName, this, this.getExpression());
 	}
+	
 	@Override
 	public final boolean equalsExpression(Expression o) {
 		if(o instanceof Production) {
@@ -60,37 +247,97 @@ public class Production extends Expression {
 	}
 	
 	public final boolean isPublic() {
-		return this.isPublic;
+		return UFlag.is(this.flag, Production.PublicProduction);
 	}
 
 	public final boolean isInline() {
-		return this.isInline || (!isPublic && !isRecursive && this.refCount == 1);
+		return UFlag.is(this.flag, Production.InlineProduction);
+	}
+
+	public final boolean isTerminal() {
+		return UFlag.is(this.flag, Production.TerminalProduction);
 	}
 
 	public final boolean isRecursive() {
-		return this.isRecursive;
+		return UFlag.is(this.flag, Production.RecursiveProduction);
 	}
-	
-	@Override
-	public Expression get(int index) {
-		return body;
+
+	public final void setRecursive() {
+		this.flag |= Production.RecursiveChecked | Production.RecursiveProduction;
 	}
-	
-	@Override
-	public int size() {
-		return 1;
+
+	public final boolean isConditional() {
+		if(!UFlag.is(this.flag, Production.ConditionalChecked)) {
+			checkConditional(this.getExpression(), null);
+			this.flag |= Production.ConditionalChecked;
+		}
+		return UFlag.is(this.flag, Production.ConditionalProduction);
 	}
-	
+
+	private void checkConditional(Expression e, Stacker stacker) {
+		if(e instanceof Contextual) {
+			this.flag |= Production.ConditionalChecked | Production.ConditionalProduction;
+		}
+		if(e instanceof NonTerminal) {
+			Production p = ((NonTerminal) e).getProduction();
+			if(!UFlag.is(p.flag, Production.ConditionalChecked)) {
+				if(stacker != null && stacker.isVisited(p)) {
+					return;
+				}
+				p.checkConditional(p.getExpression(), new Stacker(p, stacker));
+				p.flag |= Production.ConditionalChecked;
+			}
+			if(UFlag.is(p.flag, Production.ConditionalProduction)) {
+				this.flag |= Production.ConditionalChecked | Production.ConditionalProduction;
+			}
+		}
+		for(Expression sub : e) {
+			checkConditional(sub, stacker);
+			if(UFlag.is(this.flag, Production.ConditionalProduction)) {
+				break;
+			}
+		}
+	}
+
+	public final boolean isContextual() {
+		if(!UFlag.is(this.flag, Production.ContextualChecked)) {
+			checkContextual(this.getExpression(), null);
+			this.flag |= Production.ContextualChecked;
+		}
+		return UFlag.is(this.flag, Production.ContextualProduction);
+	}
+
+	private void checkContextual(Expression e, Stacker stacker) {
+		if(e instanceof Contextual) {
+			this.flag |= Production.ContextualChecked | Production.ContextualProduction;
+		}
+		if(e instanceof NonTerminal) {
+			Production p = ((NonTerminal) e).getProduction();
+			if(!UFlag.is(p.flag, Production.ContextualChecked)) {
+				if(stacker != null && stacker.isVisited(p)) {
+					return;
+				}
+				p.checkContextual(p.getExpression(), new Stacker(p, stacker));
+				p.flag |= Production.ContextualChecked;
+			}
+			if(UFlag.is(p.flag, Production.ContextualProduction)) {
+				this.flag |= Production.ContextualChecked | Production.ContextualProduction;
+			}
+		}
+		for(Expression sub : e) {
+			checkContextual(sub, stacker);
+			if(UFlag.is(this.flag, Production.ContextualProduction)) {
+				break;
+			}
+		}
+	}
+
 	public final String getLocalName() {
 		return this.name;
 	}
 	
 	public final String getUniqueName() {
 		return this.uname;
-	}
-
-	public final String getOriginalLocalName() {
-		return this.original.getLocalName();
 	}
 	
 	public final Expression getExpression() {
@@ -101,6 +348,16 @@ public class Production extends Expression {
 		this.body = e;
 	}
 
+	@Override
+	public Expression get(int index) {
+		return body;
+	}
+	
+	@Override
+	public int size() {
+		return 1;
+	}
+	
 	@Override
 	protected final void format(StringBuilder sb) {
 		sb.append(this.getLocalName());
@@ -178,6 +435,7 @@ public class Production extends Expression {
 		}
 		return this.transType;
 	}
+	
 
 //
 //	public final void removeExpressionFlag(TreeMap<String, String> undefedFlags) {
@@ -261,32 +519,11 @@ public class Production extends Expression {
 	}
 
 	public final void dump() {
-		StringBuilder sb = new StringBuilder();
-		if(this.isPublic) {
-			sb.append("public ");
-		}
-		if(this.isInline()) {
-			sb.append("inline ");
-		}
-		if(this.isRecursive) {
-			sb.append("recursive ");
-		}
-		if(!this.isAlwaysConsumed()) {
-			sb.append("unconsumed ");
-		}
-		boolean[] b = ByteMap.newMap(true);
-		for(int c = 0; c < b.length; c++) {
-			if(this.acceptByte(c, 0) == Acceptance.Reject) {
-				b[c] = false;
-			}
-		}
-		sb.append("ref(" + this.refCount + ") ");
-		sb.append("accept" + StringUtils.stringfyCharacterClass(b) + " ");
-		
-		ConsoleUtils.println(sb.toString());
 		ConsoleUtils.println(this.getLocalName() + " = " + this.getExpression());
 	}
 
+	
+	
 }
 
 class Stacker {

@@ -136,10 +136,14 @@ public class NameSpace extends GrammarFactory {
 	}
 
 	public final Production defineProduction(SourcePosition s, String localName, Expression e) {
+		return this.defineProduction(s, 0, localName, e);
+	}
+
+	public final Production defineProduction(SourcePosition s, int flag, String localName, Expression e) {
 		if(!hasProduction(localName)) {
 			nameList.add(localName);
 		}
-		Production p = new Production(s, this, localName, e);
+		Production p = new Production(s, flag, this, localName, e);
 		this.ruleMap.put(localName, p);
 		addProduction(p);
 		return p;
@@ -178,8 +182,8 @@ public class NameSpace extends GrammarFactory {
 		return r;
 	}
 	
-	public final Production newRule(String name, Expression e) {
-		Production r = new Production(null, this, name, e);
+	public final Production newProduction(int flag, String name, Expression e) {
+		Production r = new Production(null, flag, this, name, e);
 		this.ruleMap.put(name, r);
 		return r;
 	}

@@ -7,7 +7,7 @@ import nez.util.UMap;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
-public class ExistsSymbol extends Expression {
+public class ExistsSymbol extends Expression implements Contextual {
 	public final Tag tableName;
 	final NameSpace ns;
 	ExistsSymbol(SourcePosition s, NameSpace ns, Tag tableName) {

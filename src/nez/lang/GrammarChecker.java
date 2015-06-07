@@ -68,11 +68,11 @@ public class GrammarChecker {
 //		UList<String> stack = new UList<String>(new String[64]);
 //		UMap<String> visited = new UMap<String>();
 		for(Production r: grammar.getDefinedRuleList()) {
-			if(r.isTerminal) {
-				continue;
-			}
+//			if(r.isTerminal()) {
+//				continue;
+//			}
 			if(AnalysisCache.hasRecursion(r)) {
-				r.isRecursive = true;
+				r.setRecursive();
 				if(r.minlen > 0) {
 					continue;
 				}
@@ -91,9 +91,9 @@ public class GrammarChecker {
 		}
 		// type check
 		for(Production r: grammar.getRuleList()) {
-			if(r.isTerminal) {
-				continue;
-			}
+//			if(r.isTerminal) {
+//				continue;
+//			}
 //			this.checkPhase2(r.getExpression());
 //			if(r.refCount == 0 && !r.isPublic && !specialRuleName(r.getLocalName())) {
 //				this.reportWarning(r.s, "unused nonterminal definition");
@@ -102,9 +102,9 @@ public class GrammarChecker {
 		}		
 		// interning
 		for(Production r: grammar.getRuleList()) {
-			if(r.isTerminal) {
-				continue;
-			}
+//			if(r.isTerminal) {
+//				continue;
+//			}
 			if(Verbose.Grammar) {
 				r.dump();
 			}

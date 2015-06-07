@@ -5,7 +5,7 @@ import nez.util.UList;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
-public class IsIndent extends Terminal {
+public class IsIndent extends Terminal implements Contextual {
 	IsIndent(SourcePosition s) {
 		super(s);
 	}

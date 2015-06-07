@@ -6,7 +6,7 @@ import nez.util.UMap;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
-public class OnFlag extends Unary {
+public class OnFlag extends Unary implements Conditional {
 	boolean predicate;
 	public final boolean isPositive() {
 		return predicate;
