@@ -1,5 +1,6 @@
 package nez.generator;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Stack;
@@ -28,6 +29,7 @@ import nez.lang.Repetition1;
 import nez.lang.Replace;
 import nez.lang.Sequence;
 import nez.lang.Tagging;
+import nez.util.UFlag;
 import nez.vm.GrammarOptimizer;
 
 public class CParserGenerator extends ParserGenerator {
@@ -45,8 +47,13 @@ public class CParserGenerator extends ParserGenerator {
 		return "a Nez parser generator for C (sample)";
 	}
 
-	boolean PatternMatch = false;
-	int option = Grammar.ASTConstruction | Grammar.Prediction;
+	boolean PatternMatch = true;
+	int option = common;
+	static int plain = Grammar.ASTConstruction;
+	static int prediction = Grammar.ASTConstruction | Grammar.Prediction;
+	static int common = Grammar.ASTConstruction | Grammar.Prediction | Grammar.CommonPrefix;
+	GrammarOptimizer optimizer = new GrammarOptimizer(this.option);
+	int predictionCount = 0;
 
 	@Override
 	public void generate(Grammar grammar) {
@@ -57,6 +64,9 @@ public class CParserGenerator extends ParserGenerator {
 		makeFooter(grammar);
 		file.writeNewLine();
 		file.flush();
+		System.out.println("PredictionCount: " + this.predictionCount);
+		//FIXME
+		//System.out.println("CommonCount: " + optimizer.commonCount);
 	}
 
 	@Override
@@ -73,6 +83,19 @@ public class CParserGenerator extends ParserGenerator {
 		this.file.writeNewLine();
 	}
 
+	String getOption() {
+		if(option == plain) {
+			return "plain";
+		}
+		else if(option == prediction) {
+			return "prediction";
+		}
+		else if(option == common) {
+			return "common";
+		}
+		return "unknown option";
+	}
+
 	@Override
 	public void makeFooter(Grammar grammar) {
 		this.file.writeIndent("int main(int argc, char* const argv[])");
@@ -81,6 +104,7 @@ public class CParserGenerator extends ParserGenerator {
 		this.file.writeIndent("ParsingContext ctx = nez_CreateParsingContext(argv[1]);");
 		this.file.writeIndent("ctx->flags_size = " + flagTable.size() + ";");
 		this.file.writeIndent("ctx->flags = (int*)calloc(" + flagTable.size() + ", sizeof(int));");
+		this.file.writeIndent("createMemoTable(ctx, " + memoId + ");");
 		this.file.writeIndent("start = timer();");
 		this.file.writeIndent("if(pFile(ctx))");
 		this.openBlock();
@@ -97,6 +121,8 @@ public class CParserGenerator extends ParserGenerator {
 		this.file.writeIndent("dump_pego(&po, ctx->inputs, 0);");
 		this.file.writeIndent("fprintf(stderr, \"ErapsedTime: %llu msec\\n\", (unsigned long long)end - start);");
 		this.file.writeIndent("fprintf(stderr, \"match\");");
+		this.file.writeIndent("nez_log(ctx, argv[1], \"" + grammar.getProductionList().get(0).getNameSpace().getURN() + "\", "
+				+ grammar.getProductionList().size() + ", (unsigned long long)end - start, \"" + this.getOption() + "\");");
 		this.closeBlock();
 		this.file.writeIndent("return 0;");
 		this.file.writeIndent();
@@ -177,9 +203,42 @@ public class CParserGenerator extends ParserGenerator {
 		}
 	}
 
+	private void memoize(Production rule, int id, String pos) {
+		this.file.writeIndent("nez_setMemo(ctx, " + pos + ", " + id + ", 0);");
+	}
+
+	private void memoizeFail(Production rule, int id, String pos) {
+		this.file.writeIndent("nez_setMemo(ctx, " + pos + ", " + id + ", 1);");
+	}
+
+	private void lookup(Production rule, int id) {
+		this.file.writeIndent("MemoEntry memo = nez_getMemo(ctx, ctx->cur, " + id + ");");
+		this.file.writeIndent("if(memo != NULL)");
+		this.openBlock();
+		this.file.writeIndent("if(memo->r)");
+		this.openBlock();
+		this.file.writeIndent("return 1;");
+		this.closeBlock();
+		this.file.writeIndent("else");
+		this.openBlock();
+		if(!PatternMatch) {
+			this.file.writeIndent("nez_pushDataLog(ctx, LazyLink_T, 0, -1, NULL, memo->left);");
+		}
+		this.file.writeIndent("ctx->cur = memo->consumed;");
+		this.file.writeIndent("return 0;");
+		this.closeBlock();
+		this.closeBlock();
+	}
+
 	private void consume() {
 		this.file.writeIndent("ctx->cur++;");
 	}
+
+	private void choiceCount() {
+		this.file.writeIndent("ctx->choiceCount++;");
+	}
+
+	int memoId = 0;
 
 	@Override
 	public void visitProduction(Production rule) {
@@ -187,13 +246,19 @@ public class CParserGenerator extends ParserGenerator {
 		this.file.writeIndent("int p" + rule.getLocalName() + "(ParsingContext ctx)");
 		this.openBlock();
 		this.pushFailureJumpPoint();
-		Expression e = new GrammarOptimizer(this.option).optimize(rule);
+		lookup(rule, memoId);
+		String pos = "c" + this.fid;
+		this.let("char*", pos, "ctx->cur");
+		Expression e = optimizer.optimize(rule);
 		visit(e);
+		memoize(rule, memoId, pos);
 		this.file.writeIndent("return 0;");
 		this.popFailureJumpPoint(rule);
+		memoizeFail(rule, memoId, pos);
 		this.file.writeIndent("return 1;");
 		this.closeBlock();
 		this.file.writeNewLine();
+		memoId++;
 	}
 
 	@Override
@@ -363,17 +428,62 @@ public class CParserGenerator extends ParserGenerator {
 	}
 
 	boolean isPrediction = true;
+	int justPredictionCount = 0;
+
+	public String formatId(int id) {
+		String idStr = Integer.toString(id);
+		int len = idStr.length();
+		StringBuilder sb = new StringBuilder();
+		while (len < 9) {
+			sb.append("0");
+			len++;
+		}
+		sb.append(idStr);
+		return sb.toString();
+	}
+
+	private void showChoiceInfo(Choice e) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(e.toString() + ",").append(e.size() + ",");
+		if(e.predictedCase != null) {
+			int notNullSize = 0;
+			int notChoiceSize = 0;
+			int containsEmpty = 0;
+			int subChoiceSize = 0;
+			for(int i = 0; i < e.predictedCase.length; i++) {
+				if(e.predictedCase[i] != null) {
+					notNullSize++;
+					if(e.predictedCase[i] instanceof Choice) {
+						subChoiceSize += e.predictedCase[i].size();
+					}
+					else {
+						notChoiceSize++;
+						if(e.predictedCase[i].isEmpty()) {
+							containsEmpty = 1;
+						}
+					}
+				}
+			}
+			double evaluationValue = (double) (notChoiceSize + subChoiceSize) / (double) notNullSize;
+			NumberFormat format = NumberFormat.getInstance();
+			format.setMaximumFractionDigits(3);
+			sb.append(notNullSize + ",").append(notChoiceSize + ",").append(containsEmpty + ",").append(subChoiceSize + ",")
+					.append(format.format(evaluationValue));
+		}
+		System.out.println(sb.toString());
+	}
 
 	@Override
 	public void visitChoice(Choice e) {
-		if(e.predictedCase != null && isPrediction) {
-			isPrediction = false;
-			System.out.println("Prediction");
+		showChoiceInfo(e);
+		if((e.predictedCase != null && isPrediction && (UFlag.is(this.option, Grammar.Prediction)))) {
+			predictionCount++;
+			justPredictionCount++;
 			int fid = this.fid++;
 			String label = "EXIT_CHOICE" + fid;
 			HashMap<Integer, Expression> m = new HashMap<Integer, Expression>();
 			ArrayList<Expression> l = new ArrayList<Expression>();
-			this.file.writeIndent("void* jump_table" + fid + "[] = {");
+			this.file.writeIndent("void* jump_table" + formatId(fid) + "[] = {");
 			for(int ch = 0; ch < e.predictedCase.length; ch++) {
 				Expression pCase = e.predictedCase[ch];
 				if(pCase != null) {
@@ -382,27 +492,34 @@ public class CParserGenerator extends ParserGenerator {
 						m.put(pCase.getId(), pCase);
 						l.add(pCase);
 					}
-					this.file.write("&&PREDICATE_JUMP" + fid + pCase.getId());
+					this.file.write("&&PREDICATE_JUMP" + formatId(fid) + "" + pCase.getId());
 				}
 				else {
-					this.file.write("&&PREDICATE_JUMP" + fid + 0);
+					this.file.write("&&PREDICATE_JUMP" + formatId(fid) + "" + 0);
 				}
 				if(ch < e.predictedCase.length - 1) {
 					this.file.write(", ");
 				}
 			}
 			this.file.write("};");
-			this.file.writeIndent("goto *jump_table" + fid + "[(unsigned int)*ctx->cur];");
+			this.file.writeIndent("goto *jump_table" + formatId(fid) + "[(uint8_t)*ctx->cur];");
 			for(int i = 0; i < l.size(); i++) {
 				Expression pe = l.get(i);
-				this.exitLabel("PREDICATE_JUMP" + fid + pe.getId());
+				this.exitLabel("PREDICATE_JUMP" + formatId(fid) + "" + pe.getId());
+				if(!(pe instanceof Choice)) {
+					this.choiceCount();
+				}
+				else {
+					isPrediction = false;
+				}
 				visit(pe);
+				isPrediction = true;
 				this.gotoLabel(label);
 			}
-			this.exitLabel("PREDICATE_JUMP" + fid + 0);
+			this.exitLabel("PREDICATE_JUMP" + formatId(fid) + "" + 0);
 			this.jumpFailureJump();
 			this.exitLabel(label);
-			isPrediction = true;
+			justPredictionCount--;
 		}
 		else {
 			this.fid++;
@@ -411,6 +528,7 @@ public class CParserGenerator extends ParserGenerator {
 			this.let("char*", backtrack, "ctx->cur");
 			for(int i = 0; i < e.size(); i++) {
 				this.pushFailureJumpPoint();
+				this.choiceCount();
 				visit(e.get(i));
 				this.gotoLabel(label);
 				this.popFailureJumpPoint(e.get(i));
