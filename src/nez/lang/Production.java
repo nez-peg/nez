@@ -1,5 +1,6 @@
 package nez.lang;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.TreeMap;
 
@@ -14,7 +15,7 @@ import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
 public class Production extends Expression {
-	public final static int PublicProduction           = 1;
+	public final static int PublicProduction           = 1 << 0;
 	public final static int TerminalProduction         = 1 << 1;
 	public final static int InlineProduction           = 1 << 2;
 	
@@ -34,7 +35,7 @@ public class Production extends Expression {
 	public final static int ContextualProduction       = 1 << 19;
 
 	public final static void quickCheck(Production p) {
-		p.flag = p.flag | ConsumedChecked | ConditionalChecked | ContextualChecked | RecursiveChecked /*| ASTChecked */;
+		p.flag = p.flag | ConsumedChecked | ConditionalChecked | ContextualChecked | RecursiveChecked;
 		quickCheck(p, p.getExpression());
 	}
 	
@@ -202,6 +203,22 @@ public class Production extends Expression {
 		}
 		return r;
 	}
+	
+	void checkConsumed(int minlen) {
+		if(UFlag.is(this.flag, ConsumedChecked)) {
+			if(minlen == -1) {
+				Verbose.FIXME("must undecided: " + this.getLocalName());
+			}
+			if(minlen == 0 && UFlag.is(this.flag, ConsumedProduction)) {
+				Verbose.FIXME("must unconsumed: " + this.getLocalName());
+			}
+		}
+		else {
+			if(minlen > 0) {
+				Verbose.FIXME("must decided: " + this.getLocalName());
+			}
+		}
+	}
 
 	
 	int        flag;
@@ -209,24 +226,17 @@ public class Production extends Expression {
 	String     name;
 	String     uname;
 	Expression body;
-	
-//	boolean isPublic      = false;
-//	boolean isTerminal    = false;
-//	boolean isInline      = false;
-//	boolean isUnchecked   = true;
-//	boolean isRecursive   = false;
-//	boolean isContextual  = false;
-//	boolean isConditional = false;
-	
+		
 	public Production(SourcePosition s, int flag, NameSpace ns, String name, Expression body) {
 		super(s);
 		this.ns = ns;
 		this.name = name;
 		this.uname = ns.uniqueName(name);
 		this.body = (body == null) ? GrammarFactory.newEmpty(s) : body;
-		this.minlen = Production.quickConsumedCheck(body);
 		this.flag = flag;
 		Production.quickCheck(this);
+		this.minlen = Production.quickConsumedCheck(body);
+		//this.checkConsumed(this.minlen);
 	}
 
 	private Production(String name, Production original, Expression body) {
@@ -235,8 +245,9 @@ public class Production extends Expression {
 		this.name = name;
 		this.uname = ns.uniqueName(name);
 		this.body = (body == null) ? GrammarFactory.newEmpty(s) : body;
-		this.minlen = Production.quickConsumedCheck(body);
 		Production.quickCheck(this);
+		this.minlen = Production.quickConsumedCheck(body);
+		//this.checkConsumed(this.minlen);
 	}
 
 	Production newProduction(String localName) {
@@ -284,31 +295,54 @@ public class Production extends Expression {
 		return UFlag.is(this.flag, Production.ConditionalProduction);
 	}
 
-	private void checkConditional(Expression e, Stacker stacker) {
+	private void checkConditional(Expression e, Visa v) {
 		if(e instanceof Conditional) {
 			this.flag |= Production.ConditionalChecked | Production.ConditionalProduction;
+			return;
 		}
 		if(e instanceof NonTerminal) {
 			Production p = ((NonTerminal) e).getProduction();
-			if(!UFlag.is(p.flag, Production.ConditionalChecked)) {
-				if(stacker != null && stacker.isVisited(p)) {
-					p.flag |= Production.RecursiveChecked | Production.RecursiveProduction;
-					return;
-				}
-				p.checkConditional(p.getExpression(), new Stacker(p, stacker));
-				p.flag |= Production.ConditionalChecked;
-				//Verbose.debug("conditional? " + p.getLocalName() + " ? " + p.isConditional());
-			}
 			if(UFlag.is(p.flag, Production.ConditionalProduction)) {
 				this.flag |= Production.ConditionalChecked | Production.ConditionalProduction;
+				return;
 			}
+			if(!UFlag.is(p.flag, Production.ConditionalChecked)) {
+				if(Visa.isVisited(v, p)) {
+					return;
+				}
+				v = Visa.visited(v, p);
+				p.checkConditional(p.getExpression(), v);
+				if(UFlag.is(p.flag, Production.ConditionalProduction)) {
+					this.flag |= Production.ConditionalChecked | Production.ConditionalProduction;
+					p.flag |= Production.ConditionalChecked;
+				}
+			}
+			return;
 		}
 		for(Expression sub : e) {
-			checkConditional(sub, stacker);
+			checkConditional(sub, v);
 			if(UFlag.is(this.flag, Production.ConditionalProduction)) {
 				break;
 			}
 		}
+	}
+	
+	boolean testCondition(Expression e, Visa v) {
+		if(e instanceof NonTerminal) {
+			Production p = ((NonTerminal)e).getProduction();
+			if(!Visa.isVisited(v, p)) {
+				v = Visa.visited(v, p);
+				boolean r = testCondition(p.getExpression(), v);
+				return r;
+			}
+			return false;
+		}
+		for(Expression se : e) {
+			if(testCondition(se, v)) {
+				return true;
+			}
+		}
+		return (e instanceof Conditional);
 	}
 
 	public final boolean isContextual() {
@@ -319,32 +353,57 @@ public class Production extends Expression {
 		return UFlag.is(this.flag, Production.ContextualProduction);
 	}
 
-	private void checkContextual(Expression e, Stacker stacker) {
+	private void checkContextual(Expression e, Visa v) {
 		if(e instanceof Contextual) {
 			this.flag |= Production.ContextualChecked | Production.ContextualProduction;
+			return;
 		}
 		if(e instanceof NonTerminal) {
 			Production p = ((NonTerminal) e).getProduction();
-			if(!UFlag.is(p.flag, Production.ContextualChecked)) {
-				if(stacker != null && stacker.isVisited(p)) {
-					p.flag |= Production.RecursiveChecked | Production.RecursiveProduction;
-					return;
-				}
-				p.checkContextual(p.getExpression(), new Stacker(p, stacker));
-				p.flag |= Production.ContextualChecked;
-			}
 			if(UFlag.is(p.flag, Production.ContextualProduction)) {
 				this.flag |= Production.ContextualChecked | Production.ContextualProduction;
+				return;
 			}
+			if(!UFlag.is(p.flag, Production.ContextualChecked)) {
+				if(Visa.isVisited(v, p)) {
+					return;
+				}
+				v = Visa.visited(v, p);
+				p.checkContextual(p.getExpression(), v);
+				if(UFlag.is(p.flag, Production.ContextualProduction)) {
+					this.flag |= Production.ContextualChecked | Production.ContextualProduction;
+					p.flag |= Production.ContextualChecked;
+				}
+			}
+			return;
 		}
 		for(Expression sub : e) {
-			checkContextual(sub, stacker);
+			checkContextual(sub, v);
 			if(UFlag.is(this.flag, Production.ContextualProduction)) {
 				break;
 			}
 		}
 	}
 
+	boolean testContextSensitive(Expression e, Visa v) {
+		if(e instanceof NonTerminal) {
+			Production p = ((NonTerminal)e).getProduction();
+			if(!Visa.isVisited(v, p)) {
+				v = Visa.visited(v, p);
+				boolean r = testContextSensitive(p.getExpression(), v);
+				return r;
+			}
+			return false;
+		}
+		for(Expression se : e) {
+			if(testContextSensitive(se, v)) {
+				return true;
+			}
+		}
+		return (e instanceof Contextual);
+	}
+	
+	
 	public final String getLocalName() {
 		return this.name;
 	}
@@ -498,19 +557,55 @@ public class Production extends Expression {
 	}
 
 	public final void dump() {
-		ConsoleUtils.println(this.getLocalName() + " = " + this.getExpression());
+		UList<String> l = new UList<String>(new String[4]);
+		if(this.isPublic()) {
+			l.add("public");
+		}
+		if(this.isInline()) {
+			l.add("inline");
+		}
+		if(this.isRecursive()) {
+			l.add("recursive");
+		}
+		if(this.isConditional()) {
+			l.add("conditional");
+		}
+		if(this.isContextual()) {
+			l.add("contextual");
+		}
+		ConsoleUtils.println(l + "\n" + this.getLocalName() + " = " + this.getExpression());
 	}
-
-	
 	
 }
 
+class Visa {
+	public final static boolean isVisited(Visa v, Production p) {
+		return v == null ? false: v.isVisited(p);
+	}
+	public final static Visa visited(Visa v, Production p) {
+		if(v == null) {
+			v = new Visa();
+		}
+		v.visited(p);
+		return v;
+	}
+	HashMap<String,Production> map = new HashMap<String,Production>();
+	private boolean isVisited(Production p) {
+		return map.containsKey(p.getUniqueName());
+	}
+	private void visited(Production p) {
+		map.put(p.getUniqueName(), p);
+	}
+}
+
 class Stacker {
+	int n;
 	Stacker prev;
 	Production p;
 	Stacker(Production p, Stacker prev) {
 		this.prev = prev;
 		this.p = p;
+		this.n = (prev == null) ? 0 : prev.n + 1;
 	}
 	boolean isVisited(Production p) {
 		Stacker d = this;
