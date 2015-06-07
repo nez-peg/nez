@@ -50,13 +50,13 @@ public abstract class NezEncoder {
 
 	/* CodeMap */
 	
-	protected HashMap<String, ProductionCode> codeMap = null;
+	protected HashMap<String, CodePoint> codeMap = null;
 		
-	protected ProductionCode newProductionCode(Production p, Expression localExpression) {
-		return new ProductionCode(p, localExpression);
+	protected CodePoint newCodePoint(Production p, Expression localExpression) {
+		return new CodePoint(p, localExpression);
 	}
 	
-	protected ProductionCode getProductionCode(Production p) {
+	protected CodePoint getCodePoint(Production p) {
 		if(this.codeMap != null) {
 			return codeMap.get(p.getUniqueName());
 		}
@@ -67,14 +67,14 @@ public abstract class NezEncoder {
 		return p.getExpression();
 	}
 	
-	protected void analyizeProductionInlining(ProductionCode pcode) {
+	protected void analyizeProductionInlining(CodePoint pcode) {
 		//Verbose.debug("ref " + pcode.production.getLocalName() + " " + pcode.ref);
 		if(pcode.ref == 1 || GrammarOptimizer.isCharacterTerminal(pcode.localExpression)) {
 			pcode.inlining = true;
 		}
 	}
 
-	protected int analyizeProductionMemoizing(ProductionCode pcode, int memoId) {
+	protected int analyizeProductionMemoizing(CodePoint pcode, int memoId) {
 		if(pcode.inlining) {
 			return memoId;
 		}
@@ -88,13 +88,13 @@ public abstract class NezEncoder {
 
 	void count(Production p) {
 		String uname = p.getUniqueName();
-		ProductionCode c = this.codeMap.get(uname);
+		CodePoint c = this.codeMap.get(uname);
 		if(c == null) {
 			Expression deref = optimizeLocalProduction(p);
 			String key = "#" + deref.getId();
 			c = this.codeMap.get(key);
 			if(c == null) {
-				c = newProductionCode(p, deref);
+				c = newCodePoint(p, deref);
 				codeMap.put(key, c);
 			}
 //			else {
@@ -116,7 +116,7 @@ public abstract class NezEncoder {
 	}
 
 	protected void initCodeMap(Grammar grammar) {
-		this.codeMap = new HashMap<String, ProductionCode>();
+		this.codeMap = new HashMap<String, CodePoint>();
 		Production start = grammar.getStartProduction();
 		count(start);
 		countNonTerminalReference(start.getExpression());
@@ -127,7 +127,7 @@ public abstract class NezEncoder {
 		}
 		if(UFlag.is(option, Grammar.Inlining)) {
 			for(Production p : grammar.getProductionList()) {
-				ProductionCode pcode = this.codeMap.get(p.getUniqueName());
+				CodePoint pcode = this.codeMap.get(p.getUniqueName());
 				if(pcode != null) {
 					this.analyizeProductionInlining(pcode);
 				}
@@ -136,7 +136,7 @@ public abstract class NezEncoder {
 		if(UFlag.is(option, Grammar.PackratParsing)) {
 			int memoId = 0;
 			for(Production p : grammar.getProductionList()) {
-				ProductionCode pcode = this.codeMap.get(p.getUniqueName());
+				CodePoint pcode = this.codeMap.get(p.getUniqueName());
 				if(pcode != null) {
 					memoId = this.analyizeProductionMemoizing(pcode, memoId);
 				}

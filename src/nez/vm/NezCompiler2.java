@@ -29,7 +29,7 @@ public class NezCompiler2 extends NezCompiler1 {
 		return new GrammarOptimizer(this.option).optimize(p);
 	}
 
-	protected Instruction encodeMemoizingProduction(ProductionCode code) {
+	protected Instruction encodeMemoizingProduction(CodePoint code) {
 		if(UFlag.is(this.option, Grammar.PackratParsing)) {
 			Production p = code.production;
 			boolean state = p.isContextual();
@@ -180,7 +180,7 @@ public class NezCompiler2 extends NezCompiler1 {
 
 	public final Instruction encodeNonTerminal(NonTerminal p, Instruction next, Instruction failjump) {
 		Production r = p.getProduction();
-		ProductionCode code = this.codeMap.get(r.getUniqueName());
+		CodePoint code = this.codeMap.get(r.getUniqueName());
 		if(code.inlining) {
 			this.optimizedInline(r);
 			return encodeExpression(code.localExpression, next, failjump);
@@ -211,7 +211,7 @@ public class NezCompiler2 extends NezCompiler1 {
 
 	private Instruction encodeLinkedNonterminal(NonTerminal p, Instruction next, Instruction failjump) {
 		Production r = p.getProduction();
-		ProductionCode code = this.codeMap.get(r.getUniqueName());
+		CodePoint code = this.codeMap.get(r.getUniqueName());
 		if(code.inlining) {
 			this.optimizedInline(r);
 			return encodeExpression(code.localExpression, next, failjump);

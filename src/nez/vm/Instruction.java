@@ -203,8 +203,8 @@ class IMemoCall extends Instruction implements StackOperation {
 	public MemoPoint   memoPoint = null;
 	public Instruction nonMemoCodePoint = null;
 	public Instruction memoCodePoint    = null;
-	ProductionCode temp;
-	IMemoCall(ProductionCode temp, Instruction next) {
+	CodePoint temp;
+	IMemoCall(CodePoint temp, Instruction next) {
 		super(temp.production, next);
 		this.temp = temp;
 		this.production = temp.production;
@@ -216,8 +216,8 @@ class IMemoCall extends Instruction implements StackOperation {
 	void resolveJumpAddress() {
 		assert(this.returnPoint == null);
 		assert(this.temp != null);
-		this.memoCodePoint = temp.memoCodePoint;
-		this.nonMemoCodePoint = temp.codePoint;
+		this.memoCodePoint = temp.memoStart;
+		this.nonMemoCodePoint = temp.nonmemoStart;
 		this.memoPoint = temp.memoPoint;
 		this.returnPoint = labeling(this.next);
 		this.next = labeling(memoCodePoint);

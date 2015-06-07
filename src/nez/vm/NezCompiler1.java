@@ -44,21 +44,21 @@ public class NezCompiler1 extends NezCompiler {
 		return GrammarOptimizer.resolveNonTerminal(p.getExpression());
 	}
 
-	protected Instruction encodeMemoizingProduction(ProductionCode code) {
+	protected Instruction encodeMemoizingProduction(CodePoint code) {
 		return null;
 	}
 	
 	protected void encodeProduction(UList<Instruction> codeList, Production p, Instruction next) {
 		String uname = p.getUniqueName();
-		ProductionCode code = this.codeMap.get(uname);
+		CodePoint code = this.codeMap.get(uname);
 		if(code != null) {
-			code.codePoint = encodeExpression(code.localExpression, next, null/*failjump*/);
+			code.nonmemoStart = encodeExpression(code.localExpression, next, null/*failjump*/);
 			code.start = codeList.size();
-			this.layoutCode(codeList, code.codePoint);
+			this.layoutCode(codeList, code.nonmemoStart);
 			code.end = codeList.size();
 			if(code.memoPoint != null) {
-				code.memoCodePoint = this.encodeMemoizingProduction(code);
-				this.layoutCode(codeList, code.memoCodePoint);
+				code.memoStart = this.encodeMemoizingProduction(code);
+				this.layoutCode(codeList, code.memoStart);
 			}
 		}
 	}
@@ -77,11 +77,11 @@ public class NezCompiler1 extends NezCompiler {
 		}
 		for(Instruction inst : codeList) {
 			if(inst instanceof ICallPush) {
-				ProductionCode deref = this.codeMap.get(((ICallPush) inst).rule.getUniqueName());
+				CodePoint deref = this.codeMap.get(((ICallPush) inst).rule.getUniqueName());
 				if(deref == null) {
 					Verbose.debug("no deref: " + ((ICallPush) inst).rule.getUniqueName());
 				}
-				((ICallPush) inst).setResolvedJump(deref.codePoint);
+				((ICallPush) inst).setResolvedJump(deref.nonmemoStart);
 			}
 			if(inst instanceof IMemoCall) {
 				((IMemoCall) inst).resolveJumpAddress();
