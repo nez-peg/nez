@@ -279,9 +279,36 @@ public class Production extends Expression {
 	}
 
 	public final boolean isRecursive() {
+		if(!UFlag.is(this.flag, Production.ConditionalChecked)) {
+			checkRecursive(this.getExpression(), null);
+			this.flag |= Production.RecursiveChecked;
+		}
 		return UFlag.is(this.flag, Production.RecursiveProduction);
 	}
+	
+	private void checkRecursive(Expression e, Visa v) {
+		if(e instanceof NonTerminal) {
+			Production p = ((NonTerminal) e).getProduction();
+			if(p == this) {
+				this.flag |= Production.RecursiveChecked | Production.RecursiveProduction;				
+				return;
+			}
+			if(Visa.isVisited(v, p)) {
+				return;
+			}
+			v = Visa.visited(v, p);
+			this.checkRecursive(p.getExpression(), v);
+			return;
+		}
+		for(Expression sub : e) {
+			this.checkConditional(sub, v);
+			if(UFlag.is(this.flag, Production.RecursiveProduction)) {
+				break;
+			}
+		}
+	}
 
+	@Deprecated
 	public final void setRecursive() {
 		this.flag |= Production.RecursiveChecked | Production.RecursiveProduction;
 	}
