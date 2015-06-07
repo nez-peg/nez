@@ -4,7 +4,6 @@ import java.util.TreeMap;
 
 import nez.ast.SourcePosition;
 import nez.util.UList;
-import nez.util.UMap;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
@@ -114,9 +113,8 @@ public class NonTerminal extends Expression {
 	}
 
 	@Override
-	public int inferTypestate(UMap<String> visited) {
-		Production r = this.getProduction();
-		return r.inferTypestate(visited);
+	public int inferTypestate(Visa v) {
+		return this.getProduction().inferTypestate(v);
 	}
 	
 	@Override

@@ -33,6 +33,7 @@ public class Production extends Expression {
 	public final static int ConditionalProduction      = 1 << 17;
 	public final static int ContextualChecked          = 1 << 18;
 	public final static int ContextualProduction       = 1 << 19;
+	private static final int OptionalProduction = 0;
 
 	public final static void quickCheck(Production p) {
 		p.flag = p.flag | ConsumedChecked | ConditionalChecked | ContextualChecked | RecursiveChecked;
@@ -503,36 +504,42 @@ public class Production extends Expression {
 		return minlen > 0;
 	}
 	
-	public int transType = Typestate.Undefined;
+	//public int transType = Typestate.Undefined;
 	
 	public final boolean isPurePEG() {
-		return this.transType == Typestate.BooleanType;
+		if(!UFlag.is(this.flag, ASTChecked)) {
+			checkTypestate();
+		}
+		return !UFlag.is(this.flag, ObjectProduction) && !UFlag.is(this.flag, OperationalProduction);
+	}
+	
+	private void checkTypestate() {
+		int t = inferTypestate(null);
+		if(t == Typestate.ObjectType) {
+			this.flag |= ObjectProduction;
+		}
+		if(t == Typestate.OperationType) {
+			this.flag |= OperationalProduction;
+		}
+		this.flag |= ASTChecked;		
 	}
 
 	@Override
-	public int inferTypestate(UMap<String> visited) {
-		if(this.transType != Typestate.Undefined) {
-			return this.transType;
-		}
-		if(visited != null) {
-			if(visited.hasKey(uname)) {
-				this.transType = Typestate.BooleanType;
-				return this.transType;
+	public int inferTypestate(Visa v) {
+		if(UFlag.is(this.flag, ASTChecked)) {
+			if(UFlag.is(this.flag, ObjectProduction)) {
+				return Typestate.ObjectType;
 			}
+			if(UFlag.is(this.flag, OptionalProduction)) {
+				return Typestate.OperationType;
+			}
+			return Typestate.BooleanType;
 		}
-		else {
-			visited = new UMap<String>();
+		if(Visa.isVisited(v, this)) {
+			return Typestate.Undefined;
 		}
-		visited.put(uname, uname);
-		int t = body.inferTypestate(visited);
-		assert(t != Typestate.Undefined);
-		if(this.transType == Typestate.Undefined) {
-			this.transType = t;
-		}
-		else {
-			assert(transType == t);
-		}
-		return this.transType;
+		v = Visa.visited(v, this);
+		return this.getExpression().inferTypestate(v);
 	}
 	
 	@Override

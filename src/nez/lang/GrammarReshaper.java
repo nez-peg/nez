@@ -1,5 +1,6 @@
 package nez.lang;
 
+import nez.util.UFlag;
 import nez.util.UList;
 
 public class GrammarReshaper {
@@ -284,8 +285,7 @@ class ASTConstructionEliminator extends GrammarReshaper {
 		this.renaming = renaming;
 	}
 	public void updateProductionAttribute(Production origProduction, Production newProduction) {
-		newProduction.transType = Typestate.BooleanType;
-		newProduction.minlen = origProduction.minlen;
+		newProduction.flag = UFlag.unsetFlag(origProduction.flag, Production.ObjectProduction | Production.OperationalProduction);
 	}
 	
 	@Override

@@ -2,7 +2,6 @@ package nez.lang;
 
 import nez.ast.SourcePosition;
 import nez.util.UList;
-import nez.util.UMap;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
@@ -46,8 +45,8 @@ public class Repetition1 extends Repetition {
 	}
 
 	@Override
-	public int inferTypestate(UMap<String> visited) {
-		int t = this.inner.inferTypestate(visited);
+	public int inferTypestate(Visa v) {
+		int t = this.inner.inferTypestate(v);
 		if(t == Typestate.ObjectType) {
 			return Typestate.BooleanType;
 		}

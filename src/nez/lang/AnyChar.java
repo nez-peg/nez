@@ -4,7 +4,6 @@ import nez.ast.Source;
 import nez.ast.SourcePosition;
 import nez.util.UFlag;
 import nez.util.UList;
-import nez.util.UMap;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
@@ -55,7 +54,7 @@ public class AnyChar extends Terminal implements Consumed {
 		return true;
 	}
 	@Override
-	public int inferTypestate(UMap<String> visited) {
+	public int inferTypestate(Visa v) {
 		return Typestate.BooleanType;
 	}
 	

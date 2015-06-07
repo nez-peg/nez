@@ -67,7 +67,7 @@ public class DefSymbol extends Unary {
 	}
 	
 	@Override
-	public int inferTypestate(UMap<String> visited) {
+	public int inferTypestate(Visa v) {
 		return Typestate.BooleanType;
 	}
 	@Override

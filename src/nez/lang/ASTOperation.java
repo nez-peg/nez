@@ -4,7 +4,6 @@ import java.util.TreeMap;
 
 import nez.ast.SourcePosition;
 import nez.util.UList;
-import nez.util.UMap;
 
 public abstract class ASTOperation extends Expression {
 	ASTOperation(SourcePosition s) {
@@ -16,7 +15,7 @@ public abstract class ASTOperation extends Expression {
 		return false;
 	}
 	@Override
-	public int inferTypestate(UMap<String> visited) {
+	public int inferTypestate(Visa v) {
 		return Typestate.OperationType;
 	}
 	@Override

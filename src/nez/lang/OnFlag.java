@@ -2,7 +2,6 @@ package nez.lang;
 
 import nez.ast.SourcePosition;
 import nez.util.UList;
-import nez.util.UMap;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
@@ -57,8 +56,8 @@ public class OnFlag extends Unary implements Conditional {
 	}
 
 	@Override
-	public int inferTypestate(UMap<String> visited) {
-		return this.inner.inferTypestate(visited);
+	public int inferTypestate(Visa v) {
+		return this.inner.inferTypestate(v);
 	}
 
 	@Override

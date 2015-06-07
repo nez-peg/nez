@@ -2,7 +2,6 @@ package nez.lang;
 
 import nez.ast.SourcePosition;
 import nez.util.UList;
-import nez.util.UMap;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
@@ -46,7 +45,7 @@ public class Link extends Unary {
 		return this.inner.checkAlwaysConsumed(checker, startNonTerminal, stack);
 	}
 	@Override
-	public int inferTypestate(UMap<String> visited) {
+	public int inferTypestate(Visa v) {
 		return Typestate.OperationType;
 	}
 	@Override

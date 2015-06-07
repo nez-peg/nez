@@ -4,7 +4,6 @@ import java.util.TreeMap;
 
 import nez.ast.SourcePosition;
 import nez.util.UList;
-import nez.util.UMap;
 
 abstract class Unconsumed extends Expression {
 	protected Unconsumed(SourcePosition s) {
@@ -27,7 +26,7 @@ abstract class Unconsumed extends Expression {
 		return false;
 	}
 	@Override
-	public int inferTypestate(UMap<String> visited) {
+	public int inferTypestate(Visa v) {
 		return Typestate.BooleanType;
 	}
 	@Override

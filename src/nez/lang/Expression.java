@@ -4,7 +4,6 @@ import java.util.TreeMap;
 
 import nez.ast.SourcePosition;
 import nez.util.UList;
-import nez.util.UMap;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
@@ -81,7 +80,7 @@ public abstract class Expression extends AbstractList<Expression> {
 		return this.inferTypestate(null);
 	}
 	
-	public abstract int inferTypestate(UMap<String> visited);
+	public abstract int inferTypestate(Visa v);
 	
 	public abstract short acceptByte(int ch, int option);
 	

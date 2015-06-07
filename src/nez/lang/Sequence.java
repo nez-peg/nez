@@ -4,7 +4,6 @@ import nez.ast.SourcePosition;
 import nez.util.StringUtils;
 import nez.util.UFlag;
 import nez.util.UList;
-import nez.util.UMap;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
@@ -160,9 +159,9 @@ public class Sequence extends Expression {
 		return false;
 	}
 	@Override
-	public int inferTypestate(UMap<String> visited) {
+	public int inferTypestate(Visa v) {
 		for(Expression e: this) {
-			int t = e.inferTypestate(visited);
+			int t = e.inferTypestate(v);
 			if(t == Typestate.ObjectType || t == Typestate.OperationType) {
 				return t;
 			}
