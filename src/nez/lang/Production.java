@@ -2,16 +2,11 @@ package nez.lang;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.TreeMap;
 
 import nez.ast.SourcePosition;
-import nez.main.Command;
-import nez.main.Verbose;
 import nez.util.ConsoleUtils;
-import nez.util.StringUtils;
 import nez.util.UFlag;
 import nez.util.UList;
-import nez.util.UMap;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
@@ -35,9 +30,37 @@ public class Production extends Expression {
 	public final static int ConditionalProduction      = 1 << 17;
 	public final static int ContextualChecked          = 1 << 18;
 	public final static int ContextualProduction       = 1 << 19;
-	//private static final int OptionalProduction = 0;
 
 	public final static int ResetFlag                  = 1 << 30;
+
+	int        flag;
+	NameSpace  ns;
+	String     name;
+	String     uname;
+	Expression body;
+		
+	public Production(SourcePosition s, int flag, NameSpace ns, String name, Expression body) {
+		super(s);
+		this.ns = ns;
+		this.name = name;
+		this.uname = ns.uniqueName(name);
+		this.body = (body == null) ? GrammarFactory.newEmpty(s) : body;
+		this.flag = flag;
+		Production.quickCheck(this);
+	}
+
+	private Production(String name, Production original, Expression body) {
+		super(original.s);
+		this.ns = original.getNameSpace();
+		this.name = name;
+		this.uname = ns.uniqueName(name);
+		this.body = (body == null) ? GrammarFactory.newEmpty(s) : body;
+		Production.quickCheck(this);
+	}
+
+	Production newProduction(String localName) {
+		return new Production(localName, this, this.getExpression());
+	}
 
 	void resetFlag() {
 		this.flag = (this.flag & Declared) | ResetFlag;
@@ -50,7 +73,6 @@ public class Production extends Expression {
 		//System.out.println(this.getLocalName() + ":: " + flag());
 	}
 
-	
 	public final static void quickCheck(Production p) {
 		p.flag = p.flag | ConsumedChecked | ConditionalChecked | ContextualChecked | RecursiveChecked;
 		quickCheck(p, p.getExpression());
@@ -177,39 +199,6 @@ public class Production extends Expression {
 		return l;
 	}
 		
-	int        flag;
-	NameSpace  ns;
-	String     name;
-	String     uname;
-	Expression body;
-		
-	public Production(SourcePosition s, int flag, NameSpace ns, String name, Expression body) {
-		super(s);
-		this.ns = ns;
-		this.name = name;
-		this.uname = ns.uniqueName(name);
-		this.body = (body == null) ? GrammarFactory.newEmpty(s) : body;
-		this.flag = flag;
-		Production.quickCheck(this);
-		//this.minlen = Production.quickConsumedCheck(body);
-		//this.checkConsumed(this.minlen);
-	}
-
-	private Production(String name, Production original, Expression body) {
-		super(original.s);
-		this.ns = original.getNameSpace();
-		this.name = name;
-		this.uname = ns.uniqueName(name);
-		this.body = (body == null) ? GrammarFactory.newEmpty(s) : body;
-		Production.quickCheck(this);
-		//this.minlen = Production.quickConsumedCheck(body);
-		//this.checkConsumed(this.minlen);
-	}
-
-	Production newProduction(String localName) {
-		return new Production(localName, this, this.getExpression());
-	}
-	
 	@Override
 	public final boolean equalsExpression(Expression o) {
 		if(o instanceof Production) {
@@ -270,11 +259,6 @@ public class Production extends Expression {
 				break;
 			}
 		}
-	}
-
-	@Deprecated
-	public final void setRecursive() {
-		this.flag |= Production.RecursiveChecked | Production.RecursiveProduction;
 	}
 
 	public final boolean isConditional() {
@@ -394,13 +378,12 @@ public class Production extends Expression {
 		return (e instanceof Contextual);
 	}
 	
-	
-	public final String getLocalName() {
-		return this.name;
-	}
-	
 	public final String getUniqueName() {
 		return this.uname;
+	}
+
+	public final String getLocalName() {
+		return this.name;
 	}
 	
 	public final Expression getExpression() {
@@ -433,17 +416,15 @@ public class Production extends Expression {
 		return m.reshapeProduction(this);
 	}
 	
-	//int minlen = -1;
-
 	@Override
 	public boolean isConsumed() {
 		if(!UFlag.is(this.flag, ConsumedChecked)) {
-			checkConsumed(this.getExpression(), new Stacker(this, null));
+			checkConsumed(this.getExpression(), new ProductionStacker(this, null));
 		}
 		return UFlag.is(this.flag, ConsumedProduction);
 	}
 	
-	private boolean checkConsumed(Expression e, Stacker s) {
+	private boolean checkConsumed(Expression e, ProductionStacker s) {
 		if(e instanceof NonTerminal) {
 			NonTerminal n = (NonTerminal)e;
 			Production p = n.getProduction();
@@ -455,7 +436,7 @@ public class Production extends Expression {
 				return false;
 			}
 			if(p.isRecursive()) {
-				return checkConsumed(p.getExpression(), new Stacker(p, s));
+				return checkConsumed(p.getExpression(), new ProductionStacker(p, s));
 			}
 			return p.isConsumed();
 		}
@@ -486,7 +467,7 @@ public class Production extends Expression {
 		return e.isConsumed();
 	}
 	
-	public final boolean isPurePEG() {
+	public final boolean isNoNTreeConstruction() {
 		if(!UFlag.is(this.flag, ASTChecked)) {
 			checkTypestate();
 		}
@@ -536,22 +517,27 @@ public class Production extends Expression {
 		return this.getUniqueName() + "=";
 	}
 
-	private int dfaOption = -1;
-	private short[] dfaCache = null;
+//	private int dfaOption = -1;
+//	private short[] dfaCache = null;
+//
+//	@Override
+//	public short acceptByte(int ch, int option) {
+//		option = Grammar.mask(option);
+//		if(option != dfaOption) {
+//			if(dfaCache == null) {
+//				dfaCache = new short[257];
+//			}
+//			for(int c = 0; c < dfaCache.length; c++) {
+//				dfaCache[c] = this.body.acceptByte(c, option);
+//			}
+//			this.dfaOption = option;
+//		}
+//		return dfaCache[ch]; 
+//	}
 
 	@Override
 	public short acceptByte(int ch, int option) {
-		option = Grammar.mask(option);
-		if(option != dfaOption) {
-			if(dfaCache == null) {
-				dfaCache = new short[257];
-			}
-			for(int c = 0; c < dfaCache.length; c++) {
-				dfaCache[c] = this.body.acceptByte(c, option);
-			}
-			this.dfaOption = option;
-		}
-		return dfaCache[ch]; 
+		return this.getExpression().acceptByte(ch, option);
 	}
 
 	
@@ -589,8 +575,6 @@ public class Production extends Expression {
 		}
 		ConsoleUtils.println(l + "\n" + this.getLocalName() + " = " + this.getExpression());
 	}
-
-	
 }
 
 class Visa {
@@ -613,17 +597,17 @@ class Visa {
 	}
 }
 
-class Stacker {
+class ProductionStacker {
 	int n;
-	Stacker prev;
+	ProductionStacker prev;
 	Production p;
-	Stacker(Production p, Stacker prev) {
+	ProductionStacker(Production p, ProductionStacker prev) {
 		this.prev = prev;
 		this.p = p;
 		this.n = (prev == null) ? 0 : prev.n + 1;
 	}
 	boolean isVisited(Production p) {
-		Stacker d = this;
+		ProductionStacker d = this;
 		while(d != null) {
 			if(d.p == p) {
 				return true;

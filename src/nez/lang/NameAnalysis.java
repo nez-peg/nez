@@ -21,21 +21,21 @@ public class NameAnalysis extends GrammarReshaper {
 			if(UFlag.is(p.flag, Production.ResetFlag)) {
 				p.initFlag();
 				if(p.isRecursive()) {
-					checkLeftRecursion(p.getExpression(), new Stacker(p, null));
+					checkLeftRecursion(p.getExpression(), new ProductionStacker(p, null));
 				}
-				p.isPurePEG();
+				p.isNoNTreeConstruction();
 			}
 		}
 	}
 	
-	boolean checkLeftRecursion(Expression e, Stacker s) {
+	boolean checkLeftRecursion(Expression e, ProductionStacker s) {
 		if(e instanceof NonTerminal) {
 			Production p = ((NonTerminal) e).getProduction();
 			if(s.isVisited(p)) {
 				((NonTerminal) e).getNameSpace().reportError(e, "left recursion: " + p.getLocalName());
 				return true;  // stop as consumed
 			}
-			return checkLeftRecursion(p.getExpression(), new Stacker(p, s));
+			return checkLeftRecursion(p.getExpression(), new ProductionStacker(p, s));
 		}
 		if(e.size() > 0) {
 			if(e instanceof Sequence) {

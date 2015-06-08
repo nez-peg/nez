@@ -81,7 +81,7 @@ public abstract class NezEncoder {
 		Production p = pcode.production;
 		if(pcode.ref > 3 && p.inferTypestate() != Typestate.OperationType) {
 			pcode.memoPoint = new MemoPoint(memoId++, p.getLocalName(), pcode.localExpression, false);
-			Verbose.debug("memo " + p.getLocalName() + " " + pcode.memoPoint.id + " pure? " + p.isPurePEG());
+			Verbose.debug("memo " + p.getLocalName() + " " + pcode.memoPoint.id + " pure? " + p.isNoNTreeConstruction());
 		}
 		return memoId;
 	}
