@@ -1,7 +1,6 @@
 package nez.lang;
 
 import nez.ast.SourcePosition;
-import nez.util.UList;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
@@ -62,7 +61,7 @@ public class OnFlag extends Unary implements Conditional {
 
 	@Override
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
-		return this.inner.encode(bc, next, failjump);
+		return bc.encodeOnFlag(this, next, failjump);
 	}
 
 	@Override

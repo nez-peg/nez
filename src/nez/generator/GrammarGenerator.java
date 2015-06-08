@@ -2,14 +2,21 @@ package nez.generator;
 
 import nez.lang.And;
 import nez.lang.AnyChar;
+import nez.lang.Block;
 import nez.lang.ByteChar;
 import nez.lang.ByteMap;
 import nez.lang.Capture;
 import nez.lang.Choice;
+import nez.lang.DefIndent;
+import nez.lang.DefSymbol;
 import nez.lang.Empty;
+import nez.lang.ExistsSymbol;
 import nez.lang.Expression;
 import nez.lang.Failure;
+import nez.lang.IsIndent;
+import nez.lang.IsSymbol;
 import nez.lang.Link;
+import nez.lang.LocalTable;
 import nez.lang.New;
 import nez.lang.NonTerminal;
 import nez.lang.Not;
@@ -25,10 +32,6 @@ import nez.lang.Unary;
 import nez.util.StringUtils;
 
 public abstract class GrammarGenerator extends NezGenerator {
-
-	protected GrammarGenerator(String fileName) {
-		super(fileName);
-	}
 
 	protected GrammarGenerator W(String word) {
 		file.write(word);
@@ -90,7 +93,7 @@ public abstract class GrammarGenerator extends NezGenerator {
 	
 	public void visitGrouping(Expression e) {
 		W(_OpenGrouping());
-		visit(e);
+		visitExpression(e);
 		W(_CloseGrouping());
 	}
 
@@ -109,7 +112,7 @@ public abstract class GrammarGenerator extends NezGenerator {
 			if(c > 0) {
 				W(_Delim());
 			}
-			visit(sub);
+			visitExpression(sub);
 			c++;
 		}	
 		W(_Close());
@@ -120,7 +123,7 @@ public abstract class GrammarGenerator extends NezGenerator {
 		W(name).W(_Open());
 		W(first).W(_Delim());
 		for(Expression sub: e) {
-			visit(sub);
+			visitExpression(sub);
 		}	
 		W(_Close());
 		return this;
@@ -171,7 +174,7 @@ public abstract class GrammarGenerator extends NezGenerator {
 			W(prefix);
 		}
 		if(e.get(0) instanceof NonTerminal) {
-			this.visit(e.get(0));
+			this.visitExpression(e.get(0));
 		}
 		else {
 			visitGrouping(e.get(0));
@@ -193,20 +196,20 @@ public abstract class GrammarGenerator extends NezGenerator {
 				if(i > 0) {
 					L(_Choice() + " ");
 				}
-				visit(e.get(i));
+				visitExpression(e.get(i));
 			}
 		}
 		else {
-			visit(e);
+			visitExpression(e);
 		}
 		dec();
 	}	
 
-	public void visitEmpty(Empty e) {
+	public void visitEmpty(Expression e) {
 		W(""+ Quoatation()+Quoatation());
 	}
 
-	public void visitFailure(Failure e) {
+	public void visitFailure(Expression e) {
 		W(_Not()+ Quoatation()+Quoatation());
 	}
 
@@ -251,7 +254,7 @@ public abstract class GrammarGenerator extends NezGenerator {
 			if(i > 0) {
 				W(" " + _Choice() + " ");
 			}
-			visit(e.get(i));
+			visitExpression(e.get(i));
 		}
 	}
 	
@@ -278,7 +281,7 @@ public abstract class GrammarGenerator extends NezGenerator {
 //			predicate += "[" + e.index + "]";
 //		}
 //		Unary(predicate, e, null);
-		visit(e.get(0));
+		visitExpression(e.get(0));
 	}
 	
 	public void visitSequence(Sequence e) {
@@ -298,7 +301,7 @@ public abstract class GrammarGenerator extends NezGenerator {
 				c++;
 			}
 			else {
-				visit(s);
+				visitExpression(s);
 				c++;
 			}
 		}
@@ -329,8 +332,68 @@ public abstract class GrammarGenerator extends NezGenerator {
 	@Override
 	public void visitUndefined(Expression e) {
 		if(e.size() > 0) {
-			visit(e.get(0));
+			visitExpression(e.get(0));
 		}
+	}
+
+	@Override
+	public String getDesc() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void visitExpression(Expression e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void visitReplace(Replace p) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void visitBlock(Block p) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void visitDefSymbol(DefSymbol p) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void visitIsSymbol(IsSymbol p) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void visitDefIndent(DefIndent p) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void visitIsIndent(IsIndent p) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void visitExistsSymbol(ExistsSymbol p) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void visitLocalTable(LocalTable p) {
+		// TODO Auto-generated method stub
+		
 	}
 
 

@@ -25,14 +25,6 @@ import nez.util.StringUtils;
 
 public class PEGTLGenerator extends GrammarGenerator {
 
-	PEGTLGenerator() {
-		super(null);
-	}
-
-	PEGTLGenerator(String fileName) {
-		super(fileName);
-	}
-
 	@Override
 	public String getDesc() {
 		return "Parsing Expression Grammar Template Library for C++11";
@@ -63,7 +55,7 @@ public class PEGTLGenerator extends GrammarGenerator {
 	
 	public void visitGrouping(Expression e) {
 		//W(_OpenGrouping());
-		visit(e);
+		visitExpression(e);
 		//W(_CloseGrouping());
 	}
 	
@@ -74,16 +66,16 @@ public class PEGTLGenerator extends GrammarGenerator {
 		inc();
 		L("");
 		W("pegtl::seq<");
-		visit(e);
+		visitExpression(e);
 		W(", pegtl::success> {};");
 		dec();
 	}	
 
-	public void visitEmpty(Empty e) {
+	public void visitEmpty(Expression e) {
 		C("pegtl::success");
 	}
 
-	public void visitFailure(Failure e) {
+	public void visitFailure(Expression e) {
 		C("pegtl::failure");
 	}
 
@@ -178,13 +170,13 @@ public class PEGTLGenerator extends GrammarGenerator {
 //		else {
 //			C("Link", e);
 //		}
-		visit(e.get(0));
+		visitExpression(e.get(0));
 	}
 
 	@Override
 	public void visitUndefined(Expression e) {
 		if(e.size() > 0) {
-			visit(e.get(0));
+			visitExpression(e.get(0));
 		}
 		else {
 			W("pegtl::success");

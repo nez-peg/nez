@@ -19,9 +19,9 @@ public class GeneratorCommand extends Command {
 
 	@Override
 	public void exec(CommandConfigure config) {
-		Grammar g = config.getGrammar();
-		new NezGrammar();
-		gen.generate(g);
+//		Grammar g = config.getGrammar();
+//		new NezGrammar();
+//		gen.generate(g);
 	}
 
 }

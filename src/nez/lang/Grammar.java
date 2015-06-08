@@ -20,9 +20,9 @@ import nez.vm.Machine;
 import nez.vm.MemoPoint;
 import nez.vm.MemoTable;
 import nez.vm.NezCompiler;
-import nez.vm.NezEncoder;
 import nez.vm.NezCompiler1;
 import nez.vm.NezCompiler2;
+import nez.vm.NezEncoder;
 
 public class Grammar {
 	Production start;

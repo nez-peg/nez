@@ -25,14 +25,7 @@ import nez.lang.Tagging;
 import nez.lang.Unary;
 import nez.util.StringUtils;
 
-public class MouseGrammarGenerator extends NezGenerator {
-	public MouseGrammarGenerator(String filename) {
-		super(filename);
-	}
-	
-	public MouseGrammarGenerator() {
-		super();
-	}
+public class MouseGrammarGenerator extends GrammarGenerator {
 	
 	@Override
 	public String getDesc() {
@@ -63,11 +56,11 @@ public class MouseGrammarGenerator extends NezGenerator {
 				if(i > 0) {
 					file.writeIndent("/ ");
 				}
-				visit(e.get(i));
+				visitExpression(e.get(i));
 			}
 		}
 		else {
-			visit(e);
+			visitExpression(e);
 		}
 		file.writeIndent(";");
 		file.decIndent();
@@ -152,11 +145,11 @@ public class MouseGrammarGenerator extends NezGenerator {
 			file.write(prefix);
 		}
 		if(/*e.get(0) instanceof String ||*/ e.get(0) instanceof NonTerminal/* || e.get(0) instanceof NewClosure*/) {
-			this.visit(e.get(0));
+			this.visitExpression(e.get(0));
 		}
 		else {
 			file.write("(");
-			this.visit(e.get(0));
+			this.visitExpression(e.get(0));
 			file.write(")");
 		}
 		if(suffix != null) {
@@ -197,11 +190,11 @@ public class MouseGrammarGenerator extends NezGenerator {
 			Expression e = l.get(i);
 			if(e instanceof Choice || e instanceof Sequence) {
 				file.write("( ");
-				visit(e);
+				visitExpression(e);
 				file.write(" )");
 				continue;
 			}
-			visit(e);
+			visitExpression(e);
 		}
 	}
 
@@ -231,7 +224,7 @@ public class MouseGrammarGenerator extends NezGenerator {
 			if(i > 0) {
 				file.write(" / ");
 			}
-			visit(e.get(i));
+			visitExpression(e.get(i));
 		}
 	}
 	
@@ -259,7 +252,7 @@ public class MouseGrammarGenerator extends NezGenerator {
 //			predicate += "[" + e.index + "]";
 //		}
 //		this.visit(predicate, e, null);
-		this.visit(e.get(0));
+		this.visitExpression(e.get(0));
 	}
 
 	@Override
@@ -268,7 +261,7 @@ public class MouseGrammarGenerator extends NezGenerator {
 		file.write(e.getPredicate());
 		for(Expression se : e) {
 			file.write(" ");
-			visit(se);
+			visitExpression(se);
 		}
 		file.write("> */");
 	}

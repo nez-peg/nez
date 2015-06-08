@@ -31,6 +31,7 @@ import nez.lang.Production;
 import nez.lang.Repetition;
 import nez.lang.Repetition1;
 import nez.lang.Replace;
+import nez.lang.Sequence;
 import nez.lang.Tagging;
 import nez.lang.Typestate;
 import nez.main.Verbose;
@@ -38,7 +39,7 @@ import nez.util.UFlag;
 import nez.util.UList;
 
 public abstract class NezEncoder {
-	final int option;
+	protected int option;
 		
 	public NezEncoder(int option) {
 		this.option = option;
@@ -149,8 +150,9 @@ public abstract class NezEncoder {
 //	private Instruction failed = new IFail(null);
 	
 	public abstract Instruction encodeExpression(Expression e, Instruction next, Instruction failjump);
+	
 	public abstract Instruction encodeFail(Expression p);
-	public abstract Instruction encodeMatchAny(AnyChar p, Instruction next, Instruction failjump);
+	public abstract Instruction encodeAnyChar(AnyChar p, Instruction next, Instruction failjump);
 	public abstract Instruction encodeByteChar(ByteChar p, Instruction next, Instruction failjump);
 	public abstract Instruction encodeByteMap(ByteMap p, Instruction next, Instruction failjump);
 	public abstract Instruction encodeOption(Option p, Instruction next);
@@ -158,7 +160,7 @@ public abstract class NezEncoder {
 	public abstract Instruction encodeRepetition1(Repetition1 p, Instruction next, Instruction failjump);
 	public abstract Instruction encodeAnd(And p, Instruction next, Instruction failjump);
 	public abstract Instruction encodeNot(Not p, Instruction next, Instruction failjump);
-	public abstract Instruction encodeSequence(Expression p, Instruction next, Instruction failjump);
+	public abstract Instruction encodeSequence(Sequence p, Instruction next, Instruction failjump);
 	public abstract Instruction encodeChoice(Choice p, Instruction next, Instruction failjump);
 	public abstract Instruction encodeNonTerminal(NonTerminal p, Instruction next, Instruction failjump);
 	
@@ -177,6 +179,20 @@ public abstract class NezEncoder {
 	public abstract Instruction encodeIsIndent(IsIndent p, Instruction next, Instruction failjump);
 	public abstract Instruction encodeExistsSymbol(ExistsSymbol existsSymbol, Instruction next, Instruction failjump);
 	public abstract Instruction encodeLocalTable(LocalTable localTable, Instruction next, Instruction failjump);
-	
 
+	// Extension
+	public abstract Instruction encodeExtension(Expression p, Instruction next, Instruction failjump);
+
+	public Instruction encodeEmpty(Expression empty, Instruction next) {
+		return next;
+	}
+
+	public Instruction encodeOnFlag(OnFlag p, Instruction next, Instruction failjump) {
+		return p.get(0).encode(this, next, failjump);
+	}
+
+	public Instruction encodeIfFlag(IfFlag ifFlag, Instruction next, Instruction failjump) {
+		return next;
+	}
+	
 }

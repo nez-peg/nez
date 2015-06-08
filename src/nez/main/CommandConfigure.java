@@ -3,7 +3,7 @@ package nez.main;
 import java.io.IOException;
 
 import nez.SourceContext;
-import nez.generator.NezGenerator;
+import nez.generator.GeneratorLoader;
 import nez.lang.Grammar;
 import nez.lang.GrammarChecker;
 import nez.lang.NameSpace;
@@ -233,11 +233,11 @@ public class CommandConfigure {
 	public final Command getCommand() {
 		Command com = Command.getCommand(this.CommandName);
 		if(com == null) {
-			if(GrammarFile != null && NezGenerator.supportedGenerator(this.CommandName) && this.OutputFileName != null) {
-				return new GeneratorCommand(NezGenerator.newNezGenerator(this.CommandName, this.OutputFileName));
+			if(GrammarFile != null && GeneratorLoader.supportedGenerator(this.CommandName) && this.OutputFileName != null) {
+				return new GeneratorCommand(GeneratorLoader.newNezGenerator(this.CommandName, this.OutputFileName));
 			}
-			if(GrammarFile != null && NezGenerator.supportedGenerator(this.CommandName)) {
-				return new GeneratorCommand(NezGenerator.newNezGenerator(this.CommandName));
+			if(GrammarFile != null && GeneratorLoader.supportedGenerator(this.CommandName)) {
+				return new GeneratorCommand(GeneratorLoader.newNezGenerator(this.CommandName));
 			}
 			this.showUsage("unknown command: " + this.CommandName);
 		}
@@ -275,7 +275,7 @@ public class CommandConfigure {
 		return getNameSpace(false).newGrammar(start, option);
 	}
 
-	private int GrammarOption = Grammar.DefaultOption;
+	public int GrammarOption = Grammar.DefaultOption;
 
 	public final Grammar getGrammar(String start) {
 		Grammar p = getNameSpace(false).newGrammar(start, GrammarOption);

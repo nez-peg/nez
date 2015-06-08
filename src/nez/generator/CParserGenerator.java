@@ -8,16 +8,23 @@ import java.util.Stack;
 import nez.ast.Tag;
 import nez.lang.And;
 import nez.lang.AnyChar;
+import nez.lang.Block;
 import nez.lang.ByteChar;
 import nez.lang.ByteMap;
 import nez.lang.Capture;
 import nez.lang.Choice;
+import nez.lang.DefIndent;
+import nez.lang.DefSymbol;
 import nez.lang.Empty;
+import nez.lang.ExistsSymbol;
 import nez.lang.Expression;
 import nez.lang.Failure;
 import nez.lang.Grammar;
 import nez.lang.IfFlag;
+import nez.lang.IsIndent;
+import nez.lang.IsSymbol;
 import nez.lang.Link;
+import nez.lang.LocalTable;
 import nez.lang.New;
 import nez.lang.NonTerminal;
 import nez.lang.Not;
@@ -34,14 +41,6 @@ import nez.vm.GrammarOptimizer;
 
 public class CParserGenerator extends ParserGenerator {
 
-	public CParserGenerator() {
-		super(null);
-	}
-
-	public CParserGenerator(String fileName) {
-		super(fileName);
-	}
-
 	@Override
 	public String getDesc() {
 		return "a Nez parser generator for C (sample)";
@@ -56,7 +55,9 @@ public class CParserGenerator extends ParserGenerator {
 	int predictionCount = 0;
 
 	@Override
-	public void generate(Grammar grammar) {
+	public void generate(Grammar grammar, int option, String fileName) {
+		this.setOption(option);
+		this.setOutputFile(fileName);
 		makeHeader(grammar);
 		for(Production p : grammar.getProductionList()) {
 			visitProduction(p);
@@ -250,7 +251,7 @@ public class CParserGenerator extends ParserGenerator {
 		String pos = "c" + this.fid;
 		this.let("char*", pos, "ctx->cur");
 		Expression e = optimizer.optimize(rule);
-		visit(e);
+		visitExpression(e);
 		memoize(rule, memoId, pos);
 		this.file.writeIndent("return 0;");
 		this.popFailureJumpPoint(rule);
@@ -262,11 +263,11 @@ public class CParserGenerator extends ParserGenerator {
 	}
 
 	@Override
-	public void visitEmpty(Empty e) {
+	public void visitEmpty(Expression e) {
 	}
 
 	@Override
-	public void visitFailure(Failure e) {
+	public void visitFailure(Expression e) {
 		this.jumpFailureJump();
 	}
 
@@ -357,7 +358,7 @@ public class CParserGenerator extends ParserGenerator {
 		String label = "EXIT_OPTION" + this.fid;
 		String backtrack = "c" + this.fid;
 		this.let("char*", backtrack, "ctx->cur");
-		visit(e.get(0));
+		visitExpression(e.get(0));
 		this.gotoLabel(label);
 		this.popFailureJumpPoint(e);
 		this.let(null, "ctx->cur", backtrack);
@@ -371,7 +372,7 @@ public class CParserGenerator extends ParserGenerator {
 		this.let("char*", backtrack, "ctx->cur");
 		this.file.writeIndent("while(1)");
 		this.openBlock();
-		visit(e.get(0));
+		visitExpression(e.get(0));
 		this.let(null, backtrack, "ctx->cur");
 		this.closeBlock();
 		this.popFailureJumpPoint(e);
@@ -380,13 +381,13 @@ public class CParserGenerator extends ParserGenerator {
 
 	@Override
 	public void visitRepetition1(Repetition1 e) {
-		visit(e.get(0));
+		visitExpression(e.get(0));
 		this.pushFailureJumpPoint();
 		String backtrack = "c" + this.fid;
 		this.let("char*", backtrack, "ctx->cur");
 		this.file.writeIndent("while(1)");
 		this.openBlock();
-		visit(e.get(0));
+		visitExpression(e.get(0));
 		this.let(null, backtrack, "ctx->cur");
 		this.closeBlock();
 		this.popFailureJumpPoint(e);
@@ -399,7 +400,7 @@ public class CParserGenerator extends ParserGenerator {
 		String label = "EXIT_AND" + this.fid;
 		String backtrack = "c" + this.fid;
 		this.let("char*", backtrack, "ctx->cur");
-		visit(e.get(0));
+		visitExpression(e.get(0));
 		this.let(null, "ctx->cur", backtrack);
 		this.gotoLabel(label);
 		this.popFailureJumpPoint(e);
@@ -413,7 +414,7 @@ public class CParserGenerator extends ParserGenerator {
 		this.pushFailureJumpPoint();
 		String backtrack = "c" + this.fid;
 		this.let("char*", backtrack, "ctx->cur");
-		visit(e.get(0));
+		visitExpression(e.get(0));
 		this.let(null, "ctx->cur", backtrack);
 		this.jumpPrevFailureJump();
 		this.popFailureJumpPoint(e);
@@ -423,7 +424,7 @@ public class CParserGenerator extends ParserGenerator {
 	@Override
 	public void visitSequence(Sequence e) {
 		for(int i = 0; i < e.size(); i++) {
-			visit(e.get(i));
+			visitExpression(e.get(i));
 		}
 	}
 
@@ -512,7 +513,7 @@ public class CParserGenerator extends ParserGenerator {
 				else {
 					isPrediction = false;
 				}
-				visit(pe);
+				visitExpression(pe);
 				isPrediction = true;
 				this.gotoLabel(label);
 			}
@@ -529,7 +530,7 @@ public class CParserGenerator extends ParserGenerator {
 			for(int i = 0; i < e.size(); i++) {
 				this.pushFailureJumpPoint();
 				this.choiceCount();
-				visit(e.get(i));
+				visitExpression(e.get(i));
 				this.gotoLabel(label);
 				this.popFailureJumpPoint(e.get(i));
 				this.let(null, "ctx->cur", backtrack);
@@ -566,11 +567,6 @@ public class CParserGenerator extends ParserGenerator {
 	}
 
 	@Override
-	protected String _tag(Tag tag) {
-		return null;
-	}
-
-	@Override
 	public void visitTagging(Tagging e) {
 		if(!PatternMatch) {
 			this.file.writeIndent("nez_pushDataLog(ctx, LazyTag_T, 0, 0, \"" + e.tag.getName() + "\", NULL);");
@@ -592,7 +588,7 @@ public class CParserGenerator extends ParserGenerator {
 			String label = "EXIT_LINK" + this.fid;
 			String po = "ctx->left"; //+ this.fid;
 			this.file.writeIndent("int " + mark + " = nez_markLogStack(ctx);");
-			visit(e.get(0));
+			visitExpression(e.get(0));
 			this.let(null, po, "nez_commitLog(ctx, " + mark + ")");
 			this.file.writeIndent("nez_pushDataLog(ctx, LazyLink_T, 0, " + e.index + ", NULL, " + po + ");");
 			this.gotoLabel(label);
@@ -602,7 +598,7 @@ public class CParserGenerator extends ParserGenerator {
 			this.exitLabel(label);
 		}
 		else {
-			visit(e.get(0));
+			visitExpression(e.get(0));
 		}
 	}
 
@@ -630,13 +626,55 @@ public class CParserGenerator extends ParserGenerator {
 		if(!flagTable.contains(e.getFlagName())) {
 			flagTable.add(e.getFlagName());
 		}
-		visit(e.get(0));
+		visitExpression(e.get(0));
 		if(e.isPositive()) {
 			this.file.writeIndent("ctx->flags[" + flagTable.indexOf(e.getFlagName()) + "] = 1;");
 		}
 		else {
 			this.file.writeIndent("ctx->flags[" + flagTable.indexOf(e.getFlagName()) + "] = 0;");
 		}
+	}
+
+	@Override
+	public void visitBlock(Block p) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void visitDefSymbol(DefSymbol p) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void visitIsSymbol(IsSymbol p) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void visitDefIndent(DefIndent p) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void visitIsIndent(IsIndent p) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void visitExistsSymbol(ExistsSymbol p) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void visitLocalTable(LocalTable p) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

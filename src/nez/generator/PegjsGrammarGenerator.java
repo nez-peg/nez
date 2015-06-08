@@ -24,14 +24,6 @@ import nez.lang.Tagging;
 
 public class PegjsGrammarGenerator extends GrammarGenerator {
 
-	public PegjsGrammarGenerator() {
-		super(null);
-	}
-
-	public PegjsGrammarGenerator(String fileName) {
-		super(fileName);
-	}
-
 	@Override
 	public String getDesc() {
 		return "generate a PEGjs Grammar";
@@ -64,7 +56,7 @@ public class PegjsGrammarGenerator extends GrammarGenerator {
 
 	public void visitGrouping(Expression e) {
 		W(_OpenGrouping());
-		visit(e);
+		visitExpression(e);
 		W(_CloseGrouping());
 	}
 
@@ -74,15 +66,15 @@ public class PegjsGrammarGenerator extends GrammarGenerator {
 		L(_NonTerminal(p));
 		inc();
 		L("= ");
-		visit(e);
+		visitExpression(e);
 		L();
 		dec();
 	}
 
-	public void visitEmpty(Empty e) {
+	public void visitEmpty(Expression e) {
 	}
 
-	public void visitFailure(Failure e) {
+	public void visitFailure(Expression e) {
 	}
 
 	public void visitNonTerminal(NonTerminal e) {
@@ -174,21 +166,21 @@ public class PegjsGrammarGenerator extends GrammarGenerator {
 
 	public void visitOption(Option e) {
 		for (Expression sub : e) {
-			visit(sub);
+			visitExpression(sub);
 		}
 		W("?");
 	}
 
 	public void visitRepetition(Repetition e) {
 		for (Expression sub : e) {
-			visit(sub);
+			visitExpression(sub);
 		}
 		W("*");
 	}
 
 	public void visitRepetition1(Repetition1 e) {
 		for (Expression sub : e) {
-			visit(sub);
+			visitExpression(sub);
 		}
 		W("+");
 	}
@@ -196,14 +188,14 @@ public class PegjsGrammarGenerator extends GrammarGenerator {
 	public void visitAnd(And e) {
 		W("&");
 		for (Expression sub : e) {
-			visit(sub);
+			visitExpression(sub);
 		}
 	}
 
 	public void visitNot(Not e) {
 		W("!");
 		for (Expression sub : e) {
-			visit(sub);
+			visitExpression(sub);
 		}
 	}
 
@@ -214,7 +206,7 @@ public class PegjsGrammarGenerator extends GrammarGenerator {
 			if (checkFirst > 0) {
 				L("/ ");
 			}
-			visit(sub);
+			visitExpression(sub);
 			checkFirst++;
 		}
 		W(")");
@@ -223,7 +215,7 @@ public class PegjsGrammarGenerator extends GrammarGenerator {
 	public void visitSequence(Sequence e) {
 		W("(");
 		for (Expression sub : e) {
-			visit(sub);
+			visitExpression(sub);
 			W(" ");
 		}
 		W(")");
@@ -231,7 +223,7 @@ public class PegjsGrammarGenerator extends GrammarGenerator {
 
 	public void visitNew(New e) {
 		for (Expression sub : e) {
-			visit(sub);
+			visitExpression(sub);
 		}
 	}
 
@@ -251,13 +243,13 @@ public class PegjsGrammarGenerator extends GrammarGenerator {
 		// else {
 		// C("Link", e);
 		// }
-		visit(e.get(0));
+		visitExpression(e.get(0));
 	}
 
 	@Override
 	public void visitUndefined(Expression e) {
 		if (e.size() > 0) {
-			visit(e.get(0));
+			visitExpression(e.get(0));
 		} else {
 		}
 		// W("<");

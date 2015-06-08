@@ -26,6 +26,7 @@ import nez.lang.Production;
 import nez.lang.Repetition;
 import nez.lang.Repetition1;
 import nez.lang.Replace;
+import nez.lang.Sequence;
 import nez.lang.Tagging;
 import nez.lang.Typestate;
 import nez.main.Verbose;
@@ -110,7 +111,7 @@ public class NezCompiler1 extends NezCompiler {
 		return e.encode(this, next, failjump);
 	}
 
-	public Instruction encodeMatchAny(AnyChar p, Instruction next, Instruction failjump) {
+	public Instruction encodeAnyChar(AnyChar p, Instruction next, Instruction failjump) {
 		return new IAnyChar(p, next);
 	}
 
@@ -153,7 +154,7 @@ public class NezCompiler1 extends NezCompiler {
 		return new INotFailPush(p, next, encodeExpression(p.get(0), fail, failjump));
 	}
 
-	public Instruction encodeSequence(Expression p, Instruction next, Instruction failjump) {
+	public Instruction encodeSequence(Sequence p, Instruction next, Instruction failjump) {
 		Instruction nextStart = next;
 		for(int i = p.size() - 1; i >= 0; i--) {
 			Expression e = p.get(i);
@@ -250,6 +251,11 @@ public class NezCompiler1 extends NezCompiler {
 
 	public Instruction encodeIsIndent(IsIndent p, Instruction next, Instruction failjump) {
 		return new IIsIndent(p, next);
+	}
+
+	@Override
+	public Instruction encodeExtension(Expression p, Instruction next, Instruction failjump) {
+		return next;
 	}
 
 }

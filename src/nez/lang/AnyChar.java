@@ -66,7 +66,7 @@ public class AnyChar extends Terminal implements Consumed {
 	
 	@Override
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
-		return bc.encodeMatchAny(this, next, failjump);
+		return bc.encodeAnyChar(this, next, failjump);
 	}
 	@Override
 	protected int pattern(GEP gep) {
