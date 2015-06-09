@@ -20,6 +20,7 @@ import nez.vm.Machine;
 import nez.vm.MemoPoint;
 import nez.vm.MemoTable;
 import nez.vm.NezCompiler;
+import nez.vm.NezDebugger;
 import nez.vm.NezEncoder;
 import nez.vm.NezCompiler1;
 import nez.vm.NezCompiler2;
@@ -155,7 +156,11 @@ public class Grammar {
 		boolean matched;
 		Instruction pc = this.compile();
 		s.initJumpStack(64, getMemoTable(s));
-		if(Verbose.Debug) {
+		if(this.option == Grammar.DebugOption) {
+			NezDebugger debugger = new NezDebugger(this, pc, s);
+			matched = debugger.exec();
+		}
+		else if(Verbose.Debug) {
 			matched = Machine.debug(pc, s);
 		}
 		else {
@@ -247,6 +252,7 @@ public class Grammar {
 											| Specialization | Prediction /* | Tracing */;
 	public final static int SafeOption = ASTConstruction | Optimization;
 	public final static int ExampleOption = Optimization | Specialization | Inlining | CommonPrefix | Prediction;
+	public final static int DebugOption = ASTConstruction;
 	
 	public final static int mask(int m) {
 		return Binary & m;

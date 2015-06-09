@@ -277,6 +277,10 @@ public class CommandConfigure {
 
 	private int GrammarOption = Grammar.DefaultOption;
 
+	public final void setGrammarOption(int option) {
+		this.GrammarOption = option;
+	}
+
 	public final Grammar getGrammar(String start) {
 		Grammar p = getNameSpace(false).newGrammar(start, GrammarOption);
 		if(p == null) {

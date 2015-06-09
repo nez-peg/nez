@@ -103,6 +103,39 @@ class CheckCommand extends Command {
 
 }
 
+class DebugCommand extends Command {
+
+	@Override
+	public void exec(CommandConfigure config) {
+		config.setGrammarOption(Grammar.DebugOption);
+		Command.displayVersion();
+		Recorder rec = config.getRecorder();
+		Grammar peg = config.getGrammar();
+		peg.record(rec);
+		while (config.hasInput()) {
+			SourceContext file = config.getInputSourceContext();
+			file.start(rec);
+			CommonTree node = (CommonTree) peg.parse(file);
+			file.done(rec);
+			if(node == null) {
+				ConsoleUtils.println(file.getSyntaxErrorMessage());
+				continue;
+			}
+			if(file.hasUnconsumed()) {
+				ConsoleUtils.println(file.getUnconsumedMessage());
+			}
+			file = null;
+			new CommonTreeWriter().transform(config.getOutputFileName(file), node);
+		}
+	}
+
+	@Override
+	public String getDesc() {
+		return "debug";
+	}
+
+}
+
 class DfaCommand extends Command {
 	@Override
 	public String getDesc() {
