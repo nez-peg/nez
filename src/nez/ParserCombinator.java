@@ -73,6 +73,10 @@ public class ParserCombinator {
 			public String formatSourceMessage(String type, String msg) {
 				return e + " " + type + " " + msg;
 			}
+			@Override
+			public String formatDebugSourceMessage(String msg) {
+				return e + " " + msg;
+			}
 		}
 		return new JavaSourcePosition(stacks[2]);
 	}

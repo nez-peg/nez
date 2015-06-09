@@ -174,7 +174,7 @@ public class NezCompiler1 extends NezCompiler {
 
 	public Instruction encodeNonTerminal(NonTerminal p, Instruction next, Instruction failjump) {
 		Production r = p.getProduction();
-		return new ICallPush(r, next);
+		return new ICallPush(r, p, next);
 	}
 
 	// AST Construction

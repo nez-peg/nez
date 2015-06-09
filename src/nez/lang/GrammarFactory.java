@@ -43,6 +43,17 @@ public class GrammarFactory {
 		return e;
 	}
 	
+	private static int id = 1;
+	static void setId(Expression e) {
+		if(e.internId == 0) {
+			e.internId = id++;
+			for(int i = 0; i < e.size(); i++) {
+				Expression sube = e.get(i);
+				setId(sube);
+			}
+		}
+	}
+
 	static Expression internImpl(SourcePosition s, Expression e) {
 		return (s == null) ? intern(e) : e;
 	}

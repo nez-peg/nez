@@ -12,12 +12,18 @@ import nez.util.UMap;
 public class GrammarChecker {
 	
 	boolean strictMode;
+	int option;
 
 	boolean foundError = false;
 	boolean foundFlag  = false;
 
 	public GrammarChecker(int checkerLevel) {
 		this.strictMode = checkerLevel > 0;
+	}
+	
+	public GrammarChecker(int checkerLevel, int option) {
+		this.strictMode = checkerLevel > 0;
+		this.option = option;
 	}
 
 	public GrammarChecker() {
@@ -112,28 +118,35 @@ public class GrammarChecker {
 			r.reshape(new Typestate(this));
 		}		
 		// interning
-		for(Production r: grammar.getRuleList()) {
-			if(r.isTerminal()) {
-				continue;
+		if(this.option == Grammar.DebugOption) {
+			for(Production r: grammar.getRuleList()) {
+				GrammarFactory.setId(r.getExpression());
 			}
-			if(Verbose.Grammar) {
-				r.dump();
-			}
-			if(Command.ReleasePreview) {
-				boolean r1 = r.isConditional();
-				boolean r2 = r.testCondition(r.getExpression(), null);
-				if(r1 != r2) {
-					Verbose.FIXME("mismatch condition: " + r.getLocalName() + " " + r1 + " " + r2);
+		}
+		else {
+			for(Production r: grammar.getRuleList()) {
+				if(r.isTerminal()) {
+					continue;
 				}
-			}
-			if(Command.ReleasePreview) {
-				boolean r1 = r.isContextual();
-				boolean r2 = r.testContextSensitive(r.getExpression(), null);
-				if(r1 != r2) {
-					Verbose.FIXME("mismatch contextual: " + r.getLocalName() + " " + r1 + " " + r2);
+				if(Verbose.Grammar) {
+					r.dump();
 				}
+				if(Command.ReleasePreview) {
+					boolean r1 = r.isConditional();
+					boolean r2 = r.testCondition(r.getExpression(), null);
+					if(r1 != r2) {
+						Verbose.FIXME("mismatch condition: " + r.getLocalName() + " " + r1 + " " + r2);
+					}
+				}
+				if(Command.ReleasePreview) {
+					boolean r1 = r.isContextual();
+					boolean r2 = r.testContextSensitive(r.getExpression(), null);
+					if(r1 != r2) {
+						Verbose.FIXME("mismatch contextual: " + r.getLocalName() + " " + r1 + " " + r2);
+					}
+				}
+				r.internRule();
 			}
-			r.internRule();
 		}
 		grammar.testExample(Grammar.ExampleOption);
 	}

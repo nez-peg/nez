@@ -14,7 +14,7 @@ public interface Source {
 	public long    linenum(long pos);
 	
 	public String formatPositionLine(String messageType, long pos, String message);
-
+	public String formatDebugPositionMessage(long pos, String message);
 
 }
 

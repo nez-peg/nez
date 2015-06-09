@@ -14,15 +14,14 @@ import nez.util.ConsoleUtils;
 import nez.util.UFlag;
 import nez.util.UList;
 import nez.util.UMap;
-import nez.vm.DeprecatedNezCompiler;
 import nez.vm.Instruction;
 import nez.vm.Machine;
 import nez.vm.MemoPoint;
 import nez.vm.MemoTable;
 import nez.vm.NezCompiler;
+import nez.vm.NezDebugger;
 import nez.vm.NezCompiler1;
 import nez.vm.NezCompiler2;
-import nez.vm.NezEncoder;
 
 public class Grammar {
 	Production start;
@@ -145,8 +144,15 @@ public class Grammar {
 		
 	public final boolean match(SourceContext s) {
 		boolean matched;
-		Instruction pc = this.compile();
+		Instruction pc;
 		s.initJumpStack(64, getMemoTable(s));
+		if(this.option == Grammar.DebugOption) { // FIXME
+			NezCompiler c = new NezCompiler1(this.option);
+			pc = c.compile(this).startPoint;
+			NezDebugger debugger = new NezDebugger(this, pc, s);
+			matched = debugger.exec();
+		}
+		pc = this.compile();
 		if(Verbose.Debug) {
 			matched = Machine.debug(pc, s);
 		}
@@ -239,6 +245,7 @@ public class Grammar {
 											| Specialization | Prediction /* | Tracing */;
 	public final static int SafeOption = ASTConstruction | Optimization;
 	public final static int ExampleOption = Optimization | Specialization | Inlining | CommonPrefix | Prediction;
+	public final static int DebugOption = ASTConstruction;
 	
 	public final static int mask(int m) {
 		return Binary & m;

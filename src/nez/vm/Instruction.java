@@ -17,6 +17,7 @@ import nez.lang.LocalTable;
 import nez.lang.New;
 import nez.lang.NezTag;
 import nez.lang.Acceptance;
+import nez.lang.NonTerminal;
 import nez.lang.Production;
 import nez.lang.Replace;
 import nez.lang.Sequence;
@@ -66,6 +67,10 @@ public abstract class Instruction {
 
 	protected String getOperand() {
 		return null;
+	}
+	
+	public Expression getExpression() {
+		return this.e;
 	}
 	
 	protected void stringfy(StringBuilder sb) {
@@ -166,10 +171,16 @@ class IFailCheckSkip extends IFailSkip {
 
 class ICallPush extends Instruction implements StackOperation {
 	Production rule;
+	NonTerminal ne;
 	public Instruction jump = null;
 	ICallPush(Production rule, Instruction next) {
 		super(rule, next);
 		this.rule = rule;
+	}
+	ICallPush(Production rule, NonTerminal ne, Instruction next) {
+		super(rule, next);
+		this.rule = rule;
+		this.ne = ne;
 	}
 	void setResolvedJump(Instruction jump) {
 		assert(this.jump == null);

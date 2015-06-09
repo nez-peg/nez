@@ -45,6 +45,10 @@ public abstract class Context implements Source {
 	public final String getUnconsumedMessage() {
 		return this.formatPositionLine("unconsumed", this.pos, "");
 	}
+	
+	public int getUsedStackTop() {
+		return this.usedStackTop;
+	}
 
 	/* PEG4d : AST construction */
 
