@@ -19,18 +19,6 @@ public abstract class NezDebugOperator {
 	public String toString() {
 		return this.type.toString();
 	}
-
-	public void showDebugUsage() {
-		ConsoleUtils.println("Nez Debugger support following commands:");
-		ConsoleUtils.println("  p | print ");
-		ConsoleUtils.println("  b | break ");
-		ConsoleUtils.println("  n           StepOver");
-		ConsoleUtils.println("  s           StepIn");
-		ConsoleUtils.println("  f | finish  StepOut");
-		ConsoleUtils.println("  c           Continue");
-		ConsoleUtils.println("  r | run     Run");
-		ConsoleUtils.println("  q | exit    Exit");
-	}
 }
 
 class Print extends NezDebugOperator {
@@ -141,5 +129,12 @@ class Exit extends NezDebugOperator {
 }
 
 enum DebugOperation {
-	Print, Break, StepOver, StepIn, StepOut, Continue, Run, Exit
+	Print,
+	Break,
+	StepOver,
+	StepIn,
+	StepOut,
+	Continue,
+	Run,
+	Exit
 }
