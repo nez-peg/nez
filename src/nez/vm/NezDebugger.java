@@ -110,7 +110,10 @@ public class NezDebugger {
 			Object console = ConsoleUtils.getConsoleReader();
 			String line = ConsoleUtils.readSingleLine(console, prompt);
 			if(line == null || line.equals("")) {
-				continue;
+				if(this.command == null) {
+					continue;
+				}
+				return;
 			}
 			String[] tokens = line.split("\\s+");
 			String command = tokens[0];
