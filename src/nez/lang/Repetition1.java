@@ -2,7 +2,6 @@ package nez.lang;
 
 import nez.ast.SourcePosition;
 import nez.util.UList;
-import nez.util.UMap;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
@@ -36,18 +35,13 @@ public class Repetition1 extends Repetition {
 	}
 
 	@Override
-	public boolean isConsumed(Stacker stacker) {
-		return this.inner.isConsumed(stacker);
+	public boolean isConsumed() {
+		return this.inner.isConsumed();
 	}
 
 	@Override
-	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
-		return this.inner.checkAlwaysConsumed(checker, startNonTerminal, stack);
-	}
-
-	@Override
-	public int inferTypestate(UMap<String> visited) {
-		int t = this.inner.inferTypestate(visited);
+	public int inferTypestate(Visa v) {
+		int t = this.inner.inferTypestate(v);
 		if(t == Typestate.ObjectType) {
 			return Typestate.BooleanType;
 		}

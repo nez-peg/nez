@@ -1,8 +1,6 @@
 package nez.lang;
 
 import nez.ast.SourcePosition;
-import nez.util.UList;
-import nez.util.UMap;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
@@ -47,18 +45,13 @@ public class OnFlag extends Unary implements Conditional {
 	}
 
 	@Override
-	public boolean isConsumed(Stacker stacker) {
-		return this.inner.isConsumed(stacker);
+	public boolean isConsumed() {
+		return this.inner.isConsumed();
 	}
 
 	@Override
-	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
-		return inner.checkAlwaysConsumed(checker, startNonTerminal, stack);
-	}
-
-	@Override
-	public int inferTypestate(UMap<String> visited) {
-		return this.inner.inferTypestate(visited);
+	public int inferTypestate(Visa v) {
+		return this.inner.inferTypestate(v);
 	}
 
 	@Override
@@ -68,7 +61,7 @@ public class OnFlag extends Unary implements Conditional {
 
 	@Override
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
-		return this.inner.encode(bc, next, failjump);
+		return bc.encodeOnFlag(this, next, failjump);
 	}
 
 	@Override

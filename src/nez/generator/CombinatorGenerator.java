@@ -28,14 +28,6 @@ public class CombinatorGenerator extends GrammarGenerator {
 	public String getDesc() {
 		return "a Nez combinator for Java" ;
 	}
-
-	public CombinatorGenerator() {
-		super(null);
-	}
-
-	public CombinatorGenerator(String fileName) {
-		super(fileName);
-	}
 	
 	protected String _Delim() { return ", "; }
 	
@@ -57,7 +49,7 @@ public class CombinatorGenerator extends GrammarGenerator {
 		Expression e = rule.getExpression();
 		L("public Expression p").W(_NonTerminal(rule)).W("() ").Begin();
 		L("return ");
-		visit(e);
+		visitExpression(e);
 		W(";");
 		End();
 	}	
@@ -156,7 +148,7 @@ public class CombinatorGenerator extends GrammarGenerator {
 		W(e.getPredicate());
 		for(Expression se : e) {
 			W(" ");
-			visit(se);
+			visitExpression(se);
 		}
 		W(">");
 	}

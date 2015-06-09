@@ -32,7 +32,7 @@ public class Capture extends ASTOperation {
 	}
 
 	@Override
-	public boolean isConsumed(Stacker stacker) {
+	public boolean isConsumed() {
 		return false;
 	}
 	

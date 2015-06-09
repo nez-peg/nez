@@ -3,6 +3,7 @@ package nez.lang;
 import java.util.TreeMap;
 
 import nez.ast.SourcePosition;
+import nez.main.Command;
 import nez.main.Verbose;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
@@ -64,46 +65,56 @@ public class GrammarChecker {
 	public final static boolean specialRuleName(String n) {
 		return n.equalsIgnoreCase("FILE") || n.equalsIgnoreCase("CHUNK");
 	}
-	
+
+////UList<String> stack = new UList<String>(new String[64]);
+////UMap<String> visited = new UMap<String>();
+//for(Production r: grammar.getDefinedRuleList()) {
+//	if(r.isTerminal()) {
+//		continue;
+//	}
+//	if(AnalysisCache.hasRecursion(r)) {
+//		r.setRecursive();
+//		if(r.minlen > 0) {
+//			continue;
+//		}
+//		r.minlen = -1;  // reset for all checking
+//		r.isConsumed(new Stacker(r, null));
+////		visited.clear();
+////		r.checkAlwaysConsumed(this, null, stack);
+//	}
+////	if(r.minlen == -1) {
+//////		visited.clear();
+////		r.checkAlwaysConsumed(this, null, stack);
+////	}
+//}
+
 	public void verify(NameSpace grammar) {
 		NameAnalysis nameAnalyzer = new NameAnalysis();
-		for(Production p: grammar.getDefinedRuleList()) {
-			nameAnalyzer.reshapeProduction(p);
-		}
-		
-//		UList<String> stack = new UList<String>(new String[64]);
-//		UMap<String> visited = new UMap<String>();
-		for(Production r: grammar.getDefinedRuleList()) {
+		nameAnalyzer.analyze(grammar.getDefinedRuleList());
+//		for(Production p: grammar.getDefinedRuleList()) {
+//			nameAnalyzer.reshapeProduction(p);
+//		}
+//		for(Production r: grammar.getDefinedRuleList()) {
 //			if(r.isTerminal()) {
 //				continue;
 //			}
-			if(AnalysisCache.hasRecursion(r)) {
-				r.setRecursive();
-				if(r.minlen > 0) {
-					continue;
-				}
-				r.minlen = -1;  // reset for all checking
-				r.isConsumed(new Stacker(r, null));
-//				visited.clear();
-//				r.checkAlwaysConsumed(this, null, stack);
-			}
-//			if(r.minlen == -1) {
-////				visited.clear();
-//				r.checkAlwaysConsumed(this, null, stack);
+//			if(AnalysisCache.hasRecursion(r)) {
+//				r.setRecursive();
+//				if(r.minlen > 0) {
+//					continue;
+//				}
+//				r.minlen = -1;  // reset for all checking
+//				r.isConsumed();
 //			}
-		}
+//		}
 		if(this.foundError) {
 			ConsoleUtils.exit(1, "FatalGrammarError");
 		}
 		// type check
 		for(Production r: grammar.getRuleList()) {
-//			if(r.isTerminal) {
-//				continue;
-//			}
-//			this.checkPhase2(r.getExpression());
-//			if(r.refCount == 0 && !r.isPublic && !specialRuleName(r.getLocalName())) {
-//				this.reportWarning(r.s, "unused nonterminal definition");
-//			}
+			if(r.isTerminal()) {
+				continue;
+			}
 			r.reshape(new Typestate(this));
 		}		
 		// interning
@@ -114,21 +125,29 @@ public class GrammarChecker {
 		}
 		else {
 			for(Production r: grammar.getRuleList()) {
-//				if(r.isTerminal) {
-//					continue;
-//				}
+				if(r.isTerminal()) {
+					continue;
+				}
 				if(Verbose.Grammar) {
 					r.dump();
+				}
+				if(Command.ReleasePreview) {
+					boolean r1 = r.isConditional();
+					boolean r2 = r.testCondition(r.getExpression(), null);
+					if(r1 != r2) {
+						Verbose.FIXME("mismatch condition: " + r.getLocalName() + " " + r1 + " " + r2);
+					}
+				}
+				if(Command.ReleasePreview) {
+					boolean r1 = r.isContextual();
+					boolean r2 = r.testContextSensitive(r.getExpression(), null);
+					if(r1 != r2) {
+						Verbose.FIXME("mismatch contextual: " + r.getLocalName() + " " + r1 + " " + r2);
+					}
 				}
 				r.internRule();
 			}
 		}
-//		if(this.foundFlag) {
-//			TreeMap<String,String> undefedFlags = new TreeMap<String,String>();
-//			for(Production r: grammar.getRuleList()) {
-//				r.removeExpressionFlag(undefedFlags);
-//			}
-//		}
 		grammar.testExample(Grammar.ExampleOption);
 	}
 	

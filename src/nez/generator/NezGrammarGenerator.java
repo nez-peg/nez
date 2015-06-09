@@ -24,6 +24,7 @@ import nez.lang.Multinary;
 import nez.lang.Tagging;
 import nez.lang.Unary;
 import nez.util.StringUtils;
+import nez.vm.Instruction;
 
 public class NezGrammarGenerator extends GrammarGenerator {
 	@Override
@@ -32,12 +33,8 @@ public class NezGrammarGenerator extends GrammarGenerator {
 	}
 
 	public NezGrammarGenerator() {
-		super(null);
 	}
 
-	public NezGrammarGenerator(String fileName) {
-		super(fileName);
-	}
 	
 	@Override
 	public void makeHeader(Grammar g) {
@@ -66,20 +63,20 @@ public class NezGrammarGenerator extends GrammarGenerator {
 				if(i > 0) {
 					L("/ ");
 				}
-				visit(e.get(i));
+				visitExpression(e.get(i));
 			}
 		}
 		else {
-			visit(e);
+			visitExpression(e);
 		}
 		dec();
 	}	
 	
-	public void visitEmpty(Empty e) {
+	public void visitEmpty(Expression e) {
 		W("''");
 	}
 
-	public void visitFailure(Failure e) {
+	public void visitFailure(Expression e) {
 		W("!''");
 	}
 
@@ -124,7 +121,7 @@ public class NezGrammarGenerator extends GrammarGenerator {
 			if(i > 0) {
 				W(" / ");
 			}
-			visit(e.get(i));
+			visitExpression(e.get(i));
 		}
 	}
 	
@@ -159,7 +156,7 @@ public class NezGrammarGenerator extends GrammarGenerator {
 		W(e.getPredicate());
 		for(Expression se : e) {
 			W(" ");
-			visit(se);
+			visitExpression(se);
 		}
 		W(">");
 	}

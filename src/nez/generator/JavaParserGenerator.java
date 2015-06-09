@@ -6,15 +6,22 @@ import java.util.HashMap;
 import nez.ast.Tag;
 import nez.lang.And;
 import nez.lang.AnyChar;
+import nez.lang.Block;
 import nez.lang.ByteChar;
 import nez.lang.ByteMap;
 import nez.lang.Capture;
 import nez.lang.Choice;
+import nez.lang.DefIndent;
+import nez.lang.DefSymbol;
 import nez.lang.Empty;
+import nez.lang.ExistsSymbol;
 import nez.lang.Expression;
 import nez.lang.Failure;
 import nez.lang.Grammar;
+import nez.lang.IsIndent;
+import nez.lang.IsSymbol;
 import nez.lang.Link;
+import nez.lang.LocalTable;
 import nez.lang.New;
 import nez.lang.NonTerminal;
 import nez.lang.Not;
@@ -29,14 +36,6 @@ import nez.lang.Typestate;
 import nez.util.StringUtils;
 
 public class JavaParserGenerator extends ParserGenerator {
-
-	JavaParserGenerator() {
-		super(null);
-	}
-	
-	JavaParserGenerator(String fileName) {
-		super(fileName);
-	}
 
 	@Override
 	public String getDesc() {
@@ -267,7 +266,6 @@ public class JavaParserGenerator extends ParserGenerator {
 		Abort(_log(), _left());
 	}
 
-	
 	HashMap<String, Object> funcMap = new HashMap<String, Object>();
 	
 	private void ensureFunc(Expression e) {
@@ -310,7 +308,7 @@ public class JavaParserGenerator extends ParserGenerator {
 			writePredicateLogic(e);
 		}
 		else {
-			visit(e);
+			visitExpression(e);
 			Return(_true());
 		}
 		End();
@@ -357,19 +355,19 @@ public class JavaParserGenerator extends ParserGenerator {
 	@Override
 	public void visitProduction(Production rule) {
 		DefPublicFunc(_func(rule)).Begin();
-		visit(rule.getExpression());
+		visitExpression(rule.getExpression());
 		Return(_true());
 		End();
 		makeFunc();
 	}	
 	
 	@Override
-	public void visitEmpty(Empty e) {
+	public void visitEmpty(Expression e) {
 
 	}
 
 	@Override
-	public void visitFailure(Failure e) {
+	public void visitFailure(Expression e) {
 		Return(_false());
 	}
 
@@ -405,7 +403,7 @@ public class JavaParserGenerator extends ParserGenerator {
 	
 	@Override
 	public void visitRepetition1(Repetition1 e) {
-		visit(e.get(0));
+		visitExpression(e.get(0));
 		Statement(_call(e));
 	}
 
@@ -422,7 +420,7 @@ public class JavaParserGenerator extends ParserGenerator {
 	@Override
 	public void visitSequence(Sequence e) {
 		for(Expression s: e) {
-			visit(s);
+			visitExpression(s);
 		}
 	}
 
@@ -441,7 +439,6 @@ public class JavaParserGenerator extends ParserGenerator {
 		Statement(_ccall("capture"));
 	}
 
-	@Override
 	protected String _tag(Tag tag) {
 		return StringUtils.quoteString('"', tag.getName(), '"');
 	}
@@ -464,6 +461,54 @@ public class JavaParserGenerator extends ParserGenerator {
 	@Override
 	public void visitUndefined(Expression e) {
 		LComment("undefined " + e);
+	}
+
+	@Override
+	public void visitExpression(Expression e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void visitBlock(Block p) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void visitDefSymbol(DefSymbol p) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void visitIsSymbol(IsSymbol p) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void visitDefIndent(DefIndent p) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void visitIsIndent(IsIndent p) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void visitExistsSymbol(ExistsSymbol p) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void visitLocalTable(LocalTable p) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

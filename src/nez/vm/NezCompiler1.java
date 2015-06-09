@@ -26,6 +26,7 @@ import nez.lang.Production;
 import nez.lang.Repetition;
 import nez.lang.Repetition1;
 import nez.lang.Replace;
+import nez.lang.Sequence;
 import nez.lang.Tagging;
 import nez.lang.Typestate;
 import nez.main.Verbose;
@@ -44,21 +45,21 @@ public class NezCompiler1 extends NezCompiler {
 		return GrammarOptimizer.resolveNonTerminal(p.getExpression());
 	}
 
-	protected Instruction encodeMemoizingProduction(ProductionCode code) {
+	protected Instruction encodeMemoizingProduction(CodePoint code) {
 		return null;
 	}
 	
 	protected void encodeProduction(UList<Instruction> codeList, Production p, Instruction next) {
 		String uname = p.getUniqueName();
-		ProductionCode code = this.codeMap.get(uname);
+		CodePoint code = this.codeMap.get(uname);
 		if(code != null) {
-			code.codePoint = encodeExpression(code.localExpression, next, null/*failjump*/);
+			code.nonmemoStart = encodeExpression(code.localExpression, next, null/*failjump*/);
 			code.start = codeList.size();
-			this.layoutCode(codeList, code.codePoint);
+			this.layoutCode(codeList, code.nonmemoStart);
 			code.end = codeList.size();
 			if(code.memoPoint != null) {
-				code.memoCodePoint = this.encodeMemoizingProduction(code);
-				this.layoutCode(codeList, code.memoCodePoint);
+				code.memoStart = this.encodeMemoizingProduction(code);
+				this.layoutCode(codeList, code.memoStart);
 			}
 		}
 	}
@@ -77,11 +78,11 @@ public class NezCompiler1 extends NezCompiler {
 		}
 		for(Instruction inst : codeList) {
 			if(inst instanceof ICallPush) {
-				ProductionCode deref = this.codeMap.get(((ICallPush) inst).rule.getUniqueName());
+				CodePoint deref = this.codeMap.get(((ICallPush) inst).rule.getUniqueName());
 				if(deref == null) {
 					Verbose.debug("no deref: " + ((ICallPush) inst).rule.getUniqueName());
 				}
-				((ICallPush) inst).setResolvedJump(deref.codePoint);
+				((ICallPush) inst).setResolvedJump(deref.nonmemoStart);
 			}
 			if(inst instanceof IMemoCall) {
 				((IMemoCall) inst).resolveJumpAddress();
@@ -110,7 +111,7 @@ public class NezCompiler1 extends NezCompiler {
 		return e.encode(this, next, failjump);
 	}
 
-	public Instruction encodeMatchAny(AnyChar p, Instruction next, Instruction failjump) {
+	public Instruction encodeAnyChar(AnyChar p, Instruction next, Instruction failjump) {
 		return new IAnyChar(p, next);
 	}
 
@@ -153,7 +154,7 @@ public class NezCompiler1 extends NezCompiler {
 		return new INotFailPush(p, next, encodeExpression(p.get(0), fail, failjump));
 	}
 
-	public Instruction encodeSequence(Expression p, Instruction next, Instruction failjump) {
+	public Instruction encodeSequence(Sequence p, Instruction next, Instruction failjump) {
 		Instruction nextStart = next;
 		for(int i = p.size() - 1; i >= 0; i--) {
 			Expression e = p.get(i);
@@ -250,6 +251,11 @@ public class NezCompiler1 extends NezCompiler {
 
 	public Instruction encodeIsIndent(IsIndent p, Instruction next, Instruction failjump) {
 		return new IIsIndent(p, next);
+	}
+
+	@Override
+	public Instruction encodeExtension(Expression p, Instruction next, Instruction failjump) {
+		return next;
 	}
 
 }

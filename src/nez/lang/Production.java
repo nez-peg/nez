@@ -1,22 +1,20 @@
 package nez.lang;
 
+import java.util.HashMap;
 import java.util.List;
-import java.util.TreeMap;
 
 import nez.ast.SourcePosition;
-import nez.main.Verbose;
 import nez.util.ConsoleUtils;
-import nez.util.StringUtils;
 import nez.util.UFlag;
 import nez.util.UList;
-import nez.util.UMap;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
 public class Production extends Expression {
-	public final static int PublicProduction           = 1;
+	public final static int PublicProduction           = 1 << 0;
 	public final static int TerminalProduction         = 1 << 1;
 	public final static int InlineProduction           = 1 << 2;
+	public final static int Declared = PublicProduction | TerminalProduction | InlineProduction;
 	
 	public final static int RecursiveChecked           = 1 << 3;
 	public final static int RecursiveProduction        = 1 << 4;
@@ -33,8 +31,50 @@ public class Production extends Expression {
 	public final static int ContextualChecked          = 1 << 18;
 	public final static int ContextualProduction       = 1 << 19;
 
+	public final static int ResetFlag                  = 1 << 30;
+
+	int        flag;
+	NameSpace  ns;
+	String     name;
+	String     uname;
+	Expression body;
+		
+	public Production(SourcePosition s, int flag, NameSpace ns, String name, Expression body) {
+		super(s);
+		this.ns = ns;
+		this.name = name;
+		this.uname = ns.uniqueName(name);
+		this.body = (body == null) ? GrammarFactory.newEmpty(s) : body;
+		this.flag = flag;
+		Production.quickCheck(this);
+	}
+
+	private Production(String name, Production original, Expression body) {
+		super(original.s);
+		this.ns = original.getNameSpace();
+		this.name = name;
+		this.uname = ns.uniqueName(name);
+		this.body = (body == null) ? GrammarFactory.newEmpty(s) : body;
+		Production.quickCheck(this);
+	}
+
+	Production newProduction(String localName) {
+		return new Production(localName, this, this.getExpression());
+	}
+
+	void resetFlag() {
+		this.flag = (this.flag & Declared) | ResetFlag;
+	}
+
+	void initFlag() {
+		this.flag = this.flag | ConsumedChecked | ConditionalChecked | ContextualChecked | RecursiveChecked;
+		this.flag = UFlag.unsetFlag(this.flag, ResetFlag);
+		quickCheck(this, this.getExpression());
+		//System.out.println(this.getLocalName() + ":: " + flag());
+	}
+
 	public final static void quickCheck(Production p) {
-		p.flag = p.flag | ConsumedChecked | ConditionalChecked | ContextualChecked | RecursiveChecked /*| ASTChecked */;
+		p.flag = p.flag | ConsumedChecked | ConditionalChecked | ContextualChecked | RecursiveChecked;
 		quickCheck(p, p.getExpression());
 	}
 	
@@ -158,91 +198,7 @@ public class Production extends Expression {
 		}
 		return l;
 	}
-
-	public final static int quickConsumedCheck(Expression e) {
-		if(e == null) {
-			return -1;
-		}
-		if(e instanceof NonTerminal ) {
-			NonTerminal n = (NonTerminal)e;
-			Production p = n.getProduction();
-			if(p != null && p.minlen != -1) {
-				return p.minlen;
-			}
-			return -1;  // unknown
-		}
-		if(e instanceof ByteChar || e instanceof AnyChar || e instanceof ByteMap) {
-			return 1; /* next*/
-		}
-		if(e instanceof Choice) {
-			int r = 1;
-			for(Expression sub: e) {
-				int minlen = quickConsumedCheck(sub);
-				if(minlen == 0) {
-					return 0;
-				}
-				if(minlen == -1) {
-					r = -1;
-				}
-			}
-			return r;
-		}
-		if(e instanceof Not || e instanceof Option || (e instanceof Repetition && !(e instanceof Repetition1)) || e instanceof And) {
-			return 0;
-		}
-		int r = 0;
-		for(Expression sub: e) {
-			int minlen = quickConsumedCheck(sub);
-			if(minlen > 0) {
-				return minlen;
-			}
-			if(minlen == -1) {
-				r = -1;
-			}
-		}
-		return r;
-	}
-
-	
-	int        flag;
-	NameSpace  ns;
-	String     name;
-	String     uname;
-	Expression body;
-	
-//	boolean isPublic      = false;
-//	boolean isTerminal    = false;
-//	boolean isInline      = false;
-//	boolean isUnchecked   = true;
-//	boolean isRecursive   = false;
-//	boolean isContextual  = false;
-//	boolean isConditional = false;
-	
-	public Production(SourcePosition s, int flag, NameSpace ns, String name, Expression body) {
-		super(s);
-		this.ns = ns;
-		this.name = name;
-		this.uname = ns.uniqueName(name);
-		this.body = (body == null) ? GrammarFactory.newEmpty(s) : body;
-		this.minlen = Production.quickConsumedCheck(body);
-		this.flag = flag;
-		Production.quickCheck(this);
-	}
-
-	private Production(String name, Production original, Expression body) {
-		super(original.s);
-		this.ns = original.getNameSpace();
-		this.name = name;
-		this.uname = ns.uniqueName(name);
-		this.body = (body == null) ? GrammarFactory.newEmpty(s) : body;
-		this.minlen = Production.quickConsumedCheck(body);
-		Production.quickCheck(this);
-	}
-
-	Production newProduction(String localName) {
-		return new Production(localName, this, this.getExpression());
-	}
-	
+		
 	@Override
 	public final boolean equalsExpression(Expression o) {
 		if(o instanceof Production) {
@@ -268,11 +224,41 @@ public class Production extends Expression {
 	}
 
 	public final boolean isRecursive() {
+		if(!UFlag.is(this.flag, Production.RecursiveChecked)) {
+			checkRecursive(this.getExpression(), null);
+			this.flag |= Production.RecursiveChecked;
+//			if(Command.ReleasePreview) {
+//				boolean r = AnalysisCache.hasRecursion(this);
+//				boolean r2 = UFlag.is(this.flag, Production.RecursiveProduction);
+//				if(r != r2) {
+//					Verbose.FIXME("mismatched recursion: " + this.getLocalName() + " " + r + " " + r2);
+//				}
+//			}
+		}
 		return UFlag.is(this.flag, Production.RecursiveProduction);
 	}
-
-	public final void setRecursive() {
-		this.flag |= Production.RecursiveChecked | Production.RecursiveProduction;
+	
+	private void checkRecursive(Expression e, Visa v) {
+		if(e instanceof NonTerminal) {
+			Production p = ((NonTerminal) e).getProduction();
+			if(p == this) {
+				this.flag |= Production.RecursiveChecked | Production.RecursiveProduction;				
+				return;
+			}
+			if(Visa.isVisited(v, p)) {
+				//p.flag |= Production.RecursiveChecked | Production.RecursiveProduction;				
+				return;
+			}
+			v = Visa.visited(v, p);
+			this.checkRecursive(p.getExpression(), v);
+			return;
+		}
+		for(Expression sub : e) {
+			this.checkRecursive(sub, v);
+			if(UFlag.is(this.flag, Production.RecursiveProduction)) {
+				break;
+			}
+		}
 	}
 
 	public final boolean isConditional() {
@@ -284,31 +270,54 @@ public class Production extends Expression {
 		return UFlag.is(this.flag, Production.ConditionalProduction);
 	}
 
-	private void checkConditional(Expression e, Stacker stacker) {
+	private void checkConditional(Expression e, Visa v) {
 		if(e instanceof Conditional) {
 			this.flag |= Production.ConditionalChecked | Production.ConditionalProduction;
+			return;
 		}
 		if(e instanceof NonTerminal) {
 			Production p = ((NonTerminal) e).getProduction();
-			if(!UFlag.is(p.flag, Production.ConditionalChecked)) {
-				if(stacker != null && stacker.isVisited(p)) {
-					p.flag |= Production.RecursiveChecked | Production.RecursiveProduction;
-					return;
-				}
-				p.checkConditional(p.getExpression(), new Stacker(p, stacker));
-				p.flag |= Production.ConditionalChecked;
-				//Verbose.debug("conditional? " + p.getLocalName() + " ? " + p.isConditional());
-			}
 			if(UFlag.is(p.flag, Production.ConditionalProduction)) {
 				this.flag |= Production.ConditionalChecked | Production.ConditionalProduction;
+				return;
 			}
+			if(!UFlag.is(p.flag, Production.ConditionalChecked)) {
+				if(Visa.isVisited(v, p)) {
+					return;
+				}
+				v = Visa.visited(v, p);
+				p.checkConditional(p.getExpression(), v);
+				if(UFlag.is(p.flag, Production.ConditionalProduction)) {
+					this.flag |= Production.ConditionalChecked | Production.ConditionalProduction;
+					p.flag |= Production.ConditionalChecked;
+				}
+			}
+			return;
 		}
 		for(Expression sub : e) {
-			checkConditional(sub, stacker);
+			checkConditional(sub, v);
 			if(UFlag.is(this.flag, Production.ConditionalProduction)) {
 				break;
 			}
 		}
+	}
+	
+	boolean testCondition(Expression e, Visa v) {
+		if(e instanceof NonTerminal) {
+			Production p = ((NonTerminal)e).getProduction();
+			if(!Visa.isVisited(v, p)) {
+				v = Visa.visited(v, p);
+				boolean r = testCondition(p.getExpression(), v);
+				return r;
+			}
+			return false;
+		}
+		for(Expression se : e) {
+			if(testCondition(se, v)) {
+				return true;
+			}
+		}
+		return (e instanceof Conditional);
 	}
 
 	public final boolean isContextual() {
@@ -319,38 +328,62 @@ public class Production extends Expression {
 		return UFlag.is(this.flag, Production.ContextualProduction);
 	}
 
-	private void checkContextual(Expression e, Stacker stacker) {
+	private void checkContextual(Expression e, Visa v) {
 		if(e instanceof Contextual) {
 			this.flag |= Production.ContextualChecked | Production.ContextualProduction;
+			return;
 		}
 		if(e instanceof NonTerminal) {
 			Production p = ((NonTerminal) e).getProduction();
-			if(!UFlag.is(p.flag, Production.ContextualChecked)) {
-				if(stacker != null && stacker.isVisited(p)) {
-					p.flag |= Production.RecursiveChecked | Production.RecursiveProduction;
-					return;
-				}
-				p.checkContextual(p.getExpression(), new Stacker(p, stacker));
-				p.flag |= Production.ContextualChecked;
-			}
 			if(UFlag.is(p.flag, Production.ContextualProduction)) {
 				this.flag |= Production.ContextualChecked | Production.ContextualProduction;
+				return;
 			}
+			if(!UFlag.is(p.flag, Production.ContextualChecked)) {
+				if(Visa.isVisited(v, p)) {
+					return;
+				}
+				v = Visa.visited(v, p);
+				p.checkContextual(p.getExpression(), v);
+				if(UFlag.is(p.flag, Production.ContextualProduction)) {
+					this.flag |= Production.ContextualChecked | Production.ContextualProduction;
+					p.flag |= Production.ContextualChecked;
+				}
+			}
+			return;
 		}
 		for(Expression sub : e) {
-			checkContextual(sub, stacker);
+			checkContextual(sub, v);
 			if(UFlag.is(this.flag, Production.ContextualProduction)) {
 				break;
 			}
 		}
 	}
 
-	public final String getLocalName() {
-		return this.name;
+	boolean testContextSensitive(Expression e, Visa v) {
+		if(e instanceof NonTerminal) {
+			Production p = ((NonTerminal)e).getProduction();
+			if(!Visa.isVisited(v, p)) {
+				v = Visa.visited(v, p);
+				boolean r = testContextSensitive(p.getExpression(), v);
+				return r;
+			}
+			return false;
+		}
+		for(Expression se : e) {
+			if(testContextSensitive(se, v)) {
+				return true;
+			}
+		}
+		return (e instanceof Contextual);
 	}
 	
 	public final String getUniqueName() {
 		return this.uname;
+	}
+
+	public final String getLocalName() {
+		return this.name;
 	}
 	
 	public final Expression getExpression() {
@@ -383,70 +416,91 @@ public class Production extends Expression {
 		return m.reshapeProduction(this);
 	}
 	
-	int minlen = -1;
-
 	@Override
-	public boolean isConsumed(Stacker stacker) {
-		if(minlen == -1) {
-			this.minlen = this.getExpression().isConsumed(stacker) ? 1 : 0;
+	public boolean isConsumed() {
+		if(!UFlag.is(this.flag, ConsumedChecked)) {
+			checkConsumed(this.getExpression(), new ProductionStacker(this, null));
 		}
-		return minlen > 0;
+		return UFlag.is(this.flag, ConsumedProduction);
 	}
 	
-	@Override
-	public final boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
-		if(stack != null && this.minlen != 0 && stack.size() > 0) {
-			for(String n : stack) { // Check Unconsumed Recursion
-				if(uname.equals(n)) {
-					this.minlen = 0;
-					break;
+	private boolean checkConsumed(Expression e, ProductionStacker s) {
+		if(e instanceof NonTerminal) {
+			NonTerminal n = (NonTerminal)e;
+			Production p = n.getProduction();
+			if(UFlag.is(p.flag, ConsumedChecked)) {
+				return p.isConsumed();
+			}
+			if(s.isVisited(p)) {
+				// left recursion
+				return false;
+			}
+			if(p.isRecursive()) {
+				return checkConsumed(p.getExpression(), new ProductionStacker(p, s));
+			}
+			return p.isConsumed();
+		}
+		if(e instanceof Sequence) {
+			if(checkConsumed(e.get(0), s)) {
+				return true;
+			}
+			return checkConsumed(e.get(1), s);
+		}
+		if(e instanceof Choice) {
+			boolean consumed = true;
+			for(Expression se: e) {
+				if(!checkConsumed(se, s)) {
+					consumed = false;
 				}
 			}
+			return consumed;
 		}
-		if(minlen == -1) {
-			if(stack == null) {
-				stack = new UList<String>(new String[4]);
+		if(e.size() > 0) {
+			if(e instanceof Repetition1) {
+				return checkConsumed(e.get(0), s);
 			}
-			if(startNonTerminal == null) {
-				startNonTerminal = this.uname;
+			if(e instanceof Not || e instanceof Option || e instanceof Repetition || e instanceof And) {
+				return false;
 			}
-			stack.add(this.uname);
-			this.minlen = this.body.checkAlwaysConsumed(checker, startNonTerminal, stack) ? 1 : 0;
-			stack.pop();
+			return checkConsumed(e.get(0), s);
 		}
-		return minlen > 0;
+		return e.isConsumed();
 	}
 	
-	public int transType = Typestate.Undefined;
+	public final boolean isNoNTreeConstruction() {
+		if(!UFlag.is(this.flag, ASTChecked)) {
+			checkTypestate();
+		}
+		return !UFlag.is(this.flag, ObjectProduction) && !UFlag.is(this.flag, OperationalProduction);
+	}
 	
-	public final boolean isPurePEG() {
-		return this.transType == Typestate.BooleanType;
+	private void checkTypestate() {
+		int t = inferTypestate(null);
+		if(t == Typestate.ObjectType) {
+			this.flag |= ObjectProduction;
+		}
+		if(t == Typestate.OperationType) {
+			this.flag |= OperationalProduction;
+		}
+		this.flag |= ASTChecked;		
 	}
 
 	@Override
-	public int inferTypestate(UMap<String> visited) {
-		if(this.transType != Typestate.Undefined) {
-			return this.transType;
-		}
-		if(visited != null) {
-			if(visited.hasKey(uname)) {
-				this.transType = Typestate.BooleanType;
-				return this.transType;
+	public int inferTypestate(Visa v) {
+		if(UFlag.is(this.flag, ASTChecked)) {
+			if(UFlag.is(this.flag, ObjectProduction)) {
+				return Typestate.ObjectType;
 			}
+			if(UFlag.is(this.flag, OperationalProduction)) {
+				return Typestate.OperationType;
+			}
+			return Typestate.BooleanType;
 		}
-		else {
-			visited = new UMap<String>();
+		if(Visa.isVisited(v, this)) {
+			return Typestate.Undefined;
 		}
-		visited.put(uname, uname);
-		int t = body.inferTypestate(visited);
-		assert(t != Typestate.Undefined);
-		if(this.transType == Typestate.Undefined) {
-			this.transType = t;
-		}
-		else {
-			assert(transType == t);
-		}
-		return this.transType;
+		v = Visa.visited(v, this);
+		return this.getExpression().inferTypestate(v);
 	}
 	
 	@Override
@@ -463,22 +517,27 @@ public class Production extends Expression {
 		return this.getUniqueName() + "=";
 	}
 
-	private int dfaOption = -1;
-	private short[] dfaCache = null;
+//	private int dfaOption = -1;
+//	private short[] dfaCache = null;
+//
+//	@Override
+//	public short acceptByte(int ch, int option) {
+//		option = Grammar.mask(option);
+//		if(option != dfaOption) {
+//			if(dfaCache == null) {
+//				dfaCache = new short[257];
+//			}
+//			for(int c = 0; c < dfaCache.length; c++) {
+//				dfaCache[c] = this.body.acceptByte(c, option);
+//			}
+//			this.dfaOption = option;
+//		}
+//		return dfaCache[ch]; 
+//	}
 
 	@Override
 	public short acceptByte(int ch, int option) {
-		option = Grammar.mask(option);
-		if(option != dfaOption) {
-			if(dfaCache == null) {
-				dfaCache = new short[257];
-			}
-			for(int c = 0; c < dfaCache.length; c++) {
-				dfaCache[c] = this.body.acceptByte(c, option);
-			}
-			this.dfaOption = option;
-		}
-		return dfaCache[ch]; 
+		return this.getExpression().acceptByte(ch, option);
 	}
 
 	
@@ -498,22 +557,57 @@ public class Production extends Expression {
 	}
 
 	public final void dump() {
-		ConsoleUtils.println(this.getLocalName() + " = " + this.getExpression());
+		UList<String> l = new UList<String>(new String[4]);
+		if(this.isPublic()) {
+			l.add("public");
+		}
+		if(this.isInline()) {
+			l.add("inline");
+		}
+		if(this.isRecursive()) {
+			l.add("recursive");
+		}
+		if(this.isConditional()) {
+			l.add("conditional");
+		}
+		if(this.isContextual()) {
+			l.add("contextual");
+		}
+		ConsoleUtils.println(l + "\n" + this.getLocalName() + " = " + this.getExpression());
 	}
-
-	
-	
 }
 
-class Stacker {
-	Stacker prev;
+class Visa {
+	public final static boolean isVisited(Visa v, Production p) {
+		return v == null ? false: v.isVisited(p);
+	}
+	public final static Visa visited(Visa v, Production p) {
+		if(v == null) {
+			v = new Visa();
+		}
+		v.visited(p);
+		return v;
+	}
+	HashMap<String,Production> map = new HashMap<String,Production>();
+	private boolean isVisited(Production p) {
+		return map.containsKey(p.getUniqueName());
+	}
+	private void visited(Production p) {
+		map.put(p.getUniqueName(), p);
+	}
+}
+
+class ProductionStacker {
+	int n;
+	ProductionStacker prev;
 	Production p;
-	Stacker(Production p, Stacker prev) {
+	ProductionStacker(Production p, ProductionStacker prev) {
 		this.prev = prev;
 		this.p = p;
+		this.n = (prev == null) ? 0 : prev.n + 1;
 	}
 	boolean isVisited(Production p) {
-		Stacker d = this;
+		ProductionStacker d = this;
 		while(d != null) {
 			if(d.p == p) {
 				return true;

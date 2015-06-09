@@ -29,7 +29,7 @@ public class Failure extends Unconsumed {
 		return m.reshapeFailure(this);
 	}
 	@Override
-	public boolean isConsumed(Stacker stacker) {
+	public boolean isConsumed() {
 		return true;
 	}
 

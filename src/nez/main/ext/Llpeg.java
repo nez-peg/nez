@@ -1,11 +1,11 @@
 package nez.main.ext;
 
-import nez.generator.NezGenerator;
+import nez.generator.GeneratorLoader;
 
 public class Llpeg {
 	static {
-		NezGenerator.regist("lpeg", nez.generator.LPegGrammarGenerator.class);
+		GeneratorLoader.regist("lpeg", nez.generator.LPegGrammarGenerator.class);
 		// File Extension
-		NezGenerator.regist(".lua", nez.generator.LPegGrammarGenerator.class);
+		GeneratorLoader.regist(".lua", nez.generator.LPegGrammarGenerator.class);
 	}
 }

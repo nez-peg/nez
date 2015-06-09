@@ -2,7 +2,6 @@ package nez.lang;
 import java.util.TreeMap;
 
 import nez.ast.SourcePosition;
-import nez.util.UMap;
 
 public abstract class Terminal extends Expression {
 	Terminal(SourcePosition s) {
@@ -17,7 +16,7 @@ public abstract class Terminal extends Expression {
 		return 0;
 	}
 	@Override
-	public int inferTypestate(UMap<String> visited) {
+	public int inferTypestate(Visa v) {
 		return Typestate.BooleanType;
 	}
 

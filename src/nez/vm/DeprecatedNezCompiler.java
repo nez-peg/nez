@@ -183,7 +183,7 @@ public class DeprecatedNezCompiler extends NezCompiler1 {
 		return e.encode(this, next, failjump);
 	}
 	
-	public final Instruction encodeMatchAny(AnyChar p, Instruction next, Instruction failjump) {
+	public final Instruction encodeAnyChar(AnyChar p, Instruction next, Instruction failjump) {
 		return new IAnyChar(p, next);
 	}
 
@@ -380,7 +380,7 @@ public class DeprecatedNezCompiler extends NezCompiler1 {
 		return new INotFailPush(p, next, encodeExpression(p.get(0), fail, failjump));
 	}
 
-	public final Instruction encodeSequence(Expression p, Instruction next, Instruction failjump) {
+	public final Instruction encodeSequence(Sequence p, Instruction next, Instruction failjump) {
 		Expression pp = p; //optimize(option);
 		if(pp != p) {
 			if(pp instanceof ByteMap) {

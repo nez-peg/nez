@@ -29,13 +29,13 @@ public class NezCompiler2 extends NezCompiler1 {
 		return new GrammarOptimizer(this.option).optimize(p);
 	}
 
-	protected Instruction encodeMemoizingProduction(ProductionCode code) {
+	protected Instruction encodeMemoizingProduction(CodePoint code) {
 		if(UFlag.is(this.option, Grammar.PackratParsing)) {
 			Production p = code.production;
 			boolean state = p.isContextual();
-			Instruction next = new IMemoize(p, code.memoPoint, !p.isPurePEG(), state, new IMemoRet(p, null));
+			Instruction next = new IMemoize(p, code.memoPoint, !p.isNoNTreeConstruction(), state, new IMemoRet(p, null));
 			Instruction inside = new ICallPush(code.production, next);
-			return new ILookup(p, code.memoPoint, !p.isPurePEG(), state, inside, next, new IMemoizeFail(p, state, code.memoPoint));
+			return new ILookup(p, code.memoPoint, !p.isNoNTreeConstruction(), state, inside, next, new IMemoizeFail(p, state, code.memoPoint));
 		}
 		return null;
 	}
@@ -180,13 +180,13 @@ public class NezCompiler2 extends NezCompiler1 {
 
 	public final Instruction encodeNonTerminal(NonTerminal p, Instruction next, Instruction failjump) {
 		Production r = p.getProduction();
-		ProductionCode code = this.codeMap.get(r.getUniqueName());
+		CodePoint code = this.codeMap.get(r.getUniqueName());
 		if(code.inlining) {
 			this.optimizedInline(r);
 			return encodeExpression(code.localExpression, next, failjump);
 		}
 		if(this.enablePackratParsing() && code.memoPoint != null) {
-			if(!this.enableASTConstruction() || r.isPurePEG()) {
+			if(!this.enableASTConstruction() || r.isNoNTreeConstruction()) {
 				return new IMemoCall(code, next);
 			}
 		}
@@ -211,7 +211,7 @@ public class NezCompiler2 extends NezCompiler1 {
 
 	private Instruction encodeLinkedNonterminal(NonTerminal p, Instruction next, Instruction failjump) {
 		Production r = p.getProduction();
-		ProductionCode code = this.codeMap.get(r.getUniqueName());
+		CodePoint code = this.codeMap.get(r.getUniqueName());
 		if(code.inlining) {
 			this.optimizedInline(r);
 			return encodeExpression(code.localExpression, next, failjump);

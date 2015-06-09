@@ -3,7 +3,6 @@ package nez.lang;
 import nez.ast.SourcePosition;
 import nez.ast.Tag;
 import nez.util.UList;
-import nez.util.UMap;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
@@ -54,22 +53,15 @@ public class ExistsSymbol extends Expression implements Contextual {
 	}
 	
 	@Override
-	public boolean isConsumed(Stacker stacker) {
-		Expression inner = this.getSymbolExpression();
-		if(inner != null) {
-			return inner.isConsumed(stacker);
-		}
+	public boolean isConsumed() {
 		return false;
 	}
 
 	@Override
-	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
-		return true;
-	}
-	@Override
-	public int inferTypestate(UMap<String> visited) {
+	public int inferTypestate(Visa v) {
 		return Typestate.BooleanType;
 	}
+	
 	@Override
 	public short acceptByte(int ch, int option) {
 		if(this.getSymbolExpression() != null) {

@@ -2,7 +2,6 @@ package nez.lang;
 
 import nez.ast.SourcePosition;
 import nez.util.UList;
-import nez.util.UMap;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
@@ -27,18 +26,13 @@ public class Block extends Unary {
 	}
 
 	@Override
-	public boolean isConsumed(Stacker stacker) {
-		return this.inner.isConsumed(stacker);
-	}
-
-	@Override
-	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
-		return this.inner.checkAlwaysConsumed(checker, startNonTerminal, stack);
+	public boolean isConsumed() {
+		return this.inner.isConsumed();
 	}
 	
 	@Override
-	public int inferTypestate(UMap<String> visited) {
-		return this.inner.inferTypestate(visited);
+	public int inferTypestate(Visa v) {
+		return this.inner.inferTypestate(v);
 	}
 
 	@Override

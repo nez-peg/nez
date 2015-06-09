@@ -45,13 +45,13 @@ public class IfFlag extends Unconsumed implements Conditional {
 	}
 
 	@Override
-	public boolean isConsumed(Stacker stacker) {
+	public boolean isConsumed() {
 		return false;
 	}
 
 	@Override
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
-		return next;
+		return bc.encodeIfFlag(this, next, failjump);
 	}
 
 	@Override

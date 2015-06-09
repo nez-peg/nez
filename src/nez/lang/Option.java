@@ -2,7 +2,6 @@ package nez.lang;
 
 import nez.ast.SourcePosition;
 import nez.util.UList;
-import nez.util.UMap;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
@@ -37,18 +36,13 @@ public class Option extends Unary {
 	}
 
 	@Override
-	public boolean isConsumed(Stacker stacker) {
+	public boolean isConsumed() {
 		return false;
 	}
-
+	
 	@Override
-	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
-		return false;
-	}
-
-	@Override
-	public int inferTypestate(UMap<String> visited) {
-		int t = this.inner.inferTypestate(visited);
+	public int inferTypestate(Visa v) {
+		int t = this.inner.inferTypestate(v);
 		if(t == Typestate.ObjectType) {
 			return Typestate.BooleanType;
 		}

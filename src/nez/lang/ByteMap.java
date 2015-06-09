@@ -61,14 +61,10 @@ public class ByteMap extends Terminal implements Consumed {
 	}
 
 	@Override
-	public boolean isConsumed(Stacker stacker) {
+	public boolean isConsumed() {
 		return true;
 	}
-	
-	@Override
-	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
-		return true;
-	}
+
 	@Override
 	public short acceptByte(int ch, int option) {
 		return (byteMap[ch]) ? Acceptance.Accept : Acceptance.Reject;

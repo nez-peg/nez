@@ -4,7 +4,6 @@ import java.util.TreeMap;
 
 import nez.ast.SourcePosition;
 import nez.util.UList;
-import nez.util.UMap;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
@@ -67,13 +66,12 @@ public abstract class Expression extends AbstractList<Expression> {
 
 	public abstract Expression reshape(GrammarReshaper m);
 	
-	public final boolean isAlwaysConsumed() {
-		return this.checkAlwaysConsumed(null, null, null);
-	}
-	public abstract boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack);
+//	public final boolean isAlwaysConsumed() {
+//		return this.checkAlwaysConsumed(null, null, null);
+//	}
+//	public abstract boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack);
 	
-	public abstract boolean isConsumed(Stacker stacker);
-	
+	public abstract boolean isConsumed();
 	
 	boolean setOuterLefted(Expression outer) { return false; }
 	
@@ -81,7 +79,7 @@ public abstract class Expression extends AbstractList<Expression> {
 		return this.inferTypestate(null);
 	}
 	
-	public abstract int inferTypestate(UMap<String> visited);
+	public abstract int inferTypestate(Visa v);
 	
 	public abstract short acceptByte(int ch, int option);
 	

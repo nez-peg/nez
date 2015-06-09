@@ -30,14 +30,13 @@ public class Empty extends Unconsumed {
 	}
 
 	@Override
-	public boolean isConsumed(Stacker stacker) {
+	public boolean isConsumed() {
 		return false;
 	}
 
-
 	@Override
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
-		return next;
+		return bc.encodeEmpty(this, next);
 	}
 
 	@Override

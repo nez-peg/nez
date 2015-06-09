@@ -53,14 +53,17 @@ class ConditionalAnalysis extends GrammarReshaper {
 	}
 	
 	private Production eliminateConditionalFlag(Production p) {
-		String flagedName = nameFlagedProduction(p);
-		Production newp = p.getNameSpace().getProduction(flagedName);
-		if(newp == null) {
-			p = this.getBaseProduction(p);
-			newp = p.getNameSpace().newReducedProduction(flagedName, p, this);
-			//Verbose.debug("creating .. " + flagedName);
+		if(p.isConditional()) {
+			String flagedName = nameFlagedProduction(p);
+			Production newp = p.getNameSpace().getProduction(flagedName);
+			if(newp == null) {
+				p = this.getBaseProduction(p);
+				newp = p.getNameSpace().newReducedProduction(flagedName, p, this);
+				//Verbose.debug("creating .. " + flagedName);
+			}
+			return newp;
 		}
-		return newp;
+		return p;
 	}
 
 	private Production getBaseProduction(Production p) {

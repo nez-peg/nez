@@ -6,6 +6,7 @@ import java.util.HashMap;
 import nez.SourceContext;
 import nez.ast.CommonTree;
 import nez.ast.CommonTreeWriter;
+import nez.generator.GeneratorLoader;
 import nez.generator.NezGenerator;
 import nez.generator.NezGrammarGenerator;
 import nez.lang.Formatter;
@@ -31,6 +32,7 @@ public class NezInteractiveParser extends Command {
 		Command.displayVersion();
 		NameSpace ns = config.getNameSpace(true);
 		ConsoleUtils.addCompleter(ns.getNonterminalList());
+		int option = config.GrammarOption;
 		while(readLine(">>> ")) {
 			if((command != null && command.equals(""))) {
 				continue;
@@ -41,10 +43,10 @@ public class NezInteractiveParser extends Command {
 				defineProduction(ns, text);
 				continue;
 			}
-			if(text != null && NezGenerator.supportedGenerator(command)) {
+			if(text != null && GeneratorLoader.supportedGenerator(command)) {
 				Grammar g = getGrammar(ns, text);
 				if(g != null) {
-					execCommand(command, g);
+					execCommand(command, g, option);
 				}
 				continue;
 			}
@@ -169,9 +171,9 @@ public class NezInteractiveParser extends Command {
 		return cmdMap.containsKey(cmd);
 	}
 	
-	static void execCommand(String cmd, Grammar g) {
-		NezGenerator gen = NezGenerator.newNezGenerator(cmd);
-		gen.generate(g);
+	static void execCommand(String cmd, Grammar g, int option) {
+		NezGenerator gen = GeneratorLoader.newNezGenerator(cmd);
+		gen.generate(g, option, null);
 		ConsoleUtils.println("");
 	}
 }
@@ -184,7 +186,7 @@ class NezCommand extends ShellCommand {
 
 	@Override
 	public void perform(Grammar g) {
-		NezGrammarGenerator gen  = new NezGrammarGenerator(null);
+		NezGrammarGenerator gen  = new NezGrammarGenerator();
 		for(Production p: g.getProductionList()) {
 			gen.visitProduction(p);
 		}

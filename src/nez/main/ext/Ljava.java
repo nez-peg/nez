@@ -1,12 +1,12 @@
 package nez.main.ext;
 
-import nez.generator.NezGenerator;
+import nez.generator.GeneratorLoader;
 
 public class Ljava {
 	static {
-		NezGenerator.regist("java", nez.generator.JavaParserGenerator.class);
+		GeneratorLoader.regist("java", nez.generator.JavaParserGenerator.class);
 		// File Extension
-		NezGenerator.regist(".java", nez.generator.JavaParserGenerator.class);
+		GeneratorLoader.regist(".java", nez.generator.JavaParserGenerator.class);
 	}
 
 }

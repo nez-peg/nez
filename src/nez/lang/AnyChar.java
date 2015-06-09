@@ -4,7 +4,6 @@ import nez.ast.Source;
 import nez.ast.SourcePosition;
 import nez.util.UFlag;
 import nez.util.UList;
-import nez.util.UMap;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
@@ -46,16 +45,12 @@ public class AnyChar extends Terminal implements Consumed {
 	}
 
 	@Override
-	public boolean isConsumed(Stacker stacker) {
+	public boolean isConsumed() {
 		return true;
 	}
 
 	@Override
-	public boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack) {
-		return true;
-	}
-	@Override
-	public int inferTypestate(UMap<String> visited) {
+	public int inferTypestate(Visa v) {
 		return Typestate.BooleanType;
 	}
 	
@@ -71,7 +66,7 @@ public class AnyChar extends Terminal implements Consumed {
 	
 	@Override
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
-		return bc.encodeMatchAny(this, next, failjump);
+		return bc.encodeAnyChar(this, next, failjump);
 	}
 	@Override
 	protected int pattern(GEP gep) {
