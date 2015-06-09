@@ -198,7 +198,7 @@ public class NezDebugger {
 			}
 			else if(o.code.equals("pos")) {
 				ConsoleUtils.println("pos = " + ctx.getPosition());
-				ConsoleUtils.println(sc.formatDebugPositionMessage(((Context) sc).getPosition(), ""));
+				ConsoleUtils.println(sc.formatDebugPositionLine(((Context) sc).getPosition(), ""));
 			}
 			else if(o.code.equals("input_name")) {
 				ConsoleUtils.println("input_name = " + ctx.getResourceName());

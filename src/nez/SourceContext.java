@@ -126,11 +126,11 @@ public abstract class SourceContext extends Context {
 		return this.formatPositionMessage(messageType, pos, message) + this.getTextAround(pos, "\n ");
 	}
 	
+	@Override
 	public final String formatDebugPositionMessage(long pos, String message) {
 		return "(" + this.getResourceName() + ":" + this.linenum(pos) + ")" + message;
 	}
 	
-	@Override
 	public final String formatDebugPositionLine(long pos, String message) {
 		return this.formatDebugPositionMessage(pos, message) + this.getTextAround(pos, "\n ");
 	}

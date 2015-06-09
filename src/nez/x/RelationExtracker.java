@@ -552,7 +552,7 @@ class RNode extends AbstractList<RNode> implements SourcePosition {
 	
 	@Override
 	public String formatDebugSourceMessage(String msg) {
-		return this.source.formatDebugPositionLine(this.getSourcePosition(), msg);
+		return this.source.formatDebugPositionMessage(this.getSourcePosition(), msg);
 	}
 
 	public final int subNodes() {

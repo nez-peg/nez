@@ -112,7 +112,7 @@ public class CommonTree extends AbstractList<CommonTree> implements SourcePositi
 
 	@Override
 	public String formatDebugSourceMessage(String msg) {
-		return this.source.formatDebugPositionLine(this.getSourcePosition(), msg);
+		return this.source.formatDebugPositionMessage(this.getSourcePosition(), msg);
 	}
 	
 	// subTree[]
