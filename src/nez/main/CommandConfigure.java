@@ -250,7 +250,7 @@ public class CommandConfigure {
 				return NezCombinator.newNameSpace();
 			}
 			try {
-				return NameSpace.loadGrammarFile(GrammarFile, new GrammarChecker(this.CheckerLevel));
+				return NameSpace.loadGrammarFile(GrammarFile, new GrammarChecker(this.CheckerLevel, GrammarOption));
 			} catch (IOException e) {
 				ConsoleUtils.exit(1, "cannot open " + GrammarFile + "; " + e.getMessage());
 			}

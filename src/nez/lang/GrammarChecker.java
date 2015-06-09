@@ -11,12 +11,18 @@ import nez.util.UMap;
 public class GrammarChecker {
 	
 	boolean strictMode;
+	int option;
 
 	boolean foundError = false;
 	boolean foundFlag  = false;
 
 	public GrammarChecker(int checkerLevel) {
 		this.strictMode = checkerLevel > 0;
+	}
+	
+	public GrammarChecker(int checkerLevel, int option) {
+		this.strictMode = checkerLevel > 0;
+		this.option = option;
 	}
 
 	public GrammarChecker() {
@@ -101,14 +107,21 @@ public class GrammarChecker {
 			r.reshape(new Typestate(this));
 		}		
 		// interning
-		for(Production r: grammar.getRuleList()) {
-//			if(r.isTerminal) {
-//				continue;
-//			}
-			if(Verbose.Grammar) {
-				r.dump();
+		if(this.option == Grammar.DebugOption) {
+			for(Production r: grammar.getRuleList()) {
+				GrammarFactory.setId(r.getExpression());
 			}
-			r.internRule();
+		}
+		else {
+			for(Production r: grammar.getRuleList()) {
+//				if(r.isTerminal) {
+//					continue;
+//				}
+				if(Verbose.Grammar) {
+					r.dump();
+				}
+				r.internRule();
+			}
 		}
 //		if(this.foundFlag) {
 //			TreeMap<String,String> undefedFlags = new TreeMap<String,String>();

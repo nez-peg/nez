@@ -154,13 +154,16 @@ public class Grammar {
 		
 	public final boolean match(SourceContext s) {
 		boolean matched;
-		Instruction pc = this.compile();
+		Instruction pc;
 		s.initJumpStack(64, getMemoTable(s));
-		if(this.option == Grammar.DebugOption) {
+		if(this.option == Grammar.DebugOption) { // FIXME
+			NezCompiler c = new NezCompiler1(this.option);
+			pc = c.compile(this).startPoint;
 			NezDebugger debugger = new NezDebugger(this, pc, s);
 			matched = debugger.exec();
 		}
-		else if(Verbose.Debug) {
+		pc = this.compile();
+		if(Verbose.Debug) {
 			matched = Machine.debug(pc, s);
 		}
 		else {

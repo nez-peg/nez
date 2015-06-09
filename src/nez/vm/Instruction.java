@@ -180,6 +180,7 @@ class ICallPush extends Instruction implements StackOperation {
 	ICallPush(Production rule, NonTerminal ne, Instruction next) {
 		super(rule, next);
 		this.rule = rule;
+		this.ne = ne;
 	}
 	void setResolvedJump(Instruction jump) {
 		assert(this.jump == null);
