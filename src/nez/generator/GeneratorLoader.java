@@ -35,27 +35,5 @@ public class GeneratorLoader {
 		}
 		return null;
 	}
-	public final static NezGenerator newNezGenerator(String key, String fileName) {
-		Class<?> c = classMap.get(key);
-		if(c != null) {
-			try {
-				Constructor<?> ct = c.getConstructor(String.class);
-				return (NezGenerator) ct.newInstance(fileName);
-			} catch (InstantiationException e) {
-				Verbose.traceException(e);
-			} catch (IllegalAccessException e) {
-				Verbose.traceException(e);
-			} catch (NoSuchMethodException e) {
-				e.printStackTrace();
-			} catch (SecurityException e) {
-				e.printStackTrace();
-			} catch (IllegalArgumentException e) {
-				e.printStackTrace();
-			} catch (InvocationTargetException e) {
-				e.printStackTrace();
-			}
-		}
-		return null;
-	}
 
 }

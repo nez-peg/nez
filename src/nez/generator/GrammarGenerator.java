@@ -343,12 +343,6 @@ public abstract class GrammarGenerator extends NezGenerator {
 	}
 
 	@Override
-	public void visitExpression(Expression e) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
 	public void visitReplace(Replace p) {
 		// TODO Auto-generated method stub
 		
