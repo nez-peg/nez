@@ -52,6 +52,7 @@ public class CeleryConverter extends CommonTreeVisitor {
 		NameSpace grammar = NameSpace.newNameSpace(filePath);
 		converter.convert(node, grammar);
 		checker.verify(grammar);
+		grammar.dump();
 		return grammar;
 	}
 
@@ -74,7 +75,11 @@ public class CeleryConverter extends CommonTreeVisitor {
 			initMemberList();
 			this.visit("visit", classNode);
 			String className = classNode.textAt(0, null);
-			grammar.defineProduction(classNode, className, genClassRule(className));
+			if (UseExtendedSyntax) {
+				grammar.defineProduction(classNode, className, genExClassRule(className));
+			} else {
+				grammar.defineProduction(classNode, className, genClassRule(className));
+			}
 		}
 		grammar.defineProduction(node, rootClassName, genRootClass());
 	}
@@ -283,6 +288,46 @@ public class CeleryConverter extends CommonTreeVisitor {
 		}
 	}
 
+	private final Expression genExClassRule(String className) {
+		int requiredMembersListSize = requiredMembersList.size();
+		String memberList = className + "_Members";
+
+		Expression[] tables = new Expression[requiredMembersListSize];
+		for (int i = 0; i < requiredMembersListSize; i++) {
+			tables[i] = grammar.newExists(requiredMembersList.get(i));
+		}
+
+		Expression[] seq = {
+				grammar.newByteChar('"'),
+				grammar.newString(className),
+				grammar.newByteChar('"'),
+				grammar.newNonTerminal("NAMESEP"),
+				grammar.newByteChar('{'),
+				grammar.newNonTerminal("SPACING"),
+				grammar.newNonTerminal(memberList),
+				grammar.newRepetition1(grammar.newSequence(tables)),
+				grammar.newNonTerminal("SPACING"),
+				grammar.newByteChar('}')
+		};
+		grammar.defineProduction(null, memberList,
+				genExMemberRule(className, requiredMembersListSize));
+		return grammar.newSequence(seq);
+	}
+
+	private final Expression genExMemberRule(String className, int requiredListSize) {
+		Expression[] choice = new Expression[requiredListSize + 1];
+		String impliedChoiceRuleName = className + "_imp";
+
+		for (int i = 0; i < requiredListSize; i++) {
+			String memberName = requiredMembersList.get(i);
+			choice[i] = grammar.newSequence(grammar.newNot(grammar.newIsSymbol(memberName)),
+					grammar.newDefSymbol(memberName, grammar.newNonTerminal(memberName)));
+		}
+		choice[requiredListSize] = grammar.newNonTerminal(impliedChoiceRuleName);
+
+		return grammar.newChoice(choice);
+	}
+
 	private final void genImpliedChoice(String ruleName) {
 		Expression[] l = new Expression[impliedMemebersList.size()];
 		int choiceCount = 0;
@@ -343,5 +388,6 @@ public class CeleryConverter extends CommonTreeVisitor {
 		PermutationGen permGen = new PermutationGen(target);
 		return permGen.getPermList();
 	}
+
 
 }
