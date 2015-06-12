@@ -52,7 +52,7 @@ public class CeleryConverter extends CommonTreeVisitor {
 		NameSpace grammar = NameSpace.newNameSpace(filePath);
 		converter.convert(node, grammar);
 		checker.verify(grammar);
-		grammar.dump();
+		// grammar.dump();
 		return grammar;
 	}
 
@@ -81,7 +81,7 @@ public class CeleryConverter extends CommonTreeVisitor {
 				grammar.defineProduction(classNode, className, genClassRule(className));
 			}
 		}
-		grammar.defineProduction(node, rootClassName, genRootClass());
+		grammar.defineProduction(node, "Root", genRootClass());
 	}
 
 	public final void visitClass(CommonTree node) {
@@ -94,9 +94,9 @@ public class CeleryConverter extends CommonTreeVisitor {
 		String name = node.textAt(0, null);
 		requiredMembersList.add(name);
 		Expression[] seq = {
-				grammar.newByteChar('"'),
+				_DQuoat(),
 				grammar.newString(name),
-				grammar.newByteChar('"'),
+				_DQuoat(),
 				grammar.newNonTerminal("NAMESEP"),
 				toExpression(node.get(1)),
 				grammar.newOption(grammar.newNonTerminal("VALUESEP"))
@@ -108,9 +108,9 @@ public class CeleryConverter extends CommonTreeVisitor {
 		String name = node.textAt(0, null);
 		impliedMemebersList.add(name);
 		Expression[] seq = {
-				grammar.newByteChar('"'),
+				_DQuoat(),
 				grammar.newString(name),
-				grammar.newByteChar('"'),
+				_DQuoat(),
 				grammar.newNonTerminal("NAMESEP"),
 				toExpression(node.get(1)),
 				grammar.newOption(grammar.newNonTerminal("VALUESEP"))
@@ -123,9 +123,9 @@ public class CeleryConverter extends CommonTreeVisitor {
 		requiredMembersList.add(name);
 		// inferType(node.get(2));
 		Expression[] seq = {
-				grammar.newByteChar('"'),
+				_DQuoat(),
 				grammar.newString(name),
-				grammar.newByteChar('"'),
+				_DQuoat(),
 				grammar.newNonTerminal("NAMESEP"),
 				grammar.newNonTerminal("Any"),
 				grammar.newOption(grammar.newNonTerminal("VALUESEP"))
@@ -138,9 +138,9 @@ public class CeleryConverter extends CommonTreeVisitor {
 		impliedMemebersList.add(name);
 		// inferType(node.get(2));
 		Expression[] seq = {
-				grammar.newByteChar('"'),
+				_DQuoat(),
 				grammar.newString(name),
-				grammar.newByteChar('"'),
+				_DQuoat(),
 				grammar.newNonTerminal("NAMESEP"),
 				grammar.newNonTerminal("Any"),
 				grammar.newOption(grammar.newNonTerminal("VALUESEP"))
@@ -197,7 +197,7 @@ public class CeleryConverter extends CommonTreeVisitor {
 		Expression type = toExpression(node.get(0));
 		Expression[] seq = {
 				grammar.newByteChar('['),
-				grammar.newNonTerminal("SPACING"),
+				_SPACING(),
 				type,
 				grammar.newRepetition(grammar.newNonTerminal("VALUESEP"), type),
 				grammar.newByteChar(']')
@@ -210,14 +210,14 @@ public class CeleryConverter extends CommonTreeVisitor {
 	private final Expression genClassRule(String className) {
 		String memberList = className + "_Members";
 		Expression[] seq = {
-				grammar.newByteChar('"'),
+				_DQuoat(),
 				grammar.newString(className),
-				grammar.newByteChar('"'),
+				_DQuoat(),
 				grammar.newNonTerminal("NAMESEP"),
 				grammar.newByteChar('{'),
-				grammar.newNonTerminal("SPACING"),
+				_SPACING(),
 				grammar.newNonTerminal(memberList),
-				grammar.newNonTerminal("SPACING"),
+				_SPACING(),
 				grammar.newByteChar('}')
 		};
 		grammar.defineProduction(null, memberList, genMemberRule(className));
@@ -298,15 +298,16 @@ public class CeleryConverter extends CommonTreeVisitor {
 		}
 
 		Expression[] seq = {
-				grammar.newByteChar('"'),
+				_DQuoat(),
 				grammar.newString(className),
-				grammar.newByteChar('"'),
+				_DQuoat(),
+				_SPACING(),
 				grammar.newNonTerminal("NAMESEP"),
 				grammar.newByteChar('{'),
-				grammar.newNonTerminal("SPACING"),
-				grammar.newNonTerminal(memberList),
-				grammar.newRepetition1(grammar.newSequence(tables)),
-				grammar.newNonTerminal("SPACING"),
+				_SPACING(),
+				grammar.newRepetition1(grammar.newNonTerminal(memberList)),
+				grammar.newSequence(tables),
+				_SPACING(),
 				grammar.newByteChar('}')
 		};
 		grammar.defineProduction(null, memberList,
@@ -317,7 +318,7 @@ public class CeleryConverter extends CommonTreeVisitor {
 	private final Expression genExMemberRule(String className, int requiredListSize) {
 		Expression[] choice = new Expression[requiredListSize + 1];
 		String impliedChoiceRuleName = className + "_imp";
-
+		genImpliedChoice(impliedChoiceRuleName);
 		for (int i = 0; i < requiredListSize; i++) {
 			String memberName = requiredMembersList.get(i);
 			choice[i] = grammar.newSequence(grammar.newNot(grammar.newIsSymbol(memberName)),
@@ -338,25 +339,39 @@ public class CeleryConverter extends CommonTreeVisitor {
 	}
 
 	private final Expression genRootClass() {
-		Expression[] root = {
-				grammar.newByteChar('{'),
-				grammar.newNonTerminal("SPACING"),
-				grammar.newNonTerminal(rootClassName + "_Members"),
-				grammar.newNonTerminal("SPACING"),
-				grammar.newByteChar('}')
-		};
+		Expression root = genRootSeq();
 		Expression[] seq = {
-				grammar.newNonTerminal("VALUESEP"),
-				grammar.newSequence(root)
+				grammar.newNonTerminal("VALUESEP"), root
 		};
 		Expression[] array = {
 				grammar.newByteChar('['),
-				grammar.newNonTerminal("SPACING"),
-				grammar.newSequence(root),
-				grammar.newRepetition(seq),
+				_SPACING(),
+				root,
+				grammar.newRepetition1(seq),
+				_SPACING(),
 				grammar.newByteChar(']')
 		};
 		return grammar.newChoice(grammar.newSequence(root), grammar.newSequence(array));
+	}
+
+	private final Expression genRootSeq() {
+		int requiredMembersListSize = requiredMembersList.size();
+		String memberList = rootClassName + "_Members";
+
+		Expression[] tables = new Expression[requiredMembersListSize];
+		for (int i = 0; i < requiredMembersListSize; i++) {
+			tables[i] = grammar.newExists(requiredMembersList.get(i));
+		}
+
+		Expression[] seq = {
+				grammar.newByteChar('{'),
+				_SPACING(),
+				grammar.newRepetition1(grammar.newNonTerminal(memberList)),
+				grammar.newSequence(tables),
+				_SPACING(),
+				grammar.newByteChar('}')
+		};
+		return grammar.newSequence(seq);
 	}
 
 	// Utilities
@@ -387,6 +402,14 @@ public class CeleryConverter extends CommonTreeVisitor {
 		}
 		PermutationGen permGen = new PermutationGen(target);
 		return permGen.getPermList();
+	}
+
+	private final Expression _SPACING(){
+		return grammar.newNonTerminal("SPACING");
+	}
+
+	private final Expression _DQuoat() {
+		return grammar.newByteChar('"');
 	}
 
 
