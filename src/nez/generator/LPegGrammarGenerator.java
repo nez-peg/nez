@@ -9,16 +9,13 @@ import nez.lang.Capture;
 import nez.lang.Choice;
 import nez.lang.DefIndent;
 import nez.lang.DefSymbol;
-import nez.lang.Empty;
 import nez.lang.ExistsSymbol;
 import nez.lang.Expression;
-import nez.lang.Failure;
 import nez.lang.Grammar;
 import nez.lang.IsIndent;
 import nez.lang.IsSymbol;
 import nez.lang.Link;
 import nez.lang.LocalTable;
-import nez.lang.NameSpace;
 import nez.lang.New;
 import nez.lang.NonTerminal;
 import nez.lang.Not;
@@ -28,11 +25,9 @@ import nez.lang.Repetition;
 import nez.lang.Repetition1;
 import nez.lang.Replace;
 import nez.lang.Sequence;
-import nez.lang.Multinary;
 import nez.lang.Tagging;
 import nez.lang.Unary;
 import nez.util.StringUtils;
-import nez.util.UList;
 
 public class LPegGrammarGenerator extends NezGenerator {
 	
@@ -47,6 +42,8 @@ public class LPegGrammarGenerator extends NezGenerator {
 		this.setOutputFile(fileName);
 		file.writeIndent("local lpeg = require \"lpeg\"");
 		for(Production r: grammar.getProductionList()) {
+			System.out.println(r.getLocalName() + " =");
+			System.out.println(r.getExpression().toString());
 			if(!r.getLocalName().startsWith("\"")) {
 				String localName = r.getLocalName();
 				file.writeIndent("local " + localName + " = lpeg.V\"" + localName + "\"");
@@ -161,32 +158,41 @@ public class LPegGrammarGenerator extends NezGenerator {
 	private void getRangeChar(int ch, StringBuilder sb) {
 		char c = (char)ch;
 		switch(c) {
-		case '\n' : sb.append("\\n"); 
-		case '\t' : sb.append("'\\t'"); 
-		case '\r' : sb.append("'\\r'"); 
-		case '\'' : sb.append("'\\''"); 
-		case '\\' : sb.append("'\\\\'"); 
+		case '\n' : sb.append("\\n"); return;
+		case '\t' : sb.append("\\t"); return;
+		case '\r' : sb.append("\\r"); return;
+		case '\'' : sb.append("\\\""); return;
+		case '\\' : sb.append("'\\\\'"); return;
 		}
 		sb.append(c);
 	}
 
 	public void visitByteMap(ByteMap e) {
 		boolean b[] = e.byteMap;
+		boolean top = true;
+		file.write("( ");
 		for(int start = 0; start < 256; start++) {
 			if(b[start]) {
+				if(!top) {
+					file.write(" + ");
+				}
+				else {
+					top = false;
+				}
 				int end = searchEndChar(b, start+1);
 				if (start == end) {
-					file.write("lpeg.P" + this.stringfyByte(start) + " ");
+					file.write("lpeg.P" + this.stringfyByte(start));
 				}
 				else {
 					StringBuilder sb = new StringBuilder();
 					getRangeChar(start, sb);
 					getRangeChar(end, sb);
-					file.write("lpeg.R(\"" + sb.toString() + "\") ");
+					file.write("lpeg.R(\"" + sb.toString() + "\")");
 					start = end;
 				}
 			}
 		}
+		file.write(" )");
 	}
 	
 	public void visitAnyChar(AnyChar e) {
@@ -322,11 +328,11 @@ public class LPegGrammarGenerator extends NezGenerator {
 //	}
 
 	public void visitNew(New e) {
-
+		file.write("lpeg.P\"\"");
 	}
 
 	public void visitCapture(Capture e) {
-
+		file.write("lpeg.P\"\"");
 	}
 
 	@Override
@@ -341,15 +347,8 @@ public class LPegGrammarGenerator extends NezGenerator {
 	}
 
 	@Override
-	public void visitExpression(Expression e) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
 	public void visitReplace(Replace p) {
-		// TODO Auto-generated method stub
-		
+		file.write("lpeg.P\"\"");
 	}
 
 	@Override
