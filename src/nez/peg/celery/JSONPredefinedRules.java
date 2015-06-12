@@ -196,12 +196,15 @@ public class JSONPredefinedRules {
 	}
 
 	final void defSTRING() {
-		Expression[] l = {
-				grammar.newByteChar('"'),
-				grammar.newRepetition(grammar.newAnyChar()),
-				grammar.newByteChar('"')
+		Expression notSeq = grammar.newSequence(grammar.newNot(grammar.newByteChar('"')),
+				grammar.newAnyChar());
+		Expression strValue = grammar.newChoice(grammar.newString("\\\""),
+				grammar.newString("\\\\"),
+				notSeq);
+		Expression[] seq = {
+				grammar.newByteChar('"'), grammar.newRepetition(strValue), grammar.newByteChar('"')
 		};
-		grammar.defineProduction(null, "STRING", grammar.newSequence(l));
+		grammar.defineProduction(null, "STRING", grammar.newSequence(seq));
 	}
 
 	final void defSPACING() {
