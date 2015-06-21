@@ -1,6 +1,14 @@
-// PEG4d utf8
-// ==========
-// Based on The Unicode Standard, Version 5.2 and RFC 3629
+/**
+ * UTF8 Characters
+ *
+ * Based on: 
+ *
+ * [1] Based on The Unicode Standard, Version 5.2 
+ * [2] RFC 3629
+ * 
+ * Authors:
+ *   Kimio Kuramitsu (https://github.com/kkuramitsu/)
+ */
 
 public ASCII
 	= [\x00-\x7F]
