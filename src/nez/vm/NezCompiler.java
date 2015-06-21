@@ -1,5 +1,6 @@
 package nez.vm;
 
+import nez.GrammarOption;
 import nez.lang.Grammar;
 import nez.util.UFlag;
 import nez.util.UList;
@@ -11,11 +12,11 @@ public abstract class NezCompiler extends NezEncoder {
 	}
 
 	protected final boolean enablePackratParsing() {
-		return UFlag.is(this.option, Grammar.PackratParsing);
+		return UFlag.is(this.option, GrammarOption.PackratParsing);
 	}
 
 	protected final boolean enableASTConstruction() {
-		return UFlag.is(this.option, Grammar.ASTConstruction);
+		return UFlag.is(this.option, GrammarOption.ASTConstruction);
 	}
 	
 	public abstract NezCode compile(Grammar grammar);

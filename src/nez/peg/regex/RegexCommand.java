@@ -1,5 +1,6 @@
 package nez.peg.regex;
 
+import nez.GrammarOption;
 import nez.SourceContext;
 import nez.ast.CommonTree;
 import nez.lang.Grammar;
@@ -42,7 +43,7 @@ public class RegexCommand extends Command {
 		config.GrammarFile = outputfile;
 		config.setInputFileList(inputFileList);
 		rec = config.getRecorder();
-		p = conv.grammar.newGrammar(config.StartingPoint, Grammar.RegexOption);
+		p = conv.grammar.newGrammar(config.StartingPoint, GrammarOption.RegexOption);
 		parse(config, rec, p, true);
 	}
 	

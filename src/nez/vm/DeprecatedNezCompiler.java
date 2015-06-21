@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
+import nez.GrammarOption;
 import nez.lang.And;
 import nez.lang.AnyChar;
 import nez.lang.Block;
@@ -16,7 +17,6 @@ import nez.lang.DefSymbol;
 import nez.lang.ExistsSymbol;
 import nez.lang.Expression;
 import nez.lang.GrammarFactory;
-import nez.lang.Grammar;
 import nez.lang.IsIndent;
 import nez.lang.IsSymbol;
 import nez.lang.Link;
@@ -286,7 +286,7 @@ public class DeprecatedNezCompiler extends NezCompiler1 {
 //			System.out.println("NFA: " + p + " " + next.e);
 //			System.out.println("NFA: " + StringUtils.stringfyCharClass(and(dfa, optdfa)));
 //		}
-		if(UFlag.is(option, Grammar.Specialization)) {
+		if(UFlag.is(option, GrammarOption.Specialization)) {
 			Expression inner = p.get(0); //optimize(option);
 			if(inner instanceof ByteChar) {
 				Verbose.noticeOptimize("Specialization", p, inner);
@@ -297,7 +297,7 @@ public class DeprecatedNezCompiler extends NezCompiler1 {
 				return new IOptionByteMap((ByteMap)inner, next);
 			}
 		}
-		if(UFlag.is(option, Grammar.DFA)) {
+		if(UFlag.is(option, GrammarOption.DFA)) {
 			Verbose.printNFA(p + " " + next.e);
 		}
 		Instruction pop = new IFailPop(p, next);
@@ -327,7 +327,7 @@ public class DeprecatedNezCompiler extends NezCompiler1 {
 //				return match;
 //			}
 //		}
-		if(UFlag.is(option, Grammar.Specialization)) {
+		if(UFlag.is(option, GrammarOption.Specialization)) {
 			Expression inner = p.get(0); //optimize(option);
 			if(inner instanceof ByteChar) {
 				Verbose.noticeOptimize("Specialization", p, inner);
@@ -338,7 +338,7 @@ public class DeprecatedNezCompiler extends NezCompiler1 {
 				return new IRepeatedByteMap((ByteMap)inner, next);
 			}
 		}
-		if(UFlag.is(option, Grammar.DFA)) {
+		if(UFlag.is(option, GrammarOption.DFA)) {
 			Verbose.printNFA(p + " " + next.e);
 		}
 		IFailSkip skip = p.possibleInfiniteLoop ? new IFailCheckSkip(p) : new IFailCheckSkip(p);
@@ -357,7 +357,7 @@ public class DeprecatedNezCompiler extends NezCompiler1 {
 	}
 
 	public final Instruction encodeNot(Not p, Instruction next, Instruction failjump) {
-		if(UFlag.is(option, Grammar.Specialization)) {
+		if(UFlag.is(option, GrammarOption.Specialization)) {
 			Expression inn = p.get(0); //optimize(option);
 			if(inn instanceof ByteMap) {
 				Verbose.noticeOptimize("Specilization", p);
@@ -369,7 +369,7 @@ public class DeprecatedNezCompiler extends NezCompiler1 {
 			}
 			if(inn instanceof AnyChar) {
 				Verbose.noticeOptimize("Specilization", p);
-				return new INotAnyChar(inn, UFlag.is(this.option, Grammar.Binary), next);
+				return new INotAnyChar(inn, UFlag.is(this.option, GrammarOption.Binary), next);
 			}
 			if(inn instanceof Sequence && ((Sequence)inn).isMultiChar()) {
 				Verbose.noticeOptimize("Specilization", p);
@@ -418,7 +418,7 @@ public class DeprecatedNezCompiler extends NezCompiler1 {
 			Verbose.noticeOptimize("ByteMap", p, pp);
 			return encodeByteMap((ByteMap)pp, next, failjump);
 		}
-		if(UFlag.is(option, Grammar.Prediction) && p.predictedCase != null) {
+		if(UFlag.is(option, GrammarOption.Prediction) && p.predictedCase != null) {
 			return encodePredicatedChoice(p, next, failjump);
 		}
 		return this.encodeUnoptimizedChoice(p, next, failjump);

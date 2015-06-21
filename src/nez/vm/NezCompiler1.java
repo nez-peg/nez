@@ -2,6 +2,7 @@ package nez.vm;
 
 import java.util.HashMap;
 
+import nez.GrammarOption;
 import nez.lang.And;
 import nez.lang.AnyChar;
 import nez.lang.Block;
@@ -180,35 +181,35 @@ public class NezCompiler1 extends NezCompiler {
 	// AST Construction
 
 	public Instruction encodeLink(Link p, Instruction next, Instruction failjump) {
-		if(UFlag.is(this.option, Grammar.ASTConstruction)) {
+		if(UFlag.is(this.option, GrammarOption.ASTConstruction)) {
 			return new INodePush(p, encodeExpression(p.get(0), new INodeStore(p, next), failjump));
 		}
 		return encodeExpression(p.get(0), next, failjump);
 	}
 
 	public Instruction encodeNew(New p, Instruction next) {
-		if(UFlag.is(this.option, Grammar.ASTConstruction)) {
+		if(UFlag.is(this.option, GrammarOption.ASTConstruction)) {
 			return p.lefted ? new ILeftNew(p, next) : new INew(p, next);
 		}
 		return next;
 	}
 
 	public Instruction encodeCapture(Capture p, Instruction next) {
-		if(UFlag.is(this.option, Grammar.ASTConstruction)) {
+		if(UFlag.is(this.option, GrammarOption.ASTConstruction)) {
 			return new ICapture(p, next);
 		}
 		return next;
 	}
 
 	public Instruction encodeTagging(Tagging p, Instruction next) {
-		if(UFlag.is(this.option, Grammar.ASTConstruction)) {
+		if(UFlag.is(this.option, GrammarOption.ASTConstruction)) {
 			return new ITag(p, next);
 		}
 		return next;
 	}
 
 	public Instruction encodeReplace(Replace p, Instruction next) {
-		if(UFlag.is(this.option, Grammar.ASTConstruction)) {
+		if(UFlag.is(this.option, GrammarOption.ASTConstruction)) {
 			return new IReplace(p, next);
 		}
 		return next;

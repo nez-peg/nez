@@ -1,5 +1,6 @@
 package nez.main;
 
+import nez.GrammarOption;
 import nez.SourceContext;
 import nez.ast.CommonTree;
 import nez.ast.CommonTreeWriter;
@@ -65,7 +66,7 @@ class CheckCommand extends Command {
 		UList<String> failedInput = new UList<String>(new String[4]);
 		Recorder rec = config.getRecorder();
 		Grammar product = config.getGrammar();
-		product.disable(Grammar.ASTConstruction);
+		product.disable(GrammarOption.ASTConstruction);
 		product.record(rec);
 		int totalCount = 0, failureCount = 0, unconsumedCount = 0;
 		while(config.hasInput()) {
@@ -107,7 +108,7 @@ class DebugCommand extends Command {
 
 	@Override
 	public void exec(CommandConfigure config) {
-		config.setGrammarOption(Grammar.DebugOption);
+		config.setGrammarOption(GrammarOption.DebugOption);
 		Command.displayVersion();
 		Recorder rec = config.getRecorder();
 		Grammar peg = config.getGrammar();

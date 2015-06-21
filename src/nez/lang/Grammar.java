@@ -3,6 +3,7 @@ package nez.lang;
 import java.util.List;
 import java.util.TreeMap;
 
+import nez.GrammarOption;
 import nez.SourceContext;
 import nez.ast.CommonTree;
 import nez.ast.CommonTreeFactory;
@@ -88,7 +89,7 @@ public class Grammar {
 		if(this.option != option) {
 			this.compiledCode = null; // recompile
 		}
-		if(UFlag.is(option, PackratParsing) && this.defaultMemoTable == null) {
+		if(UFlag.is(option, GrammarOption.PackratParsing) && this.defaultMemoTable == null) {
 			this.defaultMemoTable = MemoTable.newElasticTable(0, 0, 0);
 		}
 		this.option = option;
@@ -146,7 +147,7 @@ public class Grammar {
 		boolean matched;
 		Instruction pc;
 		s.initJumpStack(64, getMemoTable(s));
-		if(this.option == Grammar.DebugOption) { // FIXME
+		if(this.option == GrammarOption.DebugOption) { // FIXME
 			NezCompiler c = new NezCompiler1(this.option);
 			pc = c.compile(this).startPoint;
 			NezDebugger debugger = new NezDebugger(this, pc, s);
@@ -202,7 +203,7 @@ public class Grammar {
 
 	public final void record(Recorder rec) {
 		if(rec != null) {
-			this.enable(Grammar.Profiling);
+			this.enable(GrammarOption.Profiling);
 			this.compile();
 			rec.setFile("G.File", this.start.getNameSpace().getURN());
 			rec.setCount("G.NonTerminals", this.productionMap.size());
@@ -225,75 +226,53 @@ public class Grammar {
 	/* --------------------------------------------------------------------- */
 	/* Grammar Option */
 	
-	public final static int ClassicMode = 1;
-	public final static int ASTConstruction = 1 << 1;
-	public final static int PackratParsing  = 1 << 2;
-	public final static int Optimization    = 1 << 3;
-	public final static int Specialization  = 1 << 4;
-	public final static int CommonPrefix    = 1 << 5;
-	public final static int Inlining        = 1 << 6;
-	public final static int Prediction      = 1 << 7;
-	public final static int DFA             = 1 << 8;
-	public final static int Tracing         = 1 << 9;	
-	public final static int Binary          = 1 << 10;
-	public final static int Utf8            = 1 << 11;	
-	public final static int Profiling       = 1 << 12;
-
-	public final static int DefaultOption = ASTConstruction | PackratParsing | Optimization 
-											| Specialization | Inlining | CommonPrefix | Prediction /* | Tracing */;
-	public final static int RegexOption = ASTConstruction | PackratParsing | Optimization
-											| Specialization | Prediction /* | Tracing */;
-	public final static int SafeOption = ASTConstruction | Optimization;
-	public final static int ExampleOption = Optimization | Specialization | Inlining | CommonPrefix | Prediction;
-	public final static int DebugOption = ASTConstruction;
-	
 	public final static int mask(int m) {
-		return Binary & m;
+		return GrammarOption.Binary & m;
 	}
 	
 	public final static String stringfyOption(int option, String delim) {
 		StringBuilder sb = new StringBuilder();
-		if(UFlag.is(option, Grammar.ClassicMode)) {
+		if(UFlag.is(option, GrammarOption.ClassicMode)) {
 			sb.append(delim);
 			sb.append("classic");
 		}
-		if(UFlag.is(option, Grammar.ASTConstruction)) {
+		if(UFlag.is(option, GrammarOption.ASTConstruction)) {
 			sb.append(delim);
 			sb.append("ast");
 		}
-		if(UFlag.is(option, Grammar.PackratParsing)) {
+		if(UFlag.is(option, GrammarOption.PackratParsing)) {
 			sb.append(delim);
 			sb.append("memo");
 		}
-		if(UFlag.is(option, Grammar.Optimization)) {
+		if(UFlag.is(option, GrammarOption.Optimization)) {
 			sb.append(delim);
 			sb.append("opt.");
 		}
-		if(UFlag.is(option, Grammar.Specialization)) {
+		if(UFlag.is(option, GrammarOption.Specialization)) {
 			sb.append(delim);
 			sb.append("spe.");
 		}
-		if(UFlag.is(option, Grammar.CommonPrefix)) {
+		if(UFlag.is(option, GrammarOption.CommonPrefix)) {
 			sb.append(delim);
 			sb.append("com.");
 		}
-		if(UFlag.is(option, Grammar.Inlining)) {
+		if(UFlag.is(option, GrammarOption.Inlining)) {
 			sb.append(delim);
 			sb.append("inline");
 		}
-		if(UFlag.is(option, Grammar.Prediction)) {
+		if(UFlag.is(option, GrammarOption.Prediction)) {
 			sb.append(delim);
 			sb.append("pdt.");
 		}
-		if(UFlag.is(option, Grammar.Tracing)) {
+		if(UFlag.is(option, GrammarOption.Tracing)) {
 			sb.append(delim);
 			sb.append("tracing");
 		}
-		if(UFlag.is(option, Grammar.DFA)) {
+		if(UFlag.is(option, GrammarOption.DFA)) {
 			sb.append(delim);
 			sb.append("dfa");
 		}
-		if(UFlag.is(option, Grammar.Profiling)) {
+		if(UFlag.is(option, GrammarOption.Profiling)) {
 			sb.append(delim);
 			sb.append("prof");
 		}

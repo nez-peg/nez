@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Stack;
 
+import nez.GrammarOption;
 import nez.lang.And;
 import nez.lang.AnyChar;
 import nez.lang.Block;
@@ -46,9 +47,9 @@ public class CParserGenerator extends ParserGenerator {
 	boolean isPackrat = false;
 	boolean PatternMatch = true;
 	int option = common;
-	static int plain = Grammar.ASTConstruction;
-	static int prediction = Grammar.ASTConstruction | Grammar.Prediction;
-	static int common = Grammar.ASTConstruction | Grammar.Prediction | Grammar.CommonPrefix;
+	static int plain = GrammarOption.ASTConstruction;
+	static int prediction = GrammarOption.ASTConstruction | GrammarOption.Prediction;
+	static int common = GrammarOption.ASTConstruction | GrammarOption.Prediction | GrammarOption.CommonPrefix;
 	GrammarOptimizer optimizer = new GrammarOptimizer(this.option);
 	int predictionCount = 0;
 
@@ -935,7 +936,7 @@ public class CParserGenerator extends ParserGenerator {
 	@Override
 	public void visitChoice(Choice e) {
 //		showChoiceInfo(e);
-		if((e.predictedCase != null && isPrediction && (UFlag.is(this.option, Grammar.Prediction)))) {
+		if((e.predictedCase != null && isPrediction && (UFlag.is(this.option, GrammarOption.Prediction)))) {
 			predictionCount++;
 			justPredictionCount++;
 			int fid = this.fid++;

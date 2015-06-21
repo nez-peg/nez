@@ -4,6 +4,7 @@ package nez.vm;
 import java.util.HashMap;
 import java.util.TreeMap;
 
+import nez.GrammarOption;
 import nez.lang.And;
 import nez.lang.AnyChar;
 import nez.lang.Block;
@@ -126,7 +127,7 @@ public abstract class NezEncoder {
 				this.countNonTerminalReference(p.getExpression());
 			}
 		}
-		if(UFlag.is(option, Grammar.Inlining)) {
+		if(UFlag.is(option, GrammarOption.Inlining)) {
 			for(Production p : grammar.getProductionList()) {
 				CodePoint pcode = this.codeMap.get(p.getUniqueName());
 				if(pcode != null) {
@@ -134,7 +135,7 @@ public abstract class NezEncoder {
 				}
 			}
 		}
-		if(UFlag.is(option, Grammar.PackratParsing)) {
+		if(UFlag.is(option, GrammarOption.PackratParsing)) {
 			int memoId = 0;
 			for(Production p : grammar.getProductionList()) {
 				CodePoint pcode = this.codeMap.get(p.getUniqueName());

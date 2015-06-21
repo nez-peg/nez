@@ -4,6 +4,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 
+import nez.GrammarOption;
 import nez.lang.And;
 import nez.lang.AnyChar;
 import nez.lang.Block;
@@ -168,7 +169,7 @@ public abstract class NezGenerator extends NezEncoder {
 	// AST Construction
 
 	public Instruction encodeLink(Link p, Instruction next, Instruction failjump) {
-		if(is(Grammar.ASTConstruction)) {
+		if(is(GrammarOption.ASTConstruction)) {
 			this.visitLink(p);
 		}
 		else {
@@ -178,28 +179,28 @@ public abstract class NezGenerator extends NezEncoder {
 	}
 
 	public Instruction encodeNew(New p, Instruction next) {
-		if(is(Grammar.ASTConstruction)) {
+		if(is(GrammarOption.ASTConstruction)) {
 			this.visitNew(p);
 		}
 		return null;
 	}
 
 	public Instruction encodeCapture(Capture p, Instruction next) {
-		if(is(Grammar.ASTConstruction)) {
+		if(is(GrammarOption.ASTConstruction)) {
 			this.visitCapture(p);
 		}
 		return null;
 	}
 
 	public Instruction encodeTagging(Tagging p, Instruction next) {
-		if(is(Grammar.ASTConstruction)) {
+		if(is(GrammarOption.ASTConstruction)) {
 			this.visitTagging(p);
 		}
 		return null;
 	}
 
 	public Instruction encodeReplace(Replace p, Instruction next) {
-		if(is(Grammar.ASTConstruction)) {
+		if(is(GrammarOption.ASTConstruction)) {
 			this.visitReplace(p);
 		}
 		return null;

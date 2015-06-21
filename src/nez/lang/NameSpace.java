@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import nez.GrammarOption;
 import nez.ParserCombinator;
 import nez.ast.SourcePosition;
 import nez.main.Verbose;
@@ -214,7 +215,7 @@ public class NameSpace extends GrammarFactory {
 	}
 
 	public final Grammar newGrammar(String name) {
-		return this.newGrammar(name, Grammar.DefaultOption);
+		return this.newGrammar(name, GrammarOption.DefaultOption);
 	}
 
 	public void dump() {

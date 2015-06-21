@@ -2,6 +2,7 @@ package nez.lang;
 
 import java.util.TreeMap;
 
+import nez.GrammarOption;
 import nez.ast.SourcePosition;
 import nez.main.Command;
 import nez.main.Verbose;
@@ -118,7 +119,7 @@ public class GrammarChecker {
 			r.reshape(new Typestate(this));
 		}		
 		// interning
-		if(this.option == Grammar.DebugOption) {
+		if(this.option == GrammarOption.DebugOption) {
 			for(Production r: grammar.getRuleList()) {
 				GrammarFactory.setId(r.getExpression());
 			}
@@ -148,7 +149,7 @@ public class GrammarChecker {
 				r.internRule();
 			}
 		}
-		grammar.testExample(Grammar.ExampleOption);
+		grammar.testExample(GrammarOption.ExampleOption);
 	}
 	
 }
