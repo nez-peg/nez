@@ -233,9 +233,6 @@ public class CommandConfigure {
 	public final Command getCommand() {
 		Command com = Command.getCommand(this.CommandName);
 		if(com == null) {
-			if(GrammarFile != null && GeneratorLoader.supportedGenerator(this.CommandName) && this.OutputFileName != null) {
-				return new GeneratorCommand(GeneratorLoader.newNezGenerator(this.CommandName, this.OutputFileName));
-			}
 			if(GrammarFile != null && GeneratorLoader.supportedGenerator(this.CommandName)) {
 				return new GeneratorCommand(GeneratorLoader.newNezGenerator(this.CommandName));
 			}
