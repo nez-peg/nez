@@ -3,6 +3,7 @@ package nez.fsharp;
 import java.util.ArrayList;
 import java.util.Stack;
 
+import sun.security.action.GetBooleanAction;
 import nez.ast.Tag;
 
 
@@ -91,6 +92,7 @@ public class FSharpGenerator extends SourceGenerator {
 		ModifiableTree node = currentScope.node;
 		
 		if(node.is(JSTag.TAG_FIELD)){
+			
 		}
 		
 		if(node.size() > 0){
@@ -116,6 +118,24 @@ public class FSharpGenerator extends SourceGenerator {
 			}
 		}
 		return true;
+	}
+	
+	private void formatField(ModifiableTree node){
+		ModifiableTree fieldNode = node;
+		ArrayList<ModifiableTree> fieldElements = new ArrayList<ModifiableTree>();
+		if(node.is(JSTag.TAG_FIELD)){
+			while(fieldNode.is(JSTag.TAG_FIELD)){
+				fieldElements.add(fieldNode);
+				fieldNode = fieldNode.get(0);
+			}
+			if(fieldNode.is(JSTag.TAG_APPLY)){
+				ArrayList<ModifiableTree> applyFieldElements = new ArrayList<ModifiableTree>();
+				while(fieldNode.get(0).is(JSTag.TAG_FIELD)){
+					applyFieldElements.add(fieldNode);
+					fieldNode = fieldNode.get(0);
+				}
+			}
+		}
 	}
 	
 	private ArrayList<String> getFieldElements(ModifiableTree node){
