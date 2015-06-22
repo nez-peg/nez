@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Stack;
 
-import nez.ast.Tag;
 import nez.lang.And;
 import nez.lang.AnyChar;
 import nez.lang.Block;
@@ -15,10 +14,8 @@ import nez.lang.Capture;
 import nez.lang.Choice;
 import nez.lang.DefIndent;
 import nez.lang.DefSymbol;
-import nez.lang.Empty;
 import nez.lang.ExistsSymbol;
 import nez.lang.Expression;
-import nez.lang.Failure;
 import nez.lang.Grammar;
 import nez.lang.IfFlag;
 import nez.lang.IsIndent;

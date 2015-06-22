@@ -15,7 +15,7 @@ public class JSONPredefinedRules {
 
 	public void defineRule() {
 		defFile();
-		defRoot();
+		// defRoot();
 		defAny();
 		defMember();
 		defValue();
@@ -84,9 +84,11 @@ public class JSONPredefinedRules {
 				grammar.newByteChar('{'),
 				grammar.newNonTerminal("SPACING"),
 				grammar.newNonTerminal("Member"),
-				grammar.newRepetition(grammar.newNonTerminal("VALUESEP"),
-						grammar.newNonTerminal("Member")),
 				grammar.newNonTerminal("SPACING"),
+				grammar.newRepetition(grammar.newNonTerminal("VALUESEP"),
+						grammar.newNonTerminal("Member"),
+						grammar.newNonTerminal("SPACING")
+						),
 				grammar.newByteChar('}'),
 		};
 		grammar.defineProduction(null, "JSONObject", grammar.newSequence(l));
@@ -123,7 +125,10 @@ public class JSONPredefinedRules {
 		Expression choice = grammar.newChoice(grammar.newSequence(grammar.newNonTerminal("FRAC"),
 				grammar.newOption(grammar.newNonTerminal("EXP"))));
 		Expression[] l = {
-				grammar.newOption(grammar.newByteChar('-')), grammar.newNonTerminal("INT"), choice
+				grammar.newOption(grammar.newByteChar('-')),
+				grammar.newNonTerminal("INT"),
+				choice,
+				grammar.newNonTerminal("SPACING")
 		};
 		grammar.defineProduction(null, "Number", grammar.newSequence(l));
 	}
@@ -142,7 +147,6 @@ public class JSONPredefinedRules {
 
 	final void defNAMESEP() {
 		Expression[] l = {
-				grammar.newNonTerminal("SPACING"),
 				grammar.newByteChar(':'),
 				grammar.newNonTerminal("SPACING")
 		};
@@ -151,7 +155,6 @@ public class JSONPredefinedRules {
 
 	final void defVALUESEP() {
 		Expression[] l = {
-				grammar.newNonTerminal("SPACING"),
 				grammar.newByteChar(','),
 				grammar.newNonTerminal("SPACING")
 		};
@@ -196,12 +199,18 @@ public class JSONPredefinedRules {
 	}
 
 	final void defSTRING() {
-		Expression[] l = {
+		Expression notSeq = grammar.newSequence(grammar.newNot(grammar.newByteChar('"')),
+				grammar.newAnyChar());
+		Expression strValue = grammar.newChoice(grammar.newString("\\\""),
+				grammar.newString("\\\\"),
+				notSeq);
+		Expression[] seq = {
 				grammar.newByteChar('"'),
-				grammar.newRepetition(grammar.newAnyChar()),
-				grammar.newByteChar('"')
+				grammar.newRepetition(strValue),
+				grammar.newByteChar('"'),
+				grammar.newNonTerminal("SPACING")
 		};
-		grammar.defineProduction(null, "STRING", grammar.newSequence(l));
+		grammar.defineProduction(null, "STRING", grammar.newSequence(seq));
 	}
 
 	final void defSPACING() {
