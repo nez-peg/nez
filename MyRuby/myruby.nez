@@ -1,0 +1,297 @@
+
+Program
+    = {(@SentenceList)? (SeparatorList)? #Program}
+
+SentenceList
+    = { @Sentence (@SeparetorList @Sentence )* #SentenceList}
+
+SeparetorList
+    = { (@Separetor)+ #SeparetorList}
+
+Separetor
+    = { ";" / LINE_TERMINATOR }
+
+LINE_TERMINATOR
+    = '\n' / '\r\n' / '\r'
+
+Sentence
+    =  Expression
+     / aliasSentence
+     / undefSentence
+     / ifSentence
+     / unlessSentence
+     / whileSentence
+     / untilSentence
+     / rescueSentence
+     / Assignment
+
+
+// ========================================
+// Expression
+// ========================================
+
+Expression
+    = NOTExpr
+    / KeywordANDExpr
+    / KeywordORExpr
+
+NOTExpr
+    = OperatorExpr
+    / NoPerenthesisMethodCall
+    / ("!" NoParenthesisMethodCall )
+    / KeywordNOTExpr
+
+LogicExpr
+    = LogicNOTExpr
+    / LogicANDExpr
+    / LogicORExpr
+
+LogicNOTExpr
+   = KeywordNOTExpr
+   / OperatorNOTExpr
+
+KeywordNOTExpr
+   = "not" NOTExpr
+
+OperatorNOTExpr
+   = {"!" ( NoPerenthesisMethodCall / MonoExpr) #OperatorNOTExpr}
+
+LogicANDExpr
+   = KeywordANDExpr
+   / OperatorANDExpr
+
+KeywordANDExpr
+   = { @Expression (!LINE_TERMINATOR) "and" @NOTExpr #KeywordANDExpr }
+
+OperatorANDExpr
+   = { EqualExpr /  (OperatorANDExpr (!LINE_TERMINATOR) "&&" EqualExpr ) #OperatorANDExpr }
+
+LogicORExpr
+   = { KeywordORExpr / OperatorORExpr #LogicORExpr }
+
+KeywordORExpr
+   = { Expression (!LINE_TERMINATOR) "or" NOTExpr #KeywordORExpr }
+
+OperatorORExpr
+   = { OperatorANDExpr / ( OperatorANDExpr (!LINE_TERMINATOR) "||" OperatorANDExpr ) #OperatorORExpr}
+
+MethodCallExpr
+   = { FirstMethodCall / NoParenthesisMethodCall / LocalVariableID #MethodCall }
+
+FirstMethodCall
+   = SuperWithArgument
+   / IndexMethodCall
+   / ExclusiveMethodID
+   / ( MethodID  Block)
+   / ( MethodID  ParenthesisArg (Block)? )
+   / ( FirstExpr (!LINE_TERMINATOR) "." MethodName ParenthesisArg? Block? )
+   / ( FirstExpr (!LINE_TERMINATOR) "::" MethodName ParenthesisArg Block? )
+   / ( FirstExpr (!LINE_TERMINATOR) "::" NotValueMethodName Block? )
+
+MethodID
+   = LocalVariableID
+   / ValueID
+   / ExclusiveMethodID
+
+MethodName
+   = MethodID
+   / OperatorMethodName
+   / Keyword
+
+IndexMethodCall
+   = ( FirstExpr (!LINE_TERMINATOR) (!SPACE) "[" IndexList? )
+//SPACE =
+
+NotValueMethodName
+   = MethodName ValueID
+
+NoPerenthesisMethodCall
+   = Command
+   / DoBlockChainCommand
+   / ( DoBlockCommand ("."/"::") MethodName NoParenthesisArg )
+   / ( ValueArg_return)
+   / ( ValueArg_break)
+   / ( ValueArg_next)
+
+Command
+   = ValueArg_super
+   / ValueArg_yield
+   / ( MethodID NoPerenthesisArg )
+   / ( FirstExpr (!LINE_TERMINATOR) ("."/"::") MethodName NoParenthesisArg )
+
+DoBlockChainCommand
+   = DoBlockCommand ChainMethodCall*
+
+ChainMethodCall
+   = ("."/"::") MethodName ParenthesisArg?
+
+DoBlockCommand
+   = ArgDoBlock_super
+   / ( MethodID NoParenthesis DoBlock )
+   / ( FirstExpr (!LINE_TERMINATOR) ("."/"::") MethodName NoParenthesisArg DoBlock )
+
+
+
+
+
+
+// aliasSentence
+
+aliasSentence
+   = {"alias" @NewName @Target #alias}
+
+NewName
+   = { methodDefName / Symbol #NewName }
+
+Target
+   = { methodDefName / Symbol #Target }
+
+Symbol
+   = { " " #Symbol}
+
+
+// undefSentence
+
+undefSentence
+   = {"undef" undefList #undef}
+
+undefList
+   = { @NameOrSymbol ( "," @NameOrSymbol )* #undefList }
+
+NameOrSymbol
+   = { methodDefName / Symbol #NameOrSymbol }
+
+
+ifSentence
+   = { "if" @Sentence ("then")? @Expression ("end")? #if}
+
+unlessSentence
+   = {"unless" @Sentence ("then")? @Expression  ("end")? #unless}
+
+whileSentence
+   = { "while" @Sentence "do" @Expression "end" #while }
+
+untilSentence
+   = { "until" @Sentence "do" @Expression "end" #until}
+
+rescueSentence
+   = { " " }
+
+Assignment
+   = {" "}
+
+
+// ============================
+// Module
+// ============================
+
+module
+   = { " module " @modulePass @moduleMain " end " #module }
+
+modulePass
+   = { HighestPass /  moduleName / ChildrenPass #modulePass }
+
+moduleName
+   = { ValueID #moduleName }
+
+HighestPass
+   = { "::" moduleName #HighestPass }
+
+ChildrendPass
+   = { FirstExpr (!LINE_TERMINATOR) "::" moduleName #ChildrenPass }
+
+//FirstExpr
+//   = { " " #linearExpr}
+
+moduleMain
+   = { " " #moduleMain }
+
+
+// ==================================
+// Class
+// ==================================
+
+class
+   = { "class" @classPass (!LINE_TERMINATOR) ( "<" @superClass)? @Separetor @classMain " end " #class }
+
+classPass
+   = { HighestClassPass / className / ChildrenClassPass #classPass}
+
+className
+   = { ValueID #className }
+
+HighestClassPass
+   = { "::" className #HighestClasspass }
+
+ChildrenClassPass
+   = { linearExpr (!LINE_TERMINATOR) "::" className #ChildrenClassPass }
+
+superClass
+   = { Expression #superClass}
+
+classMain
+   = { " " #classMain }
+
+
+// ==================================
+// Method
+// ==================================
+
+Method
+   = { "def" @MethodDefName (!LINE_TERMINATOR) @Argument @MethodMain "end" #method}
+
+MethodDefName
+   = { MethodName/MethodID #methodDefName }
+
+MethodMain
+   = { " " #methodMain }
+
+Argument
+   = ( "("  ArgList? ")" )
+   / ( ArgList? Separetor )
+
+ArgList
+   = ( EssentialArgList ( "," OptionalArgList? ) ("," ArrayArg?) ("," ProcArg? ) )
+   / ( OptionalArgList ("," ArrayArg?) ("," ProcArg? ) )
+   / ( ArrayArg ("," ProcArg? ) )
+   / ProcArg
+
+EssentialArgList
+   = EssentialArg
+   / ( EssentialArgList "," EssentialArg )
+
+EssentialArg
+   = LocalVariableID
+
+OptionalArgList
+   = OptionalArg
+   / ( OptionalArgList "," OptionalArg )
+
+OptionalArg
+   = OptionalArgName "=" ValueArg
+
+OptionalArgName
+   = LocalVariableID
+
+ValueArg
+   = OperatorExpr
+
+ArrayArg
+   = "*" ArrayArgName?
+
+ArrayArgName
+   = LocalVariableID
+
+ProcArg
+   = "&" ProcArgName
+
+ProcArgName
+   = LocalVariableID
+
+
+
+SpecialClass
+   = { "class" "<<" @Expression @Separetor @SpecialClassMain "end" #SpecialClass }
+
+SpecialClassMain
+   = { " " #SpecialClassMain}

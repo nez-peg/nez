@@ -1,0 +1,413 @@
+
+# Parsing Expression Grammars for Waxeye
+# Translated from Nez
+File
+   <- Document
+Document
+   <- ?PROLOG (*MISC (?DOCTYPE (*MISC (Content *MISC))))
+PROLOG
+   <- '<' ('?' ('x' ('m' ('l' (*S (*ATTRIBUTE (*S ('?>'))))))))
+S
+   <- [\t-\n]
+   | '\r'
+   | ' '
+ATTRIBUTE
+   <- NAME (*S ('=' (*S (STRING *S))))
+NAME
+   <- (':' | [A-Z] | '_' | [a-z]) *([] | [0-:] | [A-Z] | '_' | [a-z])
+STRING
+   <- '"' (*(!('"')  .) '"')
+MISC
+   <- S
+   | COMMENT
+COMMENT
+   <- '<' ('!' ('-' ('-' (*(!('-' ('->'))  .) ('-' ('-' ('>' *S)))))))
+DOCTYPE
+   <- '<' ('!' ('D' ('O' ('C' ('T' ('Y' ('P' ('E' (*S (*NAME (*S (?('S' ('Y' ('S' ('T' ('EM'))))) (*S (STRING (*S '>')))))))))))))))
+Content
+   <- +(RootElement | COMMENT)
+RootElement
+   <- Element_site
+Element_site
+   <- '<' ('s' ('i' ('t' ('e' (*S (('/>' | '>' (*S (Content0 (*S ('<' ('/' ('s' ('i' ('t' ('e>')))))))))) *S))))))
+Content0
+   <- Element_regions (Element_categories (Element_catgraph (Element_people (Element_open_auctions Element_closed_auctions))))
+Element_regions
+   <- '<' ('r' ('e' ('g' ('i' ('o' ('n' ('s' (*S (('/>' | '>' (*S (Content13 (*S ('<' ('/' ('r' ('e' ('g' ('i' ('o' ('n' ('s>'))))))))))))) *S)))))))))
+Content13
+   <- Element_africa (Element_asia (Element_australia (Element_europe (Element_namerica Element_samerica))))
+Element_africa
+   <- '<' ('a' ('f' ('r' ('i' ('c' ('a' (*S (('/>' | '>' (*S (Content14 (*S ('<' ('/' ('a' ('f' ('r' ('i' ('c' ('a>')))))))))))) *S))))))))
+Content14
+   <- *Element_item
+Element_item
+   <- '<' ('i' ('t' ('e' ('m' (*S (Attribute20 (*S (('/>' | '>' (*S (Content20 (*S ('<' ('/' ('i' ('t' ('e' ('m>')))))))))) *S))))))))
+Attribute20
+   <- *AttChoice20 (AttDef20_0 (*AttChoice20 ENDTAG))
+AttChoice20
+   <- AttDef20_1
+AttDef20_1
+   <- 'f' ('e' ('a' ('t' ('u' ('r' ('e' ('d' (*S ('=' (*S (STRING *S)))))))))))
+AttDef20_0
+   <- 'i' ('d' (*S ('=' (*S ('"' (IDTOKEN ('"' *S)))))))
+IDTOKEN
+   <- ([] | [0-:] | [A-Z] | '_' | [a-z]) *([] | [0-:] | [A-Z] | '_' | [a-z])
+ENDTAG
+   <- &('>')
+   | &('/>')
+Content20
+   <- Element_location (Element_quantity (Element_name (Element_payment (Element_description (Element_shipping (+Element_incategory Element_mailbox))))))
+Element_location
+   <- '<' ('l' ('o' ('c' ('a' ('t' ('i' ('o' ('n' (*S (('/>' | '>' (*S (Content21 (*S ('<' ('/' ('l' ('o' ('c' ('a' ('t' ('i' ('o' ('n>')))))))))))))) *S))))))))))
+Content21
+   <- *PCDATA
+PCDATA
+   <- TEXT
+   | '&' ((PreEntity | Entity) ';')
+TEXT
+   <- +(!('&' | '<')  .)
+PreEntity
+   <- 'lt'
+   | 'gt'
+   | 'a' ('mp')
+   | 'a' ('p' ('os'))
+   | 'q' ('u' ('ot'))
+   | +('#' | [0-9] | [A-Z] | [a-z])
+Entity
+   <- !(' ') 
+Element_quantity
+   <- '<' ('q' ('u' ('a' ('n' ('t' ('i' ('t' ('y' (*S (('/>' | '>' (*S (Content22 (*S ('<' ('/' ('q' ('u' ('a' ('n' ('t' ('i' ('t' ('y>')))))))))))))) *S))))))))))
+Content22
+   <- *PCDATA
+Element_name
+   <- '<' ('n' ('a' ('m' ('e' (*S (('/>' | '>' (*S (Content3 (*S ('<' ('/' ('n' ('a' ('m' ('e>')))))))))) *S))))))
+Content3
+   <- *PCDATA
+Element_payment
+   <- '<' ('p' ('a' ('y' ('m' ('e' ('n' ('t' (*S (('/>' | '>' (*S (Content23 (*S ('<' ('/' ('p' ('a' ('y' ('m' ('e' ('n' ('t>'))))))))))))) *S)))))))))
+Content23
+   <- *PCDATA
+Element_description
+   <- '<' ('d' ('e' ('s' ('c' ('r' ('i' ('p' ('t' ('i' ('o' ('n' (*S (('/>' | '>' (*S (Content4 (*S ('<' ('/' ('d' ('e' ('s' ('c' ('r' ('i' ('p' ('t' ('i' ('o' ('n>'))))))))))))))))) *S)))))))))))))
+Content4
+   <- Element_text
+   | Element_parlist
+Element_text
+   <- '<' ('t' ('e' ('x' ('t' (*S (('/>' | '>' (*S (Content5 (*S ('<' ('/' ('t' ('e' ('x' ('t>')))))))))) *S))))))
+Content5
+   <- *(PCDATA | Element_bold | Element_keyword | Element_emph)
+Element_bold
+   <- '<' ('b' ('o' ('l' ('d' (*S (('/>' | '>' (*S (Content6 (*S ('<' ('/' ('b' ('o' ('l' ('d>')))))))))) *S))))))
+Content6
+   <- *(PCDATA | Element_bold | Element_keyword | Element_emph)
+Element_keyword
+   <- '<' ('k' ('e' ('y' ('w' ('o' ('r' ('d' (*S (('/>' | '>' (*S (Content7 (*S ('<' ('/' ('k' ('e' ('y' ('w' ('o' ('r' ('d>'))))))))))))) *S)))))))))
+Content7
+   <- *(PCDATA | Element_bold | Element_keyword | Element_emph)
+Element_emph
+   <- '<' ('e' ('m' ('p' ('h' (*S (('/>' | '>' (*S (Content8 (*S ('<' ('/' ('e' ('m' ('p' ('h>')))))))))) *S))))))
+Content8
+   <- *(PCDATA | Element_bold | Element_keyword | Element_emph)
+Element_parlist
+   <- '<' ('p' ('a' ('r' ('l' ('i' ('s' ('t' (*S (('/>' | '>' (*S (Content9 (*S ('<' ('/' ('p' ('a' ('r' ('l' ('i' ('s' ('t>'))))))))))))) *S)))))))))
+Content9
+   <- *Element_listitem
+Element_listitem
+   <- '<' ('l' ('i' ('s' ('t' ('i' ('t' ('e' ('m' (*S (('/>' | '>' (*S (Content10 (*S ('<' ('/' ('l' ('i' ('s' ('t' ('i' ('t' ('e' ('m>')))))))))))))) *S))))))))))
+Content10
+   <- *(Element_text | Element_parlist)
+Element_shipping
+   <- '<' ('s' ('h' ('i' ('p' ('p' ('i' ('n' ('g' (*S (('/>' | '>' (*S (Content24 (*S ('<' ('/' ('s' ('h' ('i' ('p' ('p' ('i' ('n' ('g>')))))))))))))) *S))))))))))
+Content24
+   <- *PCDATA
+Element_incategory
+   <- '<' ('i' ('n' ('c' ('a' ('t' ('e' ('g' ('o' ('r' ('y' (*S (Attribute26 (*S (('/>' | '>' (*S (Content26 (*S ('<' ('/' ('i' ('n' ('c' ('a' ('t' ('e' ('g' ('o' ('r' ('y>')))))))))))))))) *S))))))))))))))
+Attribute26
+   <- AttDef26_0 (*S ENDTAG)
+AttDef26_0
+   <- 'c' ('a' ('t' ('e' ('g' ('o' ('r' ('y' (*S ('=' (*S ('"' (IDTOKEN ('"' *S)))))))))))))
+Content26
+   <- EMPTY
+EMPTY
+   <- *S
+Element_mailbox
+   <- '<' ('m' ('a' ('i' ('l' ('b' ('o' ('x' (*S (('/>' | '>' (*S (Content27 (*S ('<' ('/' ('m' ('a' ('i' ('l' ('b' ('o' ('x>'))))))))))))) *S)))))))))
+Content27
+   <- *Element_mail
+Element_mail
+   <- '<' ('m' ('a' ('i' ('l' (*S (('/>' | '>' (*S (Content28 (*S ('<' ('/' ('m' ('a' ('i' ('l>')))))))))) *S))))))
+Content28
+   <- Element_from (Element_to (Element_date Element_text))
+Element_from
+   <- '<' ('f' ('r' ('o' ('m' (*S (('/>' | '>' (*S (Content29 (*S ('<' ('/' ('f' ('r' ('o' ('m>')))))))))) *S))))))
+Content29
+   <- *PCDATA
+Element_to
+   <- '<' ('t' ('o' (*S (('/>' | '>' (*S (Content30 (*S ('<' ('/' ('t' ('o>')))))))) *S))))
+Content30
+   <- *PCDATA
+Element_date
+   <- '<' ('d' ('a' ('t' ('e' (*S (('/>' | '>' (*S (Content31 (*S ('<' ('/' ('d' ('a' ('t' ('e>')))))))))) *S))))))
+Content31
+   <- *PCDATA
+Element_asia
+   <- '<' ('a' ('s' ('i' ('a' (*S (('/>' | '>' (*S (Content15 (*S ('<' ('/' ('a' ('s' ('i' ('a>')))))))))) *S))))))
+Content15
+   <- *Element_item
+Element_australia
+   <- '<' ('a' ('u' ('s' ('t' ('r' ('a' ('l' ('i' ('a' (*S (('/>' | '>' (*S (Content16 (*S ('<' ('/' ('a' ('u' ('s' ('t' ('r' ('a' ('l' ('i' ('a>'))))))))))))))) *S)))))))))))
+Content16
+   <- *Element_item
+Element_europe
+   <- '<' ('e' ('u' ('r' ('o' ('p' ('e' (*S (('/>' | '>' (*S (Content19 (*S ('<' ('/' ('e' ('u' ('r' ('o' ('p' ('e>')))))))))))) *S))))))))
+Content19
+   <- *Element_item
+Element_namerica
+   <- '<' ('n' ('a' ('m' ('e' ('r' ('i' ('c' ('a' (*S (('/>' | '>' (*S (Content17 (*S ('<' ('/' ('n' ('a' ('m' ('e' ('r' ('i' ('c' ('a>')))))))))))))) *S))))))))))
+Content17
+   <- *Element_item
+Element_samerica
+   <- '<' ('s' ('a' ('m' ('e' ('r' ('i' ('c' ('a' (*S (('/>' | '>' (*S (Content18 (*S ('<' ('/' ('s' ('a' ('m' ('e' ('r' ('i' ('c' ('a>')))))))))))))) *S))))))))))
+Content18
+   <- *Element_item
+Element_categories
+   <- '<' ('c' ('a' ('t' ('e' ('g' ('o' ('r' ('i' ('e' ('s' (*S (('/>' | '>' (*S (Content1 (*S ('<' ('/' ('c' ('a' ('t' ('e' ('g' ('o' ('r' ('i' ('e' ('s>')))))))))))))))) *S))))))))))))
+Content1
+   <- +Element_category
+Element_category
+   <- '<' ('c' ('a' ('t' ('e' ('g' ('o' ('r' ('y' (*S (Attribute2 (*S (('/>' | '>' (*S (Content2 (*S ('<' ('/' ('c' ('a' ('t' ('e' ('g' ('o' ('r' ('y>')))))))))))))) *S))))))))))))
+Attribute2
+   <- AttDef2_0 (*S ENDTAG)
+AttDef2_0
+   <- 'i' ('d' (*S ('=' (*S ('"' (IDTOKEN ('"' *S)))))))
+Content2
+   <- Element_name Element_description
+Element_catgraph
+   <- '<' ('c' ('a' ('t' ('g' ('r' ('a' ('p' ('h' (*S (('/>' | '>' (*S (Content11 (*S ('<' ('/' ('c' ('a' ('t' ('g' ('r' ('a' ('p' ('h>')))))))))))))) *S))))))))))
+Content11
+   <- *Element_edge
+Element_edge
+   <- '<' ('e' ('d' ('g' ('e' (*S (Attribute12 (*S (('/>' | '>' (*S (Content12 (*S ('<' ('/' ('e' ('d' ('g' ('e>')))))))))) *S))))))))
+Attribute12
+   <- AttDef12_0 (AttDef12_1 ENDTAG)
+   | AttDef12_1 (AttDef12_0 ENDTAG)
+AttDef12_0
+   <- 'f' ('r' ('o' ('m' (*S ('=' (*S ('"' (IDTOKEN ('"' *S)))))))))
+AttDef12_1
+   <- 't' ('o' (*S ('=' (*S ('"' (IDTOKEN ('"' *S)))))))
+Content12
+   <- EMPTY
+Element_people
+   <- '<' ('p' ('e' ('o' ('p' ('l' ('e' (*S (('/>' | '>' (*S (Content34 (*S ('<' ('/' ('p' ('e' ('o' ('p' ('l' ('e>')))))))))))) *S))))))))
+Content34
+   <- *Element_person
+Element_person
+   <- '<' ('p' ('e' ('r' ('s' ('o' ('n' (*S (Attribute35 (*S (('/>' | '>' (*S (Content35 (*S ('<' ('/' ('p' ('e' ('r' ('s' ('o' ('n>')))))))))))) *S))))))))))
+Attribute35
+   <- AttDef35_0 (*S ENDTAG)
+AttDef35_0
+   <- 'i' ('d' (*S ('=' (*S ('"' (IDTOKEN ('"' *S)))))))
+Content35
+   <- Element_name (Element_emailaddress (?Element_phone (?Element_address (?Element_homepage (?Element_creditcard (?Element_profile ?Element_watches))))))
+Element_emailaddress
+   <- '<' ('e' ('m' ('a' ('i' ('l' ('a' ('d' ('d' ('r' ('e' ('s' ('s' (*S (('/>' | '>' (*S (Content36 (*S ('<' ('/' ('e' ('m' ('a' ('i' ('l' ('a' ('d' ('d' ('r' ('e' ('s' ('s>')))))))))))))))))) *S))))))))))))))
+Content36
+   <- *PCDATA
+Element_phone
+   <- '<' ('p' ('h' ('o' ('n' ('e' (*S (('/>' | '>' (*S (Content37 (*S ('<' ('/' ('p' ('h' ('o' ('n' ('e>'))))))))))) *S)))))))
+Content37
+   <- *PCDATA
+Element_address
+   <- '<' ('a' ('d' ('d' ('r' ('e' ('s' ('s' (*S (('/>' | '>' (*S (Content38 (*S ('<' ('/' ('a' ('d' ('d' ('r' ('e' ('s' ('s>'))))))))))))) *S)))))))))
+Content38
+   <- Element_street (Element_city (Element_country (?Element_province Element_zipcode)))
+Element_street
+   <- '<' ('s' ('t' ('r' ('e' ('e' ('t' (*S (('/>' | '>' (*S (Content39 (*S ('<' ('/' ('s' ('t' ('r' ('e' ('e' ('t>')))))))))))) *S))))))))
+Content39
+   <- *PCDATA
+Element_city
+   <- '<' ('c' ('i' ('t' ('y' (*S (('/>' | '>' (*S (Content40 (*S ('<' ('/' ('c' ('i' ('t' ('y>')))))))))) *S))))))
+Content40
+   <- *PCDATA
+Element_country
+   <- '<' ('c' ('o' ('u' ('n' ('t' ('r' ('y' (*S (('/>' | '>' (*S (Content43 (*S ('<' ('/' ('c' ('o' ('u' ('n' ('t' ('r' ('y>'))))))))))))) *S)))))))))
+Content43
+   <- *PCDATA
+Element_province
+   <- '<' ('p' ('r' ('o' ('v' ('i' ('n' ('c' ('e' (*S (('/>' | '>' (*S (Content41 (*S ('<' ('/' ('p' ('r' ('o' ('v' ('i' ('n' ('c' ('e>')))))))))))))) *S))))))))))
+Content41
+   <- *PCDATA
+Element_zipcode
+   <- '<' ('z' ('i' ('p' ('c' ('o' ('d' ('e' (*S (('/>' | '>' (*S (Content42 (*S ('<' ('/' ('z' ('i' ('p' ('c' ('o' ('d' ('e>'))))))))))))) *S)))))))))
+Content42
+   <- *PCDATA
+Element_homepage
+   <- '<' ('h' ('o' ('m' ('e' ('p' ('a' ('g' ('e' (*S (('/>' | '>' (*S (Content44 (*S ('<' ('/' ('h' ('o' ('m' ('e' ('p' ('a' ('g' ('e>')))))))))))))) *S))))))))))
+Content44
+   <- *PCDATA
+Element_creditcard
+   <- '<' ('c' ('r' ('e' ('d' ('i' ('t' ('c' ('a' ('r' ('d' (*S (('/>' | '>' (*S (Content45 (*S ('<' ('/' ('c' ('r' ('e' ('d' ('i' ('t' ('c' ('a' ('r' ('d>')))))))))))))))) *S))))))))))))
+Content45
+   <- *PCDATA
+Element_profile
+   <- '<' ('p' ('r' ('o' ('f' ('i' ('l' ('e' (*S (Attribute46 (*S (('/>' | '>' (*S (Content46 (*S ('<' ('/' ('p' ('r' ('o' ('f' ('i' ('l' ('e>'))))))))))))) *S)))))))))))
+Attribute46
+   <- *AttChoice46 (*S ENDTAG)
+AttChoice46
+   <- AttDef46_0
+AttDef46_0
+   <- 'i' ('n' ('c' ('o' ('m' ('e' (*S ('=' (*S (STRING *S)))))))))
+Content46
+   <- *Element_interest (?Element_education (?Element_gender (Element_business ?Element_age)))
+Element_interest
+   <- '<' ('i' ('n' ('t' ('e' ('r' ('e' ('s' ('t' (*S (Attribute47 (*S (('/>' | '>' (*S (Content47 (*S ('<' ('/' ('i' ('n' ('t' ('e' ('r' ('e' ('s' ('t>')))))))))))))) *S))))))))))))
+Attribute47
+   <- AttDef47_0 (*S ENDTAG)
+AttDef47_0
+   <- 'c' ('a' ('t' ('e' ('g' ('o' ('r' ('y' (*S ('=' (*S ('"' (IDTOKEN ('"' *S)))))))))))))
+Content47
+   <- EMPTY
+Element_education
+   <- '<' ('e' ('d' ('u' ('c' ('a' ('t' ('i' ('o' ('n' (*S (('/>' | '>' (*S (Content48 (*S ('<' ('/' ('e' ('d' ('u' ('c' ('a' ('t' ('i' ('o' ('n>'))))))))))))))) *S)))))))))))
+Content48
+   <- *PCDATA
+Element_gender
+   <- '<' ('g' ('e' ('n' ('d' ('e' ('r' (*S (('/>' | '>' (*S (Content50 (*S ('<' ('/' ('g' ('e' ('n' ('d' ('e' ('r>')))))))))))) *S))))))))
+Content50
+   <- *PCDATA
+Element_business
+   <- '<' ('b' ('u' ('s' ('i' ('n' ('e' ('s' ('s' (*S (('/>' | '>' (*S (Content51 (*S ('<' ('/' ('b' ('u' ('s' ('i' ('n' ('e' ('s' ('s>')))))))))))))) *S))))))))))
+Content51
+   <- *PCDATA
+Element_age
+   <- '<' ('a' ('g' ('e' (*S (('/>' | '>' (*S (Content52 (*S ('<' ('/' ('a' ('g' ('e>'))))))))) *S)))))
+Content52
+   <- *PCDATA
+Element_watches
+   <- '<' ('w' ('a' ('t' ('c' ('h' ('e' ('s' (*S (('/>' | '>' (*S (Content53 (*S ('<' ('/' ('w' ('a' ('t' ('c' ('h' ('e' ('s>'))))))))))))) *S)))))))))
+Content53
+   <- *Element_watch
+Element_watch
+   <- '<' ('w' ('a' ('t' ('c' ('h' (*S (Attribute54 (*S (('/>' | '>' (*S (Content54 (*S ('<' ('/' ('w' ('a' ('t' ('c' ('h>'))))))))))) *S)))))))))
+Attribute54
+   <- AttDef54_0 (*S ENDTAG)
+AttDef54_0
+   <- 'o' ('p' ('e' ('n' ('_' ('a' ('u' ('c' ('t' ('i' ('o' ('n' (*S ('=' (*S ('"' (IDTOKEN ('"' *S)))))))))))))))))
+Content54
+   <- EMPTY
+Element_open_auctions
+   <- '<' ('o' ('p' ('e' ('n' ('_' ('a' ('u' ('c' ('t' ('i' ('o' ('n' ('s' (*S (('/>' | '>' (*S (Content55 (*S ('<' ('/' ('o' ('p' ('e' ('n' ('_' ('a' ('u' ('c' ('t' ('i' ('o' ('n' ('s>'))))))))))))))))))) *S)))))))))))))))
+Content55
+   <- *Element_open_auction
+Element_open_auction
+   <- '<' ('o' ('p' ('e' ('n' ('_' ('a' ('u' ('c' ('t' ('i' ('o' ('n' (*S (Attribute56 (*S (('/>' | '>' (*S (Content56 (*S ('<' ('/' ('o' ('p' ('e' ('n' ('_' ('a' ('u' ('c' ('t' ('i' ('o' ('n>')))))))))))))))))) *S))))))))))))))))
+Attribute56
+   <- AttDef56_0 (*S ENDTAG)
+AttDef56_0
+   <- 'i' ('d' (*S ('=' (*S ('"' (IDTOKEN ('"' *S)))))))
+Content56
+   <- Element_initial (?Element_reserve (*Element_bidder (Element_current (?Element_privacy (Element_itemref (Element_seller (Element_annotation (Element_quantity (Element_type Element_interval)))))))))
+Element_initial
+   <- '<' ('i' ('n' ('i' ('t' ('i' ('a' ('l' (*S (('/>' | '>' (*S (Content58 (*S ('<' ('/' ('i' ('n' ('i' ('t' ('i' ('a' ('l>'))))))))))))) *S)))))))))
+Content58
+   <- *PCDATA
+Element_reserve
+   <- '<' ('r' ('e' ('s' ('e' ('r' ('v' ('e' (*S (('/>' | '>' (*S (Content25 (*S ('<' ('/' ('r' ('e' ('s' ('e' ('r' ('v' ('e>'))))))))))))) *S)))))))))
+Content25
+   <- *PCDATA
+Element_bidder
+   <- '<' ('b' ('i' ('d' ('d' ('e' ('r' (*S (('/>' | '>' (*S (Content59 (*S ('<' ('/' ('b' ('i' ('d' ('d' ('e' ('r>')))))))))))) *S))))))))
+Content59
+   <- Element_date (Element_time (Element_personref Element_increase))
+Element_time
+   <- '<' ('t' ('i' ('m' ('e' (*S (('/>' | '>' (*S (Content67 (*S ('<' ('/' ('t' ('i' ('m' ('e>')))))))))) *S))))))
+Content67
+   <- *PCDATA
+Element_personref
+   <- '<' ('p' ('e' ('r' ('s' ('o' ('n' ('r' ('e' ('f' (*S (Attribute33 (*S (('/>' | '>' (*S (Content33 (*S ('<' ('/' ('p' ('e' ('r' ('s' ('o' ('n' ('r' ('e' ('f>'))))))))))))))) *S)))))))))))))
+Attribute33
+   <- AttDef33_0 (*S ENDTAG)
+AttDef33_0
+   <- 'p' ('e' ('r' ('s' ('o' ('n' (*S ('=' (*S ('"' (IDTOKEN ('"' *S)))))))))))
+Content33
+   <- EMPTY
+Element_increase
+   <- '<' ('i' ('n' ('c' ('r' ('e' ('a' ('s' ('e' (*S (('/>' | '>' (*S (Content62 (*S ('<' ('/' ('i' ('n' ('c' ('r' ('e' ('a' ('s' ('e>')))))))))))))) *S))))))))))
+Content62
+   <- *PCDATA
+Element_current
+   <- '<' ('c' ('u' ('r' ('r' ('e' ('n' ('t' (*S (('/>' | '>' (*S (Content61 (*S ('<' ('/' ('c' ('u' ('r' ('r' ('e' ('n' ('t>'))))))))))))) *S)))))))))
+Content61
+   <- *PCDATA
+Element_privacy
+   <- '<' ('p' ('r' ('i' ('v' ('a' ('c' ('y' (*S (('/>' | '>' (*S (Content57 (*S ('<' ('/' ('p' ('r' ('i' ('v' ('a' ('c' ('y>'))))))))))))) *S)))))))))
+Content57
+   <- *PCDATA
+Element_itemref
+   <- '<' ('i' ('t' ('e' ('m' ('r' ('e' ('f' (*S (Attribute32 (*S (('/>' | '>' (*S (Content32 (*S ('<' ('/' ('i' ('t' ('e' ('m' ('r' ('e' ('f>'))))))))))))) *S)))))))))))
+Attribute32
+   <- AttDef32_0 (*S ENDTAG)
+AttDef32_0
+   <- 'i' ('t' ('e' ('m' (*S ('=' (*S ('"' (IDTOKEN ('"' *S)))))))))
+Content32
+   <- EMPTY
+Element_seller
+   <- '<' ('s' ('e' ('l' ('l' ('e' ('r' (*S (Attribute60 (*S (('/>' | '>' (*S (Content60 (*S ('<' ('/' ('s' ('e' ('l' ('l' ('e' ('r>')))))))))))) *S))))))))))
+Attribute60
+   <- AttDef60_0 (*S ENDTAG)
+AttDef60_0
+   <- 'p' ('e' ('r' ('s' ('o' ('n' (*S ('=' (*S ('"' (IDTOKEN ('"' *S)))))))))))
+Content60
+   <- EMPTY
+Element_annotation
+   <- '<' ('a' ('n' ('n' ('o' ('t' ('a' ('t' ('i' ('o' ('n' (*S (('/>' | '>' (*S (Content74 (*S ('<' ('/' ('a' ('n' ('n' ('o' ('t' ('a' ('t' ('i' ('o' ('n>')))))))))))))))) *S))))))))))))
+Content74
+   <- Element_author (?Element_description Element_happiness)
+Element_author
+   <- '<' ('a' ('u' ('t' ('h' ('o' ('r' (*S (Attribute75 (*S (('/>' | '>' (*S (Content75 (*S ('<' ('/' ('a' ('u' ('t' ('h' ('o' ('r>')))))))))))) *S))))))))))
+Attribute75
+   <- AttDef75_0 (*S ENDTAG)
+AttDef75_0
+   <- 'p' ('e' ('r' ('s' ('o' ('n' (*S ('=' (*S ('"' (IDTOKEN ('"' *S)))))))))))
+Content75
+   <- EMPTY
+Element_happiness
+   <- '<' ('h' ('a' ('p' ('p' ('i' ('n' ('e' ('s' ('s' (*S (('/>' | '>' (*S (Content76 (*S ('<' ('/' ('h' ('a' ('p' ('p' ('i' ('n' ('e' ('s' ('s>'))))))))))))))) *S)))))))))))
+Content76
+   <- *PCDATA
+Element_type
+   <- '<' ('t' ('y' ('p' ('e' (*S (('/>' | '>' (*S (Content63 (*S ('<' ('/' ('t' ('y' ('p' ('e>')))))))))) *S))))))
+Content63
+   <- *PCDATA
+Element_interval
+   <- '<' ('i' ('n' ('t' ('e' ('r' ('v' ('a' ('l' (*S (('/>' | '>' (*S (Content64 (*S ('<' ('/' ('i' ('n' ('t' ('e' ('r' ('v' ('a' ('l>')))))))))))))) *S))))))))))
+Content64
+   <- Element_start Element_end
+Element_start
+   <- '<' ('s' ('t' ('a' ('r' ('t' (*S (('/>' | '>' (*S (Content65 (*S ('<' ('/' ('s' ('t' ('a' ('r' ('t>'))))))))))) *S)))))))
+Content65
+   <- *PCDATA
+Element_end
+   <- '<' ('e' ('n' ('d' (*S (('/>' | '>' (*S (Content66 (*S ('<' ('/' ('e' ('n' ('d>'))))))))) *S)))))
+Content66
+   <- *PCDATA
+Element_closed_auctions
+   <- '<' ('c' ('l' ('o' ('s' ('e' ('d' ('_' ('a' ('u' ('c' ('t' ('i' ('o' ('n' ('s' (*S (('/>' | '>' (*S (Content70 (*S ('<' ('/' ('c' ('l' ('o' ('s' ('e' ('d' ('_' ('a' ('u' ('c' ('t' ('i' ('o' ('n' ('s>'))))))))))))))))))))) *S)))))))))))))))))
+Content70
+   <- *Element_closed_auction
+Element_closed_auction
+   <- '<' ('c' ('l' ('o' ('s' ('e' ('d' ('_' ('a' ('u' ('c' ('t' ('i' ('o' ('n' (*S (('/>' | '>' (*S (Content71 (*S ('<' ('/' ('c' ('l' ('o' ('s' ('e' ('d' ('_' ('a' ('u' ('c' ('t' ('i' ('o' ('n>')))))))))))))))))))) *S))))))))))))))))
+Content71
+   <- Element_seller (Element_buyer (Element_itemref (Element_price (Element_date (Element_quantity (Element_type ?Element_annotation))))))
+Element_buyer
+   <- '<' ('b' ('u' ('y' ('e' ('r' (*S (Attribute72 (*S (('/>' | '>' (*S (Content72 (*S ('<' ('/' ('b' ('u' ('y' ('e' ('r>'))))))))))) *S)))))))))
+Attribute72
+   <- AttDef72_0 (*S ENDTAG)
+AttDef72_0
+   <- 'p' ('e' ('r' ('s' ('o' ('n' (*S ('=' (*S ('"' (IDTOKEN ('"' *S)))))))))))
+Content72
+   <- EMPTY
+Element_price
+   <- '<' ('p' ('r' ('i' ('c' ('e' (*S (('/>' | '>' (*S (Content73 (*S ('<' ('/' ('p' ('r' ('i' ('c' ('e>'))))))))))) *S)))))))
+Content73
+   <- *PCDATA

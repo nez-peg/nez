@@ -1,0 +1,1017 @@
+(xmldtd.nez:20) [warning] unexpected AST operations .. => removed!!
+     = ( ( '<!' (element/attlist/entity/condsect) '>') / MISC)  _*
+                                        ^                         
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Entity
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_interval
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:96) [notice] invalid naming convention: Content73
+ <!ELEMENT price           (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:97) [notice] invalid naming convention: Content74
+ <!ELEMENT annotation      (author, description?, happiness)>
+           ^                                                  
+(..\bench\XMark\xmark.dtd:93) [notice] invalid naming convention: Content71
+ <!ELEMENT closed_auction  (seller, buyer, itemref, price, date, quantity, type,
+           ^                                                                    
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_people
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:94) [notice] invalid naming convention: Content72
+ <!ELEMENT buyer           EMPTY>
+           ^                      
+(..\bench\XMark\xmark.dtd:92) [notice] invalid naming convention: Content70
+ <!ELEMENT closed_auctions (closed_auction*)>
+           ^                                  
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_seller
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Entity
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:99) [notice] invalid naming convention: Content75
+ <!ELEMENT author          EMPTY>
+           ^                      
+(..\bench\XMark\xmark.dtd:101) [notice] invalid naming convention: Content76
+ <!ELEMENT happiness       (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_seller
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:83) [notice] invalid naming convention: Content62
+ <!ELEMENT increase        (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:84) [notice] invalid naming convention: Content63
+ <!ELEMENT type            (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:80) [notice] invalid naming convention: Content60
+ <!ELEMENT seller          EMPTY>
+           ^                      
+(..\bench\XMark\xmark.dtd:82) [notice] invalid naming convention: Content61
+ <!ELEMENT current         (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_categories
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:89) [notice] invalid naming convention: Content68
+ <!ELEMENT status          (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:90) [notice] invalid naming convention: Content69
+ <!ELEMENT amount          (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:87) [notice] invalid naming convention: Content66
+ <!ELEMENT end             (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:88) [notice] invalid naming convention: Content67
+ <!ELEMENT time            (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:85) [notice] invalid naming convention: Content64
+ <!ELEMENT interval        (start, end)>
+           ^                             
+(..\bench\XMark\xmark.dtd:86) [notice] invalid naming convention: Content65
+ <!ELEMENT start           (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_date
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:17) [notice] invalid naming convention: Attribute12
+ <!ATTLIST edge            from IDREF #REQUIRED 
+           ^                                     
+(..\bench\XMark\xmark.dtd:68) [notice] invalid naming convention: Content51
+ <!ELEMENT business        (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:69) [notice] invalid naming convention: Content52
+ <!ELEMENT age             (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:67) [notice] invalid naming convention: Content50
+ <!ELEMENT gender          (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:79) [notice] invalid naming convention: Content59
+ <!ELEMENT bidder          (date, time, personref, increase)>
+           ^                                                  
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_buyer
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:77) [notice] invalid naming convention: Content57
+ <!ELEMENT privacy         (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:78) [notice] invalid naming convention: Content58
+ <!ELEMENT initial         (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:74) [notice] invalid naming convention: Content55
+ <!ELEMENT open_auctions   (open_auction*)>
+           ^                                
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_gender
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:75) [notice] invalid naming convention: Content56
+ <!ELEMENT open_auction    (initial, reserve?, bidder*, current, privacy?, itemr
+           ^                                                                    
+(..\bench\XMark\xmark.dtd:70) [notice] invalid naming convention: Content53
+ <!ELEMENT watches         (watch*)>
+           ^                         
+(..\bench\XMark\xmark.dtd:71) [notice] invalid naming convention: Content54
+ <!ELEMENT watch           EMPTY>
+           ^                      
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_gender
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:29) [notice] invalid naming convention: Attribute20
+ <!ATTLIST item            id ID #REQUIRED
+           ^                               
+(..\bench\XMark\xmark.dtd:55) [notice] invalid naming convention: Content40
+ <!ELEMENT city            (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:56) [notice] invalid naming convention: Content41
+ <!ELEMENT province        (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:37) [notice] invalid naming convention: Attribute26
+ <!ATTLIST incategory      category IDREF #REQUIRED>
+           ^                                         
+(..\bench\XMark\xmark.dtd:65) [notice] invalid naming convention: Content48
+ <!ELEMENT education       (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:66) [notice] invalid naming convention: Content49
+ <!ELEMENT income          (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:61) [notice] invalid naming convention: Content46
+ <!ELEMENT profile         (interest*, education?, gender?, business, age?)>
+           ^                                                                 
+(..\bench\XMark\xmark.dtd:63) [notice] invalid naming convention: Content47
+ <!ELEMENT interest        EMPTY>
+           ^                      
+(..\bench\XMark\xmark.dtd:59) [notice] invalid naming convention: Content44
+ <!ELEMENT homepage        (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:60) [notice] invalid naming convention: Content45
+ <!ELEMENT creditcard      (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:57) [notice] invalid naming convention: Content42
+ <!ELEMENT zipcode         (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:58) [notice] invalid naming convention: Content43
+ <!ELEMENT country         (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_from
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:54) [notice] invalid naming convention: Content39
+ <!ELEMENT street          (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_zipcode
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:50) [notice] invalid naming convention: Attribute35
+ <!ATTLIST person          id ID #REQUIRED>
+           ^                                
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_to
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:46) [notice] invalid naming convention: Attribute33
+ <!ATTLIST personref       person IDREF #REQUIRED>
+           ^                                       
+(..\bench\XMark\xmark.dtd:44) [notice] invalid naming convention: Attribute32
+ <!ATTLIST itemref         item IDREF #REQUIRED>
+           ^                                     
+(..\bench\XMark\xmark.dtd:41) [notice] invalid naming convention: Content30
+ <!ELEMENT to              (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:52) [notice] invalid naming convention: Content37
+ <!ELEMENT phone           (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:53) [notice] invalid naming convention: Content38
+ <!ELEMENT address         (street, city, country, province?, zipcode)>
+           ^                                                            
+(..\bench\XMark\xmark.dtd:49) [notice] invalid naming convention: Content35
+ <!ELEMENT person          (name, emailaddress, phone?, address?, homepage?, cre
+           ^                                                                    
+(..\bench\XMark\xmark.dtd:51) [notice] invalid naming convention: Content36
+ <!ELEMENT emailaddress    (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:45) [notice] invalid naming convention: Content33
+ <!ELEMENT personref       EMPTY>
+           ^                      
+(..\bench\XMark\xmark.dtd:48) [notice] invalid naming convention: Content34
+ <!ELEMENT people          (person*)>
+           ^                          
+(..\bench\XMark\xmark.dtd:42) [notice] invalid naming convention: Content31
+ <!ELEMENT date            (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:43) [notice] invalid naming convention: Content32
+ <!ELEMENT itemref         EMPTY>
+           ^                      
+(..\bench\XMark\xmark.dtd:39) [notice] invalid naming convention: Content28
+ <!ELEMENT mail            (from, to, date, text)>
+           ^                                       
+(..\bench\XMark\xmark.dtd:40) [notice] invalid naming convention: Content29
+ <!ELEMENT from            (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_date
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_happiness
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:62) [notice] invalid naming convention: Attribute46
+ <!ATTLIST profile         income CDATA #IMPLIED>
+           ^                                      
+(..\bench\XMark\xmark.dtd:64) [notice] invalid naming convention: Attribute47
+ <!ATTLIST interest        category IDREF #REQUIRED>
+           ^                                         
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_from
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:36) [notice] invalid naming convention: Content26
+ <!ELEMENT incategory      EMPTY>
+           ^                      
+(..\bench\XMark\xmark.dtd:38) [notice] invalid naming convention: Content27
+ <!ELEMENT mailbox         (mail*)>
+           ^                        
+(..\bench\XMark\xmark.dtd:34) [notice] invalid naming convention: Content24
+ <!ELEMENT shipping        (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:35) [notice] invalid naming convention: Content25
+ <!ELEMENT reserve         (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:32) [notice] invalid naming convention: Content22
+ <!ELEMENT quantity        (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:33) [notice] invalid naming convention: Content23
+ <!ELEMENT payment         (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:28) [notice] invalid naming convention: Content20
+ <!ELEMENT item            (location, quantity, name, payment, description, ship
+           ^                                                                    
+(..\bench\XMark\xmark.dtd:31) [notice] invalid naming convention: Content21
+ <!ELEMENT location        (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:27) [notice] invalid naming convention: Content19
+ <!ELEMENT europe          (item*)>
+           ^                        
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_author
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:25) [notice] invalid naming convention: Content17
+ <!ELEMENT namerica        (item*)>
+           ^                        
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_type
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:26) [notice] invalid naming convention: Content18
+ <!ELEMENT samerica        (item*)>
+           ^                        
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_street
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:76) [notice] invalid naming convention: Attribute56
+ <!ATTLIST open_auction    id ID #REQUIRED>
+           ^                                
+(..\bench\XMark\xmark.dtd:72) [notice] invalid naming convention: Attribute54
+ <!ATTLIST watch           open_auction IDREF #REQUIRED>
+           ^                                             
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_site
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_zipcode
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_status
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:23) [notice] invalid naming convention: Content15
+ <!ELEMENT asia            (item*)>
+           ^                        
+(..\bench\XMark\xmark.dtd:24) [notice] invalid naming convention: Content16
+ <!ELEMENT australia       (item*)>
+           ^                        
+(..\bench\XMark\xmark.dtd:21) [notice] invalid naming convention: Content13
+ <!ELEMENT regions         (africa, asia, australia, europe, namerica, samerica)
+           ^                                                                    
+(..\bench\XMark\xmark.dtd:22) [notice] invalid naming convention: Content14
+ <!ELEMENT africa          (item*)>
+           ^                        
+(..\bench\XMark\xmark.dtd:15) [notice] invalid naming convention: Content11
+ <!ELEMENT catgraph        (edge*)>
+           ^                        
+(..\bench\XMark\xmark.dtd:16) [notice] invalid naming convention: Content12
+ <!ELEMENT edge            EMPTY>
+           ^                      
+(..\bench\XMark\xmark.dtd:13) [notice] invalid naming convention: Content10
+ <!ELEMENT listitem        (text | parlist)*>
+           ^                                  
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_item
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:81) [notice] invalid naming convention: Attribute60
+ <!ATTLIST seller          person IDREF #REQUIRED>
+           ^                                       
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_personref
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:4) [notice] invalid naming convention: Content2
+ <!ELEMENT category        (name, description)>
+           ^                                    
+(..\bench\XMark\xmark.dtd:3) [notice] invalid naming convention: Content1
+ <!ELEMENT categories      (category+)>
+           ^                            
+(..\bench\XMark\xmark.dtd:7) [notice] invalid naming convention: Content4
+ <!ELEMENT description     (text | parlist)>
+           ^                                 
+(..\bench\XMark\xmark.dtd:6) [notice] invalid naming convention: Content3
+ <!ELEMENT name            (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:9) [notice] invalid naming convention: Content6
+ <!ELEMENT bold          (#PCDATA | bold | keyword | emph)*>
+           ^                                                 
+(..\bench\XMark\xmark.dtd:8) [notice] invalid naming convention: Content5
+ <!ELEMENT text            (#PCDATA | bold | keyword | emph)*>
+           ^                                                   
+(..\bench\XMark\xmark.dtd:11) [notice] invalid naming convention: Content8
+ <!ELEMENT emph          (#PCDATA | bold | keyword | emph)*>
+           ^                                                 
+(..\bench\XMark\xmark.dtd:10) [notice] invalid naming convention: Content7
+ <!ELEMENT keyword      (#PCDATA | bold | keyword | emph)*>
+           ^                                                
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_province
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Content0
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+           ^                                                                    
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_watch
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:12) [notice] invalid naming convention: Content9
+ <!ELEMENT parlist      (listitem)*>
+           ^                         
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_item
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:64) [notice] invalid naming convention: Attribute47
+ <!ATTLIST interest        category IDREF #REQUIRED>
+           ^                                         
+(..\bench\XMark\xmark.dtd:62) [notice] invalid naming convention: Attribute46
+ <!ATTLIST profile         income CDATA #IMPLIED>
+           ^                                      
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_namerica
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_business
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_type
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_annotation
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_itemref
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_buyer
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_address
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:44) [notice] invalid naming convention: Attribute32
+ <!ATTLIST itemref         item IDREF #REQUIRED>
+           ^                                     
+(..\bench\XMark\xmark.dtd:46) [notice] invalid naming convention: Attribute33
+ <!ATTLIST personref       person IDREF #REQUIRED>
+           ^                                       
+(..\bench\XMark\xmark.dtd:50) [notice] invalid naming convention: Attribute35
+ <!ATTLIST person          id ID #REQUIRED>
+           ^                                
+(..\bench\XMark\xmark.dtd:37) [notice] invalid naming convention: Attribute26
+ <!ATTLIST incategory      category IDREF #REQUIRED>
+           ^                                         
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_bidder
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_closed_auction
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_start
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:29) [notice] invalid naming convention: Attribute20
+ <!ATTLIST item            id ID #REQUIRED
+           ^                               
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_country
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_time
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:5) [notice] invalid naming convention: Attribute2
+ <!ATTLIST category        id ID #REQUIRED>
+           ^                                
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_keyword
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_site
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:17) [notice] invalid naming convention: Attribute12
+ <!ATTLIST edge            from IDREF #REQUIRED 
+           ^                                     
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_catgraph
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_closed_auctions
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_privacy
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_current
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_name
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_bold
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_bold
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_australia
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_name
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_status
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_interest
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_categories
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_profile
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_income
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_location
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_africa
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_homepage
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_payment
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_creditcard
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_regions
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_open_auctions
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_watches
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_shipping
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_education
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_author
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_description
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_time
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_street
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_interval
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_incategory
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_phone
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_quantity
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_emailaddress
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_interest
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_homepage
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_open_auction
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_reserve
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_parlist
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_edge
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_creditcard
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_mail
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_mailbox
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_shipping
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_listitem
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_increase
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_quantity
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_initial
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_samerica
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_watch
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_price
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_description
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_parlist
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_age
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_africa
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_price
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_annotation
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_reserve
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_open_auctions
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_education
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_phone
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_increase
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:95) [notice] invalid naming convention: Attribute72
+ <!ATTLIST buyer           person IDREF #REQUIRED>
+           ^                                       
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_mail
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:100) [notice] invalid naming convention: Attribute75
+ <!ATTLIST author          person IDREF #REQUIRED>
+           ^                                       
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_mailbox
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_city
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:81) [notice] invalid naming convention: Attribute60
+ <!ATTLIST seller          person IDREF #REQUIRED>
+           ^                                       
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_emailaddress
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_incategory
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_edge
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:72) [notice] invalid naming convention: Attribute54
+ <!ATTLIST watch           open_auction IDREF #REQUIRED>
+           ^                                             
+(..\bench\XMark\xmark.dtd:76) [notice] invalid naming convention: Attribute56
+ <!ATTLIST open_auction    id ID #REQUIRED>
+           ^                                
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_catgraph
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_text
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_europe
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Content0
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+           ^                                                                    
+(..\bench\XMark\xmark.dtd:3) [notice] invalid naming convention: Content1
+ <!ELEMENT categories      (category+)>
+           ^                            
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_country
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_amount
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_end
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:11) [notice] invalid naming convention: Content8
+ <!ELEMENT emph          (#PCDATA | bold | keyword | emph)*>
+           ^                                                 
+(..\bench\XMark\xmark.dtd:100) [notice] invalid naming convention: Attribute75
+ <!ATTLIST author          person IDREF #REQUIRED>
+           ^                                       
+(..\bench\XMark\xmark.dtd:12) [notice] invalid naming convention: Content9
+ <!ELEMENT parlist      (listitem)*>
+           ^                         
+(..\bench\XMark\xmark.dtd:9) [notice] invalid naming convention: Content6
+ <!ELEMENT bold          (#PCDATA | bold | keyword | emph)*>
+           ^                                                 
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_person
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:10) [notice] invalid naming convention: Content7
+ <!ELEMENT keyword      (#PCDATA | bold | keyword | emph)*>
+           ^                                                
+(..\bench\XMark\xmark.dtd:95) [notice] invalid naming convention: Attribute72
+ <!ATTLIST buyer           person IDREF #REQUIRED>
+           ^                                       
+(..\bench\XMark\xmark.dtd:7) [notice] invalid naming convention: Content4
+ <!ELEMENT description     (text | parlist)>
+           ^                                 
+(..\bench\XMark\xmark.dtd:8) [notice] invalid naming convention: Content5
+ <!ELEMENT text            (#PCDATA | bold | keyword | emph)*>
+           ^                                                   
+(..\bench\XMark\xmark.dtd:4) [notice] invalid naming convention: Content2
+ <!ELEMENT category        (name, description)>
+           ^                                    
+(..\bench\XMark\xmark.dtd:6) [notice] invalid naming convention: Content3
+ <!ELEMENT name            (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:24) [notice] invalid naming convention: Content16
+ <!ELEMENT australia       (item*)>
+           ^                        
+(..\bench\XMark\xmark.dtd:25) [notice] invalid naming convention: Content17
+ <!ELEMENT namerica        (item*)>
+           ^                        
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_text
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:22) [notice] invalid naming convention: Content14
+ <!ELEMENT africa          (item*)>
+           ^                        
+(..\bench\XMark\xmark.dtd:23) [notice] invalid naming convention: Content15
+ <!ELEMENT asia            (item*)>
+           ^                        
+(..\bench\XMark\xmark.dtd:16) [notice] invalid naming convention: Content12
+ <!ELEMENT edge            EMPTY>
+           ^                      
+(..\bench\XMark\xmark.dtd:21) [notice] invalid naming convention: Content13
+ <!ELEMENT regions         (africa, asia, australia, europe, namerica, samerica)
+           ^                                                                    
+(..\bench\XMark\xmark.dtd:13) [notice] invalid naming convention: Content10
+ <!ELEMENT listitem        (text | parlist)*>
+           ^                                  
+(..\bench\XMark\xmark.dtd:15) [notice] invalid naming convention: Content11
+ <!ELEMENT catgraph        (edge*)>
+           ^                        
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_payment
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_category
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_australia
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_europe
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_location
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_current
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_income
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_category
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:40) [notice] invalid naming convention: Content29
+ <!ELEMENT from            (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:53) [notice] invalid naming convention: Content38
+ <!ELEMENT address         (street, city, country, province?, zipcode)>
+           ^                                                            
+(..\bench\XMark\xmark.dtd:54) [notice] invalid naming convention: Content39
+ <!ELEMENT street          (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:51) [notice] invalid naming convention: Content36
+ <!ELEMENT emailaddress    (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:52) [notice] invalid naming convention: Content37
+ <!ELEMENT phone           (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:48) [notice] invalid naming convention: Content34
+ <!ELEMENT people          (person*)>
+           ^                          
+(..\bench\XMark\xmark.dtd:49) [notice] invalid naming convention: Content35
+ <!ELEMENT person          (name, emailaddress, phone?, address?, homepage?, cre
+           ^                                                                    
+(..\bench\XMark\xmark.dtd:43) [notice] invalid naming convention: Content32
+ <!ELEMENT itemref         EMPTY>
+           ^                      
+(..\bench\XMark\xmark.dtd:45) [notice] invalid naming convention: Content33
+ <!ELEMENT personref       EMPTY>
+           ^                      
+(..\bench\XMark\xmark.dtd:41) [notice] invalid naming convention: Content30
+ <!ELEMENT to              (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:42) [notice] invalid naming convention: Content31
+ <!ELEMENT date            (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_person
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_asia
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_age
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_end
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_province
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_initial
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_address
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:26) [notice] invalid naming convention: Content18
+ <!ELEMENT samerica        (item*)>
+           ^                        
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_personref
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_amount
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:27) [notice] invalid naming convention: Content19
+ <!ELEMENT europe          (item*)>
+           ^                        
+(..\bench\XMark\xmark.dtd:38) [notice] invalid naming convention: Content27
+ <!ELEMENT mailbox         (mail*)>
+           ^                        
+(..\bench\XMark\xmark.dtd:39) [notice] invalid naming convention: Content28
+ <!ELEMENT mail            (from, to, date, text)>
+           ^                                       
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_emph
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:35) [notice] invalid naming convention: Content25
+ <!ELEMENT reserve         (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_keyword
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:36) [notice] invalid naming convention: Content26
+ <!ELEMENT incategory      EMPTY>
+           ^                      
+(..\bench\XMark\xmark.dtd:33) [notice] invalid naming convention: Content23
+ <!ELEMENT payment         (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:34) [notice] invalid naming convention: Content24
+ <!ELEMENT shipping        (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:31) [notice] invalid naming convention: Content21
+ <!ELEMENT location        (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:32) [notice] invalid naming convention: Content22
+ <!ELEMENT quantity        (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_city
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:28) [notice] invalid naming convention: Content20
+ <!ELEMENT item            (location, quantity, name, payment, description, ship
+           ^                                                                    
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_bidder
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:78) [notice] invalid naming convention: Content58
+ <!ELEMENT initial         (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:79) [notice] invalid naming convention: Content59
+ <!ELEMENT bidder          (date, time, personref, increase)>
+           ^                                                  
+(..\bench\XMark\xmark.dtd:75) [notice] invalid naming convention: Content56
+ <!ELEMENT open_auction    (initial, reserve?, bidder*, current, privacy?, itemr
+           ^                                                                    
+(..\bench\XMark\xmark.dtd:77) [notice] invalid naming convention: Content57
+ <!ELEMENT privacy         (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:71) [notice] invalid naming convention: Content54
+ <!ELEMENT watch           EMPTY>
+           ^                      
+(..\bench\XMark\xmark.dtd:74) [notice] invalid naming convention: Content55
+ <!ELEMENT open_auctions   (open_auction*)>
+           ^                                
+(..\bench\XMark\xmark.dtd:69) [notice] invalid naming convention: Content52
+ <!ELEMENT age             (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:70) [notice] invalid naming convention: Content53
+ <!ELEMENT watches         (watch*)>
+           ^                         
+(..\bench\XMark\xmark.dtd:67) [notice] invalid naming convention: Content50
+ <!ELEMENT gender          (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:68) [notice] invalid naming convention: Content51
+ <!ELEMENT business        (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_to
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_closed_auction
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_namerica
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:66) [notice] invalid naming convention: Content49
+ <!ELEMENT income          (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:63) [notice] invalid naming convention: Content47
+ <!ELEMENT interest        EMPTY>
+           ^                      
+(..\bench\XMark\xmark.dtd:65) [notice] invalid naming convention: Content48
+ <!ELEMENT education       (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:60) [notice] invalid naming convention: Content45
+ <!ELEMENT creditcard      (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:61) [notice] invalid naming convention: Content46
+ <!ELEMENT profile         (interest*, education?, gender?, business, age?)>
+           ^                                                                 
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_profile
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:58) [notice] invalid naming convention: Content43
+ <!ELEMENT country         (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:59) [notice] invalid naming convention: Content44
+ <!ELEMENT homepage        (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:56) [notice] invalid naming convention: Content41
+ <!ELEMENT province        (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:57) [notice] invalid naming convention: Content42
+ <!ELEMENT zipcode         (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_emph
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_itemref
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:55) [notice] invalid naming convention: Content40
+ <!ELEMENT city            (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_regions
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_listitem
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_privacy
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:5) [notice] invalid naming convention: Attribute2
+ <!ATTLIST category        id ID #REQUIRED>
+           ^                                
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_people
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_samerica
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_closed_auctions
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_asia
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:101) [notice] invalid naming convention: Content76
+ <!ELEMENT happiness       (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:97) [notice] invalid naming convention: Content74
+ <!ELEMENT annotation      (author, description?, happiness)>
+           ^                                                  
+(..\bench\XMark\xmark.dtd:99) [notice] invalid naming convention: Content75
+ <!ELEMENT author          EMPTY>
+           ^                      
+(..\bench\XMark\xmark.dtd:94) [notice] invalid naming convention: Content72
+ <!ELEMENT buyer           EMPTY>
+           ^                      
+(..\bench\XMark\xmark.dtd:96) [notice] invalid naming convention: Content73
+ <!ELEMENT price           (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:92) [notice] invalid naming convention: Content70
+ <!ELEMENT closed_auctions (closed_auction*)>
+           ^                                  
+(..\bench\XMark\xmark.dtd:93) [notice] invalid naming convention: Content71
+ <!ELEMENT closed_auction  (seller, buyer, itemref, price, date, quantity, type,
+           ^                                                                    
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_open_auction
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_watches
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_happiness
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_business
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:90) [notice] invalid naming convention: Content69
+ <!ELEMENT amount          (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:88) [notice] invalid naming convention: Content67
+ <!ELEMENT time            (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:89) [notice] invalid naming convention: Content68
+ <!ELEMENT status          (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:86) [notice] invalid naming convention: Content65
+ <!ELEMENT start           (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:87) [notice] invalid naming convention: Content66
+ <!ELEMENT end             (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:1) [notice] invalid naming convention: Element_start
+ <!ELEMENT site            (regions, categories, catgraph, people, open_auctions
+ ^                                                                              
+(..\bench\XMark\xmark.dtd:84) [notice] invalid naming convention: Content63
+ <!ELEMENT type            (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:85) [notice] invalid naming convention: Content64
+ <!ELEMENT interval        (start, end)>
+           ^                             
+(..\bench\XMark\xmark.dtd:82) [notice] invalid naming convention: Content61
+ <!ELEMENT current         (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:83) [notice] invalid naming convention: Content62
+ <!ELEMENT increase        (#PCDATA)>
+           ^                          
+(..\bench\XMark\xmark.dtd:80) [notice] invalid naming convention: Content60
+ <!ELEMENT seller          EMPTY>
+           ^                      

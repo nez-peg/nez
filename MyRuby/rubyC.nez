@@ -1,0 +1,967 @@
+File
+    = (EOS? _)* CompleteStatement
+
+//-----------------------------------------
+
+EOS
+    = _ ';'
+    / _ LINE_TERMINATOR
+    / _ SINGLE_LINE_COMMENT LINE_TERMINATOR
+    / __ EOF
+
+LINE_TERMINATOR
+    = [\n\r\u2028\u2029]
+
+SINGLE_LINE_COMMENT
+    = '#' (!LINE_TERMINATOR .)*
+
+__
+    = SPACE_OR_NEWLINE*
+
+SPACE_OR_NEWLINE
+    = SPACE / LINE_TERMINATOR / SINGLE_LINE_COMMENT
+
+SPACE
+    = [\t\v\f \u00A0\uFEFF]
+
+EOF
+    = !.
+
+_
+    = (SPACE)*
+
+//-------------------------------------------------------
+
+
+CompleteStatement
+    = { @StatementOrBegin (EOS* _ @StatementOrBegin)+ EOS* _ #Block }
+    / StatementOrBegin EOS* _
+    / EOS* _ { #Empty }
+
+StatementOrBegin
+    = InitializerStatement
+    / '{' __ CompleteStatement __ '}'
+    / Statement
+
+ InitializerStatement
+    = { 'BEGIN' __ '{' __ @CompleteStatement __ '}' #Initializer }
+
+
+
+ Statement
+    = DecoratorStatement
+
+
+ DecoratorStatement
+    [example: if true then 1 end while f]
+    [example: puts n += 1 while n < 10]
+    [example: tmp = input.read(4096) or break]
+    = <with Decorator NoDecorationStatement> {@ <if Decorator> _ addDecorator _ @Expression }*
+
+NoDecorationStatement
+    = AliasStatement
+    / UndefStatement
+    / FinalizerStatement
+    / Expression
+
+AliasStatement
+    = { "alias" _ @FunctionName _ @FunctionName #Alias }
+
+UndefStatement
+    = { "undef" (_ (@FunctionName / @Symbol))+}
+
+FinalizerStatement
+    = { 'END' __ '{' __ @CompleteStatement __ '}' #Finalizer }
+
+Symbol
+    = ":" _ { FUNCTION_NAME #Symbol }
+    / ":" _ { VARIABLE_NAME #Symbol }
+
+ addDecorator
+    = "if" #IfDecorator
+    / "while" #WhileDecorator
+    / "unless" #UnlessDecorator
+    / "until" #UntilDecorator
+    / "rescue" #RescueDecorator
+
+Expression
+    = { @MultipleLeftHandSideExpression __ "=" __ @MultipleRightHandSideExpression #MultipleAssign }
+    / KeywordLogicalExpression
+    / ControlExpression
+
+MultipleLeftHandSideExpression
+    = '(' _ MultipleLeftHandSideExpression _ ')'
+    / { @LHSListItem (_ ',' _ @LHSListItem)+ (_ ',' _ @LHSExpandExpression)? #MultipleLeftHandSideExpression }
+    / { @LHSListItem _ ',' _ @LHSExpandExpression #MultipleLeftHandSideExpression }
+    / { @LHSListItem (_ ',' _ @LHSListItem)* _ ',' #MultipleLeftHandSideExpression }
+    / LHSExpandExpression
+
+LHSListItem
+    = LeftHandSideExpression
+    / '(' __ MultipleLeftHandSideExpression __ ')'
+
+LeftHandSideExpression
+    = <with DoEndBlock PrimaryExpression> {@ addLHSCall }+
+    / PrimaryLHSExpression
+
+PrimaryExpression
+    = '(' __ <with StatementAsPrimary CompleteStatement> __ ')'
+    / Literal
+    / HereDocument
+    / ArrayLiteral
+    / HashLiteral
+    / LambdaExpression
+    / Variable !(_[({])
+    / PrimaryCallExpression
+    / ConstantExpression
+    / <if StatementAsPrimary> StatementLikeExpression
+
+Literal
+    = NumericLiteral / StringLiteral / RegularExpressionLiteral / Symbol / ParcentNotation
+
+NumericLiteral
+    [example: 0x1F]
+    [example: 0123]
+    [example: 0.12]
+    [example: 1234]
+    = HexIntegerLiteral / BinaryIntegerLiteral
+    / FloatingPointLiteral / DecimalLiteral / OctalIntegerLiteral
+
+HexIntegerLiteral
+    [example: 0xa12]
+    = { '0' [xX] HEX+ #HexInteger }
+
+
+BinaryIntegerLiteral
+    [example: 0b01010]
+    = { '0' [bB] [01_]+ #BinaryInteger }
+
+FloatingPointLiteral
+    [example: 12.456]
+    [example: 12.456e-78]
+    [example: 0.12]
+    [example: 5e3]
+    [example: 4.84143144246472090e+00]
+    = { DECIMAL_INTEGER '.' DIGIT+ EXPONENT_PART? #FloatingPointNumber }
+    / { DECIMAL_INTEGER EXPONENT_PART #FloatingPointNumber }
+
+DECIMAL_INTEGER
+    = [1-9] DIGIT* / '0'
+
+EXPONENT_PART
+    [example: e+1]
+    [exam0]
+    [example: E-1]
+    = [eE] SIGN? DIGIT*
+
+SIGN
+    = ( '+' / '-' )
+
+DecimalLiteral
+    [example: 123]
+    = { [1-9] DIGIT* #DecimalInteger }
+    / '0' [dD] { DIGIT+ #DecimalInteger }
+
+OctalIntegerLiteral
+    [example: 0]
+    [example: 012]
+    = { '0' ([oO] OCT+ / OCT*) #OctalInteger }
+
+OCT
+    = [0-7_]
+
+StringLiteral
+    [example: ?"]
+    [bad-example: ? ]
+    = ["] { DOUBLE_STRING_CHARACTER* #String } ["]
+    / ['] { SINGLE_STRING_CHARACTER* #String } [']
+    / [`] { BACK_STRING_CHARACTER* #Command } [`]
+    / '?'{ ('\\' ESCAPE_SEQUENCE) / !SPACE_OR_NEWLINE . #String }
+
+DOUBLE_STRING_CHARACTER
+    = !( ["] / '\\' / LINE_TERMINATOR ) SOURCE / '\\' ESCAPE_SEQUENCE
+
+SOURCE
+    = .
+
+ESCAPE_SEQUENCE
+    = '\\' / ["'bfnrtv] / OCTA_ESCAPE_SEQUENCE / HEX_ESCAPE_SEQUENCE / UNICODE_ESCAPE_SEQUUENCE / LINE_TERMINATOR / .
+
+OCTA_ESCAPE_SEQUENCE
+    = OCT OCT OCT
+
+HEX_ESCAPE_SEQUENCE
+    = [xX] HEX HEX
+
+UNICODE_ESCAPE_SEQUUENCE
+    = [uU] HEX4
+
+SINGLE_STRING_CHARACTER
+    = !( ['] / '\\' / LINE_TERMINATOR ) SOURCE / '\\' ESCAPE_SEQUENCE
+
+BACK_STRING_CHARACTER
+    = !( [`] / '\\' / LINE_TERMINATOR ) SOURCE / '\\' ESCAPE_SEQUENCE
+
+RegularExpressionLiteral
+    [example: /.*(?=#[^\s]*$)/]
+    = { '/' REGEX_BODY? '/' REGEX_FLAGS #RegularExp }
+
+REGEX_BODY
+    = REGEX_FIRST_CHAR REGEX_CHAR*
+
+REGEX_FIRST_CHAR
+    = REGEX_BACKSLASH_SEQUENCE / ![*\\/\x5b] REGEX_NON_TERMINATOR / REGEX_CLASS
+
+REGEX_BACKSLASH_SEQUENCE
+    = '\\' REGEX_NON_TERMINATOR
+
+REGEX_NON_TERMINATOR
+    = !LINE_TERMINATOR SOURCE
+
+REGEX_CLASS
+    = '[' REGEX_CLASS_CHAR* ']'
+
+REGEX_CLASS_CHAR
+    = ![\x5d\\] REGEX_NON_TERMINATOR / REGEX_BACKSLASH_SEQUENCE
+
+REGEX_CHAR
+    = '*' / REGEX_FIRST_CHAR
+
+REGEX_FLAGS
+    = [gimsy]*
+
+ParcentNotation
+    = { "%" [wWiI] <without PNSpace PN_BODY> #ParcentNotation }
+    / { "%" [qQxrs]? PN_BODY #ParcentNotation }
+PN_BODY
+    = PN_PAREN
+    / PN_BRACE
+    / PN_BRAKET
+    / PN_ANGLE
+    / <if PNSpace> ' ' (!' ' .)* ' '
+    / <if PNSpace> <def EON LINE_TERMINATOR> (!<isa EON> .)* <isa EON>
+
+PN_PAREN
+    = '(' (PN_PAREN / ![()] .)* ')'
+
+
+PN_BRACE
+    = '{' (PN_BRACE / ![{}] .)* '}'
+
+PN_BRAKET
+    = '[' (PN_BRAKET / ![\[\]] .)* ']'
+
+PN_ANGLE
+    = "<" (PN_ANGLE / ![<>] .)* ">"
+
+HereDocument
+    = { "<<" "-"? (
+          ["] <def HereDocID IDENTIFIER> ["]
+        / ['] <def HereDocID IDENTIFIER> [']
+        / [`] <def HereDocID IDENTIFIER> [`]
+        / <def HereDocID IDENTIFIER>) (!HD_NEWLINE .)* HD_NEWLINE
+      (!(_ <isa HereDocID>) (!HD_NEWLINE .)* HD_NEWLINE)*
+      _ <isa HereDocID> HD_NEWLINE
+      #HereDocument
+    }
+
+HD_NEWLINE
+    = LINE_TERMINATOR
+
+
+ArrayLiteral
+    [example: [1,2,3]]
+    = { '[' (__ addArgsNoAssoc (__ ',' __ @{ addAssocs #Hash } )?)? __ (',' __)? ']' #Array }
+    / { '[' (__ @{ addAssocs #Hash } )? __ (',' __)? ']' #Array }
+
+HashLiteral
+    [example: {"a"=>1,"b"=>2}]
+    [example: { :foo => 12 }]
+    = { '{' __ ( addAssocs (__ ',' __)? )? __ '}' #Hash }
+
+
+LambdaExpression
+    = { '->' __ addLambdaParameter __ @[2]LambdaBody #Function }
+
+addLambdaParameter
+    = '(' __ @[1]ParamOrEmptyList __ ')'
+    / @[1]ParamOrEmptyList
+
+ParamOrEmptyList
+    = ParameterList / EmptyList
+
+ParameterList
+    [example: *a]
+    [example: &b]
+    [example: *a, &b]
+    [example: x, y, *a, &b]
+    [example: a = 1]
+    [example: a = 1, *b]
+    [example: a, b = 1]
+    [bad-example: &b, *a]
+    [bad-example: &b, x]
+    [bad-example: *a, x]
+    = { @BlockParameter #List }
+    / { @VariadicParameter (__ "," __ @BlockParameter)? #List }
+    / { addParameterAssocs (__ "," __ @VariadicParameter)? (__ "," __ @BlockParameter)? #List }
+    / { addParameters (__ "," __ addParameterAssocs)? (__ "," __ @VariadicParameter)? (__ "," __ @BlockParameter)? #List }
+
+VariadicParameter
+    = { "*" @Identifier #VariadicParameter }
+
+addParameterAssocs
+    [example: a = 1, b = 2]
+    = @DefaultValueAssociation (__ "," __ @DefaultValueAssociation)*
+
+DefaultValueAssociation
+    [example: a = 1]
+    = { @Identifier __ "=" __ @Arg #Assign }
+
+addParameters
+    = @Identifier !(_ [=]) (__ "," __ @Identifier !(_ "="))*
+
+EmptyList
+    = { #List }
+
+LambdaBody
+    = DoEndBlockWithoutParameter / BraceBlockWithoutParameter
+
+DoEndBlockWithoutParameter
+    [example: do a * b end]
+    = "do" __ CompleteStatement __ "end"
+
+BraceBlockWithoutParameter
+    [example: { x * x }]
+    = '{' __ CompleteStatement __ '}'
+
+
+PrimaryCallExpression
+    [example: p (if false then 1 else 2 end)]
+    = { @[0]DummySelf @[1]OperationName _ @AddArguments #Apply }
+    / { @[0]DummySelf @[1]Super (_ @AddArguments)? #Apply }
+
+Super
+    = { "super" #Super }
+
+StatementLikeExpression
+    = IfExpression
+    / UnlessExpression
+    / WhileExpression
+    / UntilExpression
+    / CaseExpression
+    / ForExpression
+    / BeginExpression
+    / ClassExpression
+    / ModuleExpression
+    / FunctionDefinition
+    / EigenMethodDefinition
+
+IfExpression
+    [example: if true then return end]
+    [example: if true; return end]
+    [example: if true; 1; else; 0; end]
+    [example: if n == 1; a; elsif n == 2 then b; else; c; end]
+    = { "if" _ @Expression _ THEN __ @CompleteStatement
+        (elseClause / elsifClause)? _ "end" #If }
+
+elsifClause
+    = @ElsifClause
+
+ElsifClause
+    = { "elsif" _ @Expression _ THEN __ @CompleteStatement
+        (elseClause / elsifClause)? #If }
+
+elseClause
+    = "else" EOS* _ @CompleteStatement
+
+UnlessExpression
+    [example: unless true then return end]
+    [example: unless true; return end]
+    = { "unless" _ @Expression _ THEN __ @CompleteStatement __ elseClause? __ "end" #Unless }
+
+THEN
+    = "then" / EOS (__ "then")?
+
+WhileExpression
+    [example: while true do 1 end]
+    = { "while" _ <without DoEndBlock @Expression> _ DO __ @CompleteStatement __ "end" #While }
+
+DO
+    = "do" / EOS (__ "do")?
+
+UntilExpression
+    [example: until true do 1 end]
+    = { "until" _ <without DoEndBlock @Expression> _ DO __ @CompleteStatement __ "end" #Until }
+
+CaseExpression
+    [example: case n; when 1; a; end]
+    [example: case n; when 1; a; else; b; end]
+    = { "case" _ @Expression EOS __ @CaseList __ (elseClause? __) "end" #Case }
+
+CaseList
+    = { ("when" _ @WhenArgs _ THEN __ @CompleteStatement __)* #CaseList }
+
+WhenArgs
+    = { @Args (_ ',' __ @ExpandExpression)? #List }
+    / { @ExpandExpression #List }
+
+ForExpression
+    [example: for n in 1..10; p n; end]
+    = { "for" _  @BlockVar _ "in" _ @Expression _ DO __ @CompleteStatement __ "end" #For}
+
+BeginExpression
+    [example: begin p 1 end]
+    [example: begin p 1; rescue a => b; 1 end]
+    [example: begin p 1; rescue a => b; 1; else; 2 end]
+    = { "begin" __ (EOS __)? addBeginBody __ "end" #Begin }
+
+addBeginBody
+    = @[0]CompleteStatement (__ EOS)? (__ @[1]RescueList)? (__ "else" EOS __ @[2]CompleteStatement)? (__ "ensure" __ @[3]CompleteStatement)?
+
+RescueList
+    = { (@RescueItem)+ (__ EOS)? #List }
+
+RescueItem
+    [example: rescue]
+    [example: rescue;]
+    [example: rescue 1;]
+    [example: rescue a; 1;]
+    [example: rescue => b; 1;]
+    [example: rescue a => b; 1;]
+    = { "rescue" _ (@[0]Args _)? ("=>" _ @[1]LeftHandSideExpression _)? THEN __ @[2]CompleteStatement #Rescue }
+
+ClassExpression
+    [example: class Human; end]
+    [example: class Human < Animal; end]
+    = { "class" __ @[0]Identifier (__ "<" __ @[1]BaseClass)? EOS __ @[2]CompleteStatement __ "end" #Class }
+
+BaseClass
+    = Expression
+
+ModuleExpression
+    = { "module" __ @Identifier __ @CompleteStatement __ "end" #Module }
+
+FunctionDefinition
+    [example: def hoge; p 1 end]
+    [example: def hoge a,b; p a end]
+    [example: def hoge() p a end]
+    [example: def hoge(a,b) p a end]
+    [example: def hoge(a,b); p a end]
+    = { "def" __ @[0]FunctionName _ addFunctionParameter __ @[2]FunctionBody __ "end" #Function }
+
+addFunctionParameter
+    = '(' __ @[1]ParamOrEmptyList __ ')' EOS?
+    / @[1]ParamOrEmptyList EOS
+
+FunctionBody
+    = { addBeginBody #Begin }
+
+EigenMethodDefinition
+    [example: def self.hoge a,b; p a end]
+    = { "def" __ @Singleton __ ('.' / '::') __ @FunctionName _ addFunctionParameter __ @FunctionBody __ "end" #EigenFunction }
+
+Singleton
+    = VariableName
+    / SelfExpression
+    / NilExpression
+    / TrueExpression
+    / FalseExpression
+    / '(' __ Expression __ ')'
+
+
+
+addLHSCall
+    = '[' __ (@[1]Args)? __ ']' #Indexer
+    /  _ addFuncName (_ @AddArguments &NEXT_CALL)? #Apply
+
+Args
+    = { addArgs #List }
+
+addArgs
+    = @Arg (__ ',' __ @Arg)*
+
+Arg
+    = AssignmentExpression
+
+AssignmentExpression
+    [example: a = Klass.new 1, 2]
+    [example: a += b -= c **= 2]
+    [example: a = 1,2]
+    = { @LeftHandSideExpression _ addAssignmentOperator __ ( @Command / @UnwrapedArray / @AssignmentExpression ) }
+    / ConditionalExpression
+
+addAssignmentOperator
+    = '='   #Assign
+    / '*='  #AssignMul
+    / '/='  #AssignDiv
+    / '%='  #AssignMod
+    / '**=' #AssignPower
+    / '+='  #AssignAdd
+    / '-='  #AssignSub
+    / '<<=' #AssignLeftShift
+    / '>>=' #AssignRightShift
+    / '&='  #AssignBitwiseAnd
+    / '^='  #AssignBitwiseXOr
+    / '|='  #AssignBitwiseOr
+    / '&&=' #AssignAnd
+    / '||=' #AssignOr
+
+Command
+    [example: a 1]
+    [example: a.b.c 1]
+    [example: a(b).c 1]
+    [example: p +1]
+    [bad-example: a(b) 1]
+//    [bad-example: p if false then 1 else 2 end]
+    = { @DummySelf @OperationName !'[' !OPERATOR _ addCmdArguments #Apply }
+    / { @DummySelf @OperationName2 !'[' !OPERATOR _ addCmdArguments? #Apply }
+    / { @BeforeCommandFunctionCallExpression _ addFuncName _ addCmdArguments #Apply }
+    / { "super" (_ @CmdArgs)? #Super }
+    / { "defined?" _ @Arg #Defined }
+
+DummySelf
+    = { `self` #Self }
+
+OperationName
+    = { IDENTIFIER [!?]? #Name }
+
+OPERATOR
+    = "|" / "^" / "&" / "<=>" / "==" / "===" / "=~"
+    / ">" / ">=" / "<" / "<=" / "+" / "-" / "*" / "/" / "%" / "**"
+    / "<<" / ">>" / "~" / "`" / "+@" / "-@" / "[]" / "[]="
+
+addCmdArguments
+    = @[2]CmdArgs (_ @[3]BlockArgument)?
+    / @[3]BlockArgument
+
+CmdArgs
+    = !"(" <without DoEndBlock <without StatementAsPrimary CallArgs> >
+
+DoEndBlock
+    [example: do |n| p n end]
+    [example: do |a,b| end]
+    = { "do" __ ("|" __ (@[0]BlockVar)? __ "|" __)? (@[1]CompleteStatement)? __ "end" #BlockArgument }
+
+BlockVar
+    = MultipleLeftHandSideExpression
+    / { @LeftHandSideExpression #MultipleLeftHandSideExpression }
+
+BlockArgument
+    = <if DoEndBlock> DoEndBlock / BraceBlock
+
+
+BraceBlock
+    [example: {|n| p n }]
+    [example: {|a,b| }]
+    = { '{' __ ('|' __ (@[0]BlockVar)? __ '|' __)? (@[1]CompleteStatement)? __ '}' #BlockArgument }
+
+OperationName2
+    = { IDENTIFIER [!?] #Name }
+
+BeforeCommandFunctionCallExpression
+    = { {@ @AddBeforeCommandCall }* }
+
+AddBeforeCommandCall
+    = { '[' __ (@[1]Args)? __ ']' #Indexer }
+    / { _ addFuncName (_ @AddArguments / &NEXT_CALL) #Apply }
+
+addFuncName
+    = '.' __ @[1]OperationName
+    / '.' __ @[1]IdentifierName
+    / '::' __ @[1]Identifier
+    / ('.' / '::') __ @[1]FunctionName
+
+AddArguments
+    = { '(' __ (@[2]CallArgs __)? ')' (__ @[3]BlockArgument)? }
+    / {  @[3]BlockArgument }
+
+CallArgs
+    [example: 1,2,3,4]
+    [example: *a]
+    [example: &b]
+    [example: *a, &b]
+    [example: 1, b => 1]
+    [example: 1, 2, *a, &b]
+    [bad-example: &b, *a]
+    [bad-example: &b, 1]
+    [bad-example: *a, 1]
+    = <without Decorator <without KeywordOperator CallArgsBody> >
+
+CallArgsBody
+    = { @Command #List }
+    / { @BlockParameter #List }
+    / { @ExpandExpression (__ "," __ @BlockParameter)? #List }
+    / { addAssocs (__ "," __ @ExpandExpression)? (__ "," __ @BlockParameter)? #List }
+    / { addArgsNoAssoc (__ "," __ addAssocs)? (__ "," __ @ExpandExpression)? (__ "," __ @BlockParameter)? #List }
+    / Args
+
+BlockParameter
+    [bad-example: a & b]
+    = { "&" (@Identifier / @Symbol) #BlockParameter }
+
+addAssocs
+    [example: a => 1, b => 2]
+    = @Association (__ "," __ @Association)*
+
+Association
+    [example: a => 1]
+    = { @Arg __ "=>" __ @Arg #Assign }
+    / { @JsonStyleAssocSymbol _ ":" __ @Arg #Assign }
+
+addArgsNoAssoc
+    = @Arg !(_ "=>") (__ "," __ @Arg !(_ "=>"))*
+JsonStyleAssocSymbol
+    = { FUNCTION_NAME #Symbol }
+    / { VARIABLE_NAME #Symbol }
+
+
+FunctionName
+    = { FUNCTION_NAME #Name }
+
+FUNCTION_NAME
+    = IDENTIFIER [!?]?
+       / OPERATOR
+       / ('__LINE__' / '__FILE__' / 'BEGIN' / 'END') [!?]?
+       / KEYWORD [!?]?
+
+UnwrapedArray
+    [example: 1,2]
+    = { add2MoreArgs #Array }
+
+add2MoreArgs
+    = @Arg (__ ',' __ @Arg)+
+
+ConditionalExpression
+    = RangeExpression {@ _ '?' __ @RangeExpression __ ':' __ @RangeExpression #Trinary }*
+
+RangeExpression
+    = {@LogicalORExpression  _ addRangeOperator __ @LogicalORExpression }
+    / LogicalORExpression
+
+addRangeOperator
+    = '..' ( '.' #OpenRange / #ClosedRange )
+
+LogicalORExpression
+    = LogicalANDExpression {@ _ '||' __ @LogicalANDExpression #Or }*
+
+LogicalANDExpression
+    = EqualityExpression {@ _ '&&' __ @EqualityExpression #And }*
+
+EqualityExpression
+    [example: /hoge/ =~ str]
+    = RelationalExpression {@ _ addEqualityOperator __ @RelationalExpression }*
+
+addEqualityOperator
+    = "=="  #Equals
+    / "!="  #NotEquals
+    / "===" #StrictEquals
+    / "<=>" #Compare
+    / "=~" #Match
+    / '!~' #NotMatch
+
+RelationalExpression
+    = BitwiseORExpression {@ _ addRelationalOperator __ @BitwiseORExpression }*
+
+
+addRelationalOperator
+    = "<=" #LessThanEquals
+    / ">=" #GreaterThanEquals
+    / "<" #LessThan
+    / ">" #GreaterThan
+
+BitwiseORExpression
+    = BitwiseANDExpression {@ _ ("|" #BitwiseOr / "^" #BitwiseXor) __ @BitwiseANDExpression }*
+
+BitwiseANDExpression
+    = ShiftExpression {@ (SPACE+ "&" SPACE_OR_NEWLINE+ / "&" __) @ShiftExpression #BitwiseAnd }*
+
+ShiftExpression
+    = AdditiveExpression {@ (SPACE+ "<<" SPACE_OR_NEWLINE+ #LeftShift / "<<" __ #LeftShift / _ ">>" __ #RightShift) @AdditiveExpression }*
+
+//AdditiveExpression = ' ' MultiplicativeExpression
+    //[example: a + 1]
+    //= { MultiplicativeExpression #aaa}
+    //{@ (SPACE+ addAdditiveOperator SPACE_OR_NEWLINE+ / addAdditiveOperator __) @MultiplicativeExpression }*
+
+AdditiveExpression
+    [example: a + 1]
+    = MultiplicativeExpression {@ (SPACE+ addAdditiveOperator SPACE_OR_NEWLINE+ / addAdditiveOperator __) @MultiplicativeExpression }*
+
+addAdditiveOperator
+    = "+" #Add
+    / "-" #Sub
+
+MultiplicativeExpression
+    [example: a / 2]
+    [example: a/ 2]
+    [bad-example: a /2]
+    = UnaryMinusExpression {@ (SPACE+ addMultiplicativeOperator SPACE_OR_NEWLINE+ / addMultiplicativeOperator __) @UnaryMinusExpression }*
+
+addMultiplicativeOperator
+    = "*" #Mul
+    / "%" #Mod
+    / "/" #Div
+
+UnaryMinusExpression
+    = PowerExpression / { _ "-" #Minus _ @UnaryMinusExpression }
+
+PowerExpression
+    = UnaryExpression {@ _ ( "**" #Power ) __ @UnaryExpression }*
+
+UnaryExpression
+    [example: +a]
+    [bad-example: + a]
+    = FunctionCallExpression / { addUnaryOperator @UnaryExpression }
+
+addUnaryOperator
+    = "+" #Plus
+    / "~" #Invert
+    / "!" #Not
+
+FunctionCallExpression
+    [example: 10.times do |n| p n end]
+    [bad-example: 10.times 2 do |n| p n end]
+    = <with DoEndBlock PrimaryExpression>  {@ addCall }*
+
+addCall
+    = '[' __ (@[1]Args)? __ ']' #Indexer
+    / _ addFuncName (_ @AddArguments)? #Apply
+
+NEXT_CALL
+    = '[' / _ '.' / _ '::'
+
+
+PrimaryLHSExpression
+    = Variable !(_[({])
+    / ConstantExpression
+
+Variable
+    = VariableName
+    / SelfExpression
+    / NilExpression
+    / TrueExpression
+    / FalseExpression
+    / FileExpression
+    / LineExpression
+
+
+VariableName
+    = { VARIABLE_NAME #Name }
+
+VARIABLE_NAME
+    = GLOBAL_VARIABLE_NAME ![!?]
+    / ('@@' / '@')? IDENTIFIER ![!?]
+
+GLOBAL_VARIABLE_NAME
+    = '$' IDENTIFIER
+    / '$' !SPACE .
+    / '$-' !SPACE .
+
+
+SelfExpression
+    = { "self" ![!?] #Self }
+
+TrueExpression
+    = { "true" ![!?] #True }
+
+FalseExpression
+    = { "false" ![!?] #False }
+
+NilExpression
+    = { "nil" ![!?] #Nil }
+
+FileExpression
+    = { '__FILE__' ![!?] #File }
+
+LineExpression
+    = { '__LINE__' ![!?] #Line }
+
+
+ConstantExpression
+    = { '::' _ @[1]Identifier #Name }
+
+Identifier
+    = !KEYWORD IdentifierName
+
+KEYWORD
+    = "do" / "end" / "return" / "yield" / "defined?"
+    / "if" / "elsif" / "else" / "unless" / "while"
+    / "until" / "case" / "when" / "break" / "next"
+    / "redo" / "for" / "in" / "begin" / "rescue"
+    / "rescue" / "retry" / "ensure" / "class"
+    / "module" / "def" / "alias" / "and"
+    / "defined" / "false" / "nil" / "not"
+    / "or" / "self" / "super" / "then" / "true" / "undef"
+
+IdentifierName
+    = { IDENTIFIER #Name }
+
+IDENTIFIER
+    = !KEYWORD IDENTIFIER_START IDENTIFIER_PART*
+
+IDENTIFIER_START
+    = [a-zA-Z$_]
+    / UCHAR
+
+IDENTIFIER_PART
+    = IDENTIFIER_START
+    / DIGIT
+
+DIGIT
+    = [0-9_]
+
+
+LHSExpandExpression
+    = { '*' @LeftHandSideExpression #Sprat }
+
+
+
+
+MultipleRightHandSideExpression
+    = { addArgs (_ ',' _ @ExpandExpression)? #MultipleRightHandSideExpression }
+    / { @ExpandExpression #MultipleRightHandSideExpression }
+
+ExpandExpression
+    = { '*' @Arg #Sprat }
+
+KeywordLogicalExpression
+    = KeywordNotExpression {@ <if KeywordOperator> __ addKeywordLogicalOperator __ @KeywordLogicalOperandWithControl #And }*
+
+KeywordNotExpression
+    = <with KeywordOperator CommandNotExpression>
+    / <with KeywordOperator AssignmentExpression>
+    / <if KeywordOperator> { __ "not" #Not _ @KeywordNotExpression }
+
+CommandNotExpression
+    = Command / { __ "!" #Not _ @CommandNotExpression }
+
+KeywordOperator = { ' ' }
+/////////////////////////////////////////
+
+addKeywordLogicalOperator
+    = "and" #And
+    / "or" #Or
+
+KeywordLogicalOperandWithControl
+    = KeywordNotExpression
+    / ControlExpression
+
+ControlExpression
+    = ReturnExpression
+    / BreakExpression
+    / NextExpression
+    / RedoExpression
+    / YieldExpression
+
+ReturnExpression
+    = { "return" _ '(' _ @CallArgs _ ')' #Return }
+    / { "return" (_ @CmdArgs)? #Return }
+
+
+BreakExpression
+    = { "break" _ '(' _ @CallArgs _ ')' #Break }
+    / { "break" (_ @CmdArgs)? #Break }
+
+NextExpression
+    = { "next" _ '(' _ @CallArgs _ ')' #Next }
+    / { "next" (_ @CmdArgs)? #Next }
+
+RedoExpression
+    = { "redo" _ '(' _ @CallArgs _ ')' #Redo }
+    / { "redo" (_ @CmdArgs)? #Redo }
+
+YieldExpression
+    = { "yield" _ '(' _ @CallArgs _ ')' #Redo }
+    / { "yield" (_ @CmdArgs)? #Redo }
+
+
+W
+  = [a-zA-Z0-9_]
+  / UCHAR
+
+UCHAR
+  = '\\u' HEX4
+  / '\\U' HEX4 HEX4
+
+HEX4
+  = HEX HEX HEX HEX
+
+HEX
+    = [0-9a-fA-F_]
+
+"&"   = '&' !'&'
+"*"   = '*' !'='
+"+"   = '+' ![+=]
+"-"   = '-' !('-' / [=>])
+"!"   = '!' ![=~]
+":"    = ':' ![>]
+"/"    = '/' !'='
+"%"    = '%' ![=>]
+"<<"  = '<<' !'='
+">>"  = '>>' ![=>]
+"<"    = '<' ![=]
+">"    = '>' ![=]
+"=="  = '==' ![=]
+"!="  = '!=' ![=]
+"^"    = '^' ![=]
+"|"    = '|' ![=]
+"="    = '=' ![=~]
+"<=>" = '<=>'
+"===" = '==='
+"=~" = '=~'
+">=" = '>='
+"<=" = '<='
+"**" = '**'
+"~" = '~'
+"`" = '`'
+"+@" = '+@'
+"-@" = '-@'
+"[]" = '[]'
+"[]=" = '[]='
+"(" = '('
+"=>" = '=>'
+"." = '.'
+"," = ','
+
+
+
+
+"do" = 'do' !W
+"end" = 'end' !W
+"return" = 'return' !W
+"yield" = 'yield' !W
+"defined?" = 'defined?' !W
+"if" = 'if' !W
+"elsif" = 'elsif' !W
+"else" = 'else' !W
+"unless" = 'unless' !W
+"while" = 'while' !W
+"until" = 'until' !W
+"case" = 'case' !W
+"when" = 'when' !W
+"break" = 'break' !W
+"next" = 'next' !W
+"redo" = 'redo' !W
+"for" = 'for' !W
+"in" = 'in' !W
+"begin" = 'begin' !W
+"rescue" = 'rescue' !W
+"retry" = 'retry' !W
+"ensure" = 'ensure' !W
+"class" = 'class' !W
+"module" = 'module' !W
+"def" = 'def' !W
+
+"alias" = 'alias' !W
+"and" = 'and' !W
+"defined" = 'defined' !W
+"false" = 'false' !W
+"nil" = 'nil' !W
+"not" = 'not' !W
+
+"or" = 'or' !W
+"self" = 'self' !W
+"super" = 'super' !W
+"then" = 'then' !W
+"true" = 'true' !W
+"undef" = 'undef' !W

@@ -1,0 +1,418 @@
+// PEG4d Regex file
+
+
+File
+	= { ( ('#' _ @Comment BREAK? ) / @TopLevel / _ BREAK? )* #Source } !.
+
+Chunk
+	= Statement _ BREAK?
+
+TopLevel
+	= _ Statement _ BREAK?
+
+Statement
+	= { (@LogOp)+ #Regex }
+
+_
+	= [ \t]*
+
+Comment
+	= { (!BREAK .)* #Comment }
+
+BREAK
+	= '\n' / '\r\n' / '\r'
+
+OCTDIGIT
+	= [0-7]
+
+DECDIGIT
+	= [0-9]
+
+HEXDIGIT
+	= [0-9A-Fa-f]
+
+LETTER
+	= W / SYMBOL
+
+EscapeLetter
+	= { UNICODE #Unicode }
+	/ { ASCII #ASCII }
+	/ { ESCAPE METACHARACTER #Symbol }
+	/ { ESCAPE ('p' / 'P') '{' _ ('In' / 'Is')? ( @{CLASSNAME #ClassName} / @{UNICODECLASSNAME #UnicodeClassName} ) _ '}' #Class }	//Perl
+	/ { ESCAPE METALETTER #Letter }
+
+W
+	= [a-zA-Z0-9]
+
+ESCAPE
+	= '\\'
+
+METACHARACTER
+	= '+' / '*' / '?' / '.' / '^' / '$' / '|' / '\\'
+	/ '(' / ')' / '[' / ']' / '{' / '}' / '-' / '.'
+
+METALETTER
+	= 'C' // 1Byte
+	/ 'A' // TopOfString
+	/ 'z' // EndOfStringWithoutEOL
+	/ 'Z' // EndOfString
+	/ 'b' // WordBoundary or BackSpace
+	/ 'y' // WordBoundary
+	/ 'B' // NonWordBoundary
+	/ 'Y' // NonWordBoundary
+	/ 'w' // Character
+	/ 'W' // NonCharacter
+	/ 'd' // DecNumber
+	/ 'D' // NonDecNumber
+	/ 's' // Space
+	/ 'S' // NonSpace
+	/ 't' // tab
+	/ 'n' // LF
+	/ 'r' // CR
+
+SYMBOL
+	= '&' !'&' / '/' / '@' / '_' / '#' / '%' / ',' / '-'
+	/ ':' / ';' / '<' / '>' / '=' / '~' / '`' / '"'
+
+UNICODE
+	= '\\u' HEXDIGIT HEXDIGIT HEXDIGIT HEXDIGIT
+
+ASCII
+	= '\\x' HEXDIGIT HEXDIGIT?
+	/ '\\0' OCTDIGIT OCTDIGIT?
+
+Token
+	= { ( @[0]{ '^' #BeginWith })? _   @[1]ParenBlock                (@[2]Quantifier)? _ ( @[3]{ '$' !DECDIGIT !'{' !'$' !'`' !'\'' #EndWith })? #Stmt }
+	/ { ( @[0]{ '^' #BeginWith })? _ ( @[1]Character / @[1]Bracket ) (@[2]Quantifier)? _ ( @[3]{ '$' !DECDIGIT !'{' !'$' !'`' !'\'' #EndWith })? #Token }
+
+Quantifier
+	= { '+?' #OneMoreS }
+	/ { '+'  #OneMoreL }
+	/ { '*?' #ZeroMoreS }
+	/ { '*'  #ZeroMoreL }
+	/ { '??'  #OptionalS }
+	/ { '?' '+'?  #OptionalL }
+	/ { '{' _ @[0]{ DECDIGIT+ #AndMore } _ ',' _ @[1]{ DECDIGIT+ #AndFewer } _ '}' '?'? #Times }
+	/ { '{' _ @[0]{ DECDIGIT+ #AndMore } _ ',' _ '}' '?'? #Times }
+	/ { '{' _ ',' _ @[1]{ DECDIGIT+ #AndFewer } _ '}' '?'? #Times }
+	/ { '{' _ @[0]{ DECDIGIT+ #Time } _ '}' '?'? #Times }
+
+ParenBlock
+	= _ '(' _ '?#' _ { (!')' !BREAK .)* #Comment } ')'
+	/ { _ '(' _  '?' addEXTOPERATOR _ ( @LogOp / @ParenBlock / @Character / @Bracket )+ ')' _ }
+	/ { _ '(' ( @LogOp / @ParenBlock / @Character / @Bracket / _ )+ ')' _ #Block }
+
+addEXTOPERATOR
+	= '<=' #LookBehind
+	/ '<!' #NegLookBehind
+	/ '=' #LookAhead
+	/ '!' #NegLookAhead
+	/ ':' #Group
+
+Bracket
+	= { '[^' (@Items)+ ']' #ExceptFor }
+	/ { '['  (@Items)+ ']' #OneOf }
+
+Items
+	= { ( '&&' #And / '-' #Minus ) _ (@Bracket)+ }
+	/ Item
+
+Item
+	= { '[:' @{CLASSNAME #ClassName} ':]' #Class}
+	/ { @{@Character #From} '-' @{@Character #To} #Range }
+	/ BracketCharacter
+
+LogOp
+	= { (@Token)+ #Item } _ {@ ( '&&' #And / '|' #Or ) _ @{ (@Token)+ #Item } }+
+	/ Token
+
+Character
+	= { ESCAPE @{ DECDIGIT #BlockNum } !DECDIGIT #BlockReference }
+	/ { '$' @{ ( DECDIGIT / '$' / '`' / '\'' ) #BlockNum } !DECDIGIT #BlockReference }
+	/ { ESCAPE 'g' @{ DECDIGIT #BlockNum } !DECDIGIT #BlockReference }						//Python
+	/ { '${' @{ ( DECDIGIT / '$' / '`' / '\'' ) #BlockNum } '}' #BlockReference }			//Perl
+	/ { LETTER #Char }
+	/ { @EscapeLetter #EscapedChar }
+	/ { '.' #WildCard }
+
+BracketCharacter
+	= { ESCAPE @{ DECDIGIT #BlockNum } !DECDIGIT #BlockReference }
+	/ { '$' @{ ( DECDIGIT / '$' / '`' / '\'' ) #BlockNum } !DECDIGIT #BlockReference }
+	/ { ESCAPE 'g' @{ DECDIGIT #BlockNum } !DECDIGIT #BlockReference }						//Python
+	/ { '${' @{ ( DECDIGIT / '$' / '`' / '\'' ) #BlockNum } '}' #BlockReference }			//Perl
+	/ { LETTER #Char }
+	/ { @EscapeLetter #EscapedChar }
+	/ { METACHARACTER #Char }
+	/ { '.' #Char }
+	/ { ' ' #Char }
+
+CLASSNAME
+	= 'ascii'  / 'ASCII'
+	/ 'alnum'  / 'Alnum'
+	/ 'alpha'  / 'Alpha'
+	/ 'blank'  / 'Blank'
+	/ 'cntrl'  / 'Cntrl'
+	/ 'digit'  / 'Digit'
+	/ 'graph'  / 'Graph'
+	/ 'lower'  / 'Lower'
+	/ 'upper'  / 'Upper'
+	/ 'print'  / 'Print'
+	/ 'space'  / 'Space'
+	/ 'punct'  / 'Punct'
+	/ 'xdigit' / 'XDigit'
+
+// Unicode 7.0.0
+// http://www.unicode.org/Public/UNIDATA/Blocks.txt
+UNICODECLASSNAME
+	= ('Basic' / 'basic') _ ('Latin' / 'latin')
+	/ ('Latin' / 'latin') _ '-'? _ '1' _ ('Supplement' / 'supplement')
+	/ ('Latin' / 'latin') _ ('Extended' / 'extended') _ '-'? _ ('A' / 'a')
+	/ ('Latin' / 'latin') _ ('Extended' / 'extended') _ '-'? _ ('B' / 'b')
+	/ ('IPA' / 'ipa') _ ('Extensions' / 'extensions')
+	/ ('Spacing' / 'spacing') _ ('Modifier' / 'modifier') _ ('Letters' / 'letters')
+	/ ('Combining' / 'combining') _ ('Diacritical' / 'diacritical') _ ('Marks' / 'marks')
+	/ ('Greek' / 'greek') _ ('And' / 'and') _ ('Coptic' / 'coptic')
+	/ ('Cyrillic' / 'cyrillic')
+	/ ('Cyrillic' / 'cyrillic') _ ('Supplement' / 'supplement')
+	/ ('Armenian' / 'armenian')
+	/ ('Hebrew' / 'hebrew')
+	/ ('Arabic' / 'arabic')
+	/ ('Syriac' / 'syriac')
+	/ ('Arabic' / 'arabic') _ ('Supplement' / 'supplement')
+	/ ('Thaana' / 'thaana')
+	/ ('NKo' / 'nko')
+	/ ('Samaritan' / 'samaritan')
+	/ ('Mandaic' / 'mandaic')
+	/ ('Arabic' / 'arabic') _ ('Extended' / 'extended') _ '-'? _ ('A' / 'a')
+	/ ('Devanagari' / 'devanagari')
+	/ ('Bengali' / 'bengali')
+	/ ('Gurmukhi' / 'gurmukhi')
+	/ ('Gujarati' / 'gujarati')
+	/ ('Oriya' / 'oriya')
+	/ ('Tamil' / 'tamil')
+	/ ('Telugu' / 'telugu')
+	/ ('Kannada' / 'kannada')
+	/ ('Malayalam' / 'malayalam')
+	/ ('Sinhala' / 'sinhala')
+	/ ('Thai' / 'thai')
+	/ ('Lao' / 'lao')
+	/ ('Tibetan' / 'tibetan')
+	/ ('Myanmar' / 'myanmar')
+	/ ('Georgian' / 'georgian')
+	/ ('Hangul' / 'hangul') _ ('Jamo' / 'jamo')
+	/ ('Ethiopic' / 'ethiopic')
+	/ ('Ethiopic' / 'ethiopic') _ ('Supplement' / 'supplement')
+	/ ('Cherokee' / 'cherokee')
+	/ ('Unified' / 'unified') _ ('Canadian' / 'canadian') _ ('Aboriginal' / 'aboriginal') _ ('Syllabics' / 'syllabics')
+	/ ('Ogham' / 'ogham')
+	/ ('Runic' / 'runic')
+	/ ('Tagalog' / 'tagalog')
+	/ ('Hanunoo' / 'hanunoo')
+	/ ('Buhid' / 'buhid')
+	/ ('Tagbanwa' / 'tagbanwa')
+	/ ('Khmer' / 'khmer')
+	/ ('Mongolian' / 'mongolian')
+	/ ('Unified' / 'unified') _ ('Canadian' / 'canadian') _ ('Aboriginal' / 'aboriginal') _ ('Syllabics' / 'syllabics') _ ('Extended' / 'extended')
+	/ ('Limbu' / 'limbu')
+	/ ('Tai' / 'tai') _ ('Le' / 'le')
+	/ ('New' / 'new') _ ('Tai' / 'tai') _ ('Lue' / 'lue')
+	/ ('Khmer' / 'khmer') _ ('Symbols' / 'symbols')
+	/ ('Buginese' / 'buginese')
+	/ ('Tai' / 'tai') _ ('Tham' / 'tham')
+	/ ('Combining' / 'combining') _ ('Diacritical' / 'diacritical') _ ('Marks' / 'marks') _ ('Extended' / 'extended')
+	/ ('Balinese' / 'balinese')
+	/ ('Sundanese' / 'sundanese')
+	/ ('Batak' / 'batak')
+	/ ('Lepcha' / 'lepcha')
+	/ ('Ol' / 'ol') _ ('Chiki' / 'chiki')
+	/ ('Sundanese' / 'sundanese') _ ('Supplement' / 'supplement')
+	/ ('Vedic' / 'vedic') _ ('Extensions' / 'extensions')
+	/ ('Phonetic' / 'phonetic') _ ('Extensions' / 'extensions')
+	/ ('Phonetic' / 'phonetic') _ ('Extensions' / 'extensions') _ ('Supplement' / 'supplement')
+	/ ('Combining' / 'combining') _ ('Diacritical' / 'diacritical') _ ('Marks' / 'marks') _ ('Supplement' / 'supplement')
+	/ ('Latin' / 'latin') _ ('Extended' / 'extended') _ ('Additional' / 'additional')
+	/ ('Greek' / 'greek') _ ('Extended' / 'extended')
+	/ ('General' / 'general') _ ('Punctuation' / 'punctuation')
+	/ ('Superscripts' / 'superscripts') _ ('And' / 'and') _ ('Subscripts' / 'subscripts')
+	/ ('Currency' / 'currency') _ ('Symbols' / 'symbols')
+	/ ('Combining' / 'combining') _ ('Diacritical' / 'diacritical') _ ('Marks' / 'marks') _ ('For' / 'for') _ ('Symbols' / 'symbols')
+	/ ('Letterlike' / 'letterlike') _ ('Symbols' / 'symbols')
+	/ ('Number' / 'number') _ ('Forms' / 'forms')
+	/ ('Arrows' / 'arrows')
+	/ ('Mathematical' / 'mathematical') _ ('Operators' / 'operators')
+	/ ('Miscellaneous' / 'miscellaneous') _ ('Technical' / 'technical')
+	/ ('Control' / 'control') _ ('Pictures' / 'pictures')
+	/ ('Optical' / 'optical') _ ('Character' / 'character') _ ('Recognition' / 'recognition')
+	/ ('Enclosed' / 'enclosed') _ ('Alphanumerics' / 'alphanumerics')
+	/ ('Box' / 'box') _ ('Drawing' / 'drawing')
+	/ ('Block' / 'block') _ ('Elements' / 'elements')
+	/ ('Geometric' / 'geometric') _ ('Shapes' / 'shapes')
+	/ ('Miscellaneous' / 'miscellaneous') _ ('Symbols' / 'symbols')
+	/ ('Dingbats' / 'dingbats')
+	/ ('Miscellaneous' / 'miscellaneous') _ ('Mathematical' / 'mathematical') _ ('Symbols' / 'symbols') _ '-'? _ ('A' / 'a')
+	/ ('Supplemental' / 'supplemental') _ ('Arrows' / 'arrows') _ '-'? _ ('A' / 'a')
+	/ ('Braille' / 'braille') _ ('Patterns' / 'patterns')
+	/ ('Supplemental' / 'supplemental') _ ('Arrows' / 'arrows') _ '-'? _ ('B' / 'b')
+	/ ('Miscellaneous' / 'miscellaneous') _ ('Mathematical' / 'mathematical') _ ('Symbols' / 'symbols') _ '-'? _ ('B' / 'b')
+	/ ('Supplemental' / 'supplemental') _ ('Mathematical' / 'mathematical') _ ('Operators' / 'operators')
+	/ ('Miscellaneous' / 'miscellaneous') _ ('Symbols' / 'symbols') _ ('And' / 'and') _ ('Arrows' / 'arrows')
+	/ ('Glagolitic' / 'glagolitic')
+	/ ('Latin' / 'latin') _ ('Extended' / 'extended') _ '-'? _ ('C' / 'c')
+	/ ('Coptic' / 'coptic')
+	/ ('Georgian' / 'georgian') _ ('Supplement' / 'supplement')
+	/ ('Tifinagh' / 'tifinagh')
+	/ ('Ethiopic' / 'ethiopic') _ ('Extended' / 'extended')
+	/ ('Cyrillic' / 'cyrillic') _ ('Extended' / 'extended') _ '-'? _ ('A' / 'a')
+	/ ('Supplemental' / 'supplemental') _ ('Punctuation' / 'punctuation')
+	/ ('CJK' / 'cjk') _ ('Radicals' / 'radicals') _ ('Supplement' / 'supplement')
+	/ ('Kangxi' / 'kangxi') _ ('Radicals' / 'radicals')
+	/ ('Ideographic' / 'ideographic') _ ('Description' / 'description') _ ('Characters' / 'characters')
+	/ ('CJK' / 'cjk') _ ('Symbols' / 'symbols') _ ('And' / 'and') _ ('Punctuation' / 'punctuation')
+	/ ('Hiragana' / 'hiragana')
+	/ ('Katakana' / 'katakana')
+	/ ('Bopomofo' / 'bopomofo')
+	/ ('Hangul' / 'hangul') _ ('Compatibility' / 'compatibility') _ ('Jamo' / 'jamo')
+	/ ('Kanbun' / 'kanbun')
+	/ ('Bopomofo' / 'bopomofo') _ ('Extended' / 'extended')
+	/ ('CJK' / 'cjk') _ ('Strokes' / 'strokes')
+	/ ('Katakana' / 'katakana') _ ('Phonetic' / 'phonetic') _ ('Extensions' / 'extensions')
+	/ ('Enclosed' / 'enclosed') _ ('CJK' / 'cjk') _ ('Letters' / 'letters') _ ('And' / 'and') _ ('Months' / 'months')
+	/ ('CJK' / 'cjk') _ ('Compatibility' / 'compatibility')
+	/ ('CJK' / 'cjk') _ ('Unified' / 'unified') _ ('Ideographs' / 'ideographs') _ ('Extension' / 'extension') _ ('A' / 'a')
+	/ ('Yijing' / 'yijing') _ ('Hexagram' / 'hexagram') _ ('Symbols' / 'symbols')
+	/ ('CJK' / 'cjk') _ ('Unified' / 'unified') _ ('Ideographs' / 'ideographs')
+	/ ('Yi' / 'yi') _ ('Syllables' / 'syllables')
+	/ ('Yi' / 'yi') _ ('Radicals' / 'radicals')
+	/ ('Lisu' / 'lisu')
+	/ ('Vai' / 'vai')
+	/ ('Cyrillic' / 'cyrillic') _ ('Extended' / 'extended') _ '-'? _ ('B' / 'b')
+	/ ('Bamum' / 'bamum')
+	/ ('Modifier' / 'modifier') _ ('Tone' / 'tone') _ ('Letters' / 'letters')
+	/ ('Latin' / 'latin') _ ('Extended' / 'extended') _ '-'? _ ('D' / 'd')
+	/ ('Syloti' / 'syloti') _ ('Nagri' / 'nagri')
+	/ ('Common' / 'common') _ ('Indic' / 'indic') _ ('Number' / 'number') _ ('Forms' / 'forms')
+	/ ('Phags' / 'phags') _ '-'? _ ('Pa' / 'pa')
+	/ ('Saurashtra' / 'saurashtra')
+	/ ('Devanagari' / 'devanagari') _ ('Extended' / 'extended')
+	/ ('Kayah' / 'kayah') _ ('Li' / 'li')
+	/ ('Rejang' / 'rejang')
+	/ ('Hangul' / 'hangul') _ ('Jamo' / 'jamo') _ ('Extended' / 'extended') _ '-'? _ ('A' / 'a')
+	/ ('Javanese' / 'javanese')
+	/ ('Myanmar' / 'myanmar') _ ('Extended' / 'extended') _ '-'? _ ('B' / 'b')
+	/ ('Cham' / 'cham')
+	/ ('Myanmar' / 'myanmar') _ ('Extended' / 'extended') _ '-'? _ ('A' / 'a')
+	/ ('Tai' / 'tai') _ ('Viet' / 'viet')
+	/ ('Meetei' / 'meetei') _ ('Mayek' / 'mayek') _ ('Extensions' / 'extensions')
+	/ ('Ethiopic' / 'ethiopic') _ ('Extended' / 'extended') _ '-'? _ ('A' / 'a')
+	/ ('Latin' / 'latin') _ ('Extended' / 'extended') _ '-'? _ ('E' / 'e')
+	/ ('Meetei' / 'meetei') _ ('Mayek' / 'mayek')
+	/ ('Hangul' / 'hangul') _ ('Syllables' / 'syllables')
+	/ ('Hangul' / 'hangul') _ ('Jamo' / 'jamo') _ ('Extended' / 'extended') _ '-'? _ ('B' / 'b')
+	/ ('High' / 'high') _ ('Surrogates' / 'surrogates')
+	/ ('High' / 'high') _ ('Private' / 'private') _ ('Use' / 'use') _ ('Surrogates' / 'surrogates')
+	/ ('Low' / 'low') _ ('Surrogates' / 'surrogates')
+	/ ('Private' / 'private') _ ('Use' / 'use') _ ('Area' / 'area')
+	/ ('CJK' / 'cjk') _ ('Compatibility' / 'compatibility') _ ('Ideographs' / 'ideographs')
+	/ ('Alphabetic' / 'alphabetic') _ ('Presentation' / 'presentation') _ ('Forms' / 'forms')
+	/ ('Arabic' / 'arabic') _ ('Presentation' / 'presentation') _ ('Forms' / 'forms') _ '-'? _ ('A' / 'a')
+	/ ('Variation' / 'variation') _ ('Selectors' / 'selectors')
+	/ ('Vertical' / 'vertical') _ ('Forms' / 'forms')
+	/ ('Combining' / 'combining') _ ('Half' / 'half') _ ('Marks' / 'marks')
+	/ ('CJK' / 'cjk') _ ('Compatibility' / 'compatibility') _ ('Forms' / 'forms')
+	/ ('Small' / 'small') _ ('Form' / 'form') _ ('Variants' / 'variants')
+	/ ('Arabic' / 'arabic') _ ('Presentation' / 'presentation') _ ('Forms' / 'forms') _ '-'? _ ('B' / 'b')
+	/ ('Halfwidth' / 'halfwidth') _ ('And' / 'and') _ ('Fullwidth' / 'fullwidth') _ ('Forms' / 'forms')
+	/ ('Specials' / 'specials')
+	/ ('Linear' / 'linear') _ ('B' / 'b') _ ('Syllabary' / 'syllabary')
+	/ ('Linear' / 'linear') _ ('B' / 'b') _ ('Ideograms' / 'ideograms')
+	/ ('Aegean' / 'aegean') _ ('Numbers' / 'numbers')
+	/ ('Ancient' / 'ancient') _ ('Greek' / 'greek') _ ('Numbers' / 'numbers')
+	/ ('Ancient' / 'ancient') _ ('Symbols' / 'symbols')
+	/ ('Phaistos' / 'phaistos') _ ('Disc' / 'disc')
+	/ ('Lycian' / 'lycian')
+	/ ('Carian' / 'carian')
+	/ ('Coptic' / 'coptic') _ ('Epact' / 'epact') _ ('Numbers' / 'numbers')
+	/ ('Old' / 'old') _ ('Italic' / 'italic')
+	/ ('Gothic' / 'gothic')
+	/ ('Old' / 'old') _ ('Permic' / 'permic')
+	/ ('Ugaritic' / 'ugaritic')
+	/ ('Old' / 'old') _ ('Persian' / 'persian')
+	/ ('Deseret' / 'deseret')
+	/ ('Shavian' / 'shavian')
+	/ ('Osmanya' / 'osmanya')
+	/ ('Elbasan' / 'elbasan')
+	/ ('Caucasian' / 'caucasian') _ ('Albanian' / 'albanian')
+	/ ('Linear' / 'linear') _ ('A' / 'a')
+	/ ('Cypriot' / 'cypriot') _ ('Syllabary' / 'syllabary')
+	/ ('Imperial' / 'imperial') _ ('Aramaic' / 'aramaic')
+	/ ('Palmyrene' / 'palmyrene')
+	/ ('Nabataean' / 'nabataean')
+	/ ('Phoenician' / 'phoenician')
+	/ ('Lydian' / 'lydian')
+	/ ('Meroitic' / 'meroitic') _ ('Hieroglyphs' / 'hieroglyphs')
+	/ ('Meroitic' / 'meroitic') _ ('Cursive' / 'cursive')
+	/ ('Kharoshthi' / 'kharoshthi')
+	/ ('Old' / 'old') _ ('South' / 'south') _ ('Arabian' / 'arabian')
+	/ ('Old' / 'old') _ ('North' / 'north') _ ('Arabian' / 'arabian')
+	/ ('Manichaean' / 'manichaean')
+	/ ('Avestan' / 'avestan')
+	/ ('Inscriptional' / 'inscriptional') _ ('Parthian' / 'parthian')
+	/ ('Inscriptional' / 'inscriptional') _ ('Pahlavi' / 'pahlavi')
+	/ ('Psalter' / 'psalter') _ ('Pahlavi' / 'pahlavi')
+	/ ('Old' / 'old') _ ('Turkic' / 'turkic')
+	/ ('Rumi' / 'rumi') _ ('Numeral' / 'numeral') _ ('Symbols' / 'symbols')
+	/ ('Brahmi' / 'brahmi')
+	/ ('Kaithi' / 'kaithi')
+	/ ('Sora' / 'sora') _ ('Sompeng' / 'sompeng')
+	/ ('Chakma' / 'chakma')
+	/ ('Mahajani' / 'mahajani')
+	/ ('Sharada' / 'sharada')
+	/ ('Sinhala' / 'sinhala') _ ('Archaic' / 'archaic') _ ('Numbers' / 'numbers')
+	/ ('Khojki' / 'khojki')
+	/ ('Khudawadi' / 'khudawadi')
+	/ ('Grantha' / 'grantha')
+	/ ('Tirhuta' / 'tirhuta')
+	/ ('Siddham' / 'siddham')
+	/ ('Modi' / 'modi')
+	/ ('Takri' / 'takri')
+	/ ('Warang' / 'warang') _ ('Citi' / 'citi')
+	/ ('Pau' / 'pau') _ ('Cin' / 'cin') _ ('Hau' / 'hau')
+	/ ('Cuneiform' / 'cuneiform')
+	/ ('Cuneiform' / 'cuneiform') _ ('Numbers' / 'numbers') _ ('And' / 'and') _ ('Punctuation' / 'punctuation')
+	/ ('Egyptian' / 'egyptian') _ ('Hieroglyphs' / 'hieroglyphs')
+	/ ('Bamum' / 'bamum') _ ('Supplement' / 'supplement')
+	/ ('Mro' / 'mro')
+	/ ('Bassa' / 'bassa') _ ('Vah' / 'vah')
+	/ ('Pahawh' / 'pahawh') _ ('Hmong' / 'hmong')
+	/ ('Miao' / 'miao')
+	/ ('Kana' / 'kana') _ ('Supplement' / 'supplement')
+	/ ('Duployan' / 'duployan')
+	/ ('Shorthand' / 'shorthand') _ ('Format' / 'format') _ ('Controls' / 'controls')
+	/ ('Byzantine' / 'byzantine') _ ('Musical' / 'musical') _ ('Symbols' / 'symbols')
+	/ ('Musical' / 'musical') _ ('Symbols' / 'symbols')
+	/ ('Ancient' / 'ancient') _ ('Greek' / 'greek') _ ('Musical' / 'musical') _ ('Notation' / 'notation')
+	/ ('Tai' / 'tai') _ ('Xuan' / 'xuan') _ ('Jing' / 'jing') _ ('Symbols' / 'symbols')
+	/ ('Counting' / 'counting') _ ('Rod' / 'rod') _ ('Numerals' / 'numerals')
+	/ ('Mathematical' / 'mathematical') _ ('Alphanumeric' / 'alphanumeric') _ ('Symbols' / 'symbols')
+	/ ('Mende' / 'mende') _ ('Kikakui' / 'kikakui')
+	/ ('Arabic' / 'arabic') _ ('Mathematical' / 'mathematical') _ ('Alphabetic' / 'alphabetic') _ ('Symbols' / 'symbols')
+	/ ('Mahjong' / 'mahjong') _ ('Tiles' / 'tiles')
+	/ ('Domino' / 'domino') _ ('Tiles' / 'tiles')
+	/ ('Playing' / 'playing') _ ('Cards' / 'cards')
+	/ ('Enclosed' / 'enclosed') _ ('Alphanumeric' / 'alphanumeric') _ ('Supplement' / 'supplement')
+	/ ('Enclosed' / 'enclosed') _ ('Ideographic' / 'ideographic') _ ('Supplement' / 'supplement')
+	/ ('Miscellaneous' / 'miscellaneous') _ ('Symbols' / 'symbols') _ ('And' / 'and') _ ('Pictographs' / 'pictographs')
+	/ ('Emoticons' / 'emoticons')
+	/ ('Ornamental' / 'ornamental') _ ('Dingbats' / 'dingbats')
+	/ ('Transport' / 'transport') _ ('And' / 'and') _ ('Map' / 'map') _ ('Symbols' / 'symbols')
+	/ ('Alchemical' / 'alchemical') _ ('Symbols' / 'symbols')
+	/ ('Geometric' / 'geometric') _ ('Shapes' / 'shapes') _ ('Extended' / 'extended')
+	/ ('Supplemental' / 'supplemental') _ ('Arrows' / 'arrows') _ '-'? _ ('C' / 'c')
+	/ ('CJK' / 'cjk') _ ('Unified' / 'unified') _ ('Ideographs' / 'ideographs') _ ('Extension' / 'extension') _ ('B' / 'b')
+	/ ('CJK' / 'cjk') _ ('Unified' / 'unified') _ ('Ideographs' / 'ideographs') _ ('Extension' / 'extension') _ ('C' / 'c')
+	/ ('CJK' / 'cjk') _ ('Unified' / 'unified') _ ('Ideographs' / 'ideographs') _ ('Extension' / 'extension') _ ('D' / 'd')
+	/ ('CJK' / 'cjk') _ ('Compatibility' / 'compatibility') _ ('Ideographs' / 'ideographs') _ ('Supplement' / 'supplement')
+	/ ('Tags' / 'tags')
+	/ ('Variation' / 'variation') _ ('Selectors' / 'selectors') _ ('Supplement' / 'supplement')
+	/ ('Supplementary' / 'supplementary') _ ('Private' / 'private') _ ('Use' / 'use') _ ('Area' / 'area') _ '-'? _ ('A' / 'a')
+	/ ('Supplementary' / 'supplementary') _ ('Private' / 'private') _ ('Use' / 'use') _ ('Area' / 'area') _ '-'? _ ('B' / 'b')

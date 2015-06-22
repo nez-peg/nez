@@ -1,21 +1,24 @@
 /**
  * math.nez
- * basic mathematical operator 
+ * basic mathematical operator
  * author: Kimio Kuramitsu
  */
 
 File
 	= Expr .*
 
-example Expr 1
-example Expr 1+A*3
+//example Expr 1
+//example Expr 1+A*3
 
-example Expr '''
-1*2+3
-'''
+//example Expr '''
+//1*2+3
+//'''
 
 public Expr
-	= Sum
+	= S
+
+S
+   = [\t-\n\r ]
 
 Sum
 	= Product {@ ( '+' #Add / '-' #Sub ) @Product }*
