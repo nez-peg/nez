@@ -191,7 +191,7 @@ KEYWORD
     / "redo" / "for" / "in" / "begin" / "rescue"
     / "rescue" / "retry" / "ensure" / "class"
     / "module" / "def" / "alias" / "and"
-    / "defined" / "false" / "nil" / "not" 
+    / "defined" / "false" / "nil" / "not"
     / "or" / "self" / "super" / "then" / "true" / "undef"
 
 //Literal
@@ -203,9 +203,6 @@ NumericLiteral
     [example: 0x1F]
     [example: 0123]
     [example: 0.12]
-    [example: 1234]
-    = HexIntegerLiteral / BinaryIntegerLiteral
-    / FloatingPointLiteral / DecimalLiteral / OctalIntegerLiteral
 
 DecimalLiteral
     [example: 123]
@@ -799,7 +796,7 @@ FunctionCallExpression
     = <with DoEndBlock PrimaryExpression> {@ addCall }*
 
 LeftHandSideExpression
-    = <with DoEndBlock PrimaryExpression> {@ addLHSCall }+ 
+    = <with DoEndBlock PrimaryExpression> {@ addLHSCall }+
     / PrimaryLHSExpression
 
 addFuncName
@@ -852,7 +849,7 @@ AdditiveExpression
 
 addAdditiveOperator
     = "+" #Add
-    / "-" #Sub 
+    / "-" #Sub
 
 ShiftExpression
     = AdditiveExpression {@ (SPACE+ "<<" SPACE_OR_NEWLINE+ #LeftShift / "<<" __ #LeftShift / _ ">>" __ #RightShift) @AdditiveExpression }*
@@ -871,7 +868,7 @@ addRelationalOperator
     / ">=" #GreaterThanEquals
     / "<" #LessThan
     / ">" #GreaterThan
-  
+
 EqualityExpression
     [example: /hoge/ =~ str]
     = RelationalExpression {@ _ addEqualityOperator __ @RelationalExpression }*
@@ -889,7 +886,7 @@ LogicalANDExpression
 
 LogicalORExpression
     = LogicalANDExpression {@ _ "||" __ @LogicalANDExpression #Or }*
-  
+
 RangeExpression
     = {@LogicalORExpression  _ addRangeOperator __ @LogicalORExpression }
     / LogicalORExpression
@@ -918,7 +915,7 @@ addAssignmentOperator
     / "<<=" #AssignLeftShift
     / ">>=" #AssignRightShift
     / "&="  #AssignBitwiseAnd
-    / "^="  #AssignBitwiseXOr 
+    / "^="  #AssignBitwiseXOr
     / "|="  #AssignBitwiseOr
     / "&&=" #AssignAnd
     / "||=" #AssignOr
@@ -963,6 +960,7 @@ RedoExpression
 
 YieldExpression
     = { "yield" _ "(" _ @CallArgs _ ")" #Redo }
+
     / { "yield" (_ @CmdArgs)? #Redo }
 
 KeywordLogicalExpression

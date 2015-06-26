@@ -25,7 +25,7 @@
 	<target name="build">
 		<mkdir dir="${build_dir}" />
 		<javac fork="true" srcdir="${source_dir}" destdir="${build_dir}" target="1.8" source="1.8"
-			debug="yes" debuglevel="lines,vars,source" includeantruntime="false">
+			debug="yes" debuglevel="lines,vars,source" includeantruntime="false" encoding = "UTF-8">
 			<classpath path="${jline_jar}" />
 			<classpath path="${asm_jar}" />
 			<include name="**/*.java" />

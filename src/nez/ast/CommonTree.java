@@ -16,7 +16,7 @@ public class CommonTree extends AbstractList<CommonTree> implements SourcePositi
 	private long      pos;
 	private int       length;
 	private Object    value;
-	CommonTree             parent = null;
+	CommonTree     parent = null;
 	private CommonTree     subTree[] = null;
 
 	public CommonTree(Tag tag, Source source, long pos, long epos, int size, Object value) {
@@ -291,6 +291,5 @@ public class CommonTree extends AbstractList<CommonTree> implements SourcePositi
 //		}
 //		return null;
 //	}
-	
 }
 
