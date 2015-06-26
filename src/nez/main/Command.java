@@ -7,6 +7,7 @@ import java.util.TreeMap;
 import nez.util.ConsoleUtils;
 
 public abstract class Command {
+<<<<<<< HEAD
 	public final static boolean ReleasePreview = true;
 	public final static String ProgName = "Nez";
 	public final static String CodeName = "yokohama";
@@ -17,6 +18,17 @@ public abstract class Command {
 			+ "." + PatchLevel;
 	public final static String Copyright = "Copyright (c) 2014-2015, Nez project authors";
 	public final static String License = "BSD-License Open Source";
+=======
+	public final static boolean ReleasePreview = false;
+	public final static String  ProgName  = "Nez";
+	public final static String  CodeName  = "yokohama";
+	public final static int     MajorVersion = 0;
+	public final static int     MinerVersion = 9;
+	public final static int     PatchLevel   = 0;
+	public final static String  Version = "" + MajorVersion + "." + MinerVersion + "." + PatchLevel;
+	public final static String  Copyright = "Copyright (c) 2014-2015, Nez project authors";
+	public final static String  License = "BSD-License Open Source";
+>>>>>>> 286341976b0facf1463661e78df21f8afaafbc61
 
 	public final static void main(String[] args) {
 		CommandConfigure config = new CommandConfigure();
@@ -90,13 +102,14 @@ public abstract class Command {
 		load("check", "nez.main.CheckCommand");
 		load("parse", "nez.main.ParseCommand");
 		load("debug", "nez.main.DebugCommand");
-		load("type", "nez.x.TypeCommand");
-		// load("find", "nez.main.FindCommand");
+//		load("type", "nez.x.TypeCommand");
+//		load("find", "nez.main.FindCommand");
 		load("shell", "nez.main.NezInteractiveParser");
 		load("dfa", "nez.main.DfaCommand");
-		// load("dtd", "nez.x.DTDCommand");
-		// load("conv", "nez.x.ConverterCommand");
-		// load("regex", "nez.x.RegexCommand");
+//		load("dtd", "nez.x.DTDCommand");
+//		load("conv", "nez.x.ConverterCommand");
+//		load("regex", "nez.x.RegexCommand");
+		load("typecheck", "nez.checker.TypeCheckCommand");
 	}
 
 	public static final Command getCommand(String name) {
