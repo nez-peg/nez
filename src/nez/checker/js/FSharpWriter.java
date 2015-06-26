@@ -1,4 +1,8 @@
-package nez.fsharp;
+package nez.checker.js;
+
+import nez.checker.ModifiableTree;
+import nez.checker.ParsingWriter;
+import nez.checker.SourceGenerator;
 
 public class FSharpWriter extends ParsingWriter {
 	

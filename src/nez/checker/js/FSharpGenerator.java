@@ -1,6 +1,9 @@
-package nez.fsharp;
+package nez.checker.js;
 
 import java.util.ArrayList;
+
+import nez.checker.ModifiableTree;
+import nez.checker.SourceGenerator;
 
 public class FSharpGenerator extends SourceGenerator {
 
@@ -153,13 +156,16 @@ public class FSharpGenerator extends SourceGenerator {
 					node.getSource(), node.getSourcePosition(),
 					node.getSourcePosition() + node.getLength(), 2, "new");
 			ModifiableTree constructorNode = new ModifiableTree(JSTag.TAG_NAME,
-					node.getSource(), node.getSourcePosition(), 0,
+					node.getSource(), node.getSourcePosition(),
+					node.getSourcePosition() + node.getLength(), 0,
 					classScope.getScopeName());
 			ModifiableTree argsNode = new ModifiableTree(JSTag.TAG_LIST,
-					node.getSource(), node.getSourcePosition(), 0, null);
+					node.getSource(), node.getSourcePosition(),
+					node.getSourcePosition() + node.getLength(), 0, null);
 			ArrayList<String> fieldStrings = getFieldElements(node);
 			ModifiableTree callNode = new ModifiableTree(JSTag.TAG_NAME,
-					node.getSource(), node.getSourcePosition(), 0,
+					node.getSource(), node.getSourcePosition(),
+					node.getSourcePosition() + node.getLength(), 0,
 					fieldStrings.get(fieldStrings.size() - 1));
 			fixedNode.set(0, newNode);
 			fixedNode.set(1, callNode);
@@ -173,10 +179,12 @@ public class FSharpGenerator extends SourceGenerator {
 						currentScope) == null) {
 					ModifiableTree fixedNode = new ModifiableTree(
 							JSTag.TAG_APPLY, node.getSource(),
-							node.getSourcePosition(), 2, "");
+							node.getSourcePosition(), node.getSourcePosition()
+									+ node.getLength(), 2, "");
 					ModifiableTree funcNode = new ModifiableTree(
 							JSTag.TAG_NAME, node.getSource(),
-							node.getSourcePosition(), 0, fieldElements.get(i));
+							node.getSourcePosition(), node.getSourcePosition()
+									+ node.getLength(), 0, fieldElements.get(i));
 
 				}
 			}

@@ -1,10 +1,11 @@
-package nez.fsharp;
+package nez.checker;
 
 import java.io.IOException;
 
 import nez.SourceContext;
 import nez.ast.CommonTree;
 import nez.ast.CommonTreeWriter;
+import nez.checker.js.FSharpWriter;
 import nez.lang.Grammar;
 import nez.main.Command;
 import nez.main.CommandConfigure;

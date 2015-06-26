@@ -1,6 +1,7 @@
-package nez.fsharp;
+package nez.checker.js;
 
-import nez.fsharp.FSharpScope.ScopeType;
+import nez.checker.ModifiableTree;
+import nez.checker.js.FSharpScope.ScopeType;
 
 
 public class FSharpFunc {

@@ -1,4 +1,4 @@
-package nez.fsharp;
+package nez.checker;
 
 import nez.ast.ParsingFactory;
 import nez.ast.Source;

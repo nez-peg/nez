@@ -1,4 +1,4 @@
-package nez.fsharp;
+package nez.checker.js;
 
 import nez.ast.Tag;
 

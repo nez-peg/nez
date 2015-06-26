@@ -1,4 +1,4 @@
-package nez.fsharp;
+package nez.checker;
 
 public class SourceBuilder {
 	private StringBuilder builder;

@@ -1,4 +1,4 @@
-package nez.fsharp;
+package nez.checker;
 
 import java.io.IOException;
 import java.io.PrintWriter;

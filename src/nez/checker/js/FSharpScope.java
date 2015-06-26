@@ -1,8 +1,9 @@
-package nez.fsharp;
+package nez.checker.js;
 
 import java.util.ArrayList;
 
 import nez.ast.Tag;
+import nez.checker.ModifiableTree;
 
 public class FSharpScope {
 	public String name;

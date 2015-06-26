@@ -1,4 +1,4 @@
-package nez.fsharp;
+package nez.checker;
 
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -7,9 +7,11 @@ import nez.SourceContext;
 import nez.ast.Source;
 import nez.ast.SourcePosition;
 import nez.ast.Tag;
+import nez.checker.js.FSharpScope;
 import nez.util.StringUtils;
 
-public class ModifiableTree extends AbstractList<ModifiableTree> implements SourcePosition {
+public class ModifiableTree extends AbstractList<ModifiableTree> implements
+		SourcePosition {
 
 	private Source source;
 	private Tag tag;
@@ -21,21 +23,23 @@ public class ModifiableTree extends AbstractList<ModifiableTree> implements Sour
 	public FSharpScope fsClass;
 	public FSharpScope scope;
 
-	public ModifiableTree(Tag tag, Source source, long pos, long epos, int size, Object value) {
+	public ModifiableTree(Tag tag, Source source, long pos, long epos,
+			int size, Object value) {
 		this.tag = tag;
 		this.source = source;
 		this.pos = pos;
 		this.length = (int) (epos - pos);
-		if(size > 0) {
+		if (size > 0) {
 			this.subTree = new ArrayList<ModifiableTree>();
-			for(int i = 0; i < size; i++) {
+			for (int i = 0; i < size; i++) {
 				subTree.add(null);
 			}
 		}
 		this.value = value;
 	}
 
-	ModifiableTree(Tag tag, Source source, long pos, int length, int size, Object value) {
+	ModifiableTree(Tag tag, Source source, long pos, int length, int size,
+			Object value) {
 		this.tag = tag;
 		this.source = source;
 		this.pos = pos;
@@ -53,25 +57,25 @@ public class ModifiableTree extends AbstractList<ModifiableTree> implements Sour
 	}
 
 	public ModifiableTree dup() {
-		if(this.subTree != null) {
-			ModifiableTree t = new ModifiableTree(this.tag, this.source, pos, this.length,
-					this.subTree.size(), value);
-			for(int i = 0; i < subTree.size(); i++) {
-				if(this.subTree.get(i) != null) {
+		if (this.subTree != null) {
+			ModifiableTree t = new ModifiableTree(this.tag, this.source, pos,
+					this.length, this.subTree.size(), value);
+			for (int i = 0; i < subTree.size(); i++) {
+				if (this.subTree.get(i) != null) {
 					t.subTree.set(i, this.subTree.get(i).dup());
 				}
 			}
 			return t;
-		}
-		else {
-			return new ModifiableTree(this.tag, this.source, pos, this.length, value);
+		} else {
+			return new ModifiableTree(this.tag, this.source, pos, this.length,
+					value);
 		}
 	}
 
 	public int count() {
 		int c = 1;
-		for(ModifiableTree t : this) {
-			if(t != null) {
+		for (ModifiableTree t : this) {
+			if (t != null) {
 				c += t.count();
 			}
 		}
@@ -113,14 +117,15 @@ public class ModifiableTree extends AbstractList<ModifiableTree> implements Sour
 
 	@Override
 	public final String formatSourceMessage(String type, String msg) {
-		return this.source.formatPositionLine(type, this.getSourcePosition(), msg);
+		return this.source.formatPositionLine(type, this.getSourcePosition(),
+				msg);
 	}
 
 	// subTree[]
 
 	@Override
 	public final int size() {
-		if(this.subTree == null) {
+		if (this.subTree == null) {
 			return 0;
 		}
 		return this.subTree.size();
@@ -132,7 +137,7 @@ public class ModifiableTree extends AbstractList<ModifiableTree> implements Sour
 	}
 
 	public final ModifiableTree get(int index, ModifiableTree defaultValue) {
-		if(index < this.size()) {
+		if (index < this.size()) {
 			return this.subTree.get(index);
 		}
 		return defaultValue;
@@ -171,20 +176,18 @@ public class ModifiableTree extends AbstractList<ModifiableTree> implements Sour
 		sb.append("#");
 		sb.append(this.getTag().getName());
 		sb.append("[");
-		if(this.subTree == null) {
+		if (this.subTree == null) {
 			sb.append(" ");
 			StringUtils.formatQuoteString(sb, '\'', this.getText(), '\'');
 			sb.append("]");
-		}
-		else {
+		} else {
 			String nindent = "   " + indent;
-			for(int i = 0; i < this.size(); i++) {
-				if(this.subTree.get(i) == null) {
+			for (int i = 0; i < this.size(); i++) {
+				if (this.subTree.get(i) == null) {
 					sb.append("\n");
 					sb.append(nindent);
 					sb.append("null");
-				}
-				else {
+				} else {
 					this.subTree.get(i).stringfy(nindent, sb);
 				}
 			}
@@ -197,12 +200,12 @@ public class ModifiableTree extends AbstractList<ModifiableTree> implements Sour
 	//
 
 	public final String getText() {
-		if(this.value != null) {
+		if (this.value != null) {
 			return this.value.toString();
 		}
-		if(this.source != null) {
-			this.value = this.source.substring(this.getSourcePosition(), this.getSourcePosition()
-					+ this.getLength());
+		if (this.source != null) {
+			this.value = this.source.substring(this.getSourcePosition(),
+					this.getSourcePosition() + this.getLength());
 			return this.value.toString();
 		}
 		return "";
@@ -214,9 +217,9 @@ public class ModifiableTree extends AbstractList<ModifiableTree> implements Sour
 
 	public final int getIndexInParentNode() {
 		int index = -1;
-		if(this.parent != null) {
-			for(int i = 0; i < this.parent.size(); i++) {
-				if(this.parent.get(i) == this) {
+		if (this.parent != null) {
+			for (int i = 0; i < this.parent.size(); i++) {
+				if (this.parent.get(i) == this) {
 					index = i;
 				}
 			}
@@ -225,15 +228,15 @@ public class ModifiableTree extends AbstractList<ModifiableTree> implements Sour
 	}
 
 	public final String textAt(int index, String defaultValue) {
-		if(index < this.size()) {
+		if (index < this.size()) {
 			return this.get(index).getText();
 		}
 		return defaultValue;
 	}
 
 	public final boolean containsToken(String token) {
-		for(ModifiableTree sub : this) {
-			if(sub.containsToken(token)) {
+		for (ModifiableTree sub : this) {
+			if (sub.containsToken(token)) {
 				return true;
 			}
 		}
@@ -247,7 +250,8 @@ public class ModifiableTree extends AbstractList<ModifiableTree> implements Sour
 	 */
 
 	public final SourceContext newSourceContext() {
-		return SourceContext.newStringSourceContext(this.source.getResourceName(),
+		return SourceContext.newStringSourceContext(
+				this.source.getResourceName(),
 				this.source.linenum(this.getSourcePosition()), this.getText());
 	}
 

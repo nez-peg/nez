@@ -99,7 +99,7 @@ public abstract class Command {
 //		load("dtd", "nez.x.DTDCommand");
 //		load("conv", "nez.x.ConverterCommand");
 //		load("regex", "nez.x.RegexCommand");
-		load("typecheck", "nez.fsharp.TypeCheckCommand");
+		load("typecheck", "nez.checker.TypeCheckCommand");
 	}
 	
 	public static final Command getCommand(String name) {

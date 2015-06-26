@@ -1,4 +1,4 @@
-package nez.fsharp;
+package nez.checker;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
