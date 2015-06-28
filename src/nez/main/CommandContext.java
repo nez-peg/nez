@@ -18,6 +18,11 @@ import nez.util.UList;
 import nez.vm.MemoTable;
 
 class CommandContext {
+	
+	public CommandContext(String[] args) {
+		this.parseCommandOption(args);
+	}
+
 	public String commandName = "shell";
 
 	// -p konoha.nez
@@ -29,7 +34,7 @@ class CommandContext {
 	// --option
 	private NezOption option = new NezOption(); // default
 	
-	public final NezOption getGrammarOption() {
+	public final NezOption getNezOption() {
 		return this.option;
 	}
 	
@@ -162,20 +167,20 @@ class CommandContext {
 //			}
 //			else if(argument.startsWith("--enable:")) {
 //				if(argument.endsWith("packrat")) {
-//					this.GrammarOption |= nez.GrammarOption.PackratParsing;
+//					this.NezOption |= nez.NezOption.PackratParsing;
 //					defaultTable = MemoTable.newPackratHashTable(0, 0, 0);
 //				}
 //				else if(argument.endsWith(":prediction") || argument.endsWith(":predict")) {
-//					this.GrammarOption |= nez.GrammarOption.Prediction;
+//					this.NezOption |= nez.NezOption.Prediction;
 //				}
 //				else if(argument.endsWith(":tracing") || argument.endsWith(":trace")) {
-//					this.GrammarOption |= nez.GrammarOption.Tracing;
+//					this.NezOption |= nez.NezOption.Tracing;
 //				}
 //				else if(argument.endsWith(":inline")) {
-//					this.GrammarOption |= nez.GrammarOption.Inlining;
+//					this.NezOption |= nez.NezOption.Inlining;
 //				}
 //				else if(argument.endsWith(":dfa")) {
-//					this.GrammarOption |= nez.GrammarOption.DFA;
+//					this.NezOption |= nez.NezOption.DFA;
 //				}
 //				else if(argument.endsWith(":log")) {
 //					RecorderFileName = "nezrec.csv"; // -Xrec
@@ -183,19 +188,19 @@ class CommandContext {
 //			}
 //			else if(argument.startsWith("--disable:")) {
 //				if(argument.endsWith(":packrat") || argument.endsWith(":memo")) {
-//					this.GrammarOption = UFlag.unsetFlag(this.GrammarOption, nez.GrammarOption.PackratParsing);
+//					this.NezOption = UFlag.unsetFlag(this.NezOption, nez.NezOption.PackratParsing);
 //				}
 //				else if(argument.endsWith(":tracing") || argument.endsWith(":trace")) {
-//					this.GrammarOption = UFlag.unsetFlag(this.GrammarOption, nez.GrammarOption.Tracing);
+//					this.NezOption = UFlag.unsetFlag(this.NezOption, nez.NezOption.Tracing);
 //				}
 //				else if(argument.endsWith(":prediction") || argument.endsWith(":predict")) {
-//					this.GrammarOption = UFlag.unsetFlag(this.GrammarOption, nez.GrammarOption.Prediction);
+//					this.NezOption = UFlag.unsetFlag(this.NezOption, nez.NezOption.Prediction);
 //				}
 //				else if(argument.endsWith(":inline")) {
-//					this.GrammarOption = UFlag.unsetFlag(this.GrammarOption, nez.GrammarOption.Inlining);
+//					this.NezOption = UFlag.unsetFlag(this.NezOption, nez.NezOption.Inlining);
 //				}
 //				else if(argument.endsWith(":dfa")) {
-//					this.GrammarOption = UFlag.unsetFlag(this.GrammarOption, nez.GrammarOption.DFA);
+//					this.NezOption = UFlag.unsetFlag(this.NezOption, nez.NezOption.DFA);
 //				}
 //			}
 			else if(argument.startsWith("--verbose")) {
@@ -326,10 +331,11 @@ class CommandContext {
 		return this.getGrammar(this.startingProduction, option);
 	}
 
-	public final boolean hasInput() {
+	public final boolean hasInputSource() {
 		if(this.InputFileIndex == -1) {
-			this.inputText = Command.readMultiLine(">>> ", "... ");
-			return this.inputText != null;
+//			this.inputText = ConsoleUtils.readMultiLine(">>> ", "... ");
+//			return this.inputText != null;
+			return false;
 		}
 		return this.inputText != null || this.InputFileIndex < this.inputFileLists.size();
 	}
@@ -343,7 +349,7 @@ class CommandContext {
 		return this.inputFileLists;
 	}
 
-	public final SourceContext getInputSourceContext() {
+	public final SourceContext nextInputSource() {
 		if(this.inputText != null) {
 			String text = this.inputText;
 			this.inputText = null;

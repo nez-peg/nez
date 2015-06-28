@@ -9,6 +9,7 @@ import java.util.Map;
 
 import nez.NezOption;
 import nez.ParserCombinator;
+import nez.ast.CommonTree;
 import nez.ast.SourcePosition;
 import nez.main.Command;
 import nez.main.Verbose;
@@ -262,6 +263,11 @@ public class GrammarFile extends GrammarFactory {
 		return null;
 	}
 	
+	public final String formatCommonTree(CommonTree node) {
+		return Formatter.format(this, node);
+	}
+
+	
 	private UList<Example> exampleList;
 	
 	final void addExample(Example ex) {
@@ -345,7 +351,7 @@ public class GrammarFile extends GrammarFactory {
 			p.reshape(new Typestate(this));
 		}		
 		// interning
-//		if(this.option == GrammarOption.DebugOption) {
+//		if(this.option == NezOption.DebugOption) {
 //			for(Production r: grammar.getRuleList()) {
 //				GrammarFactory.setId(r.getExpression());
 //			}
@@ -380,6 +386,7 @@ public class GrammarFile extends GrammarFactory {
 			testExample(option);
 		}
 	}
+
 	
 	
 }

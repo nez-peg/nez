@@ -6,12 +6,14 @@ import nez.util.FileBuilder;
 import nez.util.StringUtils;
 
 public class CommonTreeWriter {
+	
 	public void transform(String path, CommonTree node) {
 		FileBuilder fb = new FileBuilder(path);
 		this.writeCommonTree(fb, node);
 		fb.writeNewLine();
 		fb.flush();
 	}
+	
 	private void writeCommonTree(FileBuilder fb, CommonTree node) {
 		if(node == null) {
 			fb.writeIndent("null");

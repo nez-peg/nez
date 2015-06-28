@@ -14,11 +14,11 @@ public class Lndb extends Command {
 	}
 	@Override
 	public void exec(CommandContext config) {
-		//config.setGrammarOption(GrammarOption.DebugOption);
+		//config.setNezOption(NezOption.DebugOption);
 		Command.displayVersion();
 		Grammar peg = config.getGrammar();
-		while (config.hasInput()) {
-			SourceContext file = config.getInputSourceContext();
+		while (config.hasInputSource()) {
+			SourceContext file = config.nextInputSource();
 			CommonTree node = (CommonTree) peg.parse(file);
 			if(node == null) {
 				ConsoleUtils.println(file.getSyntaxErrorMessage());

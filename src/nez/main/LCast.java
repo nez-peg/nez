@@ -9,26 +9,26 @@ import nez.util.ConsoleUtils;
 public class LCast extends Command {
 	@Override
 	public String getDesc() {
-		return "AST parser";
+		return "an AST parser";
 	}
 
 	@Override
 	public void exec(CommandContext config) {
-		Grammar p = config.getGrammar();
-		while(config.hasInput()) {
-			SourceContext file = config.getInputSourceContext();
-			CommonTree node = p.parse(file);
+		Grammar g = config.getGrammar();
+		while(config.hasInputSource()) {
+			SourceContext source = config.nextInputSource();
+			CommonTree node = g.parse(source);
 			if(node == null) {
-				ConsoleUtils.println(file.getSyntaxErrorMessage());
+				ConsoleUtils.println(source.getSyntaxErrorMessage());
 				continue;
 			}
-			if(file.hasUnconsumed()) {
-				ConsoleUtils.println(file.getUnconsumedMessage());
+			if(source.hasUnconsumed()) {
+				ConsoleUtils.println(source.getUnconsumedMessage());
 			}
-			file = null;
-			record(p.getProfiler(), node);
-			p.logProfiler();
-			new CommonTreeWriter().transform(config.getOutputFileName(file), node);
+			source = null;
+			record(g.getProfiler(), node);
+			g.logProfiler();
+			new CommonTreeWriter().transform(config.getOutputFileName(source), node);
 		}
 	}
 	

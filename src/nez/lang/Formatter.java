@@ -50,8 +50,8 @@ public abstract class Formatter {
 		return fmt != null;
 	}
 
-	public static String format(GrammarFile ns, CommonTree node) {
-		FormatStringBuilder fsb = new FormatStringBuilder(ns);
+	public static String format(GrammarFile gfile, CommonTree node) {
+		FormatStringBuilder fsb = new FormatStringBuilder(gfile);
 		format(fsb, node);
 		return fsb.toString();
 	}
@@ -65,10 +65,8 @@ public abstract class Formatter {
 			stream.write("null");
 		}
 	}
-
 	
 	public abstract void write(FormatterStream stream, CommonTree node);
-
 
 }
 

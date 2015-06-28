@@ -1,6 +1,6 @@
 //package nez.main;
 //
-//import nez.GrammarOption;
+//import nez.NezOption;
 //import nez.SourceContext;
 //import nez.ast.CommonTree;
 //import nez.lang.Grammar;
@@ -42,7 +42,7 @@
 //		config.grammarFile = outputfile;
 //		config.setInputFileList(inputFileList);
 //		rec = config.getRecorder();
-//		p = conv.grammar.newGrammar(config.StartingPoint, GrammarOption.RegexOption);
+//		p = conv.grammar.newGrammar(config.StartingPoint, NezOption.RegexOption);
 //		parse(config, rec, p, true);
 //	}
 //	

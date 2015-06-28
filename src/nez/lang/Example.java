@@ -10,6 +10,7 @@ public class Example {
 	CommonTree nameNode;
 	CommonTree textNode;
 	boolean result;
+	
 	Example(CommonTree nameNode, CommonTree textNode, boolean result) {
 		this.nameNode = nameNode;
 		this.textNode = textNode;
@@ -17,39 +18,36 @@ public class Example {
 	}
 	
 	boolean test(GrammarFile grammar, NezOption option) {
-		Grammar p = grammar.newGrammar(nameNode.getText(), option);
-		if(p == null) {
+		Grammar g = grammar.newGrammar(nameNode.getText(), option);
+		if(g == null) {
 			System.out.println(nameNode.formatSourceMessage("error", "undefined nonterminal"));
 			return false;
 		}
-		SourceContext c = textNode.newSourceContext();
+		SourceContext source = textNode.newSourceContext();
 		String name = (this.result ? "" : "!") + nameNode.getText() + 
-				" (" + textNode.getSource().getResourceName() + ":" + textNode.getSourcePosition() + ")";
-//		if(Verbose.Example) {
-//			Verbose.println("testing " + name + "...");
-//		}
-		boolean matchingResult = p.match(c);
+				" (" + textNode.getSource().getResourceName() + ":" + textNode.getSource().linenum(textNode.getSourcePosition()) + ")";
+		boolean matchingResult = g.match(source);
 		boolean unConsumed = true;
 		if(matchingResult) {
-			while(c.hasUnconsumed()) {
-				int ch = c.byteAt(c.getPosition());
+			while(source.hasUnconsumed()) {
+				int ch = source.byteAt(source.getPosition());
 				if(ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r') {
-					c.consume(1);
+					source.consume(1);
 					continue;
 				}
 				break;
 			}
-			unConsumed = c.hasUnconsumed();
+			unConsumed = source.hasUnconsumed();
 		}
 		if(result) {
 			if(!matchingResult) {
 				Verbose.println("[FAIL] " + name);
-				Verbose.println(c.getSyntaxErrorMessage());
+				Verbose.println(source.getSyntaxErrorMessage());
 				return false;
 			}
 			if(unConsumed) {
 				Verbose.println("[FAIL] " + name);
-				Verbose.println(c.getUnconsumedMessage());
+				Verbose.println(source.getUnconsumedMessage());
 				return false;
 			}
 			if(Verbose.Example) {

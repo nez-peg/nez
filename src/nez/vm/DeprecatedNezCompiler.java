@@ -4,7 +4,7 @@
 //import java.util.HashMap;
 //import java.util.Map.Entry;
 //
-//import nez.GrammarOption;
+//import nez.NezOption;
 //import nez.lang.And;
 //import nez.lang.AnyChar;
 //import nez.lang.Block;
@@ -297,7 +297,7 @@
 //				return new IOptionByteMap((ByteMap)inner, next);
 //			}
 //		}
-//		if(UFlag.is(option, GrammarOption.DFA)) {
+//		if(UFlag.is(option, NezOption.DFA)) {
 //			Verbose.printNFA(p + " " + next.e);
 //		}
 //		Instruction pop = new IFailPop(p, next);
@@ -338,7 +338,7 @@
 //				return new IRepeatedByteMap((ByteMap)inner, next);
 //			}
 //		}
-//		if(UFlag.is(option, GrammarOption.DFA)) {
+//		if(UFlag.is(option, NezOption.DFA)) {
 //			Verbose.printNFA(p + " " + next.e);
 //		}
 //		IFailSkip skip = p.possibleInfiniteLoop ? new IFailCheckSkip(p) : new IFailCheckSkip(p);
@@ -369,7 +369,7 @@
 //			}
 //			if(inn instanceof AnyChar) {
 //				Verbose.noticeOptimize("Specilization", p);
-//				return new INotAnyChar(inn, UFlag.is(this.option, GrammarOption.Binary), next);
+//				return new INotAnyChar(inn, UFlag.is(this.option, NezOption.Binary), next);
 //			}
 //			if(inn instanceof Sequence && ((Sequence)inn).isMultiChar()) {
 //				Verbose.noticeOptimize("Specilization", p);
@@ -418,7 +418,7 @@
 //			Verbose.noticeOptimize("ByteMap", p, pp);
 //			return encodeByteMap((ByteMap)pp, next, failjump);
 //		}
-//		if(UFlag.is(option, GrammarOption.Prediction) && p.predictedCase != null) {
+//		if(UFlag.is(option, NezOption.Prediction) && p.predictedCase != null) {
 //			return encodePredicatedChoice(p, next, failjump);
 //		}
 //		return this.encodeUnoptimizedChoice(p, next, failjump);

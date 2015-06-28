@@ -218,19 +218,21 @@ public abstract class SourceContext extends Context {
 //			System.out.println("url: " + url);
 //			Stream = url.openStream();
 			InputStream Stream = SourceContext.class.getResourceAsStream("/nez/lib/" + fileName);
-			BufferedReader reader = new BufferedReader(new InputStreamReader(Stream));
-			StringBuilder builder = new StringBuilder();
-			String line = reader.readLine();
-			while(true) {
-				builder.append(line);
-				line = reader.readLine();
-				if (line == null) {
-					break;
+			if(Stream != null) {
+				BufferedReader reader = new BufferedReader(new InputStreamReader(Stream));
+				StringBuilder builder = new StringBuilder();
+				String line = reader.readLine();
+				while(true) {
+					builder.append(line);
+					line = reader.readLine();
+					if (line == null) {
+						break;
+					}
+					builder.append("\n");
 				}
-				builder.append("\n");
+				reader.close();
+				return new StringContext(fileName, 1, builder.toString());
 			}
-			reader.close();
-			return new StringContext(fileName, 1, builder.toString());
 		}
 		return new FileContext(fileName);
 	}

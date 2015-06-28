@@ -7,7 +7,7 @@ import nez.NezOption;
 import nez.SourceContext;
 import nez.ast.CommonTree;
 import nez.ast.CommonTreeFactory;
-import nez.ast.ParsingFactory;
+import nez.ast.ParserConstructor;
 import nez.main.Command;
 import nez.main.NezProfier;
 import nez.main.Verbose;
@@ -110,7 +110,7 @@ public class Grammar {
 	private Instruction compiledCode = null;
 	private NezOption option;
 	
-	public final NezOption getGrammarOption() {
+	public final NezOption getNezOption() {
 		return this.option;
 	}
 
@@ -164,7 +164,7 @@ public class Grammar {
 		Instruction pc;
 		s.initJumpStack(64, getMemoTable(s));
 // REAL FIXME
-//		if(this.option == GrammarOption.DebugOption) { // FIXME
+//		if(this.option == NezOption.DebugOption) { // FIXME
 //			NezCompiler c = new NezCompiler1(this.option);
 //			pc = c.compile(this).startPoint;
 //			NezDebugger debugger = new NezDebugger(this, pc, s);
@@ -199,7 +199,7 @@ public class Grammar {
 		return false;
 	}
 
-	public Object parse(SourceContext sc, ParsingFactory treeFactory) {
+	public Object parse(SourceContext sc, ParserConstructor treeFactory) {
 		long startPosition = sc.getPosition();
 		sc.setFactory(treeFactory);
 		if(!this.match(sc)) {

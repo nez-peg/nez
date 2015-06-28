@@ -24,7 +24,7 @@ import nez.util.UMap;
 public class DfaOptimizer extends GrammarReshaper {
 
 	public static final Grammar optimize(Grammar g) {
-		GrammarFile ns = GrammarFile.newGrammarFile(g.getGrammarOption().clone());
+		GrammarFile ns = GrammarFile.newGrammarFile(g.getNezOption().clone());
 		GrammarReshaper dup = new DuplicateGrammar(ns);
 		GrammarReshaper inlining = new InliningChoice();
 		for(Production p : g.getProductionList()) {

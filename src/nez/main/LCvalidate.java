@@ -15,11 +15,11 @@ class LCvalidate extends Command {
 	@Override
 	public void exec(CommandContext config) {
 		UList<String> failedInput = new UList<String>(new String[4]);
-		config.getGrammarOption().setOption("ast", false);
+		config.getNezOption().setOption("ast", false);
 		Grammar g = config.getGrammar();
 		int totalCount = 0, failureCount = 0, unconsumedCount = 0;
-		while(config.hasInput()) {
-			SourceContext file = config.getInputSourceContext();
+		while(config.hasInputSource()) {
+			SourceContext file = config.nextInputSource();
 			totalCount++;
 			boolean result = g.match(file);
 			g.verboseMemo();

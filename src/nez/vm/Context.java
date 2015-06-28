@@ -1,6 +1,6 @@
 package nez.vm;
 
-import nez.ast.ParsingFactory;
+import nez.ast.ParserConstructor;
 import nez.ast.Source;
 import nez.ast.Tag;
 import nez.lang.NezTag;
@@ -52,13 +52,13 @@ public abstract class Context implements Source {
 
 	/* PEG4d : AST construction */
 
-	private ParsingFactory treeFactory;
+	private ParserConstructor treeFactory;
 	private Object left;
 	void setLeftObject(Object left) {
 		this.left = left;
 	}
 
-	public final void setFactory(ParsingFactory treeFactory) {
+	public final void setFactory(ParserConstructor treeFactory) {
 		this.treeFactory = treeFactory;
 	}
 	
@@ -241,6 +241,9 @@ public abstract class Context implements Source {
 		this.failStackTop = 0;
 		this.usedStackTop = 1;
 		this.memoTable = memoTable;
+		if(this.treeFactory == null) {
+			treeFactory = new NothingConstructor();
+		}
 		//Verbose.println("MemoTable: " + this.memoTable.getClass().getSimpleName());
 	}
 
@@ -824,5 +827,22 @@ class OperationLog {
 			return "["+id()+"] leftnew<pos=" + this.pos + "," + this.value + ">";
 		}
 		return "["+id()+"] nop";
+	}
+}
+
+class NothingConstructor extends ParserConstructor {
+	@Override
+	public Object newNode(Tag tag, Source s, long spos, long epos, int size, Object value) {
+		return null;
+	}
+	@Override
+	public void link(Object node, int index, Object child) {
+	}
+	@Override
+	public Object commit(Object node) {
+		return null;
+	}
+	@Override
+	public void abort(Object node) {
 	}
 }

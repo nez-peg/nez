@@ -31,9 +31,9 @@ public class LCshell extends Command {
 	@Override
 	public void exec(CommandContext config) {
 		Command.displayVersion();
-		GrammarFile ns = config.getGrammarFile(true);
-		ConsoleUtils.addCompleter(ns.getNonterminalList());
-		NezOption option = config.getGrammarOption();
+		GrammarFile gfile = config.getGrammarFile(true);
+		ConsoleUtils.addCompleter(gfile.getNonterminalList());
+		NezOption option = config.getNezOption();
 		
 		while(readLine(">>> ")) {
 			if((command != null && command.equals(""))) {
@@ -42,17 +42,17 @@ public class LCshell extends Command {
 //			System.out.println("command: " + command);
 //			System.out.println("text: " + text);
 			if(command == null) {
-				defineProduction(ns, text);
+				defineProduction(gfile, text);
 				continue;
 			}
 			if(text != null && GeneratorLoader.isSupported(command)) {
-				Grammar g = getGrammar(ns, text);
+				Grammar g = getGrammar(gfile, text);
 				if(g != null) {
 					execCommand(command, g, option);
 				}
 				continue;
 			}
-			Grammar g = getGrammar(ns, command);
+			Grammar g = getGrammar(gfile, command);
 			if(g == null) {
 				continue;
 			}
@@ -71,8 +71,8 @@ public class LCshell extends Command {
 				}
 				sc = null;
 				new CommonTreeWriter().transform(null, node);
-				if(Formatter.isSupported(ns, node)) {
-					ConsoleUtils.println("Formatted: " + Formatter.format(ns, node));
+				if(Formatter.isSupported(gfile, node)) {
+					ConsoleUtils.println("Formatted: " + Formatter.format(gfile, node));
 				}
 			}
 		}
