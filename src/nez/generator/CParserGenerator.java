@@ -54,7 +54,7 @@ public class CParserGenerator extends ParserGenerator {
 	int predictionCount = 0;
 
 	@Override
-	public void generate(Grammar grammar, int option, String fileName) {
+	public void generate(Grammar grammar, GrammarOption option, String fileName) {
 		this.setOption(option);
 		this.setOutputFile(fileName);
 		makeHeader(grammar);
@@ -135,7 +135,7 @@ public class CParserGenerator extends ParserGenerator {
 		this.closeBlock();
 		this.closeBlock();
 		this.closeBlock();
-		this.file.writeIndent("nez_log(ctx, argv[1], \"" + grammar.getProductionList().get(0).getNameSpace().getURN() + "\", "
+		this.file.writeIndent("nez_log(ctx, argv[1], \"" + grammar.getProductionList().get(0).getGrammarFile().getURN() + "\", "
 				+ grammar.getProductionList().size() + ", latency, \"" + this.getOption() + "\");");
 		this.file.writeIndent("return 0;");
 		this.file.writeIndent();

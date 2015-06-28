@@ -10,6 +10,7 @@ import java.util.Map;
 import nez.GrammarOption;
 import nez.ParserCombinator;
 import nez.ast.SourcePosition;
+import nez.main.Command;
 import nez.main.Verbose;
 import nez.peg.celery.CeleryConverter;
 import nez.peg.dtd.DTDConverter;
@@ -17,34 +18,35 @@ import nez.util.ConsoleUtils;
 import nez.util.UList;
 import nez.util.UMap;
 
-public class NameSpace extends GrammarFactory {
+public class GrammarFile extends GrammarFactory {
+	
 	private static int nsid = 0;
-	private static HashMap<String, NameSpace> nsMap = new HashMap<String, NameSpace>();
-
+	private static HashMap<String, GrammarFile> nsMap = new HashMap<String, GrammarFile>();
+	
 	public final static boolean isLoaded(String urn) {
 		return nsMap.containsKey(urn);
 	}
 
-	public static NameSpace newNameSpace() {
-		return new NameSpace(nsid++, null);
+	public static GrammarFile newGrammarFile(GrammarOption option) {
+		return new GrammarFile(nsid++, null, option);
 	}
 
-	public final static NameSpace newNameSpace(String urn) {
+	public final static GrammarFile newGrammarFile(String urn, GrammarOption option) {
 		if(urn != null && nsMap.containsKey(urn)) {
 			return nsMap.get(urn);
 		}
-		NameSpace ns = new NameSpace(nsid++, urn);
+		GrammarFile ns = new GrammarFile(nsid++, urn, option);
 		if(urn != null) {
 			nsMap.put(urn, ns);
 		}
 		return ns;
 	}
 
-	public final static NameSpace loadNezFile(String urn, GrammarChecker checker) throws IOException {
+	public final static GrammarFile loadNezFile(String urn, GrammarOption option) throws IOException {
 		if(nsMap.containsKey(urn)) {
 			return nsMap.get(urn);
 		}
-		NameSpace ns = null;
+		GrammarFile ns = null;
 		if(urn != null && !urn.endsWith(".nez")) {
 			try {
 				Class<?> c = Class.forName(urn);
@@ -58,31 +60,24 @@ public class NameSpace extends GrammarFactory {
 			}
 		}
 		if(ns == null) {
-			ns = new NameSpace(nsid++, urn);
+			ns = new GrammarFile(nsid++, urn, option);
 			NezParser parser = new NezParser();
-			parser.load(ns, urn, checker);
+			parser.load(ns, urn);
 		}
 		nsMap.put(urn, ns);
 		return ns;
 	}
-
-	public final static NameSpace loadNezFile(String urn) throws IOException {
-		return loadNezFile(urn, new GrammarChecker());
-	}
 	
-	public final static NameSpace loadGrammarFile(String urn, GrammarChecker checker) throws IOException {
+	public final static GrammarFile loadGrammarFile(String urn, GrammarOption option) throws IOException {
 		if(urn.endsWith(".dtd")) {
-			return DTDConverter.loadGrammar(urn, checker);
+			return DTDConverter.loadGrammar(urn, option);
 		}
 		if (urn.endsWith(".cl")) {
-			return CeleryConverter.loadGrammar(urn, checker);
+			return CeleryConverter.loadGrammar(urn, option);
 		}
-		return loadNezFile(urn, checker);
+		return loadNezFile(urn, option);
 	}
-
-	public final static NameSpace loadGrammarFile(String file) throws IOException {
-		return loadGrammarFile(file, new GrammarChecker());
-	}
+	
 
 	public final static String nameUniqueName(String ns, String name) {
 		return ns + ":" + name;
@@ -96,15 +91,16 @@ public class NameSpace extends GrammarFactory {
 		return "\"" + t + "\"";
 	}
 
-	// static 
+	// fields 
 	
-	final int             id;
-	final String          urn;
-	final String          ns;
-	final UMap<Production>      ruleMap;
-	final UList<String>   nameList;
+	final int               id;
+	final String            urn;
+	final String            ns;
+	final UMap<Production>  ruleMap;
+	final UList<String>     nameList;
+	final GrammarOption     option;
 
-	private NameSpace(int id, String urn) {
+	private GrammarFile(int id, String urn, GrammarOption option) {
 		this.id = id;
 		this.urn = urn;
 		String ns = "g";
@@ -118,6 +114,7 @@ public class NameSpace extends GrammarFactory {
 		this.ns = ns;
 		this.ruleMap = new UMap<Production>();
 		this.nameList = new UList<String>(new String[8]);
+		this.option = option;
 	}
 
 	public final String uniqueName(String localName) {
@@ -128,6 +125,10 @@ public class NameSpace extends GrammarFactory {
 		return this.urn;
 	}
 	
+	public final boolean isEmpty() {
+		return this.ruleMap.size() == 0;
+	}
+
 	public final boolean hasProduction(String localName) {
 		return this.ruleMap.get(localName) != null;
 	}
@@ -205,7 +206,7 @@ public class NameSpace extends GrammarFactory {
 		return ruleList;
 	}
 
-	public final Grammar newGrammar(String name, int option) {
+	public final Grammar newGrammar(String name, GrammarOption option) {
 		Production r = this.getProduction(name);
 		if(r != null) {
 			return new Grammar(r, option);
@@ -215,7 +216,7 @@ public class NameSpace extends GrammarFactory {
 	}
 
 	public final Grammar newGrammar(String name) {
-		return this.newGrammar(name, GrammarOption.DefaultOption);
+		return this.newGrammar(name, GrammarOption.newDefault());
 	}
 
 	public void dump() {
@@ -270,7 +271,7 @@ public class NameSpace extends GrammarFactory {
 		exampleList.add(ex);
 	}
 	
-	final void testExample(int option) {
+	final void testExample(GrammarOption option) {
 		if(exampleList != null) {
 			long t1 = System.nanoTime();
 			for(Example ex : exampleList) {
@@ -285,7 +286,7 @@ public class NameSpace extends GrammarFactory {
 
 	// Grammar
 
-	protected NameSpace getNameSpace() {
+	protected GrammarFile getGrammarFile() {
 		return this;
 	}
 
@@ -299,23 +300,86 @@ public class NameSpace extends GrammarFactory {
 	boolean strictMode = true;
 	
 	public final void reportError(Expression p, String message) {
-		if(p.s != null) {
-			ConsoleUtils.println(p.s.formatSourceMessage("error", message));
+		this.reportError(p.getSourcePosition(), message);
+	}
+
+	public final void reportError(SourcePosition s, String message) {
+		if(s != null) {
+			ConsoleUtils.println(s.formatSourceMessage("error", message));
 		}
 	}
 
 	public final void reportWarning(Expression p, String message) {
-		if(p.s != null) {
-			ConsoleUtils.println(p.s.formatSourceMessage("warning", message));
+		this.reportWarning(p.getSourcePosition(), message);
+	}
+
+	public final void reportWarning(SourcePosition s, String message) {
+		if(s != null) {
+			ConsoleUtils.println(s.formatSourceMessage("warning", message));
 		}
 	}
 
 	public final void reportNotice(Expression p, String message) {
+		this.reportNotice(p.getSourcePosition(), message);
+	}
+
+	public final void reportNotice(SourcePosition s, String message) {
 		if(this.strictMode) {
-			if(p.s != null) {
-				ConsoleUtils.println(p.s.formatSourceMessage("notice", message));
+			if(s != null) {
+				ConsoleUtils.println(s.formatSourceMessage("notice", message));
 			}
 		}
 	}
 
+	public void verify() {
+		NameAnalysis nameAnalyzer = new NameAnalysis();
+		nameAnalyzer.analyze(this.getDefinedRuleList());
+//		if(this.foundError) {
+//			ConsoleUtils.exit(1, "FatalGrammarError");
+//		}
+		// type check
+		for(Production p: this.getRuleList()) {
+			if(p.isTerminal()) {
+				continue;
+			}
+			p.reshape(new Typestate(this));
+		}		
+		// interning
+//		if(this.option == GrammarOption.DebugOption) {
+//			for(Production r: grammar.getRuleList()) {
+//				GrammarFactory.setId(r.getExpression());
+//			}
+//		}
+//		else {
+		for(Production r: this.getRuleList()) {
+			if(r.isTerminal()) {
+				continue;
+			}
+			if(Verbose.Grammar) {
+				r.dump();
+			}
+			if(Command.ReleasePreview) {
+				boolean r1 = r.isConditional();
+				boolean r2 = r.testCondition(r.getExpression(), null);
+				if(r1 != r2) {
+					Verbose.FIXME("mismatch condition: " + r.getLocalName() + " " + r1 + " " + r2);
+				}
+			}
+			if(Command.ReleasePreview) {
+				boolean r1 = r.isContextual();
+				boolean r2 = r.testContextSensitive(r.getExpression(), null);
+				if(r1 != r2) {
+					Verbose.FIXME("mismatch contextual: " + r.getLocalName() + " " + r1 + " " + r2);
+				}
+			}
+			if(option.enabledInterning) {
+				r.internRule();
+			}
+		}
+		if(option.enabledExampleVerification) {
+			testExample(option);
+		}
+	}
+	
+	
 }

@@ -10,52 +10,45 @@ import nez.lang.Expression;
 import nez.lang.GrammarFactory;
 import nez.lang.Grammar;
 import nez.lang.GrammarChecker;
-import nez.lang.NameSpace;
+import nez.lang.GrammarFile;
 import nez.main.Verbose;
 import nez.util.UList;
 
 public class ParserCombinator {
 
-	protected NameSpace ns = null;
+	protected GrammarFile gfile = null;
 		
-	public final NameSpace load(GrammarChecker checker) {
-		if(this.ns == null) {
+	public final GrammarFile load() {
+		if(this.gfile == null) {
 			Class<?> c = this.getClass();
-			this.ns = NameSpace.newNameSpace(c.getName());
-			for(Method m : c.getDeclaredMethods()) {
-				if(m.getReturnType() == Expression.class && m.getParameterTypes().length == 0) {
-					String name = m.getName();
-					if(name.startsWith("p")) {
-						name = name.substring(1);
-					}
-//					if(name.equals("SPACING")) {
-//						name = "_";
-//					}
-					try {
-						Expression e = (Expression)m.invoke(this);
-						ns.defineProduction(e.getSourcePosition(), name, e);
-					} catch (IllegalAccessException e1) {
-						Verbose.traceException(e1);
-					} catch (IllegalArgumentException e1) {
-						Verbose.traceException(e1);
-					} catch (InvocationTargetException e1) {
-						Verbose.traceException(e1);
+			gfile = GrammarFile.newGrammarFile(c.getName(), GrammarOption.newDefault());
+			if(gfile.isEmpty()) {
+				for(Method m : c.getDeclaredMethods()) {
+					if(m.getReturnType() == Expression.class && m.getParameterTypes().length == 0) {
+						String name = m.getName();
+						if(name.startsWith("p")) {
+							name = name.substring(1);
+						}
+						try {
+							Expression e = (Expression)m.invoke(this);
+							gfile.defineProduction(e.getSourcePosition(), name, e);
+						} catch (IllegalAccessException e1) {
+							Verbose.traceException(e1);
+						} catch (IllegalArgumentException e1) {
+							Verbose.traceException(e1);
+						} catch (InvocationTargetException e1) {
+							Verbose.traceException(e1);
+						}
 					}
 				}
-			}
-			if(checker != null) {
-				checker.verify(ns);
+				gfile.verify();
 			}
 		}
-		return ns;
-	}
-
-	public final NameSpace load() {
-		return this.load(new GrammarChecker());
+		return gfile;
 	}
 
 	public final Grammar newGrammar(String name) {
-		return this.load(new GrammarChecker()).newGrammar(name);
+		return this.load().newGrammar(name);
 	}
 
 	private SourcePosition src() {
@@ -82,7 +75,7 @@ public class ParserCombinator {
 	}
 	
 	protected final Expression P(String name) {
-		return GrammarFactory.newNonTerminal(src(), this.ns, name);
+		return GrammarFactory.newNonTerminal(src(), this.gfile, name);
 	}
 
 	protected final Expression t(char c) {
@@ -228,7 +221,5 @@ public class ParserCombinator {
 	protected final Expression Replace(String value) {
 		return GrammarFactory.newReplace(src(), value);
 	}
-
-	
 	
 }

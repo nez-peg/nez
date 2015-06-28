@@ -21,16 +21,16 @@ public class NezCompiler2 extends NezCompiler1 {
 
 //	HashMap<Integer, MemoPoint> memoMap;
 
-	public NezCompiler2(int option) {
+	public NezCompiler2(GrammarOption option) {
 		super(option);
 	}
 
-	protected Expression optimizeLocalProduction(Production p) {
-		return new GrammarOptimizer(this.option).optimize(p);
-	}
+//	protected Expression optimizeLocalProduction(Production p) {
+//		return new GrammarOptimizer(this.option).optimize(p);
+//	}
 
 	protected Instruction encodeMemoizingProduction(CodePoint code) {
-		if(UFlag.is(this.option, GrammarOption.PackratParsing)) {
+		if(this.option.enabledMemoization) {
 			Production p = code.production;
 			boolean state = p.isContextual();
 			Instruction next = new IMemoize(p, code.memoPoint, !p.isNoNTreeConstruction(), state, new IMemoRet(p, null));
@@ -41,7 +41,7 @@ public class NezCompiler2 extends NezCompiler1 {
 	}
 
 	public final Instruction encodeOption(Option p, Instruction next) {
-		if(UFlag.is(option, GrammarOption.Specialization)) {
+		if(option.enabledUnaryOptimization) {
 			Expression inner = p.get(0);
 			if(inner instanceof ByteChar) {
 				this.optimizedUnary(p);
@@ -56,7 +56,7 @@ public class NezCompiler2 extends NezCompiler1 {
 	}
 
 	public final Instruction encodeRepetition(Repetition p, Instruction next) {
-		if(UFlag.is(option, GrammarOption.Specialization)) {
+		if(option.enabledUnaryOptimization) {
 			Expression inner = p.get(0);
 			if(inner instanceof ByteChar) {
 				this.optimizedUnary(p);
@@ -71,7 +71,7 @@ public class NezCompiler2 extends NezCompiler1 {
 	}
 
 	public final Instruction encodeNot(Not p, Instruction next, Instruction failjump) {
-		if(UFlag.is(option, GrammarOption.Specialization)) {
+		if(option.enabledUnaryOptimization) {
 			Expression inn = p.get(0);
 			if(inn instanceof ByteMap) {
 				this.optimizedUnary(p);
@@ -83,7 +83,7 @@ public class NezCompiler2 extends NezCompiler1 {
 			}
 			if(inn instanceof AnyChar) {
 				this.optimizedUnary(p);
-				return new INotAnyChar(inn, UFlag.is(this.option, GrammarOption.Binary), next);
+				return new INotAnyChar(inn, ((AnyChar) inn).isBinary(), next);
 			}
 			if(inn instanceof Sequence && ((Sequence) inn).isMultiChar()) {
 				this.optimizedUnary(p);
@@ -126,7 +126,7 @@ public class NezCompiler2 extends NezCompiler1 {
 //	}
 
 	public final Instruction encodeChoice(Choice p, Instruction next, Instruction failjump) {
-		if(UFlag.is(option, GrammarOption.Prediction) && p.predictedCase != null) {
+		if(option.enabledPrediction && p.predictedCase != null) {
 			return encodePredicatedChoice(p, next, failjump);
 		}
 		return this.encodeUnoptimizedChoice(p, next, failjump);

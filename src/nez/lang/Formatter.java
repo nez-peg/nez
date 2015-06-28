@@ -45,12 +45,12 @@ public abstract class Formatter {
 		return (index < 0) ? size + index + 1: index;
 	}
 	
-	public static boolean isSupported(NameSpace ns, CommonTree node) {
+	public static boolean isSupported(GrammarFile ns, CommonTree node) {
 		Formatter fmt = ns.getFormatter(node.getTag().getName(), node.size());
 		return fmt != null;
 	}
 
-	public static String format(NameSpace ns, CommonTree node) {
+	public static String format(GrammarFile ns, CommonTree node) {
 		FormatStringBuilder fsb = new FormatStringBuilder(ns);
 		format(fsb, node);
 		return fsb.toString();
@@ -136,10 +136,10 @@ interface FormatterStream {
 }
 
 class FormatStringBuilder implements FormatterStream {
-	final NameSpace ns;
+	final GrammarFile ns;
 	StringBuilder sb = new StringBuilder();
 	int indent = 0;
-	FormatStringBuilder(NameSpace ns) {
+	FormatStringBuilder(GrammarFile ns) {
 		this.ns = ns;
 	}
 	

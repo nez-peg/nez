@@ -32,7 +32,7 @@ public class NameAnalysis extends GrammarReshaper {
 		if(e instanceof NonTerminal) {
 			Production p = ((NonTerminal) e).getProduction();
 			if(s.isVisited(p)) {
-				((NonTerminal) e).getNameSpace().reportError(e, "left recursion: " + p.getLocalName());
+				((NonTerminal) e).getGrammarFile().reportError(e, "left recursion: " + p.getLocalName());
 				return true;  // stop as consumed
 			}
 			return checkLeftRecursion(p.getExpression(), new ProductionStacker(p, s));
@@ -75,13 +75,13 @@ public class NameAnalysis extends GrammarReshaper {
 	}
 	
 	public Expression reshapeNonTerminal(NonTerminal n) {
-		Production p = n.getNameSpace().getProduction(n.getLocalName());
+		Production p = n.getGrammarFile().getProduction(n.getLocalName());
 		if(p == null) {
 			if(n.isTerminal()) {
-				n.getNameSpace().reportNotice(n, "undefined terminal: " + n.getLocalName());
+				n.getGrammarFile().reportNotice(n, "undefined terminal: " + n.getLocalName());
 				return GrammarFactory.newString(n.s, StringUtils.unquoteString(n.getLocalName()));
 			}
-			n.getNameSpace().reportWarning(n, "undefined production: " + n.getLocalName());
+			n.getGrammarFile().reportWarning(n, "undefined production: " + n.getLocalName());
 			return n.newEmpty();
 		}
 		if(n.isTerminal()) {

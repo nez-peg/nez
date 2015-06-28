@@ -1,20 +1,21 @@
 package nez.lang;
 
+import nez.GrammarOption;
 import nez.ParserCombinator;
 
 public class NezCombinator extends ParserCombinator {
 
-	private static NameSpace ns = null;
+	private static GrammarFile ns = null;
 	
-	public final static NameSpace newNameSpace() {
+	public final static GrammarFile newGrammarFile() {
 		if(ns == null) {
 			ns = new NezCombinator().load();
 		}
 		return ns;
 	}
 	
-	public final static Grammar newGrammar(String name, int option) {
-		return newNameSpace().newGrammar(name, option);
+	public final static Grammar newGrammar(String name, GrammarOption option) {
+		return newGrammarFile().newGrammar(name, option);
 	}
 	
 	public Expression EOT() {

@@ -9,7 +9,7 @@ import nez.ast.CommonTree;
 import nez.ast.CommonTreeFactory;
 import nez.ast.ParsingFactory;
 import nez.main.Command;
-import nez.main.Recorder;
+import nez.main.NezProfier;
 import nez.main.Verbose;
 import nez.util.ConsoleUtils;
 import nez.util.UFlag;
@@ -30,11 +30,12 @@ public class Grammar {
 	UMap<Production>           productionMap;
 	TreeMap<String, Boolean>   conditionMap;
 	
-	Grammar(Production start, int option) {
+	Grammar(Production start, GrammarOption option) {
 		this.start = start;
 		this.productionList = new UList<Production>(new Production[4]);
 		this.productionMap = new UMap<Production>();
 		this.setOption(option);
+		
 		conditionMap = start.isConditional() ? new TreeMap<String, Boolean>() : null; 
 		analyze(start, conditionMap);
 		if(conditionMap != null) {
@@ -45,8 +46,8 @@ public class Grammar {
 			this.productionMap = new UMap<Production>();
 			analyze(this.start, conditionMap);
 		}
-	}
-
+	}	
+	
 	public final Production getStartProduction() {
 		return this.start;
 	}
@@ -77,30 +78,45 @@ public class Grammar {
 		}
 	}
 	
+	/* --------------------------------------------------------------------- */
+	/* profiler */
+
+	private NezProfier prof = null;
 	
+	public void setProfiler(NezProfier prof) {
+		this.prof = prof;
+		if(prof != null) {
+			this.compile();
+			prof.setFile("G.File", this.start.getGrammarFile().getURN());
+			prof.setCount("G.Production", this.productionMap.size());
+			prof.setCount("G.Instruction", this.InstructionSize);
+			prof.setCount("G.MemoPoint", this.memoPointSize);
+		}
+	}
+
+	public NezProfier getProfiler() {
+		return this.prof;
+	}
+
+	public void logProfiler() {
+		if(prof != null) {
+			prof.log();
+		}
+	}
 
 	/* --------------------------------------------------------------------- */
 	/* memoization configuration */
 	
 	private Instruction compiledCode = null;
-	private int option;
+	private GrammarOption option;
 	
-	private void setOption (int option) {
-		if(this.option != option) {
-			this.compiledCode = null; // recompile
-		}
-		if(UFlag.is(option, GrammarOption.PackratParsing) && this.defaultMemoTable == null) {
-			this.defaultMemoTable = MemoTable.newElasticTable(0, 0, 0);
-		}
+	public final GrammarOption getGrammarOption() {
+		return this.option;
+	}
+
+	private void setOption (GrammarOption option) {
 		this.option = option;
-	}
-
-	public final void enable(int option) {
-		setOption(this.option | option);
-	}
-
-	public final void disable(int option) {
-		setOption(UFlag.unsetFlag(this.option, option));
+		this.compiledCode = null;
 	}
 
 	private MemoTable defaultMemoTable;
@@ -147,13 +163,17 @@ public class Grammar {
 		boolean matched;
 		Instruction pc;
 		s.initJumpStack(64, getMemoTable(s));
-		if(this.option == GrammarOption.DebugOption) { // FIXME
-			NezCompiler c = new NezCompiler1(this.option);
-			pc = c.compile(this).startPoint;
-			NezDebugger debugger = new NezDebugger(this, pc, s);
-			matched = debugger.exec();
-		}
+// REAL FIXME
+//		if(this.option == GrammarOption.DebugOption) { // FIXME
+//			NezCompiler c = new NezCompiler1(this.option);
+//			pc = c.compile(this).startPoint;
+//			NezDebugger debugger = new NezDebugger(this, pc, s);
+//			matched = debugger.exec();
+//		}
 		pc = this.compile();
+		if(prof != null) {
+			s.startProfiling(prof);
+		}
 		if(Verbose.Debug) {
 			matched = Machine.debug(pc, s);
 		}
@@ -162,6 +182,9 @@ public class Grammar {
 		}
 		if(matched) {
 			s.newTopLevelNode();
+		}
+		if(prof != null) {
+			s.doneProfiling(prof);
 		}
 		return matched;
 	}
@@ -201,17 +224,6 @@ public class Grammar {
 		return (CommonTree)this.parse(sc, new CommonTreeFactory());
 	}
 
-	public final void record(Recorder rec) {
-		if(rec != null) {
-			this.enable(GrammarOption.Profiling);
-			this.compile();
-			rec.setFile("G.File", this.start.getNameSpace().getURN());
-			rec.setCount("G.NonTerminals", this.productionMap.size());
-			rec.setCount("G.Instruction", this.InstructionSize);
-			rec.setCount("G.MemoPoint", this.memoPointSize);
-		}
-	}
-
 	public final void verboseMemo() {
 		if(Verbose.PackratParsing && this.memoPointList != null) {
 			ConsoleUtils.println("ID\tPEG\tCount\tHit\tFail\tMean");
@@ -222,64 +234,6 @@ public class Grammar {
 			ConsoleUtils.println("");
 		}
 	}
-	
-	/* --------------------------------------------------------------------- */
-	/* Grammar Option */
-	
-	public final static int mask(int m) {
-		return GrammarOption.Binary & m;
-	}
-	
-	public final static String stringfyOption(int option, String delim) {
-		StringBuilder sb = new StringBuilder();
-		if(UFlag.is(option, GrammarOption.ClassicMode)) {
-			sb.append(delim);
-			sb.append("classic");
-		}
-		if(UFlag.is(option, GrammarOption.ASTConstruction)) {
-			sb.append(delim);
-			sb.append("ast");
-		}
-		if(UFlag.is(option, GrammarOption.PackratParsing)) {
-			sb.append(delim);
-			sb.append("memo");
-		}
-		if(UFlag.is(option, GrammarOption.Optimization)) {
-			sb.append(delim);
-			sb.append("opt.");
-		}
-		if(UFlag.is(option, GrammarOption.Specialization)) {
-			sb.append(delim);
-			sb.append("spe.");
-		}
-		if(UFlag.is(option, GrammarOption.CommonPrefix)) {
-			sb.append(delim);
-			sb.append("com.");
-		}
-		if(UFlag.is(option, GrammarOption.Inlining)) {
-			sb.append(delim);
-			sb.append("inline");
-		}
-		if(UFlag.is(option, GrammarOption.Prediction)) {
-			sb.append(delim);
-			sb.append("pdt.");
-		}
-		if(UFlag.is(option, GrammarOption.Tracing)) {
-			sb.append(delim);
-			sb.append("tracing");
-		}
-		if(UFlag.is(option, GrammarOption.DFA)) {
-			sb.append(delim);
-			sb.append("dfa");
-		}
-		if(UFlag.is(option, GrammarOption.Profiling)) {
-			sb.append(delim);
-			sb.append("prof");
-		}
-		String s = sb.toString();
-		if(s.length() > 0) {
-			return s.substring(delim.length());
-		}
-		return s;
-	}
+
+
 }

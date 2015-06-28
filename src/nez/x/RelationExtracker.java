@@ -6,7 +6,7 @@ import java.util.Arrays;
 import nez.ast.Source;
 import nez.ast.SourcePosition;
 import nez.ast.Tag;
-import nez.main.Recorder;
+import nez.main.NezProfier;
 import nez.util.FileBuilder;
 import nez.util.StringUtils;
 import nez.util.UList;
@@ -244,7 +244,7 @@ public class RelationExtracker {
 		return true;
 	}
 
-	public void record(Recorder rec) {
+	public void record(NezProfier rec) {
 		// TODO Auto-generated method stub
 	}
 

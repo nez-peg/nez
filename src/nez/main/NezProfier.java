@@ -11,9 +11,9 @@ import nez.util.ConsoleUtils;
 import nez.util.UList;
 import nez.util.UMap;
 
-public class Recorder {
+public class NezProfier {
 	final String logFile;
-	Recorder(String logFile) {
+	NezProfier(String logFile) {
 		this.logFile = logFile;
 	}
 	
@@ -104,21 +104,21 @@ public class Recorder {
 		}
 	}
 	
-	public final static void recordLatencyMS(Recorder rec, String key, long nanoT1, long nanoT2) {
+	public final static void recordLatencyMS(NezProfier rec, String key, long nanoT1, long nanoT2) {
 		if(rec != null) {
 			long t = (nanoT2 - nanoT1) / 1000; // [micro second]
 			rec.setDouble(key + "[ms]", t / 1000.0);
 		}
 	}
 
-	public final static void recordLatencyS(Recorder rec, String key, long nanoT1, long nanoT2) {
+	public final static void recordLatencyS(NezProfier rec, String key, long nanoT1, long nanoT2) {
 		if(rec != null) {
 			long t = (nanoT2 - nanoT1) / 1000; // [micro second]
 			rec.setDouble(key + "[s]", t / 10000000.0);
 		}
 	}
 
-	public final static void recordThroughputKPS(Recorder rec, String key, long length, long nanoT1, long nanoT2) {
+	public final static void recordThroughputKPS(NezProfier rec, String key, long length, long nanoT1, long nanoT2) {
 		if(rec != null) {
 			long micro = (nanoT2 - nanoT1) / 1000; // [micro second]
 			double sec = micro / 1000000.0;

@@ -7,16 +7,16 @@ import nez.util.UList;
 
 public abstract class NezCompiler extends NezEncoder {
 
-	public NezCompiler(int option) {
+	public NezCompiler(GrammarOption option) {
 		super(option);
 	}
 
 	protected final boolean enablePackratParsing() {
-		return UFlag.is(this.option, GrammarOption.PackratParsing);
+		return this.option.enabledMemoization;
 	}
 
 	protected final boolean enableASTConstruction() {
-		return UFlag.is(this.option, GrammarOption.ASTConstruction);
+		return this.option.enabledASTConstruction;
 	}
 	
 	public abstract NezCode compile(Grammar grammar);

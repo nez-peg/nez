@@ -34,12 +34,12 @@ public class Production extends Expression {
 	public final static int ResetFlag                  = 1 << 30;
 
 	int        flag;
-	NameSpace  ns;
+	GrammarFile  ns;
 	String     name;
 	String     uname;
 	Expression body;
 		
-	public Production(SourcePosition s, int flag, NameSpace ns, String name, Expression body) {
+	public Production(SourcePosition s, int flag, GrammarFile ns, String name, Expression body) {
 		super(s);
 		this.ns = ns;
 		this.name = name;
@@ -51,7 +51,7 @@ public class Production extends Expression {
 
 	private Production(String name, Production original, Expression body) {
 		super(original.s);
-		this.ns = original.getNameSpace();
+		this.ns = original.getGrammarFile();
 		this.name = name;
 		this.uname = ns.uniqueName(name);
 		this.body = (body == null) ? GrammarFactory.newEmpty(s) : body;
@@ -207,7 +207,7 @@ public class Production extends Expression {
 		return false;
 	}
 
-	public final NameSpace getNameSpace() {
+	public final GrammarFile getGrammarFile() {
 		return this.ns;
 	}
 	

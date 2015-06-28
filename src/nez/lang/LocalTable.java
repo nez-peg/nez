@@ -8,9 +8,9 @@ import nez.vm.NezEncoder;
 
 public class LocalTable extends Unary {
 	public final Tag tableName;
-	public final NameSpace ns;
+	public final GrammarFile ns;
 	
-	LocalTable(SourcePosition s, NameSpace ns, Tag table, Expression inner) {
+	LocalTable(SourcePosition s, GrammarFile ns, Tag table, Expression inner) {
 		super(s, inner);
 		this.ns = ns;
 		this.tableName = table;
@@ -27,7 +27,7 @@ public class LocalTable extends Unary {
 		return false;
 	}
 
-	public final NameSpace getNameSpace() {
+	public final GrammarFile getGrammarFile() {
 		return ns;
 	}
 	

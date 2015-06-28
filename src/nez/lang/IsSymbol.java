@@ -8,9 +8,9 @@ import nez.vm.NezEncoder;
 
 public class IsSymbol extends Terminal implements Contextual {
 	public final Tag tableName;
-	final NameSpace ns;
+	final GrammarFile ns;
 	public final boolean checkLastSymbolOnly;
-	IsSymbol(SourcePosition s, NameSpace ns, Tag tableName, boolean checkLastSymbolOnly) {
+	IsSymbol(SourcePosition s, GrammarFile ns, Tag tableName, boolean checkLastSymbolOnly) {
 		super(s);
 		this.ns = ns;
 		this.tableName = tableName;
@@ -25,7 +25,7 @@ public class IsSymbol extends Terminal implements Contextual {
 		return false;
 	}
 
-	public final NameSpace getNameSpace() {
+	public final GrammarFile getGrammarFile() {
 		return ns;
 	}
 

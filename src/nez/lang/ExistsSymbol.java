@@ -8,8 +8,8 @@ import nez.vm.NezEncoder;
 
 public class ExistsSymbol extends Expression implements Contextual {
 	public final Tag tableName;
-	final NameSpace ns;
-	ExistsSymbol(SourcePosition s, NameSpace ns, Tag tableName) {
+	final GrammarFile ns;
+	ExistsSymbol(SourcePosition s, GrammarFile ns, Tag tableName) {
 		super(s);
 		this.ns = ns;
 		this.tableName = tableName;
@@ -23,7 +23,7 @@ public class ExistsSymbol extends Expression implements Contextual {
 		return false;
 	}
 	
-	public final NameSpace getNameSpace() {
+	public final GrammarFile getGrammarFile() {
 		return ns;
 	}
 

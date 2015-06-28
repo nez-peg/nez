@@ -38,7 +38,7 @@ public class NezCompiler1 extends NezCompiler {
 
 	protected final Instruction commonFailure = new IFail(null);
 
-	public NezCompiler1(int option) {
+	public NezCompiler1(GrammarOption option) {
 		super(option);
 	}
 
@@ -181,35 +181,35 @@ public class NezCompiler1 extends NezCompiler {
 	// AST Construction
 
 	public Instruction encodeLink(Link p, Instruction next, Instruction failjump) {
-		if(UFlag.is(this.option, GrammarOption.ASTConstruction)) {
+		if(this.option.enabledASTConstruction) {
 			return new INodePush(p, encodeExpression(p.get(0), new INodeStore(p, next), failjump));
 		}
 		return encodeExpression(p.get(0), next, failjump);
 	}
 
 	public Instruction encodeNew(New p, Instruction next) {
-		if(UFlag.is(this.option, GrammarOption.ASTConstruction)) {
+		if(this.option.enabledASTConstruction) {
 			return p.lefted ? new ILeftNew(p, next) : new INew(p, next);
 		}
 		return next;
 	}
 
 	public Instruction encodeCapture(Capture p, Instruction next) {
-		if(UFlag.is(this.option, GrammarOption.ASTConstruction)) {
+		if(this.option.enabledASTConstruction) {
 			return new ICapture(p, next);
 		}
 		return next;
 	}
 
 	public Instruction encodeTagging(Tagging p, Instruction next) {
-		if(UFlag.is(this.option, GrammarOption.ASTConstruction)) {
+		if(this.option.enabledASTConstruction) {
 			return new ITag(p, next);
 		}
 		return next;
 	}
 
 	public Instruction encodeReplace(Replace p, Instruction next) {
-		if(UFlag.is(this.option, GrammarOption.ASTConstruction)) {
+		if(this.option.enabledASTConstruction) {
 			return new IReplace(p, next);
 		}
 		return next;

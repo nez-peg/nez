@@ -2,12 +2,12 @@ package nez.peg.dtd;
 
 import nez.lang.Expression;
 import nez.lang.GrammarFactory;
-import nez.lang.NameSpace;
+import nez.lang.GrammarFile;
 
 public class PredefinedRules {
-	NameSpace grammar;
+	GrammarFile grammar;
 	String rootElement;
-	public PredefinedRules(NameSpace grammar, String rootElement) {
+	public PredefinedRules(GrammarFile grammar, String rootElement) {
 		this.grammar = grammar;
 		this.rootElement = rootElement;
 	}

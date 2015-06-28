@@ -19,13 +19,13 @@ public abstract class Command {
 	public final static String  License = "BSD-License Open Source";
 
 	public final static void main(String[] args) {
-		CommandConfigure config = new CommandConfigure();
+		CommandContext config = new CommandContext();
 		config.parseCommandOption(args);
 		Command com = config.getCommand();
 		com.exec(config);
 	}
 
-	public abstract void exec(CommandConfigure config);
+	public abstract void exec(CommandContext config);
 	
 	public final static void displayVersion() {
 		ConsoleUtils.println(ProgName + "-" + Version + " (" + CodeName + ") on Java JVM-" + System.getProperty("java.version"));
@@ -74,43 +74,43 @@ public abstract class Command {
 		}
 	}
 
-	// command database 
-	
-	private static TreeMap<String,Command> commandTable = new TreeMap<String,Command>();
-
-	public static void load(String name, String className) {
-		try {
-			Class<?> c = Class.forName(className);
-			commandTable.put(name, (Command)c.newInstance());
-		}
-		catch(Exception e) {
-			Verbose.println("undefined command: " + name + " due to " + e);
-		}
-	}
-
-	static {
-		load("check", "nez.main.CheckCommand");
-		load("parse", "nez.main.ParseCommand");
-		load("debug", "nez.main.DebugCommand");
-		load("type", "nez.x.TypeCommand");
-//		load("find", "nez.main.FindCommand");
-		load("shell", "nez.main.NezInteractiveParser");
-		load("dfa", "nez.main.DfaCommand");
-//		load("dtd", "nez.x.DTDCommand");
-//		load("conv", "nez.x.ConverterCommand");
-//		load("regex", "nez.x.RegexCommand");
-	}
-	
-	public static final Command getCommand(String name) {
-		return commandTable.get(name);
-	}
-
-	public static void showList() {
-		for(Entry<String,Command> e : commandTable.entrySet()) {
-			Command c = e.getValue();
-			ConsoleUtils.println(String.format("  %8s - %s", e.getKey(), c.getDesc()));
-		}
-	}
+//	// command database 
+//	
+//	private static TreeMap<String,Command> commandTable = new TreeMap<String,Command>();
+//
+//	public static void load(String name, String className) {
+//		try {
+//			Class<?> c = Class.forName(className);
+//			commandTable.put(name, (Command)c.newInstance());
+//		}
+//		catch(Exception e) {
+//			Verbose.println("undefined command: " + name + " due to " + e);
+//		}
+//	}
+//
+//	static {
+//		load("check", "nez.main.CheckCommand");
+//		load("parse", "nez.main.ParseCommand");
+//		load("debug", "nez.main.DebugCommand");
+//		load("type", "nez.x.TypeCommand");
+////		load("find", "nez.main.FindCommand");
+//		load("shell", "nez.main.NezInteractiveParser");
+//		load("dfa", "nez.main.DfaCommand");
+////		load("dtd", "nez.x.DTDCommand");
+////		load("conv", "nez.x.ConverterCommand");
+////		load("regex", "nez.x.RegexCommand");
+//	}
+//	
+//	public static final Command getCommand(String name) {
+//		return commandTable.get(name);
+//	}
+//
+//	public static void showList() {
+//		for(Entry<String,Command> e : commandTable.entrySet()) {
+//			Command c = e.getValue();
+//			ConsoleUtils.println(String.format("  %8s - %s", e.getKey(), c.getDesc()));
+//		}
+//	}
 
 	public abstract String getDesc();
 

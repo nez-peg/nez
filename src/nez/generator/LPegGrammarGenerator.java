@@ -1,5 +1,6 @@
 package nez.generator;
 
+import nez.GrammarOption;
 import nez.lang.And;
 import nez.lang.AnyChar;
 import nez.lang.Block;
@@ -18,7 +19,7 @@ import nez.lang.IsIndent;
 import nez.lang.IsSymbol;
 import nez.lang.Link;
 import nez.lang.LocalTable;
-import nez.lang.NameSpace;
+import nez.lang.GrammarFile;
 import nez.lang.New;
 import nez.lang.NonTerminal;
 import nez.lang.Not;
@@ -42,7 +43,7 @@ public class LPegGrammarGenerator extends NezGenerator {
 	}
 
 	@Override
-	public void generate(Grammar grammar, int option, String fileName) {
+	public void generate(Grammar grammar, GrammarOption option, String fileName) {
 		this.setOption(option);
 		this.setOutputFile(fileName);
 		file.writeIndent("local lpeg = require \"lpeg\"");

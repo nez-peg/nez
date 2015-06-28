@@ -2,13 +2,13 @@ package nez.peg.celery;
 
 import nez.lang.Expression;
 import nez.lang.GrammarFactory;
-import nez.lang.NameSpace;
+import nez.lang.GrammarFile;
 
 public class JSONPredefinedRules {
-	NameSpace grammar;
+	GrammarFile grammar;
 	String rootClassName;
 
-	public JSONPredefinedRules(NameSpace grammar, String rootClassName) {
+	public JSONPredefinedRules(GrammarFile grammar, String rootClassName) {
 		this.grammar = grammar;
 		this.rootClassName = rootClassName;
 	}

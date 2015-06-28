@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import nez.GrammarOption;
 import nez.NezException;
 import nez.SourceContext;
 import nez.ast.CommonTree;
@@ -13,7 +14,7 @@ import nez.lang.Expression;
 import nez.lang.GrammarFactory;
 import nez.lang.Grammar;
 import nez.lang.GrammarChecker;
-import nez.lang.NameSpace;
+import nez.lang.GrammarFile;
 import nez.main.Verbose;
 import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
@@ -21,11 +22,11 @@ import nez.util.UList;
 
 public class RegexGrammar extends CommonTreeVisitor {
 
-	static NameSpace regexGrammar = null;
-	public final static NameSpace loadGrammar(SourceContext regex, GrammarChecker checker) throws IOException {
+	static GrammarFile regexGrammar = null;
+	public final static GrammarFile loadGrammar(SourceContext regex, GrammarOption option) throws IOException {
 		if(regexGrammar == null) {
 			try {
-				regexGrammar = NameSpace.loadGrammarFile("regex.nez");
+				regexGrammar = GrammarFile.loadGrammarFile("regex.nez", GrammarOption.newSafe());
 			}
 			catch(IOException e) {
 				ConsoleUtils.exit(1, "can't load regex.nez");
@@ -39,16 +40,16 @@ public class RegexGrammar extends CommonTreeVisitor {
 		if (regex.hasUnconsumed()) {
 			throw new NezException(regex.getUnconsumedMessage());
 		}
+		GrammarFile gfile = GrammarFile.newGrammarFile("re", option);
 		RegexGrammar conv = new RegexGrammar();
-		NameSpace grammar = NameSpace.newNameSpace("re");
-		conv.convert(node, grammar);
-		checker.verify(grammar);
-		return grammar;
+		conv.convert(node, gfile);
+		gfile.verify();
+		return gfile;
 	}
 	
 	public final static Grammar newProduction(String pattern) {
 		try {
-			NameSpace grammar = loadGrammar(SourceContext.newStringContext(pattern), new GrammarChecker());
+			GrammarFile grammar = loadGrammar(SourceContext.newStringContext(pattern), GrammarOption.newDefault() /* FIXME */);
 			return grammar.newGrammar("File");
 		} catch (IOException e) {
 			Verbose.traceException(e);
@@ -59,9 +60,9 @@ public class RegexGrammar extends CommonTreeVisitor {
 	RegexGrammar() {
 	}
 	
-	private NameSpace grammar;
+	private GrammarFile grammar;
 
-	void convert(CommonTree e, NameSpace grammar) {
+	void convert(CommonTree e, GrammarFile grammar) {
 		this.grammar = grammar;
 		grammar.defineProduction(e, "File", pi(e, null));
 		grammar.defineProduction(e, "Chunk", grammar.newNonTerminal("File"));

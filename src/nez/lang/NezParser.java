@@ -17,17 +17,15 @@ import nez.util.UList;
 
 public class NezParser extends CommonTreeVisitor {
 	Grammar nezGrammar;
-	NameSpace loaded;
-	GrammarChecker checker;
+	GrammarFile loaded;
 	
 	public NezParser() {
-		this.nezGrammar = NezCombinator.newGrammar("Chunk", GrammarOption.SafeOption);
+		this.nezGrammar = NezCombinator.newGrammar("Chunk", GrammarOption.newSafe());
 	}
 	
-	public void eval(NameSpace ns, String urn, int linenum, String text) {
+	public void eval(GrammarFile ns, String urn, int linenum, String text) {
 		SourceContext sc = SourceContext.newStringSourceContext(urn, linenum, text);
 		this.loaded = ns;
-		this.checker = new GrammarChecker();
 		while(sc.hasUnconsumed()) {
 			CommonTree ast = nezGrammar.parse(sc);
 			if(ast == null) {
@@ -39,10 +37,9 @@ public class NezParser extends CommonTreeVisitor {
 		}
 	}
 
-	public final void load(NameSpace ns, String urn, GrammarChecker checker) throws IOException {
+	public final void load(GrammarFile gfile, String urn) throws IOException {
 		SourceContext sc = SourceContext.newFileContext(urn);
-		this.loaded = ns;
-		this.checker = checker;
+		this.loaded = gfile;
 		while(sc.hasUnconsumed()) {
 			CommonTree ast = nezGrammar.parse(sc);
 			if(ast == null) {
@@ -52,33 +49,12 @@ public class NezParser extends CommonTreeVisitor {
 				break;
 			}
 		}
-		checker.verify(ns);
+		gfile.verify();
 	}
 
-	public final void load(NameSpace ns, String urn) throws IOException {
-		load(ns, urn, new GrammarChecker());
-	}
-
-//	public final NameSpace loadGrammar(SourceContext sc, GrammarChecker checker) {
-//		this.loaded = NameSpace.newNameSpace(sc.getResourceName());
-//		this.checker = checker;
-//		while(sc.hasUnconsumed()) {
-//			CommonTree ast = nezGrammar.parse(sc);
-//			if(ast == null) {
-//				ConsoleUtils.exit(1, sc.getSyntaxErrorMessage());
-//			}
-//			if(!this.parseStatement(ast)) {
-//				break;
-//			}
-//		}
-//		checker.verify(loaded);
-//		return loaded;
+//	public final void load(GrammarFile ns, String urn) throws IOException {
+//		load(ns, urn);
 //	}
-//
-//	public final NameSpace loadGrammar(SourceContext sc) {
-//		return this.loadGrammar(sc, new GrammarChecker());
-//	}
-
 	
 	private boolean parseStatement(CommonTree node) {
 		//System.out.println("DEBUG? parsed: " + node);
@@ -144,7 +120,7 @@ public class NezParser extends CommonTreeVisitor {
 		if(node.is(NezTag.Name)) {
 			Formatter fmt = Formatter.newAction(node.getText());
 			if(fmt == null) {
-				checker.reportWarning(node, "undefined formatter action");
+				loaded.reportWarning(node, "undefined formatter action");
 				fmt = Formatter.newFormatter("${"+node.getText()+"}");
 			}
 			return fmt;
@@ -164,7 +140,7 @@ public class NezParser extends CommonTreeVisitor {
 		}
 		String urn = path(node.getSource().getResourceName(), node.textAt(1, ""));
 		try {
-			NameSpace source = NameSpace.loadNezFile(urn);
+			GrammarFile source = GrammarFile.loadNezFile(urn, GrammarOption.newDefault());
 			if(name.equals("*")) {
 				int c = 0;
 				for(String n : source.getNonterminalList()) {
@@ -176,13 +152,13 @@ public class NezParser extends CommonTreeVisitor {
 					}
 				}
 				if(c == 0) {
-					checker.reportError(node.get(0), "nothing imported (no public production exisits)");
+					loaded.reportError(node.get(0), "nothing imported (no public production exisits)");
 				}
 			}
 			else {
 				Production p = source.getProduction(name);
 				if(p == null) {
-					checker.reportError(node.get(0), "undefined production: " + name);
+					loaded.reportError(node.get(0), "undefined production: " + name);
 					return false;
 				}
 				loaded.inportProduction(ns, p);
@@ -190,11 +166,11 @@ public class NezParser extends CommonTreeVisitor {
 			return true;
 		}
 		catch(IOException e) {
-			checker.reportError(node.get(1), "unloaded: " + urn);
+			loaded.reportError(node.get(1), "unloaded: " + urn);
 		}
 		catch(NullPointerException e) {
 			/* This is for a bug unhandling IOException at java.io.Reader.<init>(Reader.java:78) */
-			checker.reportError(node.get(1), "unloaded: " + urn);
+			loaded.reportError(node.get(1), "unloaded: " + urn);
 		}
 		return false;
 	}
@@ -202,7 +178,7 @@ public class NezParser extends CommonTreeVisitor {
 	private void checkDuplicatedName(CommonTree errorNode) {
 		String name = errorNode.getText();
 		if(loaded.hasProduction(name)) {
-			checker.reportWarning(errorNode, "duplicated production: " + name);
+			loaded.reportWarning(errorNode, "duplicated production: " + name);
 		}
 	}
 
@@ -221,7 +197,7 @@ public class NezParser extends CommonTreeVisitor {
 		String localName = node.textAt(0, "");
 		int productionFlag = 0;
 		if(node.get(0).is(NezTag.String)) {
-			localName = NameSpace.nameTerminalProduction(localName);
+			localName = GrammarFile.nameTerminalProduction(localName);
 			productionFlag |= Production.TerminalProduction;
 		}
 		this.binary = false;
@@ -239,7 +215,7 @@ public class NezParser extends CommonTreeVisitor {
 		}
 		Production rule = loaded.getProduction(localName);
 		if(rule != null) {
-			checker.reportWarning(node, "duplicated rule name: " + localName);
+			loaded.reportWarning(node, "duplicated rule name: " + localName);
 			rule = null;
 		}
 		Expression e = toExpression(node.get(1));
@@ -258,7 +234,7 @@ public class NezParser extends CommonTreeVisitor {
 	}
 
 	public Expression toString(CommonTree ast) {
-		String name = NameSpace.nameTerminalProduction(ast.getText());
+		String name = GrammarFile.nameTerminalProduction(ast.getText());
 		return GrammarFactory.newNonTerminal(ast, this.loaded, name);
 	}
 
@@ -444,7 +420,7 @@ public class NezParser extends CommonTreeVisitor {
 	}
 
 	public Expression toUndefined(CommonTree ast) {
-		checker.reportError(ast, "undefined or deprecated notation");
+		loaded.reportError(ast, "undefined or deprecated notation");
 		return GrammarFactory.newEmpty(ast);
 	}
 	

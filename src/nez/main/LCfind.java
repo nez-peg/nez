@@ -2,16 +2,17 @@ package nez.main;
 
 import java.io.IOException;
 
+import nez.GrammarOption;
 import nez.SourceContext;
 import nez.lang.Grammar;
 import nez.lang.GrammarChecker;
-import nez.lang.NameSpace;
+import nez.lang.GrammarFile;
 import nez.lang.NezParser;
 import nez.lang.Production;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
 
-public class FindCommand extends Command {
+public class LCfind extends Command {
 
 	@Override
 	public String getDesc() {
@@ -19,7 +20,7 @@ public class FindCommand extends Command {
 	}
 
 	@Override
-	public void exec(CommandConfigure config) {
+	public void exec(CommandContext config) {
 		String text = null;
 		UList<Grammar> pList = load(config.getInputFileList());
 		while( (text = ConsoleUtils.readMultiLine(">>> ", "    ")) != null) {
@@ -38,7 +39,7 @@ public class FindCommand extends Command {
 		Verbose.print("Loading ..");
 		try {
 			for(String f : fileList) {
-				NameSpace g = NameSpace.loadNezFile(f);
+				GrammarFile g = GrammarFile.loadNezFile(f, GrammarOption.newDefault());
 				UList<Production> rules = g.getDefinedRuleList();
 				for(Production r : rules) {
 					if(r.isPublic()) {

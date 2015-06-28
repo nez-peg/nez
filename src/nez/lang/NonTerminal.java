@@ -8,11 +8,11 @@ import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
 public class NonTerminal extends Expression {
-	private NameSpace ns;
+	private GrammarFile ns;
 	private String  localName;
 	private String  uniqueName;
 	private Production deref = null;
-	public NonTerminal(SourcePosition s, NameSpace ns, String ruleName) {
+	public NonTerminal(SourcePosition s, GrammarFile ns, String ruleName) {
 		super(s);
 		this.ns = ns;
 		this.localName = ruleName;
@@ -26,7 +26,7 @@ public class NonTerminal extends Expression {
 		return false;
 	}
 
-	public final NameSpace getNameSpace() {
+	public final GrammarFile getGrammarFile() {
 		return ns;
 	}
 
@@ -128,7 +128,7 @@ public class NonTerminal extends Expression {
 	
 	
 	public final Expression newNonTerminal(String localName) {
-		return GrammarFactory.newNonTerminal(this.getSourcePosition(), this.getNameSpace(), localName);
+		return GrammarFactory.newNonTerminal(this.getSourcePosition(), this.getGrammarFile(), localName);
 	}
 
 

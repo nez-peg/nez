@@ -8,7 +8,7 @@ import nez.lang.Expression;
 import nez.lang.Grammar;
 import nez.lang.GrammarFactory;
 import nez.lang.GrammarReshaper;
-import nez.lang.NameSpace;
+import nez.lang.GrammarFile;
 import nez.lang.NonTerminal;
 import nez.lang.Option;
 import nez.lang.Acceptance;
@@ -24,7 +24,7 @@ import nez.util.UMap;
 public class DfaOptimizer extends GrammarReshaper {
 
 	public static final Grammar optimize(Grammar g) {
-		NameSpace ns = NameSpace.newNameSpace();
+		GrammarFile ns = GrammarFile.newGrammarFile(g.getGrammarOption().clone());
 		GrammarReshaper dup = new DuplicateGrammar(ns);
 		GrammarReshaper inlining = new InliningChoice();
 		for(Production p : g.getProductionList()) {
@@ -36,13 +36,12 @@ public class DfaOptimizer extends GrammarReshaper {
 		g = ns.newGrammar(g.getStartProduction().getLocalName());
 		return g;
 	}
-
 }
 
 class DuplicateGrammar extends GrammarReshaper {
-	NameSpace ns;
+	GrammarFile ns;
 	int c = 0;
-	DuplicateGrammar(NameSpace ns) {
+	DuplicateGrammar(GrammarFile ns) {
 		this.ns = ns;
 	}
 	public Expression reshapeProduction(Production p) {

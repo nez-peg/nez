@@ -261,14 +261,14 @@ public class GrammarReshaper {
 			e.inner = inner;
 			return e;
 		}
-		return (e.get(0) != inner) ? GrammarFactory.newLocal(e.s, e.getNameSpace(), e.getTable(), inner) : e;
+		return (e.get(0) != inner) ? GrammarFactory.newLocal(e.s, e.getGrammarFile(), e.getTable(), inner) : e;
 	}
 	protected final Expression updateInner(DefSymbol e, Expression inner) {
 		if(!e.isInterned()) {
 			e.inner = inner;
 			return e;
 		}
-		return (e.get(0) != inner) ? GrammarFactory.newDefSymbol(e.s, e.getNameSpace(), e.getTable(), inner) : e;
+		return (e.get(0) != inner) ? GrammarFactory.newDefSymbol(e.s, e.getGrammarFile(), e.getTable(), inner) : e;
 	}
 	protected final Expression updateInner(OnFlag e, Expression inner) {
 		if(!e.isInterned()) {
@@ -293,7 +293,7 @@ class ASTConstructionEliminator extends GrammarReshaper {
 		if(renaming) {
 			Production r = removeASTOperator(e.getProduction());
 			if(!e.getLocalName().equals(r.getLocalName())) {
-				return GrammarFactory.newNonTerminal(e.s, r.getNameSpace(), r.getLocalName());
+				return GrammarFactory.newNonTerminal(e.s, r.getGrammarFile(), r.getLocalName());
 			}
 		}
 		return e;
@@ -304,9 +304,9 @@ class ASTConstructionEliminator extends GrammarReshaper {
 			return p;
 		}
 		String name = "~" + p.getLocalName();
-		Production r = p.getNameSpace().getProduction(name);
+		Production r = p.getGrammarFile().getProduction(name);
 		if(r == null) {
-			r = p.getNameSpace().newReducedProduction(name, p, this);
+			r = p.getGrammarFile().newReducedProduction(name, p, this);
 		}
 		return r;
 	}

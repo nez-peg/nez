@@ -40,15 +40,17 @@ import nez.util.UFlag;
 import nez.util.UList;
 
 public abstract class NezEncoder {
-	protected int option;
+	protected GrammarOption option;
 		
-	public NezEncoder(int option) {
+	public NezEncoder(GrammarOption option) {
 		this.option = option;
 	}
-	
+
+	/**
 	public final boolean is(int grammarOption) {
 		return UFlag.is(this.option, grammarOption);
 	}
+	**/
 
 	/* CodeMap */
 	
@@ -127,7 +129,7 @@ public abstract class NezEncoder {
 				this.countNonTerminalReference(p.getExpression());
 			}
 		}
-		if(UFlag.is(option, GrammarOption.Inlining)) {
+		if(option.enabledInlining) {
 			for(Production p : grammar.getProductionList()) {
 				CodePoint pcode = this.codeMap.get(p.getUniqueName());
 				if(pcode != null) {
@@ -135,7 +137,7 @@ public abstract class NezEncoder {
 				}
 			}
 		}
-		if(UFlag.is(option, GrammarOption.PackratParsing)) {
+		if(option.enabledMemoization) {
 			int memoId = 0;
 			for(Production p : grammar.getProductionList()) {
 				CodePoint pcode = this.codeMap.get(p.getUniqueName());

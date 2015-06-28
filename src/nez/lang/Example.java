@@ -1,5 +1,6 @@
 package nez.lang;
 
+import nez.GrammarOption;
 import nez.SourceContext;
 import nez.ast.CommonTree;
 import nez.main.Verbose;
@@ -15,7 +16,7 @@ public class Example {
 		this.result = result;
 	}
 	
-	boolean test(NameSpace grammar, int option) {
+	boolean test(GrammarFile grammar, GrammarOption option) {
 		Grammar p = grammar.newGrammar(nameNode.getText(), option);
 		if(p == null) {
 			System.out.println(nameNode.formatSourceMessage("error", "undefined nonterminal"));

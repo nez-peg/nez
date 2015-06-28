@@ -2,7 +2,7 @@ package nez.vm;
 
 import java.util.HashMap;
 
-import nez.main.Recorder;
+import nez.main.NezProfier;
 
 public abstract class MemoTable {
 	public abstract MemoTable newMemoTable(long len, int w, int n);
@@ -31,7 +31,7 @@ public abstract class MemoTable {
 	public static MemoTable newPackratHashTable(int len, int w, int n) {
 		return new PackratHashTable(len, w, n);
 	}
-	public void record(Recorder rec) {
+	public void record(NezProfier rec) {
 		rec.setText("M.TableType", this.getClass().getSimpleName());
 		rec.setCount("M.MemoStored", this.CountStored);
 		rec.setRatio("M.MemoHit", this.CountUsed, this.CountStored);

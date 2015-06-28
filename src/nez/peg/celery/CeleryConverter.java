@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import nez.GrammarOption;
 import nez.NezException;
 import nez.SourceContext;
 import nez.ast.CommonTree;
@@ -12,13 +13,13 @@ import nez.ast.CommonTreeVisitor;
 import nez.lang.Expression;
 import nez.lang.Grammar;
 import nez.lang.GrammarChecker;
-import nez.lang.NameSpace;
+import nez.lang.GrammarFile;
 import nez.util.ConsoleUtils;
 
 public class CeleryConverter extends CommonTreeVisitor {
 
-	static NameSpace celeryGrammar = null;
-	private NameSpace grammar;
+	static GrammarFile celeryGrammar = null;
+	private GrammarFile grammar;
 	private HashMap<String, Integer> classNameMap;
 	private List<String> requiredMembersList;
 	private List<String> impliedMemebersList;
@@ -29,12 +30,12 @@ public class CeleryConverter extends CommonTreeVisitor {
 		this.classNameMap = new HashMap<>();
 	}
 
-	public final static NameSpace loadGrammar(String filePath, GrammarChecker checker)
-			throws IOException {
+	public final static GrammarFile loadGrammar(String filePath, GrammarOption option) throws IOException {
 		if (celeryGrammar == null) {
 			try {
-				celeryGrammar = NameSpace.loadGrammarFile("celery.nez");
-			} catch (IOException e) {
+				celeryGrammar = GrammarFile.loadGrammarFile("celery.nez", GrammarOption.newDefault());
+			} 
+			catch (IOException e) {
 				ConsoleUtils.exit(1, "can't load celery.nez");
 			}
 		}
@@ -49,11 +50,10 @@ public class CeleryConverter extends CommonTreeVisitor {
 		}
 		CeleryConverter converter = new CeleryConverter();
 		converter.setRootClassName(filePath);
-		NameSpace grammar = NameSpace.newNameSpace(filePath);
-		converter.convert(node, grammar);
-		checker.verify(grammar);
-		// grammar.dump();
-		return grammar;
+		GrammarFile gfile = GrammarFile.newGrammarFile(filePath, option);
+		converter.convert(node, gfile);
+		gfile.verify();
+		return gfile;
 	}
 
 	private final void loadPredefinedRules(CommonTree node) {
@@ -61,7 +61,7 @@ public class CeleryConverter extends CommonTreeVisitor {
 		preRules.defineRule();
 	}
 
-	private final void convert(CommonTree node, NameSpace grammar) {
+	private final void convert(CommonTree node, GrammarFile grammar) {
 		this.grammar = grammar;
 		loadPredefinedRules(node);
 		this.visit("visit", node);

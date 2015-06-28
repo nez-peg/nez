@@ -9,11 +9,11 @@ import nez.vm.NezEncoder;
 
 public class DefSymbol extends Unary {
 	public final Tag tableName;
-	public final NameSpace ns;
+	public final GrammarFile gfile;
 	
-	DefSymbol(SourcePosition s, NameSpace ns, Tag table, Expression inner) {
+	DefSymbol(SourcePosition s, GrammarFile ns, Tag table, Expression inner) {
 		super(s, inner);
-		this.ns = ns;
+		this.gfile = ns;
 		this.tableName = table;
 		ns.setSymbolExpresion(tableName.getName(), inner);
 	}
@@ -21,15 +21,15 @@ public class DefSymbol extends Unary {
 	public final boolean equalsExpression(Expression o) {
 		if(o instanceof DefSymbol) {
 			DefSymbol e = (DefSymbol)o;
-			if(this.tableName == e.tableName && this.ns == e.ns) {
+			if(this.tableName == e.tableName && this.gfile == e.gfile) {
 				return this.get(0).equalsExpression(e.get(0));
 			}
 		}
 		return false;
 	}
 
-	public final NameSpace getNameSpace() {
-		return ns;
+	public final GrammarFile getGrammarFile() {
+		return gfile;
 	}
 	
 	public final Tag getTable() {

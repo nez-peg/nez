@@ -1,12 +1,11 @@
-package nez.x;
+package nez.main;
 
-import nez.lang.NameSpace;
+import nez.lang.GrammarFile;
 import nez.lang.Production;
 import nez.lang.Typestate;
-import nez.main.Command;
-import nez.main.CommandConfigure;
+import nez.x.Type;
 
-public class TypeCommand extends Command {
+public class LCtype extends Command {
 
 	@Override
 	public String getDesc() {
@@ -14,8 +13,8 @@ public class TypeCommand extends Command {
 	}
 
 	@Override
-	public void exec(CommandConfigure config) {
-		NameSpace peg = config.getNameSpace(false);
+	public void exec(CommandContext config) {
+		GrammarFile peg = config.getGrammarFile(false);
 		for(Production r : peg.getDefinedRuleList()) {
 			if(r.inferTypestate() == Typestate.ObjectType) {
 				Type t = Type.inferType(r, r.getExpression());

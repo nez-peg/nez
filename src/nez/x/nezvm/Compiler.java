@@ -18,7 +18,7 @@ import nez.lang.GrammarFactory;
 import nez.lang.Failure;
 import nez.lang.GrammarVisitor;
 import nez.lang.Link;
-import nez.lang.NameSpace;
+import nez.lang.GrammarFile;
 import nez.lang.NonTerminal;
 import nez.lang.Not;
 import nez.lang.Option;
@@ -47,7 +47,7 @@ public class Compiler extends GrammarVisitor {
 	
 	boolean PatternMatching = false;
 	
-	NameSpace peg;
+	GrammarFile peg;
 	Module module;
 	Function func;
 	BasicBlock currentBB;
@@ -114,7 +114,7 @@ public class Compiler extends GrammarVisitor {
 	
 	int codeIndex;
 	
-	public void writeByteCode(String grammerfileName, String outputFileName, NameSpace peg) {
+	public void writeByteCode(String grammerfileName, String outputFileName, GrammarFile peg) {
 		//generateProfileCode(peg);
 		//System.out.println("choiceCase: " + choiceCaseCount + "\nconstructor: " + constructorCount);
 		byte[] byteCode = new byte[this.codeIndex * 256];

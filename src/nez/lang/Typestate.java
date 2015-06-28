@@ -9,9 +9,9 @@ public class Typestate extends GrammarReshaper {
 	public final static int OperationType     = 2;
 	
 	private int   required = BooleanType;
-	private GrammarChecker checker;
+	private GrammarFile checker;
 	
-	Typestate(GrammarChecker checker) {
+	Typestate(GrammarFile checker) {
 		this.checker = checker;
 	}
 	
