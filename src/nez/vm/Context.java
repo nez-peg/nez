@@ -1,6 +1,6 @@
 package nez.vm;
 
-import nez.ast.ParserConstructor;
+import nez.ast.TreeTransducer;
 import nez.ast.Source;
 import nez.ast.Tag;
 import nez.lang.NezTag;
@@ -52,13 +52,13 @@ public abstract class Context implements Source {
 
 	/* PEG4d : AST construction */
 
-	private ParserConstructor treeFactory;
+	private TreeTransducer treeFactory;
 	private Object left;
 	void setLeftObject(Object left) {
 		this.left = left;
 	}
 
-	public final void setFactory(ParserConstructor treeFactory) {
+	public final void setFactory(TreeTransducer treeFactory) {
 		this.treeFactory = treeFactory;
 	}
 	
@@ -830,7 +830,7 @@ class OperationLog {
 	}
 }
 
-class NothingConstructor extends ParserConstructor {
+class NothingConstructor extends TreeTransducer {
 	@Override
 	public Object newNode(Tag tag, Source s, long spos, long epos, int size, Object value) {
 		return null;

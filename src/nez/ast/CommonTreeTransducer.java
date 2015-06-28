@@ -1,6 +1,6 @@
 package nez.ast;
 
-public class CommonTreeFactory extends ParserConstructor {
+public class CommonTreeTransducer extends TreeTransducer {
 	private static final Tag Token = Tag.tag("Token");
 	private static final Tag Tree = Tag.tag("Tree");
 	

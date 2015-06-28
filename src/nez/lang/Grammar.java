@@ -6,8 +6,8 @@ import java.util.TreeMap;
 import nez.NezOption;
 import nez.SourceContext;
 import nez.ast.CommonTree;
-import nez.ast.CommonTreeFactory;
-import nez.ast.ParserConstructor;
+import nez.ast.CommonTreeTransducer;
+import nez.ast.TreeTransducer;
 import nez.main.Command;
 import nez.main.NezProfier;
 import nez.main.Verbose;
@@ -199,7 +199,7 @@ public class Grammar {
 		return false;
 	}
 
-	public Object parse(SourceContext sc, ParserConstructor treeFactory) {
+	public Object parse(SourceContext sc, TreeTransducer treeFactory) {
 		long startPosition = sc.getPosition();
 		sc.setFactory(treeFactory);
 		if(!this.match(sc)) {
@@ -216,12 +216,12 @@ public class Grammar {
 	}
 
 	public final CommonTree parse(SourceContext sc) {
-		return (CommonTree)this.parse(sc, new CommonTreeFactory());
+		return (CommonTree)this.parse(sc, new CommonTreeTransducer());
 	}
 
 	public final CommonTree parseAST(String str) {
 		SourceContext sc = SourceContext.newStringContext(str);
-		return (CommonTree)this.parse(sc, new CommonTreeFactory());
+		return (CommonTree)this.parse(sc, new CommonTreeTransducer());
 	}
 
 	public final void verboseMemo() {
