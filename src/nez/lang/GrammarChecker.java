@@ -2,7 +2,7 @@ package nez.lang;
 
 import java.util.TreeMap;
 
-import nez.GrammarOption;
+import nez.NezOption;
 import nez.ast.SourcePosition;
 import nez.main.Command;
 import nez.main.Verbose;
@@ -13,7 +13,7 @@ import nez.util.UMap;
 public class GrammarChecker {
 	
 	boolean strictMode;
-	GrammarOption option;
+	NezOption option;
 
 	boolean foundError = false;
 	boolean foundFlag  = false;
@@ -22,7 +22,7 @@ public class GrammarChecker {
 //		this.strictMode = checkerLevel > 0;
 //	}
 	
-	public GrammarChecker(int checkerLevel, GrammarOption option) {
+	public GrammarChecker(int checkerLevel, NezOption option) {
 		this.strictMode = checkerLevel > 0;
 		this.option = option;
 	}

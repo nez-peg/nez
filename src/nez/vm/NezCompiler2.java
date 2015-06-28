@@ -2,7 +2,7 @@ package nez.vm;
 
 import java.util.HashMap;
 
-import nez.GrammarOption;
+import nez.NezOption;
 import nez.lang.AnyChar;
 import nez.lang.ByteChar;
 import nez.lang.ByteMap;
@@ -21,7 +21,7 @@ public class NezCompiler2 extends NezCompiler1 {
 
 //	HashMap<Integer, MemoPoint> memoMap;
 
-	public NezCompiler2(GrammarOption option) {
+	public NezCompiler2(NezOption option) {
 		super(option);
 	}
 

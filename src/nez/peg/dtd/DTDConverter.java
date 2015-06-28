@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import nez.GrammarOption;
+import nez.NezOption;
 import nez.NezException;
 import nez.SourceContext;
 import nez.ast.CommonTree;
@@ -21,10 +21,10 @@ import nez.util.ConsoleUtils;
 public class DTDConverter extends CommonTreeVisitor {
 
 	static GrammarFile dtdGrammar = null;
-	public final static GrammarFile loadGrammar(String filePath, GrammarOption option) throws IOException {
+	public final static GrammarFile loadGrammar(String filePath, NezOption option) throws IOException {
 		if(dtdGrammar == null) {
 			try {
-				dtdGrammar = GrammarFile.loadGrammarFile("xmldtd.nez", GrammarOption.newSafe());
+				dtdGrammar = GrammarFile.loadGrammarFile("xmldtd.nez", NezOption.newSafeOption());
 			}
 			catch(IOException e) {
 				ConsoleUtils.exit(1, "can't load xmldtd.nez");

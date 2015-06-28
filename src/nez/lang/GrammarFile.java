@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import nez.GrammarOption;
+import nez.NezOption;
 import nez.ParserCombinator;
 import nez.ast.SourcePosition;
 import nez.main.Command;
@@ -27,11 +27,11 @@ public class GrammarFile extends GrammarFactory {
 		return nsMap.containsKey(urn);
 	}
 
-	public static GrammarFile newGrammarFile(GrammarOption option) {
+	public static GrammarFile newGrammarFile(NezOption option) {
 		return new GrammarFile(nsid++, null, option);
 	}
 
-	public final static GrammarFile newGrammarFile(String urn, GrammarOption option) {
+	public final static GrammarFile newGrammarFile(String urn, NezOption option) {
 		if(urn != null && nsMap.containsKey(urn)) {
 			return nsMap.get(urn);
 		}
@@ -42,7 +42,7 @@ public class GrammarFile extends GrammarFactory {
 		return ns;
 	}
 
-	public final static GrammarFile loadNezFile(String urn, GrammarOption option) throws IOException {
+	public final static GrammarFile loadNezFile(String urn, NezOption option) throws IOException {
 		if(nsMap.containsKey(urn)) {
 			return nsMap.get(urn);
 		}
@@ -68,7 +68,7 @@ public class GrammarFile extends GrammarFactory {
 		return ns;
 	}
 	
-	public final static GrammarFile loadGrammarFile(String urn, GrammarOption option) throws IOException {
+	public final static GrammarFile loadGrammarFile(String urn, NezOption option) throws IOException {
 		if(urn.endsWith(".dtd")) {
 			return DTDConverter.loadGrammar(urn, option);
 		}
@@ -98,9 +98,9 @@ public class GrammarFile extends GrammarFactory {
 	final String            ns;
 	final UMap<Production>  ruleMap;
 	final UList<String>     nameList;
-	final GrammarOption     option;
+	final NezOption     option;
 
-	private GrammarFile(int id, String urn, GrammarOption option) {
+	private GrammarFile(int id, String urn, NezOption option) {
 		this.id = id;
 		this.urn = urn;
 		String ns = "g";
@@ -206,7 +206,7 @@ public class GrammarFile extends GrammarFactory {
 		return ruleList;
 	}
 
-	public final Grammar newGrammar(String name, GrammarOption option) {
+	public final Grammar newGrammar(String name, NezOption option) {
 		Production r = this.getProduction(name);
 		if(r != null) {
 			return new Grammar(r, option);
@@ -216,7 +216,7 @@ public class GrammarFile extends GrammarFactory {
 	}
 
 	public final Grammar newGrammar(String name) {
-		return this.newGrammar(name, GrammarOption.newDefault());
+		return this.newGrammar(name, NezOption.newDefaultOption());
 	}
 
 	public void dump() {
@@ -271,7 +271,7 @@ public class GrammarFile extends GrammarFactory {
 		exampleList.add(ex);
 	}
 	
-	final void testExample(GrammarOption option) {
+	final void testExample(NezOption option) {
 		if(exampleList != null) {
 			long t1 = System.nanoTime();
 			for(Example ex : exampleList) {

@@ -2,7 +2,7 @@ package nez.vm;
 
 import java.util.HashMap;
 
-import nez.GrammarOption;
+import nez.NezOption;
 import nez.lang.And;
 import nez.lang.AnyChar;
 import nez.lang.Block;
@@ -38,7 +38,7 @@ public class NezCompiler1 extends NezCompiler {
 
 	protected final Instruction commonFailure = new IFail(null);
 
-	public NezCompiler1(GrammarOption option) {
+	public NezCompiler1(NezOption option) {
 		super(option);
 	}
 

@@ -1,6 +1,6 @@
 package nez.main;
 
-import nez.GrammarOption;
+import nez.NezOption;
 import nez.SourceContext;
 import nez.ast.CommonTree;
 import nez.ast.CommonTreeWriter;

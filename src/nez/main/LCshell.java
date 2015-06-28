@@ -3,7 +3,7 @@ package nez.main;
 import java.io.IOException;
 import java.util.HashMap;
 
-import nez.GrammarOption;
+import nez.NezOption;
 import nez.SourceContext;
 import nez.ast.CommonTree;
 import nez.ast.CommonTreeWriter;
@@ -33,7 +33,7 @@ public class LCshell extends Command {
 		Command.displayVersion();
 		GrammarFile ns = config.getGrammarFile(true);
 		ConsoleUtils.addCompleter(ns.getNonterminalList());
-		GrammarOption option = config.getGrammarOption();
+		NezOption option = config.getGrammarOption();
 		
 		while(readLine(">>> ")) {
 			if((command != null && command.equals(""))) {
@@ -173,7 +173,7 @@ public class LCshell extends Command {
 		return cmdMap.containsKey(cmd);
 	}
 	
-	static void execCommand(String cmd, Grammar g, GrammarOption option) {
+	static void execCommand(String cmd, Grammar g, NezOption option) {
 		NezGenerator gen = GeneratorLoader.load(cmd);
 		gen.generate(g, option, null);
 		ConsoleUtils.println("");

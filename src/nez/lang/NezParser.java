@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import nez.GrammarOption;
+import nez.NezOption;
 import nez.SourceContext;
 import nez.ast.CommonTree;
 import nez.ast.CommonTreeVisitor;
@@ -20,7 +20,7 @@ public class NezParser extends CommonTreeVisitor {
 	GrammarFile loaded;
 	
 	public NezParser() {
-		this.nezGrammar = NezCombinator.newGrammar("Chunk", GrammarOption.newSafe());
+		this.nezGrammar = NezCombinator.newGrammar("Chunk", NezOption.newSafeOption());
 	}
 	
 	public void eval(GrammarFile ns, String urn, int linenum, String text) {
@@ -140,7 +140,7 @@ public class NezParser extends CommonTreeVisitor {
 		}
 		String urn = path(node.getSource().getResourceName(), node.textAt(1, ""));
 		try {
-			GrammarFile source = GrammarFile.loadNezFile(urn, GrammarOption.newDefault());
+			GrammarFile source = GrammarFile.loadNezFile(urn, NezOption.newDefaultOption());
 			if(name.equals("*")) {
 				int c = 0;
 				for(String n : source.getNonterminalList()) {

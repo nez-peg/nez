@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import nez.GrammarOption;
+import nez.NezOption;
 import nez.NezException;
 import nez.SourceContext;
 import nez.ast.CommonTree;
@@ -23,10 +23,10 @@ import nez.util.UList;
 public class RegexGrammar extends CommonTreeVisitor {
 
 	static GrammarFile regexGrammar = null;
-	public final static GrammarFile loadGrammar(SourceContext regex, GrammarOption option) throws IOException {
+	public final static GrammarFile loadGrammar(SourceContext regex, NezOption option) throws IOException {
 		if(regexGrammar == null) {
 			try {
-				regexGrammar = GrammarFile.loadGrammarFile("regex.nez", GrammarOption.newSafe());
+				regexGrammar = GrammarFile.loadGrammarFile("regex.nez", NezOption.newSafeOption());
 			}
 			catch(IOException e) {
 				ConsoleUtils.exit(1, "can't load regex.nez");
@@ -49,7 +49,7 @@ public class RegexGrammar extends CommonTreeVisitor {
 	
 	public final static Grammar newProduction(String pattern) {
 		try {
-			GrammarFile grammar = loadGrammar(SourceContext.newStringContext(pattern), GrammarOption.newDefault() /* FIXME */);
+			GrammarFile grammar = loadGrammar(SourceContext.newStringContext(pattern), NezOption.newDefaultOption() /* FIXME */);
 			return grammar.newGrammar("File");
 		} catch (IOException e) {
 			Verbose.traceException(e);

@@ -4,7 +4,7 @@ package nez.vm;
 import java.util.HashMap;
 import java.util.TreeMap;
 
-import nez.GrammarOption;
+import nez.NezOption;
 import nez.lang.And;
 import nez.lang.AnyChar;
 import nez.lang.Block;
@@ -40,9 +40,9 @@ import nez.util.UFlag;
 import nez.util.UList;
 
 public abstract class NezEncoder {
-	protected GrammarOption option;
+	protected NezOption option;
 		
-	public NezEncoder(GrammarOption option) {
+	public NezEncoder(NezOption option) {
 		this.option = option;
 	}
 

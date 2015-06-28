@@ -1,6 +1,6 @@
 package nez.lang;
 
-import nez.GrammarOption;
+import nez.NezOption;
 import nez.ast.Source;
 import nez.ast.SourcePosition;
 import nez.util.UFlag;
@@ -72,7 +72,7 @@ public class Not extends Unary {
 		}
 		if(p instanceof AnyChar) {
 			if(ch == Source.BinaryEOF) return Acceptance.Accept;
-			if(ch == 0 && !UFlag.is(option, GrammarOption.Binary)) return Acceptance.Accept;
+			if(ch == 0 && !UFlag.is(option, NezOption.Binary)) return Acceptance.Accept;
 			return Acceptance.Reject;
 		}
 		return Acceptance.Unconsumed;

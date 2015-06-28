@@ -4,7 +4,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 
-import nez.GrammarOption;
+import nez.NezOption;
 import nez.lang.And;
 import nez.lang.AnyChar;
 import nez.lang.Block;
@@ -43,11 +43,11 @@ public abstract class NezGenerator extends NezEncoder {
 	public abstract String getDesc();
 
 	public NezGenerator() {
-		super(GrammarOption.newDefault());
+		super(NezOption.newDefaultOption());
 		this.file = null;
 	}
 
-	protected void setOption(GrammarOption grammar) {
+	protected void setOption(NezOption grammar) {
 		this.option = option;
 	}
 
@@ -300,7 +300,7 @@ public abstract class NezGenerator extends NezEncoder {
 
 	// ---------------------------------------------------------------------
 
-	public void generate(Grammar grammar, GrammarOption option, String fileName) {
+	public void generate(Grammar grammar, NezOption option, String fileName) {
 		this.setOption(option);
 		this.setOutputFile(fileName);
 		makeHeader(grammar);

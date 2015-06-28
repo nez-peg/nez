@@ -1,6 +1,6 @@
 package nez.lang;
 
-import nez.GrammarOption;
+import nez.NezOption;
 import nez.ast.SourcePosition;
 import nez.util.StringUtils;
 import nez.util.UFlag;
@@ -134,7 +134,7 @@ public class ByteMap extends Terminal implements Consumed {
 		for(int i = 0; i < 256; i++) {
 			byteMap[i] = !byteMap[i];
 		}
-		if(!UFlag.is(option, GrammarOption.Binary)) {
+		if(!UFlag.is(option, NezOption.Binary)) {
 			byteMap[0] = false;
 		}
 	}

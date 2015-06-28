@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import nez.GrammarOption;
+import nez.NezOption;
 import nez.NezException;
 import nez.SourceContext;
 import nez.ast.CommonTree;
@@ -30,10 +30,10 @@ public class CeleryConverter extends CommonTreeVisitor {
 		this.classNameMap = new HashMap<>();
 	}
 
-	public final static GrammarFile loadGrammar(String filePath, GrammarOption option) throws IOException {
+	public final static GrammarFile loadGrammar(String filePath, NezOption option) throws IOException {
 		if (celeryGrammar == null) {
 			try {
-				celeryGrammar = GrammarFile.loadGrammarFile("celery.nez", GrammarOption.newDefault());
+				celeryGrammar = GrammarFile.loadGrammarFile("celery.nez", NezOption.newDefaultOption());
 			} 
 			catch (IOException e) {
 				ConsoleUtils.exit(1, "can't load celery.nez");

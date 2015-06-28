@@ -1,6 +1,6 @@
 package nez.vm;
 
-import nez.GrammarOption;
+import nez.NezOption;
 import nez.ast.SourcePosition;
 import nez.lang.AnyChar;
 import nez.lang.ByteChar;
@@ -228,7 +228,7 @@ public class GrammarOptimizer extends GrammarReshaper {
 		if(p.predictedCase == null) {
 			UList<Expression> choiceList = new UList<Expression>(new Expression[p.size()]);
 			flattenChoiceList(p, choiceList);
-			if(UFlag.is(option, GrammarOption.Optimization)) {
+			if(UFlag.is(option, NezOption.Optimization)) {
 				Expression o = newOptimizedByteMap(p.getSourcePosition(), choiceList);
 				if(o != null) {
 					return o;

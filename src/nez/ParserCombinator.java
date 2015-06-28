@@ -21,7 +21,7 @@ public class ParserCombinator {
 	public final GrammarFile load() {
 		if(this.gfile == null) {
 			Class<?> c = this.getClass();
-			gfile = GrammarFile.newGrammarFile(c.getName(), GrammarOption.newDefault());
+			gfile = GrammarFile.newGrammarFile(c.getName(), NezOption.newDefaultOption());
 			if(gfile.isEmpty()) {
 				for(Method m : c.getDeclaredMethods()) {
 					if(m.getReturnType() == Expression.class && m.getParameterTypes().length == 0) {

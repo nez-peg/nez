@@ -1,13 +1,13 @@
 package nez.vm;
 
-import nez.GrammarOption;
+import nez.NezOption;
 import nez.lang.Grammar;
 import nez.util.UFlag;
 import nez.util.UList;
 
 public abstract class NezCompiler extends NezEncoder {
 
-	public NezCompiler(GrammarOption option) {
+	public NezCompiler(NezOption option) {
 		super(option);
 	}
 

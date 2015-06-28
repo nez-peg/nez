@@ -1,6 +1,6 @@
 package nez.lang;
 
-import nez.GrammarOption;
+import nez.NezOption;
 import nez.ast.Source;
 import nez.util.UFlag;
 
@@ -14,7 +14,7 @@ public class Acceptance {
 	public static boolean predictAnyChar(int option, int ch, boolean k) {
 		switch(ch) {
 		case 0:
-			return UFlag.is(option, GrammarOption.Binary);
+			return UFlag.is(option, NezOption.Binary);
 		case Source.BinaryEOF:
 			return false;
 		}
@@ -25,7 +25,7 @@ public class Acceptance {
 		for(int c = 1; c < dfa.length - 1; c++) {
 			dfa[c] = true;
 		}
-		dfa[0] = UFlag.is(option, GrammarOption.Binary);
+		dfa[0] = UFlag.is(option, NezOption.Binary);
 		dfa[Source.BinaryEOF] = false;
 	}
 

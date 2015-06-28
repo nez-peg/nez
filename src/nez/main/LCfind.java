@@ -2,7 +2,7 @@ package nez.main;
 
 import java.io.IOException;
 
-import nez.GrammarOption;
+import nez.NezOption;
 import nez.SourceContext;
 import nez.lang.Grammar;
 import nez.lang.GrammarChecker;
@@ -39,7 +39,7 @@ public class LCfind extends Command {
 		Verbose.print("Loading ..");
 		try {
 			for(String f : fileList) {
-				GrammarFile g = GrammarFile.loadNezFile(f, GrammarOption.newDefault());
+				GrammarFile g = GrammarFile.loadNezFile(f, NezOption.newDefaultOption());
 				UList<Production> rules = g.getDefinedRuleList();
 				for(Production r : rules) {
 					if(r.isPublic()) {

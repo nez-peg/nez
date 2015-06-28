@@ -3,7 +3,7 @@ package nez.lang;
 import java.util.List;
 import java.util.TreeMap;
 
-import nez.GrammarOption;
+import nez.NezOption;
 import nez.SourceContext;
 import nez.ast.CommonTree;
 import nez.ast.CommonTreeFactory;
@@ -30,7 +30,7 @@ public class Grammar {
 	UMap<Production>           productionMap;
 	TreeMap<String, Boolean>   conditionMap;
 	
-	Grammar(Production start, GrammarOption option) {
+	Grammar(Production start, NezOption option) {
 		this.start = start;
 		this.productionList = new UList<Production>(new Production[4]);
 		this.productionMap = new UMap<Production>();
@@ -108,13 +108,13 @@ public class Grammar {
 	/* memoization configuration */
 	
 	private Instruction compiledCode = null;
-	private GrammarOption option;
+	private NezOption option;
 	
-	public final GrammarOption getGrammarOption() {
+	public final NezOption getGrammarOption() {
 		return this.option;
 	}
 
-	private void setOption (GrammarOption option) {
+	private void setOption (NezOption option) {
 		this.option = option;
 		this.compiledCode = null;
 	}

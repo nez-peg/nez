@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Stack;
 
-import nez.GrammarOption;
+import nez.NezOption;
 import nez.lang.And;
 import nez.lang.AnyChar;
 import nez.lang.Block;
@@ -47,14 +47,14 @@ public class CParserGenerator extends ParserGenerator {
 	boolean isPackrat = false;
 	boolean PatternMatch = true;
 	int option = common;
-	static int plain = GrammarOption.ASTConstruction;
-	static int prediction = GrammarOption.ASTConstruction | GrammarOption.Prediction;
-	static int common = GrammarOption.ASTConstruction | GrammarOption.Prediction | GrammarOption.CommonPrefix;
+	static int plain = NezOption.ASTConstruction;
+	static int prediction = NezOption.ASTConstruction | NezOption.Prediction;
+	static int common = NezOption.ASTConstruction | NezOption.Prediction | NezOption.CommonPrefix;
 	GrammarOptimizer optimizer = new GrammarOptimizer(this.option);
 	int predictionCount = 0;
 
 	@Override
-	public void generate(Grammar grammar, GrammarOption option, String fileName) {
+	public void generate(Grammar grammar, NezOption option, String fileName) {
 		this.setOption(option);
 		this.setOutputFile(fileName);
 		makeHeader(grammar);
@@ -936,7 +936,7 @@ public class CParserGenerator extends ParserGenerator {
 	@Override
 	public void visitChoice(Choice e) {
 //		showChoiceInfo(e);
-		if((e.predictedCase != null && isPrediction && (UFlag.is(this.option, GrammarOption.Prediction)))) {
+		if((e.predictedCase != null && isPrediction && (UFlag.is(this.option, NezOption.Prediction)))) {
 			predictionCount++;
 			justPredictionCount++;
 			int fid = this.fid++;

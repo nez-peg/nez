@@ -3,7 +3,7 @@ package nez.main;
 import java.io.IOException;
 import java.util.TreeMap;
 
-import nez.GrammarOption;
+import nez.NezOption;
 import nez.SourceContext;
 import nez.generator.GeneratorLoader;
 import nez.generator.NezGenerator;
@@ -27,9 +27,9 @@ class CommandContext {
 	public String grammarExpression = null;
 
 	// --option
-	private GrammarOption option = new GrammarOption(); // default
+	private NezOption option = new NezOption(); // default
 	
-	public final GrammarOption getGrammarOption() {
+	public final NezOption getGrammarOption() {
 		return this.option;
 	}
 	
@@ -300,7 +300,7 @@ class CommandContext {
 		}
 	}
 
-	public final Grammar getGrammar(String start, GrammarOption option) {
+	public final Grammar getGrammar(String start, NezOption option) {
 		if(start == null) {
 			start = this.startingProduction;
 		}

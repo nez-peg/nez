@@ -1,6 +1,6 @@
 package nez.generator;
 
-import nez.GrammarOption;
+import nez.NezOption;
 import nez.lang.And;
 import nez.lang.AnyChar;
 import nez.lang.Block;
@@ -43,7 +43,7 @@ public class LPegGrammarGenerator extends NezGenerator {
 	}
 
 	@Override
-	public void generate(Grammar grammar, GrammarOption option, String fileName) {
+	public void generate(Grammar grammar, NezOption option, String fileName) {
 		this.setOption(option);
 		this.setOutputFile(fileName);
 		file.writeIndent("local lpeg = require \"lpeg\"");
