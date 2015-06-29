@@ -34,6 +34,7 @@ import nez.lang.Replace;
 import nez.lang.Sequence;
 import nez.lang.Tagging;
 import nez.lang.Typestate;
+import nez.main.Verbose;
 
 public abstract class NezEncoder {
 	protected NezOption option;
@@ -103,17 +104,21 @@ public abstract class NezEncoder {
 		if(option.enabledInlining) {
 			for(Production p : grammar.getProductionList()) {
 				CodePoint cp = this.codePointMap.get(p.getUniqueName());
-				if(cp != null) {
-					this.checkInlining(cp);
-				}
+				this.checkInlining(cp);
+//				System.out.println(p.getUniqueName() + " cp = " + cp);
+//				if(cp != null) {
+//					this.checkInlining(cp);
+//				}
 			}
 		}
 		if(memoPointList != null) {
 			for(Production p : grammar.getProductionList()) {
 				CodePoint cp = this.codePointMap.get(p.getUniqueName());
-				if(cp != null) {
-					this.checkMemoizing(cp, memoPointList);
-				}
+				//System.out.println(p.getUniqueName() + " cp = " + cp);
+				this.checkMemoizing(cp, memoPointList);
+//				if(cp != null) {
+//					this.checkMemoizing(cp, memoPointList);
+//				}
 			}
 		}
 	}
@@ -126,17 +131,19 @@ public abstract class NezEncoder {
 	}
 
 	protected void checkMemoizing(CodePoint cp, List<MemoPoint> memoPointList) {
-		if(!cp.inlining) {
-			Production p = cp.production;
-			if(cp.ref > 3 && p.inferTypestate() != Typestate.OperationType) {
-				int memoId = memoPointList.size();
-				cp.memoPoint = new MemoPoint(memoId, p.getLocalName(), cp.localExpression, false);
-				memoPointList.add(cp.memoPoint);
-				//Verbose.debug("memo " + p.getLocalName() + " " + pcode.memoPoint.id + " pure? " + p.isNoNTreeConstruction());
+		if(cp.inlining || cp.memoPoint != null) {
+			return ;
+		}
+		Production p = cp.production;
+		if(cp.ref > 2 && p.inferTypestate() != Typestate.OperationType) {
+			int memoId = memoPointList.size();
+			cp.memoPoint = new MemoPoint(memoId, p.getLocalName(), cp.localExpression, p.isContextual());
+			memoPointList.add(cp.memoPoint);
+			if(Verbose.PackratParsing) {
+				Verbose.debug("memo " + cp.memoPoint + " ref="+ cp.ref + " pure? " + p.isNoNTreeConstruction() + " rec? " + p.isRecursive());
 			}
 		}
 	}
-
 
 	// encoding
 

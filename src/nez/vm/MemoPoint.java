@@ -77,5 +77,9 @@ public final class MemoPoint {
 		}
 		return false;
 	}
+	
+	public String toString() {
+		return this.label + "[id=" + this.id +"]";
+	}
 
 }
