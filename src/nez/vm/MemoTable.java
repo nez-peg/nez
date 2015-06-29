@@ -23,9 +23,6 @@ public abstract class MemoTable {
 	}
 	
 	public static MemoTable newTable(NezOption option, long length, int windowSize, int memoPointSize) {
-		if(Verbose.PackratParsing) {
-			Verbose.println("MemoPointSize: " + memoPointSize);
-		}
 		if(memoPointSize == 0) {
 			return new NullTable(length, windowSize, memoPointSize);
 		}

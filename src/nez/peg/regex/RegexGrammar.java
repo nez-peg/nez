@@ -13,7 +13,6 @@ import nez.ast.Tag;
 import nez.lang.Expression;
 import nez.lang.GrammarFactory;
 import nez.lang.Grammar;
-import nez.lang.GrammarChecker;
 import nez.lang.GrammarFile;
 import nez.main.Verbose;
 import nez.util.ConsoleUtils;

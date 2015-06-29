@@ -13,7 +13,6 @@ import nez.ast.CommonTree;
 import nez.ast.CommonTreeVisitor;
 import nez.lang.Expression;
 import nez.lang.Grammar;
-import nez.lang.GrammarChecker;
 import nez.lang.GrammarFactory;
 import nez.lang.GrammarFile;
 import nez.util.ConsoleUtils;

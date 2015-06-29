@@ -8,7 +8,6 @@ import nez.SourceContext;
 import nez.generator.GeneratorLoader;
 import nez.generator.NezGenerator;
 import nez.lang.Grammar;
-import nez.lang.GrammarChecker;
 import nez.lang.GrammarFile;
 import nez.lang.NezCombinator;
 import nez.util.ConsoleUtils;

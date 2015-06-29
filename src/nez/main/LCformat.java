@@ -4,7 +4,6 @@ import nez.SourceContext;
 import nez.ast.CommonTree;
 import nez.ast.CommonTreeWriter;
 import nez.lang.Grammar;
-import nez.lang.GrammarChecker;
 import nez.lang.GrammarFile;
 import nez.lang.NezParser;
 import nez.lang.Production;
