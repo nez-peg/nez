@@ -23,13 +23,14 @@ public class NezCompiler2 extends NezCompiler1 {
 		super(option);
 	}
 
-	protected Instruction encodeMemoizingProduction(CodePoint code) {
-		if(this.option.enabledMemoization) {
-			Production p = code.production;
+	protected Instruction encodeMemoizingProduction(CodePoint cp) {
+		if(cp.memoPoint != null) {
+			Production p = cp.production;
+			boolean node = option.enabledASTConstruction ? !p.isNoNTreeConstruction() : false;
 			boolean state = p.isContextual();
-			Instruction next = new IMemoize(p, code.memoPoint, !p.isNoNTreeConstruction(), state, new IMemoRet(p, null));
-			Instruction inside = new ICallPush(code.production, next);
-			return new ILookup(p, code.memoPoint, !p.isNoNTreeConstruction(), state, inside, next, new IMemoizeFail(p, state, code.memoPoint));
+			Instruction next = new IMemoize(p, cp.memoPoint, node, state, new IRet(p));
+			Instruction inside = new ICallPush(cp.production, next);
+			return new ILookup(p, cp.memoPoint, node, state, inside, next, new IMemoizeFail(p, state, cp.memoPoint));
 		}
 		return null;
 	}
@@ -174,14 +175,14 @@ public class NezCompiler2 extends NezCompiler1 {
 
 	public final Instruction encodeNonTerminal(NonTerminal p, Instruction next, Instruction failjump) {
 		Production r = p.getProduction();
-		CodePoint code = this.codePointMap.get(r.getUniqueName());
-		if(code.inlining) {
+		CodePoint cp = this.getCodePoint(r);
+		if(cp.inlining) {
 			this.optimizedInline(r);
-			return encodeExpression(code.localExpression, next, failjump);
+			return encodeExpression(cp.localExpression, next, failjump);
 		}
-		if(this.enablePackratParsing() && code.memoPoint != null) {
-			if(!this.enableASTConstruction() || r.isNoNTreeConstruction()) {
-				return new IMemoCall(code, next);
+		if(cp.memoPoint != null) {
+			if(!option.enabledASTConstruction || r.isNoNTreeConstruction()) {
+				return new IMemoCall(cp, next);
 			}
 		}
 		return new ICallPush(r, next);
@@ -189,31 +190,13 @@ public class NezCompiler2 extends NezCompiler1 {
 
 	// AST Construction
 
-	public final Instruction encodeLink(Link p, Instruction next, Instruction failjump) {
-		if(this.enableASTConstruction()) {
-			next = new ICommit(p, new ILink(p, next));
-			if(this.enablePackratParsing() && p.get(0) instanceof NonTerminal) {
-				next = encodeLinkedNonterminal((NonTerminal) p.get(0), next, failjump);
-			}
-			else {
-				next = encodeExpression(p.get(0), next, failjump);
-			}
-			return new INodePush(p, next);
-		}
-		return encodeExpression(p.get(0), next, failjump);
-	}
-
-	private Instruction encodeLinkedNonterminal(NonTerminal p, Instruction next, Instruction failjump) {
-		Production r = p.getProduction();
-		CodePoint code = this.codePointMap.get(r.getUniqueName());
-		if(code.inlining) {
-			this.optimizedInline(r);
-			return encodeExpression(code.localExpression, next, failjump);
-		}
-		if(this.enablePackratParsing() && code.memoPoint != null) {
-			return new IMemoCall(code, next);
-		}
-		return new ICallPush(r, next);
-	}
+//	public final Instruction encodeLink(Link p, Instruction next, Instruction failjump) {
+//		if(p.get(0) instanceof NonTerminal) {
+//			next = new ICommit(p, new ILink(p, next));
+//			next = encodeNonTerminal((NonTerminal) p.get(0), next, failjump);
+//			return new INodePush(p, next);
+//		}
+//		return super.encodeLink(p, next, failjump);
+//	}
 
 }

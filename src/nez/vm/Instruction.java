@@ -104,7 +104,7 @@ class IFail extends Instruction implements StackOperation {
 	}
 	@Override
 	Instruction exec(Context sc) throws TerminationException {
-		return sc.opIFail();
+		return sc.opIFailCatch();
 	}
 }
 
@@ -120,7 +120,7 @@ class IFailPush extends Instruction implements StackOperation {
 	}
 	@Override
 	Instruction exec(Context sc) throws TerminationException {
-		return sc.opIFailPush(this);
+		return sc.opITry(this);
 	}
 	@Override
 	protected String getOperand() {
@@ -140,7 +140,7 @@ class IFailPop extends Instruction implements StackOperation {
 	}
 	@Override
 	Instruction exec(Context sc) throws TerminationException {
-		return sc.opIFailPop(this);
+		return sc.opIFanally(this);
 	}
 }
 
@@ -214,11 +214,12 @@ class IMemoCall extends Instruction implements StackOperation {
 	public MemoPoint   memoPoint = null;
 	public Instruction nonMemoCodePoint = null;
 	public Instruction memoCodePoint    = null;
-	CodePoint temp;
-	IMemoCall(CodePoint temp, Instruction next) {
-		super(temp.production, next);
-		this.temp = temp;
-		this.production = temp.production;
+	CodePoint codePoint;
+	
+	IMemoCall(CodePoint codePoint, Instruction next) {
+		super(codePoint.production, next);
+		this.codePoint = codePoint;
+		this.production = codePoint.production;
 	}
 	@Override
 	protected String getOperand() {
@@ -226,13 +227,13 @@ class IMemoCall extends Instruction implements StackOperation {
 	}
 	void resolveJumpAddress() {
 		assert(this.returnPoint == null);
-		assert(this.temp != null);
-		this.memoCodePoint = temp.memoStart;
-		this.nonMemoCodePoint = temp.nonmemoStart;
-		this.memoPoint = temp.memoPoint;
+		assert(this.codePoint != null);
+		this.memoCodePoint = codePoint.memoStart;
+		this.nonMemoCodePoint = codePoint.nonmemoStart;
+		this.memoPoint = codePoint.memoPoint;
 		this.returnPoint = labeling(this.next);
 		this.next = labeling(memoCodePoint);
-		this.temp = null;
+		this.codePoint = null;
 	}
 	@Override
 	Instruction exec(Context sc) throws TerminationException {
@@ -315,7 +316,7 @@ class INotAnyChar extends Instruction {
 	@Override
 	Instruction exec(Context sc) throws TerminationException {
 		if(sc.hasUnconsumed()) {
-			return sc.opIFail();
+			return sc.opIFailCatch();
 		}
 		return next;
 	}
@@ -464,10 +465,10 @@ class ICommit extends Instruction {
 	@Override
 	Instruction exec(Context sc) throws TerminationException {
 		ContextStack top = sc.popLocalStack();
-		if(top.lastLog.next != null) {
-			Object child = sc.logCommit(top.lastLog.next);
+		if(top.topASTLog.next != null) {
+			Object child = sc.logCommit(top.topASTLog.next);
 			sc.setLeftObject(child);
-			sc.logAbort(top.lastLog, false);
+			sc.logAbort(top.topASTLog, false);
 		}
 		return this.next;
 	}
@@ -588,11 +589,31 @@ class ILookup extends IFailPush implements Memoization {
 	}
 	@Override
 	protected String getOperand() {
-		return String.valueOf(this.memoPoint.id);
+		return String.valueOf(this.memoPoint);
 	}
 	@Override
 	Instruction exec(Context sc) throws TerminationException {
-		return sc.opILookup(this);
+		MemoEntry entry = sc.getMemo(memoId, state); 
+		if(entry != null) {
+			if(entry.failed) {
+				memoPoint.failHit();
+				return sc.opIFailCatch();
+			}
+			memoPoint.memoHit(entry.consumed);
+			sc.consume(entry.consumed);
+			if(node) {
+				sc.setLeftObject(entry.result);
+			}
+			return this.skip;
+		}
+		memoPoint.miss();
+		if(node) {
+			sc.opITry(this);
+			return sc.opNodePush(this);
+		}
+		else {
+			return sc.opITry(this);
+		}
 	}
 }
 
@@ -610,11 +631,17 @@ class IMemoize extends Instruction implements Memoization {
 	}
 	@Override
 	protected String getOperand() {
-		return String.valueOf(this.memoPoint.id);
+		return String.valueOf(this.memoPoint);
 	}
 	@Override
 	Instruction exec(Context sc) throws TerminationException {
-		return sc.opIMemoize(this);
+		if(this.node) {
+			sc.opICommit(this);
+		}
+		ContextStack stackTop = sc.getUsedStackTop();
+		int length = (int)(sc.getPosition() - stackTop.pos);
+		sc.setMemo(stackTop.pos, memoId, false, this.node ? sc.getLeftObject() :null, length, this.state);
+		return sc.opIFanally(this);
 	}
 }
 
@@ -630,11 +657,12 @@ class IMemoizeFail extends IFail implements Memoization {
 	}
 	@Override
 	protected String getOperand() {
-		return String.valueOf(this.memoPoint.id);
+		return String.valueOf(this.memoPoint);
 	}
 	@Override
 	Instruction exec(Context sc) throws TerminationException {
-		return sc.opIMemoizeFail(this);
+		sc.setMemo(sc.getPosition(), memoId, true, null, 0, state);
+		return sc.opIFailCatch();
 	}
 }
 
@@ -771,7 +799,7 @@ class IBeginSymbolScope extends IFailPush {
 	}
 	@Override
 	Instruction exec(Context sc) throws TerminationException {
-		sc.opIFailPush(this);
+		sc.opITry(this);
 		ContextStack top = sc.newUnusedLocalStack();
 		top.pos = sc.getSymbolTable().savePoint();
 		return this.next;
@@ -786,7 +814,7 @@ class IBeginLocalScope extends IFailPush {
 	}
 	@Override
 	Instruction exec(Context sc) throws TerminationException {
-		sc.opIFailPush(this);
+		sc.opITry(this);
 		ContextStack top = sc.newUnusedLocalStack();
 		top.pos = sc.getSymbolTable().saveHiddenPoint(tableName);
 		return this.next;
@@ -803,7 +831,7 @@ class IEndSymbolScope extends Instruction {
 	Instruction exec(Context sc) throws TerminationException {
 		ContextStack top = sc.popLocalStack();
 		sc.getSymbolTable().rollBack((int)top.pos);
-		return (fail) ? sc.opIFail() : sc.opIFailPop(this);
+		return (fail) ? sc.opIFailCatch() : sc.opIFanally(this);
 	}
 }
 
@@ -839,7 +867,7 @@ class IExistsSymbol extends Instruction {
 	@Override
 	Instruction exec(Context sc) throws TerminationException {
 		byte[] t = sc.getSymbolTable().getSymbol(tableName);
-		return t != null ? this.next : sc.opIFail();
+		return t != null ? this.next : sc.opIFailCatch();
 	}
 }
 
@@ -860,7 +888,7 @@ class IIsSymbol extends Instruction {
 			sc.consume(t.length);
 			return this.next;
 		}
-		return sc.opIFail();
+		return sc.opIFailCatch();
 	}
 }
 
@@ -883,7 +911,7 @@ class IIsaSymbol extends Instruction {
 			return this.next;
 			
 		}
-		return sc.opIFail();
+		return sc.opIFailCatch();
 	}
 }
 
@@ -935,7 +963,7 @@ class IIsIndent extends Instruction {
 		long pos = sc.getPosition();
 		if(pos > 0) {
 			if(sc.byteAt(pos-1) != '\n') {
-				return sc.opIFail();
+				return sc.opIFailCatch();
 			}
 		}
 		byte[] b = sc.getSymbolTable().getSymbol(NezTag.Indent);
@@ -944,7 +972,7 @@ class IIsIndent extends Instruction {
 				sc.consume(b.length);
 				return this.next;
 			}
-			return sc.opIFail();
+			return sc.opIFailCatch();
 		}
 		return this.next;  // empty entry is allowable
 	}

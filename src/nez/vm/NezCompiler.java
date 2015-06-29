@@ -11,13 +11,13 @@ public abstract class NezCompiler extends NezEncoder {
 		super(option);
 	}
 
-	protected final boolean enablePackratParsing() {
-		return this.option.enabledMemoization;
-	}
-
-	protected final boolean enableASTConstruction() {
-		return this.option.enabledASTConstruction;
-	}
+//	protected final boolean enablePackratParsing() {
+//		return option.enabledMemoization;
+//	}
+//
+//	protected final boolean enableASTConstruction() {
+//		return option.enabledASTConstruction;
+//	}
 	
 	public abstract NezCode compile(Grammar grammar);
 

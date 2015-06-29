@@ -294,25 +294,25 @@ public class NezDebugger {
 		Expression current = code.getExpression();
 		if(e instanceof NonTerminal) {
 			code = exec_code();
-			int stackTop = ((Context) sc).getUsedStackTop();
-			while (stackTop <= ((Context) sc).getUsedStackTop()) {
+			int stackTop = ((Context) sc).getUsedStackTopForDebugger();
+			while (stackTop <= ((Context) sc).getUsedStackTopForDebugger()) {
 				code = exec_code();
 				current = code.getExpression();
 			}
 		}
 		else if(e instanceof Production) {
-			int stackTop = ((Context) sc).getUsedStackTop();
-			while (stackTop <= ((Context) sc).getUsedStackTop()) {
+			int stackTop = ((Context) sc).getUsedStackTopForDebugger();
+			while (stackTop <= ((Context) sc).getUsedStackTopForDebugger()) {
 				code = exec_code();
 				current = code.getExpression();
 			}
 		}
 		else if(e instanceof Link) {
 			code = exec_code();
-			int stackTop = ((Context) sc).getUsedStackTop();
+			int stackTop = ((Context) sc).getUsedStackTopForDebugger();
 			if(code.getExpression() instanceof Production) {
 				code = exec_code();
-				while (stackTop <= ((Context) sc).getUsedStackTop()) {
+				while (stackTop <= ((Context) sc).getUsedStackTopForDebugger()) {
 					code = exec_code();
 					current = code.getExpression();
 				}
@@ -363,9 +363,9 @@ public class NezDebugger {
 
 	public boolean exec(StepOut o) throws TerminationException {
 		Expression current = code.getExpression();
-		int stackTop = ((Context) sc).getUsedStackTop();
+		int stackTop = ((Context) sc).getUsedStackTopForDebugger();
 		code = exec_code();
-		while (stackTop <= ((Context) sc).getUsedStackTop()) {
+		while (stackTop <= ((Context) sc).getUsedStackTopForDebugger()) {
 			code = exec_code();
 			current = code.getExpression();
 		}
