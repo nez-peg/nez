@@ -130,11 +130,11 @@ public class ByteMap extends Terminal implements Consumed {
 		}
 	}
 
-	public final static void reverse(boolean[] byteMap, int option) {
+	public final static void reverse(boolean[] byteMap, boolean isBinary) {
 		for(int i = 0; i < 256; i++) {
 			byteMap[i] = !byteMap[i];
 		}
-		if(!UFlag.is(option, NezOption.Binary)) {
+		if(!isBinary) {
 			byteMap[0] = false;
 		}
 	}

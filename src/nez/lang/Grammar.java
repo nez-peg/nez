@@ -189,6 +189,22 @@ public class Grammar {
 		return matched;
 	}
 
+	public final boolean debug(SourceContext s) {
+		boolean matched;
+		Instruction pc;
+		s.initJumpStack(64, getMemoTable(s));
+		NezCompiler c = new NezCompiler1(this.option);
+		pc = c.compile(this).startPoint;
+		NezDebugger debugger = new NezDebugger(this, pc, s);
+		matched = debugger.exec();
+//		if(matched) {
+//			s.newTopLevelNode();
+//		}
+		return matched;
+	}
+
+	
+
 	/* --------------------------------------------------------------------- */
 		
 	public final boolean match(String str) {

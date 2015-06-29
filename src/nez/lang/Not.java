@@ -52,7 +52,7 @@ public class Not extends Unary {
 		Expression p = this.inner; //optimize(option);
 		if(p instanceof Choice) {
 			for(Expression pp : p) {
-				short r = acceptByte(pp, ch, option);
+				short r = acceptByte(pp, ch);
 				if(r != Acceptance.Unconsumed) {
 					return r;
 				}
@@ -60,10 +60,10 @@ public class Not extends Unary {
 			return Acceptance.Unconsumed;
 		}
 		else {
-			return acceptByte(p, ch, option);
+			return acceptByte(p, ch);
 		}
 	}
-	private short acceptByte(Expression p, int ch, int option) {
+	private short acceptByte(Expression p, int ch) {
 		if(p instanceof ByteChar) {
 			return ((ByteChar) p).byteChar == ch ? Acceptance.Reject : Acceptance.Unconsumed;
 		}
@@ -72,7 +72,7 @@ public class Not extends Unary {
 		}
 		if(p instanceof AnyChar) {
 			if(ch == Source.BinaryEOF) return Acceptance.Accept;
-			if(ch == 0 && !UFlag.is(option, NezOption.Binary)) return Acceptance.Accept;
+			if(ch == 0 && ((AnyChar)p).isBinary()) return Acceptance.Accept;
 			return Acceptance.Reject;
 		}
 		return Acceptance.Unconsumed;

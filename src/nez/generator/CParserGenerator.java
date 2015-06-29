@@ -50,12 +50,13 @@ public class CParserGenerator extends ParserGenerator {
 	static int plain = NezOption.ASTConstruction;
 	static int prediction = NezOption.ASTConstruction | NezOption.Prediction;
 	static int common = NezOption.ASTConstruction | NezOption.Prediction | NezOption.CommonPrefix;
-	GrammarOptimizer optimizer = new GrammarOptimizer(this.option);
+	GrammarOptimizer optimizer = null;
 	int predictionCount = 0;
 
 	@Override
 	public void generate(Grammar grammar, NezOption option, String fileName) {
 		this.setOption(option);
+		this.optimizer = new GrammarOptimizer(option);
 		this.setOutputFile(fileName);
 		makeHeader(grammar);
 		for(Production p : grammar.getProductionList()) {

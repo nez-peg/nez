@@ -11,21 +11,21 @@ public class Acceptance {
 	public final static short Unconsumed = 1;
 	public final static short Reject = 2;
 		
-	public static boolean predictAnyChar(int option, int ch, boolean k) {
+	public static boolean predictAnyChar(boolean isBinary, int ch, boolean k) {
 		switch(ch) {
 		case 0:
-			return UFlag.is(option, NezOption.Binary);
+			return isBinary;
 		case Source.BinaryEOF:
 			return false;
 		}
 		return true;
 	}
 
-	public static void predictAnyChar(int option, boolean[] dfa) {
+	public static void predictAnyChar(boolean isBinary, boolean[] dfa) {
 		for(int c = 1; c < dfa.length - 1; c++) {
 			dfa[c] = true;
 		}
-		dfa[0] = UFlag.is(option, NezOption.Binary);
+		dfa[0] = isBinary;
 		dfa[Source.BinaryEOF] = false;
 	}
 

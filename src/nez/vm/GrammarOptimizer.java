@@ -23,10 +23,10 @@ import nez.util.UList;
 
 public class GrammarOptimizer extends GrammarReshaper {
 
-	int option;
+	NezOption option;
 //	Grammar grammar = null;
 	
-	public GrammarOptimizer(int option) {
+	public GrammarOptimizer(NezOption option) {
 		this.option = option;
 	}
 
@@ -228,7 +228,7 @@ public class GrammarOptimizer extends GrammarReshaper {
 		if(p.predictedCase == null) {
 			UList<Expression> choiceList = new UList<Expression>(new Expression[p.size()]);
 			flattenChoiceList(p, choiceList);
-			if(UFlag.is(option, NezOption.Optimization)) {
+			if(option.enabledLexicalOptimization) {
 				Expression o = newOptimizedByteMap(p.getSourcePosition(), choiceList);
 				if(o != null) {
 					return o;
@@ -313,7 +313,7 @@ public class GrammarOptimizer extends GrammarReshaper {
 		UList<Expression> newChoiceList = null;
 		boolean commonPrifixed = false;
 		for(Expression p: choiceList) {
-			short r = p.acceptByte(ch, this.option);
+			short r = p.acceptByte(ch, 0/*this.option*/);
 			if(r == Acceptance.Reject) {
 				continue;
 			}
