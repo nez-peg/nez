@@ -45,35 +45,37 @@ public abstract class Context implements Source {
 	public final String getUnconsumedMessage() {
 		return this.formatPositionLine("unconsumed", this.pos, "");
 	}
-	
+
+	// NOTE: Added by Honda
 	public int getUsedStackTop() {
 		return this.usedStackTop;
 	}
 
 	/* PEG4d : AST construction */
 
-	private TreeTransducer treeFactory;
+	private TreeTransducer treeTransducer;
 	private Object left;
+
+	public final void setTreeTransducer(TreeTransducer treeTransducer) {
+		this.treeTransducer = treeTransducer;
+	}
+
 	void setLeftObject(Object left) {
 		this.left = left;
 	}
 
-	public final void setFactory(TreeTransducer treeFactory) {
-		this.treeFactory = treeFactory;
-	}
-	
-	public final Object getParsingObject() {
+	public final Object getLeftObject() {
 		return this.left;
 	}
 		
 	//private DataLog newPoint = null;
-	private OperationLog lastAppendedLog = null;
-	private OperationLog unusedDataLog = null;
+	private ASTLog lastAppendedLog = null;
+	private ASTLog unusedDataLog = null;
 	
 	private final void pushDataLog(int type, long pos, Object value) {
-		OperationLog l;
+		ASTLog l;
 		if(this.unusedDataLog == null) {
-			l = new OperationLog();
+			l = new ASTLog();
 		}
 		else {
 			l = this.unusedDataLog;
@@ -88,16 +90,16 @@ public abstract class Context implements Source {
 		lastAppendedLog = l;
 	}
 	
-	public final Object logCommit(OperationLog start) {
-		assert(start.type == OperationLog.LazyNew);
+	public final Object logCommit(ASTLog start) {
+		assert(start.type == ASTLog.LazyNew);
 		long spos = start.pos, epos = spos;
 		Tag tag = null;
 		Object value = null;
 		int objectSize = 0;
 		Object left = null;
-		for(OperationLog cur = start.next; cur != null; cur = cur.next ) {
+		for(ASTLog cur = start.next; cur != null; cur = cur.next ) {
 			switch(cur.type) {
-			case OperationLog.LazyLink:
+			case ASTLog.LazyLink:
 				int index = (int)cur.pos;
 				if(index == -1) {
 					cur.pos = objectSize;
@@ -107,16 +109,16 @@ public abstract class Context implements Source {
 					objectSize = index + 1;
 				}
 				break;
-			case OperationLog.LazyCapture:
+			case ASTLog.LazyCapture:
 				epos = cur.pos;
 				break;
-			case OperationLog.LazyTag:
+			case ASTLog.LazyTag:
 				tag = (Tag)cur.value;
 				break;
-			case OperationLog.LazyReplace:
+			case ASTLog.LazyReplace:
 				value = cur.value;
 				break;
-			case OperationLog.LazyLeftNew:
+			case ASTLog.LazyLeftNew:
 				left = commitNode(start, cur, spos, epos, objectSize, left, tag, value);
 				start = cur;
 				spos = cur.pos; 
@@ -129,28 +131,28 @@ public abstract class Context implements Source {
 		return commitNode(start, null, spos, epos, objectSize, left, tag, value);
 	}
 
-	private Object commitNode(OperationLog start, OperationLog end, long spos, long epos, int objectSize, Object left, Tag tag, Object value) {
-		Object newnode = this.treeFactory.newNode(tag, this, spos, epos, objectSize, value);
+	private Object commitNode(ASTLog start, ASTLog end, long spos, long epos, int objectSize, Object left, Tag tag, Object value) {
+		Object newnode = this.treeTransducer.newNode(tag, this, spos, epos, objectSize, value);
 		if(left != null) {
-			this.treeFactory.link(newnode, 0, left);
+			this.treeTransducer.link(newnode, 0, left);
 		}
 		if(objectSize > 0) {
 //			System.out.println("PREV " + start.prev);
 //			System.out.println(">>> BEGIN");
 //			System.out.println("  LOG " + start);
-			for(OperationLog cur = start.next; cur != end; cur = cur.next ) {
+			for(ASTLog cur = start.next; cur != end; cur = cur.next ) {
 //				System.out.println("  LOG " + cur);
-				if(cur.type == OperationLog.LazyLink) {
-					this.treeFactory.link(newnode, (int)cur.pos, cur.value);
+				if(cur.type == ASTLog.LazyLink) {
+					this.treeTransducer.link(newnode, (int)cur.pos, cur.value);
 				}
 			}
 //			System.out.println("<<< END");
 //			System.out.println("COMMIT " + newnode);
 		}
-		return this.treeFactory.commit(newnode);
+		return this.treeTransducer.commit(newnode);
 	}
 
-	public final void logAbort(OperationLog checkPoint, boolean isFail) {
+	public final void logAbort(ASTLog checkPoint, boolean isFail) {
 		assert(checkPoint != null);
 //		if(isFail) {
 //			for(DataLog cur = checkPoint.next; cur != null; cur = cur.next ) {
@@ -178,58 +180,18 @@ public abstract class Context implements Source {
 		return this.symbolTable.getState();
 	}
 
-	
-//	public int stateValue = 0;
-//	int stateCount = 0;
-//	UList<SymbolTableEntry> stackedSymbolTable = new UList<SymbolTableEntry>(new SymbolTableEntry[4]);
-//
-//	public final void pushSymbolTable(Tag table, byte[] s) {
-//		this.stackedSymbolTable.add(new SymbolTableEntry(table, s));
-//		this.stateCount += 1;
-//		this.stateValue = stateCount;
-//	}
-//
-//	public final void popSymbolTable(int stackTop) {
-//		this.stackedSymbolTable.clear(stackTop);
-//	}
-//
-//	public final boolean matchSymbolTable(Tag table, boolean onlyTop) {
-//		for(int i = stackedSymbolTable.size() - 1; i >= 0; i--) {
-//			SymbolTableEntry s = stackedSymbolTable.ArrayValues[i];
-//			if(s.table == table) {
-//				if(s.match(this)) {
-//					return true;
-//				}
-//				if(onlyTop) break;
-//			}
-//		}
-//		return false;
-//	}
-//	
-//	public final boolean matchSymbolTable(Tag table, byte[] symbol, boolean onlyTop) {
-//		for(int i = stackedSymbolTable.size() - 1; i >= 0; i--) {
-//			SymbolTableEntry s = stackedSymbolTable.ArrayValues[i];
-//			if(s.table == table) {
-//				if(s.match(symbol)) {
-//					return true;
-//				}
-//				if(onlyTop) break;
-//			}
-//		}
-//		return false;
-//	}
-
 	// ----------------------------------------------------------------------
 	// Instruction 
-		
+	
+	private static int StackSize = 64;
 	private ContextStack[] contextStacks = null;
 	private int usedStackTop;
 	private int failStackTop;
 	
-	public final void initJumpStack(int n, MemoTable memoTable) {
-		this.contextStacks = new ContextStack[n];
-		this.lastAppendedLog = new OperationLog();
-		for(int i = 0; i < n; i++) {
+	public final void initJumpStack(MemoTable memoTable) {
+		this.lastAppendedLog = new ASTLog();
+		this.contextStacks = new ContextStack[StackSize];
+		for(int i = 0; i < StackSize; i++) {
 			this.contextStacks[i] = new ContextStack();
 		}
 		this.contextStacks[0].jump = new IExit(false);
@@ -241,10 +203,12 @@ public abstract class Context implements Source {
 		this.failStackTop = 0;
 		this.usedStackTop = 1;
 		this.memoTable = memoTable;
-		if(this.treeFactory == null) {
-			treeFactory = new NothingConstructor();
+		if(this.treeTransducer == null) {
+			treeTransducer = new NoTreeTransducer();
 		}
-		//Verbose.println("MemoTable: " + this.memoTable.getClass().getSimpleName());
+		if(Verbose.PackratParsing) {
+			Verbose.println("MemoTable: " + this.memoTable.getClass().getSimpleName());
+		}
 	}
 
 	private ContextStack newUnusedStack() {
@@ -402,16 +366,6 @@ public abstract class Context implements Source {
 		return op.next;
 	}
 
-//	public final Instruction opMatchByteMap(IByteMap op) {
-//		int byteChar = this.byteAt(this.pos);
-//		if(op.byteMap[byteChar]) {
-//			this.consume(1);
-//			return op.next;
-//		}
-//		return this.opFail();
-//	}
-
-
 	public final Instruction opNodePush(Instruction op) {
 		ContextStack top = newUnusedLocalStack();
 		top.lastLog = this.lastAppendedLog;
@@ -425,7 +379,7 @@ public abstract class Context implements Source {
 			Object child = this.logCommit(top.lastLog.next);
 			logAbort(top.lastLog, false);
 			if(child != null) {
-				pushDataLog(OperationLog.LazyLink, op.index, child);
+				pushDataLog(ASTLog.LazyLink, op.index, child);
 			}
 			this.left = child;
 			//System.out.println("LINK " + this.lastAppendedLog);
@@ -456,24 +410,24 @@ public abstract class Context implements Source {
 	
 	public final Instruction opILink(ILink op) {
 		if(this.left != null) {
-			pushDataLog(OperationLog.LazyLink, op.index, this.left);
+			pushDataLog(ASTLog.LazyLink, op.index, this.left);
 		}
 		return op.next;
 	}
 
 	public final Instruction opINew(INew op) {
-		pushDataLog(OperationLog.LazyNew, this.pos + op.shift, null); //op.e);
+		pushDataLog(ASTLog.LazyNew, this.pos + op.shift, null); //op.e);
 		return op.next;
 	}
 
 	public final Instruction opILeftNew(ILeftNew op) {
-		pushDataLog(OperationLog.LazyLeftNew, this.pos + op.shift, null); // op.e);
+		pushDataLog(ASTLog.LazyLeftNew, this.pos + op.shift, null); // op.e);
 		return op.next;
 	}
 
 	public final Object newTopLevelNode() {
-		for(OperationLog cur = this.lastAppendedLog; cur != null; cur = cur.prev) {
-			if(cur.type == OperationLog.LazyNew) {
+		for(ASTLog cur = this.lastAppendedLog; cur != null; cur = cur.prev) {
+			if(cur.type == ASTLog.LazyNew) {
 				this.left = logCommit(cur);
 				logAbort(cur.prev, false);
 				return this.left;
@@ -483,17 +437,17 @@ public abstract class Context implements Source {
 	}
 	
 	public final Instruction opITag(ITag op) {
-		pushDataLog(OperationLog.LazyTag, 0, op.tag);
+		pushDataLog(ASTLog.LazyTag, 0, op.tag);
 		return op.next;
 	}
 
 	public final Instruction opIReplace(IReplace op) {
-		pushDataLog(OperationLog.LazyReplace, 0, op.value);
+		pushDataLog(ASTLog.LazyReplace, 0, op.value);
 		return op.next;
 	}
 
 	public final Instruction opICapture(ICapture op) {
-		pushDataLog(OperationLog.LazyCapture, this.pos, null);
+		pushDataLog(ASTLog.LazyCapture, this.pos, null);
 		return op.next;
 	}
 
@@ -793,7 +747,7 @@ public abstract class Context implements Source {
 	
 }
 
-class OperationLog {
+class ASTLog {
 	final static int LazyLink    = 0;
 	final static int LazyCapture = 1;
 	final static int LazyTag     = 2;
@@ -804,8 +758,8 @@ class OperationLog {
 	int     type;
 	long    pos;
 	Object  value;
-	OperationLog prev;
-	OperationLog next;
+	ASTLog prev;
+	ASTLog next;
 	int id() {
 		if(prev == null) return 0;
 		return prev.id() + 1;
@@ -830,7 +784,7 @@ class OperationLog {
 	}
 }
 
-class NothingConstructor extends TreeTransducer {
+class NoTreeTransducer extends TreeTransducer {
 	@Override
 	public Object newNode(Tag tag, Source s, long spos, long epos, int size, Object value) {
 		return null;

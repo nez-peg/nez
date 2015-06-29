@@ -2,7 +2,9 @@ package nez.vm;
 
 import java.util.HashMap;
 
+import nez.NezOption;
 import nez.main.NezProfier;
+import nez.main.Verbose;
 
 public abstract class MemoTable {
 	public abstract MemoTable newMemoTable(long len, int w, int n);
@@ -20,24 +22,26 @@ public abstract class MemoTable {
 		this.CountInvalidated = 0;
 	}
 	
-	public static MemoTable newNullTable(long len, int w, int n) {
-		return new NullTable(len, w, n);
+	public static MemoTable newTable(NezOption option, long length, int windowSize, int memoPointSize) {
+		if(Verbose.PackratParsing) {
+			Verbose.println("MemoPointSize: " + memoPointSize);
+		}
+		if(memoPointSize == 0) {
+			return new NullTable(length, windowSize, memoPointSize);
+		}
+		if(option.enabledPackratParsing) {
+			return new PackratHashTable(length, windowSize, memoPointSize);
+		}
+		return new ElasticTable(length, windowSize, memoPointSize);
 	}
 
-	public static MemoTable newElasticTable(long len, int w, int n) {
-		return new ElasticTable(len, w, n);
-	}
-
-	public static MemoTable newPackratHashTable(int len, int w, int n) {
-		return new PackratHashTable(len, w, n);
-	}
 	public void record(NezProfier rec) {
 		rec.setText("M.TableType", this.getClass().getSimpleName());
 		rec.setCount("M.MemoStored", this.CountStored);
 		rec.setRatio("M.MemoHit", this.CountUsed, this.CountStored);
 		rec.setCount("M.Invalidated", this.CountInvalidated);
 	}
-	
+
 }
 
 class NullTable extends MemoTable {

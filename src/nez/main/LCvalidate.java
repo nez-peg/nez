@@ -22,7 +22,6 @@ class LCvalidate extends Command {
 			SourceContext file = config.nextInputSource();
 			totalCount++;
 			boolean result = g.match(file);
-			g.verboseMemo();
 			if(!result) {
 				ConsoleUtils.println(file.getSyntaxErrorMessage());
 				failedInput.add(file.getResourceName());

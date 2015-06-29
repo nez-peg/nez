@@ -2,7 +2,7 @@ package nez.vm;
 
 
 import java.util.HashMap;
-import java.util.TreeMap;
+import java.util.List;
 
 import nez.NezOption;
 import nez.lang.And;
@@ -17,7 +17,6 @@ import nez.lang.DefSymbol;
 import nez.lang.ExistsSymbol;
 import nez.lang.Expression;
 import nez.lang.Grammar;
-import nez.lang.GrammarFactory;
 import nez.lang.IfFlag;
 import nez.lang.IsIndent;
 import nez.lang.IsSymbol;
@@ -35,9 +34,6 @@ import nez.lang.Replace;
 import nez.lang.Sequence;
 import nez.lang.Tagging;
 import nez.lang.Typestate;
-import nez.main.Verbose;
-import nez.util.UFlag;
-import nez.util.UList;
 
 public abstract class NezEncoder {
 	protected NezOption option;
@@ -46,23 +42,17 @@ public abstract class NezEncoder {
 		this.option = option;
 	}
 
-	/**
-	public final boolean is(int grammarOption) {
-		return UFlag.is(this.option, grammarOption);
-	}
-	**/
-
 	/* CodeMap */
 	
-	protected HashMap<String, CodePoint> codeMap = null;
+	protected HashMap<String, CodePoint> codePointMap = null;
 		
 	protected CodePoint newCodePoint(Production p, Expression localExpression) {
 		return new CodePoint(p, localExpression);
 	}
 	
 	protected CodePoint getCodePoint(Production p) {
-		if(this.codeMap != null) {
-			return codeMap.get(p.getUniqueName());
+		if(this.codePointMap != null) {
+			return codePointMap.get(p.getUniqueName());
 		}
 		return null;
 	}
@@ -71,40 +61,21 @@ public abstract class NezEncoder {
 		return p.getExpression();
 	}
 	
-	protected void analyizeProductionInlining(CodePoint pcode) {
-		//Verbose.debug("ref " + pcode.production.getLocalName() + " " + pcode.ref);
-		if(pcode.ref == 1 || GrammarOptimizer.isCharacterTerminal(pcode.localExpression)) {
-			pcode.inlining = true;
-		}
-	}
-
-	protected int analyizeProductionMemoizing(CodePoint pcode, int memoId) {
-		if(pcode.inlining) {
-			return memoId;
-		}
-		Production p = pcode.production;
-		if(pcode.ref > 3 && p.inferTypestate() != Typestate.OperationType) {
-			pcode.memoPoint = new MemoPoint(memoId++, p.getLocalName(), pcode.localExpression, false);
-			//Verbose.debug("memo " + p.getLocalName() + " " + pcode.memoPoint.id + " pure? " + p.isNoNTreeConstruction());
-		}
-		return memoId;
-	}
-
 	void count(Production p) {
 		String uname = p.getUniqueName();
-		CodePoint c = this.codeMap.get(uname);
+		CodePoint c = this.codePointMap.get(uname);
 		if(c == null) {
 			Expression deref = optimizeLocalProduction(p);
 			String key = "#" + deref.getId();
-			c = this.codeMap.get(key);
+			c = this.codePointMap.get(key);
 			if(c == null) {
 				c = newCodePoint(p, deref);
-				codeMap.put(key, c);
+				codePointMap.put(key, c);
 			}
 //			else {
 //				Verbose.debug("alias " + uname + ", " + c.production.getUniqueName());
 //			}
-			codeMap.put(uname, c);
+			codePointMap.put(uname, c);
 		}
 		c.ref++;
 	}
@@ -119,8 +90,8 @@ public abstract class NezEncoder {
 		}
 	}
 
-	protected void initCodeMap(Grammar grammar) {
-		this.codeMap = new HashMap<String, CodePoint>();
+	protected void initCodeMap(Grammar grammar, List<MemoPoint> memoPointList) {
+		this.codePointMap = new HashMap<String, CodePoint>();
 		Production start = grammar.getStartProduction();
 		count(start);
 		countNonTerminalReference(start.getExpression());
@@ -131,22 +102,41 @@ public abstract class NezEncoder {
 		}
 		if(option.enabledInlining) {
 			for(Production p : grammar.getProductionList()) {
-				CodePoint pcode = this.codeMap.get(p.getUniqueName());
-				if(pcode != null) {
-					this.analyizeProductionInlining(pcode);
+				CodePoint cp = this.codePointMap.get(p.getUniqueName());
+				if(cp != null) {
+					this.checkInlining(cp);
 				}
 			}
 		}
-		if(option.enabledMemoization) {
-			int memoId = 0;
+		if(memoPointList != null) {
 			for(Production p : grammar.getProductionList()) {
-				CodePoint pcode = this.codeMap.get(p.getUniqueName());
-				if(pcode != null) {
-					memoId = this.analyizeProductionMemoizing(pcode, memoId);
+				CodePoint cp = this.codePointMap.get(p.getUniqueName());
+				if(cp != null) {
+					this.checkMemoizing(cp, memoPointList);
 				}
 			}
 		}
 	}
+	
+	protected void checkInlining(CodePoint cp) {
+		//Verbose.debug("ref " + cp.production.getLocalName() + " " + cp.ref);
+		if(cp.ref == 1 || GrammarOptimizer.isCharacterTerminal(cp.localExpression)) {
+			cp.inlining = true;
+		}
+	}
+
+	protected void checkMemoizing(CodePoint cp, List<MemoPoint> memoPointList) {
+		if(!cp.inlining) {
+			Production p = cp.production;
+			if(cp.ref > 3 && p.inferTypestate() != Typestate.OperationType) {
+				int memoId = memoPointList.size();
+				cp.memoPoint = new MemoPoint(memoId, p.getLocalName(), cp.localExpression, false);
+				memoPointList.add(cp.memoPoint);
+				//Verbose.debug("memo " + p.getLocalName() + " " + pcode.memoPoint.id + " pure? " + p.isNoNTreeConstruction());
+			}
+		}
+	}
+
 
 	// encoding
 

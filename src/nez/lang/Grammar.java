@@ -19,6 +19,7 @@ import nez.vm.Instruction;
 import nez.vm.Machine;
 import nez.vm.MemoPoint;
 import nez.vm.MemoTable;
+import nez.vm.NezCode;
 import nez.vm.NezCompiler;
 import nez.vm.NezDebugger;
 import nez.vm.NezCompiler1;
@@ -89,8 +90,8 @@ public class Grammar {
 			this.compile();
 			prof.setFile("G.File", this.start.getGrammarFile().getURN());
 			prof.setCount("G.Production", this.productionMap.size());
-			prof.setCount("G.Instruction", this.InstructionSize);
-			prof.setCount("G.MemoPoint", this.memoPointSize);
+			prof.setCount("G.Instruction", this.compiledCode.getInstructionSize());
+			prof.setCount("G.MemoPoint", this.compiledCode.getMemoPointSize());
 		}
 	}
 
@@ -107,8 +108,8 @@ public class Grammar {
 	/* --------------------------------------------------------------------- */
 	/* memoization configuration */
 	
-	private Instruction compiledCode = null;
 	private NezOption option;
+	private NezCode compiledCode = null;
 	
 	public final NezOption getNezOption() {
 		return this.option;
@@ -118,59 +119,26 @@ public class Grammar {
 		this.option = option;
 		this.compiledCode = null;
 	}
-
-	private MemoTable defaultMemoTable;
-	private int windowSize = 32;
-	private int memoPointSize;
-	private int InstructionSize;
-	private UList<MemoPoint> memoPointList = null;
-
-	public void config(MemoTable memoTable, int windowSize) {
-		this.windowSize = windowSize;
-		this.defaultMemoTable = memoTable;
-	}
 	
 	private MemoTable getMemoTable(SourceContext sc) {
-		if(memoPointSize == 0) {
-			return MemoTable.newNullTable(sc.length(), this.windowSize, this.memoPointSize);
-		}
-		return this.defaultMemoTable.newMemoTable(sc.length(), this.windowSize, this.memoPointSize);
+		return MemoTable.newTable(option, sc.length(), 32, this.compiledCode.getMemoPointSize());
 	}
 
 	public final Instruction compile() {
 		if(compiledCode == null) {
 			NezCompiler bc = Command.ReleasePreview ? new NezCompiler2(this.option) : new NezCompiler1(this.option);
-			compiledCode = bc.compile(this).startPoint;
-//			this.InstructionSize  = bc.getInstructionSize();
-//			this.memoPointSize = bc.getMemoPointSize();
-//			if(Verbose.PackratParsing) {
-//				this.memoPointList = bc.getMemoPointList();
-//			}
+			compiledCode = bc.compile(this);
 //			if(Verbose.VirtualMachine) {
 //				bc.dump(this.productionList);
 //			}
 		}
-		return compiledCode;
+		return compiledCode.getStartPoint();
 	}
-	
-//	public NezCompiler cc() {
-//		NezCompiler bc = Command.ReleasePreview ? new NezCompiler2(this.option) : new NezCompiler1(this.option);
-//		bc.encode(this);
-//		return bc;
-//	}
-		
+			
 	public final boolean match(SourceContext s) {
 		boolean matched;
-		Instruction pc;
-		s.initJumpStack(64, getMemoTable(s));
-// REAL FIXME
-//		if(this.option == NezOption.DebugOption) { // FIXME
-//			NezCompiler c = new NezCompiler1(this.option);
-//			pc = c.compile(this).startPoint;
-//			NezDebugger debugger = new NezDebugger(this, pc, s);
-//			matched = debugger.exec();
-//		}
-		pc = this.compile();
+		Instruction pc = this.compile();
+		s.initJumpStack(getMemoTable(s));
 		if(prof != null) {
 			s.startProfiling(prof);
 		}
@@ -185,6 +153,9 @@ public class Grammar {
 		}
 		if(prof != null) {
 			s.doneProfiling(prof);
+			if(Verbose.PackratParsing) {
+				this.compiledCode.dumpMemoPointList();
+			}
 		}
 		return matched;
 	}
@@ -192,9 +163,9 @@ public class Grammar {
 	public final boolean debug(SourceContext s) {
 		boolean matched;
 		Instruction pc;
-		s.initJumpStack(64, getMemoTable(s));
+		s.initJumpStack(getMemoTable(s));
 		NezCompiler c = new NezCompiler1(this.option);
-		pc = c.compile(this).startPoint;
+		pc = c.compile(this).getStartPoint();
 		NezDebugger debugger = new NezDebugger(this, pc, s);
 		matched = debugger.exec();
 //		if(matched) {
@@ -217,11 +188,11 @@ public class Grammar {
 
 	public Object parse(SourceContext sc, TreeTransducer treeFactory) {
 		long startPosition = sc.getPosition();
-		sc.setFactory(treeFactory);
+		sc.setTreeTransducer(treeFactory);
 		if(!this.match(sc)) {
 			return null;
 		}
-		Object node = sc.getParsingObject();
+		Object node = sc.getLeftObject();
 		if(node == null) {
 			node = treeFactory.newNode(null, sc, startPosition, sc.getPosition(), 0, null);
 		}
@@ -239,17 +210,5 @@ public class Grammar {
 		SourceContext sc = SourceContext.newStringContext(str);
 		return (CommonTree)this.parse(sc, new CommonTreeTransducer());
 	}
-
-	public final void verboseMemo() {
-		if(Verbose.PackratParsing && this.memoPointList != null) {
-			ConsoleUtils.println("ID\tPEG\tCount\tHit\tFail\tMean");
-			for(MemoPoint p: this.memoPointList) {
-				String s = String.format("%d\t%s\t%d\t%f\t%f\t%f", p.id, p.label, p.count(), p.hitRatio(), p.failHitRatio(), p.meanLength());
-				ConsoleUtils.println(s);
-			}
-			ConsoleUtils.println("");
-		}
-	}
-
 
 }

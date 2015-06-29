@@ -1,6 +1,7 @@
 package nez.vm;
 
 import java.util.HashMap;
+import java.util.List;
 
 import nez.NezOption;
 import nez.lang.And;
@@ -52,7 +53,7 @@ public class NezCompiler1 extends NezCompiler {
 	
 	protected void encodeProduction(UList<Instruction> codeList, Production p, Instruction next) {
 		String uname = p.getUniqueName();
-		CodePoint code = this.codeMap.get(uname);
+		CodePoint code = this.codePointMap.get(uname);
 		if(code != null) {
 			code.nonmemoStart = encodeExpression(code.localExpression, next, null/*failjump*/);
 			code.start = codeList.size();
@@ -68,7 +69,11 @@ public class NezCompiler1 extends NezCompiler {
 	@Override
 	public NezCode compile(Grammar grammar) {
 		long t = System.nanoTime();
-		initCodeMap(grammar);
+		List<MemoPoint> memoPointList = null;
+		if(option.enabledMemoization || option.enabledPackratParsing) {
+			memoPointList = new UList<MemoPoint>(new MemoPoint[4]);
+		}
+		initCodeMap(grammar, memoPointList);
 		UList<Instruction> codeList = new UList<Instruction>(new Instruction[64]);
 		Production start = grammar.getStartProduction();
 		this.encodeProduction(codeList, start, new IRet(start));
@@ -79,7 +84,7 @@ public class NezCompiler1 extends NezCompiler {
 		}
 		for(Instruction inst : codeList) {
 			if(inst instanceof ICallPush) {
-				CodePoint deref = this.codeMap.get(((ICallPush) inst).rule.getUniqueName());
+				CodePoint deref = this.codePointMap.get(((ICallPush) inst).rule.getUniqueName());
 				if(deref == null) {
 					Verbose.debug("no deref: " + ((ICallPush) inst).rule.getUniqueName());
 				}
@@ -91,8 +96,8 @@ public class NezCompiler1 extends NezCompiler {
 		}
 		long t2 = System.nanoTime();
 		Verbose.printElapsedTime("CompilingTime", t, t2);
-		this.codeMap = null;
-		return new NezCode(codeList.ArrayValues[0]);
+		this.codePointMap = null;
+		return new NezCode(codeList.ArrayValues[0], codeList.size(), memoPointList);
 	}
 
 
@@ -103,8 +108,6 @@ public class NezCompiler1 extends NezCompiler {
 	protected void optimizedInline(Production p) {
 		Verbose.noticeOptimize("inlining", p.getExpression());
 	}
-
-	
 	
 	// encoding
 

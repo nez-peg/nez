@@ -19,15 +19,9 @@ import nez.util.UFlag;
 
 public class NezCompiler2 extends NezCompiler1 {
 
-//	HashMap<Integer, MemoPoint> memoMap;
-
 	public NezCompiler2(NezOption option) {
 		super(option);
 	}
-
-//	protected Expression optimizeLocalProduction(Production p) {
-//		return new GrammarOptimizer(this.option).optimize(p);
-//	}
 
 	protected Instruction encodeMemoizingProduction(CodePoint code) {
 		if(this.option.enabledMemoization) {
@@ -180,7 +174,7 @@ public class NezCompiler2 extends NezCompiler1 {
 
 	public final Instruction encodeNonTerminal(NonTerminal p, Instruction next, Instruction failjump) {
 		Production r = p.getProduction();
-		CodePoint code = this.codeMap.get(r.getUniqueName());
+		CodePoint code = this.codePointMap.get(r.getUniqueName());
 		if(code.inlining) {
 			this.optimizedInline(r);
 			return encodeExpression(code.localExpression, next, failjump);
@@ -211,7 +205,7 @@ public class NezCompiler2 extends NezCompiler1 {
 
 	private Instruction encodeLinkedNonterminal(NonTerminal p, Instruction next, Instruction failjump) {
 		Production r = p.getProduction();
-		CodePoint code = this.codeMap.get(r.getUniqueName());
+		CodePoint code = this.codePointMap.get(r.getUniqueName());
 		if(code.inlining) {
 			this.optimizedInline(r);
 			return encodeExpression(code.localExpression, next, failjump);

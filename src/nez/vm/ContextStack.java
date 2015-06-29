@@ -5,5 +5,5 @@ class ContextStack {
 	Instruction jump;
 	long pos;
 	int  prevFailTop;
-	OperationLog lastLog;
+	ASTLog lastLog;
 }

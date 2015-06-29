@@ -81,11 +81,6 @@ class CommandContext {
 		ConsoleUtils.exit(0, Message);
 	}
 	
-	
-
-	private int WindowSize = 32;
-	private MemoTable defaultTable = MemoTable.newElasticTable(0, 0, 0);
-
 	public void parseCommandOption(String[] args) {
 		int index = 0;
 		if(args.length > 0) {
@@ -319,7 +314,6 @@ class CommandContext {
 			rec.setText("config", option.toString());
 			g.setProfiler(rec);
 		}
-		g.config(this.defaultTable, WindowSize);
 		return g;
 	}
 

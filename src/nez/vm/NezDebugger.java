@@ -216,12 +216,12 @@ public class NezDebugger {
 				ConsoleUtils.println("context {");
 				ConsoleUtils.println("  input_name = " + ctx.getResourceName());
 				ConsoleUtils.println("  pos = " + ctx.getPosition());
-				Object obj = ctx.getParsingObject();
+				Object obj = ctx.getLeftObject();
 				if(obj == null) {
-					ConsoleUtils.println("  left = " + ctx.getParsingObject());
+					ConsoleUtils.println("  left = " + ctx.getLeftObject());
 				}
 				else {
-					ConsoleUtils.println("  left = " + ctx.getParsingObject().hashCode());
+					ConsoleUtils.println("  left = " + ctx.getLeftObject().hashCode());
 				}
 				ConsoleUtils.println("}");
 			}
@@ -233,7 +233,7 @@ public class NezDebugger {
 				ConsoleUtils.println("input_name = " + ctx.getResourceName());
 			}
 			else if(o.code.equals("left")) {
-				ConsoleUtils.println("left = " + ctx.getParsingObject());
+				ConsoleUtils.println("left = " + ctx.getLeftObject());
 			}
 			else {
 				ConsoleUtils.println("error: no member nameed \'" + o.code + "\' in context");
