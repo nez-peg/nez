@@ -2,9 +2,9 @@ package nez.main.ext;
 
 import nez.generator.GeneratorLoader;
 
-public class Lc {
+public class Lcnez {
 	static {
-		GeneratorLoader.regist("c", nez.generator.CParserGenerator.class);
+		GeneratorLoader.regist("cnez", nez.generator.CParserGenerator.class);
 		// File Extension
 		GeneratorLoader.regist(".c", nez.generator.CParserGenerator.class);
 	}

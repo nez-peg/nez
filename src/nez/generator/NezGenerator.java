@@ -47,7 +47,7 @@ public abstract class NezGenerator extends NezEncoder {
 		this.file = null;
 	}
 
-	protected void setOption(NezOption grammar) {
+	protected void setOption(NezOption option) {
 		this.option = option;
 	}
 
