@@ -28,7 +28,7 @@ condsect
 	= IGNORE / include
 	
 include	
-	= '[' _* ('INCLUDE'/NAME) _* '[' _* (@Dtd)* _*  NAME? _* MISC*  ']]' _*
+	= '[' _* ('INCLUDE'/NAME) _* '[' _* (Dtd)* _*  NAME? _* MISC*  ']]' _*
 	
 IGNORE
 	= '[' _* 'IGNORE' _* '[' _* IGNORESECT* _* ']]' _*
