@@ -7,6 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import nez.SourceContext;
+import nez.main.Verbose;
 import nez.util.StringUtils;
 
 public class FileContext extends SourceContext {
@@ -23,31 +24,36 @@ public class FileContext extends SourceContext {
 
 	public FileContext(String fileName) throws IOException {
 		super(fileName, 1);
-		this.file = new RandomAccessFile(fileName, "r");
-		this.fileLength = this.file.length();
-		
-		this.buffer_offset = 0;
-		lines = new long[((int)this.fileLength / PageSize) + 1];
-		lines[0] = 1;
-		if(this.FifoSize > 0) {
-			this.fifoMap = new LinkedHashMap<Long, byte[]>(FifoSize) {  //FIFO
-				private static final long serialVersionUID = 6725894996600788028L;
-				@Override
-				protected boolean removeEldestEntry(Map.Entry<Long, byte[]> eldest)  {
-					if(this.size() > FifoSize) {
-						return true;			
+		try {
+			this.file = new RandomAccessFile(fileName, "r");
+			this.fileLength = this.file.length();
+			
+			this.buffer_offset = 0;
+			lines = new long[((int)this.fileLength / PageSize) + 1];
+			lines[0] = 1;
+			if(this.FifoSize > 0) {
+				this.fifoMap = new LinkedHashMap<Long, byte[]>(FifoSize) {  //FIFO
+					private static final long serialVersionUID = 6725894996600788028L;
+					@Override
+					protected boolean removeEldestEntry(Map.Entry<Long, byte[]> eldest)  {
+						if(this.size() > FifoSize) {
+							return true;			
+						}
+						return false;
 					}
-					return false;
-				}
-			};
-			this.buffer = null;
+				};
+				this.buffer = null;
+			}
+			else {
+				this.fifoMap = null;
+				this.buffer = new byte[PageSize];
+			}
+			this.readMainBuffer(this.buffer_offset);
 		}
-		else {
-			this.fifoMap = null;
-			this.buffer = new byte[PageSize];
+		catch(Exception e) {
+			Verbose.traceException(e);
+			throw new IOException(e.getMessage());
 		}
-		this.readMainBuffer(this.buffer_offset);
-
 	}
 	@Override
 	public final long length() {
@@ -223,11 +229,12 @@ public class FileContext extends SourceContext {
 			for(int i = readsize; i < b.length; i++) {
 				b[i] = 0;
 			}
-			//		if(this.stat != null) {
-			//			stat.readFile(b.length);
-			//		}
-		} catch (IOException e) {
-			e.printStackTrace();
+		} 
+		catch (IOException e) {
+			Verbose.traceException(e);
+		}
+		catch (Exception e) {
+			Verbose.traceException(e);
 		}
 	}
 
