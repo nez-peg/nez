@@ -30,7 +30,7 @@ public class NezCompiler2 extends NezCompiler1 {
 			boolean state = p.isContextual();
 			Instruction next = new IMemoize(p, cp.memoPoint, node, state, new IRet(p));
 			Instruction inside = new ICallPush(cp.production, next);
-			return new ILookup(p, cp.memoPoint, node, state, inside, next, new IMemoizeFail(p, state, cp.memoPoint));
+			return new ILookup(p, cp.memoPoint, node, state, inside, new IRet(p), new IMemoizeFail(p, state, cp.memoPoint));
 		}
 		return null;
 	}
