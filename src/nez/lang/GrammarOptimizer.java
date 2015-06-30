@@ -9,14 +9,21 @@ import nez.util.UFlag;
 import nez.util.UList;
 
 public class GrammarOptimizer extends GrammarReshaper {
+	/* local optimizer option */
+	boolean enabledCommonLeftFactoring = true; //true;
+	boolean enabledCostBasedReduction  = true;
+	boolean enabledOutOfOrder = false;   // bugs!!
+
 	NezOption option;
 	HashMap<String,String> optimizedMap = new HashMap<String,String>();
 	
-	boolean enabledCommonLeftFactoring = false;
-	boolean enabledOutOfOrder = false;
 	
 	public GrammarOptimizer(NezOption option) {
 		this.option = option;
+		if(option.enabledPrediction) {
+			// seems slow when the prediction option is enabled
+			this.enabledCommonLeftFactoring = false;
+		}
 	}
 
 	public final Expression optimize(Production p) {
@@ -39,7 +46,7 @@ public class GrammarOptimizer extends GrammarReshaper {
 	}
 
 	private void rewrite_common(Expression e, Expression e2, Expression e3) {
-		Verbose.debug("common (" + e + " / " + e2 + ")\n\t=>" + e3);
+		//Verbose.debug("common (" + e + " / " + e2 + ")\n\t=>" + e3);
 	}
 
 	// used to test inlining
@@ -183,137 +190,6 @@ public class GrammarOptimizer extends GrammarReshaper {
 		return e;
 	}
 	
-//	@Override
-//	public Expression reshapeSequence(Sequence parentExpression) {
-//		UList<Expression> l = new UList<Expression>(new Expression[parentExpression.size()]);
-//		for(Expression subExpression: parentExpression) {
-//			GrammarFactory.addSequence(l, subExpression.reshape(this));
-//		}
-////		reorderSequence(l);  // FIXME
-//		if(UFlag.is(option, Grammar.Optimization)) {
-//			
-//			int loc = findNotAny(0, l);
-//			if(loc != -1) {
-//				UList<Expression> nl = new UList<Expression>(new Expression[l.size()]);
-//				joinNotAny(0, loc, l, nl);
-//				l = nl;
-//			}
-//		}
-//		return GrammarFactory.newSequence(parentExpression.getSourcePosition(), l);
-//	}
-//	
-//	/**
-//	 * Sequence otimization
-//	 * // #t 'a' 'b' => 'a' #t 'b'
-//	 */
-//
-//	private void reorderSequence(UList<Expression> l) {
-//		for(int i = 1; i < l.size(); i++) {
-//			Expression p = l.ArrayValues[i-1];
-//			Expression e = l.ArrayValues[i];
-//			if(Expression.isByteConsumed(e)) {   // #t 'a' 'b' => 'a' #t 'b'
-//				if(Expression.isPositionIndependentOperation(p)) {
-//					l.ArrayValues[i-1] = e;
-//					l.ArrayValues[i]   = p;
-//					continue;
-//				}
-//				if(p instanceof New) {
-//					New n = (New)p;
-//					l.ArrayValues[i-1] = e;
-//					if(n.isInterned()) {
-//						l.ArrayValues[i] =  GrammarFactory.newNew(n.getSourcePosition(), n.lefted, n.shift - 1);
-//					}
-//					else {
-//						n.shift -= 1;
-//						l.ArrayValues[i]   = n;
-//					}
-//					continue;
-//				}
-//				if(p instanceof Capture) {
-//					Capture n = (Capture)p;
-//					l.ArrayValues[i-1] = e;
-//					if(n.isInterned()) {
-//						l.ArrayValues[i] =  GrammarFactory.newCapture(n.getSourcePosition(), n.shift - 1);
-//					}
-//					else {
-//						n.shift -= 1;
-//						l.ArrayValues[i]   = n;
-//					}
-//					continue;
-//				}
-//			}
-//		}
-//	}
-//
-//	private int findNotAny(int s, UList<Expression> l) {
-//		for(int i = s; i < l.size(); i++) {
-//			Expression p = l.ArrayValues[i];
-//			if(p instanceof Not) {
-//				if(findAny(i, l) != -1) {
-//					return i;
-//				}
-//			}
-//		}
-//		return -1;
-//	}
-//
-//	private int findAny(int s, UList<Expression> l) {
-//		for(int i = s; i < l.size(); i++) {
-//			Expression p = l.ArrayValues[i];
-//			if(p instanceof Not) {
-//				continue;
-//			}
-//			if(p instanceof AnyChar) {
-//				return i;
-//			}
-//			break;
-//		}
-//		return -1;
-//	}
-//
-//	private void joinNotAny(int s, int loc, UList<Expression> l, UList<Expression> nl) {
-//		for(int i = s; i < loc; i++) {
-//			nl.add(l.ArrayValues[i]);
-//		}
-//		int e = findAny(loc, l);
-//		assert(e != -1);
-//		Not not = (Not)l.ArrayValues[loc];
-//		AnyChar any = (AnyChar)l.ArrayValues[e];
-//		if(loc + 1 < e) {
-//			UList<Expression> sl = new UList<Expression>(new Expression[4]);
-//			for(int i = loc; i < e; i++) {
-//				GrammarFactory.addChoice(sl, l.ArrayValues[i]);
-//			}
-//			not = GrammarFactory.newNot(not.getSourcePosition(), GrammarFactory.newChoice(not.getSourcePosition(), sl).reshape(this));
-//		}
-//		if(not.get(0) instanceof ByteChar) {
-//			boolean[] byteMap = ByteMap.newMap(true);
-//			byteMap[((ByteChar) not.get(0)).byteChar] = false;
-//			if(!UFlag.is(option, Grammar.Binary)) {
-//				byteMap[0] = false;
-//			}
-//			nl.add(GrammarFactory.newByteMap(not.getSourcePosition(), byteMap));
-//		}
-//		else if(not.get(0) instanceof ByteMap) {
-//			boolean[] byteMap = ByteMap.newMap(false);
-//			ByteMap.appendBitMap(byteMap, ((ByteMap) not.get(0)).byteMap);
-//			ByteMap.reverse(byteMap, option);
-//			nl.add(GrammarFactory.newByteMap(not.getSourcePosition(), byteMap));
-//		}
-//		else {
-//			nl.add(not);
-//			nl.add(any);
-//		}
-//		loc = findNotAny(e+1, l);
-//		if(loc != -1) {
-//			joinNotAny(e+1, loc, l, nl);
-//			return;
-//		}
-//		for(int i = e+1; i < l.size(); i++) {
-//			nl.add(l.ArrayValues[i]);
-//		}
-//	}
-	
 	public Expression reshapeLink(Link p) {
 		if(p.get(0) instanceof Choice) {
 			Expression inner = p.get(0);
@@ -372,10 +248,13 @@ public class GrammarOptimizer extends GrammarReshaper {
 					}
 				}
 				double reduced = (double)selected / count;
-				Verbose.debug("reduced: " + choiceList.size() + " => " + reduced);
+				//Verbose.debug("reduced: " + choiceList.size() + " => " + reduced);
 				if(count == 1 && singleChoice != null) {
 					rewrite("choice-single", p, singleChoice);
 					return singleChoice;
+				}
+				if(this.enabledCostBasedReduction && reduced / choiceList.size() > 0.55) {
+					p.predictedCase = null;
 				}
 			}
 			if(!isFlatten) {

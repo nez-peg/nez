@@ -404,16 +404,16 @@ class IBacktrack extends Instruction {
 }
 
 
-class IDfaDispatch extends Instruction {
+class IPredictDispatch extends Instruction {
 	Instruction[] jumpTable;
-	IDfaDispatch(Expression e, Instruction next) {
+	IPredictDispatch(Expression e, Instruction next) {
 		super(e, next);
 		jumpTable = new Instruction[257];
 		Arrays.fill(jumpTable, next);
 	}
 	void setJumpTable(int ch, Instruction inst) {
-		if(inst instanceof IDfaDispatch) {
-			jumpTable[ch] = ((IDfaDispatch) inst).jumpTable[ch];
+		if(inst instanceof IPredictDispatch) {
+			jumpTable[ch] = ((IPredictDispatch) inst).jumpTable[ch];
 		}
 		else {
 			jumpTable[ch] = Instruction.labeling(inst);

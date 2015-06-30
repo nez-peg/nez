@@ -6,7 +6,7 @@ import nez.util.UList;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
-public class IsSymbol extends Terminal implements Contextual {
+public class IsSymbol extends Expression implements Contextual {
 	public final Tag tableName;
 	final GrammarFile ns;
 	public final boolean checkLastSymbolOnly;
