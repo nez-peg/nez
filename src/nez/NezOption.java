@@ -34,12 +34,12 @@ public class NezOption {
 	
 	/* optimization */
 	public boolean enabledAsIsGrammar         = false; // asis
-	public boolean enabledLexicalOptimization = true;  // lex
-
 	public boolean enabledInlining        = true;      // inline
+
+	public boolean enabledLexicalOptimization = true;  // lex
 	public boolean enabledCommonFactored  = true;      // common
 	
-	public boolean enabledPrediction      = true;      // predict
+	public boolean enabledPrediction      = false;      // predict
 	public boolean enabledDFAConversion   = false;     // dfa
 
 	/* runtime option */

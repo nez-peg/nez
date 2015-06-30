@@ -305,7 +305,9 @@ public abstract class StringUtils {
 			}
 		}
 		for(int offset = 0; offset < end; offset += 4) {
-			appendBitmap(sb, b, offset);
+			if(offset+3 < b.length) {
+				appendBitmap(sb, b, offset);
+			}
 		}
 		return sb.toString();
 	}

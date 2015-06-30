@@ -348,6 +348,8 @@ public class GrammarFactory {
 	}
 
 	public final static Expression newChoice(SourcePosition s, Expression p, Expression p2) {
+		if(p == null) return newEmpty(s);
+		if(p2 == null) return p;
 		UList<Expression> l = new UList<Expression>(new Expression[2]);
 		addChoice(l, p);
 		addChoice(l, p2);

@@ -6,9 +6,13 @@ import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
 public class Choice extends Multinary {
+	boolean isFlatten = false;
+	public Expression[] predictedCase = null;
+	
 	Choice(SourcePosition s, UList<Expression> l, int size) {
 		super(s, l, size);
 	}
+
 	@Override
 	public final boolean equalsExpression(Expression o) {
 		if(o instanceof Choice && this.size() == o.size()) {
@@ -21,10 +25,12 @@ public class Choice extends Multinary {
 		}
 		return false;
 	}
+	
 	@Override
 	public String getPredicate() {
 		return "/";
 	}
+	
 	@Override
 	public String key() {
 		return "/";
@@ -131,10 +137,7 @@ public class Choice extends Multinary {
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
 		return bc.encodeChoice(this, next, failjump);
 	}
-	
-	// optimize
-	public Expression[] predictedCase = null;
-	
+		
 	@Override
 	protected int pattern(GEP gep) {
 		return this.size();

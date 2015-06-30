@@ -66,8 +66,8 @@ public class GrammarReshaper {
 
 	public Expression reshapeSequence(Sequence e) {
 		Expression first = e.getFirst().reshape(this);
-		Expression last = e.getLast().reshape(this);
-		if(first == e.getFirst() && last == e.getLast()) {
+		Expression last = e.getNext().reshape(this);
+		if(first == e.getFirst() && last == e.getNext()) {
 			return e;
 		}
 		return e.newSequence(first, last);

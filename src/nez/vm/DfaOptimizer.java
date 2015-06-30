@@ -182,9 +182,9 @@ class InliningChoice extends GrammarReshaper {
 		if(this.inlining) {
 			Expression first = e.getFirst().reshape(this);
 			this.inlining = false;
-			Expression last = e.getLast().reshape(this);
+			Expression last = e.getNext().reshape(this);
 			this.inlining = true;
-			if(first == e.getFirst() && last == e.getLast()) {
+			if(first == e.getFirst() && last == e.getNext()) {
 				return e;
 			}
 			return e.newSequence(first, last);

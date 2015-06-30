@@ -46,7 +46,7 @@ public class Sequence extends Expression {
 	public Expression getFirst() {
 		return this.first;
 	}
-	public Expression getLast() {
+	public Expression getNext() {
 		return this.last;
 	}
 
@@ -85,7 +85,7 @@ public class Sequence extends Expression {
 			b = null;
 			if(first instanceof ByteChar) {
 				b = (ByteChar)first;
-				next = next.getLast();
+				next = next.getNext();
 			}
 		}
 		sb.append("'");

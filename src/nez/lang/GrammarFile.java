@@ -198,7 +198,7 @@ public class GrammarFile extends GrammarFactory {
 		return ruleList;
 	}
 
-	public final UList<Production> getRuleList() {
+	public final List<Production> getAllProductionList() {
 		UList<Production> ruleList = new UList<Production>(new Production[this.ruleMap.size()]);
 		for(String n : this.ruleMap.keys()) {
 			ruleList.add(this.getProduction(n));
@@ -220,7 +220,7 @@ public class GrammarFile extends GrammarFactory {
 	}
 
 	public void dump() {
-		for(Production r : this.getRuleList()) {
+		for(Production r : this.getAllProductionList()) {
 			ConsoleUtils.println(r);
 		}
 	}
@@ -330,20 +330,17 @@ public class GrammarFile extends GrammarFactory {
 //			ConsoleUtils.exit(1, "FatalGrammarError");
 //		}
 		// type check
-		for(Production p: this.getRuleList()) {
+		for(Production p: this.getAllProductionList()) {
 			if(p.isTerminal()) {
 				continue;
 			}
 			p.reshape(new Typestate(this));
-		}		
-		// interning
-//		if(this.option == NezOption.DebugOption) {
-//			for(Production r: grammar.getRuleList()) {
-//				GrammarFactory.setId(r.getExpression());
-//			}
-//		}
-//		else {
-		for(Production r: this.getRuleList()) {
+		}
+		GrammarOptimizer optimizer = null;
+		if(!option.enabledAsIsGrammar) {
+			optimizer = new GrammarOptimizer(this.option);
+		}
+		for(Production r: this.getAllProductionList()) {
 			if(r.isTerminal()) {
 				continue;
 			}
@@ -363,6 +360,9 @@ public class GrammarFile extends GrammarFactory {
 				if(r1 != r2) {
 					Verbose.FIXME("mismatch contextual: " + r.getLocalName() + " " + r1 + " " + r2);
 				}
+			}
+			if(optimizer != null) {
+				optimizer.optimize(r);
 			}
 			if(option.enabledInterning) {
 				r.internRule();

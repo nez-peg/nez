@@ -126,7 +126,7 @@ public abstract class NezEncoder {
 	
 	protected void checkInlining(CodePoint cp) {
 		//Verbose.debug("ref " + cp.production.getLocalName() + " " + cp.ref);
-		if(cp.ref == 1 || GrammarOptimizer.isCharacterTerminal(cp.localExpression)) {
+		if(cp.ref == 1 || GrammarOptimizer.isSingleCharacter(cp.localExpression)) {
 			cp.inlining = true;
 		}
 	}
