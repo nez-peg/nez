@@ -33,11 +33,11 @@ public class IsIndent extends Terminal implements Contextual {
 	}
 
 	@Override
-	public short acceptByte(int ch, int option) {
+	public short acceptByte(int ch) {
 		if (ch == '\t' || ch == ' ') {
-			return Acceptance.Accept;
+			return PossibleAcceptance.Accept;
 		}
-		return Acceptance.Unconsumed;
+		return PossibleAcceptance.Unconsumed;
 	}
 
 	@Override

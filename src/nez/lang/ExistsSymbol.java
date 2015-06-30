@@ -63,11 +63,11 @@ public class ExistsSymbol extends Expression implements Contextual {
 	}
 	
 	@Override
-	public short acceptByte(int ch, int option) {
+	public short acceptByte(int ch) {
 		if(this.getSymbolExpression() != null) {
-			return this.getSymbolExpression().acceptByte(ch, option);
+			return this.getSymbolExpression().acceptByte(ch);
 		}
-		return Acceptance.Accept;
+		return PossibleAcceptance.Accept;
 	}
 	@Override
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {

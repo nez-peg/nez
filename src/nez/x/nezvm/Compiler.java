@@ -6,7 +6,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 
-import nez.NezOption;
 import nez.lang.And;
 import nez.lang.AnyChar;
 import nez.lang.ByteChar;
@@ -22,7 +21,7 @@ import nez.lang.GrammarFile;
 import nez.lang.NonTerminal;
 import nez.lang.Not;
 import nez.lang.Option;
-import nez.lang.Acceptance;
+import nez.lang.PossibleAcceptance;
 import nez.lang.Production;
 import nez.lang.Repetition;
 import nez.lang.Replace;
@@ -774,8 +773,8 @@ public class Compiler extends GrammarVisitor {
 			else {
 				// FIXME:
 				// AnyChar behaves differently in cases of Binary
-				short r = e.acceptByte(c, NezOption.Binary); 
-				if(r != Acceptance.Reject) {
+				short r = e.acceptByte(c); 
+				if(r != PossibleAcceptance.Reject) {
 					l.add(e);
 				}
 			}

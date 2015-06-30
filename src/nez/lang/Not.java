@@ -46,36 +46,8 @@ public class Not extends Unary {
 	}
 	
 	@Override
-	public short acceptByte(int ch, int option) {
-		/* The code below works only if a single character in !(e) */
-		/* we must accept 'i' for !'int' 'i' */
-		Expression p = this.inner; //optimize(option);
-		if(p instanceof Choice) {
-			for(Expression pp : p) {
-				short r = acceptByte(pp, ch);
-				if(r != Acceptance.Unconsumed) {
-					return r;
-				}
-			}
-			return Acceptance.Unconsumed;
-		}
-		else {
-			return acceptByte(p, ch);
-		}
-	}
-	private short acceptByte(Expression p, int ch) {
-		if(p instanceof ByteChar) {
-			return ((ByteChar) p).byteChar == ch ? Acceptance.Reject : Acceptance.Unconsumed;
-		}
-		if(p instanceof ByteMap) {
-			return ((ByteMap) p).byteMap[ch] ? Acceptance.Reject : Acceptance.Unconsumed;
-		}
-		if(p instanceof AnyChar) {
-			if(ch == Source.BinaryEOF) return Acceptance.Accept;
-			if(ch == 0 && ((AnyChar)p).isBinary()) return Acceptance.Accept;
-			return Acceptance.Reject;
-		}
-		return Acceptance.Unconsumed;
+	public short acceptByte(int ch) {
+		return PossibleAcceptance.acceptNot(this, ch);
 	}
 
 	@Override

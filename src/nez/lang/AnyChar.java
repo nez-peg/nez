@@ -55,13 +55,8 @@ public class AnyChar extends Terminal implements Consumed {
 	}
 	
 	@Override
-	public short acceptByte(int ch, int option) {
-		if(binary) {
-			return (ch == Source.BinaryEOF) ? Acceptance.Reject : Acceptance.Accept;
-		}
-		else {
-			return (ch == Source.BinaryEOF || ch == 0) ? Acceptance.Reject : Acceptance.Accept;
-		}
+	public short acceptByte(int ch) {
+		return PossibleAcceptance.acceptAny(binary, ch);
 	}
 	
 	@Override

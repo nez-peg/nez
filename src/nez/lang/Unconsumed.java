@@ -26,7 +26,7 @@ abstract class Unconsumed extends Expression {
 		return Typestate.BooleanType;
 	}
 	@Override
-	public short acceptByte(int ch, int option) {
-		return Acceptance.Unconsumed;
+	public short acceptByte(int ch) {
+		return PossibleAcceptance.Unconsumed;
 	}
 }

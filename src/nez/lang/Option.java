@@ -49,8 +49,8 @@ public class Option extends Unary {
 		return t;
 	}
 	
-	@Override public short acceptByte(int ch, int option) {
-		return Acceptance.acceptOption(this, ch, option);
+	@Override public short acceptByte(int ch) {
+		return PossibleAcceptance.acceptOption(this, ch);
 	}
 	
 	@Override

@@ -11,7 +11,7 @@ import nez.lang.GrammarReshaper;
 import nez.lang.GrammarFile;
 import nez.lang.NonTerminal;
 import nez.lang.Option;
-import nez.lang.Acceptance;
+import nez.lang.PossibleAcceptance;
 import nez.lang.Production;
 import nez.lang.Repetition;
 import nez.lang.Repetition1;
@@ -199,8 +199,8 @@ class InliningChoice extends GrammarReshaper {
 		UList<Expression> newChoiceList = null;
 		boolean commonPrifixed = false;
 		for(Expression p: choiceList) {
-			short r = p.acceptByte(ch, 0);
-			if(r == Acceptance.Reject) {
+			short r = p.acceptByte(ch);
+			if(r == PossibleAcceptance.Reject) {
 				continue;
 			}
 			if(first == null) {

@@ -119,18 +119,18 @@ public class Choice extends Multinary {
 	}
 	
 	@Override
-	public short acceptByte(int ch, int option) {
+	public short acceptByte(int ch) {
 		boolean hasUnconsumed = false;
 		for(int i = 0; i < this.size(); i++) {
-			short r = this.get(i).acceptByte(ch, option);
-			if(r == Acceptance.Accept) {
+			short r = this.get(i).acceptByte(ch);
+			if(r == PossibleAcceptance.Accept) {
 				return r;
 			}
-			if(r == Acceptance.Unconsumed) {
+			if(r == PossibleAcceptance.Unconsumed) {
 				hasUnconsumed = true;
 			}
 		}
-		return hasUnconsumed ? Acceptance.Unconsumed : Acceptance.Reject;
+		return hasUnconsumed ? PossibleAcceptance.Unconsumed : PossibleAcceptance.Reject;
 	}
 
 	@Override

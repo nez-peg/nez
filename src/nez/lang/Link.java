@@ -45,8 +45,8 @@ public class Link extends Unary {
 		return Typestate.OperationType;
 	}
 	@Override
-	public short acceptByte(int ch, int option) {
-		return inner.acceptByte(ch, option);
+	public short acceptByte(int ch) {
+		return inner.acceptByte(ch);
 	}
 	@Override
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {

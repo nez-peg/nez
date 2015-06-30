@@ -536,8 +536,8 @@ public class Production extends Expression {
 //	}
 
 	@Override
-	public short acceptByte(int ch, int option) {
-		return this.getExpression().acceptByte(ch, option);
+	public short acceptByte(int ch) {
+		return this.getExpression().acceptByte(ch);
 	}
 
 	

@@ -81,7 +81,7 @@ public abstract class Expression extends AbstractList<Expression> {
 	
 	public abstract int inferTypestate(Visa v);
 	
-	public abstract short acceptByte(int ch, int option);
+	public abstract short acceptByte(int ch);
 	
 	@Override
 	public final String toString() {

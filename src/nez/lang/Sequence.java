@@ -9,11 +9,11 @@ import nez.vm.NezEncoder;
 
 public class Sequence extends Expression {
 	Expression first;
-	Expression last;
-	Sequence(SourcePosition s, Expression first, Expression last) {
+	Expression next;
+	Sequence(SourcePosition s, Expression first, Expression next) {
 		super(s);
 		this.first = first;
-		this.last  = last;
+		this.next  = next;
 	}
 	@Override
 	public final boolean equalsExpression(Expression o) {
@@ -28,7 +28,7 @@ public class Sequence extends Expression {
 	}
 	@Override
 	public final Expression get(int index) {
-		return index == 0 ? this.first : this.last;
+		return index == 0 ? this.first : this.next;
 	}
 	@Override
 	public final Expression set(int index, Expression e) {
@@ -37,8 +37,8 @@ public class Sequence extends Expression {
 			this.first = e;
 		}
 		else {
-			p = this.last;
-			this.last = e;
+			p = this.next;
+			this.next = e;
 		}
 		return p;
 	}
@@ -47,7 +47,7 @@ public class Sequence extends Expression {
 		return this.first;
 	}
 	public Expression getNext() {
-		return this.last;
+		return this.next;
 	}
 
 //	Sequence(SourcePosition s, UList<Expression> l) {
@@ -63,14 +63,14 @@ public class Sequence extends Expression {
 	}
 	@Override
 	protected final void format(StringBuilder sb) {
-		if(this.first instanceof ByteChar && this.last.getFirst() instanceof ByteChar) {
+		if(this.first instanceof ByteChar && this.next.getFirst() instanceof ByteChar) {
 			sb.append("'");
-			formatString(sb, (ByteChar)this.first, this.last);
+			formatString(sb, (ByteChar)this.first, this.next);
 		}
 		else {
 			formatInner(sb, this.first);
 			sb.append(" ");
-			formatInner(sb, this.last);
+			formatInner(sb, this.next);
 		}
 	}
 	
@@ -159,8 +159,12 @@ public class Sequence extends Expression {
 	}
 
 	@Override
-	public short acceptByte(int ch, int option) {
-		return Acceptance.acceptSequence(this, ch, option);
+	public short acceptByte(int ch) {
+		short r = this.first.acceptByte(ch);
+		if(r == PossibleAcceptance.Unconsumed) {
+			return this.next.acceptByte(ch);
+		}
+		return r;
 	}
 
 	public final boolean isMultiChar() {

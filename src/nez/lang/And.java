@@ -43,12 +43,8 @@ public class And extends Unary {
 	}
 
 	@Override
-	public short acceptByte(int ch, int option) {
-		short r = this.inner.acceptByte(ch, option);
-		if(r == Acceptance.Accept || r == Acceptance.Unconsumed) {
-			return Acceptance.Unconsumed;
-		}
-		return r;
+	public short acceptByte(int ch) {
+		return PossibleAcceptance.acceptAnd(this, ch);
 	}
 	
 	@Override

@@ -14,7 +14,7 @@ public abstract class ASTOperation extends Expression {
 		return Typestate.OperationType;
 	}
 	@Override
-	public short acceptByte(int ch, int option) {
-		return Acceptance.Unconsumed;
+	public short acceptByte(int ch) {
+		return PossibleAcceptance.Unconsumed;
 	}
 }

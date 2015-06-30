@@ -34,13 +34,15 @@ public class Failure extends Unconsumed {
 	}
 
 	@Override
-	public short acceptByte(int ch, int option) {
-		return Acceptance.Reject;
+	public short acceptByte(int ch) {
+		return PossibleAcceptance.Reject;
 	}
+	
 	@Override
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
 		return bc.encodeFail(this);
 	}
+	
 	@Override
 	protected int pattern(GEP gep) {
 		return 1;

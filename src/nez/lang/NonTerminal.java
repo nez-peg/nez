@@ -101,13 +101,13 @@ public class NonTerminal extends Expression {
 	}
 	
 	@Override
-	public short acceptByte(int ch, int option) {
+	public short acceptByte(int ch) {
 		try {
-			return this.deReference().acceptByte(ch, option);
+			return this.deReference().acceptByte(ch);
 		}
 		catch(StackOverflowError e) {
 			System.out.println(e + " at " + this.getLocalName());
-			return Acceptance.Accept;
+			return PossibleAcceptance.Accept;
 		}
 	}
 

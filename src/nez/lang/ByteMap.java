@@ -67,8 +67,8 @@ public class ByteMap extends Terminal implements Consumed {
 	}
 
 	@Override
-	public short acceptByte(int ch, int option) {
-		return (byteMap[ch]) ? Acceptance.Accept : Acceptance.Reject;
+	public short acceptByte(int ch) {
+		return PossibleAcceptance.acceptByteMap(byteMap, ch);
 	}
 	
 	@Override

@@ -48,8 +48,8 @@ public class Repetition1 extends Repetition {
 		return t;
 	}
 
-	@Override public short acceptByte(int ch, int option) {
-		return Acceptance.acceptUnary(this, ch, option);
+	@Override public short acceptByte(int ch) {
+		return PossibleAcceptance.acceptUnary(this, ch);
 	}
 	
 	@Override

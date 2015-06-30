@@ -65,8 +65,8 @@ public class DefSymbol extends Unary {
 		return Typestate.BooleanType;
 	}
 	@Override
-	public short acceptByte(int ch, int option) {
-		return this.inner.acceptByte(ch, option);
+	public short acceptByte(int ch) {
+		return this.inner.acceptByte(ch);
 	}
 	
 	// Utilities

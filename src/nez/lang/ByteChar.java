@@ -45,8 +45,8 @@ public class ByteChar extends Terminal implements Consumed {
 		return true;
 	}
 	@Override
-	public short acceptByte(int ch, int option) {
-		return (byteChar == ch) ? Acceptance.Accept : Acceptance.Reject;
+	public short acceptByte(int ch) {
+		return PossibleAcceptance.acceptByteChar(byteChar, ch);
 	}
 	@Override
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {

@@ -16,7 +16,7 @@ import nez.lang.Link;
 import nez.lang.LocalTable;
 import nez.lang.New;
 import nez.lang.NezTag;
-import nez.lang.Acceptance;
+import nez.lang.PossibleAcceptance;
 import nez.lang.NonTerminal;
 import nez.lang.Production;
 import nez.lang.Replace;
@@ -41,11 +41,11 @@ public abstract class Instruction {
 	}
 	
 	final short isAcceptImpl(int ch) {
-		return next == null ? Acceptance.Accept : this.next.isAcceptImpl(ch);
+		return next == null ? PossibleAcceptance.Accept : this.next.isAcceptImpl(ch);
 	}
 
 	boolean isAccept(int ch) {
-		return this.isAcceptImpl(ch) == Acceptance.Accept;
+		return this.isAcceptImpl(ch) == PossibleAcceptance.Accept;
 	}
 
 	abstract Instruction exec(Context sc) throws TerminationException;

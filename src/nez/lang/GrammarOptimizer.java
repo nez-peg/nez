@@ -463,8 +463,8 @@ public class GrammarOptimizer extends GrammarReshaper {
 		UList<Expression> newChoiceList = null;
 		boolean commonPrifixed = false;
 		for(Expression p: choiceList) {
-			short r = p.acceptByte(ch, 0/*this.option*/);
-			if(r == Acceptance.Reject) {
+			short r = p.acceptByte(ch);
+			if(r == PossibleAcceptance.Reject) {
 				continue;
 			}
 			if(first == null) {
