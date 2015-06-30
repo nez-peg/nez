@@ -659,13 +659,8 @@ public abstract class Context implements Source {
 		return this.opIFailCatch();
 	}
 
-	public final Instruction opMultiChar(IMultiChar op) {
-		if(this.match(pos, op.utf8)) {
-			this.consume(op.len);
-			return op.next;
-		}
-		return op.optional ? op.next : this.opIFailCatch();
-	}
+//	public final Instruction opMultiChar(IMultiChar op) {
+//	}
 	
 	
 	// Profiling ------------------------------------------------------------

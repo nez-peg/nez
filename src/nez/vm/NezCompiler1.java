@@ -10,6 +10,7 @@ import nez.lang.Block;
 import nez.lang.ByteChar;
 import nez.lang.ByteMap;
 import nez.lang.Capture;
+import nez.lang.CharMultiByte;
 import nez.lang.Choice;
 import nez.lang.DefIndent;
 import nez.lang.DefSymbol;
@@ -128,6 +129,11 @@ public class NezCompiler1 extends NezCompiler {
 		return new IByteMap(p, next);
 	}
 
+	@Override
+	public Instruction encodeCharMultiByte(CharMultiByte p, Instruction next, Instruction failjump) {
+		return new IMultiChar(p, p.byteSeq, false, next);
+	}
+	
 	public Instruction encodeFail(Expression p) {
 //		return new IFail(p);
 		return this.commonFailure;

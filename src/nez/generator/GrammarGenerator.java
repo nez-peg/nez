@@ -6,6 +6,7 @@ import nez.lang.Block;
 import nez.lang.ByteChar;
 import nez.lang.ByteMap;
 import nez.lang.Capture;
+import nez.lang.CharMultiByte;
 import nez.lang.Choice;
 import nez.lang.DefIndent;
 import nez.lang.DefSymbol;
@@ -227,6 +228,11 @@ public abstract class GrammarGenerator extends NezGenerator {
 	
 	public void visitAnyChar(AnyChar e) {
 		W(_Any());
+	}
+
+	@Override
+	public void visitCharMultiByte(CharMultiByte p) {
+		W(p.toString());
 	}
 
 	public void visitOption(Option e) {

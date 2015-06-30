@@ -49,10 +49,6 @@ public class Sequence extends Expression {
 	public Expression getNext() {
 		return this.next;
 	}
-
-//	Sequence(SourcePosition s, UList<Expression> l) {
-//		super(s, l, l.size());
-//	}
 	@Override
 	public String getPredicate() {
 		return "seq";
@@ -103,28 +99,50 @@ public class Sequence extends Expression {
 			e.format(sb);
 		}
 	}
-
-	private int appendAsString(StringBuilder sb, int start) {
-		int end = this.size();
-		String s = "";
-		for(int i = start; i < end; i++) {
-			Expression e = this.get(i);
-			if(e instanceof ByteChar) {
-				char c = (char)(((ByteChar) e).byteChar);
-				if(c >= ' ' && c < 127) {
-					s += c;
-					continue;
-				}
+	
+	public final Expression convertToMultiByte() {
+		Expression f = this.getFirst();
+		Expression s = this.getNext().getFirst();
+		if(f instanceof ByteChar || s instanceof ByteChar) {
+			UList<Byte> l = new UList<Byte>(new Byte[16]);
+			l.add(((byte)((ByteChar)f).byteChar));
+			Expression next = convertMultiByte(this, l);
+			Expression mb = this.newCharMultiByte(((ByteChar)f).isBinary(), toByteSeq(l));
+			if(next != null) {
+				return this.newSequence(mb, next);
 			}
-			end = i;
-			break;
+			return mb;
 		}
-		if(s.length() > 1) {
-			sb.append(StringUtils.quoteString('\'', s, '\''));
-		}
-		return end - 1;
+		return this;
 	}
 
+	private Expression newCharMultiByte(boolean binary, byte[] byteSeq) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	private Expression convertMultiByte(Sequence seq, UList<Byte> l) {
+		Expression s = seq.getNext().getFirst();
+		while(s instanceof ByteChar) {
+			l.add((byte)((ByteChar)s).byteChar);
+			Expression next = seq.getNext();
+			if(next instanceof Sequence) {
+				seq = (Sequence)next;
+				s = seq.getNext().getFirst();
+				continue;
+			}
+			return null;
+		}
+		return seq.getNext();
+	}
+	
+	private byte[] toByteSeq(UList<Byte> l) {
+		byte[] byteSeq = new byte[l.size()];
+		for(int i = 0; i < l.size(); i++) {
+			byteSeq[i] = l.ArrayValues[i];
+		}
+		return byteSeq;
+	}
+	
 	@Override
 	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeSequence(this);

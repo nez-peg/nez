@@ -5,6 +5,7 @@ import nez.lang.AnyChar;
 import nez.lang.ByteChar;
 import nez.lang.ByteMap;
 import nez.lang.Capture;
+import nez.lang.CharMultiByte;
 import nez.lang.Choice;
 import nez.lang.Empty;
 import nez.lang.Expression;
@@ -95,6 +96,7 @@ public class NezGrammarGenerator extends GrammarGenerator {
 	public void visitAnyChar(AnyChar e) {
 		W(".");
 	}
+	
 
 	public void visitOption(Option e) {
 		Unary( null, e, "?");
@@ -160,5 +162,6 @@ public class NezGrammarGenerator extends GrammarGenerator {
 		}
 		W(">");
 	}
+
 
 }

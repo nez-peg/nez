@@ -7,6 +7,7 @@ import nez.lang.Block;
 import nez.lang.ByteChar;
 import nez.lang.ByteMap;
 import nez.lang.Capture;
+import nez.lang.CharMultiByte;
 import nez.lang.Choice;
 import nez.lang.DefIndent;
 import nez.lang.DefSymbol;
@@ -192,6 +193,12 @@ public class LPegGrammarGenerator extends NezGenerator {
 	
 	public void visitAnyChar(AnyChar e) {
 		file.write("lpeg.P(1)");
+	}
+	
+	@Override
+	public void visitCharMultiByte(CharMultiByte p) {
+		// TODO Auto-generated method stub
+		
 	}
 
 	protected void visit(String prefix, Unary e, String suffix) {

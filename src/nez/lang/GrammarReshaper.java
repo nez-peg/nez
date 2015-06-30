@@ -34,6 +34,10 @@ public class GrammarReshaper {
 		return e;
 	}
 
+	public Expression reshapeCharMultiByte(CharMultiByte e) {
+		return e;
+	}
+
 	public Expression reshapeNonTerminal(NonTerminal e) {
 		return e;
 	}
@@ -277,6 +281,7 @@ public class GrammarReshaper {
 		}
 		return (e.get(0) != inner) ? GrammarFactory.newOnFlag(e.s, e.predicate, e.flagName, inner) : e;
 	}
+
 }
 
 class ASTConstructionEliminator extends GrammarReshaper {

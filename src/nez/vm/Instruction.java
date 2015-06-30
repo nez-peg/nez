@@ -6,6 +6,7 @@ import nez.ast.Tag;
 import nez.lang.Block;
 import nez.lang.ByteChar;
 import nez.lang.ByteMap;
+import nez.lang.CharMultiByte;
 import nez.lang.DefIndent;
 import nez.lang.DefSymbol;
 import nez.lang.ExistsSymbol;
@@ -902,13 +903,13 @@ class IRepeatedByteMap extends Instruction {
 
 
 class IMultiChar extends Instruction {
-	boolean optional = false;
+	final boolean optional;
 	final byte[] utf8;
 	final int    len;
-	public IMultiChar(Sequence e, boolean optional, Instruction next) {
+	public IMultiChar(CharMultiByte e, byte[] utf8, boolean optional, Instruction next) {
 		super(e, next);
-		this.utf8 = e.extractMultiChar(0, e.size());
-		this.len = this.utf8.length;
+		this.utf8 = utf8;
+		this.len = utf8.length;
 		this.optional = optional;
 	}
 	@Override
@@ -924,16 +925,23 @@ class IMultiChar extends Instruction {
 	}
 	@Override
 	Instruction exec(Context sc) throws TerminationException {
-		return sc.opMultiChar(this);
+		if(sc.match(sc.getPosition(), this.utf8)) {
+			sc.consume(this.len);
+			return this.next;
+		}
+		return this.optional ? this.next : sc.opIFailCatch();
 	}
 }
 
 class INotMultiChar extends IMultiChar {
-	INotMultiChar(Sequence e, Instruction next) {
-		super(e, false, next);
+	INotMultiChar(CharMultiByte e, byte[] utf8, Instruction next) {
+		super(e, utf8, false, next);
 	}
 	@Override
 	Instruction exec(Context sc) throws TerminationException {
-		return sc.opNMultiChar(this);
+		if(!sc.match(sc.getPosition(), this.utf8)) {
+			return this.next;
+		}
+		return sc.opIFailCatch();
 	}
 }

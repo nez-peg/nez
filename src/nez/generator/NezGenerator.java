@@ -1,9 +1,5 @@
 package nez.generator;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.HashMap;
-
 import nez.NezOption;
 import nez.lang.And;
 import nez.lang.AnyChar;
@@ -11,6 +7,7 @@ import nez.lang.Block;
 import nez.lang.ByteChar;
 import nez.lang.ByteMap;
 import nez.lang.Capture;
+import nez.lang.CharMultiByte;
 import nez.lang.Choice;
 import nez.lang.DefIndent;
 import nez.lang.DefSymbol;
@@ -33,9 +30,7 @@ import nez.lang.Repetition1;
 import nez.lang.Replace;
 import nez.lang.Sequence;
 import nez.lang.Tagging;
-import nez.main.Verbose;
 import nez.util.FileBuilder;
-import nez.util.UFlag;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
@@ -61,46 +56,6 @@ public abstract class NezGenerator extends NezEncoder {
 			this.file = new FileBuilder(fileName);
 		}
 	}
-	
-//	HashMap<Class<?>, Method> methodMap = new HashMap<Class<?>, Method>();
-//
-//	public final void visitExpression(Expression p) {
-//		Method m = lookupMethod("visit", p.getClass());
-//		if(m != null) {
-//			try {
-//				m.invoke(this, p);
-//			} catch (IllegalAccessException e) {
-//				e.printStackTrace();
-//			} catch (IllegalArgumentException e) {
-//				e.printStackTrace();
-//			} catch (InvocationTargetException e) {
-//				e.printStackTrace();
-//			}
-//		}
-//		else {
-//			visitUndefined(p);
-//		}
-//	}
-//
-//	void visitUndefined(Expression p) {
-//		Verbose.todo("undefined: " + p.getClass());
-//	}
-//
-//	protected final Method lookupMethod(String method, Class<?> c) {
-//		Method m = this.methodMap.get(c);
-//		if(m == null) {
-//			String name = method + c.getSimpleName();
-//			try {
-//				m = this.getClass().getMethod(name, c);
-//			} catch (NoSuchMethodException e) {
-//				return null;
-//			} catch (SecurityException e) {
-//				return null;
-//			}
-//			this.methodMap.put(c, m);
-//		}
-//		return m;
-//	}
 
 	public Instruction encodeExpression(Expression e, Instruction next, Instruction failjump) {
 		return e.encode(this, next, failjump);
@@ -118,6 +73,11 @@ public abstract class NezGenerator extends NezEncoder {
 
 	public Instruction encodeByteMap(ByteMap p, Instruction next, Instruction failjump) {
 		this.visitByteMap(p);
+		return null;
+	}
+
+	public Instruction encodeCharMultiByte(CharMultiByte p, Instruction next, Instruction failjump) {
+		this.visitCharMultiByte(p);
 		return null;
 	}
 
@@ -281,7 +241,8 @@ public abstract class NezGenerator extends NezEncoder {
 	public abstract void visitSequence(Sequence p);
 	public abstract void visitChoice(Choice p);
 	public abstract void visitNonTerminal(NonTerminal p);
-	
+	public abstract void visitCharMultiByte(CharMultiByte p);
+
 	// AST Construction
 	public abstract void visitLink(Link p);
 	public abstract void visitNew(New p);
