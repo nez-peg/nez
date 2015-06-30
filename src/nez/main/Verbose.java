@@ -1,6 +1,5 @@
 package nez.main;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
 import nez.lang.Expression;

@@ -1,7 +1,6 @@
 package nez.main;
 
 import java.io.IOException;
-import java.util.TreeMap;
 
 import nez.NezOption;
 import nez.SourceContext;
@@ -12,9 +11,7 @@ import nez.lang.GrammarFile;
 import nez.lang.NezCombinator;
 import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
-import nez.util.UFlag;
 import nez.util.UList;
-import nez.vm.MemoTable;
 
 class CommandContext {
 	

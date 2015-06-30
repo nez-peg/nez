@@ -341,9 +341,6 @@ public class GrammarFactory {
 		if(s != null && isInterned(l)) {
 			s = null;
 		}
-//		if(l.ArrayValues[size - 1] instanceof Empty) {
-//			return newOption(s, new Choice(s, l, size-1));  //     e / '' => e?
-//		}
 		return internImpl(s, new Choice(s, l, size));
 	}
 
@@ -355,25 +352,6 @@ public class GrammarFactory {
 		addChoice(l, p2);
 		return newChoice(s, l);
 	}
-
-	@Deprecated //FIXME
-	public final static Expression newDirectChoice(SourcePosition s, UList<Expression> l) {
-		int size = l.size();
-		for(int i = 0; i < size; i++) {
-			if(l.ArrayValues[i] instanceof Empty) {
-				size = i + 1;
-				break;
-			}
-		}
-		if(size == 1) {
-			return l.ArrayValues[0];
-		}
-		if(s != null && isInterned(l)) {
-			s = null;
-		}
-		return internImpl(s, new Choice(s, l, size));
-	}
-
 
 	// AST Construction
 

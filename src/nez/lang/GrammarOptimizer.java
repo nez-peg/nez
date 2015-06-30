@@ -3,9 +3,6 @@ package nez.lang;
 import java.util.HashMap;
 
 import nez.NezOption;
-import nez.ast.SourcePosition;
-import nez.main.Verbose;
-import nez.util.UFlag;
 import nez.util.UList;
 
 public class GrammarOptimizer extends GrammarReshaper {

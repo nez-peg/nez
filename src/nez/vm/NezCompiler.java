@@ -2,7 +2,6 @@ package nez.vm;
 
 import nez.NezOption;
 import nez.lang.Grammar;
-import nez.util.UFlag;
 import nez.util.UList;
 
 public abstract class NezCompiler extends NezEncoder {

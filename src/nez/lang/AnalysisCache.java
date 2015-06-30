@@ -5,9 +5,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.TreeMap;
-
-import nez.util.UList;
 
 public class AnalysisCache {
 	/* this must be LRU Cache in the future */

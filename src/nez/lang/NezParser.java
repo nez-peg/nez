@@ -1,6 +1,5 @@
 package nez.lang;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -8,7 +7,6 @@ import nez.NezOption;
 import nez.SourceContext;
 import nez.ast.CommonTree;
 import nez.ast.CommonTreeVisitor;
-import nez.ast.Source;
 import nez.ast.Tag;
 import nez.main.Verbose;
 import nez.util.ConsoleUtils;

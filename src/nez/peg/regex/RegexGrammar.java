@@ -247,7 +247,7 @@ public class RegexGrammar extends CommonTreeVisitor {
 		else {
 			GrammarFactory.addChoice(l, toEmpty(node));
 		}
-		return GrammarFactory.newDirectChoice(null, l);
+		return GrammarFactory.newChoice(null, l);
 	}
 
 	public Expression toSeq(CommonTree e, Expression k) {

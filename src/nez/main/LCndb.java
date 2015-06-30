@@ -1,11 +1,7 @@
 package nez.main;
 
-import nez.NezOption;
 import nez.SourceContext;
-import nez.ast.CommonTree;
-import nez.ast.CommonTreeWriter;
 import nez.lang.Grammar;
-import nez.util.ConsoleUtils;
 
 public class LCndb extends Command {
 	@Override

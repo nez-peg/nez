@@ -1,9 +1,6 @@
 package nez.lang;
 
-import java.util.TreeMap;
-
 import nez.ast.SourcePosition;
-import nez.util.UList;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 

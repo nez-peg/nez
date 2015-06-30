@@ -234,7 +234,7 @@ public class RegexConverter extends GrammarConverter{
 		else {
 			GrammarFactory.addChoice(l, toEmpty(node));
 		}
-		return GrammarFactory.newDirectChoice(null, l);
+		return GrammarFactory.newChoice(null, l);
 	}
 
 	public Expression toSeq(CommonTree e, Expression k) {

@@ -1,6 +1,5 @@
 package nez.main;
 
-import java.io.IOException;
 import java.util.HashMap;
 
 import nez.NezOption;
@@ -16,7 +15,6 @@ import nez.lang.GrammarFile;
 import nez.lang.NezParser;
 import nez.lang.Production;
 import nez.util.ConsoleUtils;
-import nez.util.UList;
 
 public class LCshell extends Command {
 	@Override

@@ -1,7 +1,5 @@
 package nez.vm;
 
-import java.util.HashMap;
-
 import nez.lang.Choice;
 import nez.lang.Empty;
 import nez.lang.Expression;
@@ -16,10 +14,7 @@ import nez.lang.Production;
 import nez.lang.Repetition;
 import nez.lang.Repetition1;
 import nez.lang.Sequence;
-import nez.util.StringUtils;
-import nez.util.UFlag;
 import nez.util.UList;
-import nez.util.UMap;
 
 public class DfaOptimizer extends GrammarReshaper {
 

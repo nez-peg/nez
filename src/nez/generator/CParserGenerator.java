@@ -12,6 +12,7 @@ import nez.lang.Block;
 import nez.lang.ByteChar;
 import nez.lang.ByteMap;
 import nez.lang.Capture;
+import nez.lang.CharMultiByte;
 import nez.lang.Choice;
 import nez.lang.DefIndent;
 import nez.lang.DefSymbol;
@@ -788,6 +789,13 @@ public class CParserGenerator extends ParserGenerator {
 	}
 
 	@Override
+	public void visitCharMultiByte(CharMultiByte p) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	
+	@Override
 	public void visitOption(Option e) {
 		if(!specializeOption(e)) {
 			this.pushFailureJumpPoint();
@@ -1117,5 +1125,6 @@ public class CParserGenerator extends ParserGenerator {
 		// TODO Auto-generated method stub
 		
 	}
+
 
 }
