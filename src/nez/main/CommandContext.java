@@ -214,7 +214,7 @@ class CommandContext {
 					Verbose.Debug = true;
 				}
 				else if(argument.equals("--verbose:backtrack")) {
-					Verbose.Backtrack = true;
+					Verbose.BacktrackActivity = true;
 				}
 				else if(argument.equals("--verbose:none")) {
 					Verbose.General = false;
@@ -305,7 +305,7 @@ class CommandContext {
 			ConsoleUtils.exit(1, "undefined production: " + start);
 		}
 		if(option.enabledProfiling) {
-			NezProfier rec = new NezProfier("nezlog.csv");
+			NezProfier rec = new NezProfier("nezprof.csv");
 			rec.setText("nez", Command.Version);
 			rec.setText("config", option.toString());
 			g.setProfiler(rec);

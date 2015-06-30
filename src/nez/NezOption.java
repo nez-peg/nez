@@ -3,20 +3,7 @@ package nez;
 import nez.main.Verbose;
 
 public class NezOption {
-	
-	@Deprecated public final static int ASTConstruction = 1 << 1;
-	@Deprecated public final static int PackratParsing  = 1 << 2;
-	@Deprecated public final static int Optimization    = 1 << 3;
-	@Deprecated public final static int Specialization  = 1 << 4;
-	@Deprecated public final static int CommonPrefix    = 1 << 5;
-	@Deprecated public final static int Inlining        = 1 << 6;
-	@Deprecated public final static int Prediction      = 1 << 7;
-	@Deprecated public final static int DFA             = 1 << 8;
-	@Deprecated public final static int Tracing         = 1 << 9;
-	@Deprecated public final static int Binary          = 1 << 10;
-	@Deprecated public final static int Utf8            = 1 << 11;
-	@Deprecated public final static int Profiling       = 1 << 12;	
-	
+		
 	public final static NezOption newDefaultOption() {
 		return new NezOption();
 	}
@@ -33,11 +20,11 @@ public class NezOption {
 	public boolean enabledSymbolTable     = true;      // symbol
 	
 	/* optimization */
-	public boolean enabledAsIsGrammar         = false; // asis
+	public boolean enabledAsIsGrammar     = false; // asis
 	public boolean enabledInlining        = true;      // inline
 
 	public boolean enabledLexicalOptimization = true;  // lex
-	public boolean enabledCommonFactored  = true;      // common
+	//public boolean enabledCommonFactored  = true;      // common
 	
 	public boolean enabledPrediction      = false;      // predict
 	public boolean enabledDFAConversion   = false;     // dfa
@@ -69,7 +56,7 @@ public class NezOption {
 		o.enabledAsIsGrammar = this.enabledAsIsGrammar;
 		o.enabledLexicalOptimization = this.enabledLexicalOptimization;
 		o.enabledInlining = this.enabledInlining;
-		o.enabledCommonFactored = this.enabledCommonFactored;
+//		o.enabledCommonFactored = this.enabledCommonFactored;
 		o.enabledPrediction = this.enabledPrediction;
 		o.enabledMemoization = this.enabledMemoization;
 		o.enabledPackratParsing = this.enabledPackratParsing;
@@ -154,8 +141,14 @@ public class NezOption {
 		if(this.enabledSymbolTable) {
 			sb.append(":symbol");
 		}
+		if(this.enabledAsIsGrammar) {
+			sb.append(":asis");
+		}
 		if(this.enabledLexicalOptimization) {
-			sb.append(":lex");
+			sb.append(":lexer");
+		}
+		if(this.enabledPrediction) {
+			sb.append(":predict");
 		}
 		if(this.enabledMemoization) {
 			sb.append(":memo");

@@ -718,7 +718,7 @@ public abstract class Context implements Source {
 			rec.setRatio("P.Backtrack", this.BacktrackCount, consumed);
 			rec.setRatio("P.BacktrackLength", this.BacktrackLength, consumed);
 			rec.setCount("P.LongestBacktrack", LongestBacktrack);
-			if(Verbose.Backtrack) {
+			if(Verbose.BacktrackActivity) {
 				double cf = 0;
 				for(int i = 0; i < 16; i++) {
 					int n = 1 << i;

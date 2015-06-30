@@ -362,5 +362,19 @@ public abstract class StringUtils {
 		}
 		return "<" + (char)c + "," + c + ">";
 	}
+	
+
+	
+	public final static String formatParcentage(long a, long b) {
+		return String.format("%.3f", (double)a / b * 100.0);
+	}
+
+	public final static String formatMPS(long length, long nano) {
+		long micro = (nano) / 1000;
+		double sec = micro / 1000000.0;
+		double thr = length / sec / (1024 * 1024);
+		return String.format("%.4f", thr);
+	}
+
 
 }

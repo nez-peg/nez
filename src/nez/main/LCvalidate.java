@@ -3,6 +3,7 @@ package nez.main;
 import nez.SourceContext;
 import nez.lang.Grammar;
 import nez.util.ConsoleUtils;
+import nez.util.StringUtils;
 import nez.util.UList;
 
 class LCvalidate extends Command {
@@ -13,10 +14,11 @@ class LCvalidate extends Command {
 
 	@Override
 	public void exec(CommandContext config) {
-		UList<String> failedInputs = new UList<String>(new String[4]);
-		UList<String> unconsumedInputs = new UList<String>(new String[4]);
 		config.getNezOption().setOption("ast", false);
 		Grammar g = config.getGrammar();
+
+		UList<String> failedInputs = new UList<String>(new String[4]);
+		UList<String> unconsumedInputs = new UList<String>(new String[4]);
 		
 		int totalCount = 0, failureCount = 0, unconsumedCount = 0;
 		long consumed = 0;
@@ -46,10 +48,10 @@ class LCvalidate extends Command {
 		if(totalCount > 1){
 			Verbose.println(
 					totalCount + " files, " +
-//					(((double)consumed / (time / 1000 / 1000))) + " KB/s, " + 
+					StringUtils.formatMPS(consumed, time) + " MiB/s, " + 
 					failureCount + " failed, " +
 					unconsumedCount + " uncosumed, " +
-					(100 - 100.0 * (unconsumedCount+failureCount)/totalCount) + "% passed.");
+					StringUtils.formatParcentage(totalCount - (unconsumedCount+failureCount), totalCount) + "% passed.");
 		}
 		if(unconsumedInputs.size() > 0) {
 			Verbose.println("unconsumed: " + unconsumedInputs);
@@ -58,5 +60,4 @@ class LCvalidate extends Command {
 			ConsoleUtils.exit(1, "failed: " + failedInputs);
 		}
 	}
-
 }

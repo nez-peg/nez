@@ -8,13 +8,19 @@ import nez.util.ConsoleUtils;
 public class Verbose {
 	public static final String BugsReport1 = "kimio@ynu.ac.jp";
 	public static boolean General = true;
+
 	public static boolean Example = false;
-	public static boolean Grammar = false;
-	public static boolean Expression = false;
-	public static boolean VirtualMachine = false;
+
+	public static boolean BacktrackActivity = false;
 	public static boolean PackratParsing = false;
+
+	public static boolean VirtualMachine = false;
+
+	public static boolean ParsingExpression = false;
+
+	public static boolean Grammar = false;
+
 	public static boolean Debug = false;
-	public static boolean Backtrack = false;
 	public static boolean SelfTesting = true;
 	public static boolean NFA = true;
 	public static boolean TraceException = true;
@@ -24,10 +30,10 @@ public class Verbose {
 		General = true;
 		Example = true;
 		Grammar = true;
-		Expression = true;
+		ParsingExpression = true;
 		VirtualMachine = true;
 		PackratParsing = true;
-		Backtrack = true;
+		BacktrackActivity = true;
 		Time = true;
 	}
 
@@ -57,13 +63,13 @@ public class Verbose {
 	}
 
 	public static void noticeOptimize(String key, Expression p) {
-		if(Expression) {
+		if(ParsingExpression) {
 			ConsoleUtils.println("optimizing " + key + "\n\t" + p);
 		}
 	}
 
 	public static void noticeOptimize(String key, Expression p, Expression pp) {
-		if(Expression) {
+		if(ParsingExpression) {
 			ConsoleUtils.println("optimizing " + key + "\n\t" + p + "\n\t => " + pp);
 		}
 	}
