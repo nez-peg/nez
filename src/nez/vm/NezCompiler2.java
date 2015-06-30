@@ -36,7 +36,7 @@ public class NezCompiler2 extends NezCompiler1 {
 	}
 
 	public final Instruction encodeOption(Option p, Instruction next) {
-		if(option.enabledUnaryOptimization) {
+		if(option.enabledAsIsGrammar) {
 			Expression inner = p.get(0);
 			if(inner instanceof ByteChar) {
 				this.optimizedUnary(p);
@@ -51,7 +51,7 @@ public class NezCompiler2 extends NezCompiler1 {
 	}
 
 	public final Instruction encodeRepetition(Repetition p, Instruction next) {
-		if(option.enabledUnaryOptimization) {
+		if(option.enabledAsIsGrammar) {
 			Expression inner = p.get(0);
 			if(inner instanceof ByteChar) {
 				this.optimizedUnary(p);
@@ -66,7 +66,7 @@ public class NezCompiler2 extends NezCompiler1 {
 	}
 
 	public final Instruction encodeNot(Not p, Instruction next, Instruction failjump) {
-		if(option.enabledUnaryOptimization) {
+		if(option.enabledAsIsGrammar) {
 			Expression inn = p.get(0);
 			if(inn instanceof ByteMap) {
 				this.optimizedUnary(p);
@@ -190,13 +190,13 @@ public class NezCompiler2 extends NezCompiler1 {
 
 	// AST Construction
 
-//	public final Instruction encodeLink(Link p, Instruction next, Instruction failjump) {
-//		if(p.get(0) instanceof NonTerminal) {
-//			next = new ICommit(p, new ILink(p, next));
-//			next = encodeNonTerminal((NonTerminal) p.get(0), next, failjump);
-//			return new INodePush(p, next);
-//		}
-//		return super.encodeLink(p, next, failjump);
-//	}
+	public final Instruction encodeLink(Link p, Instruction next, Instruction failjump) {
+		if(!option.enabledASTConstruction && p.get(0) instanceof NonTerminal) {
+			next = new ICommit(p, new ILink(p, next));
+			next = encodeNonTerminal((NonTerminal) p.get(0), next, failjump);
+			return new INodePush(p, next);
+		}
+		return super.encodeLink(p, next, failjump);
+	}
 
 }

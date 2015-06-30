@@ -16,6 +16,7 @@ import nez.lang.DefSymbol;
 import nez.lang.ExistsSymbol;
 import nez.lang.Expression;
 import nez.lang.Grammar;
+import nez.lang.GrammarOptimizer;
 import nez.lang.IsIndent;
 import nez.lang.IsSymbol;
 import nez.lang.Link;
@@ -178,7 +179,7 @@ public class NezCompiler1 extends NezCompiler {
 
 	public Instruction encodeNonTerminal(NonTerminal p, Instruction next, Instruction failjump) {
 		Production r = p.getProduction();
-		return new ICallPush(r, p, next);
+		return new ICallPush(r, next);
 	}
 
 	// AST Construction

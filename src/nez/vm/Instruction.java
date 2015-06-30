@@ -177,11 +177,11 @@ class ICallPush extends Instruction implements StackOperation {
 		super(rule, next);
 		this.rule = rule;
 	}
-	ICallPush(Production rule, NonTerminal ne, Instruction next) {
-		super(rule, next);
-		this.rule = rule;
-		this.ne = ne;
-	}
+//	ICallPush(Production rule, NonTerminal ne, Instruction next) {
+//		super(rule, next);
+//		this.rule = rule;
+//		this.ne = ne;
+//	}
 	void setResolvedJump(Instruction jump) {
 		assert(this.jump == null);
 		this.jump = labeling(this.next);
@@ -666,130 +666,6 @@ class IMemoizeFail extends IFail implements Memoization {
 	}
 }
 
-//class IMonitoredSwitch extends Instruction {
-//	final static IMonitoredSwitch dummyMonitor = new IMonitoredSwitch(null, null);
-//	boolean isActivated;
-//	Instruction activatedNext = null;
-//	int used = 0;
-//	int stored = 0;
-//	IMonitoredSwitch(Expression e, Instruction next) {
-//		super(e, next);
-//		this.isActivated = true;
-//	}
-//	void setActivatedNext(Instruction inst) {
-//		this.activatedNext = labeling(inst);
-//	}
-//	@Override
-//	Instruction branch() {
-//		return this.activatedNext;
-//	}
-//	final void stored() {
-//		stored++;
-//		this.checked();
-//	}
-//	final void used() {
-//		used++;
-//	}
-//	final void checked() {
-//		if(this.isActivated) {
-//			if(stored % 32 == 0) {
-//				double r = used / (double)stored;
-//				//System.out.println("monitor: " + this.used + "/" + this.stored + ", " + r);
-//				if(r < 0.0361) {  /* this is a magic number */
-//					this.isActivated = false;
-//				}
-//			}
-//		}
-//	}
-//	@Override
-//	Instruction exec(Context sc) throws TerminationException {
-//		return this.isActivated ? this.activatedNext : this.next;
-//	}
-//}
-
-//class IStateLookup extends ILookup {
-//	IStateLookup(Expression e, IMonitoredSwitch monitor, MemoPoint m, Instruction next, Instruction skip, Instruction failjump) {
-//		super(e, monitor, m, next, skip, failjump);
-//	}
-//	@Override
-//	Instruction exec(Context sc) throws TerminationException {
-//		return sc.opIStateLookup(this);
-//	}
-//}
-//
-//
-//class IStateMemoize extends IMemoize {
-//	IStateMemoize(Expression e, IMonitoredSwitch monitor, MemoPoint m, Instruction next) {
-//		super(e, monitor, m, next);
-//	}
-//	@Override
-//	Instruction exec(Context sc) throws TerminationException {
-//		return sc.opIStateMemoize(this);
-//	}
-//}
-//
-//
-//class IStateMemoizeFail extends IMemoizeFail {
-//	IStateMemoizeFail(Expression e, IMonitoredSwitch monitor, MemoPoint m) {
-//		super(e, monitor, m);
-//	}
-//	@Override
-//	Instruction exec(Context sc) throws TerminationException {
-//		return sc.opIStateMemoizeFail(this);
-//	}
-//}
-//
-//class ILookupNode extends ILookup {
-//	final int index;
-//	ILookupNode(Link e, IMonitoredSwitch monitor, MemoPoint m, Instruction next, Instruction skip, Instruction failjump) {
-//		super(e, monitor, m, next, skip, failjump);
-//		this.index = e.index;
-//	}
-//	@Override
-//	Instruction exec(Context sc) throws TerminationException {
-//		return sc.opILookupNode(this);
-//	}
-//}
-//
-//class IStateLookupNode extends ILookupNode {
-//	final int index;
-//	IStateLookupNode(Link e, IMonitoredSwitch monitor, MemoPoint m, Instruction next, Instruction skip, Instruction failjump) {
-//		super(e, monitor, m, next, skip, failjump);
-//		this.index = e.index;
-//	}
-//	@Override
-//	Instruction exec(Context sc) throws TerminationException {
-//		return sc.opIStateLookupNode(this);
-//	}
-//}
-//
-//class IMemoizeNode extends INodeStore implements Memoization {
-//	final MemoPoint memoPoint;
-//	final IMonitoredSwitch monitor;
-//	IMemoizeNode(Link e, IMonitoredSwitch monitor, MemoPoint m, Instruction next) {
-//		super(e, next);
-//		this.memoPoint = m;
-//		this.monitor = monitor;
-//	}
-//	@Override
-//	protected String getOperand() {
-//		return String.valueOf(this.memoPoint.id);
-//	}
-//	@Override
-//	Instruction exec(Context sc) throws TerminationException {
-//		return sc.opIMemoizeNode(this);
-//	}
-//}
-//
-//class IStateMemoizeNode extends IMemoizeNode {
-//	IStateMemoizeNode(Link e, IMonitoredSwitch monitor, MemoPoint m, Instruction next) {
-//		super(e, monitor, m, next);
-//	}
-//	@Override
-//	Instruction exec(Context sc) throws TerminationException {
-//		return sc.opIStateMemoizeNode(this);
-//	}
-//}
 
 /* Symbol */
 

@@ -1,23 +1,7 @@
-package nez.vm;
+package nez.lang;
 
 import nez.NezOption;
 import nez.ast.SourcePosition;
-import nez.lang.AnyChar;
-import nez.lang.ByteChar;
-import nez.lang.ByteMap;
-import nez.lang.Capture;
-import nez.lang.Choice;
-import nez.lang.Empty;
-import nez.lang.Expression;
-import nez.lang.GrammarFactory;
-import nez.lang.GrammarReshaper;
-import nez.lang.Link;
-import nez.lang.New;
-import nez.lang.NonTerminal;
-import nez.lang.Not;
-import nez.lang.Acceptance;
-import nez.lang.Production;
-import nez.lang.Sequence;
 import nez.util.UFlag;
 import nez.util.UList;
 

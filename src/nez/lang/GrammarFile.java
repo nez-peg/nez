@@ -78,7 +78,6 @@ public class GrammarFile extends GrammarFactory {
 		}
 		return loadNezFile(urn, option);
 	}
-	
 
 	public final static String nameUniqueName(String ns, String name) {
 		return ns + ":" + name;
@@ -99,7 +98,7 @@ public class GrammarFile extends GrammarFactory {
 	final String            ns;
 	final UMap<Production>  ruleMap;
 	final UList<String>     nameList;
-	final NezOption     option;
+	final NezOption         option;
 
 	private GrammarFile(int id, String urn, NezOption option) {
 		this.id = id;
@@ -291,19 +290,6 @@ public class GrammarFile extends GrammarFactory {
 	}
 
 	// Grammar
-
-	protected GrammarFile getGrammarFile() {
-		return this;
-	}
-
-	protected SourcePosition getSourcePosition() {
-		return null;
-	}
-	
-
-	// reporting errors
-	
-	boolean strictMode = true;
 	
 	public final void reportError(Expression p, String message) {
 		this.reportError(p.getSourcePosition(), message);
@@ -330,7 +316,7 @@ public class GrammarFile extends GrammarFactory {
 	}
 
 	public final void reportNotice(SourcePosition s, String message) {
-		if(this.strictMode) {
+		if(option.enabledNoticeReport) {
 			if(s != null) {
 				ConsoleUtils.println(s.formatSourceMessage("notice", message));
 			}

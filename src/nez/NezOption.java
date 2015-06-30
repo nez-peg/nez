@@ -33,9 +33,9 @@ public class NezOption {
 	public boolean enabledSymbolTable     = true;      // symbol
 	
 	/* optimization */
+	public boolean enabledAsIsGrammar         = false; // asis
 	public boolean enabledLexicalOptimization = true;  // lex
 
-	public boolean enabledUnaryOptimization   = true;  // unary
 	public boolean enabledInlining        = true;      // inline
 	public boolean enabledCommonFactored  = true;      // common
 	
@@ -47,9 +47,11 @@ public class NezOption {
 	public boolean enabledPackratParsing  = false; // packrat
 
 	/* misc */
-	public boolean enabledInterning = true;
+	public boolean enabledInterning            = true;
 	public boolean enabledExampleVerification  = false;
-	public boolean enabledProfiling       = false;
+	public boolean enabledProfiling            = false;
+	
+	public boolean enabledNoticeReport = true;     // notice
 	
 	public NezOption() {
 	}
@@ -64,8 +66,8 @@ public class NezOption {
 		o.enabledExperimental = this.enabledExperimental;
 		o.enabledASTConstruction = this.enabledASTConstruction;
 		o.enabledSymbolTable = this.enabledSymbolTable;
+		o.enabledAsIsGrammar = this.enabledAsIsGrammar;
 		o.enabledLexicalOptimization = this.enabledLexicalOptimization;
-		o.enabledUnaryOptimization = this.enabledUnaryOptimization;
 		o.enabledInlining = this.enabledInlining;
 		o.enabledCommonFactored = this.enabledCommonFactored;
 		o.enabledPrediction = this.enabledPrediction;
@@ -74,6 +76,7 @@ public class NezOption {
 		o.enabledInterning = this.enabledInterning;
 		o.enabledExampleVerification = this.enabledExampleVerification;
 		o.enabledProfiling = this.enabledProfiling;
+		o.enabledNoticeReport = this.enabledNoticeReport;
 		return o;
 	}
 	
@@ -93,6 +96,9 @@ public class NezOption {
 	
 	public final void setOption(String key, boolean value) {
 		switch(key) {
+		case "asis":
+			this.enabledAsIsGrammar = value;
+			break;
 		case "ast":
 			this.enabledASTConstruction = value;
 			break;
@@ -108,11 +114,14 @@ public class NezOption {
 		case "intern":
 			this.enabledInterning = value;
 			break;
-		case "lexer":
+		case "lex" : case "lexer":
 			this.enabledLexicalOptimization = value;
 			break;
 		case "memo":
 			this.enabledMemoization = value;
+			break;
+		case "notice":
+			this.enabledNoticeReport = value;
 			break;
 		case "packrat":
 			this.enabledPackratParsing = value;
