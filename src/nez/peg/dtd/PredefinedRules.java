@@ -41,60 +41,78 @@ public class PredefinedRules {
 
 
 	final void defToplevel() {
-		grammar.defineProduction(null, "Toplevel", grammar.newNonTerminal("Document"));
+		grammar.defineProduction(null, "Toplevel",
+				GrammarFactory.newNonTerminal(null, grammar, "Document"));
+
 	}
 
 	final void defChunk() {
-		grammar.defineProduction(null, "Chunk", grammar.newNonTerminal("Document"));
+		grammar.defineProduction(null, "Chunk",
+				GrammarFactory.newNonTerminal(null, grammar, "Document"));
 	}
 
 	final void defFile() {
-		grammar.defineProduction(null, "File", grammar.newNonTerminal("Document"));
+		grammar.defineProduction(null, "File",
+				GrammarFactory.newNonTerminal(null, grammar, "Document"));
 	}
 
 	final void defDocument() {
 		Expression[] l = {
-				grammar.newOption(grammar.newNonTerminal("PROLOG")),
-				grammar.newRepetition(grammar.newNonTerminal("MISC")),
-				grammar.newOption(grammar.newNonTerminal("DOCTYPE")),
-				grammar.newRepetition(grammar.newNonTerminal("MISC")),
-				grammar.newNonTerminal("Content"),
-				grammar.newRepetition(grammar.newNonTerminal("MISC")),
+				GrammarFactory.newOption(null,
+						GrammarFactory.newNonTerminal(null, grammar, "PROLOG")),
+				GrammarFactory.newRepetition(null,
+						GrammarFactory.newNonTerminal(null, grammar, "MISC")),
+				GrammarFactory.newOption(null,
+						GrammarFactory.newNonTerminal(null, grammar, "DOCTYPE")),
+				GrammarFactory.newRepetition(null,
+						GrammarFactory.newNonTerminal(null, grammar, "MISC")),
+				GrammarFactory.newNonTerminal(null, grammar, "Content"),
+				GrammarFactory.newRepetition(null,
+						GrammarFactory.newNonTerminal(null, grammar, "MISC")),
 		};
 		grammar.defineProduction(null, "Document", grammar.newSequence(l));
 	}
 
 	final void defProlog() {
 		Expression[] l = {
-				grammar.newString("<?xml"),
-				grammar.newRepetition(grammar.newNonTerminal("S")),
-				grammar.newRepetition(grammar.newNonTerminal("ATTRIBUTE")),
-				grammar.newRepetition(grammar.newNonTerminal("S")),
-				grammar.newString("?>"),
+				GrammarFactory.newString(null, "<?xml"),
+				GrammarFactory.newRepetition(null,
+						GrammarFactory.newNonTerminal(null, grammar, "S")),
+				GrammarFactory.newRepetition(null,
+						GrammarFactory.newNonTerminal(null, grammar, "ATTRIBUTE")),
+				GrammarFactory.newRepetition(null,
+						GrammarFactory.newNonTerminal(null, grammar, "S")),
+				GrammarFactory.newString(null, "?>"),
 		};
 		grammar.defineProduction(null, "PROLOG", grammar.newSequence(l));
 	}
 
 	final void defDoctype() {
 		Expression[] l = {
-				grammar.newString("<!DOCTYPE"),
-				grammar.newRepetition(grammar.newNonTerminal("S")),
-				grammar.newRepetition(grammar.newNonTerminal("NAME")),
-				grammar.newRepetition(grammar.newNonTerminal("S")),
-				grammar.newOption(grammar.newString("SYSTEM")),
-				grammar.newRepetition(grammar.newNonTerminal("S")),
-				grammar.newNonTerminal("STRING"),
-				grammar.newRepetition(grammar.newNonTerminal("S")),
-				grammar.newString(">"),
+				GrammarFactory.newString(null, "<!DOCTYPE"),
+				GrammarFactory.newRepetition(null,
+						GrammarFactory.newNonTerminal(null, grammar, "S")),
+				GrammarFactory.newRepetition(null,
+						GrammarFactory.newNonTerminal(null, grammar, "NAME")),
+				GrammarFactory.newRepetition(null,
+						GrammarFactory.newNonTerminal(null, grammar, "S")),
+				GrammarFactory.newOption(null, GrammarFactory.newString(null, "SYSTEM")),
+				GrammarFactory.newRepetition(null,
+						GrammarFactory.newNonTerminal(null, grammar, "S")),
+				GrammarFactory.newNonTerminal(null, grammar, "STRING"),
+				GrammarFactory.newRepetition(null,
+						GrammarFactory.newNonTerminal(null, grammar, "S")),
+				GrammarFactory.newString(null, ">"),
 		};
 		grammar.defineProduction(null, "DOCTYPE", grammar.newSequence(l));
 	}
 
 	final void defContent() {
-		Expression choice = grammar.newChoice(grammar.newNonTerminal("RootElement"),
-				grammar.newNonTerminal("COMMENT"));
+		Expression choice = grammar.newChoice(
+				GrammarFactory.newNonTerminal(null, grammar, "RootElement"),
+				GrammarFactory.newNonTerminal(null, grammar, "COMMENT"));
 		Expression[] l = {
-			grammar.newRepetition1(choice)
+			GrammarFactory.newRepetition1(null, choice)
 		};
 		grammar.defineProduction(null, "Content", grammar.newSequence(l));
 	}
@@ -102,26 +120,28 @@ public class PredefinedRules {
 	final void defName() {
 		Expression[] l = {
 				GrammarFactory.newCharSet(null, "A-Za-z_:"),
-				grammar.newRepetition(GrammarFactory.newCharSet(null, "-A-Za-z0-9:._"))
+				GrammarFactory
+						.newRepetition(null, GrammarFactory.newCharSet(null, "-A-Za-z0-9:._"))
 		};
 		grammar.defineProduction(null, "NAME", grammar.newSequence(l));
 	}
 
 	final void defString() {
 		Expression[] l = {
-				grammar.newByteChar('"'),
-				grammar.newRepetition(grammar.newNot(grammar.newByteChar('"')),
-						grammar.newAnyChar()),
-				grammar.newByteChar('"')
+				GrammarFactory.newByteChar(null, false, '"'),
+				grammar.newRepetition(
+						GrammarFactory.newNot(null, GrammarFactory.newByteChar(null, false, '"')),
+						GrammarFactory.newAnyChar(null, false)),
+				GrammarFactory.newByteChar(null, false, '"')
 		};
 		grammar.defineProduction(null, "STRING", grammar.newSequence(l));
 	}
 
 	final void defNameToken() {
 		Expression[] l = {
-				grammar.newByteChar('"'),
-				grammar.newNonTerminal("NAME"),
-				grammar.newByteChar('"')
+				GrammarFactory.newByteChar(null, false, '"'),
+				GrammarFactory.newNonTerminal(null, grammar, "NAME"),
+				GrammarFactory.newByteChar(null, false, '"')
 		};
 		grammar.defineProduction(null, "NMTOKEN", grammar.newSequence(l));
 	}
@@ -136,57 +156,62 @@ public class PredefinedRules {
 
 	final void defText() {
 		Expression onemoreExpr = grammar.newSequence(
-				grammar.newNot(GrammarFactory.newCharSet(null, "<&")), grammar.newAnyChar());
+				GrammarFactory.newNot(null, GrammarFactory.newCharSet(null, "<&")),
+				GrammarFactory.newAnyChar(null, false));
 		grammar.defineProduction(null, "TEXT", GrammarFactory.newRepetition1(null, onemoreExpr));
 	}
 
 	final void defAttribute() {
 		Expression[] l = {
-				grammar.newNonTerminal("NAME"),
-				grammar.newRepetition(grammar.newNonTerminal("S")),
-				grammar.newByteChar('='),
-				grammar.newRepetition(grammar.newNonTerminal("S")),
-				grammar.newNonTerminal("STRING"),
-				grammar.newRepetition(grammar.newNonTerminal("S"))
+				GrammarFactory.newNonTerminal(null, grammar, "NAME"),
+				grammar.newRepetition(GrammarFactory.newNonTerminal(null, grammar, "S")),
+				GrammarFactory.newByteChar(null, false, '='),
+				grammar.newRepetition(GrammarFactory.newNonTerminal(null, grammar, "S")),
+				GrammarFactory.newNonTerminal(null, grammar,"STRING"),
+				grammar.newRepetition(GrammarFactory.newNonTerminal(null, grammar, "S"))
 		};
 		grammar.defineProduction(null, "ATTRIBUTE", grammar.newSequence(l));
 	}
 
 	final void defCDATASECT() {
 		Expression[] l = {
-				grammar.newString("<![CDATA["),
-				grammar.newRepetition(grammar.newNot(grammar.newString("]]>")),
-						grammar.newAnyChar()),
-				grammar.newString("]]>")
+				GrammarFactory.newString(null, "<![CDATA["),
+				grammar.newRepetition(
+						GrammarFactory.newNot(null, GrammarFactory.newString(null, "]]>")),
+						GrammarFactory.newAnyChar(null, false)),
+				GrammarFactory.newString(null, "]]>")
 		};
 		grammar.defineProduction(null, "CDATASECT", grammar.newSequence(l));
 	}
 
 	final void defMISC() {
 		grammar.defineProduction(null, "MISC",
-				grammar.newChoice(grammar.newNonTerminal("S"), grammar.newNonTerminal("COMMENT")));
+				grammar.newChoice(GrammarFactory.newNonTerminal(null, grammar, "S"),
+						GrammarFactory.newNonTerminal(null, grammar, "COMMENT")));
 	}
 
 	final void defCOMMENT() {
 		Expression[] l = {
-				grammar.newString("<!--"),
-				grammar.newRepetition(grammar.newNot(grammar.newString("-->")),
-						grammar.newAnyChar()),
-				grammar.newString("-->"),
-				GrammarFactory.newRepetition(null, grammar.newNonTerminal("S"))
+				GrammarFactory.newString(null, "<!--"),
+				grammar.newRepetition(
+						GrammarFactory.newNot(null, GrammarFactory.newString(null, "-->")),
+						GrammarFactory.newAnyChar(null, false)),
+				GrammarFactory.newString(null, "-->"),
+				grammar.newRepetition(GrammarFactory.newNonTerminal(null, grammar, "S"))
 		};
 		grammar.defineProduction(null, "COMMENT", grammar.newSequence(l));
 	}
 
 	final void defEMPTY() {
-		grammar.defineProduction(null, "EMPTY", grammar.newRepetition(grammar.newNonTerminal("S")));
+		grammar.defineProduction(null, "EMPTY",
+				grammar.newRepetition(GrammarFactory.newNonTerminal(null, grammar, "S")));
 	}
 
 	final void defANY() {
 		Expression[] l = {
-				grammar.newRepetition(grammar.newNonTerminal("S")),
-				grammar.newNonTerminal("TEXT"),
-				grammar.newRepetition(grammar.newNonTerminal("S")),
+				grammar.newRepetition(GrammarFactory.newNonTerminal(null, grammar, "S")),
+				GrammarFactory.newNonTerminal(null, grammar, "TEXT"),
+				grammar.newRepetition(GrammarFactory.newNonTerminal(null, grammar, "S")),
 		};
 		grammar.defineProduction(null, "ANY", grammar.newSequence(l));
 	}
@@ -196,41 +221,44 @@ public class PredefinedRules {
 	}
 
 	final void defENDTAG() {
-		Expression l = grammar.newChoice(grammar.newAnd(grammar.newByteChar('>')),
-				grammar.newAnd(grammar.newString("/>")));
+		Expression l = grammar.newChoice(
+				GrammarFactory.newAnd(null, GrammarFactory.newByteChar(null, false, '>')),
+				GrammarFactory.newAnd(null, GrammarFactory.newString(null, "/>")));
 		grammar.defineProduction(null, "ENDTAG", l);
 	}
 
 	final void defNotAny() {
-		Expression l = grammar.newNot(grammar.newAnyChar());
+		Expression l = GrammarFactory.newNot(null, GrammarFactory.newAnyChar(null, false));
 		grammar.defineProduction(null, "NotAny", l);
 	}
 
 	final void defPCDATA() {
 		Expression[] seq = {
-				grammar.newNonTerminal("PreEntity"), grammar.newNonTerminal("Entity")
+				GrammarFactory.newNonTerminal(null, grammar, "PreEntity"),
+				GrammarFactory.newNonTerminal(null, grammar, "Entity")
 		};
 		Expression[] l = {
-				grammar.newNonTerminal("TEXT"),
-				grammar.newSequence(grammar.newByteChar('&'), grammar.newChoice(seq),
-						grammar.newByteChar(';'))
+				GrammarFactory.newNonTerminal(null, grammar,"TEXT"),
+				grammar.newSequence(GrammarFactory.newByteChar(null, false, '&'),
+						grammar.newChoice(seq), GrammarFactory.newByteChar(null, false, ';'))
 		};
 		grammar.defineProduction(null, "PCDATA", grammar.newChoice(l));
 	}
 
 	final void defRootElement() {
 		String rootElementName = "Element_" + this.rootElement;
-		grammar.defineProduction(null, "RootElement", grammar.newNonTerminal(rootElementName));
+		grammar.defineProduction(null, "RootElement",
+				GrammarFactory.newNonTerminal(null, grammar, rootElementName));
 	}
 
 	final void defPreEntity() {
 		Expression[] keywords = {
-				grammar.newString("lt"),
-				grammar.newString("gt"),
-				grammar.newString("amp"),
-				grammar.newString("apos"),
-				grammar.newString("quot"),
-				grammar.newRepetition1(grammar.newCharSet("#a-zA-Z0-9"))
+				GrammarFactory.newString(null, "lt"),
+				GrammarFactory.newString(null, "gt"),
+				GrammarFactory.newString(null, "amp"),
+				GrammarFactory.newString(null, "apos"),
+				GrammarFactory.newString(null, "quot"),
+				grammar.newRepetition1(GrammarFactory.newCharSet(null, "#a-zA-Z0-9"))
 		};
 		grammar.defineProduction(null, "PreEntity", grammar.newChoice(keywords));
 	}
