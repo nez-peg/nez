@@ -26,7 +26,7 @@ public class NezOption {
 	public boolean enabledLexicalOptimization = true;  // lex
 	//public boolean enabledCommonFactored  = true;      // common
 	
-	public boolean enabledPrediction      = false;      // predict
+	public boolean enabledPrediction      = true;      // predict
 	public boolean enabledDFAConversion   = false;     // dfa
 
 	/* runtime option */
