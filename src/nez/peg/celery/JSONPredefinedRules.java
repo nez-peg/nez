@@ -31,7 +31,6 @@ public class JSONPredefinedRules {
 		defDIGIT();
 		defFRAC();
 		defEXP();
-		defSTRING();
 		defSPACING();
 	}
 
