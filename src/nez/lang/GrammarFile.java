@@ -71,7 +71,7 @@ public class GrammarFile extends GrammarFactory {
 		if (urn.endsWith(".dtd")) {
 			return DTDConverter.loadGrammar(urn, option);
 		}
-		if (urn.endsWith(".cl")) {
+		if (urn.endsWith(".celery")) {
 			return JSONConverter.loadGrammar(urn, option);
 		}
 		return loadNezFile(urn, option);
