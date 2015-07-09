@@ -16,6 +16,7 @@ import nez.lang.Grammar;
 import nez.lang.GrammarFactory;
 import nez.lang.GrammarFile;
 import nez.util.ConsoleUtils;
+import nez.util.UList;
 
 public class JSONConverter extends AbstractTreeVisitor {
 
@@ -259,26 +260,30 @@ public class JSONConverter extends AbstractTreeVisitor {
 		}
 
 		Expression[] seq = { _DQuoat(), grammar.newString(className), _DQuoat(), _SPACING(), GrammarFactory.newNonTerminal(null, grammar, "NAMESEP"), grammar.newByteChar('{'), _SPACING(),
-				grammar.newRepetition1(GrammarFactory.newNonTerminal(null, grammar, memberList)), grammar.newSequence(tables), _SPACING(), grammar.newByteChar('}') };
+				grammar.newBlock(grammar.newRepetition1(GrammarFactory.newNonTerminal(null, grammar, memberList)), grammar.newSequence(tables)), _SPACING(), grammar.newByteChar('}') };
 		grammar.defineProduction(null, memberList, genExMemberRule(className, requiredMembersListSize));
-		return grammar.newBlock(seq);
+		return grammar.newSequence(seq);
 	}
 
 	private final Expression genExMemberRule(String className, int requiredListSize) {
-		Expression[] choice = new Expression[requiredListSize + 1];
+		Expression[] values = new Expression[10];
+		UList<Expression> choice = new UList<>(values);
 		String impliedChoiceRuleName = className + "_imp";
-		if (!impliedMemebersList.isEmpty()) {
-			genImpliedChoice(impliedChoiceRuleName);
-		}
+
 		for (int i = 0; i < requiredListSize; i++) {
 			String memberName = requiredMembersList.get(i);
-			choice[i] = grammar.newSequence(grammar.newNot(GrammarFactory.newIsSymbol(null, grammar, Tag.tag(memberName))), GrammarFactory.newDefSymbol(null, grammar, Tag.tag(memberName), GrammarFactory.newNonTerminal(null, grammar, memberName)));
+			Expression required = grammar
+					.newSequence(grammar.newNot(GrammarFactory.newIsSymbol(null, grammar, Tag.tag(memberName))), GrammarFactory.newDefSymbol(null, grammar, Tag.tag(memberName), GrammarFactory.newNonTerminal(null, grammar, memberName)));
+			GrammarFactory.addChoice(choice, required);
 		}
-		// choice[requiredListSize] = GrammarFactory.newNonTerminal(null,
-		// grammar,
-		// impliedChoiceRuleName);
-		choice[requiredListSize] = GrammarFactory.newNonTerminal(null, grammar, "Any");
-		return grammar.newChoice(choice);
+
+		if (!impliedMemebersList.isEmpty()) {
+			genImpliedChoice(impliedChoiceRuleName);
+			GrammarFactory.addChoice(choice, GrammarFactory.newNonTerminal(null, grammar, impliedChoiceRuleName));
+		}
+
+		GrammarFactory.addChoice(choice, GrammarFactory.newNonTerminal(null, grammar, "Any"));
+		return GrammarFactory.newChoice(null, choice);
 	}
 
 	private final void genImpliedChoice(String ruleName) {
@@ -294,7 +299,7 @@ public class JSONConverter extends AbstractTreeVisitor {
 		Expression root = genRootSeq();
 		Expression[] seq = { GrammarFactory.newNonTerminal(null, grammar, "VALUESEP"), root };
 		Expression[] array = { grammar.newByteChar('['), _SPACING(), root, _SPACING(), grammar.newRepetition1(seq), _SPACING(), grammar.newByteChar(']') };
-		return grammar.newBlock(grammar.newChoice(grammar.newSequence(root), grammar.newSequence(array)));
+		return grammar.newChoice(grammar.newSequence(root), grammar.newSequence(array));
 	}
 
 	private final Expression genRootSeq() {
@@ -307,7 +312,7 @@ public class JSONConverter extends AbstractTreeVisitor {
 			tables[i] = grammar.newExists(requiredMembersList.get(i), null);
 		}
 
-		Expression[] seq = { grammar.newByteChar('{'), _SPACING(), grammar.newRepetition1(GrammarFactory.newNonTerminal(null, grammar, membersNonterminal)), grammar.newSequence(tables), _SPACING(), grammar.newByteChar('}') };
+		Expression[] seq = { grammar.newByteChar('{'), _SPACING(), grammar.newBlock(grammar.newRepetition1(GrammarFactory.newNonTerminal(null, grammar, membersNonterminal)), grammar.newSequence(tables)), _SPACING(), grammar.newByteChar('}') };
 		return grammar.newSequence(seq);
 	}
 
