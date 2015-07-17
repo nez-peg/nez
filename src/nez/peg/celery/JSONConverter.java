@@ -86,7 +86,7 @@ public class JSONConverter extends AbstractTreeVisitor {
 		grammar.defineProduction(node, "Root", genRootClass());
 	}
 
-	public final void visitClass(CommonTree node) {
+	public final void visitStruct(CommonTree node) {
 		for (CommonTree memberNode : node) {
 			this.visit("visit", memberNode);
 		}

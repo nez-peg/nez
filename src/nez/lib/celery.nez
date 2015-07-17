@@ -16,7 +16,7 @@ Root
 ////////////////////////////////////////////////*/
 
 ClassDeclaration
-	= { 'class' _ @Name _ '{' _ (@ClassMembers)+ _ '}' _ #Class}
+	= { 'struct' _ @Name _ '{' _ (@ClassMembers)+ _ '}' _ #Struct}
 
 ClassMembers
 	= TypedParameter/ EnumDeclaration / UntypedParameter 
