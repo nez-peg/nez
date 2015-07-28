@@ -8,7 +8,6 @@ import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
 public abstract class Expression extends AbstractList<Expression> {
-	public final static boolean ClassicMode = false;
 
 	SourcePosition s = null;
 	int    internId   = 0;
@@ -65,12 +64,7 @@ public abstract class Expression extends AbstractList<Expression> {
 	}
 
 	public abstract Expression reshape(GrammarReshaper m);
-	
-//	public final boolean isAlwaysConsumed() {
-//		return this.checkAlwaysConsumed(null, null, null);
-//	}
-//	public abstract boolean checkAlwaysConsumed(GrammarChecker checker, String startNonTerminal, UList<String> stack);
-	
+		
 	public abstract boolean isConsumed();
 	
 	boolean setOuterLefted(Expression outer) { return false; }
@@ -127,10 +121,6 @@ public abstract class Expression extends AbstractList<Expression> {
 	protected void examplfy(GEP gep, StringBuilder sb, int p) {
 
 	}
-//
-//	protected abstract int pattern(GEP gep);
-//	protected abstract void examplfy(GEP gep, StringBuilder sb, int p);
-
 	
 	// test
 	
@@ -171,8 +161,5 @@ public abstract class Expression extends AbstractList<Expression> {
 	public final Expression newChoice(UList<Expression> l) {
 		return GrammarFactory.newChoice(this.getSourcePosition(), l);
 	}
-
-	
-	
 
 }

@@ -16,6 +16,7 @@ import nez.lang.Option;
 import nez.lang.Production;
 import nez.lang.Repetition;
 import nez.lang.Sequence;
+import nez.main.Verbose;
 import nez.util.UFlag;
 
 public class NezCompiler2 extends NezCompiler1 {
@@ -149,16 +150,20 @@ public class NezCompiler2 extends NezCompiler1 {
 		}
 		if(cp.memoPoint != null) {
 			if(!option.enabledASTConstruction || r.isNoNTreeConstruction()) {
+				if(Verbose.PackratParsing) {
+					Verbose.debug("memoize: " + p.getLocalName());
+				}
 				return new IMemoCall(cp, next);
 			}
 		}
+		//Verbose.debug("memoize: NOT " + p.getLocalName());
 		return new ICallPush(r, next);
 	}
 
 	// AST Construction
 
 	public final Instruction encodeLink(Link p, Instruction next, Instruction failjump) {
-		if(!option.enabledASTConstruction && p.get(0) instanceof NonTerminal) {
+		if(option.enabledASTConstruction && p.get(0) instanceof NonTerminal) {
 			next = new ICommit(p, new ILink(p, next));
 			next = encodeNonTerminal((NonTerminal) p.get(0), next, failjump);
 			return new INodePush(p, next);

@@ -69,16 +69,22 @@ public abstract class NezEncoder {
 		CodePoint c = this.codePointMap.get(uname);
 		if(c == null) {
 			Expression deref = optimizeLocalProduction(p);
-			String key = "#" + deref.getId();
-			c = this.codePointMap.get(key);
-			if(c == null) {
-				c = newCodePoint(p, deref);
-				codePointMap.put(key, c);
+			if(deref.isInterned()) {
+				String key = "#" + deref.getId();
+				c = this.codePointMap.get(key);
+				if(c == null) {
+					c = newCodePoint(p, deref);
+					codePointMap.put(key, c);
+				}
+	//			else {
+	//				Verbose.debug("alias " + uname + ", " + c.production.getUniqueName());
+	//			}
+				codePointMap.put(uname, c);
 			}
-//			else {
-//				Verbose.debug("alias " + uname + ", " + c.production.getUniqueName());
-//			}
-			codePointMap.put(uname, c);
+			else {
+				c = newCodePoint(p, deref);
+				codePointMap.put(uname, c);
+			}
 		}
 		c.ref++;
 	}

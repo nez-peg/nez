@@ -306,15 +306,7 @@ public class NezParser extends CommonTreeVisitor {
 	}
 
 	public Expression toRepetition1(CommonTree ast) {
-		if(Expression.ClassicMode) {
-			UList<Expression> l = new UList<Expression>(new Expression[2]);
-			l.add(toExpression(ast.get(0)));
-			l.add(GrammarFactory.newRepetition(ast, toExpression(ast.get(0))));
-			return GrammarFactory.newSequence(ast, l);
-		}
-		else {
-			return GrammarFactory.newRepetition1(ast, toExpression(ast.get(0)));
-		}
+		return GrammarFactory.newRepetition1(ast, toExpression(ast.get(0)));
 	}
 
 	public Expression toRepetition(CommonTree ast) {

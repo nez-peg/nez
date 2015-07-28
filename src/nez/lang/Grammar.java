@@ -5,6 +5,7 @@ import java.util.TreeMap;
 
 import nez.NezOption;
 import nez.SourceContext;
+import nez.ast.AbstractTree;
 import nez.ast.CommonTree;
 import nez.ast.CommonTreeTransducer;
 import nez.ast.TreeTransducer;
@@ -206,6 +207,10 @@ public class Grammar {
 		return (CommonTree)this.parse(sc, new CommonTreeTransducer());
 	}
 
+	public <E extends AbstractTree<E>> AbstractTree<E> parseTree(SourceContext sc) {
+		return (AbstractTree<E>)this.parse(sc, new CommonTreeTransducer());
+	}
+	
 	public final CommonTree parseAST(String str) {
 		SourceContext sc = SourceContext.newStringContext(str);
 		return (CommonTree)this.parse(sc, new CommonTreeTransducer());

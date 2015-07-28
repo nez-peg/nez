@@ -69,9 +69,9 @@ public class IsSymbol extends Expression implements Contextual {
 	}
 	@Override
 	public short acceptByte(int ch) {
-		if(this.getSymbolExpression() != null) {
-			return this.getSymbolExpression().acceptByte(ch);
-		}
+//		if(this.getSymbolExpression() != null) {
+//			return this.getSymbolExpression().acceptByte(ch);
+//		}
 		return PossibleAcceptance.Accept;
 	}
 	@Override

@@ -1,0 +1,509 @@
+/**
+ * Konoha Grammar of Sample Version
+ *
+ * Konoha is a statically typed scripting language
+ * 
+ * [1] https://docs.oracle.com/javase/specs/jls/se8/html/jls-2.html#jls-2.4
+ *
+ * Authors:
+ *   Kimio Kuramitsu (https://github.com/kkuramitsu/)
+ */
+
+File
+	= _  { (@Statement)* #Source } _ EOT
+
+/* Code Layout (Whitespace) */
+
+_
+	= (S / BLOCKCOMMENT / LINECOMMENT )*
+
+S
+	= [ \n\r\t]
+
+BLOCKCOMMENT
+	= '/*' (!'*/' .)* '*/'
+
+LINECOMMENT
+	= '//' (!'\n' .)*
+
+EOL
+	= ('\r'? '\n' / !.)
+
+EOT = !.
+
+/* Tokens */
+
+"++"   = '++' _
+"--"   = '--' _
+"&"    = '&' ![&=] _
+"*"    = '*' !'=' _
+"+"    = '+' ![+=] _
+"-"    = '-' !('-' / [=>]) _
+"~"    = '~' _
+"!"    = '!' !'=' _
+
+"{"    = '{' _
+"["    = '[' _
+"]"    = ']' _
+","    = ',' _
+"..."  = '...' _
+":"    = ':' ![>:] _
+"/"    = '/' !'=' _
+"%"    = '%' ![=>] _
+"<<"   = '<<' !'=' _
+">>"   = '>>' ![=>] _
+">>>"  = '>>>' !'=' _
+"<="   = '<=' _
+">="   = '>=' _
+"<"    = '<' ![=] _
+">"    = '>' ![=] _
+"=="   = '==' _
+"!="   = '!=' _
+"|"    = '|' ![|=] _
+";"    = ';' _
+"}"    = '}' _
+
+"="    = '=' !'=' _
+"->"   = '->' _
+"<:"   = '<:' _
+"."    = '.' !'.' _
+
+"("    = '(' _
+")"    = ')' _
+
+// reserved keyword
+"and"          = 'and'          !W _
+"as"           = 'as'           !W _
+"assert"       = 'assert'       !W _
+"bool"         = 'bool'         !W _
+"break"        = 'break'        !W _
+"continue"     = 'continue'     !W _
+"do"           = 'do'           !W _
+"else"         = 'else'         !W _
+"enum"         = 'enum'         !W _
+"false"        = 'false'        !W _
+"float"        = 'float'        !W _
+"for"          = 'for'          !W _
+"func"         = 'func'         !W _
+"if"           = 'if'           !W _
+"import"       = 'import'       !W _
+"in"           = 'in'           !W _
+"int"          = 'int'          !W _
+"let"          = 'let'          !W _
+"meta"         = 'meta'         !W _
+"mod"          = 'mod'          !W _
+"next"         = 'next'         !W _
+"new"          = 'new'          !W _
+"not"          = 'not'          !W _
+"null"         = 'null'         !W _
+"of"           = 'of'           !W _
+"on"           = 'on'           !W _
+"or"           = 'or'           !W _
+"return"       = 'return'       !W _
+"string"       = 'string'       !W _
+"then"         = 'then'         !W _
+"this"         = 'this'         !W _
+"throw"        = 'throw'        !W _
+"true"         = 'true'         !W _
+"type"         = 'type'         !W _
+"var"          = 'var'          !W _
+"void"         = 'void'         !W _
+"while"        = 'while'        !W _
+
+KEYWORD
+	= "true" / "false" / "null"
+
+/* Identifier */
+
+format #Name[0] `${text}`
+format #QualifiedName[2] `$[0].$[1]`
+
+example Identifier name$java
+example QualifiedName java.io.Lang
+
+public Identifier
+	= { NAME #Name } _
+
+public QualifiedName
+	= Identifier {@ "." @Identifier #QualifiedName }*
+
+public Name
+	= StringLiteral
+	/ Identifier
+
+W
+	= [A-Za-z0-9_$]
+
+LETTER
+	= [A-Za-z_]
+
+NAME
+	= !KEYWORD LETTER W*
+
+/* Import */
+
+ImportDecl
+	= { "import" @Name #Import }
+
+/* Meta */
+
+example CodeDecl&Statement '''
+meta "+" int int -> int =
+	`$[1] + $[2]` on "main"
+'''
+
+MetaDecl
+	= { "meta" @Name @FuncType "=" @Formatter (@Requirements)? #MetaDecl }
+
+Formatter
+   = '`' { #List (!('`') @('${' Identifier '}' 
+       / '$[' _ Index _ ({@  @Formatter _ @Index _ #Format })? ']' 
+       / { ( '$$' `$` / '\\`' `\`` 
+       / (!('$$' / '${' / '$[' / '\\`' / '`') .)+ ) }))* } '`'
+
+Index
+   = { ('-')? DIGIT+ #Integer }
+
+Requirements
+	= { "on" (@QualifiedName ("," @QualifiedName)*)? #List }
+
+/* TypeDecl */
+
+example TypeDecl '''
+type name = 
+	naruto: string
+	age: int
+'''
+
+example TypeDecl '''
+type name = int int -> int
+'''
+
+format #TypeDecl[2] `type $[0] = $[1]`
+format #StructType[*] `${inc}${NL}$[0 `${NL}` -1]${dec}`
+format #TypedName[2] `$[0]: $[1]`
+format #FuncType[2] `$[0] -> $[1]`
+format #FuncType[3] `$[0],$[1] -> $[2]`
+format #FuncType[4] `$[0],$[1],$[2] -> $[3]`
+format #FuncType[5] `$[0],$[1],$[2],$[3] -> $[4]`
+
+TypeDecl
+	= {"type" @Identifier "=" @TypeBlock #TypeDecl}
+
+TypeBlock
+	= StructType
+	/ FuncType
+
+StructType
+	= { @TypedName (@TypedName)* #StructType }
+
+TypedName
+	= { @Identifier ":" @Type #TypedName }
+
+FuncType
+	= { @Type (","? @Type)* "->" @Type #FuncType }
+
+/* Type */
+
+format #Tarray[1]     `$[0][]`
+
+example ArrayType&Type int[]
+
+public Type
+	= ArrayType
+
+ArrayType
+	= (ObjectType ) {@ "[" "]" #Tarray }?
+	
+ObjectType
+	= Identifier /* QualifiedName */
+
+/* Statement */
+
+format #LetDecl[2] `let $[0] = $[1]`
+format #VarDecl[2] `var $[0] = $[1]`
+format #Assign[2]  `$[0] = $[1]`
+format #If[2]  `if $[0] then $[1]`
+format #If[3]  `if $[0] then $[1] ${NL}else $[2]`
+format #While[2]  `while $[0] do $[1]`
+
+Statement
+	= ImportDecl
+	/ MetaDecl
+	/ FuncDecl
+	/ VarDecl
+	/ TypeDecl
+	/ IfStatement
+	/ WhileStatement
+	/ Expression
+
+VarDecl
+	= { "var" @Identifier "=" @Expression #VarDecl }
+
+IfStatement
+	= { "if" @Expression "then"? @ThenBlock ("else" @Block)? #If }
+
+ThenBlock
+	= { (!"else" @Statement)* (!"else" @EndBlock)? #Block}
+
+WhileStatement
+	= { "while" @Expression "do"? @Block #While }
+
+StatementExpression
+	= PrimaryExpression {@ addMethodCall}+
+	/ ApplyExpression
+	/ AssignmentExpression
+
+/* FuncDecl */
+
+format #FuncDecl[3] `func $[0] $[1] = $[2]`
+format #FuncParam[*] `{$[0 ` ` -1]}`
+format #Block[*] `${inc}$[0 `${NL}` -1]${dec}`
+
+example FuncDecl&Statement '''
+func f =
+	return 1
+'''
+
+example FuncDecl&Statement '''
+func f a b =
+	return a + b
+'''
+
+example FuncDecl&Statement '''
+func f a b =
+	var n = 1
+	return a + b + n
+'''
+
+FuncDecl
+	= { "func" @Identifier @FuncParam "=" (@Expression / @Block) #FuncDecl }
+
+FuncParam 
+	= { (@Identifier)* #FuncParam }
+
+Block
+	= { (@Statement)* @EndBlock #Block}
+
+EndBlock
+	= { "next" #Next }
+	/ { "return" (@Expression)? #Return }
+	/ { "break" #Break }
+	/ { "continue" #Continue }
+
+/* Expression */
+
+format #Comma[2] `$[0], $[1]`
+format #Assign[2] `$[0] = $[1]`
+format #Conditional[3] `$[0] ? $[1] : $[2]`
+format #LogicalAnd[2] `$[0] and $[1]`
+format #LogicalOr[2] `$[0] or $[1]`
+format #Equals[2] `$[0] == $[1]`
+format #NotEquals[2] `$[0] != $[1]`
+format #LessThanEquals[2] `$[0] <= $[1]`
+format #LessThan[2] `$[0] < $[1]`
+format #GreaterThanEquals[2] `$[0] >= $[1]`
+format #GreaterThan[2] `$[0] > $[1]`
+format #InstanceOf[2] `$[0] <: $[1]`
+format #HashIn[2] `$[0] in $[1]`
+
+format #Add[2] `($[0] + $[1])`
+format #Sub[2] `($[0] - $[1])`
+format #Mul[2] `($[0] * $[1])`
+format #Div[2] `($[0] / $[1])`
+format #Mod[2] `($[0] mod $[1])`
+
+/* Unary Operator */
+format #Plus[1] `+$[0]`
+format #Minus[1] `-$[0]`
+format #LogicalNot[1] `not $[0]`
+
+/* Primary */
+
+format #This[0] `this`
+format #Array[*] `[$[0 `,` -1]]`
+format #Object[*] `{$[0 `,` -1]}`
+format #Property[2] `$[0]: $[1]`
+format #Field[2] `$[0].$[1]`
+format #Index[2] `$[0][$[1]]`
+format #List[*] `($[0 `, ` -1])`
+
+
+public Expression
+	= AssignmentExpression
+	/ LogicalOrExpression
+	
+AssignmentExpression
+	= { @UnaryExpression "=" @Expression #Assign }
+
+LogicalOrExpression
+	= LogicalAndExpression {@ "or" @LogicalAndExpression #Or }*
+
+LogicalAndExpression
+	= EqualityExpression {@ "and" @EqualityExpression #And }*
+
+EqualityExpression
+	= RelationalExpression {@ ( "==" #Equals / "!=" #NotEquals ) @RelationalExpression }*
+
+RelationalExpression
+	= AdditiveExpression {@ ( relationalOperator @AdditiveExpression / "<:" @Type #InstanceOf ) }*
+
+relationalOperator
+	= "<=" #LessThanEquals
+	/ ">=" #GreaterThanEquals
+	/ "<"  #LessThan
+	/ ">"  #GreaterThan
+	/ "in" #HashIn
+
+AdditiveExpression
+	= MultiplicativeExpression {@ ( "+" #Add / "-" #Sub ) @MultiplicativeExpression }*
+
+MultiplicativeExpression
+	= CastExpression {@ ( "*" #Mul / "/" #Div / "mod" #Mod ) @CastExpression }*
+
+CastExpression
+	= UnaryExpression {@ "as" @Type #Cast }?
+
+UnaryExpression
+	= PostfixExpression
+	/ { "+"  @CastExpression #Plus }
+	/ { "-"  @CastExpression #Minus }
+	/ { "not"  @CastExpression #Not }
+
+PostfixExpression
+	= PrimaryExpression {@ (addMethodCall / addIndex / addField ) }*
+
+addMethodCall
+	= "." @Identifier @Arguments #Method
+
+Arguments
+	= { "(" (@Expression ("," @Expression)*)? ")" #List }
+
+addIndex
+	= "[" @Expression "]" #Index
+
+addField
+	= "." @Identifier !'(' #Field
+
+public PrimaryExpression
+	= Constant
+	/ "(" Expression ")"
+	/ ApplyExpression
+	/ NewExpression
+	/ Identifier
+
+
+ApplyExpression
+	= { @Identifier @Arguments #Apply }
+
+NewExpression
+	= { "new" @Identifier @Arguments #New }
+
+/* Literal, Constant */
+
+format #Null[0]   `null`
+format #True[0]   `true`
+format #False[0]  `false`
+
+format #Integer[0] `${text}`
+format #Long[0]    `${text}`
+format #Float[0]   `${text}`
+format #Double[0]  `${text}`
+
+format #String[0]    `"${text}"`
+format #Character[0] `'${text}'`
+
+Literal
+	= FloatingPointLiteral 
+	/ IntegerLiteral 
+	/ BooleanLiteral 
+	/ CharacterLiteral 
+	/ StringLiteral 
+	/ NullLiteral
+
+Constant
+	= Literal
+
+NullLiteral
+	= { "null" #Null }
+
+BooleanLiteral
+	= { "true"  #True }
+	/ { "false" #False }
+
+IntegerLiteral
+	= { ( DECIMAL / HEXADECIMAL / BINARY / OCTAL ) (INT_SUFFIX #Long / FLOAT_SUFFIX #Float / #Integer) } _
+
+DECIMAL
+	= '0' ![bBxX0-9_]
+	/ [1-9] ('_'* DIGIT)*
+
+HEXADECIMAL
+	= '0' [xX] HEX ('_'* HEX)*
+
+BINARY
+	= '0' [bB] [01] ('_'* [01])*
+
+OCTAL
+	= '0' ('_'* [0-7])*
+
+DIGIT
+	= [0-9]
+
+HEX
+	= [a-fA-F0-9]
+
+INT_SUFFIX
+	= [lL]
+
+FloatingPointLiteral
+	= { FLOAT #Float } FLOAT_SUFFIX? _
+	/ { DECIMAL #Float } FLOAT_SUFFIX _
+
+FLOAT
+	= FRACTION EXPONENT?
+	/ DIGIT+ EXPONENT
+
+FLOAT_SUFFIX
+	= [fFdD]
+
+FRACTION
+	= !'_' ('_'* DIGIT)* '.' DIGIT ('_'* DIGIT)*
+	/ DIGIT ('_'* DIGIT)* '.'
+
+EXPONENT
+	= [eE] [+\-]? DIGIT ('_'* DIGIT)*
+
+StringLiteral
+	= '"' { STRING_CONTENT* #String } '"' _
+
+CharacterLiteral
+	= '\'' { CHAR_CONTENT* #Character } '\'' _
+
+STRING_CONTENT
+	= ESCAPE
+	/ ![\"\n\\] .
+
+CHAR_CONTENT
+	= ESCAPE
+	/ !['\n\\] .
+
+ESCAPE
+	= SIMPLE_ESCAPE
+	/ OCTAL_ESCAPE
+	/ HEX_ESCAPE
+
+SIMPLE_ESCAPE
+	= '\\' ['\"\\bfnrt]
+
+OCTAL_ESCAPE
+	= '\\' [0-3] [0-7] [0-7]
+	/ '\\' [0-7] [0-7]
+	/ '\\' [0-7]
+
+HEX_ESCAPE
+	= '\\' 'u'+ HEX4
+
+HEX4
+	= HEX HEX HEX HEX
+

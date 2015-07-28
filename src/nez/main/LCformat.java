@@ -30,8 +30,8 @@ public class LCformat extends Command {
 				ConsoleUtils.println(source.getUnconsumedMessage());
 			}
 			source = null;
-			g.logProfiler();
 			ConsoleUtils.println(gfile.formatCommonTree(node));
+			g.logProfiler();
 		}
 	}
 }
