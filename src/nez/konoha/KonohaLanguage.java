@@ -19,6 +19,9 @@ public class KonohaLanguage extends StringTransducerCombinator {
 		defineLiteral(konoha, "#String", "string", Asis());
 
 		defineBinary(konoha, "#Add", "int", "int", "int", "+");
+		defineBinary(konoha, "#Sub", "int", "int", "int", "-");
+		defineBinary(konoha, "#Mul", "int", "int", "int", "*");
+		defineBinary(konoha, "#Dev", "int", "int", "int", "/");
 
 	}
 	
@@ -109,7 +112,7 @@ public class KonohaLanguage extends StringTransducerCombinator {
 			node.matched = this;
 			if(t != null) {
 				KonohaTree nameNode = node.get(0);
-				String name = node.getText();				
+				String name = nameNode.getText();				
 				nameNode.typed = t;
 				konoha.setName(name, nameNode);
 			}
