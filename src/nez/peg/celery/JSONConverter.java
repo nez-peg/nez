@@ -20,7 +20,6 @@ import nez.util.UList;
 
 public class JSONConverter extends AbstractTreeVisitor {
 
-	static GrammarFile celeryGrammar = null;
 	private HashMap<String, List<String>> classMap;
 	private List<String> requiredMembersList;
 	private List<String> impliedMemebersList;
@@ -60,12 +59,6 @@ public class JSONConverter extends AbstractTreeVisitor {
 		JSONPredefinedRules preRules = new JSONPredefinedRules(grammar);
 		preRules.defineRule();
 	}
-
-	// public final void convert(CommonTree node, GrammarFile grammar) {
-	// this.grammar = grammar;
-	// loadPredefinedRules(node);
-	// this.visit("visit", node);
-	// }
 
 	// visitor methods
 
