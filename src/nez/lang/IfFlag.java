@@ -7,6 +7,7 @@ import nez.vm.NezEncoder;
 public class IfFlag extends Unconsumed implements Conditional {
 	boolean predicate;
 	String flagName;
+
 	IfFlag(SourcePosition s, boolean predicate, String flagName) {
 		super(s);
 		if(flagName.startsWith("!")) {
@@ -16,6 +17,7 @@ public class IfFlag extends Unconsumed implements Conditional {
 		this.predicate = predicate;
 		this.flagName = flagName;
 	}
+
 	@Override
 	public final boolean equalsExpression(Expression o) {
 		if(o instanceof IfFlag) {
@@ -24,7 +26,6 @@ public class IfFlag extends Unconsumed implements Conditional {
 		}
 		return false;
 	}
-
 
 	public final String getFlagName() {
 		return this.flagName;

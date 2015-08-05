@@ -8,10 +8,11 @@ import java.io.OutputStream;
 public class SourceBuilder {
 
 	private OutputStream out;
+
 	private String CHARSET = "UTF8";
-	private final static String TAB = " ";
-	private final static String LF = "\n";
-	private final static String CRLF = "\r\n";
+	public final static String TAB = " ";
+	public final static String LF = "\n";
+	public final static String CRLF = "\r\n";
 		
 	public SourceBuilder(String fileName) throws IOException {
 		this.out = new BufferedOutputStream(new FileOutputStream(fileName));

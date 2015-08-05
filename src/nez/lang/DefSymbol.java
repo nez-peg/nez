@@ -2,7 +2,6 @@ package nez.lang;
 
 import nez.ast.SourcePosition;
 import nez.ast.Tag;
-import nez.util.UList;
 import nez.util.UMap;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
@@ -10,13 +9,14 @@ import nez.vm.NezEncoder;
 public class DefSymbol extends Unary {
 	public final Tag tableName;
 	public final GrammarFile gfile;
-	
+
 	DefSymbol(SourcePosition s, GrammarFile ns, Tag table, Expression inner) {
 		super(s, inner);
 		this.gfile = ns;
 		this.tableName = table;
 		ns.setSymbolExpresion(tableName.getName(), inner);
 	}
+
 	@Override
 	public final boolean equalsExpression(Expression o) {
 		if(o instanceof DefSymbol) {
@@ -31,7 +31,7 @@ public class DefSymbol extends Unary {
 	public final GrammarFile getGrammarFile() {
 		return gfile;
 	}
-	
+
 	public final Tag getTable() {
 		return tableName;
 	}
@@ -44,7 +44,7 @@ public class DefSymbol extends Unary {
 	public String getPredicate() {
 		return "def " + tableName.getName();
 	}
-	
+
 	@Override
 	public String key() {
 		return "def " + tableName.getName();
@@ -54,23 +54,25 @@ public class DefSymbol extends Unary {
 	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeDefSymbol(this);
 	}
-	
+
 	@Override
 	public boolean isConsumed() {
 		return this.inner.isConsumed();
 	}
-	
+
 	@Override
 	public int inferTypestate(Visa v) {
 		return Typestate.BooleanType;
 	}
+
 	@Override
 	public short acceptByte(int ch) {
 		return this.inner.acceptByte(ch);
 	}
-	
+
 	// Utilities
-	public static boolean checkContextSensitivity(Expression e, UMap<String> visitedMap) {
+	public static boolean checkContextSensitivity(Expression e,
+			UMap<String> visitedMap) {
 		if(e.size() > 0) {
 			for(int i = 0; i < e.size(); i++) {
 				if(checkContextSensitivity(e.get(i), visitedMap)) {
@@ -80,10 +82,11 @@ public class DefSymbol extends Unary {
 			return false;
 		}
 		if(e instanceof NonTerminal) {
-			String un = ((NonTerminal) e).getUniqueName();
+			String un = ((NonTerminal)e).getUniqueName();
 			if(visitedMap.get(un) == null) {
 				visitedMap.put(un, un);
-				return checkContextSensitivity(((NonTerminal) e).getProduction().getExpression(), visitedMap);
+				return checkContextSensitivity(((NonTerminal)e)
+						.getProduction().getExpression(), visitedMap);
 			}
 			return false;
 		}
@@ -92,9 +95,10 @@ public class DefSymbol extends Unary {
 		}
 		return false;
 	}
-	
+
 	@Override
-	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
+	public Instruction encode(NezEncoder bc, Instruction next,
+			Instruction failjump) {
 		return bc.encodeDefSymbol(this, next, failjump);
 	}
 
@@ -102,6 +106,7 @@ public class DefSymbol extends Unary {
 	protected int pattern(GEP gep) {
 		return 1;
 	}
+
 	@Override
 	protected void examplfy(GEP gep, StringBuilder sb, int p) {
 		StringBuilder sb2 = new StringBuilder();
@@ -110,5 +115,5 @@ public class DefSymbol extends Unary {
 		gep.addTable(tableName, token);
 		sb.append(token);
 	}
-	
+
 }

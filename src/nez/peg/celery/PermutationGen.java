@@ -27,8 +27,8 @@ public class PermutationGen {
 	}
 
 	private void printPerm() {
-		for (int[] x : perm_list) {
-			for (int i : x) {
+		for(int[] x : perm_list) {
+			for(int i : x) {
 				System.out.print(i + " ");
 			}
 			System.out.println();
@@ -36,14 +36,15 @@ public class PermutationGen {
 	}
 
 	public void createPermutation(int n, int[] target) {
-		if (n == this.number) {
-			for (int i = 0; i < n; i++) {
+		if(n == this.number) {
+			for(int i = 0; i < n; i++) {
 				perm_list[perm_list_index][i] = perm[i];
 			}
 			perm_list_index++;
-		} else {
-			for (int i = 0; i < perm.length; i++) {
-				if (flag[i])
+		}
+		else {
+			for(int i = 0; i < perm.length; i++) {
+				if(flag[i])
 					continue;
 				perm[n] = target[i];
 				flag[i] = true;

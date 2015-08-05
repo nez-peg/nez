@@ -2,18 +2,19 @@ package nez.lang;
 
 import nez.ast.SourcePosition;
 import nez.ast.Tag;
-import nez.util.UList;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
 public class ExistsSymbol extends Expression implements Contextual {
 	public final Tag tableName;
 	final GrammarFile ns;
+
 	ExistsSymbol(SourcePosition s, GrammarFile ns, Tag tableName) {
 		super(s);
 		this.ns = ns;
 		this.tableName = tableName;
 	}
+
 	@Override
 	public final boolean equalsExpression(Expression o) {
 		if(o instanceof ExistsSymbol) {
@@ -22,7 +23,7 @@ public class ExistsSymbol extends Expression implements Contextual {
 		}
 		return false;
 	}
-	
+
 	public final GrammarFile getGrammarFile() {
 		return ns;
 	}
@@ -43,15 +44,17 @@ public class ExistsSymbol extends Expression implements Contextual {
 	public String getPredicate() {
 		return "exists " + tableName.getName();
 	}
+
 	@Override
 	public String key() {
 		return this.getPredicate();
 	}
+
 	@Override
 	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeExistsSymbol(this);
 	}
-	
+
 	@Override
 	public boolean isConsumed() {
 		return false;
@@ -61,7 +64,7 @@ public class ExistsSymbol extends Expression implements Contextual {
 	public int inferTypestate(Visa v) {
 		return Typestate.BooleanType;
 	}
-	
+
 	@Override
 	public short acceptByte(int ch) {
 		if(this.getSymbolExpression() != null) {
@@ -69,14 +72,18 @@ public class ExistsSymbol extends Expression implements Contextual {
 		}
 		return PossibleAcceptance.Accept;
 	}
+
 	@Override
-	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
+	public Instruction encode(NezEncoder bc, Instruction next,
+			Instruction failjump) {
 		return bc.encodeExistsSymbol(this, next, failjump);
 	}
+
 	@Override
 	protected int pattern(GEP gep) {
 		return 1;
 	}
+
 	@Override
 	protected void examplfy(GEP gep, StringBuilder sb, int p) {
 		String token = gep.getSymbol(tableName);

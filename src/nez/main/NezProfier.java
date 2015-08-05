@@ -13,20 +13,21 @@ import nez.util.UMap;
 
 public class NezProfier {
 	final String logFile;
-	
+
 	NezProfier(String logFile) {
 		this.logFile = logFile;
 	}
-	
+
 	class DataPoint {
 		String key;
 		Object value;
+
 		DataPoint(String key, Object value) {
 			this.key = key;
 			this.value = value;
 		}
 	}
-	
+
 	private UList<DataPoint> dataPointList = new UList<DataPoint>(new DataPoint[64]);
 	private UMap<DataPoint> dataPointMap = new UMap<DataPoint>();
 
@@ -49,7 +50,7 @@ public class NezProfier {
 	public final void setFile(String key, String file) {
 		int loc = file.lastIndexOf('/');
 		if(loc > 0) {
-			file = file.substring(loc+1);
+			file = file.substring(loc + 1);
 		}
 		this.setDataPoint(key, file);
 	}
@@ -65,7 +66,7 @@ public class NezProfier {
 	public final void setRatio(String key, long v, long v2) {
 		double d = v;
 		double d2 = v2;
-		this.setDataPoint(key, new Double(d/d2));
+		this.setDataPoint(key, new Double(d / d2));
 	}
 
 	public final String formatCommaSeparateValue() {
@@ -85,26 +86,27 @@ public class NezProfier {
 		}
 		return sb.toString();
 	}
-	
+
 	public final void log() {
 		try(PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(this.logFile, true)))) {
 			String csv = formatCommaSeparateValue();
-		    Verbose.println("writing .. " + this.logFile + " " + csv);
+			Verbose.println("writing .. " + this.logFile + " " + csv);
 			out.println(csv);
-//			double cf = 0;
-//			for(int i = 0; i < 16; i++) {
-//				int n = 1 << i;
-//				double f = (double)this.backtrackCount[i] / this.BacktrackCount;
-//				cf += this.backtrackCount[i];
-//				System.out.println(String.format("%d\t%d\t%2.3f\t%2.3f", n, this.backtrackCount[i], f, (cf / this.BacktrackCount)));
-//				if(n > this.WorstBacktrackSize) break;
-//			}
+			// double cf = 0;
+			// for(int i = 0; i < 16; i++) {
+			// int n = 1 << i;
+			// double f = (double)this.backtrackCount[i] / this.BacktrackCount;
+			// cf += this.backtrackCount[i];
+			// System.out.println(String.format("%d\t%d\t%2.3f\t%2.3f", n, this.backtrackCount[i], f, (cf /
+			// this.BacktrackCount)));
+			// if(n > this.WorstBacktrackSize) break;
+			// }
 		}
-		catch (IOException e) {
+		catch(IOException e) {
 			ConsoleUtils.exit(1, "Can't write csv log: " + this.logFile);
 		}
 	}
-	
+
 	public final static void recordLatencyMS(NezProfier rec, String key, long nanoT1, long nanoT2) {
 		if(rec != null) {
 			long t = (nanoT2 - nanoT1) / 1000; // [micro second]
@@ -118,7 +120,7 @@ public class NezProfier {
 			rec.setDouble(key + "[s]", t / 10000000.0);
 		}
 	}
-	
+
 	public final static void recordThroughputKPS(NezProfier rec, String key, long length, long nanoT1, long nanoT2) {
 		if(rec != null) {
 			long micro = (nanoT2 - nanoT1) / 1000; // [micro second]
@@ -127,6 +129,5 @@ public class NezProfier {
 			rec.setDouble(key + "[KiB/s]", thr);
 		}
 	}
-
 
 }

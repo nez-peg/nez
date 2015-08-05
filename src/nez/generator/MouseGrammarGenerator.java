@@ -11,6 +11,7 @@ import nez.lang.Expression;
 import nez.lang.Failure;
 import nez.lang.Grammar;
 import nez.lang.Link;
+import nez.lang.Multinary;
 import nez.lang.New;
 import nez.lang.NonTerminal;
 import nez.lang.Not;
@@ -20,18 +21,17 @@ import nez.lang.Repetition;
 import nez.lang.Repetition1;
 import nez.lang.Replace;
 import nez.lang.Sequence;
-import nez.lang.Multinary;
 import nez.lang.Tagging;
 import nez.lang.Unary;
 import nez.util.StringUtils;
 
 public class MouseGrammarGenerator extends GrammarGenerator {
-	
+
 	@Override
 	public String getDesc() {
-		return "a PEG-style grammar for Mouse" ;
+		return "a PEG-style grammar for Mouse";
 	}
-	
+
 	@Override
 	public void makeHeader(Grammar g) {
 		file.write("// Parsing Expression Grammars for Mouse");
@@ -44,7 +44,7 @@ public class MouseGrammarGenerator extends GrammarGenerator {
 		}
 		return s;
 	}
-	
+
 	@Override
 	public void visitProduction(Production rule) {
 		Expression e = rule.getExpression();
@@ -64,8 +64,8 @@ public class MouseGrammarGenerator extends GrammarGenerator {
 		}
 		file.writeIndent(";");
 		file.decIndent();
-	}	
-	
+	}
+
 	public void visitEmpty(Empty e) {
 		file.write("\"\"");
 	}
@@ -74,18 +74,22 @@ public class MouseGrammarGenerator extends GrammarGenerator {
 		file.write("!_");
 	}
 
+	@Override
 	public void visitNonTerminal(NonTerminal e) {
 		file.write(stringfyName(e.getLocalName().replaceAll("_", "under")));
 	}
-	
+
+	@Override
 	public void visitByteChar(ByteChar e) {
 		file.write(stringfy("\"", e.byteChar, "\""));
 	}
 
+	@Override
 	public void visitByteMap(ByteMap e) {
 		file.write(stringfy(e.byteMap));
 	}
-	
+
+	@Override
 	public void visitAnyChar(AnyChar e) {
 		file.write("_");
 	}
@@ -93,35 +97,40 @@ public class MouseGrammarGenerator extends GrammarGenerator {
 	private final String stringfy(String s, int ch, String e) {
 		char c = (char)ch;
 		switch(c) {
-		case '\n' : return s+ "\\n" + e; 
-		case '\t' : return s+ "\\t" + e; 
-		case '\r' : return s+ "\\r" + e; 
-		case '"' : return s+ "\\\"" + e; 
-		case '\\' : return s + "\\\\" + e; 
+		case '\n':
+			return s + "\\n" + e;
+		case '\t':
+			return s + "\\t" + e;
+		case '\r':
+			return s + "\\r" + e;
+		case '"':
+			return s + "\\\"" + e;
+		case '\\':
+			return s + "\\\\" + e;
 		}
 		if(Character.isISOControl(c) || c > 127) {
 			return s + String.format("0x%02x", (int)c) + e;
 		}
-		return(s + c + e);
+		return (s + c + e);
 	}
-	
+
 	private final String stringfy(boolean[] b) {
 		StringBuilder sb = new StringBuilder();
 		String delim = "";
 		for(int s = 0; s < 256; s++) {
 			if(b[s]) {
-				int e = searchEndChar(b, s+1);
+				int e = searchEndChar(b, s + 1);
 				if(s == e) {
 					sb.append(delim);
-					sb.append(stringfy("\"",s,"\""));
+					sb.append(stringfy("\"", s, "\""));
 					delim = " / ";
 				}
 				else {
 					sb.append(delim);
 					sb.append("[");
-					sb.append(stringfy("",s,""));
+					sb.append(stringfy("", s, ""));
 					sb.append("-");
-					sb.append(stringfy("",e,""));
+					sb.append(stringfy("", e, ""));
 					sb.append("]");
 					delim = " / ";
 					s = e;
@@ -134,7 +143,7 @@ public class MouseGrammarGenerator extends GrammarGenerator {
 	private final static int searchEndChar(boolean[] b, int s) {
 		for(; s < 256; s++) {
 			if(!b[s]) {
-				return s-1;
+				return s - 1;
 			}
 		}
 		return 255;
@@ -144,7 +153,7 @@ public class MouseGrammarGenerator extends GrammarGenerator {
 		if(prefix != null) {
 			file.write(prefix);
 		}
-		if(/*e.get(0) instanceof String ||*/ e.get(0) instanceof NonTerminal/* || e.get(0) instanceof NewClosure*/) {
+		if(/* e.get(0) instanceof String || */e.get(0) instanceof NonTerminal/* || e.get(0) instanceof NewClosure */) {
 			this.visitExpression(e.get(0));
 		}
 		else {
@@ -157,24 +166,29 @@ public class MouseGrammarGenerator extends GrammarGenerator {
 		}
 	}
 
+	@Override
 	public void visitOption(Option e) {
-		this.visit( null, e, "?");
+		this.visit(null, e, "?");
 	}
-	
+
+	@Override
 	public void visitRepetition(Repetition e) {
 		this.visit(null, e, "*");
 	}
-	
+
+	@Override
 	public void visitRepetition1(Repetition1 e) {
 		this.visit(null, e, "+");
 	}
 
+	@Override
 	public void visitAnd(And e) {
-		this.visit( "&", e, null);
+		this.visit("&", e, null);
 	}
-	
+
+	@Override
 	public void visitNot(Not e) {
-		this.visit( "!", e, null);
+		this.visit("!", e, null);
 	}
 
 	protected void visitSequenceImpl(Multinary l) {
@@ -204,7 +218,7 @@ public class MouseGrammarGenerator extends GrammarGenerator {
 		for(int i = start; i < end; i++) {
 			Expression e = l.get(i);
 			if(e instanceof ByteChar) {
-				char c = (char)(((ByteChar) e).byteChar);
+				char c = (char)(((ByteChar)e).byteChar);
 				if(c >= ' ' && c < 127) {
 					s += c;
 					continue;
@@ -218,7 +232,8 @@ public class MouseGrammarGenerator extends GrammarGenerator {
 		}
 		return end - 1;
 	}
-		
+
+	@Override
 	public void visitChoice(Choice e) {
 		for(int i = 0; i < e.size(); i++) {
 			if(i > 0) {
@@ -227,31 +242,36 @@ public class MouseGrammarGenerator extends GrammarGenerator {
 			visitExpression(e.get(i));
 		}
 	}
-	
+
+	@Override
 	public void visitNew(New e) {
 
 	}
 
+	@Override
 	public void visitCapture(Capture e) {
-		
+
 	}
 
+	@Override
 	public void visitTagging(Tagging e) {
-//		file.write("{");
-//		file.write(e.tag.toString().toLowerCase());
-//		file.write("}");
+		// file.write("{");
+		// file.write(e.tag.toString().toLowerCase());
+		// file.write("}");
 	}
-	
+
+	@Override
 	public void visitValue(Replace e) {
-		//file.write(StringUtils.quoteString('`', e.value, '`'));
+		// file.write(StringUtils.quoteString('`', e.value, '`'));
 	}
-	
+
+	@Override
 	public void visitLink(Link e) {
-//		String predicate = "@";
-//		if(e.index != -1) {
-//			predicate += "[" + e.index + "]";
-//		}
-//		this.visit(predicate, e, null);
+		// String predicate = "@";
+		// if(e.index != -1) {
+		// predicate += "[" + e.index + "]";
+		// }
+		// this.visit(predicate, e, null);
 		this.visitExpression(e.get(0));
 	}
 

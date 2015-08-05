@@ -2,20 +2,20 @@ package nez.lang;
 
 import nez.ast.SourcePosition;
 import nez.ast.Tag;
-import nez.util.UList;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
 public class LocalTable extends Unary {
 	public final Tag tableName;
 	public final GrammarFile ns;
-	
+
 	LocalTable(SourcePosition s, GrammarFile ns, Tag table, Expression inner) {
 		super(s, inner);
 		this.ns = ns;
 		this.tableName = table;
 		ns.setSymbolExpresion(tableName.getName(), inner);
 	}
+
 	@Override
 	public final boolean equalsExpression(Expression o) {
 		if(o instanceof LocalTable) {
@@ -30,7 +30,7 @@ public class LocalTable extends Unary {
 	public final GrammarFile getGrammarFile() {
 		return ns;
 	}
-	
+
 	public final Tag getTable() {
 		return tableName;
 	}
@@ -43,7 +43,7 @@ public class LocalTable extends Unary {
 	public String getPredicate() {
 		return "local " + tableName.getName();
 	}
-	
+
 	@Override
 	public String key() {
 		return "local " + tableName.getName();
@@ -53,24 +53,25 @@ public class LocalTable extends Unary {
 	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeLocalTable(this);
 	}
-	
+
 	@Override
 	public boolean isConsumed() {
 		return this.inner.isConsumed();
 	}
-	
+
 	@Override
 	public int inferTypestate(Visa v) {
 		return this.inner.inferTypestate(v);
 	}
-	
+
 	@Override
 	public short acceptByte(int ch) {
 		return this.inner.acceptByte(ch);
 	}
-		
+
 	@Override
-	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
+	public Instruction encode(NezEncoder bc, Instruction next,
+			Instruction failjump) {
 		return bc.encodeLocalTable(this, next, failjump);
 	}
 
@@ -78,6 +79,7 @@ public class LocalTable extends Unary {
 	protected int pattern(GEP gep) {
 		return 1;
 	}
+
 	@Override
 	protected void examplfy(GEP gep, StringBuilder sb, int p) {
 		StringBuilder sb2 = new StringBuilder();

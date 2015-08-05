@@ -1,16 +1,17 @@
 package nez.lang;
 
 import nez.ast.SourcePosition;
-import nez.util.UList;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
 public class Repetition extends Unary {
 	public boolean possibleInfiniteLoop = false;
+
 	Repetition(SourcePosition s, Expression e) {
 		super(s, e);
 		e.setOuterLefted(this);
 	}
+
 	@Override
 	public boolean equalsExpression(Expression o) {
 		if(o instanceof Repetition) {
@@ -18,18 +19,22 @@ public class Repetition extends Unary {
 		}
 		return false;
 	}
+
 	@Override
-	public String getPredicate() { 
+	public String getPredicate() {
 		return "*";
 	}
+
 	@Override
-	public String key() { 
+	public String key() {
 		return "*";
 	}
+
 	@Override
 	protected void format(StringBuilder sb) {
 		this.formatUnary(sb, this.inner, "*");
 	}
+
 	@Override
 	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeRepetition(this);
@@ -49,12 +54,14 @@ public class Repetition extends Unary {
 		return t;
 	}
 
-	@Override public short acceptByte(int ch) {
+	@Override
+	public short acceptByte(int ch) {
 		return PossibleAcceptance.acceptOption(this, ch);
 	}
-			
+
 	@Override
-	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
+	public Instruction encode(NezEncoder bc, Instruction next,
+			Instruction failjump) {
 		return bc.encodeRepetition(this, next);
 	}
 
@@ -62,6 +69,7 @@ public class Repetition extends Unary {
 	protected int pattern(GEP gep) {
 		return 2;
 	}
+
 	@Override
 	protected void examplfy(GEP gep, StringBuilder sb, int p) {
 		if(p > 0) {

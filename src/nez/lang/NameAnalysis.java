@@ -8,13 +8,13 @@ import nez.util.UFlag;
 public class NameAnalysis extends GrammarReshaper {
 
 	public void analyze(List<Production> l) {
-		for(Production p: l) {
+		for(Production p : l) {
 			if(p.isTerminal()) {
 				continue;
 			}
 			analyze(p);
 		}
-		for(Production p: l) {
+		for(Production p : l) {
 			if(p.isTerminal()) {
 				continue;
 			}
@@ -27,13 +27,13 @@ public class NameAnalysis extends GrammarReshaper {
 			}
 		}
 	}
-	
+
 	boolean checkLeftRecursion(Expression e, ProductionStacker s) {
 		if(e instanceof NonTerminal) {
-			Production p = ((NonTerminal) e).getProduction();
+			Production p = ((NonTerminal)e).getProduction();
 			if(s.isVisited(p)) {
-				((NonTerminal) e).getGrammarFile().reportError(e, "left recursion: " + p.getLocalName());
-				return true;  // stop as consumed
+				((NonTerminal)e).getGrammarFile().reportError(e, "left recursion: " + p.getLocalName());
+				return true; // stop as consumed
 			}
 			return checkLeftRecursion(p.getExpression(), new ProductionStacker(p, s));
 		}
@@ -45,7 +45,7 @@ public class NameAnalysis extends GrammarReshaper {
 			}
 			if(e instanceof Choice) {
 				boolean consumed = true;
-				for(Expression se: e) {
+				for(Expression se : e) {
 					if(!checkLeftRecursion(e.get(1), s)) {
 						consumed = false;
 					}
@@ -63,8 +63,9 @@ public class NameAnalysis extends GrammarReshaper {
 		}
 		return e.isConsumed();
 	}
-		
+
 	boolean sync;
+
 	public boolean analyze(Production p) {
 		sync = false;
 		p.setExpression(p.getExpression().reshape(this));
@@ -73,7 +74,8 @@ public class NameAnalysis extends GrammarReshaper {
 		}
 		return sync;
 	}
-	
+
+	@Override
 	public Expression reshapeNonTerminal(NonTerminal n) {
 		Production p = n.getGrammarFile().getProduction(n.getLocalName());
 		if(p == null) {
@@ -85,7 +87,7 @@ public class NameAnalysis extends GrammarReshaper {
 			return n.newEmpty();
 		}
 		if(n.isTerminal()) {
-			return p.getExpression().reshape(this);  // inlining terminal
+			return p.getExpression().reshape(this); // inlining terminal
 		}
 		if(n.syncProduction()) {
 			this.sync = true;

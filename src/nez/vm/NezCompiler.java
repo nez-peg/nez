@@ -8,9 +8,9 @@ public abstract class NezCompiler extends NezEncoder {
 	public NezCompiler(NezOption option) {
 		super(option);
 	}
-	
+
 	public abstract NezCode compile(Grammar grammar);
-	
+
 	public final void layoutCode(UList<Instruction> codeList, Instruction inst) {
 		if(inst == null) {
 			return;
@@ -25,11 +25,11 @@ public abstract class NezCompiler extends NezEncoder {
 			layoutCode(codeList, inst.branch());
 			if(inst instanceof IPredictDispatch) {
 				IPredictDispatch match = (IPredictDispatch)inst;
-				for(int ch = 0; ch < match.jumpTable.length; ch ++) {
+				for(int ch = 0; ch < match.jumpTable.length; ch++) {
 					layoutCode(codeList, match.jumpTable[ch]);
 				}
 			}
-			//encode(inst.branch2());
+			// encode(inst.branch2());
 		}
 	}
 

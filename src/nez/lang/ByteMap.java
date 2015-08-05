@@ -7,15 +7,18 @@ import nez.vm.NezEncoder;
 
 public class ByteMap extends Char implements Consumed {
 	public boolean[] byteMap; // Immutable
+
 	ByteMap(SourcePosition s, boolean binary, int beginChar, int endChar) {
 		super(s, binary);
 		this.byteMap = newMap(false);
 		appendRange(this.byteMap, beginChar, endChar);
 	}
+
 	ByteMap(SourcePosition s, boolean binary, boolean[] b) {
 		super(s, binary);
 		this.byteMap = b;
 	}
+
 	@Override
 	public final boolean equalsExpression(Expression o) {
 		if(o instanceof ByteMap && this.binary == ((ByteMap)o).isBinary()) {
@@ -43,7 +46,7 @@ public class ByteMap extends Char implements Consumed {
 	@Override
 	public String key() {
 		return binary ? "b[" + StringUtils.stringfyBitmap(this.byteMap)
-				      : "[" +  StringUtils.stringfyBitmap(this.byteMap);
+				: "[" + StringUtils.stringfyBitmap(this.byteMap);
 	}
 
 	@Override
@@ -60,21 +63,23 @@ public class ByteMap extends Char implements Consumed {
 	public short acceptByte(int ch) {
 		return PossibleAcceptance.acceptByteMap(byteMap, ch);
 	}
-	
+
 	@Override
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
 		return bc.encodeByteMap(this, next, failjump);
 	}
+
 	@Override
 	protected int pattern(GEP gep) {
 		int c = 0;
-		for(boolean b: this.byteMap) {
+		for(boolean b : this.byteMap) {
 			if(b) {
 				c += 1;
 			}
 		}
 		return c;
 	}
+
 	@Override
 	protected void examplfy(GEP gep, StringBuilder sb, int p) {
 		int c = 0;
@@ -87,9 +92,9 @@ public class ByteMap extends Char implements Consumed {
 			}
 		}
 	}
-	
+
 	// Utils
-	
+
 	public final static boolean[] newMap(boolean initValue) {
 		boolean[] b = new boolean[257];
 		if(initValue) {

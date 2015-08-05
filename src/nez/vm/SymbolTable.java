@@ -1,10 +1,9 @@
 package nez.vm;
 
 import nez.ast.Tag;
-import nez.util.UList;
 
 public class SymbolTable {
-	public final static byte[] NullSymbol = {0,0,0,0}; // to distinguish others
+	public final static byte[] NullSymbol = { 0, 0, 0, 0 }; // to distinguish others
 	SymbolTableEntry2[] tables;
 	int tableSize = 0;
 	int maxTableSize = 0;
@@ -13,20 +12,20 @@ public class SymbolTable {
 	int stateCount = 0;
 
 	final class SymbolTableEntry2 {
-		Tag     table;
-		long    code;
-		byte[]  utf8;
-		boolean avail;   // if hidden, avail = false
+		Tag table;
+		long code;
+		byte[] utf8;
+		boolean avail; // if hidden, avail = false
 	}
-	
+
 	final static long hashCode(byte[] utf8) {
 		long hashCode = 0;
-		for (int i = 0; i < utf8.length; i++) {
+		for(int i = 0; i < utf8.length; i++) {
 			hashCode = hashCode * 31 + (utf8[i] & 0xff);
 		}
 		return hashCode;
 	}
-	
+
 	final boolean equals(byte[] utf8, byte[] b) {
 		if(utf8.length == b.length) {
 			for(int i = 0; i < utf8.length; i++) {
@@ -39,13 +38,12 @@ public class SymbolTable {
 		return false;
 	}
 
-	
 	private void initEntry(int s, int e) {
 		for(int i = s; i < e; i++) {
 			this.tables[i] = new SymbolTableEntry2();
 		}
 	}
-	
+
 	private void push(Tag table, long code, byte[] utf8) {
 		if(!(tableSize < maxTableSize)) {
 			if(maxTableSize == 0) {
@@ -64,8 +62,8 @@ public class SymbolTable {
 		SymbolTableEntry2 entry = tables[tableSize];
 		tableSize++;
 		entry.table = table;
-		entry.code  = code;
-		entry.utf8  = utf8;
+		entry.code = code;
+		entry.utf8 = utf8;
 		entry.avail = true;
 		this.stateCount += 1;
 		this.stateValue = stateCount;
@@ -78,7 +76,7 @@ public class SymbolTable {
 
 	public final int saveHiddenPoint(Tag table) {
 		push(table, this.stateValue, NullSymbol);
-		this.tables[this.tableSize-1].avail = false;
+		this.tables[this.tableSize - 1].avail = false;
 		return this.tableSize - 1;
 	}
 
@@ -86,11 +84,11 @@ public class SymbolTable {
 		this.stateValue = (int)tables[savePoint].code;
 		this.tableSize = savePoint;
 	}
-		
+
 	public final int getState() {
 		return this.stateValue;
 	}
-	
+
 	public final void addTable(Tag table, byte[] utf8) {
 		push(table, hashCode(utf8), utf8);
 	}
@@ -98,7 +96,7 @@ public class SymbolTable {
 	public final boolean exists(Tag table) {
 		for(int i = tableSize - 1; i >= 0; i--) {
 			SymbolTableEntry2 entry = tables[i];
-			if(entry.table == table && entry.avail ) {
+			if(entry.table == table && entry.avail) {
 				return true;
 			}
 		}
@@ -108,7 +106,7 @@ public class SymbolTable {
 	public final byte[] getSymbol(Tag table) {
 		for(int i = tableSize - 1; i >= 0; i--) {
 			SymbolTableEntry2 entry = tables[i];
-			if(entry.table == table && entry.avail ) {
+			if(entry.table == table && entry.avail) {
 				return entry.utf8;
 			}
 		}
@@ -141,7 +139,7 @@ public class SymbolTable {
 		}
 		return false;
 	}
-	
+
 	public final void setCount(Tag table, int number) {
 		push(table, number, NullSymbol);
 	}
@@ -149,8 +147,9 @@ public class SymbolTable {
 	public final boolean count(Tag table) {
 		for(int i = tableSize - 1; i >= 0; i--) {
 			SymbolTableEntry2 entry = tables[i];
-			if(entry.table == table && entry.avail ) {
-				if(entry.code == 0) return false;
+			if(entry.table == table && entry.avail) {
+				if(entry.code == 0)
+					return false;
 				entry.code--;
 				return true;
 			}

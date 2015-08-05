@@ -16,11 +16,11 @@ import nez.util.UList;
 public class NezParser extends CommonTreeVisitor {
 	Grammar nezGrammar;
 	GrammarFile loaded;
-	
+
 	public NezParser() {
 		this.nezGrammar = NezCombinator.newGrammar("Chunk", NezOption.newSafeOption());
 	}
-	
+
 	public void eval(GrammarFile ns, String urn, int linenum, String text) {
 		SourceContext sc = SourceContext.newStringSourceContext(urn, linenum, text);
 		this.loaded = ns;
@@ -50,12 +50,12 @@ public class NezParser extends CommonTreeVisitor {
 		gfile.verify();
 	}
 
-//	public final void load(GrammarFile ns, String urn) throws IOException {
-//		load(ns, urn);
-//	}
-	
+	// public final void load(GrammarFile ns, String urn) throws IOException {
+	// load(ns, urn);
+	// }
+
 	private boolean parseStatement(CommonTree node) {
-		//System.out.println("DEBUG? parsed: " + node);
+		// System.out.println("DEBUG? parsed: " + node);
 		if(node != null) {
 			if(node.is(NezTag.Rule)) {
 				parseProduction(node);
@@ -74,7 +74,7 @@ public class NezParser extends CommonTreeVisitor {
 		}
 		return false;
 	}
-	
+
 	private boolean defineExample(CommonTree node) {
 		if(node.size() == 2) {
 			Example ex = new Example(node.get(0), node.get(1), true);
@@ -90,14 +90,14 @@ public class NezParser extends CommonTreeVisitor {
 	}
 
 	private boolean defineFormat(CommonTree node) {
-		//System.out.println("node: " + node);
+		// System.out.println("node: " + node);
 		String tag = node.textAt(0, "token");
 		int index = StringUtils.parseInt(node.textAt(1, "*"), -1);
 		Formatter fmt = toFormatter(node.get(2));
 		this.loaded.addFormatter(tag, index, fmt);
 		return true;
 	}
-	
+
 	Formatter toFormatter(CommonTree node) {
 		if(node.is(NezTag.List)) {
 			ArrayList<Formatter> l = new ArrayList<Formatter>(node.size());
@@ -119,7 +119,7 @@ public class NezParser extends CommonTreeVisitor {
 			Formatter fmt = Formatter.newAction(node.getText());
 			if(fmt == null) {
 				loaded.reportWarning(node, "undefined formatter action");
-				fmt = Formatter.newFormatter("${"+node.getText()+"}");
+				fmt = Formatter.newFormatter("${" + node.getText() + "}");
 			}
 			return fmt;
 		}
@@ -134,7 +134,7 @@ public class NezParser extends CommonTreeVisitor {
 		int loc = name.indexOf('.');
 		if(loc >= 0) {
 			ns = name.substring(0, loc);
-			name = name.substring(loc+1);
+			name = name.substring(loc + 1);
 		}
 		String urn = path(node.getSource().getResourceName(), node.textAt(1, ""));
 		try {
@@ -184,13 +184,14 @@ public class NezParser extends CommonTreeVisitor {
 		if(path != null) {
 			int loc = path.lastIndexOf('/');
 			if(loc > 0) {
-				return path.substring(0, loc+1) + path2;
+				return path.substring(0, loc + 1) + path2;
 			}
 		}
 		return path2;
 	}
 
 	private boolean binary = false;
+
 	public Production parseProduction(CommonTree node) {
 		String localName = node.textAt(0, "");
 		int productionFlag = 0;
@@ -221,11 +222,10 @@ public class NezParser extends CommonTreeVisitor {
 		return rule;
 	}
 
-
 	Expression toExpression(CommonTree po) {
 		return (Expression)this.visit(po);
 	}
-	
+
 	public Expression toNonTerminal(CommonTree ast) {
 		String symbol = ast.getText();
 		return GrammarFactory.newNonTerminal(ast, this.loaded, symbol);
@@ -245,10 +245,10 @@ public class NezParser extends CommonTreeVisitor {
 		if(ast.size() > 0) {
 			for(int i = 0; i < ast.size(); i++) {
 				CommonTree o = ast.get(i);
-				if(o.is(NezTag.List)) {  // range
+				if(o.is(NezTag.List)) { // range
 					l.add(GrammarFactory.newCharSet(ast, o.textAt(0, ""), o.textAt(1, "")));
 				}
-				if(o.is(NezTag.Class)) {  // single
+				if(o.is(NezTag.Class)) { // single
 					l.add(GrammarFactory.newCharSet(ast, o.getText(), o.getText()));
 				}
 			}
@@ -264,12 +264,12 @@ public class NezParser extends CommonTreeVisitor {
 			c = (c * 16) + StringUtils.hex(t.charAt(4));
 			c = (c * 16) + StringUtils.hex(t.charAt(5));
 			if(c < 128) {
-				return GrammarFactory.newByteChar(ast, this.binary, c);					
+				return GrammarFactory.newByteChar(ast, this.binary, c);
 			}
 			String t2 = java.lang.String.valueOf((char)c);
 			return GrammarFactory.newString(ast, t2);
 		}
-		int c = StringUtils.hex(t.charAt(t.length()-2)) * 16 + StringUtils.hex(t.charAt(t.length()-1)); 
+		int c = StringUtils.hex(t.charAt(t.length() - 2)) * 16 + StringUtils.hex(t.charAt(t.length() - 1));
 		return GrammarFactory.newByteChar(ast, this.binary, c);
 	}
 
@@ -332,7 +332,7 @@ public class NezParser extends CommonTreeVisitor {
 
 	public Expression toLeftNew(CommonTree ast) {
 		Expression p = (ast.size() == 0) ? GrammarFactory.newEmpty(ast) : toExpression(ast.get(0));
-		return GrammarFactory.newNew(ast, true, p);//		}
+		return GrammarFactory.newNew(ast, true, p);// }
 	}
 
 	public Expression toLink(CommonTree ast) {
@@ -351,23 +351,23 @@ public class NezParser extends CommonTreeVisitor {
 		return GrammarFactory.newReplace(ast, ast.getText());
 	}
 
-	//PEG4d Function
-	
-//	public Expression toDebug(AST ast) {
-//		return Factory.newDebug(toExpression(ast.get(0)));
-//	}
+	// PEG4d Function
+
+	// public Expression toDebug(AST ast) {
+	// return Factory.newDebug(toExpression(ast.get(0)));
+	// }
 
 	public Expression toMatch(CommonTree ast) {
 		return GrammarFactory.newMatch(ast, toExpression(ast.get(0)));
 	}
 
-//	public Expression toCatch(AST ast) {
-//		return Factory.newCatch();
-//	}
-//
-//	public Expression toFail(AST ast) {
-//		return Factory.newFail(Utils.unquoteString(ast.textAt(0, "")));
-//	}
+	// public Expression toCatch(AST ast) {
+	// return Factory.newCatch();
+	// }
+	//
+	// public Expression toFail(AST ast) {
+	// return Factory.newFail(Utils.unquoteString(ast.textAt(0, "")));
+	// }
 
 	public Expression toIf(CommonTree ast) {
 		return GrammarFactory.newIfFlag(ast, ast.textAt(0, ""));
@@ -413,13 +413,13 @@ public class NezParser extends CommonTreeVisitor {
 		loaded.reportError(ast, "undefined or deprecated notation");
 		return GrammarFactory.newEmpty(ast);
 	}
-	
-//	public Expression toScan(AST ast) {
-//		return Factory.newScan(Integer.parseInt(ast.get(0).getText()), toExpression(ast.get(1)), toExpression(ast.get(2)));
-//	}
-//	
-//	public Expression toRepeat(AST ast) {
-//		return Factory.newRepeat(toExpression(ast.get(0)));
-//	}
-	
+
+	// public Expression toScan(AST ast) {
+	// return Factory.newScan(Integer.parseInt(ast.get(0).getText()), toExpression(ast.get(1)), toExpression(ast.get(2)));
+	// }
+	//
+	// public Expression toRepeat(AST ast) {
+	// return Factory.newRepeat(toExpression(ast.get(0)));
+	// }
+
 }

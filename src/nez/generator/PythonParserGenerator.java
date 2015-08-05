@@ -119,7 +119,8 @@ public class PythonParserGenerator extends NezGenerator {
 			for(int i = 0; i < map.byteMap.length; i++) {
 				if(map.byteMap[i]) {
 					W("True");
-				} else {
+				}
+				else {
 					W("False");
 				}
 				if(i != map.byteMap.length - 1) {
@@ -488,9 +489,9 @@ public class PythonParserGenerator extends NezGenerator {
 		Expression first = seq.getFirst();
 		Expression last = seq.getNext();
 		if(first instanceof Sequence) {
-			flattenSequence((Sequence) first, l);
+			flattenSequence((Sequence)first, l);
 			if(last instanceof Sequence) {
-				flattenSequence((Sequence) last, l);
+				flattenSequence((Sequence)last, l);
 				return;
 			}
 			l.add(last);
@@ -498,7 +499,7 @@ public class PythonParserGenerator extends NezGenerator {
 		}
 		l.add(first);
 		if(last instanceof Sequence) {
-			flattenSequence((Sequence) last, l);
+			flattenSequence((Sequence)last, l);
 			return;
 		}
 		l.add(last);
@@ -515,7 +516,7 @@ public class PythonParserGenerator extends NezGenerator {
 		for(int i = 0; i < list.size(); i++) {
 			If("result").Begin();
 			if(list.get(i) instanceof New) {
-				if(((New) list.get(i)).lefted) {
+				if(((New)list.get(i)).lefted) {
 					isLeftNew = true;
 				}
 			}
@@ -529,7 +530,8 @@ public class PythonParserGenerator extends NezGenerator {
 		}
 		if(isLeftNew) {
 			If("not result").Begin().Abort().End();
-		} else if(isLink) {
+		}
+		else if(isLink) {
 			If("not result").Begin().Abort("index" + p.getId()).End();
 		}
 		isLeftNew = false;
@@ -561,7 +563,8 @@ public class PythonParserGenerator extends NezGenerator {
 			if(!memoMap.containsKey(p.getId())) {
 				memoPoint = this.memoPoint++;
 				this.memoMap.put(p.getId(), memoPoint);
-			} else {
+			}
+			else {
 				memoPoint = memoMap.get(p.getId());
 			}
 			Lookup(memoPoint);
@@ -570,7 +573,8 @@ public class PythonParserGenerator extends NezGenerator {
 			Let("result", _func("self.p" + p.getLocalName(), "result"));
 			Memoize(memoPoint, "pos" + p.getId());
 			End();
-		} else {
+		}
+		else {
 			Let("result", _func("self.p" + p.getLocalName(), "result"));
 		}
 	}
@@ -581,7 +585,8 @@ public class PythonParserGenerator extends NezGenerator {
 		if(!memoMap.containsKey(p.getId())) {
 			memoPoint = this.memoPoint++;
 			this.memoMap.put(p.getId(), memoPoint);
-		} else {
+		}
+		else {
 			memoPoint = memoMap.get(p.getId());
 		}
 		LookupNode(memoPoint, p.index);
@@ -605,7 +610,8 @@ public class PythonParserGenerator extends NezGenerator {
 		if(p.lefted) {
 			Ileftnew();
 			markStack.push(true);
-		} else {
+		}
+		else {
 			Inew();
 			markStack.push(false);
 		}
@@ -616,7 +622,8 @@ public class PythonParserGenerator extends NezGenerator {
 		if(markStack.pop()) {
 			If("result").Begin().Ileftcapture().End();
 			Else().Begin().Abort().End();
-		} else {
+		}
+		else {
 			Icapture();
 		}
 	}

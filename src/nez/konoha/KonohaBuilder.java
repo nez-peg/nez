@@ -8,12 +8,12 @@ public class KonohaBuilder implements StringTransducerBuilder {
 	StringTransducer defaultTransducer = new StringTransducer();
 	StringBuilder sb = new StringBuilder();
 	int indent;
-	
+
 	@Override
 	public <E extends AbstractTree<E>> StringTransducer lookup(AbstractTree<E> sub) {
 		KonohaTree node = (KonohaTree)sub;
 		StringTransducer st = node.getStringTransducer();
-		return st == null ? defaultTransducer : st; 
+		return st == null ? defaultTransducer : st;
 	}
 
 	@Override
@@ -31,14 +31,15 @@ public class KonohaBuilder implements StringTransducerBuilder {
 
 	@Override
 	public void incIndent() {
-		indent ++;
+		indent++;
 	}
 
 	@Override
 	public void decIndent() {
-		indent --;
+		indent--;
 	}
-	
+
+	@Override
 	public String toString() {
 		return sb.toString();
 	}

@@ -3,9 +3,6 @@ package nez.util;
 import java.io.UnsupportedEncodingException;
 
 import nez.lang.ByteMap;
-import nez.lang.Choice;
-import nez.lang.Expression;
-import nez.lang.Sequence;
 import nez.main.Verbose;
 
 public abstract class StringUtils {
@@ -14,38 +11,40 @@ public abstract class StringUtils {
 
 	private final static int E = 1;
 	final static int[] utf8LengthMatrix = {
-		1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-		E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E,
-		E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E,
-		E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E,
-		E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E,
-		E, E, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-		2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-		3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-		4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, E, E,
-		0 /* EOF */
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+			E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E,
+			E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E,
+			E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E,
+			E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E,
+			E, E, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+			2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+			3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+			4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, E, E,
+			0 /* EOF */
 	};
 
 	public final static String newString(byte[] utf8) {
 		try {
 			return new String(utf8, DefaultEncoding);
-		} catch (UnsupportedEncodingException e) {
+		}
+		catch(UnsupportedEncodingException e) {
 			Verbose.traceException(e);
 		}
 		return new String(utf8);
 	}
-	
+
 	public final static byte[] toUtf8(String text) {
 		try {
 			return text.getBytes(DefaultEncoding);
-		} catch (UnsupportedEncodingException e) {
+		}
+		catch(UnsupportedEncodingException e) {
 			ConsoleUtils.exit(1, "unsupported character: " + e);
 		}
 		return text.getBytes();
@@ -59,7 +58,6 @@ public abstract class StringUtils {
 		return StringUtils.utf8LengthMatrix[ch & 0xff];
 	}
 
-	
 	public final static String quoteString(char openChar, String text, char closeChar) {
 		StringBuilder sb = new StringBuilder();
 		StringUtils.formatQuoteString(sb, openChar, text, closeChar);
@@ -118,7 +116,7 @@ public abstract class StringUtils {
 				return Integer.parseInt(text);
 			}
 			catch(NumberFormatException e) {
-				//e.printStackTrace();
+				// e.printStackTrace();
 			}
 		}
 		return defval;
@@ -136,15 +134,20 @@ public abstract class StringUtils {
 		}
 		if(t.startsWith("\\") && t.length() > 1) {
 			int c = t.charAt(1);
-			switch (c) {
-//			case 'a':  return '\007'; /* bel */
-//			case 'b':  return '\b';  /* bs */
-//			case 'e':  return '\033'; /* esc */
-			case 'f':  return '\f';   /* ff */
-			case 'n':  return '\n';   /* nl */
-			case 'r':  return '\r';   /* cr */
-			case 't':  return '\t';   /* ht */
-			case 'v':  return '\013'; /* vt */
+			switch(c) {
+			// case 'a': return '\007'; /* bel */
+			// case 'b': return '\b'; /* bs */
+			// case 'e': return '\033'; /* esc */
+			case 'f':
+				return '\f'; /* ff */
+			case 'n':
+				return '\n'; /* nl */
+			case 'r':
+				return '\r'; /* cr */
+			case 't':
+				return '\t'; /* ht */
+			case 'v':
+				return '\013'; /* vt */
 			}
 			return c;
 		}
@@ -186,10 +189,18 @@ public abstract class StringUtils {
 
 	public static void appendByteChar(StringBuilder sb, int ch, String quote) {
 		switch(ch) {
-			case '\n' : sb.append("\\n"); return;
-			case '\t' : sb.append("\\t"); return;
-			case '\r' : sb.append("\\r"); return;
-			case '\\' : sb.append("\\\\"); return;
+		case '\n':
+			sb.append("\\n");
+			return;
+		case '\t':
+			sb.append("\\t");
+			return;
+		case '\r':
+			sb.append("\\r");
+			return;
+		case '\\':
+			sb.append("\\\\");
+			return;
 		}
 		if(Character.isISOControl(ch) || ch > 127) {
 			sb.append(String.format("0x%02x", ch));
@@ -204,38 +215,48 @@ public abstract class StringUtils {
 	public final static String stringfyCharacter(int ch) {
 		char c = (char)ch;
 		switch(c) {
-		case '\n' : return("'\\n'"); 
-		case '\t' : return("'\\t'"); 
-		case '\r' : return("'\\r'"); 
-		case '\'' : return("'\\''"); 
-		case '\\' : return("'\\\\'"); 
+		case '\n':
+			return ("'\\n'");
+		case '\t':
+			return ("'\\t'");
+		case '\r':
+			return ("'\\r'");
+		case '\'':
+			return ("'\\''");
+		case '\\':
+			return ("'\\\\'");
 		}
 		if(Character.isISOControl(c) || c > 127) {
-			return(String.format("0x%02x", (int)c));
+			return (String.format("0x%02x", (int)c));
 		}
-		return("'" + c + "'");
+		return ("'" + c + "'");
 	}
 
 	public final static String stringfyByte(char oc, int ch, char ec) {
 		char c = (char)ch;
 		switch(c) {
-		case '\n' : return("'\\n'"); 
-		case '\t' : return("'\\t'"); 
-		case '\r' : return("'\\r'"); 
-		case '\'' : return("'\\''"); 
-		case '\\' : return("'\\\\'"); 
+		case '\n':
+			return ("'\\n'");
+		case '\t':
+			return ("'\\t'");
+		case '\r':
+			return ("'\\r'");
+		case '\'':
+			return ("'\\''");
+		case '\\':
+			return ("'\\\\'");
 		}
 		if(oc == ch) {
 			return "" + oc + "\\" + ch + ec;
 		}
 		if(Character.isISOControl(c) || c > 127) {
-			return(String.format("0x%02x", (int)c));
+			return (String.format("0x%02x", (int)c));
 		}
-		return("" + oc + c + ec);
+		return ("" + oc + c + ec);
 	}
 
 	// The below are used in ByteMap
-	
+
 	public final static String stringfyCharClass(int startChar, int endChar) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("[");
@@ -245,13 +266,13 @@ public abstract class StringUtils {
 		sb.append("]");
 		return sb.toString();
 	}
-	
+
 	public final static String stringfyCharacterClass(boolean[] b) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("[");
 		for(int s = 0; s < 256; s++) {
 			if(b[s]) {
-				int e = searchEndChar(b, s+1);
+				int e = searchEndChar(b, s + 1);
 				if(s == e) {
 					appendCharClass(sb, s);
 				}
@@ -270,7 +291,7 @@ public abstract class StringUtils {
 	private final static int searchEndChar(boolean[] b, int s) {
 		for(; s < 256; s++) {
 			if(!b[s]) {
-				return s-1;
+				return s - 1;
 			}
 		}
 		return 255;
@@ -279,13 +300,27 @@ public abstract class StringUtils {
 	private static void appendCharClass(StringBuilder sb, int ch) {
 		char c = (char)ch;
 		switch(c) {
-		case '\n' : sb.append("\\n"); break;
-		case '\t' : sb.append("\\t"); break;
-		case '\r' : sb.append("\\r"); break;
-		case '\'' : sb.append("\\'"); break;
-		case ']' : sb.append("\\]"); break;
-		case '-' : sb.append("\\-"); break;
-		case '\\' : sb.append("\\\\"); break;
+		case '\n':
+			sb.append("\\n");
+			break;
+		case '\t':
+			sb.append("\\t");
+			break;
+		case '\r':
+			sb.append("\\r");
+			break;
+		case '\'':
+			sb.append("\\'");
+			break;
+		case ']':
+			sb.append("\\]");
+			break;
+		case '-':
+			sb.append("\\-");
+			break;
+		case '\\':
+			sb.append("\\\\");
+			break;
 		default:
 			if(Character.isISOControl(c) || c > 127) {
 				sb.append(String.format("\\x%02x", (int)c));
@@ -305,7 +340,7 @@ public abstract class StringUtils {
 			}
 		}
 		for(int offset = 0; offset < end; offset += 4) {
-			if(offset+3 < b.length) {
+			if(offset + 3 < b.length) {
 				appendBitmap(sb, b, offset);
 			}
 		}
@@ -313,26 +348,26 @@ public abstract class StringUtils {
 	}
 
 	private final static char[] HexChar = {
-		'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
+			'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
 	};
-	
+
 	private static void appendBitmap(StringBuilder sb, boolean[] b, int offset) {
 		int n = 0;
-		if(b[offset+0]) {
+		if(b[offset + 0]) {
 			n |= (1 << 3);
 		}
-		if(b[offset+1]) {
-			n |= ( 1 << 2 );
+		if(b[offset + 1]) {
+			n |= (1 << 2);
 		}
-		if(b[offset+2]) {
-			n |= ( 1 << 1);
+		if(b[offset + 2]) {
+			n |= (1 << 1);
 		}
-		if(b[offset+3]) {
+		if(b[offset + 3]) {
 			n |= 1;
 		}
 		sb.append(HexChar[n]);
 	}
-	
+
 	public static final boolean[] parseByteMap(String text) {
 		boolean[] b = ByteMap.newMap(false);
 		CharReader r = new CharReader(text);
@@ -350,7 +385,7 @@ public abstract class StringUtils {
 				if(ch > 0 && ch < 128) {
 					ByteMap.appendRange(b, ch, ch);
 				}
-				ch = next; //r.readChar();
+				ch = next; // r.readChar();
 			}
 		}
 		return b;
@@ -362,9 +397,7 @@ public abstract class StringUtils {
 		}
 		return "<" + (char)c + "," + c + ">";
 	}
-	
 
-	
 	public final static String formatParcentage(long a, long b) {
 		return String.format("%.3f", (double)a / b * 100.0);
 	}
@@ -375,6 +408,5 @@ public abstract class StringUtils {
 		double thr = length / sec / (1024 * 1024);
 		return String.format("%.4f", thr);
 	}
-
 
 }

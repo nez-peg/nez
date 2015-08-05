@@ -1,31 +1,29 @@
 package nez.vm;
 
-import nez.ast.TreeTransducer;
 import nez.ast.Source;
 import nez.ast.Tag;
-import nez.lang.NezTag;
+import nez.ast.TreeTransducer;
 import nez.main.NezProfier;
 import nez.main.Verbose;
 import nez.util.ConsoleUtils;
-import nez.util.UList;
 
 public abstract class Context implements Source {
 	/* parsing position */
-	long   pos;
-	long   head_pos;
-	
+	long pos;
+	long head_pos;
+
 	public final long getPosition() {
 		return this.pos;
 	}
-	
+
 	final void setPosition(long pos) {
 		this.pos = pos;
 	}
-	
+
 	public boolean hasUnconsumed() {
 		return this.pos != length();
 	}
-	
+
 	public final boolean consume(int length) {
 		this.pos += length;
 		return true;
@@ -37,7 +35,7 @@ public abstract class Context implements Source {
 		}
 		this.pos = pos;
 	}
-	
+
 	public final String getSyntaxErrorMessage() {
 		return this.formatPositionLine("error", this.head_pos, "syntax error");
 	}
@@ -67,11 +65,11 @@ public abstract class Context implements Source {
 	public final Object getLeftObject() {
 		return this.left;
 	}
-		
-	//private DataLog newPoint = null;
+
+	// private DataLog newPoint = null;
 	private ASTLog lastAppendedLog = null;
 	private ASTLog unusedDataLog = null;
-	
+
 	private final void pushDataLog(int type, long pos, Object value) {
 		ASTLog l;
 		if(this.unusedDataLog == null) {
@@ -82,22 +80,22 @@ public abstract class Context implements Source {
 			this.unusedDataLog = l.next;
 		}
 		l.type = type;
-		l.pos  = pos;
+		l.pos = pos;
 		l.value = value;
 		l.prev = lastAppendedLog;
 		l.next = null;
 		lastAppendedLog.next = l;
 		lastAppendedLog = l;
 	}
-	
+
 	public final Object logCommit(ASTLog start) {
-		assert(start.type == ASTLog.LazyNew);
+		assert (start.type == ASTLog.LazyNew);
 		long spos = start.pos, epos = spos;
 		Tag tag = null;
 		Object value = null;
 		int objectSize = 0;
 		Object left = null;
-		for(ASTLog cur = start.next; cur != null; cur = cur.next ) {
+		for(ASTLog cur = start.next; cur != null; cur = cur.next) {
 			switch(cur.type) {
 			case ASTLog.LazyLink:
 				int index = (int)cur.pos;
@@ -121,9 +119,10 @@ public abstract class Context implements Source {
 			case ASTLog.LazyLeftNew:
 				left = commitNode(start, cur, spos, epos, objectSize, left, tag, value);
 				start = cur;
-				spos = cur.pos; 
+				spos = cur.pos;
 				epos = spos;
-				tag = null; value = null;
+				tag = null;
+				value = null;
 				objectSize = 1;
 				break;
 			}
@@ -137,28 +136,28 @@ public abstract class Context implements Source {
 			this.treeTransducer.link(newnode, 0, left);
 		}
 		if(objectSize > 0) {
-//			System.out.println("PREV " + start.prev);
-//			System.out.println(">>> BEGIN");
-//			System.out.println("  LOG " + start);
-			for(ASTLog cur = start.next; cur != end; cur = cur.next ) {
-//				System.out.println("  LOG " + cur);
+			// System.out.println("PREV " + start.prev);
+			// System.out.println(">>> BEGIN");
+			// System.out.println("  LOG " + start);
+			for(ASTLog cur = start.next; cur != end; cur = cur.next) {
+				// System.out.println("  LOG " + cur);
 				if(cur.type == ASTLog.LazyLink) {
 					this.treeTransducer.link(newnode, (int)cur.pos, cur.value);
 				}
 			}
-//			System.out.println("<<< END");
-//			System.out.println("COMMIT " + newnode);
+			// System.out.println("<<< END");
+			// System.out.println("COMMIT " + newnode);
 		}
 		return this.treeTransducer.commit(newnode);
 	}
 
 	public final void logAbort(ASTLog checkPoint, boolean isFail) {
-		assert(checkPoint != null);
-//		if(isFail) {
-//			for(DataLog cur = checkPoint.next; cur != null; cur = cur.next ) {
-//				System.out.println("ABORT " + cur);
-//			}
-//		}
+		assert (checkPoint != null);
+		// if(isFail) {
+		// for(DataLog cur = checkPoint.next; cur != null; cur = cur.next ) {
+		// System.out.println("ABORT " + cur);
+		// }
+		// }
 		lastAppendedLog.next = this.unusedDataLog;
 		this.unusedDataLog = checkPoint.next;
 		this.unusedDataLog.prev = null;
@@ -171,23 +170,23 @@ public abstract class Context implements Source {
 	/* <def T e>, <is T>, <isa T> */
 
 	private final SymbolTable symbolTable = new SymbolTable();
-	
+
 	public final SymbolTable getSymbolTable() {
 		return this.symbolTable;
 	}
-	
+
 	public final int getState() {
 		return this.symbolTable.getState();
 	}
 
 	// ----------------------------------------------------------------------
-	// Instruction 
-	
+	// Instruction
+
 	private static int StackSize = 64;
 	private ContextStack[] contextStacks = null;
 	private int usedStackTop;
 	private int catchStackTop;
-	
+
 	public final void initJumpStack(MemoTable memoTable) {
 		this.lastAppendedLog = new ASTLog();
 		this.contextStacks = new ContextStack[StackSize];
@@ -195,10 +194,10 @@ public abstract class Context implements Source {
 			this.contextStacks[i] = new ContextStack();
 		}
 		this.contextStacks[0].jump = new IExit(false);
-		//this.contextStacks[0].debugFailStackFlag = true;
+		// this.contextStacks[0].debugFailStackFlag = true;
 		this.contextStacks[0].pos = this.getPosition();
 		this.contextStacks[0].topASTLog = this.lastAppendedLog;
-		this.contextStacks[1].jump = new IExit(true);  // for a point of the first called nonterminal
+		this.contextStacks[1].jump = new IExit(true); // for a point of the first called nonterminal
 		this.contextStacks[1].pos = this.getPosition();
 		this.catchStackTop = 0;
 		this.usedStackTop = 1;
@@ -214,11 +213,11 @@ public abstract class Context implements Source {
 	public final ContextStack getUsedStackTop() {
 		return contextStacks[usedStackTop];
 	}
-	
+
 	private ContextStack newUnusedStack() {
 		usedStackTop++;
 		if(contextStacks.length == usedStackTop) {
-			ContextStack[] newstack = new ContextStack[contextStacks.length*2];
+			ContextStack[] newstack = new ContextStack[contextStacks.length * 2];
 			System.arraycopy(contextStacks, 0, newstack, 0, contextStacks.length);
 			for(int i = this.contextStacks.length; i < newstack.length; i++) {
 				newstack[i] = new ContextStack();
@@ -229,32 +228,32 @@ public abstract class Context implements Source {
 	}
 
 	public final void dumpStack(String op) {
-		System.out.println(op + " F="+this.catchStackTop +", T=" +usedStackTop);
+		System.out.println(op + " F=" + this.catchStackTop + ", T=" + usedStackTop);
 	}
 
 	public final Instruction opITry(IFailPush op) {
 		ContextStack stackTop = newUnusedStack();
-		stackTop.prevFailCatch   = catchStackTop;
+		stackTop.prevFailCatch = catchStackTop;
 		catchStackTop = usedStackTop;
 		stackTop.jump = op.failjump;
 		stackTop.pos = this.pos;
 		stackTop.topASTLog = this.lastAppendedLog;
-		assert(stackTop.topASTLog != null);
-		//stackTop.debugFailStackFlag = true;
+		assert (stackTop.topASTLog != null);
+		// stackTop.debugFailStackFlag = true;
 		return op.next;
 	}
 
 	public final Instruction opIFanally(Instruction op) {
 		ContextStack stackTop = contextStacks[catchStackTop];
-		//assert(stackTop.debugFailStackFlag);
+		// assert(stackTop.debugFailStackFlag);
 		usedStackTop = catchStackTop - 1;
 		catchStackTop = stackTop.prevFailCatch;
 		return op.next;
 	}
-	
+
 	public final Instruction opIFailCatch() {
 		ContextStack stackTop = contextStacks[catchStackTop];
-		//assert(stackTop.debugFailStackFlag);
+		// assert(stackTop.debugFailStackFlag);
 		usedStackTop = catchStackTop - 1;
 		catchStackTop = stackTop.prevFailCatch;
 		if(this.lprof != null) {
@@ -266,12 +265,12 @@ public abstract class Context implements Source {
 		}
 		return stackTop.jump;
 	}
-	
+
 	public final Instruction opIFailSkip(IFailSkip op) {
 		ContextStack stackTop = contextStacks[catchStackTop];
-//		if(this.pos == stackTop.pos) {
-//			return opIFail();
-//		}
+		// if(this.pos == stackTop.pos) {
+		// return opIFail();
+		// }
 		stackTop.pos = this.pos;
 		stackTop.topASTLog = this.lastAppendedLog;
 		return op.next;
@@ -279,28 +278,28 @@ public abstract class Context implements Source {
 
 	public final Instruction opIFailCheckSkip(IFailSkip op) {
 		ContextStack stackTop = contextStacks[catchStackTop];
-		//assert(stackTop.debugFailStackFlag);
+		// assert(stackTop.debugFailStackFlag);
 		if(this.pos == stackTop.pos) {
 			return opIFailCatch();
 		}
 		stackTop.pos = this.pos;
 		stackTop.topASTLog = this.lastAppendedLog;
-		assert(stackTop.topASTLog != null);
+		assert (stackTop.topASTLog != null);
 		return op.next;
 	}
 
 	final ContextStack newUnusedLocalStack() {
 		ContextStack stackTop = newUnusedStack();
-		assert(this.catchStackTop < this.usedStackTop);
-		//stackTop.debugFailStackFlag = false;
+		assert (this.catchStackTop < this.usedStackTop);
+		// stackTop.debugFailStackFlag = false;
 		return stackTop;
 	}
-	
+
 	final ContextStack popLocalStack() {
 		ContextStack stackTop = contextStacks[this.usedStackTop];
 		usedStackTop--;
-		//assert(!stackTop.debugFailStackFlag);
-		assert(this.catchStackTop <= this.usedStackTop);
+		// assert(!stackTop.debugFailStackFlag);
+		assert (this.catchStackTop <= this.usedStackTop);
 		return stackTop;
 	}
 
@@ -309,12 +308,12 @@ public abstract class Context implements Source {
 		top.jump = op.jump;
 		return op.next;
 	}
-	
+
 	public final Instruction opIRet() {
 		Instruction jump = popLocalStack().jump;
 		return jump;
 	}
-	
+
 	public final Instruction opIPosPush(IPosPush op) {
 		ContextStack top = newUnusedLocalStack();
 		top.pos = pos;
@@ -375,7 +374,7 @@ public abstract class Context implements Source {
 		this.left = null;
 		return op.next;
 	}
-	
+
 	public final Instruction opNodeStore(INodeStore op) {
 		ContextStack top = popLocalStack();
 		if(top.topASTLog.next != null) {
@@ -385,7 +384,7 @@ public abstract class Context implements Source {
 				pushDataLog(ASTLog.LazyLink, op.index, child);
 			}
 			this.left = child;
-			//System.out.println("LINK " + this.lastAppendedLog);
+			// System.out.println("LINK " + this.lastAppendedLog);
 		}
 		return op.next;
 	}
@@ -396,7 +395,7 @@ public abstract class Context implements Source {
 			Object child = this.logCommit(top.topASTLog.next);
 			logAbort(top.topASTLog, false);
 			this.left = child;
-			//System.out.println("LINK " + this.lastAppendedLog);
+			// System.out.println("LINK " + this.lastAppendedLog);
 		}
 		return op.next;
 	}
@@ -404,13 +403,13 @@ public abstract class Context implements Source {
 	public final Instruction opAbort(Instruction op) {
 		ContextStack top = popLocalStack();
 		if(top.topASTLog.next != null) {
-			//Object child = this.logCommit(top.lastLog.next);
+			// Object child = this.logCommit(top.lastLog.next);
 			logAbort(top.topASTLog, false);
 			this.left = null;
 		}
 		return op.next;
 	}
-	
+
 	public final Instruction opILink(ILink op) {
 		if(this.left != null) {
 			pushDataLog(ASTLog.LazyLink, op.index, this.left);
@@ -419,7 +418,7 @@ public abstract class Context implements Source {
 	}
 
 	public final Instruction opINew(INew op) {
-		pushDataLog(ASTLog.LazyNew, this.pos + op.shift, null); //op.e);
+		pushDataLog(ASTLog.LazyNew, this.pos + op.shift, null); // op.e);
 		return op.next;
 	}
 
@@ -438,7 +437,7 @@ public abstract class Context implements Source {
 		}
 		return null;
 	}
-	
+
 	public final Instruction opITag(ITag op) {
 		pushDataLog(ASTLog.LazyTag, 0, op.tag);
 		return op.next;
@@ -456,21 +455,21 @@ public abstract class Context implements Source {
 
 	// Memoization
 	MemoTable memoTable;
-	
+
 	public final void setMemo(long pos, int memoId, boolean failed, Object result, int consumed, boolean state) {
 		memoTable.setMemo(pos, memoId, failed, result, consumed, state ? symbolTable.getState() : 0);
 	}
 
 	public final MemoEntry getMemo(int memoId, boolean state) {
-		return state ? 
-				memoTable.getMemo2(this.pos, memoId, symbolTable.getState()): 
+		return state ?
+				memoTable.getMemo2(this.pos, memoId, symbolTable.getState()) :
 				memoTable.getMemo(this.pos, memoId);
 	}
 
 	public final Instruction opILookup(ILookup op) {
 		MemoPoint mp = op.memoPoint;
-		MemoEntry entry = op.state ? 
-				memoTable.getMemo2(this.pos, mp.id, symbolTable.getState()): 
+		MemoEntry entry = op.state ?
+				memoTable.getMemo2(this.pos, mp.id, symbolTable.getState()) :
 				memoTable.getMemo(this.pos, mp.id);
 		if(entry != null) {
 			if(entry.failed) {
@@ -493,7 +492,7 @@ public abstract class Context implements Source {
 			return this.opITry(op);
 		}
 	}
-	
+
 	public final Instruction opIMemoize(IMemoize op) {
 		MemoPoint mp = op.memoPoint;
 		if(op.node) {
@@ -501,7 +500,7 @@ public abstract class Context implements Source {
 		}
 		ContextStack stackTop = contextStacks[this.usedStackTop];
 		int length = (int)(this.pos - stackTop.pos);
-		memoTable.setMemo(stackTop.pos, mp.id, false, op.node ? this.left :null, length, op.state ? symbolTable.getState() : 0);
+		memoTable.setMemo(stackTop.pos, mp.id, false, op.node ? this.left : null, length, op.state ? symbolTable.getState() : 0);
 		return this.opIFanally(op);
 	}
 
@@ -510,129 +509,129 @@ public abstract class Context implements Source {
 		memoTable.setMemo(pos, mp.id, true, null, 0, op.state ? symbolTable.getState() : 0);
 		return opIFailCatch();
 	}
-	
-//	public final Instruction opIMemoize(IStateMemoizeNode op) {
-//		MemoPoint mp = op.memoPoint;
-//		this.opNodeStore(op);
-//		assert(this.usedStackTop == this.failStackTop);
-//		ContextStack stackTop = contextStacks[this.failStackTop];
-//		int length = (int)(this.pos - stackTop.pos);
-//		memoTable.setMemo(stackTop.pos, mp.id, false, this.left, length, stateValue);
-//		op.monitor.stored();
-//		return this.opIFailPop(op);
-//	}
-//
-//
-//	public final Instruction opIStateLookup(IStateLookup op) {
-//		MemoPoint mp = op.memoPoint;
-//		MemoEntry m = memoTable.getMemo2(this.pos, mp.id, stateValue);
-//		if(m != null) {
-//			if(m.failed) {
-//				mp.failHit();
-//				return opIFail();
-//			}
-//			mp.memoHit(m.consumed);
-//			this.consume(m.consumed);
-//			return op.skip;
-//		}
-//		mp.miss();
-//		return this.opIFailPush(op);
-//	}
-//
-//	public final Instruction opILookupNode(ILookupNode op) {
-//		MemoPoint mp = op.memoPoint;
-//		MemoEntry entry = memoTable.getMemo(this.pos, mp.id);
-//		if(entry != null) {
-//			op.monitor.used();
-//			if(entry.failed) {
-//				mp.failHit();
-//				return opIFail();
-//			}
-//			mp.memoHit(entry.consumed);
-//			this.consume(entry.consumed);
-//			pushDataLog(OperationLog.LazyLink, op.index, entry.result);
-//			return op.skip;
-//		}
-//		mp.miss();
-//		this.opIFailPush(op);
-//		return this.opNodePush(op);
-//	}
-//
-//	public final Instruction opIStateLookupNode(ILookupNode op) {
-//		MemoPoint mp = op.memoPoint;
-//		MemoEntry me = memoTable.getMemo2(pos, mp.id, stateValue);
-//		if(me != null) {
-//			op.monitor.used();
-//			if(me.failed) {
-//				mp.failHit();
-//				return opIFail();
-//			}
-//			mp.memoHit(me.consumed);
-//			consume(me.consumed);
-//			pushDataLog(OperationLog.LazyLink, op.index, me.result);
-//			return op.skip;
-//		}
-//		mp.miss();
-//		this.opIFailPush(op);
-//		return this.opNodePush(op);
-//	}
-//
-//	public final Instruction opIMemoize(IMemoize op) {
-//		MemoPoint mp = op.memoPoint;
-//		ContextStack stackTop = contextStacks[this.usedStackTop];
-//		int length = (int)(this.pos - stackTop.pos);
-//		memoTable.setMemo(stackTop.pos, mp.id, false, null, length, 0);
-//		op.monitor.stored();
-//		return this.opIFailPop(op);
-//	}
-//
-//	public final Instruction opIStateMemoize(IMemoize op) {
-//		MemoPoint mp = op.memoPoint;
-//		ContextStack stackTop = contextStacks[this.usedStackTop];
-//		int length = (int)(this.pos - stackTop.pos);
-//		memoTable.setMemo(stackTop.pos, mp.id, false, null, length, stateValue);
-//		op.monitor.stored();
-//		return this.opIFailPop(op);
-//	}
-//
-//	public final Instruction opIMemoizeNode(IMemoizeNode op) {
-//		MemoPoint mp = op.memoPoint;
-//		this.opNodeStore(op);
-//		assert(this.usedStackTop == this.failStackTop);
-//		ContextStack stackTop = contextStacks[this.failStackTop];
-//		int length = (int)(this.pos - stackTop.pos);
-//		memoTable.setMemo(stackTop.pos, mp.id, false, this.left, length, 0);
-//		op.monitor.stored();
-//		return this.opIFailPop(op);
-//	}
-//
-//	public final Instruction opIStateMemoizeNode(IStateMemoizeNode op) {
-//		MemoPoint mp = op.memoPoint;
-//		this.opNodeStore(op);
-//		assert(this.usedStackTop == this.failStackTop);
-//		ContextStack stackTop = contextStacks[this.failStackTop];
-//		int length = (int)(this.pos - stackTop.pos);
-//		memoTable.setMemo(stackTop.pos, mp.id, false, this.left, length, stateValue);
-//		op.monitor.stored();
-//		return this.opIFailPop(op);
-//	}
-//
-//	public final Instruction opIMemoizeFail(IMemoizeFail op) {
-//		MemoPoint mp = op.memoPoint;
-//		memoTable.setMemo(pos, mp.id, true, null, 0, 0);
-//		op.monitor.stored();
-//		return opIFail();
-//	}
-//
-//	public final Instruction opIStateMemoizeFail(IMemoizeFail op) {
-//		MemoPoint mp = op.memoPoint;
-//		memoTable.setMemo(pos, mp.id, true, null, 0, stateValue);
-//		op.monitor.stored();
-//		return opIFail();
-//	}
 
-	// Specialization 
-	
+	// public final Instruction opIMemoize(IStateMemoizeNode op) {
+	// MemoPoint mp = op.memoPoint;
+	// this.opNodeStore(op);
+	// assert(this.usedStackTop == this.failStackTop);
+	// ContextStack stackTop = contextStacks[this.failStackTop];
+	// int length = (int)(this.pos - stackTop.pos);
+	// memoTable.setMemo(stackTop.pos, mp.id, false, this.left, length, stateValue);
+	// op.monitor.stored();
+	// return this.opIFailPop(op);
+	// }
+	//
+	//
+	// public final Instruction opIStateLookup(IStateLookup op) {
+	// MemoPoint mp = op.memoPoint;
+	// MemoEntry m = memoTable.getMemo2(this.pos, mp.id, stateValue);
+	// if(m != null) {
+	// if(m.failed) {
+	// mp.failHit();
+	// return opIFail();
+	// }
+	// mp.memoHit(m.consumed);
+	// this.consume(m.consumed);
+	// return op.skip;
+	// }
+	// mp.miss();
+	// return this.opIFailPush(op);
+	// }
+	//
+	// public final Instruction opILookupNode(ILookupNode op) {
+	// MemoPoint mp = op.memoPoint;
+	// MemoEntry entry = memoTable.getMemo(this.pos, mp.id);
+	// if(entry != null) {
+	// op.monitor.used();
+	// if(entry.failed) {
+	// mp.failHit();
+	// return opIFail();
+	// }
+	// mp.memoHit(entry.consumed);
+	// this.consume(entry.consumed);
+	// pushDataLog(OperationLog.LazyLink, op.index, entry.result);
+	// return op.skip;
+	// }
+	// mp.miss();
+	// this.opIFailPush(op);
+	// return this.opNodePush(op);
+	// }
+	//
+	// public final Instruction opIStateLookupNode(ILookupNode op) {
+	// MemoPoint mp = op.memoPoint;
+	// MemoEntry me = memoTable.getMemo2(pos, mp.id, stateValue);
+	// if(me != null) {
+	// op.monitor.used();
+	// if(me.failed) {
+	// mp.failHit();
+	// return opIFail();
+	// }
+	// mp.memoHit(me.consumed);
+	// consume(me.consumed);
+	// pushDataLog(OperationLog.LazyLink, op.index, me.result);
+	// return op.skip;
+	// }
+	// mp.miss();
+	// this.opIFailPush(op);
+	// return this.opNodePush(op);
+	// }
+	//
+	// public final Instruction opIMemoize(IMemoize op) {
+	// MemoPoint mp = op.memoPoint;
+	// ContextStack stackTop = contextStacks[this.usedStackTop];
+	// int length = (int)(this.pos - stackTop.pos);
+	// memoTable.setMemo(stackTop.pos, mp.id, false, null, length, 0);
+	// op.monitor.stored();
+	// return this.opIFailPop(op);
+	// }
+	//
+	// public final Instruction opIStateMemoize(IMemoize op) {
+	// MemoPoint mp = op.memoPoint;
+	// ContextStack stackTop = contextStacks[this.usedStackTop];
+	// int length = (int)(this.pos - stackTop.pos);
+	// memoTable.setMemo(stackTop.pos, mp.id, false, null, length, stateValue);
+	// op.monitor.stored();
+	// return this.opIFailPop(op);
+	// }
+	//
+	// public final Instruction opIMemoizeNode(IMemoizeNode op) {
+	// MemoPoint mp = op.memoPoint;
+	// this.opNodeStore(op);
+	// assert(this.usedStackTop == this.failStackTop);
+	// ContextStack stackTop = contextStacks[this.failStackTop];
+	// int length = (int)(this.pos - stackTop.pos);
+	// memoTable.setMemo(stackTop.pos, mp.id, false, this.left, length, 0);
+	// op.monitor.stored();
+	// return this.opIFailPop(op);
+	// }
+	//
+	// public final Instruction opIStateMemoizeNode(IStateMemoizeNode op) {
+	// MemoPoint mp = op.memoPoint;
+	// this.opNodeStore(op);
+	// assert(this.usedStackTop == this.failStackTop);
+	// ContextStack stackTop = contextStacks[this.failStackTop];
+	// int length = (int)(this.pos - stackTop.pos);
+	// memoTable.setMemo(stackTop.pos, mp.id, false, this.left, length, stateValue);
+	// op.monitor.stored();
+	// return this.opIFailPop(op);
+	// }
+	//
+	// public final Instruction opIMemoizeFail(IMemoizeFail op) {
+	// MemoPoint mp = op.memoPoint;
+	// memoTable.setMemo(pos, mp.id, true, null, 0, 0);
+	// op.monitor.stored();
+	// return opIFail();
+	// }
+	//
+	// public final Instruction opIStateMemoizeFail(IMemoizeFail op) {
+	// MemoPoint mp = op.memoPoint;
+	// memoTable.setMemo(pos, mp.id, true, null, 0, stateValue);
+	// op.monitor.stored();
+	// return opIFail();
+	// }
+
+	// Specialization
+
 	public final Instruction opRepeatedByteMap(IRepeatedByteMap op) {
 		while(true) {
 			int c = this.byteAt(this.pos);
@@ -659,17 +658,16 @@ public abstract class Context implements Source {
 		return this.opIFailCatch();
 	}
 
-//	public final Instruction opMultiChar(IMultiChar op) {
-//	}
-	
-	
+	// public final Instruction opMultiChar(IMultiChar op) {
+	// }
+
 	// Profiling ------------------------------------------------------------
-	
+
 	private LocalProfiler lprof;
-	
+
 	public final void startProfiling(NezProfier prof) {
 		if(prof != null) {
-			prof.setFile("I.File",  this.getResourceName());
+			prof.setFile("I.File", this.getResourceName());
 			prof.setCount("I.Size", this.length());
 			this.lprof = new LocalProfiler();
 			this.lprof.init(this.getPosition());
@@ -686,16 +684,16 @@ public abstract class Context implements Source {
 	class LocalProfiler {
 		long startPosition = 0;
 		long startingNanoTime = 0;
-		long endingNanoTime   = 0;
-		
-		long FailureCount   = 0;
+		long endingNanoTime = 0;
+
+		long FailureCount = 0;
 		long BacktrackCount = 0;
 		long BacktrackLength = 0;
-		
+
 		long HeadPostion = 0;
 		long LongestBacktrack = 0;
 		int[] BacktrackHistgrams = null;
-		
+
 		public void init(long pos) {
 			this.startPosition = pos;
 			this.startingNanoTime = System.nanoTime();
@@ -707,7 +705,7 @@ public abstract class Context implements Source {
 			this.HeadPostion = 0;
 			this.BacktrackHistgrams = new int[32];
 		}
-		
+
 		void parsed(NezProfier rec, long consumed) {
 			consumed -= this.startPosition;
 			this.endingNanoTime = System.nanoTime();
@@ -725,17 +723,18 @@ public abstract class Context implements Source {
 					double f = (double)this.BacktrackHistgrams[i] / this.BacktrackCount;
 					cf += this.BacktrackHistgrams[i];
 					ConsoleUtils.println(String.format("%d\t%d\t%2.3f\t%2.3f", n, this.BacktrackHistgrams[i], f, (cf / this.BacktrackCount)));
-					if(n > this.LongestBacktrack) break;
+					if(n > this.LongestBacktrack)
+						break;
 				}
 			}
 		}
 
 		public final void statBacktrack(long backed_pos, long current_pos) {
-			this.FailureCount ++;
+			this.FailureCount++;
 			long len = current_pos - backed_pos;
 			if(len > 0) {
 				this.BacktrackCount = this.BacktrackCount + 1;
-				this.BacktrackLength  = this.BacktrackLength + len;
+				this.BacktrackLength = this.BacktrackLength + len;
 				if(this.HeadPostion < current_pos) {
 					this.HeadPostion = current_pos;
 				}
@@ -753,43 +752,45 @@ public abstract class Context implements Source {
 		}
 	}
 
-	
 }
 
 class ASTLog {
-	final static int LazyLink    = 0;
+	final static int LazyLink = 0;
 	final static int LazyCapture = 1;
-	final static int LazyTag     = 2;
+	final static int LazyTag = 2;
 	final static int LazyReplace = 3;
 	final static int LazyLeftNew = 4;
-	final static int LazyNew     = 5;
+	final static int LazyNew = 5;
 
-	int     type;
-	long    pos;
-	Object  value;
+	int type;
+	long pos;
+	Object value;
 	ASTLog prev;
 	ASTLog next;
+
 	int id() {
-		if(prev == null) return 0;
+		if(prev == null)
+			return 0;
 		return prev.id() + 1;
 	}
+
 	@Override
 	public String toString() {
 		switch(type) {
 		case LazyLink:
-			return "["+id()+"] link<" + this.pos + "," + this.value + ">";
+			return "[" + id() + "] link<" + this.pos + "," + this.value + ">";
 		case LazyCapture:
-			return "["+id()+"] cap<pos=" + this.pos + ">";
+			return "[" + id() + "] cap<pos=" + this.pos + ">";
 		case LazyTag:
-			return "["+id()+"] tag<" + this.value + ">";
+			return "[" + id() + "] tag<" + this.value + ">";
 		case LazyReplace:
-			return "["+id()+"] replace<" + this.value + ">";
+			return "[" + id() + "] replace<" + this.value + ">";
 		case LazyNew:
-			return "["+id()+"] new<pos=" + this.pos + ">"  + "   ## " + this.value  ;
+			return "[" + id() + "] new<pos=" + this.pos + ">" + "   ## " + this.value;
 		case LazyLeftNew:
-			return "["+id()+"] leftnew<pos=" + this.pos + "," + this.value + ">";
+			return "[" + id() + "] leftnew<pos=" + this.pos + "," + this.value + ">";
 		}
-		return "["+id()+"] nop";
+		return "[" + id() + "] nop";
 	}
 }
 
@@ -798,13 +799,16 @@ class NoTreeTransducer extends TreeTransducer {
 	public Object newNode(Tag tag, Source s, long spos, long epos, int size, Object value) {
 		return null;
 	}
+
 	@Override
 	public void link(Object node, int index, Object child) {
 	}
+
 	@Override
 	public Object commit(Object node) {
 		return null;
 	}
+
 	@Override
 	public void abort(Object node) {
 	}

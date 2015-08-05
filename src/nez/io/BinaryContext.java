@@ -49,7 +49,8 @@ public class BinaryContext extends SourceContext {
 	public final String substring(long startIndex, long endIndex) {
 		try {
 			return new String(this.bin, (int)(startIndex), (int)(endIndex - startIndex), StringUtils.DefaultEncoding);
-		} catch (UnsupportedEncodingException e) {
+		}
+		catch(UnsupportedEncodingException e) {
 		}
 		return null;
 	}
@@ -68,7 +69,7 @@ public class BinaryContext extends SourceContext {
 		}
 		return count;
 	}
-	
+
 	@Override
 	public final boolean match(long pos, byte[] text) {
 		if(pos + text.length > this.binLength) {

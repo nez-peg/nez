@@ -8,6 +8,7 @@ class LCdfa extends Command {
 	public String getDesc() {
 		return "DFA";
 	}
+
 	@Override
 	public void exec(CommandContext config) {
 		Grammar p = config.getGrammar();

@@ -11,16 +11,13 @@ import nez.lang.CharMultiByte;
 import nez.lang.Choice;
 import nez.lang.DefIndent;
 import nez.lang.DefSymbol;
-import nez.lang.Empty;
 import nez.lang.ExistsSymbol;
 import nez.lang.Expression;
-import nez.lang.Failure;
 import nez.lang.Grammar;
 import nez.lang.IsIndent;
 import nez.lang.IsSymbol;
 import nez.lang.Link;
 import nez.lang.LocalTable;
-import nez.lang.GrammarFile;
 import nez.lang.New;
 import nez.lang.NonTerminal;
 import nez.lang.Not;
@@ -30,17 +27,15 @@ import nez.lang.Repetition;
 import nez.lang.Repetition1;
 import nez.lang.Replace;
 import nez.lang.Sequence;
-import nez.lang.Multinary;
 import nez.lang.Tagging;
 import nez.lang.Unary;
 import nez.util.StringUtils;
-import nez.util.UList;
 
 public class LPegGrammarGenerator extends NezGenerator {
-	
+
 	@Override
 	public String getDesc() {
-		return "Lua script (required LPEG)" ;
+		return "Lua script (required LPEG)";
 	}
 
 	@Override
@@ -48,15 +43,16 @@ public class LPegGrammarGenerator extends NezGenerator {
 		this.setOption(option);
 		this.setOutputFile(fileName);
 		file.writeIndent("local lpeg = require \"lpeg\"");
-		for(Production r: grammar.getProductionList()) {
+		for(Production r : grammar.getProductionList()) {
 			if(!r.getLocalName().startsWith("\"")) {
 				String localName = r.getLocalName();
-				file.writeIndent("local " + localName + " = lpeg.V\"" + localName + "\"");
+				file.writeIndent("local " + localName + " = lpeg.V\""
+						+ localName + "\"");
 			}
 		}
 		file.writeIndent("G = lpeg.P{ File,");
 		file.incIndent();
-		for(Production r: grammar.getProductionList()) {
+		for(Production r : grammar.getProductionList()) {
 			if(!r.getLocalName().startsWith("\"")) {
 				visitProduction(r);
 			}
@@ -92,7 +88,7 @@ public class LPegGrammarGenerator extends NezGenerator {
 		file.write(";");
 		file.decIndent();
 	}
-	
+
 	@Override
 	public void makeFooter(Grammar g) {
 		file.writeIndent("function evalExp (s)");
@@ -122,62 +118,77 @@ public class LPegGrammarGenerator extends NezGenerator {
 		file.writeIndent("end");
 		file.writeIndent("evalExp(data)");
 	}
-	
+
+	@Override
 	public void visitEmpty(Expression e) {
 		file.write("lpeg.P\"\"");
 	}
 
+	@Override
 	public void visitFailure(Expression e) {
 		file.write("- lpeg.P(1) ");
 	}
 
+	@Override
 	public void visitNonTerminal(NonTerminal e) {
 		file.write(e.getLocalName() + " ");
 	}
-	
+
 	public String stringfyByte(int byteChar) {
 		char c = (char)byteChar;
 		switch(c) {
-		case '\n' : return("'\\n'"); 
-		case '\t' : return("'\\t'"); 
-		case '\r' : return("'\\r'"); 
-		case '\"' : return("\"\\\"\""); 
-		case '\\' : return("'\\\\'"); 
+		case '\n':
+			return ("'\\n'");
+		case '\t':
+			return ("'\\t'");
+		case '\r':
+			return ("'\\r'");
+		case '\"':
+			return ("\"\\\"\"");
+		case '\\':
+			return ("'\\\\'");
 		}
-		return "\"" + c + "\""; 
+		return "\"" + c + "\"";
 	}
-	
+
+	@Override
 	public void visitByteChar(ByteChar e) {
 		file.write("lpeg.P" + this.stringfyByte(e.byteChar) + " ");
 	}
-	
+
 	private int searchEndChar(boolean[] b, int s) {
 		for(; s < 256; s++) {
 			if(!b[s]) {
-				return s-1;
+				return s - 1;
 			}
 		}
 		return 255;
 	}
-	
+
 	private void getRangeChar(int ch, StringBuilder sb) {
 		char c = (char)ch;
 		switch(c) {
-		case '\n' : sb.append("\\n"); 
-		case '\t' : sb.append("'\\t'"); 
-		case '\r' : sb.append("'\\r'"); 
-		case '\'' : sb.append("'\\''"); 
-		case '\\' : sb.append("'\\\\'"); 
+		case '\n':
+			sb.append("\\n");
+		case '\t':
+			sb.append("'\\t'");
+		case '\r':
+			sb.append("'\\r'");
+		case '\'':
+			sb.append("'\\''");
+		case '\\':
+			sb.append("'\\\\'");
 		}
 		sb.append(c);
 	}
 
+	@Override
 	public void visitByteMap(ByteMap e) {
 		boolean b[] = e.byteMap;
 		for(int start = 0; start < 256; start++) {
 			if(b[start]) {
-				int end = searchEndChar(b, start+1);
-				if (start == end) {
+				int end = searchEndChar(b, start + 1);
+				if(start == end) {
 					file.write("lpeg.P" + this.stringfyByte(start) + " ");
 				}
 				else {
@@ -190,22 +201,23 @@ public class LPegGrammarGenerator extends NezGenerator {
 			}
 		}
 	}
-	
+
+	@Override
 	public void visitAnyChar(AnyChar e) {
 		file.write("lpeg.P(1)");
 	}
-	
+
 	@Override
 	public void visitCharMultiByte(CharMultiByte p) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	protected void visit(String prefix, Unary e, String suffix) {
 		if(prefix != null) {
 			file.write(prefix);
 		}
-		if(e.get(0) instanceof NonTerminal/* || e.get(0) instanceof NewClosure*/) {
+		if(e.get(0) instanceof NonTerminal/* || e.get(0) instanceof NewClosure */) {
 			this.visitExpression(e.get(0));
 		}
 		else {
@@ -218,42 +230,49 @@ public class LPegGrammarGenerator extends NezGenerator {
 		}
 	}
 
+	@Override
 	public void visitOption(Option e) {
-		this.visit( null, e, "^-1");
+		this.visit(null, e, "^-1");
 	}
-	
+
+	@Override
 	public void visitRepetition(Repetition e) {
 		this.visit(null, e, "^0");
 	}
 
+	@Override
 	public void visitRepetition1(Repetition1 e) {
 		this.visit(null, e, "^1");
 	}
 
+	@Override
 	public void visitAnd(And e) {
-		this.visit( "#", e, null);
-	}
-	
-	public void visitNot(Not e) {
-		this.visit( "-", e, null);
+		this.visit("#", e, null);
 	}
 
+	@Override
+	public void visitNot(Not e) {
+		this.visit("-", e, null);
+	}
+
+	@Override
 	public void visitTagging(Tagging e) {
 		file.write("lpeg.P\"\" --[[");
 		file.write(e.tag.toString());
 		file.write("]]");
 	}
-	
+
 	public void visitValue(Replace e) {
 		file.write("lpeg.P\"\"");
 	}
-	
+
+	@Override
 	public void visitLink(Link e) {
-//		String predicate = "@";
-//		if(e.index != -1) {
-//			predicate += "[" + e.index + "]";
-//		}
-//		this.visit(predicate, e, null);
+		// String predicate = "@";
+		// if(e.index != -1) {
+		// predicate += "[" + e.index + "]";
+		// }
+		// this.visit(predicate, e, null);
 		this.visitExpression(e.get(0));
 	}
 
@@ -263,7 +282,7 @@ public class LPegGrammarGenerator extends NezGenerator {
 		for(int i = start; i < end; i++) {
 			Expression e = l.get(i);
 			if(e instanceof ByteChar) {
-				char c = (char)(((ByteChar) e).byteChar);
+				char c = (char)(((ByteChar)e).byteChar);
 				if(c >= ' ' && c < 127) {
 					s += c;
 					continue;
@@ -277,7 +296,8 @@ public class LPegGrammarGenerator extends NezGenerator {
 		}
 		return end - 1;
 	}
-	
+
+	@Override
 	public void visitSequence(Sequence l) {
 		for(int i = 0; i < l.size(); i++) {
 			if(i > 0) {
@@ -286,7 +306,7 @@ public class LPegGrammarGenerator extends NezGenerator {
 			int n = appendAsString(l, i);
 			if(n > i) {
 				i = n;
-				if(i < l.size()-1) {
+				if(i < l.size() - 1) {
 					file.write(" * ");
 				}
 				continue;
@@ -300,12 +320,13 @@ public class LPegGrammarGenerator extends NezGenerator {
 			else {
 				visitExpression(e);
 			}
-			if(i < l.size()-1) {
+			if(i < l.size() - 1) {
 				file.write(" * ");
 			}
 		}
 	}
-	
+
+	@Override
 	public void visitChoice(Choice e) {
 		for(int i = 0; i < e.size(); i++) {
 			if(i > 0) {
@@ -317,22 +338,24 @@ public class LPegGrammarGenerator extends NezGenerator {
 		}
 	}
 
-//	public void visitNewClosure(NewClosure e) {
-//		file.write("( ");
-//		this.visitSequenceImpl(e);
-//		file.write(" )");
-//	}
-//
-//	public void visitLeftNew(LeftNewClosure e) {
-//		file.write("( ");
-//		this.visitSequenceImpl(e);
-//		file.write(" )");
-//	}
+	// public void visitNewClosure(NewClosure e) {
+	// file.write("( ");
+	// this.visitSequenceImpl(e);
+	// file.write(" )");
+	// }
+	//
+	// public void visitLeftNew(LeftNewClosure e) {
+	// file.write("( ");
+	// this.visitSequenceImpl(e);
+	// file.write(" )");
+	// }
 
+	@Override
 	public void visitNew(New e) {
 
 	}
 
+	@Override
 	public void visitCapture(Capture e) {
 
 	}
@@ -351,54 +374,54 @@ public class LPegGrammarGenerator extends NezGenerator {
 	@Override
 	public void visitExpression(Expression e) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void visitReplace(Replace p) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void visitBlock(Block p) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void visitDefSymbol(DefSymbol p) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void visitIsSymbol(IsSymbol p) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void visitDefIndent(DefIndent p) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void visitIsIndent(IsIndent p) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void visitExistsSymbol(ExistsSymbol p) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void visitLocalTable(LocalTable p) {
 		// TODO Auto-generated method stub
-		
+
 	}
 }

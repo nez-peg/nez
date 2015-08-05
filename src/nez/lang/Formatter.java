@@ -9,15 +9,15 @@ import nez.util.StringUtils;
 public abstract class Formatter {
 	public static final Formatter Null = new NullFormatter();
 	public static final Formatter Default = new DefaultFormatter();
-	
-	public static final HashMap<String, Formatter> fmtMap = new HashMap<String,Formatter>();
+
+	public static final HashMap<String, Formatter> fmtMap = new HashMap<String, Formatter>();
 	static {
 		fmtMap.put("NL", new IndentFormatter());
 		fmtMap.put("inc", new IncFormatter());
 		fmtMap.put("dec", new DecFormatter());
 		fmtMap.put("text", Null);
 	}
-	
+
 	public final static Formatter newAction(String t) {
 		return fmtMap.get(t);
 	}
@@ -42,9 +42,9 @@ public abstract class Formatter {
 	}
 
 	public static int index(int index, int size) {
-		return (index < 0) ? size + index + 1: index;
+		return (index < 0) ? size + index + 1 : index;
 	}
-	
+
 	public static boolean isSupported(GrammarFile ns, CommonTree node) {
 		Formatter fmt = ns.getFormatter(node.getTag().getName(), node.size());
 		return fmt != null;
@@ -65,27 +65,29 @@ public abstract class Formatter {
 			stream.write("null");
 		}
 	}
-	
+
 	public abstract void write(FormatterStream stream, CommonTree node);
 
 }
 
 class FormatterEntry {
 	Formatter[] arguments;
+
 	void set(int index, Formatter fmt) {
 		index++;
 		if(arguments == null) {
-			arguments = new Formatter[index+1];
+			arguments = new Formatter[index + 1];
 			arguments[index] = fmt;
 			return;
 		}
 		if(!(index < arguments.length)) {
-			Formatter[] a = new Formatter[index+1];
+			Formatter[] a = new Formatter[index + 1];
 			System.arraycopy(this.arguments, 0, a, 0, this.arguments.length);
 			this.arguments = a;
 		}
 		arguments[index] = fmt;
 	}
+
 	Formatter get(int index) {
 		if(arguments == null) {
 			return null;
@@ -94,7 +96,7 @@ class FormatterEntry {
 		if(!(index < arguments.length)) {
 			index = arguments.length - 1;
 		}
-		for(int i = index; i >=0; i--) {
+		for(int i = index; i >= 0; i--) {
 			if(this.arguments[i] != null) {
 				return this.arguments[i];
 			}
@@ -105,6 +107,7 @@ class FormatterEntry {
 
 class FormatterMap {
 	HashMap<String, FormatterEntry> map = new HashMap<String, FormatterEntry>();
+
 	void set(String tag, int index, Formatter fmt) {
 		FormatterEntry entry = map.get(tag);
 		if(entry == null) {
@@ -113,6 +116,7 @@ class FormatterMap {
 		}
 		entry.set(index, fmt);
 	}
+
 	Formatter get(String tag, int index) {
 		FormatterEntry entry = map.get(tag);
 		if(entry != null) {
@@ -122,25 +126,30 @@ class FormatterMap {
 	}
 }
 
-
 interface FormatterStream {
 
 	public Formatter lookupFormatter(CommonTree sub);
+
 	public void write(String text);
+
 	public void writeNewLineIndent();
+
 	public void incIndent();
+
 	public void decIndent();
-	
+
 }
 
 class FormatStringBuilder implements FormatterStream {
 	final GrammarFile ns;
 	StringBuilder sb = new StringBuilder();
 	int indent = 0;
+
 	FormatStringBuilder(GrammarFile ns) {
 		this.ns = ns;
 	}
-	
+
+	@Override
 	public String toString() {
 		return sb.toString();
 	}
@@ -181,6 +190,7 @@ class FormatStringBuilder implements FormatterStream {
 class DefaultFormatter extends Formatter {
 	DefaultFormatter() {
 	}
+
 	@Override
 	public void write(FormatterStream s, CommonTree node) {
 		s.write("#");
@@ -191,7 +201,7 @@ class DefaultFormatter extends Formatter {
 		}
 		else {
 			int c = 0;
-			for(CommonTree sub: node) {
+			for(CommonTree sub : node) {
 				if(c > 0) {
 					s.write(" ");
 				}
@@ -205,15 +215,17 @@ class DefaultFormatter extends Formatter {
 
 class SequenceFormatter extends Formatter {
 	final Formatter sub[];
+
 	SequenceFormatter(List<Formatter> s) {
 		sub = new Formatter[s.size()];
 		for(int i = 0; i < s.size(); i++) {
 			sub[i] = s.get(i);
 		}
 	}
+
 	@Override
 	public void write(FormatterStream s, CommonTree node) {
-		for(Formatter fmt: sub) {
+		for(Formatter fmt : sub) {
 			fmt.write(s, node);
 		}
 	}
@@ -222,6 +234,7 @@ class SequenceFormatter extends Formatter {
 class NullFormatter extends Formatter {
 	NullFormatter() {
 	}
+
 	@Override
 	public void write(FormatterStream s, CommonTree node) {
 		s.write(node.getText());
@@ -230,9 +243,11 @@ class NullFormatter extends Formatter {
 
 class TextFormatter extends Formatter {
 	final String text;
+
 	TextFormatter(String text) {
 		this.text = text;
 	}
+
 	@Override
 	public void write(FormatterStream s, CommonTree node) {
 		s.write(text);
@@ -241,9 +256,11 @@ class TextFormatter extends Formatter {
 
 class IndexFormatter extends Formatter {
 	final int index;
+
 	IndexFormatter(int index) {
 		this.index = index;
 	}
+
 	@Override
 	public void write(FormatterStream s, CommonTree node) {
 		int size = node.size();
@@ -259,11 +276,13 @@ class RangeFormatter extends Formatter {
 	int start;
 	Formatter delim;
 	int end;
+
 	RangeFormatter(int s, Formatter delim, int e) {
 		this.start = s;
 		this.delim = delim;
 		this.end = e;
 	}
+
 	@Override
 	public void write(FormatterStream stream, CommonTree node) {
 		int size = node.size();
@@ -285,6 +304,7 @@ class RangeFormatter extends Formatter {
 class IndentFormatter extends Formatter {
 	IndentFormatter() {
 	}
+
 	@Override
 	public void write(FormatterStream stream, CommonTree node) {
 		stream.writeNewLineIndent();

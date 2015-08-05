@@ -2,7 +2,6 @@ package nez.lang;
 
 import nez.ast.SourcePosition;
 import nez.ast.Tag;
-import nez.util.UList;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
@@ -10,17 +9,21 @@ public class IsSymbol extends Expression implements Contextual {
 	public final Tag tableName;
 	final GrammarFile ns;
 	public final boolean checkLastSymbolOnly;
-	IsSymbol(SourcePosition s, GrammarFile ns, Tag tableName, boolean checkLastSymbolOnly) {
+
+	IsSymbol(SourcePosition s, GrammarFile ns, Tag tableName,
+			boolean checkLastSymbolOnly) {
 		super(s);
 		this.ns = ns;
 		this.tableName = tableName;
 		this.checkLastSymbolOnly = false;
 	}
+
 	@Override
 	public final boolean equalsExpression(Expression o) {
 		if(o instanceof IsSymbol) {
 			IsSymbol e = (IsSymbol)o;
-			return this.tableName == e.tableName && this.ns == e.ns && this.checkLastSymbolOnly == e.checkLastSymbolOnly;
+			return this.tableName == e.tableName && this.ns == e.ns
+					&& this.checkLastSymbolOnly == e.checkLastSymbolOnly;
 		}
 		return false;
 	}
@@ -45,15 +48,17 @@ public class IsSymbol extends Expression implements Contextual {
 	public String getPredicate() {
 		return (checkLastSymbolOnly ? "is " : "isa ") + tableName.getName();
 	}
+
 	@Override
 	public String key() {
 		return this.getPredicate();
 	}
+
 	@Override
 	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeIsSymbol(this);
 	}
-	
+
 	@Override
 	public boolean isConsumed() {
 		Expression inner = this.getSymbolExpression();
@@ -67,21 +72,26 @@ public class IsSymbol extends Expression implements Contextual {
 	public int inferTypestate(Visa v) {
 		return Typestate.BooleanType;
 	}
+
 	@Override
 	public short acceptByte(int ch) {
-//		if(this.getSymbolExpression() != null) {
-//			return this.getSymbolExpression().acceptByte(ch);
-//		}
+		// if(this.getSymbolExpression() != null) {
+		// return this.getSymbolExpression().acceptByte(ch);
+		// }
 		return PossibleAcceptance.Accept;
 	}
+
 	@Override
-	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
+	public Instruction encode(NezEncoder bc, Instruction next,
+			Instruction failjump) {
 		return bc.encodeIsSymbol(this, next, failjump);
 	}
+
 	@Override
 	protected int pattern(GEP gep) {
 		return 1;
 	}
+
 	@Override
 	protected void examplfy(GEP gep, StringBuilder sb, int p) {
 		String token = gep.getSymbol(tableName);

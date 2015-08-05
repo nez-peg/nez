@@ -20,10 +20,10 @@ import nez.util.UList;
 import nez.util.UMap;
 
 public class GrammarFile extends GrammarFactory {
-	
+
 	private static int nsid = 0;
 	private static HashMap<String, GrammarFile> nsMap = new HashMap<String, GrammarFile>();
-	
+
 	public final static boolean isLoaded(String urn) {
 		return nsMap.containsKey(urn);
 	}
@@ -52,7 +52,7 @@ public class GrammarFile extends GrammarFactory {
 			try {
 				Class<?> c = Class.forName(urn);
 				ParserCombinator p = (ParserCombinator)c.newInstance();
-				 ns = p.load();
+				ns = p.load();
 			}
 			catch(ClassNotFoundException e) {
 			}
@@ -68,12 +68,12 @@ public class GrammarFile extends GrammarFactory {
 		nsMap.put(urn, ns);
 		return ns;
 	}
-	
+
 	public final static GrammarFile loadGrammarFile(String urn, NezOption option) throws IOException {
 		if(urn.endsWith(".dtd")) {
 			return DTDConverter.loadGrammar(urn, option);
 		}
-		if (urn.endsWith(".cl")) {
+		if(urn.endsWith(".cl")) {
 			return CeleryConverter.loadGrammar(urn, option);
 		}
 		return loadNezFile(urn, option);
@@ -82,23 +82,23 @@ public class GrammarFile extends GrammarFactory {
 	public final static String nameUniqueName(String ns, String name) {
 		return ns + ":" + name;
 	}
-	
+
 	public final static String nameNamespaceName(String ns, String name) {
-		return ns == null ? name :  ns + "." + name;
+		return ns == null ? name : ns + "." + name;
 	}
 
 	public final static String nameTerminalProduction(String t) {
 		return "\"" + t + "\"";
 	}
 
-	// fields 
-	
-	final int               id;
-	final String            urn;
-	final String            ns;
-	final UMap<Production>  ruleMap;
-	final UList<String>     nameList;
-	final NezOption         option;
+	// fields
+
+	final int id;
+	final String urn;
+	final String ns;
+	final UMap<Production> ruleMap;
+	final UList<String> nameList;
+	final NezOption option;
 
 	private GrammarFile(int id, String urn, NezOption option) {
 		this.id = id;
@@ -107,7 +107,7 @@ public class GrammarFile extends GrammarFactory {
 		if(urn != null) {
 			int loc = urn.lastIndexOf('/');
 			if(loc != -1) {
-				ns = urn.substring(loc+1);
+				ns = urn.substring(loc + 1);
 			}
 			ns = ns.replace(".nez", "");
 		}
@@ -124,7 +124,7 @@ public class GrammarFile extends GrammarFactory {
 	public final String getURN() {
 		return this.urn;
 	}
-	
+
 	public final boolean isEmpty() {
 		return this.ruleMap.size() == 0;
 	}
@@ -156,15 +156,16 @@ public class GrammarFile extends GrammarFactory {
 		addProduction(p);
 		return p;
 	}
-	
+
 	public final Production getProduction(String ruleName) {
 		return this.ruleMap.get(ruleName);
 	}
-	
+
 	public final List<String> getNonterminalList() {
 		ArrayList<String> l = new ArrayList<String>();
 		for(String s : this.ruleMap.keys()) {
-			if(s.indexOf(':') > 0) continue;
+			if(s.indexOf(':') > 0)
+				continue;
 			char c = s.charAt(0);
 			if(!Character.isUpperCase(c)) {
 				continue;
@@ -174,7 +175,7 @@ public class GrammarFile extends GrammarFactory {
 		Collections.sort(l);
 		return l;
 	}
-	
+
 	public Production newReducedProduction(String localName, Production p, GrammarReshaper m) {
 		Production r = p.newProduction(localName);
 		this.ruleMap.put(localName, r);
@@ -183,7 +184,7 @@ public class GrammarFile extends GrammarFactory {
 		r.setExpression(p.getExpression().reshape(m));
 		return r;
 	}
-	
+
 	public final Production newProduction(int flag, String name, Expression e) {
 		Production r = new Production(null, flag, this, name, e);
 		this.ruleMap.put(name, r);
@@ -211,7 +212,7 @@ public class GrammarFile extends GrammarFactory {
 		if(r != null) {
 			return new Grammar(r, option);
 		}
-		//System.out.println("** " + this.ruleMap.keys());
+		// System.out.println("** " + this.ruleMap.keys());
 		return null;
 	}
 
@@ -224,8 +225,8 @@ public class GrammarFile extends GrammarFactory {
 			ConsoleUtils.println(r);
 		}
 	}
-	
-	private Map<String, Expression> tableMap; 
+
+	private Map<String, Expression> tableMap;
 
 	final void setSymbolExpresion(String tableName, Expression e) {
 		if(tableMap == null) {
@@ -247,7 +248,7 @@ public class GrammarFile extends GrammarFactory {
 	}
 
 	private FormatterMap fmtMap;
-	
+
 	public final void addFormatter(String tag, int size, Formatter fmt) {
 		if(fmtMap == null) {
 			fmtMap = new FormatterMap();
@@ -261,21 +262,20 @@ public class GrammarFile extends GrammarFactory {
 		}
 		return null;
 	}
-	
+
 	public final String formatCommonTree(CommonTree node) {
 		return Formatter.format(this, node);
 	}
 
-	
 	private UList<Example> exampleList;
-	
+
 	final void addExample(Example ex) {
 		if(exampleList == null) {
 			exampleList = new UList<Example>(new Example[2]);
 		}
 		exampleList.add(ex);
 	}
-	
+
 	final void testExample(NezOption option) {
 		if(exampleList != null) {
 			long t1 = System.nanoTime();
@@ -284,13 +284,13 @@ public class GrammarFile extends GrammarFactory {
 			}
 			long t2 = System.nanoTime();
 			if(Verbose.Example) {
-				Verbose.println("Elapsed time (Example Tests): " + ((t2 - t1) / 1000000) + "ms"); 
+				Verbose.println("Elapsed time (Example Tests): " + ((t2 - t1) / 1000000) + "ms");
 			}
 		}
 	}
 
 	// Grammar
-	
+
 	public final void reportError(Expression p, String message) {
 		this.reportError(p.getSourcePosition(), message);
 	}
@@ -326,11 +326,11 @@ public class GrammarFile extends GrammarFactory {
 	public void verify() {
 		NameAnalysis nameAnalyzer = new NameAnalysis();
 		nameAnalyzer.analyze(this.getDefinedRuleList());
-//		if(this.foundError) {
-//			ConsoleUtils.exit(1, "FatalGrammarError");
-//		}
+		// if(this.foundError) {
+		// ConsoleUtils.exit(1, "FatalGrammarError");
+		// }
 		// type check
-		for(Production p: this.getAllProductionList()) {
+		for(Production p : this.getAllProductionList()) {
 			if(p.isTerminal()) {
 				continue;
 			}
@@ -340,7 +340,7 @@ public class GrammarFile extends GrammarFactory {
 		if(!option.enabledAsIsGrammar) {
 			optimizer = new GrammarOptimizer(this.option);
 		}
-		for(Production r: this.getAllProductionList()) {
+		for(Production r : this.getAllProductionList()) {
 			if(r.isTerminal()) {
 				continue;
 			}
@@ -373,6 +373,4 @@ public class GrammarFile extends GrammarFactory {
 		}
 	}
 
-	
-	
 }

@@ -12,18 +12,18 @@ public class StringContext extends SourceContext {
 	public StringContext(String sourceText) {
 		super("(string)", 1);
 		this.utf8 = toZeroTerminalByteSequence(sourceText);
-		this.textLength = utf8.length-1;
+		this.textLength = utf8.length - 1;
 	}
 
 	public StringContext(String resource, long linenum, String sourceText) {
 		super(resource, linenum);
 		this.utf8 = toZeroTerminalByteSequence(sourceText);
-		this.textLength = utf8.length-1;
+		this.textLength = utf8.length - 1;
 	}
 
 	private final byte[] toZeroTerminalByteSequence(String s) {
 		byte[] b = StringUtils.toUtf8(s);
-		byte[] b2 = new byte[b.length+1];
+		byte[] b2 = new byte[b.length + 1];
 		System.arraycopy(b, 0, b2, 0, b.length);
 		return b2;
 	}
@@ -37,7 +37,7 @@ public class StringContext extends SourceContext {
 	public final int byteAt(long pos) {
 		return this.utf8[(int)pos] & 0xff;
 	}
-	
+
 	@Override
 	public final int EOF() {
 		return 0;
@@ -54,7 +54,8 @@ public class StringContext extends SourceContext {
 	public final String substring(long startIndex, long endIndex) {
 		try {
 			return new String(this.utf8, (int)(startIndex), (int)(endIndex - startIndex), StringUtils.DefaultEncoding);
-		} catch (UnsupportedEncodingException e) {
+		}
+		catch(UnsupportedEncodingException e) {
 		}
 		return null;
 	}
@@ -73,7 +74,7 @@ public class StringContext extends SourceContext {
 		}
 		return count;
 	}
-	
+
 	@Override
 	public final boolean match(long pos, byte[] text) {
 		if(pos + text.length > this.textLength) {

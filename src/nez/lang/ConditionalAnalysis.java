@@ -4,6 +4,7 @@ import java.util.TreeMap;
 
 class ConditionalAnalysis extends GrammarReshaper {
 	TreeMap<String, Boolean> condMap;
+
 	ConditionalAnalysis(TreeMap<String, Boolean> condMap) {
 		this.condMap = condMap;
 	}
@@ -11,7 +12,8 @@ class ConditionalAnalysis extends GrammarReshaper {
 	public final Production newStart(Production start) {
 		return eliminateConditionalFlag(start);
 	}
-	
+
+	@Override
 	public Expression reshapeOnFlag(OnFlag p) {
 		String flagName = p.getFlagName();
 		Boolean bool = condMap.get(flagName);
@@ -36,6 +38,7 @@ class ConditionalAnalysis extends GrammarReshaper {
 		return p.get(0).reshape(this);
 	}
 
+	@Override
 	public Expression reshapeIfFlag(IfFlag p) {
 		String flagName = p.getFlagName();
 		if(condMap.get(flagName)) {
@@ -44,6 +47,7 @@ class ConditionalAnalysis extends GrammarReshaper {
 		return p.isPredicate() ? p.newFailure() : p.newEmpty();
 	}
 
+	@Override
 	public Expression reshapeNonTerminal(NonTerminal n) {
 		Production r = eliminateConditionalFlag(n.getProduction());
 		if(r != n.getProduction()) {
@@ -51,7 +55,7 @@ class ConditionalAnalysis extends GrammarReshaper {
 		}
 		return n;
 	}
-	
+
 	private Production eliminateConditionalFlag(Production p) {
 		if(p.isConditional()) {
 			String flagedName = nameFlagedProduction(p);
@@ -59,7 +63,7 @@ class ConditionalAnalysis extends GrammarReshaper {
 			if(newp == null) {
 				p = this.getBaseProduction(p);
 				newp = p.getGrammarFile().newReducedProduction(flagedName, p, this);
-				//Verbose.debug("creating .. " + flagedName);
+				// Verbose.debug("creating .. " + flagedName);
 			}
 			return newp;
 		}
@@ -85,13 +89,13 @@ class ConditionalAnalysis extends GrammarReshaper {
 		else {
 			sb.append(localName);
 		}
-		
-		for(String flagName: condMap.keySet()) {
+
+		for(String flagName : condMap.keySet()) {
 			if(condMap.get(flagName)) {
 				sb.append("&");
 			}
 			else {
-				sb.append("!");				
+				sb.append("!");
 			}
 			sb.append(flagName);
 		}
@@ -107,37 +111,37 @@ class ConditionalAnalysis extends GrammarReshaper {
 		}
 		return -1;
 	}
-	
-//	private static boolean hasReachableFlag(Expression e, String flagName) {
-//		return hasReachableFlag(e, flagName, new UMap<String>());
-//	}
 
-//	private static boolean hasReachableFlag(Expression e, String flagName, UMap<String> visited) {
-//		if(e instanceof OnFlag) {
-//			OnFlag f = (OnFlag)e;
-//			
-//			if(flagName.equals(((OnFlag) e).flagName)) {
-//				return false;
-//			}
-//		}
-//		for(Expression se : e) {
-//			if(hasReachableFlag(se, flagName, visited)) {
-//				return true;
-//			}
-//		}
-//		if(e instanceof IfFlag) {
-//			return flagName.equals(((IfFlag) e).flagName);
-//		}
-//		if(e instanceof NonTerminal) {
-//			NonTerminal ne = (NonTerminal)e;
-//			String un = ne.getUniqueName();
-//			if(!visited.hasKey(un)) {
-//				visited.put(un, un);
-//				Production r = ne.getProduction();
-//				return hasReachableFlag(r.body, flagName, visited);
-//			}
-//		}
-//		return false;
-//	}
-	
+	// private static boolean hasReachableFlag(Expression e, String flagName) {
+	// return hasReachableFlag(e, flagName, new UMap<String>());
+	// }
+
+	// private static boolean hasReachableFlag(Expression e, String flagName, UMap<String> visited) {
+	// if(e instanceof OnFlag) {
+	// OnFlag f = (OnFlag)e;
+	//
+	// if(flagName.equals(((OnFlag) e).flagName)) {
+	// return false;
+	// }
+	// }
+	// for(Expression se : e) {
+	// if(hasReachableFlag(se, flagName, visited)) {
+	// return true;
+	// }
+	// }
+	// if(e instanceof IfFlag) {
+	// return flagName.equals(((IfFlag) e).flagName);
+	// }
+	// if(e instanceof NonTerminal) {
+	// NonTerminal ne = (NonTerminal)e;
+	// String un = ne.getUniqueName();
+	// if(!visited.hasKey(un)) {
+	// visited.put(un, un);
+	// Production r = ne.getProduction();
+	// return hasReachableFlag(r.body, flagName, visited);
+	// }
+	// }
+	// return false;
+	// }
+
 }

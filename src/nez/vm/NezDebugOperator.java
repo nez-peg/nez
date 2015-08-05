@@ -1,6 +1,5 @@
 package nez.vm;
 
-import nez.util.ConsoleUtils;
 
 public abstract class NezDebugOperator {
 	DebugOperation type;
@@ -16,6 +15,7 @@ public abstract class NezDebugOperator {
 
 	public abstract boolean exec(NezDebugger d) throws TerminationException;
 
+	@Override
 	public String toString() {
 		return this.type.toString();
 	}
