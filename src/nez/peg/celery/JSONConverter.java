@@ -173,6 +173,14 @@ public class JSONConverter extends AbstractTreeVisitor {
 		return grammar.newSequence(seq);
 	}
 
+	public final Expression toTEnum(CommonTree node) {
+		Expression[] choice = new Expression[node.size()];
+		for (int index = 0; index < choice.length; index++) {
+			choice[index] = grammar.newString(node.textAt(index, null));
+		}
+		return grammar.newChoice(choice);
+	}
+
 	// generator methods
 	@Deprecated
 	private final Expression genClassRule(String className) {
