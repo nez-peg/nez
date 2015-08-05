@@ -2,11 +2,8 @@ package nez.main;
 
 import nez.SourceContext;
 import nez.ast.CommonTree;
-import nez.ast.CommonTreeWriter;
 import nez.lang.Grammar;
 import nez.lang.GrammarFile;
-import nez.lang.NezParser;
-import nez.lang.Production;
 import nez.util.ConsoleUtils;
 
 public class LCformat extends Command {

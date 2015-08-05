@@ -12,41 +12,44 @@ import nez.util.StringUtils;
 import nez.vm.Context;
 
 public abstract class SourceContext extends Context {
-	
-	private String     fileName;
-	protected long     startLineNum = 1;
+
+	private String fileName;
+	protected long startLineNum = 1;
 
 	protected SourceContext(String fileName, long linenum) {
 		this.fileName = fileName;
 		this.startLineNum = linenum;
 	}
-	
+
 	@Override
-	public abstract int     byteAt(long pos);
+	public abstract int byteAt(long pos);
+
 	@Override
-	public abstract long    length();
+	public abstract long length();
 
 	@Override
 	public abstract boolean match(long pos, byte[] text);
+
 	@Override
-	public abstract String  substring(long startIndex, long endIndex);
+	public abstract String substring(long startIndex, long endIndex);
+
 	@Override
-	public abstract long    linenum(long pos);
+	public abstract long linenum(long pos);
 
 	/* handling input stream */
-	
+
 	@Override
 	public final String getResourceName() {
 		return fileName;
 	}
 
-//	final String getFilePath(String fileName) {
-//		int loc = this.getResourceName().lastIndexOf("/");
-//		if(loc > 0) {
-//			return this.getResourceName().substring(0, loc+1) + fileName; 
-//		}
-//		return fileName;
-//	}
+	// final String getFilePath(String fileName) {
+	// int loc = this.getResourceName().lastIndexOf("/");
+	// if(loc > 0) {
+	// return this.getResourceName().substring(0, loc+1) + fileName;
+	// }
+	// return fileName;
+	// }
 
 	public final int charAt(long pos) {
 		int c = byteAt(pos), c2, c3, c4;
@@ -104,7 +107,7 @@ public abstract class SourceContext extends Context {
 			int ch = this.byteAt(i);
 			if(ch != ' ' && ch != '\t') {
 				if(i + 1 != fromPosition) {
-					for(long j = i;j < fromPosition; j++) {
+					for(long j = i; j < fromPosition; j++) {
 						indent = indent + " ";
 					}
 				}
@@ -116,19 +119,19 @@ public abstract class SourceContext extends Context {
 	}
 
 	public final String formatPositionMessage(String messageType, long pos, String message) {
-		return "(" + this.getResourceName() + ":" + this.linenum(pos) + ") [" + messageType +"] " + message;
+		return "(" + this.getResourceName() + ":" + this.linenum(pos) + ") [" + messageType + "] " + message;
 	}
 
 	@Override
 	public final String formatPositionLine(String messageType, long pos, String message) {
 		return this.formatPositionMessage(messageType, pos, message) + this.getTextAround(pos, "\n ");
 	}
-	
+
 	@Override
 	public final String formatDebugPositionMessage(long pos, String message) {
 		return "(" + this.getResourceName() + ":" + this.linenum(pos) + ")" + message;
 	}
-	
+
 	public final String formatDebugPositionLine(long pos, String message) {
 		return this.formatDebugPositionMessage(pos, message) + this.getTextAround(pos, "\n ");
 	}
@@ -199,7 +202,7 @@ public abstract class SourceContext extends Context {
 		}
 		return delim + source.toString() + delim + marker.toString();
 	}
-	
+
 	public final static SourceContext newStringContext(String str) {
 		return new StringContext(str);
 	}
@@ -210,11 +213,11 @@ public abstract class SourceContext extends Context {
 
 	public final static SourceContext newFileContext(String fileName) throws IOException {
 		File f = new File(fileName);
-		//System.out.println("file: " + fileName + " " + f.isFile());
+		// System.out.println("file: " + fileName + " " + f.isFile());
 		if(!f.isFile()) {
-//			URL url = new URL(SourceContext.class.getResource("."), fileName);
-//			System.out.println("url: " + url);
-//			Stream = url.openStream();
+			// URL url = new URL(SourceContext.class.getResource("."), fileName);
+			// System.out.println("url: " + url);
+			// Stream = url.openStream();
 			InputStream Stream = SourceContext.class.getResourceAsStream("/nez/lib/" + fileName);
 			if(Stream != null) {
 				BufferedReader reader = new BufferedReader(new InputStreamReader(Stream));
@@ -223,7 +226,7 @@ public abstract class SourceContext extends Context {
 				while(true) {
 					builder.append(line);
 					line = reader.readLine();
-					if (line == null) {
+					if(line == null) {
 						break;
 					}
 					builder.append("\n");
@@ -235,5 +238,3 @@ public abstract class SourceContext extends Context {
 		return new FileContext(fileName);
 	}
 }
-
-

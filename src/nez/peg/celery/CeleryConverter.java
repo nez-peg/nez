@@ -5,8 +5,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import nez.NezOption;
 import nez.NezException;
+import nez.NezOption;
 import nez.SourceContext;
 import nez.ast.CommonTree;
 import nez.ast.CommonTreeVisitor;
@@ -30,21 +30,21 @@ public class CeleryConverter extends CommonTreeVisitor {
 	}
 
 	public final static GrammarFile loadGrammar(String filePath, NezOption option) throws IOException {
-		if (celeryGrammar == null) {
+		if(celeryGrammar == null) {
 			try {
 				celeryGrammar = GrammarFile.loadGrammarFile("celery.nez", NezOption.newDefaultOption());
-			} 
-			catch (IOException e) {
+			}
+			catch(IOException e) {
 				ConsoleUtils.exit(1, "can't load celery.nez");
 			}
 		}
 		Grammar p = celeryGrammar.newGrammar("File");
 		SourceContext celeryFile = SourceContext.newFileContext(filePath);
 		CommonTree node = p.parse(celeryFile);
-		if (node == null) {
+		if(node == null) {
 			throw new NezException(celeryFile.getSyntaxErrorMessage());
 		}
-		if (celeryFile.hasUnconsumed()) {
+		if(celeryFile.hasUnconsumed()) {
 			throw new NezException(celeryFile.getUnconsumedMessage());
 		}
 		CeleryConverter converter = new CeleryConverter();
@@ -70,13 +70,14 @@ public class CeleryConverter extends CommonTreeVisitor {
 
 	public final void visitRoot(CommonTree node) {
 		correctClassNames(node);
-		for (CommonTree classNode : node) {
+		for(CommonTree classNode : node) {
 			initMemberList();
 			this.visit("visit", classNode);
 			String className = classNode.textAt(0, null);
-			if (UseExtendedSyntax) {
+			if(UseExtendedSyntax) {
 				grammar.defineProduction(classNode, className, genExClassRule(className));
-			} else {
+			}
+			else {
 				grammar.defineProduction(classNode, className, genClassRule(className));
 			}
 		}
@@ -84,7 +85,7 @@ public class CeleryConverter extends CommonTreeVisitor {
 	}
 
 	public final void visitClass(CommonTree node) {
-		for (CommonTree memberNode : node) {
+		for(CommonTree memberNode : node) {
 			this.visit("visit", memberNode);
 		}
 	}
@@ -152,7 +153,7 @@ public class CeleryConverter extends CommonTreeVisitor {
 
 	public final Expression visitTEnum(CommonTree node) {
 		Expression[] choice = new Expression[node.size()];
-		for (int index = 0; index < choice.length; index++) {
+		for(int index = 0; index < choice.length; index++) {
 			choice[index] = grammar.newString(node.textAt(index, null));
 		}
 		return grammar.newChoice(choice);
@@ -161,7 +162,7 @@ public class CeleryConverter extends CommonTreeVisitor {
 	// to Expression Methods
 
 	private final Expression toExpression(CommonTree node) {
-		return (Expression) this.visit("to", node);
+		return (Expression)this.visit("to", node);
 	}
 
 	public final Expression toTBoolean(CommonTree node) {
@@ -224,9 +225,10 @@ public class CeleryConverter extends CommonTreeVisitor {
 	}
 
 	private final Expression genMemberRule(String className) {
-		if (impliedMemebersList.isEmpty()) {
+		if(impliedMemebersList.isEmpty()) {
 			return genCompMember();
-		} else {
+		}
+		else {
 			String impliedChoiceRuleName = className + "_imp";
 			genImpliedChoice(impliedChoiceRuleName);
 			return genProxMember(impliedChoiceRuleName);
@@ -237,7 +239,7 @@ public class CeleryConverter extends CommonTreeVisitor {
 		int listLength = requiredMembersList.size();
 
 		// return the rule that include only one member
-		if (listLength == 1) {
+		if(listLength == 1) {
 			return grammar.newNonTerminal(requiredMembersList.get(0));
 		}
 
@@ -246,9 +248,9 @@ public class CeleryConverter extends CommonTreeVisitor {
 			int[][] permutedList = permute(listLength);
 			Expression[] choiceList = new Expression[permutedList.length];
 			int choiceCount = 0;
-			for (int[] targetLine : permutedList) {
+			for(int[] targetLine : permutedList) {
 				Expression[] seqList = new Expression[listLength];
-				for (int index = 0; index < targetLine.length; index++) {
+				for(int index = 0; index < targetLine.length; index++) {
 					seqList[index] = grammar.newNonTerminal(requiredMembersList
 							.get(targetLine[index]));
 				}
@@ -262,7 +264,7 @@ public class CeleryConverter extends CommonTreeVisitor {
 		int listLength = requiredMembersList.size();
 
 		// return the rule that include only implied member list
-		if (listLength == 0) {
+		if(listLength == 0) {
 			return grammar.newNonTerminal(impliedChoiceRuleName);
 		}
 
@@ -272,11 +274,11 @@ public class CeleryConverter extends CommonTreeVisitor {
 			Expression[] choiceList = new Expression[permutedList.length];
 			Expression impliedChoiceRule = grammar.newNonTerminal(impliedChoiceRuleName);
 			int choiceCount = 0;
-			for (int[] targetLine : permutedList) {
+			for(int[] targetLine : permutedList) {
 				int seqCount = 0;
 				Expression[] seqList = new Expression[listLength * 2 + 1];
 				seqList[seqCount++] = grammar.newRepetition(impliedChoiceRule);
-				for (int index = 0; index < targetLine.length; index++) {
+				for(int index = 0; index < targetLine.length; index++) {
 					seqList[seqCount++] = grammar.newNonTerminal(requiredMembersList
 							.get(targetLine[index]));
 					seqList[seqCount++] = grammar.newRepetition(impliedChoiceRule);
@@ -292,7 +294,7 @@ public class CeleryConverter extends CommonTreeVisitor {
 		String memberList = className + "_Members";
 
 		Expression[] tables = new Expression[requiredMembersListSize];
-		for (int i = 0; i < requiredMembersListSize; i++) {
+		for(int i = 0; i < requiredMembersListSize; i++) {
 			tables[i] = grammar.newExists(requiredMembersList.get(i));
 		}
 
@@ -318,7 +320,7 @@ public class CeleryConverter extends CommonTreeVisitor {
 		Expression[] choice = new Expression[requiredListSize + 1];
 		String impliedChoiceRuleName = className + "_imp";
 		genImpliedChoice(impliedChoiceRuleName);
-		for (int i = 0; i < requiredListSize; i++) {
+		for(int i = 0; i < requiredListSize; i++) {
 			String memberName = requiredMembersList.get(i);
 			choice[i] = grammar.newSequence(grammar.newNot(grammar.newIsSymbol(memberName)),
 					grammar.newDefSymbol(memberName, grammar.newNonTerminal(memberName)));
@@ -331,7 +333,7 @@ public class CeleryConverter extends CommonTreeVisitor {
 	private final void genImpliedChoice(String ruleName) {
 		Expression[] l = new Expression[impliedMemebersList.size()];
 		int choiceCount = 0;
-		for (String nonTerminalSymbol : impliedMemebersList) {
+		for(String nonTerminalSymbol : impliedMemebersList) {
 			l[choiceCount++] = grammar.newNonTerminal(nonTerminalSymbol);
 		}
 		grammar.defineProduction(null, ruleName, grammar.newChoice(l));
@@ -358,7 +360,7 @@ public class CeleryConverter extends CommonTreeVisitor {
 		String memberList = rootClassName + "_Members";
 
 		Expression[] tables = new Expression[requiredMembersListSize];
-		for (int i = 0; i < requiredMembersListSize; i++) {
+		for(int i = 0; i < requiredMembersListSize; i++) {
 			tables[i] = grammar.newExists(requiredMembersList.get(i));
 		}
 
@@ -377,7 +379,7 @@ public class CeleryConverter extends CommonTreeVisitor {
 
 	private final void correctClassNames(CommonTree node) {
 		int index = 0;
-		for (CommonTree classNode : node) {
+		for(CommonTree classNode : node) {
 			String className = classNode.textAt(0, null);
 			classNameMap.put(className, index++);
 		}
@@ -396,20 +398,19 @@ public class CeleryConverter extends CommonTreeVisitor {
 
 	private final int[][] permute(int listLength) {
 		int[] target = new int[listLength];
-		for (int i = 0; i < target.length; i++) {
+		for(int i = 0; i < target.length; i++) {
 			target[i] = i;
 		}
 		PermutationGen permGen = new PermutationGen(target);
 		return permGen.getPermList();
 	}
 
-	private final Expression _SPACING(){
+	private final Expression _SPACING() {
 		return grammar.newNonTerminal("SPACING");
 	}
 
 	private final Expression _DQuoat() {
 		return grammar.newByteChar('"');
 	}
-
 
 }

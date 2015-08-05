@@ -14,12 +14,14 @@ import nez.util.ConsoleUtils;
 public class Konoha extends TreeTransducer {
 	KonohaTransducer konoha;
 	Grammar grammar;
+
 	public Konoha() {
 		this.grammar = newKonohaGrammar();
 		this.konoha = new KonohaTransducer(this);
 	}
 
 	private static GrammarFile konohaGrammar = null;
+
 	public final static Grammar newKonohaGrammar() {
 		if(konohaGrammar == null) {
 			try {
@@ -31,11 +33,11 @@ public class Konoha extends TreeTransducer {
 		}
 		return konohaGrammar.newGrammar("File");
 	}
-	
+
 	/* begin of tree transducer */
-	
+
 	static final Tag Expression = Tag.tag("node");
-	
+
 	@Override
 	public Object newNode(Tag tag, Source s, long spos, long epos, int size, Object value) {
 		return new KonohaTree(tag == null ? Expression : tag, s, spos, (int)(epos - spos), size, value);
@@ -54,7 +56,7 @@ public class Konoha extends TreeTransducer {
 	@Override
 	public void abort(Object node) {
 	}
-	
+
 	/* end of tree transducer */
 
 	public boolean loadFile(KonohaTransducer konoha, String path) {
@@ -72,21 +74,21 @@ public class Konoha extends TreeTransducer {
 		}
 		return false;
 	}
-		
+
 	public void parse(KonohaTransducer konoha, String urn, int linenum, String text) {
 		SourceContext source = SourceContext.newStringSourceContext(urn, linenum, text);
 		KonohaTree node = (KonohaTree)grammar.parse(source, this);
 		if(node == null) {
 			ConsoleUtils.println(source.getSyntaxErrorMessage());
 		}
-		System.out.println("parsed:\n"+node+"\n");
+		System.out.println("parsed:\n" + node + "\n");
 		konoha.eval(node);
 	}
-	
+
 	public KonohaTransducer newKonohaTransducer() {
 		return new KonohaTransducer(this);
 	}
-	
+
 	public void shell() {
 		ConsoleUtils.println("Konoha" + "-" + "5.0" + " (" + "Nez" + ") on Java JVM-" + System.getProperty("java.version"));
 		ConsoleUtils.println("Copyright (c) 2014-2015, Nez project authors");
@@ -118,6 +120,5 @@ public class Konoha extends TreeTransducer {
 			sb.append("\n");
 		}
 	}
-
 
 }

@@ -14,7 +14,7 @@ import nez.util.StringUtils;
 import nez.util.UList;
 
 class CommandContext {
-	
+
 	public CommandContext(String[] args) {
 		this.parseCommandOption(args);
 	}
@@ -29,11 +29,11 @@ class CommandContext {
 
 	// --option
 	private NezOption option = new NezOption(); // default
-	
+
 	public final NezOption getNezOption() {
 		return this.option;
 	}
-	
+
 	// -s, --start
 	private String startingProduction = "File"; // default
 
@@ -72,11 +72,11 @@ class CommandContext {
 		ConsoleUtils.println("  --verbose:memo             Printing Memoization information");
 		ConsoleUtils.println("  -X <class>                 Specify an extension class");
 		ConsoleUtils.println("");
-//		ConsoleUtils.println("The most commonly used nez commands are:");
-//		Command.showList();
+		// ConsoleUtils.println("The most commonly used nez commands are:");
+		// Command.showList();
 		ConsoleUtils.exit(0, Message);
 	}
-	
+
 	public void parseCommandOption(String[] args) {
 		int index = 0;
 		if(args.length > 0) {
@@ -85,7 +85,7 @@ class CommandContext {
 				index = 1;
 			}
 		}
-		while (index < args.length) {
+		while(index < args.length) {
 			String argument = args[index];
 			if(!argument.startsWith("-")) {
 				break;
@@ -94,10 +94,11 @@ class CommandContext {
 			if(argument.equals("-X") && (index < args.length)) {
 				try {
 					Class<?> c = Class.forName(args[index]);
-//					if(ParsingWriter.class.isAssignableFrom(c)) {
-//						OutputWriterClass = c;
-//					}
-				} catch (ClassNotFoundException e) {
+					// if(ParsingWriter.class.isAssignableFrom(c)) {
+					// OutputWriterClass = c;
+					// }
+				}
+				catch(ClassNotFoundException e) {
 					ConsoleUtils.exit(1, "-X specified class is not found: " + args[index]);
 				}
 				index = index + 1;
@@ -117,7 +118,7 @@ class CommandContext {
 			}
 			else if((argument.equals("-i") || argument.equals("--input")) && (index < args.length)) {
 				inputFileLists = new UList<String>(new String[4]);
-				while (index < args.length && !args[index].startsWith("-")) {
+				while(index < args.length && !args[index].startsWith("-")) {
 					inputFileLists.add(args[index]);
 					index = index + 1;
 					InputFileIndex = 0;
@@ -137,63 +138,63 @@ class CommandContext {
 			else if(argument.startsWith("--option:")) {
 				String s = argument.substring(9);
 				this.option.setOption(s);
-			}			
-//			else if(argument.startsWith("--memo")) {
-//				if(argument.equals("--memo:none")) {
-//					this.option.setOption("memo", false);
-//				}
-//				else if(argument.equals("--memo:packrat")) {
-//					this.option.setOption("packrat", false);
-//					this.option.setOption("packrat", true);
-//				}
-//				else {
-//					int w = StringUtils.parseInt(argument.substring(7), -1);
-//					if(w >= 0) {
-//						WindowSize = w;
-//					}
-//					else {
-//						showUsage("unknown option: " + argument);
-//					}
-//				}
-//			}
-//			else if(argument.startsWith("--enable:")) {
-//				if(argument.endsWith("packrat")) {
-//					this.NezOption |= nez.NezOption.PackratParsing;
-//					defaultTable = MemoTable.newPackratHashTable(0, 0, 0);
-//				}
-//				else if(argument.endsWith(":prediction") || argument.endsWith(":predict")) {
-//					this.NezOption |= nez.NezOption.Prediction;
-//				}
-//				else if(argument.endsWith(":tracing") || argument.endsWith(":trace")) {
-//					this.NezOption |= nez.NezOption.Tracing;
-//				}
-//				else if(argument.endsWith(":inline")) {
-//					this.NezOption |= nez.NezOption.Inlining;
-//				}
-//				else if(argument.endsWith(":dfa")) {
-//					this.NezOption |= nez.NezOption.DFA;
-//				}
-//				else if(argument.endsWith(":log")) {
-//					RecorderFileName = "nezrec.csv"; // -Xrec
-//				}
-//			}
-//			else if(argument.startsWith("--disable:")) {
-//				if(argument.endsWith(":packrat") || argument.endsWith(":memo")) {
-//					this.NezOption = UFlag.unsetFlag(this.NezOption, nez.NezOption.PackratParsing);
-//				}
-//				else if(argument.endsWith(":tracing") || argument.endsWith(":trace")) {
-//					this.NezOption = UFlag.unsetFlag(this.NezOption, nez.NezOption.Tracing);
-//				}
-//				else if(argument.endsWith(":prediction") || argument.endsWith(":predict")) {
-//					this.NezOption = UFlag.unsetFlag(this.NezOption, nez.NezOption.Prediction);
-//				}
-//				else if(argument.endsWith(":inline")) {
-//					this.NezOption = UFlag.unsetFlag(this.NezOption, nez.NezOption.Inlining);
-//				}
-//				else if(argument.endsWith(":dfa")) {
-//					this.NezOption = UFlag.unsetFlag(this.NezOption, nez.NezOption.DFA);
-//				}
-//			}
+			}
+			// else if(argument.startsWith("--memo")) {
+			// if(argument.equals("--memo:none")) {
+			// this.option.setOption("memo", false);
+			// }
+			// else if(argument.equals("--memo:packrat")) {
+			// this.option.setOption("packrat", false);
+			// this.option.setOption("packrat", true);
+			// }
+			// else {
+			// int w = StringUtils.parseInt(argument.substring(7), -1);
+			// if(w >= 0) {
+			// WindowSize = w;
+			// }
+			// else {
+			// showUsage("unknown option: " + argument);
+			// }
+			// }
+			// }
+			// else if(argument.startsWith("--enable:")) {
+			// if(argument.endsWith("packrat")) {
+			// this.NezOption |= nez.NezOption.PackratParsing;
+			// defaultTable = MemoTable.newPackratHashTable(0, 0, 0);
+			// }
+			// else if(argument.endsWith(":prediction") || argument.endsWith(":predict")) {
+			// this.NezOption |= nez.NezOption.Prediction;
+			// }
+			// else if(argument.endsWith(":tracing") || argument.endsWith(":trace")) {
+			// this.NezOption |= nez.NezOption.Tracing;
+			// }
+			// else if(argument.endsWith(":inline")) {
+			// this.NezOption |= nez.NezOption.Inlining;
+			// }
+			// else if(argument.endsWith(":dfa")) {
+			// this.NezOption |= nez.NezOption.DFA;
+			// }
+			// else if(argument.endsWith(":log")) {
+			// RecorderFileName = "nezrec.csv"; // -Xrec
+			// }
+			// }
+			// else if(argument.startsWith("--disable:")) {
+			// if(argument.endsWith(":packrat") || argument.endsWith(":memo")) {
+			// this.NezOption = UFlag.unsetFlag(this.NezOption, nez.NezOption.PackratParsing);
+			// }
+			// else if(argument.endsWith(":tracing") || argument.endsWith(":trace")) {
+			// this.NezOption = UFlag.unsetFlag(this.NezOption, nez.NezOption.Tracing);
+			// }
+			// else if(argument.endsWith(":prediction") || argument.endsWith(":predict")) {
+			// this.NezOption = UFlag.unsetFlag(this.NezOption, nez.NezOption.Prediction);
+			// }
+			// else if(argument.endsWith(":inline")) {
+			// this.NezOption = UFlag.unsetFlag(this.NezOption, nez.NezOption.Inlining);
+			// }
+			// else if(argument.endsWith(":dfa")) {
+			// this.NezOption = UFlag.unsetFlag(this.NezOption, nez.NezOption.DFA);
+			// }
+			// }
 			else if(argument.startsWith("--verbose")) {
 				if(argument.equals("--verbose:example")) {
 					Verbose.Example = true;
@@ -229,7 +230,7 @@ class CommandContext {
 			}
 		}
 	}
-	
+
 	public final static String LoaderPoint = "nez.main.LC";
 
 	public final Command getCommand() {
@@ -237,14 +238,14 @@ class CommandContext {
 		try {
 			Class<?> c = Class.forName(LoaderPoint + commandName);
 			cmd = (Command)c.newInstance();
-		} 
-		catch (ClassNotFoundException e) {
+		}
+		catch(ClassNotFoundException e) {
 
-		} 
-		catch (InstantiationException e) {
+		}
+		catch(InstantiationException e) {
 			Verbose.traceException(e);
 		}
-		catch (IllegalAccessException e) {
+		catch(IllegalAccessException e) {
 			Verbose.traceException(e);
 		}
 		if(cmd == null) {
@@ -255,23 +256,26 @@ class CommandContext {
 		}
 		return cmd;
 	}
-	
+
 	class GrammarCommand extends Command {
 		NezGenerator gen;
+
 		@Override
 		public String getDesc() {
 			return "parser generator";
 		}
+
 		GrammarCommand(NezGenerator gen) {
 			this.gen = gen;
 		}
+
 		@Override
 		public void exec(CommandContext config) {
 			Grammar g = config.getGrammar();
 			gen.generate(g, option, OutputFileName);
 		}
 	}
-	
+
 	public final GrammarFile getGrammarFile(boolean grammarFileCreation) {
 		if(grammarFile != null) {
 			if(grammarFile.equals("nez")) {
@@ -279,14 +283,15 @@ class CommandContext {
 			}
 			try {
 				return GrammarFile.loadGrammarFile(grammarFile, option);
-			} catch (IOException e) {
+			}
+			catch(IOException e) {
 				ConsoleUtils.exit(1, "cannot open " + grammarFile + "; " + e.getMessage());
 			}
 		}
-//		if(GrammarText != null) {
-//			NezParser p = new NezParser();
-//			return p.loadGrammarFile(SourceContext.newStringContext(GrammarText), new GrammarChecker(this.CheckerLevel));
-//		}
+		// if(GrammarText != null) {
+		// NezParser p = new NezParser();
+		// return p.loadGrammarFile(SourceContext.newStringContext(GrammarText), new GrammarChecker(this.CheckerLevel));
+		// }
 		if(grammarFileCreation) {
 			return GrammarFile.newGrammarFile(option);
 		}
@@ -323,8 +328,8 @@ class CommandContext {
 
 	public final boolean hasInputSource() {
 		if(this.InputFileIndex == -1) {
-//			this.inputText = ConsoleUtils.readMultiLine(">>> ", "... ");
-//			return this.inputText != null;
+			// this.inputText = ConsoleUtils.readMultiLine(">>> ", "... ");
+			// return this.inputText != null;
 			return false;
 		}
 		return this.inputText != null || this.InputFileIndex < this.inputFileLists.size();
@@ -350,7 +355,8 @@ class CommandContext {
 			this.InputFileIndex++;
 			try {
 				return SourceContext.newFileContext(f);
-			} catch (IOException e) {
+			}
+			catch(IOException e) {
 				ConsoleUtils.exit(1, "cannot open: " + f);
 			}
 		}

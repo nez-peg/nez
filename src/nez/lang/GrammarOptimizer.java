@@ -7,14 +7,13 @@ import nez.util.UList;
 
 public class GrammarOptimizer extends GrammarReshaper {
 	/* local optimizer option */
-	boolean enabledCommonLeftFactoring = true; //true;
-	boolean enabledCostBasedReduction  = true;
-	boolean enabledOutOfOrder = false;   // bugs!!
+	boolean enabledCommonLeftFactoring = true; // true;
+	boolean enabledCostBasedReduction = true;
+	boolean enabledOutOfOrder = false; // bugs!!
 
 	NezOption option;
-	HashMap<String,String> optimizedMap = new HashMap<String,String>();
-	
-	
+	HashMap<String, String> optimizedMap = new HashMap<String, String>();
+
 	public GrammarOptimizer(NezOption option) {
 		this.option = option;
 		if(option.enabledPrediction) {
@@ -33,17 +32,17 @@ public class GrammarOptimizer extends GrammarReshaper {
 		}
 		return p.getExpression();
 	}
-	
+
 	private void rewrite_outoforder(Expression e, Expression e2) {
-		//Verbose.debug("out-of-order " + e + " <==> " + e2);
+		// Verbose.debug("out-of-order " + e + " <==> " + e2);
 	}
 
 	private void rewrite(String msg, Expression e, Expression e2) {
-		//Verbose.debug(msg + " " + e + "\n\t=>" + e2);
+		// Verbose.debug(msg + " " + e + "\n\t=>" + e2);
 	}
 
 	private void rewrite_common(Expression e, Expression e2, Expression e3) {
-		//Verbose.debug("common (" + e + " / " + e2 + ")\n\t=>" + e3);
+		// Verbose.debug("common (" + e + " / " + e2 + ")\n\t=>" + e3);
 	}
 
 	// used to test inlining
@@ -75,7 +74,7 @@ public class GrammarOptimizer extends GrammarReshaper {
 		}
 		return n;
 	}
-	
+
 	private boolean isOutOfOrderExpression(Expression e) {
 		if(e instanceof Tagging) {
 			return true;
@@ -84,26 +83,26 @@ public class GrammarOptimizer extends GrammarReshaper {
 			return true;
 		}
 		if(e instanceof New && !e.isInterned()) {
-			((New) e).shift -= 1;
+			((New)e).shift -= 1;
 			return true;
 		}
 		if(e instanceof Capture && !e.isInterned()) {
-			((Capture) e).shift -= 1;
+			((Capture)e).shift -= 1;
 			return true;
 		}
 		return false;
 	}
-	
+
 	@Override
 	public Expression reshapeSequence(Sequence p) {
 		Expression first = p.getFirst().reshape(this);
-		Expression next  = p.getNext().reshape(this);
+		Expression next = p.getNext().reshape(this);
 		if(this.enabledOutOfOrder && !p.isInterned()) {
 			if(next instanceof Sequence) {
 				Sequence nextSequence = (Sequence)next;
 				if(isSingleCharacter(nextSequence.first) && isOutOfOrderExpression(first)) {
 					rewrite_outoforder(first, nextSequence.first);
-					Expression temp = nextSequence.first; 
+					Expression temp = nextSequence.first;
 					nextSequence.first = first;
 					first = temp;
 				}
@@ -111,9 +110,9 @@ public class GrammarOptimizer extends GrammarReshaper {
 			else {
 				if(isSingleCharacter(next) && isOutOfOrderExpression(first)) {
 					rewrite_outoforder(first, next);
-					Expression temp = first; 
+					Expression temp = first;
 					first = next;
-					next  = temp;
+					next = temp;
 				}
 			}
 		}
@@ -126,14 +125,14 @@ public class GrammarOptimizer extends GrammarReshaper {
 		}
 		return p.newSequence(first, next);
 	}
-	
+
 	private boolean isNotChar(Expression p) {
 		if(p instanceof Not) {
 			return (p.get(0) instanceof ByteMap || p.get(0) instanceof ByteChar);
 		}
 		return false;
 	}
-	
+
 	private Expression convertBitMap(Expression next, Expression not) {
 		boolean[] bany = null;
 		boolean isBinary = false;
@@ -186,15 +185,16 @@ public class GrammarOptimizer extends GrammarReshaper {
 		}
 		return e;
 	}
-	
+
+	@Override
 	public Expression reshapeLink(Link p) {
 		if(p.get(0) instanceof Choice) {
 			Expression inner = p.get(0);
 			UList<Expression> l = new UList<Expression>(new Expression[inner.size()]);
-			for(Expression subChoice: inner) {
+			for(Expression subChoice : inner) {
 				subChoice = subChoice.reshape(this);
 				l.add(GrammarFactory.newLink(p.getSourcePosition(), subChoice, p.index));
-			}			
+			}
 			return inner.newChoice(l);
 		}
 		return super.reshapeLink(p);
@@ -227,7 +227,7 @@ public class GrammarOptimizer extends GrammarReshaper {
 			}
 			if(option.enabledPrediction) {
 				int count = 0;
-				int selected = 0;				
+				int selected = 0;
 				p.predictedCase = new Expression[257];
 				Expression singleChoice = null;
 				for(int ch = 0; ch <= 255; ch++) {
@@ -235,7 +235,7 @@ public class GrammarOptimizer extends GrammarReshaper {
 					p.predictedCase[ch] = predicted;
 					if(predicted != null) {
 						singleChoice = predicted;
-						count ++;
+						count++;
 						if(predicted instanceof Choice) {
 							selected += predicted.size();
 						}
@@ -245,7 +245,7 @@ public class GrammarOptimizer extends GrammarReshaper {
 					}
 				}
 				double reduced = (double)selected / count;
-				//Verbose.debug("reduced: " + choiceList.size() + " => " + reduced);
+				// Verbose.debug("reduced: " + choiceList.size() + " => " + reduced);
 				if(count == 1 && singleChoice != null) {
 					rewrite("choice-single", p, singleChoice);
 					return singleChoice;
@@ -262,14 +262,14 @@ public class GrammarOptimizer extends GrammarReshaper {
 				((Choice)c).isFlatten = true;
 				((Choice)c).predictedCase = p.predictedCase;
 			}
-			//rewrite("flatten", p, c);
+			// rewrite("flatten", p, c);
 			return c;
 		}
 		return p;
 	}
-	
+
 	private void flattenChoiceList(Choice parentExpression, UList<Expression> l) {
-		for(Expression subExpression: parentExpression) {
+		for(Expression subExpression : parentExpression) {
 			subExpression = resolveNonTerminal(subExpression);
 			if(subExpression instanceof Choice) {
 				flattenChoiceList((Choice)subExpression, l);
@@ -277,13 +277,13 @@ public class GrammarOptimizer extends GrammarReshaper {
 			else {
 				subExpression = subExpression.reshape(this);
 				if(l.size() > 0 && this.enabledCommonLeftFactoring) {
-					Expression lastExpression = l.ArrayValues[l.size()-1];
+					Expression lastExpression = l.ArrayValues[l.size() - 1];
 					Expression first = lastExpression.getFirst();
 					if(first.equalsExpression(subExpression.getFirst())) {
 						Expression next = lastExpression.newChoice(lastExpression.getNext(), subExpression.getNext());
 						Expression common = lastExpression.newSequence(first, next);
 						rewrite_common(lastExpression, subExpression, common);
-						l.ArrayValues[l.size()-1] = common;
+						l.ArrayValues[l.size() - 1] = common;
 						continue;
 					}
 				}
@@ -291,17 +291,17 @@ public class GrammarOptimizer extends GrammarReshaper {
 			}
 		}
 	}
-	
+
 	public final static Expression resolveNonTerminal(Expression e) {
 		while(e instanceof NonTerminal) {
-			NonTerminal nterm = (NonTerminal) e;
+			NonTerminal nterm = (NonTerminal)e;
 			e = nterm.deReference();
 		}
 		return e;
 	}
 
 	// OptimizerLibrary
-	
+
 	private Expression convertByteMap(Choice choice, UList<Expression> choiceList) {
 		boolean byteMap[] = ByteMap.newMap(false);
 		boolean binary = false;
@@ -310,15 +310,15 @@ public class GrammarOptimizer extends GrammarReshaper {
 				continue;
 			}
 			if(e instanceof ByteChar) {
-				byteMap[((ByteChar) e).byteChar] = true;
-				if(((ByteChar) e).isBinary()) {
+				byteMap[((ByteChar)e).byteChar] = true;
+				if(((ByteChar)e).isBinary()) {
 					binary = true;
 				}
 				continue;
 			}
 			if(e instanceof ByteMap) {
 				ByteMap.appendBitMap(byteMap, ((ByteMap)e).byteMap);
-				if(((ByteMap) e).isBinary()) {
+				if(((ByteMap)e).isBinary()) {
 					binary = true;
 				}
 				continue;
@@ -333,12 +333,12 @@ public class GrammarOptimizer extends GrammarReshaper {
 		}
 		return choice.newByteMap(binary, byteMap);
 	}
-	
+
 	private Expression selectChoice(Choice choice, UList<Expression> choiceList, int ch) {
 		Expression first = null;
 		UList<Expression> newChoiceList = null;
 		boolean commonPrifixed = false;
-		for(Expression p: choiceList) {
+		for(Expression p : choiceList) {
 			short r = p.acceptByte(ch);
 			if(r == PossibleAcceptance.Reject) {
 				continue;
@@ -355,14 +355,14 @@ public class GrammarOptimizer extends GrammarReshaper {
 					continue;
 				}
 				newChoiceList = new UList<Expression>(new Expression[2]);
-				newChoiceList.add(first);				
+				newChoiceList.add(first);
 				newChoiceList.add(p);
 			}
 			else {
-				Expression last = newChoiceList.ArrayValues[newChoiceList.size()-1];
+				Expression last = newChoiceList.ArrayValues[newChoiceList.size() - 1];
 				Expression common = tryCommonFactoring(choice, last, p, true);
 				if(common != null) {
-					newChoiceList.ArrayValues[newChoiceList.size()-1] = common;
+					newChoiceList.ArrayValues[newChoiceList.size() - 1] = common;
 					continue;
 				}
 				newChoiceList.add(p);
@@ -373,7 +373,7 @@ public class GrammarOptimizer extends GrammarReshaper {
 		}
 		return commonPrifixed == true ? first.reshape(this) : first;
 	}
-		
+
 	public final static Expression tryCommonFactoring(Choice base, Expression e, Expression e2, boolean ignoredFirstChar) {
 		UList<Expression> l = null;
 		while(e != null && e2 != null) {
@@ -399,7 +399,7 @@ public class GrammarOptimizer extends GrammarReshaper {
 			l.add(f);
 			e = e.getNext();
 			e2 = e2.getNext();
-			//System.out.println("l="+l.size()+",e="+e);
+			// System.out.println("l="+l.size()+",e="+e);
 		}
 		if(l == null) {
 			return null;
@@ -409,10 +409,10 @@ public class GrammarOptimizer extends GrammarReshaper {
 		}
 		if(e2 == null) {
 			e2 = base.newEmpty();
-		}		
+		}
 		Expression alt = base.newChoice(e, e2);
 		l.add(alt);
 		return base.newSequence(l);
 	}
-	
+
 }

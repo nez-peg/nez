@@ -2,14 +2,11 @@ package nez.util;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 
 import jline.ConsoleReader;
-
 
 public class ConsoleUtils {
 
@@ -17,7 +14,7 @@ public class ConsoleUtils {
 		ConsoleUtils.println("EXIT " + message);
 		System.exit(status);
 	}
-	
+
 	public final static void println(Object s) {
 		System.out.println(s);
 	}
@@ -33,10 +30,11 @@ public class ConsoleUtils {
 	public static void notice(String message) {
 		System.out.println("NOTICE: " + message);
 	}
-	
+
 	// console
-	
+
 	private static Object console = null;
+
 	public final static Object getConsoleReader() {
 		if(console == null) {
 			try {
@@ -48,7 +46,7 @@ public class ConsoleUtils {
 		}
 		return console;
 	}
-	
+
 	@SuppressWarnings("resource")
 	public final static String readSingleLine(Object console, String prompt) {
 		if(!(console instanceof Scanner)) {
@@ -78,7 +76,7 @@ public class ConsoleUtils {
 			}
 		}
 	}
-	
+
 	public final static void addCompleter(List<String> list) {
 		Object con = getConsoleReader();
 		if(con != null) {
@@ -86,18 +84,18 @@ public class ConsoleUtils {
 				Class<?> c = Class.forName("jline.console.completer.StringsCompleter");
 				Constructor<?> nc = c.getConstructor(Collection.class);
 				Method m = con.getClass().getMethod("addCompletor");
-				 m.invoke(con, nc.newInstance(list));
-				 return;
+				m.invoke(con, nc.newInstance(list));
+				return;
 			}
 			catch(Exception e) {
 			}
 			try {
-//				Class<?> c = Class.forName("jline.SimpleCompletor");
-//				Constructor<?> nc = c.getConstructor(String[].class);
-//				Method m = console.getClass().getMethod("addCompletor", jline.Completor.class);
+				// Class<?> c = Class.forName("jline.SimpleCompletor");
+				// Constructor<?> nc = c.getConstructor(String[].class);
+				// Method m = console.getClass().getMethod("addCompletor", jline.Completor.class);
 				String[] s = list.toArray(new String[list.size()]);
 				((ConsoleReader)con).addCompletor(new jline.SimpleCompletor(s));
-				//m.invoke(console, nc.newInstance((Object[])s));
+				// m.invoke(console, nc.newInstance((Object[])s));
 			}
 			catch(Exception e) {
 				e.printStackTrace();

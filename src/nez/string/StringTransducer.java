@@ -1,14 +1,13 @@
 package nez.string;
 
-
 import nez.ast.AbstractTree;
 import nez.ast.Tag;
 import nez.util.StringUtils;
 
 public class StringTransducer {
-	
+
 	StringTransducer next;
-		
+
 	protected <E extends AbstractTree<E>> void formatTo(AbstractTree<E> node, StringTransducerBuilder stream) {
 		stream.write(node.getText());
 	}
@@ -21,13 +20,13 @@ public class StringTransducer {
 		}
 	}
 
-	// 
-	
-	private static final Tag FormatTag  = Tag.tag("Format");
-	private static final Tag NameTag    = Tag.tag("Name");
-	private static final Tag ListTag    = Tag.tag("List");
-	private static final Tag IntTag     = Tag.tag("Integer");
-	
+	//
+
+	private static final Tag FormatTag = Tag.tag("Format");
+	private static final Tag NameTag = Tag.tag("Name");
+	private static final Tag ListTag = Tag.tag("List");
+	private static final Tag IntTag = Tag.tag("Integer");
+
 	public final static <E extends AbstractTree<E>> StringTransducer parseStringTransducer(AbstractTree<E> node) {
 		if(node.is(NameTag)) {
 			return newActionStringTransducer(node.getText());
@@ -56,11 +55,14 @@ public class StringTransducer {
 
 	public final static <E extends AbstractTree<E>> StringTransducer newActionStringTransducer(String command) {
 		switch(command) {
-			case "NL"  : return new IndentAction();
-			case "inc" : return new IncAction();
-			case "dec" : return new DecAction();
+		case "NL":
+			return new IndentAction();
+		case "inc":
+			return new IncAction();
+		case "dec":
+			return new DecAction();
 		}
-		return new TextualStringTransducer("${"+command+"}");
+		return new TextualStringTransducer("${" + command + "}");
 	}
 
 }

@@ -31,7 +31,7 @@ public class LCast extends Command {
 			new CommonTreeWriter().transform(config.getOutputFileName(source), node);
 		}
 	}
-	
+
 	private void record(NezProfier prof, CommonTree node) {
 		if(prof != null) {
 			System.gc();
@@ -44,5 +44,3 @@ public class LCast extends Command {
 	}
 
 }
-
-

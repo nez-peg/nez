@@ -3,10 +3,10 @@ package nez.string;
 import nez.ast.AbstractTree;
 
 public class StringTransducerCombinator {
-	public StringTransducer make(StringTransducer ... list) {
+	public StringTransducer make(StringTransducer... list) {
 		StringTransducer head = null;
 		StringTransducer prev = null;
-		for(StringTransducer st:  list) {
+		for(StringTransducer st : list) {
 			if(head == null) {
 				head = st;
 				prev = head;
@@ -18,7 +18,7 @@ public class StringTransducerCombinator {
 		}
 		return head;
 	}
-	
+
 	public StringTransducer S(String text) {
 		return new TextualStringTransducer(text);
 	}
@@ -54,9 +54,11 @@ public class StringTransducerCombinator {
 
 class TextualStringTransducer extends StringTransducer {
 	final String text;
+
 	TextualStringTransducer(String text) {
 		this.text = text;
 	}
+
 	@Override
 	protected <E extends AbstractTree<E>> void formatTo(AbstractTree<E> node, StringTransducerBuilder stream) {
 		stream.write(text);
@@ -65,12 +67,15 @@ class TextualStringTransducer extends StringTransducer {
 
 class NodeStringTransducer extends StringTransducer {
 	final int index;
+
 	NodeStringTransducer(int index) {
 		this.index = index;
 	}
+
 	public static int index(int index, int size) {
-		return (index < 0) ? size + index + 1: index;
+		return (index < 0) ? size + index + 1 : index;
 	}
+
 	@Override
 	protected <E extends AbstractTree<E>> void formatTo(AbstractTree<E> node, StringTransducerBuilder stream) {
 		int size = node.size();
@@ -87,11 +92,13 @@ class RangeNodeStringTransducer extends StringTransducer {
 	int start;
 	StringTransducer delim;
 	int end;
+
 	RangeNodeStringTransducer(int s, StringTransducer delim, int e) {
 		this.start = s;
 		this.delim = delim;
 		this.end = e;
 	}
+
 	@Override
 	protected <E extends AbstractTree<E>> void formatTo(AbstractTree<E> node, StringTransducerBuilder stream) {
 		int size = node.size();

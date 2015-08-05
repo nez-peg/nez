@@ -5,23 +5,23 @@ import java.util.List;
 
 import nez.lang.Expression;
 
-
 public abstract class Instruction {
 	Opcode op;
 	Expression expr;
 	BasicBlock bb;
+
 	public Instruction(Expression expr, BasicBlock bb) {
 		this.expr = expr;
 		this.bb = bb;
 		this.bb.append(this);
 	}
-	
+
 	public Instruction(Expression expr) {
 		this.expr = expr;
 	}
-	
+
 	protected abstract void stringfy(StringBuilder sb);
-	
+
 	@Override
 	public abstract String toString();
 }
@@ -46,6 +46,7 @@ class EXIT extends Instruction {
 class CALL extends Instruction {
 	String ruleName;
 	int jumpIndex;
+
 	public CALL(Expression expr, BasicBlock bb, String ruleName) {
 		super(expr, bb);
 		this.op = Opcode.CALL;
@@ -83,11 +84,12 @@ class RET extends Instruction {
 
 abstract class JumpInstruction extends Instruction {
 	BasicBlock jump;
+
 	public JumpInstruction(Expression expr, BasicBlock bb, BasicBlock jump) {
 		super(expr, bb);
 		this.jump = jump;
 	}
-	
+
 	public BasicBlock getJumpPoint() {
 		return jump;
 	}
@@ -113,6 +115,7 @@ class JUMP extends JumpInstruction {
 
 class CONDBRANCH extends JumpInstruction {
 	int val;
+
 	public CONDBRANCH(Expression expr, BasicBlock bb, BasicBlock jump, int val) {
 		super(expr, bb, jump);
 		this.op = Opcode.CONDBRANCH;
@@ -121,7 +124,7 @@ class CONDBRANCH extends JumpInstruction {
 
 	@Override
 	protected void stringfy(StringBuilder sb) {
-		if (this.bb.func.funcName.equals("ATTRIBUTECONTENT")) {
+		if(this.bb.func.funcName.equals("ATTRIBUTECONTENT")) {
 			System.out.println(this.bb.func.indexOf(this.bb));
 		}
 		sb.append("  CONDBRANCH ");
@@ -155,35 +158,36 @@ class REPCOND extends JumpInstruction {
 
 abstract class MatchingInstruction extends Instruction {
 	List<Integer> cdata;
-	public MatchingInstruction(Expression expr, BasicBlock bb, int ...cdata) {
+
+	public MatchingInstruction(Expression expr, BasicBlock bb, int... cdata) {
 		super(expr, bb);
-		this.cdata = new ArrayList<Integer>(); 
+		this.cdata = new ArrayList<Integer>();
 		for(int i = 0; i < cdata.length; i++) {
 			this.cdata.add(cdata[i]);
 		}
 	}
-	
-	public MatchingInstruction(Expression expr, int ...cdata) {
+
+	public MatchingInstruction(Expression expr, int... cdata) {
 		super(expr);
-		this.cdata = new ArrayList<Integer>(); 
+		this.cdata = new ArrayList<Integer>();
 		for(int i = 0; i < cdata.length; i++) {
 			this.cdata.add(cdata[i]);
 		}
 	}
-	
+
 	public MatchingInstruction(Expression expr, BasicBlock bb) {
 		super(expr, bb);
-		this.cdata = new ArrayList<Integer>(); 
+		this.cdata = new ArrayList<Integer>();
 	}
-	
+
 	public int size() {
 		return this.cdata.size();
 	}
-	
+
 	public int getc(int index) {
 		return this.cdata.get(index);
 	}
-	
+
 	public void append(int c) {
 		this.cdata.add(c);
 	}
@@ -191,21 +195,22 @@ abstract class MatchingInstruction extends Instruction {
 
 abstract class JumpMatchingInstruction extends MatchingInstruction {
 	BasicBlock jump;
-	public JumpMatchingInstruction(Expression expr, BasicBlock bb, BasicBlock jump, int ...cdata ) {
+
+	public JumpMatchingInstruction(Expression expr, BasicBlock bb, BasicBlock jump, int... cdata) {
 		super(expr, bb, cdata);
 		this.jump = jump;
 	}
-	
-	public JumpMatchingInstruction(Expression expr, BasicBlock jump, int ...cdata ) {
+
+	public JumpMatchingInstruction(Expression expr, BasicBlock jump, int... cdata) {
 		super(expr, cdata);
 		this.jump = jump;
 	}
-	
+
 	public JumpMatchingInstruction(Expression expr, BasicBlock bb, BasicBlock jump) {
 		super(expr, bb);
 		this.jump = jump;
 	}
-	
+
 	public BasicBlock getJumpPoint() {
 		return jump;
 	}
@@ -266,7 +271,7 @@ class CHARSET extends JumpMatchingInstruction {
 }
 
 class STRING extends JumpMatchingInstruction {
-	public STRING(Expression expr, BasicBlock bb,  BasicBlock jump) {
+	public STRING(Expression expr, BasicBlock bb, BasicBlock jump) {
 		super(expr, bb, jump);
 		this.op = Opcode.STRING;
 	}
@@ -292,7 +297,7 @@ class STRING extends JumpMatchingInstruction {
 }
 
 class ANY extends JumpMatchingInstruction {
-	public ANY(Expression expr, BasicBlock bb, BasicBlock jump, int ...cdata) {
+	public ANY(Expression expr, BasicBlock bb, BasicBlock jump, int... cdata) {
 		super(expr, bb, jump, cdata);
 		this.op = Opcode.ANY;
 	}
@@ -418,6 +423,7 @@ class STOREo extends StackOperateInstruction {
 
 class STOREflag extends Instruction {
 	int val;
+
 	public STOREflag(Expression expr, BasicBlock bb, int val) {
 		super(expr, bb);
 		this.op = Opcode.STOREflag;
@@ -451,11 +457,12 @@ class NEW extends Instruction {
 	public String toString() {
 		return "NEW";
 	}
-	
+
 }
 
 class NEWJOIN extends Instruction {
 	int ndata;
+
 	public NEWJOIN(Expression expr, BasicBlock bb, int ndata) {
 		super(expr, bb);
 		this.op = Opcode.NEWJOIN;
@@ -471,11 +478,12 @@ class NEWJOIN extends Instruction {
 	@Override
 	public String toString() {
 		return "NEWJOIN " + this.ndata;
-	}	
+	}
 }
 
 class COMMIT extends Instruction {
 	int ndata;
+
 	public COMMIT(Expression expr, BasicBlock bb, int ndata) {
 		super(expr, bb);
 		this.op = Opcode.COMMIT;
@@ -530,6 +538,7 @@ class SETendp extends Instruction {
 
 class TAG extends Instruction {
 	String cdata;
+
 	public TAG(Expression expr, BasicBlock bb, String cdata) {
 		super(expr, bb);
 		this.op = Opcode.TAG;
@@ -550,6 +559,7 @@ class TAG extends Instruction {
 
 class VALUE extends Instruction {
 	String cdata;
+
 	public VALUE(Expression expr, BasicBlock bb, String cdata) {
 		super(expr, bb);
 		this.op = Opcode.VALUE;
@@ -570,6 +580,7 @@ class VALUE extends Instruction {
 
 class MAPPEDCHOICE extends Instruction {
 	List<BasicBlock> jumpList;
+
 	public MAPPEDCHOICE(Expression expr, BasicBlock bb) {
 		super(expr, bb);
 		this.op = Opcode.MAPPEDCHOICE;
@@ -585,7 +596,7 @@ class MAPPEDCHOICE extends Instruction {
 	public String toString() {
 		return "MAPPEDCHOICE";
 	}
-	
+
 	public MAPPEDCHOICE append(BasicBlock bb) {
 		this.jumpList.add(bb);
 		return this;
@@ -840,7 +851,7 @@ class NOTCHARANY extends JumpMatchingInstruction {
 		super(expr, jump, cdata);
 		this.op = Opcode.NOTCHARANY;
 	}
-	
+
 	public void addBasicBlock(int index, BasicBlock bb) {
 		this.bb = bb;
 		this.bb.add(index, this);

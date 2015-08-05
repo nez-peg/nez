@@ -19,11 +19,11 @@ class LCvalidate extends Command {
 
 		UList<String> failedInputs = new UList<String>(new String[4]);
 		UList<String> unconsumedInputs = new UList<String>(new String[4]);
-		
+
 		int totalCount = 0, failureCount = 0, unconsumedCount = 0;
 		long consumed = 0;
 		long time = 0;
-		
+
 		while(config.hasInputSource()) {
 			SourceContext file = config.nextInputSource();
 			totalCount++;
@@ -45,13 +45,13 @@ class LCvalidate extends Command {
 			time += (t2 - t);
 			g.logProfiler();
 		}
-		if(totalCount > 1){
+		if(totalCount > 1) {
 			Verbose.println(
 					totalCount + " files, " +
-					StringUtils.formatMPS(consumed, time) + " MiB/s, " + 
-					failureCount + " failed, " +
-					unconsumedCount + " uncosumed, " +
-					StringUtils.formatParcentage(totalCount - (unconsumedCount+failureCount), totalCount) + "% passed.");
+							StringUtils.formatMPS(consumed, time) + " MiB/s, " +
+							failureCount + " failed, " +
+							unconsumedCount + " uncosumed, " +
+							StringUtils.formatParcentage(totalCount - (unconsumedCount + failureCount), totalCount) + "% passed.");
 		}
 		if(unconsumedInputs.size() > 0) {
 			Verbose.println("unconsumed: " + unconsumedInputs);

@@ -67,7 +67,7 @@ public class NezDebugger {
 		boolean result = false;
 		showCurrentExpression();
 		try {
-			while (true) {
+			while(true) {
 				readLine("(nezdb) ");
 				command.exec(this);
 				if(code instanceof IExit) {
@@ -75,7 +75,8 @@ public class NezDebugger {
 				}
 				showCurrentExpression();
 			}
-		} catch (TerminationException e) {
+		}
+		catch(TerminationException e) {
 			result = e.status;
 		}
 		return result;
@@ -86,7 +87,7 @@ public class NezDebugger {
 	public void showCurrentExpression() {
 		Expression e = null;
 		if(code instanceof ICallPush) {
-			e = ((ICallPush) code).ne;
+			e = ((ICallPush)code).ne;
 		}
 		else {
 			e = code.getExpression();
@@ -106,7 +107,7 @@ public class NezDebugger {
 	}
 
 	private void readLine(String prompt) {
-		while (true) {
+		while(true) {
 			Object console = ConsoleUtils.getConsoleReader();
 			String line = ConsoleUtils.readSingleLine(console, prompt);
 			if(line == null || line.equals("")) {
@@ -211,7 +212,7 @@ public class NezDebugger {
 
 	public boolean exec(Print o) {
 		if(o.type == Print.printContext) {
-			Context ctx = (Context) sc;
+			Context ctx = sc;
 			if(o.code == null) {
 				ConsoleUtils.println("context {");
 				ConsoleUtils.println("  input_name = " + ctx.getResourceName());
@@ -227,7 +228,7 @@ public class NezDebugger {
 			}
 			else if(o.code.equals("pos")) {
 				ConsoleUtils.println("pos = " + ctx.getPosition());
-				ConsoleUtils.println(sc.formatDebugPositionLine(((Context) sc).getPosition(), ""));
+				ConsoleUtils.println(sc.formatDebugPositionLine(((Context)sc).getPosition(), ""));
 			}
 			else if(o.code.equals("input_name")) {
 				ConsoleUtils.println("input_name = " + ctx.getResourceName());
@@ -278,11 +279,11 @@ public class NezDebugger {
 			Collections.sort(mapValuesList, new Comparator<Map.Entry>() {
 				@Override
 				public int compare(Entry entry1, Entry entry2) {
-					return (((BreakPoint) entry1.getValue()).id).compareTo(((BreakPoint) entry2.getValue()).id);
+					return (((BreakPoint)entry1.getValue()).id).compareTo(((BreakPoint)entry2.getValue()).id);
 				}
 			});
 			for(Entry s : mapValuesList) {
-				BreakPoint br = (BreakPoint) s.getValue();
+				BreakPoint br = (BreakPoint)s.getValue();
 				Production rule = (br.pr);
 				ConsoleUtils.println(br.id + ": " + rule.getLocalName() + " " + rule.getSourcePosition().formatDebugSourceMessage(""));
 			}
@@ -294,37 +295,37 @@ public class NezDebugger {
 		Expression current = code.getExpression();
 		if(e instanceof NonTerminal) {
 			code = exec_code();
-			int stackTop = ((Context) sc).getUsedStackTopForDebugger();
-			while (stackTop <= ((Context) sc).getUsedStackTopForDebugger()) {
+			int stackTop = ((Context)sc).getUsedStackTopForDebugger();
+			while(stackTop <= ((Context)sc).getUsedStackTopForDebugger()) {
 				code = exec_code();
 				current = code.getExpression();
 			}
 		}
 		else if(e instanceof Production) {
-			int stackTop = ((Context) sc).getUsedStackTopForDebugger();
-			while (stackTop <= ((Context) sc).getUsedStackTopForDebugger()) {
+			int stackTop = ((Context)sc).getUsedStackTopForDebugger();
+			while(stackTop <= ((Context)sc).getUsedStackTopForDebugger()) {
 				code = exec_code();
 				current = code.getExpression();
 			}
 		}
 		else if(e instanceof Link) {
 			code = exec_code();
-			int stackTop = ((Context) sc).getUsedStackTopForDebugger();
+			int stackTop = ((Context)sc).getUsedStackTopForDebugger();
 			if(code.getExpression() instanceof Production) {
 				code = exec_code();
-				while (stackTop <= ((Context) sc).getUsedStackTopForDebugger()) {
+				while(stackTop <= ((Context)sc).getUsedStackTopForDebugger()) {
 					code = exec_code();
 					current = code.getExpression();
 				}
 			}
 		}
 		else {
-			while (e.getId() == current.getId()) {
+			while(e.getId() == current.getId()) {
 				code = exec_code();
 				current = code.getExpression();
 			}
 		}
-		while ((current instanceof Production) && code instanceof IRet) {
+		while((current instanceof Production) && code instanceof IRet) {
 			code = exec_code();
 			current = code.getExpression();
 		}
@@ -337,7 +338,7 @@ public class NezDebugger {
 		if(e instanceof NonTerminal) {
 			code = exec_code();
 			current = code.getExpression();
-			while ((current instanceof Production)) {
+			while((current instanceof Production)) {
 				code = exec_code();
 				current = code.getExpression();
 			}
@@ -349,12 +350,12 @@ public class NezDebugger {
 			}
 		}
 		else {
-			while (e.getId() == current.getId()) {
+			while(e.getId() == current.getId()) {
 				code = exec_code();
 				current = code.getExpression();
 			}
 		}
-		while ((current instanceof Production) && code instanceof IRet) {
+		while((current instanceof Production) && code instanceof IRet) {
 			code = exec_code();
 			current = code.getExpression();
 		}
@@ -363,13 +364,13 @@ public class NezDebugger {
 
 	public boolean exec(StepOut o) throws TerminationException {
 		Expression current = code.getExpression();
-		int stackTop = ((Context) sc).getUsedStackTopForDebugger();
+		int stackTop = ((Context)sc).getUsedStackTopForDebugger();
 		code = exec_code();
-		while (stackTop <= ((Context) sc).getUsedStackTopForDebugger()) {
+		while(stackTop <= ((Context)sc).getUsedStackTopForDebugger()) {
 			code = exec_code();
 			current = code.getExpression();
 		}
-		while ((current instanceof Production)) {
+		while((current instanceof Production)) {
 			code = exec_code();
 			current = code.getExpression();
 		}
@@ -377,10 +378,10 @@ public class NezDebugger {
 	}
 
 	public boolean exec(Continue o) throws TerminationException {
-		while (true) {
+		while(true) {
 			Expression e = code.getExpression();
 			if(e instanceof Production && code instanceof ICallPush) {
-				if(this.breakPointMap.containsKey(((Production) e).getLocalName())) {
+				if(this.breakPointMap.containsKey(((Production)e).getLocalName())) {
 					code = exec_code();
 					return true;
 				}
@@ -391,10 +392,10 @@ public class NezDebugger {
 	}
 
 	public boolean exec(Run o) throws TerminationException {
-		while (true) {
+		while(true) {
 			Expression e = code.getExpression();
 			if(e instanceof Production && code instanceof ICallPush) {
-				if(this.breakPointMap.containsKey(((Production) e).getLocalName())) {
+				if(this.breakPointMap.containsKey(((Production)e).getLocalName())) {
 					code = exec_code();
 					return true;
 				}

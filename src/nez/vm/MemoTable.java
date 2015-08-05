@@ -4,12 +4,14 @@ import java.util.HashMap;
 
 import nez.NezOption;
 import nez.main.NezProfier;
-import nez.main.Verbose;
 
 public abstract class MemoTable {
 	public abstract MemoTable newMemoTable(long len, int w, int n);
+
 	abstract void setMemo(long pos, int memoPoint, boolean failed, Object result, int consumed, int stateValue);
+
 	abstract MemoEntry getMemo(long pos, int memoPoint);
+
 	abstract MemoEntry getMemo2(long pos, int memoPoint, int stateValue);
 
 	int CountStored;
@@ -21,7 +23,7 @@ public abstract class MemoTable {
 		this.CountUsed = 0;
 		this.CountInvalidated = 0;
 	}
-	
+
 	public static MemoTable newTable(NezOption option, long length, int windowSize, int memoPointSize) {
 		if(memoPointSize == 0) {
 			return new NullTable(length, windowSize, memoPointSize);
@@ -43,21 +45,24 @@ public abstract class MemoTable {
 
 class NullTable extends MemoTable {
 	@Override
-	public
-	MemoTable newMemoTable(long len, int w, int n) {
+	public MemoTable newMemoTable(long len, int w, int n) {
 		return this;
 	}
+
 	NullTable(long len, int w, int n) {
 		this.initStat();
 	}
+
 	@Override
 	void setMemo(long pos, int memoPoint, boolean failed, Object result, int consumed, int stateValue) {
 		this.CountStored += 1;
 	}
+
 	@Override
 	MemoEntry getMemo(long pos, int id) {
 		return null;
 	}
+
 	@Override
 	MemoEntry getMemo2(long pos, int id, int stateValue) {
 		return null;
@@ -79,19 +84,18 @@ class ElasticTable extends MemoTable {
 	}
 
 	@Override
-	public
-	MemoTable newMemoTable(long len, int w, int n) {
+	public MemoTable newMemoTable(long len, int w, int n) {
 		return new ElasticTable(len, w, n);
 	}
-	
+
 	final long longkey(long pos, int memoPoint, int shift) {
 		return ((pos << shift) | memoPoint) & Long.MAX_VALUE;
 	}
-	
+
 	@Override
 	void setMemo(long pos, int memoPoint, boolean failed, Object result, int consumed, int stateValue) {
 		long key = longkey(pos, memoPoint, shift);
-		int hash =  (int)(key % memoArray.length);
+		int hash = (int)(key % memoArray.length);
 		MemoEntryKey m = this.memoArray[hash];
 		m.key = key;
 		m.failed = failed;
@@ -104,7 +108,7 @@ class ElasticTable extends MemoTable {
 	@Override
 	final MemoEntry getMemo(long pos, int memoPoint) {
 		long key = longkey(pos, memoPoint, shift);
-		int hash =  (int)(key % memoArray.length);
+		int hash = (int)(key % memoArray.length);
 		MemoEntryKey m = this.memoArray[hash];
 		if(m.key == key) {
 			this.CountUsed += 1;
@@ -116,7 +120,7 @@ class ElasticTable extends MemoTable {
 	@Override
 	final MemoEntry getMemo2(long pos, int memoPoint, int stateValue) {
 		long key = longkey(pos, memoPoint, shift);
-		int hash =  (int)(key % memoArray.length);
+		int hash = (int)(key % memoArray.length);
 		MemoEntryKey m = this.memoArray[hash];
 		if(m.key == key) {
 			if(m.stateValue == stateValue) {
@@ -137,13 +141,12 @@ class PackratHashTable extends MemoTable {
 	PackratHashTable(long len, int w, int n) {
 		this.memoMap = new HashMap<Long, MemoEntryList>(w * n);
 	}
-	
+
 	@Override
-	public
-	MemoTable newMemoTable(long len, int w, int n) {
+	public MemoTable newMemoTable(long len, int w, int n) {
 		return new PackratHashTable(len, w, n);
 	}
-	
+
 	private final MemoEntryList newMemo() {
 		if(UnusedMemo != null) {
 			MemoEntryList m = this.UnusedMemo;
@@ -154,7 +157,7 @@ class PackratHashTable extends MemoTable {
 			return new MemoEntryList();
 		}
 	}
-	
+
 	protected final void unusedMemo(MemoEntryList m) {
 		MemoEntryList s = m;
 		while(m.next != null) {
@@ -163,7 +166,7 @@ class PackratHashTable extends MemoTable {
 		m.next = this.UnusedMemo;
 		UnusedMemo = s;
 	}
-	
+
 	@Override
 	protected MemoEntry getMemo(long pos, int memoPoint) {
 		MemoEntryList m = this.memoMap.get(pos);
@@ -184,7 +187,7 @@ class PackratHashTable extends MemoTable {
 			if(m.memoPoint == memoPoint) {
 				if(m.stateValue == stateValue) {
 					this.CountUsed += 1;
-					return m;					
+					return m;
 				}
 				this.CountInvalidated += 1;
 			}
@@ -207,7 +210,4 @@ class PackratHashTable extends MemoTable {
 		this.CountStored += 1;
 	}
 
-
 }
-
-

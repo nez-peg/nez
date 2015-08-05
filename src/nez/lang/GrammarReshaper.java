@@ -42,31 +42,31 @@ public class GrammarReshaper {
 		return e;
 	}
 
-//	public Expression reshapeSequence(Sequence e) {
-//		int i = 0;
-//		Expression updated = null;
-//		for(i = 0; i < e.size(); i++) {
-//			Expression s = e.get(i);
-//			updated = s.reshape(this);
-//			if(s == updated) {
-//				updated = null;
-//				continue;
-//			}
-//			break;
-//		}
-//		if(updated == null) {
-//			return e;
-//		}
-//		UList<Expression> l = GrammarFactory.newList(2);
-//		for(int j = 0; j < i; j++) {
-//			l.add(e.get(j));
-//		}
-//		GrammarFactory.addSequence(l, updated);
-//		for(int j = i + 1; j < e.size(); j++) {
-//			GrammarFactory.addSequence(l, e.get(j).reshape(this));
-//		}
-//		return GrammarFactory.newSequence(e.s, l);
-//	}
+	// public Expression reshapeSequence(Sequence e) {
+	// int i = 0;
+	// Expression updated = null;
+	// for(i = 0; i < e.size(); i++) {
+	// Expression s = e.get(i);
+	// updated = s.reshape(this);
+	// if(s == updated) {
+	// updated = null;
+	// continue;
+	// }
+	// break;
+	// }
+	// if(updated == null) {
+	// return e;
+	// }
+	// UList<Expression> l = GrammarFactory.newList(2);
+	// for(int j = 0; j < i; j++) {
+	// l.add(e.get(j));
+	// }
+	// GrammarFactory.addSequence(l, updated);
+	// for(int j = i + 1; j < e.size(); j++) {
+	// GrammarFactory.addSequence(l, e.get(j).reshape(this));
+	// }
+	// return GrammarFactory.newSequence(e.s, l);
+	// }
 
 	public Expression reshapeSequence(Sequence e) {
 		Expression first = e.getFirst().reshape(this);
@@ -77,7 +77,6 @@ public class GrammarReshaper {
 		return e.newSequence(first, last);
 	}
 
-	
 	public Expression reshapeChoice(Choice e) {
 		int i = 0;
 		Expression updated = null;
@@ -98,7 +97,7 @@ public class GrammarReshaper {
 			l.add(e.get(j));
 		}
 		GrammarFactory.addChoice(l, updated);
-		for(int j = i+1; j < e.size(); j++) {
+		for(int j = i + 1; j < e.size(); j++) {
 			GrammarFactory.addChoice(l, e.get(j).reshape(this));
 		}
 		return GrammarFactory.newChoice(e.s, l);
@@ -154,7 +153,7 @@ public class GrammarReshaper {
 	public Expression reshapeCapture(Capture e) {
 		return e;
 	}
-	
+
 	public Expression reshapeBlock(Block e) {
 		Expression inner = e.get(0).reshape(this);
 		return updateInner(e, inner);
@@ -181,20 +180,19 @@ public class GrammarReshaper {
 	public Expression reshapeIsIndent(IsIndent e) {
 		return e;
 	}
-	
+
 	public Expression reshapeIfFlag(IfFlag e) {
 		return e;
 	}
-	
+
 	public Expression reshapeOnFlag(OnFlag e) {
 		Expression inner = e.get(0).reshape(this);
 		return updateInner(e, inner);
 	}
-	
+
 	public Expression reshapeUndefined(Expression e) {
 		return e;
 	}
-
 
 	protected final Expression empty(Expression e) {
 		return GrammarFactory.newEmpty(null);
@@ -211,6 +209,7 @@ public class GrammarReshaper {
 		}
 		return (e.get(0) != inner) ? GrammarFactory.newOption(e.s, inner) : e;
 	}
+
 	protected final Expression updateInner(Repetition e, Expression inner) {
 		if(!e.isInterned()) {
 			e.inner = inner;
@@ -218,6 +217,7 @@ public class GrammarReshaper {
 		}
 		return (e.get(0) != inner) ? GrammarFactory.newRepetition(e.s, inner) : e;
 	}
+
 	protected final Expression updateInner(Repetition1 e, Expression inner) {
 		if(!e.isInterned()) {
 			e.inner = inner;
@@ -225,6 +225,7 @@ public class GrammarReshaper {
 		}
 		return (e.get(0) != inner) ? GrammarFactory.newRepetition1(e.s, inner) : e;
 	}
+
 	protected final Expression updateInner(And e, Expression inner) {
 		if(!e.isInterned()) {
 			e.inner = inner;
@@ -232,6 +233,7 @@ public class GrammarReshaper {
 		}
 		return (e.get(0) != inner) ? GrammarFactory.newAnd(e.s, inner) : e;
 	}
+
 	protected final Expression updateInner(Not e, Expression inner) {
 		if(!e.isInterned()) {
 			e.inner = inner;
@@ -239,6 +241,7 @@ public class GrammarReshaper {
 		}
 		return (e.get(0) != inner) ? GrammarFactory.newNot(e.s, inner) : e;
 	}
+
 	protected final Expression updateInner(Match e, Expression inner) {
 		if(!e.isInterned()) {
 			e.inner = inner;
@@ -246,6 +249,7 @@ public class GrammarReshaper {
 		}
 		return (e.get(0) != inner) ? GrammarFactory.newMatch(e.s, inner) : e;
 	}
+
 	protected final Expression updateInner(Link e, Expression inner) {
 		if(!e.isInterned()) {
 			e.inner = inner;
@@ -253,6 +257,7 @@ public class GrammarReshaper {
 		}
 		return (e.get(0) != inner) ? GrammarFactory.newLink(e.s, inner, e.index) : e;
 	}
+
 	protected final Expression updateInner(Block e, Expression inner) {
 		if(!e.isInterned()) {
 			e.inner = inner;
@@ -260,6 +265,7 @@ public class GrammarReshaper {
 		}
 		return (e.get(0) != inner) ? GrammarFactory.newBlock(e.s, inner) : e;
 	}
+
 	protected final Expression updateInner(LocalTable e, Expression inner) {
 		if(!e.isInterned()) {
 			e.inner = inner;
@@ -267,6 +273,7 @@ public class GrammarReshaper {
 		}
 		return (e.get(0) != inner) ? GrammarFactory.newLocal(e.s, e.getGrammarFile(), e.getTable(), inner) : e;
 	}
+
 	protected final Expression updateInner(DefSymbol e, Expression inner) {
 		if(!e.isInterned()) {
 			e.inner = inner;
@@ -274,6 +281,7 @@ public class GrammarReshaper {
 		}
 		return (e.get(0) != inner) ? GrammarFactory.newDefSymbol(e.s, e.getGrammarFile(), e.getTable(), inner) : e;
 	}
+
 	protected final Expression updateInner(OnFlag e, Expression inner) {
 		if(!e.isInterned()) {
 			e.inner = inner;
@@ -285,14 +293,17 @@ public class GrammarReshaper {
 }
 
 class ASTConstructionEliminator extends GrammarReshaper {
-	boolean renaming ;
+	boolean renaming;
+
 	ASTConstructionEliminator(boolean renaming) {
 		this.renaming = renaming;
 	}
+
+	@Override
 	public void updateProductionAttribute(Production origProduction, Production newProduction) {
 		newProduction.flag = UFlag.unsetFlag(origProduction.flag, Production.ObjectProduction | Production.OperationalProduction);
 	}
-	
+
 	@Override
 	public Expression reshapeNonTerminal(NonTerminal e) {
 		if(renaming) {
@@ -303,7 +314,7 @@ class ASTConstructionEliminator extends GrammarReshaper {
 		}
 		return e;
 	}
-	
+
 	private Production removeASTOperator(Production p) {
 		if(p.inferTypestate(null) == Typestate.BooleanType) {
 			return p;
@@ -315,29 +326,35 @@ class ASTConstructionEliminator extends GrammarReshaper {
 		}
 		return r;
 	}
-	
+
+	@Override
 	public Expression reshapeMatch(Match e) {
 		return e.get(0).reshape(this);
 	}
-	
+
+	@Override
 	public Expression reshapeNew(New e) {
 		return empty(e);
 	}
-	
+
+	@Override
 	public Expression reshapeLink(Link e) {
 		return e.get(0).reshape(this);
 	}
 
+	@Override
 	public Expression reshapeTagging(Tagging e) {
 		return empty(e);
 	}
 
+	@Override
 	public Expression reshapeReplace(Replace e) {
 		return empty(e);
 	}
 
+	@Override
 	public Expression reshapeCapture(Capture e) {
 		return empty(e);
 	}
-		
+
 }

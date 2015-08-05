@@ -11,7 +11,7 @@ public class KonohaTransducer {
 	HashMap<String, KonohaTypeRule> typeRuleMap;
 	HashMap<String, KonohaType> typeMap;
 	HashMap<String, KonohaTree> nameMap;
-	
+
 	public KonohaTransducer(Konoha root) {
 		this.root = root;
 		this.parent = null;
@@ -28,13 +28,13 @@ public class KonohaTransducer {
 		this.setType("int", new KonohaPrimitiveType("int"));
 		this.setType("float", new KonohaPrimitiveType("float"));
 		this.setType("string", new KonohaPrimitiveType("string"));
-//		for(char c = 'a'; c <= 'z'; c++) {
-//			String n = String.valueOf(c);
-//			this.setType(n, new KonohaGreekType(n));
-//		}
+		// for(char c = 'a'; c <= 'z'; c++) {
+		// String n = String.valueOf(c);
+		// this.setType(n, new KonohaGreekType(n));
+		// }
 		new KonohaLanguage(this);
 	}
-		
+
 	public void setTypeRule(KonohaTypeRule rule) {
 		if(this.typeRuleMap == null) {
 			this.typeRuleMap = new HashMap<>();
@@ -57,7 +57,7 @@ public class KonohaTransducer {
 		}
 		return t;
 	}
-	
+
 	private KonohaType typeCheck(KonohaTransducer konoha, KonohaType req, KonohaTree node) {
 		if(node.matched != null) {
 			if(node.typed != null) {
@@ -86,8 +86,7 @@ public class KonohaTransducer {
 		}
 		return null;
 	}
-	
-	
+
 	public final void setType(String name, KonohaType t) {
 		if(this.typeMap == null) {
 			this.typeMap = new HashMap<>();
@@ -124,8 +123,6 @@ public class KonohaTransducer {
 		return null;
 	}
 
-	
-	
 	public final void setName(String name, KonohaTree nameNode) {
 		if(this.nameMap == null) {
 			this.nameMap = new HashMap<>();

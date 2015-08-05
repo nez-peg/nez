@@ -3,18 +3,18 @@ package nez.lang;
 import nez.util.UList;
 
 public class Typestate extends GrammarReshaper {
-	public final static int Undefined         = -1;
-	public final static int BooleanType       = 0;
-	public final static int ObjectType        = 1;
-	public final static int OperationType     = 2;
-	
-	private int   required = BooleanType;
+	public final static int Undefined = -1;
+	public final static int BooleanType = 0;
+	public final static int ObjectType = 1;
+	public final static int OperationType = 2;
+
+	private int required = BooleanType;
 	private GrammarFile checker;
-	
+
 	Typestate(GrammarFile checker) {
 		this.checker = checker;
 	}
-	
+
 	void reportInserted(Expression e, String operator) {
 		checker.reportWarning(e.s, "expected " + operator + " .. => inserted!!");
 	}
@@ -22,7 +22,7 @@ public class Typestate extends GrammarReshaper {
 	void reportRemoved(Expression e, String operator) {
 		checker.reportWarning(e.s, "unexpected " + operator + " .. => removed!!");
 	}
-	
+
 	@Override
 	public Expression reshapeProduction(Production p) {
 		int t = checkNamingConvention(p.name);
@@ -33,21 +33,22 @@ public class Typestate extends GrammarReshaper {
 		p.setExpression(p.getExpression().reshape(this));
 		return p;
 	}
-	
+
 	private static int checkNamingConvention(String ruleName) {
 		int start = 0;
 		if(ruleName.startsWith("~") || ruleName.startsWith("\"")) {
 			return Typestate.BooleanType;
 		}
-		for(;ruleName.charAt(start) == '_'; start++) {
+		for(; ruleName.charAt(start) == '_'; start++) {
 			if(start + 1 == ruleName.length()) {
 				return Typestate.BooleanType;
 			}
 		}
 		boolean firstUpperCase = Character.isUpperCase(ruleName.charAt(start));
-		for(int i = start+1; i < ruleName.length(); i++) {
+		for(int i = start + 1; i < ruleName.length(); i++) {
 			char ch = ruleName.charAt(i);
-			if(ch == '!') break; // option
+			if(ch == '!')
+				break; // option
 			if(Character.isUpperCase(ch) && !firstUpperCase) {
 				return Typestate.OperationType;
 			}
@@ -75,7 +76,7 @@ public class Typestate extends GrammarReshaper {
 		this.required = Typestate.OperationType;
 		return p;
 	}
-	
+
 	@Override
 	public Expression reshapeLink(Link p) {
 		if(this.required != Typestate.OperationType) {
@@ -92,7 +93,7 @@ public class Typestate extends GrammarReshaper {
 		this.required = Typestate.OperationType;
 		return updateInner(p, inn);
 	}
-	
+
 	@Override
 	public Expression reshapeMatch(Match p) {
 		return p.inner.reshape(GrammarReshaper.RemoveASTandRename);
@@ -124,7 +125,7 @@ public class Typestate extends GrammarReshaper {
 		}
 		return p;
 	}
-	
+
 	@Override
 	public Expression reshapeNonTerminal(NonTerminal p) {
 		Production r = p.getProduction();
@@ -164,7 +165,7 @@ public class Typestate extends GrammarReshaper {
 		this.required = next;
 		return GrammarFactory.newChoice(p.s, l);
 	}
-	
+
 	@Override
 	public Expression reshapeRepetition(Repetition p) {
 		int required = this.required;
@@ -188,7 +189,7 @@ public class Typestate extends GrammarReshaper {
 		}
 		return updateInner(p, inn);
 	}
-	
+
 	@Override
 	public Expression reshapeOption(Option p) {
 		int required = this.required;
@@ -200,7 +201,6 @@ public class Typestate extends GrammarReshaper {
 		}
 		return updateInner(p, inn);
 	}
-
 
 	@Override
 	public Expression reshapeAnd(And p) {
@@ -230,7 +230,7 @@ public class Typestate extends GrammarReshaper {
 		}
 		return p;
 	}
-	
+
 	@Override
 	public Expression reshapeIsSymbol(IsSymbol p) {
 		Expression e = p.getSymbolExpression();
@@ -241,13 +241,10 @@ public class Typestate extends GrammarReshaper {
 		return p;
 	}
 
-//	@Override
-//	public Expression reshapeBlock(Block p) {
-//		p.inner = p.inner.reshape(this);
-//		return p;
-//	}
-
-
+	// @Override
+	// public Expression reshapeBlock(Block p) {
+	// p.inner = p.inner.reshape(this);
+	// return p;
+	// }
 
 }
-

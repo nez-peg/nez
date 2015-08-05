@@ -7,6 +7,7 @@ import nez.lang.GrammarFile;
 public class PredefinedRules {
 	GrammarFile grammar;
 	String rootElement;
+
 	public PredefinedRules(GrammarFile grammar, String rootElement) {
 		this.grammar = grammar;
 		this.rootElement = rootElement;
@@ -38,7 +39,6 @@ public class PredefinedRules {
 		defRootElement();
 		defPreEntity();
 	}
-
 
 	final void defToplevel() {
 		grammar.defineProduction(null, "Toplevel",
@@ -112,7 +112,7 @@ public class PredefinedRules {
 				GrammarFactory.newNonTerminal(null, grammar, "RootElement"),
 				GrammarFactory.newNonTerminal(null, grammar, "COMMENT"));
 		Expression[] l = {
-			GrammarFactory.newRepetition1(null, choice)
+				GrammarFactory.newRepetition1(null, choice)
 		};
 		grammar.defineProduction(null, "Content", grammar.newSequence(l));
 	}
@@ -167,7 +167,7 @@ public class PredefinedRules {
 				grammar.newRepetition(GrammarFactory.newNonTerminal(null, grammar, "S")),
 				GrammarFactory.newByteChar(null, false, '='),
 				grammar.newRepetition(GrammarFactory.newNonTerminal(null, grammar, "S")),
-				GrammarFactory.newNonTerminal(null, grammar,"STRING"),
+				GrammarFactory.newNonTerminal(null, grammar, "STRING"),
 				grammar.newRepetition(GrammarFactory.newNonTerminal(null, grammar, "S"))
 		};
 		grammar.defineProduction(null, "ATTRIBUTE", grammar.newSequence(l));
@@ -238,7 +238,7 @@ public class PredefinedRules {
 				GrammarFactory.newNonTerminal(null, grammar, "Entity")
 		};
 		Expression[] l = {
-				GrammarFactory.newNonTerminal(null, grammar,"TEXT"),
+				GrammarFactory.newNonTerminal(null, grammar, "TEXT"),
 				grammar.newSequence(GrammarFactory.newByteChar(null, false, '&'),
 						grammar.newChoice(seq), GrammarFactory.newByteChar(null, false, ';'))
 		};

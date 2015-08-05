@@ -26,11 +26,14 @@ import nez.util.StringUtils;
 public class CombinatorGenerator extends GrammarGenerator {
 	@Override
 	public String getDesc() {
-		return "a Nez combinator for Java" ;
+		return "a Nez combinator for Java";
 	}
-	
-	protected String _Delim() { return ", "; }
-	
+
+	@Override
+	protected String _Delim() {
+		return ", ";
+	}
+
 	@Override
 	public void makeHeader(Grammar g) {
 		L("/* Parsing Expression Grammars for Nez */");
@@ -39,7 +42,8 @@ public class CombinatorGenerator extends GrammarGenerator {
 		L("");
 		L("class G extends ParserCombinator").Begin();
 	}
-	
+
+	@Override
 	public void makeFooter(Grammar g) {
 		End();
 	}
@@ -52,8 +56,8 @@ public class CombinatorGenerator extends GrammarGenerator {
 		visitExpression(e);
 		W(";");
 		End();
-	}	
-	
+	}
+
 	public void visitEmpty(Empty e) {
 		C("Empty");
 	}
@@ -62,56 +66,69 @@ public class CombinatorGenerator extends GrammarGenerator {
 		C("Failure");
 	}
 
+	@Override
 	public void visitNonTerminal(NonTerminal e) {
 		C("P", _NonTerminal(e.getProduction()));
 	}
-	
+
+	@Override
 	public void visitByteChar(ByteChar e) {
 		C("t", StringUtils.stringfyByte('"', e.byteChar, '"'));
 	}
 
+	@Override
 	public void visitByteMap(ByteMap e) {
 		C("c", e.byteMap);
 	}
 
+	@Override
 	public void visitString(String s) {
 		C("t", s);
 	}
 
+	@Override
 	public void visitAnyChar(AnyChar e) {
 		C("AnyChar");
 	}
 
+	@Override
 	public void visitOption(Option e) {
 		C("Option", e);
 	}
-	
+
+	@Override
 	public void visitRepetition(Repetition e) {
 		C("ZeroMore", e);
 	}
-	
+
+	@Override
 	public void visitRepetition1(Repetition1 e) {
 		C("OneMore", e);
 	}
 
+	@Override
 	public void visitAnd(And e) {
 		C("And", e);
 	}
-	
+
+	@Override
 	public void visitNot(Not e) {
 		C("Not", e);
 	}
-	
+
+	@Override
 	public void visitChoice(Choice e) {
 		C("Choice", e);
 	}
-	
+
+	@Override
 	public void visitSequence(Sequence e) {
 		W("Sequence(");
 		super.visitSequence(e);
 		W(")");
 	}
-	
+
+	@Override
 	public void visitNew(New e) {
 		if(e.lefted) {
 			C("LCapture", e.shift);
@@ -121,18 +138,22 @@ public class CombinatorGenerator extends GrammarGenerator {
 		}
 	}
 
+	@Override
 	public void visitCapture(Capture e) {
 		C("Capture", e.shift);
 	}
 
+	@Override
 	public void visitTagging(Tagging e) {
 		C("Tagging", e.getTagName());
 	}
-	
+
+	@Override
 	public void visitReplace(Replace e) {
 		C("Replace", StringUtils.quoteString('"', e.value, '"'));
 	}
-	
+
+	@Override
 	public void visitLink(Link e) {
 		if(e.index != -1) {
 			C("Link", String.valueOf(e.index), e);

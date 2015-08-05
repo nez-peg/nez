@@ -1,6 +1,6 @@
 package nez.lang;
+
 import java.util.AbstractList;
-import java.util.TreeMap;
 
 import nez.ast.SourcePosition;
 import nez.util.UList;
@@ -10,22 +10,23 @@ import nez.vm.NezEncoder;
 public abstract class Expression extends AbstractList<Expression> {
 
 	SourcePosition s = null;
-	int    internId   = 0;
-	
+	int internId = 0;
+
 	Expression(SourcePosition s) {
 		this.s = s;
 		this.internId = 0;
 	}
-	
-	public abstract boolean equalsExpression(Expression o) ;
-	
+
+	public abstract boolean equalsExpression(Expression o);
+
+	@Override
 	public final boolean equals(Object o) {
 		if(o instanceof Expression) {
 			return this.equalsExpression((Expression)o);
 		}
 		return false;
 	}
-	
+
 	public final SourcePosition getSourcePosition() {
 		return this.s;
 	}
@@ -33,18 +34,21 @@ public abstract class Expression extends AbstractList<Expression> {
 	public final int getId() {
 		return this.internId;
 	}
-	
+
 	public final boolean isInterned() {
 		return (this.internId > 0);
 	}
-	
+
 	final Expression intern() {
 		return GrammarFactory.intern(this);
 	}
 
 	public abstract String getPredicate();
-	public String key() { return this.getPredicate(); }
-	
+
+	public String key() {
+		return this.getPredicate();
+	}
+
 	@Override
 	public Expression get(int index) {
 		return null;
@@ -64,19 +68,21 @@ public abstract class Expression extends AbstractList<Expression> {
 	}
 
 	public abstract Expression reshape(GrammarReshaper m);
-		
+
 	public abstract boolean isConsumed();
-	
-	boolean setOuterLefted(Expression outer) { return false; }
-	
+
+	boolean setOuterLefted(Expression outer) {
+		return false;
+	}
+
 	public final int inferTypestate() {
 		return this.inferTypestate(null);
 	}
-	
+
 	public abstract int inferTypestate(Visa v);
-	
+
 	public abstract short acceptByte(int ch);
-	
+
 	@Override
 	public final String toString() {
 		StringBuilder sb = new StringBuilder();
@@ -93,7 +99,7 @@ public abstract class Expression extends AbstractList<Expression> {
 		}
 		sb.append(">");
 	}
-	
+
 	public final UList<Expression> toList() {
 		UList<Expression> l = new UList<Expression>(new Expression[this.size()]);
 		if(this.size() > 1) {
@@ -111,8 +117,8 @@ public abstract class Expression extends AbstractList<Expression> {
 		visitor.visit(this);
 	}
 
-	public abstract Instruction encode(NezEncoder bc, Instruction next, Instruction failjump);
-
+	public abstract Instruction encode(NezEncoder bc, Instruction next,
+			Instruction failjump);
 
 	protected int pattern(GEP gep) {
 		return 0;
@@ -121,9 +127,9 @@ public abstract class Expression extends AbstractList<Expression> {
 	protected void examplfy(GEP gep, StringBuilder sb, int p) {
 
 	}
-	
+
 	// test
-	
+
 	public static final boolean isByteConsumed(Expression e) {
 		return (e instanceof ByteChar || e instanceof ByteMap || e instanceof AnyChar);
 	}
@@ -131,9 +137,9 @@ public abstract class Expression extends AbstractList<Expression> {
 	public static final boolean isPositionIndependentOperation(Expression e) {
 		return (e instanceof Tagging || e instanceof Replace);
 	}
-	
+
 	// convinient interface
-	
+
 	public final Expression newEmpty() {
 		return GrammarFactory.newEmpty(this.getSourcePosition());
 	}
@@ -143,9 +149,10 @@ public abstract class Expression extends AbstractList<Expression> {
 	}
 
 	public final Expression newByteMap(boolean isBinary, boolean[] byteMap) {
-		return GrammarFactory.newByteMap(this.getSourcePosition(), isBinary, byteMap);
+		return GrammarFactory.newByteMap(this.getSourcePosition(), isBinary,
+				byteMap);
 	}
-	
+
 	public final Expression newSequence(Expression e, Expression e2) {
 		return GrammarFactory.newSequence(this.getSourcePosition(), e, e2);
 	}

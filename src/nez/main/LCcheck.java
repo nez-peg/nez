@@ -2,7 +2,6 @@ package nez.main;
 
 import nez.SourceContext;
 import nez.ast.CommonTree;
-import nez.ast.CommonTreeWriter;
 import nez.lang.Grammar;
 import nez.lang.GrammarFile;
 import nez.util.ConsoleUtils;
@@ -18,17 +17,17 @@ public class LCcheck extends Command {
 	@Override
 	public void exec(CommandContext conf) {
 		conf.getNezOption().setOption("example", true);
-		
+
 		GrammarFile gfile = conf.getGrammarFile(true);
 		Grammar g = conf.getGrammar();
-		
+
 		UList<String> unparsedInputs = new UList<String>(new String[4]);
 		UList<String> unformatedInputs = new UList<String>(new String[4]);
 		UList<String> mismatchedInputs = new UList<String>(new String[4]);
-		
+
 		int totalCount = 0, parsedCount = 0, formatCount = 0, matchCount = 0;
-//		long consumed = 0;
-//		long time = 0;
+		// long consumed = 0;
+		// long time = 0;
 
 		while(conf.hasInputSource()) {
 			totalCount++;
@@ -47,7 +46,8 @@ public class LCcheck extends Command {
 
 			parsedCount++;
 			String formatted = gfile.formatCommonTree(node);
-			source = SourceContext.newStringSourceContext("(formatted)", 1, formatted);
+			source = SourceContext.newStringSourceContext("(formatted)", 1,
+					formatted);
 			CommonTree node2 = g.parse(source);
 			if(node2 == null) {
 				ConsoleUtils.println(source.getSyntaxErrorMessage());
@@ -68,14 +68,12 @@ public class LCcheck extends Command {
 			}
 			matchCount++;
 		}
-		
-		if(totalCount > 1){
-			Verbose.println(
-					totalCount + " files, " +
-					parsedCount + " parsed, " +
-					formatCount + " formatted, " +
-					matchCount + " matched, " +
-					StringUtils.formatParcentage(matchCount, totalCount) + "% matched.");
+
+		if(totalCount > 1) {
+			Verbose.println(totalCount + " files, " + parsedCount + " parsed, "
+					+ formatCount + " formatted, " + matchCount + " matched, "
+					+ StringUtils.formatParcentage(matchCount, totalCount)
+					+ "% matched.");
 		}
 		if(unparsedInputs.size() > 0) {
 			Verbose.println("unparsed: " + unparsedInputs);
@@ -88,5 +86,5 @@ public class LCcheck extends Command {
 		}
 
 	}
-	
+
 }

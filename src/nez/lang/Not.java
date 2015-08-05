@@ -1,10 +1,6 @@
 package nez.lang;
 
-import nez.NezOption;
-import nez.ast.Source;
 import nez.ast.SourcePosition;
-import nez.util.UFlag;
-import nez.util.UList;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
@@ -12,6 +8,7 @@ public class Not extends Unary {
 	Not(SourcePosition s, Expression e) {
 		super(s, e);
 	}
+
 	@Override
 	public final boolean equalsExpression(Expression o) {
 		if(o instanceof Not) {
@@ -19,22 +16,27 @@ public class Not extends Unary {
 		}
 		return false;
 	}
+
 	@Override
-	public String getPredicate() { 
+	public String getPredicate() {
 		return "!";
 	}
+
 	@Override
-	public String key() { 
-		return "!" ;
+	public String key() {
+		return "!";
 	}
+
 	@Override
 	protected final void format(StringBuilder sb) {
 		this.formatUnary(sb, "!", this.inner);
 	}
+
 	@Override
 	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeNot(this);
 	}
+
 	@Override
 	public boolean isConsumed() {
 		return false;
@@ -44,20 +46,22 @@ public class Not extends Unary {
 	public int inferTypestate(Visa v) {
 		return Typestate.BooleanType;
 	}
-	
+
 	@Override
 	public short acceptByte(int ch) {
 		return PossibleAcceptance.acceptNot(this, ch);
 	}
 
 	@Override
-	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
+	public Instruction encode(NezEncoder bc, Instruction next,
+			Instruction failjump) {
 		return bc.encodeNot(this, next, failjump);
 	}
+
 	@Override
 	protected int pattern(GEP gep) {
 		int max = 0;
-		for(Expression p: this) {
+		for(Expression p : this) {
 			int c = p.pattern(gep);
 			if(c > max) {
 				max = c;
@@ -68,9 +72,7 @@ public class Not extends Unary {
 
 	@Override
 	protected void examplfy(GEP gep, StringBuilder sb, int p) {
-		
+
 	}
-
-
 
 }

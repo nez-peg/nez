@@ -25,7 +25,7 @@ public class Verbose {
 	public static boolean NFA = true;
 	public static boolean TraceException = true;
 	public static boolean Time = false;
-	
+
 	public static void setAll() {
 		General = true;
 		Example = true;
@@ -48,13 +48,13 @@ public class Verbose {
 			ConsoleUtils.println(msg);
 		}
 	}
-	
+
 	public static void todo(Object msg) {
 		if(General) {
 			ConsoleUtils.println("TODO " + msg);
 		}
 	}
-	
+
 	public final static void printElapsedTime(String msg, long t1, long t2) {
 		if(Time) {
 			double d = (t2 - t1) / 1000000;
@@ -107,7 +107,7 @@ public class Verbose {
 	public static void traceException(Exception e) {
 		if(TraceException) {
 			if(e instanceof InvocationTargetException) {
-				Throwable e2 = ((InvocationTargetException) e).getTargetException();
+				Throwable e2 = ((InvocationTargetException)e).getTargetException();
 				if(e2 instanceof RuntimeException) {
 					throw (RuntimeException)e2;
 				}
@@ -119,9 +119,7 @@ public class Verbose {
 	public static void printNoSuchMethodException(NoSuchMethodException e) {
 		if(General) {
 			ConsoleUtils.println(e);
-		}		
+		}
 	}
 
-
-	
 }

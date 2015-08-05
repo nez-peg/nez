@@ -1,6 +1,5 @@
 package nez.main;
 
-
 import java.lang.reflect.Method;
 
 import nez.util.ConsoleUtils;
@@ -16,7 +15,8 @@ public class LCkonoha extends Command {
 		Class<?> c = null;
 		try {
 			c = Class.forName("nez.konoha.Konoha");
-		} catch (ClassNotFoundException e) {
+		}
+		catch(ClassNotFoundException e) {
 			ConsoleUtils.exit(1, "unsupported konoha");
 		}
 		try {

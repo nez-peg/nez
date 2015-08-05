@@ -1,35 +1,34 @@
 package nez.konoha;
 
-import java.util.AbstractList;
-
-import nez.SourceContext;
 import nez.ast.AbstractTree;
-import nez.ast.CommonTree;
 import nez.ast.Source;
 import nez.ast.SourcePosition;
 import nez.ast.Tag;
 import nez.string.StringTransducer;
-import nez.util.StringUtils;
 
 public class KonohaTree extends AbstractTree<KonohaTree> implements SourcePosition {
-	KonohaType     typed = null;
+	KonohaType typed = null;
 	KonohaTypeRule matched = null;
-	
-	public KonohaTree(Tag tag, Source source, long pos, int len, int size, Object value) {
-		super(tag, source, pos, len, size > 0 ? new KonohaTree[size] : null, value);
+
+	public KonohaTree(Tag tag, Source source, long pos, int len, int size,
+			Object value) {
+		super(tag, source, pos, len, size > 0 ? new KonohaTree[size] : null,
+				value);
 	}
-	
+
 	@Override
 	protected KonohaTree dupImpl() {
-		return new KonohaTree(this.getTag(), 
-			this.getSource(), this.getSourcePosition(), this.getLength(), this.size(), getValue());
+		return new KonohaTree(this.getTag(), this.getSource(),
+				this.getSourcePosition(), this.getLength(), this.size(),
+				getValue());
 	}
 
 	@Override
 	public String formatDebugSourceMessage(String msg) {
-		return this.source.formatDebugPositionMessage(this.getSourcePosition(), msg);
+		return this.source.formatDebugPositionMessage(this.getSourcePosition(),
+				msg);
 	}
-	
+
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
@@ -37,6 +36,7 @@ public class KonohaTree extends AbstractTree<KonohaTree> implements SourcePositi
 		return sb.toString();
 	}
 
+	@Override
 	public void stringfy(String indent, StringBuilder sb) {
 		super.stringfy(indent, sb);
 		if(typed != null) {
@@ -44,8 +44,7 @@ public class KonohaTree extends AbstractTree<KonohaTree> implements SourcePositi
 			sb.append(typed.toString());
 		}
 	}
-	
-	
+
 	public final static String keyTag(String name) {
 		return "#" + name;
 	}
@@ -53,7 +52,7 @@ public class KonohaTree extends AbstractTree<KonohaTree> implements SourcePositi
 	public final static String keyTag(Tag t) {
 		return keyTag(t.getName());
 	}
-	
+
 	public final String getRuleName() {
 		if(Konoha.Expression == this.getTag()) {
 		}
@@ -63,7 +62,5 @@ public class KonohaTree extends AbstractTree<KonohaTree> implements SourcePositi
 	public StringTransducer getStringTransducer() {
 		return matched != null ? matched.st : null;
 	}
-	
+
 }
-
-

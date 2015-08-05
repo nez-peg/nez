@@ -1,25 +1,37 @@
 package nez.konoha;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 import nez.ast.Tag;
 
 public abstract class KonohaType {
 	String name;
+
 	KonohaType(String name) {
 		this.name = name;
 	}
+
 	public String getName() {
 		return this.name;
 	}
+
 	abstract boolean equalsType(KonohaType exprType);
+
 	abstract boolean matchType(KonohaType exprType);
+
 	abstract boolean isGreekType();
-	boolean isPolymorphic() { return false; }
-	public String toString() { return this.getName(); }
-	
+
+	boolean isPolymorphic() {
+		return false;
+	}
+
+	@Override
+	public String toString() {
+		return this.getName();
+	}
+
 	public final static KonohaType VoidType = new KonohaPrimitiveType("void");
+
 	public static KonohaType newErrorType(KonohaTree node, String msg) {
 		return new KonohaErrorType(node, msg);
 	}
@@ -30,19 +42,26 @@ class KonohaPrimitiveType extends KonohaType {
 		super(name);
 		// TODO Auto-generated constructor stub
 	}
+
 	@Override
 	boolean isGreekType() {
 		return false;
 	}
+
+	@Override
 	boolean equalsType(KonohaType exprType) {
 		if(exprType instanceof KonohaVarType) {
-			return ((KonohaVarType) exprType).equalsPrimitiveType(this, (KonohaVarType) exprType);
+			return ((KonohaVarType)exprType).equalsPrimitiveType(this,
+					(KonohaVarType)exprType);
 		}
 		return this == exprType;
 	}
+
+	@Override
 	boolean matchType(KonohaType exprType) {
 		if(exprType instanceof KonohaVarType) {
-			return ((KonohaVarType) exprType).equalsPrimitiveType(this, (KonohaVarType) exprType);
+			return ((KonohaVarType)exprType).equalsPrimitiveType(this,
+					(KonohaVarType)exprType);
 		}
 		return this == exprType;
 	}
@@ -52,19 +71,26 @@ class KonohaStructType extends KonohaType {
 	KonohaStructType(String name) {
 		super(name);
 	}
+
 	@Override
 	boolean isGreekType() {
 		return false;
 	}
+
+	@Override
 	boolean equalsType(KonohaType exprType) {
 		if(exprType instanceof KonohaVarType) {
-			return ((KonohaVarType) exprType).equalsStructType(this, (KonohaVarType) exprType);
+			return ((KonohaVarType)exprType).equalsStructType(this,
+					(KonohaVarType)exprType);
 		}
 		return this == exprType;
 	}
+
+	@Override
 	boolean matchType(KonohaType exprType) {
 		if(exprType instanceof KonohaVarType) {
-			return ((KonohaVarType) exprType).matchStructType(this, (KonohaVarType) exprType);
+			return ((KonohaVarType)exprType).matchStructType(this,
+					(KonohaVarType)exprType);
 		}
 		if(this == exprType) {
 			return true;
@@ -74,65 +100,87 @@ class KonohaStructType extends KonohaType {
 		}
 		return false;
 	}
+
 	private boolean matchStructType(KonohaStructType t) {
 		// TODO;
 		return false;
-	}	
+	}
 }
 
 class KonohaArrayType extends KonohaType {
 	public final static Tag ArrayTag = Tag.tag("Tarray");
+
 	public final static KonohaType newArrayType(KonohaType t) {
-		if(t == null) return t;
+		if(t == null)
+			return t;
 		return new KonohaArrayType(t);
 	}
+
 	//
 	KonohaType paramType;
+
 	KonohaArrayType(KonohaType paramType) {
 		super("array");
 		this.paramType = paramType;
 	}
+
 	@Override
 	boolean isGreekType() {
 		return this.paramType.isGreekType();
 	}
+
+	@Override
 	boolean equalsType(KonohaType exprType) {
 		if(exprType instanceof KonohaVarType) {
 
 		}
 		if(exprType instanceof KonohaArrayType) {
-			return this.paramType.equalsType(((KonohaArrayType) exprType).paramType);
+			return this.paramType
+					.equalsType(((KonohaArrayType)exprType).paramType);
 		}
 		return false;
 	}
+
+	@Override
 	boolean matchType(KonohaType exprType) {
 		if(exprType instanceof KonohaVarType) {
 
 		}
 		if(exprType instanceof KonohaArrayType) {
-			return this.paramType.equalsType(((KonohaArrayType) exprType).paramType);
+			return this.paramType
+					.equalsType(((KonohaArrayType)exprType).paramType);
 		}
 		return false;
 	}
-	public String toString() { return this.getName()+"[]"; }
+
+	@Override
+	public String toString() {
+		return this.getName() + "[]";
+	}
 
 }
 
 class KonohaErrorType extends KonohaType {
 	KonohaTree node;
 	String msg;
+
 	KonohaErrorType(KonohaTree node, String msg) {
 		super("'" + msg + "'");
 		this.node = node;
 		this.msg = msg;
 	}
+
 	@Override
 	boolean isGreekType() {
 		return false;
 	}
+
+	@Override
 	boolean equalsType(KonohaType exprType) {
 		return true;
 	}
+
+	@Override
 	boolean matchType(KonohaType exprType) {
 		return true;
 	}
@@ -140,18 +188,20 @@ class KonohaErrorType extends KonohaType {
 
 class KonohaTypeEnv {
 	public static boolean isGreek(KonohaType[] types) {
-		for(KonohaType t: types) {
+		for(KonohaType t : types) {
 			if(t.isGreekType()) {
 				return true;
 			}
 		}
 		return false;
 	}
+
 	HashMap<String, KonohaType> varTypeMap;
+
 	KonohaTypeEnv(KonohaType[] types) {
 		varTypeMap = new HashMap<String, KonohaType>();
 	}
-	
+
 	KonohaType[] newTypeVar(KonohaType[] types) {
 		KonohaType[] newtypes = new KonohaType[types.length];
 		for(int i = 0; i < types.length; i++) {
@@ -175,8 +225,8 @@ class KonohaTypeEnv {
 			return var;
 		}
 		if(t instanceof KonohaArrayType) {
-			KonohaType var = newVarType(((KonohaArrayType) t).paramType);
-			String name = var.getName()+"[]";
+			KonohaType var = newVarType(((KonohaArrayType)t).paramType);
+			String name = var.getName() + "[]";
 			KonohaType avar = varTypeMap.get(name);
 			if(avar == null) {
 				avar = new KonohaArrayType(var);
@@ -192,14 +242,17 @@ class KonohaGreekType extends KonohaType {
 	KonohaGreekType(char c) {
 		super(String.valueOf(c));
 	}
+
 	@Override
 	boolean isGreekType() {
 		return true;
 	}
+
 	@Override
 	boolean equalsType(KonohaType exprType) {
 		return this == exprType;
 	}
+
 	@Override
 	boolean matchType(KonohaType exprType) {
 		return this == exprType;
@@ -211,26 +264,30 @@ class KonohaVarType extends KonohaType {
 		int cmp;
 		KonohaType t;
 		TypeLog next;
+
 		TypeLog(int cmp, KonohaType t, TypeLog next) {
 			this.cmp = cmp;
 			this.t = t;
 			this.next = next;
 		}
 	}
+
 	class TypeVarLog {
 		boolean isEquiv;
 		KonohaVarType var;
 		TypeVarLog next;
+
 		TypeVarLog(boolean isEquiv, KonohaVarType var, TypeVarLog next) {
 			this.isEquiv = isEquiv;
 			this.var = var;
 			this.next = next;
 		}
 	}
+
 	boolean typePoly = false;
 	TypeLog typeLog = null;
 	TypeVarLog varLog = null;
-	
+
 	KonohaVarType(String name, KonohaType t) {
 		super(name);
 		if(t != null) {
@@ -253,12 +310,12 @@ class KonohaVarType extends KonohaType {
 	public final KonohaType getResolvedType() {
 		return this.typeLog.t;
 	}
-	
+
 	@Override
 	boolean isGreekType() {
-		return false;  // all GreekTypes are converted into VarTypes
+		return false; // all GreekTypes are converted into VarTypes
 	}
-	
+
 	@Override
 	boolean equalsType(KonohaType exprType) {
 		if(exprType == this) {
@@ -286,7 +343,7 @@ class KonohaVarType extends KonohaType {
 		}
 		return false;
 	}
-	
+
 	private boolean update(KonohaPrimitiveType t) {
 		if(this.isUnresolved()) {
 			this.typeLog = new TypeLog(0, t, null);
@@ -322,7 +379,7 @@ class KonohaVarType extends KonohaType {
 		}
 		this.typeLog = new TypeLog(0, t, this.typeLog);
 	}
-	
+
 	private boolean appendTypeVarLog(boolean isEquiv, KonohaVarType exprVarType) {
 		TypeVarLog l = this.varLog;
 		while(l != null) {
@@ -334,7 +391,7 @@ class KonohaVarType extends KonohaType {
 					l.isEquiv = true;
 					return this.syncVarType(l.var);
 				}
-				if(!isEquiv) { 
+				if(!isEquiv) {
 					if(l.var.isMatchVar(exprVarType)) {
 						l.isEquiv = true;
 						return this.syncVarType(l.var);
@@ -359,7 +416,7 @@ class KonohaVarType extends KonohaType {
 		}
 		return false;
 	}
-	
+
 	private boolean syncVarType(KonohaVarType var) {
 		if(var.isUnresolved() && this.isUnresolved()) {
 			return true;
@@ -375,29 +432,28 @@ class KonohaVarType extends KonohaType {
 		return false;
 	}
 
-//	private boolean checkVarLog() {
-//		if(this.isResolved()) {
-//			TypeVarLog l = this.varLog;
-//			KonohaType t = this.getResolvedType();
-//			while(l != null) {
-//				if(l.isEquiv) {
-//					
-//				}
-//				l = l.next;
-//			}
-//		}
-//	}
+	// private boolean checkVarLog() {
+	// if(this.isResolved()) {
+	// TypeVarLog l = this.varLog;
+	// KonohaType t = this.getResolvedType();
+	// while(l != null) {
+	// if(l.isEquiv) {
+	//
+	// }
+	// l = l.next;
+	// }
+	// }
+	// }
 
 	boolean equalsPrimitiveType(KonohaPrimitiveType t, KonohaVarType var) {
 		return var.update(t);
 	}
 
 	boolean equalsStructType(KonohaStructType t, KonohaVarType var) {
-		return false; //var.updateRealType(t);
+		return false; // var.updateRealType(t);
 	}
 
 	boolean matchStructType(KonohaStructType t, KonohaVarType var) {
-		return false; //var.updateRealType(t); // FIXME
+		return false; // var.updateRealType(t); // FIXME
 	}
 }
-

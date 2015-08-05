@@ -26,7 +26,7 @@ public class GEP {
 
 	public void addTable(Tag table, String token) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	public String addIndent() {
@@ -41,9 +41,7 @@ public class GEP {
 
 	public void endBlock(int pos) {
 		// TODO Auto-generated method stub
-		
+
 	}
-
-
 
 }

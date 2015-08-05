@@ -4,28 +4,30 @@ import nez.NezOption;
 import nez.SourceContext;
 import nez.ast.CommonTree;
 import nez.main.Verbose;
-import nez.util.ConsoleUtils;
 
 public class Example {
 	CommonTree nameNode;
 	CommonTree textNode;
 	boolean result;
-	
+
 	Example(CommonTree nameNode, CommonTree textNode, boolean result) {
 		this.nameNode = nameNode;
 		this.textNode = textNode;
 		this.result = result;
 	}
-	
+
 	boolean test(GrammarFile grammar, NezOption option) {
 		Grammar g = grammar.newGrammar(nameNode.getText(), option);
 		if(g == null) {
-			System.out.println(nameNode.formatSourceMessage("error", "undefined nonterminal"));
+			System.out.println(nameNode.formatSourceMessage("error",
+					"undefined nonterminal"));
 			return false;
 		}
 		SourceContext source = textNode.newSourceContext();
-		String name = (this.result ? "" : "!") + nameNode.getText() + 
-				" (" + textNode.getSource().getResourceName() + ":" + textNode.getSource().linenum(textNode.getSourcePosition()) + ")";
+		String name = (this.result ? "" : "!") + nameNode.getText() + " ("
+				+ textNode.getSource().getResourceName() + ":"
+				+ textNode.getSource().linenum(textNode.getSourcePosition())
+				+ ")";
 		boolean matchingResult = g.match(source);
 		boolean unConsumed = true;
 		if(matchingResult) {
@@ -67,4 +69,3 @@ public class Example {
 		}
 	}
 }
-

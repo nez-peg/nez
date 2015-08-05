@@ -15,9 +15,7 @@ import nez.lang.Not;
 import nez.lang.Option;
 import nez.lang.Production;
 import nez.lang.Repetition;
-import nez.lang.Sequence;
 import nez.main.Verbose;
-import nez.util.UFlag;
 
 public class NezCompiler2 extends NezCompiler1 {
 
@@ -25,6 +23,7 @@ public class NezCompiler2 extends NezCompiler1 {
 		super(option);
 	}
 
+	@Override
 	protected Instruction encodeMemoizingProduction(CodePoint cp) {
 		if(cp.memoPoint != null) {
 			Production p = cp.production;
@@ -37,59 +36,63 @@ public class NezCompiler2 extends NezCompiler1 {
 		return null;
 	}
 
+	@Override
 	public final Instruction encodeOption(Option p, Instruction next) {
 		if(option.enabledLexicalOptimization) {
 			Expression inner = GrammarOptimizer.resolveNonTerminal(p.get(0));
 			if(inner instanceof ByteChar) {
 				this.optimizedUnary(p);
-				return new IOptionByteChar((ByteChar) inner, next);
+				return new IOptionByteChar((ByteChar)inner, next);
 			}
 			if(inner instanceof ByteMap) {
 				this.optimizedUnary(p);
-				return new IOptionByteMap((ByteMap) inner, next);
+				return new IOptionByteMap((ByteMap)inner, next);
 			}
 		}
 		return super.encodeOption(p, next);
 	}
 
+	@Override
 	public final Instruction encodeRepetition(Repetition p, Instruction next) {
 		if(option.enabledLexicalOptimization) {
 			Expression inner = GrammarOptimizer.resolveNonTerminal(p.get(0));
 			if(inner instanceof ByteChar) {
 				this.optimizedUnary(p);
-				return new IRepeatedByteMap((ByteChar) inner, next);
+				return new IRepeatedByteMap((ByteChar)inner, next);
 			}
 			if(inner instanceof ByteMap) {
 				this.optimizedUnary(p);
-				return new IRepeatedByteMap((ByteMap) inner, next);
+				return new IRepeatedByteMap((ByteMap)inner, next);
 			}
 		}
 		return super.encodeRepetition(p, next);
 	}
 
+	@Override
 	public final Instruction encodeNot(Not p, Instruction next, Instruction failjump) {
 		if(option.enabledLexicalOptimization) {
 			Expression inner = GrammarOptimizer.resolveNonTerminal(p.get(0));
 			if(inner instanceof ByteMap) {
 				this.optimizedUnary(p);
-				return new INotByteMap((ByteMap) inner, next);
+				return new INotByteMap((ByteMap)inner, next);
 			}
 			if(inner instanceof ByteChar) {
 				this.optimizedUnary(p);
-				return new INotByteMap((ByteChar) inner, next);
+				return new INotByteMap((ByteChar)inner, next);
 			}
 			if(inner instanceof AnyChar) {
 				this.optimizedUnary(p);
-				return new INotAnyChar(inner, ((AnyChar) inner).isBinary(), next);
+				return new INotAnyChar(inner, ((AnyChar)inner).isBinary(), next);
 			}
-//			if(inner instanceof Sequence && ((Sequence) inner).isMultiChar()) {
-//				this.optimizedUnary(p);
-//				return new INotMultiChar((Sequence) inner, next);
-//			}
+			// if(inner instanceof Sequence && ((Sequence) inner).isMultiChar()) {
+			// this.optimizedUnary(p);
+			// return new INotMultiChar((Sequence) inner, next);
+			// }
 		}
 		return super.encodeNot(p, next, failjump);
 	}
 
+	@Override
 	public final Instruction encodeChoice(Choice p, Instruction next, Instruction failjump) {
 		if(option.enabledPrediction && p.predictedCase != null) {
 			return encodePredicatedChoice(p, next, failjump);
@@ -108,9 +111,9 @@ public class NezCompiler2 extends NezCompiler1 {
 			int id = predictId(choice.predictedCase, ch, predicted);
 			Instruction inst = m.get(id);
 			if(inst == null) {
-				//System.out.println("creating '" + (char)ch + "'("+ch+"): " + e);
+				// System.out.println("creating '" + (char)ch + "'("+ch+"): " + e);
 				if(predicted instanceof Choice) {
-//					if(predicated == choice) {
+					// if(predicated == choice) {
 					/* this is a rare case where the selected choice is the parent choice */
 					/* this cause the repeated calls of the same matchers */
 					inst = this.encodeUnoptimizedChoice(choice, next, failjump);
@@ -136,11 +139,12 @@ public class NezCompiler2 extends NezCompiler1 {
 		}
 		return max;
 	}
-	
+
 	public final Instruction encodeUnoptimizedChoice(Choice p, Instruction next, Instruction failjump) {
 		return super.encodeChoice(p, next, failjump);
 	}
 
+	@Override
 	public final Instruction encodeNonTerminal(NonTerminal p, Instruction next, Instruction failjump) {
 		Production r = p.getProduction();
 		CodePoint cp = this.getCodePoint(r);
@@ -156,16 +160,17 @@ public class NezCompiler2 extends NezCompiler1 {
 				return new IMemoCall(cp, next);
 			}
 		}
-		//Verbose.debug("memoize: NOT " + p.getLocalName());
+		// Verbose.debug("memoize: NOT " + p.getLocalName());
 		return new ICallPush(r, next);
 	}
 
 	// AST Construction
 
+	@Override
 	public final Instruction encodeLink(Link p, Instruction next, Instruction failjump) {
 		if(option.enabledASTConstruction && p.get(0) instanceof NonTerminal) {
 			next = new ICommit(p, new ILink(p, next));
-			next = encodeNonTerminal((NonTerminal) p.get(0), next, failjump);
+			next = encodeNonTerminal((NonTerminal)p.get(0), next, failjump);
 			return new INodePush(p, next);
 		}
 		return super.encodeLink(p, next, failjump);

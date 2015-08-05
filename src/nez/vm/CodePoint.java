@@ -10,9 +10,10 @@ public class CodePoint {
 	int start;
 	int end;
 	int ref = 0;
-	boolean     inlining = false;
-	MemoPoint   memoPoint = null;
+	boolean inlining = false;
+	MemoPoint memoPoint = null;
 	Instruction memoStart = null;
+
 	CodePoint(Production p, Expression local) {
 		this.production = p;
 		this.localExpression = local;

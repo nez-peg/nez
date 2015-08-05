@@ -25,20 +25,20 @@ public class LCshell extends Command {
 	String command = null;
 	String text = null;
 	int linenum = 0;
-	
+
 	@Override
 	public void exec(CommandContext config) {
 		Command.displayVersion();
 		GrammarFile gfile = config.getGrammarFile(true);
 		ConsoleUtils.addCompleter(gfile.getNonterminalList());
 		NezOption option = config.getNezOption();
-		
+
 		while(readLine(">>> ")) {
 			if((command != null && command.equals(""))) {
 				continue;
 			}
-//			System.out.println("command: " + command);
-//			System.out.println("text: " + text);
+			// System.out.println("command: " + command);
+			// System.out.println("text: " + text);
 			if(command == null) {
 				defineProduction(gfile, text);
 				continue;
@@ -75,11 +75,11 @@ public class LCshell extends Command {
 			}
 		}
 	}
-	
+
 	private void displayGrammar(String command, Grammar g) {
 		g.getStartProduction().dump();
 	}
-	
+
 	private int indexOfOperator(String line) {
 		int index = -1;
 		for(int i = 0; i < line.length(); i++) {
@@ -129,7 +129,7 @@ public class LCshell extends Command {
 		}
 		if(text.startsWith("=") || command.equals("import") || command.equals("format") || command.equals("example")) {
 			StringBuilder sb = new StringBuilder();
-			sb.append(line); 
+			sb.append(line);
 			sb.append("\n");
 			while((line = ConsoleUtils.readSingleLine(console, "... ")) != null) {
 				if(line.equals("")) {
@@ -150,27 +150,27 @@ public class LCshell extends Command {
 		String name = text.replace('\n', ' ').trim();
 		Grammar g = ns.newGrammar(name);
 		if(g == null) {
-			ConsoleUtils.println("NameError: name '"+name+"' is not defined");
+			ConsoleUtils.println("NameError: name '" + name + "' is not defined");
 		}
 		return g;
 	}
-	
+
 	private void defineProduction(GrammarFile ns, String text) {
-		//ConsoleUtils.println("--\n"+text+"--");
+		// ConsoleUtils.println("--\n"+text+"--");
 		NezParser parser = new NezParser();
 		parser.eval(ns, "<stdio>", linenum, text);
 		ConsoleUtils.addCompleter(ns.getNonterminalList());
 	}
-	
-	static HashMap<String, ShellCommand> cmdMap = new HashMap<String,ShellCommand>();
+
+	static HashMap<String, ShellCommand> cmdMap = new HashMap<String, ShellCommand>();
 	static {
 		cmdMap.put("nez", new NezCommand());
 	}
-	
+
 	static boolean hasCommand(String cmd) {
 		return cmdMap.containsKey(cmd);
 	}
-	
+
 	static void execCommand(String cmd, Grammar g, NezOption option) {
 		NezGenerator gen = GeneratorLoader.load(cmd);
 		gen.generate(g, option, null);
@@ -186,11 +186,10 @@ class NezCommand extends ShellCommand {
 
 	@Override
 	public void perform(Grammar g) {
-		NezGrammarGenerator gen  = new NezGrammarGenerator();
-		for(Production p: g.getProductionList()) {
+		NezGrammarGenerator gen = new NezGrammarGenerator();
+		for(Production p : g.getProductionList()) {
 			gen.visitProduction(p);
 		}
 	}
-	
-}
 
+}

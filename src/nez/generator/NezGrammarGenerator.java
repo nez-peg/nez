@@ -5,11 +5,8 @@ import nez.lang.AnyChar;
 import nez.lang.ByteChar;
 import nez.lang.ByteMap;
 import nez.lang.Capture;
-import nez.lang.CharMultiByte;
 import nez.lang.Choice;
-import nez.lang.Empty;
 import nez.lang.Expression;
-import nez.lang.Failure;
 import nez.lang.Grammar;
 import nez.lang.Link;
 import nez.lang.New;
@@ -20,23 +17,18 @@ import nez.lang.Production;
 import nez.lang.Repetition;
 import nez.lang.Repetition1;
 import nez.lang.Replace;
-import nez.lang.Sequence;
-import nez.lang.Multinary;
 import nez.lang.Tagging;
-import nez.lang.Unary;
 import nez.util.StringUtils;
-import nez.vm.Instruction;
 
 public class NezGrammarGenerator extends GrammarGenerator {
 	@Override
 	public String getDesc() {
-		return "a Nez grammar" ;
+		return "a Nez grammar";
 	}
 
 	public NezGrammarGenerator() {
 	}
 
-	
 	@Override
 	public void makeHeader(Grammar g) {
 		L("// Parsing Expression Grammars for Nez");
@@ -46,7 +38,7 @@ public class NezGrammarGenerator extends GrammarGenerator {
 	String stringfyName(String s) {
 		return s;
 	}
-	
+
 	@Override
 	public void visitProduction(Production rule) {
 		Expression e = rule.getExpression();
@@ -71,53 +63,64 @@ public class NezGrammarGenerator extends GrammarGenerator {
 			visitExpression(e);
 		}
 		dec();
-	}	
-	
+	}
+
+	@Override
 	public void visitEmpty(Expression e) {
 		W("''");
 	}
 
+	@Override
 	public void visitFailure(Expression e) {
 		W("!''");
 	}
 
+	@Override
 	public void visitNonTerminal(NonTerminal e) {
 		W(stringfyName(e.getLocalName()));
 	}
-	
+
+	@Override
 	public void visitByteChar(ByteChar e) {
 		W(StringUtils.stringfyCharacter(e.byteChar));
 	}
 
+	@Override
 	public void visitByteMap(ByteMap e) {
 		W(StringUtils.stringfyCharacterClass(e.byteMap));
 	}
-	
+
+	@Override
 	public void visitAnyChar(AnyChar e) {
 		W(".");
 	}
-	
 
+	@Override
 	public void visitOption(Option e) {
-		Unary( null, e, "?");
+		Unary(null, e, "?");
 	}
-	
+
+	@Override
 	public void visitRepetition(Repetition e) {
 		Unary(null, e, "*");
 	}
-	
+
+	@Override
 	public void visitRepetition1(Repetition1 e) {
 		Unary(null, e, "+");
 	}
 
+	@Override
 	public void visitAnd(And e) {
-		Unary( "&", e, null);
+		Unary("&", e, null);
 	}
-	
+
+	@Override
 	public void visitNot(Not e) {
-		Unary( "!", e, null);
+		Unary("!", e, null);
 	}
-	
+
+	@Override
 	public void visitChoice(Choice e) {
 		for(int i = 0; i < e.size(); i++) {
 			if(i > 0) {
@@ -126,24 +129,29 @@ public class NezGrammarGenerator extends GrammarGenerator {
 			visitExpression(e.get(i));
 		}
 	}
-	
+
+	@Override
 	public void visitNew(New e) {
 		W(e.lefted ? "{@" : "{");
 	}
 
+	@Override
 	public void visitCapture(Capture e) {
 		W("}");
 	}
 
+	@Override
 	public void visitTagging(Tagging e) {
 		W("#");
 		W(e.tag.getName());
 	}
-	
+
+	@Override
 	public void visitReplace(Replace e) {
 		W(StringUtils.quoteString('`', e.value, '`'));
 	}
-	
+
+	@Override
 	public void visitLink(Link e) {
 		String predicate = "@";
 		if(e.index != -1) {
@@ -162,6 +170,5 @@ public class NezGrammarGenerator extends GrammarGenerator {
 		}
 		W(">");
 	}
-
 
 }

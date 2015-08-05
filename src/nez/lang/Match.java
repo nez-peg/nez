@@ -8,6 +8,7 @@ public class Match extends Unary {
 	Match(SourcePosition s, Expression inner) {
 		super(s, inner);
 	}
+
 	@Override
 	public final boolean equalsExpression(Expression o) {
 		if(o instanceof Match) {
@@ -17,15 +18,15 @@ public class Match extends Unary {
 	}
 
 	@Override
-	public String getPredicate() { 
+	public String getPredicate() {
 		return "~";
 	}
-	
+
 	@Override
-	public String key() { 
+	public String key() {
 		return "~";
 	}
-	
+
 	@Override
 	protected final void format(StringBuilder sb) {
 		this.formatUnary(sb, "~", inner);
@@ -45,10 +46,12 @@ public class Match extends Unary {
 	public int inferTypestate(Visa v) {
 		return Typestate.BooleanType;
 	}
+
 	@Override
 	public short acceptByte(int ch) {
 		return this.inner.acceptByte(ch);
 	}
+
 	@Override
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
 		return this.inner.encode(bc, next, failjump);
