@@ -221,20 +221,28 @@ class ASTMachine {
 		return this.treeTransducer.commit(newnode);
 	}
 
+	private Object parseResult = null;
+	
 	public final Object getParseResult(long startpos, long endpos) {
+		if(parseResult != null) {
+			return parseResult;
+		}
 		if(debugMode) {
 			dump(this.firstLog, null);
 		}
 		for(ASTLog cur = this.firstLog; cur != null; cur = cur.next) {
 			if(cur.type == ASTMachine.New) {
-				Object node = createNode(cur, null);
-				//logAbort(cur.prev, false);
-				//Verbose.debug("getParseResult: " + node);
-				return node;
+				parseResult = createNode(cur, null);
+				break;
 			}
 		}
-		//Verbose.debug("getParseResult: " + null);
-		return treeTransducer.newNode(null, source, startpos, endpos, 0, null);
+		if(parseResult == null) {
+			parseResult = treeTransducer.newNode(null, source, startpos, endpos, 0, null);
+		}
+		this.firstLog = null;
+		this.unusedDataLog = null;
+		//Verbose.debug("getParseResult: " + parseResult);
+		return parseResult;
 	}
 
 	class ASTLog {
