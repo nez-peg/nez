@@ -960,7 +960,7 @@ class ITLookup extends AbstractMemoizationInstruction {
 			memoPoint.memoHit(entry.consumed);
 			sc.consume(entry.consumed);
 			ASTMachine astMachine = sc.getAstMachine();
-			astMachine.commitTransactionPoint(index, entry.result);
+			astMachine.logLink(index, entry.result);
 			return this.skip;
 		}
 		memoPoint.miss();

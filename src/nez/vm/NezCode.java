@@ -29,14 +29,14 @@ public class NezCode {
 		return this.memoPointList != null ? this.memoPointList.size() : 0;
 	}
 	
-	public final void dumpMemoPointList() {
+	public final void dumpMemoPoints() {
 		if(this.memoPointList != null) {
-			ConsoleUtils.println("ID\tPEG\tCount\tHit\tFail\tMean");
+			Verbose.println("ID\tPEG\tCount\tHit\tFail\tMean");
 			for(MemoPoint p: this.memoPointList) {
 				String s = String.format("%d\t%s\t%d\t%f\t%f\t%f", p.id, p.label, p.count(), p.hitRatio(), p.failHitRatio(), p.meanLength());
-				ConsoleUtils.println(s);
+				Verbose.println(s);
 			}
-			ConsoleUtils.println("");
+			Verbose.println("");
 		}
 	}
 }

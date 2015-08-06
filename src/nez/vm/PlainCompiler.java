@@ -46,18 +46,24 @@ public class PlainCompiler extends NezCompiler {
 		return GrammarOptimizer.resolveNonTerminal(p.getExpression());
 	}
 
-	protected Instruction encodeMemoizingProduction(CodePoint code) {
+	protected Instruction encodeMemoizingProduction(ProductionCode code) {
 		return null;
+	}
+	
+	private Production encodingProduction;
+	protected Production getEncodingProduction() {
+		return this.encodingProduction;
 	}
 	
 	protected void encodeProduction(UList<Instruction> codeList, Production p, Instruction next) {
 		String uname = p.getUniqueName();
-		CodePoint code = this.codePointMap.get(uname);
-		if(code != null) {
-			code.nonmemoStart = encode(code.localExpression, next, null/*failjump*/);
-			code.start = codeList.size();
-			this.layoutCode(codeList, code.nonmemoStart);
-			code.end = codeList.size();
+		ProductionCode pcode = this.pcodeMap.get(uname);
+		if(pcode != null) {
+			encodingProduction = p;
+			pcode.compiled = encode(pcode.localExpression, next, null/*failjump*/);
+			//pcode.start = codeList.size();
+			this.layoutCode(codeList, pcode.compiled);
+			//pcode.end = codeList.size();
 //			if(code.memoPoint != null) {
 //				code.memoStart = this.encodeMemoizingProduction(code);
 //				this.layoutCode(codeList, code.memoStart);
@@ -72,7 +78,7 @@ public class PlainCompiler extends NezCompiler {
 		if(option.enabledMemoization || option.enabledPackratParsing) {
 			memoPointList = new UList<MemoPoint>(new MemoPoint[4]);
 		}
-		initCodeMap(grammar, memoPointList);
+		initProductionCodeMap(grammar, memoPointList);
 		UList<Instruction> codeList = new UList<Instruction>(new Instruction[64]);
 		Production start = grammar.getStartProduction();
 		this.encodeProduction(codeList, start, new IRet(start));
@@ -83,17 +89,17 @@ public class PlainCompiler extends NezCompiler {
 		}
 		for(Instruction inst : codeList) {
 			if(inst instanceof ICall) {
-				CodePoint deref = this.codePointMap.get(((ICall) inst).rule.getUniqueName());
+				ProductionCode deref = this.pcodeMap.get(((ICall) inst).rule.getUniqueName());
 				if(deref == null) {
 					Verbose.debug("no deref: " + ((ICall) inst).rule.getUniqueName());
 				}
-				((ICall) inst).setResolvedJump(deref.nonmemoStart);
+				((ICall) inst).setResolvedJump(deref.compiled);
 			}
 //			Verbose.debug("\t" + inst.id + "\t" + inst);
 		}
 		long t2 = System.nanoTime();
 		Verbose.printElapsedTime("CompilingTime", t, t2);
-		this.codePointMap = null;
+		this.pcodeMap = null;
 		return new NezCode(codeList.ArrayValues[0], codeList.size(), memoPointList);
 	}
 	

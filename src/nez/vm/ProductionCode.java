@@ -3,20 +3,28 @@ package nez.vm;
 import nez.lang.Expression;
 import nez.lang.Production;
 
-public class CodePoint {
+public class ProductionCode {
 	Production production;
 	Expression localExpression;
-	Instruction nonmemoStart;
-	int start;
-	int end;
+	Instruction compiled;
+
 	int ref = 0;
 	boolean     inlining = false;
 	MemoPoint   memoPoint = null;
-	Instruction memoStart = null;
 	boolean state;
-	CodePoint(Production p, Expression local) {
+	
+	int start;
+	int end;
+	Instruction memoStart = null;
+
+	ProductionCode(Production p, Expression local) {
 		this.production = p;
 		this.localExpression = local;
 		this.state = p.isContextual();
 	}
+
+	public final String getLocalName() {
+		return this.production.getLocalName();
+	}
+
 }

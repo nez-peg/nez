@@ -47,15 +47,15 @@ public abstract class NezEncoder {
 
 	/* CodeMap */
 	
-	protected HashMap<String, CodePoint> codePointMap = null;
+	protected HashMap<String, ProductionCode> pcodeMap = null;
 		
-	protected CodePoint newCodePoint(Production p, Expression localExpression) {
-		return new CodePoint(p, localExpression);
+	protected ProductionCode newProductionCode(Production p, Expression localExpression) {
+		return new ProductionCode(p, localExpression);
 	}
 	
-	protected CodePoint getCodePoint(Production p) {
-		if(this.codePointMap != null) {
-			return codePointMap.get(p.getUniqueName());
+	protected ProductionCode getCodePoint(Production p) {
+		if(this.pcodeMap != null) {
+			return pcodeMap.get(p.getUniqueName());
 		}
 		return null;
 	}
@@ -66,24 +66,24 @@ public abstract class NezEncoder {
 	
 	void count(Production p) {
 		String uname = p.getUniqueName();
-		CodePoint c = this.codePointMap.get(uname);
+		ProductionCode c = this.pcodeMap.get(uname);
 		if(c == null) {
 			Expression deref = optimizeLocalProduction(p);
 			if(deref.isInterned()) {
 				String key = "#" + deref.getId();
-				c = this.codePointMap.get(key);
+				c = this.pcodeMap.get(key);
 				if(c == null) {
-					c = newCodePoint(p, deref);
-					codePointMap.put(key, c);
+					c = newProductionCode(p, deref);
+					pcodeMap.put(key, c);
 				}
 	//			else {
 	//				Verbose.debug("alias " + uname + ", " + c.production.getUniqueName());
 	//			}
-				codePointMap.put(uname, c);
+				pcodeMap.put(uname, c);
 			}
 			else {
-				c = newCodePoint(p, deref);
-				codePointMap.put(uname, c);
+				c = newProductionCode(p, deref);
+				pcodeMap.put(uname, c);
 			}
 		}
 		c.ref++;
@@ -99,8 +99,8 @@ public abstract class NezEncoder {
 		}
 	}
 
-	protected void initCodeMap(Grammar grammar, List<MemoPoint> memoPointList) {
-		this.codePointMap = new HashMap<String, CodePoint>();
+	protected void initProductionCodeMap(Grammar grammar, List<MemoPoint> memoPointList) {
+		this.pcodeMap = new HashMap<String, ProductionCode>();
 		Production start = grammar.getStartProduction();
 		count(start);
 		countNonTerminalReference(start.getExpression());
@@ -111,44 +111,38 @@ public abstract class NezEncoder {
 		}
 		if(option.enabledInlining) {
 			for(Production p : grammar.getProductionList()) {
-				CodePoint cp = this.codePointMap.get(p.getUniqueName());
+				ProductionCode cp = this.pcodeMap.get(p.getUniqueName());
 				this.checkInlining(cp);
-//				System.out.println(p.getUniqueName() + " cp = " + cp);
-//				if(cp != null) {
-//					this.checkInlining(cp);
-//				}
 			}
 		}
 		if(memoPointList != null) {
 			for(Production p : grammar.getProductionList()) {
-				CodePoint cp = this.codePointMap.get(p.getUniqueName());
-				//System.out.println(p.getUniqueName() + " cp = " + cp);
+				ProductionCode cp = this.pcodeMap.get(p.getUniqueName());
 				this.checkMemoizing(cp, memoPointList);
-//				if(cp != null) {
-//					this.checkMemoizing(cp, memoPointList);
-//				}
 			}
 		}
 	}
 	
-	protected void checkInlining(CodePoint cp) {
-		//Verbose.debug("ref " + cp.production.getLocalName() + " " + cp.ref);
-		if(cp.ref == 1 || GrammarOptimizer.isSingleCharacter(cp.localExpression)) {
-			cp.inlining = true;
+	protected void checkInlining(ProductionCode pcode) {
+		if(pcode.ref == 1 || GrammarOptimizer.isSingleCharacter(pcode.localExpression)) {
+			if(Verbose.PackratParsing) {
+				Verbose.println("Inlining: " + pcode.getLocalName());
+			}
+			pcode.inlining = true;
 		}
 	}
 
-	protected void checkMemoizing(CodePoint cp, List<MemoPoint> memoPointList) {
-		if(cp.inlining || cp.memoPoint != null) {
+	protected void checkMemoizing(ProductionCode pcode, List<MemoPoint> memoPointList) {
+		if(pcode.inlining || pcode.memoPoint != null) {
 			return ;
 		}
-		Production p = cp.production;
-		if(cp.ref > 2 && p.inferTypestate() != Typestate.OperationType) {
+		Production p = pcode.production;
+		if(pcode.ref > 1 && p.inferTypestate() != Typestate.OperationType) {
 			int memoId = memoPointList.size();
-			cp.memoPoint = new MemoPoint(memoId, p.getLocalName(), cp.localExpression, p.isContextual());
-			memoPointList.add(cp.memoPoint);
+			pcode.memoPoint = new MemoPoint(memoId, p.getLocalName(), pcode.localExpression, p.isContextual());
+			memoPointList.add(pcode.memoPoint);
 			if(Verbose.PackratParsing) {
-				Verbose.debug("memo " + cp.memoPoint + " ref="+ cp.ref + " pure? " + p.isNoNTreeConstruction() + " rec? " + p.isRecursive());
+				Verbose.println("MemoPoint: " + pcode.memoPoint + " ref="+ pcode.ref + " pure? " + p.isNoNTreeConstruction() + " rec? " + p.isRecursive());
 			}
 		}
 	}

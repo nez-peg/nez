@@ -129,7 +129,7 @@ public class Grammar {
 	public final Instruction compile() {
 		if(compiledCode == null) {
 //			NezCompiler bc = Command.ReleasePreview ? new PackratCompiler(this.option) : new PlainCompiler(this.option);
-			NezCompiler bc = new OptimizedCompiler(this.option);
+			NezCompiler bc = new PackratCompiler(this.option);
 			compiledCode = bc.compile(this);
 //			if(Verbose.VirtualMachine) {
 //				bc.dump(this.productionList);
@@ -146,7 +146,7 @@ public class Grammar {
 			boolean matched = machine.run(pc,  s);
 			s.doneProfiling(prof);
 			if(Verbose.PackratParsing) {
-				this.compiledCode.dumpMemoPointList();
+				this.compiledCode.dumpMemoPoints();
 			}
 			return matched;
 		}
