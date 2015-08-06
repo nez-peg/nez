@@ -18,14 +18,14 @@ import nez.lang.GrammarFile;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
 
-public class JSONConverter extends AbstractTreeVisitor {
+public class JSONCeleryConverter extends AbstractCeleryConverter {
 
 	private HashMap<String, List<String>> classMap;
 	private List<String> requiredMembersList;
 	private List<String> impliedMemebersList;
 	private final boolean UseExtendedGrammar = true;
 
-	public JSONConverter() {
+	public JSONCeleryConverter() {
 		this.classMap = new HashMap<>();
 	}
 

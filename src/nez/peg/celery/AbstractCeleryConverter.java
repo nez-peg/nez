@@ -18,7 +18,7 @@ public abstract class AbstractCeleryConverter extends CommonTreeVisitor {
 		this.visit("visit", node);
 	}
 
-	abstract void loadPredefinedRules(CommonTree node);
+	abstract protected void loadPredefinedRules(CommonTree node);
 
 	public final void setRootClassName(String filePath) {
 		int offset = filePath.lastIndexOf('/');
