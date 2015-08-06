@@ -16,6 +16,8 @@ public class KonohaLanguage extends StringTransducerCombinator {
 		konoha.setTypeRule(new ApplyTypeRule(key("Apply")));
 		konoha.setTypeRule(new BlockTypeRule(key("Block")));
 		konoha.setTypeRule(new AssignTypeRule(key("Assign")));
+		konoha.setTypeRule(new IfTypeRule(key("If")));
+		konoha.setTypeRule(new WhileTypeRule(key("While")));
 		
 		defineLiteral(konoha, "#True", "bool", Asis());
 		defineLiteral(konoha, "#False", "bool", Asis());
@@ -311,6 +313,35 @@ public class KonohaLanguage extends StringTransducerCombinator {
 			KonohaType varType = konoha.typeCheck(null, node.get(0));
 			KonohaType assignType = konoha.typeCheck(varType, node.get(1));
 			node.typed = assignType;
+		}
+	}
+	
+	class IfTypeRule extends KonohaTypeRule {
+		public IfTypeRule(String name) {
+			super(name, 0, Asis());
+		}
+		@Override
+		public void match(KonohaTransducer konoha, KonohaTree node){
+			node.matched = this;
+			node.typed = KonohaType.VoidType;
+			konoha.typeCheck(konoha.getType("bool"), node.get(0)); //condition node
+			konoha.typeCheck(null, node.get(1));
+			if(node.size() == 3){
+				konoha.typeCheck(null, node.get(2));
+			}
+		}
+	}
+	
+	class WhileTypeRule extends KonohaTypeRule {
+		public WhileTypeRule(String name) {
+			super(name, 0, Asis());
+		}
+		@Override
+		public void match(KonohaTransducer konoha, KonohaTree node){
+			node.matched = this;
+			node.typed = KonohaType.VoidType;
+			konoha.typeCheck(konoha.getType("bool"), node.get(0)); //condition node
+			konoha.typeCheck(null, node.get(1));
 		}
 	}
 
