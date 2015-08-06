@@ -1,6 +1,5 @@
 package nez.konoha;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 import nez.ast.Tag;
@@ -251,7 +250,10 @@ class KonohaVarType extends KonohaType {
 	}
 
 	public final KonohaType getResolvedType() {
-		return this.typeLog.t;
+		if(!this.isUnresolved()){
+			return this.typeLog.t;
+		}
+		return null;
 	}
 	
 	@Override
