@@ -252,6 +252,10 @@ class KonohaVarType extends KonohaType {
 	public final KonohaType getResolvedType() {
 		if(!this.isUnresolved()){
 			return this.typeLog.t;
+		} else {
+			if(this.varLog != null){
+				return this.varLog.var.getResolvedType();
+			}
 		}
 		return null;
 	}
