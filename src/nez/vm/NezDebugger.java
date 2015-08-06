@@ -85,8 +85,8 @@ public class NezDebugger {
 
 	public void showCurrentExpression() {
 		Expression e = null;
-		if(code instanceof ICallPush) {
-			e = ((ICallPush) code).ne;
+		if(code instanceof ICall) {
+			e = ((ICall) code).ne;
 		}
 		else {
 			e = code.getExpression();
@@ -209,47 +209,47 @@ public class NezDebugger {
 		}
 	}
 
-	public boolean exec(Print o) {
-		if(o.type == Print.printContext) {
-			Context ctx = (Context) sc;
-			if(o.code == null) {
-				ConsoleUtils.println("context {");
-				ConsoleUtils.println("  input_name = " + ctx.getResourceName());
-				ConsoleUtils.println("  pos = " + ctx.getPosition());
-				Object obj = ctx.getLeftObject();
-				if(obj == null) {
-					ConsoleUtils.println("  left = " + ctx.getLeftObject());
-				}
-				else {
-					ConsoleUtils.println("  left = " + ctx.getLeftObject().hashCode());
-				}
-				ConsoleUtils.println("}");
-			}
-			else if(o.code.equals("pos")) {
-				ConsoleUtils.println("pos = " + ctx.getPosition());
-				ConsoleUtils.println(sc.formatDebugPositionLine(((Context) sc).getPosition(), ""));
-			}
-			else if(o.code.equals("input_name")) {
-				ConsoleUtils.println("input_name = " + ctx.getResourceName());
-			}
-			else if(o.code.equals("left")) {
-				ConsoleUtils.println("left = " + ctx.getLeftObject());
-			}
-			else {
-				ConsoleUtils.println("error: no member nameed \'" + o.code + "\' in context");
-			}
-		}
-		else if(o.type == Print.printProduction) {
-			Production rule = ruleMap.get(o.code);
-			if(rule != null) {
-				ConsoleUtils.println(rule.toString());
-			}
-			else {
-				ConsoleUtils.println("error: production not found '" + o.code + "'");
-			}
-		}
-		return true;
-	}
+//	public boolean exec(Print o) {
+//		if(o.type == Print.printContext) {
+//			Context ctx = (Context) sc;
+//			if(o.code == null) {
+//				ConsoleUtils.println("context {");
+//				ConsoleUtils.println("  input_name = " + ctx.getResourceName());
+//				ConsoleUtils.println("  pos = " + ctx.getPosition());
+//				Object obj = ctx.getLeftObject();
+//				if(obj == null) {
+//					ConsoleUtils.println("  left = " + ctx.getLeftObject());
+//				}
+//				else {
+//					ConsoleUtils.println("  left = " + ctx.getLeftObject().hashCode());
+//				}
+//				ConsoleUtils.println("}");
+//			}
+//			else if(o.code.equals("pos")) {
+//				ConsoleUtils.println("pos = " + ctx.getPosition());
+//				ConsoleUtils.println(sc.formatDebugPositionLine(((Context) sc).getPosition(), ""));
+//			}
+//			else if(o.code.equals("input_name")) {
+//				ConsoleUtils.println("input_name = " + ctx.getResourceName());
+//			}
+//			else if(o.code.equals("left")) {
+//				ConsoleUtils.println("left = " + ctx.getLeftObject());
+//			}
+//			else {
+//				ConsoleUtils.println("error: no member nameed \'" + o.code + "\' in context");
+//			}
+//		}
+//		else if(o.type == Print.printProduction) {
+//			Production rule = ruleMap.get(o.code);
+//			if(rule != null) {
+//				ConsoleUtils.println(rule.toString());
+//			}
+//			else {
+//				ConsoleUtils.println("error: production not found '" + o.code + "'");
+//			}
+//		}
+//		return true;
+//	}
 
 	public boolean exec(Break o) {
 		if(this.command.code != null) {
@@ -294,25 +294,25 @@ public class NezDebugger {
 		Expression current = code.getExpression();
 		if(e instanceof NonTerminal) {
 			code = exec_code();
-			int stackTop = ((Context) sc).getUsedStackTopForDebugger();
-			while (stackTop <= ((Context) sc).getUsedStackTopForDebugger()) {
+			int stackTop = ((RuntimeContext) sc).getUsedStackTopForDebugger();
+			while (stackTop <= ((RuntimeContext) sc).getUsedStackTopForDebugger()) {
 				code = exec_code();
 				current = code.getExpression();
 			}
 		}
 		else if(e instanceof Production) {
-			int stackTop = ((Context) sc).getUsedStackTopForDebugger();
-			while (stackTop <= ((Context) sc).getUsedStackTopForDebugger()) {
+			int stackTop = ((RuntimeContext) sc).getUsedStackTopForDebugger();
+			while (stackTop <= ((RuntimeContext) sc).getUsedStackTopForDebugger()) {
 				code = exec_code();
 				current = code.getExpression();
 			}
 		}
 		else if(e instanceof Link) {
 			code = exec_code();
-			int stackTop = ((Context) sc).getUsedStackTopForDebugger();
+			int stackTop = ((RuntimeContext) sc).getUsedStackTopForDebugger();
 			if(code.getExpression() instanceof Production) {
 				code = exec_code();
-				while (stackTop <= ((Context) sc).getUsedStackTopForDebugger()) {
+				while (stackTop <= ((RuntimeContext) sc).getUsedStackTopForDebugger()) {
 					code = exec_code();
 					current = code.getExpression();
 				}
@@ -363,9 +363,9 @@ public class NezDebugger {
 
 	public boolean exec(StepOut o) throws TerminationException {
 		Expression current = code.getExpression();
-		int stackTop = ((Context) sc).getUsedStackTopForDebugger();
+		int stackTop = ((RuntimeContext) sc).getUsedStackTopForDebugger();
 		code = exec_code();
-		while (stackTop <= ((Context) sc).getUsedStackTopForDebugger()) {
+		while (stackTop <= ((RuntimeContext) sc).getUsedStackTopForDebugger()) {
 			code = exec_code();
 			current = code.getExpression();
 		}
@@ -379,7 +379,7 @@ public class NezDebugger {
 	public boolean exec(Continue o) throws TerminationException {
 		while (true) {
 			Expression e = code.getExpression();
-			if(e instanceof Production && code instanceof ICallPush) {
+			if(e instanceof Production && code instanceof ICall) {
 				if(this.breakPointMap.containsKey(((Production) e).getLocalName())) {
 					code = exec_code();
 					return true;
@@ -393,7 +393,7 @@ public class NezDebugger {
 	public boolean exec(Run o) throws TerminationException {
 		while (true) {
 			Expression e = code.getExpression();
-			if(e instanceof Production && code instanceof ICallPush) {
+			if(e instanceof Production && code instanceof ICall) {
 				if(this.breakPointMap.containsKey(((Production) e).getLocalName())) {
 					code = exec_code();
 					return true;

@@ -40,7 +40,7 @@ public class CeleryConverter extends CommonTreeVisitor {
 		}
 		Grammar p = celeryGrammar.newGrammar("File");
 		SourceContext celeryFile = SourceContext.newFileContext(filePath);
-		CommonTree node = p.parse(celeryFile);
+		CommonTree node = p.parseCommonTree(celeryFile);
 		if (node == null) {
 			throw new NezException(celeryFile.getSyntaxErrorMessage());
 		}

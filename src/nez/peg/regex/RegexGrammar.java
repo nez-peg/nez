@@ -32,7 +32,7 @@ public class RegexGrammar extends CommonTreeVisitor {
 			}
 		}
 		Grammar p = regexGrammar.newGrammar("File");
-		CommonTree node = p.parse(regex);
+		CommonTree node = p.parseCommonTree(regex);
 		if (node == null) {
 			throw new NezException(regex.getSyntaxErrorMessage());
 		}

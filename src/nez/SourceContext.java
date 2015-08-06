@@ -9,9 +9,9 @@ import java.io.InputStreamReader;
 import nez.io.FileContext;
 import nez.io.StringContext;
 import nez.util.StringUtils;
-import nez.vm.Context;
+import nez.vm.RuntimeContext;
 
-public abstract class SourceContext extends Context {
+public abstract class SourceContext extends RuntimeContext {
 	
 	private String     fileName;
 	protected long     startLineNum = 1;

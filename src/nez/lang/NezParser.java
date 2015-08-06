@@ -25,7 +25,7 @@ public class NezParser extends CommonTreeVisitor {
 		SourceContext sc = SourceContext.newStringSourceContext(urn, linenum, text);
 		this.loaded = ns;
 		while(sc.hasUnconsumed()) {
-			CommonTree ast = nezGrammar.parse(sc);
+			CommonTree ast = nezGrammar.parseCommonTree(sc);
 			if(ast == null) {
 				ConsoleUtils.println(sc.getSyntaxErrorMessage());
 			}
@@ -39,7 +39,7 @@ public class NezParser extends CommonTreeVisitor {
 		SourceContext sc = SourceContext.newFileContext(urn);
 		this.loaded = gfile;
 		while(sc.hasUnconsumed()) {
-			CommonTree ast = nezGrammar.parse(sc);
+			CommonTree ast = nezGrammar.parseCommonTree(sc);
 			if(ast == null) {
 				ConsoleUtils.exit(1, sc.getSyntaxErrorMessage());
 			}

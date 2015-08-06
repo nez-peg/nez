@@ -34,7 +34,7 @@ public class LCcheck extends Command {
 			totalCount++;
 			SourceContext source = conf.nextInputSource();
 			String urn = source.getResourceName();
-			CommonTree node = g.parse(source);
+			CommonTree node = g.parseCommonTree(source);
 			if(node == null) {
 				ConsoleUtils.println(source.getSyntaxErrorMessage());
 				unparsedInputs.add(urn);
@@ -48,7 +48,7 @@ public class LCcheck extends Command {
 			parsedCount++;
 			String formatted = gfile.formatCommonTree(node);
 			source = SourceContext.newStringSourceContext("(formatted)", 1, formatted);
-			CommonTree node2 = g.parse(source);
+			CommonTree node2 = g.parseCommonTree(source);
 			if(node2 == null) {
 				ConsoleUtils.println(source.getSyntaxErrorMessage());
 				unformatedInputs.add(urn);

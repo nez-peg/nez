@@ -57,7 +57,7 @@ public abstract class NezGenerator extends NezEncoder {
 		}
 	}
 
-	public Instruction encodeExpression(Expression e, Instruction next, Instruction failjump) {
+	public Instruction encode(Expression e, Instruction next, Instruction failjump) {
 		return e.encode(this, next, failjump);
 	}
 

@@ -23,8 +23,8 @@ public abstract class NezCompiler extends NezEncoder {
 				Instruction.labeling(inst.next);
 			}
 			layoutCode(codeList, inst.branch());
-			if(inst instanceof IPredictDispatch) {
-				IPredictDispatch match = (IPredictDispatch)inst;
+			if(inst instanceof IFirst) {
+				IFirst match = (IFirst)inst;
 				for(int ch = 0; ch < match.jumpTable.length; ch ++) {
 					layoutCode(codeList, match.jumpTable[ch]);
 				}

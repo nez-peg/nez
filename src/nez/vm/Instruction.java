@@ -6,6 +6,7 @@ import nez.ast.Tag;
 import nez.lang.Block;
 import nez.lang.ByteChar;
 import nez.lang.ByteMap;
+import nez.lang.Capture;
 import nez.lang.CharMultiByte;
 import nez.lang.DefIndent;
 import nez.lang.DefSymbol;
@@ -24,14 +25,17 @@ import nez.lang.Replace;
 import nez.lang.Sequence;
 import nez.lang.Tagging;
 import nez.util.StringUtils;
+import nez.vm.RuntimeContext.StackData;
 
 public abstract class Instruction {
+	public final byte opcode;
 	protected Expression  e;
 	public Instruction next;
 	public int id;
 	public boolean label = false;
 	
-	public Instruction(Expression e, Instruction next) {
+	public Instruction(byte opcode, Expression e, Instruction next) {
+		this.opcode = opcode;
 		this.e = e;
 		this.id = -1;
 		this.next = next;
@@ -40,6 +44,14 @@ public abstract class Instruction {
 	Instruction branch() {
 		return null;
 	}
+
+	public final void encode(ByteCoder c) {
+		c.encodeOpcode(this.opcode);
+		this.encodeA(c);
+	}
+	
+	abstract void encodeA(ByteCoder c);
+	abstract Instruction exec(RuntimeContext sc) throws TerminationException;
 	
 	final short isAcceptImpl(int ch) {
 		return next == null ? PossibleAcceptance.Accept : this.next.isAcceptImpl(ch);
@@ -49,7 +61,6 @@ public abstract class Instruction {
 		return this.isAcceptImpl(ch) == PossibleAcceptance.Accept;
 	}
 
-	abstract Instruction exec(Context sc) throws TerminationException;
 	
 	protected static Instruction labeling(Instruction inst) {
 		if(inst != null) {
@@ -63,7 +74,7 @@ public abstract class Instruction {
 	}
 
 	public final String getName() {
-		return this.getClass().getSimpleName();
+		return InstructionSet.stringfy(this.opcode);
 	}
 
 	protected String getOperand() {
@@ -101,18 +112,22 @@ interface StackOperation {
 
 class IFail extends Instruction implements StackOperation {
 	IFail(Expression e) {
-		super(e, null);
+		super(InstructionSet.Fail, e, null);
 	}
 	@Override
-	Instruction exec(Context sc) throws TerminationException {
-		return sc.opIFailCatch();
+	void encodeA(ByteCoder c) {
+		// No argument
+	}
+	@Override
+	Instruction exec(RuntimeContext sc) throws TerminationException {
+		return sc.fail();
 	}
 }
 
-class IFailPush extends Instruction implements StackOperation {
+class IAlt extends Instruction implements StackOperation {
 	public final Instruction failjump;
-	IFailPush(Expression e, Instruction failjump, Instruction next) {
-		super(e, next);
+	IAlt(Expression e, Instruction failjump, Instruction next) {
+		super(InstructionSet.Alt, e, next);
 		this.failjump = labeling(failjump);
 	}
 	@Override
@@ -120,685 +135,975 @@ class IFailPush extends Instruction implements StackOperation {
 		return this.failjump;
 	}
 	@Override
-	Instruction exec(Context sc) throws TerminationException {
-		return sc.opITry(this);
-	}
-	@Override
 	protected String getOperand() {
 		return label(this.failjump) + "  ## " + e;
 	}
-}
-
-class INotFailPush extends IFailPush implements StackOperation {
-	INotFailPush(Expression e, Instruction failjump, Instruction next) {
-		super(e, failjump, next);
-	}
-}
-
-class IFailPop extends Instruction implements StackOperation {
-	IFailPop(Expression e, Instruction next) {
-		super(e, next);
+	@Override
+	void encodeA(ByteCoder c) {
+		c.encodeJumpAddr(this.failjump);
 	}
 	@Override
-	Instruction exec(Context sc) throws TerminationException {
-		return sc.opIFanally(this);
+	Instruction exec(RuntimeContext sc) throws TerminationException {
+		sc.pushAlt(this.failjump);
+		return this.next;
 	}
 }
 
-class IFailSkip extends Instruction {
-	IFailSkip(Expression e) {
-		super(e, null);
+//
+//class INotFailPush1 extends IAlt implements StackOperation {
+//	INotFailPush1(Expression e, Instruction failjump, Instruction next) {
+//		super(e, failjump, next);
+//	}
+//}
+
+class ISucc extends Instruction implements StackOperation {
+	ISucc(Expression e, Instruction next) {
+		super(InstructionSet.Succ, e, next);
 	}
 	@Override
-	Instruction exec(Context sc) throws TerminationException {
-		return sc.opIFailSkip(this);
+	void encodeA(ByteCoder c) {
+		// No argument
+	}
+	@Override
+	Instruction exec(RuntimeContext sc) throws TerminationException {
+		sc.popAlt();
+		return this.next;
 	}
 }
+
+//class IFailSkip extends Instruction {
+//	IFailSkip(Expression e) {
+//		super(e, null);
+//	}
+//	@Override
+//	Instruction exec(Context sc) throws TerminationException {
+//		return sc.failSkip(this);
+//	}
+//}
 
 /*
  * IFailCheckSkip
  * Check unconsumed repetition
  */
 
-class IFailCheckSkip extends IFailSkip {
-	IFailCheckSkip(Expression e) {
-		super(e);
+class ISkip extends Instruction {
+	ISkip(Expression e) {
+		super(InstructionSet.Skip, e, null);
 	}
 	@Override
-	Instruction exec(Context sc) throws TerminationException {
-		return sc.opIFailCheckSkip(this);
+	void encodeA(ByteCoder c) {
+		// No argument
+	}
+	@Override
+	Instruction exec(RuntimeContext sc) throws TerminationException {
+		return sc.skip(this.next);
 	}
 }
 
-class ICallPush extends Instruction implements StackOperation {
+class ICall extends Instruction implements StackOperation {
 	Production rule;
 	NonTerminal ne;
 	public Instruction jump = null;
-	ICallPush(Production rule, Instruction next) {
-		super(rule, next);
+	ICall(Production rule, Instruction next) {
+		super(InstructionSet.Call, rule, next);
 		this.rule = rule;
 	}
-//	ICallPush(Production rule, NonTerminal ne, Instruction next) {
-//		super(rule, next);
-//		this.rule = rule;
-//		this.ne = ne;
-//	}
 	void setResolvedJump(Instruction jump) {
 		assert(this.jump == null);
 		this.jump = labeling(this.next);
 		this.next = labeling(jump);
 	}
 	@Override
-	Instruction exec(Context sc) throws TerminationException {
-		return sc.opICallPush(this);
-	}
-	
-	@Override
 	protected String getOperand() {
 		return label(jump);
+	}
+	@Override
+	void encodeA(ByteCoder c) {
+		c.encodeJumpAddr(this.jump);
+	}
+	@Override
+	Instruction exec(RuntimeContext sc) throws TerminationException {
+		StackData s = sc.newUnusedStack();
+		s.ref = this.jump;
+		return this.next;
 	}
 }
 
 class IRet extends Instruction implements StackOperation {
 	IRet(Production e) {
-		super(e, null);
+		super(InstructionSet.Ret, e, null);
 	}
 	@Override
-	Instruction exec(Context sc) throws TerminationException {
-		return sc.opIRet();
+	void encodeA(ByteCoder c) {
+		// No argument
+	}
+	@Override
+	Instruction exec(RuntimeContext sc) throws TerminationException {
+		StackData s = sc.popStack();
+		return (Instruction)s.ref;
 	}
 }
 
-class IMemoCall extends Instruction implements StackOperation {
-	public Instruction returnPoint = null;
-	public Production  production; 
-	public MemoPoint   memoPoint = null;
-	public Instruction nonMemoCodePoint = null;
-	public Instruction memoCodePoint    = null;
-	CodePoint codePoint;
-	
-	IMemoCall(CodePoint codePoint, Instruction next) {
-		super(codePoint.production, next);
-		this.codePoint = codePoint;
-		this.production = codePoint.production;
+//class IMemoCall extends Instruction implements StackOperation {
+//	public Instruction returnPoint = null;
+//	public Production  production; 
+//	public MemoPoint   memoPoint = null;
+//	public Instruction nonMemoCodePoint = null;
+//	public Instruction memoCodePoint    = null;
+//	CodePoint codePoint;
+//	
+//	IMemoCall(CodePoint codePoint, Instruction next) {
+//		super(codePoint.production, next);
+//		this.codePoint = codePoint;
+//		this.production = codePoint.production;
+//	}
+//	@Override
+//	protected String getOperand() {
+//		return label(returnPoint) + "   ## " + production.getLocalName();
+//	}
+//	void resolveJumpAddress() {
+//		assert(this.returnPoint == null);
+//		assert(this.codePoint != null);
+//		this.memoCodePoint = codePoint.memoStart;
+//		this.nonMemoCodePoint = codePoint.nonmemoStart;
+//		this.memoPoint = codePoint.memoPoint;
+//		this.returnPoint = labeling(this.next);
+//		this.next = labeling(memoCodePoint);
+//		this.codePoint = null;
+//	}
+//	@Override
+//	Instruction exec(Context sc) throws TerminationException {
+//		ContextStack top = sc.newUnusedLocalStack();
+//		top.jump = this.returnPoint;
+//		return this.next;
+//	}
+//	void deactivateMemo() {
+//		this.next = nonMemoCodePoint;
+//	}
+//}
+//
+//class IMemoRet extends Instruction implements StackOperation {
+//	public IMemoCall callPoint = null;
+//	IMemoRet(Production p, IMemoCall callPoint) {
+//		super(p, null);
+//		this.callPoint = callPoint;
+//	}
+//	@Override
+//	Instruction exec(Context sc) throws TerminationException {
+//		Instruction returnPoint = sc.popLocalStack().jump;
+//		if(this.callPoint != null) {
+//			if(callPoint.memoPoint.checkDeactivation()) {
+//				callPoint.deactivateMemo();
+//				callPoint = null;
+//			}
+//		}
+//		return returnPoint;
+//	}
+//}
+
+class IPos extends Instruction {
+	IPos(Expression e, Instruction next) {
+		super(InstructionSet.Pos, e, next);
 	}
 	@Override
-	protected String getOperand() {
-		return label(returnPoint) + "   ## " + production.getLocalName();
-	}
-	void resolveJumpAddress() {
-		assert(this.returnPoint == null);
-		assert(this.codePoint != null);
-		this.memoCodePoint = codePoint.memoStart;
-		this.nonMemoCodePoint = codePoint.nonmemoStart;
-		this.memoPoint = codePoint.memoPoint;
-		this.returnPoint = labeling(this.next);
-		this.next = labeling(memoCodePoint);
-		this.codePoint = null;
+	void encodeA(ByteCoder c) {
+		// No argument
 	}
 	@Override
-	Instruction exec(Context sc) throws TerminationException {
-		ContextStack top = sc.newUnusedLocalStack();
-		top.jump = this.returnPoint;
+	Instruction exec(RuntimeContext sc) throws TerminationException {
+		StackData s = sc.newUnusedStack();
+		s.value = sc.getPosition();
 		return this.next;
 	}
-	void deactivateMemo() {
-		this.next = nonMemoCodePoint;
-	}
 }
 
-class IMemoRet extends Instruction implements StackOperation {
-	public IMemoCall callPoint = null;
-	IMemoRet(Production p, IMemoCall callPoint) {
-		super(p, null);
-		this.callPoint = callPoint;
+class IBack extends Instruction {
+	public IBack(Expression e, Instruction next) {
+		super(InstructionSet.Back, e, next);
 	}
 	@Override
-	Instruction exec(Context sc) throws TerminationException {
-		Instruction returnPoint = sc.popLocalStack().jump;
-		if(this.callPoint != null) {
-			if(callPoint.memoPoint.checkDeactivation()) {
-				callPoint.deactivateMemo();
-				callPoint = null;
-			}
-		}
-		return returnPoint;
-	}
-}
-
-
-
-class IPosPush extends Instruction {
-	IPosPush(Expression e, Instruction next) {
-		super(e, next);
+	void encodeA(ByteCoder c) {
+		// No argument
 	}
 	@Override
-	Instruction exec(Context sc) throws TerminationException {
-		return sc.opIPosPush(this);
-	}
-}
-
-class IPosBack extends Instruction {
-	public IPosBack(Expression e, Instruction next) {
-		super(e, next);
-	}
-	@Override
-	Instruction exec(Context sc) throws TerminationException {
-		return sc.opIPopBack(this);
+	Instruction exec(RuntimeContext sc) throws TerminationException {
+		StackData s = sc.popStack();
+		sc.setPosition(s.value);
+		return this.next;
 	}
 }
 
 class IExit extends Instruction {
 	boolean status;
 	IExit(boolean status) {
-		super(null, null);
+		super(InstructionSet.Exit, null, null);
 		this.status = status;
 	}
 	@Override
-	Instruction exec(Context sc) throws TerminationException {
+	void encodeA(ByteCoder c) {
+		c.encodeBoolean(status);
+	}
+	@Override
+	Instruction exec(RuntimeContext sc) throws TerminationException {
 		throw new TerminationException(status);
 	}
 }
 
-class IAnyChar extends Instruction {
-	IAnyChar(Expression e, Instruction next) {
-		super(e, next);
-	}
-	@Override
-	Instruction exec(Context sc) throws TerminationException {
-		return sc.opIAnyChar(this);
-	}
-}
-
-class INotAnyChar extends Instruction {
-	INotAnyChar(Expression e, boolean isBinary, Instruction next) {
-		super(e, next);
-	}
-	@Override
-	Instruction exec(Context sc) throws TerminationException {
-		if(sc.hasUnconsumed()) {
-			return sc.opIFailCatch();
-		}
-		return next;
-	}
-}
-
-class IByteChar extends Instruction {
+abstract class IAbstractByte extends Instruction {
 	public final int byteChar;
-	IByteChar(ByteChar e, Instruction next) {
-		super(e, next);
+	IAbstractByte(byte bytecode, ByteChar e, Instruction next) {
+		super(bytecode, e, next);
 		this.byteChar = e.byteChar;
-	}
-	@Override
-	Instruction exec(Context sc) throws TerminationException {
-		return sc.opIByteChar(this);
 	}
 	@Override
 	protected String getOperand() {
 		return StringUtils.stringfyCharacter(byteChar);
 	}
+	@Override
+	void encodeA(ByteCoder c) {
+		c.encodeByteChar(byteChar);
+	}
 }
 
-class IOptionByteChar extends IByteChar {
-	IOptionByteChar(ByteChar e, Instruction next) {
-		super(e, next);
+class IByte extends IAbstractByte {
+	IByte(ByteChar e, Instruction next) {
+		super(InstructionSet.Byte, e, next);
 	}
 	@Override
-	Instruction exec(Context sc) throws TerminationException {
-		return sc.opIOptionByteChar(this);
+	Instruction exec(RuntimeContext sc) throws TerminationException {
+		if(sc.byteAt(sc.getPosition()) == this.byteChar) {
+			sc.consume(1);
+			return this.next;
+		}
+		return sc.fail();
 	}
 }
 
-class IByteMap extends Instruction {
+class INByte extends IAbstractByte {
+	INByte(ByteChar e, Instruction next) {
+		super(InstructionSet.NByte, e, next);
+	}
+	@Override
+	Instruction exec(RuntimeContext sc) throws TerminationException {
+		if(sc.byteAt(sc.getPosition()) != this.byteChar) {
+			return this.next;
+		}
+		return sc.fail();
+	}
+}
+
+class IOByte extends IAbstractByte {
+	IOByte(ByteChar e, Instruction next) {
+		super(InstructionSet.OByte, e, next);
+	}
+	@Override
+	Instruction exec(RuntimeContext sc) throws TerminationException {
+		if(sc.byteAt(sc.getPosition()) == this.byteChar) {
+			sc.consume(1);
+		}
+		return this.next;
+	}
+}
+
+class IRByte extends IAbstractByte {
+	IRByte(ByteChar e, Instruction next) {
+		super(InstructionSet.RByte, e, next);
+	}
+	@Override
+	Instruction exec(RuntimeContext sc) throws TerminationException {
+		while(sc.byteAt(sc.getPosition()) == this.byteChar) {
+			sc.consume(1);
+		}
+		return this.next;
+	}
+}
+
+abstract class IAbstractAny extends Instruction {
+	IAbstractAny(byte opcode, Expression e, Instruction next) {
+		super(opcode, e, next);
+	}
+	@Override
+	void encodeA(ByteCoder c) {
+		// No argument
+	}
+}
+
+class IAny extends IAbstractAny {
+	IAny(Expression e, Instruction next) {
+		super(InstructionSet.Any, e, next);
+	}
+	@Override
+	Instruction exec(RuntimeContext sc) throws TerminationException {
+		if(sc.hasUnconsumed()) {
+			sc.consume(1);
+			return this.next;
+		}
+		return sc.fail();
+	}
+}
+
+class INAny extends IAbstractAny {
+	INAny(Expression e, boolean isBinary, Instruction next) {
+		super(InstructionSet.NAny, e, next);
+	}
+	@Override
+	Instruction exec(RuntimeContext sc) throws TerminationException {
+		if(sc.hasUnconsumed()) {
+			return sc.fail();
+		}
+		return next;
+	}
+}
+
+abstract class IAbstractSet extends Instruction {
 	public final boolean[] byteMap;
-	IByteMap(ByteMap e, Instruction next) {
-		super(e, next);
+	IAbstractSet(byte opcode, ByteMap e, Instruction next) {
+		super(opcode, e, next);
 		this.byteMap = e.byteMap;
-	}
-//	IByteMap(ByteChar e, Instruction next) {
-//		super(e, next);
-//		this.byteMap = ByteMap.newMap(false);
-//		this.byteMap[e.byteChar] = true;
-//	}
-	@Override
-	Instruction exec(Context sc) throws TerminationException {
-		return sc.opIByteMap(this);
 	}
 	@Override
 	protected String getOperand() {
 		return StringUtils.stringfyCharacterClass(byteMap);
 	}
+	@Override
+	void encodeA(ByteCoder c) {
+		c.encodeByteMap(byteMap);
+	}
 }
 
-class IOptionByteMap extends IByteMap {
-	IOptionByteMap(ByteMap e, Instruction next) {
-		super(e, next);
+class ISet extends IAbstractSet {
+	ISet(ByteMap e, Instruction next) {
+		super(InstructionSet.Set, e, next);
 	}
 	@Override
-	Instruction exec(Context sc) throws TerminationException {
-		return sc.opIOptionByteMap(this);
+	Instruction exec(RuntimeContext sc) throws TerminationException {
+		int byteChar = sc.byteAt(sc.getPosition());
+		if(byteMap[byteChar]) {
+			sc.consume(1);
+			return this.next;
+		}
+		return sc.fail();
+	}
+}
+
+class IOSet extends IAbstractSet {
+	IOSet(ByteMap e, Instruction next) {
+		super(InstructionSet.Set, e, next);
+	}
+	@Override
+	Instruction exec(RuntimeContext sc) throws TerminationException {
+		int byteChar = sc.byteAt(sc.getPosition());
+		if(byteMap[byteChar]) {
+			sc.consume(1);
+		}
+		return this.next;
+	}
+}
+
+class INSet extends IAbstractSet {
+	INSet(ByteMap e, Instruction next) {
+		super(InstructionSet.NSet, e, next);
+	}
+	@Override
+	Instruction exec(RuntimeContext sc) throws TerminationException {
+		int byteChar = sc.byteAt(sc.getPosition());
+		if(byteMap[byteChar]) {
+			return this.next;
+		}
+		return sc.fail();
+	}
+}
+
+class IRSet extends IAbstractSet {
+	IRSet(ByteMap e, Instruction next) {
+		super(InstructionSet.RSet, e, next);
+	}
+	@Override
+	Instruction exec(RuntimeContext sc) throws TerminationException {
+		int byteChar = sc.byteAt(sc.getPosition());
+		if(byteMap[byteChar]) {
+			sc.consume(1);
+			byteChar = sc.byteAt(sc.getPosition());
+		}
+		return this.next;
+	}
+}
+
+abstract class AbstractStrInstruction extends Instruction {
+	final byte[] utf8;
+	public AbstractStrInstruction(byte opcode, CharMultiByte e, byte[] utf8, Instruction next) {
+		super(opcode, e, next);
+		this.utf8 = utf8;
+	}
+	@Override
+	protected String getOperand() {
+		StringBuilder sb = new StringBuilder();
+		for(int i = 0; i < utf8.length; i++) {
+			if(i > 0) {
+				sb.append(" ");
+			}
+			sb.append(StringUtils.stringfyCharacter(utf8[i] & 0xff));
+		}
+		return sb.toString();
+	}
+	@Override
+	void encodeA(ByteCoder c) {
+		c.encodeString(utf8);
+	}
+}
+
+
+class IStr extends AbstractStrInstruction {
+	public IStr(CharMultiByte e, Instruction next) {
+		super(InstructionSet.Str, e, e.byteSeq, next);
+	}
+	@Override
+	Instruction exec(RuntimeContext sc) throws TerminationException {
+		if(sc.match(sc.getPosition(), this.utf8)) {
+			sc.consume(utf8.length);
+			return this.next;
+		}
+		return sc.fail();
+	}
+}
+
+class INStr extends AbstractStrInstruction {
+	public INStr(CharMultiByte e, Instruction next) {
+		super(InstructionSet.NStr, e, e.byteSeq, next);
+	}
+	@Override
+	Instruction exec(RuntimeContext sc) throws TerminationException {
+		if(!sc.match(sc.getPosition(), this.utf8)) {
+			return this.next;
+		}
+		return sc.fail();
+	}
+}
+
+class IOStr extends AbstractStrInstruction {
+	public IOStr(CharMultiByte e, Instruction next) {
+		super(InstructionSet.OStr, e, e.byteSeq, next);
+	}
+	@Override
+	Instruction exec(RuntimeContext sc) throws TerminationException {
+		if(sc.match(sc.getPosition(), this.utf8)) {
+			sc.consume(utf8.length);
+		}
+		return this.next;
+	}
+}
+
+class IRStr extends AbstractStrInstruction {
+	public IRStr(CharMultiByte e, Instruction next) {
+		super(InstructionSet.RStr, e, e.byteSeq, next);
+	}
+	@Override
+	Instruction exec(RuntimeContext sc) throws TerminationException {
+		while(sc.match(sc.getPosition(), this.utf8)) {
+			sc.consume(utf8.length);
+		}
+		return this.next;
 	}
 }
 
 class IConsume extends Instruction {
-	IConsume(Expression e, Instruction next) {
-		super(e, next);
+	int shift;
+	IConsume(Expression e, int shift, Instruction next) {
+		super(InstructionSet.Consume, e, next);
+		this.shift = shift;
 	}
 	@Override
-	Instruction exec(Context sc) throws TerminationException {
-		sc.consume(1);
+	void encodeA(ByteCoder c) {
+		c.encodeShift(shift);
+	}
+	@Override
+	Instruction exec(RuntimeContext sc) throws TerminationException {
+		sc.consume(this.shift);
 		return this.next;
 	}
 }
 
-class IBacktrack extends Instruction {
-	final int prefetched;
-	IBacktrack(Expression e, int prefetched, Instruction next) {
-		super(e, next);
-		this.prefetched = prefetched;
-	}
-	@Override
-	Instruction exec(Context sc) throws TerminationException {
-		sc.consume(-1);
-		return this.next;
-	}
-}
+//class IBacktrack extends Instruction {
+//	final int prefetched;
+//	IBacktrack(Expression e, int prefetched, Instruction next) {
+//		super(e, next);
+//		this.prefetched = prefetched;
+//	}
+//	@Override
+//	Instruction exec(Context sc) throws TerminationException {
+//		sc.consume(-1);
+//		return this.next;
+//	}
+//}
 
 
-class IPredictDispatch extends Instruction {
+class IFirst extends Instruction {
 	Instruction[] jumpTable;
-	IPredictDispatch(Expression e, Instruction next) {
-		super(e, next);
+	IFirst(Expression e, Instruction next) {
+		super(InstructionSet.First, e, next);
 		jumpTable = new Instruction[257];
 		Arrays.fill(jumpTable, next);
 	}
 	void setJumpTable(int ch, Instruction inst) {
-		if(inst instanceof IPredictDispatch) {
-			jumpTable[ch] = ((IPredictDispatch) inst).jumpTable[ch];
+		if(inst instanceof IFirst) {
+			jumpTable[ch] = ((IFirst) inst).jumpTable[ch];
 		}
 		else {
 			jumpTable[ch] = Instruction.labeling(inst);
 		}
 	}
 	@Override
-	Instruction exec(Context sc) throws TerminationException {
+	void encodeA(ByteCoder c) {
+		for(int i = 0; i < jumpTable.length; i++) {
+			c.encodeJumpAddr(jumpTable[i]);
+		}
+	}
+	@Override
+	Instruction exec(RuntimeContext sc) throws TerminationException {
 		int ch = sc.byteAt(sc.getPosition());
-		//sc.consume(1);
-		//System.out.println("ch="+(char)ch + " " + jumpTable[ch]);
 		return jumpTable[ch].exec(sc);
 	}
 }
 
-interface Construction {
-	
-}
-
-class INodePush extends Instruction {
-	INodePush(Link e, Instruction next) {
-		super(e, next);
+abstract class AbstractMemoizationInstruction extends Instruction {
+	final MemoPoint memoPoint;
+	final int memoId;
+	final boolean state;
+	final Instruction skip;
+	AbstractMemoizationInstruction(byte opcode, Expression e, MemoPoint m, boolean state, Instruction next, Instruction skip) {
+		super(opcode, e, next);
+		this.memoPoint = m;
+		this.memoId = m.id;
+		this.skip = labeling(skip);
+		this.state = state;
 	}
-	@Override
-	Instruction exec(Context sc) throws TerminationException {
-		return sc.opNodePush(this);
-	}
-}
-
-class INodeStore extends Instruction {
-	public final int index;
-	INodeStore(Link e, Instruction next) {
-		super(e, next);
-		this.index = e.index;
-	}
-	@Override
-	Instruction exec(Context sc) throws TerminationException {
-		return sc.opNodeStore(this);
+	AbstractMemoizationInstruction(byte opcode, Expression e, MemoPoint m, boolean state, Instruction next) {
+		super(opcode, e, next);
+		this.memoPoint = m;
+		this.memoId = m.id;
+		this.state = state;
+		this.skip = null;
 	}
 	@Override
 	protected String getOperand() {
-		return String.valueOf(index);
+		return String.valueOf(this.memoPoint);
+	}
+	@Override
+	void encodeA(ByteCoder c) {
+		c.encodeBoolean(this.state);
+		c.encodeInt(memoId);
+		if(skip != null) {
+			c.encodeJumpAddr(skip);
+		}
 	}
 }
 
-class ICommit extends Instruction {
-	ICommit(Link e, Instruction next) {
-		super(e, next);
+class ILookup extends AbstractMemoizationInstruction {
+	ILookup(Expression e, MemoPoint m, boolean state, Instruction next, Instruction skip) {
+		super(InstructionSet.Lookup, e, m, state, next, skip);
 	}
 	@Override
-	Instruction exec(Context sc) throws TerminationException {
-		ContextStack top = sc.popLocalStack();
-		if(top.topASTLog.next != null) {
-			Object child = sc.logCommit(top.topASTLog.next);
-			sc.setLeftObject(child);
-			sc.logAbort(top.topASTLog, false);
+	Instruction exec(RuntimeContext sc) throws TerminationException {
+		MemoEntry entry = sc.getMemo(memoId, state); 
+		if(entry != null) {
+			if(entry.failed) {
+				memoPoint.failHit();
+				return sc.fail();
+			}
+			memoPoint.memoHit(entry.consumed);
+			sc.consume(entry.consumed);
+			return this.skip;
 		}
+		memoPoint.miss();
 		return this.next;
 	}
 }
 
-class ILink extends Instruction {
-	public final int index;
-	ILink(Link e, Instruction next) {
-		super(e, next);
-		this.index = e.index;
+class IMemo extends AbstractMemoizationInstruction {
+	IMemo(Expression e, MemoPoint m, boolean state, Instruction next) {
+		super(InstructionSet.Memo, e, m, state, next);
 	}
 	@Override
-	protected String getOperand() {
-		return String.valueOf(index);
-	}
-	@Override
-	Instruction exec(Context sc) throws TerminationException {
-		return sc.opILink(this);
+	Instruction exec(RuntimeContext sc) throws TerminationException {
+		long ppos = sc.popAlt();
+		int length = (int)(sc.getPosition() - ppos);
+		sc.setMemo(ppos, memoId, false, null, length, this.state);
+		return this.next;
 	}
 }
+
+class IMemoFail extends AbstractMemoizationInstruction {
+	IMemoFail(Expression e, boolean state, MemoPoint m) {
+		super(InstructionSet.MemoFail, e, m, state, null);
+	}
+	@Override
+	Instruction exec(RuntimeContext sc) throws TerminationException {
+		sc.setMemo(sc.getPosition(), memoId, true, null, 0, state);
+		return sc.fail();
+	}
+}
+
+
+// AST Construction 
 
 class INew extends Instruction {
 	int shift;
 	INew(New e, Instruction next) {
-		super(e, next);
+		super(InstructionSet.TNew, e, next);
 		this.shift = e.shift;
 	}
-	@Deprecated
-	INew(Expression e, Instruction next) {
-		super(e, next);
-		this.shift = 0;
+	@Override
+	void encodeA(ByteCoder c) {
+		c.encodeShift(shift);
 	}
 	@Override
-	Instruction exec(Context sc) throws TerminationException {
-		return sc.opINew(this);
+	Instruction exec(RuntimeContext sc) throws TerminationException {
+		ASTMachine astMachine = sc.getAstMachine();
+		astMachine.logNew(sc.getPosition() + shift);
+		return this.next;
 	}
 }
 
-class ILeftNew extends Instruction {
+class ITLeftFold extends Instruction {
 	int shift;
-	ILeftNew(New e, Instruction next) {
-		super(e, next);
+	ITLeftFold(New e, Instruction next) {
+		super(InstructionSet.TLeftFold, e, next);
 		this.shift = e.shift;
 	}
-	@Deprecated
-	ILeftNew(Expression e, Instruction next) {
-		super(e, next);
-		this.shift = 0;
+	@Override
+	void encodeA(ByteCoder c) {
+		c.encodeShift(shift);
 	}
 	@Override
-	Instruction exec(Context sc) throws TerminationException {
-		return sc.opILeftNew(this);
+	Instruction exec(RuntimeContext sc) throws TerminationException {
+		ASTMachine astMachine = sc.getAstMachine();
+		astMachine.logSwap(sc.getPosition() + shift);
+		return this.next;
 	}
 }
 
 class ICapture extends Instruction {
 	int shift;
-	ICapture(Expression e, Instruction next) {
-		super(e, next);
-		this.shift = 0;
+	ICapture(Capture e, Instruction next) {
+		super(InstructionSet.TCapture, e, next);
+		this.shift = e.shift;
 	}
 	@Override
-	Instruction exec(Context sc) throws TerminationException {
-		return sc.opICapture(this);
+	void encodeA(ByteCoder c) {
+		c.encodeShift(shift);
+	}
+	@Override
+	Instruction exec(RuntimeContext sc) throws TerminationException {
+		ASTMachine astMachine = sc.getAstMachine();
+		astMachine.logCapture(sc.getPosition() + shift);
+		return this.next;
 	}
 }
 
 class IReplace extends Instruction {
 	public final String value;
 	IReplace(Replace e, Instruction next) {
-		super(e, next);
+		super(InstructionSet.TReplace, e, next);
 		this.value = e.value;
-	}
-	@Override
-	Instruction exec(Context sc) throws TerminationException {
-		return sc.opIReplace(this);
 	}
 	@Override
 	protected String getOperand() {
 		return StringUtils.quoteString('"', value, '"');
+	}
+	@Override
+	void encodeA(ByteCoder c) {
+		c.encodeString(value.getBytes());
+	}
+	@Override
+	Instruction exec(RuntimeContext sc) throws TerminationException {
+		ASTMachine astMachine = sc.getAstMachine();
+		astMachine.logReplace(this.value);
+		return this.next;
 	}
 }
 
 class ITag extends Instruction {
 	public final Tag tag;
 	ITag(Tagging e, Instruction next) {
-		super(e, next);
+		super(InstructionSet.TTag, e, next);
 		this.tag = e.tag;
-	}
-	@Override
-	Instruction exec(Context sc) throws TerminationException {
-		return sc.opITag(this);
 	}
 	@Override
 	protected String getOperand() {
 		return StringUtils.quoteString('"', tag.name, '"');
 	}
+	@Override
+	void encodeA(ByteCoder c) {
+		c.encodeTag(tag);
+	}
+	@Override
+	Instruction exec(RuntimeContext sc) throws TerminationException {
+		ASTMachine astMachine = sc.getAstMachine();
+		astMachine.logTag(tag);
+		return this.next;
+	}
 }
 
-interface Memoization {
-
+class ITPush extends Instruction {
+	ITPush(Link e, Instruction next) {
+		super(InstructionSet.TPush, e, next);
+	}
+	@Override
+	void encodeA(ByteCoder c) {
+		// No argument
+	}
+	@Override
+	Instruction exec(RuntimeContext sc) throws TerminationException {
+		ASTMachine astMachine = sc.getAstMachine();
+		astMachine.logPush();
+		return this.next;
+	}
 }
 
-
-class ILookup extends IFailPush implements Memoization {
-	final MemoPoint memoPoint;
-	final int memoId;
-	final boolean node;
-	final boolean state;
-	final Instruction skip;
-	ILookup(Expression e, MemoPoint m, boolean node, boolean state, Instruction next, Instruction skip, Instruction failjump) {
-		super(e, failjump, next);
-		this.memoPoint = m;
-		this.memoId = m.id;
-		this.skip = labeling(skip);
-		this.node = node;
-		this.state = state;
+class ITPop extends Instruction {
+	public final int index;
+	ITPop(Link e, Instruction next) {
+		super(InstructionSet.TPop, e, next);
+		this.index = e.index;
 	}
 	@Override
 	protected String getOperand() {
-		return String.valueOf(this.memoPoint);
+		return String.valueOf(index);
 	}
 	@Override
-	Instruction exec(Context sc) throws TerminationException {
+	void encodeA(ByteCoder c) {
+		c.encodeIndex(index);
+	}
+	@Override
+	Instruction exec(RuntimeContext sc) throws TerminationException {
+		ASTMachine astMachine = sc.getAstMachine();
+		astMachine.logPop(index);
+		return this.next;
+	}
+}
+
+class ITStart extends Instruction {
+	ITStart(Link e, Instruction next) {
+		super(InstructionSet.TStart, e, next);
+	}
+	@Override
+	void encodeA(ByteCoder c) {
+		// No argument
+	}
+	@Override
+	Instruction exec(RuntimeContext sc) throws TerminationException {
+		StackData s = sc.newUnusedStack();
+		ASTMachine astMachine = sc.getAstMachine();
+		s.ref = astMachine.saveTransactionPoint();
+		return this.next;
+	}
+}
+
+class ICommit extends Instruction {
+	public final int index;
+	ICommit(Link e, Instruction next) {
+		super(InstructionSet.TCommit, e, next);
+		this.index = e.index;
+	}
+	@Override
+	void encodeA(ByteCoder c) {
+		c.encodeIndex(index);
+	}
+	@Override
+	Instruction exec(RuntimeContext sc) throws TerminationException {
+		StackData s = sc.popStack();
+		ASTMachine astMachine = sc.getAstMachine();
+		astMachine.commitTransactionPoint(index, s.ref);
+		return this.next;
+	}
+}
+
+class ITLookup extends AbstractMemoizationInstruction {
+	final int index;
+	ITLookup(Link e, MemoPoint m, boolean state, Instruction next, Instruction skip) {
+		super(InstructionSet.TLookup, e, m, state, next, skip);
+		this.index = e.index;
+	}
+	@Override
+	void encodeA(ByteCoder c) {
+		c.encodeIndex(index);
+		super.encodeA(c);
+	}
+
+	@Override
+	Instruction exec(RuntimeContext sc) throws TerminationException {
 		MemoEntry entry = sc.getMemo(memoId, state); 
 		if(entry != null) {
 			if(entry.failed) {
 				memoPoint.failHit();
-				return sc.opIFailCatch();
+				return sc.fail();
 			}
 			memoPoint.memoHit(entry.consumed);
 			sc.consume(entry.consumed);
-			if(node) {
-				sc.setLeftObject(entry.result);
-			}
+			ASTMachine astMachine = sc.getAstMachine();
+			astMachine.commitTransactionPoint(index, entry.result);
 			return this.skip;
 		}
 		memoPoint.miss();
-		if(node) {
-			sc.opITry(this);
-			return sc.opNodePush(this);
-		}
-		else {
-			return sc.opITry(this);
-		}
+		return this.next;
 	}
 }
 
-class IMemoize extends Instruction implements Memoization {
-	final MemoPoint memoPoint;
-	final int memoId;
-	final boolean node;
-	final boolean state;
-	IMemoize(Expression e, MemoPoint m, boolean node, boolean state, Instruction next) {
-		super(e, next);
-		this.memoPoint = m;
-		this.memoId = m.id;
-		this.node = node;
-		this.state = state;
+class ITMemo extends AbstractMemoizationInstruction {
+	ITMemo(Expression e, MemoPoint m, boolean state, Instruction next) {
+		super(InstructionSet.Memo, e, m, state, next);
 	}
 	@Override
-	protected String getOperand() {
-		return String.valueOf(this.memoPoint);
-	}
-	@Override
-	Instruction exec(Context sc) throws TerminationException {
-		if(this.node) {
-			sc.opICommit(this);
-		}
-		ContextStack stackTop = sc.getUsedStackTop();
-		int length = (int)(sc.getPosition() - stackTop.pos);
-		sc.setMemo(stackTop.pos, memoId, false, this.node ? sc.getLeftObject() :null, length, this.state);
-		return sc.opIFanally(this);
-	}
-}
-
-class IMemoizeFail extends IFail implements Memoization {
-	final MemoPoint memoPoint;
-	final int memoId;
-	final boolean state;
-	IMemoizeFail(Expression e, boolean state, MemoPoint m) {
-		super(e);
-		this.memoPoint = m;
-		this.memoId = m.id;
-		this.state = state;
-	}
-	@Override
-	protected String getOperand() {
-		return String.valueOf(this.memoPoint);
-	}
-	@Override
-	Instruction exec(Context sc) throws TerminationException {
-		sc.setMemo(sc.getPosition(), memoId, true, null, 0, state);
-		return sc.opIFailCatch();
+	Instruction exec(RuntimeContext sc) throws TerminationException {
+		ASTMachine astMachine = sc.getAstMachine();
+		long ppos = sc.popAlt();
+		int length = (int)(sc.getPosition() - ppos);
+		sc.setMemo(ppos, memoId, false, astMachine.getLatestLinkedNode(), length, this.state);
+		return this.next;
 	}
 }
 
 
 /* Symbol */
 
-class IBeginSymbolScope extends IFailPush {
-	IBeginSymbolScope(Block e, Instruction failjump, Instruction next) {
-		super(e, failjump, next);
+abstract class AbstractTableInstruction extends Instruction {
+	final Tag tableName;
+	AbstractTableInstruction(byte opcode, Expression e, Tag tableName, Instruction next) {
+		super(opcode, e, next);
+		this.tableName = tableName;
 	}
 	@Override
-	Instruction exec(Context sc) throws TerminationException {
-		sc.opITry(this);
-		ContextStack top = sc.newUnusedLocalStack();
-		top.pos = sc.getSymbolTable().savePoint();
+	protected String getOperand() {
+		return tableName.getName();
+	}
+	@Override
+	void encodeA(ByteCoder c) {
+		c.encodeSymbolTable(tableName);
+	}
+}
+
+class IBeginSymbolScope extends Instruction {
+	IBeginSymbolScope(Block e, Instruction next) {
+		super(InstructionSet.SOpen, e, next);
+	}
+	@Override
+	void encodeA(ByteCoder c) {
+		// No Arguments
+	}
+	@Override
+	Instruction exec(RuntimeContext sc) throws TerminationException {
+		StackData s = sc.newUnusedStack();
+		s.value = sc.getSymbolTable().savePoint();
 		return this.next;
 	}
 }
 
-class IBeginLocalScope extends IFailPush {
-	final Tag tableName;
-	IBeginLocalScope(LocalTable e, Instruction failjump, Instruction next) {
-		super(e, failjump, next);
-		this.tableName = e.getTable();
+class IBeginLocalScope extends AbstractTableInstruction {
+	IBeginLocalScope(LocalTable e, Instruction next) {
+		super(InstructionSet.SMask, e, e.getTable(), next);
 	}
 	@Override
-	Instruction exec(Context sc) throws TerminationException {
-		sc.opITry(this);
-		ContextStack top = sc.newUnusedLocalStack();
-		top.pos = sc.getSymbolTable().saveHiddenPoint(tableName);
+	Instruction exec(RuntimeContext sc) throws TerminationException {
+		StackData s = sc.newUnusedStack();
+		s.value = sc.getSymbolTable().saveHiddenPoint(tableName);
 		return this.next;
 	}
 }
 
 class IEndSymbolScope extends Instruction {
-	final boolean fail;
-	IEndSymbolScope(Expression e, boolean fail, Instruction next) {
-		super(e, next);
-		this.fail = fail;
+	IEndSymbolScope(Expression e, Instruction next) {
+		super(InstructionSet.SClose, e, next);
 	}
 	@Override
-	Instruction exec(Context sc) throws TerminationException {
-		ContextStack top = sc.popLocalStack();
-		sc.getSymbolTable().rollBack((int)top.pos);
-		return (fail) ? sc.opIFailCatch() : sc.opIFanally(this);
+	void encodeA(ByteCoder c) {
+	}
+	@Override
+	Instruction exec(RuntimeContext sc) throws TerminationException {
+		StackData s = sc.popStack();
+		sc.getSymbolTable().rollBack((int)s.value);
+		return this.next;
 	}
 }
 
-class IDefSymbol extends Instruction {
-	Tag tableName;
+
+class IDefSymbol extends AbstractTableInstruction {
 	IDefSymbol(DefSymbol e, Instruction next) {
-		super(e, next);
-		this.tableName = e.tableName;
+		super(InstructionSet.SDef, e, e.tableName, next);
 	}
 	@Override
-	protected String getOperand() {
-		return tableName.getName();
-	}
-	@Override
-	Instruction exec(Context sc) throws TerminationException {
-		ContextStack top = sc.popLocalStack();
-		byte[] captured = sc.subbyte(top.pos, sc.getPosition());
+	Instruction exec(RuntimeContext sc) throws TerminationException {
+		StackData top = sc.popStack();
+		byte[] captured = sc.subbyte(top.value, sc.getPosition());
 		sc.getSymbolTable().addTable(this.tableName, captured);
 		return this.next;
 	}
 }
 
-class IExistsSymbol extends Instruction {
-	Tag tableName;
+class IExistsSymbol extends AbstractTableInstruction {
 	IExistsSymbol(ExistsSymbol e, Instruction next) {
-		super(e, next);
-		this.tableName = e.tableName;
+		super(InstructionSet.SExists, e, e.tableName, next);
 	}
 	@Override
-	protected String getOperand() {
-		return tableName.getName();
-	}
-	@Override
-	Instruction exec(Context sc) throws TerminationException {
+	Instruction exec(RuntimeContext sc) throws TerminationException {
 		byte[] t = sc.getSymbolTable().getSymbol(tableName);
-		return t != null ? this.next : sc.opIFailCatch();
+		return t != null ? this.next : sc.fail();
 	}
 }
 
-class IIsSymbol extends Instruction {
-	Tag tableName;
-	IIsSymbol(IsSymbol e, Instruction next) {
-		super(e, next);
-		this.tableName = e.tableName;
+class IsMatch extends AbstractTableInstruction {
+	IsMatch(IsSymbol e, Instruction next) {
+		super(InstructionSet.SMatch, e, e.tableName, next);
 	}
 	@Override
-	protected String getOperand() {
-		return tableName.getName();
-	}
-	@Override
-	Instruction exec(Context sc) throws TerminationException {
+	Instruction exec(RuntimeContext sc) throws TerminationException {
 		byte[] t = sc.getSymbolTable().getSymbol(tableName);
 		if(t != null && sc.match(sc.getPosition(), t)) {
 			sc.consume(t.length);
 			return this.next;
 		}
-		return sc.opIFailCatch();
+		return sc.fail();
 	}
 }
 
-class IIsaSymbol extends Instruction {
-	Tag tableName;
-	IIsaSymbol(IsSymbol e, Instruction next) {
-		super(e, next);
-		this.tableName = e.tableName;
+class IIsSymbol extends AbstractTableInstruction {
+	IIsSymbol(IsSymbol e, Instruction next) {
+		super(InstructionSet.SIs, e, e.tableName, next);
 	}
 	@Override
-	protected String getOperand() {
-		return tableName.getName();
-	}
-	@Override
-	Instruction exec(Context sc) throws TerminationException {
-		ContextStack top = sc.popLocalStack();
-		byte[] captured = sc.subbyte(top.pos, sc.getPosition());
+	Instruction exec(RuntimeContext sc) throws TerminationException {
+		StackData s = sc.popStack();
+		byte[] captured = sc.subbyte(s.value, sc.getPosition());
 		if(sc.getSymbolTable().contains2(this.tableName, captured)) {
 			sc.consume(captured.length);
 			return this.next;
 			
 		}
-		return sc.opIFailCatch();
+		return sc.fail();
 	}
 }
 
-
+class IIsaSymbol extends AbstractTableInstruction {
+	IIsaSymbol(IsSymbol e, Instruction next) {
+		super(InstructionSet.SIsa, e, e.tableName, next);
+	}
+	@Override
+	Instruction exec(RuntimeContext sc) throws TerminationException {
+		StackData s = sc.popStack();
+		byte[] captured = sc.subbyte(s.value, sc.getPosition());
+		if(sc.getSymbolTable().contains2(this.tableName, captured)) {
+			sc.consume(captured.length);
+			return this.next;
+			
+		}
+		return sc.fail();
+	}
+}
 
 class IDefIndent extends Instruction {
 	IDefIndent(DefIndent e, Instruction next) {
-		super(e, next);
+		super(InstructionSet.Obsolate, e, next);
 	}
-	final long getLineStartPosition(Context sc, long fromPostion) {
+	final long getLineStartPosition(RuntimeContext sc, long fromPostion) {
 		long startIndex = fromPostion;
 		if(!(startIndex < sc.length())) {
 			startIndex = sc.length() - 1;
@@ -817,7 +1122,11 @@ class IDefIndent extends Instruction {
 		return startIndex;
 	}
 	@Override
-	Instruction exec(Context sc) throws TerminationException {
+	void encodeA(ByteCoder c) {
+		// No argument
+	}
+	@Override
+	Instruction exec(RuntimeContext sc) throws TerminationException {
 		long pos = sc.getPosition();
 		long spos = getLineStartPosition(sc, pos);
 		byte[] b = sc.subbyte(spos, pos);
@@ -833,14 +1142,18 @@ class IDefIndent extends Instruction {
 
 class IIsIndent extends Instruction {
 	IIsIndent(IsIndent e, Instruction next) {
-		super(e, next);
+		super(InstructionSet.Obsolate, e, next);
 	}
 	@Override
-	Instruction exec(Context sc) throws TerminationException {
+	void encodeA(ByteCoder c) {
+		// No argument
+	}
+	@Override
+	Instruction exec(RuntimeContext sc) throws TerminationException {
 		long pos = sc.getPosition();
 		if(pos > 0) {
 			if(sc.byteAt(pos-1) != '\n') {
-				return sc.opIFailCatch();
+				return sc.fail();
 			}
 		}
 		byte[] b = sc.getSymbolTable().getSymbol(NezTag.Indent);
@@ -849,99 +1162,8 @@ class IIsIndent extends Instruction {
 				sc.consume(b.length);
 				return this.next;
 			}
-			return sc.opIFailCatch();
+			return sc.fail();
 		}
 		return this.next;  // empty entry is allowable
-	}
-}
-
-
-
-/* Specialization */
-
-class INotByteMap extends Instruction {
-	public final boolean[] byteMap;
-	INotByteMap(ByteMap e, Instruction next) {
-		super(e, next);
-		this.byteMap = e.byteMap;
-	}
-	INotByteMap(ByteChar e, Instruction next) {
-		super(e, next);
-		this.byteMap = ByteMap.newMap(false);
-		this.byteMap[e.byteChar] = true;
-	}
-	@Override
-	protected String getOperand() {
-		return StringUtils.stringfyCharacterClass(byteMap);
-	}
-	@Override
-	Instruction exec(Context sc) throws TerminationException {
-		return sc.opNotByteMap(this);
-	}
-}
-
-class IRepeatedByteMap extends Instruction {
-	public final boolean[] byteMap;
-	IRepeatedByteMap(ByteMap e, Instruction next) {
-		super(e, next);
-		this.byteMap = e.byteMap;
-	}
-	IRepeatedByteMap(ByteChar e, Instruction next) {
-		super(e, next);
-		this.byteMap = ByteMap.newMap(false);
-		this.byteMap[e.byteChar] = true;
-	}
-	@Override
-	protected String getOperand() {
-		return StringUtils.stringfyCharacterClass(byteMap);
-	}
-	@Override
-	Instruction exec(Context sc) throws TerminationException {
-		return sc.opRepeatedByteMap(this);
-	}
-}
-
-
-class IMultiChar extends Instruction {
-	final boolean optional;
-	final byte[] utf8;
-	final int    len;
-	public IMultiChar(CharMultiByte e, byte[] utf8, boolean optional, Instruction next) {
-		super(e, next);
-		this.utf8 = utf8;
-		this.len = utf8.length;
-		this.optional = optional;
-	}
-	@Override
-	protected String getOperand() {
-		StringBuilder sb = new StringBuilder();
-		for(int i = 0; i < utf8.length; i++) {
-			if(i > 0) {
-				sb.append(" ");
-			}
-			sb.append(StringUtils.stringfyCharacter(utf8[i] & 0xff));
-		}
-		return sb.toString();
-	}
-	@Override
-	Instruction exec(Context sc) throws TerminationException {
-		if(sc.match(sc.getPosition(), this.utf8)) {
-			sc.consume(this.len);
-			return this.next;
-		}
-		return this.optional ? this.next : sc.opIFailCatch();
-	}
-}
-
-class INotMultiChar extends IMultiChar {
-	INotMultiChar(CharMultiByte e, byte[] utf8, Instruction next) {
-		super(e, utf8, false, next);
-	}
-	@Override
-	Instruction exec(Context sc) throws TerminationException {
-		if(!sc.match(sc.getPosition(), this.utf8)) {
-			return this.next;
-		}
-		return sc.opIFailCatch();
 	}
 }

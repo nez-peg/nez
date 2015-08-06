@@ -6,6 +6,7 @@ import nez.NezOption;
 import nez.lang.AnyChar;
 import nez.lang.ByteChar;
 import nez.lang.ByteMap;
+import nez.lang.CharMultiByte;
 import nez.lang.Choice;
 import nez.lang.Expression;
 import nez.lang.GrammarOptimizer;
@@ -19,21 +20,22 @@ import nez.lang.Sequence;
 import nez.main.Verbose;
 import nez.util.UFlag;
 
-public class NezCompiler2 extends NezCompiler1 {
+public class PackratCompiler extends PlainCompiler {
 
-	public NezCompiler2(NezOption option) {
+	public PackratCompiler(NezOption option) {
 		super(option);
 	}
 
 	protected Instruction encodeMemoizingProduction(CodePoint cp) {
-		if(cp.memoPoint != null) {
-			Production p = cp.production;
-			boolean node = option.enabledASTConstruction ? !p.isNoNTreeConstruction() : false;
-			boolean state = p.isContextual();
-			Instruction next = new IMemoize(p, cp.memoPoint, node, state, new IRet(p));
-			Instruction inside = new ICallPush(cp.production, next);
-			return new ILookup(p, cp.memoPoint, node, state, inside, new IRet(p), new IMemoizeFail(p, state, cp.memoPoint));
-		}
+//		if(cp.memoPoint != null) {
+//			Production p = cp.production;
+//			//boolean node = option.enabledASTConstruction ? !p.isNoNTreeConstruction() : false;
+//			boolean state = p.isContextual();
+//			Instruction next = new IMemo(p, cp.memoPoint, state, new IRet(p));
+//			Instruction inside = new ICall(cp.production, next);
+//			inside = new IAlt(p, new IMemoFail(p, state, cp.memoPoint), inside);
+//			return new ILookup(p, cp.memoPoint, state, inside, new IRet(p));
+//		}
 		return null;
 	}
 
@@ -42,11 +44,15 @@ public class NezCompiler2 extends NezCompiler1 {
 			Expression inner = GrammarOptimizer.resolveNonTerminal(p.get(0));
 			if(inner instanceof ByteChar) {
 				this.optimizedUnary(p);
-				return new IOptionByteChar((ByteChar) inner, next);
+				return new IOByte((ByteChar) inner, next);
 			}
 			if(inner instanceof ByteMap) {
 				this.optimizedUnary(p);
-				return new IOptionByteMap((ByteMap) inner, next);
+				return new IOSet((ByteMap) inner, next);
+			}
+			if(inner instanceof CharMultiByte) {
+				this.optimizedUnary(p);
+				return new IOStr((CharMultiByte)inner, next);
 			}
 		}
 		return super.encodeOption(p, next);
@@ -57,11 +63,15 @@ public class NezCompiler2 extends NezCompiler1 {
 			Expression inner = GrammarOptimizer.resolveNonTerminal(p.get(0));
 			if(inner instanceof ByteChar) {
 				this.optimizedUnary(p);
-				return new IRepeatedByteMap((ByteChar) inner, next);
+				return new IRByte((ByteChar) inner, next);
 			}
 			if(inner instanceof ByteMap) {
 				this.optimizedUnary(p);
-				return new IRepeatedByteMap((ByteMap) inner, next);
+				return new IRSet((ByteMap) inner, next);
+			}
+			if(inner instanceof CharMultiByte) {
+				this.optimizedUnary(p);
+				return new IRStr((CharMultiByte)inner, next);
 			}
 		}
 		return super.encodeRepetition(p, next);
@@ -72,20 +82,20 @@ public class NezCompiler2 extends NezCompiler1 {
 			Expression inner = GrammarOptimizer.resolveNonTerminal(p.get(0));
 			if(inner instanceof ByteMap) {
 				this.optimizedUnary(p);
-				return new INotByteMap((ByteMap) inner, next);
+				return new INSet((ByteMap) inner, next);
 			}
 			if(inner instanceof ByteChar) {
 				this.optimizedUnary(p);
-				return new INotByteMap((ByteChar) inner, next);
+				return new INByte((ByteChar) inner, next);
 			}
 			if(inner instanceof AnyChar) {
 				this.optimizedUnary(p);
-				return new INotAnyChar(inner, ((AnyChar) inner).isBinary(), next);
+				return new INAny(inner, ((AnyChar) inner).isBinary(), next);
 			}
-//			if(inner instanceof Sequence && ((Sequence) inner).isMultiChar()) {
-//				this.optimizedUnary(p);
-//				return new INotMultiChar((Sequence) inner, next);
-//			}
+			if(inner instanceof CharMultiByte) {
+				this.optimizedUnary(p);
+				return new INStr((CharMultiByte)inner, next);
+			}
 		}
 		return super.encodeNot(p, next, failjump);
 	}
@@ -99,7 +109,7 @@ public class NezCompiler2 extends NezCompiler1 {
 
 	private final Instruction encodePredicatedChoice(Choice choice, Instruction next, Instruction failjump) {
 		HashMap<Integer, Instruction> m = new HashMap<Integer, Instruction>();
-		IPredictDispatch dispatch = new IPredictDispatch(choice, commonFailure);
+		IFirst dispatch = new IFirst(choice, commonFailure);
 		for(int ch = 0; ch < choice.predictedCase.length; ch++) {
 			Expression predicted = choice.predictedCase[ch];
 			if(predicted == null) {
@@ -116,7 +126,7 @@ public class NezCompiler2 extends NezCompiler1 {
 					inst = this.encodeUnoptimizedChoice(choice, next, failjump);
 				}
 				else {
-					inst = encodeExpression(predicted, next, failjump);
+					inst = encode(predicted, next, failjump);
 				}
 				m.put(id, inst);
 			}
@@ -146,27 +156,36 @@ public class NezCompiler2 extends NezCompiler1 {
 		CodePoint cp = this.getCodePoint(r);
 		if(cp.inlining) {
 			this.optimizedInline(r);
-			return encodeExpression(cp.localExpression, next, failjump);
+			return encode(cp.localExpression, next, failjump);
 		}
 		if(cp.memoPoint != null) {
 			if(!option.enabledASTConstruction || r.isNoNTreeConstruction()) {
 				if(Verbose.PackratParsing) {
 					Verbose.debug("memoize: " + p.getLocalName());
 				}
-				return new IMemoCall(cp, next);
+				Instruction inside = new IMemo(p, cp.memoPoint, cp.state, next);
+				inside = new ICall(cp.production, inside);
+				inside = new IAlt(p, new IMemoFail(p, cp.state, cp.memoPoint), inside);
+				return new ILookup(p, cp.memoPoint, cp.state, inside, next);
 			}
 		}
-		//Verbose.debug("memoize: NOT " + p.getLocalName());
-		return new ICallPush(r, next);
+		return new ICall(r, next);
 	}
 
 	// AST Construction
 
 	public final Instruction encodeLink(Link p, Instruction next, Instruction failjump) {
 		if(option.enabledASTConstruction && p.get(0) instanceof NonTerminal) {
-			next = new ICommit(p, new ILink(p, next));
-			next = encodeNonTerminal((NonTerminal) p.get(0), next, failjump);
-			return new INodePush(p, next);
+			NonTerminal n = (NonTerminal) p.get(0);
+			CodePoint cp = this.getCodePoint(n.getProduction());
+			if(cp.memoPoint != null) {
+				Instruction inside = new ITMemo(p, cp.memoPoint, cp.state, next);
+				inside = new ICommit(p, inside);
+				inside = super.encodeNonTerminal(n, inside, failjump);
+				inside = new ITStart(p, inside);
+				inside = new IAlt(p, new IMemoFail(p, cp.state, cp.memoPoint), inside);
+				return new ITLookup(p, cp.memoPoint, cp.state, inside, next);
+			}
 		}
 		return super.encodeLink(p, next, failjump);
 	}

@@ -39,6 +39,4 @@ public class NezCode {
 			ConsoleUtils.println("");
 		}
 	}
-
-	
 }

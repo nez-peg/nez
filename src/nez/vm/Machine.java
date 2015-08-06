@@ -6,7 +6,7 @@ import nez.util.UList;
 
 public class Machine {
 
-	public static boolean run(Instruction code, SourceContext sc) {
+	public boolean run(Instruction code, SourceContext sc) {
 		boolean result = false;
 		try {
 			while (true) {
@@ -25,9 +25,9 @@ public class Machine {
 		stack.add("Start");
 		try {
 			while (true) {
-				if(code instanceof ICallPush) {
+				if(code instanceof ICall) {
 					stack.add(u);
-					u = ((ICallPush) code).rule.getLocalName();
+					u = ((ICall) code).rule.getLocalName();
 				}
 				if(code instanceof IRet) {
 					u = stack.ArrayValues[stack.size() - 1];

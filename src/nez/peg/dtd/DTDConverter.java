@@ -32,7 +32,7 @@ public class DTDConverter extends CommonTreeVisitor {
 		}
 		Grammar p = dtdGrammar.newGrammar("File");
 		SourceContext dtdFile = SourceContext.newFileContext(filePath);
-		CommonTree node = p.parse(dtdFile);
+		CommonTree node = p.parseCommonTree(dtdFile);
 		if (node == null) {
 			throw new NezException(dtdFile.getSyntaxErrorMessage());
 		}

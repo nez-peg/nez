@@ -13,8 +13,10 @@ public class CodePoint {
 	boolean     inlining = false;
 	MemoPoint   memoPoint = null;
 	Instruction memoStart = null;
+	boolean state;
 	CodePoint(Production p, Expression local) {
 		this.production = p;
 		this.localExpression = local;
+		this.state = p.isContextual();
 	}
 }

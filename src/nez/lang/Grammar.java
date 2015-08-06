@@ -23,8 +23,8 @@ import nez.vm.MemoTable;
 import nez.vm.NezCode;
 import nez.vm.NezCompiler;
 import nez.vm.NezDebugger;
-import nez.vm.NezCompiler1;
-import nez.vm.NezCompiler2;
+import nez.vm.PlainCompiler;
+import nez.vm.PackratCompiler;
 
 public class Grammar {
 	Production start;
@@ -127,7 +127,7 @@ public class Grammar {
 
 	public final Instruction compile() {
 		if(compiledCode == null) {
-			NezCompiler bc = Command.ReleasePreview ? new NezCompiler2(this.option) : new NezCompiler1(this.option);
+			NezCompiler bc = Command.ReleasePreview ? new PackratCompiler(this.option) : new PlainCompiler(this.option);
 			compiledCode = bc.compile(this);
 //			if(Verbose.VirtualMachine) {
 //				bc.dump(this.productionList);
@@ -136,82 +136,59 @@ public class Grammar {
 		return compiledCode.getStartPoint();
 	}
 			
-	public final boolean match(SourceContext s) {
-		boolean matched;
+	public final boolean perform(Machine machine, SourceContext s, TreeTransducer treeTransducer) {
 		Instruction pc = this.compile();
-		s.initJumpStack(getMemoTable(s));
+		s.init(getMemoTable(s), treeTransducer);
 		if(prof != null) {
 			s.startProfiling(prof);
-		}
-		if(Verbose.Debug) {
-			matched = Machine.debug(pc, s);
-		}
-		else {
-			matched = Machine.run(pc, s);
-		}
-		if(matched) {
-			s.newTopLevelNode();
-		}
-		if(prof != null) {
+			boolean matched = machine.run(pc,  s);
 			s.doneProfiling(prof);
 			if(Verbose.PackratParsing) {
 				this.compiledCode.dumpMemoPointList();
 			}
+			return matched;
 		}
-		return matched;
+		return machine.run(pc,  s);
 	}
 
 	public final boolean debug(SourceContext s) {
 		boolean matched;
 		Instruction pc;
-		s.initJumpStack(getMemoTable(s));
-		NezCompiler c = new NezCompiler1(this.option);
+		s.init(getMemoTable(s), null);
+		NezCompiler c = new PlainCompiler(this.option);
 		pc = c.compile(this).getStartPoint();
 		NezDebugger debugger = new NezDebugger(this, pc, s);
 		matched = debugger.exec();
-//		if(matched) {
-//			s.newTopLevelNode();
-//		}
 		return matched;
 	}
 
-	
-
 	/* --------------------------------------------------------------------- */
 		
+	public final boolean match(SourceContext s) {
+		return perform(new Machine(), s, null);
+	}
+
 	public final boolean match(String str) {
 		SourceContext sc = SourceContext.newStringContext(str);
-		if(match(sc)) {
+		if(perform(new Machine(), sc, null)) {
 			return (!sc.hasUnconsumed());
 		}
 		return false;
 	}
 
-	public Object parse(SourceContext sc, TreeTransducer treeFactory) {
+	public Object parse(SourceContext sc, TreeTransducer treeTransducer) {
 		long startPosition = sc.getPosition();
-		sc.setTreeTransducer(treeFactory);
-		if(!this.match(sc)) {
+		if(!this.perform(new Machine(), sc, treeTransducer)) {
 			return null;
 		}
-		Object node = sc.getLeftObject();
-		if(node == null) {
-			node = treeFactory.newNode(null, sc, startPosition, sc.getPosition(), 0, null);
-		}
-//		else {
-//			sc.commitConstruction(0, node);
-//		}
-		return treeFactory.commit(node);
+		return sc.getParseResult(startPosition, sc.getPosition());
 	}
 
-	public final CommonTree parse(SourceContext sc) {
+	public final CommonTree parseCommonTree(SourceContext sc) {
 		return (CommonTree)this.parse(sc, new CommonTreeTransducer());
 	}
-
-	public <E extends AbstractTree<E>> AbstractTree<E> parseTree(SourceContext sc) {
-		return (AbstractTree<E>)this.parse(sc, new CommonTreeTransducer());
-	}
 	
-	public final CommonTree parseAST(String str) {
+	public final CommonTree parseCommonTree(String str) {
 		SourceContext sc = SourceContext.newStringContext(str);
 		return (CommonTree)this.parse(sc, new CommonTreeTransducer());
 	}

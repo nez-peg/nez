@@ -157,7 +157,7 @@ public abstract class NezEncoder {
 
 //	private Instruction failed = new IFail(null);
 	
-	public abstract Instruction encodeExpression(Expression e, Instruction next, Instruction failjump);
+	public abstract Instruction encode(Expression e, Instruction next, Instruction failjump);
 	
 	public abstract Instruction encodeFail(Expression p);
 	public abstract Instruction encodeAnyChar(AnyChar p, Instruction next, Instruction failjump);

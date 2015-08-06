@@ -21,7 +21,7 @@ public class LCformat extends Command {
 		Grammar g = config.getGrammar();
 		while(config.hasInputSource()) {
 			SourceContext source = config.nextInputSource();
-			CommonTree node = g.parse(source);
+			CommonTree node = g.parseCommonTree(source);
 			if(node == null) {
 				ConsoleUtils.println(source.getSyntaxErrorMessage());
 				continue;

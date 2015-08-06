@@ -9,7 +9,7 @@ import java.util.ListIterator;
 import nez.SourceContext;
 import nez.util.StringUtils;
 
-public abstract class AbstractTree<E extends AbstractTree<E>> extends AbstractList<E> {
+public abstract class AbstractTree<E extends AbstractTree<E>> extends AbstractList<E> implements SourcePosition {
 	protected Tag             tag;
 	protected Source          source;
 	protected int             pos;
@@ -119,6 +119,10 @@ public abstract class AbstractTree<E extends AbstractTree<E>> extends AbstractLi
 		return this.getSource().formatPositionLine(type, this.getSourcePosition(), msg);
 	}
 	
+	public final String formatDebugSourceMessage(String msg) {
+		return this.source.formatDebugPositionMessage(this.getSourcePosition(), msg);
+	}
+
 	/**
 	 * Create new input stream 
 	 * @return SourceContext

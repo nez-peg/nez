@@ -59,7 +59,7 @@ public class LCshell extends Command {
 			}
 			else {
 				SourceContext sc = SourceContext.newStringSourceContext("<stdio>", linenum, text);
-				CommonTree node = g.parse(sc);
+				CommonTree node = g.parseCommonTree(sc);
 				if(node == null) {
 					ConsoleUtils.println(sc.getSyntaxErrorMessage());
 					continue;

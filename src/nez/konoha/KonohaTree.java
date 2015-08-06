@@ -1,17 +1,12 @@
 package nez.konoha;
 
-import java.util.AbstractList;
 
-import nez.SourceContext;
 import nez.ast.AbstractTree;
-import nez.ast.CommonTree;
 import nez.ast.Source;
-import nez.ast.SourcePosition;
 import nez.ast.Tag;
 import nez.string.StringTransducer;
-import nez.util.StringUtils;
 
-public class KonohaTree extends AbstractTree<KonohaTree> implements SourcePosition {
+public class KonohaTree extends AbstractTree<KonohaTree> {
 	KonohaType     typed = null;
 	KonohaTypeRule matched = null;
 	
@@ -23,11 +18,6 @@ public class KonohaTree extends AbstractTree<KonohaTree> implements SourcePositi
 	protected KonohaTree dupImpl() {
 		return new KonohaTree(this.getTag(), 
 			this.getSource(), this.getSourcePosition(), this.getLength(), this.size(), getValue());
-	}
-
-	@Override
-	public String formatDebugSourceMessage(String msg) {
-		return this.source.formatDebugPositionMessage(this.getSourcePosition(), msg);
 	}
 	
 	@Override
