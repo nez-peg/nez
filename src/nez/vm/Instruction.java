@@ -368,9 +368,9 @@ class IExit extends Instruction {
 	}
 }
 
-abstract class IAbstractByte extends Instruction {
+abstract class AbstractByteInstruction extends Instruction {
 	public final int byteChar;
-	IAbstractByte(byte bytecode, ByteChar e, Instruction next) {
+	AbstractByteInstruction(byte bytecode, ByteChar e, Instruction next) {
 		super(bytecode, e, next);
 		this.byteChar = e.byteChar;
 	}
@@ -384,7 +384,7 @@ abstract class IAbstractByte extends Instruction {
 	}
 }
 
-class IByte extends IAbstractByte {
+class IByte extends AbstractByteInstruction {
 	IByte(ByteChar e, Instruction next) {
 		super(InstructionSet.Byte, e, next);
 	}
@@ -398,7 +398,7 @@ class IByte extends IAbstractByte {
 	}
 }
 
-class INByte extends IAbstractByte {
+class INByte extends AbstractByteInstruction {
 	INByte(ByteChar e, Instruction next) {
 		super(InstructionSet.NByte, e, next);
 	}
@@ -411,7 +411,7 @@ class INByte extends IAbstractByte {
 	}
 }
 
-class IOByte extends IAbstractByte {
+class IOByte extends AbstractByteInstruction {
 	IOByte(ByteChar e, Instruction next) {
 		super(InstructionSet.OByte, e, next);
 	}
@@ -424,7 +424,7 @@ class IOByte extends IAbstractByte {
 	}
 }
 
-class IRByte extends IAbstractByte {
+class IRByte extends AbstractByteInstruction {
 	IRByte(ByteChar e, Instruction next) {
 		super(InstructionSet.RByte, e, next);
 	}
@@ -437,8 +437,8 @@ class IRByte extends IAbstractByte {
 	}
 }
 
-abstract class IAbstractAny extends Instruction {
-	IAbstractAny(byte opcode, Expression e, Instruction next) {
+abstract class AbstractAnyInstruction extends Instruction {
+	AbstractAnyInstruction(byte opcode, Expression e, Instruction next) {
 		super(opcode, e, next);
 	}
 	@Override
@@ -447,7 +447,7 @@ abstract class IAbstractAny extends Instruction {
 	}
 }
 
-class IAny extends IAbstractAny {
+class IAny extends AbstractAnyInstruction {
 	IAny(Expression e, Instruction next) {
 		super(InstructionSet.Any, e, next);
 	}
@@ -461,7 +461,7 @@ class IAny extends IAbstractAny {
 	}
 }
 
-class INAny extends IAbstractAny {
+class INAny extends AbstractAnyInstruction {
 	INAny(Expression e, boolean isBinary, Instruction next) {
 		super(InstructionSet.NAny, e, next);
 	}
@@ -474,9 +474,9 @@ class INAny extends IAbstractAny {
 	}
 }
 
-abstract class AbstractSetOperation extends Instruction {
+abstract class AbstractSetInstruction extends Instruction {
 	public final boolean[] byteMap;
-	AbstractSetOperation(byte opcode, ByteMap e, Instruction next) {
+	AbstractSetInstruction(byte opcode, ByteMap e, Instruction next) {
 		super(opcode, e, next);
 		this.byteMap = e.byteMap;
 	}
@@ -490,7 +490,7 @@ abstract class AbstractSetOperation extends Instruction {
 	}
 }
 
-class ISet extends AbstractSetOperation {
+class ISet extends AbstractSetInstruction {
 	ISet(ByteMap e, Instruction next) {
 		super(InstructionSet.Set, e, next);
 	}
@@ -505,7 +505,7 @@ class ISet extends AbstractSetOperation {
 	}
 }
 
-class IOSet extends AbstractSetOperation {
+class IOSet extends AbstractSetInstruction {
 	IOSet(ByteMap e, Instruction next) {
 		super(InstructionSet.Set, e, next);
 	}
@@ -519,28 +519,28 @@ class IOSet extends AbstractSetOperation {
 	}
 }
 
-class INSet extends AbstractSetOperation {
+class INSet extends AbstractSetInstruction {
 	INSet(ByteMap e, Instruction next) {
 		super(InstructionSet.NSet, e, next);
 	}
 	@Override
 	Instruction exec(RuntimeContext sc) throws TerminationException {
 		int byteChar = sc.byteAt(sc.getPosition());
-		if(byteMap[byteChar]) {
+		if(!byteMap[byteChar]) {
 			return this.next;
 		}
 		return sc.fail();
 	}
 }
 
-class IRSet extends AbstractSetOperation {
+class IRSet extends AbstractSetInstruction {
 	IRSet(ByteMap e, Instruction next) {
 		super(InstructionSet.RSet, e, next);
 	}
 	@Override
 	Instruction exec(RuntimeContext sc) throws TerminationException {
 		int byteChar = sc.byteAt(sc.getPosition());
-		if(byteMap[byteChar]) {
+		while(byteMap[byteChar]) {
 			sc.consume(1);
 			byteChar = sc.byteAt(sc.getPosition());
 		}
