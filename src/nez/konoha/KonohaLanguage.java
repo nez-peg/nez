@@ -10,7 +10,11 @@ public class KonohaLanguage extends StringTransducerCombinator {
 		konoha.setTypeRule(new ImportTypeRule(key("Import")));
 		konoha.setTypeRule(new MetaDeclTypeRule(key("MetaDecl")));
 		konoha.setTypeRule(new VarDeclTypeRule(key("VarDecl")));
+		konoha.setTypeRule(new FuncDeclTypeRule(key("FuncDecl"), Asis()));
 		konoha.setTypeRule(new VarTypeRule(key("Name")));
+		konoha.setTypeRule(new ReturnTypeRule(key("Return")));
+		konoha.setTypeRule(new ApplyTypeRule(key("Apply")));
+		konoha.setTypeRule(new BlockTypeRule(key("Block")));
 		
 		defineLiteral(konoha, "#True", "bool", Asis());
 		defineLiteral(konoha, "#False", "bool", Asis());
@@ -58,6 +62,18 @@ public class KonohaLanguage extends StringTransducerCombinator {
 				}
 			}
 			super.match(konoha, node);
+		}
+	}
+	
+	class BlockTypeRule extends KonohaTypeRule {
+		public BlockTypeRule(String name) {
+			super(name, 1, Asis());
+		}
+		@Override
+		public void match(KonohaTransducer konoha, KonohaTree node) {
+			for(KonohaTree subnode : node) {
+				KonohaType t = konoha.typeCheck(null, subnode);
+			}
 		}
 	}
 	
@@ -112,7 +128,7 @@ public class KonohaLanguage extends StringTransducerCombinator {
 			node.matched = this;
 			if(t != null) {
 				KonohaTree nameNode = node.get(0);
-				String name = nameNode.getText();				
+				String name = nameNode.getText();
 				nameNode.typed = t;
 				konoha.setName(name, nameNode);
 			}
@@ -136,6 +152,16 @@ public class KonohaLanguage extends StringTransducerCombinator {
 		}
 	}
 	
+	class ApplyTypeRule extends KonohaTypeRule {
+		public ApplyTypeRule(String name) {
+			super(name, 0, Asis());
+		}
+		@Override
+		public void match(KonohaTransducer konoha, KonohaTree node) {
+			this.nextChoice = konoha.typeRuleMap.get(node.get(0).getText());
+		}
+	}
+	
 	class ReturnTypeRule extends KonohaTypeRule {
 		public ReturnTypeRule(String name) {
 			super(name, 1, Asis());
@@ -151,7 +177,7 @@ public class KonohaLanguage extends StringTransducerCombinator {
 					nameNode.typed.matchType(KonohaType.VoidType);
 				}
 				else {
-					konoha.typeCheck(nameNode.typed, node.get(1));
+					konoha.typeCheck(nameNode.typed, node.get(0));
 				}
 			}
 		}
@@ -164,8 +190,9 @@ public class KonohaLanguage extends StringTransducerCombinator {
 		@Override
 		public void match(KonohaTransducer konoha, KonohaTree node) {
 			String name = node.textAt(0, "");
-			konoha.setTypeRule(new FuncTypeInferRule(konoha, name, node.get(1).size(), node));
-			super.match(konoha, node);
+			KonohaTypeRule inferTypeRule = new FuncTypeInferRule(konoha, name, node.get(1).size(), node);
+			konoha.setTypeRule(inferTypeRule);
+			konoha.setName(name, node);
 		}
 		
 	}
@@ -182,20 +209,20 @@ public class KonohaLanguage extends StringTransducerCombinator {
 		@Override
 		public void match(KonohaTransducer konoha, KonohaTree node) {
 			KonohaTransducer funcLevel = new KonohaTransducer(ns);
-			KonohaTree funcNode = node.dup();
-			KonohaType[] types = setTypeVariable(konoha, node, funcLevel, funcNode.get(1));
+			KonohaTree funcNode = this.funcNode.dup();
+			KonohaType[] types = setTypeVariable(konoha, node.get(1), funcLevel, funcNode.get(1));
 			appendTypeRule(node.textAt(0, ""), types);
 			funcLevel.typeCheck(null, funcNode.get(2));
 			checkTypeVariable(types);
 		}
 
-		private KonohaType[] setTypeVariable(KonohaTransducer konoha, KonohaTree applyNode, KonohaTransducer funcLevel, KonohaTree funcNameNode) {
-			KonohaType[] types = new KonohaType[funcNameNode.size()+1];
+		private KonohaType[] setTypeVariable(KonohaTransducer konoha, KonohaTree applyNode, KonohaTransducer funcLevel, KonohaTree funcParamNode) {
+			KonohaType[] types = new KonohaType[funcParamNode.size()+1];
 			types[0] = new KonohaVarType("", null);
-			funcNameNode.typed = types[0];
-			funcLevel.setName("", funcNameNode);  // return type
-			for(int i = 0; i < funcNameNode.size(); i++) {
-				KonohaTree nameNode = funcNameNode.get(i);
+			funcParamNode.typed = types[0];
+			funcLevel.setName("", funcParamNode);  // return type
+			for(int i = 0; i < funcParamNode.size(); i++) {
+				KonohaTree nameNode = funcParamNode.get(i);
 				KonohaType t = konoha.typeCheck(null, applyNode.get(i));
 				types[i+1] = new KonohaVarType(nameNode.getText(), t);
 				nameNode.typed = types[i+1];
@@ -203,9 +230,9 @@ public class KonohaLanguage extends StringTransducerCombinator {
 			}
 			return types;
 		}
-
+		
 		private void appendTypeRule(String name, KonohaType[] types) {
-			OperatorTypeRule st = new OperatorTypeRule(name, types, Asis());
+			FuncOperatorTypeRule st = new FuncOperatorTypeRule(name, types, Asis());
 			st.nextChoice = this.nextChoice;
 			this.nextChoice = st;
 		}
@@ -230,6 +257,28 @@ public class KonohaLanguage extends StringTransducerCombinator {
 				}
 			}
 			return true;
+		}
+	}
+	
+	class FuncOperatorTypeRule extends KonohaTypeRule {
+		KonohaType[] types;  // types[0] is return type
+		
+		public FuncOperatorTypeRule(String name, KonohaType[] types, StringTransducer st) {
+			super(name, types.length - 1, st);
+			this.types = types;
+		}
+		
+		public final void match(KonohaTransducer konoha, KonohaTree node) {
+			KonohaTree argsNode = node.get(1);
+			if(argsNode.size() + 1 != types.length) {
+				return;
+			}
+			for(int i = 1; i < types.length; i++) {
+				KonohaType reqT = types[i];
+				konoha.typeCheck(reqT, argsNode.get(i - 1));
+			}
+			node.matched = this;
+			node.typed = this.types[0];
 		}
 	}
 
