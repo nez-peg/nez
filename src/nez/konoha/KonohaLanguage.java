@@ -15,6 +15,7 @@ public class KonohaLanguage extends StringTransducerCombinator {
 		konoha.setTypeRule(new ReturnTypeRule(key("Return")));
 		konoha.setTypeRule(new ApplyTypeRule(key("Apply")));
 		konoha.setTypeRule(new BlockTypeRule(key("Block")));
+		konoha.setTypeRule(new AssignTypeRule(key("Assign")));
 		
 		defineLiteral(konoha, "#True", "bool", Asis());
 		defineLiteral(konoha, "#False", "bool", Asis());
@@ -23,10 +24,28 @@ public class KonohaLanguage extends StringTransducerCombinator {
 		defineLiteral(konoha, "#String", "string", Asis());
 
 		defineBinary(konoha, "#Add", "int", "int", "int", "+");
+		defineBinary(konoha, "#Add", "float", "float", "float", "+");
 		defineBinary(konoha, "#Sub", "int", "int", "int", "-");
+		defineBinary(konoha, "#Sub", "float", "float", "float", "-");
 		defineBinary(konoha, "#Mul", "int", "int", "int", "*");
+		defineBinary(konoha, "#Mul", "float", "float", "float", "*");
 		defineBinary(konoha, "#Dev", "int", "int", "int", "/");
-
+		defineBinary(konoha, "#Dev", "float", "float", "float", "/");
+		
+		defineBinary(konoha, "#Equals", "bool", "int", "int", "==");
+		defineBinary(konoha, "#Equals", "bool", "float", "float", "==");
+		defineBinary(konoha, "#Equals", "bool", "string", "string", "==");
+		defineBinary(konoha, "#NotEquals", "bool", "int", "int", "!=");
+		defineBinary(konoha, "#NotEquals", "bool", "float", "float", "!=");
+		defineBinary(konoha, "#NotEquals", "bool", "string", "string", "!=");
+		defineBinary(konoha, "#LessThanEquals", "bool", "int", "int", "==");
+		defineBinary(konoha, "#LessThanEquals", "bool", "float", "float", "==");
+		defineBinary(konoha, "#LessThan", "bool", "int", "int", "!=");
+		defineBinary(konoha, "#LessThan", "bool", "float", "float", "!=");
+		defineBinary(konoha, "#GreaterThanEquals", "bool", "int", "int", "==");
+		defineBinary(konoha, "#GreaterThanEquals", "bool", "float", "float", "==");
+		defineBinary(konoha, "#GreaterThan", "bool", "int", "int", "!=");
+		defineBinary(konoha, "#GreaterThan", "bool", "float", "float", "!=");
 	}
 	
 	private String key(String tagname) {
@@ -279,6 +298,19 @@ public class KonohaLanguage extends StringTransducerCombinator {
 			}
 			node.matched = this;
 			node.typed = this.types[0];
+		}
+	}
+	
+	class AssignTypeRule extends KonohaTypeRule {
+		public AssignTypeRule(String name) {
+			super(name, 0, Asis());
+		}
+		@Override
+		public void match(KonohaTransducer konoha, KonohaTree node){
+			node.matched = this;
+			KonohaType varType = konoha.typeCheck(null, node.get(0));
+			KonohaType assignType = konoha.typeCheck(varType, node.get(1));
+			node.typed = assignType;
 		}
 	}
 
