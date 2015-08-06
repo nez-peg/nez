@@ -15,6 +15,7 @@ public class KonohaTransducer {
 	public KonohaTransducer(Konoha root) {
 		this.root = root;
 		this.parent = null;
+		initRoot();
 	}
 
 	public KonohaTransducer(KonohaTransducer parent) {
