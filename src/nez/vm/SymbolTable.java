@@ -13,21 +13,21 @@ public class SymbolTable {
 	int stateCount = 0;
 
 	final class SymbolTableEntry2 {
+		int     stateValue;
 		Tag     table;
 		long    code;
-		byte[]  utf8;
-		boolean avail;   // if hidden, avail = false
+		byte[]  symbol;    // if uft8 is null, hidden 
 	}
 	
-	final static long hashCode(byte[] utf8) {
-		long hashCode = 0;
+	final static long hash(byte[] utf8) {
+		long hashCode = 1;
 		for (int i = 0; i < utf8.length; i++) {
 			hashCode = hashCode * 31 + (utf8[i] & 0xff);
 		}
 		return hashCode;
 	}
 	
-	final boolean equals(byte[] utf8, byte[] b) {
+	static final boolean equals(byte[] utf8, byte[] b) {
 		if(utf8.length == b.length) {
 			for(int i = 0; i < utf8.length; i++) {
 				if(utf8[i] != b[i]) {
@@ -39,7 +39,6 @@ public class SymbolTable {
 		return false;
 	}
 
-	
 	private void initEntry(int s, int e) {
 		for(int i = s; i < e; i++) {
 			this.tables[i] = new SymbolTableEntry2();
@@ -63,79 +62,117 @@ public class SymbolTable {
 		}
 		SymbolTableEntry2 entry = tables[tableSize];
 		tableSize++;
-		entry.table = table;
-		entry.code  = code;
-		entry.utf8  = utf8;
-		entry.avail = true;
-		this.stateCount += 1;
-		this.stateValue = stateCount;
+		if(entry.table == table && equals(entry.symbol, utf8)) {
+			// reuse state value
+			entry.code  = code;
+			this.stateValue = entry.stateValue;
+		}
+		else {
+			entry.table = table;
+			entry.code  = code;
+			entry.symbol  = utf8;
+			this.stateCount += 1;
+			this.stateValue = stateCount;
+			entry.stateValue = stateCount;
+		}
 	}
 
 	public final int savePoint() {
-		push(null, this.stateValue, NullSymbol);
-		return this.tableSize - 1;
-	}
-
-	public final int saveHiddenPoint(Tag table) {
-		push(table, this.stateValue, NullSymbol);
-		this.tables[this.tableSize-1].avail = false;
-		return this.tableSize - 1;
+		return this.tableSize;
 	}
 
 	public final void rollBack(int savePoint) {
-		this.stateValue = (int)tables[savePoint].code;
-		this.tableSize = savePoint;
+		if(this.tableSize != savePoint) {
+			this.tableSize = savePoint;
+			if(this.tableSize == 0) {
+				this.stateValue = 0;
+			}
+			else {
+				this.stateValue = tables[savePoint-1].stateValue;
+			}
+		}
 	}
-		
+			
 	public final int getState() {
 		return this.stateValue;
 	}
 	
-	public final void addTable(Tag table, byte[] utf8) {
-		push(table, hashCode(utf8), utf8);
+	public final void addSymbol(Tag table, byte[] utf8) {
+		push(table, hash(utf8), utf8);
+	}
+
+	public final void addSymbolMask(Tag table) {
+		push(table, 0, null);
 	}
 
 	public final boolean exists(Tag table) {
 		for(int i = tableSize - 1; i >= 0; i--) {
 			SymbolTableEntry2 entry = tables[i];
-			if(entry.table == table && entry.avail ) {
-				return true;
+			if(entry.table == table) {
+				return entry.symbol != null;
 			}
 		}
 		return false;
 	}
 
+	public final boolean exists(Tag table, byte[] symbol) {
+		long code = hash(symbol);
+		for(int i = tableSize - 1; i >= 0; i--) {
+			SymbolTableEntry2 entry = tables[i];
+			if(entry.table == table) {
+				if(entry.symbol == null) return false; // masked
+				if(entry.code == code && equals(entry.symbol, symbol)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	public final boolean exists(Tag table, Tag xtable, byte[] symbol) {
+		long code = hash(symbol);
+		for(int i = tableSize - 1; i >= 0; i--) {
+			SymbolTableEntry2 entry = tables[i];
+			if(entry.table == xtable) {
+				if(entry.symbol == null) {
+					xtable = null;
+					continue;
+				}
+				if(entry.code == code && equals(entry.symbol, symbol)) {
+					return false;
+				}
+				continue;
+			}
+			if(entry.table == table) {
+				if(entry.symbol == null) return false; // masked
+				if(entry.code == code && equals(entry.symbol, symbol)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
 	public final byte[] getSymbol(Tag table) {
 		for(int i = tableSize - 1; i >= 0; i--) {
 			SymbolTableEntry2 entry = tables[i];
-			if(entry.table == table && entry.avail ) {
-				return entry.utf8;
+			if(entry.table == table) {
+				return entry.symbol;
 			}
 		}
 		return null;
 	}
-
-	public final boolean contains(Tag table, byte[] s) {
-		long code = hashCode(s);
+	
+	public final boolean contains(Tag table, byte[] symbol) {
+		long code = hash(symbol);
 		for(int i = tableSize - 1; i >= 0; i--) {
 			SymbolTableEntry2 entry = tables[i];
-			if(entry.table == table && entry.code == code && equals(entry.utf8, s)) {
-				return entry.avail;
-			}
-		}
-		return false;
-	}
-
-	public final boolean contains2(Tag table, byte[] s) {
-		long code = hashCode(s);
-		for(int i = tableSize - 1; i >= 0; i--) {
-			SymbolTableEntry2 entry = tables[i];
-			if(entry.code == code && equals(entry.utf8, s)) {
-				if(entry.table == table && entry.avail) {
-					return true;
+			if(entry.table == table) {
+				if(entry.symbol == null) {
+					return false; // masked
 				}
-				if(entry.table != table && entry.avail) {
-					return false;
+				if(entry.code == code && equals(entry.symbol, symbol)) {
+					return true;
 				}
 			}
 		}
@@ -149,7 +186,7 @@ public class SymbolTable {
 	public final boolean count(Tag table) {
 		for(int i = tableSize - 1; i >= 0; i--) {
 			SymbolTableEntry2 entry = tables[i];
-			if(entry.table == table && entry.avail ) {
+			if(entry.table == table ) {
 				if(entry.code == 0) return false;
 				entry.code--;
 				return true;

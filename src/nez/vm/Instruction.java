@@ -1024,7 +1024,9 @@ class IBeginLocalScope extends AbstractTableInstruction {
 	@Override
 	Instruction exec(RuntimeContext sc) throws TerminationException {
 		StackData s = sc.newUnusedStack();
-		s.value = sc.getSymbolTable().saveHiddenPoint(tableName);
+		SymbolTable st = sc.getSymbolTable();
+		s.value = st.savePoint();
+		st.addSymbolMask(tableName);
 		return this.next;
 	}
 }
@@ -1044,7 +1046,6 @@ class IEndSymbolScope extends Instruction {
 	}
 }
 
-
 class IDefSymbol extends AbstractTableInstruction {
 	IDefSymbol(DefSymbol e, Instruction next) {
 		super(InstructionSet.SDef, e, e.tableName, next);
@@ -1053,7 +1054,7 @@ class IDefSymbol extends AbstractTableInstruction {
 	Instruction exec(RuntimeContext sc) throws TerminationException {
 		StackData top = sc.popStack();
 		byte[] captured = sc.subbyte(top.value, sc.getPosition());
-		sc.getSymbolTable().addTable(this.tableName, captured);
+		sc.getSymbolTable().addSymbol(this.tableName, captured);
 		return this.next;
 	}
 }
@@ -1090,12 +1091,14 @@ class IIsSymbol extends AbstractTableInstruction {
 	}
 	@Override
 	Instruction exec(RuntimeContext sc) throws TerminationException {
-		StackData s = sc.popStack();
-		byte[] captured = sc.subbyte(s.value, sc.getPosition());
-		if(sc.getSymbolTable().contains2(this.tableName, captured)) {
-			sc.consume(captured.length);
-			return this.next;
-			
+		byte[] symbol = sc.getSymbolTable().getSymbol(tableName);
+		if(symbol != null) {
+			StackData s = sc.popStack();
+			byte[] captured = sc.subbyte(s.value, sc.getPosition());
+			if(symbol.length == captured.length && SymbolTable.equals(symbol, captured)) {
+				sc.consume(symbol.length);
+				return this.next;
+			}
 		}
 		return sc.fail();
 	}
@@ -1109,7 +1112,7 @@ class IIsaSymbol extends AbstractTableInstruction {
 	Instruction exec(RuntimeContext sc) throws TerminationException {
 		StackData s = sc.popStack();
 		byte[] captured = sc.subbyte(s.value, sc.getPosition());
-		if(sc.getSymbolTable().contains2(this.tableName, captured)) {
+		if(sc.getSymbolTable().contains(this.tableName, captured)) {
 			sc.consume(captured.length);
 			return this.next;
 			
@@ -1154,7 +1157,7 @@ class IDefIndent extends Instruction {
 				b[i] = ' ';
 			}
 		}
-		sc.getSymbolTable().addTable(NezTag.Indent, b);
+		sc.getSymbolTable().addSymbol(NezTag.Indent, b);
 		return this.next;
 	}
 }
