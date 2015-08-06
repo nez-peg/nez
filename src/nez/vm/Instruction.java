@@ -1,6 +1,7 @@
 package nez.vm;
 
 import java.util.Arrays;
+import java.util.HashMap;
 
 import nez.ast.Tag;
 import nez.lang.Block;
@@ -24,6 +25,7 @@ import nez.lang.Production;
 import nez.lang.Replace;
 import nez.lang.Sequence;
 import nez.lang.Tagging;
+import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
 import nez.vm.RuntimeContext.StackData;
 
@@ -101,8 +103,25 @@ public abstract class Instruction {
 		return sb.toString();
 	}
 
-	boolean debug() {
-		return false;
+	
+	
+	public void dump(HashMap<Integer, Boolean> visited) {
+		if(visited.containsKey(this.id)) {
+			visited.put(this.id, true);
+			if(this.next != null && this.next.id != this.id+1) {
+				ConsoleUtils.println(this.id + "\t" + this + "   ==> " + this.next.id);
+			}
+			else {
+				ConsoleUtils.println(this.id + "\t" + this);
+			}
+			if(this.next != null) {
+				next.dump(visited);
+			}
+			if(this.branch() != null) {
+				this.branch().dump(visited);
+			}
+		}
+		
 	}
 }
 

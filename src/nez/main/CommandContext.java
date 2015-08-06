@@ -138,62 +138,6 @@ class CommandContext {
 				String s = argument.substring(9);
 				this.option.setOption(s);
 			}			
-//			else if(argument.startsWith("--memo")) {
-//				if(argument.equals("--memo:none")) {
-//					this.option.setOption("memo", false);
-//				}
-//				else if(argument.equals("--memo:packrat")) {
-//					this.option.setOption("packrat", false);
-//					this.option.setOption("packrat", true);
-//				}
-//				else {
-//					int w = StringUtils.parseInt(argument.substring(7), -1);
-//					if(w >= 0) {
-//						WindowSize = w;
-//					}
-//					else {
-//						showUsage("unknown option: " + argument);
-//					}
-//				}
-//			}
-//			else if(argument.startsWith("--enable:")) {
-//				if(argument.endsWith("packrat")) {
-//					this.NezOption |= nez.NezOption.PackratParsing;
-//					defaultTable = MemoTable.newPackratHashTable(0, 0, 0);
-//				}
-//				else if(argument.endsWith(":prediction") || argument.endsWith(":predict")) {
-//					this.NezOption |= nez.NezOption.Prediction;
-//				}
-//				else if(argument.endsWith(":tracing") || argument.endsWith(":trace")) {
-//					this.NezOption |= nez.NezOption.Tracing;
-//				}
-//				else if(argument.endsWith(":inline")) {
-//					this.NezOption |= nez.NezOption.Inlining;
-//				}
-//				else if(argument.endsWith(":dfa")) {
-//					this.NezOption |= nez.NezOption.DFA;
-//				}
-//				else if(argument.endsWith(":log")) {
-//					RecorderFileName = "nezrec.csv"; // -Xrec
-//				}
-//			}
-//			else if(argument.startsWith("--disable:")) {
-//				if(argument.endsWith(":packrat") || argument.endsWith(":memo")) {
-//					this.NezOption = UFlag.unsetFlag(this.NezOption, nez.NezOption.PackratParsing);
-//				}
-//				else if(argument.endsWith(":tracing") || argument.endsWith(":trace")) {
-//					this.NezOption = UFlag.unsetFlag(this.NezOption, nez.NezOption.Tracing);
-//				}
-//				else if(argument.endsWith(":prediction") || argument.endsWith(":predict")) {
-//					this.NezOption = UFlag.unsetFlag(this.NezOption, nez.NezOption.Prediction);
-//				}
-//				else if(argument.endsWith(":inline")) {
-//					this.NezOption = UFlag.unsetFlag(this.NezOption, nez.NezOption.Inlining);
-//				}
-//				else if(argument.endsWith(":dfa")) {
-//					this.NezOption = UFlag.unsetFlag(this.NezOption, nez.NezOption.DFA);
-//				}
-//			}
 			else if(argument.startsWith("--verbose")) {
 				if(argument.equals("--verbose:example")) {
 					Verbose.Example = true;
@@ -283,17 +227,13 @@ class CommandContext {
 				ConsoleUtils.exit(1, "cannot open " + grammarFile + "; " + e.getMessage());
 			}
 		}
-//		if(GrammarText != null) {
-//			NezParser p = new NezParser();
-//			return p.loadGrammarFile(SourceContext.newStringContext(GrammarText), new GrammarChecker(this.CheckerLevel));
+//		if(grammarFileCreation) {
+//			return GrammarFile.newGrammarFile(option);
 //		}
-		if(grammarFileCreation) {
-			return GrammarFile.newGrammarFile(option);
-		}
-		else {
+//		else {
 			ConsoleUtils.println("unspecifed grammar");
 			return NezCombinator.newGrammarFile();
-		}
+//		}
 	}
 
 	public final Grammar getGrammar(String start, NezOption option) {

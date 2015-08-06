@@ -217,6 +217,7 @@ public class NezParser extends CommonTreeVisitor {
 			rule = null;
 		}
 		Expression e = toExpression(node.get(1));
+		//Verbose.debug("Parsed: " + node + "\n\t=>" + e);
 		rule = loaded.defineProduction(node.get(0), productionFlag, localName, e);
 		return rule;
 	}

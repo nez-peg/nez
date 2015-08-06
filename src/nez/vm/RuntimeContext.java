@@ -175,6 +175,9 @@ public abstract class RuntimeContext implements Source {
 			return fail();
 		}
 		s1.value = this.pos;
+		StackData s2 = stacks[catchStackTop+2];
+		s2.ref = astMachine.saveTransactionPoint();
+		s2.value = symbolTable.savePoint();
 		return next;
 	}
 

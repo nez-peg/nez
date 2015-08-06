@@ -7,7 +7,7 @@ import nez.lang.Expression;
 import nez.main.Verbose;
 
 class ASTMachine {
-	final static boolean debugMode = true;
+	final static boolean debugMode = false;
 	final static int Nop     = 0;
 	final static int Capture = 1;
 	final static int Tag     = 2;
@@ -111,7 +111,9 @@ class ASTMachine {
 
 	public final void rollTransactionPoint(Object point) {
 		ASTLog save = (ASTLog)point;
-		//Verbose.debug("roll" + save + " < " + this.lastAppendedLog);
+		if(debugMode) {
+			Verbose.debug("roll" + save + " < " + this.lastAppendedLog);
+		}
 		if(save != lastAppendedLog) {
 			lastAppendedLog.next = this.unusedDataLog;
 			this.unusedDataLog = save.next;
@@ -141,18 +143,20 @@ class ASTMachine {
 		if(debugMode) {
 			Verbose.debug("createNode.start: " + start + "     pushed:" + pushed);
 		}
-		for(; cur != null; cur = cur.next ) {
-			if(cur.type == ASTMachine.New) {
-				break;
-			}
-		}
 		long spos = cur.value, epos = spos;
 		Tag tag = null;
 		Object value = null;
 		int objectSize = 0;
-		Object left = null;
-		for(cur = cur.next; cur != null; cur = cur.next ) {
+		for(cur = start; cur != null; cur = cur.next ) {
 			switch(cur.type) {
+			case ASTMachine.New:
+				spos = cur.value;
+				epos = spos;
+				objectSize = 0;
+				tag = null;
+				value = null;
+				start = cur;
+				break;
 			case ASTMachine.Capture:
 				epos = cur.value;
 				break;
@@ -163,17 +167,18 @@ class ASTMachine {
 				value = cur.ref;
 				break;
 			case ASTMachine.LeftFold:
-				left = constructTree(start, cur, spos, epos, objectSize, left, tag, value);
-				start = cur;
-				spos = cur.value; 
-				epos = spos;
-				tag = null; value = null;
+				cur.ref = constructLeft(start, cur, spos, epos, objectSize, tag, value);
+				cur.type = ASTMachine.Link;
+				cur.value = 0;
+				tag = null;
+				value = null;
 				objectSize = 1;
+				start = cur;
 				break;
 			case ASTMachine.Pop:
 				assert(pushed != null);
 				pushed.type = ASTMachine.Link;
-				pushed.ref = constructTree(start, cur, spos, epos, objectSize, left, tag, value);
+				pushed.ref = constructLeft(start, cur, spos, epos, objectSize, tag, value);
 				pushed.value = cur.value;
 				// TODO unused
 				pushed.next = cur.next;
@@ -194,20 +199,13 @@ class ASTMachine {
 			}
 		}
 		assert(pushed == null);
-		return constructTree(start, null, spos, epos, objectSize, left, tag, value);
-	}
-	
-	private void unused(ASTLog start, ASTLog pop) {
-		
+		return constructLeft(start, null, spos, epos, objectSize, tag, value);
 	}
 
-	private Object constructTree(ASTLog start, ASTLog end, long spos, long epos, int objectSize, Object left, Tag tag, Object value) {
+	private Object constructLeft(ASTLog start, ASTLog end, long spos, long epos, int objectSize, Tag tag, Object value) {
 		Object newnode = this.treeTransducer.newNode(tag, source, spos, epos, objectSize, value);
-		if(left != null) {
-			this.treeTransducer.link(newnode, 0, left);
-		}
 		if(objectSize > 0) {
-			for(ASTLog cur = start.next; cur != end; cur = cur.next ) {
+			for(ASTLog cur = start; cur != end; cur = cur.next ) {
 				if(cur.type == ASTMachine.Link) {
 					if(cur.ref == null) {
 						Verbose.debug("@@ linking null child at " + cur.value);
@@ -220,6 +218,26 @@ class ASTMachine {
 		}
 		return this.treeTransducer.commit(newnode);
 	}
+
+//	private Object constructTree(ASTLog start, ASTLog end, long spos, long epos, int objectSize, Object left, Tag tag, Object value) {
+//		Object newnode = this.treeTransducer.newNode(tag, source, spos, epos, objectSize, value);
+//		if(left != null) {
+//			this.treeTransducer.link(newnode, 0, left);
+//		}
+//		if(objectSize > 0) {
+//			for(ASTLog cur = start.next; cur != end; cur = cur.next ) {
+//				if(cur.type == ASTMachine.Link) {
+//					if(cur.ref == null) {
+//						Verbose.debug("@@ linking null child at " + cur.value);
+//					}
+//					else {
+//						this.treeTransducer.link(newnode, (int)cur.value, cur.ref);
+//					}
+//				}
+//			}
+//		}
+//		return this.treeTransducer.commit(newnode);
+//	}
 
 	private Object parseResult = null;
 	
@@ -241,7 +259,9 @@ class ASTMachine {
 		}
 		this.firstLog = null;
 		this.unusedDataLog = null;
-		//Verbose.debug("getParseResult: " + parseResult);
+		if(debugMode) {
+			Verbose.debug("getParseResult: " + parseResult);
+		}
 		return parseResult;
 	}
 

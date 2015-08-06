@@ -19,7 +19,7 @@ public class Machine {
 		return result;
 	}
 
-	public  boolean run_debug(Instruction code, SourceContext sc) {
+	public boolean run_debug(Instruction code, SourceContext sc) {
 		boolean result = false;
 		String u = "Start";
 		UList<String> stack = new UList<String>(new String[128]);

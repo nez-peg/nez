@@ -90,9 +90,9 @@ public class Sequence extends Expression {
 
 	private void formatInner(StringBuilder sb, Expression e) {
 		if(e instanceof Choice || e instanceof Sequence) {
-			sb.append("( ");
+			//sb.append("( ");
 			e.format(sb);
-			sb.append(" )");
+			//sb.append(" )");
 		}
 		else {	
 			e.format(sb);
