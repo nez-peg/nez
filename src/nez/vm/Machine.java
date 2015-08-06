@@ -1,6 +1,7 @@
 package nez.vm;
 
 import nez.SourceContext;
+import nez.main.Verbose;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
 
@@ -18,7 +19,7 @@ public class Machine {
 		return result;
 	}
 
-	public static boolean debug(Instruction code, SourceContext sc) {
+	public  boolean run_debug(Instruction code, SourceContext sc) {
 		boolean result = false;
 		String u = "Start";
 		UList<String> stack = new UList<String>(new String[128]);
@@ -34,7 +35,11 @@ public class Machine {
 					stack.clear(stack.size() - 1);
 				}
 				ConsoleUtils.println(u + "(" + sc.getPosition() + ")  " + code.id + " " + code);
-				code = code.exec(sc);
+				Instruction code2 = code.exec(sc);
+				if(code2 == null) {
+					Verbose.debug("@@ returning null at " + code);
+				}
+				code = code2;
 			}
 		} catch (TerminationException e) {
 			result = e.status;

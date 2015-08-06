@@ -58,10 +58,10 @@ public class PlainCompiler extends NezCompiler {
 			code.start = codeList.size();
 			this.layoutCode(codeList, code.nonmemoStart);
 			code.end = codeList.size();
-			if(code.memoPoint != null) {
-				code.memoStart = this.encodeMemoizingProduction(code);
-				this.layoutCode(codeList, code.memoStart);
-			}
+//			if(code.memoPoint != null) {
+//				code.memoStart = this.encodeMemoizingProduction(code);
+//				this.layoutCode(codeList, code.memoStart);
+//			}
 		}
 	}
 
@@ -89,17 +89,14 @@ public class PlainCompiler extends NezCompiler {
 				}
 				((ICall) inst).setResolvedJump(deref.nonmemoStart);
 			}
-//			if(inst instanceof IMemoCall) {
-//				((IMemoCall) inst).resolveJumpAddress();
-//			}
+//			Verbose.debug("\t" + inst.id + "\t" + inst);
 		}
 		long t2 = System.nanoTime();
 		Verbose.printElapsedTime("CompilingTime", t, t2);
 		this.codePointMap = null;
 		return new NezCode(codeList.ArrayValues[0], codeList.size(), memoPointList);
 	}
-
-
+	
 	protected void optimizedUnary(Expression p) {
 		Verbose.noticeOptimize("specialization", p);
 	}
@@ -163,13 +160,13 @@ public class PlainCompiler extends NezCompiler {
 	}
 
 	public Instruction encodeSequence(Sequence p, Instruction next, Instruction failjump) {
-		return encode(p.get(0), encode(p.get(1), next, failjump), failjump);
-//		Instruction nextStart = next;
-//		for(int i = p.size() - 1; i >= 0; i--) {
-//			Expression e = p.get(i);
-//			nextStart = encode(e, nextStart, failjump);
-//		}
-//		return nextStart;
+//		return encode(p.get(0), encode(p.get(1), next, failjump), failjump);
+		Instruction nextStart = next;
+		for(int i = p.size() - 1; i >= 0; i--) {
+			Expression e = p.get(i);
+			nextStart = encode(e, nextStart, failjump);
+		}
+		return nextStart;
 	}
 
 	public Instruction encodeChoice(Choice p, Instruction next, Instruction failjump) {

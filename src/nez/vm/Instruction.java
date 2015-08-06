@@ -455,9 +455,9 @@ class INAny extends IAbstractAny {
 	}
 }
 
-abstract class IAbstractSet extends Instruction {
+abstract class AbstractSetOperation extends Instruction {
 	public final boolean[] byteMap;
-	IAbstractSet(byte opcode, ByteMap e, Instruction next) {
+	AbstractSetOperation(byte opcode, ByteMap e, Instruction next) {
 		super(opcode, e, next);
 		this.byteMap = e.byteMap;
 	}
@@ -471,7 +471,7 @@ abstract class IAbstractSet extends Instruction {
 	}
 }
 
-class ISet extends IAbstractSet {
+class ISet extends AbstractSetOperation {
 	ISet(ByteMap e, Instruction next) {
 		super(InstructionSet.Set, e, next);
 	}
@@ -486,7 +486,7 @@ class ISet extends IAbstractSet {
 	}
 }
 
-class IOSet extends IAbstractSet {
+class IOSet extends AbstractSetOperation {
 	IOSet(ByteMap e, Instruction next) {
 		super(InstructionSet.Set, e, next);
 	}
@@ -500,7 +500,7 @@ class IOSet extends IAbstractSet {
 	}
 }
 
-class INSet extends IAbstractSet {
+class INSet extends AbstractSetOperation {
 	INSet(ByteMap e, Instruction next) {
 		super(InstructionSet.NSet, e, next);
 	}
@@ -514,7 +514,7 @@ class INSet extends IAbstractSet {
 	}
 }
 
-class IRSet extends IAbstractSet {
+class IRSet extends AbstractSetOperation {
 	IRSet(ByteMap e, Instruction next) {
 		super(InstructionSet.RSet, e, next);
 	}
@@ -759,7 +759,7 @@ class INew extends Instruction {
 	@Override
 	Instruction exec(RuntimeContext sc) throws TerminationException {
 		ASTMachine astMachine = sc.getAstMachine();
-		astMachine.logNew(sc.getPosition() + shift);
+		astMachine.logNew(sc.getPosition() + shift, this.id);
 		return this.next;
 	}
 }

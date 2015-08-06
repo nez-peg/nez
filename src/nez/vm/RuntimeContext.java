@@ -135,7 +135,7 @@ public abstract class RuntimeContext implements Source {
 		StackData s1 = newUnusedStack();
 		StackData s2 = newUnusedStack();
 		s0.value = catchStackTop;
-		catchStackTop = usedStackTop;
+		catchStackTop = usedStackTop - 2;
 		s1.ref = failjump;
 		s1.value = this.pos;
 		s2.ref = astMachine.saveTransactionPoint();
@@ -162,9 +162,10 @@ public abstract class RuntimeContext implements Source {
 				this.lprof.statBacktrack(s1.value, this.pos);
 			}
 			this.rollback(s1.value);
-			this.astMachine.rollTransactionPoint(s2.ref);
-			this.symbolTable.rollBack((int)s2.value);
 		}
+		this.astMachine.rollTransactionPoint(s2.ref);
+		this.symbolTable.rollBack((int)s2.value);
+		assert(s1.ref != null);
 		return (Instruction)s1.ref;
 	}
 	

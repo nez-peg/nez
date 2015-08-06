@@ -127,7 +127,8 @@ public class Grammar {
 
 	public final Instruction compile() {
 		if(compiledCode == null) {
-			NezCompiler bc = Command.ReleasePreview ? new PackratCompiler(this.option) : new PlainCompiler(this.option);
+//			NezCompiler bc = Command.ReleasePreview ? new PackratCompiler(this.option) : new PlainCompiler(this.option);
+			NezCompiler bc = new PlainCompiler(this.option);
 			compiledCode = bc.compile(this);
 //			if(Verbose.VirtualMachine) {
 //				bc.dump(this.productionList);

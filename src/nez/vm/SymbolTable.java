@@ -58,7 +58,7 @@ public class SymbolTable {
 				SymbolTableEntry2[] newtable = new SymbolTableEntry2[maxTableSize];
 				System.arraycopy(this.tables, 0, newtable, 0, tables.length);
 				this.tables = newtable;
-				initEntry(tables.length, maxTableSize);
+				initEntry(tables.length/2, maxTableSize);
 			}
 		}
 		SymbolTableEntry2 entry = tables[tableSize];
