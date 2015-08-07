@@ -94,7 +94,6 @@ public class Konoha extends TreeTransducer {
 		KonohaTransducer konoha = newKonohaTransducer();
 		int linenum = 1;
 		String command = null;
-		KonohaLanguage lang = new KonohaLanguage(konoha);
 		while((command = readLine()) != null) {
 			parse(konoha, "<stdio>", linenum, command);
 			linenum += (command.split("\n").length);
