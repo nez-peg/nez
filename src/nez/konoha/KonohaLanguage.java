@@ -26,7 +26,14 @@ public class KonohaLanguage extends StringTransducerCombinator {
 		defineLiteral(konoha, "#Integer", "int", Asis());
 		defineLiteral(konoha, "#Float", "float", Asis());
 		defineLiteral(konoha, "#String", "string", Asis());
+		defineLiteral(konoha, "#Null", "null", Asis());
 
+		defineUnary(konoha, "#Not", "bool", "bool", "not");
+		defineUnary(konoha, "#Plus", "int", "int", "+");
+		defineUnary(konoha, "#Plus", "float", "float", "+");
+		defineUnary(konoha, "#Minus", "int", "int", "-");
+		defineUnary(konoha, "#Minus", "float", "float", "-");
+		
 		defineBinary(konoha, "#Add", "int", "int", "int", "+");
 		defineBinary(konoha, "#Add", "float", "float", "float", "+");
 		defineBinary(konoha, "#Sub", "int", "int", "int", "-");
@@ -50,6 +57,9 @@ public class KonohaLanguage extends StringTransducerCombinator {
 		defineBinary(konoha, "#GreaterThanEquals", "bool", "float", "float", ">=");
 		defineBinary(konoha, "#GreaterThan", "bool", "int", "int", ">");
 		defineBinary(konoha, "#GreaterThan", "bool", "float", "float", ">");
+		defineBinary(konoha, "#And", "bool", "bool", "bool", "and");
+		defineBinary(konoha, "#Or", "bool", "bool", "bool", "or");
+		
 	}
 	
 	private String key(String tagname) {
@@ -66,6 +76,13 @@ public class KonohaLanguage extends StringTransducerCombinator {
 		KonohaType t1 = konoha.getType(type1);
 		KonohaType t2 = konoha.getType(type2);
 		KonohaType[] types = {rt, t1, t2};
+		konoha.setTypeRule(new OperatorTypeRule(tname, types, make(Node(0), S(op), Node(1))));
+	}
+	
+	private void defineUnary(KonohaTransducer konoha, String tname, String rtype, String type1, String op) {
+		KonohaType rt = konoha.getType(rtype);
+		KonohaType t1 = konoha.getType(type1);
+		KonohaType[] types = {rt, t1};
 		konoha.setTypeRule(new OperatorTypeRule(tname, types, make(Node(0), S(op), Node(1))));
 	}
 
