@@ -1,5 +1,7 @@
 package nez.konoha;
 
+import java.util.ArrayList;
+
 import nez.string.StringTransducer;
 import nez.string.StringTransducerCombinator;
 
@@ -40,14 +42,14 @@ public class KonohaLanguage extends StringTransducerCombinator {
 		defineBinary(konoha, "#NotEquals", "bool", "int", "int", "!=");
 		defineBinary(konoha, "#NotEquals", "bool", "float", "float", "!=");
 		defineBinary(konoha, "#NotEquals", "bool", "string", "string", "!=");
-		defineBinary(konoha, "#LessThanEquals", "bool", "int", "int", "==");
-		defineBinary(konoha, "#LessThanEquals", "bool", "float", "float", "==");
-		defineBinary(konoha, "#LessThan", "bool", "int", "int", "!=");
-		defineBinary(konoha, "#LessThan", "bool", "float", "float", "!=");
-		defineBinary(konoha, "#GreaterThanEquals", "bool", "int", "int", "==");
-		defineBinary(konoha, "#GreaterThanEquals", "bool", "float", "float", "==");
-		defineBinary(konoha, "#GreaterThan", "bool", "int", "int", "!=");
-		defineBinary(konoha, "#GreaterThan", "bool", "float", "float", "!=");
+		defineBinary(konoha, "#LessThanEquals", "bool", "int", "int", "<=");
+		defineBinary(konoha, "#LessThanEquals", "bool", "float", "float", "<=");
+		defineBinary(konoha, "#LessThan", "bool", "int", "int", "<");
+		defineBinary(konoha, "#LessThan", "bool", "float", "float", "<");
+		defineBinary(konoha, "#GreaterThanEquals", "bool", "int", "int", ">=");
+		defineBinary(konoha, "#GreaterThanEquals", "bool", "float", "float", ">=");
+		defineBinary(konoha, "#GreaterThan", "bool", "int", "int", ">");
+		defineBinary(konoha, "#GreaterThan", "bool", "float", "float", ">");
 	}
 	
 	private String key(String tagname) {
@@ -359,25 +361,48 @@ public class KonohaLanguage extends StringTransducerCombinator {
 	}
 
 	class OperatorTypeRule extends KonohaTypeRule {
-		KonohaType[] types;  // types[0] is return type
+		ArrayList<KonohaType[]> typesList = new ArrayList<KonohaType[]>();  // types[0] is return type
 		int shift = -1;
 		
 		public OperatorTypeRule(String name, KonohaType[] types, StringTransducer st) {
 			super(name, types.length - 1, st);
-			this.types = types;
+			this.typesList.add(types);
 		}
 		
 		public final void match(KonohaTransducer konoha, KonohaTree node) {
-			if(node.size() - shift != types.length) {
-				return;
+			boolean failure = false;
+			for(KonohaType[] types : this.typesList){
+				if(node.size() - shift != types.length) {
+					continue;
+				}
+				for(int i = 1; i < types.length; i++) {
+					KonohaType reqT = types[i];
+					if(konoha.typeCheck(reqT, node.get(i + shift)).getClass() == KonohaErrorType.class){
+						failure = true;
+					};
+				}
+				if(!failure){
+					node.matched = this;
+					node.typed = types[0];
+					break;
+				} else {
+					failure = false;
+					continue;
+				}
 			}
-			for(int i = 1; i < types.length; i++) {
-				KonohaType reqT = types[i];
-				konoha.typeCheck(reqT, node.get(i + shift));
-			}
-			node.matched = this;
-			node.typed = this.types[0];
 		}
+		
+		public ArrayList<KonohaType[]> getTypesList(){
+			return this.typesList;
+		}
+		
+		public void appendTypes(KonohaTypeRule newRule) {
+			ArrayList<KonohaType[]> newTypesList = ((OperatorTypeRule)newRule).getTypesList();
+			for(KonohaType[] types : newTypesList){
+				this.typesList.add(types);
+			}
+		}
+
 	}
 
 
