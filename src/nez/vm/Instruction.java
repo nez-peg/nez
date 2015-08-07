@@ -55,14 +55,13 @@ public abstract class Instruction {
 	abstract void encodeA(ByteCoder c);
 	abstract Instruction exec(RuntimeContext sc) throws TerminationException;
 	
-	final short isAcceptImpl(int ch) {
-		return next == null ? PossibleAcceptance.Accept : this.next.isAcceptImpl(ch);
-	}
-
-	boolean isAccept(int ch) {
-		return this.isAcceptImpl(ch) == PossibleAcceptance.Accept;
-	}
-
+//	final short isAcceptImpl(int ch) {
+//		return next == null ? PossibleAcceptance.Accept : this.next.isAcceptImpl(ch);
+//	}
+//
+//	boolean isAccept(int ch) {
+//		return this.isAcceptImpl(ch) == PossibleAcceptance.Accept;
+//	}
 	
 	protected static Instruction labeling(Instruction inst) {
 		if(inst != null) {
@@ -102,8 +101,6 @@ public abstract class Instruction {
 		stringfy(sb);
 		return sb.toString();
 	}
-
-	
 	
 	public void dump(HashMap<Integer, Boolean> visited) {
 		if(visited.containsKey(this.id)) {
@@ -125,11 +122,7 @@ public abstract class Instruction {
 	}
 }
 
-interface StackOperation {
-
-}
-
-class IFail extends Instruction implements StackOperation {
+class IFail extends Instruction {
 	IFail(Expression e) {
 		super(InstructionSet.Fail, e, null);
 	}
@@ -143,7 +136,7 @@ class IFail extends Instruction implements StackOperation {
 	}
 }
 
-class IAlt extends Instruction implements StackOperation {
+class IAlt extends Instruction {
 	public final Instruction failjump;
 	IAlt(Expression e, Instruction failjump, Instruction next) {
 		super(InstructionSet.Alt, e, next);
@@ -175,7 +168,7 @@ class IAlt extends Instruction implements StackOperation {
 //	}
 //}
 
-class ISucc extends Instruction implements StackOperation {
+class ISucc extends Instruction {
 	ISucc(Expression e, Instruction next) {
 		super(InstructionSet.Succ, e, next);
 	}
@@ -219,7 +212,27 @@ class ISkip extends Instruction {
 	}
 }
 
-class ICall extends Instruction implements StackOperation {
+class ILabel extends Instruction {
+	Production rule;
+	ILabel(Production rule, Instruction next) {
+		super(InstructionSet.Label, rule, next);
+		this.rule = rule;
+	}
+	@Override
+	protected String getOperand() {
+		return rule.getLocalName();
+	}
+	@Override
+	void encodeA(ByteCoder c) {
+		c.encodeLabel(rule.getLocalName());
+	}
+	@Override
+	Instruction exec(RuntimeContext sc) throws TerminationException {
+		return this.next;
+	}
+}
+
+class ICall extends Instruction {
 	Production rule;
 	NonTerminal ne;
 	public Instruction jump = null;
@@ -248,7 +261,7 @@ class ICall extends Instruction implements StackOperation {
 	}
 }
 
-class IRet extends Instruction implements StackOperation {
+class IRet extends Instruction {
 	IRet(Production e) {
 		super(InstructionSet.Ret, e, null);
 	}
@@ -567,7 +580,7 @@ abstract class AbstractStrInstruction extends Instruction {
 	}
 	@Override
 	void encodeA(ByteCoder c) {
-		c.encodeString(utf8);
+		c.encodeMultiByte(utf8);
 	}
 }
 
@@ -831,7 +844,7 @@ class IReplace extends Instruction {
 	}
 	@Override
 	void encodeA(ByteCoder c) {
-		c.encodeString(value.getBytes());
+		c.encodeMultiByte(value.getBytes());
 	}
 	@Override
 	Instruction exec(RuntimeContext sc) throws TerminationException {
@@ -1123,7 +1136,7 @@ class IIsaSymbol extends AbstractTableInstruction {
 
 class IDefIndent extends Instruction {
 	IDefIndent(DefIndent e, Instruction next) {
-		super(InstructionSet.Obsolate, e, next);
+		super(InstructionSet.Nop, e, next);
 	}
 	final long getLineStartPosition(RuntimeContext sc, long fromPostion) {
 		long startIndex = fromPostion;
@@ -1164,7 +1177,7 @@ class IDefIndent extends Instruction {
 
 class IIsIndent extends Instruction {
 	IIsIndent(IsIndent e, Instruction next) {
-		super(InstructionSet.Obsolate, e, next);
+		super(InstructionSet.Nop, e, next);
 	}
 	@Override
 	void encodeA(ByteCoder c) {

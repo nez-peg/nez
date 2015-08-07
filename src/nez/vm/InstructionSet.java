@@ -10,7 +10,7 @@ public class InstructionSet {
 	public final static byte Ret  = 6;  // Ret
 	public final static byte Pos  = 7;  // Pos
 	public final static byte Back = 8;  // Back
-	public final static byte Skip = 9;  // Back
+	public final static byte Skip = 9;  // Skip
 
 	public final static byte Byte     = 10;  // match a byte character
 	public final static byte Any      = 11;  // match any
@@ -62,11 +62,10 @@ public class InstructionSet {
 	public final static byte SIsa     = 49;
 	public final static byte SDefNum  = 50;
 	public final static byte SCount   = 51;
+	public final static byte Exit     = 52;   // 7-bit only
 	
-	public final static byte Obsolate = 99;
 	
-	public final static byte NonTerminal = 126;
-	public final static byte Exit     = 127; 
+	public final static byte Label    = 127;  // 7-bit
 
 	public static String stringfy(byte opcode) {
 		switch(opcode) {

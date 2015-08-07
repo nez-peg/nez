@@ -73,6 +73,10 @@ public class PlainCompiler extends NezCompiler {
 
 	@Override
 	public NezCode compile(Grammar grammar) {
+		return this.compile(grammar, null);
+	}
+	
+	public NezCode compile(Grammar grammar, ByteCoder coder) {
 		long t = System.nanoTime();
 		List<MemoPoint> memoPointList = null;
 		if(option.enabledMemoization || option.enabledPackratParsing) {
@@ -80,12 +84,15 @@ public class PlainCompiler extends NezCompiler {
 		}
 		initProductionCodeMap(grammar, memoPointList);
 		UList<Instruction> codeList = new UList<Instruction>(new Instruction[64]);
-		Production start = grammar.getStartProduction();
-		this.encodeProduction(codeList, start, new IRet(start));
+//		Production start = grammar.getStartProduction();
+//		this.encodeProduction(codeList, start, new IRet(start));
+//		for(Production p : grammar.getProductionList()) {
+//			if(p != start) {
+//				this.encodeProduction(codeList, p, new IRet(p));
+//			}
+//		}
 		for(Production p : grammar.getProductionList()) {
-			if(p != start) {
-				this.encodeProduction(codeList, p, new IRet(p));
-			}
+			this.encodeProduction(codeList, p, new IRet(p));
 		}
 		for(Instruction inst : codeList) {
 			if(inst instanceof ICall) {
@@ -99,6 +106,9 @@ public class PlainCompiler extends NezCompiler {
 		}
 		long t2 = System.nanoTime();
 		Verbose.printElapsedTime("CompilingTime", t, t2);
+		if(coder != null) {
+			coder.setHeader(codeList.size(), pcodeMap.size(), memoPointList == null ? 0 : memoPointList.size());
+		}
 		this.pcodeMap = null;
 		return new NezCode(codeList.ArrayValues[0], codeList.size(), memoPointList);
 	}
