@@ -8,7 +8,6 @@ import java.util.List;
 import nez.NezException;
 import nez.NezOption;
 import nez.SourceContext;
-import nez.ast.AbstractTreeVisitor;
 import nez.ast.CommonTree;
 import nez.ast.Tag;
 import nez.lang.Expression;
@@ -21,8 +20,8 @@ import nez.util.UList;
 public class JSONCeleryConverter extends AbstractCeleryConverter {
 
 	private HashMap<String, List<String>> classMap;
-	private List<String> requiredMembersList;
-	private List<String> impliedMemebersList;
+	private List<String> requiredPropertiesList;
+	private List<String> impliedPropertiesList;
 	private final boolean UseExtendedGrammar = true;
 
 	public JSONCeleryConverter() {
@@ -55,6 +54,7 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 		return gfile;
 	}
 
+	@Override
 	protected final void loadPredefinedRules(CommonTree node) {
 		JSONPredefinedRules preRules = new JSONPredefinedRules(grammar);
 		preRules.defineRule();
@@ -62,9 +62,10 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 
 	// visitor methods
 
+	@Override
 	public final void visitRoot(CommonTree node) {
 		for (CommonTree classNode : node) {
-			initMemberList();
+			initPropertiesList();
 			this.visit("visit", classNode);
 			String className = classNode.getText(0, null);
 			if (UseExtendedGrammar) {
@@ -72,43 +73,48 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 			} else {
 				grammar.defineProduction(classNode, className, genClassRule(className));
 			}
-			saveMemberList(className);
+			savePropertiesList(className);
 		}
 		grammar.defineProduction(node, "Root", genRootClass());
 	}
 
+	@Override
 	public final void visitStruct(CommonTree node) {
 		for (CommonTree memberNode : node) {
 			this.visit("visit", memberNode);
 		}
 	}
 
+	@Override
 	public final void visitRequired(CommonTree node) {
-		String name = node.getText(0, null);
-		requiredMembersList.add(name);
+		String name = node.textAt(0, null);
+		requiredPropertiesList.add(name);
 		Expression[] seq = { _DQuoat(), grammar.newString(name), _DQuoat(), GrammarFactory.newNonTerminal(null, grammar, "NAMESEP"), toExpression(node.get(1)), grammar.newOption(GrammarFactory.newNonTerminal(null, grammar, "VALUESEP")) };
 		grammar.defineProduction(node, node.getText(0, null), grammar.newSequence(seq));
 	}
 
+	@Override
 	public final void visitOption(CommonTree node) {
-		String name = node.getText(0, null);
-		impliedMemebersList.add(name);
+		String name = node.textAt(0, null);
+		impliedPropertiesList.add(name);
 		Expression[] seq = { _DQuoat(), grammar.newString(name), _DQuoat(), GrammarFactory.newNonTerminal(null, grammar, "NAMESEP"), toExpression(node.get(1)), grammar.newOption(GrammarFactory.newNonTerminal(null, grammar, "VALUESEP")) };
 		grammar.defineProduction(node, node.getText(0, null), grammar.newSequence(seq));
 	}
 
+	@Override
 	public final void visitUntypedRequired(CommonTree node) {
-		String name = node.getText(0, null);
-		requiredMembersList.add(name);
+		String name = node.textAt(0, null);
+		requiredPropertiesList.add(name);
 		// inferType(node.get(2));
 		Expression[] seq = { _DQuoat(), grammar.newString(name), _DQuoat(), GrammarFactory.newNonTerminal(null, grammar, "NAMESEP"), GrammarFactory.newNonTerminal(null, grammar, "Any"),
 				grammar.newOption(GrammarFactory.newNonTerminal(null, grammar, "VALUESEP")) };
 		grammar.defineProduction(node, node.getText(0, null), grammar.newSequence(seq));
 	}
 
+	@Override
 	public final void visitUntypedOption(CommonTree node) {
-		String name = node.getText(0, null);
-		impliedMemebersList.add(name);
+		String name = node.textAt(0, null);
+		impliedPropertiesList.add(name);
 		// inferType(node.get(2));
 		Expression[] seq = { _DQuoat(), grammar.newString(name), _DQuoat(), GrammarFactory.newNonTerminal(null, grammar, "NAMESEP"), GrammarFactory.newNonTerminal(null, grammar, "Any"),
 				grammar.newOption(GrammarFactory.newNonTerminal(null, grammar, "VALUESEP")) };
@@ -118,6 +124,7 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 	public final void visitName(CommonTree node) {
 	}
 
+	@Override
 	public final Expression toTEnum(CommonTree node) {
 		Expression[] choice = new Expression[node.size()];
 		for (int index = 0; index < choice.length; index++) {
@@ -128,38 +135,47 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 
 	// to Expression Methods
 
+	@Override
 	private final Expression toExpression(CommonTree node) {
 		return (Expression) this.visit("to", node);
 	}
 
+	@Override
 	public final Expression toTBoolean(CommonTree node) {
 		return GrammarFactory.newNonTerminal(null, grammar, "BOOLEAN");
 	}
 
+	@Override
 	public final Expression toTInteger(CommonTree node) {
 		return GrammarFactory.newNonTerminal(null, grammar, "INT");
 	}
 
+	@Override
 	public final Expression toTFloat(CommonTree node) {
 		return GrammarFactory.newNonTerminal(null, grammar, "Number");
 	}
 
+	@Override
 	public final Expression toTString(CommonTree node) {
 		return GrammarFactory.newNonTerminal(null, grammar, "String");
 	}
 
+	@Override
 	public final Expression toTAny(CommonTree node) {
 		return GrammarFactory.newNonTerminal(null, grammar, "Any");
 	}
 
+	@Override
 	public final Expression toTObject(CommonTree node) {
 		return GrammarFactory.newNonTerminal(null, grammar, "JSONObject");
 	}
 
+	@Override
 	public final Expression toTClass(CommonTree node) {
 		return GrammarFactory.newNonTerminal(null, grammar, node.toText());
 	}
 
+	@Override
 	public final Expression toTArray(CommonTree node) {
 		Expression type = toExpression(node.get(0));
 		Expression[] seq = { grammar.newByteChar('['), _SPACING(), type, grammar.newRepetition(GrammarFactory.newNonTerminal(null, grammar, "VALUESEP"), type), grammar.newByteChar(']') };
@@ -186,7 +202,7 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 
 	@Deprecated
 	private final Expression genMemberRule(String className) {
-		if (impliedMemebersList.isEmpty()) {
+		if (impliedPropertiesList.isEmpty()) {
 			return genCompMember();
 		} else {
 			String impliedChoiceRuleName = className + "_imp";
@@ -197,11 +213,11 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 
 	@Deprecated
 	private final Expression genCompMember() {
-		int listLength = requiredMembersList.size();
+		int listLength = requiredPropertiesList.size();
 
 		// return the rule that include only one member
 		if (listLength == 1) {
-			return GrammarFactory.newNonTerminal(null, grammar, requiredMembersList.get(0));
+			return GrammarFactory.newNonTerminal(null, grammar, requiredPropertiesList.get(0));
 		}
 
 		// return the rule that include permuted members
@@ -212,7 +228,7 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 			for (int[] targetLine : permutedList) {
 				Expression[] seqList = new Expression[listLength];
 				for (int index = 0; index < targetLine.length; index++) {
-					seqList[index] = GrammarFactory.newNonTerminal(null, grammar, requiredMembersList.get(targetLine[index]));
+					seqList[index] = GrammarFactory.newNonTerminal(null, grammar, requiredPropertiesList.get(targetLine[index]));
 				}
 				choiceList[choiceCount++] = grammar.newSequence(seqList);
 			}
@@ -222,7 +238,7 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 
 	@Deprecated
 	private final Expression genProxMember(String impliedChoiceRuleName) {
-		int listLength = requiredMembersList.size();
+		int listLength = requiredPropertiesList.size();
 
 		// return the rule that include only implied member list
 		if (listLength == 0) {
@@ -240,7 +256,7 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 				Expression[] seqList = new Expression[listLength * 2 + 1];
 				seqList[seqCount++] = grammar.newRepetition(impliedChoiceRule);
 				for (int index = 0; index < targetLine.length; index++) {
-					seqList[seqCount++] = GrammarFactory.newNonTerminal(null, grammar, requiredMembersList.get(targetLine[index]));
+					seqList[seqCount++] = GrammarFactory.newNonTerminal(null, grammar, requiredPropertiesList.get(targetLine[index]));
 					seqList[seqCount++] = grammar.newRepetition(impliedChoiceRule);
 				}
 				choiceList[choiceCount++] = grammar.newSequence(seqList);
@@ -250,7 +266,7 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 	}
 
 	private final Expression genExClassRule(String className) {
-		int requiredMembersListSize = requiredMembersList.size();
+		int requiredMembersListSize = requiredPropertiesList.size();
 		String memberList = className + "_Members";
 
 		Expression[] tables = new Expression[requiredMembersListSize];
@@ -270,13 +286,13 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 		String impliedChoiceRuleName = className + "_imp";
 
 		for (int i = 0; i < requiredListSize; i++) {
-			String memberName = requiredMembersList.get(i);
+			String memberName = requiredPropertiesList.get(i);
 			Expression required = grammar
 					.newSequence(grammar.newNot(GrammarFactory.newIsSymbol(null, grammar, Tag.tag(memberName))), GrammarFactory.newDefSymbol(null, grammar, Tag.tag(memberName), GrammarFactory.newNonTerminal(null, grammar, memberName)));
 			GrammarFactory.addChoice(choice, required);
 		}
 
-		if (!impliedMemebersList.isEmpty()) {
+		if (!impliedPropertiesList.isEmpty()) {
 			genImpliedChoice(impliedChoiceRuleName);
 			GrammarFactory.addChoice(choice, GrammarFactory.newNonTerminal(null, grammar, impliedChoiceRuleName));
 		}
@@ -286,9 +302,9 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 	}
 
 	private final void genImpliedChoice(String ruleName) {
-		Expression[] l = new Expression[impliedMemebersList.size()];
+		Expression[] l = new Expression[impliedPropertiesList.size()];
 		int choiceCount = 0;
-		for (String nonTerminalSymbol : impliedMemebersList) {
+		for (String nonTerminalSymbol : impliedPropertiesList) {
 			l[choiceCount++] = GrammarFactory.newNonTerminal(null, grammar, nonTerminalSymbol);
 		}
 		grammar.defineProduction(null, ruleName, grammar.newChoice(l));
@@ -317,13 +333,13 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 
 	// Utilities
 
-	private final void initMemberList() {
-		requiredMembersList = new ArrayList<String>();
-		impliedMemebersList = new ArrayList<String>();
+	private final void initPropertiesList() {
+		requiredPropertiesList = new ArrayList<String>();
+		impliedPropertiesList = new ArrayList<String>();
 	}
 
-	private final void saveMemberList(String className) {
-		this.classMap.put(className, requiredMembersList);
+	private final void savePropertiesList(String className) {
+		this.classMap.put(className, requiredPropertiesList);
 	}
 
 	private final int[][] permute(int listLength) {
