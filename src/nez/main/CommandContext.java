@@ -216,6 +216,17 @@ class CommandContext {
 		}
 	}
 	
+	public final String getGrammarFileName(String ext) {
+		if(grammarFile != null) {
+			int loc = grammarFile.lastIndexOf('.');
+			if(loc > 0) {
+				return grammarFile.substring(0, loc+1) + ext;
+			}
+			return grammarFile + "." + ext;
+		}
+		return "noname." + ext;
+	}
+
 	public final GrammarFile getGrammarFile(boolean grammarFileCreation) {
 		if(grammarFile != null) {
 			if(grammarFile.equals("nez")) {
@@ -227,13 +238,13 @@ class CommandContext {
 				ConsoleUtils.exit(1, "cannot open " + grammarFile + "; " + e.getMessage());
 			}
 		}
-//		if(grammarFileCreation) {
-//			return GrammarFile.newGrammarFile(option);
-//		}
-//		else {
+		if(grammarFileCreation) {
+			return GrammarFile.newGrammarFile(option);
+		}
+		else {
 			ConsoleUtils.println("unspecifed grammar");
 			return NezCombinator.newGrammarFile();
-//		}
+		}
 	}
 
 	public final Grammar getGrammar(String start, NezOption option) {

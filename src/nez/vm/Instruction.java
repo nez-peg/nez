@@ -43,26 +43,33 @@ public abstract class Instruction {
 		this.next = next;
 	}
 	
+	public final boolean isIncrementedNext() {
+		if(this.next != null) {
+			return this.next.id == this.id + 1;
+		}
+		return true;  // RET or instructions that are unnecessary to go next
+	}
+
 	Instruction branch() {
 		return null;
 	}
 
 	public final void encode(ByteCoder c) {
-		c.encodeOpcode(this.opcode);
-		this.encodeA(c);
+		if(isIncrementedNext()) {
+			c.encodeOpcode(this.opcode);
+			this.encodeA(c);
+		}
+		else {
+			c.encodeOpcode((byte)(this.opcode | 128));   // opcode | 10000000
+			this.encodeA(c);
+			c.encodeJumpAddr(this.next);
+		}
 	}
 	
 	abstract void encodeA(ByteCoder c);
 	abstract Instruction exec(RuntimeContext sc) throws TerminationException;
-	
-//	final short isAcceptImpl(int ch) {
-//		return next == null ? PossibleAcceptance.Accept : this.next.isAcceptImpl(ch);
-//	}
-//
-//	boolean isAccept(int ch) {
-//		return this.isAcceptImpl(ch) == PossibleAcceptance.Accept;
-//	}
-	
+		
+
 	protected static Instruction labeling(Instruction inst) {
 		if(inst != null) {
 			inst.label = true;
@@ -101,25 +108,25 @@ public abstract class Instruction {
 		stringfy(sb);
 		return sb.toString();
 	}
-	
-	public void dump(HashMap<Integer, Boolean> visited) {
-		if(visited.containsKey(this.id)) {
-			visited.put(this.id, true);
-			if(this.next != null && this.next.id != this.id+1) {
-				ConsoleUtils.println(this.id + "\t" + this + "   ==> " + this.next.id);
-			}
-			else {
-				ConsoleUtils.println(this.id + "\t" + this);
-			}
-			if(this.next != null) {
-				next.dump(visited);
-			}
-			if(this.branch() != null) {
-				this.branch().dump(visited);
-			}
-		}
 		
-	}
+//	public void dump(HashMap<Integer, Boolean> visited) {
+//		if(visited.containsKey(this.id)) {
+//			visited.put(this.id, true);
+//			if(this.next != null && this.next.id != this.id+1) {
+//				ConsoleUtils.println(this.id + "\t" + this + "   ==> " + this.next.id);
+//			}
+//			else {
+//				ConsoleUtils.println(this.id + "\t" + this);
+//			}
+//			if(this.next != null) {
+//				next.dump(visited);
+//			}
+//			if(this.branch() != null) {
+//				this.branch().dump(visited);
+//			}
+//		}
+//		
+//	}
 }
 
 class IFail extends Instruction {

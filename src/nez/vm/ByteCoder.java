@@ -1,7 +1,9 @@
 package nez.vm;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -74,9 +76,9 @@ public class ByteCoder {
 		symList = new ArrayList<>();
 	}
 
-	public byte[] generate(Instruction[] insts) {
+	public void setInstructions(Instruction[] insts, int len) {
 		stream = new ByteArrayOutputStream();
-		for(int i = 0; i < insts.length; i++) {
+		for(int i = 0; i < len; i++) {
 			if(insts[i] != null) {
 				assert(insts[i].id == i);
 				insts[i].encode(this);
@@ -85,43 +87,6 @@ public class ByteCoder {
 				encodeOpcode(InstructionSet.Nop);
 			}
 		}
-
-		byte[] body = stream.toByteArray();
-		stream = new ByteArrayOutputStream();
-		stream.write('N');
-		stream.write('E');
-		stream.write('Z');
-		stream.write('0');
-		encodeShort(instSize);
-		encodeShort(prodSize);
-		encodeShort(memoSize);
-		encodeShort(setList.size());
-		for(SetEntry e: setList) {
-			encodeData(e.data);
-		}
-		encodeShort(strList.size());
-		for(StrEntry e: strList) {
-			encodeData(e.data);
-		}
-		encodeShort(tagList.size());
-		for(TagEntry e: tagList) {
-			encodeData(e.data);
-		}
-		encodeShort(tabList.size());
-		for(TagEntry e: tabList) {
-			encodeData(e.data);
-		}
-		encodeShort(symList.size());
-		for(SymEntry e: symList) {
-			encodeShort(e.tabid);
-			encodeData(e.symbol);
-		}
-		try {
-			stream.write(body);
-		} catch (IOException e1) {
-			Verbose.traceException(e1);
-		}
-		return stream.toByteArray();
 	}
 		
 	public void encodeBoolean(boolean b) {
@@ -267,6 +232,55 @@ public class ByteCoder {
 		}
 		encodeShort(entry.id);
 		// TODO
+	}
+
+	public void writeTo(String fileName) {
+
+		byte[] body = stream.toByteArray();
+		stream = new ByteArrayOutputStream();
+		stream.write('N');
+		stream.write('E');
+		stream.write('Z');
+		stream.write('0');
+		encodeShort(instSize);
+		encodeShort(prodSize);
+		encodeShort(memoSize);
+		encodeShort(setList.size());
+		for(SetEntry e: setList) {
+			encodeData(e.data);
+		}
+		encodeShort(strList.size());
+		for(StrEntry e: strList) {
+			encodeData(e.data);
+		}
+		encodeShort(tagList.size());
+		for(TagEntry e: tagList) {
+			encodeData(e.data);
+		}
+		encodeShort(tabList.size());
+		for(TagEntry e: tabList) {
+			encodeData(e.data);
+		}
+		encodeShort(symList.size());
+		for(SymEntry e: symList) {
+			encodeShort(e.tabid);
+			encodeData(e.symbol);
+		}
+		try {
+			stream.write(body);
+		} catch (IOException e1) {
+			Verbose.traceException(e1);
+		}
+
+		byte[] code = stream.toByteArray();
+		try {
+			OutputStream out = new FileOutputStream(fileName);
+			out.write(code);
+			out.close();
+		}
+		catch(IOException e) {
+			Verbose.traceException(e);
+		}
 	}
 
 }

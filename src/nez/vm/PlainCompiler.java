@@ -15,7 +15,6 @@ import nez.lang.DefIndent;
 import nez.lang.DefSymbol;
 import nez.lang.ExistsSymbol;
 import nez.lang.Expression;
-import nez.lang.Grammar;
 import nez.lang.GrammarOptimizer;
 import nez.lang.IsIndent;
 import nez.lang.IsSymbol;
@@ -31,8 +30,6 @@ import nez.lang.Repetition1;
 import nez.lang.Replace;
 import nez.lang.Sequence;
 import nez.lang.Tagging;
-import nez.main.Verbose;
-import nez.util.UList;
 
 public class PlainCompiler extends NezCompiler {
 
@@ -41,86 +38,7 @@ public class PlainCompiler extends NezCompiler {
 	public PlainCompiler(NezOption option) {
 		super(option);
 	}
-
-	protected Expression optimizeLocalProduction(Production p) {
-		return GrammarOptimizer.resolveNonTerminal(p.getExpression());
-	}
-
-	protected Instruction encodeMemoizingProduction(ProductionCode code) {
-		return null;
-	}
-	
-	private Production encodingProduction;
-	protected Production getEncodingProduction() {
-		return this.encodingProduction;
-	}
-	
-	protected void encodeProduction(UList<Instruction> codeList, Production p, Instruction next) {
-		String uname = p.getUniqueName();
-		ProductionCode pcode = this.pcodeMap.get(uname);
-		if(pcode != null) {
-			encodingProduction = p;
-			pcode.compiled = encode(pcode.localExpression, next, null/*failjump*/);
-			//pcode.start = codeList.size();
-			this.layoutCode(codeList, pcode.compiled);
-			//pcode.end = codeList.size();
-//			if(code.memoPoint != null) {
-//				code.memoStart = this.encodeMemoizingProduction(code);
-//				this.layoutCode(codeList, code.memoStart);
-//			}
-		}
-	}
-
-	@Override
-	public NezCode compile(Grammar grammar) {
-		return this.compile(grammar, null);
-	}
-	
-	public NezCode compile(Grammar grammar, ByteCoder coder) {
-		long t = System.nanoTime();
-		List<MemoPoint> memoPointList = null;
-		if(option.enabledMemoization || option.enabledPackratParsing) {
-			memoPointList = new UList<MemoPoint>(new MemoPoint[4]);
-		}
-		initProductionCodeMap(grammar, memoPointList);
-		UList<Instruction> codeList = new UList<Instruction>(new Instruction[64]);
-//		Production start = grammar.getStartProduction();
-//		this.encodeProduction(codeList, start, new IRet(start));
-//		for(Production p : grammar.getProductionList()) {
-//			if(p != start) {
-//				this.encodeProduction(codeList, p, new IRet(p));
-//			}
-//		}
-		for(Production p : grammar.getProductionList()) {
-			this.encodeProduction(codeList, p, new IRet(p));
-		}
-		for(Instruction inst : codeList) {
-			if(inst instanceof ICall) {
-				ProductionCode deref = this.pcodeMap.get(((ICall) inst).rule.getUniqueName());
-				if(deref == null) {
-					Verbose.debug("no deref: " + ((ICall) inst).rule.getUniqueName());
-				}
-				((ICall) inst).setResolvedJump(deref.compiled);
-			}
-//			Verbose.debug("\t" + inst.id + "\t" + inst);
-		}
-		long t2 = System.nanoTime();
-		Verbose.printElapsedTime("CompilingTime", t, t2);
-		if(coder != null) {
-			coder.setHeader(codeList.size(), pcodeMap.size(), memoPointList == null ? 0 : memoPointList.size());
-		}
-		this.pcodeMap = null;
-		return new NezCode(codeList.ArrayValues[0], codeList.size(), memoPointList);
-	}
-	
-	protected void optimizedUnary(Expression p) {
-		Verbose.noticeOptimize("specialization", p);
-	}
-
-	protected void optimizedInline(Production p) {
-		Verbose.noticeOptimize("inlining", p.getExpression());
-	}
-	
+		
 	// encoding
 
 	public Instruction encode(Expression e, Instruction next, Instruction failjump) {

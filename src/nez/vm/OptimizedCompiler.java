@@ -12,6 +12,7 @@ import nez.lang.Expression;
 import nez.lang.GrammarOptimizer;
 import nez.lang.Not;
 import nez.lang.Option;
+import nez.lang.Production;
 import nez.lang.Repetition;
 import nez.main.Verbose;
 
@@ -19,6 +20,14 @@ public class OptimizedCompiler extends PlainCompiler {
 
 	public OptimizedCompiler(NezOption option) {
 		super(option);
+	}
+	
+	protected void optimizedUnary(Expression p) {
+		Verbose.noticeOptimize("specialization", p);
+	}
+
+	protected void optimizedInline(Production p) {
+		Verbose.noticeOptimize("inlining", p.getExpression());
 	}
 
 	public final Instruction encodeOption(Option p, Instruction next) {
