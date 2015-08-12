@@ -2,6 +2,7 @@ package nez.konoha;
 
 import java.util.HashMap;
 
+import nez.konoha.KonohaLanguage.OperatorTypeRule;
 import nez.main.Verbose;
 import nez.util.ConsoleUtils;
 
@@ -39,7 +40,12 @@ public class KonohaTransducer {
 		if(this.typeRuleMap == null) {
 			this.typeRuleMap = new HashMap<>();
 		}
-		this.typeRuleMap.put(rule.getName(), rule);
+		OperatorTypeRule oldTypeRule = (OperatorTypeRule)this.typeRuleMap.get(rule.getName());
+		if(oldTypeRule != null){
+			oldTypeRule.appendTypes(rule);
+		} else {
+			this.typeRuleMap.put(rule.getName(), rule);
+		}
 	}
 
 	public final KonohaType typeCheck(KonohaType req, KonohaTree node) {

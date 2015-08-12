@@ -26,7 +26,6 @@ public abstract class KonohaTypeRule {
 		node.matched = this;
 		node.typed = KonohaType.VoidType;
 	}
-
 }
 
 

@@ -111,8 +111,8 @@ EOT = !.
 "while"        = 'while'        !W _
 
 KEYWORD
-	= "true" / "false" / "null"
-
+	= "true" / "false" / "null" / "return" / "var" / "func"
+	
 /* Identifier */
 
 format #Name[0] `${text}`
@@ -277,7 +277,7 @@ func f a b =
 '''
 
 FuncDecl
-	= { "func" @Identifier @FuncParam "=" (@Expression / @Block) #FuncDecl }
+	= { "func" @Identifier @FuncParam "=" (@Block / @Expression) #FuncDecl }
 
 FuncParam 
 	= { (@Identifier)* #FuncParam }
