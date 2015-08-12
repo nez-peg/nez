@@ -10,7 +10,7 @@ import nez.vm.NezCode;
 import nez.vm.NezCompiler;
 import nez.vm.PackratCompiler;
 
-public class Lcompile extends Command {
+public class LCcompile extends Command {
 	@Override
 	public String getDesc() {
 		return "an bytecode compiler";
