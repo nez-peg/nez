@@ -730,7 +730,7 @@ abstract class AbstractMemoizationInstruction extends Instruction {
 	@Override
 	void encodeA(ByteCoder c) {
 		c.encodeBoolean(this.state);
-		c.encodeInt(memoId);
+		c.write_u32(memoId);
 		if(skip != null) {
 			c.encodeJumpAddr(skip);
 		}

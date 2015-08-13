@@ -47,33 +47,36 @@ public class ByteCoder {
 
 	int instSize;
 	int prodSize;
+	int jumpTableSize;
 	int memoSize;
 	ByteArrayOutputStream stream;
-	HashMap<String, SetEntry> setMap;
-	HashMap<String, StrEntry> strMap;
-	HashMap<String, TagEntry> tagMap;
-	HashMap<String, TagEntry> tabMap;  // tableEntry
-	HashMap<String, SymEntry> symMap;
-	ArrayList<SetEntry> setList;
-	ArrayList<StrEntry> strList;
-	ArrayList<TagEntry> tagList;
-	ArrayList<TagEntry> tabList;  // tableEntry
-	ArrayList<SymEntry> symList;
+	HashMap<String, StrEntry> NonTerminalPoolMap;
+	HashMap<String, SetEntry> BSetPoolMap;
+	HashMap<String, StrEntry> BStrPoolMap;
+	HashMap<String, TagEntry> TagPoolMap;
+	HashMap<String, TagEntry> TablePoolMap;  // tableEntry
+	ArrayList<StrEntry> NonTerminalPools;
+	ArrayList<SetEntry> BSetPools;
+	ArrayList<StrEntry> BStrPools;
+	ArrayList<TagEntry> TagPools;
+	ArrayList<TagEntry> TablePools;  // tableEntry
 	
 	public void setHeader(int instSize, int prodSize, int memoSize) {
 		this.instSize = instSize;
 		this.prodSize = prodSize;
 		this.memoSize = memoSize;
-		setMap = new HashMap<>();
-		strMap = new HashMap<>();
-		tagMap = new HashMap<>();
-		tabMap = new HashMap<>();
-		symMap = new HashMap<>();
-		setList = new ArrayList<>();
-		strList = new ArrayList<>();
-		tagList = new ArrayList<>();
-		tabList = new ArrayList<>();
-		symList = new ArrayList<>();
+		NonTerminalPoolMap = new HashMap<>();
+		BSetPoolMap = new HashMap<>();
+		BStrPoolMap = new HashMap<>();
+		TagPoolMap = new HashMap<>();
+		TablePoolMap = new HashMap<>();
+//		SymbolTableMap = new HashMap<>();
+		NonTerminalPools = new ArrayList<>();
+		BSetPools = new ArrayList<>();
+		BStrPools = new ArrayList<>();
+		TagPools = new ArrayList<>();
+		TablePools = new ArrayList<>();
+//		SymbolTablePools = new ArrayList<>();
 	}
 
 	public void setInstructions(Instruction[] insts, int len) {
@@ -97,14 +100,14 @@ public class ByteCoder {
 		stream.write(num);
 	}
 
-	public void encodeShort(int num) {
+	public void write_u16(int num) {
 		int n1 = num % 256;
 		int n0 = num / 256;
 		stream.write(n0);
 		stream.write(n1);
 	}
 
-	public void encodeInt(int num) {
+	public void write_u32(int num) {
 		int n3 = num % 256;
 		num = num / 256;
 		int n2 = num % 256;
@@ -130,11 +133,11 @@ public class ByteCoder {
 				n |= (1 << (31-i));
 			}
 		}
-		encodeInt(n);
+		write_u32(n);
 	}
 
 	private void encodeData(byte[] utf8) {
-		encodeShort(utf8.length);
+		write_u16(utf8.length);
 		try {
 			stream.write(utf8);
 		} catch (IOException e) {
@@ -158,7 +161,7 @@ public class ByteCoder {
 	}
 
 	public final void encodeJumpAddr(Instruction jump) {
-		encodeInt(jump.id);
+		write_u32(jump.id);
 	}
 
 	public void encodeShift(int shift) {
@@ -175,24 +178,24 @@ public class ByteCoder {
 
 	public void encodeByteMap(boolean[] byteMap) {
 		String key = StringUtils.stringfyBitmap(byteMap);
-		SetEntry entry = setMap.get(key);
+		SetEntry entry = BSetPoolMap.get(key);
 		if(entry == null) {
-			entry = new SetEntry(setMap.size(), byteMap);
-			setMap.put(key, entry);
+			entry = new SetEntry(BSetPoolMap.size(), byteMap);
+			BSetPoolMap.put(key, entry);
 		}
-		encodeShort(entry.id);
+		write_u16(entry.id);
 	}
 
 
 	public void encodeMultiByte(byte[] utf8) {
 		try {
 			String key = new String(utf8, StringUtils.DefaultEncoding);
-			StrEntry entry = strMap.get(key);
+			StrEntry entry = BStrPoolMap.get(key);
 			if(entry == null) {
-				entry = new StrEntry(strMap.size(), utf8);
-				strMap.put(key, entry);
+				entry = new StrEntry(BStrPoolMap.size(), utf8);
+				BStrPoolMap.put(key, entry);
 			}
-			encodeShort(entry.id);
+			write_u16(entry.id);
 		}
 		catch(IOException e) {
 			Verbose.traceException(e);
@@ -205,32 +208,32 @@ public class ByteCoder {
 	
 	public void encodeTag(Tag tag) {
 		String key = tag.getName();
-		TagEntry entry = tagMap.get(key);
+		TagEntry entry = TagPoolMap.get(key);
 		if(entry == null) {
-			entry = new TagEntry(tagMap.size(), tag);
-			tagMap.put(key, entry);
+			entry = new TagEntry(TagPoolMap.size(), tag);
+			TagPoolMap.put(key, entry);
 		}
-		encodeShort(entry.id);
+		write_u16(entry.id);
 	}
 
 	public void encodeSymbolTable(Tag tableName) {
 		String key = tableName.getName();
-		TagEntry entry = tabMap.get(key);
+		TagEntry entry = TablePoolMap.get(key);
 		if(entry == null) {
-			entry = new TagEntry(tabMap.size(), tableName);
-			tabMap.put(key, entry);
+			entry = new TagEntry(TablePoolMap.size(), tableName);
+			TablePoolMap.put(key, entry);
 		}
-		encodeShort(entry.id);
+		write_u16(entry.id);
 	}
 
 	public void encodeSymbol(Tag tableName, String symbol) {
 		String key = tableName.getName();
-		TagEntry entry = tabMap.get(key);
+		TagEntry entry = TablePoolMap.get(key);
 		if(entry == null) {
-			entry = new TagEntry(tabMap.size(), tableName);
-			tabMap.put(key, entry);
+			entry = new TagEntry(TablePoolMap.size(), tableName);
+			TablePoolMap.put(key, entry);
 		}
-		encodeShort(entry.id);
+		write_u16(entry.id);
 		// TODO
 	}
 
@@ -242,29 +245,30 @@ public class ByteCoder {
 		stream.write('E');
 		stream.write('Z');
 		stream.write('0');
-		encodeShort(instSize);
-		encodeShort(prodSize);
-		encodeShort(memoSize);
-		encodeShort(setList.size());
-		for(SetEntry e: setList) {
+
+		write_u16(instSize);
+		write_u16(memoSize);
+		write_u16(jumpTableSize);
+		
+		write_u16(NonTerminalPools.size());
+		for(StrEntry e: NonTerminalPools) {
 			encodeData(e.data);
 		}
-		encodeShort(strList.size());
-		for(StrEntry e: strList) {
+		write_u16(BSetPools.size());
+		for(SetEntry e: BSetPools) {
 			encodeData(e.data);
 		}
-		encodeShort(tagList.size());
-		for(TagEntry e: tagList) {
+		write_u16(BStrPools.size());
+		for(StrEntry e: BStrPools) {
 			encodeData(e.data);
 		}
-		encodeShort(tabList.size());
-		for(TagEntry e: tabList) {
+		write_u16(TagPools.size());
+		for(TagEntry e: TagPools) {
 			encodeData(e.data);
 		}
-		encodeShort(symList.size());
-		for(SymEntry e: symList) {
-			encodeShort(e.tabid);
-			encodeData(e.symbol);
+		write_u16(TablePools.size());
+		for(TagEntry e: TablePools) {
+			encodeData(e.data);
 		}
 		try {
 			stream.write(body);
