@@ -127,7 +127,7 @@ public class ByteCoder {
 		int n = 0;
 		for(int i = 0; i < 32; i++) {
 			if(b[offset+i]) {
-				n |= (1 << (31-i));
+				n |= (1 << i);
 			}
 		}
 		encodeInt(n);
@@ -179,6 +179,7 @@ public class ByteCoder {
 		if(entry == null) {
 			entry = new SetEntry(setMap.size(), byteMap);
 			setMap.put(key, entry);
+			setList.add(entry);
 		}
 		encodeShort(entry.id);
 	}
@@ -191,6 +192,7 @@ public class ByteCoder {
 			if(entry == null) {
 				entry = new StrEntry(strMap.size(), utf8);
 				strMap.put(key, entry);
+				strList.add(entry);
 			}
 			encodeShort(entry.id);
 		}
@@ -209,6 +211,7 @@ public class ByteCoder {
 		if(entry == null) {
 			entry = new TagEntry(tagMap.size(), tag);
 			tagMap.put(key, entry);
+			tagList.add(entry);
 		}
 		encodeShort(entry.id);
 	}
@@ -219,6 +222,7 @@ public class ByteCoder {
 		if(entry == null) {
 			entry = new TagEntry(tabMap.size(), tableName);
 			tabMap.put(key, entry);
+			tabList.add(entry);
 		}
 		encodeShort(entry.id);
 	}
@@ -229,13 +233,13 @@ public class ByteCoder {
 		if(entry == null) {
 			entry = new TagEntry(tabMap.size(), tableName);
 			tabMap.put(key, entry);
+			tabList.add(entry);
 		}
 		encodeShort(entry.id);
 		// TODO
 	}
 
 	public void writeTo(String fileName) {
-
 		byte[] body = stream.toByteArray();
 		stream = new ByteArrayOutputStream();
 		stream.write('N');
