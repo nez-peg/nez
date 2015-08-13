@@ -43,12 +43,12 @@ InstructionSet = [
 ["TNew", "Shift"],
 ["TCapture", "Shift"],
 ["TTag", "Tag"],
-["TReplace", "Value"],
+["TReplace", "Bstr"],
 ["TStart"],
 ["TCommit", "Index"],
 ["TAbort"],
 
-["TLookup", "Index", "MemoPoint", "Jump"],
+["TLookup", "Jump", "MemoPoint", "Index"],
 ["TMemo", "Index"],
 
 
@@ -56,8 +56,8 @@ InstructionSet = [
 ["SClose"],
 ["SMask", "Table"],
 ["SDef", "Table"],
-["SIsDef", "Table"],
-["SExists", "TableSymbol"],
+["SIsDef", "Table", "Bstr"],
+["SExists", "Table"],
 ["SMatch", "Table"],
 ["SIs", "Table"],
 ["SIsa", "Table"],
@@ -69,8 +69,8 @@ InstructionSet = [
 
 Arguments = [
  ["NonTerminal", "u16",     "@NonTerminalConstPools"],
- ["Jump", "u32"],
- ["JumpTable",              "u32*257"],
+ ["Jump", "u24"],
+ ["JumpTable",              "u24*257"],
  ["Byte", "u8"],
  ["Bset", "u16",            "@SetConstPools"],
  ["Bstr", "u16",            "@StrConstPools"],
@@ -78,8 +78,6 @@ Arguments = [
  ["MemoPoint", "u16"],
  ["Index", "i8"],
  ["Tag", "u16",             "@TagConstPools"],
- ["Value", "u16",           "@ValueConstPools"],
- ["Table", "u16",           "@TableConstPools"],
- ["TableSymol", "u16",      "@TableSymbolConstPools"]
+ ["Table", "u16",           "@TableConstPools"]
 ]
 

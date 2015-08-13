@@ -231,7 +231,7 @@ class ILabel extends Instruction {
 	}
 	@Override
 	void encodeA(ByteCoder c) {
-		c.encodeLabel(rule.getLocalName());
+		c.encodeNonTerminal(rule.getLocalName());
 	}
 	@Override
 	Instruction exec(RuntimeContext sc) throws TerminationException {
@@ -259,6 +259,7 @@ class ICall extends Instruction {
 	@Override
 	void encodeA(ByteCoder c) {
 		c.encodeJumpAddr(this.jump);
+		c.encodeNonTerminal(rule.getLocalName());  // debug information
 	}
 	@Override
 	Instruction exec(RuntimeContext sc) throws TerminationException {
@@ -380,7 +381,7 @@ class IExit extends Instruction {
 	}
 	@Override
 	void encodeA(ByteCoder c) {
-		c.encodeBoolean(status);
+		c.write_b(status);
 	}
 	@Override
 	Instruction exec(RuntimeContext sc) throws TerminationException {
@@ -693,6 +694,7 @@ class IFirst extends Instruction {
 	}
 	@Override
 	void encodeA(ByteCoder c) {
+		c.encodeJumpTable();
 		for(int i = 0; i < jumpTable.length; i++) {
 			c.encodeJumpAddr(jumpTable[i]);
 		}
@@ -729,7 +731,7 @@ abstract class AbstractMemoizationInstruction extends Instruction {
 	}
 	@Override
 	void encodeA(ByteCoder c) {
-		c.encodeBoolean(this.state);
+		c.write_b(this.state);
 		c.write_u32(memoId);
 		if(skip != null) {
 			c.encodeJumpAddr(skip);
@@ -965,8 +967,8 @@ class ITLookup extends AbstractMemoizationInstruction {
 	}
 	@Override
 	void encodeA(ByteCoder c) {
-		c.encodeIndex(index);
 		super.encodeA(c);
+		c.encodeIndex(index);
 	}
 
 	@Override
