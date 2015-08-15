@@ -1,3 +1,5 @@
+export
+	= JSONObject
 File
 	= S* (JSONObject / Array) S*
 Chunk
@@ -15,6 +17,13 @@ Value
 	/ Null
 	/ True
 	/ False
+	/ ObjectId
+
+ObjectId 
+        = 'ObjectId' '("' { [0-9a-z]+ #ObjectId } '")'
+
+ID
+        = [0-9a-z]+
 
 Array
 	= { '[' (S* @Value (VALUESEP @Value)* )? S* ']' #List }
@@ -23,7 +32,7 @@ String
 	= '"' { ('\\"' / '\\\\' / !'"' .)* #String } '"'
 
 Number
-        = { '-'? INT #Integer (&[.eE] FRAC? EXP? #Float)? }
+        = { '-'? INT (FRAC EXP? #Float / '' #Integer) }
 True
         = { 'true'  #True }
 False
