@@ -99,33 +99,21 @@ public class ByteCoder {
 	}
 
 	public void write_u16(int num) {
-		int n1 = num % 256;
-		int n0 = num / 256;
-		stream.write(n0);
-		stream.write(n1);
+		stream.write(0xff & (num >> 8));
+		stream.write(0xff & (num >> 0));
 	}
 
 	public void write_u24(int num) {
-		int n2 = num % 256;
-		num = num / 256;
-		int n1 = num % 256;
-		int n0 = num / 256;
-		stream.write(n0);
-		stream.write(n1);
-		stream.write(n2);
+		stream.write(0xff & (num >> 16));
+		stream.write(0xff & (num >> 8));
+		stream.write(0xff & (num >> 0));
 	}
 
 	public void write_u32(int num) {
-		int n3 = num % 256;
-		num = num / 256;
-		int n2 = num % 256;
-		num = num / 256;
-		int n1 = num % 256;
-		int n0 = num / 256;
-		stream.write(n0);
-		stream.write(n1);
-		stream.write(n2);
-		stream.write(n3);
+		stream.write(0xff & (num >> 24));
+		stream.write(0xff & (num >> 16));
+		stream.write(0xff & (num >> 8));
+		stream.write(0xff & (num >> 0));
 	}
 
 	private void encodeData(boolean[] byteMap) {
