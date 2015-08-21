@@ -6,10 +6,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
 
-import org.objectweb.asm.Opcodes;
-
 import nez.ast.jcode.ClassBuilder.MethodBuilder;
 import nez.ast.jcode.ClassBuilder.VarEntry;
+
+import org.objectweb.asm.Opcodes;
 
 public class JCodeGenerator {
 	private Map<String, Class<?>> generatedClassMap = new HashMap<String, Class<?>>();
@@ -90,7 +90,41 @@ public class JCodeGenerator {
 			visitUndefined(node);
 		}
 	}
-
+	
+//	void visitNull(JCodeTree p){
+//		this.mBuilder.push();
+//	}
+	void visitTrue(JCodeTree p){
+		this.mBuilder.push(true);
+	}
+	void visitFalse(JCodeTree p){
+		this.mBuilder.push(false);
+	}
+	void visitInteger(JCodeTree p){
+		this.mBuilder.push(Integer.parseInt(p.getText()));
+	}
+	
+	void visitOctalInteger(JCodeTree p){
+		this.mBuilder.push(Integer.parseInt(p.getText()));
+	}
+	
+	void visitHexInteger(JCodeTree p){
+		this.mBuilder.push(Integer.parseInt(p.getText()));
+	}
+	
+	void visitDouble(JCodeTree p){
+		this.mBuilder.push(Double.parseDouble(p.getText()));
+	}
+	
+	void visitString(JCodeTree p){
+		this.mBuilder.push(p.getText());
+	}
+	
+	void visitCharacter(JCodeTree p){
+		this.mBuilder.push(p.getText());
+		//this.mBuilder.push(p.getText().charAt(0));
+	}
+	
 	void visitUndefined(JCodeTree p) {
 		System.out.println("undefined: " + p.getClass());
 	}
