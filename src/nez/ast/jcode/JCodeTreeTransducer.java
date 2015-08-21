@@ -14,7 +14,7 @@ public class JCodeTreeTransducer extends TreeTransducer {
 	}
 
 	@Override
-	public void link(Object node, int index, Object child) {
+	public void link(Object node, int index, Tag tag, Object child) {
 		((JCodeTreeImpl) node).set(index, (JCodeTreeImpl) child);
 	}
 

@@ -13,7 +13,7 @@ import org.objectweb.asm.Opcodes;
 
 public class JCodeGenerator {
 	private Map<String, Class<?>> generatedClassMap = new HashMap<String, Class<?>>();
-	private final static String packagePrefix = "mincaml/";
+	private final static String packagePrefix = "nez/ast/jcode/";
 
 	private static int nameSuffix = -1;
 
@@ -72,10 +72,10 @@ public class JCodeGenerator {
 		return loader.definedAndLoadClass(this.cBuilder.getInternalName(), cBuilder.toByteArray());
 	}
 
-	HashMap<Class<?>, Method> methodMap = new HashMap<Class<?>, Method>();
+	HashMap<String, Method> methodMap = new HashMap<String, Method>();
 
 	public final void visit(JCodeTree node) {
-		Method m = lookupMethod("visit", node.getClass());
+		Method m = lookupMethod("visit", node.getTag().getName());
 		if(m != null) {
 			try {
 				m.invoke(this, node);
@@ -90,60 +90,23 @@ public class JCodeGenerator {
 			visitUndefined(node);
 		}
 	}
-	
-	public void visitNull(JCodeTree p){
-		this.mBuilder.pushNull();
-	}
-//	void visitArray(JCodeTree p){
-//		this.mBuilder.newArray(Object.class);
-//	}
-	public void visitTrue(JCodeTree p){
-		this.mBuilder.push(true);
-	}
-	public void visitFalse(JCodeTree p){
-		this.mBuilder.push(false);
-	}
-	public void visitInteger(JCodeTree p){
-		this.mBuilder.push((Integer)Integer.parseInt(p.getText()));
-	}
-	
-	public void visitOctalInteger(JCodeTree p){
-		this.mBuilder.push((Integer)Integer.parseInt(p.getText()));
-	}
-	
-	public void visitHexInteger(JCodeTree p){
-		this.mBuilder.push((Integer)Integer.parseInt(p.getText()));
-	}
-	
-	public void visitDouble(JCodeTree p){
-		this.mBuilder.push((Double)Double.parseDouble(p.getText()));
-	}
-	
-	public void visitString(JCodeTree p){
-		this.mBuilder.push(p.getText());
-	}
-	
-	public void visitCharacter(JCodeTree p){
-		this.mBuilder.push(p.getText());
-		//this.mBuilder.push(p.getText().charAt(0));
-	}
-	
-	public void visitUndefined(JCodeTree p) {
-		System.out.println("undefined: " + p.getClass());
+
+	void visitUndefined(JCodeTree node) {
+		System.out.println("undefined: " + node.getTag().getName());
 	}
 
-	protected final Method lookupMethod(String method, Class<?> c) {
-		Method m = this.methodMap.get(c);
+	protected final Method lookupMethod(String method, String tagName) {
+		Method m = this.methodMap.get(tagName);
 		if(m == null) {
-			String name = method + c.getSimpleName();
+			String name = method + tagName;
 			try {
-				m = this.getClass().getMethod(name, c);
+				m = this.getClass().getMethod(name, JCodeTree.class);
 			} catch (NoSuchMethodException e) {
 				return null;
 			} catch (SecurityException e) {
 				return null;
 			}
-			this.methodMap.put(c, m);
+			this.methodMap.put(tagName, m);
 		}
 		return m;
 	}
@@ -198,6 +161,42 @@ public class JCodeGenerator {
 
 	public void visitMinus(JCodeTree node) {
 		this.visitUnaryNode(node);
+	}
+
+	// void visitNull(JCodeTree p){
+	// this.mBuilder.push();
+	// }
+	public void visitTrue(JCodeTree p) {
+		this.mBuilder.push(true);
+	}
+
+	public void visitFalse(JCodeTree p) {
+		this.mBuilder.push(false);
+	}
+
+	public void visitInteger(JCodeTree p) {
+		this.mBuilder.push(Integer.parseInt(p.toText()));
+	}
+
+	public void visitOctalInteger(JCodeTree p) {
+		this.mBuilder.push(Integer.parseInt(p.toText()));
+	}
+
+	public void visitHexInteger(JCodeTree p) {
+		this.mBuilder.push(Integer.parseInt(p.toText()));
+	}
+
+	public void visitDouble(JCodeTree p) {
+		this.mBuilder.push(Double.parseDouble(p.toText()));
+	}
+
+	public void visitString(JCodeTree p) {
+		this.mBuilder.push(p.toText());
+	}
+
+	public void visitCharacter(JCodeTree p) {
+		this.mBuilder.push(p.toText());
+		// this.mBuilder.push(p.toText().charAt(0));
 	}
 
 }

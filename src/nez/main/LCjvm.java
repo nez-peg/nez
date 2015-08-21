@@ -4,9 +4,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import nez.SourceContext;
-import nez.ast.CommonTreeTransducer;
 import nez.ast.jcode.JCodeGenerator;
 import nez.ast.jcode.JCodeTree;
+import nez.ast.jcode.JCodeTreeTransducer;
 import nez.lang.Grammar;
 import nez.util.ConsoleUtils;
 
@@ -16,11 +16,13 @@ public class LCjvm extends Command {
 		return "jvm";
 	}
 
-	private static Grammar grammar;
-	private static CommonTreeTransducer treeTransducer;
+	private Grammar grammar;
+	private JCodeTreeTransducer treeTransducer;
 
 	@Override
 	public void exec(CommandContext config) {
+		this.treeTransducer = new JCodeTreeTransducer();
+		this.grammar = config.getGrammar();
 		if(config.hasInputSource()) {
 			JCodeTree node = parse(config);
 			execute(node);
@@ -31,7 +33,7 @@ public class LCjvm extends Command {
 
 	public final JCodeTree parse(CommandContext config) {
 		SourceContext source = config.nextInputSource();
-		JCodeTree node = (JCodeTree) grammar.parse(source, treeTransducer);
+		JCodeTree node = (JCodeTree) this.grammar.parse(source, this.treeTransducer);
 		if(node == null) {
 			ConsoleUtils.println(source.getSyntaxErrorMessage());
 		}
