@@ -15,7 +15,7 @@ public abstract class JCodeTree extends AbstractTree<JCodeTree> {
 }
 
 class JCodeTreeImpl extends JCodeTree {
-	Class<?> typed;
+	Class<?> typed = Object.class;
 
 	public JCodeTreeImpl(Tag tag, Source source, long pos, int len, int size, Object value) {
 		super(tag, source, pos, len, size > 0 ? new JCodeTreeImpl[size] : null, value);
