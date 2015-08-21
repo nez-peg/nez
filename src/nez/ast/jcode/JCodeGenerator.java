@@ -132,4 +132,35 @@ public class JCodeGenerator {
 				left.getTypedClass(), node.getTypedClass());
 	}
 
+	public void visitAdd(JCodeTree node) {
+		this.visitBinaryNode(node);
+	}
+
+	public void visitSub(JCodeTree node) {
+		this.visitBinaryNode(node);
+	}
+
+	public void visitMul(JCodeTree node) {
+		this.visitBinaryNode(node);
+	}
+
+	public void visitDiv(JCodeTree node) {
+		this.visitBinaryNode(node);
+	}
+
+	public void visitUnaryNode(JCodeTree node) {
+		JCodeTree child = node.get(0);
+		this.visit(child);
+		this.mBuilder.callStaticMethod(JCodeOperator.class, node.getTypedClass(), node.getTag().getName(),
+				child.getTypedClass());
+	}
+
+	public void visitPlus(JCodeTree node) {
+		this.visitUnaryNode(node);
+	}
+
+	public void visitMinus(JCodeTree node) {
+		this.visitUnaryNode(node);
+	}
+
 }
