@@ -258,7 +258,7 @@ public class JCodeGenerator {
 	}
 
 	public void visitUndefined(JCodeTree p) {
-		System.out.println("undefined: " + p.getClass());
+		System.out.println("undefined: " + p.getTag().getName());
 	}
 
 }
