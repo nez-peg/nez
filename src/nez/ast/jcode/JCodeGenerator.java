@@ -115,12 +115,21 @@ public class JCodeGenerator {
 		this.mBuilder = this.cBuilder.newMethodBuilder(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, void.class, "main");
 		this.mBuilder.enterScope();
 		for(JCodeTree child : node) {
-			visit(child);
+			this.visit(child);
 		}
 		this.mBuilder.exitScope();
 		this.mBuilder.returnValue(); // return stack top value
 		this.mBuilder.endMethod();
 		this.cBuilder.visitEnd();
+	}
+
+	public void visitBinaryNode(JCodeTree node) {
+		JCodeTree left = node.get(0);
+		JCodeTree right = node.get(1);
+		this.visit(left);
+		this.visit(right);
+		this.mBuilder.callStaticMethod(JCodeOperator.class, node.getTypedClass(), node.getTag().getName(),
+				left.getTypedClass(), node.getTypedClass());
 	}
 
 }
