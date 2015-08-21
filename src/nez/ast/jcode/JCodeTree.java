@@ -12,6 +12,8 @@ public abstract class JCodeTree extends AbstractTree<JCodeTree> {
 
 	public abstract Class<?> getTypedClass();
 
+	public abstract Class<?> setType(Class<?> type);
+
 }
 
 class JCodeTreeImpl extends JCodeTree {
@@ -29,6 +31,12 @@ class JCodeTreeImpl extends JCodeTree {
 
 	@Override
 	public Class<?> getTypedClass() {
+		return this.typed;
+	}
+	
+	@Override
+	public Class<?> setType(Class<?> type){
+		this.typed = type;
 		return this.typed;
 	}
 }
