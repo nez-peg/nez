@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
 
+import org.objectweb.asm.Opcodes;
+
 import nez.ast.jcode.ClassBuilder.MethodBuilder;
 import nez.ast.jcode.ClassBuilder.VarEntry;
 
@@ -72,7 +74,7 @@ public class JCodeGenerator {
 
 	HashMap<Class<?>, Method> methodMap = new HashMap<Class<?>, Method>();
 
-	public final void visit(JCodeTree<?> node) {
+	public final void visit(JCodeTree node) {
 		Method m = lookupMethod("visit", node.getClass());
 		if(m != null) {
 			try {
@@ -89,7 +91,7 @@ public class JCodeGenerator {
 		}
 	}
 
-	void visitUndefined(JCodeTree<?> p) {
+	void visitUndefined(JCodeTree p) {
 		System.out.println("undefined: " + p.getClass());
 	}
 
@@ -107,6 +109,18 @@ public class JCodeGenerator {
 			this.methodMap.put(c, m);
 		}
 		return m;
+	}
+
+	public void visitTopLevel(JCodeTree node) {
+		this.mBuilder = this.cBuilder.newMethodBuilder(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, void.class, "main");
+		this.mBuilder.enterScope();
+		for(JCodeTree child : node) {
+			visit(child);
+		}
+		this.mBuilder.exitScope();
+		this.mBuilder.returnValue(); // return stack top value
+		this.mBuilder.endMethod();
+		this.cBuilder.visitEnd();
 	}
 
 }
