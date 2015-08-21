@@ -111,7 +111,7 @@ public class JCodeGenerator {
 		return m;
 	}
 
-	public void visitTopLevel(JCodeTree node) {
+	public void visitSource(JCodeTree node) {
 		this.mBuilder = this.cBuilder.newMethodBuilder(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, void.class, "main");
 		this.mBuilder.enterScope();
 		for(JCodeTree child : node) {
