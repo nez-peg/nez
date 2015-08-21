@@ -91,41 +91,44 @@ public class JCodeGenerator {
 		}
 	}
 	
-//	void visitNull(JCodeTree p){
-//		this.mBuilder.push();
+	public void visitNull(JCodeTree p){
+		this.mBuilder.pushNull();
+	}
+//	void visitArray(JCodeTree p){
+//		this.mBuilder.newArray(Object.class);
 //	}
-	void visitTrue(JCodeTree p){
+	public void visitTrue(JCodeTree p){
 		this.mBuilder.push(true);
 	}
-	void visitFalse(JCodeTree p){
+	public void visitFalse(JCodeTree p){
 		this.mBuilder.push(false);
 	}
-	void visitInteger(JCodeTree p){
-		this.mBuilder.push(Integer.parseInt(p.getText()));
+	public void visitInteger(JCodeTree p){
+		this.mBuilder.push((Integer)Integer.parseInt(p.getText()));
 	}
 	
-	void visitOctalInteger(JCodeTree p){
-		this.mBuilder.push(Integer.parseInt(p.getText()));
+	public void visitOctalInteger(JCodeTree p){
+		this.mBuilder.push((Integer)Integer.parseInt(p.getText()));
 	}
 	
-	void visitHexInteger(JCodeTree p){
-		this.mBuilder.push(Integer.parseInt(p.getText()));
+	public void visitHexInteger(JCodeTree p){
+		this.mBuilder.push((Integer)Integer.parseInt(p.getText()));
 	}
 	
-	void visitDouble(JCodeTree p){
-		this.mBuilder.push(Double.parseDouble(p.getText()));
+	public void visitDouble(JCodeTree p){
+		this.mBuilder.push((Double)Double.parseDouble(p.getText()));
 	}
 	
-	void visitString(JCodeTree p){
+	public void visitString(JCodeTree p){
 		this.mBuilder.push(p.getText());
 	}
 	
-	void visitCharacter(JCodeTree p){
+	public void visitCharacter(JCodeTree p){
 		this.mBuilder.push(p.getText());
 		//this.mBuilder.push(p.getText().charAt(0));
 	}
 	
-	void visitUndefined(JCodeTree p) {
+	public void visitUndefined(JCodeTree p) {
 		System.out.println("undefined: " + p.getClass());
 	}
 
