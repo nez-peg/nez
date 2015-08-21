@@ -182,8 +182,8 @@ public class JCodeGenerator {
 		this.mBuilder.push(Integer.parseInt(p.toText()));
 	}
 
-	public void visitHexInteger(JCodeTree p) {
-		this.mBuilder.push(Integer.parseInt(p.toText()));
+	public void visitHexInteger(JCodeTree p){
+		this.mBuilder.push((Integer)Integer.parseInt(p.toText(), 16));
 	}
 
 	public void visitDouble(JCodeTree p) {
