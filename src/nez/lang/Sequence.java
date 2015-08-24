@@ -1,5 +1,6 @@
 package nez.lang;
 
+import nez.NezOption;
 import nez.ast.SourcePosition;
 import nez.util.StringUtils;
 import nez.util.UList;
@@ -141,6 +142,20 @@ public class Sequence extends Expression {
 		}
 		return r;
 	}
+	
+	@Override
+	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
+		NezOption option = bc.getOption();
+		if(option.enabledStringOptimization) {
+			Expression e = this.toMultiCharSequence();
+			if(e instanceof MultiChar) {
+				//System.out.println("stringfy .. " + e);
+				return bc.encodeMultiChar((MultiChar)e, next, failjump);
+			}
+			return bc.encodeSequence((Sequence)e, next, failjump);
+		}
+		return bc.encodeSequence(this, next, failjump);
+	}
 
 	public final boolean isMultiChar() {
 		return (this.getFirst() instanceof ByteChar && this.getNext() instanceof ByteChar);
@@ -149,7 +164,7 @@ public class Sequence extends Expression {
 	public final Expression toMultiCharSequence() {
 		Expression f = this.getFirst();
 		Expression s = this.getNext().getFirst();
-		if(f instanceof ByteChar || s instanceof ByteChar) {
+		if(f instanceof ByteChar && s instanceof ByteChar) {
 			UList<Byte> l = new UList<Byte>(new Byte[16]);
 			l.add(((byte)((ByteChar)f).byteChar));
 			Expression next = convertMultiByte(this, l);
@@ -342,12 +357,7 @@ public class Sequence extends Expression {
 		}
 	}
 	**/
-	
-	@Override
-	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
-		return bc.encodeSequence(this, next, failjump);
-	}
-	
+		
 	@Override
 	protected int pattern(GEP gep) {
 		int max = 0;

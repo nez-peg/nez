@@ -24,6 +24,7 @@ public class NezOption {
 	public boolean enabledInlining        = true;      // inline
 
 	public boolean enabledLexicalOptimization = true;  // lex
+	public boolean enabledStringOptimization = true;   // str
 	//public boolean enabledCommonFactored  = true;      // common
 	
 	public boolean enabledPrediction      = true;      // predict
@@ -55,6 +56,7 @@ public class NezOption {
 		o.enabledSymbolTable = this.enabledSymbolTable;
 		o.enabledAsIsGrammar = this.enabledAsIsGrammar;
 		o.enabledLexicalOptimization = this.enabledLexicalOptimization;
+		o.enabledStringOptimization = this.enabledStringOptimization;
 		o.enabledInlining = this.enabledInlining;
 //		o.enabledCommonFactored = this.enabledCommonFactored;
 		o.enabledPrediction = this.enabledPrediction;
@@ -121,6 +123,9 @@ public class NezOption {
 			break;
 		case "safe":
 			this.enabledSafeMode = value;
+			break;
+		case "str":
+			this.enabledStringOptimization = value;
 			break;
 		case "symbol":
 			this.enabledSymbolTable = value;

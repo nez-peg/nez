@@ -31,9 +31,18 @@ public class OptimizedCompiler extends PlainCompiler {
 		Verbose.noticeOptimize("inlining", p.getExpression());
 	}
 
+	public final Expression getInnerExpression(Expression p) {
+		Expression inner = GrammarOptimizer.resolveNonTerminal(p.get(0));
+		if(option.enabledStringOptimization && inner instanceof Sequence) {
+			inner = ((Sequence) inner).toMultiCharSequence();
+			//System.out.println("Stringfy:" + inner);
+		}
+		return inner;
+	}
+	
 	public final Instruction encodeOption(Option p, Instruction next) {
 		if(option.enabledLexicalOptimization) {
-			Expression inner = GrammarOptimizer.resolveNonTerminal(p.get(0));
+			Expression inner = getInnerExpression(p);
 			if(inner instanceof ByteChar) {
 				this.optimizedUnary(p);
 				return new IOByte((ByteChar) inner, next);
@@ -52,7 +61,7 @@ public class OptimizedCompiler extends PlainCompiler {
 
 	public final Instruction encodeRepetition(Repetition p, Instruction next) {
 		if(option.enabledLexicalOptimization) {
-			Expression inner = GrammarOptimizer.resolveNonTerminal(p.get(0));
+			Expression inner = getInnerExpression(p);
 			if(inner instanceof ByteChar) {
 				this.optimizedUnary(p);
 				return new IRByte((ByteChar) inner, next);
@@ -71,7 +80,7 @@ public class OptimizedCompiler extends PlainCompiler {
 
 	public final Instruction encodeNot(Not p, Instruction next, Instruction failjump) {
 		if(option.enabledLexicalOptimization) {
-			Expression inner = GrammarOptimizer.resolveNonTerminal(p.get(0));
+			Expression inner = getInnerExpression(p);
 			if(inner instanceof ByteMap) {
 				this.optimizedUnary(p);
 				return new INSet((ByteMap) inner, next);

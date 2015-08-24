@@ -44,6 +44,10 @@ public abstract class NezEncoder {
 	public NezEncoder(NezOption option) {
 		this.option = option;
 	}
+	
+	public final NezOption getOption() {
+		return this.option;
+	}
 
 	/* CodeMap */
 	
