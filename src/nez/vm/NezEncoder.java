@@ -11,7 +11,7 @@ import nez.lang.Block;
 import nez.lang.ByteChar;
 import nez.lang.ByteMap;
 import nez.lang.Capture;
-import nez.lang.CharMultiByte;
+import nez.lang.MultiChar;
 import nez.lang.Choice;
 import nez.lang.DefIndent;
 import nez.lang.DefSymbol;
@@ -157,7 +157,7 @@ public abstract class NezEncoder {
 	public abstract Instruction encodeAnyChar(AnyChar p, Instruction next, Instruction failjump);
 	public abstract Instruction encodeByteChar(ByteChar p, Instruction next, Instruction failjump);
 	public abstract Instruction encodeByteMap(ByteMap p, Instruction next, Instruction failjump);
-	public abstract Instruction encodeCharMultiByte(CharMultiByte p, Instruction next, Instruction failjump);
+	public abstract Instruction encodeMultiChar(MultiChar p, Instruction next, Instruction failjump);
 
 	public abstract Instruction encodeOption(Option p, Instruction next);
 	public abstract Instruction encodeRepetition(Repetition p, Instruction next);

@@ -11,7 +11,7 @@ import nez.lang.Block;
 import nez.lang.ByteChar;
 import nez.lang.ByteMap;
 import nez.lang.Capture;
-import nez.lang.CharMultiByte;
+import nez.lang.MultiChar;
 import nez.lang.Choice;
 import nez.lang.DefIndent;
 import nez.lang.DefSymbol;
@@ -674,7 +674,7 @@ public class PythonParserGenerator extends NezGenerator {
 	}
 
 	@Override
-	public void visitCharMultiByte(CharMultiByte p) {
+	public void visitCharMultiByte(MultiChar p) {
 		// TODO Auto-generated method stub
 
 	}

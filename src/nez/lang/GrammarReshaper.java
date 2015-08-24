@@ -34,7 +34,7 @@ public class GrammarReshaper {
 		return e;
 	}
 
-	public Expression reshapeCharMultiByte(CharMultiByte e) {
+	public Expression reshapeCharMultiByte(MultiChar e) {
 		return e;
 	}
 

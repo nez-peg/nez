@@ -5,7 +5,7 @@ import nez.lang.AnyChar;
 import nez.lang.ByteChar;
 import nez.lang.ByteMap;
 import nez.lang.Capture;
-import nez.lang.CharMultiByte;
+import nez.lang.MultiChar;
 import nez.lang.Choice;
 import nez.lang.Empty;
 import nez.lang.Expression;

@@ -8,7 +8,7 @@ import nez.lang.Block;
 import nez.lang.ByteChar;
 import nez.lang.ByteMap;
 import nez.lang.Capture;
-import nez.lang.CharMultiByte;
+import nez.lang.MultiChar;
 import nez.lang.DefIndent;
 import nez.lang.DefSymbol;
 import nez.lang.ExistsSymbol;
@@ -571,7 +571,7 @@ class IRSet extends AbstractSetInstruction {
 
 abstract class AbstractStrInstruction extends Instruction {
 	final byte[] utf8;
-	public AbstractStrInstruction(byte opcode, CharMultiByte e, byte[] utf8, Instruction next) {
+	public AbstractStrInstruction(byte opcode, MultiChar e, byte[] utf8, Instruction next) {
 		super(opcode, e, next);
 		this.utf8 = utf8;
 	}
@@ -594,7 +594,7 @@ abstract class AbstractStrInstruction extends Instruction {
 
 
 class IStr extends AbstractStrInstruction {
-	public IStr(CharMultiByte e, Instruction next) {
+	public IStr(MultiChar e, Instruction next) {
 		super(InstructionSet.Str, e, e.byteSeq, next);
 	}
 	@Override
@@ -608,7 +608,7 @@ class IStr extends AbstractStrInstruction {
 }
 
 class INStr extends AbstractStrInstruction {
-	public INStr(CharMultiByte e, Instruction next) {
+	public INStr(MultiChar e, Instruction next) {
 		super(InstructionSet.NStr, e, e.byteSeq, next);
 	}
 	@Override
@@ -621,7 +621,7 @@ class INStr extends AbstractStrInstruction {
 }
 
 class IOStr extends AbstractStrInstruction {
-	public IOStr(CharMultiByte e, Instruction next) {
+	public IOStr(MultiChar e, Instruction next) {
 		super(InstructionSet.OStr, e, e.byteSeq, next);
 	}
 	@Override
@@ -634,7 +634,7 @@ class IOStr extends AbstractStrInstruction {
 }
 
 class IRStr extends AbstractStrInstruction {
-	public IRStr(CharMultiByte e, Instruction next) {
+	public IRStr(MultiChar e, Instruction next) {
 		super(InstructionSet.RStr, e, e.byteSeq, next);
 	}
 	@Override

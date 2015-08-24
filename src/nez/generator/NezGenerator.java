@@ -7,7 +7,7 @@ import nez.lang.Block;
 import nez.lang.ByteChar;
 import nez.lang.ByteMap;
 import nez.lang.Capture;
-import nez.lang.CharMultiByte;
+import nez.lang.MultiChar;
 import nez.lang.Choice;
 import nez.lang.DefIndent;
 import nez.lang.DefSymbol;
@@ -76,7 +76,7 @@ public abstract class NezGenerator extends NezEncoder {
 		return null;
 	}
 
-	public Instruction encodeCharMultiByte(CharMultiByte p, Instruction next, Instruction failjump) {
+	public Instruction encodeMultiChar(MultiChar p, Instruction next, Instruction failjump) {
 		this.visitCharMultiByte(p);
 		return null;
 	}
@@ -241,7 +241,7 @@ public abstract class NezGenerator extends NezEncoder {
 	public abstract void visitSequence(Sequence p);
 	public abstract void visitChoice(Choice p);
 	public abstract void visitNonTerminal(NonTerminal p);
-	public abstract void visitCharMultiByte(CharMultiByte p);
+	public abstract void visitCharMultiByte(MultiChar p);
 
 	// AST Construction
 	public abstract void visitLink(Link p);

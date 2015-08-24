@@ -85,10 +85,6 @@ public class GrammarFactory {
 		}
 		if(l.size() > 0) {
 			Expression prev = l.ArrayValues[l.size()-1];
-//			if(e instanceof Not && pe instanceof Not) {
-//				((Not) pe).inner = appendAsChoice(((Not) pe).inner, ((Not) e).inner);
-//				return;
-//			}
 			if(prev instanceof Failure) {
 				return;
 			}
@@ -114,15 +110,6 @@ public class GrammarFactory {
 		}
 		l.add(e);
 	}
-
-//	private final static Expression appendAsChoice(Expression e, Expression e2) {
-//		if(e == null) return e2;
-//		if(e2 == null) return e;
-//		UList<Expression> l = new UList<Expression>(new Expression[e.size()+e2.size()]);
-//		addChoice(l, e);
-//		addChoice(l, e2);
-//		return newChoice(null, l);
-//	}
 
 	// -----------------------------------------------------------------------
 		
@@ -162,6 +149,10 @@ public class GrammarFactory {
 		return byteChar;
 	}
 	
+	public static Expression newMultiChar(SourcePosition s, boolean binary, byte[] utf8) {
+		return internImpl(s, new MultiChar(s, binary, utf8));
+	}
+
 	public static Expression newByteMap(SourcePosition s, boolean binary, boolean[] byteMap) {
 		int byteChar = uniqueByteChar(byteMap);
 		if(byteChar != -1) {

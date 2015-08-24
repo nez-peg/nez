@@ -99,49 +99,7 @@ public class Sequence extends Expression {
 		e.format(sb);
 	}
 	
-	public final Expression convertToMultiByte() {
-		Expression f = this.getFirst();
-		Expression s = this.getNext().getFirst();
-		if(f instanceof ByteChar || s instanceof ByteChar) {
-			UList<Byte> l = new UList<Byte>(new Byte[16]);
-			l.add(((byte)((ByteChar)f).byteChar));
-			Expression next = convertMultiByte(this, l);
-			Expression mb = this.newCharMultiByte(((ByteChar)f).isBinary(), toByteSeq(l));
-			if(next != null) {
-				return this.newSequence(mb, next);
-			}
-			return mb;
-		}
-		return this;
-	}
 
-	private Expression newCharMultiByte(boolean binary, byte[] byteSeq) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	private Expression convertMultiByte(Sequence seq, UList<Byte> l) {
-		Expression s = seq.getNext().getFirst();
-		while(s instanceof ByteChar) {
-			l.add((byte)((ByteChar)s).byteChar);
-			Expression next = seq.getNext();
-			if(next instanceof Sequence) {
-				seq = (Sequence)next;
-				s = seq.getNext().getFirst();
-				continue;
-			}
-			return null;
-		}
-		return seq.getNext();
-	}
-	
-	private byte[] toByteSeq(UList<Byte> l) {
-		byte[] byteSeq = new byte[l.size()];
-		for(int i = 0; i < l.size(); i++) {
-			byteSeq[i] = l.ArrayValues[i];
-		}
-		return byteSeq;
-	}
-	
 	@Override
 	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeSequence(this);
@@ -185,36 +143,80 @@ public class Sequence extends Expression {
 	}
 
 	public final boolean isMultiChar() {
-		return this.isMultiChar(0, this.size());
+		return (this.getFirst() instanceof ByteChar && this.getNext() instanceof ByteChar);
 	}
 
-	public final boolean isMultiChar(int start, int end) {
-		for(int i = start; i < end; i++) {
-			Expression p = this.get(i);
-			if(!(p instanceof ByteChar)) {
-				return false;
+	public final Expression toMultiCharSequence() {
+		Expression f = this.getFirst();
+		Expression s = this.getNext().getFirst();
+		if(f instanceof ByteChar || s instanceof ByteChar) {
+			UList<Byte> l = new UList<Byte>(new Byte[16]);
+			l.add(((byte)((ByteChar)f).byteChar));
+			Expression next = convertMultiByte(this, l);
+			Expression mb = this.newMultiChar(((ByteChar)f).isBinary(), toByteSeq(l));
+			if(next != null) {
+				return this.newSequence(mb, next);
 			}
+			return mb;
 		}
-		return true;
+		return this;
 	}
 	
-	public final byte[] extractMultiChar(int start, int end) {
-		for(int i = start; i < end; i++) {
-			Expression p = this.get(i);
-			if(!(p instanceof ByteChar)) {
-				end = i;
-				break;
+	private Expression convertMultiByte(Sequence seq, UList<Byte> l) {
+		Expression s = seq.getNext().getFirst();
+		while(s instanceof ByteChar) {
+			l.add((byte)((ByteChar)s).byteChar);
+			Expression next = seq.getNext();
+			if(next instanceof Sequence) {
+				seq = (Sequence)next;
+				s = seq.getNext().getFirst();
+				continue;
 			}
+			return null;
 		}
-		byte[] b = new byte[end - start];
-		for(int i = start; i < end; i++) {
-			Expression p = this.get(i);
-			if(p instanceof ByteChar) {
-				b[i - start] = (byte)((ByteChar) p).byteChar;
-			}
-		}
-		return b;
+		return seq.getNext();
 	}
+	
+	private byte[] toByteSeq(UList<Byte> l) {
+		byte[] byteSeq = new byte[l.size()];
+		for(int i = 0; i < l.size(); i++) {
+			byteSeq[i] = l.ArrayValues[i];
+		}
+		return byteSeq;
+	}
+
+	public final Expression newMultiChar(boolean binary, byte[] byteSeq) {
+		return GrammarFactory.newMultiChar(this.getSourcePosition(), binary, byteSeq);
+	}
+
+//
+//	public final boolean isMultiChar(int start, int end) {
+//		for(int i = start; i < end; i++) {
+//			Expression p = this.get(i);
+//			if(!(p instanceof ByteChar)) {
+//				return false;
+//			}
+//		}
+//		return true;
+//	}
+//	
+//	public final byte[] extractMultiChar(int start, int end) {
+//		for(int i = start; i < end; i++) {
+//			Expression p = this.get(i);
+//			if(!(p instanceof ByteChar)) {
+//				end = i;
+//				break;
+//			}
+//		}
+//		byte[] b = new byte[end - start];
+//		for(int i = start; i < end; i++) {
+//			Expression p = this.get(i);
+//			if(p instanceof ByteChar) {
+//				b[i - start] = (byte)((ByteChar) p).byteChar;
+//			}
+//		}
+//		return b;
+//	}
 	
 	/**
 	@Override

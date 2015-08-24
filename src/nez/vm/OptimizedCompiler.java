@@ -6,7 +6,7 @@ import nez.NezOption;
 import nez.lang.AnyChar;
 import nez.lang.ByteChar;
 import nez.lang.ByteMap;
-import nez.lang.CharMultiByte;
+import nez.lang.MultiChar;
 import nez.lang.Choice;
 import nez.lang.Expression;
 import nez.lang.GrammarOptimizer;
@@ -42,9 +42,9 @@ public class OptimizedCompiler extends PlainCompiler {
 				this.optimizedUnary(p);
 				return new IOSet((ByteMap) inner, next);
 			}
-			if(inner instanceof CharMultiByte) {
+			if(inner instanceof MultiChar) {
 				this.optimizedUnary(p);
-				return new IOStr((CharMultiByte)inner, next);
+				return new IOStr((MultiChar)inner, next);
 			}
 		}
 		return super.encodeOption(p, next);
@@ -61,9 +61,9 @@ public class OptimizedCompiler extends PlainCompiler {
 				this.optimizedUnary(p);
 				return new IRSet((ByteMap) inner, next);
 			}
-			if(inner instanceof CharMultiByte) {
+			if(inner instanceof MultiChar) {
 				this.optimizedUnary(p);
-				return new IRStr((CharMultiByte)inner, next);
+				return new IRStr((MultiChar)inner, next);
 			}
 		}
 		return super.encodeRepetition(p, next);
@@ -84,14 +84,13 @@ public class OptimizedCompiler extends PlainCompiler {
 				this.optimizedUnary(p);
 				return new INAny(inner, ((AnyChar) inner).isBinary(), next);
 			}
-			if(inner instanceof CharMultiByte) {
+			if(inner instanceof MultiChar) {
 				this.optimizedUnary(p);
-				return new INStr((CharMultiByte)inner, next);
+				return new INStr((MultiChar)inner, next);
 			}
 		}
 		return super.encodeNot(p, next, failjump);
 	}
-
 	
 	public final Instruction encodeChoice(Choice p, Instruction next, Instruction failjump) {
 		if(option.enabledPrediction && p.predictedCase != null) {

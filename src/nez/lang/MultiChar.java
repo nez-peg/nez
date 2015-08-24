@@ -5,16 +5,16 @@ import nez.util.StringUtils;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
-public class CharMultiByte extends Char implements Consumed {
+public class MultiChar extends Char {
 	public byte[] byteSeq;
-	CharMultiByte(SourcePosition s, boolean binary, byte[] byteSeq) {
+	MultiChar(SourcePosition s, boolean binary, byte[] byteSeq) {
 		super(s, binary);
 		this.byteSeq = byteSeq;
 	}
 	@Override
 	public final boolean equalsExpression(Expression o) {
-		if(o instanceof CharMultiByte) {
-			CharMultiByte mb = (CharMultiByte)o;
+		if(o instanceof MultiChar) {
+			MultiChar mb = (MultiChar)o;
 			if(mb.byteSeq.length == this.byteSeq.length) {
 				for(int i = 0; i < this.byteSeq.length; i++) {
 					if(byteSeq[i] != mb.byteSeq[i]) {
@@ -56,6 +56,6 @@ public class CharMultiByte extends Char implements Consumed {
 	}
 	@Override
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
-		return bc.encodeCharMultiByte(this, next, failjump);
+		return bc.encodeMultiChar(this, next, failjump);
 	}
 }
