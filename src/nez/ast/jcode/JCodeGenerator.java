@@ -145,35 +145,71 @@ public class JCodeGenerator {
 	}
 
 	public void visitWhile(JCodeTree node) {
+		Label beginLabel = this.mBuilder.newLabel();
+		Label endLabel = this.mBuilder.newLabel();
 
+		//Condition
+		this.mBuilder.mark(beginLabel);
+		visit(node.get(0));
+		this.mBuilder.push(true);
+
+		this.mBuilder.ifCmp(Type.BOOLEAN_TYPE, this.mBuilder.NE, endLabel);
+
+		//Block
+		visit(node.get(1));
+		this.mBuilder.goTo(beginLabel);
+
+		this.mBuilder.mark(endLabel);
 	}
 
 	public void visitDoWhile(JCodeTree node) {
+		Label beginLabel = this.mBuilder.newLabel();
 
+		//Do
+		this.mBuilder.mark(beginLabel);
+		visit(node.get(0));
+
+		//Condition
+		visit(node.get(1));
+		this.mBuilder.push(false);
+
+		this.mBuilder.ifCmp(Type.BOOLEAN_TYPE, this.mBuilder.NE, beginLabel);
 	}
 
 	public void visitFor(JCodeTree node) {
+		Label beginLabel = this.mBuilder.newLabel();
+		Label endLabel = this.mBuilder.newLabel();
 
+		//Initialize
+		visit(node.get(0));
+
+		//Condition
+		this.mBuilder.mark(beginLabel);
+		visit(node.get(1));
+		this.mBuilder.push(false);
+		this.mBuilder.ifCmp(Type.BOOLEAN_TYPE, this.mBuilder.NE, endLabel);
+
+		//Block
+		visit(node.get(3));
+		visit(node.get(2));
+		this.mBuilder.goTo(beginLabel);
+		this.mBuilder.mark(endLabel);
 	}
 
 	public void visitContinue(JCodeTree node) {
-
 	}
 
 	public void visitBreak(JCodeTree node) {
-
 	}
 
 	public void visitReturn(JCodeTree node) {
-
+		this.mBuilder.returnValue();
 	}
 
 	public void visitThrow(JCodeTree node) {
-
 	}
 
 	public void visitWith(JCodeTree node) {
-
 	}
 
 	public void visitApply(JCodeTree node) {
