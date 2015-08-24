@@ -8,13 +8,13 @@ import java.util.Stack;
 
 import javax.lang.model.type.NullType;
 
-import org.objectweb.asm.Label;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
-
 import nez.ast.Tag;
 import nez.ast.jcode.ClassBuilder.MethodBuilder;
 import nez.ast.jcode.ClassBuilder.VarEntry;
+
+import org.objectweb.asm.Label;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 
 public class JCodeGenerator {
 	private Map<String, Class<?>> generatedClassMap = new HashMap<String, Class<?>>();
@@ -121,6 +121,51 @@ public class JCodeGenerator {
 		this.cBuilder.visitEnd();
 	}
 
+	public void visitBlock(JCodeTree node){
+		for(JCodeTree stmt : node){
+			visit(stmt);
+		}
+	}
+
+	public void visitFuncDecl(JCodeTree node){
+		this.mBuilderStack.push(this.mBuilder);
+		JCodeTree nameNode = node.get(0);
+		JCodeTree args = node.get(1);
+		String name = nameNode.toText();
+		Class<?> funcType = nameNode.getTypedClass();
+		Class<?>[] paramClasses = new Class<?>[args.size()];
+		for(int i = 0; i < paramClasses.length; i++) {
+			paramClasses[i] = args.get(i).getTypedClass();
+		}
+		this.mBuilder = this.cBuilder.newMethodBuilder(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC,
+				funcType, name, paramClasses);
+		this.mBuilder.enterScope();
+		this.pushScope();
+		for(JCodeTree arg : args) {
+			this.scope.setLocalVar(arg.toText(), this.mBuilder.defineArgument(arg.getTypedClass()));
+		}
+		visit(node.get(2));
+		this.mBuilder.exitScope();
+		this.popScope();
+		this.mBuilder.returnValue();
+		this.mBuilder.endMethod();
+		this.mBuilder = this.mBuilderStack.pop();
+	}
+	
+	public void visitVarDeclStmt(JCodeTree node){
+		visit(node.get(0));
+	}
+
+	public void visitVarDecl(JCodeTree node){
+		if(node.size() > 1){
+			JCodeTree varNode = node.get(0);
+			JCodeTree valueNode = node.get(1);
+			visit(valueNode);
+			varNode.setType(valueNode.getTypedClass());
+			this.scope.setLocalVar(varNode.toText(), this.mBuilder.createNewVarAndStore(valueNode.getTypedClass()));
+		}
+	}
+
 	public void visitIf(JCodeTree node) {
 		visit(node.get(0));
 		this.mBuilder.push(true);
@@ -169,9 +214,9 @@ public class JCodeGenerator {
 
 		//Condition
 		visit(node.get(1));
-		this.mBuilder.push(false);
+		this.mBuilder.push(true);
 
-		this.mBuilder.ifCmp(Type.BOOLEAN_TYPE, this.mBuilder.NE, beginLabel);
+		this.mBuilder.ifCmp(Type.BOOLEAN_TYPE, this.mBuilder.EQ, beginLabel);
 	}
 
 	public void visitFor(JCodeTree node) {
@@ -184,8 +229,8 @@ public class JCodeGenerator {
 		//Condition
 		this.mBuilder.mark(beginLabel);
 		visit(node.get(1));
-		this.mBuilder.push(false);
-		this.mBuilder.ifCmp(Type.BOOLEAN_TYPE, this.mBuilder.NE, endLabel);
+		this.mBuilder.push(true);
+		this.mBuilder.ifCmp(Type.BOOLEAN_TYPE, this.mBuilder.EQ, endLabel);
 
 		//Block
 		visit(node.get(3));
@@ -210,13 +255,20 @@ public class JCodeGenerator {
 	public void visitWith(JCodeTree node) {
 	}
 
+	public void visitAssign(JCodeTree node){
+		JCodeTree nameNode = node.get(0);
+		JCodeTree valueNode = node.get(1);
+		visit(valueNode);
+		scope.setLocalVar(nameNode.toText(), this.mBuilder.createNewVarAndStore(valueNode.getTypedClass()));
+	}
+
 	public void visitApply(JCodeTree node) {
 		JCodeTree fieldNode = node.get(0);
 		JCodeTree argsNode = node.get(1);
 		JCodeTree top = fieldNode.get(0);
 		VarEntry var = null;
 		if(Tag.tag("Name").equals(top.getTag())) {
-			var = this.scope.getLocalVar(top.getText());
+			var = this.scope.getLocalVar(top.toText());
 			if(var != null) {
 				this.mBuilder.loadFromVar(var);
 			} else {
@@ -252,7 +304,7 @@ public class JCodeGenerator {
 		JCodeTree top = node.get(0);
 		VarEntry var = null;
 		if(Tag.tag("Name").equals(top.getTag())) {
-			var = this.scope.getLocalVar(top.getText());
+			var = this.scope.getLocalVar(top.toText());
 			if(var != null) {
 				this.mBuilder.loadFromVar(var);
 			} else {
@@ -265,7 +317,7 @@ public class JCodeGenerator {
 		for(int i = 1; i < node.size(); i++) {
 			JCodeTree member = node.get(i);
 			if(Tag.tag("Name").equals(member.getTag())) {
-				this.mBuilder.getField(Type.getType(var.getVarClass()), member.getText(), Type.getType(Object.class));
+				this.mBuilder.getField(Type.getType(var.getVarClass()), member.toText(), Type.getType(Object.class));
 				visit(member);
 			}
 		}
@@ -277,6 +329,16 @@ public class JCodeGenerator {
 		this.visit(left);
 		this.visit(right);
 		node.setType(typeInfferBinary(node, left, right));
+		this.mBuilder.callStaticMethod(JCodeOperator.class, node.getTypedClass(), node.getTag().getName(),
+				left.getTypedClass(), right.getTypedClass());
+	}
+
+	public void visitCompNode(JCodeTree node){
+		JCodeTree left = node.get(0);
+		JCodeTree right = node.get(1);
+		this.visit(left);
+		this.visit(right);
+		node.setType(boolean.class);
 		this.mBuilder.callStaticMethod(JCodeOperator.class, node.getTypedClass(), node.getTag().getName(),
 				left.getTypedClass(), right.getTypedClass());
 	}
@@ -332,6 +394,34 @@ public class JCodeGenerator {
 		this.visitBinaryNode(node);
 	}
 
+	public void visitNotEquals(JCodeTree node){
+		this.visitCompNode(node);
+	}
+
+	public void visitLessThan(JCodeTree node){
+		this.visitCompNode(node);
+	}
+
+	public void visitLessThanEquals(JCodeTree node){
+		this.visitCompNode(node);
+	}
+
+	public void visitGreaterThan(JCodeTree node){
+		this.visitCompNode(node);
+	}
+
+	public void visitGreaterThanEquals(JCodeTree node){
+		this.visitCompNode(node);
+	}
+	
+	public void visitLogicalAnd(JCodeTree node){
+		this.visitCompNode(node);
+	}
+	
+	public void visitLogicalOr(JCodeTree node){
+		this.visitCompNode(node);
+	}
+
 	public void visitUnaryNode(JCodeTree node) {
 		JCodeTree child = node.get(0);
 		this.visit(child);
@@ -367,6 +457,16 @@ public class JCodeGenerator {
 	// void visitArray(JCodeTree p){
 	// this.mBuilder.newArray(Object.class);
 	// }
+
+	public void visitName(JCodeTree node){
+		this.mBuilder.loadFromVar(scope.getLocalVar(node.toText()));
+	}
+
+	public void visitList(JCodeTree node){
+		for(JCodeTree element : node){
+			visit(element);
+		}
+	}
 
 	public void visitTrue(JCodeTree p) {
 		p.setType(boolean.class);

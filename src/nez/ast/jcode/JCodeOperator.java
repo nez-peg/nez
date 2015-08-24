@@ -81,6 +81,14 @@ public class JCodeOperator {
 		return ((Number) x).longValue() ^ ((Number) y).longValue();
 	}
 
+	public static boolean LogicalAnd(boolean x, boolean y){
+		return x && y;
+	}
+
+	public static boolean LogicalOr(boolean x, boolean y){
+		return x || y;
+	}
+
 	public static boolean LessThan(Object x, Object y) {
 		return ((Number) x).doubleValue() < ((Number) y).doubleValue();
 	}
