@@ -121,13 +121,13 @@ public class JCodeGenerator {
 		this.cBuilder.visitEnd();
 	}
 
-	public void visitBlock(JCodeTree node){
-		for(JCodeTree stmt : node){
+	public void visitBlock(JCodeTree node) {
+		for(JCodeTree stmt : node) {
 			visit(stmt);
 		}
 	}
 
-	public void visitFuncDecl(JCodeTree node){
+	public void visitFuncDecl(JCodeTree node) {
 		this.mBuilderStack.push(this.mBuilder);
 		JCodeTree nameNode = node.get(0);
 		JCodeTree args = node.get(1);
@@ -137,8 +137,8 @@ public class JCodeGenerator {
 		for(int i = 0; i < paramClasses.length; i++) {
 			paramClasses[i] = args.get(i).getTypedClass();
 		}
-		this.mBuilder = this.cBuilder.newMethodBuilder(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC,
-				funcType, name, paramClasses);
+		this.mBuilder = this.cBuilder.newMethodBuilder(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, funcType, name,
+				paramClasses);
 		this.mBuilder.enterScope();
 		this.pushScope();
 		for(JCodeTree arg : args) {
@@ -151,13 +151,13 @@ public class JCodeGenerator {
 		this.mBuilder.endMethod();
 		this.mBuilder = this.mBuilderStack.pop();
 	}
-	
-	public void visitVarDeclStmt(JCodeTree node){
+
+	public void visitVarDeclStmt(JCodeTree node) {
 		visit(node.get(0));
 	}
 
-	public void visitVarDecl(JCodeTree node){
-		if(node.size() > 1){
+	public void visitVarDecl(JCodeTree node) {
+		if(node.size() > 1) {
 			JCodeTree varNode = node.get(0);
 			JCodeTree valueNode = node.get(1);
 			visit(valueNode);
@@ -191,14 +191,14 @@ public class JCodeGenerator {
 		Label beginLabel = this.mBuilder.newLabel();
 		Label endLabel = this.mBuilder.newLabel();
 
-		//Condition
+		// Condition
 		this.mBuilder.mark(beginLabel);
 		visit(node.get(0));
 		this.mBuilder.push(true);
 
 		this.mBuilder.ifCmp(Type.BOOLEAN_TYPE, this.mBuilder.NE, endLabel);
 
-		//Block
+		// Block
 		visit(node.get(1));
 		this.mBuilder.goTo(beginLabel);
 
@@ -208,11 +208,11 @@ public class JCodeGenerator {
 	public void visitDoWhile(JCodeTree node) {
 		Label beginLabel = this.mBuilder.newLabel();
 
-		//Do
+		// Do
 		this.mBuilder.mark(beginLabel);
 		visit(node.get(0));
 
-		//Condition
+		// Condition
 		visit(node.get(1));
 		this.mBuilder.push(true);
 
@@ -223,16 +223,16 @@ public class JCodeGenerator {
 		Label beginLabel = this.mBuilder.newLabel();
 		Label endLabel = this.mBuilder.newLabel();
 
-		//Initialize
+		// Initialize
 		visit(node.get(0));
 
-		//Condition
+		// Condition
 		this.mBuilder.mark(beginLabel);
 		visit(node.get(1));
 		this.mBuilder.push(true);
 		this.mBuilder.ifCmp(Type.BOOLEAN_TYPE, this.mBuilder.EQ, endLabel);
 
-		//Block
+		// Block
 		visit(node.get(3));
 		visit(node.get(2));
 		this.mBuilder.goTo(beginLabel);
@@ -255,11 +255,16 @@ public class JCodeGenerator {
 	public void visitWith(JCodeTree node) {
 	}
 
-	public void visitAssign(JCodeTree node){
+	public void visitAssign(JCodeTree node) {
 		JCodeTree nameNode = node.get(0);
 		JCodeTree valueNode = node.get(1);
+		VarEntry var = this.scope.getLocalVar(nameNode.toText());
 		visit(valueNode);
-		scope.setLocalVar(nameNode.toText(), this.mBuilder.createNewVarAndStore(valueNode.getTypedClass()));
+		if(var != null) {
+			this.mBuilder.storeToVar(var);
+		} else {
+			this.scope.setLocalVar(nameNode.toText(), this.mBuilder.createNewVarAndStore(valueNode.getTypedClass()));
+		}
 	}
 
 	public void visitApply(JCodeTree node) {
@@ -333,7 +338,7 @@ public class JCodeGenerator {
 				left.getTypedClass(), right.getTypedClass());
 	}
 
-	public void visitCompNode(JCodeTree node){
+	public void visitCompNode(JCodeTree node) {
 		JCodeTree left = node.get(0);
 		JCodeTree right = node.get(1);
 		this.visit(left);
@@ -394,31 +399,31 @@ public class JCodeGenerator {
 		this.visitBinaryNode(node);
 	}
 
-	public void visitNotEquals(JCodeTree node){
+	public void visitNotEquals(JCodeTree node) {
 		this.visitCompNode(node);
 	}
 
-	public void visitLessThan(JCodeTree node){
+	public void visitLessThan(JCodeTree node) {
 		this.visitCompNode(node);
 	}
 
-	public void visitLessThanEquals(JCodeTree node){
+	public void visitLessThanEquals(JCodeTree node) {
 		this.visitCompNode(node);
 	}
 
-	public void visitGreaterThan(JCodeTree node){
+	public void visitGreaterThan(JCodeTree node) {
 		this.visitCompNode(node);
 	}
 
-	public void visitGreaterThanEquals(JCodeTree node){
+	public void visitGreaterThanEquals(JCodeTree node) {
 		this.visitCompNode(node);
 	}
-	
-	public void visitLogicalAnd(JCodeTree node){
+
+	public void visitLogicalAnd(JCodeTree node) {
 		this.visitCompNode(node);
 	}
-	
-	public void visitLogicalOr(JCodeTree node){
+
+	public void visitLogicalOr(JCodeTree node) {
 		this.visitCompNode(node);
 	}
 
@@ -459,11 +464,13 @@ public class JCodeGenerator {
 	// }
 
 	public void visitName(JCodeTree node){
-		this.mBuilder.loadFromVar(scope.getLocalVar(node.toText()));
+		VarEntry var = this.scope.getLocalVar(node.toText());
+		node.setType(var.getVarClass());
+		this.mBuilder.loadFromVar(var);
 	}
 
-	public void visitList(JCodeTree node){
-		for(JCodeTree element : node){
+	public void visitList(JCodeTree node) {
+		for(JCodeTree element : node) {
 			visit(element);
 		}
 	}
