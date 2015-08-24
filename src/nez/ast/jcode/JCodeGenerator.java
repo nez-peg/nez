@@ -11,6 +11,7 @@ import javax.lang.model.type.NullType;
 import nez.ast.jcode.ClassBuilder.MethodBuilder;
 import nez.ast.jcode.ClassBuilder.VarEntry;
 
+import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
@@ -120,6 +121,59 @@ public class JCodeGenerator {
 		this.mBuilder.returnValue(); // return stack top value
 		this.mBuilder.endMethod();
 		this.cBuilder.visitEnd();
+	}
+	
+	public void visitIf(JCodeTree node) {
+		visit(node.get(0));
+		this.mBuilder.push(true);
+
+		Label elseLabel = this.mBuilder.newLabel();
+		Label mergeLabel = this.mBuilder.newLabel();
+
+		this.mBuilder.ifCmp(Type.BOOLEAN_TYPE, this.mBuilder.NE, elseLabel);
+
+		// then
+		visit(node.get(1));
+		this.mBuilder.goTo(mergeLabel);
+
+		// else
+		this.mBuilder.mark(elseLabel);
+		visit(node.get(2));
+
+		// merge
+		this.mBuilder.mark(mergeLabel);
+	}
+
+	public void visitWhile(JCodeTree node) {
+
+	}
+
+	public void visitDoWhile(JCodeTree node) {
+
+	}
+
+	public void visitFor(JCodeTree node) {
+
+	}
+
+	public void visitContinue(JCodeTree node) {
+
+	}
+
+	public void visitBreak(JCodeTree node) {
+
+	}
+
+	public void visitReturn(JCodeTree node) {
+
+	}
+
+	public void visitThrow(JCodeTree node) {
+
+	}
+
+	public void visitWith(JCodeTree node) {
+
 	}
 
 	public void visitApply(JCodeTree node) {
