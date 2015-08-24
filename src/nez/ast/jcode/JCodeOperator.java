@@ -135,8 +135,40 @@ public class JCodeOperator {
 		return x * y;
 	}
 
-	public static int Div(int x, int y) {
-		return x / y;
+	public static double Div(int x, int y) {
+		return (double) x / (double) y;
+	}
+
+	public static double Add(int x, double y) {
+		return (double) x + y;
+	}
+
+	public static double Add(double x, int y) {
+		return x + (double) y;
+	}
+
+	public static double Sub(int x, double y) {
+		return (double) x - y;
+	}
+
+	public static double Sub(double x, int y) {
+		return x - (double) y;
+	}
+
+	public static double Mul(int x, double y) {
+		return (double) x * y;
+	}
+
+	public static double Mul(double x, int y) {
+		return x * (double) y;
+	}
+
+	public static double Div(int x, double y) {
+		return (double) x / y;
+	}
+
+	public static double Div(double x, int y) {
+		return x / (double) y;
 	}
 
 	public static double Add(double x, double y) {

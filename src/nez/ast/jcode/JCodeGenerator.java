@@ -149,18 +149,21 @@ public class JCodeGenerator {
 	public void visitBinaryNode(JCodeTree node) {
 		JCodeTree left = node.get(0);
 		JCodeTree right = node.get(1);
-		node.setType(typeInfferBinary(left, right));
 		this.visit(left);
 		this.visit(right);
+		node.setType(typeInfferBinary(node, left, right));
 		this.mBuilder.callStaticMethod(JCodeOperator.class, node.getTypedClass(), node.getTag().getName(),
-				left.getTypedClass(), node.getTypedClass());
+				left.getTypedClass(), right.getTypedClass());
 	}
 
-	private Class<?> typeInfferBinary(JCodeTree left, JCodeTree right) {
+	private Class<?> typeInfferBinary(JCodeTree binary, JCodeTree left, JCodeTree right) {
 		Class<?> leftType = left.getTypedClass();
 		Class<?> rightType = right.getTypedClass();
 		if(leftType == int.class) {
 			if(rightType == int.class) {
+				if(binary.getTag().getName().equals("Div")) {
+					return double.class;
+				}
 				return int.class;
 			} else if(rightType == double.class) {
 				return double.class;
