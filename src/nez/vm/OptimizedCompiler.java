@@ -14,6 +14,7 @@ import nez.lang.Not;
 import nez.lang.Option;
 import nez.lang.Production;
 import nez.lang.Repetition;
+import nez.lang.Sequence;
 import nez.main.Verbose;
 
 public class OptimizedCompiler extends PlainCompiler {
@@ -91,6 +92,7 @@ public class OptimizedCompiler extends PlainCompiler {
 		return super.encodeNot(p, next, failjump);
 	}
 
+	
 	public final Instruction encodeChoice(Choice p, Instruction next, Instruction failjump) {
 		if(option.enabledPrediction && p.predictedCase != null) {
 			return encodePredicatedChoice(p, next, failjump);

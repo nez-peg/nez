@@ -21,14 +21,17 @@ public class Sequence extends Expression {
 		}
 		return false;
 	}
+	
 	@Override
 	public final int size() {
 		return 2;
 	}
+	
 	@Override
 	public final Expression get(int index) {
 		return index == 0 ? this.first : this.next;
 	}
+	
 	@Override
 	public final Expression set(int index, Expression e) {
 		Expression p = this.first;
@@ -45,17 +48,21 @@ public class Sequence extends Expression {
 	public Expression getFirst() {
 		return this.first;
 	}
+	
 	public Expression getNext() {
 		return this.next;
 	}
+	
 	@Override
 	public String getPredicate() {
 		return "seq";
 	}	
+	
 	@Override
 	public String key() {
 		return " ";
 	}
+	
 	@Override
 	protected final void format(StringBuilder sb) {
 		if(this.first instanceof ByteChar && this.next.getFirst() instanceof ByteChar) {
@@ -89,14 +96,7 @@ public class Sequence extends Expression {
 	}
 
 	private void formatInner(StringBuilder sb, Expression e) {
-		if(e instanceof Choice || e instanceof Sequence) {
-			//sb.append("( ");
-			e.format(sb);
-			//sb.append(" )");
-		}
-		else {	
-			e.format(sb);
-		}
+		e.format(sb);
 	}
 	
 	public final Expression convertToMultiByte() {
@@ -357,12 +357,12 @@ public class Sequence extends Expression {
 		}
 		return max;
 	}
+	
 	@Override
 	protected void examplfy(GEP gep, StringBuilder sb, int p) {
 		for(Expression e: this) {
 			e.examplfy(gep, sb, p);
 		}
 	}
-
 
 }
