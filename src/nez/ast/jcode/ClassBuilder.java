@@ -1,10 +1,14 @@
 package nez.ast.jcode;
 
+import java.lang.invoke.CallSite;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Handle;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -379,6 +383,29 @@ public class ClassBuilder extends ClassWriter implements Opcodes {
 			default:
 				break;
 			}
+		}
+
+		/**
+		 * generate invokedynamic instruction.
+		 *
+		 * @param bsmClassPath
+		 *            class path that has bootstrap method.
+		 * @param bsmName
+		 *            bootstrap method name
+		 * @param methodName
+		 *            invocation method name
+		 * @param invokeClassPath
+		 *            invocation class path
+		 * @param argTypes
+		 *            types of arguments
+		 */
+		public void callDynamicMethod(String bsmClassPath, String bsmName, String methodName, String invokeClassPath,
+				Type... argTypes) {
+			MethodType mt = MethodType.methodType(CallSite.class, MethodHandles.Lookup.class, String.class,
+					MethodType.class, String.class);
+			Handle bsm = new Handle(Opcodes.H_INVOKESTATIC, bsmClassPath, bsmName, mt.toMethodDescriptorString());
+			this.invokeDynamic(methodName, Type.getMethodDescriptor(Type.getType(Object.class), argTypes), bsm,
+					invokeClassPath);
 		}
 
 		public void getStatic(StaticField field) {
