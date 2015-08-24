@@ -558,7 +558,7 @@ public class ClassBuilder extends ClassWriter implements Opcodes {
 		 * 
 		 * @return return null if this entry represents return address
 		 */
-		private Class<?> getVarClass() {
+		public Class<?> getVarClass() {
 			return this.varClass;
 		}
 	}
