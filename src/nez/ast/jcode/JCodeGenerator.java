@@ -108,6 +108,18 @@ public class JCodeGenerator {
 		}
 		return m;
 	}
+	
+	protected final void popUnusedValue(JCodeTree node){
+		JCodeTree parent = (JCodeTree) node.getParent();
+		if(parent.is(Tag.tag("Source")) || parent.is(Tag.tag("Block"))){
+			this.mBuilder.pop();
+		}
+		if(parent.is(Tag.tag("For"))){
+			if(!parent.get(1).equals(node)){
+				this.mBuilder.pop();
+			}
+		}
+	}
 
 	public void visitSource(JCodeTree node) {
 		this.mBuilder = this.cBuilder.newMethodBuilder(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, void.class, "main");
@@ -189,20 +201,20 @@ public class JCodeGenerator {
 
 	public void visitWhile(JCodeTree node) {
 		Label beginLabel = this.mBuilder.newLabel();
-		Label endLabel = this.mBuilder.newLabel();
+		Label condLabel = this.mBuilder.newLabel();
+
+		this.mBuilder.goTo(condLabel);
+
+		// Block
+		this.mBuilder.mark(beginLabel);
+		visit(node.get(1));
 
 		// Condition
-		this.mBuilder.mark(beginLabel);
+		this.mBuilder.mark(condLabel);
 		visit(node.get(0));
 		this.mBuilder.push(true);
 
-		this.mBuilder.ifCmp(Type.BOOLEAN_TYPE, this.mBuilder.NE, endLabel);
-
-		// Block
-		visit(node.get(1));
-		this.mBuilder.goTo(beginLabel);
-
-		this.mBuilder.mark(endLabel);
+		this.mBuilder.ifCmp(Type.BOOLEAN_TYPE, this.mBuilder.EQ, beginLabel);
 	}
 
 	public void visitDoWhile(JCodeTree node) {
@@ -221,22 +233,23 @@ public class JCodeGenerator {
 
 	public void visitFor(JCodeTree node) {
 		Label beginLabel = this.mBuilder.newLabel();
-		Label endLabel = this.mBuilder.newLabel();
+		Label condLabel = this.mBuilder.newLabel();
 
 		// Initialize
 		visit(node.get(0));
 
-		// Condition
-		this.mBuilder.mark(beginLabel);
-		visit(node.get(1));
-		this.mBuilder.push(true);
-		this.mBuilder.ifCmp(Type.BOOLEAN_TYPE, this.mBuilder.EQ, endLabel);
+		this.mBuilder.goTo(condLabel);
 
 		// Block
+		this.mBuilder.mark(beginLabel);
 		visit(node.get(3));
 		visit(node.get(2));
-		this.mBuilder.goTo(beginLabel);
-		this.mBuilder.mark(endLabel);
+
+		// Condition
+		this.mBuilder.mark(condLabel);
+		visit(node.get(1));
+		this.mBuilder.push(true);
+		this.mBuilder.ifCmp(Type.BOOLEAN_TYPE, this.mBuilder.EQ, beginLabel);
 	}
 
 	public void visitContinue(JCodeTree node) {
@@ -303,6 +316,8 @@ public class JCodeGenerator {
 			argTypes[i] = Type.getType(arg.getTypedClass());
 		}
 		this.mBuilder.callDynamicMethod("nez/ast/jcode/StandardLibrary", "bootstrap", methodName, classPath, argTypes);
+		JCodeTree node = (JCodeTree) fieldNode.getParent();
+		this.popUnusedValue(node);
 	}
 
 	public void visitField(JCodeTree node) {
@@ -336,6 +351,7 @@ public class JCodeGenerator {
 		node.setType(typeInfferBinary(node, left, right));
 		this.mBuilder.callStaticMethod(JCodeOperator.class, node.getTypedClass(), node.getTag().getName(),
 				left.getTypedClass(), right.getTypedClass());
+		this.popUnusedValue(node);
 	}
 
 	public void visitCompNode(JCodeTree node) {
@@ -346,6 +362,7 @@ public class JCodeGenerator {
 		node.setType(boolean.class);
 		this.mBuilder.callStaticMethod(JCodeOperator.class, node.getTypedClass(), node.getTag().getName(),
 				left.getTypedClass(), right.getTypedClass());
+		this.popUnusedValue(node);
 	}
 
 	private Class<?> typeInfferBinary(JCodeTree binary, JCodeTree left, JCodeTree right) {
@@ -433,6 +450,7 @@ public class JCodeGenerator {
 		node.setType(this.typeInfferUnary(node.get(0)));
 		this.mBuilder.callStaticMethod(JCodeOperator.class, node.getTypedClass(), node.getTag().getName(),
 				child.getTypedClass());
+		this.popUnusedValue(node);
 	}
 
 	public void visitPlus(JCodeTree node) {
@@ -441,6 +459,52 @@ public class JCodeGenerator {
 
 	public void visitMinus(JCodeTree node) {
 		this.visitUnaryNode(node);
+	}
+
+	private void evalPrefixInc(JCodeTree node, int amount){
+		JCodeTree nameNode = node.get(0);
+		VarEntry var = this.scope.getLocalVar(nameNode.getText());
+		if(var != null) {
+			node.setType(int.class);
+			JCodeTree parent = (JCodeTree) node.getParent();
+			this.mBuilder.callIinc(var, amount);
+			if(!parent.is(Tag.tag("Source")) && !parent.is(Tag.tag("Block")) && !parent.is(Tag.tag("For"))){
+				this.mBuilder.loadFromVar(var);
+			}
+		} else {
+			new RuntimeException("undefined variable " + nameNode.getText());
+		}
+	}
+	
+	private void evalSuffixInc(JCodeTree node, int amount){
+		JCodeTree nameNode = node.get(0);
+		VarEntry var = this.scope.getLocalVar(nameNode.getText());
+		if(var != null) {
+			node.setType(int.class);
+			JCodeTree parent = (JCodeTree) node.getParent();
+			if(!parent.is(Tag.tag("Source")) && !parent.is(Tag.tag("Block")) && !parent.is(Tag.tag("For"))){
+				this.mBuilder.loadFromVar(var);
+			}
+			this.mBuilder.callIinc(var, amount);
+		} else {
+			new RuntimeException("undefined variable " + nameNode.getText());
+		}
+	}
+
+	public void visitSuffixInc(JCodeTree node) {
+		this.evalSuffixInc(node, 1);
+	}
+
+	public void visitSuffixDec(JCodeTree node) {
+		this.evalSuffixInc(node, -1);
+	}
+
+	public void visitPrefixInc(JCodeTree node) {
+		this.evalPrefixInc(node, 1);
+	}
+
+	public void visitPrefixDec(JCodeTree node) {
+		this.evalPrefixInc(node, -1);
 	}
 
 	private Class<?> typeInfferUnary(JCodeTree node) {
