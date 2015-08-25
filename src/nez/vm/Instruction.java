@@ -902,23 +902,23 @@ class ITPush extends Instruction {
 }
 
 class ITPop extends Instruction {
-	public final int index;
+	public final Tag label;
 	ITPop(Link e, Instruction next) {
 		super(InstructionSet.TPop, e, next);
-		this.index = e.index;
+		this.label = e.getLabel();
 	}
 	@Override
 	protected String getOperand() {
-		return String.valueOf(index);
+		return label.getName();
 	}
 	@Override
 	void encodeA(ByteCoder c) {
-		c.encodeIndex(index);
+		c.encodeLabel(label);
 	}
 	@Override
 	Instruction exec(RuntimeContext sc) throws TerminationException {
 		ASTMachine astMachine = sc.getAstMachine();
-		astMachine.logPop(index);
+		astMachine.logPop(label);
 		return this.next;
 	}
 }
@@ -941,34 +941,34 @@ class ITStart extends Instruction {
 }
 
 class ICommit extends Instruction {
-	public final int index;
+	public final Tag label;
 	ICommit(Link e, Instruction next) {
 		super(InstructionSet.TCommit, e, next);
-		this.index = e.index;
+		this.label = e.getLabel();
 	}
 	@Override
 	void encodeA(ByteCoder c) {
-		c.encodeIndex(index);
+		c.encodeLabel(label);
 	}
 	@Override
 	Instruction exec(RuntimeContext sc) throws TerminationException {
 		StackData s = sc.popStack();
 		ASTMachine astMachine = sc.getAstMachine();
-		astMachine.commitTransactionPoint(index, s.ref);
+		astMachine.commitTransactionPoint(label, s.ref);
 		return this.next;
 	}
 }
 
 class ITLookup extends AbstractMemoizationInstruction {
-	final int index;
+	public final Tag label;
 	ITLookup(Link e, MemoPoint m, boolean state, Instruction next, Instruction skip) {
 		super(InstructionSet.TLookup, e, m, state, next, skip);
-		this.index = e.index;
+		this.label = e.getLabel();
 	}
 	@Override
 	void encodeA(ByteCoder c) {
 		super.encodeA(c);
-		c.encodeIndex(index);
+		c.encodeLabel(label);
 	}
 
 	@Override
@@ -982,7 +982,7 @@ class ITLookup extends AbstractMemoizationInstruction {
 			memoPoint.memoHit(entry.consumed);
 			sc.consume(entry.consumed);
 			ASTMachine astMachine = sc.getAstMachine();
-			astMachine.logLink(index, entry.result);
+			astMachine.logLink(label, entry.result);
 			return this.skip;
 		}
 		memoPoint.miss();

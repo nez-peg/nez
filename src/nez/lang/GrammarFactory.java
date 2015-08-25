@@ -353,11 +353,15 @@ public class GrammarFactory {
 		return internImpl(s, new Match(s, p));
 	}
 	
-	public final static Expression newLink(SourcePosition s, Expression p, int index) {
+	public final static Expression newLink(SourcePosition s, Expression p) {
+		return newLink(s, null, p);
+	}
+
+	public final static Expression newLink(SourcePosition s, Tag label, Expression p) {
 		if(p.isInterned()) {
 			s = null;
 		}
-		return internImpl(s, new Link(s, p, index));
+		return internImpl(s, new Link(s, label, p));
 	}
 
 	public final static Expression newNew(SourcePosition s, boolean lefted, int shift) {
@@ -376,7 +380,7 @@ public class GrammarFactory {
 		return newSequence(s, l);
 	}
 
-	public final static Expression newLeftNewOption(SourcePosition s, Expression e) {
+	public final static Expression newLeftFoldOption(SourcePosition s, Expression e) {
 		UList<Expression> l = new UList<Expression>(new Expression[e.size() + 3]);
 		GrammarFactory.addSequence(l, internImpl(s, new New(s, true, 0)));
 		GrammarFactory.addSequence(l, e);
@@ -384,7 +388,7 @@ public class GrammarFactory {
 		return newOption(s, GrammarFactory.newSequence(s, l));
 	}
 
-	public final static Expression newLeftNewRepetition(SourcePosition s, Expression e) {
+	public final static Expression newLeftFoldRepetition(SourcePosition s, Expression e) {
 		UList<Expression> l = new UList<Expression>(new Expression[e.size() + 3]);
 		GrammarFactory.addSequence(l, internImpl(s, new New(s, true, 0)));
 		GrammarFactory.addSequence(l, e);
@@ -392,7 +396,7 @@ public class GrammarFactory {
 		return newRepetition(s, GrammarFactory.newSequence(s, l));
 	}
 
-	public final static Expression newLeftNewRepetition1(SourcePosition s, Expression e) {
+	public final static Expression newLeftFoldRepetition1(SourcePosition s, Expression e) {
 		UList<Expression> l = new UList<Expression>(new Expression[e.size() + 3]);
 		GrammarFactory.addSequence(l, internImpl(s, new New(s, true, 0)));
 		GrammarFactory.addSequence(l, e);
@@ -554,11 +558,11 @@ public class GrammarFactory {
 	}
 	
 	public final Expression newLink(Expression ... seq) {
-		return GrammarFactory.newLink(getSourcePosition(), newSequence(seq), -1);
+		return GrammarFactory.newLink(getSourcePosition(), null, newSequence(seq));
 	}
 
-	public final Expression newLink(int index, Expression ... seq) {
-		return GrammarFactory.newLink(getSourcePosition(), newSequence(seq), index);
+	public final Expression newLink(Tag label, Expression ... seq) {
+		return GrammarFactory.newLink(getSourcePosition(), label, newSequence(seq));
 	}
 
 	public final Expression newNew(Expression ... seq) {

@@ -225,6 +225,10 @@ public class ByteCoder {
 		}
 		write_u16(entry.id);
 	}
+	
+	public void encodeLabel(Tag label) {
+		this.encodeTag(label);
+	}
 
 	public void encodeSymbolTable(Tag tableName) {
 		String key = tableName.getName();
@@ -285,5 +289,6 @@ public class ByteCoder {
 			Verbose.traceException(e);
 		}
 	}
+
 
 }

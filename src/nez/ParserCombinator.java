@@ -177,32 +177,36 @@ public class ParserCombinator {
 		return GrammarFactory.newNew(src(), false, Sequence(e));
 	}
 
-	protected final Expression LeftNewOption(Expression ... e) {
-		return GrammarFactory.newLeftNewOption(src(), Sequence(e));
+	protected final Expression LeftFoldOption(String label, Expression ... e) {
+		return GrammarFactory.newLeftFoldOption(src(), Sequence(e));
 	}
 
-	protected final Expression LeftNewZeroMore(Expression ... e) {
-		return GrammarFactory.newLeftNewRepetition(src(), Sequence(e));
+	protected final Expression LeftFoldZeroMore(String label, Expression ... e) {
+		return GrammarFactory.newLeftFoldRepetition(src(), Sequence(e));
 	}
 
-	protected final Expression LeftNewOneMore(Expression ... e) {
-		return GrammarFactory.newLeftNewRepetition1(src(), Sequence(e));
+	protected final Expression LeftFoldOneMore(String label, Expression ... e) {
+		return GrammarFactory.newLeftFoldRepetition1(src(), Sequence(e));
 	}
 		
-	protected Expression Link(String nonterminal) {
-		return GrammarFactory.newLink(src(), P(nonterminal), -1);
+//	protected Expression Link(String nonterminal) {
+//		return GrammarFactory.newLink(src(), Tag.tag(""), P(nonterminal));
+//	}
+//
+//	protected Expression Link(Expression ... e) {
+//		return GrammarFactory.newLink(src(), Tag.tag(""), Sequence(e));
+//	}
+//	
+//	protected Expression Link(String label, Expression ... e) {
+//		return GrammarFactory.newLink(src(), Tag.tag(label), Sequence(e));
+//	}
+
+	protected Expression Link(String label, Expression e) {
+		return GrammarFactory.newLink(src(), Tag.tag(label), e);
 	}
 
-	protected Expression Link(Expression ... e) {
-		return GrammarFactory.newLink(src(), Sequence(e), -1);
-	}
-	
-	protected Expression Link(int index, Expression ... e) {
-		return GrammarFactory.newLink(src(), Sequence(e), index);
-	}
-
-	protected Expression Link(int index, String nonterminal) {
-		return GrammarFactory.newLink(src(), P(nonterminal), index);
+	protected Expression Link(String label, String nonTerminal) {
+		return GrammarFactory.newLink(src(), Tag.tag(label), P(nonTerminal));
 	}
 
 	protected final Expression Tag(Tag t) {

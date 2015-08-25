@@ -1,34 +1,42 @@
 package nez.lang;
 
 import nez.ast.SourcePosition;
+import nez.ast.Tag;
 import nez.util.UList;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
 public class Link extends Unary {
-	public int index;
-	Link(SourcePosition s, Expression e, int index) {
+	@Deprecated public int index;
+	Tag label;
+	
+	Link(SourcePosition s, Tag label, Expression e) {
 		super(s, e);
-		this.index = index;
+		this.label = label;
 	}
+
+	public final Tag getLabel() {
+		return this.label;
+	}
+
 	@Override
 	public final boolean equalsExpression(Expression o) {
-		if(o instanceof Link && this.index == ((Link)o).index) {
+		if(o instanceof Link && this.label == ((Link)o).label) {
 			return this.get(0).equalsExpression(o.get(0));
 		}
 		return false;
 	}
 	@Override
 	public String getPredicate() { 
-		return (index != -1) ? "link " + index : "link";
+		return (label != null) ? "link " + label : "link";
 	}
 	@Override
 	public String key() {
-		return (index != -1) ? "@" + index : "@";
+		return (label != null) ? "@" + label : "@";
 	}
 	@Override
 	protected final void format(StringBuilder sb) {
-		formatUnary(sb, (index != -1) ? "@[" + index +"]" : "@", this.get(0));
+		formatUnary(sb, (label != null) ? "@" + label +"(" : "@(", this.get(0), ")");
 	}
 	@Override
 	public Expression reshape(GrammarReshaper m) {

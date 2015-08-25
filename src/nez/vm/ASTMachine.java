@@ -35,7 +35,7 @@ class ASTMachine {
 		this.lastAppendedLog = this.firstLog;
 	}
 
-	private final void log(int type, long pos, Object value) {
+	private final void log(int type, long pos, Tag label, Object value) {
 		ASTLog l;
 		if(this.unusedDataLog == null) {
 			l = new ASTLog();
@@ -47,6 +47,7 @@ class ASTMachine {
 		l.id     = lastAppendedLog.id + 1;
 		l.type   = type;
 		l.value  = pos;
+		l.label  = label;
 		l.ref    = value;
 		l.next = null;
 		lastAppendedLog.next = l;
@@ -54,57 +55,44 @@ class ASTMachine {
 	}
 	
 	public final void logNew(long pos, Object debug) {
-		log(ASTMachine.New, pos, debug);
+		log(ASTMachine.New, pos, null, debug);
 	}
 
 	public final void logCapture(long pos) {
-		log(ASTMachine.Capture, pos, null);
+		log(ASTMachine.Capture, pos, null, null);
 	}
 
 	public final void logTag(Tag tag) {
-		log(ASTMachine.Tag, 0, tag);
+		log(ASTMachine.Tag, 0, null, tag);
 	}
 
 	public final void logReplace(Object value) {
-		log(ASTMachine.Replace, 0, value);
+		log(ASTMachine.Replace, 0, null, value);
 	}
 
 	public final void logSwap(Object value) {
-		log(ASTMachine.LeftFold, 0, null);
+		log(ASTMachine.LeftFold, 0, null, null);
 	}
 
 	public final void logPush() {
-		log(ASTMachine.Push, 0, null);
+		log(ASTMachine.Push, 0, null, null);
 	}
 
-	public final void logPop(int index) {
-		log(ASTMachine.Pop, index, null);
+	public final void logPop(Tag label) {
+		log(ASTMachine.Pop, 0, label, null);
 	}
 
 	private Object latestLinkedNode = null;
+	
 	public final Object getLatestLinkedNode() {
 		return latestLinkedNode;
 	}
 
-	public final void logLink(int index, Object node) {
-		log(ASTMachine.Link, index, node);
+	public final void logLink(Tag label, Object node) {
+		log(ASTMachine.Link, 0, null, node);
 		latestLinkedNode = node;
 	}
 	
-//	public final void logAbort(ASTLog checkPoint, boolean isFail) {
-//		assert(checkPoint != null);
-////		if(isFail) {
-////			for(DataLog cur = checkPoint.next; cur != null; cur = cur.next ) {
-////				System.out.println("ABORT " + cur);
-////			}
-////		}
-//		lastAppendedLog.next = this.unusedDataLog;
-//		this.unusedDataLog = checkPoint.next;
-//		this.unusedDataLog.prev = null;
-//		this.lastAppendedLog = checkPoint;
-//		this.lastAppendedLog.next = null;
-//	}
-
 	public final Object saveTransactionPoint() {
 		return lastAppendedLog;
 	}
@@ -123,12 +111,12 @@ class ASTMachine {
 		assert(lastAppendedLog.next == null);
 	}
 
-	public final void commitTransactionPoint(int index, Object point) {
+	public final void commitTransactionPoint(Tag label, Object point) {
 		ASTLog save = (ASTLog)point;
 		Object node = createNode(save.next, null);
 		this.rollTransactionPoint(point);
 		if(node != null) {
-			logLink(index, node);
+			logLink(label, node);
 		}
 	}
 	
@@ -187,14 +175,7 @@ class ASTMachine {
 				createNode(cur.next, cur);
 				assert(cur.type == ASTMachine.Link);
 			case ASTMachine.Link:
-				int index = (int)cur.value;
-				if(index == -1) {
-					cur.value = objectSize;
-					objectSize++;
-				}
-				else if(!(index < objectSize)) {
-					objectSize = index + 1;
-				}
+				objectSize++;
 				break;
 			}
 		}
@@ -204,6 +185,7 @@ class ASTMachine {
 
 	private Object constructLeft(ASTLog start, ASTLog end, long spos, long epos, int objectSize, Tag tag, Object value) {
 		Object newnode = this.treeTransducer.newNode(tag, source, spos, epos, objectSize, value);
+		int n = 0;
 		if(objectSize > 0) {
 			for(ASTLog cur = start; cur != end; cur = cur.next ) {
 				if(cur.type == ASTMachine.Link) {
@@ -211,8 +193,9 @@ class ASTMachine {
 						Verbose.debug("@@ linking null child at " + cur.value);
 					}
 					else {
-						this.treeTransducer.link(newnode, (int)cur.value, cur.ref);
+						this.treeTransducer.link(newnode, n, cur.label, cur.ref);
 					}
+					n++;
 				}
 			}
 		}
@@ -268,6 +251,7 @@ class ASTMachine {
 	class ASTLog {
 		int     id;
 		int     type;
+		Tag     label;
 		Object  ref;
 		long    value;
 		
@@ -289,7 +273,7 @@ class ASTMachine {
 			case ASTMachine.New:
 				return "["+id+"] new(" + this.value + "," + this.ref + ")";
 			case ASTMachine.Pop:
-				return "["+id+"] pop(index=" + this.value + ")" ;
+				return "["+id+"] pop(" + this.ref + ")" ;
 			case ASTMachine.Push:
 				return "["+id+"] push"  ;
 			}
@@ -303,7 +287,7 @@ class ASTMachine {
 			return null;
 		}
 		@Override
-		public void link(Object node, int index, Object child) {
+		public void link(Object node, int index, Tag label, Object child) {
 		}
 		@Override
 		public Object commit(Object node) {

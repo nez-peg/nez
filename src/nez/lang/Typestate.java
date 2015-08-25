@@ -143,7 +143,7 @@ public class Typestate extends GrammarReshaper {
 		if(this.required == Typestate.OperationType) {
 			if(t == Typestate.ObjectType) {
 				reportInserted(p, "@");
-				return GrammarFactory.newLink(p.s, p, -1);
+				return GrammarFactory.newLink(p.s, null, p);
 			}
 		}
 		return p;

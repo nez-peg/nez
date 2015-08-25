@@ -251,7 +251,7 @@ public class GrammarReshaper {
 			e.inner = inner;
 			return e;
 		}
-		return (e.get(0) != inner) ? GrammarFactory.newLink(e.s, inner, e.index) : e;
+		return (e.get(0) != inner) ? GrammarFactory.newLink(e.s, e.getLabel(), inner) : e;
 	}
 	protected final Expression updateInner(Block e, Expression inner) {
 		if(!e.isInterned()) {

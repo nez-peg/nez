@@ -193,7 +193,7 @@ public class GrammarOptimizer extends GrammarReshaper {
 			UList<Expression> l = new UList<Expression>(new Expression[inner.size()]);
 			for(Expression subChoice: inner) {
 				subChoice = subChoice.reshape(this);
-				l.add(GrammarFactory.newLink(p.getSourcePosition(), subChoice, p.index));
+				l.add(GrammarFactory.newLink(p.getSourcePosition(), p.getLabel(), subChoice));
 			}			
 			return inner.newChoice(l);
 		}

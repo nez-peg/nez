@@ -42,7 +42,7 @@ public class Konoha extends TreeTransducer {
 	}
 
 	@Override
-	public void link(Object node, int index, Object child) {
+	public void link(Object node, int index, Tag label, Object child) {
 		((KonohaTree)node).set(index, (KonohaTree)child);
 	}
 

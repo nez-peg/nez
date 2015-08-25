@@ -341,7 +341,7 @@ public class NezParser extends CommonTreeVisitor {
 		if(ast.size() == 2) {
 			index = StringUtils.parseInt(ast.textAt(1, ""), -1);
 		}
-		return GrammarFactory.newLink(ast, toExpression(ast.get(0)), index);
+		return GrammarFactory.newLink(ast, null, toExpression(ast.get(0)));
 	}
 
 	public Expression toTagging(CommonTree ast) {
