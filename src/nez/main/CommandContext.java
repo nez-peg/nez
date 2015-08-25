@@ -72,8 +72,12 @@ class CommandContext {
 		ConsoleUtils.println("  --verbose:memo             Printing Memoization information");
 		ConsoleUtils.println("  -X <class>                 Specify an extension class");
 		ConsoleUtils.println("");
-//		ConsoleUtils.println("The most commonly used nez commands are:");
-//		Command.showList();
+		ConsoleUtils.println("The most commonly used nez commands are:");
+		ConsoleUtils.println("  shell      an interactive mode (by default)");
+		ConsoleUtils.println("  match      match an input");
+		ConsoleUtils.println("  parse      parse an input and construct ASTs (.ast)");
+		ConsoleUtils.println("  compile    compile Nez bytecode .nzc");
+
 		ConsoleUtils.exit(0, Message);
 	}
 	
@@ -308,8 +312,8 @@ class CommandContext {
 		return SourceContext.newStringContext(""); // empty input
 	}
 
-	public String getOutputFileName(SourceContext input) {
-		return null;
+	public final String getOutputFileName(SourceContext input, String ext) {
+		return StringUtils.toFileName(input.getResourceName(), null, ext);
 	}
 
 	public final String getOutputFileName() {

@@ -68,7 +68,7 @@ public class LCshell extends Command {
 					ConsoleUtils.println(sc.getUnconsumedMessage());
 				}
 				sc = null;
-				new CommonTreeWriter().transform(null, node);
+				new CommonTreeWriter().writeTree(node);
 				if(Formatter.isSupported(gfile, node)) {
 					ConsoleUtils.println("Formatted: " + Formatter.format(gfile, node));
 				}

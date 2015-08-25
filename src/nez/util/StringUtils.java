@@ -376,5 +376,25 @@ public abstract class StringUtils {
 		return String.format("%.4f", thr);
 	}
 
+	
+	// filename
+	
+	public final static String toFileName(String urn, String dir, String ext) {
+		if(urn == null) {
+			urn = "stdout.out";
+		}
+		int loc = urn.lastIndexOf('.');
+		if(loc > 0) {
+			urn = urn.substring(0, loc) + "." + ext;
+		}
+		if(dir != null) {
+			loc = urn.lastIndexOf('/');
+			if(loc > 0) {
+				urn = dir + "/" + urn.substring(loc+1);
+			}
+		}
+		return urn;
+	}
+
 
 }

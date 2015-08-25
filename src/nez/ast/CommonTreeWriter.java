@@ -2,50 +2,106 @@ package nez.ast;
 
 import java.util.TreeMap;
 
+import nez.NezOption;
 import nez.util.FileBuilder;
 import nez.util.StringUtils;
 
-public class CommonTreeWriter {
+public class CommonTreeWriter extends FileBuilder {
 	
-	public void transform(String path, CommonTree node) {
-		FileBuilder fb = new FileBuilder(path);
-		this.writeCommonTree(fb, node);
-		fb.writeNewLine();
-		fb.flush();
-	}
+	boolean sourceOption = false;
 	
-	private void writeCommonTree(FileBuilder fb, CommonTree node) {
-		if(node == null) {
-			fb.writeIndent("null");
-			return;
-		}
-		fb.writeIndent("#" + node.getTag().toString() + "["); 
-		if(node.size() == 0) {
-			fb.write(StringUtils.quoteString('\'', node.getText(), '\''));
-			fb.write("]");
-		}
-		else {
-			fb.incIndent();
-			for(int i = 0; i < node.size(); i++) {
-				this.writeCommonTree(fb, node.get(i));
-			}
-			fb.decIndent();
-			fb.writeIndent("]"); 
-		}
-	}
-	
-	public void writeTag(FileBuilder fb, CommonTree po) {
-		TreeMap<String,Integer> m = new TreeMap<String,Integer>();
-		this.tagCount(po, m);
-		for(String k : m.keySet()) {
-			fb.write("#" + k + ":" + m.get(k));
-		}
-		fb.writeNewLine();
+	public CommonTreeWriter() {
+		super(null);
 	}
 
-	private void tagCount(CommonTree po, TreeMap<String,Integer> m) {
+	public CommonTreeWriter(String path) {
+		super(path);
+	}
+
+	public CommonTreeWriter(NezOption option, String path) {
+		super(path);
+	}
+
+	public CommonTreeWriter(String path, String dir, String ext) {
+		this(StringUtils.toFileName(path, dir, ext));
+	}
+
+	public CommonTreeWriter(NezOption option, String path, String dir, String ext) {
+		this(StringUtils.toFileName(path, dir, ext));
+	}
+		
+	public final <T extends AbstractTree<T>> void writeTree(AbstractTree<T> node) {
+		if(node == null) {
+			this.writeIndent("null");
+			return;
+		}
+		this.writeIndent("#" + node.getTag().toString() + "["); 
+		if(node.size() == 0) {
+			this.write(StringUtils.quoteString('\'', node.getText(), '\''));
+			this.write("]");
+		}
+		else {
+			this.incIndent();
+			for(int i = 0; i < node.size(); i++) {
+				this.writeTree(node.get(i));
+			}
+			this.decIndent();
+			this.writeIndent("]"); 
+		}
+	}
+		
+	public final <T extends AbstractTree<T>> void writeXML(AbstractTree<T> node) {
+		String tag = node.getTag().toString();
+		this.writeIndent("<" + tag); 
+		if(node.size() == 0) {
+			String s = node.getText();
+			if(s.equals("")) {
+				this.write("/>");
+			}
+			else {
+				this.write(">");
+				this.write(node.getText());
+				this.write("</" + tag + ">");
+			}
+		}
+		else {
+			for(int i = 0; i < node.size(); i++) {
+				AbstractTree<T> sub = node.get(i);
+				String stag = sub.getTag().toString();
+				if(stag.startsWith("@")) {
+					this.write(" ");
+					this.write(stag.substring(1));
+					this.write("=");
+					this.write(StringUtils.quoteString('"', node.getText(), '"'));
+				}
+				this.writeXML(node.get(i));
+			}
+			this.write(">");
+			this.incIndent();
+			for(int i = 0; i < node.size(); i++) {
+				AbstractTree<T> sub = node.get(i);
+				String stag = sub.getTag().toString();
+				if(!stag.startsWith("@")) {
+					this.writeXML(node.get(i));
+				}
+			}
+			this.decIndent();
+			this.write("</" + tag + ">");
+		}
+	}
+	
+	public <T extends AbstractTree<T>> void writeTag(AbstractTree<T> po) {
+		TreeMap<String,Integer> m = new TreeMap<String,Integer>();
+		this.countTag(po, m);
+		for(String k : m.keySet()) {
+			this.write("#" + k + ":" + m.get(k));
+		}
+		this.writeNewLine();
+	}
+
+	private <T extends AbstractTree<T>> void countTag(AbstractTree<T> po, TreeMap<String,Integer> m) {
 		for(int i = 0; i < po.size(); i++) {
-			tagCount(po.get(i), m);
+			countTag(po.get(i), m);
 		}
 		String key = po.getTag().toString();
 		Integer n = m.get(key);

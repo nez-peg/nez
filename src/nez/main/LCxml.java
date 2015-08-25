@@ -6,10 +6,10 @@ import nez.ast.CommonTreeWriter;
 import nez.lang.Grammar;
 import nez.util.ConsoleUtils;
 
-public class LCast extends Command {
+public class LCxml extends Command {
 	@Override
-	public String getDesc() {
-		return "an AST parser";
+	public final String getDesc() {
+		return "an XML converter";
 	}
 
 	@Override
@@ -26,26 +26,11 @@ public class LCast extends Command {
 				ConsoleUtils.println(source.getUnconsumedMessage());
 			}
 			source = null;
-			record(g.getProfiler(), node);
 			g.logProfiler();
-			CommonTreeWriter w = new CommonTreeWriter(config.getNezOption(),config.getOutputFileName(source, "ast"));
-			w.writeTree(node);
-			w.writeNewLine();
+			CommonTreeWriter w = new CommonTreeWriter(config.getNezOption(),config.getOutputFileName(source, "xml"));
+			w.writeXML(node);
 			w.flush();
 		}
 	}
 	
-	private void record(NezProfier prof, CommonTree node) {
-		if(prof != null) {
-			System.gc();
-			prof.setCount("O.Size", node.count());
-			long t1 = System.nanoTime();
-			CommonTree t = node.dup();
-			long t2 = System.nanoTime();
-			NezProfier.recordLatencyMS(prof, "O.Overhead", t1, t2);
-		}
-	}
-
 }
-
-
