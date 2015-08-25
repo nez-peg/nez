@@ -26,6 +26,9 @@ public class Tag {
 		return tagNameList.ArrayValues[tagId];
 	}
 	
+	public final static Tag MetaTag = tag("keyvalue");
+	
+	
 	public final int    tagId;
 	public final String name;
 	

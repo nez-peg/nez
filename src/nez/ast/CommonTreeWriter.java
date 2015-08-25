@@ -49,9 +49,18 @@ public class CommonTreeWriter extends FileBuilder {
 			this.writeIndent("]"); 
 		}
 	}
-		
+
 	public final <T extends AbstractTree<T>> void writeXML(AbstractTree<T> node) {
-		String tag = node.getTag().toString();
+		if(node.size() == 2 && node.getTag() == Tag.MetaTag) {
+			writeXML(node.get(0).getText(), node.get(1));
+		}
+		else {
+			String tag = node.getTag().toString();
+			writeXML(tag, node);
+		}
+	}
+
+	public final <T extends AbstractTree<T>> void writeXML(String tag, AbstractTree<T> node) {
 		this.writeIndent("<" + tag); 
 		if(node.size() == 0) {
 			String s = node.getText();
@@ -72,9 +81,8 @@ public class CommonTreeWriter extends FileBuilder {
 					this.write(" ");
 					this.write(stag.substring(1));
 					this.write("=");
-					this.write(StringUtils.quoteString('"', node.getText(), '"'));
+					this.write(StringUtils.quoteString('"', sub.getText(), '"'));
 				}
-				this.writeXML(node.get(i));
 			}
 			this.write(">");
 			this.incIndent();
@@ -82,13 +90,15 @@ public class CommonTreeWriter extends FileBuilder {
 				AbstractTree<T> sub = node.get(i);
 				String stag = sub.getTag().toString();
 				if(!stag.startsWith("@")) {
-					this.writeXML(node.get(i));
+					this.writeXML(sub);
 				}
 			}
 			this.decIndent();
-			this.write("</" + tag + ">");
+			this.writeIndent("</" + tag + ">");
 		}
 	}
+
+	
 	
 	public <T extends AbstractTree<T>> void writeTag(AbstractTree<T> po) {
 		TreeMap<String,Integer> m = new TreeMap<String,Integer>();

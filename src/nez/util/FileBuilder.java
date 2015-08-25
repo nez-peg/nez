@@ -6,8 +6,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import nez.main.Verbose;
+
 public class FileBuilder {
 	
+	protected String fileName = null;
 	private OutputStream out;
 	private String CHARSET = "UTF8";
 	
@@ -22,6 +25,7 @@ public class FileBuilder {
 	public FileBuilder(String fileName) {
 		try {
 			this.out = new BufferedOutputStream(new FileOutputStream(fileName));
+			this.fileName = fileName;
 		} catch (NullPointerException e) {
 			this.out = null;			
 		} catch (FileNotFoundException e) {
@@ -53,6 +57,13 @@ public class FileBuilder {
 			}
 		} catch (IOException e) {
 			ConsoleUtils.exit(1, "IO error: " + e.getMessage());
+		}
+	}
+
+	public final void close() {
+		this.flush();
+		if(this.fileName != null) {
+			Verbose.println("written to: " + this.fileName);
 		}
 	}
 

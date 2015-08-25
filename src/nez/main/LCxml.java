@@ -25,11 +25,11 @@ public class LCxml extends Command {
 			if(source.hasUnconsumed()) {
 				ConsoleUtils.println(source.getUnconsumedMessage());
 			}
-			source = null;
 			g.logProfiler();
 			CommonTreeWriter w = new CommonTreeWriter(config.getNezOption(),config.getOutputFileName(source, "xml"));
+			source = null;
 			w.writeXML(node);
-			w.flush();
+			w.close();
 		}
 	}
 	

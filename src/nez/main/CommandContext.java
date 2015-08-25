@@ -76,8 +76,10 @@ class CommandContext {
 		ConsoleUtils.println("  shell      an interactive mode (by default)");
 		ConsoleUtils.println("  match      match an input");
 		ConsoleUtils.println("  parse      parse an input and construct ASTs (.ast)");
-		ConsoleUtils.println("  compile    compile Nez bytecode .nzc");
-
+		ConsoleUtils.println("    xml      parse an input and convert into XML (.xml)");
+		ConsoleUtils.println("    json     parse an input and convert into JSON (.json)");
+		ConsoleUtils.println("  compile    compile a grammar to Nez bytecode .nzc");
+		ConsoleUtils.println("    cnez     generate a C-based parser generator (.c)");
 		ConsoleUtils.exit(0, Message);
 	}
 	
