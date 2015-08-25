@@ -309,6 +309,10 @@ public class ClassBuilder extends ClassWriter implements Opcodes {
 			this.visitVarInsn(typeDesc.getOpcode(ILOAD), entry.getVarIndex());
 		}
 
+		public void callIinc(VarEntry entry, int amount) {
+			this.iinc(entry.getVarIndex(), amount);
+		}
+
 		/**
 		 * generate line number.
 		 * 
