@@ -9,13 +9,13 @@ import nez.NezOption;
 import nez.NezException;
 import nez.SourceContext;
 import nez.ast.CommonTree;
-import nez.ast.CommonTreeVisitor;
+import nez.ast.AbstractTreeVisitor;
 import nez.lang.Expression;
 import nez.lang.Grammar;
 import nez.lang.GrammarFile;
 import nez.util.ConsoleUtils;
 
-public class CeleryConverter extends CommonTreeVisitor {
+public class CeleryConverter extends AbstractTreeVisitor {
 
 	static GrammarFile celeryGrammar = null;
 	private GrammarFile grammar;

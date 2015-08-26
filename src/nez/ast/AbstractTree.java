@@ -122,6 +122,15 @@ public abstract class AbstractTree<E extends AbstractTree<E>> extends AbstractLi
 		return -1;
 	}
 	
+	public final E get(Tag label) {
+		for(int i = 0; i < labels.length; i++) {
+			if(labels[i] == label) {
+				return this.subTree[i];
+			}
+		}
+		throw new RuntimeException("undefined label: " + label);
+	}
+
 	public final E get(Tag label, E defval) {
 		for(int i = 0; i < labels.length; i++) {
 			if(labels[i] == label) {

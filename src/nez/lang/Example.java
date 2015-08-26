@@ -2,16 +2,16 @@ package nez.lang;
 
 import nez.NezOption;
 import nez.SourceContext;
-import nez.ast.CommonTree;
+import nez.ast.AbstractTree;
 import nez.main.Verbose;
 import nez.util.ConsoleUtils;
 
 public class Example {
-	CommonTree nameNode;
-	CommonTree textNode;
+	AbstractTree<?> nameNode;
+	AbstractTree<?> textNode;
 	boolean result;
 	
-	Example(CommonTree nameNode, CommonTree textNode, boolean result) {
+	Example(AbstractTree<?> nameNode, AbstractTree<?> textNode, boolean result) {
 		this.nameNode = nameNode;
 		this.textNode = textNode;
 		this.result = result;

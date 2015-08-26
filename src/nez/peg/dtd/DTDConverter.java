@@ -10,14 +10,14 @@ import nez.NezException;
 import nez.NezOption;
 import nez.SourceContext;
 import nez.ast.CommonTree;
-import nez.ast.CommonTreeVisitor;
+import nez.ast.AbstractTreeVisitor;
 import nez.lang.Expression;
 import nez.lang.Grammar;
 import nez.lang.GrammarFactory;
 import nez.lang.GrammarFile;
 import nez.util.ConsoleUtils;
 
-public class DTDConverter extends CommonTreeVisitor {
+public class DTDConverter extends AbstractTreeVisitor {
 
 	static GrammarFile dtdGrammar = null;
 	public final static GrammarFile loadGrammar(String filePath, NezOption option) throws IOException {

@@ -8,7 +8,7 @@ import nez.NezOption;
 import nez.NezException;
 import nez.SourceContext;
 import nez.ast.CommonTree;
-import nez.ast.CommonTreeVisitor;
+import nez.ast.AbstractTreeVisitor;
 import nez.ast.Tag;
 import nez.lang.Expression;
 import nez.lang.GrammarFactory;
@@ -19,7 +19,7 @@ import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
 import nez.util.UList;
 
-public class RegexGrammar extends CommonTreeVisitor {
+public class RegexGrammar extends AbstractTreeVisitor {
 
 	static GrammarFile regexGrammar = null;
 	public final static GrammarFile loadGrammar(SourceContext regex, NezOption option) throws IOException {
