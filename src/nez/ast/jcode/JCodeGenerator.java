@@ -110,20 +110,15 @@ public class JCodeGenerator {
 	}
 	
 	protected final void popUnusedValue(JCodeTree node){
-		JCodeTree parent = (JCodeTree) node.getParent();
-		if(parent.is(Tag.tag("Source")) || parent.is(Tag.tag("Block"))){
+		if(node.requiredPop){
 			this.mBuilder.pop();
-		}
-		if(parent.is(Tag.tag("For"))){
-			if(!parent.get(1).equals(node)){
-				this.mBuilder.pop();
-			}
 		}
 	}
 
 	public void visitSource(JCodeTree node) {
 		this.mBuilder = this.cBuilder.newMethodBuilder(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, void.class, "main");
 		this.mBuilder.enterScope();
+		node.requirePop();
 		for(JCodeTree child : node) {
 			this.visit(child);
 		}
@@ -134,6 +129,7 @@ public class JCodeGenerator {
 	}
 
 	public void visitBlock(JCodeTree node) {
+		node.requirePop();
 		for(JCodeTree stmt : node) {
 			visit(stmt);
 		}
@@ -149,6 +145,8 @@ public class JCodeGenerator {
 		for(int i = 0; i < paramClasses.length; i++) {
 			paramClasses[i] = args.get(i).getTypedClass();
 		}
+		System.out.println(funcType.toGenericString());
+		System.out.println(paramClasses[0].toGenericString());
 		this.mBuilder = this.cBuilder.newMethodBuilder(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, funcType, name,
 				paramClasses);
 		this.mBuilder.enterScope();
@@ -161,7 +159,7 @@ public class JCodeGenerator {
 		this.popScope();
 		this.mBuilder.returnValue();
 		this.mBuilder.endMethod();
-		this.mBuilder = this.mBuilderStack.pop();
+		//this.mBuilder = this.mBuilderStack.pop();
 	}
 
 	public void visitVarDeclStmt(JCodeTree node) {
@@ -234,6 +232,7 @@ public class JCodeGenerator {
 	public void visitFor(JCodeTree node) {
 		Label beginLabel = this.mBuilder.newLabel();
 		Label condLabel = this.mBuilder.newLabel();
+		node.requirePop();
 
 		// Initialize
 		visit(node.get(0));
@@ -290,6 +289,7 @@ public class JCodeGenerator {
 			if(var != null) {
 				this.mBuilder.loadFromVar(var);
 			} else {
+				this.popUnusedValue(node);
 				this.generateRunTimeLibrary(fieldNode, argsNode);
 				return;
 			}
@@ -316,8 +316,6 @@ public class JCodeGenerator {
 			argTypes[i] = Type.getType(arg.getTypedClass());
 		}
 		this.mBuilder.callDynamicMethod("nez/ast/jcode/StandardLibrary", "bootstrap", methodName, classPath, argTypes);
-		JCodeTree node = (JCodeTree) fieldNode.getParent();
-		this.popUnusedValue(node);
 	}
 
 	public void visitField(JCodeTree node) {
@@ -466,9 +464,8 @@ public class JCodeGenerator {
 		VarEntry var = this.scope.getLocalVar(nameNode.getText());
 		if(var != null) {
 			node.setType(int.class);
-			JCodeTree parent = (JCodeTree) node.getParent();
 			this.mBuilder.callIinc(var, amount);
-			if(!parent.is(Tag.tag("Source")) && !parent.is(Tag.tag("Block")) && !parent.is(Tag.tag("For"))){
+			if(node.requiredPop){
 				this.mBuilder.loadFromVar(var);
 			}
 		} else {
@@ -481,8 +478,7 @@ public class JCodeGenerator {
 		VarEntry var = this.scope.getLocalVar(nameNode.getText());
 		if(var != null) {
 			node.setType(int.class);
-			JCodeTree parent = (JCodeTree) node.getParent();
-			if(!parent.is(Tag.tag("Source")) && !parent.is(Tag.tag("Block")) && !parent.is(Tag.tag("For"))){
+			if(node.requiredPop){
 				this.mBuilder.loadFromVar(var);
 			}
 			this.mBuilder.callIinc(var, amount);
