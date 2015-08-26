@@ -57,25 +57,26 @@ public class GrammarOptimizer extends GrammarReshaper {
 	@Override
 	public Expression reshapeNonTerminal(NonTerminal n) {
 		Production p = n.getProduction();
-		if(option.enabledInlining && p.isInline() && !p.isRecursive()) {
-			Expression optimized = this.optimize(p);
+		if(p.isRecursive()) {
+			return n;
+		}
+		Expression optimized = this.optimize(p);
+		if(option.enabledInlining && p.isInline()) {
 			rewrite("inline", n, optimized);
 			return optimized;
 		}
-		if(!p.isRecursive()) {
-			Expression deref = resolveNonTerminal(p.getExpression()).reshape(this);
-			if(isSingleCharacter(deref)) {
-				rewrite("deref", n, deref);
-				return deref;
-			}
-			if(deref instanceof Empty || deref instanceof Failure) {
-				rewrite("deref", n, deref);
-				return deref;
-			}
+		Expression deref = resolveNonTerminal(optimized).reshape(this);
+		if(isSingleCharacter(deref)) {
+			rewrite("deref", n, deref);
+			return deref;
+		}
+		if(deref instanceof Empty || deref instanceof Failure) {
+			rewrite("deref", n, deref);
+			return deref;
 		}
 		return n;
 	}
-	
+
 	private boolean isOutOfOrderExpression(Expression e) {
 		if(e instanceof Tagging) {
 			return true;
