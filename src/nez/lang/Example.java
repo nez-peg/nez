@@ -18,13 +18,13 @@ public class Example {
 	}
 	
 	boolean test(GrammarFile grammar, NezOption option) {
-		Grammar g = grammar.newGrammar(nameNode.getText(), option);
+		Grammar g = grammar.newGrammar(nameNode.toText(), option);
 		if(g == null) {
 			System.out.println(nameNode.formatSourceMessage("error", "undefined nonterminal"));
 			return false;
 		}
 		SourceContext source = textNode.newSourceContext();
-		String name = (this.result ? "" : "!") + nameNode.getText() + 
+		String name = (this.result ? "" : "!") + nameNode.toText() + 
 				" (" + textNode.getSource().getResourceName() + ":" + textNode.getSource().linenum(textNode.getSourcePosition()) + ")";
 		boolean matchingResult = g.match(source);
 		boolean unConsumed = true;

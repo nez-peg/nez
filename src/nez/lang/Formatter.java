@@ -187,7 +187,7 @@ class DefaultFormatter extends Formatter {
 		s.write(node.getTag().getName());
 		s.write("[");
 		if(node.size() == 0) {
-			s.write(StringUtils.quoteString('\'', node.getText(), '\''));
+			s.write(StringUtils.quoteString('\'', node.toText(), '\''));
 		}
 		else {
 			int c = 0;
@@ -224,7 +224,7 @@ class NullFormatter extends Formatter {
 	}
 	@Override
 	public void write(FormatterStream s, CommonTree node) {
-		s.write(node.getText());
+		s.write(node.toText());
 	}
 }
 

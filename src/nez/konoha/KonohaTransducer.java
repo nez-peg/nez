@@ -120,7 +120,7 @@ public class KonohaTransducer {
 
 	public final KonohaType getType(KonohaTree node) {
 		if(node.size() == 0) {
-			return getType(this, node.getText());
+			return getType(this, node.toText());
 		}
 		if(node.getTag() == KonohaArrayType.ArrayTag) {
 			KonohaType t = getType(node.get(0));

@@ -37,7 +37,7 @@ public class CommonTreeWriter extends FileBuilder {
 		}
 		this.writeIndent("#" + node.getTag().toString() + "["); 
 		if(node.size() == 0) {
-			this.write(StringUtils.quoteString('\'', node.getText(), '\''));
+			this.write(StringUtils.quoteString('\'', node.toText(), '\''));
 			this.write("]");
 		}
 		else {
@@ -52,7 +52,7 @@ public class CommonTreeWriter extends FileBuilder {
 
 	public final <T extends AbstractTree<T>> void writeXML(AbstractTree<T> node) {
 		if(node.size() == 2 && node.getTag() == Tag.MetaTag) {
-			writeXML(node.get(0).getText(), node.get(1));
+			writeXML(node.get(0).toText(), node.get(1));
 		}
 		else {
 			String tag = node.getTag().toString();
@@ -63,13 +63,13 @@ public class CommonTreeWriter extends FileBuilder {
 	public final <T extends AbstractTree<T>> void writeXML(String tag, AbstractTree<T> node) {
 		this.writeIndent("<" + tag); 
 		if(node.size() == 0) {
-			String s = node.getText();
+			String s = node.toText();
 			if(s.equals("")) {
 				this.write("/>");
 			}
 			else {
 				this.write(">");
-				this.write(node.getText());
+				this.write(node.toText());
 				this.write("</" + tag + ">");
 			}
 		}
@@ -81,7 +81,7 @@ public class CommonTreeWriter extends FileBuilder {
 					this.write(" ");
 					this.write(stag.substring(1));
 					this.write("=");
-					this.write(StringUtils.quoteString('"', sub.getText(), '"'));
+					this.write(StringUtils.quoteString('"', sub.toText(), '"'));
 				}
 			}
 			this.write(">");

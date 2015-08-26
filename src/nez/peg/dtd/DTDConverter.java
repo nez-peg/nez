@@ -58,7 +58,7 @@ public class DTDConverter extends AbstractTreeVisitor {
 	}
 
 	final void loadPredfinedRules(CommonTree node) {
-		String rootElement = node.get(0).textAt(0, null);
+		String rootElement = node.get(0).getText(0, null);
 		PredefinedRules preRules = new PredefinedRules(this.gfile, rootElement);
 		preRules.defineRule();
 	}
@@ -102,7 +102,7 @@ public class DTDConverter extends AbstractTreeVisitor {
 	}
 
 	public void visitElement(CommonTree node) {
-		String elementName = node.textAt(0, "");
+		String elementName = node.getText(0, "");
 		elementNameMap.put(elementCount, elementName);
 		//		elementIDMap.put(elementName, elementCount);
 		gfile.defineProduction(node, "Content" + elementCount, toExpression(node.get(1)));
@@ -150,7 +150,7 @@ public class DTDConverter extends AbstractTreeVisitor {
 
 	public void visitAttlist(CommonTree node) {
 		initAttCounter();
-		String elementName = node.textAt(0, "");
+		String elementName = node.getText(0, "");
 		attributeMap.put(elementName, attID);
 		String attListName = "Attribute" + attID;
 		String choiceListName = "AttChoice" + attID;
@@ -241,7 +241,7 @@ public class DTDConverter extends AbstractTreeVisitor {
 	}
 
 	public Expression toCDATA(CommonTree node) {
-		String attName = node.getParent().textAt(0, "");
+		String attName = node.getParent().getText(0, "");
 		Expression[] l = {
 				gfile.newString(attName),
 				gfile.newRepetition(GrammarFactory.newNonTerminal(null, gfile, "S")),
@@ -254,7 +254,7 @@ public class DTDConverter extends AbstractTreeVisitor {
 	}
 
 	public Expression toID(CommonTree node) {
-		String attName = node.getParent().textAt(0, "");
+		String attName = node.getParent().getText(0, "");
 		Expression[] l = {
 				gfile.newString(attName),
 				gfile.newRepetition(GrammarFactory.newNonTerminal(null, gfile, "S")),
@@ -272,7 +272,7 @@ public class DTDConverter extends AbstractTreeVisitor {
 	}
 
 	public Expression toIDREF(CommonTree node) {
-		String attName = node.getParent().textAt(0, "");
+		String attName = node.getParent().getText(0, "");
 		Expression[] l = {
 				gfile.newString(attName),
 				gfile.newRepetition(GrammarFactory.newNonTerminal(null, gfile, "S")),
@@ -287,7 +287,7 @@ public class DTDConverter extends AbstractTreeVisitor {
 	}
 
 	public Expression toIDREFS(CommonTree node) {
-		String attName = node.getParent().textAt(0, "");
+		String attName = node.getParent().getText(0, "");
 		Expression[] l = {
 				gfile.newString(attName),
 				gfile.newRepetition(GrammarFactory.newNonTerminal(null, gfile, "S")),
@@ -303,8 +303,8 @@ public class DTDConverter extends AbstractTreeVisitor {
 	}
 
 	private Expression genFixedAtt(CommonTree node) {
-		String attName = node.textAt(0, "");
-		String fixedValue = "\"" + node.textAt(2, "") + "\"";
+		String attName = node.getText(0, "");
+		String fixedValue = "\"" + node.getText(2, "") + "\"";
 		Expression[] l ={
 				gfile.newString(attName),
 				gfile.newRepetition(GrammarFactory.newNonTerminal(null, gfile, "S")),
@@ -318,7 +318,7 @@ public class DTDConverter extends AbstractTreeVisitor {
 	}
 
 	public Expression toENTITY(CommonTree node) {
-		String attName = node.getParent().textAt(0, "");
+		String attName = node.getParent().getText(0, "");
 		Expression[] l ={
 				gfile.newString(attName),
 				gfile.newRepetition(GrammarFactory.newNonTerminal(null, gfile, "S")),
@@ -333,7 +333,7 @@ public class DTDConverter extends AbstractTreeVisitor {
 	}
 
 	public Expression toENTITIES(CommonTree node) {
-		String attName = node.getParent().textAt(0, "");
+		String attName = node.getParent().getText(0, "");
 		Expression[] l = {
 				gfile.newString(attName),
 				gfile.newRepetition(GrammarFactory.newNonTerminal(null, gfile, "S")),
@@ -348,7 +348,7 @@ public class DTDConverter extends AbstractTreeVisitor {
 	}
 
 	public Expression toNMTOKEN(CommonTree node) {
-		String attName = node.getParent().textAt(0, "");
+		String attName = node.getParent().getText(0, "");
 		Expression[] l = {
 				gfile.newString(attName),
 				gfile.newRepetition(GrammarFactory.newNonTerminal(null, gfile, "S")),
@@ -361,7 +361,7 @@ public class DTDConverter extends AbstractTreeVisitor {
 	}
 
 	public Expression toNMTOKENS(CommonTree node) {
-		String attName = node.getParent().textAt(0, "");
+		String attName = node.getParent().getText(0, "");
 		Expression[] l = {
 				gfile.newString(attName),
 				gfile.newRepetition(GrammarFactory.newNonTerminal(null, gfile, "S")),
@@ -447,7 +447,7 @@ public class DTDConverter extends AbstractTreeVisitor {
 	
 
 	public Expression toEnum(CommonTree node) {
-		String attName = node.getParent().textAt(0, "");
+		String attName = node.getParent().getText(0, "");
 		Expression[] l = {
 				gfile.newString(attName),
 				gfile.newRepetition(GrammarFactory.newNonTerminal(null, gfile, "S")),
@@ -462,17 +462,17 @@ public class DTDConverter extends AbstractTreeVisitor {
 	}
 
 	public Expression toEntValue(CommonTree node) {
-		String replaceString = node.getText();
+		String replaceString = node.toText();
 		return gfile.newString(replaceString);
 	}
 
 	public Expression toElName(CommonTree node) {
-		String elementName = "Element_" + node.getText();
+		String elementName = "Element_" + node.toText();
 		return GrammarFactory.newNonTerminal(null, gfile, elementName);
 	}
 
 	public Expression toName(CommonTree node) {
-		return gfile.newString(node.getText());
+		return gfile.newString(node.toText());
 	}
 
 	public Expression toData(CommonTree node) {

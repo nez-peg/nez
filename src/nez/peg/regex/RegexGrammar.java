@@ -183,7 +183,7 @@ public class RegexGrammar extends AbstractTreeVisitor {
 	}
 	
 	public Expression toCharacter(CommonTree c) {
-		String text = c.getText();
+		String text = c.toText();
 		byte[] utf8 = StringUtils.toUtf8(text);
 		if (utf8.length !=1) {
 			ConsoleUtils.exit(1, "Error: not Character Literal");
@@ -208,16 +208,16 @@ public class RegexGrammar extends AbstractTreeVisitor {
 	}
 	
 	public Expression toCharacterRange(CommonTree e) {
-		byte[] begin = StringUtils.toUtf8(e.get(0).getText());
-		byte[] end = StringUtils.toUtf8(e.get(1).getText());
+		byte[] begin = StringUtils.toUtf8(e.get(0).toText());
+		byte[] end = StringUtils.toUtf8(e.get(1).toText());
 		for(byte i = begin[0]; i <= end[0]; i++) {
 			byteMap[i] = true;
 		}
-		return GrammarFactory.newCharSet(null, e.get(0).getText(), e.get(1).getText());
+		return GrammarFactory.newCharSet(null, e.get(0).toText(), e.get(1).toText());
 	}
 	
 	public Expression toCharacterSetItem(CommonTree c) {
-		byte[] utf8 = StringUtils.toUtf8(c.getText());
+		byte[] utf8 = StringUtils.toUtf8(c.toText());
 		byteMap[utf8[0]] = true;
 		return GrammarFactory.newByteChar(null, false, utf8[0]);
 	}

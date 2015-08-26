@@ -73,7 +73,7 @@ public class CeleryConverter extends AbstractTreeVisitor {
 		for (CommonTree classNode : node) {
 			initMemberList();
 			this.visit("visit", classNode);
-			String className = classNode.textAt(0, null);
+			String className = classNode.getText(0, null);
 			if (UseExtendedSyntax) {
 				grammar.defineProduction(classNode, className, genExClassRule(className));
 			} else {
@@ -90,7 +90,7 @@ public class CeleryConverter extends AbstractTreeVisitor {
 	}
 
 	public final void visitRequired(CommonTree node) {
-		String name = node.textAt(0, null);
+		String name = node.getText(0, null);
 		requiredMembersList.add(name);
 		Expression[] seq = {
 				_DQuoat(),
@@ -100,11 +100,11 @@ public class CeleryConverter extends AbstractTreeVisitor {
 				toExpression(node.get(1)),
 				grammar.newOption(grammar.newNonTerminal("VALUESEP"))
 		};
-		grammar.defineProduction(node, node.textAt(0, null), grammar.newSequence(seq));
+		grammar.defineProduction(node, node.getText(0, null), grammar.newSequence(seq));
 	}
 
 	public final void visitOption(CommonTree node) {
-		String name = node.textAt(0, null);
+		String name = node.getText(0, null);
 		impliedMemebersList.add(name);
 		Expression[] seq = {
 				_DQuoat(),
@@ -114,11 +114,11 @@ public class CeleryConverter extends AbstractTreeVisitor {
 				toExpression(node.get(1)),
 				grammar.newOption(grammar.newNonTerminal("VALUESEP"))
 		};
-		grammar.defineProduction(node, node.textAt(0, null), grammar.newSequence(seq));
+		grammar.defineProduction(node, node.getText(0, null), grammar.newSequence(seq));
 	}
 
 	public final void visitUntypedRequired(CommonTree node) {
-		String name = node.textAt(0, null);
+		String name = node.getText(0, null);
 		requiredMembersList.add(name);
 		// inferType(node.get(2));
 		Expression[] seq = {
@@ -129,11 +129,11 @@ public class CeleryConverter extends AbstractTreeVisitor {
 				grammar.newNonTerminal("Any"),
 				grammar.newOption(grammar.newNonTerminal("VALUESEP"))
 		};
-		grammar.defineProduction(node, node.textAt(0, null), grammar.newSequence(seq));
+		grammar.defineProduction(node, node.getText(0, null), grammar.newSequence(seq));
 	}
 
 	public final void visitUntypedOption(CommonTree node) {
-		String name = node.textAt(0, null);
+		String name = node.getText(0, null);
 		impliedMemebersList.add(name);
 		// inferType(node.get(2));
 		Expression[] seq = {
@@ -144,7 +144,7 @@ public class CeleryConverter extends AbstractTreeVisitor {
 				grammar.newNonTerminal("Any"),
 				grammar.newOption(grammar.newNonTerminal("VALUESEP"))
 		};
-		grammar.defineProduction(node, node.textAt(0, null), grammar.newSequence(seq));
+		grammar.defineProduction(node, node.getText(0, null), grammar.newSequence(seq));
 	}
 
 	public final void visitName(CommonTree node) {
@@ -153,7 +153,7 @@ public class CeleryConverter extends AbstractTreeVisitor {
 	public final Expression visitTEnum(CommonTree node) {
 		Expression[] choice = new Expression[node.size()];
 		for (int index = 0; index < choice.length; index++) {
-			choice[index] = grammar.newString(node.textAt(index, null));
+			choice[index] = grammar.newString(node.getText(index, null));
 		}
 		return grammar.newChoice(choice);
 	}
@@ -189,7 +189,7 @@ public class CeleryConverter extends AbstractTreeVisitor {
 	}
 
 	public final Expression toTClass(CommonTree node) {
-		return grammar.newNonTerminal(node.getText());
+		return grammar.newNonTerminal(node.toText());
 	}
 
 	public final Expression toTArray(CommonTree node) {
@@ -378,7 +378,7 @@ public class CeleryConverter extends AbstractTreeVisitor {
 	private final void correctClassNames(CommonTree node) {
 		int index = 0;
 		for (CommonTree classNode : node) {
-			String className = classNode.textAt(0, null);
+			String className = classNode.getText(0, null);
 			classNameMap.put(className, index++);
 		}
 	}

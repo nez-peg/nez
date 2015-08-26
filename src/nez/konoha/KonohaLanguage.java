@@ -123,7 +123,7 @@ public class KonohaLanguage extends StringTransducerCombinator {
 		}
 		@Override
 		public void match(KonohaTransducer konoha, KonohaTree node) {
-			String path = node.textAt(0, "");
+			String path = node.getText(0, "");
 			konoha.importFile(path);
 			super.match(konoha, node);
 		}
@@ -137,7 +137,7 @@ public class KonohaLanguage extends StringTransducerCombinator {
 		public void match(KonohaTransducer konoha, KonohaTree node) {
 			System.out.println("META: node" + node);
 			// META = NAME FUNCTYPE FORMAT REQUIRED
-			System.out.println("META: name" + node.textAt(0, ""));
+			System.out.println("META: name" + node.getText(0, ""));
 			System.out.println("META: type" + node.get(1));
 			System.out.println("META: format" + node.get(2));
 			super.match(konoha, node);
@@ -168,7 +168,7 @@ public class KonohaLanguage extends StringTransducerCombinator {
 			node.matched = this;
 			if(t != null) {
 				KonohaTree nameNode = node.get(0);
-				String name = nameNode.getText();
+				String name = nameNode.toText();
 				nameNode.typed = t;
 				konoha.setName(name, nameNode);
 			}
@@ -181,13 +181,13 @@ public class KonohaLanguage extends StringTransducerCombinator {
 		}
 		@Override
 		public void match(KonohaTransducer konoha, KonohaTree node) {
-			KonohaTree t = konoha.getName(node.getText());
+			KonohaTree t = konoha.getName(node.toText());
 			node.matched = this;
 			if(t != null) {
 				node.typed = t.typed;
 			}
 			else {
-				node.typed = KonohaType.newErrorType(node, "undefined name: " + node.getText());
+				node.typed = KonohaType.newErrorType(node, "undefined name: " + node.toText());
 			}
 		}
 	}
@@ -198,7 +198,7 @@ public class KonohaLanguage extends StringTransducerCombinator {
 		}
 		@Override
 		public void match(KonohaTransducer konoha, KonohaTree node) {
-			this.nextChoice = konoha.typeRuleMap.get(node.get(0).getText());
+			this.nextChoice = konoha.typeRuleMap.get(node.get(0).toText());
 		}
 	}
 	
@@ -229,7 +229,7 @@ public class KonohaLanguage extends StringTransducerCombinator {
 		}
 		@Override
 		public void match(KonohaTransducer konoha, KonohaTree node) {
-			String name = node.textAt(0, "");
+			String name = node.getText(0, "");
 			KonohaTypeRule inferTypeRule = new FuncTypeInferRule(konoha, name, node.get(1).size(), node);
 			konoha.setTypeRule(inferTypeRule);
 			konoha.setName(name, node);
@@ -251,7 +251,7 @@ public class KonohaLanguage extends StringTransducerCombinator {
 			KonohaTransducer funcLevel = new KonohaTransducer(ns);
 			KonohaTree funcNode = this.funcNode.dup();
 			KonohaType[] types = setTypeVariable(konoha, node.get(1), funcLevel, funcNode.get(1));
-			appendTypeRule(node.textAt(0, ""), types);
+			appendTypeRule(node.getText(0, ""), types);
 			funcLevel.typeCheck(null, funcNode.get(2));
 			checkTypeVariable(types);
 		}
@@ -264,9 +264,9 @@ public class KonohaLanguage extends StringTransducerCombinator {
 			for(int i = 0; i < funcParamNode.size(); i++) {
 				KonohaTree nameNode = funcParamNode.get(i);
 				KonohaType t = konoha.typeCheck(null, applyNode.get(i));
-				types[i+1] = new KonohaVarType(nameNode.getText(), t);
+				types[i+1] = new KonohaVarType(nameNode.toText(), t);
 				nameNode.typed = types[i+1];
-				funcLevel.setName(nameNode.getText(), nameNode);
+				funcLevel.setName(nameNode.toText(), nameNode);
 			}
 			return types;
 		}

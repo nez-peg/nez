@@ -10,7 +10,7 @@ public class StringTransducer {
 	StringTransducer next;
 		
 	protected <E extends AbstractTree<E>> void formatTo(AbstractTree<E> node, StringTransducerBuilder stream) {
-		stream.write(node.getText());
+		stream.write(node.toText());
 	}
 
 	public final <E extends AbstractTree<E>> void trasformTo(AbstractTree<E> node, StringTransducerBuilder stream) {
@@ -30,10 +30,10 @@ public class StringTransducer {
 	
 	public final static <E extends AbstractTree<E>> StringTransducer parseStringTransducer(AbstractTree<E> node) {
 		if(node.is(NameTag)) {
-			return newActionStringTransducer(node.getText());
+			return newActionStringTransducer(node.toText());
 		}
 		if(node.is(IntTag)) {
-			return new NodeStringTransducer(node.getInt(0));
+			return new NodeStringTransducer(node.toInt(0));
 		}
 		if(node.is(ListTag)) {
 			StringTransducer head = parseStringTransducer(node.get(0));
@@ -46,12 +46,12 @@ public class StringTransducer {
 			return head;
 		}
 		if(node.is(FormatTag)) {
-			int s = StringUtils.parseInt(node.textAt(0, "*"), -1);
+			int s = StringUtils.parseInt(node.getText(0, "*"), -1);
 			StringTransducer delim = parseStringTransducer(node.get(1));
-			int e = StringUtils.parseInt(node.textAt(2, "*"), -1);
+			int e = StringUtils.parseInt(node.getText(2, "*"), -1);
 			return new RangeNodeStringTransducer(s, delim, e);
 		}
-		return new TextualStringTransducer(node.getText());
+		return new TextualStringTransducer(node.toText());
 	}
 
 	public final static <E extends AbstractTree<E>> StringTransducer newActionStringTransducer(String command) {

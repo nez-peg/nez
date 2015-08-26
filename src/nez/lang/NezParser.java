@@ -92,8 +92,8 @@ public class NezParser extends AbstractTreeVisitor {
 
 	private boolean defineFormat(AbstractTree<?> node) {
 		//System.out.println("node: " + node);
-		String tag = node.textAt(0, "token");
-		int index = StringUtils.parseInt(node.textAt(1, "*"), -1);
+		String tag = node.getText(0, "token");
+		int index = StringUtils.parseInt(node.getText(1, "*"), -1);
 		Formatter fmt = toFormatter(node.get(2));
 		this.loaded.addFormatter(tag, index, fmt);
 		return true;
@@ -108,36 +108,36 @@ public class NezParser extends AbstractTreeVisitor {
 			return Formatter.newFormatter(l);
 		}
 		if(node.is(NezTag.Integer)) {
-			return Formatter.newFormatter(StringUtils.parseInt(node.getText(), 0));
+			return Formatter.newFormatter(StringUtils.parseInt(node.toText(), 0));
 		}
 		if(node.is(NezTag.Format)) {
-			int s = StringUtils.parseInt(node.textAt(0, "*"), -1);
-			int e = StringUtils.parseInt(node.textAt(2, "*"), -1);
+			int s = StringUtils.parseInt(node.getText(0, "*"), -1);
+			int e = StringUtils.parseInt(node.getText(2, "*"), -1);
 			Formatter fmt = toFormatter(node.get(1));
 			return Formatter.newFormatter(s, fmt, e);
 		}
 		if(node.is(NezTag.Name)) {
-			Formatter fmt = Formatter.newAction(node.getText());
+			Formatter fmt = Formatter.newAction(node.toText());
 			if(fmt == null) {
 				loaded.reportWarning(node, "undefined formatter action");
-				fmt = Formatter.newFormatter("${"+node.getText()+"}");
+				fmt = Formatter.newFormatter("${"+node.toText()+"}");
 			}
 			return fmt;
 		}
-		return Formatter.newFormatter(node.getText());
+		return Formatter.newFormatter(node.toText());
 	}
 
 	/* import */
 	private boolean importProduction(AbstractTree<?> node) {
 		System.out.println("DEBUG? parsed: " + node);
 		String ns = null;
-		String name = node.textAt(0, "*");
+		String name = node.getText(0, "*");
 		int loc = name.indexOf('.');
 		if(loc >= 0) {
 			ns = name.substring(0, loc);
 			name = name.substring(loc+1);
 		}
-		String urn = path(node.getSource().getResourceName(), node.textAt(1, ""));
+		String urn = path(node.getSource().getResourceName(), node.getText(1, ""));
 		try {
 			GrammarFile source = GrammarFile.loadNezFile(urn, NezOption.newDefaultOption());
 			if(name.equals("*")) {
@@ -175,7 +175,7 @@ public class NezParser extends AbstractTreeVisitor {
 	}
 
 	private void checkDuplicatedName(AbstractTree<?> errorNode) {
-		String name = errorNode.getText();
+		String name = errorNode.toText();
 		if(loaded.hasProduction(name)) {
 			loaded.reportWarning(errorNode, "duplicated production: " + name);
 		}
@@ -193,7 +193,7 @@ public class NezParser extends AbstractTreeVisitor {
 
 	private boolean binary = false;
 	public Production parseProduction(AbstractTree<?> node) {
-		String localName = node.textAt(0, "");
+		String localName = node.getText(0, "");
 		int productionFlag = 0;
 		if(node.get(0).is(NezTag.String)) {
 			localName = GrammarFile.nameTerminalProduction(localName);
@@ -229,17 +229,17 @@ public class NezParser extends AbstractTreeVisitor {
 	}
 	
 	public Expression toNonTerminal(AbstractTree<?> ast) {
-		String symbol = ast.getText();
+		String symbol = ast.toText();
 		return GrammarFactory.newNonTerminal(ast, this.loaded, symbol);
 	}
 
 	public Expression toString(AbstractTree<?> ast) {
-		String name = GrammarFile.nameTerminalProduction(ast.getText());
+		String name = GrammarFile.nameTerminalProduction(ast.toText());
 		return GrammarFactory.newNonTerminal(ast, this.loaded, name);
 	}
 
 	public Expression toCharacter(AbstractTree<?> ast) {
-		return GrammarFactory.newString(ast, StringUtils.unquoteString(ast.getText()));
+		return GrammarFactory.newString(ast, StringUtils.unquoteString(ast.toText()));
 	}
 
 	public Expression toClass(AbstractTree<?> ast) {
@@ -248,10 +248,10 @@ public class NezParser extends AbstractTreeVisitor {
 			for(int i = 0; i < ast.size(); i++) {
 				AbstractTree<?> o = ast.get(i);
 				if(o.is(NezTag.List)) {  // range
-					l.add(GrammarFactory.newCharSet(ast, o.textAt(0, ""), o.textAt(1, "")));
+					l.add(GrammarFactory.newCharSet(ast, o.getText(0, ""), o.getText(1, "")));
 				}
 				if(o.is(NezTag.Class)) {  // single
-					l.add(GrammarFactory.newCharSet(ast, o.getText(), o.getText()));
+					l.add(GrammarFactory.newCharSet(ast, o.toText(), o.toText()));
 				}
 			}
 		}
@@ -259,7 +259,7 @@ public class NezParser extends AbstractTreeVisitor {
 	}
 
 	public Expression toByte(AbstractTree<?> ast) {
-		String t = ast.getText();
+		String t = ast.toText();
 		if(t.startsWith("U+")) {
 			int c = StringUtils.hex(t.charAt(2));
 			c = (c * 16) + StringUtils.hex(t.charAt(3));
@@ -313,7 +313,7 @@ public class NezParser extends AbstractTreeVisitor {
 
 	public Expression toRepetition(AbstractTree<?> ast) {
 		if(ast.size() == 2) {
-			int ntimes = StringUtils.parseInt(ast.textAt(1, ""), -1);
+			int ntimes = StringUtils.parseInt(ast.getText(1, ""), -1);
 			if(ntimes != 1) {
 				UList<Expression> l = new UList<Expression>(new Expression[ntimes]);
 				for(int i = 0; i < ntimes; i++) {
@@ -340,7 +340,7 @@ public class NezParser extends AbstractTreeVisitor {
 		Tag label = null;
 		AbstractTree<?> labelNode = node.get(_label, null);
 		if(labelNode != null) {
-			label = Tag.tag(labelNode.getText());
+			label = Tag.tag(labelNode.toText());
 		}
 		return label;
 	}
@@ -356,11 +356,11 @@ public class NezParser extends AbstractTreeVisitor {
 	}
 
 	public Expression toTagging(AbstractTree<?> node) {
-		return GrammarFactory.newTagging(node, Tag.tag(node.getText()));
+		return GrammarFactory.newTagging(node, Tag.tag(node.toText()));
 	}
 
 	public Expression toReplace(AbstractTree<?> node) {
-		return GrammarFactory.newReplace(node, node.getText());
+		return GrammarFactory.newReplace(node, node.toText());
 	}
 
 	public Expression toMatch(AbstractTree<?> node) {
@@ -376,19 +376,19 @@ public class NezParser extends AbstractTreeVisitor {
 //	}
 
 	public Expression toIf(AbstractTree<?> ast) {
-		return GrammarFactory.newIfFlag(ast, ast.textAt(0, ""));
+		return GrammarFactory.newIfFlag(ast, ast.getText(0, ""));
 	}
 
 	public Expression toOn(AbstractTree<?> ast) {
-		return GrammarFactory.newOnFlag(ast, true, ast.textAt(0, ""), toExpression(ast.get(1)));
+		return GrammarFactory.newOnFlag(ast, true, ast.getText(0, ""), toExpression(ast.get(1)));
 	}
 
 	public Expression toWith(AbstractTree<?> ast) {
-		return GrammarFactory.newOnFlag(ast, true, ast.textAt(0, ""), toExpression(ast.get(1)));
+		return GrammarFactory.newOnFlag(ast, true, ast.getText(0, ""), toExpression(ast.get(1)));
 	}
 
 	public Expression toWithout(AbstractTree<?> ast) {
-		return GrammarFactory.newOnFlag(ast, false, ast.textAt(0, ""), toExpression(ast.get(1)));
+		return GrammarFactory.newOnFlag(ast, false, ast.getText(0, ""), toExpression(ast.get(1)));
 	}
 
 	public Expression toBlock(AbstractTree<?> ast) {
@@ -396,15 +396,15 @@ public class NezParser extends AbstractTreeVisitor {
 	}
 
 	public Expression toDef(AbstractTree<?> ast) {
-		return GrammarFactory.newDefSymbol(ast, this.loaded, Tag.tag(ast.textAt(0, "")), toExpression(ast.get(1)));
+		return GrammarFactory.newDefSymbol(ast, this.loaded, Tag.tag(ast.getText(0, "")), toExpression(ast.get(1)));
 	}
 
 	public Expression toIs(AbstractTree<?> ast) {
-		return GrammarFactory.newIsSymbol(ast, this.loaded, Tag.tag(ast.textAt(0, "")));
+		return GrammarFactory.newIsSymbol(ast, this.loaded, Tag.tag(ast.getText(0, "")));
 	}
 
 	public Expression toIsa(AbstractTree<?> ast) {
-		return GrammarFactory.newIsaSymbol(ast, this.loaded, Tag.tag(ast.textAt(0, "")));
+		return GrammarFactory.newIsaSymbol(ast, this.loaded, Tag.tag(ast.getText(0, "")));
 	}
 
 	public Expression toDefIndent(AbstractTree<?> ast) {

@@ -170,7 +170,7 @@ public abstract class AbstractTree<E extends AbstractTree<E>> extends AbstractLi
 	
 	public final SourceContext newSourceContext() {
 		return SourceContext.newStringSourceContext(this.getSource().getResourceName(), 
-				this.getSource().linenum(this.getSourcePosition()), this.getText());
+				this.getSource().linenum(this.getSourcePosition()), this.toText());
 	}
 
 	@Override
@@ -184,7 +184,7 @@ public abstract class AbstractTree<E extends AbstractTree<E>> extends AbstractLi
 		return this.value;
 	}
 	
-	public final String getText() {
+	public final String toText() {
 		if(this.value != null) {
 			return this.value.toString();
 		}
@@ -207,7 +207,7 @@ public abstract class AbstractTree<E extends AbstractTree<E>> extends AbstractLi
 		sb.append("[");
 		if(this.subTree == null) {
 			sb.append(" ");
-			StringUtils.formatQuoteString(sb, '\'', this.getText(), '\'');
+			StringUtils.formatQuoteString(sb, '\'', this.toText(), '\'');
 			sb.append("]");
 		}
 		else {
@@ -228,19 +228,28 @@ public abstract class AbstractTree<E extends AbstractTree<E>> extends AbstractLi
 		}
 	}
 
-	public final String textAt(int index, String defaultValue) {
+	public final String getText(int index, String defval) {
 		if(index < this.size()) {
-			return this.get(index).getText();
+			return this.get(index).toText();
 		}
-		return defaultValue;
+		return defval;
+	}
+
+	public final String getText(Tag label, String defval) {
+		for(int i = 0; i < this.labels.length; i++) {
+			if(labels[i] == label) {
+				return getText(i, defval);
+			}
+		}
+		return defval;
 	}
 	
-	public final int getInt(int defvalue) {
+	public final int toInt(int defvalue) {
 		if(this.value instanceof Number) {
 			return ((Number)this.value).intValue();
 		}
 		try {
-			String s = this.getText();
+			String s = this.toText();
 			int num = Integer.parseInt(s);
 			if(this.value == null) {
 				this.value = new Integer(num);
@@ -252,20 +261,32 @@ public abstract class AbstractTree<E extends AbstractTree<E>> extends AbstractLi
 		return defvalue;
 	}
 
-	public final int getIntAt(int index, int defvalue) {
+	public final int getInt(int index, int defvalue) {
 		if(index < this.size()) {
-			return this.get(index).getInt(defvalue);
+			return this.get(index).toInt(defvalue);
 		}
 		return defvalue;
 	}
 
+	public final int getInt(Tag label, int defvalue) {
+		for(int i = 0; i < this.labels.length; i++) {
+			if(labels[i] == label) {
+				return getInt(i, defvalue);
+			}
+		}
+		return defvalue;
+	}
+
+	
+	
+	
 	public final boolean containsToken(String token) {
 		for(E sub : this) {
 			if(sub.containsToken(token)) {
 				return true;
 			}
 		}
-		return token.equals(getText());
+		return token.equals(toText());
 	}
 
 	
