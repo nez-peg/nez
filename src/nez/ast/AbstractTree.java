@@ -50,6 +50,10 @@ public abstract class AbstractTree<E extends AbstractTree<E>> extends AbstractLi
 		return this.tag;
 	}
 
+	public final boolean is(Tag t) {
+		return t == this.getTag();
+	}
+
 	public final AbstractTree<E> getParent() {
 		return parent;
 	}
@@ -78,11 +82,15 @@ public abstract class AbstractTree<E extends AbstractTree<E>> extends AbstractLi
 		return this.size() == 0;
 	}
 
-	public final int count() {
+	public final Tag getLabel(int index) {
+		return this.labels[index];
+	}
+
+	public final int countSubNodes() {
 		int c = 1;
 		for(E t: this) {
 			if(t != null) {
-				c += t.count();
+				c += t.countSubNodes();
 			}
 		}
 		return c;
@@ -148,53 +156,14 @@ public abstract class AbstractTree<E extends AbstractTree<E>> extends AbstractLi
 			}
 		}
 	}
-
 	
-
-	public final boolean is(Tag t) {
-		return t == this.getTag();
-	}
-	
-	public final String formatSourceMessage(String type, String msg) {
-		return this.getSource().formatPositionLine(type, this.getSourcePosition(), msg);
-	}
-	
-	public final String formatDebugSourceMessage(String msg) {
-		return this.source.formatDebugPositionMessage(this.getSourcePosition(), msg);
-	}
-
-	/**
-	 * Create new input stream 
-	 * @return SourceContext
-	 */
-	
-	public final SourceContext newSourceContext() {
-		return SourceContext.newStringSourceContext(this.getSource().getResourceName(), 
-				this.getSource().linenum(this.getSourcePosition()), this.toText());
-	}
-
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		this.stringfy("", null, sb);
 		return sb.toString();
 	}
-
-	protected final Object getValue() {
-		return this.value;
-	}
-	
-	public final String toText() {
-		if(this.value != null) {
-			return this.value.toString();
-		}
-		if(this.source != null) {
-			this.value = this.source.substring(this.getSourcePosition(), this.getSourcePosition() + this.length);
-			return this.value.toString();
-		}
-		return "";
-	}
-	
+		
 	public void stringfy(String indent, Tag label, StringBuilder sb) {
 		sb.append("\n");
 		sb.append(indent);
@@ -226,6 +195,21 @@ public abstract class AbstractTree<E extends AbstractTree<E>> extends AbstractLi
 			sb.append(indent);
 			sb.append("]");
 		}
+	}
+
+	protected final Object getValue() {
+		return this.value;
+	}
+
+	public final String toText() {
+		if(this.value != null) {
+			return this.value.toString();
+		}
+		if(this.source != null) {
+			this.value = this.source.substring(this.getSourcePosition(), this.getSourcePosition() + this.length);
+			return this.value.toString();
+		}
+		return "";
 	}
 
 	public final String getText(int index, String defval) {
@@ -280,6 +264,24 @@ public abstract class AbstractTree<E extends AbstractTree<E>> extends AbstractLi
 	
 	
 	
+	public final String formatSourceMessage(String type, String msg) {
+		return this.getSource().formatPositionLine(type, this.getSourcePosition(), msg);
+	}
+	
+	public final String formatDebugSourceMessage(String msg) {
+		return this.source.formatDebugPositionMessage(this.getSourcePosition(), msg);
+	}
+
+	/**
+	 * Create new input stream 
+	 * @return SourceContext
+	 */
+	
+	public final SourceContext newSourceContext() {
+		return SourceContext.newStringSourceContext(this.getSource().getResourceName(), 
+				this.getSource().linenum(this.getSourcePosition()), this.toText());
+	}
+	
 	public final boolean containsToken(String token) {
 		for(E sub : this) {
 			if(sub.containsToken(token)) {
@@ -288,11 +290,4 @@ public abstract class AbstractTree<E extends AbstractTree<E>> extends AbstractLi
 		}
 		return token.equals(toText());
 	}
-
-	
-//	// 
-//	
-//	
-
-
 }

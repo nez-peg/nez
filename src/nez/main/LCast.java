@@ -38,7 +38,7 @@ public class LCast extends Command {
 	private void record(NezProfier prof, CommonTree node) {
 		if(prof != null) {
 			System.gc();
-			prof.setCount("O.Size", node.count());
+			prof.setCount("O.Size", node.countSubNodes());
 			long t1 = System.nanoTime();
 			CommonTree t = node.dup();
 			long t2 = System.nanoTime();
