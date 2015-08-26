@@ -56,7 +56,7 @@ public class NezParser extends AbstractTreeVisitor {
 //	}
 	
 	private boolean parseStatement(AbstractTree<?> node) {
-		System.out.println("DEBUG? parsed: " + node);
+		//Verbose.debug("Parsed: " + node);
 		if(node != null) {
 			if(node.is(NezTag.Rule)) {
 				parseProduction(node);

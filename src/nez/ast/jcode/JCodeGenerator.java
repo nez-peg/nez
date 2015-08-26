@@ -145,8 +145,8 @@ public class JCodeGenerator {
 		for(int i = 0; i < paramClasses.length; i++) {
 			paramClasses[i] = args.get(i).getTypedClass();
 		}
-		System.out.println(funcType.toGenericString());
-		System.out.println(paramClasses[0].toGenericString());
+//		System.out.println(funcType.toGenericString());
+//		System.out.println(paramClasses[0].toGenericString());
 		this.mBuilder = this.cBuilder.newMethodBuilder(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, funcType, name,
 				paramClasses);
 		this.mBuilder.enterScope();
