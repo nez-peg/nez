@@ -38,18 +38,18 @@ InstructionSet = [
 ["MemoFail", "MemoPoint"],
 
 ["TPush"],
-["TPop", "Index"],
-["TLeftFold", "Shift"],
+["TPop", "Label"],
+["TLeftFold", "Shift", "Label"],
 ["TNew", "Shift"],
 ["TCapture", "Shift"],
 ["TTag", "Tag"],
 ["TReplace", "Bstr"],
 ["TStart"],
-["TCommit", "Index"],
+["TCommit", "Label"],
 ["TAbort"],
 
-["TLookup", "Jump", "MemoPoint", "Index"],
-["TMemo", "Index"],
+["TLookup", "Jump", "MemoPoint", "Label"],
+["TMemo", "MemoPoint"],
 
 
 ["SOpen"],
@@ -76,7 +76,7 @@ Arguments = [
  ["Bstr", "u16",            "@StrConstPools"],
  ["Shift", "i8"],
  ["MemoPoint", "u16"],
- ["Index", "i8"],
+ ["Label", "u16"], #TagConstPools
  ["Tag", "u16",             "@TagConstPools"],
  ["Table", "u16",           "@TableConstPools"]
 ]
