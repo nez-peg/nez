@@ -121,14 +121,14 @@ public class NezCombinator extends ParserCombinator {
 			New(P("CHAR"), Tag(NezTag.Class)), 
 			LeftFoldOption("right", t("-"), Link("left", New(P("CHAR"), Tag(NezTag.Class))), Tag(NezTag.List))
 		);
-		return Sequence(t("["), New(ZeroMore(Link("char", _CharChunk)), Tag(NezTag.Class)), t("]"));
+		return Sequence(t("["), New(ZeroMore(Link(null, _CharChunk)), Tag(NezTag.Class)), t("]"));
 	}
 
 	public Expression Constructor() {
 		return New(
 			t("{"), 
 			Choice(
-				Sequence(t("$"), Option(Link("label", "Name")), P("S"), Tag(NezTag.LeftNew)), 
+				Sequence(t("$"), Option(Link("name", "Name")), P("S"), Tag(NezTag.LeftNew)), 
 				Sequence(t("@"), P("S"), Tag(NezTag.LeftNew)), 
 				Tag(NezTag.New)
 			), 
@@ -149,27 +149,27 @@ public class NezCombinator extends ParserCombinator {
 	public Expression Func() {
 		return Sequence(t("<"), 
 			New(Choice(
-			Sequence(t("if"), P("S"), Link("flag", "FlagName"), Tag(NezTag.If)),
-			Sequence(t("on"), P("S"), Link("flag", "FlagName"), P("S"), Link("expr", "Expr"), Tag(NezTag.On)),
+			Sequence(t("if"), P("S"), Link("name", "FlagName"), Tag(NezTag.If)),
+			Sequence(t("on"), P("S"), Link("name", "FlagName"), P("S"), Link("expr", "Expr"), Tag(NezTag.On)),
 			
 			Sequence(t("block"), P("S"), Link("expr", "Expr"), Tag(NezTag.Block)),
-			Sequence(t("def"),   P("S"), Link("table", "TableName"), P("S"), Link("expr", "Expr"), Tag(NezTag.Def)),
-			Sequence(t("is"),    P("S"), Link("table", "TableName"), Tag(NezTag.Is)),
-			Sequence(t("isa"),   P("S"), Link("table", "TableName"), Tag(NezTag.Isa)),
-			Sequence(t("exists"), P("S"), Link("table", "TableName"), Tag(NezTag.Exists)),
-			Sequence(t("local"), P("S"), Link("table", "TableName"), P("S"), Link("expr", "Expr"), Tag(NezTag.Local)),
+			Sequence(t("def"),   P("S"), Link("name", "TableName"), P("S"), Link("expr", "Expr"), Tag(NezTag.Def)),
+			Sequence(t("match"), P("S"), Link("name", "TableName"), Tag(NezTag.Match)),
+			Sequence(t("is"),    P("S"), Link("name", "TableName"), Tag(NezTag.Is)),
+			Sequence(t("isa"),   P("S"), Link("name", "TableName"), Tag(NezTag.Isa)),
+			Sequence(t("exists"), P("S"), Link("name", "TableName"), Option(P("S"), Link("symbol", "SingleQuotedString")), Tag(NezTag.Exists)),
+			Sequence(t("local"), P("S"), Link("name", "TableName"), P("S"), Link("expr", "Expr"), Tag(NezTag.Local)),
 
 //			Sequence(t("x"),  P("S"), Link("NonTerminal"), P("S"), Link("NonTerminal"), P("S"), Link("Expr"), P("S"), 
 //					ZeroMore(t(","), P("S"), Link("NonTerminal"), P("S"), Link("Expr"), P("S")),
 //					t(">"), Tag(NezTag.Match)),
 
-			Sequence(t("scan"), P("S"), Link("table", "TableName"), P("S"), Option(Link("mask", "Integer"), P("S")), Link("expr", "Expr"), Tag(NezTag.Scan)),
-			Sequence(t("repeat"), P("S"), Link("table", "TableName"), P("S"), Link("expr", "Expr"), Tag(NezTag.Repeat)),
+			Sequence(t("scan"), P("S"), Link("name", "TableName"), P("S"), Option(Link("mask", "Integer"), P("S")), Link("expr", "Expr"), Tag(NezTag.Scan)),
+			Sequence(t("repeat"), P("S"), Link("name", "TableName"), P("S"), Link("expr", "Expr"), Tag(NezTag.Repeat)),
 			/* Deprecated */
-			Sequence(t("with"),  P("S"), Link("flag", P("Name")), P("S"), Link("expr", "Expr"), Tag(NezTag.With)),
-			Sequence(t("without"), P("S"), Link("flag", P("Name")), P("S"), Link("expr", "Expr"), Tag(NezTag.Without)),
+			Sequence(t("with"),  P("S"), Link("name", P("Name")), P("S"), Link("expr", "Expr"), Tag(NezTag.With)),
+			Sequence(t("without"), P("S"), Link("name", P("Name")), P("S"), Link("expr", "Expr"), Tag(NezTag.Without)),
 			Sequence(t("indent"), Tag(NezTag.Indent)),
-			Sequence(t("match"),   P("S"), Link("expr", "Expr"), P("_"), t(">"), Tag(NezTag.Match)),
 			Sequence(OneMore(Not(">"), AnyChar()), Tag(NezTag.Undefined))
 			)), P("_"), t(">")
 		);
@@ -177,7 +177,7 @@ public class NezCombinator extends ParserCombinator {
 	
 	public Expression LabelLink() {
 		return Sequence(t('$'), New(
-			Option(Link("label", "Name")), t("("), P("_"), Link("expr", "Expr"), P("_"), t(")"), Tag(NezTag.Link)
+			Option(Link("name", "Name")), t("("), P("_"), Link("expr", "Expr"), P("_"), t(")"), Tag(NezTag.Link)
 		));
 	}
 

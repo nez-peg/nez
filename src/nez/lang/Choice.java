@@ -5,12 +5,34 @@ import nez.util.UList;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
-public class Choice extends Multinary {
+public class Choice extends Expression {
+	Expression[] inners;
 	boolean isFlatten = false;
 	public Expression[] predictedCase = null;
-	
+
 	Choice(SourcePosition s, UList<Expression> l, int size) {
-		super(s, l, size);
+		super(s);
+		this.inners = new Expression[size];
+		for(int i = 0; i < size; i++) {
+			this.inners[i] = l.get(i);
+		}
+	}
+
+	@Override
+	public final int size() {
+		return this.inners.length;
+	}
+
+	@Override
+	public final Expression get(int index) {
+		return this.inners[index];
+	}
+	
+	@Override
+	public Expression set(int index, Expression e) {
+		Expression oldExpresion = this.inners[index];
+		this.inners[index] = e;
+		return oldExpresion;
 	}
 
 	@Override
@@ -44,51 +66,6 @@ public class Choice extends Multinary {
 			this.get(i).format(sb);
 		}
 	}
-//		if(e.predictedCase != null) {
-//			int c = 0;
-//			boolean[] printed = ByteMap.newMap(false);
-//			for(int i = 0; i < e.predictedCase.length; i++) {
-//				if(e.predictedCase[i] == null || printed[i] == true) {
-//					continue;
-//				}
-//				if(c > 0) {
-//					sb.append("|");
-//				}
-//				sb.append("&");
-//				boolean[] m = checkRange(e.predictedCase, i, printed);
-//				if(m == null) {
-//					sb.append(StringUtils.stringfyByte(i));
-//				}
-//				else {
-//					sb.append(StringUtils.stringfyCharClass(m));
-//				}
-//				if(e.predictedCase[i] != e) {
-//					visit(e.predictedCase[i]);
-//				}
-//				else {
-//					sb.append("...");
-//				}
-//				c++;
-//			}
-//		}
-//		else {
-//		}
-
-//	private boolean[] checkRange(Expression[] predictedCase, int start, boolean[] printed) {
-//		Expression e = predictedCase[start];
-//		boolean[] result = null;
-//		for(int i = start + 1; i < predictedCase.length; i++) {
-//			if(predictedCase[i] == e) {
-//				if(result == null) {
-//					result = ByteMap.newMap(false);
-//					result[start] = true;
-//				}
-//				result[i] = true;
-//				printed[i] = true;
-//			}
-//		}
-//		return result;
-//	}
 
 	@Override
 	public Expression reshape(GrammarReshaper m) {

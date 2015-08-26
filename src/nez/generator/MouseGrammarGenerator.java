@@ -20,7 +20,6 @@ import nez.lang.Repetition;
 import nez.lang.Repetition1;
 import nez.lang.Replace;
 import nez.lang.Sequence;
-import nez.lang.Multinary;
 import nez.lang.Tagging;
 import nez.lang.Unary;
 import nez.util.StringUtils;
@@ -177,47 +176,47 @@ public class MouseGrammarGenerator extends GrammarGenerator {
 		this.visit( "!", e, null);
 	}
 
-	protected void visitSequenceImpl(Multinary l) {
-		for(int i = 0; i < l.size(); i++) {
-			if(i > 0) {
-				file.write(" ");
-			}
-			int n = appendAsString(l, i);
-			if(n > i) {
-				i = n;
-				continue;
-			}
-			Expression e = l.get(i);
-			if(e instanceof Choice || e instanceof Sequence) {
-				file.write("( ");
-				visitExpression(e);
-				file.write(" )");
-				continue;
-			}
-			visitExpression(e);
-		}
-	}
-
-	private int appendAsString(Multinary l, int start) {
-		int end = l.size();
-		String s = "";
-		for(int i = start; i < end; i++) {
-			Expression e = l.get(i);
-			if(e instanceof ByteChar) {
-				char c = (char)(((ByteChar) e).byteChar);
-				if(c >= ' ' && c < 127) {
-					s += c;
-					continue;
-				}
-			}
-			end = i;
-			break;
-		}
-		if(s.length() > 1) {
-			file.write(StringUtils.quoteString('"', s, '"'));
-		}
-		return end - 1;
-	}
+//	protected void visitSequenceImpl(Multinary l) {
+//		for(int i = 0; i < l.size(); i++) {
+//			if(i > 0) {
+//				file.write(" ");
+//			}
+//			int n = appendAsString(l, i);
+//			if(n > i) {
+//				i = n;
+//				continue;
+//			}
+//			Expression e = l.get(i);
+//			if(e instanceof Choice || e instanceof Sequence) {
+//				file.write("( ");
+//				visitExpression(e);
+//				file.write(" )");
+//				continue;
+//			}
+//			visitExpression(e);
+//		}
+//	}
+//
+//	private int appendAsString(Multinary l, int start) {
+//		int end = l.size();
+//		String s = "";
+//		for(int i = start; i < end; i++) {
+//			Expression e = l.get(i);
+//			if(e instanceof ByteChar) {
+//				char c = (char)(((ByteChar) e).byteChar);
+//				if(c >= ' ' && c < 127) {
+//					s += c;
+//					continue;
+//				}
+//			}
+//			end = i;
+//			break;
+//		}
+//		if(s.length() > 1) {
+//			file.write(StringUtils.quoteString('"', s, '"'));
+//		}
+//		return end - 1;
+//	}
 		
 	public void visitChoice(Choice e) {
 		for(int i = 0; i < e.size(); i++) {

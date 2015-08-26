@@ -223,106 +223,105 @@ public class NezParser extends AbstractTreeVisitor {
 		return rule;
 	}
 
-
-	Expression toExpression(AbstractTree<?> po) {
-		return (Expression)this.visit(po);
+	Expression toExpression(AbstractTree<?> node) {
+		return (Expression)this.visit(node);
 	}
 	
-	public Expression toNonTerminal(AbstractTree<?> ast) {
-		String symbol = ast.toText();
-		return GrammarFactory.newNonTerminal(ast, this.loaded, symbol);
+	public Expression toNonTerminal(AbstractTree<?> node) {
+		String symbol = node.toText();
+		return GrammarFactory.newNonTerminal(node, this.loaded, symbol);
 	}
 
-	public Expression toString(AbstractTree<?> ast) {
-		String name = GrammarFile.nameTerminalProduction(ast.toText());
-		return GrammarFactory.newNonTerminal(ast, this.loaded, name);
+	public Expression toString(AbstractTree<?> node) {
+		String name = GrammarFile.nameTerminalProduction(node.toText());
+		return GrammarFactory.newNonTerminal(node, this.loaded, name);
 	}
 
-	public Expression toCharacter(AbstractTree<?> ast) {
-		return GrammarFactory.newString(ast, StringUtils.unquoteString(ast.toText()));
+	public Expression toCharacter(AbstractTree<?> node) {
+		return GrammarFactory.newString(node, StringUtils.unquoteString(node.toText()));
 	}
 
-	public Expression toClass(AbstractTree<?> ast) {
+	public Expression toClass(AbstractTree<?> node) {
 		UList<Expression> l = new UList<Expression>(new Expression[2]);
-		if(ast.size() > 0) {
-			for(int i = 0; i < ast.size(); i++) {
-				AbstractTree<?> o = ast.get(i);
+		if(node.size() > 0) {
+			for(int i = 0; i < node.size(); i++) {
+				AbstractTree<?> o = node.get(i);
 				if(o.is(NezTag.List)) {  // range
-					l.add(GrammarFactory.newCharSet(ast, o.getText(0, ""), o.getText(1, "")));
+					l.add(GrammarFactory.newCharSet(node, o.getText(0, ""), o.getText(1, "")));
 				}
 				if(o.is(NezTag.Class)) {  // single
-					l.add(GrammarFactory.newCharSet(ast, o.toText(), o.toText()));
+					l.add(GrammarFactory.newCharSet(node, o.toText(), o.toText()));
 				}
 			}
 		}
-		return GrammarFactory.newChoice(ast, l);
+		return GrammarFactory.newChoice(node, l);
 	}
 
-	public Expression toByte(AbstractTree<?> ast) {
-		String t = ast.toText();
+	public Expression toByte(AbstractTree<?> node) {
+		String t = node.toText();
 		if(t.startsWith("U+")) {
 			int c = StringUtils.hex(t.charAt(2));
 			c = (c * 16) + StringUtils.hex(t.charAt(3));
 			c = (c * 16) + StringUtils.hex(t.charAt(4));
 			c = (c * 16) + StringUtils.hex(t.charAt(5));
 			if(c < 128) {
-				return GrammarFactory.newByteChar(ast, this.binary, c);					
+				return GrammarFactory.newByteChar(node, this.binary, c);					
 			}
 			String t2 = java.lang.String.valueOf((char)c);
-			return GrammarFactory.newString(ast, t2);
+			return GrammarFactory.newString(node, t2);
 		}
 		int c = StringUtils.hex(t.charAt(t.length()-2)) * 16 + StringUtils.hex(t.charAt(t.length()-1)); 
-		return GrammarFactory.newByteChar(ast, this.binary, c);
+		return GrammarFactory.newByteChar(node, this.binary, c);
 	}
 
-	public Expression toAny(AbstractTree<?> ast) {
-		return GrammarFactory.newAnyChar(ast, this.binary);
+	public Expression toAny(AbstractTree<?> node) {
+		return GrammarFactory.newAnyChar(node, this.binary);
 	}
 
-	public Expression toChoice(AbstractTree<?> ast) {
-		UList<Expression> l = new UList<Expression>(new Expression[ast.size()]);
-		for(int i = 0; i < ast.size(); i++) {
-			GrammarFactory.addChoice(l, toExpression(ast.get(i)));
+	public Expression toChoice(AbstractTree<?> node) {
+		UList<Expression> l = new UList<Expression>(new Expression[node.size()]);
+		for(int i = 0; i < node.size(); i++) {
+			GrammarFactory.addChoice(l, toExpression(node.get(i)));
 		}
-		return GrammarFactory.newChoice(ast, l);
+		return GrammarFactory.newChoice(node, l);
 	}
 
-	public Expression toSequence(AbstractTree<?> ast) {
-		UList<Expression> l = new UList<Expression>(new Expression[ast.size()]);
-		for(int i = 0; i < ast.size(); i++) {
-			GrammarFactory.addSequence(l, toExpression(ast.get(i)));
+	public Expression toSequence(AbstractTree<?> node) {
+		UList<Expression> l = new UList<Expression>(new Expression[node.size()]);
+		for(int i = 0; i < node.size(); i++) {
+			GrammarFactory.addSequence(l, toExpression(node.get(i)));
 		}
-		return GrammarFactory.newSequence(ast, l);
+		return GrammarFactory.newSequence(node, l);
 	}
 
-	public Expression toNot(AbstractTree<?> ast) {
-		return GrammarFactory.newNot(ast, toExpression(ast.get(0)));
+	public Expression toNot(AbstractTree<?> node) {
+		return GrammarFactory.newNot(node, toExpression(node.get(_expr)));
 	}
 
-	public Expression toAnd(AbstractTree<?> ast) {
-		return GrammarFactory.newAnd(ast, toExpression(ast.get(0)));
+	public Expression toAnd(AbstractTree<?> node) {
+		return GrammarFactory.newAnd(node, toExpression(node.get(_expr)));
 	}
 
-	public Expression toOption(AbstractTree<?> ast) {
-		return GrammarFactory.newOption(ast, toExpression(ast.get(0)));
+	public Expression toOption(AbstractTree<?> node) {
+		return GrammarFactory.newOption(node, toExpression(node.get(_expr)));
 	}
 
-	public Expression toRepetition1(AbstractTree<?> ast) {
-		return GrammarFactory.newRepetition1(ast, toExpression(ast.get(0)));
+	public Expression toRepetition1(AbstractTree<?> node) {
+		return GrammarFactory.newRepetition1(node, toExpression(node.get(_expr)));
 	}
 
-	public Expression toRepetition(AbstractTree<?> ast) {
-		if(ast.size() == 2) {
-			int ntimes = StringUtils.parseInt(ast.getText(1, ""), -1);
+	public Expression toRepetition(AbstractTree<?> node) {
+		if(node.size() == 2) {
+			int ntimes = StringUtils.parseInt(node.getText(1, ""), -1);
 			if(ntimes != 1) {
 				UList<Expression> l = new UList<Expression>(new Expression[ntimes]);
 				for(int i = 0; i < ntimes; i++) {
-					GrammarFactory.addSequence(l, toExpression(ast.get(0)));
+					GrammarFactory.addSequence(l, toExpression(node.get(0)));
 				}
-				return GrammarFactory.newSequence(ast, l);
+				return GrammarFactory.newSequence(node, l);
 			}
 		}
-		return GrammarFactory.newRepetition(ast, toExpression(ast.get(0)));
+		return GrammarFactory.newRepetition(node, toExpression(node.get(_expr)));
 	}
 
 	// PEG4d TransCapturing
@@ -333,12 +332,12 @@ public class NezParser extends AbstractTreeVisitor {
 		return GrammarFactory.newNew(node, false, null, p); 
 	}
 
-	public final static Tag _label = Tag.tag("label");
+	public final static Tag _name = Tag.tag("name");
 	public final static Tag _expr = Tag.tag("expr");
 
 	private Tag parseLabelNode(AbstractTree<?> node) {
 		Tag label = null;
-		AbstractTree<?> labelNode = node.get(_label, null);
+		AbstractTree<?> labelNode = node.get(_name, null);
 		if(labelNode != null) {
 			label = Tag.tag(labelNode.toText());
 		}

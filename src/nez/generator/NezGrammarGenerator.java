@@ -21,7 +21,6 @@ import nez.lang.Repetition;
 import nez.lang.Repetition1;
 import nez.lang.Replace;
 import nez.lang.Sequence;
-import nez.lang.Multinary;
 import nez.lang.Tagging;
 import nez.lang.Unary;
 import nez.util.StringUtils;
