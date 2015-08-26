@@ -35,10 +35,10 @@ public Expression
 	= Sum
 
 Sum
-	= Product {@ ( "+" #Add / "-" #Sub ) @Product }*
+	= Product {$left ( "+" #Add / "-" #Sub ) $right(Product) }*
 
 Product
-	= Value {@ ( "*" #Mul / "/" #Div / "%" #Mod ) @Value }*
+	= Value {$left ( "*" #Mul / "/" #Div / "%" #Mod ) $right(Value) }*
 
 Value
 	= { [0-9]+ #Int } _

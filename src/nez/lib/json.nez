@@ -90,10 +90,10 @@ public Value
 	/ ObjectId
 
 public Object
-	= { "{" (@Member ("," @Member )* )? "}" #JSON }
+	= { "{" ($(Member) ("," $(Member) )* )? "}" #JSON }
 
 Member
-	= { @String ":" @Value #keyvalue }
+	= { $key(String) ":" $value(Value) #meta }
 
 Key
 	= String
@@ -105,7 +105,7 @@ ID
         = [0-9a-z]+
 
 Array
-	= { "[" (@Value ("," @Value )* )? "]" #List }
+	= { "[" ($(Value) ("," $(Value) )* )? "]" #List }
 
 String
 	= '"' { ('\\"' / '\\\\' / !'"' .)* #String } '"' S*

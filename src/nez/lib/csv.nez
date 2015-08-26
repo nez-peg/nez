@@ -22,17 +22,18 @@ public File
 	= CommaSeparatedValue
 
 public CommaSeparatedValue
-	= { (@Line)* #CSV }
+	= { ($(Line))* #CSV }
 
 Line
-	= { @Value (',' @Value)* ( NEWLINE / !. ) #Line }
+	= { $(Value) (',' $(Value))* ( NEWLINE / !. ) #Line }
 	
 Value
 	= '"' { ('""' / (!'"' .))* #Value } '"'
 	/ { (![,\r\n] .)* #Value }
 
 NEWLINE
-	= '\r\n' / '\n'
+	= '\r\n' 
+	/ '\n'
 
 format #CSV[*] `$[0`${NL}`-1]${NL}`
 format #Line[*] `$[0`,`-1]`

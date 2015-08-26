@@ -6,7 +6,7 @@
  */
 
 File
-        = { ((!EMAIL .)* (@{ EMAIL #Email })? )* #List }
+        = { ((!EMAIL .)* ($({ EMAIL #Email }))? )* #List }
 
 example EMAIL mail@address.com
 
