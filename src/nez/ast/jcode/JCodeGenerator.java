@@ -116,9 +116,9 @@ public class JCodeGenerator {
 	}
 
 	public void visitSource(JCodeTree node) {
+		node.requirePop();
 		this.mBuilder = this.cBuilder.newMethodBuilder(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, void.class, "main");
 		this.mBuilder.enterScope();
-		node.requirePop();
 		for(JCodeTree child : node) {
 			this.visit(child);
 		}
@@ -289,8 +289,8 @@ public class JCodeGenerator {
 			if(var != null) {
 				this.mBuilder.loadFromVar(var);
 			} else {
-				this.popUnusedValue(node);
 				this.generateRunTimeLibrary(fieldNode, argsNode);
+				this.popUnusedValue(node);
 				return;
 			}
 		}
