@@ -64,22 +64,24 @@ public class DTDConverter extends CommonTreeVisitor {
 	}
 	
 	
-	int attID;
+	int currentElementID;
 	int attDefCount = 0;
 	int elementCount = 0;
 	int entityCount = 0;
 	
 	Map<Integer, String> elementNameMap = new HashMap<Integer, String>();
-	Map<String, Integer> attributeMap = new HashMap<String, Integer>();
-	List<Integer> reqList;
-	List<Integer> impList;
+	Map<Integer, String> attDefMap;
+	List<Boolean> containsAttributeList = new ArrayList<Boolean>();
+	List<Integer> requiredAttList;
+	List<Integer> impliedAttList;
 
 	
 	final void initAttCounter() {
-		attID = elementCount - 1;
+		currentElementID = elementCount - 1;
 		attDefCount = 0;
-		reqList = new ArrayList<Integer>();
-		impList = new ArrayList<Integer>();
+		attDefMap = new HashMap<Integer, String>();
+		requiredAttList = new ArrayList<Integer>();
+		impliedAttList = new ArrayList<Integer>();
 	}
 
 	final int[] initAttDefList() {
@@ -104,7 +106,7 @@ public class DTDConverter extends CommonTreeVisitor {
 	public void visitElement(CommonTree node) {
 		String elementName = node.textAt(0, "");
 		elementNameMap.put(elementCount, elementName);
-		//		elementIDMap.put(elementName, elementCount);
+		containsAttributeList.add(false);
 		gfile.defineProduction(node, "Content" + elementCount, toExpression(node.get(1)));
 		elementCount++;
 	}
@@ -125,7 +127,7 @@ public class DTDConverter extends CommonTreeVisitor {
 				gfile.newSequence(attOnlySeq), gfile.newSequence(contentSeq)
 		};
 		// check whether attribute exists
-		if (attributeMap.containsValue(elementID)) {
+		if (hasAttribute(elementID)) {
 			Expression[] l = {
 					gfile.newString("<" + elementName),
 					gfile.newRepetition(GrammarFactory.newNonTerminal(null, gfile, "S")),
@@ -150,16 +152,15 @@ public class DTDConverter extends CommonTreeVisitor {
 
 	public void visitAttlist(CommonTree node) {
 		initAttCounter();
-		String elementName = node.textAt(0, "");
-		attributeMap.put(elementName, attID);
-		String attListName = "Attribute" + attID;
-		String choiceListName = "AttChoice" + attID;
+		containsAttributeList.add(currentElementID, true);
+		String attListName = "Attribute" + currentElementID;
+		String choiceListName = "AttChoice" + currentElementID;
 		for (int attNum = 1; attNum < node.size(); attNum++) {
 			this.visit("visit", node.get(attNum));
 		}
 		int[] attDefList = initAttDefList();
 		// generate Complete / Proximate Attribute list
-		if (impList.isEmpty()) {
+		if (impliedAttList.isEmpty()) {
 			gfile.defineProduction(node, attListName, genCompAtt(node, attDefList));
 		} else {
 			int[] requiredRules = extractRequiredRule(attDefList);
@@ -169,28 +170,36 @@ public class DTDConverter extends CommonTreeVisitor {
 	}
 
 	public void visitREQUIRED(CommonTree node) {
-		String name = "AttDef" + attID + "_" + attDefCount;
-		reqList.add(attDefCount++);
+		String name = "AttDef" + currentElementID + "_" + attDefCount;
+		attDefMap.put(attDefCount, node.textAt(0, ""));
+		requiredAttList.add(attDefCount);
 		gfile.defineProduction(node, name, toExpression(node.get(1)));
+		attDefCount++;
 	}
 
 	public void visitIMPLIED(CommonTree node) {
-		String name = "AttDef" + attID + "_" + attDefCount;
-		impList.add(attDefCount++);
+		String name = "AttDef" + currentElementID + "_" + attDefCount;
+		attDefMap.put(attDefCount, node.textAt(0, ""));
+		impliedAttList.add(attDefCount);
 		gfile.defineProduction(node, name, toExpression(node.get(1)));
+		attDefCount++;
 	}
 
 	public void visitFIXED(CommonTree node) {
-		String name = "AttDef" + attID + "_" + attDefCount;
-		impList.add(attDefCount++);
+		String name = "AttDef" + currentElementID + "_" + attDefCount;
+		attDefMap.put(attDefCount, node.textAt(0, ""));
+		impliedAttList.add(attDefCount);
 		gfile.defineProduction(node, name, genFixedAtt(node));
+		attDefCount++;
 	}
 
 
 	public void visitDefault(CommonTree node) {
-		String name = "AttDef" + attID + "_" + attDefCount;
-		impList.add(attDefCount++);
+		String name = "AttDef" + currentElementID + "_" + attDefCount;
+		attDefMap.put(attDefCount, node.textAt(0, ""));
+		impliedAttList.add(attDefCount);
 		gfile.defineProduction(node, name, toExpression(node.get(1)));
+		attDefCount++;
 	}
 
 	public void visitEntity(CommonTree node) {
@@ -241,7 +250,7 @@ public class DTDConverter extends CommonTreeVisitor {
 	}
 
 	public Expression toCDATA(CommonTree node) {
-		String attName = node.getParent().textAt(0, "");
+		String attName = attDefMap.get(attDefCount);
 		Expression[] l = {
 				gfile.newString(attName),
 				gfile.newRepetition(GrammarFactory.newNonTerminal(null, gfile, "S")),
@@ -254,7 +263,7 @@ public class DTDConverter extends CommonTreeVisitor {
 	}
 
 	public Expression toID(CommonTree node) {
-		String attName = node.getParent().textAt(0, "");
+		String attName = attDefMap.get(attDefCount);
 		Expression[] l = {
 				gfile.newString(attName),
 				gfile.newRepetition(GrammarFactory.newNonTerminal(null, gfile, "S")),
@@ -272,7 +281,7 @@ public class DTDConverter extends CommonTreeVisitor {
 	}
 
 	public Expression toIDREF(CommonTree node) {
-		String attName = node.getParent().textAt(0, "");
+		String attName = attDefMap.get(attDefCount);
 		Expression[] l = {
 				gfile.newString(attName),
 				gfile.newRepetition(GrammarFactory.newNonTerminal(null, gfile, "S")),
@@ -287,7 +296,7 @@ public class DTDConverter extends CommonTreeVisitor {
 	}
 
 	public Expression toIDREFS(CommonTree node) {
-		String attName = node.getParent().textAt(0, "");
+		String attName = attDefMap.get(attDefCount);
 		Expression[] l = {
 				gfile.newString(attName),
 				gfile.newRepetition(GrammarFactory.newNonTerminal(null, gfile, "S")),
@@ -303,7 +312,7 @@ public class DTDConverter extends CommonTreeVisitor {
 	}
 
 	private Expression genFixedAtt(CommonTree node) {
-		String attName = node.textAt(0, "");
+		String attName = attDefMap.get(attDefCount);
 		String fixedValue = "\"" + node.textAt(2, "") + "\"";
 		Expression[] l ={
 				gfile.newString(attName),
@@ -318,7 +327,7 @@ public class DTDConverter extends CommonTreeVisitor {
 	}
 
 	public Expression toENTITY(CommonTree node) {
-		String attName = node.getParent().textAt(0, "");
+		String attName = attDefMap.get(attDefCount);
 		Expression[] l ={
 				gfile.newString(attName),
 				gfile.newRepetition(GrammarFactory.newNonTerminal(null, gfile, "S")),
@@ -333,7 +342,7 @@ public class DTDConverter extends CommonTreeVisitor {
 	}
 
 	public Expression toENTITIES(CommonTree node) {
-		String attName = node.getParent().textAt(0, "");
+		String attName = attDefMap.get(attDefCount);
 		Expression[] l = {
 				gfile.newString(attName),
 				gfile.newRepetition(GrammarFactory.newNonTerminal(null, gfile, "S")),
@@ -348,7 +357,7 @@ public class DTDConverter extends CommonTreeVisitor {
 	}
 
 	public Expression toNMTOKEN(CommonTree node) {
-		String attName = node.getParent().textAt(0, "");
+		String attName = attDefMap.get(attDefCount);
 		Expression[] l = {
 				gfile.newString(attName),
 				gfile.newRepetition(GrammarFactory.newNonTerminal(null, gfile, "S")),
@@ -361,7 +370,7 @@ public class DTDConverter extends CommonTreeVisitor {
 	}
 
 	public Expression toNMTOKENS(CommonTree node) {
-		String attName = node.getParent().textAt(0, "");
+		String attName = attDefMap.get(attDefCount);
 		Expression[] l = {
 				gfile.newString(attName),
 				gfile.newRepetition(GrammarFactory.newNonTerminal(null, gfile, "S")),
@@ -377,7 +386,7 @@ public class DTDConverter extends CommonTreeVisitor {
 		int listLength = attlist.length;
 		if (listLength == 1) {
 			Expression[] l = {
-					GrammarFactory.newNonTerminal(null, gfile, "AttDef" + attID + "_" + attlist[0]),
+					GrammarFactory.newNonTerminal(null, gfile, "AttDef" + currentElementID + "_" + attlist[0]),
 					gfile.newRepetition(GrammarFactory.newNonTerminal(null, gfile, "S")),
 					GrammarFactory.newNonTerminal(null, gfile, "ENDTAG")
 			};
@@ -389,7 +398,7 @@ public class DTDConverter extends CommonTreeVisitor {
 			for (int[] target : permutationList) {
 				Expression[] seqList = new Expression[listLength + 1];
 				for (int index = 0; index < target.length; index++) {
-					seqList[index] = GrammarFactory.newNonTerminal(null, gfile, "AttDef" + attID
+					seqList[index] = GrammarFactory.newNonTerminal(null, gfile, "AttDef" + currentElementID
 							+ "_"
 							+ target[index]);
 				}
@@ -405,7 +414,7 @@ public class DTDConverter extends CommonTreeVisitor {
 		if (listLength == 0) {
 			Expression[] l = {
 					gfile.newRepetition(GrammarFactory.newNonTerminal(null, gfile, "AttChoice"
-							+ attID)),
+							+ currentElementID)),
 					gfile.newRepetition(GrammarFactory.newNonTerminal(null, gfile, "S")),
 					GrammarFactory.newNonTerminal(null, gfile, "ENDTAG")
 			};
@@ -419,14 +428,14 @@ public class DTDConverter extends CommonTreeVisitor {
 				int seqCount = 0;
 				seqList[seqCount++] = gfile
 .newRepetition(GrammarFactory.newNonTerminal(null,
-						gfile, "AttChoice" + attID));
+								gfile, "AttChoice" + currentElementID));
 				for (int index = 0; index < target.length; index++) {
 					seqList[seqCount++] = GrammarFactory.newNonTerminal(null, gfile, "AttDef"
-							+ attID + "_"
+							+ currentElementID + "_"
 							+ target[index]);
 					seqList[seqCount++] = gfile.newRepetition(GrammarFactory.newNonTerminal(null,
 							gfile, "AttChoice"
-							+ attID));
+									+ currentElementID));
 				}
 				seqList[seqCount] = GrammarFactory.newNonTerminal(null, gfile, "ENDTAG");
 				choiceList[choiceCount++] = gfile.newSequence(seqList);
@@ -436,10 +445,10 @@ public class DTDConverter extends CommonTreeVisitor {
 	}
 
 	public Expression genImpliedChoice(CommonTree node){
-		Expression[] l = new Expression[impList.size()];
-		String definitionName = "AttDef" + attID + "_";
+		Expression[] l = new Expression[impliedAttList.size()];
+		String definitionName = "AttDef" + currentElementID + "_";
 		int choiceCount = 0;
-		for (Integer ruleNum : impList) {
+		for (Integer ruleNum : impliedAttList) {
 			l[choiceCount++] = GrammarFactory.newNonTerminal(null, gfile, definitionName + ruleNum);
 		}
 		return gfile.newChoice(l);
@@ -447,7 +456,7 @@ public class DTDConverter extends CommonTreeVisitor {
 	
 
 	public Expression toEnum(CommonTree node) {
-		String attName = node.getParent().textAt(0, "");
+		String attName = attDefMap.get(attDefCount);
 		Expression[] l = {
 				gfile.newString(attName),
 				gfile.newRepetition(GrammarFactory.newNonTerminal(null, gfile, "S")),
@@ -500,7 +509,7 @@ public class DTDConverter extends CommonTreeVisitor {
 		int[] buf = new int[512];
 		int arrIndex = 0;
 		for (int requiredNum : attlist) {
-			if (reqList.contains(requiredNum)) {
+			if (requiredAttList.contains(requiredNum)) {
 				buf[arrIndex++] = requiredNum;
 			}
 		}
@@ -514,6 +523,10 @@ public class DTDConverter extends CommonTreeVisitor {
 	private final int[][] perm(int[] attlist) {
 		Permutation permutation = new Permutation(attlist);
 		return permutation.getPermList();
+	}
+	
+	private final boolean hasAttribute(int elementID){
+		return containsAttributeList.get(elementID);
 	}
 
 }
