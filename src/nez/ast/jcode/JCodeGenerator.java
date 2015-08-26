@@ -461,29 +461,29 @@ public class JCodeGenerator {
 
 	private void evalPrefixInc(JCodeTree node, int amount){
 		JCodeTree nameNode = node.get(0);
-		VarEntry var = this.scope.getLocalVar(nameNode.getText());
+		VarEntry var = this.scope.getLocalVar(nameNode.toText());
 		if(var != null) {
 			node.setType(int.class);
 			this.mBuilder.callIinc(var, amount);
-			if(node.requiredPop){
+			if(!node.requiredPop){
 				this.mBuilder.loadFromVar(var);
 			}
 		} else {
-			new RuntimeException("undefined variable " + nameNode.getText());
+			new RuntimeException("undefined variable " + nameNode.toText());
 		}
 	}
 	
 	private void evalSuffixInc(JCodeTree node, int amount){
 		JCodeTree nameNode = node.get(0);
-		VarEntry var = this.scope.getLocalVar(nameNode.getText());
+		VarEntry var = this.scope.getLocalVar(nameNode.toText());
 		if(var != null) {
 			node.setType(int.class);
-			if(node.requiredPop){
+			if(!node.requiredPop){
 				this.mBuilder.loadFromVar(var);
 			}
 			this.mBuilder.callIinc(var, amount);
 		} else {
-			new RuntimeException("undefined variable " + nameNode.getText());
+			new RuntimeException("undefined variable " + nameNode.toText());
 		}
 	}
 
@@ -547,22 +547,22 @@ public class JCodeGenerator {
 
 	public void visitInteger(JCodeTree p) {
 		p.setType(int.class);
-		this.mBuilder.push((Integer)Integer.parseInt(p.toText()));
+		this.mBuilder.push(Integer.parseInt(p.toText()));
 	}
 
 	public void visitOctalInteger(JCodeTree p) {
 		p.setType(int.class);
-		this.mBuilder.push((Integer)Integer.parseInt(p.toText(), 8));
+		this.mBuilder.push(Integer.parseInt(p.toText(), 8));
 	}
 
 	public void visitHexInteger(JCodeTree p){
 		p.setType(int.class);
-		this.mBuilder.push((Integer)Integer.parseInt(p.toText(), 16));
+		this.mBuilder.push(Integer.parseInt(p.toText(), 16));
 	}
 
 	public void visitDouble(JCodeTree p) {
 		p.setType(double.class);
-		this.mBuilder.push((Double)Double.parseDouble(p.toText()));
+		this.mBuilder.push(Double.parseDouble(p.toText()));
 	}
 
 	public void visitString(JCodeTree p) {
@@ -573,8 +573,8 @@ public class JCodeGenerator {
 	public void visitCharacter(JCodeTree p) {
 		p.setType(String.class);
 		this.mBuilder.push(p.toText());
-		//p.setType(char.class);
-		//this.mBuilder.push(p.getText().charAt(0));
+		// p.setType(char.class);
+		// this.mBuilder.push(p.toText().charAt(0));
 	}
 
 	public void visitUndefined(JCodeTree p) {
