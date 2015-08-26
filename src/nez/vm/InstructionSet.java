@@ -51,18 +51,18 @@ public class InstructionSet {
 	public final static byte TMemo     = 42;
 
 
-	public final static byte SOpen    = 41;
-	public final static byte SClose   = 42;
-	public final static byte SMask    = 43;
-	public final static byte SDef     = 44;
-	public final static byte SIsDef   = 45;
-	public final static byte SExists  = 46;
-	public final static byte SMatch   = 47;
-	public final static byte SIs      = 48;
-	public final static byte SIsa     = 49;
-	public final static byte SDefNum  = 50;
-	public final static byte SCount   = 51;
-	public final static byte Exit     = 52;   // 7-bit only
+	public final static byte SOpen    = 43;
+	public final static byte SClose   = 44;
+	public final static byte SMask    = 45;
+	public final static byte SDef     = 46;
+	public final static byte SIsDef   = 47;
+	public final static byte SExists  = 48;
+	public final static byte SMatch   = 49;
+	public final static byte SIs      = 50;
+	public final static byte SIsa     = 51;
+	public final static byte SDefNum  = 52;
+	public final static byte SCount   = 53;
+	public final static byte Exit     = 54;   // 7-bit only
 	
 	
 	public final static byte Label    = 127;  // 7-bit
@@ -117,6 +117,9 @@ public class InstructionSet {
 		case TStart:   return "tstart";
 		case TCommit:  return "tcommit";
 		case TAbort: return "tabort";
+
+		case TLookup:  return "tlookup";
+		case TMemo: return "tmemo";
 
 		case SOpen:   return "open";
 		case SClose:  return "close";

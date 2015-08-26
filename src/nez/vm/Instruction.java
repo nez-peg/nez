@@ -528,7 +528,7 @@ class ISet extends AbstractSetInstruction {
 
 class IOSet extends AbstractSetInstruction {
 	IOSet(ByteMap e, Instruction next) {
-		super(InstructionSet.Set, e, next);
+		super(InstructionSet.OSet, e, next);
 	}
 	@Override
 	Instruction exec(RuntimeContext sc) throws TerminationException {
@@ -994,7 +994,7 @@ class ITLookup extends AbstractMemoizationInstruction {
 
 class ITMemo extends AbstractMemoizationInstruction {
 	ITMemo(Expression e, MemoPoint m, boolean state, Instruction next) {
-		super(InstructionSet.Memo, e, m, state, next);
+		super(InstructionSet.TMemo, e, m, state, next);
 	}
 	@Override
 	Instruction exec(RuntimeContext sc) throws TerminationException {
