@@ -128,6 +128,7 @@ public class NezCombinator extends ParserCombinator {
 		return New(
 			t("{"), 
 			Choice(
+				Sequence(t("$"), Option(Link("label", "Name")), P("S"), Tag(NezTag.LeftNew)), 
 				Sequence(t("@"), P("S"), Tag(NezTag.LeftNew)), 
 				Tag(NezTag.New)
 			), 
@@ -173,6 +174,12 @@ public class NezCombinator extends ParserCombinator {
 			)), P("_"), t(">")
 		);
 	}
+	
+	public Expression LabelLink() {
+		return Sequence(t('$'), New(
+			Option(Link("label", "Name")), t("("), P("_"), Link("expr", "Expr"), P("_"), t(")"), Tag(NezTag.Link)
+		));
+	}
 
 	public Expression Term() {
 		Expression _Any = New(t("."), Tag(NezTag.AnyChar));
@@ -183,6 +190,7 @@ public class NezCombinator extends ParserCombinator {
 			P("SingleQuotedString"), 
 			P("Charset"), 
 			P("Func"),  
+			P("LabelLink"),
 			_Any, 
 			P("ValueReplacement"), 
 			_Tagging, 
@@ -231,11 +239,11 @@ public class NezCombinator extends ParserCombinator {
 	public Expression Sequence() {
 		return Sequence(
 			P("Predicate"), 
-			LeftFoldOption("", 
+			LeftFoldOption(null, 
 				OneMore(
 				P("_"), 
 				P("NOTRULE"),
-				Link("", "Predicate")
+				Link(null, "Predicate")
 				),
 				Tag(NezTag.Sequence) 
 			)
@@ -245,10 +253,10 @@ public class NezCombinator extends ParserCombinator {
 	public Expression Expr() {
 		return Sequence(
 			P("Sequence"), 
-			LeftFoldOption("", 
+			LeftFoldOption(null, 
 				OneMore(
 				P("_"), t("/"), P("_"), 
-				Link("", "Sequence")
+				Link(null, "Sequence")
 				),
 				Tag(NezTag.Choice) 
 			)
@@ -258,7 +266,7 @@ public class NezCombinator extends ParserCombinator {
 	public Expression RuleHead() {
 		return New(
 			P("addQualifers"), 
-			Link("", Choice(P("NonTerminal"), P("String"))), 
+			Link(null, Choice(P("NonTerminal"), P("String"))), 
 			P("_"), 
 			P("SKIP"), t("=")  
 		);
@@ -280,7 +288,7 @@ public class NezCombinator extends ParserCombinator {
 	}
 
 	public Expression Qualifers() {
-		return New(ZeroMore(Link("", New(P("QUALIFERS"))), P("S")));
+		return New(ZeroMore(Link(null, New(P("QUALIFERS"))), P("S")));
 	}
 
 	public Expression addQualifers() {
@@ -344,7 +352,7 @@ public class NezCombinator extends ParserCombinator {
 	public Expression Formatter() {
 		return New(
 				Tag(NezTag.List), 
-				ZeroMore( Not("`"), Link("", Choice(
+				ZeroMore( Not("`"), Link(null, Choice(
 					Sequence(t("${"), P("Name"), t("}")),
 					Sequence(t("$["), P("_"), P("Index"), P("_"), 
 						LeftFoldOption("left", t('`'), Link("format", "Formatter"), t('`'), P("_"), Link("right", "Index"), P("_"), Tag(NezTag.Format)), t("]")),
@@ -387,9 +395,9 @@ public class NezCombinator extends ParserCombinator {
 
 	public Expression TemplateParameter() {
 		return New(
-				Link("", "Name"), 
+				Link(null, "Name"), 
 				P("_"),
-				ZeroMore(t(","), P("_"), Link("", "Name"), P("_")),
+				ZeroMore(t(","), P("_"), Link(null, "Name"), P("_")),
 				Tag(NezTag.List)
 		);
 	}
@@ -411,7 +419,7 @@ public class NezCombinator extends ParserCombinator {
 	public Expression File() {
 		return New(
 			P("_"), 
-			ZeroMore(Link("", "Chunk")),
+			ZeroMore(Link(null, "Chunk")),
 			Tag(NezTag.List)
 		);
 	}

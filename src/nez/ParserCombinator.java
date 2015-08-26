@@ -162,11 +162,11 @@ public class ParserCombinator {
 	}
 
 	protected final Expression NCapture(int shift) {
-		return GrammarFactory.newNew(src(), false, shift);
+		return GrammarFactory.newNew(src(), false, null, shift);
 	}
 
-	protected final Expression LCapture(int shift) {
-		return GrammarFactory.newNew(src(), true, shift);
+	protected final Expression LCapture(int shift, String label) {
+		return GrammarFactory.newNew(src(), true, label == null ? null : Tag.tag(label), shift);
 	}
 
 	protected final Expression Capture(int shift) {
@@ -174,19 +174,19 @@ public class ParserCombinator {
 	}
 
 	protected final Expression New(Expression ... e) {
-		return GrammarFactory.newNew(src(), false, Sequence(e));
+		return GrammarFactory.newNew(src(), false, null, Sequence(e));
 	}
 
 	protected final Expression LeftFoldOption(String label, Expression ... e) {
-		return GrammarFactory.newLeftFoldOption(src(), Sequence(e));
+		return GrammarFactory.newLeftFoldOption(src(), label == null ? null : Tag.tag(label), Sequence(e));
 	}
 
 	protected final Expression LeftFoldZeroMore(String label, Expression ... e) {
-		return GrammarFactory.newLeftFoldRepetition(src(), Sequence(e));
+		return GrammarFactory.newLeftFoldRepetition(src(), label == null ? null : Tag.tag(label), Sequence(e));
 	}
 
 	protected final Expression LeftFoldOneMore(String label, Expression ... e) {
-		return GrammarFactory.newLeftFoldRepetition1(src(), Sequence(e));
+		return GrammarFactory.newLeftFoldRepetition1(src(), label == null ? null : Tag.tag(label), Sequence(e));
 	}
 		
 //	protected Expression Link(String nonterminal) {
@@ -202,11 +202,11 @@ public class ParserCombinator {
 //	}
 
 	protected Expression Link(String label, Expression e) {
-		return GrammarFactory.newLink(src(), Tag.tag(label), e);
+		return GrammarFactory.newLink(src(), label == null ? null : Tag.tag(label), e);
 	}
 
 	protected Expression Link(String label, String nonTerminal) {
-		return GrammarFactory.newLink(src(), Tag.tag(label), P(nonTerminal));
+		return GrammarFactory.newLink(src(), label == null ? null : Tag.tag(label), P(nonTerminal));
 	}
 
 	protected final Expression Tag(Tag t) {

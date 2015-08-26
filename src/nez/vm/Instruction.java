@@ -807,18 +807,21 @@ class INew extends Instruction {
 
 class ITLeftFold extends Instruction {
 	int shift;
+	Tag label;
 	ITLeftFold(New e, Instruction next) {
 		super(InstructionSet.TLeftFold, e, next);
 		this.shift = e.shift;
+		this.label = e.getLabel();
 	}
 	@Override
 	void encodeA(ByteCoder c) {
 		c.encodeShift(shift);
+		c.encodeLabel(label);
 	}
 	@Override
 	Instruction exec(RuntimeContext sc) throws TerminationException {
 		ASTMachine astMachine = sc.getAstMachine();
-		astMachine.logSwap(sc.getPosition() + shift);
+		astMachine.logLeftFold(sc.getPosition() + shift, this.label);
 		return this.next;
 	}
 }
@@ -970,7 +973,6 @@ class ITLookup extends AbstractMemoizationInstruction {
 		super.encodeA(c);
 		c.encodeLabel(label);
 	}
-
 	@Override
 	Instruction exec(RuntimeContext sc) throws TerminationException {
 		MemoEntry entry = sc.getMemo(memoId, state); 

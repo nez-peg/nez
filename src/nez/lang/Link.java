@@ -36,7 +36,7 @@ public class Link extends Unary {
 	}
 	@Override
 	protected final void format(StringBuilder sb) {
-		formatUnary(sb, (label != null) ? "@" + label +"(" : "@(", this.get(0), ")");
+		formatUnary(sb, (label != null) ? "$" + label +"(" : "$(", this.get(0), ")");
 	}
 	@Override
 	public Expression reshape(GrammarReshaper m) {

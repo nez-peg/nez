@@ -364,41 +364,41 @@ public class GrammarFactory {
 		return internImpl(s, new Link(s, label, p));
 	}
 
-	public final static Expression newNew(SourcePosition s, boolean lefted, int shift) {
-		return internImpl(s, new New(s, lefted, shift));
+	public final static Expression newNew(SourcePosition s, boolean lefted, Tag label, int shift) {
+		return internImpl(s, new New(s, lefted, label, shift));
 	}
 
 	public final static Expression newCapture(SourcePosition s, int shift) {
 		return internImpl(s, new Capture(s, shift));
 	}
 
-	public final static Expression newNew(SourcePosition s, boolean lefted, Expression e) {
+	public final static Expression newNew(SourcePosition s, boolean lefted, Tag label, Expression e) {
 		UList<Expression> l = new UList<Expression>(new Expression[e.size() + 3]);
-		GrammarFactory.addSequence(l, internImpl(s, new New(s, lefted, 0)));
+		GrammarFactory.addSequence(l, internImpl(s, new New(s, lefted, label, 0)));
 		GrammarFactory.addSequence(l, e);
 		GrammarFactory.addSequence(l, GrammarFactory.newCapture(s, 0));
 		return newSequence(s, l);
 	}
 
-	public final static Expression newLeftFoldOption(SourcePosition s, Expression e) {
+	public final static Expression newLeftFoldOption(SourcePosition s, Tag label, Expression e) {
 		UList<Expression> l = new UList<Expression>(new Expression[e.size() + 3]);
-		GrammarFactory.addSequence(l, internImpl(s, new New(s, true, 0)));
+		GrammarFactory.addSequence(l, internImpl(s, new New(s, true, label, 0)));
 		GrammarFactory.addSequence(l, e);
 		GrammarFactory.addSequence(l, GrammarFactory.newCapture(s, 0));
 		return newOption(s, GrammarFactory.newSequence(s, l));
 	}
 
-	public final static Expression newLeftFoldRepetition(SourcePosition s, Expression e) {
+	public final static Expression newLeftFoldRepetition(SourcePosition s, Tag label, Expression e) {
 		UList<Expression> l = new UList<Expression>(new Expression[e.size() + 3]);
-		GrammarFactory.addSequence(l, internImpl(s, new New(s, true, 0)));
+		GrammarFactory.addSequence(l, internImpl(s, new New(s, true, label, 0)));
 		GrammarFactory.addSequence(l, e);
 		GrammarFactory.addSequence(l, GrammarFactory.newCapture(s, 0));
 		return newRepetition(s, GrammarFactory.newSequence(s, l));
 	}
 
-	public final static Expression newLeftFoldRepetition1(SourcePosition s, Expression e) {
+	public final static Expression newLeftFoldRepetition1(SourcePosition s, Tag label, Expression e) {
 		UList<Expression> l = new UList<Expression>(new Expression[e.size() + 3]);
-		GrammarFactory.addSequence(l, internImpl(s, new New(s, true, 0)));
+		GrammarFactory.addSequence(l, internImpl(s, new New(s, true, label, 0)));
 		GrammarFactory.addSequence(l, e);
 		GrammarFactory.addSequence(l, GrammarFactory.newCapture(s, 0));
 		return newRepetition1(s, GrammarFactory.newSequence(s, l));
@@ -566,12 +566,12 @@ public class GrammarFactory {
 	}
 
 	public final Expression newNew(Expression ... seq) {
-		return GrammarFactory.newNew(getSourcePosition(), false, newSequence(seq));
+		return GrammarFactory.newNew(getSourcePosition(), false, null, newSequence(seq));
 	}
 
-	public final Expression newLeftNew(Expression ... seq) {
-		return GrammarFactory.newNew(getSourcePosition(), true, newSequence(seq));
-	}
+//	public final Expression newLeftNew(Expression ... seq) {
+//		return GrammarFactory.newNew(getSourcePosition(), true, newSequence(seq));
+//	}
 
 	public final Expression newTagging(String tag) {
 		return GrammarFactory.newTagging(getSourcePosition(), Tag.tag(tag));

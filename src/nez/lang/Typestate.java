@@ -60,7 +60,7 @@ public class Typestate extends GrammarReshaper {
 
 	@Override
 	public Expression reshapeNew(New p) {
-		if(p.lefted) {
+		if(p.leftFold) {
 			if(this.required != Typestate.OperationType) {
 				this.reportRemoved(p, "{@");
 				return p.reshape(GrammarReshaper.RemoveASTandRename);

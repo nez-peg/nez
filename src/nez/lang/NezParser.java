@@ -55,7 +55,7 @@ public class NezParser extends CommonTreeVisitor {
 //	}
 	
 	private boolean parseStatement(CommonTree node) {
-		//System.out.println("DEBUG? parsed: " + node);
+		System.out.println("DEBUG? parsed: " + node);
 		if(node != null) {
 			if(node.is(NezTag.Rule)) {
 				parseProduction(node);
@@ -328,12 +328,12 @@ public class NezParser extends CommonTreeVisitor {
 
 	public Expression toNew(CommonTree ast) {
 		Expression p = (ast.size() == 0) ? GrammarFactory.newEmpty(ast) : toExpression(ast.get(0));
-		return GrammarFactory.newNew(ast, false, p);
+		return GrammarFactory.newNew(ast, false, null, p);
 	}
 
 	public Expression toLeftNew(CommonTree ast) {
 		Expression p = (ast.size() == 0) ? GrammarFactory.newEmpty(ast) : toExpression(ast.get(0));
-		return GrammarFactory.newNew(ast, true, p);//		}
+		return GrammarFactory.newNew(ast, true, null/*FIXME*/, p); 
 	}
 
 	public Expression toLink(CommonTree ast) {

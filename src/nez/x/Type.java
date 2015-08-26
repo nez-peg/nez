@@ -72,7 +72,7 @@ public abstract class Type {
 			inf.link((Link) e, t2);
 			return inf;
 		}
-		if(e instanceof New && ((New) e).lefted) {
+		if(e instanceof New && ((New) e).leftFold) {
 //			if(((New) e).unRepeated) {
 //				System.out.println("TODO: Unrepeated left new is unsupported.");
 //			}

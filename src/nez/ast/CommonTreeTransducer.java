@@ -11,7 +11,7 @@ public class CommonTreeTransducer extends TreeTransducer {
 
 	@Override
 	public void link(Object node, int index, Tag label, Object child) {
-		((CommonTree)node).set(index, (CommonTree)child);
+		((CommonTree)node).set(index, label, (CommonTree)child);
 	}
 
 	@Override

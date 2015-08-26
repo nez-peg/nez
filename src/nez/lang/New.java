@@ -1,23 +1,29 @@
 package nez.lang;
 
 import nez.ast.SourcePosition;
+import nez.ast.Tag;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
 public class New extends Unconsumed {
-	public boolean lefted;
+	public boolean leftFold;
+	Tag label;
 	public Expression outer = null;
 	public int shift  = 0;
-	New(SourcePosition s, boolean lefted, int shift) {
+	New(SourcePosition s, boolean lefted, Tag label, int shift) {
 		super(s);
-		this.lefted = lefted;
+		this.leftFold = lefted;
+		this.label = label;
 		this.shift  = shift;
+	}
+	public Tag getLabel() {
+		return this.label;
 	}
 	@Override
 	public final boolean equalsExpression(Expression o) {
 		if(o instanceof New) {
 			New s = (New)o;
-			return (this.lefted == s.lefted && this.shift == s.shift);
+			return (this.leftFold == s.leftFold && this.label == s.label && this.shift == s.shift);
 		}
 		return false;
 	}
@@ -28,12 +34,28 @@ public class New extends Unconsumed {
 	}
 	@Override
 	public String key() {
-		String s = lefted ? "{@" : "{";
-		return (shift != 0) ? s + "[" + shift + "]" : s;
+		StringBuilder sb = new StringBuilder();
+		sb.append("{");
+		if(leftFold) {
+			sb.append("$");
+			if(label != null) {
+				sb.append(label);
+			}
+		}
+		if(shift != 0) {
+			sb.append("[" + shift + "]");
+		}
+		return sb.toString();
 	}
 	@Override
 	protected final void format(StringBuilder sb) {
-		sb.append(lefted ? "{@" : "{");
+		sb.append("{");
+		if(leftFold) {
+			sb.append("$");
+			if(label != null) {
+				sb.append(label);
+			}
+		}
 	}
 
 	@Override
@@ -48,7 +70,7 @@ public class New extends Unconsumed {
 	
 	@Override 
 	boolean setOuterLefted(Expression outer) { 
-		if(this.lefted) {
+		if(this.leftFold) {
 			this.outer = outer;
 			return false;
 		}

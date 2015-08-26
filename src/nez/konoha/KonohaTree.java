@@ -28,13 +28,12 @@ public class KonohaTree extends AbstractTree<KonohaTree> {
 	}
 
 	public void stringfy(String indent, StringBuilder sb) {
-		super.stringfy(indent, sb);
+		super.stringfy(indent, null, sb);
 		if(typed != null) {
 			sb.append(" :");
 			sb.append(typed.toString());
 		}
 	}
-	
 	
 	public final static String keyTag(String name) {
 		return "#" + name;

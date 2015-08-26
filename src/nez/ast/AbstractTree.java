@@ -10,14 +10,16 @@ import nez.SourceContext;
 import nez.util.StringUtils;
 
 public abstract class AbstractTree<E extends AbstractTree<E>> extends AbstractList<E> implements SourcePosition {
+	private final static Tag[] EmptyLabels = new Tag[0];
+
 	protected Tag             tag;
 	protected Source          source;
 	protected int             pos;
 	protected int             length;
 	protected Object          value;
 	protected AbstractTree<E> parent = null;
+	protected Tag[]           labels;
 	protected E[]             subTree;
-	
 	
 	protected AbstractTree(Tag tag, Source source, long pos, int len, E[] subTree, Object value) {
 		this.tag        = tag;
@@ -26,6 +28,7 @@ public abstract class AbstractTree<E extends AbstractTree<E>> extends AbstractLi
 		this.length     = len;
 		this.subTree    = subTree;
 		this.value      = value;
+		this.labels = (this.subTree != null) ? new Tag[this.subTree.length] : EmptyLabels;
 	}
 	
 	protected abstract E dupImpl();
@@ -36,6 +39,7 @@ public abstract class AbstractTree<E extends AbstractTree<E>> extends AbstractLi
 			for(int i = 0; i < subTree.length; i++) {
 				if(this.subTree[i] != null) {
 					t.subTree[i] = this.subTree[i].dup();
+					t.labels[i] = this.labels[i];
 				}
 			}
 		}
@@ -67,10 +71,7 @@ public abstract class AbstractTree<E extends AbstractTree<E>> extends AbstractLi
 	}
 
 	public int size() {
-		if(this.subTree == null) {
-			return 0;
-		}
-		return this.subTree.length;
+		return this.labels.length;
 	}
 	
 	public final boolean isEmpty() {
@@ -106,10 +107,40 @@ public abstract class AbstractTree<E extends AbstractTree<E>> extends AbstractLi
 		node.setParent(this);
 		return oldValue;
 	}
-	
-	void link(int index, E child) {
-		subTree[index] = child;
+
+	public final void set(int index, Tag label, E node) {
+		this.labels[index] = label;
+		this.subTree[index] = node;
 	}
+	
+	public final int indexOf(Tag label) {
+		for(int i = 0; i < labels.length; i++) {
+			if(labels[i] == label) {
+				return i;
+			}
+		}
+		return -1;
+	}
+	
+	public final E get(Tag label, E defval) {
+		for(int i = 0; i < labels.length; i++) {
+			if(labels[i] == label) {
+				return this.subTree[i];
+			}
+		}
+		return defval;
+	}
+
+	public final void set(Tag label, E defval) {
+		for(int i = 0; i < labels.length; i++) {
+			if(labels[i] == label) {
+				this.subTree[i] = defval;
+				return;
+			}
+		}
+	}
+
+	
 
 	public final boolean is(Tag t) {
 		return t == this.getTag();
@@ -136,7 +167,7 @@ public abstract class AbstractTree<E extends AbstractTree<E>> extends AbstractLi
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		this.stringfy("", sb);
+		this.stringfy("", null, sb);
 		return sb.toString();
 	}
 
@@ -155,9 +186,13 @@ public abstract class AbstractTree<E extends AbstractTree<E>> extends AbstractLi
 		return "";
 	}
 	
-	public void stringfy(String indent, StringBuilder sb) {
+	public void stringfy(String indent, Tag label, StringBuilder sb) {
 		sb.append("\n");
 		sb.append(indent);
+		if(label != null) {
+			sb.append(label);
+			sb.append(" ");
+		}
 		sb.append("#");
 		sb.append(this.getTag().getName());
 		sb.append("[");
@@ -175,7 +210,7 @@ public abstract class AbstractTree<E extends AbstractTree<E>> extends AbstractLi
 					sb.append("null");
 				}
 				else {
-					this.subTree[i].stringfy(nindent, sb);
+					this.subTree[i].stringfy(nindent, this.labels[i], sb);
 				}
 			}
 			sb.append("\n");

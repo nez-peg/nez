@@ -129,7 +129,7 @@ public class PlainCompiler extends NezCompiler {
 
 	public Instruction encodeNew(New p, Instruction next) {
 		if(this.option.enabledASTConstruction) {
-			return p.lefted ? new ITLeftFold(p, next) : new INew(p, next);
+			return p.leftFold ? new ITLeftFold(p, next) : new INew(p, next);
 		}
 		return next;
 	}

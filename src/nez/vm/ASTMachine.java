@@ -70,8 +70,8 @@ class ASTMachine {
 		log(ASTMachine.Replace, 0, null, value);
 	}
 
-	public final void logSwap(Object value) {
-		log(ASTMachine.LeftFold, 0, null, null);
+	public final void logLeftFold(long pos, Tag label) {
+		log(ASTMachine.LeftFold, pos, label, null);
 	}
 
 	public final void logPush() {
@@ -89,7 +89,7 @@ class ASTMachine {
 	}
 
 	public final void logLink(Tag label, Object node) {
-		log(ASTMachine.Link, 0, null, node);
+		log(ASTMachine.Link, 0, label, node);
 		latestLinkedNode = node;
 	}
 	
@@ -157,7 +157,8 @@ class ASTMachine {
 			case ASTMachine.LeftFold:
 				cur.ref = constructLeft(start, cur, spos, epos, objectSize, tag, value);
 				cur.type = ASTMachine.Link;
-				cur.value = 0;
+				//cur.value = 0;
+				spos = cur.value;
 				tag = null;
 				value = null;
 				objectSize = 1;
@@ -166,6 +167,7 @@ class ASTMachine {
 			case ASTMachine.Pop:
 				assert(pushed != null);
 				pushed.type = ASTMachine.Link;
+				pushed.label = cur.label;
 				pushed.ref = constructLeft(start, cur, spos, epos, objectSize, tag, value);
 				pushed.value = cur.value;
 				// TODO unused

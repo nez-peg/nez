@@ -113,7 +113,7 @@ public class CombinatorGenerator extends GrammarGenerator {
 	}
 	
 	public void visitNew(New e) {
-		if(e.lefted) {
+		if(e.leftFold) {
 			C("LCapture", e.shift);
 		}
 		else {

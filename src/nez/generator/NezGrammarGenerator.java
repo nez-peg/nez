@@ -128,7 +128,7 @@ public class NezGrammarGenerator extends GrammarGenerator {
 	}
 	
 	public void visitNew(New e) {
-		W(e.lefted ? "{@" : "{");
+		W(e.leftFold ? "{@" : "{");
 	}
 
 	public void visitCapture(Capture e) {

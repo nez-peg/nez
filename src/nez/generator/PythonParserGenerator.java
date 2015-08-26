@@ -515,7 +515,7 @@ public class PythonParserGenerator extends NezGenerator {
 		for(int i = 0; i < list.size(); i++) {
 			If("result").Begin();
 			if(list.get(i) instanceof New) {
-				if(((New) list.get(i)).lefted) {
+				if(((New) list.get(i)).leftFold) {
 					isLeftNew = true;
 				}
 			}
@@ -602,7 +602,7 @@ public class PythonParserGenerator extends NezGenerator {
 
 	@Override
 	public void visitNew(New p) {
-		if(p.lefted) {
+		if(p.leftFold) {
 			Ileftnew();
 			markStack.push(true);
 		} else {
