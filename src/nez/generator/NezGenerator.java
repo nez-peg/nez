@@ -7,6 +7,7 @@ import nez.lang.Block;
 import nez.lang.ByteChar;
 import nez.lang.ByteMap;
 import nez.lang.Capture;
+import nez.lang.MatchSymbol;
 import nez.lang.MultiChar;
 import nez.lang.Choice;
 import nez.lang.DefIndent;
@@ -186,6 +187,11 @@ public abstract class NezGenerator extends NezEncoder {
 		return null;
 	}
 
+	public Instruction encodeMatchSymbol(MatchSymbol p, Instruction next, Instruction failjump) {
+		this.visitMatchSymbol(p);
+		return null;
+	}
+
 	public Instruction encodeIsSymbol(IsSymbol p, Instruction next, Instruction failjump) {
 		this.visitIsSymbol(p);
 		return null;
@@ -253,6 +259,7 @@ public abstract class NezGenerator extends NezEncoder {
 	// Symbol Tables
 	public abstract void visitBlock(Block p);
 	public abstract void visitDefSymbol(DefSymbol p);
+	public abstract void visitMatchSymbol(MatchSymbol p);	
 	public abstract void visitIsSymbol(IsSymbol p);	
 	public abstract void visitDefIndent(DefIndent p);
 	public abstract void visitIsIndent(IsIndent p);

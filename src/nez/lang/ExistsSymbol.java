@@ -9,18 +9,33 @@ import nez.vm.NezEncoder;
 public class ExistsSymbol extends Expression implements Contextual {
 	public final Tag tableName;
 	final GrammarFile ns;
-	ExistsSymbol(SourcePosition s, GrammarFile ns, Tag tableName) {
+	String symbol;
+	
+	ExistsSymbol(SourcePosition s, GrammarFile ns, Tag tableName, String symbol) {
 		super(s);
 		this.ns = ns;
 		this.tableName = tableName;
+		this.symbol = symbol;
 	}
+	
+	public final String getSymbol() {
+		return this.symbol;
+	}
+	
 	@Override
 	public final boolean equalsExpression(Expression o) {
 		if(o instanceof ExistsSymbol) {
 			ExistsSymbol s = (ExistsSymbol)o;
-			return this.ns == s.ns && this.tableName == s.tableName;
+			return this.ns == s.ns && this.tableName == s.tableName && equals(this.symbol, s.symbol);
 		}
 		return false;
+	}
+
+	private boolean equals(String s, String s2) {
+		if(s != null && s2 != null) {
+			return s.equals(s2);
+		}
+		return s == s2;
 	}
 	
 	public final GrammarFile getGrammarFile() {
@@ -43,10 +58,12 @@ public class ExistsSymbol extends Expression implements Contextual {
 	public String getPredicate() {
 		return "exists " + tableName.getName();
 	}
+	
 	@Override
 	public String key() {
 		return this.getPredicate();
 	}
+	
 	@Override
 	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeExistsSymbol(this);

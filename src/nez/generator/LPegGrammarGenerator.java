@@ -7,6 +7,7 @@ import nez.lang.Block;
 import nez.lang.ByteChar;
 import nez.lang.ByteMap;
 import nez.lang.Capture;
+import nez.lang.MatchSymbol;
 import nez.lang.MultiChar;
 import nez.lang.Choice;
 import nez.lang.DefIndent;
@@ -361,6 +362,12 @@ public class LPegGrammarGenerator extends NezGenerator {
 
 	@Override
 	public void visitBlock(Block p) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void visitMatchSymbol(MatchSymbol p) {
 		// TODO Auto-generated method stub
 		
 	}

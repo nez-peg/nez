@@ -8,6 +8,7 @@ import nez.lang.Block;
 import nez.lang.ByteChar;
 import nez.lang.ByteMap;
 import nez.lang.Capture;
+import nez.lang.MatchSymbol;
 import nez.lang.MultiChar;
 import nez.lang.DefIndent;
 import nez.lang.DefSymbol;
@@ -1083,8 +1084,8 @@ class IDefSymbol extends AbstractTableInstruction {
 	}
 }
 
-class IExistsSymbol extends AbstractTableInstruction {
-	IExistsSymbol(ExistsSymbol e, Instruction next) {
+class IExists extends AbstractTableInstruction {
+	IExists(ExistsSymbol e, Instruction next) {
 		super(InstructionSet.SExists, e, e.tableName, next);
 	}
 	@Override
@@ -1094,9 +1095,29 @@ class IExistsSymbol extends AbstractTableInstruction {
 	}
 }
 
-class IsMatch extends AbstractTableInstruction {
-	IsMatch(IsSymbol e, Instruction next) {
-		super(InstructionSet.SMatch, e, e.tableName, next);
+class IExistsSymbol extends AbstractTableInstruction {
+	byte[] symbol;
+	IExistsSymbol(ExistsSymbol e, Instruction next) {
+		super(InstructionSet.SIsDef, e, e.tableName, next);
+		symbol = StringUtils.toUtf8(e.getSymbol());
+	}
+	@Override
+	void encodeA(ByteCoder c) {
+		super.encodeA(c);
+		c.encodeMultiByte(symbol);
+	}
+	@Override
+	Instruction exec(RuntimeContext sc) throws TerminationException {
+		if(sc.getSymbolTable().contains(this.tableName, symbol)) {
+			return this.next;
+		}
+		return sc.fail();
+	}
+}
+
+class IMatch extends AbstractTableInstruction {
+	IMatch(MatchSymbol e, Instruction next) {
+		super(InstructionSet.SMatch, e, e.getTable(), next);
 	}
 	@Override
 	Instruction exec(RuntimeContext sc) throws TerminationException {

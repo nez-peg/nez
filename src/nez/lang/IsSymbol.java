@@ -9,18 +9,18 @@ import nez.vm.NezEncoder;
 public class IsSymbol extends Expression implements Contextual {
 	public final Tag tableName;
 	final GrammarFile ns;
-	public final boolean checkLastSymbolOnly;
-	IsSymbol(SourcePosition s, GrammarFile ns, Tag tableName, boolean checkLastSymbolOnly) {
+	public final boolean is;
+	IsSymbol(SourcePosition s, GrammarFile ns, Tag tableName, boolean is) {
 		super(s);
 		this.ns = ns;
 		this.tableName = tableName;
-		this.checkLastSymbolOnly = false;
+		this.is = is;
 	}
 	@Override
 	public final boolean equalsExpression(Expression o) {
 		if(o instanceof IsSymbol) {
 			IsSymbol e = (IsSymbol)o;
-			return this.tableName == e.tableName && this.ns == e.ns && this.checkLastSymbolOnly == e.checkLastSymbolOnly;
+			return this.tableName == e.tableName && this.ns == e.ns && this.is == e.is;
 		}
 		return false;
 	}
@@ -43,7 +43,7 @@ public class IsSymbol extends Expression implements Contextual {
 
 	@Override
 	public String getPredicate() {
-		return (checkLastSymbolOnly ? "is " : "isa ") + tableName.getName();
+		return (is ? "is " : "isa ") + tableName.getName();
 	}
 	@Override
 	public String key() {

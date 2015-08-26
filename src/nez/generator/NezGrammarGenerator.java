@@ -144,11 +144,11 @@ public class NezGrammarGenerator extends GrammarGenerator {
 	}
 	
 	public void visitLink(Link e) {
-		String predicate = "@";
-		if(e.index != -1) {
-			predicate += "[" + e.index + "]";
+		String predicate = "$";
+		if(e.getLabel() != null) {
+			predicate += e.getLabel().toString();
 		}
-		Unary(predicate, e, null);
+		Unary(predicate + "(", e, ")");
 	}
 
 	@Override

@@ -363,7 +363,11 @@ public class NezParser extends AbstractTreeVisitor {
 	}
 
 	public Expression toMatch(AbstractTree<?> node) {
-		return GrammarFactory.newMatch(node, toExpression(node.get(_expr)));
+		AbstractTree<?> exprNode = node.get(_expr, null);
+		if(exprNode != null) {
+			return GrammarFactory.newMatch(node, toExpression(exprNode));
+		}
+		return GrammarFactory.newMatchSymbol(node, parseLabelNode(node)); 
 	}
 
 //	public Expression toCatch(AST ast) {
@@ -374,36 +378,36 @@ public class NezParser extends AbstractTreeVisitor {
 //		return Factory.newFail(Utils.unquoteString(ast.textAt(0, "")));
 //	}
 
-	public Expression toIf(AbstractTree<?> ast) {
-		return GrammarFactory.newIfFlag(ast, ast.getText(0, ""));
+	public Expression toIf(AbstractTree<?> node) {
+		return GrammarFactory.newIfFlag(node, node.getText(_name, ""));
 	}
 
-	public Expression toOn(AbstractTree<?> ast) {
-		return GrammarFactory.newOnFlag(ast, true, ast.getText(0, ""), toExpression(ast.get(1)));
+	public Expression toOn(AbstractTree<?> node) {
+		return GrammarFactory.newOnFlag(node, true, node.getText(_name, ""), toExpression(node.get(_expr)));
 	}
 
-	public Expression toWith(AbstractTree<?> ast) {
-		return GrammarFactory.newOnFlag(ast, true, ast.getText(0, ""), toExpression(ast.get(1)));
+//	public Expression toWith(AbstractTree<?> ast) {
+//		return GrammarFactory.newOnFlag(ast, true, ast.getText(0, ""), toExpression(ast.get(1)));
+//	}
+//
+//	public Expression toWithout(AbstractTree<?> ast) {
+//		return GrammarFactory.newOnFlag(ast, false, ast.getText(0, ""), toExpression(ast.get(1)));
+//	}
+
+	public Expression toBlock(AbstractTree<?> node) {
+		return GrammarFactory.newBlock(node, toExpression(node.get(_expr)));
 	}
 
-	public Expression toWithout(AbstractTree<?> ast) {
-		return GrammarFactory.newOnFlag(ast, false, ast.getText(0, ""), toExpression(ast.get(1)));
+	public Expression toDef(AbstractTree<?> node) {
+		return GrammarFactory.newDefSymbol(node, this.loaded, Tag.tag(node.getText(_name, "")), toExpression(node.get(_expr)));
 	}
 
-	public Expression toBlock(AbstractTree<?> ast) {
-		return GrammarFactory.newBlock(ast, toExpression(ast.get(0)));
+	public Expression toIs(AbstractTree<?> node) {
+		return GrammarFactory.newIsSymbol(node, this.loaded, Tag.tag(node.getText(_name, "")));
 	}
 
-	public Expression toDef(AbstractTree<?> ast) {
-		return GrammarFactory.newDefSymbol(ast, this.loaded, Tag.tag(ast.getText(0, "")), toExpression(ast.get(1)));
-	}
-
-	public Expression toIs(AbstractTree<?> ast) {
-		return GrammarFactory.newIsSymbol(ast, this.loaded, Tag.tag(ast.getText(0, "")));
-	}
-
-	public Expression toIsa(AbstractTree<?> ast) {
-		return GrammarFactory.newIsaSymbol(ast, this.loaded, Tag.tag(ast.getText(0, "")));
+	public Expression toIsa(AbstractTree<?> node) {
+		return GrammarFactory.newIsaSymbol(node, this.loaded, Tag.tag(node.getText(_name, "")));
 	}
 
 	public Expression toDefIndent(AbstractTree<?> ast) {
@@ -418,13 +422,5 @@ public class NezParser extends AbstractTreeVisitor {
 		loaded.reportError(ast, "undefined or deprecated notation");
 		return GrammarFactory.newEmpty(ast);
 	}
-	
-//	public Expression toScan(AST ast) {
-//		return Factory.newScan(Integer.parseInt(ast.get(0).getText()), toExpression(ast.get(1)), toExpression(ast.get(2)));
-//	}
-//	
-//	public Expression toRepeat(AST ast) {
-//		return Factory.newRepeat(toExpression(ast.get(0)));
-//	}
-	
+		
 }

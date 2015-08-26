@@ -437,16 +437,20 @@ public class GrammarFactory {
 		return internImpl(s, new DefSymbol(s, ns, tableName, e));
 	}
 
+	public final static Expression newMatchSymbol(SourcePosition s, Tag tableName) {
+		return internImpl(s, new MatchSymbol(s, tableName));
+	}
+
 	public final static Expression newIsSymbol(SourcePosition s, GrammarFile ns,  Tag tableName) {
-		return internImpl(s, new IsSymbol(s, ns, tableName, /*checkLastSymbolOnly*/true));
+		return internImpl(s, new IsSymbol(s, ns, tableName, /*is*/true));
 	}
 	
 	public final static Expression newIsaSymbol(SourcePosition s, GrammarFile ns, Tag tableName) {
-		return internImpl(s, new IsSymbol(s, ns, tableName, /*checkLastSymbolOnly*/false));
+		return internImpl(s, new IsSymbol(s, ns, tableName, /*is*/false));
 	}
 
-	public final static Expression newExists(SourcePosition s, GrammarFile ns, Tag tableName) {
-		return internImpl(s, new ExistsSymbol(s, ns, tableName));
+	public final static Expression newExists(SourcePosition s, GrammarFile ns, Tag tableName, String symbol) {
+		return internImpl(s, new ExistsSymbol(s, ns, tableName, symbol));
 	}
 
 	public final static Expression newDefIndent(SourcePosition s) {
@@ -618,8 +622,8 @@ public class GrammarFactory {
 		return GrammarFactory.newIsaSymbol(getSourcePosition(), getGrammarFile(), Tag.tag(table));
 	}
 
-	public final Expression newExists(String table) {
-		return GrammarFactory.newExists(getSourcePosition(), getGrammarFile(), Tag.tag(table));
+	public final Expression newExists(String table, String symbol) {
+		return GrammarFactory.newExists(getSourcePosition(), getGrammarFile(), Tag.tag(table), symbol);
 	}
 
 	public final Expression newLocal(String table, Expression ... seq) {

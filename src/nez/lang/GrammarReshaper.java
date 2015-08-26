@@ -170,6 +170,10 @@ public class GrammarReshaper {
 		return updateInner(e, inner);
 	}
 
+	public Expression reshapeMatchSymbol(MatchSymbol e) {
+		return e;
+	}
+
 	public Expression reshapeIsSymbol(IsSymbol e) {
 		return e;
 	}
@@ -281,6 +285,7 @@ public class GrammarReshaper {
 		}
 		return (e.get(0) != inner) ? GrammarFactory.newOnFlag(e.s, e.predicate, e.flagName, inner) : e;
 	}
+
 
 }
 

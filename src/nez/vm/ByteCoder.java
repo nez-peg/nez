@@ -150,7 +150,6 @@ public class ByteCoder {
 		wwrite_utf8(StringUtils.toUtf8(tag.getName()));
 	}
 
-
 	//
 	
 	public void encodeOpcode(byte opcode) {

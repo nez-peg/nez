@@ -293,7 +293,7 @@ public class CeleryConverter extends AbstractTreeVisitor {
 
 		Expression[] tables = new Expression[requiredMembersListSize];
 		for (int i = 0; i < requiredMembersListSize; i++) {
-			tables[i] = grammar.newExists(requiredMembersList.get(i));
+			tables[i] = grammar.newExists(requiredMembersList.get(i), null /*FIXME*/);
 		}
 
 		Expression[] seq = {
@@ -359,7 +359,7 @@ public class CeleryConverter extends AbstractTreeVisitor {
 
 		Expression[] tables = new Expression[requiredMembersListSize];
 		for (int i = 0; i < requiredMembersListSize; i++) {
-			tables[i] = grammar.newExists(requiredMembersList.get(i));
+			tables[i] = grammar.newExists(requiredMembersList.get(i), null /* FIXME symbol is additionally supported */);
 		}
 
 		Expression[] seq = {

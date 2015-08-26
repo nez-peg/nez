@@ -11,6 +11,7 @@ import nez.lang.Block;
 import nez.lang.ByteChar;
 import nez.lang.ByteMap;
 import nez.lang.Capture;
+import nez.lang.MatchSymbol;
 import nez.lang.MultiChar;
 import nez.lang.Choice;
 import nez.lang.DefIndent;
@@ -182,6 +183,8 @@ public abstract class NezEncoder {
 	// Symbol Tables
 	public abstract Instruction encodeBlock(Block p, Instruction next, Instruction failjump);
 	public abstract Instruction encodeDefSymbol(DefSymbol p, Instruction next, Instruction failjump);
+	public abstract Instruction encodeMatchSymbol(MatchSymbol p, Instruction next, Instruction failjump);
+
 	public abstract Instruction encodeIsSymbol(IsSymbol p, Instruction next, Instruction failjump);	
 	public abstract Instruction encodeDefIndent(DefIndent p, Instruction next, Instruction failjump);
 	public abstract Instruction encodeIsIndent(IsIndent p, Instruction next, Instruction failjump);
@@ -202,6 +205,7 @@ public abstract class NezEncoder {
 	public Instruction encodeIfFlag(IfFlag ifFlag, Instruction next, Instruction failjump) {
 		return next;
 	}
+
 
 	
 }

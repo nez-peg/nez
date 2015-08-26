@@ -9,6 +9,7 @@ import nez.lang.Block;
 import nez.lang.ByteChar;
 import nez.lang.ByteMap;
 import nez.lang.Capture;
+import nez.lang.MatchSymbol;
 import nez.lang.MultiChar;
 import nez.lang.Choice;
 import nez.lang.DefIndent;
@@ -172,12 +173,22 @@ public class PlainCompiler extends NezCompiler {
 	}
 
 	public Instruction encodeExistsSymbol(ExistsSymbol p, Instruction next, Instruction failjump) {
-		return new IExistsSymbol(p, next);
+		String symbol = p.getSymbol();
+		if(symbol == null) {
+			return new IExists(p, next);
+		}
+		else {
+			return new IExistsSymbol(p, next);
+		}
+	}
+
+	public Instruction encodeMatchSymbol(MatchSymbol p, Instruction next, Instruction failjump) {
+		return new IMatch(p, next);
 	}
 
 	public Instruction encodeIsSymbol(IsSymbol p, Instruction next, Instruction failjump) {
-		if(p.checkLastSymbolOnly) {
-			return new IsMatch(p, next);
+		if(p.is) {
+			return new IPos(p, encode(p.getSymbolExpression(), new IIsSymbol(p, next), failjump));
 		}
 		else {
 			return new IPos(p, encode(p.getSymbolExpression(), new IIsaSymbol(p, next), failjump));
