@@ -6,7 +6,7 @@ import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
 import nez.util.UList;
 
-class LCvalidate extends Command {
+class LCmatch extends Command {
 	@Override
 	public String getDesc() {
 		return "grammar validator";

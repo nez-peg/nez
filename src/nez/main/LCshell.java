@@ -5,7 +5,7 @@ import java.util.HashMap;
 import nez.NezOption;
 import nez.SourceContext;
 import nez.ast.CommonTree;
-import nez.ast.CommonTreeWriter;
+import nez.ast.AbstractTreeWriter;
 import nez.generator.GeneratorLoader;
 import nez.generator.NezGenerator;
 import nez.generator.NezGrammarGenerator;

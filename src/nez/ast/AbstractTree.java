@@ -70,6 +70,14 @@ public abstract class AbstractTree<E extends AbstractTree<E>> extends AbstractLi
 		return this.pos;
 	}
 
+	public final int getLinenum() {
+		return (int)this.source.linenum(this.pos);
+	}
+
+	public final int getColumn() {
+		return this.source.column(this.pos);
+	}
+	
 	protected final int getLength() {
 		return this.length;
 	}
@@ -84,6 +92,15 @@ public abstract class AbstractTree<E extends AbstractTree<E>> extends AbstractLi
 
 	public final Tag getLabel(int index) {
 		return this.labels[index];
+	}
+	
+	public final boolean isAllLabeled() {
+		for(int i = 0; i < this.labels.length; i++) {
+			if(labels[i] == null) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	public final int countSubNodes() {
@@ -290,4 +307,5 @@ public abstract class AbstractTree<E extends AbstractTree<E>> extends AbstractLi
 		}
 		return token.equals(toText());
 	}
+
 }

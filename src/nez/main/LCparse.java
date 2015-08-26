@@ -2,11 +2,11 @@ package nez.main;
 
 import nez.SourceContext;
 import nez.ast.CommonTree;
-import nez.ast.CommonTreeWriter;
+import nez.ast.AbstractTreeWriter;
 import nez.lang.Grammar;
 import nez.util.ConsoleUtils;
 
-public class LCast extends Command {
+public class LCparse extends Command {
 	@Override
 	public String getDesc() {
 		return "an AST parser";
@@ -28,10 +28,10 @@ public class LCast extends Command {
 			source = null;
 			record(g.getProfiler(), node);
 			g.logProfiler();
-			CommonTreeWriter w = new CommonTreeWriter(config.getNezOption(),config.getOutputFileName(source, "ast"));
+			AbstractTreeWriter w = new AbstractTreeWriter(config.getNezOption(),config.getOutputFileName(source, "ast"));
 			w.writeTree(node);
 			w.writeNewLine();
-			w.flush();
+			w.close();
 		}
 	}
 	

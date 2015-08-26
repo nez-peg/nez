@@ -2,7 +2,7 @@ package nez.main;
 
 import nez.SourceContext;
 import nez.ast.CommonTree;
-import nez.ast.CommonTreeWriter;
+import nez.ast.AbstractTreeWriter;
 import nez.lang.Grammar;
 import nez.util.ConsoleUtils;
 
@@ -26,7 +26,7 @@ public class LCxml extends Command {
 				ConsoleUtils.println(source.getUnconsumedMessage());
 			}
 			g.logProfiler();
-			CommonTreeWriter w = new CommonTreeWriter(config.getNezOption(),config.getOutputFileName(source, "xml"));
+			AbstractTreeWriter w = new AbstractTreeWriter(config.getNezOption(),config.getOutputFileName(source, "xml"));
 			source = null;
 			w.writeXML(node);
 			w.close();

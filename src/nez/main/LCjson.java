@@ -4,20 +4,16 @@ import nez.SourceContext;
 import nez.ast.CommonTree;
 import nez.ast.AbstractTreeWriter;
 import nez.lang.Grammar;
-import nez.lang.GrammarFile;
-import nez.lang.NezParser;
-import nez.lang.Production;
 import nez.util.ConsoleUtils;
 
-public class LCformat extends Command {
+public class LCjson extends Command {
 	@Override
-	public String getDesc() {
-		return "a bi-directional parser";
+	public final String getDesc() {
+		return "a JSON converter";
 	}
 
 	@Override
 	public void exec(CommandContext config) {
-		GrammarFile gfile = config.getGrammarFile(false);
 		Grammar g = config.getGrammar();
 		while(config.hasInputSource()) {
 			SourceContext source = config.nextInputSource();
@@ -29,9 +25,11 @@ public class LCformat extends Command {
 			if(source.hasUnconsumed()) {
 				ConsoleUtils.println(source.getUnconsumedMessage());
 			}
-			source = null;
-			ConsoleUtils.println(gfile.formatCommonTree(node));
 			g.logProfiler();
+			AbstractTreeWriter w = new AbstractTreeWriter(config.getNezOption(),config.getOutputFileName(source, "json"));
+			source = null;
+			w.writeJSON(node);
+			w.close();
 		}
 	}
 }

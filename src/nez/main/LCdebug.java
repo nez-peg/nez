@@ -3,7 +3,7 @@ package nez.main;
 import nez.SourceContext;
 import nez.lang.Grammar;
 
-public class LCndb extends Command {
+public class LCdebug extends Command {
 	@Override
 	public String getDesc() {
 		return "Nez debugger";

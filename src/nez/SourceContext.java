@@ -33,6 +33,16 @@ public abstract class SourceContext extends RuntimeContext {
 	@Override
 	public abstract long    linenum(long pos);
 
+	public final int column(long pos) {
+		int count = 0;
+		for(long p = pos - 1; p >= 0; p--) {
+			if(this.byteAt(pos) == '\n') {
+				break;
+			}
+		}
+		return count;
+	}
+	
 	/* handling input stream */
 	
 	@Override

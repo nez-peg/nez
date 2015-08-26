@@ -2,7 +2,7 @@ package nez.main;
 
 import nez.SourceContext;
 import nez.ast.CommonTree;
-import nez.ast.CommonTreeWriter;
+import nez.ast.AbstractTreeWriter;
 import nez.lang.Grammar;
 import nez.util.ConsoleUtils;
 import nez.vm.ByteCoder;
