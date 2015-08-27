@@ -1,13 +1,13 @@
 package nez.peg.celery;
 
+import nez.ast.AbstractTreeVisitor;
 import nez.ast.CommonTree;
-import nez.ast.CommonTreeVisitor;
 import nez.lang.Expression;
 import nez.lang.GrammarFactory;
 import nez.lang.GrammarFile;
 
 
-public abstract class AbstractCeleryConverter extends CommonTreeVisitor {
+public abstract class AbstractCeleryConverter extends AbstractTreeVisitor {
 
 	protected GrammarFile grammar;
 	protected String rootClassName;

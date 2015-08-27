@@ -1,20 +1,13 @@
 package nez.peg.celery;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import nez.NezException;
-import nez.NezOption;
-import nez.SourceContext;
 import nez.ast.CommonTree;
 import nez.ast.Tag;
 import nez.lang.Expression;
-import nez.lang.Grammar;
 import nez.lang.GrammarFactory;
-import nez.lang.GrammarFile;
-import nez.util.ConsoleUtils;
 import nez.util.UList;
 
 public class JSONCeleryConverter extends AbstractCeleryConverter {
@@ -26,32 +19,6 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 
 	public JSONCeleryConverter() {
 		this.classMap = new HashMap<>();
-	}
-
-	public final static GrammarFile loadGrammar(String filePath, NezOption option) throws IOException {
-		option.setOption("notice", false);
-		if (celeryGrammar == null) {
-			try {
-				celeryGrammar = GrammarFile.loadGrammarFile("celery.nez", NezOption.newDefaultOption());
-			} catch (IOException e) {
-				ConsoleUtils.exit(1, "can't load celery.nez");
-			}
-		}
-		Grammar p = celeryGrammar.newGrammar("File");
-		SourceContext celeryFile = SourceContext.newFileContext(filePath);
-		CommonTree node = p.parseCommonTree(celeryFile);
-		if (node == null) {
-			throw new NezException(celeryFile.getSyntaxErrorMessage());
-		}
-		if (celeryFile.hasUnconsumed()) {
-			throw new NezException(celeryFile.getUnconsumedMessage());
-		}
-		JSONConverter converter = new JSONConverter();
-		converter.setRootClassName(filePath);
-		GrammarFile gfile = GrammarFile.newGrammarFile(filePath, option);
-		converter.convert(node, gfile);
-		gfile.verify();
-		return gfile;
 	}
 
 	@Override
@@ -87,7 +54,7 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 
 	@Override
 	public final void visitRequired(CommonTree node) {
-		String name = node.textAt(0, null);
+		String name = node.getText(0, null);
 		requiredPropertiesList.add(name);
 		Expression[] seq = { _DQuoat(), grammar.newString(name), _DQuoat(), GrammarFactory.newNonTerminal(null, grammar, "NAMESEP"), toExpression(node.get(1)), grammar.newOption(GrammarFactory.newNonTerminal(null, grammar, "VALUESEP")) };
 		grammar.defineProduction(node, node.getText(0, null), grammar.newSequence(seq));
@@ -95,7 +62,7 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 
 	@Override
 	public final void visitOption(CommonTree node) {
-		String name = node.textAt(0, null);
+		String name = node.getText(0, null);
 		impliedPropertiesList.add(name);
 		Expression[] seq = { _DQuoat(), grammar.newString(name), _DQuoat(), GrammarFactory.newNonTerminal(null, grammar, "NAMESEP"), toExpression(node.get(1)), grammar.newOption(GrammarFactory.newNonTerminal(null, grammar, "VALUESEP")) };
 		grammar.defineProduction(node, node.getText(0, null), grammar.newSequence(seq));
@@ -103,7 +70,7 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 
 	@Override
 	public final void visitUntypedRequired(CommonTree node) {
-		String name = node.textAt(0, null);
+		String name = node.getText(0, null);
 		requiredPropertiesList.add(name);
 		// inferType(node.get(2));
 		Expression[] seq = { _DQuoat(), grammar.newString(name), _DQuoat(), GrammarFactory.newNonTerminal(null, grammar, "NAMESEP"), GrammarFactory.newNonTerminal(null, grammar, "Any"),
@@ -113,7 +80,7 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 
 	@Override
 	public final void visitUntypedOption(CommonTree node) {
-		String name = node.textAt(0, null);
+		String name = node.getText(0, null);
 		impliedPropertiesList.add(name);
 		// inferType(node.get(2));
 		Expression[] seq = { _DQuoat(), grammar.newString(name), _DQuoat(), GrammarFactory.newNonTerminal(null, grammar, "NAMESEP"), GrammarFactory.newNonTerminal(null, grammar, "Any"),
@@ -122,15 +89,6 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 	}
 
 	public final void visitName(CommonTree node) {
-	}
-
-	@Override
-	public final Expression toTEnum(CommonTree node) {
-		Expression[] choice = new Expression[node.size()];
-		for (int index = 0; index < choice.length; index++) {
-			choice[index] = grammar.newString(node.getText(index, null));
-		}
-		return grammar.newChoice(choice);
 	}
 
 	// to Expression Methods
@@ -182,10 +140,11 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 		return grammar.newSequence(seq);
 	}
 
+	@Override
 	public final Expression toTEnum(CommonTree node) {
 		Expression[] choice = new Expression[node.size()];
 		for (int index = 0; index < choice.length; index++) {
-			choice[index] = grammar.newString(node.textAt(index, null));
+			choice[index] = grammar.newString(node.getText(index, null));
 		}
 		return grammar.newChoice(choice);
 	}
@@ -271,7 +230,7 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 
 		Expression[] tables = new Expression[requiredMembersListSize];
 		for (int i = 0; i < requiredMembersListSize; i++) {
-			tables[i] = grammar.newExists(requiredMembersList.get(i), null /* FIXME */);
+			tables[i] = grammar.newExists(requiredPropertiesList.get(i), null /* FIXME */);
 		}
 
 		Expression[] seq = { _DQuoat(), grammar.newString(className), _DQuoat(), _SPACING(), GrammarFactory.newNonTerminal(null, grammar, "NAMESEP"), grammar.newByteChar('{'), _SPACING(),
@@ -324,7 +283,7 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 
 		Expression[] tables = new Expression[requiredMembersListSize];
 		for (int i = 0; i < requiredMembersListSize; i++) {
-			tables[i] = grammar.newExists(requiredMembersList.get(i), null);
+			tables[i] = grammar.newExists(requiredPropertiesList.get(i), null);
 		}
 
 		Expression[] seq = { grammar.newByteChar('{'), _SPACING(), grammar.newBlock(grammar.newRepetition1(GrammarFactory.newNonTerminal(null, grammar, membersNonterminal)), grammar.newSequence(tables)), _SPACING(), grammar.newByteChar('}') };
