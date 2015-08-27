@@ -21,11 +21,9 @@ import nez.util.UList;
 public class JSONConverter extends AbstractTreeVisitor {
 
 	static GrammarFile celeryGrammar = null;
-	private GrammarFile grammar;
 	private HashMap<String, List<String>> classMap;
 	private List<String> requiredMembersList;
 	private List<String> impliedMemebersList;
-	private String rootClassName;
 	private final boolean UseExtendedGrammar = true;
 
 	public JSONConverter() {
@@ -58,16 +56,16 @@ public class JSONConverter extends AbstractTreeVisitor {
 		return gfile;
 	}
 
-	private final void loadPredefinedRules(CommonTree node) {
-		JSONPredefinedRules preRules = new JSONPredefinedRules(grammar, rootClassName);
+	protected final void loadPredefinedRules(CommonTree node) {
+		JSONPredefinedRules preRules = new JSONPredefinedRules(grammar);
 		preRules.defineRule();
 	}
 
-	private final void convert(CommonTree node, GrammarFile grammar) {
-		this.grammar = grammar;
-		loadPredefinedRules(node);
-		this.visit("visit", node);
-	}
+	// public final void convert(CommonTree node, GrammarFile grammar) {
+	// this.grammar = grammar;
+	// loadPredefinedRules(node);
+	// this.visit("visit", node);
+	// }
 
 	// visitor methods
 
@@ -127,7 +125,7 @@ public class JSONConverter extends AbstractTreeVisitor {
 	public final void visitName(CommonTree node) {
 	}
 
-	public final Expression visitTEnum(CommonTree node) {
+	public final Expression toTEnum(CommonTree node) {
 		Expression[] choice = new Expression[node.size()];
 		for (int index = 0; index < choice.length; index++) {
 			choice[index] = grammar.newString(node.getText(index, null));
@@ -317,12 +315,6 @@ public class JSONConverter extends AbstractTreeVisitor {
 	}
 
 	// Utilities
-
-	private final void setRootClassName(String filePath) {
-		int offset = filePath.lastIndexOf('/');
-		int end = filePath.indexOf('.');
-		this.rootClassName = filePath.substring(offset + 1, end);
-	}
 
 	private final void initMemberList() {
 		requiredMembersList = new ArrayList<String>();

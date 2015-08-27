@@ -13,7 +13,7 @@ import nez.ast.CommonTree;
 import nez.ast.SourcePosition;
 import nez.main.Command;
 import nez.main.Verbose;
-import nez.peg.celery.JSONConverter;
+import nez.peg.celery.Celery;
 import nez.peg.dtd.DTDConverter;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
@@ -72,7 +72,7 @@ public class GrammarFile extends GrammarFactory {
 			return DTDConverter.loadGrammar(urn, option);
 		}
 		if (urn.endsWith(".celery")) {
-			return JSONConverter.loadGrammar(urn, option);
+			return Celery.loadGrammar(urn, option);
 		}
 		return loadNezFile(urn, option);
 	}
