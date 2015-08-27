@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.HashMap;
 
+import nez.ast.AbstractTree;
 import nez.ast.CommonTree;
 import nez.ast.Tag;
 import nez.lang.Expression;
@@ -22,7 +23,7 @@ public class RegexConverter extends GrammarConverter{
 		super(grammar, name);
 	}
 	
-	public final Expression pi(CommonTree expr, Expression k) {
+	public final Expression pi(AbstractTree<?> expr, Expression k) {
 		Tag tag = expr.getTag();
 		Method m = lookupPiMethod("pi", tag.tagId);
 		if(m != null) {
@@ -117,6 +118,9 @@ public class RegexConverter extends GrammarConverter{
 	public Expression piLazyQuantifiers(CommonTree e, Expression k) {
 		String ruleName = "Repetition" + NonTerminalCount++;
 		Expression ne = GrammarFactory.newNonTerminal(e, this.grammar, ruleName);
+		if( k == null ) { 
+			k = GrammarFactory.newEmpty(null);
+		}
 		grammar.defineProduction(e, ruleName, toChoice(e, k, pi(e.get(0), ne)));
 		return ne;
 	}
@@ -139,7 +143,7 @@ public class RegexConverter extends GrammarConverter{
 	}
 
 	public Expression piAny(CommonTree e, Expression k) {
-		return toAny(e);
+		return toSeq(e,k);
 	}
 
 	public Expression piNegativeCharacterSet(CommonTree e, Expression k) {
@@ -165,11 +169,11 @@ public class RegexConverter extends GrammarConverter{
 		return toSeq(c, k);
 	}
 	
-	private Expression toExpression(CommonTree e) {
+	private Expression toExpression(AbstractTree<?> e) {
 		return (Expression)this.visit("to", e);
 	}
 	
-	public Expression toCharacter(CommonTree c) {
+	public Expression toCharacter(AbstractTree<?> c) {
 		String text = c.toText();
 		byte[] utf8 = StringUtils.toUtf8(text);
 		if (utf8.length !=1) {
@@ -180,10 +184,10 @@ public class RegexConverter extends GrammarConverter{
 	
 	boolean byteMap[];
 	boolean useByteMap = true;
-	public Expression toCharacterSet(CommonTree e) {
+	public Expression toCharacterSet(AbstractTree<?> e) {
 		UList<Expression> l = new UList<Expression>(new Expression[e.size()]);
 		byteMap = new boolean[257];
-		for(CommonTree subnode: e) {
+		for(AbstractTree<?> subnode: e) {
 			GrammarFactory.addChoice(l, toExpression(subnode));
 		}
 		if (useByteMap) {
@@ -194,38 +198,39 @@ public class RegexConverter extends GrammarConverter{
 		}
 	}
 	
-	public Expression toCharacterRange(CommonTree e) {
+	public Expression toCharacterRange(AbstractTree<?> e) {
 		byte[] begin = StringUtils.toUtf8(e.get(0).toText());
 		byte[] end = StringUtils.toUtf8(e.get(1).toText());
+		byteMap = new boolean[257];
 		for(byte i = begin[0]; i <= end[0]; i++) {
 			byteMap[i] = true;
 		}
 		return GrammarFactory.newCharSet(null, e.get(0).toText(), e.get(1).toText());
 	}
 	
-	public Expression toCharacterSetItem(CommonTree c) {
+	public Expression toCharacterSetItem(AbstractTree<?> c) {
 		byte[] utf8 = StringUtils.toUtf8(c.toText());
 		byteMap[utf8[0]] = true;
 		return GrammarFactory.newByteChar(null, false, utf8[0]);
 	}
 	
-	public Expression toEmpty(CommonTree node) {
+	public Expression toEmpty(AbstractTree<?> node) {
 		return GrammarFactory.newEmpty(null);
 	}
 
-	public Expression toAny(CommonTree e) {
+	public Expression toAny(AbstractTree<?> e) {
 		return GrammarFactory.newAnyChar(null, false);
 	}
 	
-	public Expression toAnd(CommonTree e, Expression k) {
+	public Expression toAnd(AbstractTree<?> e, Expression k) {
 		return toSeq(e, GrammarFactory.newAnd(null, pi(e.get(0), toEmpty(e))), k);
 	}
 	
-	public Expression toNot(CommonTree e, Expression k) {
+	public Expression toNot(AbstractTree<?> e, Expression k) {
 		return toSeq(e, GrammarFactory.newNot(null, pi(e.get(0), toEmpty(e))), k);
 	}
 
-	public Expression toChoice(CommonTree node, Expression e, Expression k) {
+	public Expression toChoice(AbstractTree<?> node, Expression e, Expression k) {
 		UList<Expression> l = new UList<Expression>(new Expression[2]);
 		GrammarFactory.addChoice(l, e);
 		if (k != null) {
@@ -237,7 +242,7 @@ public class RegexConverter extends GrammarConverter{
 		return GrammarFactory.newChoice(null, l);
 	}
 
-	public Expression toSeq(CommonTree e, Expression k) {
+	public Expression toSeq(AbstractTree<?> e, Expression k) {
 		UList<Expression> l = new UList<Expression>(new Expression[2]);
 		GrammarFactory.addSequence(l, toExpression(e));
 		if(k != null) {
@@ -246,7 +251,7 @@ public class RegexConverter extends GrammarConverter{
 		return GrammarFactory.newSequence(null, l);
 	}
 	
-	public Expression toSeq(CommonTree node, Expression e, Expression k) {
+	public Expression toSeq(AbstractTree<?> node, Expression e, Expression k) {
 		UList<Expression> l = new UList<Expression>(new Expression[2]);
 		GrammarFactory.addSequence(l, e);
 		if (k != null) {
