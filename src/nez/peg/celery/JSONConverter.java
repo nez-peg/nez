@@ -17,7 +17,7 @@ import nez.lang.GrammarFactory;
 import nez.lang.GrammarFile;
 import nez.util.ConsoleUtils;
 
-public class CeleryConverter extends AbstractTreeVisitor {
+public class JSONConverter extends AbstractTreeVisitor {
 
 	static GrammarFile celeryGrammar = null;
 	private GrammarFile grammar;
@@ -27,7 +27,7 @@ public class CeleryConverter extends AbstractTreeVisitor {
 	private String rootClassName;
 	private final boolean UseExtendedGrammar = true;
 
-	public CeleryConverter() {
+	public JSONConverter() {
 		this.classMap = new HashMap<>();
 	}
 
@@ -49,7 +49,7 @@ public class CeleryConverter extends AbstractTreeVisitor {
 		if (celeryFile.hasUnconsumed()) {
 			throw new NezException(celeryFile.getUnconsumedMessage());
 		}
-		CeleryConverter converter = new CeleryConverter();
+		JSONConverter converter = new JSONConverter();
 		converter.setRootClassName(filePath);
 		GrammarFile gfile = GrammarFile.newGrammarFile(filePath, option);
 		converter.convert(node, gfile);
