@@ -51,7 +51,6 @@ public class SymbolTable {
 				maxTableSize = 128;
 				this.tables = new SymbolTableEntry2[128];
 				initEntry(0, maxTableSize);
-			} else {
 				maxTableSize *= 2;
 				SymbolTableEntry2[] newtable = new SymbolTableEntry2[maxTableSize];
 				System.arraycopy(this.tables, 0, newtable, 0, tables.length);
