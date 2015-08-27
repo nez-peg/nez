@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import nez.ast.CommonTree;
+import nez.ast.AbstractTree;
 import nez.ast.Tag;
 import nez.lang.Expression;
 import nez.lang.GrammarFactory;
@@ -22,7 +22,7 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 	}
 
 	@Override
-	protected final void loadPredefinedRules(CommonTree node) {
+	protected final void loadPredefinedRules(AbstractTree<?> node) {
 		JSONPredefinedRules preRules = new JSONPredefinedRules(grammar);
 		preRules.defineRule();
 	}
@@ -30,8 +30,8 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 	// visitor methods
 
 	@Override
-	public final void visitRoot(CommonTree node) {
-		for (CommonTree classNode : node) {
+	public final void visitRoot(AbstractTree<?> node) {
+		for (AbstractTree<?> classNode : node) {
 			initPropertiesList();
 			this.visit("visit", classNode);
 			String className = classNode.getText(0, null);
@@ -46,14 +46,14 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 	}
 
 	@Override
-	public final void visitStruct(CommonTree node) {
-		for (CommonTree memberNode : node) {
+	public final void visitStruct(AbstractTree<?> node) {
+		for (AbstractTree<?> memberNode : node) {
 			this.visit("visit", memberNode);
 		}
 	}
 
 	@Override
-	public final void visitRequired(CommonTree node) {
+	public final void visitRequired(AbstractTree<?> node) {
 		String name = node.getText(0, null);
 		requiredPropertiesList.add(name);
 		Expression[] seq = { _DQuoat(), grammar.newString(name), _DQuoat(), GrammarFactory.newNonTerminal(null, grammar, "NAMESEP"), toExpression(node.get(1)), grammar.newOption(GrammarFactory.newNonTerminal(null, grammar, "VALUESEP")) };
@@ -61,7 +61,7 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 	}
 
 	@Override
-	public final void visitOption(CommonTree node) {
+	public final void visitOption(AbstractTree<?> node) {
 		String name = node.getText(0, null);
 		impliedPropertiesList.add(name);
 		Expression[] seq = { _DQuoat(), grammar.newString(name), _DQuoat(), GrammarFactory.newNonTerminal(null, grammar, "NAMESEP"), toExpression(node.get(1)), grammar.newOption(GrammarFactory.newNonTerminal(null, grammar, "VALUESEP")) };
@@ -69,7 +69,7 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 	}
 
 	@Override
-	public final void visitUntypedRequired(CommonTree node) {
+	public final void visitUntypedRequired(AbstractTree<?> node) {
 		String name = node.getText(0, null);
 		requiredPropertiesList.add(name);
 		// inferType(node.get(2));
@@ -79,7 +79,7 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 	}
 
 	@Override
-	public final void visitUntypedOption(CommonTree node) {
+	public final void visitUntypedOption(AbstractTree<?> node) {
 		String name = node.getText(0, null);
 		impliedPropertiesList.add(name);
 		// inferType(node.get(2));
@@ -88,60 +88,30 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 		grammar.defineProduction(node, node.getText(0, null), grammar.newSequence(seq));
 	}
 
-	public final void visitName(CommonTree node) {
+	public final void visitName(AbstractTree<?> node) {
 	}
 
 	// to Expression Methods
 
 	@Override
-	private final Expression toExpression(CommonTree node) {
-		return (Expression) this.visit("to", node);
-	}
-
-	@Override
-	public final Expression toTBoolean(CommonTree node) {
-		return GrammarFactory.newNonTerminal(null, grammar, "BOOLEAN");
-	}
-
-	@Override
-	public final Expression toTInteger(CommonTree node) {
-		return GrammarFactory.newNonTerminal(null, grammar, "INT");
-	}
-
-	@Override
-	public final Expression toTFloat(CommonTree node) {
-		return GrammarFactory.newNonTerminal(null, grammar, "Number");
-	}
-
-	@Override
-	public final Expression toTString(CommonTree node) {
-		return GrammarFactory.newNonTerminal(null, grammar, "String");
-	}
-
-	@Override
-	public final Expression toTAny(CommonTree node) {
-		return GrammarFactory.newNonTerminal(null, grammar, "Any");
-	}
-
-	@Override
-	public final Expression toTObject(CommonTree node) {
+	public final Expression toTObject(AbstractTree<?> node) {
 		return GrammarFactory.newNonTerminal(null, grammar, "JSONObject");
 	}
 
 	@Override
-	public final Expression toTClass(CommonTree node) {
+	public final Expression toTClass(AbstractTree<?> node) {
 		return GrammarFactory.newNonTerminal(null, grammar, node.toText());
 	}
 
 	@Override
-	public final Expression toTArray(CommonTree node) {
+	public final Expression toTArray(AbstractTree<?> node) {
 		Expression type = toExpression(node.get(0));
 		Expression[] seq = { grammar.newByteChar('['), _SPACING(), type, grammar.newRepetition(GrammarFactory.newNonTerminal(null, grammar, "VALUESEP"), type), grammar.newByteChar(']') };
 		return grammar.newSequence(seq);
 	}
 
 	@Override
-	public final Expression toTEnum(CommonTree node) {
+	public final Expression toTEnum(AbstractTree<?> node) {
 		Expression[] choice = new Expression[node.size()];
 		for (int index = 0; index < choice.length; index++) {
 			choice[index] = grammar.newString(node.getText(index, null));
