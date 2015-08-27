@@ -132,7 +132,7 @@ public class ByteCoder {
 		write_u32(n);
 	}
 
-	private void wwrite_utf8(byte[] utf8) {
+	private void write_utf8(byte[] utf8) {
 		write_u16(utf8.length);
 		try {
 			stream.write(utf8);
@@ -142,12 +142,8 @@ public class ByteCoder {
 		}
 	}
 
-	private void encodeData(String str) {
-		wwrite_utf8(StringUtils.toUtf8(str));
-	}
-
 	private void encodeData(Tag tag) {
-		wwrite_utf8(StringUtils.toUtf8(tag.getName()));
+		write_utf8(StringUtils.toUtf8(tag.getName()));
 	}
 
 	//
@@ -226,7 +222,12 @@ public class ByteCoder {
 	}
 	
 	public void encodeLabel(Tag label) {
-		this.encodeTag(label);
+		if(label == null) {
+			this.encodeTag(Tag.NullTag);
+		}
+		else {
+			this.encodeTag(label);
+		}
 	}
 
 	public void encodeSymbolTable(Tag tableName) {
@@ -254,7 +255,7 @@ public class ByteCoder {
 		
 		write_u16(NonTerminalPools.size());
 		for(StrEntry e: NonTerminalPools) {
-			wwrite_utf8(e.data);
+			write_utf8(e.data);
 		}
 		write_u16(BSetPools.size());
 		for(SetEntry e: BSetPools) {
@@ -262,7 +263,7 @@ public class ByteCoder {
 		}
 		write_u16(BStrPools.size());
 		for(StrEntry e: BStrPools) {
-			wwrite_utf8(e.data);
+			write_utf8(e.data);
 		}
 		write_u16(TagPools.size());
 		for(TagEntry e: TagPools) {

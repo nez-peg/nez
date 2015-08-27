@@ -24,11 +24,11 @@ public class Tag {
 	
 	public final static Tag tag(int tagId) {
 		return tagNameList.ArrayValues[tagId];
-	}
+	}	
 	
+	public final static Tag NullTag = tag("");
 	public final static Tag MetaTag = tag("keyvalue");
-	
-	
+
 	public final int    tagId;
 	public final String name;
 	

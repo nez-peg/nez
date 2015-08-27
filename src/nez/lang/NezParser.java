@@ -50,10 +50,6 @@ public class NezParser extends AbstractTreeVisitor {
 		}
 		gfile.verify();
 	}
-
-//	public final void load(GrammarFile ns, String urn) throws IOException {
-//		load(ns, urn);
-//	}
 	
 	private boolean parseStatement(AbstractTree<?> node) {
 		//Verbose.debug("Parsed: " + node);
