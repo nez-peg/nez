@@ -8,7 +8,7 @@
 */
 
 File
-	= Chunk
+	= Chunk .*
 
 Chunk
 	= Pattern
