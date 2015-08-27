@@ -10,8 +10,10 @@ import nez.NezOption;
 import nez.SourceContext;
 import nez.ast.AbstractTreeVisitor;
 import nez.ast.CommonTree;
+import nez.ast.Tag;
 import nez.lang.Expression;
 import nez.lang.Grammar;
+import nez.lang.GrammarFactory;
 import nez.lang.GrammarFile;
 import nez.util.ConsoleUtils;
 
@@ -30,6 +32,7 @@ public class CeleryConverter extends AbstractTreeVisitor {
 	}
 
 	public final static GrammarFile loadGrammar(String filePath, NezOption option) throws IOException {
+		option.setOption("notice", false);
 		if (celeryGrammar == null) {
 			try {
 				celeryGrammar = GrammarFile.loadGrammarFile("celery.nez", NezOption.newDefaultOption());
@@ -91,14 +94,14 @@ public class CeleryConverter extends AbstractTreeVisitor {
 	public final void visitRequired(CommonTree node) {
 		String name = node.getText(0, null);
 		requiredMembersList.add(name);
-		Expression[] seq = { _DQuoat(), grammar.newString(name), _DQuoat(), grammar.newNonTerminal("NAMESEP"), toExpression(node.get(1)), grammar.newOption(grammar.newNonTerminal("VALUESEP")) };
+		Expression[] seq = { _DQuoat(), grammar.newString(name), _DQuoat(), GrammarFactory.newNonTerminal(null, grammar, "NAMESEP"), toExpression(node.get(1)), grammar.newOption(GrammarFactory.newNonTerminal(null, grammar, "VALUESEP")) };
 		grammar.defineProduction(node, node.getText(0, null), grammar.newSequence(seq));
 	}
 
 	public final void visitOption(CommonTree node) {
 		String name = node.getText(0, null);
 		impliedMemebersList.add(name);
-		Expression[] seq = { _DQuoat(), grammar.newString(name), _DQuoat(), grammar.newNonTerminal("NAMESEP"), toExpression(node.get(1)), grammar.newOption(grammar.newNonTerminal("VALUESEP")) };
+		Expression[] seq = { _DQuoat(), grammar.newString(name), _DQuoat(), GrammarFactory.newNonTerminal(null, grammar, "NAMESEP"), toExpression(node.get(1)), grammar.newOption(GrammarFactory.newNonTerminal(null, grammar, "VALUESEP")) };
 		grammar.defineProduction(node, node.getText(0, null), grammar.newSequence(seq));
 	}
 
@@ -106,7 +109,8 @@ public class CeleryConverter extends AbstractTreeVisitor {
 		String name = node.getText(0, null);
 		requiredMembersList.add(name);
 		// inferType(node.get(2));
-		Expression[] seq = { _DQuoat(), grammar.newString(name), _DQuoat(), grammar.newNonTerminal("NAMESEP"), grammar.newNonTerminal("Any"), grammar.newOption(grammar.newNonTerminal("VALUESEP")) };
+		Expression[] seq = { _DQuoat(), grammar.newString(name), _DQuoat(), GrammarFactory.newNonTerminal(null, grammar, "NAMESEP"), GrammarFactory.newNonTerminal(null, grammar, "Any"),
+				grammar.newOption(GrammarFactory.newNonTerminal(null, grammar, "VALUESEP")) };
 		grammar.defineProduction(node, node.getText(0, null), grammar.newSequence(seq));
 	}
 
@@ -114,7 +118,8 @@ public class CeleryConverter extends AbstractTreeVisitor {
 		String name = node.getText(0, null);
 		impliedMemebersList.add(name);
 		// inferType(node.get(2));
-		Expression[] seq = { _DQuoat(), grammar.newString(name), _DQuoat(), grammar.newNonTerminal("NAMESEP"), grammar.newNonTerminal("Any"), grammar.newOption(grammar.newNonTerminal("VALUESEP")) };
+		Expression[] seq = { _DQuoat(), grammar.newString(name), _DQuoat(), GrammarFactory.newNonTerminal(null, grammar, "NAMESEP"), GrammarFactory.newNonTerminal(null, grammar, "Any"),
+				grammar.newOption(GrammarFactory.newNonTerminal(null, grammar, "VALUESEP")) };
 		grammar.defineProduction(node, node.getText(0, null), grammar.newSequence(seq));
 	}
 
@@ -136,36 +141,36 @@ public class CeleryConverter extends AbstractTreeVisitor {
 	}
 
 	public final Expression toTBoolean(CommonTree node) {
-		return grammar.newNonTerminal("BOOLEAN");
+		return GrammarFactory.newNonTerminal(null, grammar, "BOOLEAN");
 	}
 
 	public final Expression toTInteger(CommonTree node) {
-		return grammar.newNonTerminal("INT");
+		return GrammarFactory.newNonTerminal(null, grammar, "INT");
 	}
 
 	public final Expression toTFloat(CommonTree node) {
-		return grammar.newNonTerminal("FLOAT");
+		return GrammarFactory.newNonTerminal(null, grammar, "FLOAT");
 	}
 
 	public final Expression toTString(CommonTree node) {
-		return grammar.newNonTerminal("STRING");
+		return GrammarFactory.newNonTerminal(null, grammar, "STRING");
 	}
 
 	public final Expression toTAny(CommonTree node) {
-		return grammar.newNonTerminal("Any");
+		return GrammarFactory.newNonTerminal(null, grammar, "Any");
 	}
 
 	public final Expression toTObject(CommonTree node) {
-		return grammar.newNonTerminal("JSONObject");
+		return GrammarFactory.newNonTerminal(null, grammar, "JSONObject");
 	}
 
 	public final Expression toTClass(CommonTree node) {
-		return grammar.newNonTerminal(node.toText());
+		return GrammarFactory.newNonTerminal(null, grammar, node.toText());
 	}
 
 	public final Expression toTArray(CommonTree node) {
 		Expression type = toExpression(node.get(0));
-		Expression[] seq = { grammar.newByteChar('['), _SPACING(), type, grammar.newRepetition(grammar.newNonTerminal("VALUESEP"), type), grammar.newByteChar(']') };
+		Expression[] seq = { grammar.newByteChar('['), _SPACING(), type, grammar.newRepetition(GrammarFactory.newNonTerminal(null, grammar, "VALUESEP"), type), grammar.newByteChar(']') };
 		return grammar.newSequence(seq);
 	}
 
@@ -173,7 +178,8 @@ public class CeleryConverter extends AbstractTreeVisitor {
 
 	private final Expression genClassRule(String className) {
 		String memberList = className + "_Members";
-		Expression[] seq = { _DQuoat(), grammar.newString(className), _DQuoat(), grammar.newNonTerminal("NAMESEP"), grammar.newByteChar('{'), _SPACING(), grammar.newNonTerminal(memberList), _SPACING(), grammar.newByteChar('}') };
+		Expression[] seq = { _DQuoat(), grammar.newString(className), _DQuoat(), GrammarFactory.newNonTerminal(null, grammar, "NAMESEP"), grammar.newByteChar('{'), _SPACING(), GrammarFactory.newNonTerminal(null, grammar, memberList), _SPACING(),
+				grammar.newByteChar('}') };
 		grammar.defineProduction(null, memberList, genMemberRule(className));
 		return grammar.newSequence(seq);
 	}
@@ -193,7 +199,7 @@ public class CeleryConverter extends AbstractTreeVisitor {
 
 		// return the rule that include only one member
 		if (listLength == 1) {
-			return grammar.newNonTerminal(requiredMembersList.get(0));
+			return GrammarFactory.newNonTerminal(null, grammar, requiredMembersList.get(0));
 		}
 
 		// return the rule that include permuted members
@@ -204,7 +210,7 @@ public class CeleryConverter extends AbstractTreeVisitor {
 			for (int[] targetLine : permutedList) {
 				Expression[] seqList = new Expression[listLength];
 				for (int index = 0; index < targetLine.length; index++) {
-					seqList[index] = grammar.newNonTerminal(requiredMembersList.get(targetLine[index]));
+					seqList[index] = GrammarFactory.newNonTerminal(null, grammar, requiredMembersList.get(targetLine[index]));
 				}
 				choiceList[choiceCount++] = grammar.newSequence(seqList);
 			}
@@ -217,21 +223,21 @@ public class CeleryConverter extends AbstractTreeVisitor {
 
 		// return the rule that include only implied member list
 		if (listLength == 0) {
-			return grammar.newNonTerminal(impliedChoiceRuleName);
+			return GrammarFactory.newNonTerminal(null, grammar, impliedChoiceRuleName);
 		}
 
 		// return the rule that include mixed member list
 		else {
 			int[][] permutedList = permute(listLength);
 			Expression[] choiceList = new Expression[permutedList.length];
-			Expression impliedChoiceRule = grammar.newNonTerminal(impliedChoiceRuleName);
+			Expression impliedChoiceRule = GrammarFactory.newNonTerminal(null, grammar, impliedChoiceRuleName);
 			int choiceCount = 0;
 			for (int[] targetLine : permutedList) {
 				int seqCount = 0;
 				Expression[] seqList = new Expression[listLength * 2 + 1];
 				seqList[seqCount++] = grammar.newRepetition(impliedChoiceRule);
 				for (int index = 0; index < targetLine.length; index++) {
-					seqList[seqCount++] = grammar.newNonTerminal(requiredMembersList.get(targetLine[index]));
+					seqList[seqCount++] = GrammarFactory.newNonTerminal(null, grammar, requiredMembersList.get(targetLine[index]));
 					seqList[seqCount++] = grammar.newRepetition(impliedChoiceRule);
 				}
 				choiceList[choiceCount++] = grammar.newSequence(seqList);
@@ -249,22 +255,22 @@ public class CeleryConverter extends AbstractTreeVisitor {
 			tables[i] = grammar.newExists(requiredMembersList.get(i), null /* FIXME */);
 		}
 
-		Expression[] seq = { _DQuoat(), grammar.newString(className), _DQuoat(), _SPACING(), grammar.newNonTerminal("NAMESEP"), grammar.newByteChar('{'), _SPACING(), grammar.newRepetition1(grammar.newNonTerminal(memberList)), grammar.newSequence(tables),
-				_SPACING(), grammar.newByteChar('}') };
+		Expression[] seq = { _DQuoat(), grammar.newString(className), _DQuoat(), _SPACING(), GrammarFactory.newNonTerminal(null, grammar, "NAMESEP"), grammar.newByteChar('{'), _SPACING(),
+				grammar.newRepetition1(GrammarFactory.newNonTerminal(null, grammar, memberList)), grammar.newSequence(tables), _SPACING(), grammar.newByteChar('}') };
 		grammar.defineProduction(null, memberList, genExMemberRule(className, requiredMembersListSize));
-		return grammar.newSequence(seq);
+		return grammar.newBlock(seq);
 	}
 
 	private final Expression genExMemberRule(String className, int requiredListSize) {
-		Expression[] choice = new Expression[requiredListSize + 1];
+		Expression[] choice = new Expression[requiredListSize + 2];
 		String impliedChoiceRuleName = className + "_imp";
 		genImpliedChoice(impliedChoiceRuleName);
 		for (int i = 0; i < requiredListSize; i++) {
 			String memberName = requiredMembersList.get(i);
-			choice[i] = grammar.newSequence(grammar.newNot(grammar.newIsSymbol(memberName)), grammar.newDefSymbol(memberName, grammar.newNonTerminal(memberName)));
+			choice[i] = grammar.newSequence(grammar.newNot(GrammarFactory.newIsSymbol(null, grammar, Tag.tag(memberName))), GrammarFactory.newDefSymbol(null, grammar, Tag.tag(memberName), GrammarFactory.newNonTerminal(null, grammar, memberName)));
 		}
-		choice[requiredListSize] = grammar.newNonTerminal(impliedChoiceRuleName);
-
+		choice[requiredListSize] = GrammarFactory.newNonTerminal(null, grammar, impliedChoiceRuleName);
+		choice[requiredListSize + 1] = GrammarFactory.newNonTerminal(null, grammar, "Any");
 		return grammar.newChoice(choice);
 	}
 
@@ -272,16 +278,16 @@ public class CeleryConverter extends AbstractTreeVisitor {
 		Expression[] l = new Expression[impliedMemebersList.size()];
 		int choiceCount = 0;
 		for (String nonTerminalSymbol : impliedMemebersList) {
-			l[choiceCount++] = grammar.newNonTerminal(nonTerminalSymbol);
+			l[choiceCount++] = GrammarFactory.newNonTerminal(null, grammar, nonTerminalSymbol);
 		}
 		grammar.defineProduction(null, ruleName, grammar.newChoice(l));
 	}
 
 	private final Expression genRootClass() {
 		Expression root = genRootSeq();
-		Expression[] seq = { grammar.newNonTerminal("VALUESEP"), root };
+		Expression[] seq = { GrammarFactory.newNonTerminal(null, grammar, "VALUESEP"), root };
 		Expression[] array = { grammar.newByteChar('['), _SPACING(), root, grammar.newRepetition1(seq), _SPACING(), grammar.newByteChar(']') };
-		return grammar.newChoice(grammar.newSequence(root), grammar.newSequence(array));
+		return grammar.newBlock(grammar.newChoice(grammar.newSequence(root), grammar.newSequence(array)));
 	}
 
 	private final Expression genRootSeq() {
@@ -290,16 +296,10 @@ public class CeleryConverter extends AbstractTreeVisitor {
 
 		Expression[] tables = new Expression[requiredMembersListSize];
 		for (int i = 0; i < requiredMembersListSize; i++) {
-			tables[i] = grammar.newExists(requiredMembersList.get(i), null /*
-																			 * FIXME
-																			 * symbol
-																			 * is
-																			 * additionally
-																			 * supported
-																			 */);
+			tables[i] = grammar.newExists(requiredMembersList.get(i), null);
 		}
 
-		Expression[] seq = { grammar.newByteChar('{'), _SPACING(), grammar.newRepetition1(grammar.newNonTerminal(memberList)), grammar.newSequence(tables), _SPACING(), grammar.newByteChar('}') };
+		Expression[] seq = { grammar.newByteChar('{'), _SPACING(), grammar.newRepetition1(GrammarFactory.newNonTerminal(null, grammar, memberList)), grammar.newSequence(tables), _SPACING(), grammar.newByteChar('}') };
 		return grammar.newSequence(seq);
 	}
 
@@ -334,7 +334,7 @@ public class CeleryConverter extends AbstractTreeVisitor {
 	}
 
 	private final Expression _SPACING() {
-		return grammar.newNonTerminal("SPACING");
+		return GrammarFactory.newNonTerminal(null, grammar, "SPACING");
 	}
 
 	private final Expression _DQuoat() {
