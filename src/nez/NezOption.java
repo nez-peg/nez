@@ -18,10 +18,11 @@ public class NezOption {
 	/* grammar */
 	public boolean enabledASTConstruction = true;      // ast
 	public boolean enabledSymbolTable     = true;      // symbol
+	public boolean disabledNezExtension   = false;     // -peg
 	
 	/* optimization */
 	public boolean enabledAsIsGrammar     = false; // asis
-	public boolean enabledInlining        = true;      // inline
+	public boolean enabledInlining        = true;  // inline
 
 	public boolean enabledLexicalOptimization = true;  // lex
 	public boolean enabledStringOptimization = true;   // str
@@ -54,6 +55,7 @@ public class NezOption {
 		o.enabledExperimental = this.enabledExperimental;
 		o.enabledASTConstruction = this.enabledASTConstruction;
 		o.enabledSymbolTable = this.enabledSymbolTable;
+		o.disabledNezExtension = this.disabledNezExtension;
 		o.enabledAsIsGrammar = this.enabledAsIsGrammar;
 		o.enabledLexicalOptimization = this.enabledLexicalOptimization;
 		o.enabledStringOptimization = this.enabledStringOptimization;
@@ -114,6 +116,9 @@ public class NezOption {
 			break;
 		case "packrat":
 			this.enabledPackratParsing = value;
+			break;
+		case "peg":
+			this.disabledNezExtension = value;
 			break;
 		case "predict":
 			this.enabledPrediction = value;
