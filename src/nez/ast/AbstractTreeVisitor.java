@@ -8,7 +8,7 @@ import nez.main.Verbose;
 import nez.util.ConsoleUtils;
 
 public class AbstractTreeVisitor {
-	private HashMap<Integer, Method> methodMap = new HashMap<Integer, Method>();
+	private HashMap<String, Method> methodMap = new HashMap<String, Method>();
 	public final Object visit(String method, AbstractTree<?> node) {
 		Tag tag = node.getTag();
 		Method m = findMethod(method, tag);
@@ -26,12 +26,8 @@ public class AbstractTreeVisitor {
 		return toUndefinedNode(node);
 	}
 	
-	public final Object visit(AbstractTree<?> node) {
-		return visit("to", node);
-	}
-	
 	protected final Method findMethod(String method, Tag tag) {
-		Integer key = tag.tagId;
+		String key = method + tag.getName();
 		Method m = this.methodMap.get(key);
 		if(m == null) {
 			try {
@@ -47,7 +43,7 @@ public class AbstractTreeVisitor {
 		}
 		return m;
 	}
-	
+
 	protected Method getClassMethod(String method, Tag tag) throws NoSuchMethodException, SecurityException {
 		String name = method + tag.getName();
 		return this.getClass().getMethod(name, AbstractTree.class);
@@ -57,4 +53,50 @@ public class AbstractTreeVisitor {
 		ConsoleUtils.exit(1, "undefined node:" + node);
 		return null;
 	}
+
+	public final Object visit(String method, Class<?> c1, AbstractTree<?> node, Object p1) {
+		Tag tag = node.getTag();
+		Method m = findMethod(method, tag, c1);
+		if(m != null) {
+			try {
+				return m.invoke(this, node, p1);
+			} catch (IllegalAccessException e) {
+				Verbose.traceException(e);
+			} catch (IllegalArgumentException e) {
+				Verbose.traceException(e);
+			} catch (InvocationTargetException e) {
+				Verbose.traceException(e);
+			}
+		}
+		return toUndefinedNode(node, p1);
+	}
+	
+	protected final Method findMethod(String method, Tag tag, Class<?> c1) {
+		String key = method + tag.getName() + c1.getName();
+		Method m = this.methodMap.get(key);
+		if(m == null) {
+			try {
+				m = getClassMethod(method, tag);
+			} catch (NoSuchMethodException e) {
+				Verbose.printNoSuchMethodException(e);
+				return null;
+			} catch (SecurityException e) {
+				Verbose.traceException(e);
+				return null;
+			}
+			this.methodMap.put(key, m);
+		}
+		return m;
+	}
+
+	protected Method getClassMethod(String method, Tag tag, Class<?> c1) throws NoSuchMethodException, SecurityException {
+		String name = method + tag.getName();
+		return this.getClass().getMethod(name, AbstractTree.class, c1);
+	}
+	
+	protected Object toUndefinedNode(AbstractTree<?> node, Object p1) {
+		ConsoleUtils.exit(1, "undefined node:" + node);
+		return null;
+	}
+	
 }

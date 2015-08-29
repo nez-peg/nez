@@ -220,7 +220,7 @@ public class NezParser extends AbstractTreeVisitor {
 	}
 
 	Expression toExpression(AbstractTree<?> node) {
-		return (Expression)this.visit(node);
+		return (Expression)this.visit("to", node);
 	}
 	
 	public Expression toNonTerminal(AbstractTree<?> node) {

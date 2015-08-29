@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.HashMap;
 
 import nez.ast.AbstractTree;
+import nez.ast.AbstractTreeVisitor;
 import nez.ast.CommonTree;
 import nez.ast.Tag;
 import nez.lang.Expression;
@@ -16,7 +17,7 @@ import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
 import nez.util.UList;
 
-public class RegexConverter extends GrammarConverter{
+public class RegexConverter extends GrammarConverter {
 	HashMap<Integer, Method> methodMap = new HashMap<Integer, Method>();
 	int NonTerminalCount = 0;
 	public RegexConverter(GrammarFile grammar, String name) {
