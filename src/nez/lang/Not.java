@@ -54,23 +54,5 @@ public class Not extends Unary {
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
 		return bc.encodeNot(this, next, failjump);
 	}
-	@Override
-	protected int pattern(GEP gep) {
-		int max = 0;
-		for(Expression p: this) {
-			int c = p.pattern(gep);
-			if(c > max) {
-				max = c;
-			}
-		}
-		return max;
-	}
-
-	@Override
-	protected void examplfy(GEP gep, StringBuilder sb, int p) {
-		
-	}
-
-
 
 }

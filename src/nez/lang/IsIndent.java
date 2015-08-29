@@ -49,13 +49,4 @@ public class IsIndent extends Expression implements Contextual {
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
 		return bc.encodeIsIndent(this, next, failjump);
 	}
-	@Override
-	protected int pattern(GEP gep) {
-		return 1;
-	}
-	@Override
-	protected void examplfy(GEP gep, StringBuilder sb, int p) {
-		String token = gep.getSymbol(NezTag.Indent);
-		sb.append(token);
-	}
 }

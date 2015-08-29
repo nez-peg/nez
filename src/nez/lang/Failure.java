@@ -43,14 +43,4 @@ public class Failure extends Unconsumed {
 		return bc.encodeFail(this);
 	}
 	
-	@Override
-	protected int pattern(GEP gep) {
-		return 1;
-	}
-
-	@Override
-	protected void examplfy(GEP gep, StringBuilder sb, int p) {
-		sb.append("\0");
-	}
-
 }

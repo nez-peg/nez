@@ -54,14 +54,4 @@ public class Match extends Unary {
 		return this.inner.encode(bc, next, failjump);
 	}
 
-	@Override
-	protected int pattern(GEP gep) {
-		return inner.pattern(gep);
-	}
-
-	@Override
-	protected void examplfy(GEP gep, StringBuilder sb, int p) {
-		this.inner.examplfy(gep, sb, p);
-	}
-
 }

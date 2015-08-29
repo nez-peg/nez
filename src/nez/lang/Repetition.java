@@ -58,17 +58,4 @@ public class Repetition extends Unary {
 		return bc.encodeRepetition(this, next);
 	}
 
-	@Override
-	protected int pattern(GEP gep) {
-		return 2;
-	}
-	@Override
-	protected void examplfy(GEP gep, StringBuilder sb, int p) {
-		if(p > 0) {
-			int p2 = this.inner.pattern(gep);
-			for(int i = 0; i < p2; i++) {
-				this.inner.examplfy(gep, sb, p2);
-			}
-		}
-	}
 }

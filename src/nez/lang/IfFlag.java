@@ -54,13 +54,4 @@ public class IfFlag extends Unconsumed implements Conditional {
 		return bc.encodeIfFlag(this, next, failjump);
 	}
 
-	@Override
-	protected int pattern(GEP gep) {
-		return 0;
-	}
-
-	@Override
-	protected void examplfy(GEP gep, StringBuilder sb, int p) {
-	}
-
 }

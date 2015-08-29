@@ -46,13 +46,6 @@ public class ByteChar extends Char implements Consumed {
 	@Override
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
 		return bc.encodeByteChar(this, next, failjump);
-	}	
-	@Override
-	protected int pattern(GEP gep) {
-		return this.size();
 	}
-	@Override
-	protected void examplfy(GEP gep, StringBuilder sb, int p) {
-		sb.append((char)this.byteChar);
-	}
+	
 }

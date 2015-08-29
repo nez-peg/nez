@@ -50,14 +50,5 @@ public class And extends Unary {
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
 		return bc.encodeAnd(this, next, failjump);
 	}
-	
-	@Override
-	protected int pattern(GEP gep) {
-		return -1;
-	}
-	@Override
-	protected void examplfy(GEP gep, StringBuilder sb, int p) {
-		// TODO Auto-generated method stub
-	}
-	
+		
 }

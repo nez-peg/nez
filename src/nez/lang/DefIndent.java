@@ -28,15 +28,6 @@ public class DefIndent extends Unconsumed {
 		return bc.encodeDefIndent(this, next, failjump);
 	}
 	@Override
-	protected int pattern(GEP gep) {
-		return 1;
-	}
-	@Override
-	protected void examplfy(GEP gep, StringBuilder sb, int p) {
-		String token = gep.addIndent();
-		sb.append(token);
-	}
-	@Override
 	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeUndefined(this);
 	}

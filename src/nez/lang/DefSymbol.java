@@ -97,18 +97,5 @@ public class DefSymbol extends Unary {
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
 		return bc.encodeDefSymbol(this, next, failjump);
 	}
-
-	@Override
-	protected int pattern(GEP gep) {
-		return 1;
-	}
-	@Override
-	protected void examplfy(GEP gep, StringBuilder sb, int p) {
-		StringBuilder sb2 = new StringBuilder();
-		inner.examplfy(gep, sb2, p);
-		String token = sb2.toString();
-		gep.addTable(tableName, token);
-		sb.append(token);
-	}
 	
 }

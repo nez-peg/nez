@@ -357,24 +357,5 @@ public class Sequence extends Expression {
 		}
 	}
 	**/
-		
-	@Override
-	protected int pattern(GEP gep) {
-		int max = 0;
-		for(Expression p: this) {
-			int c = p.pattern(gep);
-			if(c > max) {
-				max = c;
-			}
-		}
-		return max;
-	}
-	
-	@Override
-	protected void examplfy(GEP gep, StringBuilder sb, int p) {
-		for(Expression e: this) {
-			e.examplfy(gep, sb, p);
-		}
-	}
 
 }

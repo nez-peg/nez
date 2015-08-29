@@ -59,13 +59,4 @@ public class MatchSymbol extends Expression implements Contextual {
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
 		return bc.encodeMatchSymbol(this, next, failjump);
 	}
-	@Override
-	protected int pattern(GEP gep) {
-		return 1;
-	}
-	@Override
-	protected void examplfy(GEP gep, StringBuilder sb, int p) {
-		String token = gep.getSymbol(tableName);
-		sb.append(token);
-	}
 }

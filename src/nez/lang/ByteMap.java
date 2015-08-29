@@ -65,31 +65,8 @@ public class ByteMap extends Char implements Consumed {
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
 		return bc.encodeByteMap(this, next, failjump);
 	}
-	@Override
-	protected int pattern(GEP gep) {
-		int c = 0;
-		for(boolean b: this.byteMap) {
-			if(b) {
-				c += 1;
-			}
-		}
-		return c;
-	}
-	@Override
-	protected void examplfy(GEP gep, StringBuilder sb, int p) {
-		int c = 0;
-		for(int ch = 0; ch < 127; ch++) {
-			if(this.byteMap[ch]) {
-				c += 1;
-			}
-			if(c == p) {
-				sb.append((char)ch);
-			}
-		}
-	}
 	
 	// Utils
-	
 	public final static boolean[] newMap(boolean initValue) {
 		boolean[] b = new boolean[257];
 		if(initValue) {

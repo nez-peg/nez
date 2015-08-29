@@ -112,18 +112,7 @@ public class NonTerminal extends Expression {
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
 		return bc.encodeNonTerminal(this, next, failjump);
 	}
-	
-	@Override
-	protected int pattern(GEP gep) {
-		return this.deReference().pattern(gep);
-	}
-
-	@Override
-	protected void examplfy(GEP gep, StringBuilder sb, int p) {
-		this.deReference().examplfy(gep, sb, p);
-	}
-	
-	
+		
 	public final Expression newNonTerminal(String localName) {
 		return GrammarFactory.newNonTerminal(this.getSourcePosition(), this.getGrammarFile(), localName);
 	}

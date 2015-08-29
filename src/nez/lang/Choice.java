@@ -114,14 +114,5 @@ public class Choice extends Expression {
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
 		return bc.encodeChoice(this, next, failjump);
 	}
-		
-	@Override
-	protected int pattern(GEP gep) {
-		return this.size();
-	}
-	@Override
-	protected void examplfy(GEP gep, StringBuilder sb, int p) {
-		this.get(p % size()).examplfy(gep, sb, p);
-	}
 
 }

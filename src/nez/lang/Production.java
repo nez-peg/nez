@@ -546,16 +546,6 @@ public class Production extends Expression {
 		return this.getExpression().encode(bc, next, failjump);
 	}
 
-	@Override
-	protected int pattern(GEP gep) {
-		return body.pattern(gep);
-	}
-	
-	@Override
-	protected void examplfy(GEP gep, StringBuilder sb, int p) {
-		body.examplfy(gep, sb, p);
-	}
-
 	public final void dump() {
 		UList<String> l = new UList<String>(new String[4]);
 		if(this.isPublic()) {

@@ -63,15 +63,4 @@ public class OnFlag extends Unary implements Conditional {
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
 		return bc.encodeOnFlag(this, next, failjump);
 	}
-
-	@Override
-	protected int pattern(GEP gep) {
-		return inner.pattern(gep);
-	}
-
-	@Override
-	protected void examplfy(GEP gep, StringBuilder sb, int p) {
-		this.inner.examplfy(gep, sb, p);
-	}
-
 }

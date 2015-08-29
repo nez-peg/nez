@@ -112,15 +112,6 @@ public abstract class Expression extends AbstractList<Expression> {
 	}
 
 	public abstract Instruction encode(NezEncoder bc, Instruction next, Instruction failjump);
-
-
-	protected int pattern(GEP gep) {
-		return 0;
-	}
-
-	protected void examplfy(GEP gep, StringBuilder sb, int p) {
-
-	}
 	
 	// test
 	

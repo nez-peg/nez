@@ -38,13 +38,4 @@ public class Empty extends Unconsumed {
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
 		return bc.encodeEmpty(this, next);
 	}
-
-	@Override
-	protected int pattern(GEP gep) {
-		return 0;
-	}
-	@Override
-	protected void examplfy(GEP gep, StringBuilder sb, int p) {
-	}
-
 }

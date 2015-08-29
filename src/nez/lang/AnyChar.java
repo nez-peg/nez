@@ -55,12 +55,4 @@ public class AnyChar extends Char implements Consumed {
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
 		return bc.encodeAnyChar(this, next, failjump);
 	}
-	@Override
-	protected int pattern(GEP gep) {
-		return 1;
-	}
-	@Override
-	protected void examplfy(GEP gep, StringBuilder sb, int p) {
-		sb.append(".");
-	}
 }

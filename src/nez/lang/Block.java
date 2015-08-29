@@ -45,16 +45,4 @@ public class Block extends Unary {
 		return bc.encodeBlock(this, next, failjump);
 	}
 	
-	@Override
-	protected int pattern(GEP gep) {
-		return inner.pattern(gep);
-	}
-
-	@Override
-	protected void examplfy(GEP gep, StringBuilder sb, int p) {
-		int stacktop = gep.beginBlock();
-		this.inner.examplfy(gep, sb, p);
-		gep.endBlock(stacktop);
-	}
-
 }

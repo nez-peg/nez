@@ -58,15 +58,4 @@ public class Option extends Unary {
 		return bc.encodeOption(this, next);
 	}
 
-	@Override
-	protected int pattern(GEP gep) {
-		return 2;
-	}
-	@Override
-	protected void examplfy(GEP gep, StringBuilder sb, int p) {
-		if(p % 2 == 0) {
-			this.inner.examplfy(gep, sb, p);
-		}
-	}
-
 }
