@@ -12,28 +12,29 @@ public class NezOption {
 		return new NezOption("-memo:-predict");
 	}
 
-	public boolean enabledSafeMode = true;
-	public boolean enabledExperimental = false;
+	public boolean classicMode = false; // used "+classic"
+	// public boolean enabledSafeMode = true;
+	// public boolean enabledExperimental = false;
 
 	/* grammar */
-	public boolean enabledASTConstruction = true; // ast
-	public boolean enabledSymbolTable = true; // symbol
+	public boolean enabledASTConstruction = true; // "-ast"
+	// public boolean enabledSymbolTable = true; // symbol
 	public boolean disabledNezExtension = false; // -peg
 
 	/* optimization */
 	public boolean enabledAsIsGrammar = false; // asis
 	public boolean enabledInlining = true; // inline
 
-	public boolean enabledLexicalOptimization = true; // lex
-	public boolean enabledStringOptimization = true; // str
+	public boolean enabledLexicalOptimization = true; // "lex"
+	public boolean enabledStringOptimization = true; // "str"
 	// public boolean enabledCommonFactored = true; // common
 
-	public boolean enabledPrediction = true; // predict
+	public boolean enabledPrediction = true; // "predict"
 	public boolean enabledDFAConversion = false; // dfa
 
 	/* runtime option */
-	public boolean enabledMemoization = true; // memo
-	public boolean enabledPackratParsing = false; // packrat
+	public boolean enabledMemoization = true; // "memo"
+	public boolean enabledPackratParsing = false; // "packrat"
 
 	/* misc */
 	public boolean enabledInterning = true;
@@ -49,12 +50,11 @@ public class NezOption {
 		this.setOption(arguments);
 	}
 
+	@Override
 	public NezOption clone() {
 		NezOption o = new NezOption();
-		o.enabledSafeMode = this.enabledSafeMode;
-		o.enabledExperimental = this.enabledExperimental;
+		o.classicMode = this.classicMode;
 		o.enabledASTConstruction = this.enabledASTConstruction;
-		o.enabledSymbolTable = this.enabledSymbolTable;
 		o.disabledNezExtension = this.disabledNezExtension;
 		o.enabledAsIsGrammar = this.enabledAsIsGrammar;
 		o.enabledLexicalOptimization = this.enabledLexicalOptimization;
@@ -91,6 +91,9 @@ public class NezOption {
 		case "ast":
 			this.enabledASTConstruction = value;
 			break;
+		case "classic":
+			this.classicMode = value;
+			break;
 		case "dfa":
 			this.enabledDFAConversion = value;
 			break;
@@ -125,36 +128,31 @@ public class NezOption {
 		case "prof":
 			this.enabledProfiling = value;
 			break;
-		case "safe":
-			this.enabledSafeMode = value;
-			break;
 		case "str":
 			this.enabledStringOptimization = value;
-			break;
-		case "symbol":
-			this.enabledSymbolTable = value;
 			break;
 		default:
 			Verbose.debug("undefined option:" + key + " " + value);
 		}
 	}
 
+	@Override
 	public final String toString() {
 		StringBuilder sb = new StringBuilder();
-		if (this.enabledSafeMode) {
-			sb.append(":safe");
+		if (this.classicMode) {
+			sb.append(":classic");
 		}
 		if (this.enabledASTConstruction) {
 			sb.append(":ast");
 		}
-		if (this.enabledSymbolTable) {
-			sb.append(":symbol");
+		if (this.disabledNezExtension) {
+			sb.append(":peg");
 		}
 		if (this.enabledAsIsGrammar) {
 			sb.append(":asis");
 		}
 		if (this.enabledLexicalOptimization) {
-			sb.append(":lexer");
+			sb.append(":lex");
 		}
 		if (this.enabledPrediction) {
 			sb.append(":predict");

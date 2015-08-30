@@ -22,27 +22,33 @@ public class ParserCombinator {
 			Class<?> c = this.getClass();
 			file = GrammarFile.newGrammarFile(c.getName(), NezOption.newDefaultOption());
 			if (file.isEmpty()) {
-				for (Method m : c.getDeclaredMethods()) {
-					if (m.getReturnType() == Expression.class && m.getParameterTypes().length == 0) {
-						String name = m.getName();
-						if (name.startsWith("p")) {
-							name = name.substring(1);
-						}
-						try {
-							Expression e = (Expression) m.invoke(this);
-							file.defineProduction(e.getSourcePosition(), name, e);
-						} catch (IllegalAccessException e1) {
-							Verbose.traceException(e1);
-						} catch (IllegalArgumentException e1) {
-							Verbose.traceException(e1);
-						} catch (InvocationTargetException e1) {
-							Verbose.traceException(e1);
-						}
-					}
-				}
-				file.verify();
+				load(file);
 			}
 		}
+		return file;
+	}
+
+	public final GrammarFile load(GrammarFile file) {
+		Class<?> c = this.getClass();
+		for (Method m : c.getDeclaredMethods()) {
+			if (m.getReturnType() == Expression.class && m.getParameterTypes().length == 0) {
+				String name = m.getName();
+				if (name.startsWith("p")) {
+					name = name.substring(1);
+				}
+				try {
+					Expression e = (Expression) m.invoke(this);
+					file.defineProduction(e.getSourcePosition(), name, e);
+				} catch (IllegalAccessException e1) {
+					Verbose.traceException(e1);
+				} catch (IllegalArgumentException e1) {
+					Verbose.traceException(e1);
+				} catch (InvocationTargetException e1) {
+					Verbose.traceException(e1);
+				}
+			}
+		}
+		file.verify();
 		return file;
 	}
 

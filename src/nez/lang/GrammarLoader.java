@@ -2,6 +2,7 @@ package nez.lang;
 
 import java.io.IOException;
 
+import nez.NezOption;
 import nez.SourceContext;
 import nez.ast.AbstractTree;
 import nez.ast.AbstractTreeVisitor;
@@ -19,12 +20,16 @@ public abstract class GrammarLoader extends AbstractTreeVisitor {
 		return this.file;
 	}
 
-	public abstract Grammar getGrammar();
+	public final NezOption getGrammarOption() {
+		return this.file.getOption();
+	}
+
+	public abstract Grammar getStartGrammar();
 
 	public void eval(String urn, int linenum, String text) {
 		SourceContext sc = SourceContext.newStringSourceContext(urn, linenum, text);
 		while (sc.hasUnconsumed()) {
-			AbstractTree<?> node = getGrammar().parseCommonTree(sc);
+			AbstractTree<?> node = getStartGrammar().parseCommonTree(sc);
 			if (node == null) {
 				ConsoleUtils.println(sc.getSyntaxErrorMessage());
 			}
@@ -35,7 +40,7 @@ public abstract class GrammarLoader extends AbstractTreeVisitor {
 	public final void load(String urn) throws IOException {
 		SourceContext sc = SourceContext.newFileContext(urn);
 		while (sc.hasUnconsumed()) {
-			AbstractTree<?> node = getGrammar().parseCommonTree(sc);
+			AbstractTree<?> node = getStartGrammar().parseCommonTree(sc);
 			if (node == null) {
 				ConsoleUtils.exit(1, sc.getSyntaxErrorMessage());
 			}

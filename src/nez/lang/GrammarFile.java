@@ -98,6 +98,10 @@ public class GrammarFile extends GrammarFactory {
 	final UList<String> nameList;
 	final NezOption option;
 
+	public final NezOption getOption() {
+		return this.option;
+	}
+
 	private GrammarFile(int id, String urn, NezOption option) {
 		this.id = id;
 		this.urn = urn;
