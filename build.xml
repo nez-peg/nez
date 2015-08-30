@@ -2,14 +2,14 @@
 	<!-- directory / file definition -->
 	<property name="BinaryName" value="nez" />
 	<property name="source_dir" value="src" />
-	<property name="build_dir"  value="build" />
-	<property name="root_dir"   value="." />
-	<property name="jline_jar"  value="ext/jline-1.0.jar" />
-	<property name="asm_jar"    value="ext/asm-all-4.0.jar" />
-	<property name="test_dir"       value="unit_test" />
-	<property name="junit_jar"      value="ext/junit-4.10.jar" />
+	<property name="build_dir" value="build" />
+	<property name="root_dir" value="." />
+	<property name="jline_jar" value="ext/jline-1.0.jar" />
+	<property name="asm_jar" value="ext/asm-all-4.0.jar" />
+	<property name="test_dir" value="unit_test" />
+	<property name="junit_jar" value="ext/junit-4.10.jar" />
 	<property name="build_test_dir" value="build_test" />
-	<property name="test_result"    value="test_result" />
+	<property name="test_result" value="test_result" />
 
 	<condition property="have.cobertura">
 		<available file="${lib.cobertura.dir}" />
@@ -20,12 +20,13 @@
 	</condition>
 
 	<!-- ================================== -->
-	<!--                BUILD               -->
+	<!-- BUILD -->
 	<!-- ================================== -->
 	<target name="build">
 		<mkdir dir="${build_dir}" />
-		<javac fork="true" encoding="UTF-8" srcdir="${source_dir}" destdir="${build_dir}" target="1.7" source="1.7"
-			debug="yes" debuglevel="lines,vars,source" includeantruntime="false">
+		<javac fork="true" encoding="UTF-8" srcdir="${source_dir}"
+			destdir="${build_dir}" target="1.7" source="1.7" debug="yes"
+			debuglevel="lines,vars,source" includeantruntime="false">
 			<classpath path="${jline_jar}" />
 			<classpath path="${asm_jar}" />
 			<include name="**/*.java" />
@@ -36,7 +37,7 @@
 	</target>
 
 	<!-- ================================== -->
-	<!--            GENERATE JAR            -->
+	<!-- GENERATE JAR -->
 	<!-- ================================== -->
 	<target name="jar" depends="build">
 		<jar jarfile="${BinaryName}.jar">
@@ -53,21 +54,22 @@
 	</target>
 
 	<!-- ================================== -->
-	<!--               CLEAN                -->
+	<!-- CLEAN -->
 	<!-- ================================== -->
 	<target name="clean">
 		<delete dir="${build_dir}" />
 		<delete file="${BinaryName}.jar" />
-		<delete dir="${build_test_dir}"/>
+		<delete dir="${build_test_dir}" />
 	</target>
 
 	<!-- ================================== -->
-	<!--             TEST PREPARE           -->
+	<!-- TEST PREPARE -->
 	<!-- ================================== -->
-	<target name ="test_prepare" depends="jar">
+	<target name="test_prepare" depends="jar">
 		<mkdir dir="${build_test_dir}" />
 		<mkdir dir="${test_result}" />
-		<javac srcdir="${test_dir}/java" destdir="${build_test_dir}" debug="on" target="1.8" source="1.8" includeantruntime="false">
+		<javac srcdir="${test_dir}/java" destdir="${build_test_dir}"
+			debug="on" target="1.8" source="1.8" includeantruntime="false">
 			<classpath path="${BinaryName}.jar" />
 			<classpath path="${junit_jar}" />
 			<compilerarg value="-Xlint:deprecation" />
@@ -76,7 +78,7 @@
 	</target>
 
 	<!-- ================================== -->
-	<!--               TEST                 -->
+	<!-- TEST -->
 	<!-- ================================== -->
 	<target name="test" depends="test_prepare">
 		<junit printsummary="yes" haltonfailure="yes">
