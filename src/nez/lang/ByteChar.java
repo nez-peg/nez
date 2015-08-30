@@ -5,7 +5,7 @@ import nez.util.StringUtils;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
-public class ByteChar extends Char implements Consumed {
+public class ByteChar extends Char {
 	public int byteChar;
 
 	ByteChar(SourcePosition s, boolean binary, int ch) {

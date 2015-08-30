@@ -79,7 +79,7 @@ public class Production extends Expression {
 	}
 
 	public final static void quickCheck(Production p, Expression e) {
-		if (e instanceof Consumed) {
+		if (e instanceof ByteChar || e instanceof ByteMap || e instanceof AnyChar) {
 			p.flag = p.flag | ConsumedProduction | ConsumedChecked;
 			return;
 		}

@@ -5,7 +5,7 @@ import nez.util.StringUtils;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
-public class ByteMap extends Char implements Consumed {
+public class ByteMap extends Char {
 	public boolean[] byteMap; // Immutable
 
 	ByteMap(SourcePosition s, boolean binary, int beginChar, int endChar) {

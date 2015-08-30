@@ -4,7 +4,7 @@ import nez.ast.SourcePosition;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
-public class AnyChar extends Char implements Consumed {
+public class AnyChar extends Char {
 	AnyChar(SourcePosition s, boolean binary) {
 		super(s, binary);
 	}
