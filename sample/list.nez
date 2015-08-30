@@ -1,0 +1,25 @@
+/**
+ * list.nez - a flattened list
+ * 
+ **/
+
+
+File
+	= Expression
+
+Expression
+	= List / Term
+
+List
+	= { $(Term) (',' S* $(Term))+ #List }
+
+Term
+	= { [A-Za-z0-9]+ #Term } S*
+
+S
+	= [ \t]
+
+
+example Expression A,B,C,D
+
+

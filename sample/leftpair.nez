@@ -1,0 +1,22 @@
+/**
+ * leftpair.nez - a left-associative pair
+ * 
+ **/
+
+
+File
+	= Expression
+
+Expression
+	= Term {$left ',' S* $right(Term) #Pair }*
+
+Term
+	= { [A-Za-z0-9]+ #Term } S*
+
+S
+	= [ \t]
+
+
+example Expression A,B,C,D
+
+
