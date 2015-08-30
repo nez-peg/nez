@@ -38,11 +38,9 @@ public class StandardLibrary {
 
 	private static String prefixName = "nez.ast.jcode.StandardLibrary$";
 
-	public static CallSite bootstrap(Lookup lookup, String methodName, MethodType type, String className)
-			throws NoSuchMethodException, IllegalAccessException {
+	public static CallSite bootstrap(Lookup lookup, String methodName, MethodType type, String className) throws NoSuchMethodException, IllegalAccessException {
 		Class<?> ownerClass = getClass("console");
-		MethodHandle mh = lookup.findStatic(ownerClass, methodName,
-				MethodType.methodType(type.returnType(), type.parameterArray()));
+		MethodHandle mh = lookup.findStatic(ownerClass, methodName, MethodType.methodType(type.returnType(), type.parameterArray()));
 		return new ConstantCallSite(mh);
 	}
 

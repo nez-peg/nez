@@ -26,11 +26,13 @@ import nez.util.StringUtils;
 public class CombinatorGenerator extends GrammarGenerator {
 	@Override
 	public String getDesc() {
-		return "a Nez combinator for Java" ;
+		return "a Nez combinator for Java";
 	}
-	
-	protected String _Delim() { return ", "; }
-	
+
+	protected String _Delim() {
+		return ", ";
+	}
+
 	@Override
 	public void makeHeader(Grammar g) {
 		L("/* Parsing Expression Grammars for Nez */");
@@ -39,7 +41,7 @@ public class CombinatorGenerator extends GrammarGenerator {
 		L("");
 		L("class G extends ParserCombinator").Begin();
 	}
-	
+
 	public void makeFooter(Grammar g) {
 		End();
 	}
@@ -52,8 +54,8 @@ public class CombinatorGenerator extends GrammarGenerator {
 		visitExpression(e);
 		W(";");
 		End();
-	}	
-	
+	}
+
 	public void visitEmpty(Empty e) {
 		C("Empty");
 	}
@@ -65,7 +67,7 @@ public class CombinatorGenerator extends GrammarGenerator {
 	public void visitNonTerminal(NonTerminal e) {
 		C("P", _NonTerminal(e.getProduction()));
 	}
-	
+
 	public void visitByteChar(ByteChar e) {
 		C("t", StringUtils.stringfyByte('"', e.byteChar, '"'));
 	}
@@ -85,11 +87,11 @@ public class CombinatorGenerator extends GrammarGenerator {
 	public void visitOption(Option e) {
 		C("Option", e);
 	}
-	
+
 	public void visitRepetition(Repetition e) {
 		C("ZeroMore", e);
 	}
-	
+
 	public void visitRepetition1(Repetition1 e) {
 		C("OneMore", e);
 	}
@@ -97,26 +99,25 @@ public class CombinatorGenerator extends GrammarGenerator {
 	public void visitAnd(And e) {
 		C("And", e);
 	}
-	
+
 	public void visitNot(Not e) {
 		C("Not", e);
 	}
-	
+
 	public void visitChoice(Choice e) {
 		C("Choice", e);
 	}
-	
+
 	public void visitSequence(Sequence e) {
 		W("Sequence(");
 		super.visitSequence(e);
 		W(")");
 	}
-	
+
 	public void visitNew(New e) {
-		if(e.leftFold) {
+		if (e.leftFold) {
 			C("LCapture", e.shift);
-		}
-		else {
+		} else {
 			C("NCapture", e.shift);
 		}
 	}
@@ -128,16 +129,15 @@ public class CombinatorGenerator extends GrammarGenerator {
 	public void visitTagging(Tagging e) {
 		C("Tagging", e.getTagName());
 	}
-	
+
 	public void visitReplace(Replace e) {
 		C("Replace", StringUtils.quoteString('"', e.value, '"'));
 	}
-	
+
 	public void visitLink(Link e) {
-		if(e.index != -1) {
+		if (e.index != -1) {
 			C("Link", String.valueOf(e.index), e);
-		}
-		else {
+		} else {
 			C("Link", e);
 		}
 	}
@@ -146,7 +146,7 @@ public class CombinatorGenerator extends GrammarGenerator {
 	public void visitUndefined(Expression e) {
 		W("<");
 		W(e.getPredicate());
-		for(Expression se : e) {
+		for (Expression se : e) {
 			W(" ");
 			visitExpression(se);
 		}

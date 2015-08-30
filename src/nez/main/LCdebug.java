@@ -8,9 +8,10 @@ public class LCdebug extends Command {
 	public String getDesc() {
 		return "Nez debugger";
 	}
+
 	@Override
 	public void exec(CommandContext config) {
-		//config.setNezOption(NezOption.DebugOption);
+		// config.setNezOption(NezOption.DebugOption);
 		Command.displayVersion();
 		Grammar peg = config.getGrammar();
 		while (config.hasInputSource()) {

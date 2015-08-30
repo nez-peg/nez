@@ -9,24 +9,27 @@ public class IsIndent extends Expression implements Contextual {
 	IsIndent(SourcePosition s) {
 		super(s);
 	}
+
 	@Override
 	public final boolean equalsExpression(Expression o) {
 		return (o instanceof IsIndent);
 	}
+
 	@Override
 	public String getPredicate() {
 		return "indent";
 	}
+
 	@Override
 	public String key() {
 		return "indent";
 	}
-	
+
 	@Override
 	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeIsIndent(this);
 	}
-	
+
 	@Override
 	public boolean isConsumed() {
 		return false;

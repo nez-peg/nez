@@ -9,10 +9,11 @@ import nez.util.ConsoleUtils;
 
 public class AbstractTreeVisitor {
 	private HashMap<String, Method> methodMap = new HashMap<String, Method>();
+
 	public final Object visit(String method, AbstractTree<?> node) {
 		Tag tag = node.getTag();
 		Method m = findMethod(method, tag);
-		if(m != null) {
+		if (m != null) {
 			try {
 				return m.invoke(this, node);
 			} catch (IllegalAccessException e) {
@@ -25,11 +26,11 @@ public class AbstractTreeVisitor {
 		}
 		return toUndefinedNode(node);
 	}
-	
+
 	protected final Method findMethod(String method, Tag tag) {
 		String key = method + tag.getName();
 		Method m = this.methodMap.get(key);
-		if(m == null) {
+		if (m == null) {
 			try {
 				m = getClassMethod(method, tag);
 			} catch (NoSuchMethodException e) {
@@ -48,7 +49,7 @@ public class AbstractTreeVisitor {
 		String name = method + tag.getName();
 		return this.getClass().getMethod(name, AbstractTree.class);
 	}
-	
+
 	protected Object toUndefinedNode(AbstractTree<?> node) {
 		ConsoleUtils.exit(1, "undefined node:" + node);
 		return null;
@@ -57,7 +58,7 @@ public class AbstractTreeVisitor {
 	public final Object visit(String method, Class<?> c1, AbstractTree<?> node, Object p1) {
 		Tag tag = node.getTag();
 		Method m = findMethod(method, tag, c1);
-		if(m != null) {
+		if (m != null) {
 			try {
 				return m.invoke(this, node, p1);
 			} catch (IllegalAccessException e) {
@@ -70,11 +71,11 @@ public class AbstractTreeVisitor {
 		}
 		return toUndefinedNode(node, p1);
 	}
-	
+
 	protected final Method findMethod(String method, Tag tag, Class<?> c1) {
 		String key = method + tag.getName() + c1.getName();
 		Method m = this.methodMap.get(key);
-		if(m == null) {
+		if (m == null) {
 			try {
 				m = getClassMethod(method, tag);
 			} catch (NoSuchMethodException e) {
@@ -93,10 +94,10 @@ public class AbstractTreeVisitor {
 		String name = method + tag.getName();
 		return this.getClass().getMethod(name, AbstractTree.class, c1);
 	}
-	
+
 	protected Object toUndefinedNode(AbstractTree<?> node, Object p1) {
 		ConsoleUtils.exit(1, "undefined node:" + node);
 		return null;
 	}
-	
+
 }

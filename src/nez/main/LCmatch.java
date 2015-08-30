@@ -19,24 +19,24 @@ class LCmatch extends Command {
 
 		UList<String> failedInputs = new UList<String>(new String[4]);
 		UList<String> unconsumedInputs = new UList<String>(new String[4]);
-		
+
 		int totalCount = 0, failureCount = 0, unconsumedCount = 0;
 		long consumed = 0;
 		long time = 0;
-		
-		while(config.hasInputSource()) {
+
+		while (config.hasInputSource()) {
 			SourceContext file = config.nextInputSource();
 			totalCount++;
 			long t = System.nanoTime();
 			boolean result = g.match(file);
 			long t2 = System.nanoTime();
-			if(!result) {
+			if (!result) {
 				ConsoleUtils.println(file.getSyntaxErrorMessage());
 				failedInputs.add(file.getResourceName());
 				failureCount++;
 				continue;
 			}
-			if(file.hasUnconsumed()) {
+			if (file.hasUnconsumed()) {
 				ConsoleUtils.println(file.getUnconsumedMessage());
 				unconsumedInputs.add(file.getResourceName());
 				unconsumedCount++;
@@ -45,18 +45,14 @@ class LCmatch extends Command {
 			time += (t2 - t);
 			g.logProfiler();
 		}
-		if(totalCount > 1){
-			Verbose.println(
-					totalCount + " files, " +
-					StringUtils.formatMPS(consumed, time) + " MiB/s, " + 
-					failureCount + " failed, " +
-					unconsumedCount + " uncosumed, " +
-					StringUtils.formatParcentage(totalCount - (unconsumedCount+failureCount), totalCount) + "% passed.");
+		if (totalCount > 1) {
+			Verbose.println(totalCount + " files, " + StringUtils.formatMPS(consumed, time) + " MiB/s, " + failureCount + " failed, " + unconsumedCount + " uncosumed, "
+					+ StringUtils.formatParcentage(totalCount - (unconsumedCount + failureCount), totalCount) + "% passed.");
 		}
-		if(unconsumedInputs.size() > 0) {
+		if (unconsumedInputs.size() > 0) {
 			Verbose.println("unconsumed: " + unconsumedInputs);
 		}
-		if(failedInputs.size() > 0) {
+		if (failedInputs.size() > 0) {
 			ConsoleUtils.exit(1, "failed: " + failedInputs);
 		}
 	}

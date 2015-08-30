@@ -41,7 +41,7 @@ class Print extends NezDebugOperator {
 	@Override
 	public boolean exec(NezDebugger d) {
 		throw new RuntimeException("FIXME: Context.getLeftObject is deprecated");
-		//return d.exec(this);
+		// return d.exec(this);
 	}
 }
 
@@ -130,12 +130,5 @@ class Exit extends NezDebugOperator {
 }
 
 enum DebugOperation {
-	Print,
-	Break,
-	StepOver,
-	StepIn,
-	StepOut,
-	Continue,
-	Run,
-	Exit
+	Print, Break, StepOver, StepIn, StepOut, Continue, Run, Exit
 }

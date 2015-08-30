@@ -23,7 +23,7 @@ public class LCjvm extends Command {
 	public void exec(CommandContext config) {
 		this.treeTransducer = new JCodeTreeTransducer();
 		this.grammar = config.getGrammar();
-		if(config.hasInputSource()) {
+		if (config.hasInputSource()) {
 			JCodeTree node = parse(config);
 			execute(node);
 		} else {
@@ -34,7 +34,7 @@ public class LCjvm extends Command {
 	public final JCodeTree parse(CommandContext config) {
 		SourceContext source = config.nextInputSource();
 		JCodeTree node = (JCodeTree) this.grammar.parse(source, this.treeTransducer);
-		if(node == null) {
+		if (node == null) {
 			ConsoleUtils.println(source.getSyntaxErrorMessage());
 		}
 		System.out.println("parsed:\n" + node + "\n");
@@ -44,7 +44,7 @@ public class LCjvm extends Command {
 	public JCodeTree parse(String urn, int linenum, String text) {
 		SourceContext source = SourceContext.newStringSourceContext(urn, linenum, text);
 		JCodeTree node = (JCodeTree) grammar.parse(source, treeTransducer);
-		if(node == null) {
+		if (node == null) {
 			ConsoleUtils.println(source.getSyntaxErrorMessage());
 		}
 		System.out.println("parsed:\n" + node + "\n");
@@ -54,7 +54,7 @@ public class LCjvm extends Command {
 	private void shell() {
 		int linenum = 1;
 		String command = null;
-		while((command = readLine()) != null) {
+		while ((command = readLine()) != null) {
 			JCodeTree node = this.parse("<stdio>", linenum, command);
 			execute(node);
 			linenum += (command.split("\n").length);
@@ -65,12 +65,12 @@ public class LCjvm extends Command {
 		ConsoleUtils.println("\n>>>");
 		Object console = ConsoleUtils.getConsoleReader();
 		StringBuilder sb = new StringBuilder();
-		while(true) {
+		while (true) {
 			String line = ConsoleUtils.readSingleLine(console, "   ");
-			if(line == null) {
+			if (line == null) {
 				return null;
 			}
-			if(line.equals("")) {
+			if (line.equals("")) {
 				return sb.toString();
 			}
 			ConsoleUtils.addHistory(console, line);

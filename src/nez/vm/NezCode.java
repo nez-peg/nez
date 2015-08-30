@@ -28,11 +28,11 @@ public class NezCode {
 	public final int getMemoPointSize() {
 		return this.memoPointList != null ? this.memoPointList.size() : 0;
 	}
-	
+
 	public final void dumpMemoPoints() {
-		if(this.memoPointList != null) {
+		if (this.memoPointList != null) {
 			Verbose.println("ID\tPEG\tCount\tHit\tFail\tMean");
-			for(MemoPoint p: this.memoPointList) {
+			for (MemoPoint p : this.memoPointList) {
 				String s = String.format("%d\t%s\t%d\t%f\t%f\t%f", p.id, p.label, p.count(), p.hitRatio(), p.failHitRatio(), p.meanLength());
 				Verbose.println(s);
 			}

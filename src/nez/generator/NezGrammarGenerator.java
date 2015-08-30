@@ -29,13 +29,12 @@ import nez.vm.Instruction;
 public class NezGrammarGenerator extends GrammarGenerator {
 	@Override
 	public String getDesc() {
-		return "a Nez grammar" ;
+		return "a Nez grammar";
 	}
 
 	public NezGrammarGenerator() {
 	}
 
-	
 	@Override
 	public void makeHeader(Grammar g) {
 		L("// Parsing Expression Grammars for Nez");
@@ -45,33 +44,31 @@ public class NezGrammarGenerator extends GrammarGenerator {
 	String stringfyName(String s) {
 		return s;
 	}
-	
+
 	@Override
 	public void visitProduction(Production rule) {
 		Expression e = rule.getExpression();
-		if(rule.isPublic()) {
+		if (rule.isPublic()) {
 			L("public ");
 			W(stringfyName(rule.getLocalName()));
-		}
-		else {
+		} else {
 			L(stringfyName(rule.getLocalName()));
 		}
 		inc();
 		L("= ");
-		if(e instanceof Choice) {
-			for(int i = 0; i < e.size(); i++) {
-				if(i > 0) {
+		if (e instanceof Choice) {
+			for (int i = 0; i < e.size(); i++) {
+				if (i > 0) {
 					L("/ ");
 				}
 				visitExpression(e.get(i));
 			}
-		}
-		else {
+		} else {
 			visitExpression(e);
 		}
 		dec();
-	}	
-	
+	}
+
 	public void visitEmpty(Expression e) {
 		W("''");
 	}
@@ -83,7 +80,7 @@ public class NezGrammarGenerator extends GrammarGenerator {
 	public void visitNonTerminal(NonTerminal e) {
 		W(stringfyName(e.getLocalName()));
 	}
-	
+
 	public void visitByteChar(ByteChar e) {
 		W(StringUtils.stringfyCharacter(e.byteChar));
 	}
@@ -91,41 +88,40 @@ public class NezGrammarGenerator extends GrammarGenerator {
 	public void visitByteMap(ByteMap e) {
 		W(StringUtils.stringfyCharacterClass(e.byteMap));
 	}
-	
+
 	public void visitAnyChar(AnyChar e) {
 		W(".");
 	}
-	
 
 	public void visitOption(Option e) {
-		Unary( null, e, "?");
+		Unary(null, e, "?");
 	}
-	
+
 	public void visitRepetition(Repetition e) {
 		Unary(null, e, "*");
 	}
-	
+
 	public void visitRepetition1(Repetition1 e) {
 		Unary(null, e, "+");
 	}
 
 	public void visitAnd(And e) {
-		Unary( "&", e, null);
+		Unary("&", e, null);
 	}
-	
+
 	public void visitNot(Not e) {
-		Unary( "!", e, null);
+		Unary("!", e, null);
 	}
-	
+
 	public void visitChoice(Choice e) {
-		for(int i = 0; i < e.size(); i++) {
-			if(i > 0) {
+		for (int i = 0; i < e.size(); i++) {
+			if (i > 0) {
 				W(" / ");
 			}
 			visitExpression(e.get(i));
 		}
 	}
-	
+
 	public void visitNew(New e) {
 		W(e.leftFold ? "{@" : "{");
 	}
@@ -138,14 +134,14 @@ public class NezGrammarGenerator extends GrammarGenerator {
 		W("#");
 		W(e.tag.getName());
 	}
-	
+
 	public void visitReplace(Replace e) {
 		W(StringUtils.quoteString('`', e.value, '`'));
 	}
-	
+
 	public void visitLink(Link e) {
 		String predicate = "$";
-		if(e.getLabel() != null) {
+		if (e.getLabel() != null) {
 			predicate += e.getLabel().toString();
 		}
 		Unary(predicate + "(", e, ")");
@@ -155,12 +151,11 @@ public class NezGrammarGenerator extends GrammarGenerator {
 	public void visitUndefined(Expression e) {
 		W("<");
 		W(e.getPredicate());
-		for(Expression se : e) {
+		for (Expression se : e) {
 			W(" ");
 			visitExpression(se);
 		}
 		W(">");
 	}
-
 
 }

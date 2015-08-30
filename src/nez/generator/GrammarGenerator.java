@@ -53,7 +53,7 @@ public abstract class GrammarGenerator extends NezGenerator {
 		file.decIndent();
 		return this;
 	}
-	
+
 	protected GrammarGenerator Begin() {
 		W("{").inc();
 		return this;
@@ -63,7 +63,6 @@ public abstract class GrammarGenerator extends NezGenerator {
 		dec().L("}");
 		return this;
 	}
-
 
 	protected GrammarGenerator L(String line) {
 		file.writeIndent(line);
@@ -78,29 +77,59 @@ public abstract class GrammarGenerator extends NezGenerator {
 		return "=";
 	}
 
-	protected String _Choice() { return "/"; }
+	protected String _Choice() {
+		return "/";
+	}
 
-	protected String _Option() { return "?"; }
+	protected String _Option() {
+		return "?";
+	}
 
-	protected String _ZeroAndMore() { return "*"; }
+	protected String _ZeroAndMore() {
+		return "*";
+	}
 
-	protected String _OneAndMore() { return "+"; }
-	protected String _And() { return "&"; }
-	protected String _Not() { return "!"; }
-	protected String _Any() { return "."; }
+	protected String _OneAndMore() {
+		return "+";
+	}
 
-	protected String _OpenGrouping() { return "("; }
-	protected String _CloseGrouping() { return ")"; };
-	
+	protected String _And() {
+		return "&";
+	}
+
+	protected String _Not() {
+		return "!";
+	}
+
+	protected String _Any() {
+		return ".";
+	}
+
+	protected String _OpenGrouping() {
+		return "(";
+	}
+
+	protected String _CloseGrouping() {
+		return ")";
+	};
+
 	public void visitGrouping(Expression e) {
 		W(_OpenGrouping());
 		visitExpression(e);
 		W(_CloseGrouping());
 	}
 
-	protected String _Open() { return "("; }
-	protected String _Delim() { return " "; }
-	protected String _Close() { return ")"; };
+	protected String _Open() {
+		return "(";
+	}
+
+	protected String _Delim() {
+		return " ";
+	}
+
+	protected String _Close() {
+		return ")";
+	};
 
 	protected String _Name(Production p) {
 		return p.getLocalName().replace("~", "_").replace("!", "_W");
@@ -109,13 +138,13 @@ public abstract class GrammarGenerator extends NezGenerator {
 	protected GrammarGenerator C(String name, Expression e) {
 		int c = 0;
 		W(name).W(_Open());
-		for(Expression sub: e) {
-			if(c > 0) {
+		for (Expression sub : e) {
+			if (c > 0) {
 				W(_Delim());
 			}
 			visitExpression(sub);
 			c++;
-		}	
+		}
 		W(_Close());
 		return this;
 	}
@@ -123,9 +152,9 @@ public abstract class GrammarGenerator extends NezGenerator {
 	protected GrammarGenerator C(String name, String first, Expression e) {
 		W(name).W(_Open());
 		W(first).W(_Delim());
-		for(Expression sub: e) {
+		for (Expression sub : e) {
 			visitExpression(sub);
-		}	
+		}
 		W(_Close());
 		return this;
 	}
@@ -136,9 +165,8 @@ public abstract class GrammarGenerator extends NezGenerator {
 	}
 
 	protected GrammarGenerator C(String name, String arg) {
-		if(arg.length() > 1 && arg.startsWith("\"") && arg.endsWith("\"")) {
-		}
-		else {
+		if (arg.length() > 1 && arg.startsWith("\"") && arg.endsWith("\"")) {
+		} else {
 			arg = StringUtils.quoteString('"', arg, '"');
 		}
 		W(name).W(_Open()).W(arg).W(_Close());
@@ -153,9 +181,9 @@ public abstract class GrammarGenerator extends NezGenerator {
 	protected GrammarGenerator C(String name, boolean[] arg) {
 		int cnt = 0;
 		W(name).W(_Open());
-		for(int c = 0; c < arg.length; c++) {
-			if(arg[c]) {
-				if(cnt > 0) {
+		for (int c = 0; c < arg.length; c++) {
+			if (arg[c]) {
+				if (cnt > 0) {
 					W(_Delim());
 				}
 				W(String.valueOf(c));
@@ -169,18 +197,17 @@ public abstract class GrammarGenerator extends NezGenerator {
 	protected String _NonTerminal(Production p) {
 		return p.getLocalName().replace("~", "_").replace("!", "NOT").replace(".", "DOT");
 	}
-	
+
 	protected GrammarGenerator Unary(String prefix, Unary e, String suffix) {
-		if(prefix != null) {
+		if (prefix != null) {
 			W(prefix);
 		}
-		if(e.get(0) instanceof NonTerminal) {
+		if (e.get(0) instanceof NonTerminal) {
 			this.visitExpression(e.get(0));
-		}
-		else {
+		} else {
 			visitGrouping(e.get(0));
 		}
-		if(suffix != null) {
+		if (suffix != null) {
 			W(suffix);
 		}
 		return this;
@@ -192,32 +219,31 @@ public abstract class GrammarGenerator extends NezGenerator {
 		L(_NonTerminal(rule));
 		inc();
 		L(_RuleDef() + " ");
-		if(e instanceof Choice) {
-			for(int i = 0; i < e.size(); i++) {
-				if(i > 0) {
+		if (e instanceof Choice) {
+			for (int i = 0; i < e.size(); i++) {
+				if (i > 0) {
 					L(_Choice() + " ");
 				}
 				visitExpression(e.get(i));
 			}
-		}
-		else {
+		} else {
 			visitExpression(e);
 		}
 		dec();
-	}	
+	}
 
 	public void visitEmpty(Expression e) {
-		W(""+ Quoatation()+Quoatation());
+		W("" + Quoatation() + Quoatation());
 	}
 
 	public void visitFailure(Expression e) {
-		W(_Not()+ Quoatation()+Quoatation());
+		W(_Not() + Quoatation() + Quoatation());
 	}
 
 	public void visitNonTerminal(NonTerminal e) {
 		W(_NonTerminal(e.getProduction()));
 	}
-	
+
 	public void visitByteChar(ByteChar e) {
 		W(StringUtils.stringfyByte(Quoatation(), e.byteChar, Quoatation()));
 	}
@@ -225,7 +251,7 @@ public abstract class GrammarGenerator extends NezGenerator {
 	public void visitByteMap(ByteMap e) {
 		W(StringUtils.stringfyCharacterClass(e.byteMap));
 	}
-	
+
 	public void visitAnyChar(AnyChar e) {
 		W(_Any());
 	}
@@ -236,77 +262,76 @@ public abstract class GrammarGenerator extends NezGenerator {
 	}
 
 	public void visitOption(Option e) {
-		Unary( null, e, _Option());
+		Unary(null, e, _Option());
 	}
-	
+
 	public void visitRepetition(Repetition e) {
-		Unary( null, e, _ZeroAndMore());
+		Unary(null, e, _ZeroAndMore());
 	}
-	
+
 	public void visitRepetition1(Repetition1 e) {
-		Unary( null, e, _OneAndMore());
+		Unary(null, e, _OneAndMore());
 	}
 
 	public void visitAnd(And e) {
-		Unary( _And(), e, null);
+		Unary(_And(), e, null);
 	}
-	
+
 	public void visitNot(Not e) {
-		Unary( _Not(), e, null);
+		Unary(_Not(), e, null);
 	}
-	
+
 	public void visitChoice(Choice e) {
-		for(int i = 0; i < e.size(); i++) {
-			if(i > 0) {
+		for (int i = 0; i < e.size(); i++) {
+			if (i > 0) {
 				W(" " + _Choice() + " ");
 			}
 			visitExpression(e.get(i));
 		}
 	}
-	
+
 	public void visitNew(New e) {
-//		W(e.lefted ? "{@" : "{");
+		// W(e.lefted ? "{@" : "{");
 	}
 
 	public void visitCapture(Capture e) {
-//		W("}");
+		// W("}");
 	}
 
 	public void visitTagging(Tagging e) {
-//		W("#");
-//		W(e.tag.getName());
+		// W("#");
+		// W(e.tag.getName());
 	}
-	
+
 	public void visitValue(Replace e) {
-//		W(StringUtils.quoteString('`', e.value, '`'));
+		// W(StringUtils.quoteString('`', e.value, '`'));
 	}
-	
+
 	public void visitLink(Link e) {
-//		String predicate = "@";
-//		if(e.index != -1) {
-//			predicate += "[" + e.index + "]";
-//		}
-//		Unary(predicate, e, null);
+		// String predicate = "@";
+		// if(e.index != -1) {
+		// predicate += "[" + e.index + "]";
+		// }
+		// Unary(predicate, e, null);
 		visitExpression(e.get(0));
 	}
-	
+
 	public void visitSequence(Sequence e) {
 		int c = 0;
-		for(int i = 0; i < e.size(); i++) {
-			if(c > 0) {
+		for (int i = 0; i < e.size(); i++) {
+			if (c > 0) {
 				W(_Delim());
 			}
 			Expression s = e.get(i);
-			if(s instanceof ByteChar && i+1 < e.size() && e.get(i+1) instanceof ByteChar) {
+			if (s instanceof ByteChar && i + 1 < e.size() && e.get(i + 1) instanceof ByteChar) {
 				i = checkString(e, i);
 				c++;
 				continue;
 			}
-			if(s instanceof Choice || s instanceof Sequence) {
+			if (s instanceof Choice || s instanceof Sequence) {
 				visitGrouping(s);
 				c++;
-			}
-			else {
+			} else {
 				visitExpression(s);
 				c++;
 			}
@@ -315,29 +340,29 @@ public abstract class GrammarGenerator extends NezGenerator {
 
 	private int checkString(Sequence l, int start) {
 		int n = 0;
-		for(int i = start; i < l.size(); i++) {
+		for (int i = start; i < l.size(); i++) {
 			Expression e = l.get(i);
-			if(e instanceof ByteChar) {
+			if (e instanceof ByteChar) {
 				n++;
 				continue;
 			}
 			break;
 		}
 		byte[] utf8 = new byte[n];
-		for(int i = 0; i < n; i++) {
-			utf8[i] = (byte)(((ByteChar) l.get(start+i)).byteChar);
+		for (int i = 0; i < n; i++) {
+			utf8[i] = (byte) (((ByteChar) l.get(start + i)).byteChar);
 		}
 		visitString(StringUtils.newString(utf8));
 		return start + n - 1;
 	}
-	
+
 	public void visitString(String text) {
 		W(StringUtils.quoteString('\'', text, '\''));
 	}
 
 	@Override
 	public void visitUndefined(Expression e) {
-		if(e.size() > 0) {
+		if (e.size() > 0) {
 			visitExpression(e.get(0));
 		}
 	}
@@ -351,56 +376,55 @@ public abstract class GrammarGenerator extends NezGenerator {
 	@Override
 	public void visitReplace(Replace p) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void visitBlock(Block p) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void visitDefSymbol(DefSymbol p) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void visitMatchSymbol(MatchSymbol p) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void visitIsSymbol(IsSymbol p) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void visitDefIndent(DefIndent p) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void visitIsIndent(IsIndent p) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void visitExistsSymbol(ExistsSymbol p) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void visitLocalTable(LocalTable p) {
 		// TODO Auto-generated method stub
-		
-	}
 
+	}
 
 }

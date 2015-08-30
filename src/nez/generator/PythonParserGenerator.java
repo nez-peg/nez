@@ -85,7 +85,7 @@ public class PythonParserGenerator extends NezGenerator {
 		makeHeader(grammar);
 		Class("PyNez").Begin();
 		makeParserClass();
-		for(Production p : grammar.getProductionList()) {
+		for (Production p : grammar.getProductionList()) {
 			visitProduction(p);
 		}
 		makeByteMap();
@@ -115,15 +115,15 @@ public class PythonParserGenerator extends NezGenerator {
 	}
 
 	protected void makeByteMap() {
-		for(ByteMap map : this.byteMapList) {
+		for (ByteMap map : this.byteMapList) {
 			L("map").W(String.valueOf(map.getId())).W(" = [");
-			for(int i = 0; i < map.byteMap.length; i++) {
-				if(map.byteMap[i]) {
+			for (int i = 0; i < map.byteMap.length; i++) {
+				if (map.byteMap[i]) {
 					W("True");
 				} else {
 					W("False");
 				}
-				if(i != map.byteMap.length - 1) {
+				if (i != map.byteMap.length - 1) {
 					W(", ");
 				}
 			}
@@ -174,9 +174,9 @@ public class PythonParserGenerator extends NezGenerator {
 	protected String _func(String name, String... args) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(name).append("(");
-		for(int i = 0; i < args.length; i++) {
+		for (int i = 0; i < args.length; i++) {
 			sb.append(args[i]);
-			if(i != args.length - 1) {
+			if (i != args.length - 1) {
 				sb.append(", ");
 			}
 		}
@@ -186,9 +186,9 @@ public class PythonParserGenerator extends NezGenerator {
 
 	protected PythonParserGenerator FuncDef(Production p, String... args) {
 		L("def p").W(p.getLocalName()).W("(");
-		for(int i = 0; i < args.length; i++) {
+		for (int i = 0; i < args.length; i++) {
 			W(args[i]);
-			if(i != args.length - 1) {
+			if (i != args.length - 1) {
 				W(", ");
 			}
 		}
@@ -198,9 +198,9 @@ public class PythonParserGenerator extends NezGenerator {
 
 	protected PythonParserGenerator FuncDef(String name, String... args) {
 		L("def ").W(name).W("(");
-		for(int i = 0; i < args.length; i++) {
+		for (int i = 0; i < args.length; i++) {
 			W(args[i]);
-			if(i != args.length - 1) {
+			if (i != args.length - 1) {
 				W(", ");
 			}
 		}
@@ -210,9 +210,9 @@ public class PythonParserGenerator extends NezGenerator {
 
 	protected PythonParserGenerator Func(String name, String... args) {
 		W(name).W("(");
-		for(int i = 0; i < args.length; i++) {
+		for (int i = 0; i < args.length; i++) {
 			W(args[i]);
-			if(i != args.length - 1) {
+			if (i != args.length - 1) {
 				W(", ");
 			}
 		}
@@ -427,7 +427,7 @@ public class PythonParserGenerator extends NezGenerator {
 
 	@Override
 	public void visitByteMap(ByteMap p) {
-		if(!byteMapList.contains(p)) {
+		if (!byteMapList.contains(p)) {
 			byteMapList.add(p);
 		}
 		If("self.map" + p.getId() + "[ord(self.inputs[self.pos])]").Begin().Consume().End();
@@ -488,9 +488,9 @@ public class PythonParserGenerator extends NezGenerator {
 	public void flattenSequence(Sequence seq, UList<Expression> l) {
 		Expression first = seq.getFirst();
 		Expression last = seq.getNext();
-		if(first instanceof Sequence) {
+		if (first instanceof Sequence) {
 			flattenSequence((Sequence) first, l);
-			if(last instanceof Sequence) {
+			if (last instanceof Sequence) {
 				flattenSequence((Sequence) last, l);
 				return;
 			}
@@ -498,7 +498,7 @@ public class PythonParserGenerator extends NezGenerator {
 			return;
 		}
 		l.add(first);
-		if(last instanceof Sequence) {
+		if (last instanceof Sequence) {
 			flattenSequence((Sequence) last, l);
 			return;
 		}
@@ -513,24 +513,24 @@ public class PythonParserGenerator extends NezGenerator {
 		UList<Expression> list = new UList<>(new Expression[p.size()]);
 		flattenSequence(p, list);
 		System.out.println(list.toString());
-		for(int i = 0; i < list.size(); i++) {
+		for (int i = 0; i < list.size(); i++) {
 			If("result").Begin();
-			if(list.get(i) instanceof New) {
-				if(((New) list.get(i)).leftFold) {
+			if (list.get(i) instanceof New) {
+				if (((New) list.get(i)).leftFold) {
 					isLeftNew = true;
 				}
 			}
-			if(list.get(i) instanceof Link) {
+			if (list.get(i) instanceof Link) {
 				isLink = true;
 			}
 			visitExpression(list.get(i));
 		}
-		for(int i = list.size(); i > 0; i--) {
+		for (int i = list.size(); i > 0; i--) {
 			End();
 		}
-		if(isLeftNew) {
+		if (isLeftNew) {
 			If("not result").Begin().Abort().End();
-		} else if(isLink) {
+		} else if (isLink) {
 			If("not result").Begin().Abort("index" + p.getId()).End();
 		}
 		isLeftNew = false;
@@ -540,13 +540,13 @@ public class PythonParserGenerator extends NezGenerator {
 	public void visitChoice(Choice p) {
 		String pos = "pos_c" + p.getId();
 		Let(pos, "self.pos");
-		for(int i = 0; i < p.size(); i++) {
+		for (int i = 0; i < p.size(); i++) {
 			visitExpression(p.get(i));
-			if(i < p.size() - 1) {
+			if (i < p.size() - 1) {
 				If("not result").Begin().Let("self.pos", pos).Succ();
 			}
 		}
-		for(int i = 0; i < p.size() - 1; i++) {
+		for (int i = 0; i < p.size() - 1; i++) {
 			End();
 		}
 	}
@@ -557,9 +557,9 @@ public class PythonParserGenerator extends NezGenerator {
 	@Override
 	public void visitNonTerminal(NonTerminal p) {
 		Production rule = p.getProduction();
-		if(rule.isNoNTreeConstruction()) {
+		if (rule.isNoNTreeConstruction()) {
 			int memoPoint = 0;
-			if(!memoMap.containsKey(p.getId())) {
+			if (!memoMap.containsKey(p.getId())) {
 				memoPoint = this.memoPoint++;
 				this.memoMap.put(p.getId(), memoPoint);
 			} else {
@@ -579,7 +579,7 @@ public class PythonParserGenerator extends NezGenerator {
 	@Override
 	public void visitLink(Link p) {
 		int memoPoint = 0;
-		if(!memoMap.containsKey(p.getId())) {
+		if (!memoMap.containsKey(p.getId())) {
 			memoPoint = this.memoPoint++;
 			this.memoMap.put(p.getId(), memoPoint);
 		} else {
@@ -603,7 +603,7 @@ public class PythonParserGenerator extends NezGenerator {
 
 	@Override
 	public void visitNew(New p) {
-		if(p.leftFold) {
+		if (p.leftFold) {
 			Ileftnew();
 			markStack.push(true);
 		} else {
@@ -614,7 +614,7 @@ public class PythonParserGenerator extends NezGenerator {
 
 	@Override
 	public void visitCapture(Capture p) {
-		if(markStack.pop()) {
+		if (markStack.pop()) {
 			If("result").Begin().Ileftcapture().End();
 			Else().Begin().Abort().End();
 		} else {
@@ -649,13 +649,12 @@ public class PythonParserGenerator extends NezGenerator {
 		// TODO Auto-generated method stub
 
 	}
-	
+
 	@Override
 	public void visitMatchSymbol(MatchSymbol p) {
 		// TODO Auto-generated method stub
-		
-	}
 
+	}
 
 	@Override
 	public void visitDefIndent(DefIndent p) {

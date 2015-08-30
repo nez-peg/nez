@@ -3,21 +3,22 @@ package nez.vm;
 public class ByteReader {
 	byte[] source;
 	int pos;
+
 	public ByteReader(byte[] b) {
 		this.source = b;
 		this.pos = 0;
 	}
-	
+
 	public final int read_i8() {
 		pos++;
-		return this.source[pos-1]; 
+		return this.source[pos - 1];
 	}
 
 	public final int read_u8() {
 		pos++;
-		return this.source[pos-1] & 0xff; 
+		return this.source[pos - 1] & 0xff;
 	}
-	
+
 	public final int read_u16() {
 		int n0 = read_u8();
 		int n1 = read_u8();
@@ -41,8 +42,7 @@ public class ByteReader {
 
 	public final boolean read_b() {
 		pos++;
-		return this.source[pos-1] != 0; 
+		return this.source[pos - 1] != 0;
 	}
-
 
 }

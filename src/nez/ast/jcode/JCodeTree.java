@@ -14,7 +14,7 @@ public abstract class JCodeTree extends AbstractTree<JCodeTree> {
 	public abstract void requirePop();
 
 	public abstract Class<?> getTypedClass();
-	
+
 	public abstract Class<?> setType(Class<?> type);
 
 }
@@ -27,9 +27,9 @@ class JCodeTreeImpl extends JCodeTree {
 		this.requiredPop = false;
 	}
 
-	public void requirePop(){
-		for(JCodeTree child : this){
-			((JCodeTreeImpl)child).setRequiredPop(true);
+	public void requirePop() {
+		for (JCodeTree child : this) {
+			((JCodeTreeImpl) child).setRequiredPop(true);
 		}
 	}
 
@@ -39,8 +39,7 @@ class JCodeTreeImpl extends JCodeTree {
 
 	@Override
 	protected JCodeTreeImpl dupImpl() {
-		return new JCodeTreeImpl(this.getTag(), this.getSource(), this.getSourcePosition(), this.getLength(),
-				this.size(), getValue());
+		return new JCodeTreeImpl(this.getTag(), this.getSource(), this.getSourcePosition(), this.getLength(), this.size(), getValue());
 	}
 
 	@Override
@@ -49,7 +48,7 @@ class JCodeTreeImpl extends JCodeTree {
 	}
 
 	@Override
-	public Class<?> setType(Class<?> type){
+	public Class<?> setType(Class<?> type) {
 		this.typed = type;
 		return this.typed;
 	}

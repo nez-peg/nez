@@ -25,7 +25,7 @@ public class Methods {
 	public static Method method(Class<?> returnClass, String methodName, Class<?>... paramClasses) {
 		final int size = paramClasses.length;
 		Type[] paramTypeDescs = new Type[paramClasses.length];
-		for(int i = 0; i < size; i++) {
+		for (int i = 0; i < size; i++) {
 			paramTypeDescs[i] = Type.getType(paramClasses[i]);
 		}
 		return new Method(methodName, Type.getType(returnClass), paramTypeDescs);

@@ -6,10 +6,11 @@ import java.util.HashMap;
 
 public abstract class GrammarVisitor {
 	HashMap<Class<?>, Method> methodMap = new HashMap<Class<?>, Method>();
+
 	public final void visit(Expression e) {
 		Class<?> c = e.getClass();
 		Method m = lookupMethod(c);
-		if(m != null) {
+		if (m != null) {
 			try {
 				m.invoke(this, e);
 			} catch (IllegalAccessException ex) {
@@ -21,15 +22,14 @@ public abstract class GrammarVisitor {
 			} catch (InvocationTargetException ex) {
 				ex.printStackTrace();
 			}
-		}
-		else {
+		} else {
 			visitExpression(e);
 		}
 	}
-		
+
 	private final Method lookupMethod(Class<?> c) {
 		Method m = this.methodMap.get(c);
-		if(m == null) {
+		if (m == null) {
 			String name = "visit" + c.getSimpleName();
 			try {
 				m = this.getClass().getMethod(name, c);
@@ -46,4 +46,3 @@ public abstract class GrammarVisitor {
 	protected abstract void visitExpression(Expression e);
 
 }
-

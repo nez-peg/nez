@@ -9,10 +9,10 @@ public class ProductionCode {
 	Instruction compiled;
 
 	int ref = 0;
-	boolean     inlining = false;
-	MemoPoint   memoPoint = null;
+	boolean inlining = false;
+	MemoPoint memoPoint = null;
 	boolean state;
-	
+
 	int start;
 	int end;
 	Instruction memoStart = null;

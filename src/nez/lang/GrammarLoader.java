@@ -12,32 +12,33 @@ import nez.util.ConsoleUtils;
 
 public abstract class GrammarLoader extends AbstractTreeVisitor {
 	private GrammarFile file;
-	
+
 	public GrammarLoader(GrammarFile file) {
 		this.file = file;
 	}
+
 	public final GrammarFile getGrammarFile() {
 		return this.file;
 	}
-	
+
 	public abstract Grammar getGrammar();
-	
+
 	public void eval(String urn, int linenum, String text) {
 		SourceContext sc = SourceContext.newStringSourceContext(urn, linenum, text);
-		while(sc.hasUnconsumed()) {
+		while (sc.hasUnconsumed()) {
 			AbstractTree<?> node = getGrammar().parseCommonTree(sc);
-			if(node == null) {
+			if (node == null) {
 				ConsoleUtils.println(sc.getSyntaxErrorMessage());
 			}
 			parse(node);
 		}
 	}
-	
+
 	public final void load(String urn) throws IOException {
 		SourceContext sc = SourceContext.newFileContext(urn);
-		while(sc.hasUnconsumed()) {
+		while (sc.hasUnconsumed()) {
 			AbstractTree<?> node = getGrammar().parseCommonTree(sc);
-			if(node == null) {
+			if (node == null) {
 				ConsoleUtils.exit(1, sc.getSyntaxErrorMessage());
 			}
 			parse(node);

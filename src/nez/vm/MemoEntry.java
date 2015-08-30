@@ -1,12 +1,11 @@
 package nez.vm;
 
-
 class MemoEntry {
 	boolean failed;
-	int  consumed;
+	int consumed;
 	Object result;
-//	int  memoPoint;
-	int  stateValue = 0;
+	// int memoPoint;
+	int stateValue = 0;
 }
 
 class MemoEntryKey extends MemoEntry {

@@ -6,30 +6,35 @@ import nez.vm.NezEncoder;
 
 public class OnFlag extends Unary implements Conditional {
 	boolean predicate;
+
 	public final boolean isPositive() {
 		return predicate;
 	}
+
 	String flagName;
+
 	public final String getFlagName() {
 		return this.flagName;
 	}
 
 	OnFlag(SourcePosition s, boolean predicate, String flagName, Expression inner) {
 		super(s, inner);
-		if(flagName.startsWith("!")) {
+		if (flagName.startsWith("!")) {
 			predicate = false;
 			flagName = flagName.substring(1);
 		}
 		this.predicate = predicate;
 		this.flagName = flagName;
 	}
+
 	@Override
 	public final boolean equalsExpression(Expression o) {
-		if(o instanceof OnFlag) {
-			OnFlag e = (OnFlag)o;
-			if(this.predicate == e.predicate && this.flagName.equals(e.flagName)) {
+		if (o instanceof OnFlag) {
+			OnFlag e = (OnFlag) o;
+			if (this.predicate == e.predicate && this.flagName.equals(e.flagName)) {
 				return this.get(0).equalsExpression(e.get(0));
-			};
+			}
+			;
 		}
 		return false;
 	}

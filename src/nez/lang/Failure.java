@@ -8,26 +8,32 @@ public class Failure extends Unconsumed {
 	Failure(SourcePosition s) {
 		super(s);
 	}
+
 	@Override
 	public final boolean equalsExpression(Expression o) {
 		return (o instanceof Failure);
 	}
+
 	@Override
 	protected final void format(StringBuilder sb) {
 		sb.append("!''");
 	}
+
 	@Override
 	public String getPredicate() {
 		return "fail";
 	}
+
 	@Override
 	public String key() {
 		return "!!";
 	}
+
 	@Override
 	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeFailure(this);
 	}
+
 	@Override
 	public boolean isConsumed() {
 		return true;
@@ -37,10 +43,10 @@ public class Failure extends Unconsumed {
 	public short acceptByte(int ch) {
 		return PossibleAcceptance.Reject;
 	}
-	
+
 	@Override
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
 		return bc.encodeFail(this);
 	}
-	
+
 }

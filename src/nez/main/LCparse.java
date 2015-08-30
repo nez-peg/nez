@@ -15,28 +15,28 @@ public class LCparse extends Command {
 	@Override
 	public void exec(CommandContext config) {
 		Grammar g = config.getGrammar();
-		while(config.hasInputSource()) {
+		while (config.hasInputSource()) {
 			SourceContext source = config.nextInputSource();
 			CommonTree node = g.parseCommonTree(source);
-			if(node == null) {
+			if (node == null) {
 				ConsoleUtils.println(source.getSyntaxErrorMessage());
 				continue;
 			}
-			if(source.hasUnconsumed()) {
+			if (source.hasUnconsumed()) {
 				ConsoleUtils.println(source.getUnconsumedMessage());
 			}
 			source = null;
 			record(g.getProfiler(), node);
 			g.logProfiler();
-			AbstractTreeWriter w = new AbstractTreeWriter(config.getNezOption(),config.getOutputFileName(source, "ast"));
+			AbstractTreeWriter w = new AbstractTreeWriter(config.getNezOption(), config.getOutputFileName(source, "ast"));
 			w.writeTree(node);
 			w.writeNewLine();
 			w.close();
 		}
 	}
-	
+
 	private void record(NezProfier prof, CommonTree node) {
-		if(prof != null) {
+		if (prof != null) {
 			System.gc();
 			prof.setCount("O.Size", node.countSubNodes());
 			long t1 = System.nanoTime();
@@ -47,5 +47,3 @@ public class LCparse extends Command {
 	}
 
 }
-
-

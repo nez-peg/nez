@@ -3,7 +3,7 @@ package nez;
 import nez.main.Verbose;
 
 public class NezOption {
-		
+
 	public final static NezOption newDefaultOption() {
 		return new NezOption();
 	}
@@ -11,37 +11,37 @@ public class NezOption {
 	public final static NezOption newSafeOption() {
 		return new NezOption("-memo:-predict");
 	}
-	
-	public boolean enabledSafeMode        = true;
-	public boolean enabledExperimental    = false;
-	
-	/* grammar */
-	public boolean enabledASTConstruction = true;      // ast
-	public boolean enabledSymbolTable     = true;      // symbol
-	public boolean disabledNezExtension   = false;     // -peg
-	
-	/* optimization */
-	public boolean enabledAsIsGrammar     = false; // asis
-	public boolean enabledInlining        = true;  // inline
 
-	public boolean enabledLexicalOptimization = true;  // lex
-	public boolean enabledStringOptimization = true;   // str
-	//public boolean enabledCommonFactored  = true;      // common
-	
-	public boolean enabledPrediction      = true;      // predict
-	public boolean enabledDFAConversion   = false;     // dfa
+	public boolean enabledSafeMode = true;
+	public boolean enabledExperimental = false;
+
+	/* grammar */
+	public boolean enabledASTConstruction = true; // ast
+	public boolean enabledSymbolTable = true; // symbol
+	public boolean disabledNezExtension = false; // -peg
+
+	/* optimization */
+	public boolean enabledAsIsGrammar = false; // asis
+	public boolean enabledInlining = true; // inline
+
+	public boolean enabledLexicalOptimization = true; // lex
+	public boolean enabledStringOptimization = true; // str
+	// public boolean enabledCommonFactored = true; // common
+
+	public boolean enabledPrediction = true; // predict
+	public boolean enabledDFAConversion = false; // dfa
 
 	/* runtime option */
-	public boolean enabledMemoization     = true;  // memo
-	public boolean enabledPackratParsing  = false; // packrat
+	public boolean enabledMemoization = true; // memo
+	public boolean enabledPackratParsing = false; // packrat
 
 	/* misc */
-	public boolean enabledInterning            = true;
-	public boolean enabledExampleVerification  = false;
-	public boolean enabledProfiling            = false;
-	
-	public boolean enabledNoticeReport = true;     // notice
-	
+	public boolean enabledInterning = true;
+	public boolean enabledExampleVerification = false;
+	public boolean enabledProfiling = false;
+
+	public boolean enabledNoticeReport = true; // notice
+
 	public NezOption() {
 	}
 
@@ -60,7 +60,7 @@ public class NezOption {
 		o.enabledLexicalOptimization = this.enabledLexicalOptimization;
 		o.enabledStringOptimization = this.enabledStringOptimization;
 		o.enabledInlining = this.enabledInlining;
-//		o.enabledCommonFactored = this.enabledCommonFactored;
+		// o.enabledCommonFactored = this.enabledCommonFactored;
 		o.enabledPrediction = this.enabledPrediction;
 		o.enabledMemoization = this.enabledMemoization;
 		o.enabledPackratParsing = this.enabledPackratParsing;
@@ -70,23 +70,21 @@ public class NezOption {
 		o.enabledNoticeReport = this.enabledNoticeReport;
 		return o;
 	}
-	
+
 	public final void setOption(String args) {
-		for(String s : args.split(":")) {
-			if(s.startsWith("+")) {
-				setOption(s.substring(1),true);
-			}
-			else if(s.startsWith("-")) {
-				setOption(s.substring(1),false);
-			}
-			else {
-				setOption(s,true);
+		for (String s : args.split(":")) {
+			if (s.startsWith("+")) {
+				setOption(s.substring(1), true);
+			} else if (s.startsWith("-")) {
+				setOption(s.substring(1), false);
+			} else {
+				setOption(s, true);
 			}
 		}
 	}
-	
+
 	public final void setOption(String key, boolean value) {
-		switch(key) {
+		switch (key) {
 		case "asis":
 			this.enabledAsIsGrammar = value;
 			break;
@@ -105,7 +103,8 @@ public class NezOption {
 		case "intern":
 			this.enabledInterning = value;
 			break;
-		case "lex" : case "lexer":
+		case "lex":
+		case "lexer":
 			this.enabledLexicalOptimization = value;
 			break;
 		case "memo":
@@ -139,41 +138,41 @@ public class NezOption {
 			Verbose.debug("undefined option:" + key + " " + value);
 		}
 	}
-	
+
 	public final String toString() {
 		StringBuilder sb = new StringBuilder();
-		if(this.enabledSafeMode) {
+		if (this.enabledSafeMode) {
 			sb.append(":safe");
 		}
-		if(this.enabledASTConstruction) {
+		if (this.enabledASTConstruction) {
 			sb.append(":ast");
 		}
-		if(this.enabledSymbolTable) {
+		if (this.enabledSymbolTable) {
 			sb.append(":symbol");
 		}
-		if(this.enabledAsIsGrammar) {
+		if (this.enabledAsIsGrammar) {
 			sb.append(":asis");
 		}
-		if(this.enabledLexicalOptimization) {
+		if (this.enabledLexicalOptimization) {
 			sb.append(":lexer");
 		}
-		if(this.enabledPrediction) {
+		if (this.enabledPrediction) {
 			sb.append(":predict");
 		}
-		if(this.enabledMemoization) {
+		if (this.enabledMemoization) {
 			sb.append(":memo");
 		}
-		if(this.enabledPackratParsing) {
+		if (this.enabledPackratParsing) {
 			sb.append(":packrat");
 		}
-		if(this.enabledExampleVerification) {
+		if (this.enabledExampleVerification) {
 			sb.append(":example");
 		}
 		String s = sb.toString();
-		if(s.length() > 0) {
+		if (s.length() > 0) {
 			s = s.substring(1);
 		}
 		return s;
 	}
-	
+
 }

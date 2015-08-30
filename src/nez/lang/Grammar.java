@@ -29,28 +29,29 @@ import nez.vm.PackratCompiler;
 
 public class Grammar {
 	Production start;
-	UList<Production>          productionList;
-	UMap<Production>           productionMap;
-	TreeMap<String, Boolean>   conditionMap;
-	
+	UList<Production> productionList;
+	UMap<Production> productionMap;
+	TreeMap<String, Boolean> conditionMap;
+
 	Grammar(Production start, NezOption option) {
 		this.start = start;
 		this.productionList = new UList<Production>(new Production[4]);
 		this.productionMap = new UMap<Production>();
 		this.setOption(option);
-		
-		conditionMap = start.isConditional() ? new TreeMap<String, Boolean>() : null; 
+
+		conditionMap = start.isConditional() ? new TreeMap<String, Boolean>() : null;
 		analyze(start, conditionMap);
-		if(conditionMap != null) {
-			assert(conditionMap.size() > 0);
-			//Verbose.debug("condition flow analysis: " + conditionMap.keySet());
+		if (conditionMap != null) {
+			assert (conditionMap.size() > 0);
+			// Verbose.debug("condition flow analysis: " +
+			// conditionMap.keySet());
 			this.start = new ConditionalAnalysis(conditionMap).newStart(start);
 			this.productionList = new UList<Production>(new Production[4]);
 			this.productionMap = new UMap<Production>();
 			analyze(this.start, conditionMap);
 		}
-	}	
-	
+	}
+
 	public final Production getStartProduction() {
 		return this.start;
 	}
@@ -58,37 +59,37 @@ public class Grammar {
 	public final List<Production> getProductionList() {
 		return this.productionList;
 	}
-		
+
 	private void analyze(Production p, TreeMap<String, Boolean> conditionMap) {
 		String uname = p.getUniqueName();
-		if(productionMap.hasKey(uname)) {
+		if (productionMap.hasKey(uname)) {
 			return;
 		}
 		productionList.add(p);
 		productionMap.put(p.getUniqueName(), p);
 		analyze(p.getExpression(), conditionMap);
 	}
-	
+
 	private void analyze(Expression p, TreeMap<String, Boolean> conditionMap) {
-		if(p instanceof NonTerminal) {
+		if (p instanceof NonTerminal) {
 			analyze(((NonTerminal) p).getProduction(), conditionMap);
 		}
-		if(p instanceof IfFlag) {
+		if (p instanceof IfFlag) {
 			conditionMap.put(((IfFlag) p).getFlagName(), true);
 		}
-		for(Expression se : p) {
+		for (Expression se : p) {
 			analyze(se, conditionMap);
 		}
 	}
-	
+
 	/* --------------------------------------------------------------------- */
 	/* profiler */
 
 	private NezProfier prof = null;
-	
+
 	public void setProfiler(NezProfier prof) {
 		this.prof = prof;
-		if(prof != null) {
+		if (prof != null) {
 			this.compile();
 			prof.setFile("G.File", this.start.getGrammarFile().getURN());
 			prof.setCount("G.Production", this.productionMap.size());
@@ -102,55 +103,56 @@ public class Grammar {
 	}
 
 	public void logProfiler() {
-		if(prof != null) {
+		if (prof != null) {
 			prof.log();
 		}
 	}
 
 	/* --------------------------------------------------------------------- */
 	/* memoization configuration */
-	
+
 	private NezOption option;
 	private NezCode compiledCode = null;
-	
+
 	public final NezOption getNezOption() {
 		return this.option;
 	}
 
-	private void setOption (NezOption option) {
+	private void setOption(NezOption option) {
 		this.option = option;
 		this.compiledCode = null;
 	}
-	
+
 	private MemoTable getMemoTable(SourceContext sc) {
 		return MemoTable.newTable(option, sc.length(), 32, this.compiledCode.getMemoPointSize());
 	}
 
 	public final Instruction compile() {
-		if(compiledCode == null) {
-//			NezCompiler bc = Command.ReleasePreview ? new PackratCompiler(this.option) : new PlainCompiler(this.option);
+		if (compiledCode == null) {
+			// NezCompiler bc = Command.ReleasePreview ? new
+			// PackratCompiler(this.option) : new PlainCompiler(this.option);
 			NezCompiler bc = new PackratCompiler(this.option);
 			compiledCode = bc.compile(this);
-//			if(Verbose.VirtualMachine) {
-//				bc.dump(this.productionList);
-//			}
+			// if(Verbose.VirtualMachine) {
+			// bc.dump(this.productionList);
+			// }
 		}
 		return compiledCode.getStartPoint();
 	}
-			
+
 	public final boolean perform(Machine machine, SourceContext s, TreeTransducer treeTransducer) {
 		Instruction pc = this.compile();
 		s.init(getMemoTable(s), treeTransducer);
-		if(prof != null) {
+		if (prof != null) {
 			s.startProfiling(prof);
-			boolean matched = machine.run(pc,  s);
+			boolean matched = machine.run(pc, s);
 			s.doneProfiling(prof);
-			if(Verbose.PackratParsing) {
+			if (Verbose.PackratParsing) {
 				this.compiledCode.dumpMemoPoints();
 			}
 			return matched;
 		}
-		return machine.run(pc,  s);
+		return machine.run(pc, s);
 	}
 
 	public final boolean debug(SourceContext s) {
@@ -165,14 +167,14 @@ public class Grammar {
 	}
 
 	/* --------------------------------------------------------------------- */
-		
+
 	public final boolean match(SourceContext s) {
 		return perform(new Machine(), s, null);
 	}
 
 	public final boolean match(String str) {
 		SourceContext sc = SourceContext.newStringContext(str);
-		if(perform(new Machine(), sc, null)) {
+		if (perform(new Machine(), sc, null)) {
 			return (!sc.hasUnconsumed());
 		}
 		return false;
@@ -180,19 +182,19 @@ public class Grammar {
 
 	public Object parse(SourceContext sc, TreeTransducer treeTransducer) {
 		long startPosition = sc.getPosition();
-		if(!this.perform(new Machine(), sc, treeTransducer)) {
+		if (!this.perform(new Machine(), sc, treeTransducer)) {
 			return null;
 		}
 		return sc.getParseResult(startPosition, sc.getPosition());
 	}
 
 	public final CommonTree parseCommonTree(SourceContext sc) {
-		return (CommonTree)this.parse(sc, new CommonTreeTransducer());
+		return (CommonTree) this.parse(sc, new CommonTreeTransducer());
 	}
-	
+
 	public final CommonTree parseCommonTree(String str) {
 		SourceContext sc = SourceContext.newStringContext(str);
-		return (CommonTree)this.parse(sc, new CommonTreeTransducer());
+		return (CommonTree) this.parse(sc, new CommonTreeTransducer());
 	}
 
 }

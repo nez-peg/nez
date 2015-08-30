@@ -24,7 +24,5 @@ public class LCcompile extends Command {
 		NezCode code = compile.compile(g, c);
 		c.writeTo(config.getGrammarFileName("nzc"));
 	}
-	
+
 }
-
-

@@ -7,21 +7,24 @@ import nez.vm.NezEncoder;
 
 public class ByteMap extends Char implements Consumed {
 	public boolean[] byteMap; // Immutable
+
 	ByteMap(SourcePosition s, boolean binary, int beginChar, int endChar) {
 		super(s, binary);
 		this.byteMap = newMap(false);
 		appendRange(this.byteMap, beginChar, endChar);
 	}
+
 	ByteMap(SourcePosition s, boolean binary, boolean[] b) {
 		super(s, binary);
 		this.byteMap = b;
 	}
+
 	@Override
 	public final boolean equalsExpression(Expression o) {
-		if(o instanceof ByteMap && this.binary == ((ByteMap)o).isBinary()) {
-			ByteMap e = (ByteMap)o;
-			for(int i = 0; i < this.byteMap.length; i++) {
-				if(this.byteMap[i] != e.byteMap[i]) {
+		if (o instanceof ByteMap && this.binary == ((ByteMap) o).isBinary()) {
+			ByteMap e = (ByteMap) o;
+			for (int i = 0; i < this.byteMap.length; i++) {
+				if (this.byteMap[i] != e.byteMap[i]) {
 					return false;
 				}
 			}
@@ -42,8 +45,7 @@ public class ByteMap extends Char implements Consumed {
 
 	@Override
 	public String key() {
-		return binary ? "b[" + StringUtils.stringfyBitmap(this.byteMap)
-				      : "[" +  StringUtils.stringfyBitmap(this.byteMap);
+		return binary ? "b[" + StringUtils.stringfyBitmap(this.byteMap) : "[" + StringUtils.stringfyBitmap(this.byteMap);
 	}
 
 	@Override
@@ -60,17 +62,17 @@ public class ByteMap extends Char implements Consumed {
 	public short acceptByte(int ch) {
 		return PossibleAcceptance.acceptByteMap(byteMap, ch);
 	}
-	
+
 	@Override
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
 		return bc.encodeByteMap(this, next, failjump);
 	}
-	
+
 	// Utils
 	public final static boolean[] newMap(boolean initValue) {
 		boolean[] b = new boolean[257];
-		if(initValue) {
-			for(int i = 0; i < b.length; i++) {
+		if (initValue) {
+			for (int i = 0; i < b.length; i++) {
 				b[i] = initValue;
 			}
 		}
@@ -78,30 +80,30 @@ public class ByteMap extends Char implements Consumed {
 	}
 
 	public final static void clear(boolean[] byteMap) {
-		for(int c = 0; c < byteMap.length; c++) {
+		for (int c = 0; c < byteMap.length; c++) {
 			byteMap[c] = false;
 		}
 	}
 
 	public final static void appendRange(boolean[] b, int beginChar, int endChar) {
-		for(int c = beginChar; c <= endChar; c++) {
+		for (int c = beginChar; c <= endChar; c++) {
 			b[c] = true;
 		}
 	}
 
 	public final static void appendBitMap(boolean[] dst, boolean[] src) {
-		for(int i = 0; i < 256; i++) {
-			if(src[i]) {
+		for (int i = 0; i < 256; i++) {
+			if (src[i]) {
 				dst[i] = true;
 			}
 		}
 	}
 
 	public final static void reverse(boolean[] byteMap, boolean isBinary) {
-		for(int i = 0; i < 256; i++) {
+		for (int i = 0; i < 256; i++) {
 			byteMap[i] = !byteMap[i];
 		}
-		if(!isBinary) {
+		if (!isBinary) {
 			byteMap[0] = false;
 		}
 	}

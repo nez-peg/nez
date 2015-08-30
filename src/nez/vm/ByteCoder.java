@@ -14,31 +14,41 @@ import nez.util.StringUtils;
 public class ByteCoder {
 
 	class SetEntry {
-		int id; boolean[] data; 
-		SetEntry(int id, boolean[] data) { 
+		int id;
+		boolean[] data;
+
+		SetEntry(int id, boolean[] data) {
 			this.id = id;
 			this.data = data;
 		}
 	}
+
 	class StrEntry {
-		int id; byte[] data; 
-		StrEntry(int id, byte[] data) { 
+		int id;
+		byte[] data;
+
+		StrEntry(int id, byte[] data) {
 			this.id = id;
 			this.data = data;
 		}
 	}
+
 	class TagEntry {
-		int id; Tag data; 
-		TagEntry(int id, Tag data) { 
+		int id;
+		Tag data;
+
+		TagEntry(int id, Tag data) {
 			this.id = id;
 			this.data = data;
 		}
 	}
+
 	class SymEntry {
-		int id; 
+		int id;
 		int tabid;
-		byte[] symbol; 
-		SymEntry(int id, int tabid, byte[] symbol) { 
+		byte[] symbol;
+
+		SymEntry(int id, int tabid, byte[] symbol) {
 			this.id = id;
 			this.tabid = tabid;
 			this.symbol = symbol;
@@ -54,13 +64,13 @@ public class ByteCoder {
 	HashMap<String, SetEntry> BSetPoolMap;
 	HashMap<String, StrEntry> BStrPoolMap;
 	HashMap<String, TagEntry> TagPoolMap;
-	HashMap<String, TagEntry> TablePoolMap;  // tableEntry
+	HashMap<String, TagEntry> TablePoolMap; // tableEntry
 	ArrayList<StrEntry> NonTerminalPools;
 	ArrayList<SetEntry> BSetPools;
 	ArrayList<StrEntry> BStrPools;
 	ArrayList<TagEntry> TagPools;
-	ArrayList<TagEntry> TablePools;  // tableEntry
-	
+	ArrayList<TagEntry> TablePools; // tableEntry
+
 	public void setHeader(int instSize, int prodSize, int memoSize) {
 		this.instSize = instSize;
 		this.prodSize = prodSize;
@@ -79,19 +89,18 @@ public class ByteCoder {
 
 	public void setInstructions(Instruction[] insts, int len) {
 		stream = new ByteArrayOutputStream();
-		for(int i = 0; i < len; i++) {
-			if(insts[i] != null) {
-				assert(insts[i].id == i);
+		for (int i = 0; i < len; i++) {
+			if (insts[i] != null) {
+				assert (insts[i].id == i);
 				insts[i].encode(this);
-			}
-			else {
+			} else {
 				encodeOpcode(InstructionSet.Nop);
 			}
 		}
 	}
-		
+
 	public void write_b(boolean b) {
-		stream.write(b ? 1: 0);
+		stream.write(b ? 1 : 0);
 	}
 
 	public void write_i8(int num) {
@@ -117,15 +126,15 @@ public class ByteCoder {
 	}
 
 	private void encodeData(boolean[] byteMap) {
-		for(int i = 0; i < 256; i+=32) {
+		for (int i = 0; i < 256; i += 32) {
 			encodeByteMap(byteMap, i);
 		}
 	}
 
 	private void encodeByteMap(boolean[] b, int offset) {
 		int n = 0;
-		for(int i = 0; i < 32; i++) {
-			if(b[offset+i]) {
+		for (int i = 0; i < 32; i++) {
+			if (b[offset + i]) {
 				n |= (1 << i);
 			}
 		}
@@ -147,7 +156,7 @@ public class ByteCoder {
 	}
 
 	//
-	
+
 	public void encodeOpcode(byte opcode) {
 		stream.write(opcode);
 	}
@@ -163,7 +172,7 @@ public class ByteCoder {
 	public void encodeShift(int shift) {
 		write_i8(shift);
 	}
-	
+
 	public void encodeIndex(int index) {
 		write_i8(index);
 	}
@@ -175,7 +184,7 @@ public class ByteCoder {
 	public void encodeByteMap(boolean[] byteMap) {
 		String key = StringUtils.stringfyBitmap(byteMap);
 		SetEntry entry = BSetPoolMap.get(key);
-		if(entry == null) {
+		if (entry == null) {
 			entry = new SetEntry(BSetPoolMap.size(), byteMap);
 			BSetPoolMap.put(key, entry);
 			BSetPools.add(entry);
@@ -183,49 +192,46 @@ public class ByteCoder {
 		write_u16(entry.id);
 	}
 
-
 	public void encodeMultiByte(byte[] utf8) {
 		try {
 			String key = new String(utf8, StringUtils.DefaultEncoding);
 			StrEntry entry = BStrPoolMap.get(key);
-			if(entry == null) {
+			if (entry == null) {
 				entry = new StrEntry(BStrPoolMap.size(), utf8);
 				BStrPoolMap.put(key, entry);
 				BStrPools.add(entry);
 			}
 			write_u16(entry.id);
-		}
-		catch(IOException e) {
+		} catch (IOException e) {
 			Verbose.traceException(e);
 		}
 	}
 
 	public void encodeNonTerminal(String key) {
 		StrEntry entry = NonTerminalPoolMap.get(key);
-		if(entry == null) {
+		if (entry == null) {
 			entry = new StrEntry(NonTerminalPoolMap.size(), StringUtils.toUtf8(key));
 			NonTerminalPoolMap.put(key, entry);
 			NonTerminalPools.add(entry);
 		}
 		write_u16(entry.id);
 	}
-	
+
 	public void encodeTag(Tag tag) {
 		String key = tag.getName();
 		TagEntry entry = TagPoolMap.get(key);
-		if(entry == null) {
+		if (entry == null) {
 			entry = new TagEntry(TagPoolMap.size(), tag);
 			TagPoolMap.put(key, entry);
 			TagPools.add(entry);
 		}
 		write_u16(entry.id);
 	}
-	
+
 	public void encodeLabel(Tag label) {
-		if(label == null) {
+		if (label == null) {
 			this.encodeTag(Tag.NullTag);
-		}
-		else {
+		} else {
 			this.encodeTag(label);
 		}
 	}
@@ -233,7 +239,7 @@ public class ByteCoder {
 	public void encodeSymbolTable(Tag tableName) {
 		String key = tableName.getName();
 		TagEntry entry = TablePoolMap.get(key);
-		if(entry == null) {
+		if (entry == null) {
 			entry = new TagEntry(TablePoolMap.size(), tableName);
 			TablePoolMap.put(key, entry);
 			TablePools.add(entry);
@@ -252,25 +258,25 @@ public class ByteCoder {
 		write_u16(instSize);
 		write_u16(memoSize);
 		write_u16(jumpTableSize);
-		
+
 		write_u16(NonTerminalPools.size());
-		for(StrEntry e: NonTerminalPools) {
+		for (StrEntry e : NonTerminalPools) {
 			write_utf8(e.data);
 		}
 		write_u16(BSetPools.size());
-		for(SetEntry e: BSetPools) {
+		for (SetEntry e : BSetPools) {
 			encodeData(e.data);
 		}
 		write_u16(BStrPools.size());
-		for(StrEntry e: BStrPools) {
+		for (StrEntry e : BStrPools) {
 			write_utf8(e.data);
 		}
 		write_u16(TagPools.size());
-		for(TagEntry e: TagPools) {
+		for (TagEntry e : TagPools) {
 			encodeData(e.data);
 		}
 		write_u16(TablePools.size());
-		for(TagEntry e: TablePools) {
+		for (TagEntry e : TablePools) {
 			encodeData(e.data);
 		}
 		try {
@@ -284,11 +290,9 @@ public class ByteCoder {
 			OutputStream out = new FileOutputStream(fileName);
 			out.write(code);
 			out.close();
-		}
-		catch(IOException e) {
+		} catch (IOException e) {
 			Verbose.traceException(e);
 		}
 	}
-
 
 }

@@ -1,6 +1,5 @@
 package nez.main;
 
-
 import java.lang.reflect.Method;
 
 import nez.util.ConsoleUtils;
@@ -23,8 +22,7 @@ public class LCkonoha extends Command {
 			Object konoha = c.newInstance();
 			Method shell = c.getMethod("shell");
 			shell.invoke(konoha);
-		}
-		catch(Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}

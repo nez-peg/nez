@@ -10,21 +10,25 @@ public class Option extends Unary {
 		super(s, e);
 		e.setOuterLefted(this);
 	}
+
 	@Override
 	public final boolean equalsExpression(Expression o) {
-		if(o instanceof Option) {
+		if (o instanceof Option) {
 			return this.get(0).equalsExpression(o.get(0));
 		}
 		return false;
 	}
+
 	@Override
-	public String getPredicate() { 
+	public String getPredicate() {
 		return "?";
 	}
+
 	@Override
-	public String key() { 
+	public String key() {
 		return "?";
 	}
+
 	@Override
 	protected final void format(StringBuilder sb) {
 		this.formatUnary(sb, this.inner, "?");
@@ -39,20 +43,21 @@ public class Option extends Unary {
 	public boolean isConsumed() {
 		return false;
 	}
-	
+
 	@Override
 	public int inferTypestate(Visa v) {
 		int t = this.inner.inferTypestate(v);
-		if(t == Typestate.ObjectType) {
+		if (t == Typestate.ObjectType) {
 			return Typestate.BooleanType;
 		}
 		return t;
 	}
-	
-	@Override public short acceptByte(int ch) {
+
+	@Override
+	public short acceptByte(int ch) {
 		return PossibleAcceptance.acceptOption(this, ch);
 	}
-	
+
 	@Override
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
 		return bc.encodeOption(this, next);

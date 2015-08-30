@@ -15,22 +15,22 @@ public class LCxml extends Command {
 	@Override
 	public void exec(CommandContext config) {
 		Grammar g = config.getGrammar();
-		while(config.hasInputSource()) {
+		while (config.hasInputSource()) {
 			SourceContext source = config.nextInputSource();
 			CommonTree node = g.parseCommonTree(source);
-			if(node == null) {
+			if (node == null) {
 				ConsoleUtils.println(source.getSyntaxErrorMessage());
 				continue;
 			}
-			if(source.hasUnconsumed()) {
+			if (source.hasUnconsumed()) {
 				ConsoleUtils.println(source.getUnconsumedMessage());
 			}
 			g.logProfiler();
-			AbstractTreeWriter w = new AbstractTreeWriter(config.getNezOption(),config.getOutputFileName(source, "xml"));
+			AbstractTreeWriter w = new AbstractTreeWriter(config.getNezOption(), config.getOutputFileName(source, "xml"));
 			source = null;
 			w.writeXML(node);
 			w.close();
 		}
 	}
-	
+
 }

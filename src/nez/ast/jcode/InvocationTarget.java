@@ -5,9 +5,7 @@ import org.objectweb.asm.commons.Method;
 
 public class InvocationTarget {
 	public static enum InvocationType {
-		INVOKE_STATIC,
-		INVOKE_VIRTUAL,
-		INVOKE_INTERFACE;
+		INVOKE_STATIC, INVOKE_VIRTUAL, INVOKE_INTERFACE;
 	}
 
 	private final InvocationType type;
@@ -24,8 +22,7 @@ public class InvocationTarget {
 
 	private final Method methodDesc;
 
-	public InvocationTarget(InvocationType type, Class<?> ownerClass, Class<?> returnClass, String methodName,
-			Class<?>... paramClasses) {
+	public InvocationTarget(InvocationType type, Class<?> ownerClass, Class<?> returnClass, String methodName, Class<?>... paramClasses) {
 		this.type = type;
 		this.ownerClass = ownerClass;
 		this.returnClass = returnClass;
@@ -52,7 +49,7 @@ public class InvocationTarget {
 	@Override
 	public String toString() {
 		StringBuilder sBuilder = new StringBuilder();
-		switch(this.type) {
+		switch (this.type) {
 		case INVOKE_STATIC:
 			sBuilder.append("<static> ");
 			break;
@@ -72,8 +69,8 @@ public class InvocationTarget {
 		sBuilder.append('(');
 
 		final int size = this.paramClasses.length;
-		for(int i = 0; i < size; i++) {
-			if(i > 0) {
+		for (int i = 0; i < size; i++) {
+			if (i > 0) {
 				sBuilder.append(", ");
 			}
 			sBuilder.append(this.paramClasses[i].getSimpleName());
@@ -82,18 +79,15 @@ public class InvocationTarget {
 		return sBuilder.toString();
 	}
 
-	public static InvocationTarget newStaticTarget(Class<?> ownerClass, Class<?> returnClass, String methodName,
-			Class<?>... paramClasses) {
+	public static InvocationTarget newStaticTarget(Class<?> ownerClass, Class<?> returnClass, String methodName, Class<?>... paramClasses) {
 		return new InvocationTarget(InvocationType.INVOKE_STATIC, ownerClass, returnClass, methodName, paramClasses);
 	}
 
-	public static InvocationTarget newVirtualTarget(Class<?> ownerClass, Class<?> returnClass, String methodName,
-			Class<?>... paramClasses) {
+	public static InvocationTarget newVirtualTarget(Class<?> ownerClass, Class<?> returnClass, String methodName, Class<?>... paramClasses) {
 		return new InvocationTarget(InvocationType.INVOKE_VIRTUAL, ownerClass, returnClass, methodName, paramClasses);
 	}
 
-	public static InvocationTarget newInterfaceTarget(Class<?> ownerClass, Class<?> returnClass, String methodName,
-			Class<?>... paramClasses) {
+	public static InvocationTarget newInterfaceTarget(Class<?> ownerClass, Class<?> returnClass, String methodName, Class<?>... paramClasses) {
 		return new InvocationTarget(InvocationType.INVOKE_INTERFACE, ownerClass, returnClass, methodName, paramClasses);
 	}
 }

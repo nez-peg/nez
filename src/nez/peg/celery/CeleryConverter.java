@@ -33,8 +33,7 @@ public class CeleryConverter extends AbstractTreeVisitor {
 		if (celeryGrammar == null) {
 			try {
 				celeryGrammar = GrammarFile.loadGrammarFile("celery.nez", NezOption.newDefaultOption());
-			} 
-			catch (IOException e) {
+			} catch (IOException e) {
 				ConsoleUtils.exit(1, "can't load celery.nez");
 			}
 		}
@@ -92,28 +91,14 @@ public class CeleryConverter extends AbstractTreeVisitor {
 	public final void visitRequired(CommonTree node) {
 		String name = node.getText(0, null);
 		requiredMembersList.add(name);
-		Expression[] seq = {
-				_DQuoat(),
-				grammar.newString(name),
-				_DQuoat(),
-				grammar.newNonTerminal("NAMESEP"),
-				toExpression(node.get(1)),
-				grammar.newOption(grammar.newNonTerminal("VALUESEP"))
-		};
+		Expression[] seq = { _DQuoat(), grammar.newString(name), _DQuoat(), grammar.newNonTerminal("NAMESEP"), toExpression(node.get(1)), grammar.newOption(grammar.newNonTerminal("VALUESEP")) };
 		grammar.defineProduction(node, node.getText(0, null), grammar.newSequence(seq));
 	}
 
 	public final void visitOption(CommonTree node) {
 		String name = node.getText(0, null);
 		impliedMemebersList.add(name);
-		Expression[] seq = {
-				_DQuoat(),
-				grammar.newString(name),
-				_DQuoat(),
-				grammar.newNonTerminal("NAMESEP"),
-				toExpression(node.get(1)),
-				grammar.newOption(grammar.newNonTerminal("VALUESEP"))
-		};
+		Expression[] seq = { _DQuoat(), grammar.newString(name), _DQuoat(), grammar.newNonTerminal("NAMESEP"), toExpression(node.get(1)), grammar.newOption(grammar.newNonTerminal("VALUESEP")) };
 		grammar.defineProduction(node, node.getText(0, null), grammar.newSequence(seq));
 	}
 
@@ -121,14 +106,7 @@ public class CeleryConverter extends AbstractTreeVisitor {
 		String name = node.getText(0, null);
 		requiredMembersList.add(name);
 		// inferType(node.get(2));
-		Expression[] seq = {
-				_DQuoat(),
-				grammar.newString(name),
-				_DQuoat(),
-				grammar.newNonTerminal("NAMESEP"),
-				grammar.newNonTerminal("Any"),
-				grammar.newOption(grammar.newNonTerminal("VALUESEP"))
-		};
+		Expression[] seq = { _DQuoat(), grammar.newString(name), _DQuoat(), grammar.newNonTerminal("NAMESEP"), grammar.newNonTerminal("Any"), grammar.newOption(grammar.newNonTerminal("VALUESEP")) };
 		grammar.defineProduction(node, node.getText(0, null), grammar.newSequence(seq));
 	}
 
@@ -136,14 +114,7 @@ public class CeleryConverter extends AbstractTreeVisitor {
 		String name = node.getText(0, null);
 		impliedMemebersList.add(name);
 		// inferType(node.get(2));
-		Expression[] seq = {
-				_DQuoat(),
-				grammar.newString(name),
-				_DQuoat(),
-				grammar.newNonTerminal("NAMESEP"),
-				grammar.newNonTerminal("Any"),
-				grammar.newOption(grammar.newNonTerminal("VALUESEP"))
-		};
+		Expression[] seq = { _DQuoat(), grammar.newString(name), _DQuoat(), grammar.newNonTerminal("NAMESEP"), grammar.newNonTerminal("Any"), grammar.newOption(grammar.newNonTerminal("VALUESEP")) };
 		grammar.defineProduction(node, node.getText(0, null), grammar.newSequence(seq));
 	}
 
@@ -194,13 +165,7 @@ public class CeleryConverter extends AbstractTreeVisitor {
 
 	public final Expression toTArray(CommonTree node) {
 		Expression type = toExpression(node.get(0));
-		Expression[] seq = {
-				grammar.newByteChar('['),
-				_SPACING(),
-				type,
-				grammar.newRepetition(grammar.newNonTerminal("VALUESEP"), type),
-				grammar.newByteChar(']')
-		};
+		Expression[] seq = { grammar.newByteChar('['), _SPACING(), type, grammar.newRepetition(grammar.newNonTerminal("VALUESEP"), type), grammar.newByteChar(']') };
 		return grammar.newSequence(seq);
 	}
 
@@ -208,17 +173,7 @@ public class CeleryConverter extends AbstractTreeVisitor {
 
 	private final Expression genClassRule(String className) {
 		String memberList = className + "_Members";
-		Expression[] seq = {
-				_DQuoat(),
-				grammar.newString(className),
-				_DQuoat(),
-				grammar.newNonTerminal("NAMESEP"),
-				grammar.newByteChar('{'),
-				_SPACING(),
-				grammar.newNonTerminal(memberList),
-				_SPACING(),
-				grammar.newByteChar('}')
-		};
+		Expression[] seq = { _DQuoat(), grammar.newString(className), _DQuoat(), grammar.newNonTerminal("NAMESEP"), grammar.newByteChar('{'), _SPACING(), grammar.newNonTerminal(memberList), _SPACING(), grammar.newByteChar('}') };
 		grammar.defineProduction(null, memberList, genMemberRule(className));
 		return grammar.newSequence(seq);
 	}
@@ -249,8 +204,7 @@ public class CeleryConverter extends AbstractTreeVisitor {
 			for (int[] targetLine : permutedList) {
 				Expression[] seqList = new Expression[listLength];
 				for (int index = 0; index < targetLine.length; index++) {
-					seqList[index] = grammar.newNonTerminal(requiredMembersList
-							.get(targetLine[index]));
+					seqList[index] = grammar.newNonTerminal(requiredMembersList.get(targetLine[index]));
 				}
 				choiceList[choiceCount++] = grammar.newSequence(seqList);
 			}
@@ -277,8 +231,7 @@ public class CeleryConverter extends AbstractTreeVisitor {
 				Expression[] seqList = new Expression[listLength * 2 + 1];
 				seqList[seqCount++] = grammar.newRepetition(impliedChoiceRule);
 				for (int index = 0; index < targetLine.length; index++) {
-					seqList[seqCount++] = grammar.newNonTerminal(requiredMembersList
-							.get(targetLine[index]));
+					seqList[seqCount++] = grammar.newNonTerminal(requiredMembersList.get(targetLine[index]));
 					seqList[seqCount++] = grammar.newRepetition(impliedChoiceRule);
 				}
 				choiceList[choiceCount++] = grammar.newSequence(seqList);
@@ -293,24 +246,12 @@ public class CeleryConverter extends AbstractTreeVisitor {
 
 		Expression[] tables = new Expression[requiredMembersListSize];
 		for (int i = 0; i < requiredMembersListSize; i++) {
-			tables[i] = grammar.newExists(requiredMembersList.get(i), null /*FIXME*/);
+			tables[i] = grammar.newExists(requiredMembersList.get(i), null /* FIXME */);
 		}
 
-		Expression[] seq = {
-				_DQuoat(),
-				grammar.newString(className),
-				_DQuoat(),
-				_SPACING(),
-				grammar.newNonTerminal("NAMESEP"),
-				grammar.newByteChar('{'),
-				_SPACING(),
-				grammar.newRepetition1(grammar.newNonTerminal(memberList)),
-				grammar.newSequence(tables),
-				_SPACING(),
-				grammar.newByteChar('}')
-		};
-		grammar.defineProduction(null, memberList,
-				genExMemberRule(className, requiredMembersListSize));
+		Expression[] seq = { _DQuoat(), grammar.newString(className), _DQuoat(), _SPACING(), grammar.newNonTerminal("NAMESEP"), grammar.newByteChar('{'), _SPACING(), grammar.newRepetition1(grammar.newNonTerminal(memberList)), grammar.newSequence(tables),
+				_SPACING(), grammar.newByteChar('}') };
+		grammar.defineProduction(null, memberList, genExMemberRule(className, requiredMembersListSize));
 		return grammar.newSequence(seq);
 	}
 
@@ -320,8 +261,7 @@ public class CeleryConverter extends AbstractTreeVisitor {
 		genImpliedChoice(impliedChoiceRuleName);
 		for (int i = 0; i < requiredListSize; i++) {
 			String memberName = requiredMembersList.get(i);
-			choice[i] = grammar.newSequence(grammar.newNot(grammar.newIsSymbol(memberName)),
-					grammar.newDefSymbol(memberName, grammar.newNonTerminal(memberName)));
+			choice[i] = grammar.newSequence(grammar.newNot(grammar.newIsSymbol(memberName)), grammar.newDefSymbol(memberName, grammar.newNonTerminal(memberName)));
 		}
 		choice[requiredListSize] = grammar.newNonTerminal(impliedChoiceRuleName);
 
@@ -339,17 +279,8 @@ public class CeleryConverter extends AbstractTreeVisitor {
 
 	private final Expression genRootClass() {
 		Expression root = genRootSeq();
-		Expression[] seq = {
-				grammar.newNonTerminal("VALUESEP"), root
-		};
-		Expression[] array = {
-				grammar.newByteChar('['),
-				_SPACING(),
-				root,
-				grammar.newRepetition1(seq),
-				_SPACING(),
-				grammar.newByteChar(']')
-		};
+		Expression[] seq = { grammar.newNonTerminal("VALUESEP"), root };
+		Expression[] array = { grammar.newByteChar('['), _SPACING(), root, grammar.newRepetition1(seq), _SPACING(), grammar.newByteChar(']') };
 		return grammar.newChoice(grammar.newSequence(root), grammar.newSequence(array));
 	}
 
@@ -359,17 +290,16 @@ public class CeleryConverter extends AbstractTreeVisitor {
 
 		Expression[] tables = new Expression[requiredMembersListSize];
 		for (int i = 0; i < requiredMembersListSize; i++) {
-			tables[i] = grammar.newExists(requiredMembersList.get(i), null /* FIXME symbol is additionally supported */);
+			tables[i] = grammar.newExists(requiredMembersList.get(i), null /*
+																			 * FIXME
+																			 * symbol
+																			 * is
+																			 * additionally
+																			 * supported
+																			 */);
 		}
 
-		Expression[] seq = {
-				grammar.newByteChar('{'),
-				_SPACING(),
-				grammar.newRepetition1(grammar.newNonTerminal(memberList)),
-				grammar.newSequence(tables),
-				_SPACING(),
-				grammar.newByteChar('}')
-		};
+		Expression[] seq = { grammar.newByteChar('{'), _SPACING(), grammar.newRepetition1(grammar.newNonTerminal(memberList)), grammar.newSequence(tables), _SPACING(), grammar.newByteChar('}') };
 		return grammar.newSequence(seq);
 	}
 
@@ -403,13 +333,12 @@ public class CeleryConverter extends AbstractTreeVisitor {
 		return permGen.getPermList();
 	}
 
-	private final Expression _SPACING(){
+	private final Expression _SPACING() {
 		return grammar.newNonTerminal("SPACING");
 	}
 
 	private final Expression _DQuoat() {
 		return grammar.newByteChar('"');
 	}
-
 
 }

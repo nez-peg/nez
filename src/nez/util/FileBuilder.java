@@ -9,15 +9,15 @@ import java.io.OutputStream;
 import nez.main.Verbose;
 
 public class FileBuilder {
-	
+
 	protected String fileName = null;
 	private OutputStream out;
 	private String CHARSET = "UTF8";
-	
+
 	public final static String TAB = "   ";
 	public final static String LF = "\n";
 	public final static String CRLF = "\r\n";
-		
+
 	public FileBuilder() {
 		this.out = null;
 	}
@@ -27,7 +27,7 @@ public class FileBuilder {
 			this.out = new BufferedOutputStream(new FileOutputStream(fileName));
 			this.fileName = fileName;
 		} catch (NullPointerException e) {
-			this.out = null;			
+			this.out = null;
 		} catch (FileNotFoundException e) {
 			ConsoleUtils.notice(e.getMessage());
 			this.out = null;
@@ -36,23 +36,21 @@ public class FileBuilder {
 
 	public final void write(String text) {
 		try {
-			if(out == null) {
+			if (out == null) {
 				System.out.print(text);
-			}
-			else {
+			} else {
 				out.write(text.getBytes(CHARSET));
 			}
 		} catch (IOException e) {
 			ConsoleUtils.exit(1, "IO error: " + e.getMessage());
-		}		
+		}
 	}
 
 	public final void flush() {
 		try {
-			if(out == null) {
+			if (out == null) {
 				System.out.flush();
-			}
-			else {
+			} else {
 				out.flush();
 			}
 		} catch (IOException e) {
@@ -62,7 +60,7 @@ public class FileBuilder {
 
 	public final void close() {
 		this.flush();
-		if(this.fileName != null) {
+		if (this.fileName != null) {
 			Verbose.println("written to: " + this.fileName);
 		}
 	}
@@ -74,7 +72,7 @@ public class FileBuilder {
 	public String NewLine() {
 		return LF;
 	}
-	
+
 	int IndentLevel = 0;
 	String currentIndentString = "";
 
@@ -85,21 +83,21 @@ public class FileBuilder {
 
 	public final void decIndent() {
 		this.IndentLevel = this.IndentLevel - 1;
-		assert(this.IndentLevel >= 0);
+		assert (this.IndentLevel >= 0);
 		this.currentIndentString = null;
 	}
 
 	private final String Indent() {
-		if(this.currentIndentString == null){
+		if (this.currentIndentString == null) {
 			StringBuilder indentBuilder = new StringBuilder(64);
-			for(int i = 0; i < this.IndentLevel; ++i){
+			for (int i = 0; i < this.IndentLevel; ++i) {
 				indentBuilder.append(this.Tab());
 			}
 			this.currentIndentString = indentBuilder.toString();
 		}
 		return this.currentIndentString;
 	}
-	
+
 	public final void writeNewLine() {
 		this.write(this.NewLine());
 		this.flush();
@@ -118,5 +116,4 @@ public class FileBuilder {
 		this.write(text);
 	}
 
-	
 }

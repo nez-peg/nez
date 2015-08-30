@@ -10,16 +10,18 @@ public class IsSymbol extends Expression implements Contextual {
 	public final Tag tableName;
 	final GrammarFile ns;
 	public final boolean is;
+
 	IsSymbol(SourcePosition s, GrammarFile ns, Tag tableName, boolean is) {
 		super(s);
 		this.ns = ns;
 		this.tableName = tableName;
 		this.is = is;
 	}
+
 	@Override
 	public final boolean equalsExpression(Expression o) {
-		if(o instanceof IsSymbol) {
-			IsSymbol e = (IsSymbol)o;
+		if (o instanceof IsSymbol) {
+			IsSymbol e = (IsSymbol) o;
 			return this.tableName == e.tableName && this.ns == e.ns && this.is == e.is;
 		}
 		return false;
@@ -45,19 +47,21 @@ public class IsSymbol extends Expression implements Contextual {
 	public String getPredicate() {
 		return (is ? "is " : "isa ") + tableName.getName();
 	}
+
 	@Override
 	public String key() {
 		return this.getPredicate();
 	}
+
 	@Override
 	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeIsSymbol(this);
 	}
-	
+
 	@Override
 	public boolean isConsumed() {
 		Expression inner = this.getSymbolExpression();
-		if(inner != null) {
+		if (inner != null) {
 			return inner.isConsumed();
 		}
 		return false;
@@ -67,13 +71,15 @@ public class IsSymbol extends Expression implements Contextual {
 	public int inferTypestate(Visa v) {
 		return Typestate.BooleanType;
 	}
+
 	@Override
 	public short acceptByte(int ch) {
-//		if(this.getSymbolExpression() != null) {
-//			return this.getSymbolExpression().acceptByte(ch);
-//		}
+		// if(this.getSymbolExpression() != null) {
+		// return this.getSymbolExpression().acceptByte(ch);
+		// }
 		return PossibleAcceptance.Accept;
 	}
+
 	@Override
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
 		return bc.encodeIsSymbol(this, next, failjump);

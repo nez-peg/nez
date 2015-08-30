@@ -11,15 +11,15 @@ import nez.main.Verbose;
 import nez.util.UList;
 
 public abstract class NezCompiler extends NezEncoder {
-	
+
 	public final static NezCompiler newCompiler(NezOption option) {
 		return new PackratCompiler(option);
 	}
-	
+
 	protected NezCompiler(NezOption option) {
 		super(option);
 	}
-	
+
 	public final NezCode compile(Grammar grammar) {
 		return this.compile(grammar, null);
 	}
@@ -27,34 +27,34 @@ public abstract class NezCompiler extends NezEncoder {
 	public NezCode compile(Grammar grammar, ByteCoder coder) {
 		long t = System.nanoTime();
 		List<MemoPoint> memoPointList = null;
-		if(option.enabledMemoization || option.enabledPackratParsing) {
+		if (option.enabledMemoization || option.enabledPackratParsing) {
 			memoPointList = new UList<MemoPoint>(new MemoPoint[4]);
 		}
 		initProductionCodeMap(grammar, memoPointList);
 		UList<Instruction> codeList = new UList<Instruction>(new Instruction[64]);
-//		Production start = grammar.getStartProduction();
-//		this.encodeProduction(codeList, start, new IRet(start));
-//		for(Production p : grammar.getProductionList()) {
-//			if(p != start) {
-//				this.encodeProduction(codeList, p, new IRet(p));
-//			}
-//		}
-		for(Production p : grammar.getProductionList()) {
+		// Production start = grammar.getStartProduction();
+		// this.encodeProduction(codeList, start, new IRet(start));
+		// for(Production p : grammar.getProductionList()) {
+		// if(p != start) {
+		// this.encodeProduction(codeList, p, new IRet(p));
+		// }
+		// }
+		for (Production p : grammar.getProductionList()) {
 			this.encodeProduction(codeList, p, new IRet(p));
 		}
-		for(Instruction inst : codeList) {
-			if(inst instanceof ICall) {
+		for (Instruction inst : codeList) {
+			if (inst instanceof ICall) {
 				ProductionCode deref = this.pcodeMap.get(((ICall) inst).rule.getUniqueName());
-				if(deref == null) {
+				if (deref == null) {
 					Verbose.debug("no deref: " + ((ICall) inst).rule.getUniqueName());
 				}
 				((ICall) inst).setResolvedJump(deref.compiled);
 			}
-//			Verbose.debug("\t" + inst.id + "\t" + inst);
+			// Verbose.debug("\t" + inst.id + "\t" + inst);
 		}
 		long t2 = System.nanoTime();
 		Verbose.printElapsedTime("CompilingTime", t, t2);
-		if(coder != null) {
+		if (coder != null) {
 			coder.setHeader(codeList.size(), pcodeMap.size(), memoPointList == null ? 0 : memoPointList.size());
 			coder.setInstructions(codeList.ArrayValues, codeList.size());
 		}
@@ -63,49 +63,49 @@ public abstract class NezCompiler extends NezEncoder {
 	}
 
 	private Production encodingProduction;
-	
+
 	protected final Production getEncodingProduction() {
 		return this.encodingProduction;
 	}
-		
+
 	protected void encodeProduction(UList<Instruction> codeList, Production p, Instruction next) {
 		String uname = p.getUniqueName();
 		ProductionCode pcode = this.pcodeMap.get(uname);
-		if(pcode != null) {
+		if (pcode != null) {
 			encodingProduction = p;
-			pcode.compiled = encode(pcode.localExpression, next, null/*failjump*/);
+			pcode.compiled = encode(pcode.localExpression, next, null/* failjump */);
 			Instruction block = new ILabel(p, pcode.compiled);
 			this.layoutCode(codeList, block);
-//			if(code.memoPoint != null) {
-//				code.memoStart = this.encodeMemoizingProduction(code);
-//				this.layoutCode(codeList, code.memoStart);
-//			}
+			// if(code.memoPoint != null) {
+			// code.memoStart = this.encodeMemoizingProduction(code);
+			// this.layoutCode(codeList, code.memoStart);
+			// }
 		}
 	}
-	
+
 	protected Expression optimizeLocalProduction(Production p) {
 		return GrammarOptimizer.resolveNonTerminal(p.getExpression());
 	}
 
 	public final void layoutCode(UList<Instruction> codeList, Instruction inst) {
-		if(inst == null) {
+		if (inst == null) {
 			return;
 		}
-		if(inst.id == -1) {
+		if (inst.id == -1) {
 			inst.id = codeList.size();
 			codeList.add(inst);
 			layoutCode(codeList, inst.next);
-			if(inst.next != null && inst.id + 1 != inst.next.id) {
+			if (inst.next != null && inst.id + 1 != inst.next.id) {
 				Instruction.labeling(inst.next);
 			}
 			layoutCode(codeList, inst.branch());
-			if(inst instanceof IFirst) {
-				IFirst match = (IFirst)inst;
-				for(int ch = 0; ch < match.jumpTable.length; ch ++) {
+			if (inst instanceof IFirst) {
+				IFirst match = (IFirst) inst;
+				for (int ch = 0; ch < match.jumpTable.length; ch++) {
 					layoutCode(codeList, match.jumpTable[ch]);
 				}
 			}
-			//encode(inst.branch2());
+			// encode(inst.branch2());
 		}
 	}
 

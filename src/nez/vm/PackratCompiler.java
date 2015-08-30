@@ -13,28 +13,29 @@ public class PackratCompiler extends OptimizedCompiler {
 	}
 
 	protected Instruction encodeMemoizingProduction(ProductionCode cp) {
-//		if(cp.memoPoint != null) {
-//			Production p = cp.production;
-//			//boolean node = option.enabledASTConstruction ? !p.isNoNTreeConstruction() : false;
-//			boolean state = p.isContextual();
-//			Instruction next = new IMemo(p, cp.memoPoint, state, new IRet(p));
-//			Instruction inside = new ICall(cp.production, next);
-//			inside = new IAlt(p, new IMemoFail(p, state, cp.memoPoint), inside);
-//			return new ILookup(p, cp.memoPoint, state, inside, new IRet(p));
-//		}
+		// if(cp.memoPoint != null) {
+		// Production p = cp.production;
+		// //boolean node = option.enabledASTConstruction ?
+		// !p.isNoNTreeConstruction() : false;
+		// boolean state = p.isContextual();
+		// Instruction next = new IMemo(p, cp.memoPoint, state, new IRet(p));
+		// Instruction inside = new ICall(cp.production, next);
+		// inside = new IAlt(p, new IMemoFail(p, state, cp.memoPoint), inside);
+		// return new ILookup(p, cp.memoPoint, state, inside, new IRet(p));
+		// }
 		return null;
 	}
 
 	public final Instruction encodeNonTerminal(NonTerminal p, Instruction next, Instruction failjump) {
 		Production r = p.getProduction();
 		ProductionCode pcode = this.getCodePoint(r);
-		if(pcode.inlining) {
+		if (pcode.inlining) {
 			this.optimizedInline(r);
 			return encode(pcode.localExpression, next, failjump);
 		}
-		if(pcode.memoPoint != null) {
-			if(!option.enabledASTConstruction || r.isNoNTreeConstruction()) {
-				if(Verbose.PackratParsing) {
+		if (pcode.memoPoint != null) {
+			if (!option.enabledASTConstruction || r.isNoNTreeConstruction()) {
+				if (Verbose.PackratParsing) {
 					Verbose.println("memoize: " + p.getLocalName() + " at " + this.getEncodingProduction().getLocalName());
 				}
 				Instruction inside = new IMemo(p, pcode.memoPoint, pcode.state, next);
@@ -49,11 +50,11 @@ public class PackratCompiler extends OptimizedCompiler {
 	// AST Construction
 
 	public final Instruction encodeLink(Link p, Instruction next, Instruction failjump) {
-		if(option.enabledASTConstruction && p.get(0) instanceof NonTerminal) {
+		if (option.enabledASTConstruction && p.get(0) instanceof NonTerminal) {
 			NonTerminal n = (NonTerminal) p.get(0);
 			ProductionCode pcode = this.getCodePoint(n.getProduction());
-			if(pcode.memoPoint != null) {
-				if(Verbose.PackratParsing) {
+			if (pcode.memoPoint != null) {
+				if (Verbose.PackratParsing) {
 					Verbose.println("memoize: @" + n.getLocalName() + " at " + this.getEncodingProduction().getLocalName());
 				}
 				Instruction inside = new ITMemo(p, pcode.memoPoint, pcode.state, next);

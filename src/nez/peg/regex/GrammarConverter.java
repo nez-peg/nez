@@ -8,10 +8,13 @@ import nez.util.FileBuilder;
 public abstract class GrammarConverter extends AbstractTreeVisitor {
 	final protected FileBuilder file;
 	final protected GrammarFile grammar;
+
 	public GrammarConverter(GrammarFile peg, String name) {
 		this.file = new FileBuilder(name);
 		this.grammar = peg;
 	}
+
 	public abstract String getDesc();
+
 	public abstract void convert(CommonTree node);
 }

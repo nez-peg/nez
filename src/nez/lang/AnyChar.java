@@ -8,10 +8,11 @@ public class AnyChar extends Char implements Consumed {
 	AnyChar(SourcePosition s, boolean binary) {
 		super(s, binary);
 	}
+
 	@Override
 	public final boolean equalsExpression(Expression o) {
-		if(o instanceof AnyChar) {
-			return this.binary == ((AnyChar)o).isBinary();
+		if (o instanceof AnyChar) {
+			return this.binary == ((AnyChar) o).isBinary();
 		}
 		return false;
 	}
@@ -25,12 +26,12 @@ public class AnyChar extends Char implements Consumed {
 	public String getPredicate() {
 		return "any";
 	}
-	
+
 	@Override
-	public String key() { 
+	public String key() {
 		return binary ? "b." : ".";
 	}
-	
+
 	@Override
 	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeAnyChar(this);
@@ -45,12 +46,12 @@ public class AnyChar extends Char implements Consumed {
 	public int inferTypestate(Visa v) {
 		return Typestate.BooleanType;
 	}
-	
+
 	@Override
 	public short acceptByte(int ch) {
 		return PossibleAcceptance.acceptAny(binary, ch);
 	}
-	
+
 	@Override
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
 		return bc.encodeAnyChar(this, next, failjump);

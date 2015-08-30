@@ -50,10 +50,9 @@ public abstract class NezGenerator extends NezEncoder {
 	protected FileBuilder file;
 
 	protected void setOutputFile(String fileName) {
-		if(fileName == null) {
+		if (fileName == null) {
 			this.file = new FileBuilder();
-		}
-		else {
+		} else {
 			this.file = new FileBuilder(fileName);
 		}
 	}
@@ -130,38 +129,37 @@ public abstract class NezGenerator extends NezEncoder {
 	// AST Construction
 
 	public Instruction encodeLink(Link p, Instruction next, Instruction failjump) {
-		if(option.enabledASTConstruction) {
+		if (option.enabledASTConstruction) {
 			this.visitLink(p);
-		}
-		else {
+		} else {
 			this.visitExpression(p.get(0));
 		}
 		return null;
 	}
 
 	public Instruction encodeNew(New p, Instruction next) {
-		if(option.enabledASTConstruction) {
+		if (option.enabledASTConstruction) {
 			this.visitNew(p);
 		}
 		return null;
 	}
 
 	public Instruction encodeCapture(Capture p, Instruction next) {
-		if(option.enabledASTConstruction) {
+		if (option.enabledASTConstruction) {
 			this.visitCapture(p);
 		}
 		return null;
 	}
 
 	public Instruction encodeTagging(Tagging p, Instruction next) {
-		if(option.enabledASTConstruction) {
+		if (option.enabledASTConstruction) {
 			this.visitTagging(p);
 		}
 		return null;
 	}
 
 	public Instruction encodeReplace(Replace p, Instruction next) {
-		if(option.enabledASTConstruction) {
+		if (option.enabledASTConstruction) {
 			this.visitReplace(p);
 		}
 		return null;
@@ -206,7 +204,7 @@ public abstract class NezGenerator extends NezEncoder {
 		this.visitIsIndent(p);
 		return null;
 	}
-	
+
 	public Instruction encodeEmpty(Expression p, Instruction next) {
 		this.visitEmpty(p);
 		return null;
@@ -219,7 +217,7 @@ public abstract class NezGenerator extends NezEncoder {
 	public Instruction encodeIfFlag(IfFlag ifFlag, Instruction next, Instruction failjump) {
 		return next;
 	}
-	
+
 	@Override
 	public Instruction encodeExtension(Expression p, Instruction next, Instruction failjump) {
 		this.visitUndefined(p);
@@ -231,39 +229,63 @@ public abstract class NezGenerator extends NezEncoder {
 	}
 
 	public void visitUndefined(Expression p) {
-		
+
 	}
 
 	public abstract void visitEmpty(Expression p);
+
 	public abstract void visitFailure(Expression p);
+
 	public abstract void visitAnyChar(AnyChar p);
+
 	public abstract void visitByteChar(ByteChar p);
+
 	public abstract void visitByteMap(ByteMap p);
+
 	public abstract void visitOption(Option p);
+
 	public abstract void visitRepetition(Repetition p);
+
 	public abstract void visitRepetition1(Repetition1 p);
+
 	public abstract void visitAnd(And p);
+
 	public abstract void visitNot(Not p);
+
 	public abstract void visitSequence(Sequence p);
+
 	public abstract void visitChoice(Choice p);
+
 	public abstract void visitNonTerminal(NonTerminal p);
+
 	public abstract void visitCharMultiByte(MultiChar p);
 
 	// AST Construction
 	public abstract void visitLink(Link p);
+
 	public abstract void visitNew(New p);
+
 	public abstract void visitCapture(Capture p);
+
 	public abstract void visitTagging(Tagging p);
+
 	public abstract void visitReplace(Replace p);
-	
+
 	// Symbol Tables
 	public abstract void visitBlock(Block p);
+
 	public abstract void visitDefSymbol(DefSymbol p);
-	public abstract void visitMatchSymbol(MatchSymbol p);	
-	public abstract void visitIsSymbol(IsSymbol p);	
+
+	public abstract void visitMatchSymbol(MatchSymbol p);
+
+	public abstract void visitIsSymbol(IsSymbol p);
+
 	public abstract void visitDefIndent(DefIndent p);
+
 	public abstract void visitIsIndent(IsIndent p);
+
 	public abstract void visitExistsSymbol(ExistsSymbol p);
+
 	public abstract void visitLocalTable(LocalTable p);
 
 	// ---------------------------------------------------------------------
@@ -272,7 +294,7 @@ public abstract class NezGenerator extends NezEncoder {
 		this.setOption(option);
 		this.setOutputFile(fileName);
 		makeHeader(grammar);
-		for(Production p : grammar.getProductionList()) {
+		for (Production p : grammar.getProductionList()) {
 			visitProduction(p);
 		}
 		makeFooter(grammar);

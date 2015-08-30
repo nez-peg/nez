@@ -8,14 +8,16 @@ import nez.vm.NezEncoder;
 
 public class MatchSymbol extends Expression implements Contextual {
 	public final Tag tableName;
+
 	MatchSymbol(SourcePosition s, Tag tableName) {
 		super(s);
 		this.tableName = tableName;
 	}
+
 	@Override
 	public final boolean equalsExpression(Expression o) {
-		if(o instanceof MatchSymbol) {
-			MatchSymbol e = (MatchSymbol)o;
+		if (o instanceof MatchSymbol) {
+			MatchSymbol e = (MatchSymbol) o;
 			return this.tableName == e.tableName;
 		}
 		return false;
@@ -33,10 +35,12 @@ public class MatchSymbol extends Expression implements Contextual {
 	public String getPredicate() {
 		return "match " + tableName.getName();
 	}
+
 	@Override
 	public String key() {
 		return this.getPredicate();
 	}
+
 	@Override
 	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeMatchSymbol(this);
@@ -51,10 +55,12 @@ public class MatchSymbol extends Expression implements Contextual {
 	public int inferTypestate(Visa v) {
 		return Typestate.BooleanType;
 	}
+
 	@Override
 	public short acceptByte(int ch) {
 		return PossibleAcceptance.Accept;
 	}
+
 	@Override
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
 		return bc.encodeMatchSymbol(this, next, failjump);

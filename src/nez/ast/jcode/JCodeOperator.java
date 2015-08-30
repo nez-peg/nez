@@ -3,59 +3,59 @@ package nez.ast.jcode;
 public class JCodeOperator {
 
 	public static Object Plus(Object x) {
-		if(x instanceof Number) {
+		if (x instanceof Number) {
 			return x;
 		}
 		throw new RuntimeException("unsupported operator + " + x);
 	}
 
 	public static Object Minus(Object x) {
-		if(x instanceof Double) {
+		if (x instanceof Double) {
 			return -((Long) x).doubleValue();
 		}
 		return -((Number) x).longValue();
 	}
 
 	public static long BitwiseNot(Object x) {
-		if(x instanceof Number && !(x instanceof Double)) {
+		if (x instanceof Number && !(x instanceof Double)) {
 			return ~((Number) x).longValue();
 		}
 		throw new RuntimeException("unsupported operator ~ " + x);
 	}
 
 	public static Object Add(Object x, Object y) {
-		if(x instanceof String || y instanceof String) {
+		if (x instanceof String || y instanceof String) {
 			return "" + x + y;
 		}
-		if(x instanceof Double || y instanceof Double) {
+		if (x instanceof Double || y instanceof Double) {
 			return ((Number) x).doubleValue() + ((Number) y).doubleValue();
 		}
 		return ((Number) x).longValue() + ((Number) y).longValue();
 	}
 
 	public static Object Sub(Object x, Object y) {
-		if(x instanceof Double || y instanceof Double) {
+		if (x instanceof Double || y instanceof Double) {
 			return ((Double) x).doubleValue() - ((Double) y).doubleValue();
 		}
 		return ((Number) x).longValue() - ((Number) y).longValue();
 	}
 
 	public static Object Mul(Object x, Object y) {
-		if(x instanceof Double || y instanceof Double) {
+		if (x instanceof Double || y instanceof Double) {
 			return ((Number) x).doubleValue() * ((Number) y).doubleValue();
 		}
 		return ((Number) x).longValue() * ((Number) y).longValue();
 	}
 
 	public static Object Div(Object x, Object y) {
-		if(x instanceof Double || y instanceof Double) {
+		if (x instanceof Double || y instanceof Double) {
 			return ((Number) x).doubleValue() / ((Number) y).doubleValue();
 		}
 		return ((Number) x).longValue() / ((Number) y).longValue();
 	}
 
 	public static Object Mod(Object x, Object y) {
-		if(x instanceof Double || y instanceof Double) {
+		if (x instanceof Double || y instanceof Double) {
 			return ((Number) x).doubleValue() % ((Number) y).doubleValue();
 		}
 		return ((Number) x).longValue() / ((Number) y).longValue();
@@ -81,11 +81,11 @@ public class JCodeOperator {
 		return ((Number) x).longValue() ^ ((Number) y).longValue();
 	}
 
-	public static boolean LogicalAnd(boolean x, boolean y){
+	public static boolean LogicalAnd(boolean x, boolean y) {
 		return x && y;
 	}
 
-	public static boolean LogicalOr(boolean x, boolean y){
+	public static boolean LogicalOr(boolean x, boolean y) {
 		return x || y;
 	}
 
@@ -106,14 +106,14 @@ public class JCodeOperator {
 	}
 
 	public static boolean Equals(Object x, Object y) {
-		if(x instanceof Number && y instanceof Number) {
+		if (x instanceof Number && y instanceof Number) {
 			return ((Number) x).doubleValue() == ((Number) y).doubleValue();
 		}
 		return x == y;
 	}
 
 	public static boolean NotEquals(Object x, Object y) {
-		if(x instanceof Number && y instanceof Number) {
+		if (x instanceof Number && y instanceof Number) {
 			return ((Number) x).doubleValue() != ((Number) y).doubleValue();
 		}
 		return x != y;

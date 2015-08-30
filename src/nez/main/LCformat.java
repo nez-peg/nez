@@ -18,14 +18,14 @@ public class LCformat extends Command {
 	public void exec(CommandContext config) {
 		GrammarFile gfile = config.getGrammarFile(false);
 		Grammar g = config.getGrammar();
-		while(config.hasInputSource()) {
+		while (config.hasInputSource()) {
 			SourceContext source = config.nextInputSource();
 			CommonTree node = g.parseCommonTree(source);
-			if(node == null) {
+			if (node == null) {
 				ConsoleUtils.println(source.getSyntaxErrorMessage());
 				continue;
 			}
-			if(source.hasUnconsumed()) {
+			if (source.hasUnconsumed()) {
 				ConsoleUtils.println(source.getUnconsumedMessage());
 			}
 			source = null;

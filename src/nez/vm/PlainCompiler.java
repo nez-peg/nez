@@ -38,7 +38,7 @@ public class PlainCompiler extends NezCompiler {
 	public PlainCompiler(NezOption option) {
 		super(option);
 	}
-		
+
 	// encoding
 
 	public Instruction encode(Expression e, Instruction next, Instruction failjump) {
@@ -61,7 +61,7 @@ public class PlainCompiler extends NezCompiler {
 	public Instruction encodeMultiChar(MultiChar p, Instruction next, Instruction failjump) {
 		return new IStr(p, next);
 	}
-	
+
 	public Instruction encodeFail(Expression p) {
 		return this.commonFailure;
 	}
@@ -72,9 +72,10 @@ public class PlainCompiler extends NezCompiler {
 	}
 
 	public Instruction encodeRepetition(Repetition p, Instruction next) {
-		//Expression skip = p.possibleInfiniteLoop ? new ISkip(p) : new ISkip(p);
+		// Expression skip = p.possibleInfiniteLoop ? new ISkip(p) : new
+		// ISkip(p);
 		Instruction skip = new ISkip(p);
-		Instruction start = encode(p.get(0), skip, next/*FIXME*/);
+		Instruction start = encode(p.get(0), skip, next/* FIXME */);
 		skip.next = start;
 		return new IAlt(p, next, start);
 	}
@@ -94,9 +95,9 @@ public class PlainCompiler extends NezCompiler {
 	}
 
 	public Instruction encodeSequence(Sequence p, Instruction next, Instruction failjump) {
-//		return encode(p.get(0), encode(p.get(1), next, failjump), failjump);
+		// return encode(p.get(0), encode(p.get(1), next, failjump), failjump);
 		Instruction nextStart = next;
-		for(int i = p.size() - 1; i >= 0; i--) {
+		for (int i = p.size() - 1; i >= 0; i--) {
 			Expression e = p.get(i);
 			nextStart = encode(e, nextStart, failjump);
 		}
@@ -105,7 +106,7 @@ public class PlainCompiler extends NezCompiler {
 
 	public Instruction encodeChoice(Choice p, Instruction next, Instruction failjump) {
 		Instruction nextChoice = encode(p.get(p.size() - 1), next, failjump);
-		for(int i = p.size() - 2; i >= 0; i--) {
+		for (int i = p.size() - 2; i >= 0; i--) {
 			Expression e = p.get(i);
 			nextChoice = new IAlt(e, nextChoice, encode(e, new ISucc(e, next), nextChoice));
 		}
@@ -120,7 +121,7 @@ public class PlainCompiler extends NezCompiler {
 	// AST Construction
 
 	public Instruction encodeLink(Link p, Instruction next, Instruction failjump) {
-		if(this.option.enabledASTConstruction) {
+		if (this.option.enabledASTConstruction) {
 			next = new ITPop(p, next);
 			next = encode(p.get(0), next, failjump);
 			return new ITPush(p, next);
@@ -129,28 +130,28 @@ public class PlainCompiler extends NezCompiler {
 	}
 
 	public Instruction encodeNew(New p, Instruction next) {
-		if(this.option.enabledASTConstruction) {
+		if (this.option.enabledASTConstruction) {
 			return p.leftFold ? new ITLeftFold(p, next) : new INew(p, next);
 		}
 		return next;
 	}
 
 	public Instruction encodeCapture(Capture p, Instruction next) {
-		if(this.option.enabledASTConstruction) {
+		if (this.option.enabledASTConstruction) {
 			return new ICapture(p, next);
 		}
 		return next;
 	}
 
 	public Instruction encodeTagging(Tagging p, Instruction next) {
-		if(this.option.enabledASTConstruction) {
+		if (this.option.enabledASTConstruction) {
 			return new ITag(p, next);
 		}
 		return next;
 	}
 
 	public Instruction encodeReplace(Replace p, Instruction next) {
-		if(this.option.enabledASTConstruction) {
+		if (this.option.enabledASTConstruction) {
 			return new IReplace(p, next);
 		}
 		return next;
@@ -174,10 +175,9 @@ public class PlainCompiler extends NezCompiler {
 
 	public Instruction encodeExistsSymbol(ExistsSymbol p, Instruction next, Instruction failjump) {
 		String symbol = p.getSymbol();
-		if(symbol == null) {
+		if (symbol == null) {
 			return new IExists(p, next);
-		}
-		else {
+		} else {
 			return new IExistsSymbol(p, next);
 		}
 	}
@@ -187,10 +187,9 @@ public class PlainCompiler extends NezCompiler {
 	}
 
 	public Instruction encodeIsSymbol(IsSymbol p, Instruction next, Instruction failjump) {
-		if(p.is) {
+		if (p.is) {
 			return new IPos(p, encode(p.getSymbolExpression(), new IIsSymbol(p, next), failjump));
-		}
-		else {
+		} else {
 			return new IPos(p, encode(p.getSymbolExpression(), new IIsaSymbol(p, next), failjump));
 		}
 	}

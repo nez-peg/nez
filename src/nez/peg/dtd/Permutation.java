@@ -7,7 +7,6 @@ public class Permutation {
 	private int[][] perm_list;
 	private int perm_list_index;
 
-
 	public Permutation(int[] target) {
 		this.target = target;
 		this.number = target.length;
@@ -26,8 +25,8 @@ public class Permutation {
 	private int fact(int n) {
 		return n == 0 ? 1 : n * fact(n - 1);
 	}
-	
-	private void printPerm(){
+
+	private void printPerm() {
 		for (int[] x : perm_list) {
 			for (int i : x) {
 				System.out.print(i + " ");
@@ -55,7 +54,7 @@ public class Permutation {
 	}
 
 	public static void main(String[] args) {
-		int[] target = {2, 4, 6, 8};
+		int[] target = { 2, 4, 6, 8 };
 		Permutation permutation = new Permutation(target);
 		permutation.printPerm();
 	}

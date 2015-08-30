@@ -6,18 +6,20 @@ import nez.vm.NezEncoder;
 
 public class NonTerminal extends Expression {
 	private GrammarFile ns;
-	private String  localName;
-	private String  uniqueName;
+	private String localName;
+	private String uniqueName;
 	private Production deref = null;
+
 	public NonTerminal(SourcePosition s, GrammarFile ns, String ruleName) {
 		super(s);
 		this.ns = ns;
 		this.localName = ruleName;
 		this.uniqueName = this.ns.uniqueName(this.localName);
 	}
+
 	@Override
 	public final boolean equalsExpression(Expression o) {
-		if(o instanceof NonTerminal) {
+		if (o instanceof NonTerminal) {
 			return this.localName.equals(((NonTerminal) o).getLocalName());
 		}
 		return false;
@@ -38,7 +40,7 @@ public class NonTerminal extends Expression {
 	public final String getUniqueName() {
 		return this.uniqueName;
 	}
-	
+
 	public final boolean syncProduction() {
 		Production p = this.ns.getProduction(this.localName);
 		boolean sync = (deref != p);
@@ -47,12 +49,12 @@ public class NonTerminal extends Expression {
 	}
 
 	public final Production getProduction() {
-		if(deref != null) {
+		if (deref != null) {
 			return deref;
 		}
 		return this.ns.getProduction(this.localName);
 	}
-	
+
 	public final Expression deReference() {
 		Production r = this.ns.getProduction(this.localName);
 		return (r != null) ? r.getExpression() : null;
@@ -82,11 +84,12 @@ public class NonTerminal extends Expression {
 	public String getPredicate() {
 		return getUniqueName();
 	}
+
 	@Override
 	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeNonTerminal(this);
 	}
-	
+
 	@Override
 	public boolean isConsumed() {
 		return this.getProduction().isConsumed();
@@ -96,13 +99,12 @@ public class NonTerminal extends Expression {
 	public int inferTypestate(Visa v) {
 		return this.getProduction().inferTypestate(v);
 	}
-	
+
 	@Override
 	public short acceptByte(int ch) {
 		try {
 			return this.deReference().acceptByte(ch);
-		}
-		catch(StackOverflowError e) {
+		} catch (StackOverflowError e) {
 			System.out.println(e + " at " + this.getLocalName());
 			return PossibleAcceptance.Accept;
 		}
@@ -112,11 +114,9 @@ public class NonTerminal extends Expression {
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
 		return bc.encodeNonTerminal(this, next, failjump);
 	}
-		
+
 	public final Expression newNonTerminal(String localName) {
 		return GrammarFactory.newNonTerminal(this.getSourcePosition(), this.getGrammarFile(), localName);
 	}
-
-
 
 }

@@ -23,5 +23,4 @@ import nez.lang.Tagging;
 
 public abstract class ParserGenerator extends NezGenerator {
 
-
 }
