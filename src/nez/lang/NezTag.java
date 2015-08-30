@@ -4,6 +4,7 @@ import nez.ast.Tag;
 
 public class NezTag {
 
+	static final Tag Source         = Tag.tag("Source");
 	static final Tag Text         = Tag.tag("Text");
 	static final Tag Integer      = Tag.tag("Integer");
 	static final Tag Name         = Tag.tag("Name");

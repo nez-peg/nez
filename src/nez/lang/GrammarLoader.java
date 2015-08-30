@@ -11,13 +11,13 @@ import nez.main.Verbose;
 import nez.util.ConsoleUtils;
 
 public abstract class GrammarLoader extends AbstractTreeVisitor {
-	private GrammarFile loaded;
+	private GrammarFile file;
 	
-	public GrammarLoader(GrammarFile loaded) {
-		this.loaded = loaded;
+	public GrammarLoader(GrammarFile file) {
+		this.file = file;
 	}
 	public final GrammarFile getGrammarFile() {
-		return this.loaded;
+		return this.file;
 	}
 	
 	public abstract Grammar getGrammar();
@@ -42,20 +42,20 @@ public abstract class GrammarLoader extends AbstractTreeVisitor {
 			}
 			parse(node);
 		}
-		loaded.verify();
+		file.verify();
 	}
 
 	public abstract void parse(AbstractTree<?> node);
 
 	public final void reportError(SourcePosition s, String message) {
-		this.loaded.reportError(s, message);
+		this.file.reportError(s, message);
 	}
 
 	public final void reportWarning(SourcePosition s, String message) {
-		this.loaded.reportWarning(s, message);
+		this.file.reportWarning(s, message);
 	}
 
 	public final void reportNotice(SourcePosition s, String message) {
-		this.loaded.reportNotice(s, message);
+		this.file.reportNotice(s, message);
 	}
 }

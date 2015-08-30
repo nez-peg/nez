@@ -421,7 +421,7 @@ public class NezCombinator extends ParserCombinator {
 		return New(
 			P("_"), 
 			ZeroMore(Link(null, "Chunk")),
-			Tag(NezTag.List)
+			Tag(NezTag.Source)
 		);
 	}
 

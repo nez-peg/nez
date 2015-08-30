@@ -10,15 +10,17 @@ import nez.util.StringUtils;
 import nez.util.UList;
 
 public class NezGrammarLoader extends GrammarLoader {
-	Grammar nezGrammar;
+	static Grammar nezGrammar;
 	
-	public NezGrammarLoader(GrammarFile loaded) {
-		super(loaded);
-		this.nezGrammar = NezCombinator.newGrammar("Chunk", NezOption.newSafeOption());
+	public NezGrammarLoader(GrammarFile file) {
+		super(file);
 	}
 	
 	@Override
 	public Grammar getGrammar() {
+		if(nezGrammar == null) {
+			nezGrammar = NezCombinator.newGrammar("File", NezOption.newSafeOption());
+		}
 		return nezGrammar;
 	}
 
@@ -26,7 +28,7 @@ public class NezGrammarLoader extends GrammarLoader {
 		visit("parse", node);
 	}
 	
-	public boolean parseFile(AbstractTree<?> node) {
+	public boolean parseSource(AbstractTree<?> node) {
 		for(AbstractTree<?> subnode : node) {
 			parse(subnode);
 		}
