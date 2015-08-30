@@ -18,7 +18,6 @@ import nez.lang.LocalTable;
 import nez.lang.MatchSymbol;
 import nez.lang.MultiChar;
 import nez.lang.New;
-import nez.lang.NezTag;
 import nez.lang.NonTerminal;
 import nez.lang.Production;
 import nez.lang.Replace;
@@ -1271,6 +1270,8 @@ class IIsaSymbol extends AbstractTableInstruction {
 }
 
 class IDefIndent extends Instruction {
+	public final static Tag _Indent = Tag.tag("Indent");
+
 	IDefIndent(DefIndent e, Instruction next) {
 		super(InstructionSet.Nop, e, next);
 	}
@@ -1309,12 +1310,14 @@ class IDefIndent extends Instruction {
 				b[i] = ' ';
 			}
 		}
-		sc.getSymbolTable().addSymbol(NezTag.Indent, b);
+		sc.getSymbolTable().addSymbol(_Indent, b);
 		return this.next;
 	}
 }
 
 class IIsIndent extends Instruction {
+	public final static Tag _Indent = Tag.tag("Indent");
+
 	IIsIndent(IsIndent e, Instruction next) {
 		super(InstructionSet.Nop, e, next);
 	}
@@ -1332,7 +1335,7 @@ class IIsIndent extends Instruction {
 				return sc.fail();
 			}
 		}
-		byte[] b = sc.getSymbolTable().getSymbol(NezTag.Indent);
+		byte[] b = sc.getSymbolTable().getSymbol(_Indent);
 		if (b != null) {
 			if (sc.match(pos, b)) {
 				sc.consume(b.length);

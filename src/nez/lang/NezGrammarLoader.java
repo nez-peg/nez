@@ -19,11 +19,12 @@ public class NezGrammarLoader extends GrammarLoader {
 	@Override
 	public Grammar getGrammar() {
 		if (nezGrammar == null) {
-			nezGrammar = NezCombinator.newGrammar("File", NezOption.newSafeOption());
+			nezGrammar = NezGrammar.newGrammar("File", NezOption.newSafeOption());
 		}
 		return nezGrammar;
 	}
 
+	@Override
 	public void parse(AbstractTree<?> node) {
 		visit("parse", node);
 	}
@@ -36,13 +37,20 @@ public class NezGrammarLoader extends GrammarLoader {
 	}
 
 	private boolean binary = false;
+	public final static Tag _String = Tag.tag("String");
+	public final static Tag _Integer = Tag.tag("Integer");
+	public final static Tag _List = Tag.tag("List");
+	public final static Tag _Name = Tag.tag("Name");
+	public final static Tag _Format = Tag.tag("Format");
+	public final static Tag _Class = Tag.tag("_Class");
+
 	public final static Tag _anno = Tag.tag("anno");
 
-	public Production parseRule(AbstractTree<?> node) {
+	public Production parseProduction(AbstractTree<?> node) {
 		AbstractTree<?> nameNode = node.get(_name);
 		String localName = nameNode.toText();
 		int productionFlag = 0;
-		if (nameNode.is(NezTag.String)) {
+		if (nameNode.is(_String)) {
 			localName = GrammarFile.nameTerminalProduction(localName);
 			productionFlag |= Production.TerminalProduction;
 		}
@@ -92,10 +100,10 @@ public class NezGrammarLoader extends GrammarLoader {
 		if (node.size() > 0) {
 			for (int i = 0; i < node.size(); i++) {
 				AbstractTree<?> o = node.get(i);
-				if (o.is(NezTag.List)) { // range
+				if (o.is(_List)) { // range
 					l.add(GrammarFactory.newCharSet(node, o.getText(0, ""), o.getText(1, "")));
 				}
-				if (o.is(NezTag.Class)) { // single
+				if (o.is(_Class)) { // single
 					l.add(GrammarFactory.newCharSet(node, o.toText(), o.toText()));
 				}
 			}
@@ -120,7 +128,7 @@ public class NezGrammarLoader extends GrammarLoader {
 		return GrammarFactory.newByteChar(node, this.binary, c);
 	}
 
-	public Expression newAny(AbstractTree<?> node) {
+	public Expression newAnyChar(AbstractTree<?> node) {
 		return GrammarFactory.newAnyChar(node, this.binary);
 	}
 
@@ -190,7 +198,7 @@ public class NezGrammarLoader extends GrammarLoader {
 		return label;
 	}
 
-	public Expression newLeftNew(AbstractTree<?> node) {
+	public Expression newLeftFold(AbstractTree<?> node) {
 		AbstractTree<?> exprNode = node.get(_expr, null);
 		Expression p = (exprNode == null) ? GrammarFactory.newEmpty(node) : newExpression(exprNode);
 		return GrammarFactory.newNew(node, true, parseLabelNode(node), p);
@@ -216,14 +224,6 @@ public class NezGrammarLoader extends GrammarLoader {
 		return GrammarFactory.newMatchSymbol(node, parseLabelNode(node));
 	}
 
-	// public Expression newCatch(AST ast) {
-	// return Factory.newCatch();
-	// }
-	//
-	// public Expression newFail(AST ast) {
-	// return Factory.newFail(Utils.unquoteString(ast.textAt(0, "")));
-	// }
-
 	public Expression newIf(AbstractTree<?> node) {
 		return GrammarFactory.newIfFlag(node, node.getText(_name, ""));
 	}
@@ -231,16 +231,6 @@ public class NezGrammarLoader extends GrammarLoader {
 	public Expression newOn(AbstractTree<?> node) {
 		return GrammarFactory.newOnFlag(node, true, node.getText(_name, ""), newExpression(node.get(_expr)));
 	}
-
-	// public Expression newWith(AbstractTree<?> ast) {
-	// return GrammarFactory.newOnFlag(ast, true, ast.getText(0, ""),
-	// newExpression(ast.get(1)));
-	// }
-	//
-	// public Expression newWithout(AbstractTree<?> ast) {
-	// return GrammarFactory.newOnFlag(ast, false, ast.getText(0, ""),
-	// newExpression(ast.get(1)));
-	// }
 
 	public Expression newBlock(AbstractTree<?> node) {
 		return GrammarFactory.newBlock(node, newExpression(node.get(_expr)));
@@ -294,23 +284,23 @@ public class NezGrammarLoader extends GrammarLoader {
 	}
 
 	Formatter toFormatter(AbstractTree<?> node) {
-		if (node.is(NezTag.List)) {
+		if (node.is(_List)) {
 			ArrayList<Formatter> l = new ArrayList<Formatter>(node.size());
 			for (AbstractTree<?> t : node) {
 				l.add(toFormatter(t));
 			}
 			return Formatter.newFormatter(l);
 		}
-		if (node.is(NezTag.Integer)) {
+		if (node.is(_Integer)) {
 			return Formatter.newFormatter(StringUtils.parseInt(node.toText(), 0));
 		}
-		if (node.is(NezTag.Format)) {
+		if (node.is(_Format)) {
 			int s = StringUtils.parseInt(node.getText(0, "*"), -1);
 			int e = StringUtils.parseInt(node.getText(2, "*"), -1);
 			Formatter fmt = toFormatter(node.get(1));
 			return Formatter.newFormatter(s, fmt, e);
 		}
-		if (node.is(NezTag.Name)) {
+		if (node.is(_Name)) {
 			Formatter fmt = Formatter.newAction(node.toText());
 			if (fmt == null) {
 				this.reportWarning(node, "undefined formatter action");

@@ -8,7 +8,7 @@ import nez.generator.GeneratorLoader;
 import nez.generator.NezGenerator;
 import nez.lang.Grammar;
 import nez.lang.GrammarFile;
-import nez.lang.NezCombinator;
+import nez.lang.NezGrammar;
 import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
 import nez.util.UList;
@@ -218,7 +218,7 @@ class CommandContext {
 	public final GrammarFile getGrammarFile(boolean grammarFileCreation) {
 		if (grammarFile != null) {
 			if (grammarFile.equals("nez")) {
-				return NezCombinator.newGrammarFile();
+				return NezGrammar.newGrammarFile();
 			}
 			try {
 				return GrammarFile.loadGrammarFile(grammarFile, option);
@@ -230,7 +230,7 @@ class CommandContext {
 			return GrammarFile.newGrammarFile(option);
 		} else {
 			ConsoleUtils.println("unspecifed grammar");
-			return NezCombinator.newGrammarFile();
+			return NezGrammar.newGrammarFile();
 		}
 	}
 

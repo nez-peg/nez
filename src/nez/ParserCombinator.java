@@ -15,13 +15,13 @@ import nez.util.UList;
 
 public class ParserCombinator {
 
-	protected GrammarFile gfile = null;
+	protected GrammarFile file = null;
 
 	public final GrammarFile load() {
-		if (this.gfile == null) {
+		if (this.file == null) {
 			Class<?> c = this.getClass();
-			gfile = GrammarFile.newGrammarFile(c.getName(), NezOption.newDefaultOption());
-			if (gfile.isEmpty()) {
+			file = GrammarFile.newGrammarFile(c.getName(), NezOption.newDefaultOption());
+			if (file.isEmpty()) {
 				for (Method m : c.getDeclaredMethods()) {
 					if (m.getReturnType() == Expression.class && m.getParameterTypes().length == 0) {
 						String name = m.getName();
@@ -30,7 +30,7 @@ public class ParserCombinator {
 						}
 						try {
 							Expression e = (Expression) m.invoke(this);
-							gfile.defineProduction(e.getSourcePosition(), name, e);
+							file.defineProduction(e.getSourcePosition(), name, e);
 						} catch (IllegalAccessException e1) {
 							Verbose.traceException(e1);
 						} catch (IllegalArgumentException e1) {
@@ -40,10 +40,10 @@ public class ParserCombinator {
 						}
 					}
 				}
-				gfile.verify();
+				file.verify();
 			}
 		}
-		return gfile;
+		return file;
 	}
 
 	public final Grammar newGrammar(String name) {
@@ -77,7 +77,7 @@ public class ParserCombinator {
 	}
 
 	protected final Expression P(String name) {
-		return GrammarFactory.newNonTerminal(src(), this.gfile, name);
+		return GrammarFactory.newNonTerminal(src(), this.file, name);
 	}
 
 	protected final Expression t(char c) {
@@ -192,18 +192,6 @@ public class ParserCombinator {
 		return GrammarFactory.newLeftFoldRepetition1(src(), label == null ? null : Tag.tag(label), Sequence(e));
 	}
 
-	// protected Expression Link(String nonterminal) {
-	// return GrammarFactory.newLink(src(), Tag.tag(""), P(nonterminal));
-	// }
-	//
-	// protected Expression Link(Expression ... e) {
-	// return GrammarFactory.newLink(src(), Tag.tag(""), Sequence(e));
-	// }
-	//
-	// protected Expression Link(String label, Expression ... e) {
-	// return GrammarFactory.newLink(src(), Tag.tag(label), Sequence(e));
-	// }
-
 	protected Expression Link(String label, Expression e) {
 		return GrammarFactory.newLink(src(), label == null ? null : Tag.tag(label), e);
 	}
@@ -212,11 +200,15 @@ public class ParserCombinator {
 		return GrammarFactory.newLink(src(), label == null ? null : Tag.tag(label), P(nonTerminal));
 	}
 
-	protected final Expression Tag(Tag t) {
-		return GrammarFactory.newTagging(src(), t);
+	protected Expression Msg(String label, String msg) {
+		return GrammarFactory.newLink(src(), Tag.tag(label), New(Replace(msg)));
 	}
 
-	protected final Expression Tagging(String tag) {
+	// protected final Expression Tag(Tag t) {
+	// return GrammarFactory.newTagging(src(), t);
+	// }
+
+	protected final Expression Tag(String tag) {
 		return GrammarFactory.newTagging(src(), Tag.tag(tag));
 	}
 
