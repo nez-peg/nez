@@ -6,7 +6,6 @@ import nez.NezOption;
 import nez.SourceContext;
 import nez.lang.Grammar;
 import nez.lang.GrammarFile;
-import nez.lang.NezParser;
 import nez.lang.Production;
 import nez.util.ConsoleUtils;
 import nez.util.UList;

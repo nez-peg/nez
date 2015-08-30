@@ -12,7 +12,7 @@ import nez.generator.NezGrammarGenerator;
 import nez.lang.Formatter;
 import nez.lang.Grammar;
 import nez.lang.GrammarFile;
-import nez.lang.NezParser;
+import nez.lang.NezGrammarLoader;
 import nez.lang.Production;
 import nez.util.ConsoleUtils;
 
@@ -157,8 +157,8 @@ public class LCshell extends Command {
 	
 	private void defineProduction(GrammarFile ns, String text) {
 		//ConsoleUtils.println("--\n"+text+"--");
-		NezParser parser = new NezParser();
-		parser.eval(ns, "<stdio>", linenum, text);
+		NezGrammarLoader parser = new NezGrammarLoader(ns);
+		parser.eval("<stdio>", linenum, text);
 		ConsoleUtils.addCompleter(ns.getNonterminalList());
 	}
 	

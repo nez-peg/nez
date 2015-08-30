@@ -62,8 +62,8 @@ public class GrammarFile extends GrammarFactory {
 		}
 		if(ns == null) {
 			ns = new GrammarFile(nsid++, urn, option);
-			NezParser parser = new NezParser();
-			parser.load(ns, urn);
+			NezGrammarLoader loader = new NezGrammarLoader(ns);
+			loader.load(urn);
 		}
 		nsMap.put(urn, ns);
 		return ns;

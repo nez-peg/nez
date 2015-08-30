@@ -5,7 +5,6 @@ import nez.ast.CommonTree;
 import nez.ast.AbstractTreeWriter;
 import nez.lang.Grammar;
 import nez.lang.GrammarFile;
-import nez.lang.NezParser;
 import nez.lang.Production;
 import nez.util.ConsoleUtils;
 

@@ -278,11 +278,15 @@ public class NezCombinator extends ParserCombinator {
 			Link("name", Choice(P("NonTerminal"), P("String"))), P("_"), 
 			P("SKIP"),
 			t("="), P("_"), 
-			Link("rule", "Expr"),
+			Link("expr", "Expr"),
 			Tag(NezTag.Rule) 
 		);
 	}
-	
+
+	public Expression addQualifers() {
+		return Option(And(P("QUALIFERS")), Link("anno", P("Qualifers")));
+	}
+
 	public Expression QUALIFERS() {
 		return Sequence(Choice(t("public"), t("inline")), Not(P("W")));
 	}
@@ -291,9 +295,6 @@ public class NezCombinator extends ParserCombinator {
 		return New(ZeroMore(Link(null, New(P("QUALIFERS"))), P("S")));
 	}
 
-	public Expression addQualifers() {
-		return Option(And(P("QUALIFERS")), Link("qualifiers", P("Qualifers")));
-	}
 
 	public Expression DOC() {
 		return Sequence(
