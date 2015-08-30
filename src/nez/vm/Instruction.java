@@ -1,15 +1,12 @@
 package nez.vm;
 
 import java.util.Arrays;
-import java.util.HashMap;
 
 import nez.ast.Tag;
 import nez.lang.Block;
 import nez.lang.ByteChar;
 import nez.lang.ByteMap;
 import nez.lang.Capture;
-import nez.lang.MatchSymbol;
-import nez.lang.MultiChar;
 import nez.lang.DefIndent;
 import nez.lang.DefSymbol;
 import nez.lang.ExistsSymbol;
@@ -18,15 +15,14 @@ import nez.lang.IsIndent;
 import nez.lang.IsSymbol;
 import nez.lang.Link;
 import nez.lang.LocalTable;
+import nez.lang.MatchSymbol;
+import nez.lang.MultiChar;
 import nez.lang.New;
 import nez.lang.NezTag;
-import nez.lang.PossibleAcceptance;
 import nez.lang.NonTerminal;
 import nez.lang.Production;
 import nez.lang.Replace;
-import nez.lang.Sequence;
 import nez.lang.Tagging;
-import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
 import nez.vm.RuntimeContext.StackData;
 

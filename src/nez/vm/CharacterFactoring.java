@@ -7,7 +7,6 @@ import nez.lang.Choice;
 import nez.lang.Expression;
 import nez.lang.GrammarFactory;
 import nez.lang.GrammarReshaper;
-import nez.lang.Production;
 import nez.lang.Sequence;
 import nez.util.UList;
 

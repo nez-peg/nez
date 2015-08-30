@@ -1,7 +1,7 @@
 package nez.peg.regex;
 
-import nez.ast.CommonTree;
 import nez.ast.AbstractTreeVisitor;
+import nez.ast.CommonTree;
 import nez.lang.GrammarFile;
 import nez.util.FileBuilder;
 

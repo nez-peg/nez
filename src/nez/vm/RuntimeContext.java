@@ -1,13 +1,10 @@
 package nez.vm;
 
-import nez.ast.TreeTransducer;
 import nez.ast.Source;
-import nez.ast.Tag;
-import nez.lang.NezTag;
+import nez.ast.TreeTransducer;
 import nez.main.NezProfier;
 import nez.main.Verbose;
 import nez.util.ConsoleUtils;
-import nez.util.UList;
 
 public abstract class RuntimeContext implements Source {
 	/* parsing position */

@@ -1,9 +1,6 @@
 package nez.lang;
 
-import java.util.TreeMap;
-
 import nez.ast.SourcePosition;
-import nez.util.UList;
 
 abstract class Unconsumed extends Expression {
 	protected Unconsumed(SourcePosition s) {

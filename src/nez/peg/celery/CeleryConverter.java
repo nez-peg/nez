@@ -5,11 +5,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import nez.NezOption;
 import nez.NezException;
+import nez.NezOption;
 import nez.SourceContext;
-import nez.ast.CommonTree;
 import nez.ast.AbstractTreeVisitor;
+import nez.ast.CommonTree;
 import nez.lang.Expression;
 import nez.lang.Grammar;
 import nez.lang.GrammarFile;

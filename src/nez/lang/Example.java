@@ -4,7 +4,6 @@ import nez.NezOption;
 import nez.SourceContext;
 import nez.ast.AbstractTree;
 import nez.main.Verbose;
-import nez.util.ConsoleUtils;
 
 public class Example {
 	AbstractTree<?> nameNode;

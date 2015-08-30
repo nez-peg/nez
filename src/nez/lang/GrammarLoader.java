@@ -5,9 +5,7 @@ import java.io.IOException;
 import nez.SourceContext;
 import nez.ast.AbstractTree;
 import nez.ast.AbstractTreeVisitor;
-import nez.ast.CommonTree;
 import nez.ast.SourcePosition;
-import nez.main.Verbose;
 import nez.util.ConsoleUtils;
 
 public abstract class GrammarLoader extends AbstractTreeVisitor {

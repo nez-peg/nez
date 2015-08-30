@@ -1,7 +1,6 @@
 package nez.lang;
 
 import java.util.AbstractList;
-import java.util.TreeMap;
 
 import nez.ast.SourcePosition;
 import nez.util.UList;

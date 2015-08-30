@@ -1,6 +1,5 @@
 package nez.vm;
 
-import nez.util.ConsoleUtils;
 
 public abstract class NezDebugOperator {
 	DebugOperation type;

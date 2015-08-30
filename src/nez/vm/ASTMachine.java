@@ -3,7 +3,6 @@ package nez.vm;
 import nez.ast.Source;
 import nez.ast.Tag;
 import nez.ast.TreeTransducer;
-import nez.lang.Expression;
 import nez.main.Verbose;
 
 class ASTMachine {

@@ -3,8 +3,6 @@ package nez.vm;
 import java.util.List;
 
 import nez.main.Verbose;
-import nez.util.ConsoleUtils;
-import nez.util.UList;
 
 public class NezCode {
 	final Instruction startPoint;

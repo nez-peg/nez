@@ -1,8 +1,6 @@
 package nez.lang;
 
-import nez.NezOption;
 import nez.ast.Source;
-import nez.util.UFlag;
 
 public class PossibleAcceptance {
 	public final static int TextEOF = 0;

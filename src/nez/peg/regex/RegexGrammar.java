@@ -4,15 +4,15 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import nez.NezOption;
 import nez.NezException;
+import nez.NezOption;
 import nez.SourceContext;
-import nez.ast.CommonTree;
 import nez.ast.AbstractTreeVisitor;
+import nez.ast.CommonTree;
 import nez.ast.Tag;
 import nez.lang.Expression;
-import nez.lang.GrammarFactory;
 import nez.lang.Grammar;
+import nez.lang.GrammarFactory;
 import nez.lang.GrammarFile;
 import nez.main.Verbose;
 import nez.util.ConsoleUtils;

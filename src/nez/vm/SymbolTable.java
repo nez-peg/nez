@@ -1,7 +1,6 @@
 package nez.vm;
 
 import nez.ast.Tag;
-import nez.util.UList;
 
 public class SymbolTable {
 	public final static byte[] NullSymbol = { 0, 0, 0, 0 }; // to distinguish

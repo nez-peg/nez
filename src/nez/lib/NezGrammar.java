@@ -2,7 +2,6 @@ package nez.lib;
 
 /* Parsing Expression Grammars for Nez */
 import nez.ParserCombinator;
-import nez.lang.Expression;
 
 public class NezGrammar extends ParserCombinator {
 	// public NezGrammar() {

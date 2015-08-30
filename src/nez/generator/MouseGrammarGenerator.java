@@ -19,10 +19,8 @@ import nez.lang.Production;
 import nez.lang.Repetition;
 import nez.lang.Repetition1;
 import nez.lang.Replace;
-import nez.lang.Sequence;
 import nez.lang.Tagging;
 import nez.lang.Unary;
-import nez.util.StringUtils;
 
 public class MouseGrammarGenerator extends GrammarGenerator {
 

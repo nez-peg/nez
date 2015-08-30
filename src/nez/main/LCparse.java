@@ -1,8 +1,8 @@
 package nez.main;
 
 import nez.SourceContext;
-import nez.ast.CommonTree;
 import nez.ast.AbstractTreeWriter;
+import nez.ast.CommonTree;
 import nez.lang.Grammar;
 import nez.util.ConsoleUtils;
 

@@ -7,21 +7,18 @@ import nez.lang.Block;
 import nez.lang.ByteChar;
 import nez.lang.ByteMap;
 import nez.lang.Capture;
-import nez.lang.MatchSymbol;
-import nez.lang.MultiChar;
 import nez.lang.Choice;
 import nez.lang.DefIndent;
 import nez.lang.DefSymbol;
-import nez.lang.Empty;
 import nez.lang.ExistsSymbol;
 import nez.lang.Expression;
-import nez.lang.Failure;
 import nez.lang.Grammar;
 import nez.lang.IsIndent;
 import nez.lang.IsSymbol;
 import nez.lang.Link;
 import nez.lang.LocalTable;
-import nez.lang.GrammarFile;
+import nez.lang.MatchSymbol;
+import nez.lang.MultiChar;
 import nez.lang.New;
 import nez.lang.NonTerminal;
 import nez.lang.Not;
@@ -34,7 +31,6 @@ import nez.lang.Sequence;
 import nez.lang.Tagging;
 import nez.lang.Unary;
 import nez.util.StringUtils;
-import nez.util.UList;
 
 public class LPegGrammarGenerator extends NezGenerator {
 

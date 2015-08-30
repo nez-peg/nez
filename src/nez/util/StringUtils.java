@@ -3,9 +3,6 @@ package nez.util;
 import java.io.UnsupportedEncodingException;
 
 import nez.lang.ByteMap;
-import nez.lang.Choice;
-import nez.lang.Expression;
-import nez.lang.Sequence;
 import nez.main.Verbose;
 
 public abstract class StringUtils {

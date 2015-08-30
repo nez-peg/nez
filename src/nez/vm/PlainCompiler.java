@@ -1,7 +1,5 @@
 package nez.vm;
 
-import java.util.List;
-
 import nez.NezOption;
 import nez.lang.And;
 import nez.lang.AnyChar;
@@ -9,8 +7,6 @@ import nez.lang.Block;
 import nez.lang.ByteChar;
 import nez.lang.ByteMap;
 import nez.lang.Capture;
-import nez.lang.MatchSymbol;
-import nez.lang.MultiChar;
 import nez.lang.Choice;
 import nez.lang.DefIndent;
 import nez.lang.DefSymbol;
@@ -20,6 +16,8 @@ import nez.lang.IsIndent;
 import nez.lang.IsSymbol;
 import nez.lang.Link;
 import nez.lang.LocalTable;
+import nez.lang.MatchSymbol;
+import nez.lang.MultiChar;
 import nez.lang.New;
 import nez.lang.NonTerminal;
 import nez.lang.Not;

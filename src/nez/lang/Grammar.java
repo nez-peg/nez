@@ -5,27 +5,21 @@ import java.util.TreeMap;
 
 import nez.NezOption;
 import nez.SourceContext;
-import nez.ast.AbstractTree;
 import nez.ast.CommonTree;
 import nez.ast.CommonTreeTransducer;
 import nez.ast.TreeTransducer;
-import nez.main.Command;
 import nez.main.NezProfier;
 import nez.main.Verbose;
-import nez.util.ConsoleUtils;
-import nez.util.UFlag;
 import nez.util.UList;
 import nez.util.UMap;
 import nez.vm.Instruction;
 import nez.vm.Machine;
-import nez.vm.MemoPoint;
 import nez.vm.MemoTable;
 import nez.vm.NezCode;
 import nez.vm.NezCompiler;
 import nez.vm.NezDebugger;
-import nez.vm.OptimizedCompiler;
-import nez.vm.PlainCompiler;
 import nez.vm.PackratCompiler;
+import nez.vm.PlainCompiler;
 
 public class Grammar {
 	Production start;

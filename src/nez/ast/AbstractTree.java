@@ -1,10 +1,6 @@
 package nez.ast;
 
 import java.util.AbstractList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
 
 import nez.SourceContext;
 import nez.util.StringUtils;

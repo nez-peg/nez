@@ -6,9 +6,7 @@ import nez.lang.ByteChar;
 import nez.lang.ByteMap;
 import nez.lang.Capture;
 import nez.lang.Choice;
-import nez.lang.Empty;
 import nez.lang.Expression;
-import nez.lang.Failure;
 import nez.lang.Grammar;
 import nez.lang.Link;
 import nez.lang.New;
@@ -21,7 +19,6 @@ import nez.lang.Repetition1;
 import nez.lang.Replace;
 import nez.lang.Sequence;
 import nez.lang.Tagging;
-import nez.util.StringUtils;
 
 public class PEGTLGenerator extends GrammarGenerator {
 

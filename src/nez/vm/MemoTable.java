@@ -4,7 +4,6 @@ import java.util.HashMap;
 
 import nez.NezOption;
 import nez.main.NezProfier;
-import nez.main.Verbose;
 
 public abstract class MemoTable {
 	public abstract MemoTable newMemoTable(long len, int w, int n);

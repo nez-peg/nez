@@ -1,7 +1,6 @@
 package nez.lang;
 
 import nez.ast.SourcePosition;
-import nez.util.UList;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 

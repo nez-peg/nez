@@ -6,7 +6,6 @@ import java.util.Date;
 import java.util.HashMap;
 
 import nez.ast.AbstractTree;
-import nez.ast.AbstractTreeVisitor;
 import nez.ast.CommonTree;
 import nez.ast.Tag;
 import nez.lang.Expression;
