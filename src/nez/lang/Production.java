@@ -34,26 +34,26 @@ public class Production extends Expression {
 	public final static int ResetFlag = 1 << 30;
 
 	int flag;
-	GrammarFile ns;
+	GrammarFile file;
 	String name;
 	String uname;
 	Expression body;
 
-	public Production(SourcePosition s, int flag, GrammarFile ns, String name, Expression body) {
+	public Production(SourcePosition s, int flag, GrammarFile file, String name, Expression body) {
 		super(s);
-		this.ns = ns;
+		this.file = file;
 		this.name = name;
-		this.uname = ns.uniqueName(name);
+		this.uname = file.uniqueName(name);
 		this.body = (body == null) ? GrammarFactory.newEmpty(s) : body;
 		this.flag = flag;
 		Production.quickCheck(this);
 	}
 
-	private Production(String name, Production original, Expression body) {
-		super(original.s);
-		this.ns = original.getGrammarFile();
+	private Production(String name, Production orig, Expression body) {
+		super(orig.s);
+		this.file = orig.getGrammarFile();
 		this.name = name;
-		this.uname = ns.uniqueName(name);
+		this.uname = file.uniqueName(name);
 		this.body = (body == null) ? GrammarFactory.newEmpty(s) : body;
 		Production.quickCheck(this);
 	}
@@ -211,7 +211,7 @@ public class Production extends Expression {
 	}
 
 	public final GrammarFile getGrammarFile() {
-		return this.ns;
+		return this.file;
 	}
 
 	public final boolean isPublic() {
@@ -230,14 +230,6 @@ public class Production extends Expression {
 		if (!UFlag.is(this.flag, Production.RecursiveChecked)) {
 			checkRecursive(this.getExpression(), null);
 			this.flag |= Production.RecursiveChecked;
-			// if(Command.ReleasePreview) {
-			// boolean r = AnalysisCache.hasRecursion(this);
-			// boolean r2 = UFlag.is(this.flag, Production.RecursiveProduction);
-			// if(r != r2) {
-			// Verbose.FIXME("mismatched recursion: " + this.getLocalName() +
-			// " " + r + " " + r2);
-			// }
-			// }
 		}
 		return UFlag.is(this.flag, Production.RecursiveProduction);
 	}
@@ -522,24 +514,6 @@ public class Production extends Expression {
 	public String getPredicate() {
 		return this.getUniqueName() + "=";
 	}
-
-	// private int dfaOption = -1;
-	// private short[] dfaCache = null;
-	//
-	// @Override
-	// public short acceptByte(int ch, int option) {
-	// option = Grammar.mask(option);
-	// if(option != dfaOption) {
-	// if(dfaCache == null) {
-	// dfaCache = new short[257];
-	// }
-	// for(int c = 0; c < dfaCache.length; c++) {
-	// dfaCache[c] = this.body.acceptByte(c, option);
-	// }
-	// this.dfaOption = option;
-	// }
-	// return dfaCache[ch];
-	// }
 
 	@Override
 	public short acceptByte(int ch) {
