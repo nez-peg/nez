@@ -253,7 +253,7 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 
 		Expression[] tables = new Expression[requiredMembersListSize];
 		for (int i = 0; i < requiredMembersListSize; i++) {
-			tables[i] = grammar.newExists(requiredPropertiesList.get(i), null);
+			tables[i] = grammar.newExists(rootMemberList.get(i), null);
 		}
 
 		Expression[] seq = { grammar.newByteChar('{'), _SPACING(), grammar.newBlock(grammar.newRepetition1(GrammarFactory.newNonTerminal(null, grammar, membersNonterminal)), grammar.newSequence(tables)), _SPACING(), grammar.newByteChar('}') };
