@@ -15,10 +15,15 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 	private HashMap<String, List<String>> classMap;
 	private List<String> requiredPropertiesList;
 	private List<String> impliedPropertiesList;
-	private final boolean UseExtendedGrammar = true;
+	private boolean useExtension = true;
 
 	public JSONCeleryConverter() {
 		this.classMap = new HashMap<>();
+	}
+
+	public JSONCeleryConverter(boolean useExtension) {
+		this.classMap = new HashMap<>();
+		this.useExtension = useExtension;
 	}
 
 	@Override
@@ -35,7 +40,7 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 			initPropertiesList();
 			this.visit("visit", classNode);
 			String className = classNode.getText(0, null);
-			if (UseExtendedGrammar) {
+			if (useExtension) {
 				grammar.defineProduction(classNode, className, genExClassRule(className));
 			} else {
 				grammar.defineProduction(classNode, className, genClassRule(className));

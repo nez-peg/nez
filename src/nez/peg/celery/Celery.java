@@ -31,7 +31,7 @@ public class Celery {
 		if (celeryFile.hasUnconsumed()) {
 			throw new NezException(celeryFile.getUnconsumedMessage());
 		}
-		JSONCeleryConverter converter = new JSONCeleryConverter();
+		JSONCeleryConverter converter = new JSONCeleryConverter(!option.disabledNezExtension);
 		converter.setRootClassName(filePath);
 		GrammarFile gfile = GrammarFile.newGrammarFile(filePath, option);
 		converter.convert(node, gfile);
