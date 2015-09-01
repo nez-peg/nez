@@ -6,7 +6,6 @@ import nez.lang.Expression;
 import nez.lang.GrammarFactory;
 import nez.lang.GrammarFile;
 
-
 public abstract class AbstractCeleryConverter extends AbstractTreeVisitor {
 
 	protected GrammarFile grammar;
@@ -37,7 +36,6 @@ public abstract class AbstractCeleryConverter extends AbstractTreeVisitor {
 	abstract protected void visitUntypedRequired(AbstractTree<?> node);
 
 	abstract protected void visitUntypedOption(AbstractTree<?> node);
-
 
 	protected final Expression toExpression(AbstractTree<?> node) {
 		return (Expression) this.visit("to", node);
