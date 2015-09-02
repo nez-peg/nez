@@ -15,6 +15,7 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 	private HashMap<String, List<String>> classMap;
 	private List<String> requiredPropertiesList;
 	private List<String> impliedPropertiesList;
+	private String currentClassName;
 	private boolean useExtension = true;
 
 	public JSONCeleryConverter() {
@@ -39,13 +40,13 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 		for (AbstractTree<?> classNode : node) {
 			initPropertiesList();
 			this.visit("visit", classNode);
-			String className = classNode.getText(0, null);
+			currentClassName = classNode.getText(0, null);
 			if (useExtension) {
-				grammar.defineProduction(classNode, className, genExClassRule(className));
+				grammar.defineProduction(classNode, currentClassName, genExClassRule(currentClassName));
 			} else {
-				grammar.defineProduction(classNode, className, genClassRule(className));
+				grammar.defineProduction(classNode, currentClassName, genClassRule(currentClassName));
 			}
-			savePropertiesList(className);
+			savePropertiesList(currentClassName);
 		}
 		grammar.defineProduction(node, "Root", genRootClass());
 	}
@@ -59,36 +60,37 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 
 	@Override
 	public final void visitRequired(AbstractTree<?> node) {
-		String name = node.getText(0, null);
-		requiredPropertiesList.add(name);
-		Expression[] seq = { _DQuoat(), grammar.newString(name), _DQuoat(), GrammarFactory.newNonTerminal(null, grammar, "NAMESEP"), toExpression(node.get(1)), grammar.newOption(GrammarFactory.newNonTerminal(null, grammar, "VALUESEP")) };
-		grammar.defineProduction(node, node.getText(0, null), grammar.newSequence(seq));
-	}
-
-	@Override
-	public final void visitOption(AbstractTree<?> node) {
-		String name = node.getText(0, null);
-		impliedPropertiesList.add(name);
-		Expression[] seq = { _DQuoat(), grammar.newString(name), _DQuoat(), GrammarFactory.newNonTerminal(null, grammar, "NAMESEP"), toExpression(node.get(1)), grammar.newOption(GrammarFactory.newNonTerminal(null, grammar, "VALUESEP")) };
-		grammar.defineProduction(node, node.getText(0, null), grammar.newSequence(seq));
-	}
-
-	@Override
-	public final void visitUntypedRequired(AbstractTree<?> node) {
-		String name = node.getText(0, null);
-		requiredPropertiesList.add(name);
-		// inferType(node.get(2));
-		Expression[] seq = { _DQuoat(), grammar.newString(name), _DQuoat(), GrammarFactory.newNonTerminal(null, grammar, "NAMESEP"), GrammarFactory.newNonTerminal(null, grammar, "Any"),
+		String propertyName = node.getText(0, null);
+		requiredPropertiesList.add(propertyName);
+		Expression[] seq = { _DQuoat(), GrammarFactory.newDefSymbol(node, grammar, Tag.tag(currentClassName), GrammarFactory.newString(node, propertyName)), _DQuoat(), GrammarFactory.newNonTerminal(null, grammar, "NAMESEP"), toExpression(node.get(1)),
 				grammar.newOption(GrammarFactory.newNonTerminal(null, grammar, "VALUESEP")) };
 		grammar.defineProduction(node, node.getText(0, null), grammar.newSequence(seq));
 	}
 
 	@Override
-	public final void visitUntypedOption(AbstractTree<?> node) {
-		String name = node.getText(0, null);
-		impliedPropertiesList.add(name);
+	public final void visitOption(AbstractTree<?> node) {
+		String propertyName = node.getText(0, null);
+		impliedPropertiesList.add(propertyName);
+		Expression[] seq = { _DQuoat(), grammar.newString(propertyName), _DQuoat(), GrammarFactory.newNonTerminal(null, grammar, "NAMESEP"), toExpression(node.get(1)), grammar.newOption(GrammarFactory.newNonTerminal(null, grammar, "VALUESEP")) };
+		grammar.defineProduction(node, node.getText(0, null), grammar.newSequence(seq));
+	}
+
+	@Override
+	public final void visitUntypedRequired(AbstractTree<?> node) {
+		String propertyName = node.getText(0, null);
+		requiredPropertiesList.add(propertyName);
 		// inferType(node.get(2));
-		Expression[] seq = { _DQuoat(), grammar.newString(name), _DQuoat(), GrammarFactory.newNonTerminal(null, grammar, "NAMESEP"), GrammarFactory.newNonTerminal(null, grammar, "Any"),
+		Expression[] seq = { _DQuoat(), GrammarFactory.newDefSymbol(node, grammar, Tag.tag(currentClassName), GrammarFactory.newString(node, propertyName)), _DQuoat(), GrammarFactory.newNonTerminal(null, grammar, "NAMESEP"),
+				GrammarFactory.newNonTerminal(null, grammar, "Any"), grammar.newOption(GrammarFactory.newNonTerminal(null, grammar, "VALUESEP")) };
+		grammar.defineProduction(node, node.getText(0, null), grammar.newSequence(seq));
+	}
+
+	@Override
+	public final void visitUntypedOption(AbstractTree<?> node) {
+		String propertyName = node.getText(0, null);
+		impliedPropertiesList.add(propertyName);
+		// inferType(node.get(2));
+		Expression[] seq = { _DQuoat(), grammar.newString(propertyName), _DQuoat(), GrammarFactory.newNonTerminal(null, grammar, "NAMESEP"), GrammarFactory.newNonTerminal(null, grammar, "Any"),
 				grammar.newOption(GrammarFactory.newNonTerminal(null, grammar, "VALUESEP")) };
 		grammar.defineProduction(node, node.getText(0, null), grammar.newSequence(seq));
 	}
@@ -200,29 +202,29 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 	}
 
 	private final Expression genExClassRule(String className) {
-		int requiredMembersListSize = requiredPropertiesList.size();
+		int requiredListSize = requiredPropertiesList.size();
 		String memberList = className + "_Members";
 
-		Expression[] tables = new Expression[requiredMembersListSize];
-		for (int i = 0; i < requiredMembersListSize; i++) {
-			tables[i] = grammar.newExists(requiredPropertiesList.get(i), null /* FIXME */);
+		Expression[] tables = new Expression[requiredListSize];
+		for (int i = 0; i < requiredListSize; i++) {
+			tables[i] = grammar.newExists(className, requiredPropertiesList.get(i));
 		}
 
 		Expression[] seq = { _DQuoat(), grammar.newString(className), _DQuoat(), _SPACING(), GrammarFactory.newNonTerminal(null, grammar, "NAMESEP"), grammar.newByteChar('{'), _SPACING(),
 				grammar.newBlock(grammar.newRepetition1(GrammarFactory.newNonTerminal(null, grammar, memberList)), grammar.newSequence(tables)), _SPACING(), grammar.newByteChar('}') };
-		grammar.defineProduction(null, memberList, genExMemberRule(className, requiredMembersListSize));
-		return grammar.newSequence(seq);
+		grammar.defineProduction(null, memberList, genExMemberRule(className, requiredListSize));
+
+		// return grammar.newLocal(className, seq);
+		return GrammarFactory.newLocal(null, grammar, Tag.tag(className), grammar.newSequence(seq));
 	}
 
 	private final Expression genExMemberRule(String className, int requiredListSize) {
-		Expression[] values = new Expression[10];
-		UList<Expression> choice = new UList<>(values);
+		UList<Expression> choice = new UList<>(new Expression[10]);
 		String impliedChoiceRuleName = className + "_imp";
 
 		for (int i = 0; i < requiredListSize; i++) {
 			String memberName = requiredPropertiesList.get(i);
-			Expression required = grammar
-					.newSequence(grammar.newNot(GrammarFactory.newIsSymbol(null, grammar, Tag.tag(memberName))), GrammarFactory.newDefSymbol(null, grammar, Tag.tag(memberName), GrammarFactory.newNonTerminal(null, grammar, memberName)));
+			Expression required = grammar.newSequence(grammar.newNot(grammar.newExists(className, memberName), GrammarFactory.newNonTerminal(null, grammar, memberName)));
 			GrammarFactory.addChoice(choice, required);
 		}
 
