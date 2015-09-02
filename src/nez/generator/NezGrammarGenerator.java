@@ -203,7 +203,7 @@ public class NezGrammarGenerator extends GrammarGenerator {
 		W(e.getTableName());
 		if (symbol != null) {
 			W(" ");
-			W(symbol);
+			W("'" + symbol + "'");
 		}
 		W(">");
 	}
