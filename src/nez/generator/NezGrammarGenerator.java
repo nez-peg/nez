@@ -13,6 +13,8 @@ import nez.lang.Expression;
 import nez.lang.Grammar;
 import nez.lang.IsSymbol;
 import nez.lang.Link;
+import nez.lang.LocalTable;
+import nez.lang.MatchSymbol;
 import nez.lang.New;
 import nez.lang.NonTerminal;
 import nez.lang.Not;
@@ -190,6 +192,13 @@ public class NezGrammarGenerator extends GrammarGenerator {
 	}
 
 	@Override
+	public void visitMatchSymbol(MatchSymbol e) {
+		W("<match ");
+		W(e.getTableName());
+		W(">");
+	};
+
+	@Override
 	public void visitIsSymbol(IsSymbol e) {
 		W("<is ");
 		W(e.getTableName());
@@ -205,6 +214,15 @@ public class NezGrammarGenerator extends GrammarGenerator {
 			W(" ");
 			W("'" + symbol + "'");
 		}
+		W(">");
+	}
+
+	@Override
+	public void visitLocalTable(LocalTable e) {
+		W("<local ");
+		W(e.getTableName());
+		W(" ");
+		visitExpression(e.get(0));
 		W(">");
 	}
 
