@@ -39,7 +39,7 @@ public class DTDConverter extends AbstractTreeVisitor {
 		if (dtdFile.hasUnconsumed()) {
 			throw new NezException(dtdFile.getUnconsumedMessage());
 		}
-		DTDConverter conv = new DTDConverter();
+		DTDConverter conv = new DTDConverter(!option.disabledNezExtension);
 		GrammarFile gfile = GrammarFile.newGrammarFile(filePath, option);
 		conv.convert(node, gfile);
 		gfile.verify();
@@ -47,8 +47,13 @@ public class DTDConverter extends AbstractTreeVisitor {
 	}
 
 	private GrammarFile gfile;
+	private boolean enableNezExtension = false;
 
 	DTDConverter() {
+	}
+
+	DTDConverter(boolean enableExtension) {
+		this.enableNezExtension = enableExtension;
 	}
 
 	final void convert(CommonTree node, GrammarFile grammar) {
