@@ -194,6 +194,7 @@ public class NezGrammarLoader extends GrammarLoader {
 
 	public final static Tag _name = Tag.tag("name");
 	public final static Tag _expr = Tag.tag("expr");
+	public final static Tag _symbol = Tag.tag("symbol");
 
 	private Tag parseLabelNode(AbstractTree<?> node) {
 		Tag label = null;
@@ -252,6 +253,14 @@ public class NezGrammarLoader extends GrammarLoader {
 
 	public Expression newIsa(AbstractTree<?> node) {
 		return GrammarFactory.newIsaSymbol(node, this.getGrammarFile(), Tag.tag(node.getText(_name, "")));
+	}
+
+	public Expression newExists(AbstractTree<?> node) {
+		return GrammarFactory.newExists(node, this.getGrammarFile(), Tag.tag(node.getText(_name, "")), node.getText(_symbol, ""));
+	}
+
+	public Expression newLocal(AbstractTree<?> node) {
+		return GrammarFactory.newLocal(node, this.getGrammarFile(), Tag.tag(node.getText(_name, "")), newExpression(node.get(_expr)));
 	}
 
 	public Expression newDefIndent(AbstractTree<?> node) {
