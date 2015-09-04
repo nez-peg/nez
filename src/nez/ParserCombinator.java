@@ -206,6 +206,10 @@ public class ParserCombinator {
 		return GrammarFactory.newLink(src(), label == null ? null : Tag.tag(label), P(nonTerminal));
 	}
 
+	protected Expression OptionalLink(String label, String nonTerminal) {
+		return GrammarFactory.newOption(src(), GrammarFactory.newLink(src(), label == null ? null : Tag.tag(label), P(nonTerminal)));
+	}
+
 	protected Expression Msg(String label, String msg) {
 		return GrammarFactory.newLink(src(), Tag.tag(label), New(Replace(msg)));
 	}

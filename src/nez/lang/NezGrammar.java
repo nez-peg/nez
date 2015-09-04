@@ -130,41 +130,29 @@ public class NezGrammar extends ParserCombinator {
 	/* Production */
 
 	public Expression pProduction() {
+		Expression Anno = Option(Link("anno", "Annotations"));
 		Expression Name = Link("name", Choice(P("NonTerminal"), P("String")));
+		Expression Type = Option(Link("type", "Tagging"), P("_"));
 		Expression Expr = Link("expr", "Expression");
-		return New(P("addQualifers"), Name, P("_"), P("SKIP"), t("="), P("_"), Expr, Tag("Production"));
+		return New(Anno, Name, P("_"), Type, t("="), P("_"), Expr, Tag("Production"));
 	}
 
-	public Expression paddQualifers() {
-		return Option(And(P("QUALIFERS")), Link("anno", P("Qualifers")));
+	public Expression pAnnotations() {
+		return New(ZeroMore(Link(null, "Annotation"), P("S"), P("_")));
 	}
 
-	public Expression pQUALIFERS() {
-		return Sequence(Choice(t("public"), t("inline")), Not(P("W")));
-	}
-
-	public Expression pQualifers() {
-		return New(ZeroMore(Link(null, New(P("QUALIFERS"))), P("S")));
-	}
-
-	public Expression pDOC() {
-		return Sequence(ZeroMore(Not(t("]")), Not(t("[")), AnyChar()), Option(Sequence(t("["), P("DOC"), t("]"), P("DOC"))));
-	}
-
-	public Expression pANNOTATION() {
-		return Sequence(t("["), P("DOC"), t("]"), P("_"));
-	}
-
-	public Expression pSKIP() {
-		return ZeroMore(P("ANNOTATION"));
+	public Expression pAnnotation() {
+		return New(t("@"), Link("key", "Name"), Option(P("_"), t("("), P("_"), Link("value", "Integer"), P("_"), t(")")));
 	}
 
 	public Expression pNOTRULE() {
-		return Not(Choice(t(";"), P("RuleHead"), P("Import")));
+		return Not(Choice(t(";"), t("@"), P("KEYWORD")/* , P("LeftProduction") */));
 	}
 
-	public Expression pRuleHead() {
-		return New(P("addQualifers"), Link(null, Choice(P("NonTerminal"), P("String"))), P("_"), P("SKIP"), t("="));
+	public Expression pLeftProduction() {
+		Expression Name = Choice(P("NonTerminal"), P("String"));
+		Expression Type = Option(P("Tagging"), P("_"));
+		return Sequence(Name, P("_"), Type, t("="));
 	}
 
 	public Expression pExpression() {
@@ -179,8 +167,7 @@ public class NezGrammar extends ParserCombinator {
 		Expression And = Sequence(t("&"), Tag("And"));
 		Expression Not = Sequence(t("!"), Tag("Not"));
 		Expression Match = Sequence(t("~"), Tag("Match"));
-		Expression OldLink = Sequence(t("@"), Msg("warning", "deprecated operator"), Option(t("["), P("_"), Link("index", P("Index")), P("_"), t("]")), Tag("Link"));
-		return Choice(New(Choice(And, Not, OldLink, Match), Link("expr", P("Suffix"))), P("Suffix"));
+		return Choice(New(Choice(And, Not, Match), Link("expr", P("Suffix"))), P("Suffix"));
 	}
 
 	public Expression pSuffix() {
@@ -218,7 +205,7 @@ public class NezGrammar extends ParserCombinator {
 	}
 
 	public Expression pConstructor() {
-		return New(t("{"), Choice(Sequence(t("$"), Option(Link("name", "Name")), P("S"), Tag("LeftFold")), Sequence(t("@"), P("S"), Tag("LeftFold")), Tag("New")), P("_"), Option(Link("expr", "Expression"), P("_")), t("}"));
+		return New(t("{"), Choice(Sequence(t("$"), Option(Link("name", "Name")), P("S"), Tag("LeftFold")), Tag("New")), P("_"), Option(Link("expr", "Expression"), P("_")), t("}"));
 	}
 
 	public Expression pTagging() {
