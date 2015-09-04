@@ -55,7 +55,10 @@ public class ExistsSymbol extends Expression implements Contextual {
 
 	@Override
 	public String getPredicate() {
-		return "exists " + tableName.getName();
+		if (symbol.isEmpty()) {
+			return "exists " + tableName.getName();
+		}
+		return "exists " + tableName.getName() + " '" + this.symbol + "'";
 	}
 
 	@Override
