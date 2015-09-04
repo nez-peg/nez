@@ -8,14 +8,12 @@ public class JSONPredefinedRules {
 	GrammarFile grammar;
 	String rootClassName;
 
-	public JSONPredefinedRules(GrammarFile grammar, String rootClassName) {
+	public JSONPredefinedRules(GrammarFile grammar) {
 		this.grammar = grammar;
-		this.rootClassName = rootClassName;
 	}
 
 	public void defineRule() {
 		defFile();
-		// defRoot();
 		defAny();
 		defMember();
 		defValue();
@@ -33,58 +31,53 @@ public class JSONPredefinedRules {
 		defDIGIT();
 		defFRAC();
 		defEXP();
-		defSTRING();
 		defSPACING();
-		// grammar.dump();
 	}
 
 	final void defFile() {
-		Expression[] l = { grammar.newNonTerminal("SPACING"), grammar.newNonTerminal("Root"), grammar.newNonTerminal("SPACING") };
+		Expression[] l = { GrammarFactory.newNonTerminal(null, grammar, "SPACING"), GrammarFactory.newNonTerminal(null, grammar, "Root"), GrammarFactory.newNonTerminal(null, grammar, "SPACING") };
 		grammar.defineProduction(null, "File", grammar.newSequence(l));
 	}
 
-	final void defRoot() {
-		grammar.defineProduction(null, "Root", grammar.newNonTerminal(rootClassName));
-	}
-
 	final void defAny() {
-		Expression l = grammar.newRepetition(grammar.newNonTerminal("Value"), grammar.newNonTerminal("SPACING"));
+		Expression l = grammar.newSequence(GrammarFactory.newNonTerminal(null, grammar, "Member"), GrammarFactory.newNonTerminal(null, grammar, "SPACING"), GrammarFactory.newOption(null, GrammarFactory.newNonTerminal(null, grammar, "VALUESEP")));
 		grammar.defineProduction(null, "Any", l);
 	}
 
 	final void defMember() {
-		Expression[] l = { grammar.newNonTerminal("STRING"), grammar.newNonTerminal("NAMESEP"), grammar.newNonTerminal("Value"), };
+		Expression[] l = { GrammarFactory.newNonTerminal(null, grammar, "String"), GrammarFactory.newNonTerminal(null, grammar, "NAMESEP"), GrammarFactory.newNonTerminal(null, grammar, "Value"), };
 		grammar.defineProduction(null, "Member", grammar.newSequence(l));
 	}
 
 	final void defValue() {
-		Expression[] l = { grammar.newNonTerminal("String"), grammar.newNonTerminal("Number"), grammar.newNonTerminal("JSONObject"), grammar.newNonTerminal("Array"), grammar.newNonTerminal("Null"), grammar.newNonTerminal("True"),
-				grammar.newNonTerminal("False") };
+		Expression[] l = { GrammarFactory.newNonTerminal(null, grammar, "String"), GrammarFactory.newNonTerminal(null, grammar, "Number"), GrammarFactory.newNonTerminal(null, grammar, "JSONObject"), GrammarFactory.newNonTerminal(null, grammar, "Array"),
+				GrammarFactory.newNonTerminal(null, grammar, "Null"), GrammarFactory.newNonTerminal(null, grammar, "True"), GrammarFactory.newNonTerminal(null, grammar, "False") };
 		grammar.defineProduction(null, "Value", grammar.newChoice(l));
 	}
 
 	final void defJSONObject() {
-		Expression[] l = { grammar.newByteChar('{'), grammar.newNonTerminal("SPACING"), grammar.newNonTerminal("Member"), grammar.newNonTerminal("SPACING"),
-				grammar.newRepetition(grammar.newNonTerminal("VALUESEP"), grammar.newNonTerminal("Member"), grammar.newNonTerminal("SPACING")), grammar.newByteChar('}'), };
+		Expression[] l = { grammar.newByteChar('{'), GrammarFactory.newNonTerminal(null, grammar, "SPACING"), GrammarFactory.newNonTerminal(null, grammar, "Member"), GrammarFactory.newNonTerminal(null, grammar, "SPACING"),
+				grammar.newRepetition(GrammarFactory.newNonTerminal(null, grammar, "VALUESEP"), GrammarFactory.newNonTerminal(null, grammar, "Member"), GrammarFactory.newNonTerminal(null, grammar, "SPACING")), grammar.newByteChar('}'), };
 		grammar.defineProduction(null, "JSONObject", grammar.newSequence(l));
 	}
 
 	final void defArray() {
-		Expression[] valueSeq = { grammar.newNonTerminal("SPACING"), grammar.newNonTerminal("Value"), grammar.newRepetition(grammar.newNonTerminal("VALUESEP"), grammar.newNonTerminal("Value")) };
-		Expression[] l = { grammar.newByteChar('['), grammar.newOption(valueSeq), grammar.newNonTerminal("SPACING"), grammar.newByteChar(']') };
+		Expression[] valueSeq = { GrammarFactory.newNonTerminal(null, grammar, "SPACING"), GrammarFactory.newNonTerminal(null, grammar, "Value"), GrammarFactory.newNonTerminal(null, grammar, "SPACING"),
+				grammar.newRepetition(GrammarFactory.newNonTerminal(null, grammar, "VALUESEP"), GrammarFactory.newNonTerminal(null, grammar, "Value")) };
+		Expression[] l = { grammar.newByteChar('['), grammar.newSequence(valueSeq), GrammarFactory.newNonTerminal(null, grammar, "SPACING"), grammar.newByteChar(']') };
 		grammar.defineProduction(null, "Array", grammar.newSequence(l));
 	}
 
 	final void defString() {
 		Expression notSeq = grammar.newSequence(grammar.newNot(grammar.newByteChar('"')), grammar.newAnyChar());
-		Expression strValue = grammar.newChoice(grammar.newString("\""), grammar.newString("\\\\"), notSeq);
-		Expression[] seq = { grammar.newByteChar('"'), grammar.newRepetition(strValue), grammar.newByteChar('"') };
+		Expression strValue = grammar.newChoice(grammar.newString("\\\""), grammar.newString("\\\\"), notSeq);
+		Expression[] seq = { grammar.newByteChar('"'), grammar.newRepetition(strValue), grammar.newByteChar('"'), GrammarFactory.newNonTerminal(null, grammar, "SPACING") };
 		grammar.defineProduction(null, "String", grammar.newSequence(seq));
 	}
 
 	final void defNumber() {
-		Expression choice = grammar.newChoice(grammar.newSequence(grammar.newNonTerminal("FRAC"), grammar.newOption(grammar.newNonTerminal("EXP"))));
-		Expression[] l = { grammar.newOption(grammar.newByteChar('-')), grammar.newNonTerminal("INT"), choice, grammar.newNonTerminal("SPACING") };
+		Expression choice = grammar.newChoice(grammar.newSequence(GrammarFactory.newNonTerminal(null, grammar, "FRAC"), grammar.newOption(GrammarFactory.newNonTerminal(null, grammar, "EXP"))), grammar.newEmpty());
+		Expression[] l = { grammar.newOption(grammar.newByteChar('-')), GrammarFactory.newNonTerminal(null, grammar, "INT"), choice, GrammarFactory.newNonTerminal(null, grammar, "SPACING") };
 		grammar.defineProduction(null, "Number", grammar.newSequence(l));
 	}
 
@@ -101,12 +94,12 @@ public class JSONPredefinedRules {
 	}
 
 	final void defNAMESEP() {
-		Expression[] l = { grammar.newByteChar(':'), grammar.newNonTerminal("SPACING") };
+		Expression[] l = { grammar.newByteChar(':'), GrammarFactory.newNonTerminal(null, grammar, "SPACING") };
 		grammar.defineProduction(null, "NAMESEP", grammar.newSequence(l));
 	}
 
 	final void defVALUESEP() {
-		Expression[] l = { grammar.newByteChar(','), grammar.newNonTerminal("SPACING") };
+		Expression[] l = { grammar.newByteChar(','), GrammarFactory.newNonTerminal(null, grammar, "SPACING") };
 		grammar.defineProduction(null, "VALUESEP", grammar.newSequence(l));
 	}
 
@@ -116,7 +109,7 @@ public class JSONPredefinedRules {
 	}
 
 	final void defINT() {
-		Expression[] l = { grammar.newByteChar('0'), grammar.newSequence(GrammarFactory.newCharSet(null, "1-9"), grammar.newRepetition(grammar.newNonTerminal("DIGIT"))) };
+		Expression[] l = { grammar.newByteChar('0'), grammar.newSequence(GrammarFactory.newCharSet(null, "1-9"), grammar.newRepetition(GrammarFactory.newNonTerminal(null, grammar, "DIGIT"))) };
 		grammar.defineProduction(null, "INT", grammar.newChoice(l));
 	}
 
@@ -125,20 +118,20 @@ public class JSONPredefinedRules {
 	}
 
 	final void defFRAC() {
-		Expression[] l = { grammar.newByteChar('.'), grammar.newRepetition1(grammar.newNonTerminal("DIGIT")) };
+		Expression[] l = { grammar.newByteChar('.'), grammar.newRepetition1(GrammarFactory.newNonTerminal(null, grammar, "DIGIT")) };
 		grammar.defineProduction(null, "FRAC", grammar.newSequence(l));
 	}
 
 	final void defEXP() {
 		Expression choice = grammar.newChoice(grammar.newByteChar('-'), grammar.newByteChar('+'));
-		Expression[] l = { GrammarFactory.newCharSet(null, "Ee"), grammar.newOption(choice), grammar.newRepetition1(grammar.newNonTerminal("DIGIT")) };
+		Expression[] l = { GrammarFactory.newCharSet(null, "Ee"), grammar.newOption(choice), grammar.newRepetition1(GrammarFactory.newNonTerminal(null, grammar, "DIGIT")) };
 		grammar.defineProduction(null, "EXP", grammar.newSequence(l));
 	}
 
 	final void defSTRING() {
 		Expression notSeq = grammar.newSequence(grammar.newNot(grammar.newByteChar('"')), grammar.newAnyChar());
 		Expression strValue = grammar.newChoice(grammar.newString("\\\""), grammar.newString("\\\\"), notSeq);
-		Expression[] seq = { grammar.newByteChar('"'), grammar.newRepetition(strValue), grammar.newByteChar('"'), grammar.newNonTerminal("SPACING") };
+		Expression[] seq = { grammar.newByteChar('"'), grammar.newRepetition(strValue), grammar.newByteChar('"'), GrammarFactory.newNonTerminal(null, grammar, "SPACING") };
 		grammar.defineProduction(null, "STRING", grammar.newSequence(seq));
 	}
 
