@@ -132,7 +132,7 @@ public class NezGrammar extends ParserCombinator {
 	public Expression pProduction() {
 		Expression Name = Link("name", Choice(P("NonTerminal"), P("String")));
 		Expression Expr = Link("expr", "Expression");
-		return New(P("addQualifers"), Name, P("_"), P("SKIP"), t("="), P("_"), Expr, Tag("Production"));
+		return New(P("addQualifers"), Name, P("_"), t("="), P("_"), Expr, Tag("Production"));
 	}
 
 	public Expression paddQualifers() {
@@ -147,24 +147,12 @@ public class NezGrammar extends ParserCombinator {
 		return New(ZeroMore(Link(null, New(P("QUALIFERS"))), P("S")));
 	}
 
-	public Expression pDOC() {
-		return Sequence(ZeroMore(Not(t("]")), Not(t("[")), AnyChar()), Option(Sequence(t("["), P("DOC"), t("]"), P("DOC"))));
-	}
-
-	public Expression pANNOTATION() {
-		return Sequence(t("["), P("DOC"), t("]"), P("_"));
-	}
-
-	public Expression pSKIP() {
-		return ZeroMore(P("ANNOTATION"));
-	}
-
 	public Expression pNOTRULE() {
 		return Not(Choice(t(";"), P("RuleHead"), P("Import")));
 	}
 
 	public Expression pRuleHead() {
-		return New(P("addQualifers"), Link(null, Choice(P("NonTerminal"), P("String"))), P("_"), P("SKIP"), t("="));
+		return New(P("addQualifers"), Link(null, Choice(P("NonTerminal"), P("String"))), P("_"), t("="));
 	}
 
 	public Expression pExpression() {
