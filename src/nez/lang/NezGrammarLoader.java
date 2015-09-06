@@ -48,7 +48,7 @@ public class NezGrammarLoader extends GrammarLoader {
 	public final static Tag _List = Tag.tag("List");
 	public final static Tag _Name = Tag.tag("Name");
 	public final static Tag _Format = Tag.tag("Format");
-	public final static Tag _Class = Tag.tag("_Class");
+	public final static Tag _Class = Tag.tag("Class");
 
 	public final static Tag _anno = Tag.tag("anno");
 
