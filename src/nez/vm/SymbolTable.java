@@ -98,7 +98,7 @@ public class SymbolTable {
 	}
 
 	public final void addSymbolMask(Tag table) {
-		push(table, 0, null);
+		push(table, 0, NullSymbol);
 	}
 
 	public final boolean exists(Tag table) {
