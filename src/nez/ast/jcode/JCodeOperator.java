@@ -11,7 +11,7 @@ public class JCodeOperator {
 
 	public static Object Minus(Object x) {
 		if (x instanceof Double) {
-			return -((Long) x).doubleValue();
+			return -((Double) x).doubleValue();
 		}
 		return -((Number) x).longValue();
 	}
