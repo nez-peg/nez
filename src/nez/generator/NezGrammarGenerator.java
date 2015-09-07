@@ -210,7 +210,7 @@ public class NezGrammarGenerator extends GrammarGenerator {
 		String symbol = e.getSymbol();
 		W("<exists ");
 		W(e.getTableName());
-		if (!symbol.isEmpty()) {
+		if (symbol != null) {
 			W(" ");
 			W("'" + symbol + "'");
 		}

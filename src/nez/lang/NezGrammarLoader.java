@@ -256,7 +256,7 @@ public class NezGrammarLoader extends GrammarLoader {
 	}
 
 	public Expression newExists(AbstractTree<?> node) {
-		return GrammarFactory.newExists(node, this.getGrammarFile(), Tag.tag(node.getText(_name, "")), node.getText(_symbol, ""));
+		return GrammarFactory.newExists(node, this.getGrammarFile(), Tag.tag(node.getText(_name, "")), node.getText(_symbol, null));
 	}
 
 	public Expression newLocal(AbstractTree<?> node) {
