@@ -11,7 +11,7 @@ public class JCodeOperator {
 
 	public static Object Minus(Object x) {
 		if (x instanceof Double) {
-			return -((Long) x).doubleValue();
+			return -((Double) x).doubleValue();
 		}
 		return -((Number) x).longValue();
 	}
@@ -148,35 +148,35 @@ public class JCodeOperator {
 	}
 
 	public static double Add(int x, double y) {
-		return (double) x + y;
+		return x + y;
 	}
 
 	public static double Add(double x, int y) {
-		return x + (double) y;
+		return x + y;
 	}
 
 	public static double Sub(int x, double y) {
-		return (double) x - y;
+		return x - y;
 	}
 
 	public static double Sub(double x, int y) {
-		return x - (double) y;
+		return x - y;
 	}
 
 	public static double Mul(int x, double y) {
-		return (double) x * y;
+		return x * y;
 	}
 
 	public static double Mul(double x, int y) {
-		return x * (double) y;
+		return x * y;
 	}
 
 	public static double Div(int x, double y) {
-		return (double) x / y;
+		return x / y;
 	}
 
 	public static double Div(double x, int y) {
-		return x / (double) y;
+		return x / y;
 	}
 
 	public static double Add(double x, double y) {

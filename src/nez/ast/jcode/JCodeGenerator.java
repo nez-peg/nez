@@ -391,8 +391,7 @@ public class JCodeGenerator {
 				return String.class;
 			}
 		}
-		new RuntimeException("type error: " + left + ", " + right);
-		return null;
+		throw new RuntimeException("type error: " + left + ", " + right);
 	}
 
 	public void visitAdd(JCodeTree node) {
@@ -465,7 +464,7 @@ public class JCodeGenerator {
 				this.mBuilder.loadFromVar(var);
 			}
 		} else {
-			new RuntimeException("undefined variable " + nameNode.toText());
+			throw new RuntimeException("undefined variable " + nameNode.toText());
 		}
 	}
 
@@ -479,7 +478,7 @@ public class JCodeGenerator {
 			}
 			this.mBuilder.callIinc(var, amount);
 		} else {
-			new RuntimeException("undefined variable " + nameNode.toText());
+			throw new RuntimeException("undefined variable " + nameNode.toText());
 		}
 	}
 
@@ -506,8 +505,7 @@ public class JCodeGenerator {
 		} else if (nodeType == double.class) {
 			return double.class;
 		}
-		new RuntimeException("type error: " + node);
-		return null;
+		throw new RuntimeException("type error: " + node);
 	}
 
 	public void visitNull(JCodeTree p) {
