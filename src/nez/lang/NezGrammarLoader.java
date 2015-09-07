@@ -32,6 +32,7 @@ public class NezGrammarLoader extends GrammarLoader {
 
 	@Override
 	public void parse(AbstractTree<?> node) {
+		System.out.println("parsing " + node + node.formatSourceMessage("debug", "looping"));
 		visit("parse", node);
 	}
 
