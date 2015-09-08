@@ -22,6 +22,7 @@ public class NezGrammarLoader extends GrammarLoader {
 			// if (this.getGrammarOption().classicMode) {
 			// Verbose.println("Loading classic Nez grammar");
 			nezGrammar = NezGrammarClassic.newGrammar("File", NezOption.newSafeOption());
+			assert (nezGrammar != null);
 			// } else {
 			// nezGrammar = NezGrammar.newGrammar("File",
 			// NezOption.newSafeOption());
@@ -258,11 +259,11 @@ public class NezGrammarLoader extends GrammarLoader {
 	}
 
 	public Expression newExists(AbstractTree<?> node) {
-		return GrammarFactory.newExists(node, this.getGrammarFile(), Tag.tag(node.getText(_name, "")), node.getText(_symbol, null));
+		return GrammarFactory.newExists(node, Tag.tag(node.getText(_name, "")), node.getText(_symbol, null));
 	}
 
 	public Expression newLocal(AbstractTree<?> node) {
-		return GrammarFactory.newLocal(node, this.getGrammarFile(), Tag.tag(node.getText(_name, "")), newExpression(node.get(_expr)));
+		return GrammarFactory.newLocal(node, Tag.tag(node.getText(_name, "")), newExpression(node.get(_expr)));
 	}
 
 	public Expression newDefIndent(AbstractTree<?> node) {

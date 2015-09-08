@@ -7,12 +7,10 @@ import nez.vm.NezEncoder;
 
 public class ExistsSymbol extends Expression implements Contextual {
 	public final Tag tableName;
-	final GrammarFile ns;
 	String symbol;
 
-	ExistsSymbol(SourcePosition s, GrammarFile ns, Tag tableName, String symbol) {
+	ExistsSymbol(SourcePosition s, Tag tableName, String symbol) {
 		super(s);
-		this.ns = ns;
 		this.tableName = tableName;
 		this.symbol = symbol;
 	}
@@ -25,7 +23,7 @@ public class ExistsSymbol extends Expression implements Contextual {
 	public final boolean equalsExpression(Expression o) {
 		if (o instanceof ExistsSymbol) {
 			ExistsSymbol s = (ExistsSymbol) o;
-			return this.ns == s.ns && this.tableName == s.tableName && equals(this.symbol, s.symbol);
+			return this.tableName == s.tableName && equals(this.symbol, s.symbol);
 		}
 		return false;
 	}
@@ -37,20 +35,12 @@ public class ExistsSymbol extends Expression implements Contextual {
 		return s == s2;
 	}
 
-	public final GrammarFile getGrammarFile() {
-		return ns;
-	}
-
 	public final Tag getTable() {
 		return tableName;
 	}
 
 	public final String getTableName() {
 		return tableName.getName();
-	}
-
-	public final Expression getSymbolExpression() {
-		return ns.getSymbolExpresion(tableName.getName());
 	}
 
 	@Override
@@ -83,10 +73,7 @@ public class ExistsSymbol extends Expression implements Contextual {
 
 	@Override
 	public short acceptByte(int ch) {
-		if (this.getSymbolExpression() != null) {
-			return this.getSymbolExpression().acceptByte(ch);
-		}
-		return PossibleAcceptance.Accept;
+		return PossibleAcceptance.Unconsumed;
 	}
 
 	@Override

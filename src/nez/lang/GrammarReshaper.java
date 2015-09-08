@@ -275,7 +275,7 @@ public class GrammarReshaper {
 			e.inner = inner;
 			return e;
 		}
-		return (e.get(0) != inner) ? GrammarFactory.newLocal(e.s, e.getGrammarFile(), e.getTable(), inner) : e;
+		return (e.get(0) != inner) ? GrammarFactory.newLocal(e.s, e.getTable(), inner) : e;
 	}
 
 	protected final Expression updateInner(DefSymbol e, Expression inner) {
@@ -303,6 +303,7 @@ class ASTConstructionEliminator extends GrammarReshaper {
 		this.renaming = renaming;
 	}
 
+	@Override
 	public void updateProductionAttribute(Production origProduction, Production newProduction) {
 		newProduction.flag = UFlag.unsetFlag(origProduction.flag, Production.ObjectProduction | Production.OperationalProduction);
 	}
@@ -330,26 +331,32 @@ class ASTConstructionEliminator extends GrammarReshaper {
 		return r;
 	}
 
+	@Override
 	public Expression reshapeMatch(Match e) {
 		return e.get(0).reshape(this);
 	}
 
+	@Override
 	public Expression reshapeNew(New e) {
 		return empty(e);
 	}
 
+	@Override
 	public Expression reshapeLink(Link e) {
 		return e.get(0).reshape(this);
 	}
 
+	@Override
 	public Expression reshapeTagging(Tagging e) {
 		return empty(e);
 	}
 
+	@Override
 	public Expression reshapeReplace(Replace e) {
 		return empty(e);
 	}
 
+	@Override
 	public Expression reshapeCapture(Capture e) {
 		return empty(e);
 	}

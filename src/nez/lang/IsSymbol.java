@@ -7,12 +7,12 @@ import nez.vm.NezEncoder;
 
 public class IsSymbol extends Expression implements Contextual {
 	public final Tag tableName;
-	final GrammarFile ns;
+	final GrammarMap g;
 	public final boolean is;
 
-	IsSymbol(SourcePosition s, GrammarFile ns, Tag tableName, boolean is) {
+	IsSymbol(SourcePosition s, GrammarMap g, Tag tableName, boolean is) {
 		super(s);
-		this.ns = ns;
+		this.g = g;
 		this.tableName = tableName;
 		this.is = is;
 	}
@@ -21,13 +21,13 @@ public class IsSymbol extends Expression implements Contextual {
 	public final boolean equalsExpression(Expression o) {
 		if (o instanceof IsSymbol) {
 			IsSymbol e = (IsSymbol) o;
-			return this.tableName == e.tableName && this.ns == e.ns && this.is == e.is;
+			return this.tableName == e.tableName && this.g == e.g && this.is == e.is;
 		}
 		return false;
 	}
 
-	public final GrammarFile getGrammarFile() {
-		return ns;
+	public final GrammarMap getGrammarMap() {
+		return g;
 	}
 
 	public final Tag getTable() {
@@ -39,7 +39,7 @@ public class IsSymbol extends Expression implements Contextual {
 	}
 
 	public final Expression getSymbolExpression() {
-		return ns.getSymbolExpresion(tableName.getName());
+		return g.getSymbolExpresion(tableName.getName());
 	}
 
 	@Override

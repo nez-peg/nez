@@ -5,16 +5,16 @@ import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
 public class NonTerminal extends Expression {
-	private GrammarFile ns;
+	private GrammarMap g;
 	private String localName;
 	private String uniqueName;
 	private Production deref = null;
 
-	public NonTerminal(SourcePosition s, GrammarFile ns, String ruleName) {
+	public NonTerminal(SourcePosition s, GrammarMap g, String ruleName) {
 		super(s);
-		this.ns = ns;
+		this.g = g;
 		this.localName = ruleName;
-		this.uniqueName = this.ns.uniqueName(this.localName);
+		this.uniqueName = this.g.uniqueName(this.localName);
 	}
 
 	@Override
@@ -25,8 +25,8 @@ public class NonTerminal extends Expression {
 		return false;
 	}
 
-	public final GrammarFile getGrammarFile() {
-		return ns;
+	public final GrammarMap getGrammar() {
+		return g;
 	}
 
 	public final String getLocalName() {
@@ -42,7 +42,7 @@ public class NonTerminal extends Expression {
 	}
 
 	public final boolean syncProduction() {
-		Production p = this.ns.getProduction(this.localName);
+		Production p = this.g.getProduction(this.localName);
 		boolean sync = (deref != p);
 		this.deref = p;
 		return sync;
@@ -52,11 +52,11 @@ public class NonTerminal extends Expression {
 		if (deref != null) {
 			return deref;
 		}
-		return this.ns.getProduction(this.localName);
+		return this.g.getProduction(this.localName);
 	}
 
 	public final Expression deReference() {
-		Production r = this.ns.getProduction(this.localName);
+		Production r = this.g.getProduction(this.localName);
 		return (r != null) ? r.getExpression() : null;
 	}
 
@@ -116,7 +116,7 @@ public class NonTerminal extends Expression {
 	}
 
 	public final Expression newNonTerminal(String localName) {
-		return GrammarFactory.newNonTerminal(this.getSourcePosition(), this.getGrammarFile(), localName);
+		return GrammarFactory.newNonTerminal(this.getSourcePosition(), this.getGrammar(), localName);
 	}
 
 }

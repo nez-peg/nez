@@ -8,28 +8,28 @@ import nez.vm.NezEncoder;
 
 public class DefSymbol extends Unary {
 	public final Tag tableName;
-	public final GrammarFile gfile;
+	public final GrammarMap g;
 
-	DefSymbol(SourcePosition s, GrammarFile ns, Tag table, Expression inner) {
+	DefSymbol(SourcePosition s, GrammarMap g, Tag table, Expression inner) {
 		super(s, inner);
-		this.gfile = ns;
+		this.g = g;
 		this.tableName = table;
-		ns.setSymbolExpresion(tableName.getName(), inner);
+		g.setSymbolExpresion(tableName.getName(), inner);
 	}
 
 	@Override
 	public final boolean equalsExpression(Expression o) {
 		if (o instanceof DefSymbol) {
 			DefSymbol e = (DefSymbol) o;
-			if (this.tableName == e.tableName && this.gfile == e.gfile) {
+			if (this.tableName == e.tableName) {
 				return this.get(0).equalsExpression(e.get(0));
 			}
 		}
 		return false;
 	}
 
-	public final GrammarFile getGrammarFile() {
-		return gfile;
+	public final GrammarMap getGrammarFile() {
+		return g;
 	}
 
 	public final Tag getTable() {

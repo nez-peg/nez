@@ -341,15 +341,15 @@ public class DTDConverter extends AbstractTreeVisitor {
 		UList<Expression> seq = new UList<Expression>(new Expression[requiredList.length + 1]);
 		seq.add(GrammarFactory.newRepetition(node, GrammarFactory.newNonTerminal(node, gfile, attDefList)));
 		for (int index : requiredList) {
-			seq.add(GrammarFactory.newExists(node, gfile, tableName, attDefMap.get(index)));
+			seq.add(GrammarFactory.newExists(node, tableName, attDefMap.get(index)));
 		}
-		return GrammarFactory.newLocal(node, gfile, tableName, GrammarFactory.newSequence(node, seq));
+		return GrammarFactory.newLocal(node, tableName, GrammarFactory.newSequence(node, seq));
 	}
 
 	public Expression genExAttDefList(AbstractTree<?> node, int[] requiredList, Tag tableName) {
 		UList<Expression> l = new UList<Expression>(new Expression[requiredList.length + 1]);
 		for (int index : requiredList) {
-			Expression notexist = GrammarFactory.newNot(node, GrammarFactory.newExists(node, gfile, tableName, attDefMap.get(index)));
+			Expression notexist = GrammarFactory.newNot(node, GrammarFactory.newExists(node, tableName, attDefMap.get(index)));
 			Expression nonterminal = GrammarFactory.newNonTerminal(node, gfile, "AttDef" + currentElementID + "_" + index);
 			l.add(GrammarFactory.newSequence(node, notexist, nonterminal));
 		}

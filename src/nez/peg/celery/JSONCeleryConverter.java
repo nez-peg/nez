@@ -215,7 +215,7 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 		grammar.defineProduction(null, memberList, genExMemberRule(className, requiredListSize));
 
 		// return grammar.newLocal(className, seq);
-		return GrammarFactory.newLocal(null, grammar, Tag.tag(className), grammar.newSequence(seq));
+		return GrammarFactory.newLocal(null, Tag.tag(className), grammar.newSequence(seq));
 	}
 
 	private final Expression genExMemberRule(String className, int requiredListSize) {

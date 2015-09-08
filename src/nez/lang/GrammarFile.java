@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import nez.NezOption;
 import nez.ParserCombinator;
@@ -119,10 +118,6 @@ public class GrammarFile extends GrammarMap {
 		return this.option;
 	}
 
-	public final String uniqueName(String localName) {
-		return /* FIXME */this + ":" + localName;
-	}
-
 	public final String getURN() {
 		return this.urn;
 	}
@@ -177,7 +172,7 @@ public class GrammarFile extends GrammarMap {
 		if (r != null) {
 			return new Grammar(r, option);
 		}
-		// System.out.println("** " + this.ruleMap.keys());
+		Verbose.debug("newParser" + this.getProductionList());
 		return null;
 	}
 
@@ -189,27 +184,6 @@ public class GrammarFile extends GrammarMap {
 		for (Production r : this.getProductionList()) {
 			ConsoleUtils.println(r);
 		}
-	}
-
-	private Map<String, Expression> tableMap;
-
-	final void setSymbolExpresion(String tableName, Expression e) {
-		if (tableMap == null) {
-			tableMap = new HashMap<String, Expression>();
-		}
-		tableMap.put(tableName, e);
-	}
-
-	final Expression getSymbolExpresion(String tableName) {
-		if (tableMap != null) {
-			Expression e = tableMap.get(tableName);
-			if (e != null && !e.isInterned()) {
-				e = e.intern();
-				tableMap.put(tableName, e);
-			}
-			return e;
-		}
-		return null;
 	}
 
 	private FormatterMap fmtMap;
@@ -250,40 +224,6 @@ public class GrammarFile extends GrammarMap {
 			long t2 = System.nanoTime();
 			if (Verbose.Example) {
 				Verbose.println("Elapsed time (Example Tests): " + ((t2 - t1) / 1000000) + "ms");
-			}
-		}
-	}
-
-	// Grammar
-
-	public final void reportError(Expression p, String message) {
-		this.reportError(p.getSourcePosition(), message);
-	}
-
-	public final void reportError(SourcePosition s, String message) {
-		if (s != null) {
-			ConsoleUtils.println(s.formatSourceMessage("error", message));
-		}
-	}
-
-	public final void reportWarning(Expression p, String message) {
-		this.reportWarning(p.getSourcePosition(), message);
-	}
-
-	public final void reportWarning(SourcePosition s, String message) {
-		if (s != null) {
-			ConsoleUtils.println(s.formatSourceMessage("warning", message));
-		}
-	}
-
-	public final void reportNotice(Expression p, String message) {
-		this.reportNotice(p.getSourcePosition(), message);
-	}
-
-	public final void reportNotice(SourcePosition s, String message) {
-		if (option.enabledNoticeReport) {
-			if (s != null) {
-				ConsoleUtils.println(s.formatSourceMessage("notice", message));
 			}
 		}
 	}

@@ -7,28 +7,21 @@ import nez.vm.NezEncoder;
 
 public class LocalTable extends Unary {
 	public final Tag tableName;
-	public final GrammarFile ns;
 
-	LocalTable(SourcePosition s, GrammarFile ns, Tag table, Expression inner) {
+	LocalTable(SourcePosition s, Tag table, Expression inner) {
 		super(s, inner);
-		this.ns = ns;
 		this.tableName = table;
-		ns.setSymbolExpresion(tableName.getName(), inner);
 	}
 
 	@Override
 	public final boolean equalsExpression(Expression o) {
 		if (o instanceof LocalTable) {
 			LocalTable s = (LocalTable) o;
-			if (this.ns == s.ns && this.tableName == s.tableName) {
+			if (this.tableName == s.tableName) {
 				return this.get(0).equalsExpression(s.get(0));
 			}
 		}
 		return false;
-	}
-
-	public final GrammarFile getGrammarFile() {
-		return ns;
 	}
 
 	public final Tag getTable() {
