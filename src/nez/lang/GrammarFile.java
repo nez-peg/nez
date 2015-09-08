@@ -17,9 +17,8 @@ import nez.peg.celery.Celery;
 import nez.peg.dtd.DTDConverter;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
-import nez.util.UMap;
 
-public class GrammarFile extends GrammarFactory {
+public class GrammarFile extends GrammarMap {
 
 	private static int nsid = 0;
 	private static HashMap<String, GrammarFile> nsMap = new HashMap<String, GrammarFile>();
@@ -91,52 +90,41 @@ public class GrammarFile extends GrammarFactory {
 
 	// fields
 
-	final int id;
+	// final int id;
 	final String urn;
-	final String ns;
-	final UMap<Production> ruleMap;
-	final UList<String> nameList;
+	// final String ns;
+	// final UMap<Production> ruleMap;
+	// final UList<String> nameList;
 	final NezOption option;
+
+	private GrammarFile(int id, String urn, NezOption option) {
+		super(null);
+		this.urn = urn;
+		this.option = option;
+		// this.id = id;
+		// String ns = "g";
+		// if (urn != null) {
+		// int loc = urn.lastIndexOf('/');
+		// if (loc != -1) {
+		// ns = urn.substring(loc + 1);
+		// }
+		// ns = ns.replace(".nez", "");
+		// }
+		// this.ns = ns;
+		// this.ruleMap = new UMap<Production>();
+		// this.nameList = new UList<String>(new String[8]);
+	}
 
 	public final NezOption getOption() {
 		return this.option;
 	}
 
-	private GrammarFile(int id, String urn, NezOption option) {
-		this.id = id;
-		this.urn = urn;
-		String ns = "g";
-		if (urn != null) {
-			int loc = urn.lastIndexOf('/');
-			if (loc != -1) {
-				ns = urn.substring(loc + 1);
-			}
-			ns = ns.replace(".nez", "");
-		}
-		this.ns = ns;
-		this.ruleMap = new UMap<Production>();
-		this.nameList = new UList<String>(new String[8]);
-		this.option = option;
-	}
-
 	public final String uniqueName(String localName) {
-		return this.ns + this.id + ":" + localName;
+		return /* FIXME */this + ":" + localName;
 	}
 
 	public final String getURN() {
 		return this.urn;
-	}
-
-	public final boolean isEmpty() {
-		return this.ruleMap.size() == 0;
-	}
-
-	public final boolean hasProduction(String localName) {
-		return this.ruleMap.get(localName) != null;
-	}
-
-	public final void addProduction(Production p) {
-		this.ruleMap.put(p.getUniqueName(), p);
 	}
 
 	public final Production defineProduction(SourcePosition s, String localName, Expression e) {
@@ -144,30 +132,22 @@ public class GrammarFile extends GrammarFactory {
 	}
 
 	public final Production defineProduction(SourcePosition s, int flag, String localName, Expression e) {
-		if (!hasProduction(localName)) {
-			nameList.add(localName);
-		}
 		Production p = new Production(s, flag, this, localName, e);
-		this.ruleMap.put(localName, p);
 		addProduction(p);
 		return p;
 	}
 
-	public final Production inportProduction(String ns, Production p) {
-		this.ruleMap.put(nameNamespaceName(ns, p.getLocalName()), p);
-		addProduction(p);
-		return p;
-	}
-
-	public final Production getProduction(String ruleName) {
-		return this.ruleMap.get(ruleName);
+	public final Production importProduction(String ns, Production p) {
+		// this.ruleMap.put(nameNamespaceName(ns, p.getLocalName()), p);
+		// addProduction(p);
+		// return p;
+		throw new RuntimeException("FIXME");
 	}
 
 	public final List<String> getNonterminalList() {
 		ArrayList<String> l = new ArrayList<String>();
-		for (String s : this.ruleMap.keys()) {
-			if (s.indexOf(':') > 0)
-				continue;
+		for (Production p : this.getProductionList()) {
+			String s = p.getLocalName();
 			char c = s.charAt(0);
 			if (!Character.isUpperCase(c)) {
 				continue;
@@ -180,36 +160,19 @@ public class GrammarFile extends GrammarFactory {
 
 	public Production newReducedProduction(String localName, Production p, GrammarReshaper m) {
 		Production r = p.newProduction(localName);
-		this.ruleMap.put(localName, r);
+		this.addProduction(r);
 		m.updateProductionAttribute(p, r);
-		addProduction(r);
 		r.setExpression(p.getExpression().reshape(m));
 		return r;
 	}
 
 	public final Production newProduction(int flag, String name, Expression e) {
 		Production r = new Production(null, flag, this, name, e);
-		this.ruleMap.put(name, r);
+		this.addProduction(r);
 		return r;
 	}
 
-	public final UList<Production> getDefinedRuleList() {
-		UList<Production> ruleList = new UList<Production>(new Production[this.nameList.size()]);
-		for (String n : nameList) {
-			ruleList.add(this.getProduction(n));
-		}
-		return ruleList;
-	}
-
-	public final List<Production> getAllProductionList() {
-		UList<Production> ruleList = new UList<Production>(new Production[this.ruleMap.size()]);
-		for (String n : this.ruleMap.keys()) {
-			ruleList.add(this.getProduction(n));
-		}
-		return ruleList;
-	}
-
-	public final Grammar newGrammar(String name, NezOption option) {
+	public final Grammar newParser(String name, NezOption option) {
 		Production r = this.getProduction(name);
 		if (r != null) {
 			return new Grammar(r, option);
@@ -219,11 +182,11 @@ public class GrammarFile extends GrammarFactory {
 	}
 
 	public final Grammar newGrammar(String name) {
-		return this.newGrammar(name, NezOption.newDefaultOption());
+		return this.newParser(name, NezOption.newDefaultOption());
 	}
 
 	public void dump() {
-		for (Production r : this.getAllProductionList()) {
+		for (Production r : this.getProductionList()) {
 			ConsoleUtils.println(r);
 		}
 	}
@@ -327,12 +290,12 @@ public class GrammarFile extends GrammarFactory {
 
 	public void verify() {
 		NameAnalysis nameAnalyzer = new NameAnalysis();
-		nameAnalyzer.analyze(this.getDefinedRuleList());
+		nameAnalyzer.analyze(this.getProductionList()/* getDefinedRuleList() */);
 		// if(this.foundError) {
 		// ConsoleUtils.exit(1, "FatalGrammarError");
 		// }
 		// type check
-		for (Production p : this.getAllProductionList()) {
+		for (Production p : this.getProductionList()) {
 			if (p.isTerminal()) {
 				continue;
 			}
@@ -342,7 +305,7 @@ public class GrammarFile extends GrammarFactory {
 		if (!option.enabledAsIsGrammar) {
 			optimizer = new GrammarOptimizer(this.option);
 		}
-		for (Production r : this.getAllProductionList()) {
+		for (Production r : this.getProductionList()) {
 			if (r.isTerminal()) {
 				continue;
 			}

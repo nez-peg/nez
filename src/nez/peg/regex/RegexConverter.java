@@ -73,7 +73,7 @@ public class RegexConverter extends GrammarConverter {
 		file.writeIndent("// Generate Date: " + new Date().toString());
 		file.writeIndent("// Input regex :  " + e.toText());
 		file.writeIndent("\n");
-		for (Production r : grammar.getAllProductionList()) {
+		for (Production r : grammar.getProductionList()) {
 			file.write(r.toString());
 			file.writeIndent("\n");
 		}

@@ -5,7 +5,7 @@ import java.util.List;
 
 import nez.util.UList;
 
-public class GrammarMap {
+public class GrammarMap extends GrammarFactory {
 	// private static int nsid = 0;
 
 	GrammarMap parent;

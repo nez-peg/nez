@@ -25,7 +25,7 @@ public class DfaOptimizer extends GrammarReshaper {
 		for (Production p : g.getProductionList()) {
 			dup.reshapeProduction(p);
 		}
-		for (Production p : ns.getDefinedRuleList()) {
+		for (Production p : ns.getProductionList()/* getDefinedRuleList() */) {
 			System.out.println(p.getLocalName() + "::\n\t" + inlining.reshapeProduction(p));
 		}
 		g = ns.newGrammar(g.getStartProduction().getLocalName());
@@ -41,21 +41,25 @@ class DuplicateGrammar extends GrammarReshaper {
 		this.ns = ns;
 	}
 
+	@Override
 	public Expression reshapeProduction(Production p) {
 		Expression e = p.getExpression().reshape(GrammarReshaper.RemoveAST).reshape(this);
 		this.ns.defineProduction(p.getSourcePosition(), p.getLocalName(), e);
 		return e;
 	}
 
+	@Override
 	public Expression reshapeNonTerminal(NonTerminal p) {
 		return GrammarFactory.newNonTerminal(p.getSourcePosition(), ns, p.getLocalName());
 	}
 
+	@Override
 	public Expression reshapeOption(Option e) {
 		Expression inner = e.get(0).reshape(this);
 		return GrammarFactory.newChoice(e.getSourcePosition(), inner, empty(e));
 	}
 
+	@Override
 	public Expression reshapeRepetition(Repetition e) {
 		Expression inner = e.get(0).reshape(this);
 		String name = "rr" + (c++);
@@ -72,11 +76,13 @@ class DuplicateGrammar extends GrammarReshaper {
 		return GrammarFactory.newChoice(e.getSourcePosition(), seq, empty(e));
 	}
 
+	@Override
 	public Expression reshapeRepetition1(Repetition1 e) {
 		Expression inner = e.get(0).reshape(this);
 		return GrammarFactory.newSequence(e.getSourcePosition(), inner, reshapeRepetition(e));
 	}
 
+	@Override
 	public Expression reshapeSequence(Sequence e) {
 		Expression first = e.get(0).reshape(this);
 		Expression second = e.get(1).reshape(this);
@@ -111,6 +117,7 @@ class InliningChoice extends GrammarReshaper {
 
 	boolean inlining = false;
 
+	@Override
 	public Expression reshapeProduction(Production p) {
 		this.inlining = false;
 		Expression e = p.getExpression().reshape(this);
@@ -155,6 +162,7 @@ class InliningChoice extends GrammarReshaper {
 		}
 	}
 
+	@Override
 	public Expression reshapeNonTerminal(NonTerminal p) {
 		if (this.inlining) {
 			System.out.println(p.getLocalName());
@@ -178,6 +186,7 @@ class InliningChoice extends GrammarReshaper {
 		return false;
 	}
 
+	@Override
 	public Expression reshapeSequence(Sequence e) {
 		if (this.inlining) {
 			Expression first = e.getFirst().reshape(this);

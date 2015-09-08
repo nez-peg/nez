@@ -347,7 +347,7 @@ public class NezGrammarLoader extends GrammarLoader {
 					Production p = source.getProduction(n);
 					if (p.isPublic()) {
 						checkDuplicatedName(node.get(0));
-						this.getGrammarFile().inportProduction(ns, p);
+						this.getGrammarFile().importProduction(ns, p);
 						c++;
 					}
 				}
@@ -360,7 +360,7 @@ public class NezGrammarLoader extends GrammarLoader {
 					this.reportError(node.get(0), "undefined production: " + name);
 					return false;
 				}
-				this.getGrammarFile().inportProduction(ns, p);
+				this.getGrammarFile().importProduction(ns, p);
 			}
 			return true;
 		} catch (IOException e) {

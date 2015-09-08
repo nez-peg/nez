@@ -238,7 +238,7 @@ class CommandContext {
 		if (start == null) {
 			start = this.startingProduction;
 		}
-		Grammar g = getGrammarFile(false).newGrammar(start, option);
+		Grammar g = getGrammarFile(false).newParser(start, option);
 		if (g == null) {
 			ConsoleUtils.exit(1, "undefined production: " + start);
 		}
