@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import nez.NezOption;
 import nez.ast.AbstractTree;
 import nez.ast.Tag;
-import nez.main.Verbose;
 import nez.util.StringUtils;
 import nez.util.UList;
 
@@ -20,19 +19,21 @@ public class NezGrammarLoader extends GrammarLoader {
 	@Override
 	public Grammar getStartGrammar() {
 		if (nezGrammar == null) {
-			if (this.getGrammarOption().classicMode) {
-				Verbose.println("Loading classic Nez grammar");
-				nezGrammar = NezGrammarClassic.newGrammar("File", NezOption.newSafeOption());
-			} else {
-				nezGrammar = NezGrammar.newGrammar("File", NezOption.newSafeOption());
-			}
+			// if (this.getGrammarOption().classicMode) {
+			// Verbose.println("Loading classic Nez grammar");
+			nezGrammar = NezGrammarClassic.newGrammar("File", NezOption.newSafeOption());
+			// } else {
+			// nezGrammar = NezGrammar.newGrammar("File",
+			// NezOption.newSafeOption());
+			// }
 		}
 		return nezGrammar;
 	}
 
 	@Override
 	public void parse(AbstractTree<?> node) {
-		System.out.println("parsing " + node + node.formatSourceMessage("debug", "looping"));
+		// System.out.println("parsing " + node +
+		// node.formatSourceMessage("debug", "looping"));
 		visit("parse", node);
 	}
 
