@@ -51,7 +51,7 @@ public class Xexists extends Term implements Contextual {
 
 	@Override
 	public Expression reshape(ExpressionTransducer m) {
-		return m.reshapeExistsSymbol(this);
+		return m.reshapeXexists(this);
 	}
 
 	@Override

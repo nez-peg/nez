@@ -43,7 +43,7 @@ public class Cset extends Char {
 
 	@Override
 	public Expression reshape(ExpressionTransducer m) {
-		return m.reshapeByteMap(this);
+		return m.reshapeCset(this);
 	}
 
 	@Override

@@ -29,7 +29,7 @@ public class Uone extends Uzero {
 
 	@Override
 	public Expression reshape(ExpressionTransducer m) {
-		return m.reshapeRepetition1(this);
+		return m.reshapeUone(this);
 	}
 
 	@Override

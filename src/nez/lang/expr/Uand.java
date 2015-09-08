@@ -29,7 +29,7 @@ public class Uand extends Unary {
 
 	@Override
 	public Expression reshape(ExpressionTransducer m) {
-		return m.reshapeAnd(this);
+		return m.reshapeUand(this);
 	}
 
 	@Override

@@ -30,7 +30,7 @@ public class Uoption extends Unary {
 
 	@Override
 	public Expression reshape(ExpressionTransducer m) {
-		return m.reshapeOption(this);
+		return m.reshapeUoption(this);
 	}
 
 	@Override

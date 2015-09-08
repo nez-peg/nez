@@ -202,7 +202,7 @@ public class GrammarOptimizer extends ExpressionTransducer {
 	}
 
 	@Override
-	public Expression reshapeLink(Tlink p) {
+	public Expression reshapeTlink(Tlink p) {
 		if (p.get(0) instanceof Choice) {
 			Expression inner = p.get(0);
 			UList<Expression> l = new UList<Expression>(new Expression[inner.size()]);
@@ -212,7 +212,7 @@ public class GrammarOptimizer extends ExpressionTransducer {
 			}
 			return inner.newChoice(l);
 		}
-		return super.reshapeLink(p);
+		return super.reshapeTlink(p);
 	}
 
 	@Override

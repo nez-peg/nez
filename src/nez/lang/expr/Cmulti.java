@@ -43,7 +43,7 @@ public class Cmulti extends Char {
 
 	@Override
 	public Expression reshape(ExpressionTransducer m) {
-		return m.reshapeCharMultiByte(this);
+		return m.reshapeCmulti(this);
 	}
 
 	@Override

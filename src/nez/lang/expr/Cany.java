@@ -29,7 +29,7 @@ public class Cany extends Char {
 
 	@Override
 	public Expression reshape(ExpressionTransducer m) {
-		return m.reshapeAnyChar(this);
+		return m.reshapeCany(this);
 	}
 
 	@Override

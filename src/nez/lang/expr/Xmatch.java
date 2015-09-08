@@ -38,7 +38,7 @@ public class Xmatch extends Term implements Contextual {
 
 	@Override
 	public Expression reshape(ExpressionTransducer m) {
-		return m.reshapeMatchSymbol(this);
+		return m.reshapeXmatch(this);
 	}
 
 	@Override

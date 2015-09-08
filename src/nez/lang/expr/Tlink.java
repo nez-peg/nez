@@ -38,7 +38,7 @@ public class Tlink extends Unary {
 
 	@Override
 	public Expression reshape(ExpressionTransducer m) {
-		return m.reshapeLink(this);
+		return m.reshapeTlink(this);
 	}
 
 	@Override

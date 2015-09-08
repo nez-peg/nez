@@ -51,7 +51,7 @@ public class Xis extends Term implements Contextual {
 
 	@Override
 	public Expression reshape(ExpressionTransducer m) {
-		return m.reshapeIsSymbol(this);
+		return m.reshapeXis(this);
 	}
 
 	@Override

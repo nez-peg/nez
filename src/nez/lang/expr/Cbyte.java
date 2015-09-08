@@ -31,7 +31,7 @@ public class Cbyte extends Char {
 
 	@Override
 	public Expression reshape(ExpressionTransducer m) {
-		return m.reshapeByteChar(this);
+		return m.reshapeCbyte(this);
 	}
 
 	@Override

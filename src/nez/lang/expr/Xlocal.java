@@ -37,7 +37,7 @@ public class Xlocal extends Unary {
 
 	@Override
 	public Expression reshape(ExpressionTransducer m) {
-		return m.reshapeLocalTable(this);
+		return m.reshapeXlocal(this);
 	}
 
 	@Override

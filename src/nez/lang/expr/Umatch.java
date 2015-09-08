@@ -28,7 +28,7 @@ public class Umatch extends Unary {
 
 	@Override
 	public Expression reshape(ExpressionTransducer m) {
-		return m.reshapeMatch(this);
+		return m.reshapeUmatch(this);
 	}
 
 	@Override

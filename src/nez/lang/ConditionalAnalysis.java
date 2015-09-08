@@ -40,7 +40,7 @@ class ConditionalAnalysis extends ExpressionTransducer {
 		return p.get(0).reshape(this);
 	}
 
-	public Expression reshapeIfFlag(Xif p) {
+	public Expression reshapeXif(Xif p) {
 		String flagName = p.getFlagName();
 		if (condMap.get(flagName)) {
 			return p.isPredicate() ? p.newEmpty() : p.newFailure();

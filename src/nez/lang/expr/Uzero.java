@@ -32,7 +32,7 @@ public class Uzero extends Unary {
 
 	@Override
 	public Expression reshape(ExpressionTransducer m) {
-		return m.reshapeRepetition(this);
+		return m.reshapeUzero(this);
 	}
 
 	@Override

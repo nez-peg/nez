@@ -22,7 +22,7 @@ public class Xblock extends Unary {
 
 	@Override
 	public Expression reshape(ExpressionTransducer m) {
-		return m.reshapeBlock(this);
+		return m.reshapeXblock(this);
 	}
 
 	@Override

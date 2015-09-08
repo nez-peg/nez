@@ -25,15 +25,15 @@ public class CharacterFactoring extends ExpressionTransducer {
 		return r == e ? null : r;
 	}
 
-	public Expression reshapeByteChar(Cbyte e) {
+	public Expression reshapeCbyte(Cbyte e) {
 		return empty(e);
 	}
 
-	public Expression reshapeByteMap(Cset e) {
+	public Expression reshapeCset(Cset e) {
 		return empty(e);
 	}
 
-	public Expression reshapeAnyChar(Cany e) {
+	public Expression reshapeCany(Cany e) {
 		return empty(e);
 	}
 

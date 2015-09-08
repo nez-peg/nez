@@ -56,7 +56,7 @@ public class Ttag extends Term {
 
 	@Override
 	public Expression reshape(ExpressionTransducer m) {
-		return m.reshapeTagging(this);
+		return m.reshapeTtag(this);
 	}
 
 	@Override

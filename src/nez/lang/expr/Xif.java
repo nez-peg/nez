@@ -43,7 +43,7 @@ public class Xif extends Term implements Conditional {
 
 	@Override
 	public Expression reshape(ExpressionTransducer m) {
-		return m.reshapeIfFlag(this);
+		return m.reshapeXif(this);
 	}
 
 	@Override

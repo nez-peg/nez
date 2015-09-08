@@ -49,7 +49,7 @@ public class Tnew extends Term {
 
 	@Override
 	public Expression reshape(ExpressionTransducer m) {
-		return m.reshapeNew(this);
+		return m.reshapeTnew(this);
 	}
 
 	@Override

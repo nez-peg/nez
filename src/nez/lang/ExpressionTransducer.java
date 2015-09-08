@@ -52,19 +52,19 @@ public class ExpressionTransducer {
 		return e;
 	}
 
-	public Expression reshapeByteChar(Cbyte e) {
+	public Expression reshapeCbyte(Cbyte e) {
 		return e;
 	}
 
-	public Expression reshapeByteMap(Cset e) {
+	public Expression reshapeCset(Cset e) {
 		return e;
 	}
 
-	public Expression reshapeAnyChar(Cany e) {
+	public Expression reshapeCany(Cany e) {
 		return e;
 	}
 
-	public Expression reshapeCharMultiByte(Cmulti e) {
+	public Expression reshapeCmulti(Cmulti e) {
 		return e;
 	}
 
@@ -133,50 +133,50 @@ public class ExpressionTransducer {
 		return ExpressionCommons.newChoice(e.getSourcePosition(), l);
 	}
 
-	public Expression reshapeOption(Uoption e) {
+	public Expression reshapeUoption(Uoption e) {
 		Expression inner = e.get(0).reshape(this);
 		return updateInner(e, inner);
 	}
 
-	public Expression reshapeRepetition(Uzero e) {
+	public Expression reshapeUzero(Uzero e) {
 		Expression inner = e.get(0).reshape(this);
 		return updateInner(e, inner);
 	}
 
-	public Expression reshapeRepetition1(Uone e) {
+	public Expression reshapeUone(Uone e) {
 		Expression inner = e.get(0).reshape(this);
 		return updateInner(e, inner);
 	}
 
-	public Expression reshapeAnd(Uand e) {
+	public Expression reshapeUand(Uand e) {
 		Expression inner = e.get(0).reshape(this);
 		return updateInner(e, inner);
 	}
 
-	public Expression reshapeNot(Unot e) {
+	public Expression reshapeUnot(Unot e) {
 		Expression inner = e.get(0).reshape(this);
 		return updateInner(e, inner);
 	}
 
-	public Expression reshapeMatch(Umatch e) {
+	public Expression reshapeUmatch(Umatch e) {
 		Expression inner = e.get(0).reshape(this);
 		return updateInner(e, inner);
 	}
 
-	public Expression reshapeNew(Tnew e) {
+	public Expression reshapeTnew(Tnew e) {
 		return e;
 	}
 
-	public Expression reshapeLink(Tlink e) {
+	public Expression reshapeTlink(Tlink e) {
 		Expression inner = e.get(0).reshape(this);
 		return updateInner(e, inner);
 	}
 
-	public Expression reshapeTagging(Ttag e) {
+	public Expression reshapeTtag(Ttag e) {
 		return e;
 	}
 
-	public Expression reshapeReplace(Treplace e) {
+	public Expression reshapeTreplace(Treplace e) {
 		return e;
 	}
 
@@ -184,38 +184,38 @@ public class ExpressionTransducer {
 		return e;
 	}
 
-	public Expression reshapeBlock(Xblock e) {
+	public Expression reshapeXblock(Xblock e) {
 		Expression inner = e.get(0).reshape(this);
 		return updateInner(e, inner);
 	}
 
-	public Expression reshapeLocalTable(Xlocal e) {
+	public Expression reshapeXlocal(Xlocal e) {
 		Expression inner = e.get(0).reshape(this);
 		return updateInner(e, inner);
 	}
 
-	public Expression reshapeDefSymbol(Xdef e) {
+	public Expression reshapeXdef(Xdef e) {
 		Expression inner = e.get(0).reshape(this);
 		return updateInner(e, inner);
 	}
 
-	public Expression reshapeMatchSymbol(Xmatch e) {
+	public Expression reshapeXmatch(Xmatch e) {
 		return e;
 	}
 
-	public Expression reshapeIsSymbol(Xis e) {
+	public Expression reshapeXis(Xis e) {
 		return e;
 	}
 
-	public Expression reshapeExistsSymbol(Xexists e) {
+	public Expression reshapeXexists(Xexists e) {
 		return e;
 	}
 
-	public Expression reshapeIsIndent(Xindent e) {
+	public Expression reshapeXindent(Xindent e) {
 		return e;
 	}
 
-	public Expression reshapeIfFlag(Xif e) {
+	public Expression reshapeXif(Xif e) {
 		return e;
 	}
 
@@ -329,27 +329,27 @@ class ASTConstructionEliminator extends ExpressionTransducer {
 	}
 
 	@Override
-	public Expression reshapeMatch(Umatch e) {
+	public Expression reshapeUmatch(Umatch e) {
 		return e.get(0).reshape(this);
 	}
 
 	@Override
-	public Expression reshapeNew(Tnew e) {
+	public Expression reshapeTnew(Tnew e) {
 		return empty(e);
 	}
 
 	@Override
-	public Expression reshapeLink(Tlink e) {
+	public Expression reshapeTlink(Tlink e) {
 		return e.get(0).reshape(this);
 	}
 
 	@Override
-	public Expression reshapeTagging(Ttag e) {
+	public Expression reshapeTtag(Ttag e) {
 		return empty(e);
 	}
 
 	@Override
-	public Expression reshapeReplace(Treplace e) {
+	public Expression reshapeTreplace(Treplace e) {
 		return empty(e);
 	}
 

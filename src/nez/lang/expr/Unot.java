@@ -29,7 +29,7 @@ public class Unot extends Unary {
 
 	@Override
 	public Expression reshape(ExpressionTransducer m) {
-		return m.reshapeNot(this);
+		return m.reshapeUnot(this);
 	}
 
 	@Override

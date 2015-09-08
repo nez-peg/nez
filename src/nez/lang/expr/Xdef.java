@@ -47,7 +47,7 @@ public class Xdef extends Unary {
 
 	@Override
 	public Expression reshape(ExpressionTransducer m) {
-		return m.reshapeDefSymbol(this);
+		return m.reshapeXdef(this);
 	}
 
 	@Override

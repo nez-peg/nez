@@ -23,7 +23,7 @@ public class Xindent extends Term implements Contextual {
 
 	@Override
 	public Expression reshape(ExpressionTransducer m) {
-		return m.reshapeIsIndent(this);
+		return m.reshapeXindent(this);
 	}
 
 	@Override

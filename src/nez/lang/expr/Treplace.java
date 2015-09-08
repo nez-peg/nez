@@ -48,7 +48,7 @@ public class Treplace extends Term {
 
 	@Override
 	public Expression reshape(ExpressionTransducer m) {
-		return m.reshapeReplace(this);
+		return m.reshapeTreplace(this);
 	}
 
 	@Override
