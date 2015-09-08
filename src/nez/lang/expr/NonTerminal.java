@@ -1,8 +1,8 @@
 package nez.lang.expr;
 
+import nez.Grammar;
 import nez.ast.SourcePosition;
 import nez.lang.Expression;
-import nez.lang.GrammarMap;
 import nez.lang.ExpressionTransducer;
 import nez.lang.PossibleAcceptance;
 import nez.lang.Production;
@@ -11,12 +11,12 @@ import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
 public class NonTerminal extends Expression {
-	private GrammarMap g;
+	private Grammar g;
 	private String localName;
 	private String uniqueName;
 	private Production deref = null;
 
-	public NonTerminal(SourcePosition s, GrammarMap g, String ruleName) {
+	public NonTerminal(SourcePosition s, Grammar g, String ruleName) {
 		super(s);
 		this.g = g;
 		this.localName = ruleName;
@@ -31,7 +31,7 @@ public class NonTerminal extends Expression {
 		return false;
 	}
 
-	public final GrammarMap getGrammar() {
+	public final Grammar getGrammar() {
 		return g;
 	}
 

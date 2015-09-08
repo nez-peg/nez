@@ -1,5 +1,6 @@
 package nez.lang;
 
+import nez.Parser;
 import nez.NezOption;
 import nez.SourceContext;
 import nez.ast.AbstractTree;
@@ -17,7 +18,7 @@ public class Example {
 	}
 
 	boolean test(GrammarFile grammar, NezOption option) {
-		Grammar g = grammar.newParser(nameNode.toText(), option);
+		Parser g = grammar.newParser(nameNode.toText(), option);
 		if (g == null) {
 			System.out.println(nameNode.formatSourceMessage("error", "undefined nonterminal"));
 			return false;

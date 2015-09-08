@@ -1,4 +1,4 @@
-package nez.lang;
+package nez;
 
 import java.util.AbstractList;
 import java.util.HashMap;
@@ -6,18 +6,24 @@ import java.util.List;
 
 import nez.ast.SourcePosition;
 import nez.ast.SymbolId;
+import nez.lang.Expression;
+import nez.lang.Production;
 import nez.lang.expr.ExpressionCommons;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
 
-public class GrammarMap extends AbstractList<Production> {
+public class Grammar extends AbstractList<Production> {
 	// private static int nsid = 0;
 
-	GrammarMap parent;
+	Grammar parent;
 	UList<Production> prodList;
 	HashMap<String, Production> prodMap = null;
 
-	GrammarMap(GrammarMap parent) {
+	public Grammar() {
+		this(null);
+	}
+
+	public Grammar(Grammar parent) {
 		this.parent = parent;
 		this.prodList = new UList<Production>(new Production[1]);
 	}
@@ -43,6 +49,10 @@ public class GrammarMap extends AbstractList<Production> {
 
 	public final Production getStartProduction() {
 		return this.prodList.ArrayValues[0];
+	}
+
+	public final Parser newParser(NezOption option) {
+		return new Parser(this.getStartProduction(), option);
 	}
 
 	public final List<Production> getProductionList() {

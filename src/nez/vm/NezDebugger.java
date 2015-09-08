@@ -8,9 +8,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import nez.Parser;
 import nez.SourceContext;
 import nez.lang.Expression;
-import nez.lang.Grammar;
 import nez.lang.Production;
 import nez.lang.expr.Tlink;
 import nez.lang.expr.NonTerminal;
@@ -21,13 +21,13 @@ public class NezDebugger {
 	HashMap<String, Production> ruleMap = new HashMap<String, Production>();
 	NezDebugOperator command = null;
 	SourceContext sc = null;
-	Grammar peg = null;
+	Parser peg = null;
 	Instruction code = null;
 	String text = null;
 	int linenum = 0;
 	boolean running = false;
 
-	public NezDebugger(Grammar peg, Instruction code, SourceContext sc) {
+	public NezDebugger(Parser peg, Instruction code, SourceContext sc) {
 		this.peg = peg;
 		this.code = code;
 		this.sc = sc;

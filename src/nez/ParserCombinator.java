@@ -6,7 +6,6 @@ import java.lang.reflect.Method;
 import nez.ast.SourcePosition;
 import nez.ast.SymbolId;
 import nez.lang.Expression;
-import nez.lang.Grammar;
 import nez.lang.GrammarFile;
 import nez.lang.expr.Cset;
 import nez.lang.expr.ExpressionCommons;
@@ -52,7 +51,7 @@ public class ParserCombinator {
 		return file;
 	}
 
-	public final Grammar newGrammar(String name) {
+	public final Parser newGrammar(String name) {
 		return this.load().newGrammar(name);
 	}
 

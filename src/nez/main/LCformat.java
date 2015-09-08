@@ -1,8 +1,8 @@
 package nez.main;
 
+import nez.Parser;
 import nez.SourceContext;
 import nez.ast.CommonTree;
-import nez.lang.Grammar;
 import nez.lang.GrammarFile;
 import nez.util.ConsoleUtils;
 
@@ -15,7 +15,7 @@ public class LCformat extends Command {
 	@Override
 	public void exec(CommandContext config) {
 		GrammarFile gfile = config.getGrammarFile(false);
-		Grammar g = config.getGrammar();
+		Parser g = config.getGrammar();
 		while (config.hasInputSource()) {
 			SourceContext source = config.nextInputSource();
 			CommonTree node = g.parseCommonTree(source);

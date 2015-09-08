@@ -10,10 +10,10 @@ import nez.ast.AbstractTreeVisitor;
 import nez.ast.SourcePosition;
 import nez.util.ConsoleUtils;
 
-public abstract class GrammarLoader extends AbstractTreeVisitor {
+public abstract class NezLoader extends AbstractTreeVisitor {
 	private GrammarFile file;
 
-	public GrammarLoader(GrammarFile file) {
+	public NezLoader(GrammarFile file) {
 		this.file = file;
 	}
 

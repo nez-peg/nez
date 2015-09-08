@@ -6,6 +6,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
+import nez.Grammar;
+import nez.Parser;
 import nez.NezOption;
 import nez.ParserCombinator;
 import nez.ast.CommonTree;
@@ -17,7 +19,7 @@ import nez.peg.dtd.DTDConverter;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
 
-public class GrammarFile extends GrammarMap {
+public class GrammarFile extends Grammar {
 
 	private static int nsid = 0;
 	private static HashMap<String, GrammarFile> nsMap = new HashMap<String, GrammarFile>();
@@ -167,16 +169,16 @@ public class GrammarFile extends GrammarMap {
 		return r;
 	}
 
-	public final Grammar newParser(String name, NezOption option) {
+	public final Parser newParser(String name, NezOption option) {
 		Production r = this.getProduction(name);
 		if (r != null) {
-			return new Grammar(r, option);
+			return new Parser(r, option);
 		}
 		Verbose.debug("newParser" + this.getProductionList());
 		return null;
 	}
 
-	public final Grammar newGrammar(String name) {
+	public final Parser newGrammar(String name) {
 		return this.newParser(name, NezOption.newDefaultOption());
 	}
 

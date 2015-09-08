@@ -3,9 +3,9 @@ package nez.vm;
 import java.util.HashMap;
 import java.util.List;
 
+import nez.Parser;
 import nez.NezOption;
 import nez.lang.Expression;
-import nez.lang.Grammar;
 import nez.lang.GrammarOptimizer;
 import nez.lang.Production;
 import nez.lang.Typestate;
@@ -103,7 +103,7 @@ public abstract class NezEncoder {
 		}
 	}
 
-	protected void initProductionCodeMap(Grammar grammar, List<MemoPoint> memoPointList) {
+	protected void initProductionCodeMap(Parser grammar, List<MemoPoint> memoPointList) {
 		this.pcodeMap = new HashMap<String, ProductionCode>();
 		Production start = grammar.getStartProduction();
 		count(start);

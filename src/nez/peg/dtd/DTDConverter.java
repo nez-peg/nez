@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import nez.Parser;
 import nez.NezException;
 import nez.NezOption;
 import nez.SourceContext;
@@ -13,7 +14,6 @@ import nez.ast.AbstractTree;
 import nez.ast.AbstractTreeVisitor;
 import nez.ast.SymbolId;
 import nez.lang.Expression;
-import nez.lang.Grammar;
 import nez.lang.GrammarFile;
 import nez.lang.expr.ExpressionCommons;
 import nez.util.ConsoleUtils;
@@ -32,7 +32,7 @@ public class DTDConverter extends AbstractTreeVisitor {
 				ConsoleUtils.exit(1, "can't load xmldtd.nez");
 			}
 		}
-		Grammar p = dtdGrammar.newGrammar("File");
+		Parser p = dtdGrammar.newGrammar("File");
 		SourceContext dtdFile = SourceContext.newFileContext(filePath);
 		AbstractTree<?> node = p.parseCommonTree(dtdFile);
 		if (node == null) {

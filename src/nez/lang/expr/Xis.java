@@ -1,10 +1,10 @@
 package nez.lang.expr;
 
+import nez.Grammar;
 import nez.ast.SourcePosition;
 import nez.ast.SymbolId;
 import nez.lang.Contextual;
 import nez.lang.Expression;
-import nez.lang.GrammarMap;
 import nez.lang.ExpressionTransducer;
 import nez.lang.PossibleAcceptance;
 import nez.lang.Typestate;
@@ -14,10 +14,10 @@ import nez.vm.NezEncoder;
 
 public class Xis extends Term implements Contextual {
 	public final SymbolId tableName;
-	final GrammarMap g;
+	final Grammar g;
 	public final boolean is;
 
-	Xis(SourcePosition s, GrammarMap g, SymbolId tableName, boolean is) {
+	Xis(SourcePosition s, Grammar g, SymbolId tableName, boolean is) {
 		super(s);
 		this.g = g;
 		this.tableName = tableName;
@@ -33,7 +33,7 @@ public class Xis extends Term implements Contextual {
 		return false;
 	}
 
-	public final GrammarMap getGrammarMap() {
+	public final Grammar getGrammarMap() {
 		return g;
 	}
 

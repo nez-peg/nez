@@ -1,9 +1,9 @@
 package nez.lang.expr;
 
+import nez.Grammar;
 import nez.ast.SourcePosition;
 import nez.ast.SymbolId;
 import nez.lang.Expression;
-import nez.lang.GrammarMap;
 import nez.lang.ExpressionTransducer;
 import nez.lang.Typestate;
 import nez.lang.Visa;
@@ -13,9 +13,9 @@ import nez.vm.NezEncoder;
 
 public class Xdef extends Unary {
 	public final SymbolId tableName;
-	public final GrammarMap g;
+	public final Grammar g;
 
-	Xdef(SourcePosition s, GrammarMap g, SymbolId table, Expression inner) {
+	Xdef(SourcePosition s, Grammar g, SymbolId table, Expression inner) {
 		super(s, inner);
 		this.g = g;
 		this.tableName = table;
@@ -33,7 +33,7 @@ public class Xdef extends Unary {
 		return false;
 	}
 
-	public final GrammarMap getGrammarFile() {
+	public final Grammar getGrammarFile() {
 		return g;
 	}
 

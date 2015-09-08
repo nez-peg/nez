@@ -1,8 +1,8 @@
 package nez.generator;
 
+import nez.Parser;
 import nez.NezOption;
 import nez.lang.Expression;
-import nez.lang.Grammar;
 import nez.lang.Production;
 import nez.lang.expr.Uand;
 import nez.lang.expr.Cany;
@@ -40,7 +40,7 @@ public class LPegGrammarGenerator extends NezGenerator {
 	}
 
 	@Override
-	public void generate(Grammar grammar, NezOption option, String fileName) {
+	public void generate(Parser grammar, NezOption option, String fileName) {
 		this.setOption(option);
 		this.setOutputFile(fileName);
 		file.writeIndent("local lpeg = require \"lpeg\"");
@@ -66,7 +66,7 @@ public class LPegGrammarGenerator extends NezGenerator {
 	}
 
 	@Override
-	public void makeHeader(Grammar g) {
+	public void makeHeader(Parser g) {
 	}
 
 	@Override
@@ -89,7 +89,7 @@ public class LPegGrammarGenerator extends NezGenerator {
 	}
 
 	@Override
-	public void makeFooter(Grammar g) {
+	public void makeFooter(Parser g) {
 		file.writeIndent("function evalExp (s)");
 		file.incIndent();
 		file.writeIndent("for i = 0, 5 do");

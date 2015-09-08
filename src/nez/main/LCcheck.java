@@ -1,8 +1,8 @@
 package nez.main;
 
+import nez.Parser;
 import nez.SourceContext;
 import nez.ast.CommonTree;
-import nez.lang.Grammar;
 import nez.lang.GrammarFile;
 import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
@@ -19,7 +19,7 @@ public class LCcheck extends Command {
 		conf.getNezOption().setOption("example", true);
 
 		GrammarFile gfile = conf.getGrammarFile(true);
-		Grammar g = conf.getGrammar();
+		Parser g = conf.getGrammar();
 
 		UList<String> unparsedInputs = new UList<String>(new String[4]);
 		UList<String> unformatedInputs = new UList<String>(new String[4]);

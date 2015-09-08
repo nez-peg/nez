@@ -2,11 +2,11 @@ package nez.main;
 
 import java.io.IOException;
 
+import nez.Parser;
 import nez.NezOption;
 import nez.SourceContext;
 import nez.generator.GeneratorLoader;
 import nez.generator.NezGenerator;
-import nez.lang.Grammar;
 import nez.lang.GrammarFile;
 import nez.lang.NezGrammar;
 import nez.util.ConsoleUtils;
@@ -199,7 +199,7 @@ class CommandContext {
 
 		@Override
 		public void exec(CommandContext config) {
-			Grammar g = config.getGrammar();
+			Parser g = config.getGrammar();
 			gen.generate(g, option, OutputFileName);
 		}
 	}
@@ -234,11 +234,11 @@ class CommandContext {
 		}
 	}
 
-	public final Grammar getGrammar(String start, NezOption option) {
+	public final Parser getGrammar(String start, NezOption option) {
 		if (start == null) {
 			start = this.startingProduction;
 		}
-		Grammar g = getGrammarFile(false).newParser(start, option);
+		Parser g = getGrammarFile(false).newParser(start, option);
 		if (g == null) {
 			ConsoleUtils.exit(1, "undefined production: " + start);
 		}
@@ -251,11 +251,11 @@ class CommandContext {
 		return g;
 	}
 
-	public final Grammar getGrammar(String start) {
+	public final Parser getGrammar(String start) {
 		return this.getGrammar(start, option);
 	}
 
-	public final Grammar getGrammar() {
+	public final Parser getGrammar() {
 		return this.getGrammar(this.startingProduction, option);
 	}
 

@@ -1,7 +1,7 @@
 package nez.main;
 
+import nez.Parser;
 import nez.SourceContext;
-import nez.lang.Grammar;
 import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
 import nez.util.UList;
@@ -15,7 +15,7 @@ class LCmatch extends Command {
 	@Override
 	public void exec(CommandContext config) {
 		config.getNezOption().setOption("ast", false);
-		Grammar g = config.getGrammar();
+		Parser g = config.getGrammar();
 
 		UList<String> failedInputs = new UList<String>(new String[4]);
 		UList<String> unconsumedInputs = new UList<String>(new String[4]);

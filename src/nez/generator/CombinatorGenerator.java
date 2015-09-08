@@ -1,7 +1,7 @@
 package nez.generator;
 
+import nez.Parser;
 import nez.lang.Expression;
-import nez.lang.Grammar;
 import nez.lang.Production;
 import nez.lang.expr.Uand;
 import nez.lang.expr.Cany;
@@ -34,7 +34,7 @@ public class CombinatorGenerator extends GrammarGenerator {
 	}
 
 	@Override
-	public void makeHeader(Grammar g) {
+	public void makeHeader(Parser g) {
 		L("/* Parsing Expression Grammars for Nez */");
 		L("import nez.ParserCombinator;");
 		L("import nez.lang.Expression;");
@@ -42,7 +42,7 @@ public class CombinatorGenerator extends GrammarGenerator {
 		L("class G extends ParserCombinator").Begin();
 	}
 
-	public void makeFooter(Grammar g) {
+	public void makeFooter(Parser g) {
 		End();
 	}
 

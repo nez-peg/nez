@@ -1,15 +1,16 @@
-package nez.lang;
+package nez;
 
 import java.util.List;
 import java.util.TreeMap;
 
-import nez.NezOption;
-import nez.SourceContext;
 import nez.ast.CommonTree;
 import nez.ast.CommonTreeTransducer;
 import nez.ast.TreeTransducer;
-import nez.lang.expr.Xif;
+import nez.lang.ConditionalAnalysis;
+import nez.lang.Expression;
+import nez.lang.Production;
 import nez.lang.expr.NonTerminal;
+import nez.lang.expr.Xif;
 import nez.main.NezProfier;
 import nez.main.Verbose;
 import nez.util.UList;
@@ -23,13 +24,13 @@ import nez.vm.NezDebugger;
 import nez.vm.PackratCompiler;
 import nez.vm.PlainCompiler;
 
-public class Grammar {
+public class Parser {
 	Production start;
 	UList<Production> productionList;
 	UMap<Production> productionMap;
 	TreeMap<String, Boolean> conditionMap;
 
-	Grammar(Production start, NezOption option) {
+	public Parser(Production start, NezOption option) {
 		this.start = start;
 		this.productionList = new UList<Production>(new Production[4]);
 		this.productionMap = new UMap<Production>();

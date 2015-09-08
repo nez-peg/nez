@@ -1,9 +1,9 @@
 package nez.lang.expr;
 
+import nez.Grammar;
 import nez.ast.SourcePosition;
 import nez.ast.SymbolId;
 import nez.lang.Expression;
-import nez.lang.GrammarMap;
 import nez.util.StringUtils;
 import nez.util.UList;
 import nez.util.UMap;
@@ -147,7 +147,7 @@ public abstract class ExpressionCommons extends Expression {
 
 	// -----------------------------------------------------------------------
 
-	public final static Expression newNonTerminal(SourcePosition s, GrammarMap g, String name) {
+	public final static Expression newNonTerminal(SourcePosition s, Grammar g, String name) {
 		return internImpl(s, new NonTerminal(s, g, name));
 	}
 
@@ -444,7 +444,7 @@ public abstract class ExpressionCommons extends Expression {
 		return internImpl(s, new Xlocal(s, tableName, e));
 	}
 
-	public final static Expression newDefSymbol(SourcePosition s, GrammarMap g, SymbolId tableName, Expression e) {
+	public final static Expression newDefSymbol(SourcePosition s, Grammar g, SymbolId tableName, Expression e) {
 		return internImpl(s, new Xdef(s, g, tableName, e));
 	}
 
@@ -452,11 +452,11 @@ public abstract class ExpressionCommons extends Expression {
 		return internImpl(s, new Xmatch(s, tableName));
 	}
 
-	public final static Expression newIsSymbol(SourcePosition s, GrammarMap g, SymbolId tableName) {
+	public final static Expression newIsSymbol(SourcePosition s, Grammar g, SymbolId tableName) {
 		return internImpl(s, new Xis(s, g, tableName, /* is */true));
 	}
 
-	public final static Expression newIsaSymbol(SourcePosition s, GrammarMap g, SymbolId tableName) {
+	public final static Expression newIsaSymbol(SourcePosition s, Grammar g, SymbolId tableName) {
 		return internImpl(s, new Xis(s, g, tableName, /* is */false));
 	}
 

@@ -1,7 +1,7 @@
 package nez.generator;
 
+import nez.Parser;
 import nez.lang.Expression;
-import nez.lang.Grammar;
 import nez.lang.Production;
 import nez.lang.expr.Uand;
 import nez.lang.expr.Cany;
@@ -30,7 +30,7 @@ public class MouseGrammarGenerator extends GrammarGenerator {
 	}
 
 	@Override
-	public void makeHeader(Grammar g) {
+	public void makeHeader(Parser g) {
 		file.write("// Parsing Expression Grammars for Mouse");
 		file.writeIndent("// Translated from Nez");
 	}

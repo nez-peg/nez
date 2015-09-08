@@ -1,8 +1,8 @@
 package nez.generator;
 
+import nez.Parser;
 import nez.NezOption;
 import nez.lang.Expression;
-import nez.lang.Grammar;
 import nez.lang.Production;
 import nez.lang.expr.Uand;
 import nez.lang.expr.Cany;
@@ -290,7 +290,7 @@ public abstract class NezGenerator extends NezEncoder {
 
 	// ---------------------------------------------------------------------
 
-	public void generate(Grammar grammar, NezOption option, String fileName) {
+	public void generate(Parser grammar, NezOption option, String fileName) {
 		this.setOption(option);
 		this.setOutputFile(fileName);
 		makeHeader(grammar);
@@ -302,11 +302,11 @@ public abstract class NezGenerator extends NezEncoder {
 		file.flush();
 	}
 
-	public void makeHeader(Grammar g) {
+	public void makeHeader(Parser g) {
 	}
 
 	public abstract void visitProduction(Production r);
 
-	public void makeFooter(Grammar g) {
+	public void makeFooter(Parser g) {
 	}
 }
