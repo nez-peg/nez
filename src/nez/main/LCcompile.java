@@ -1,6 +1,6 @@
 package nez.main;
 
-import nez.lang.Parser;
+import nez.lang.Grammar;
 import nez.vm.ByteCoder;
 import nez.vm.NezCode;
 import nez.vm.NezCompiler;
@@ -14,7 +14,7 @@ public class LCcompile extends Command {
 
 	@Override
 	public void exec(CommandContext config) {
-		Parser g = config.getGrammar();
+		Grammar g = config.getGrammar();
 		NezCompiler compile = new PackratCompiler(config.getNezOption());
 		ByteCoder c = new ByteCoder();
 		NezCode code = compile.compile(g, c);

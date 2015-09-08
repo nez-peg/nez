@@ -4,7 +4,7 @@ import java.util.List;
 
 import nez.NezOption;
 import nez.lang.Expression;
-import nez.lang.Parser;
+import nez.lang.Grammar;
 import nez.lang.GrammarOptimizer;
 import nez.lang.Production;
 import nez.main.Verbose;
@@ -20,11 +20,11 @@ public abstract class NezCompiler extends NezEncoder {
 		super(option);
 	}
 
-	public final NezCode compile(Parser grammar) {
+	public final NezCode compile(Grammar grammar) {
 		return this.compile(grammar, null);
 	}
 
-	public NezCode compile(Parser grammar, ByteCoder coder) {
+	public NezCode compile(Grammar grammar, ByteCoder coder) {
 		long t = System.nanoTime();
 		List<MemoPoint> memoPointList = null;
 		if (option.enabledMemoization || option.enabledPackratParsing) {

@@ -9,7 +9,7 @@ import nez.generator.GeneratorLoader;
 import nez.generator.NezGenerator;
 import nez.generator.NezGrammarGenerator;
 import nez.lang.Formatter;
-import nez.lang.Parser;
+import nez.lang.Grammar;
 import nez.lang.GrammarFile;
 import nez.lang.NezGrammarLoader;
 import nez.lang.Production;
@@ -43,13 +43,13 @@ public class LCshell extends Command {
 				continue;
 			}
 			if (text != null && GeneratorLoader.isSupported(command)) {
-				Parser g = getGrammar(gfile, text);
+				Grammar g = getGrammar(gfile, text);
 				if (g != null) {
 					execCommand(command, g, option);
 				}
 				continue;
 			}
-			Parser g = getGrammar(gfile, command);
+			Grammar g = getGrammar(gfile, command);
 			if (g == null) {
 				continue;
 			}
@@ -74,7 +74,7 @@ public class LCshell extends Command {
 		}
 	}
 
-	private void displayGrammar(String command, Parser g) {
+	private void displayGrammar(String command, Grammar g) {
 		g.getStartProduction().dump();
 	}
 
@@ -143,9 +143,9 @@ public class LCshell extends Command {
 		return true;
 	}
 
-	private Parser getGrammar(GrammarFile ns, String text) {
+	private Grammar getGrammar(GrammarFile ns, String text) {
 		String name = text.replace('\n', ' ').trim();
-		Parser g = ns.newGrammar(name);
+		Grammar g = ns.newGrammar(name);
 		if (g == null) {
 			ConsoleUtils.println("NameError: name '" + name + "' is not defined");
 		}
@@ -168,7 +168,7 @@ public class LCshell extends Command {
 		return cmdMap.containsKey(cmd);
 	}
 
-	static void execCommand(String cmd, Parser g, NezOption option) {
+	static void execCommand(String cmd, Grammar g, NezOption option) {
 		NezGenerator gen = GeneratorLoader.load(cmd);
 		gen.generate(g, option, null);
 		ConsoleUtils.println("");
@@ -176,13 +176,13 @@ public class LCshell extends Command {
 }
 
 abstract class ShellCommand {
-	public abstract void perform(Parser g);
+	public abstract void perform(Grammar g);
 }
 
 class NezCommand extends ShellCommand {
 
 	@Override
-	public void perform(Parser g) {
+	public void perform(Grammar g) {
 		NezGrammarGenerator gen = new NezGrammarGenerator();
 		for (Production p : g.getProductionList()) {
 			gen.visitProduction(p);

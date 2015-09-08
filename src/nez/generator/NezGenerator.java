@@ -12,7 +12,7 @@ import nez.lang.DefIndent;
 import nez.lang.DefSymbol;
 import nez.lang.ExistsSymbol;
 import nez.lang.Expression;
-import nez.lang.Parser;
+import nez.lang.Grammar;
 import nez.lang.IfFlag;
 import nez.lang.IsIndent;
 import nez.lang.IsSymbol;
@@ -290,7 +290,7 @@ public abstract class NezGenerator extends NezEncoder {
 
 	// ---------------------------------------------------------------------
 
-	public void generate(Parser grammar, NezOption option, String fileName) {
+	public void generate(Grammar grammar, NezOption option, String fileName) {
 		this.setOption(option);
 		this.setOutputFile(fileName);
 		makeHeader(grammar);
@@ -302,11 +302,11 @@ public abstract class NezGenerator extends NezEncoder {
 		file.flush();
 	}
 
-	public void makeHeader(Parser g) {
+	public void makeHeader(Grammar g) {
 	}
 
 	public abstract void visitProduction(Production r);
 
-	public void makeFooter(Parser g) {
+	public void makeFooter(Grammar g) {
 	}
 }

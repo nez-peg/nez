@@ -209,16 +209,16 @@ public class GrammarFile extends GrammarFactory {
 		return ruleList;
 	}
 
-	public final Parser newGrammar(String name, NezOption option) {
+	public final Grammar newGrammar(String name, NezOption option) {
 		Production r = this.getProduction(name);
 		if (r != null) {
-			return new Parser(r, option);
+			return new Grammar(r, option);
 		}
 		// System.out.println("** " + this.ruleMap.keys());
 		return null;
 	}
 
-	public final Parser newGrammar(String name) {
+	public final Grammar newGrammar(String name) {
 		return this.newGrammar(name, NezOption.newDefaultOption());
 	}
 

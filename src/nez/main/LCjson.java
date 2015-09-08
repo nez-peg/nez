@@ -3,7 +3,7 @@ package nez.main;
 import nez.SourceContext;
 import nez.ast.AbstractTreeWriter;
 import nez.ast.CommonTree;
-import nez.lang.Parser;
+import nez.lang.Grammar;
 import nez.util.ConsoleUtils;
 
 public class LCjson extends Command {
@@ -14,7 +14,7 @@ public class LCjson extends Command {
 
 	@Override
 	public void exec(CommandContext config) {
-		Parser g = config.getGrammar();
+		Grammar g = config.getGrammar();
 		while (config.hasInputSource()) {
 			SourceContext source = config.nextInputSource();
 			CommonTree node = g.parseCommonTree(source);

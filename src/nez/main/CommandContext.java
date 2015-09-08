@@ -6,7 +6,7 @@ import nez.NezOption;
 import nez.SourceContext;
 import nez.generator.GeneratorLoader;
 import nez.generator.NezGenerator;
-import nez.lang.Parser;
+import nez.lang.Grammar;
 import nez.lang.GrammarFile;
 import nez.lang.NezGrammar;
 import nez.util.ConsoleUtils;
@@ -199,7 +199,7 @@ class CommandContext {
 
 		@Override
 		public void exec(CommandContext config) {
-			Parser g = config.getGrammar();
+			Grammar g = config.getGrammar();
 			gen.generate(g, option, OutputFileName);
 		}
 	}
@@ -234,11 +234,11 @@ class CommandContext {
 		}
 	}
 
-	public final Parser getGrammar(String start, NezOption option) {
+	public final Grammar getGrammar(String start, NezOption option) {
 		if (start == null) {
 			start = this.startingProduction;
 		}
-		Parser g = getGrammarFile(false).newGrammar(start, option);
+		Grammar g = getGrammarFile(false).newGrammar(start, option);
 		if (g == null) {
 			ConsoleUtils.exit(1, "undefined production: " + start);
 		}
@@ -251,11 +251,11 @@ class CommandContext {
 		return g;
 	}
 
-	public final Parser getGrammar(String start) {
+	public final Grammar getGrammar(String start) {
 		return this.getGrammar(start, option);
 	}
 
-	public final Parser getGrammar() {
+	public final Grammar getGrammar() {
 		return this.getGrammar(this.startingProduction, option);
 	}
 

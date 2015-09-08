@@ -21,13 +21,13 @@ import nez.vm.NezDebugger;
 import nez.vm.PackratCompiler;
 import nez.vm.PlainCompiler;
 
-public class Parser {
+public class Grammar {
 	Production start;
 	UList<Production> productionList;
 	UMap<Production> productionMap;
 	TreeMap<String, Boolean> conditionMap;
 
-	Parser(Production start, NezOption option) {
+	Grammar(Production start, NezOption option) {
 		this.start = start;
 		this.productionList = new UList<Production>(new Production[4]);
 		this.productionMap = new UMap<Production>();

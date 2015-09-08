@@ -7,7 +7,7 @@ import nez.SourceContext;
 import nez.ast.jcode.JCodeGenerator;
 import nez.ast.jcode.JCodeTree;
 import nez.ast.jcode.JCodeTreeTransducer;
-import nez.lang.Parser;
+import nez.lang.Grammar;
 import nez.util.ConsoleUtils;
 
 public class LCjvm extends Command {
@@ -16,7 +16,7 @@ public class LCjvm extends Command {
 		return "jvm";
 	}
 
-	private Parser grammar;
+	private Grammar grammar;
 	private JCodeTreeTransducer treeTransducer;
 
 	@Override

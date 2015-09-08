@@ -24,7 +24,7 @@ public abstract class GrammarLoader extends AbstractTreeVisitor {
 		return this.file.getOption();
 	}
 
-	public abstract Parser getStartGrammar();
+	public abstract Grammar getStartGrammar();
 
 	public void eval(String urn, int linenum, String text) {
 		SourceContext sc = SourceContext.newStringSourceContext(urn, linenum, text);

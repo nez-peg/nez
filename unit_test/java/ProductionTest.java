@@ -1,5 +1,5 @@
 import static org.junit.Assert.assertTrue;
-import nez.lang.Parser;
+import nez.lang.Grammar;
 import nez.lang.GrammarFile;
 import nez.lang.NezGrammar;
 
@@ -11,7 +11,7 @@ public class ProductionTest {
 	@Test
 	public void test() {
 		GrammarFile ns = NezGrammar.newGrammarFile();
-		Parser p = ns.newGrammar("DIGIT");
+		Grammar p = ns.newGrammar("DIGIT");
 		assertTrue(p.match("8"));
 		assertTrue(!p.match("88"));
 		assertTrue(!p.match("x"));

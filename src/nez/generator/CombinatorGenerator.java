@@ -9,7 +9,7 @@ import nez.lang.Choice;
 import nez.lang.Empty;
 import nez.lang.Expression;
 import nez.lang.Failure;
-import nez.lang.Parser;
+import nez.lang.Grammar;
 import nez.lang.Link;
 import nez.lang.New;
 import nez.lang.NonTerminal;
@@ -34,7 +34,7 @@ public class CombinatorGenerator extends GrammarGenerator {
 	}
 
 	@Override
-	public void makeHeader(Parser g) {
+	public void makeHeader(Grammar g) {
 		L("/* Parsing Expression Grammars for Nez */");
 		L("import nez.ParserCombinator;");
 		L("import nez.lang.Expression;");
@@ -42,7 +42,7 @@ public class CombinatorGenerator extends GrammarGenerator {
 		L("class G extends ParserCombinator").Begin();
 	}
 
-	public void makeFooter(Parser g) {
+	public void makeFooter(Grammar g) {
 		End();
 	}
 

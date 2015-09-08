@@ -6,7 +6,7 @@ import nez.NezException;
 import nez.NezOption;
 import nez.SourceContext;
 import nez.ast.CommonTree;
-import nez.lang.Parser;
+import nez.lang.Grammar;
 import nez.lang.GrammarFile;
 import nez.util.ConsoleUtils;
 
@@ -22,7 +22,7 @@ public class Celery {
 				ConsoleUtils.exit(1, "can't load celery.nez");
 			}
 		}
-		Parser p = celeryGrammar.newGrammar("File");
+		Grammar p = celeryGrammar.newGrammar("File");
 		SourceContext celeryFile = SourceContext.newFileContext(filePath);
 		CommonTree node = p.parseCommonTree(celeryFile);
 		if (node == null) {
