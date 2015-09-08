@@ -10,14 +10,14 @@ import nez.util.StringUtils;
 import nez.util.UList;
 
 public class NezGrammarLoader extends GrammarLoader {
-	static Grammar nezGrammar;
+	static Parser nezGrammar;
 
 	public NezGrammarLoader(GrammarFile file) {
 		super(file);
 	}
 
 	@Override
-	public Grammar getStartGrammar() {
+	public Parser getStartGrammar() {
 		if (nezGrammar == null) {
 			// if (this.getGrammarOption().classicMode) {
 			// Verbose.println("Loading classic Nez grammar");

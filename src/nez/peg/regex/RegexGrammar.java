@@ -11,7 +11,7 @@ import nez.ast.AbstractTreeVisitor;
 import nez.ast.CommonTree;
 import nez.ast.Tag;
 import nez.lang.Expression;
-import nez.lang.Grammar;
+import nez.lang.Parser;
 import nez.lang.GrammarFactory;
 import nez.lang.GrammarFile;
 import nez.main.Verbose;
@@ -31,7 +31,7 @@ public class RegexGrammar extends AbstractTreeVisitor {
 				ConsoleUtils.exit(1, "can't load regex.nez");
 			}
 		}
-		Grammar p = regexGrammar.newGrammar("File");
+		Parser p = regexGrammar.newGrammar("File");
 		CommonTree node = p.parseCommonTree(regex);
 		if (node == null) {
 			throw new NezException(regex.getSyntaxErrorMessage());
@@ -46,7 +46,7 @@ public class RegexGrammar extends AbstractTreeVisitor {
 		return gfile;
 	}
 
-	public final static Grammar newProduction(String pattern) {
+	public final static Parser newProduction(String pattern) {
 		try {
 			GrammarFile grammar = loadGrammar(SourceContext.newStringContext(pattern), NezOption.newDefaultOption() /* FIXME */);
 			return grammar.newGrammar("File");

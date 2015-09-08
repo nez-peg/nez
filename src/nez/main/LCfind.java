@@ -3,7 +3,7 @@ package nez.main;
 import java.io.IOException;
 
 import nez.NezOption;
-import nez.lang.Grammar;
+import nez.lang.Parser;
 import nez.lang.GrammarFile;
 import nez.lang.Production;
 import nez.util.ConsoleUtils;
@@ -19,10 +19,10 @@ public class LCfind extends Command {
 	@Override
 	public void exec(CommandContext config) {
 		String text = null;
-		UList<Grammar> pList = load(config.getInputFileList());
+		UList<Parser> pList = load(config.getInputFileList());
 		while ((text = ConsoleUtils.readMultiLine(">>> ", "    ")) != null) {
 			ConsoleUtils.println(text);
-			for (Grammar p : pList) {
+			for (Parser p : pList) {
 				if (p.match(text)) {
 					ConsoleUtils.println(p.getStartProduction().getLocalName());
 				}
@@ -31,8 +31,8 @@ public class LCfind extends Command {
 
 	}
 
-	UList<Grammar> load(UList<String> fileList) {
-		UList<Grammar> pList = new UList<Grammar>(new Grammar[fileList.size() * 2]);
+	UList<Parser> load(UList<String> fileList) {
+		UList<Parser> pList = new UList<Parser>(new Parser[fileList.size() * 2]);
 		Verbose.print("Loading ..");
 		try {
 			for (String f : fileList) {
@@ -40,7 +40,7 @@ public class LCfind extends Command {
 				UList<Production> rules = g.getDefinedRuleList();
 				for (Production r : rules) {
 					if (r.isPublic()) {
-						Grammar p = g.newGrammar(r.getLocalName());
+						Parser p = g.newGrammar(r.getLocalName());
 						p.compile();
 						pList.add(p);
 						Verbose.print(" " + r.getUniqueName());

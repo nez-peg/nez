@@ -7,7 +7,7 @@ import nez.ast.SourcePosition;
 import nez.ast.Tag;
 import nez.lang.ByteMap;
 import nez.lang.Expression;
-import nez.lang.Grammar;
+import nez.lang.Parser;
 import nez.lang.GrammarFactory;
 import nez.lang.GrammarFile;
 import nez.main.Verbose;
@@ -52,7 +52,7 @@ public class ParserCombinator {
 		return file;
 	}
 
-	public final Grammar newGrammar(String name) {
+	public final Parser newGrammar(String name) {
 		return this.load().newGrammar(name);
 	}
 

@@ -7,13 +7,13 @@ import nez.SourceContext;
 import nez.ast.Source;
 import nez.ast.Tag;
 import nez.ast.TreeTransducer;
-import nez.lang.Grammar;
+import nez.lang.Parser;
 import nez.lang.GrammarFile;
 import nez.util.ConsoleUtils;
 
 public class Konoha extends TreeTransducer {
 	KonohaTransducer konoha;
-	Grammar grammar;
+	Parser grammar;
 
 	public Konoha() {
 		this.grammar = newKonohaGrammar();
@@ -22,7 +22,7 @@ public class Konoha extends TreeTransducer {
 
 	private static GrammarFile konohaGrammar = null;
 
-	public final static Grammar newKonohaGrammar() {
+	public final static Parser newKonohaGrammar() {
 		if (konohaGrammar == null) {
 			try {
 				konohaGrammar = GrammarFile.loadGrammarFile("konoha.nez", NezOption.newDefaultOption());

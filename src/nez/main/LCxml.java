@@ -3,7 +3,7 @@ package nez.main;
 import nez.SourceContext;
 import nez.ast.AbstractTreeWriter;
 import nez.ast.CommonTree;
-import nez.lang.Grammar;
+import nez.lang.Parser;
 import nez.util.ConsoleUtils;
 
 public class LCxml extends Command {
@@ -14,7 +14,7 @@ public class LCxml extends Command {
 
 	@Override
 	public void exec(CommandContext config) {
-		Grammar g = config.getGrammar();
+		Parser g = config.getGrammar();
 		while (config.hasInputSource()) {
 			SourceContext source = config.nextInputSource();
 			CommonTree node = g.parseCommonTree(source);

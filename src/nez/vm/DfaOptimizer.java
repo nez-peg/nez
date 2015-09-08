@@ -3,7 +3,7 @@ package nez.vm;
 import nez.lang.Choice;
 import nez.lang.Empty;
 import nez.lang.Expression;
-import nez.lang.Grammar;
+import nez.lang.Parser;
 import nez.lang.GrammarFactory;
 import nez.lang.GrammarFile;
 import nez.lang.GrammarReshaper;
@@ -18,7 +18,7 @@ import nez.util.UList;
 
 public class DfaOptimizer extends GrammarReshaper {
 
-	public static final Grammar optimize(Grammar g) {
+	public static final Parser optimize(Parser g) {
 		GrammarFile ns = GrammarFile.newGrammarFile(g.getNezOption().clone());
 		GrammarReshaper dup = new DuplicateGrammar(ns);
 		GrammarReshaper inlining = new InliningChoice();

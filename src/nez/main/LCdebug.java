@@ -1,7 +1,7 @@
 package nez.main;
 
 import nez.SourceContext;
-import nez.lang.Grammar;
+import nez.lang.Parser;
 
 public class LCdebug extends Command {
 	@Override
@@ -13,7 +13,7 @@ public class LCdebug extends Command {
 	public void exec(CommandContext config) {
 		// config.setNezOption(NezOption.DebugOption);
 		Command.displayVersion();
-		Grammar peg = config.getGrammar();
+		Parser peg = config.getGrammar();
 		while (config.hasInputSource()) {
 			SourceContext file = config.nextInputSource();
 			peg.debug(file);

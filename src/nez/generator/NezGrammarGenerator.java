@@ -10,7 +10,7 @@ import nez.lang.Choice;
 import nez.lang.DefSymbol;
 import nez.lang.ExistsSymbol;
 import nez.lang.Expression;
-import nez.lang.Grammar;
+import nez.lang.Parser;
 import nez.lang.IsSymbol;
 import nez.lang.Link;
 import nez.lang.LocalTable;
@@ -36,7 +36,7 @@ public class NezGrammarGenerator extends GrammarGenerator {
 	}
 
 	@Override
-	public void makeHeader(Grammar g) {
+	public void makeHeader(Parser g) {
 		L("// Parsing Expression Grammars for Nez");
 		L("// ");
 	}
