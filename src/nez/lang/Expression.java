@@ -3,6 +3,12 @@ package nez.lang;
 import java.util.AbstractList;
 
 import nez.ast.SourcePosition;
+import nez.lang.expr.AnyChar;
+import nez.lang.expr.ByteChar;
+import nez.lang.expr.ByteMap;
+import nez.lang.expr.GrammarFactory;
+import nez.lang.expr.Replace;
+import nez.lang.expr.Tagging;
 import nez.util.UList;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
@@ -12,19 +18,38 @@ public abstract class Expression extends AbstractList<Expression> {
 	SourcePosition s = null;
 	int internId = 0;
 
-	Expression(SourcePosition s) {
+	protected Expression(SourcePosition s) {
 		this.s = s;
 		this.internId = 0;
 	}
 
-	public abstract boolean equalsExpression(Expression o);
+	@Override
+	public int size() {
+		return 0;
+	}
 
+	@Override
+	public Expression get(int index) {
+		return null;
+	}
+
+	public Expression getFirst() {
+		return this;
+	}
+
+	public Expression getNext() {
+		return null;
+	}
+
+	@Override
 	public final boolean equals(Object o) {
 		if (o instanceof Expression) {
 			return this.equalsExpression((Expression) o);
 		}
 		return false;
 	}
+
+	public abstract boolean equalsExpression(Expression o);
 
 	public final SourcePosition getSourcePosition() {
 		return this.s;
@@ -48,31 +73,13 @@ public abstract class Expression extends AbstractList<Expression> {
 		return this.getPredicate();
 	}
 
-	@Override
-	public Expression get(int index) {
-		return null;
-	}
-
-	@Override
-	public int size() {
-		return 0;
-	}
-
-	public Expression getFirst() {
-		return this;
-	}
-
-	public Expression getNext() {
-		return null;
-	}
+	public abstract boolean isConsumed();
 
 	public abstract Expression reshape(GrammarReshaper m);
 
-	public abstract boolean isConsumed();
-
-	boolean setOuterLefted(Expression outer) {
-		return false;
-	}
+	// boolean setOuterLefted(Expression outer) {
+	// return false;
+	// }
 
 	public final int inferTypestate() {
 		return this.inferTypestate(null);
@@ -89,7 +96,7 @@ public abstract class Expression extends AbstractList<Expression> {
 		return sb.toString();
 	}
 
-	protected void format(StringBuilder sb) {
+	public void format(StringBuilder sb) {
 		sb.append("<");
 		sb.append(this.getPredicate());
 		for (Expression se : this) {

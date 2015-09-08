@@ -1,5 +1,21 @@
 package nez.lang;
 
+import nez.lang.expr.And;
+import nez.lang.expr.Capture;
+import nez.lang.expr.Choice;
+import nez.lang.expr.DefSymbol;
+import nez.lang.expr.GrammarFactory;
+import nez.lang.expr.IsSymbol;
+import nez.lang.expr.Link;
+import nez.lang.expr.Match;
+import nez.lang.expr.New;
+import nez.lang.expr.NonTerminal;
+import nez.lang.expr.Not;
+import nez.lang.expr.Option;
+import nez.lang.expr.Repetition;
+import nez.lang.expr.Repetition1;
+import nez.lang.expr.Replace;
+import nez.lang.expr.Tagging;
 import nez.util.UList;
 
 public class Typestate extends GrammarReshaper {
@@ -143,7 +159,7 @@ public class Typestate extends GrammarReshaper {
 		if (this.required == Typestate.OperationType) {
 			if (t == Typestate.ObjectType) {
 				reportInserted(p, "@");
-				return GrammarFactory.newLink(p.s, null, p);
+				return GrammarFactory.newLink(p.getSourcePosition(), null, p);
 			}
 		}
 		return p;
@@ -162,7 +178,7 @@ public class Typestate extends GrammarReshaper {
 			}
 		}
 		this.required = next;
-		return GrammarFactory.newChoice(p.s, l);
+		return GrammarFactory.newChoice(p.getSourcePosition(), l);
 	}
 
 	@Override
@@ -170,7 +186,7 @@ public class Typestate extends GrammarReshaper {
 		int required = this.required;
 		Expression inn = p.inner.reshape(this);
 		if (required != Typestate.OperationType && this.required == Typestate.OperationType) {
-			checker.reportWarning(p.s, "unable to create objects in repetition => removed!!");
+			checker.reportWarning(p.getSourcePosition(), "unable to create objects in repetition => removed!!");
 			inn = inn.reshape(GrammarReshaper.RemoveASTandRename);
 			this.required = required;
 		}
@@ -182,7 +198,7 @@ public class Typestate extends GrammarReshaper {
 		int required = this.required;
 		Expression inn = p.inner.reshape(this);
 		if (required != Typestate.OperationType && this.required == Typestate.OperationType) {
-			checker.reportWarning(p.s, "unable to create objects in repetition => removed!!");
+			checker.reportWarning(p.getSourcePosition(), "unable to create objects in repetition => removed!!");
 			inn = inn.reshape(GrammarReshaper.RemoveASTandRename);
 			this.required = required;
 		}
@@ -194,7 +210,7 @@ public class Typestate extends GrammarReshaper {
 		int required = this.required;
 		Expression inn = p.inner.reshape(this);
 		if (required != Typestate.OperationType && this.required == Typestate.OperationType) {
-			checker.reportWarning(p.s, "unable to create objects in repetition => removed!!");
+			checker.reportWarning(p.getSourcePosition(), "unable to create objects in repetition => removed!!");
 			inn = inn.reshape(GrammarReshaper.RemoveASTandRename);
 			this.required = required;
 		}
@@ -234,8 +250,8 @@ public class Typestate extends GrammarReshaper {
 	public Expression reshapeIsSymbol(IsSymbol p) {
 		Expression e = p.getSymbolExpression();
 		if (e == null) {
-			checker.reportError(p.s, "undefined table: " + p.getTableName());
-			return GrammarFactory.newFailure(p.s);
+			checker.reportError(p.getSourcePosition(), "undefined table: " + p.getTableName());
+			return GrammarFactory.newFailure(p.getSourcePosition());
 		}
 		return p;
 	}

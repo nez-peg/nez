@@ -1,9 +1,9 @@
 package nez.vm;
 
 import nez.NezOption;
-import nez.lang.Link;
-import nez.lang.NonTerminal;
 import nez.lang.Production;
+import nez.lang.expr.Link;
+import nez.lang.expr.NonTerminal;
 import nez.main.Verbose;
 
 public class PackratCompiler extends OptimizedCompiler {

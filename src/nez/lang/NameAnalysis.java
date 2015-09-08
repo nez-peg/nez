@@ -2,6 +2,15 @@ package nez.lang;
 
 import java.util.List;
 
+import nez.lang.expr.And;
+import nez.lang.expr.Choice;
+import nez.lang.expr.GrammarFactory;
+import nez.lang.expr.NonTerminal;
+import nez.lang.expr.Not;
+import nez.lang.expr.Option;
+import nez.lang.expr.Repetition;
+import nez.lang.expr.Repetition1;
+import nez.lang.expr.Sequence;
 import nez.util.StringUtils;
 import nez.util.UFlag;
 
@@ -81,7 +90,7 @@ public class NameAnalysis extends GrammarReshaper {
 		if (p == null) {
 			if (n.isTerminal()) {
 				n.getGrammar().reportNotice(n, "undefined terminal: " + n.getLocalName());
-				return GrammarFactory.newString(n.s, StringUtils.unquoteString(n.getLocalName()));
+				return GrammarFactory.newString(n.getSourcePosition(), StringUtils.unquoteString(n.getLocalName()));
 			}
 			n.getGrammar().reportWarning(n, "undefined production: " + n.getLocalName());
 			return n.newEmpty();

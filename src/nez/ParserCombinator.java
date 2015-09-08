@@ -5,11 +5,11 @@ import java.lang.reflect.Method;
 
 import nez.ast.SourcePosition;
 import nez.ast.Tag;
-import nez.lang.ByteMap;
 import nez.lang.Expression;
 import nez.lang.Grammar;
-import nez.lang.GrammarFactory;
 import nez.lang.GrammarFile;
+import nez.lang.expr.ByteMap;
+import nez.lang.expr.GrammarFactory;
 import nez.main.Verbose;
 import nez.util.UList;
 

@@ -1,8 +1,8 @@
 package nez.peg.dtd;
 
 import nez.lang.Expression;
-import nez.lang.GrammarFactory;
 import nez.lang.GrammarFile;
+import nez.lang.expr.GrammarFactory;
 
 public class PredefinedRules {
 	GrammarFile grammar;

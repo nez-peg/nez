@@ -14,8 +14,8 @@ import nez.ast.AbstractTreeVisitor;
 import nez.ast.Tag;
 import nez.lang.Expression;
 import nez.lang.Grammar;
-import nez.lang.GrammarFactory;
 import nez.lang.GrammarFile;
+import nez.lang.expr.GrammarFactory;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
 

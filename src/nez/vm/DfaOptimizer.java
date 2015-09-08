@@ -1,19 +1,19 @@
 package nez.vm;
 
-import nez.lang.Choice;
-import nez.lang.Empty;
 import nez.lang.Expression;
 import nez.lang.Grammar;
-import nez.lang.GrammarFactory;
 import nez.lang.GrammarFile;
 import nez.lang.GrammarReshaper;
-import nez.lang.NonTerminal;
-import nez.lang.Option;
 import nez.lang.PossibleAcceptance;
 import nez.lang.Production;
-import nez.lang.Repetition;
-import nez.lang.Repetition1;
-import nez.lang.Sequence;
+import nez.lang.expr.Choice;
+import nez.lang.expr.Empty;
+import nez.lang.expr.GrammarFactory;
+import nez.lang.expr.NonTerminal;
+import nez.lang.expr.Option;
+import nez.lang.expr.Repetition;
+import nez.lang.expr.Repetition1;
+import nez.lang.expr.Sequence;
 import nez.util.UList;
 
 public class DfaOptimizer extends GrammarReshaper {

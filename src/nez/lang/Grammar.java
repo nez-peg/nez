@@ -8,6 +8,8 @@ import nez.SourceContext;
 import nez.ast.CommonTree;
 import nez.ast.CommonTreeTransducer;
 import nez.ast.TreeTransducer;
+import nez.lang.expr.IfFlag;
+import nez.lang.expr.NonTerminal;
 import nez.main.NezProfier;
 import nez.main.Verbose;
 import nez.util.UList;

@@ -3,8 +3,8 @@ package nez.peg.celery;
 import nez.ast.AbstractTree;
 import nez.ast.AbstractTreeVisitor;
 import nez.lang.Expression;
-import nez.lang.GrammarFactory;
 import nez.lang.GrammarFile;
+import nez.lang.expr.GrammarFactory;
 
 public abstract class AbstractCeleryConverter extends AbstractTreeVisitor {
 

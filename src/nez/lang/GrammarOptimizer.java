@@ -3,6 +3,21 @@ package nez.lang;
 import java.util.HashMap;
 
 import nez.NezOption;
+import nez.lang.expr.AnyChar;
+import nez.lang.expr.ByteChar;
+import nez.lang.expr.ByteMap;
+import nez.lang.expr.Capture;
+import nez.lang.expr.Choice;
+import nez.lang.expr.Empty;
+import nez.lang.expr.Failure;
+import nez.lang.expr.GrammarFactory;
+import nez.lang.expr.Link;
+import nez.lang.expr.New;
+import nez.lang.expr.NonTerminal;
+import nez.lang.expr.Not;
+import nez.lang.expr.Replace;
+import nez.lang.expr.Sequence;
+import nez.lang.expr.Tagging;
 import nez.util.UList;
 
 public class GrammarOptimizer extends GrammarReshaper {

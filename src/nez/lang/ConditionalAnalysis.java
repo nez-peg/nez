@@ -2,6 +2,10 @@ package nez.lang;
 
 import java.util.TreeMap;
 
+import nez.lang.expr.IfFlag;
+import nez.lang.expr.NonTerminal;
+import nez.lang.expr.OnFlag;
+
 class ConditionalAnalysis extends GrammarReshaper {
 	TreeMap<String, Boolean> condMap;
 

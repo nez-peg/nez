@@ -1,0 +1,214 @@
+package nez.lang.expr;
+
+import nez.NezOption;
+import nez.ast.SourcePosition;
+import nez.lang.Expression;
+import nez.lang.GrammarReshaper;
+import nez.lang.PossibleAcceptance;
+import nez.lang.Typestate;
+import nez.lang.Visa;
+import nez.util.StringUtils;
+import nez.util.UList;
+import nez.vm.Instruction;
+import nez.vm.NezEncoder;
+
+public class Sequence extends Expression {
+	public Expression first;
+	public Expression next;
+
+	Sequence(SourcePosition s, Expression first, Expression next) {
+		super(s);
+		this.first = first;
+		this.next = next;
+	}
+
+	@Override
+	public final boolean equalsExpression(Expression o) {
+		if (o instanceof Sequence) {
+			return this.get(0).equalsExpression(o.get(0)) && this.get(1).equalsExpression(o.get(1));
+		}
+		return false;
+	}
+
+	@Override
+	public final int size() {
+		return 2;
+	}
+
+	@Override
+	public final Expression get(int index) {
+		return index == 0 ? this.first : this.next;
+	}
+
+	@Override
+	public final Expression set(int index, Expression e) {
+		Expression p = this.first;
+		if (index == 0) {
+			this.first = e;
+		} else {
+			p = this.next;
+			this.next = e;
+		}
+		return p;
+	}
+
+	@Override
+	public Expression getFirst() {
+		return this.first;
+	}
+
+	@Override
+	public Expression getNext() {
+		return this.next;
+	}
+
+	@Override
+	public String getPredicate() {
+		return "seq";
+	}
+
+	@Override
+	public String key() {
+		return " ";
+	}
+
+	@Override
+	public final void format(StringBuilder sb) {
+		if (this.first instanceof ByteChar && this.next.getFirst() instanceof ByteChar) {
+			sb.append("'");
+			formatString(sb, (ByteChar) this.first, this.next);
+		} else {
+			formatInner(sb, this.first);
+			sb.append(" ");
+			formatInner(sb, this.next);
+		}
+	}
+
+	private void formatString(StringBuilder sb, ByteChar b, Expression next) {
+		while (b != null) {
+			StringUtils.appendByteChar(sb, b.byteChar, "'");
+			if (next == null) {
+				sb.append("'");
+				return;
+			}
+			Expression first = next.getFirst();
+			b = null;
+			if (first instanceof ByteChar) {
+				b = (ByteChar) first;
+				next = next.getNext();
+			}
+		}
+		sb.append("'");
+		sb.append(" ");
+		formatInner(sb, next);
+	}
+
+	private void formatInner(StringBuilder sb, Expression e) {
+		e.format(sb);
+	}
+
+	@Override
+	public Expression reshape(GrammarReshaper m) {
+		return m.reshapeSequence(this);
+	}
+
+	@Override
+	public boolean isConsumed() {
+		if (this.get(0).isConsumed()) {
+			return true;
+		}
+		return this.get(1).isConsumed();
+	}
+
+	// @Override
+	// boolean setOuterLefted(Expression outer) {
+	// for (Expression e : this) {
+	// if (e.setOuterLefted(outer)) {
+	// return true;
+	// }
+	// }
+	// return false;
+	// }
+
+	@Override
+	public int inferTypestate(Visa v) {
+		for (Expression e : this) {
+			int t = e.inferTypestate(v);
+			if (t == Typestate.ObjectType || t == Typestate.OperationType) {
+				return t;
+			}
+		}
+		return Typestate.BooleanType;
+	}
+
+	@Override
+	public short acceptByte(int ch) {
+		short r = this.first.acceptByte(ch);
+		if (r == PossibleAcceptance.Unconsumed) {
+			return this.next.acceptByte(ch);
+		}
+		return r;
+	}
+
+	@Override
+	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
+		NezOption option = bc.getOption();
+		if (option.enabledStringOptimization) {
+			Expression e = this.toMultiCharSequence();
+			if (e instanceof MultiChar) {
+				// System.out.println("stringfy .. " + e);
+				return bc.encodeMultiChar((MultiChar) e, next, failjump);
+			}
+			return bc.encodeSequence((Sequence) e, next, failjump);
+		}
+		return bc.encodeSequence(this, next, failjump);
+	}
+
+	public final boolean isMultiChar() {
+		return (this.getFirst() instanceof ByteChar && this.getNext() instanceof ByteChar);
+	}
+
+	public final Expression toMultiCharSequence() {
+		Expression f = this.getFirst();
+		Expression s = this.getNext().getFirst();
+		if (f instanceof ByteChar && s instanceof ByteChar) {
+			UList<Byte> l = new UList<Byte>(new Byte[16]);
+			l.add(((byte) ((ByteChar) f).byteChar));
+			Expression next = convertMultiByte(this, l);
+			Expression mb = this.newMultiChar(((ByteChar) f).isBinary(), toByteSeq(l));
+			if (next != null) {
+				return this.newSequence(mb, next);
+			}
+			return mb;
+		}
+		return this;
+	}
+
+	private Expression convertMultiByte(Sequence seq, UList<Byte> l) {
+		Expression s = seq.getNext().getFirst();
+		while (s instanceof ByteChar) {
+			l.add((byte) ((ByteChar) s).byteChar);
+			Expression next = seq.getNext();
+			if (next instanceof Sequence) {
+				seq = (Sequence) next;
+				s = seq.getNext().getFirst();
+				continue;
+			}
+			return null;
+		}
+		return seq.getNext();
+	}
+
+	private byte[] toByteSeq(UList<Byte> l) {
+		byte[] byteSeq = new byte[l.size()];
+		for (int i = 0; i < l.size(); i++) {
+			byteSeq[i] = l.ArrayValues[i];
+		}
+		return byteSeq;
+	}
+
+	public final Expression newMultiChar(boolean binary, byte[] byteSeq) {
+		return GrammarFactory.newMultiChar(this.getSourcePosition(), binary, byteSeq);
+	}
+
+}

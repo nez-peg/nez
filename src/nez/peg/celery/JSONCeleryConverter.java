@@ -7,7 +7,7 @@ import java.util.List;
 import nez.ast.AbstractTree;
 import nez.ast.Tag;
 import nez.lang.Expression;
-import nez.lang.GrammarFactory;
+import nez.lang.expr.GrammarFactory;
 import nez.util.UList;
 
 public class JSONCeleryConverter extends AbstractCeleryConverter {

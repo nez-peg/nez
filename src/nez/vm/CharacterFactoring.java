@@ -1,13 +1,13 @@
 package nez.vm;
 
-import nez.lang.AnyChar;
-import nez.lang.ByteChar;
-import nez.lang.ByteMap;
-import nez.lang.Choice;
 import nez.lang.Expression;
-import nez.lang.GrammarFactory;
 import nez.lang.GrammarReshaper;
-import nez.lang.Sequence;
+import nez.lang.expr.AnyChar;
+import nez.lang.expr.ByteChar;
+import nez.lang.expr.ByteMap;
+import nez.lang.expr.Choice;
+import nez.lang.expr.GrammarFactory;
+import nez.lang.expr.Sequence;
 import nez.util.UList;
 
 public class CharacterFactoring extends GrammarReshaper {

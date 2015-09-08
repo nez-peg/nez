@@ -1,26 +1,26 @@
 package nez.generator;
 
-import nez.lang.And;
-import nez.lang.AnyChar;
-import nez.lang.ByteChar;
-import nez.lang.ByteMap;
-import nez.lang.Capture;
-import nez.lang.Choice;
-import nez.lang.Empty;
 import nez.lang.Expression;
-import nez.lang.Failure;
 import nez.lang.Grammar;
-import nez.lang.Link;
-import nez.lang.New;
-import nez.lang.NonTerminal;
-import nez.lang.Not;
-import nez.lang.Option;
 import nez.lang.Production;
-import nez.lang.Repetition;
-import nez.lang.Repetition1;
-import nez.lang.Replace;
-import nez.lang.Tagging;
-import nez.lang.Unary;
+import nez.lang.expr.And;
+import nez.lang.expr.AnyChar;
+import nez.lang.expr.ByteChar;
+import nez.lang.expr.ByteMap;
+import nez.lang.expr.Capture;
+import nez.lang.expr.Choice;
+import nez.lang.expr.Empty;
+import nez.lang.expr.Failure;
+import nez.lang.expr.Link;
+import nez.lang.expr.New;
+import nez.lang.expr.NonTerminal;
+import nez.lang.expr.Not;
+import nez.lang.expr.Option;
+import nez.lang.expr.Repetition;
+import nez.lang.expr.Repetition1;
+import nez.lang.expr.Replace;
+import nez.lang.expr.Tagging;
+import nez.lang.expr.Unary;
 
 public class MouseGrammarGenerator extends GrammarGenerator {
 

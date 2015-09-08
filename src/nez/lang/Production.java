@@ -1,9 +1,20 @@
 package nez.lang;
 
-import java.util.HashMap;
 import java.util.List;
 
 import nez.ast.SourcePosition;
+import nez.lang.expr.And;
+import nez.lang.expr.AnyChar;
+import nez.lang.expr.ByteChar;
+import nez.lang.expr.ByteMap;
+import nez.lang.expr.Choice;
+import nez.lang.expr.GrammarFactory;
+import nez.lang.expr.NonTerminal;
+import nez.lang.expr.Not;
+import nez.lang.expr.Option;
+import nez.lang.expr.Repetition;
+import nez.lang.expr.Repetition1;
+import nez.lang.expr.Sequence;
 import nez.util.ConsoleUtils;
 import nez.util.UFlag;
 import nez.util.UList;
@@ -403,7 +414,8 @@ public class Production extends Expression {
 	}
 
 	@Override
-	protected final void format(StringBuilder sb) {
+	public
+	final void format(StringBuilder sb) {
 		sb.append(this.getLocalName());
 		sb.append(" = ");
 		this.getExpression().format(sb);
@@ -543,30 +555,6 @@ public class Production extends Expression {
 			l.add("contextual");
 		}
 		ConsoleUtils.println(l + "\n" + this.getLocalName() + " = " + this.getExpression());
-	}
-}
-
-class Visa {
-	public final static boolean isVisited(Visa v, Production p) {
-		return v == null ? false : v.isVisited(p);
-	}
-
-	public final static Visa visited(Visa v, Production p) {
-		if (v == null) {
-			v = new Visa();
-		}
-		v.visited(p);
-		return v;
-	}
-
-	HashMap<String, Production> map = new HashMap<String, Production>();
-
-	private boolean isVisited(Production p) {
-		return map.containsKey(p.getUniqueName());
-	}
-
-	private void visited(Production p) {
-		map.put(p.getUniqueName(), p);
 	}
 }
 

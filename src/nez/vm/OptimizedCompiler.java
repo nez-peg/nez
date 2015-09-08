@@ -3,18 +3,18 @@ package nez.vm;
 import java.util.HashMap;
 
 import nez.NezOption;
-import nez.lang.AnyChar;
-import nez.lang.ByteChar;
-import nez.lang.ByteMap;
-import nez.lang.Choice;
 import nez.lang.Expression;
 import nez.lang.GrammarOptimizer;
-import nez.lang.MultiChar;
-import nez.lang.Not;
-import nez.lang.Option;
 import nez.lang.Production;
-import nez.lang.Repetition;
-import nez.lang.Sequence;
+import nez.lang.expr.AnyChar;
+import nez.lang.expr.ByteChar;
+import nez.lang.expr.ByteMap;
+import nez.lang.expr.Choice;
+import nez.lang.expr.MultiChar;
+import nez.lang.expr.Not;
+import nez.lang.expr.Option;
+import nez.lang.expr.Repetition;
+import nez.lang.expr.Sequence;
 import nez.main.Verbose;
 
 public class OptimizedCompiler extends PlainCompiler {

@@ -1,6 +1,12 @@
 package nez.lang;
 
 import nez.ast.Source;
+import nez.lang.expr.And;
+import nez.lang.expr.AnyChar;
+import nez.lang.expr.ByteChar;
+import nez.lang.expr.ByteMap;
+import nez.lang.expr.Not;
+import nez.lang.expr.Unary;
 
 public class PossibleAcceptance {
 	public final static int TextEOF = 0;
