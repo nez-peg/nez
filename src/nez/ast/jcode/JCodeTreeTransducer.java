@@ -1,20 +1,20 @@
 package nez.ast.jcode;
 
 import nez.ast.Source;
-import nez.ast.Tag;
+import nez.ast.SymbolId;
 import nez.ast.TreeTransducer;
 
 public class JCodeTreeTransducer extends TreeTransducer {
 
-	static final Tag Expression = Tag.tag("node");
+	static final SymbolId Expression = SymbolId.tag("node");
 
 	@Override
-	public Object newNode(Tag tag, Source s, long spos, long epos, int size, Object value) {
+	public Object newNode(SymbolId tag, Source s, long spos, long epos, int size, Object value) {
 		return new JCodeTreeImpl(tag == null ? Expression : tag, s, spos, (int) (epos - spos), size, value);
 	}
 
 	@Override
-	public void link(Object node, int index, Tag tag, Object child) {
+	public void link(Object node, int index, SymbolId tag, Object child) {
 		((JCodeTreeImpl) node).set(index, (JCodeTreeImpl) child);
 	}
 

@@ -9,7 +9,7 @@ import nez.NezOption;
 import nez.SourceContext;
 import nez.ast.AbstractTreeVisitor;
 import nez.ast.CommonTree;
-import nez.ast.Tag;
+import nez.ast.SymbolId;
 import nez.lang.Expression;
 import nez.lang.Grammar;
 import nez.lang.GrammarFile;
@@ -67,13 +67,13 @@ public class RegexGrammar extends AbstractTreeVisitor {
 		grammar.defineProduction(e, "Chunk", grammar.newNonTerminal("File"));
 	}
 
-	protected Method getClassMethod(String method, Tag tag) throws NoSuchMethodException, SecurityException {
-		String name = method + tag.getName();
+	protected Method getClassMethod(String method, SymbolId tag) throws NoSuchMethodException, SecurityException {
+		String name = method + tag.getSymbol();
 		return this.getClass().getMethod(name, CommonTree.class, Expression.class);
 	}
 
 	final Expression pi(CommonTree expr, Expression k) {
-		Tag tag = expr.getTag();
+		SymbolId tag = expr.getTag();
 		Method m = findMethod("pi", tag);
 		if (m != null) {
 			try {

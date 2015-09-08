@@ -50,7 +50,7 @@ public class AbstractTreeWriter extends FileBuilder {
 	}
 
 	public final void writeXML(AbstractTree<?> node) {
-		if (node.size() == 2 && node.getTag() == Tag.MetaTag) {
+		if (node.size() == 2 && node.getTag() == SymbolId.MetaTag) {
 			writeXML(node.get(0).toText(), node.get(1));
 		} else {
 			String tag = node.getTag().toString();

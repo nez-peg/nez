@@ -1,7 +1,7 @@
 package nez.lang.expr;
 
 import nez.ast.SourcePosition;
-import nez.ast.Tag;
+import nez.ast.SymbolId;
 import nez.lang.Expression;
 import nez.lang.ExpressionTransducer;
 import nez.lang.Visa;
@@ -9,9 +9,9 @@ import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
 public class Xlocal extends Unary {
-	public final Tag tableName;
+	public final SymbolId tableName;
 
-	Xlocal(SourcePosition s, Tag table, Expression inner) {
+	Xlocal(SourcePosition s, SymbolId table, Expression inner) {
 		super(s, inner);
 		this.tableName = table;
 	}
@@ -27,12 +27,12 @@ public class Xlocal extends Unary {
 		return false;
 	}
 
-	public final Tag getTable() {
+	public final SymbolId getTable() {
 		return tableName;
 	}
 
 	public final String getTableName() {
-		return tableName.getName();
+		return tableName.getSymbol();
 	}
 
 	@Override

@@ -993,7 +993,7 @@ public class CParserGenerator extends ParserGenerator {
 	@Override
 	public void visitTagging(Ttag e) {
 		if (this.option.enabledASTConstruction) {
-			this.file.writeIndent("nez_pushDataLog(ctx, LazyTag_T, 0, 0, \"" + e.tag.getName() + "\", NULL);");
+			this.file.writeIndent("nez_pushDataLog(ctx, LazyTag_T, 0, 0, \"" + e.tag.getSymbol() + "\", NULL);");
 		}
 	}
 

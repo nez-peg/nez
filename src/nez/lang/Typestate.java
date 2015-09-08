@@ -117,7 +117,7 @@ public class Typestate extends ExpressionTransducer {
 	@Override
 	public Expression reshapeTtag(Ttag p) {
 		if (this.required != Typestate.OperationType) {
-			reportRemoved(p, "#" + p.tag.getName());
+			reportRemoved(p, "#" + p.tag.getSymbol());
 			return empty(p);
 		}
 		return p;

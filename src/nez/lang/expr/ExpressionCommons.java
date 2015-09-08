@@ -1,7 +1,7 @@
 package nez.lang.expr;
 
 import nez.ast.SourcePosition;
-import nez.ast.Tag;
+import nez.ast.SymbolId;
 import nez.lang.Expression;
 import nez.lang.GrammarMap;
 import nez.util.StringUtils;
@@ -371,11 +371,11 @@ public abstract class ExpressionCommons extends Expression {
 		return newLink(s, null, p);
 	}
 
-	public final static Expression newLink(SourcePosition s, Tag label, Expression p) {
+	public final static Expression newLink(SourcePosition s, SymbolId label, Expression p) {
 		return new Tlink(s, label, p);
 	}
 
-	public final static Expression newNew(SourcePosition s, boolean lefted, Tag label, int shift) {
+	public final static Expression newNew(SourcePosition s, boolean lefted, SymbolId label, int shift) {
 		return new Tnew(s, lefted, label, shift);
 	}
 
@@ -383,7 +383,7 @@ public abstract class ExpressionCommons extends Expression {
 		return new Tcapture(s, shift);
 	}
 
-	public final static Expression newNew(SourcePosition s, boolean lefted, Tag label, Expression e) {
+	public final static Expression newNew(SourcePosition s, boolean lefted, SymbolId label, Expression e) {
 		UList<Expression> l = new UList<Expression>(new Expression[e.size() + 3]);
 		ExpressionCommons.addSequence(l, internImpl(s, new Tnew(s, lefted, label, 0)));
 		ExpressionCommons.addSequence(l, e);
@@ -391,7 +391,7 @@ public abstract class ExpressionCommons extends Expression {
 		return newSequence(s, l);
 	}
 
-	public final static Expression newLeftFoldOption(SourcePosition s, Tag label, Expression e) {
+	public final static Expression newLeftFoldOption(SourcePosition s, SymbolId label, Expression e) {
 		UList<Expression> l = new UList<Expression>(new Expression[e.size() + 3]);
 		ExpressionCommons.addSequence(l, internImpl(s, new Tnew(s, true, label, 0)));
 		ExpressionCommons.addSequence(l, e);
@@ -399,7 +399,7 @@ public abstract class ExpressionCommons extends Expression {
 		return newOption(s, ExpressionCommons.newSequence(s, l));
 	}
 
-	public final static Expression newLeftFoldRepetition(SourcePosition s, Tag label, Expression e) {
+	public final static Expression newLeftFoldRepetition(SourcePosition s, SymbolId label, Expression e) {
 		UList<Expression> l = new UList<Expression>(new Expression[e.size() + 3]);
 		ExpressionCommons.addSequence(l, internImpl(s, new Tnew(s, true, label, 0)));
 		ExpressionCommons.addSequence(l, e);
@@ -407,7 +407,7 @@ public abstract class ExpressionCommons extends Expression {
 		return newRepetition(s, ExpressionCommons.newSequence(s, l));
 	}
 
-	public final static Expression newLeftFoldRepetition1(SourcePosition s, Tag label, Expression e) {
+	public final static Expression newLeftFoldRepetition1(SourcePosition s, SymbolId label, Expression e) {
 		UList<Expression> l = new UList<Expression>(new Expression[e.size() + 3]);
 		ExpressionCommons.addSequence(l, internImpl(s, new Tnew(s, true, label, 0)));
 		ExpressionCommons.addSequence(l, e);
@@ -415,7 +415,7 @@ public abstract class ExpressionCommons extends Expression {
 		return newRepetition1(s, ExpressionCommons.newSequence(s, l));
 	}
 
-	public final static Expression newTagging(SourcePosition s, Tag tag) {
+	public final static Expression newTagging(SourcePosition s, SymbolId tag) {
 		return internImpl(s, new Ttag(s, tag));
 	}
 
@@ -440,27 +440,27 @@ public abstract class ExpressionCommons extends Expression {
 		return internImpl(s, new Xblock(s, e));
 	}
 
-	public final static Expression newLocal(SourcePosition s, Tag tableName, Expression e) {
+	public final static Expression newLocal(SourcePosition s, SymbolId tableName, Expression e) {
 		return internImpl(s, new Xlocal(s, tableName, e));
 	}
 
-	public final static Expression newDefSymbol(SourcePosition s, GrammarMap g, Tag tableName, Expression e) {
+	public final static Expression newDefSymbol(SourcePosition s, GrammarMap g, SymbolId tableName, Expression e) {
 		return internImpl(s, new Xdef(s, g, tableName, e));
 	}
 
-	public final static Expression newMatchSymbol(SourcePosition s, Tag tableName) {
+	public final static Expression newMatchSymbol(SourcePosition s, SymbolId tableName) {
 		return internImpl(s, new Xmatch(s, tableName));
 	}
 
-	public final static Expression newIsSymbol(SourcePosition s, GrammarMap g, Tag tableName) {
+	public final static Expression newIsSymbol(SourcePosition s, GrammarMap g, SymbolId tableName) {
 		return internImpl(s, new Xis(s, g, tableName, /* is */true));
 	}
 
-	public final static Expression newIsaSymbol(SourcePosition s, GrammarMap g, Tag tableName) {
+	public final static Expression newIsaSymbol(SourcePosition s, GrammarMap g, SymbolId tableName) {
 		return internImpl(s, new Xis(s, g, tableName, /* is */false));
 	}
 
-	public final static Expression newExists(SourcePosition s, Tag tableName, String symbol) {
+	public final static Expression newExists(SourcePosition s, SymbolId tableName, String symbol) {
 		return internImpl(s, new Xexists(s, tableName, symbol));
 	}
 

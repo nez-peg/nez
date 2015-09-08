@@ -1,7 +1,7 @@
 package nez.lang.expr;
 
 import nez.ast.SourcePosition;
-import nez.ast.Tag;
+import nez.ast.SymbolId;
 import nez.lang.Expression;
 import nez.lang.ExpressionTransducer;
 import nez.lang.PossibleAcceptance;
@@ -12,18 +12,18 @@ import nez.vm.NezEncoder;
 
 public class Tnew extends Term {
 	public boolean leftFold;
-	Tag label;
+	SymbolId label;
 	public Expression outer = null;
 	public int shift = 0;
 
-	Tnew(SourcePosition s, boolean lefted, Tag label, int shift) {
+	Tnew(SourcePosition s, boolean lefted, SymbolId label, int shift) {
 		super(s);
 		this.leftFold = lefted;
 		this.label = label;
 		this.shift = shift;
 	}
 
-	public Tag getLabel() {
+	public SymbolId getLabel() {
 		return this.label;
 	}
 

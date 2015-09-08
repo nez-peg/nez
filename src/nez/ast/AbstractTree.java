@@ -6,25 +6,25 @@ import nez.SourceContext;
 import nez.util.StringUtils;
 
 public abstract class AbstractTree<E extends AbstractTree<E>> extends AbstractList<E> implements SourcePosition {
-	private final static Tag[] EmptyLabels = new Tag[0];
+	private final static SymbolId[] EmptyLabels = new SymbolId[0];
 
-	protected Tag tag;
+	protected SymbolId tag;
 	protected Source source;
 	protected int pos;
 	protected int length;
 	protected Object value;
 	protected AbstractTree<E> parent = null;
-	protected Tag[] labels;
+	protected SymbolId[] labels;
 	protected E[] subTree;
 
-	protected AbstractTree(Tag tag, Source source, long pos, int len, E[] subTree, Object value) {
+	protected AbstractTree(SymbolId tag, Source source, long pos, int len, E[] subTree, Object value) {
 		this.tag = tag;
 		this.source = source;
 		this.pos = (int) pos;
 		this.length = len;
 		this.subTree = subTree;
 		this.value = value;
-		this.labels = (this.subTree != null) ? new Tag[this.subTree.length] : EmptyLabels;
+		this.labels = (this.subTree != null) ? new SymbolId[this.subTree.length] : EmptyLabels;
 	}
 
 	protected abstract E dupImpl();
@@ -42,11 +42,11 @@ public abstract class AbstractTree<E extends AbstractTree<E>> extends AbstractLi
 		return t;
 	}
 
-	public final Tag getTag() {
+	public final SymbolId getTag() {
 		return this.tag;
 	}
 
-	public final boolean is(Tag t) {
+	public final boolean is(SymbolId t) {
 		return t == this.getTag();
 	}
 
@@ -86,7 +86,7 @@ public abstract class AbstractTree<E extends AbstractTree<E>> extends AbstractLi
 		return this.size() == 0;
 	}
 
-	public final Tag getLabel(int index) {
+	public final SymbolId getLabel(int index) {
 		return this.labels[index];
 	}
 
@@ -129,12 +129,12 @@ public abstract class AbstractTree<E extends AbstractTree<E>> extends AbstractLi
 		return oldValue;
 	}
 
-	public final void set(int index, Tag label, E node) {
+	public final void set(int index, SymbolId label, E node) {
 		this.labels[index] = label;
 		this.subTree[index] = node;
 	}
 
-	public final int indexOf(Tag label) {
+	public final int indexOf(SymbolId label) {
 		for (int i = 0; i < labels.length; i++) {
 			if (labels[i] == label) {
 				return i;
@@ -143,7 +143,7 @@ public abstract class AbstractTree<E extends AbstractTree<E>> extends AbstractLi
 		return -1;
 	}
 
-	public final E get(Tag label) {
+	public final E get(SymbolId label) {
 		for (int i = 0; i < labels.length; i++) {
 			if (labels[i] == label) {
 				return this.subTree[i];
@@ -152,7 +152,7 @@ public abstract class AbstractTree<E extends AbstractTree<E>> extends AbstractLi
 		throw new RuntimeException("undefined label: " + label);
 	}
 
-	public final E get(Tag label, E defval) {
+	public final E get(SymbolId label, E defval) {
 		for (int i = 0; i < labels.length; i++) {
 			if (labels[i] == label) {
 				return this.subTree[i];
@@ -161,7 +161,7 @@ public abstract class AbstractTree<E extends AbstractTree<E>> extends AbstractLi
 		return defval;
 	}
 
-	public final void set(Tag label, E defval) {
+	public final void set(SymbolId label, E defval) {
 		for (int i = 0; i < labels.length; i++) {
 			if (labels[i] == label) {
 				this.subTree[i] = defval;
@@ -177,7 +177,7 @@ public abstract class AbstractTree<E extends AbstractTree<E>> extends AbstractLi
 		return sb.toString();
 	}
 
-	public void stringfy(String indent, Tag label, StringBuilder sb) {
+	public void stringfy(String indent, SymbolId label, StringBuilder sb) {
 		sb.append("\n");
 		sb.append(indent);
 		if (label != null) {
@@ -185,7 +185,7 @@ public abstract class AbstractTree<E extends AbstractTree<E>> extends AbstractLi
 			sb.append(" ");
 		}
 		sb.append("#");
-		sb.append(this.getTag().getName());
+		sb.append(this.getTag().getSymbol());
 		sb.append("[");
 		if (this.subTree == null) {
 			sb.append(" ");
@@ -230,7 +230,7 @@ public abstract class AbstractTree<E extends AbstractTree<E>> extends AbstractLi
 		return defval;
 	}
 
-	public final String getText(Tag label, String defval) {
+	public final String getText(SymbolId label, String defval) {
 		for (int i = 0; i < this.labels.length; i++) {
 			if (labels[i] == label) {
 				return getText(i, defval);
@@ -262,7 +262,7 @@ public abstract class AbstractTree<E extends AbstractTree<E>> extends AbstractLi
 		return defvalue;
 	}
 
-	public final int getInt(Tag label, int defvalue) {
+	public final int getInt(SymbolId label, int defvalue) {
 		for (int i = 0; i < this.labels.length; i++) {
 			if (labels[i] == label) {
 				return getInt(i, defvalue);

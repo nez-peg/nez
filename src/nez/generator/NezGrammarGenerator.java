@@ -147,7 +147,7 @@ public class NezGrammarGenerator extends GrammarGenerator {
 	@Override
 	public void visitTagging(Ttag e) {
 		W("#");
-		W(e.tag.getName());
+		W(e.tag.getSymbol());
 	}
 
 	@Override

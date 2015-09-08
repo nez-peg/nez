@@ -7,7 +7,7 @@ import java.util.HashMap;
 
 import nez.ast.AbstractTree;
 import nez.ast.CommonTree;
-import nez.ast.Tag;
+import nez.ast.SymbolId;
 import nez.lang.Expression;
 import nez.lang.GrammarFile;
 import nez.lang.Production;
@@ -25,8 +25,8 @@ public class RegexConverter extends GrammarConverter {
 	}
 
 	public final Expression pi(AbstractTree<?> expr, Expression k) {
-		Tag tag = expr.getTag();
-		Method m = lookupPiMethod("pi", tag.tagId);
+		SymbolId tag = expr.getTag();
+		Method m = lookupPiMethod("pi", tag.id());
 		if (m != null) {
 			try {
 				return (Expression) m.invoke(this, expr, k);
@@ -46,7 +46,7 @@ public class RegexConverter extends GrammarConverter {
 		Integer key = tagId;
 		Method m = this.methodMap.get(key);
 		if (m == null) {
-			String name = method + Tag.tag(tagId).getName();
+			String name = method + SymbolId.tag(tagId).getSymbol();
 			try {
 				m = this.getClass().getMethod(name, CommonTree.class, Expression.class);
 			} catch (NoSuchMethodException e) {

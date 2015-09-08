@@ -8,7 +8,7 @@ import java.util.Stack;
 
 import javax.lang.model.type.NullType;
 
-import nez.ast.Tag;
+import nez.ast.SymbolId;
 import nez.ast.jcode.ClassBuilder.MethodBuilder;
 import nez.ast.jcode.ClassBuilder.VarEntry;
 
@@ -77,7 +77,7 @@ public class JCodeGenerator {
 	private VarEntry var;
 
 	public final void visit(JCodeTree node) {
-		Method m = lookupMethod("visit", node.getTag().getName());
+		Method m = lookupMethod("visit", node.getTag().getSymbol());
 		if (m != null) {
 			try {
 				m.invoke(this, node);
@@ -283,7 +283,7 @@ public class JCodeGenerator {
 		JCodeTree argsNode = node.get(1);
 		JCodeTree top = fieldNode.get(0);
 		VarEntry var = null;
-		if (Tag.tag("Name").equals(top.getTag())) {
+		if (SymbolId.tag("Name").equals(top.getTag())) {
 			var = this.scope.getLocalVar(top.toText());
 			if (var != null) {
 				this.mBuilder.loadFromVar(var);
@@ -320,7 +320,7 @@ public class JCodeGenerator {
 	public void visitField(JCodeTree node) {
 		JCodeTree top = node.get(0);
 		VarEntry var = null;
-		if (Tag.tag("Name").equals(top.getTag())) {
+		if (SymbolId.tag("Name").equals(top.getTag())) {
 			var = this.scope.getLocalVar(top.toText());
 			if (var != null) {
 				this.mBuilder.loadFromVar(var);
@@ -333,7 +333,7 @@ public class JCodeGenerator {
 		}
 		for (int i = 1; i < node.size(); i++) {
 			JCodeTree member = node.get(i);
-			if (Tag.tag("Name").equals(member.getTag())) {
+			if (SymbolId.tag("Name").equals(member.getTag())) {
 				this.mBuilder.getField(Type.getType(var.getVarClass()), member.toText(), Type.getType(Object.class));
 				visit(member);
 			}
@@ -346,7 +346,7 @@ public class JCodeGenerator {
 		this.visit(left);
 		this.visit(right);
 		node.setType(typeInfferBinary(node, left, right));
-		this.mBuilder.callStaticMethod(JCodeOperator.class, node.getTypedClass(), node.getTag().getName(), left.getTypedClass(), right.getTypedClass());
+		this.mBuilder.callStaticMethod(JCodeOperator.class, node.getTypedClass(), node.getTag().getSymbol(), left.getTypedClass(), right.getTypedClass());
 		this.popUnusedValue(node);
 	}
 
@@ -356,7 +356,7 @@ public class JCodeGenerator {
 		this.visit(left);
 		this.visit(right);
 		node.setType(boolean.class);
-		this.mBuilder.callStaticMethod(JCodeOperator.class, node.getTypedClass(), node.getTag().getName(), left.getTypedClass(), right.getTypedClass());
+		this.mBuilder.callStaticMethod(JCodeOperator.class, node.getTypedClass(), node.getTag().getSymbol(), left.getTypedClass(), right.getTypedClass());
 		this.popUnusedValue(node);
 	}
 
@@ -365,7 +365,7 @@ public class JCodeGenerator {
 		Class<?> rightType = right.getTypedClass();
 		if (leftType == int.class) {
 			if (rightType == int.class) {
-				if (binary.getTag().getName().equals("Div")) {
+				if (binary.getTag().getSymbol().equals("Div")) {
 					return double.class;
 				}
 				return int.class;
@@ -442,7 +442,7 @@ public class JCodeGenerator {
 		JCodeTree child = node.get(0);
 		this.visit(child);
 		node.setType(this.typeInfferUnary(node.get(0)));
-		this.mBuilder.callStaticMethod(JCodeOperator.class, node.getTypedClass(), node.getTag().getName(), child.getTypedClass());
+		this.mBuilder.callStaticMethod(JCodeOperator.class, node.getTypedClass(), node.getTag().getSymbol(), child.getTypedClass());
 		this.popUnusedValue(node);
 	}
 
@@ -572,7 +572,7 @@ public class JCodeGenerator {
 	}
 
 	public void visitUndefined(JCodeTree p) {
-		System.out.println("undefined: " + p.getTag().getName());
+		System.out.println("undefined: " + p.getTag().getSymbol());
 	}
 
 }

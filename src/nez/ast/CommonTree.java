@@ -2,7 +2,7 @@ package nez.ast;
 
 public class CommonTree extends AbstractTree<CommonTree> {
 
-	public CommonTree(Tag tag, Source source, long pos, int len, int size, Object value) {
+	public CommonTree(SymbolId tag, Source source, long pos, int len, int size, Object value) {
 		super(tag, source, pos, len, size > 0 ? new CommonTree[size] : null, value);
 	}
 

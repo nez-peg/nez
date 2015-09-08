@@ -46,7 +46,7 @@ public abstract class Formatter {
 	}
 
 	public static boolean isSupported(GrammarFile ns, CommonTree node) {
-		Formatter fmt = ns.getFormatter(node.getTag().getName(), node.size());
+		Formatter fmt = ns.getFormatter(node.getTag().getSymbol(), node.size());
 		return fmt != null;
 	}
 
@@ -154,7 +154,7 @@ class FormatStringBuilder implements FormatterStream {
 
 	@Override
 	public Formatter lookupFormatter(CommonTree sub) {
-		Formatter fmt = ns.getFormatter(sub.getTag().getName(), sub.size());
+		Formatter fmt = ns.getFormatter(sub.getTag().getSymbol(), sub.size());
 		if (fmt == null) {
 			return Formatter.Default;
 		}
@@ -192,7 +192,7 @@ class DefaultFormatter extends Formatter {
 	@Override
 	public void write(FormatterStream s, CommonTree node) {
 		s.write("#");
-		s.write(node.getTag().getName());
+		s.write(node.getTag().getSymbol());
 		s.write("[");
 		if (node.size() == 0) {
 			s.write(StringUtils.quoteString('\'', node.toText(), '\''));

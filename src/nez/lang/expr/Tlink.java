@@ -1,7 +1,7 @@
 package nez.lang.expr;
 
 import nez.ast.SourcePosition;
-import nez.ast.Tag;
+import nez.ast.SymbolId;
 import nez.lang.Expression;
 import nez.lang.ExpressionTransducer;
 import nez.lang.Typestate;
@@ -12,14 +12,14 @@ import nez.vm.NezEncoder;
 public class Tlink extends Unary {
 	@Deprecated
 	public int index = -1;
-	Tag label;
+	SymbolId label;
 
-	Tlink(SourcePosition s, Tag label, Expression e) {
+	Tlink(SourcePosition s, SymbolId label, Expression e) {
 		super(s, e);
 		this.label = label;
 	}
 
-	public final Tag getLabel() {
+	public final SymbolId getLabel() {
 		return this.label;
 	}
 

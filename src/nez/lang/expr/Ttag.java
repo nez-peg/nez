@@ -1,7 +1,7 @@
 package nez.lang.expr;
 
 import nez.ast.SourcePosition;
-import nez.ast.Tag;
+import nez.ast.SymbolId;
 import nez.lang.Expression;
 import nez.lang.ExpressionTransducer;
 import nez.lang.PossibleAcceptance;
@@ -11,19 +11,19 @@ import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
 public class Ttag extends Term {
-	public Tag tag;
+	public SymbolId tag;
 
-	Ttag(SourcePosition s, Tag tag) {
+	Ttag(SourcePosition s, SymbolId tag) {
 		super(s);
 		this.tag = tag;
 	}
 
 	Ttag(SourcePosition s, String name) {
-		this(s, Tag.tag(name));
+		this(s, SymbolId.tag(name));
 	}
 
 	public final String getTagName() {
-		return tag.getName();
+		return tag.getSymbol();
 	}
 
 	@Override
@@ -36,7 +36,7 @@ public class Ttag extends Term {
 
 	@Override
 	public final void format(StringBuilder sb) {
-		sb.append("#" + tag.getName());
+		sb.append("#" + tag.getSymbol());
 	}
 
 	@Override

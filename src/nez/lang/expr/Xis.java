@@ -1,7 +1,7 @@
 package nez.lang.expr;
 
 import nez.ast.SourcePosition;
-import nez.ast.Tag;
+import nez.ast.SymbolId;
 import nez.lang.Contextual;
 import nez.lang.Expression;
 import nez.lang.GrammarMap;
@@ -13,11 +13,11 @@ import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
 public class Xis extends Term implements Contextual {
-	public final Tag tableName;
+	public final SymbolId tableName;
 	final GrammarMap g;
 	public final boolean is;
 
-	Xis(SourcePosition s, GrammarMap g, Tag tableName, boolean is) {
+	Xis(SourcePosition s, GrammarMap g, SymbolId tableName, boolean is) {
 		super(s);
 		this.g = g;
 		this.tableName = tableName;
@@ -37,16 +37,16 @@ public class Xis extends Term implements Contextual {
 		return g;
 	}
 
-	public final Tag getTable() {
+	public final SymbolId getTable() {
 		return tableName;
 	}
 
 	public final String getTableName() {
-		return tableName.getName();
+		return tableName.getSymbol();
 	}
 
 	public final Expression getSymbolExpression() {
-		return g.getSymbolExpresion(tableName.getName());
+		return g.getSymbolExpresion(tableName.getSymbol());
 	}
 
 	@Override

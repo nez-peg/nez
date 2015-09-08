@@ -1,7 +1,7 @@
 package nez.string;
 
 import nez.ast.AbstractTree;
-import nez.ast.Tag;
+import nez.ast.SymbolId;
 import nez.util.StringUtils;
 
 public class StringTransducer {
@@ -22,10 +22,10 @@ public class StringTransducer {
 
 	//
 
-	private static final Tag FormatTag = Tag.tag("Format");
-	private static final Tag NameTag = Tag.tag("Name");
-	private static final Tag ListTag = Tag.tag("List");
-	private static final Tag IntTag = Tag.tag("Integer");
+	private static final SymbolId FormatTag = SymbolId.tag("Format");
+	private static final SymbolId NameTag = SymbolId.tag("Name");
+	private static final SymbolId ListTag = SymbolId.tag("List");
+	private static final SymbolId IntTag = SymbolId.tag("Integer");
 
 	public final static <E extends AbstractTree<E>> StringTransducer parseStringTransducer(AbstractTree<E> node) {
 		if (node.is(NameTag)) {

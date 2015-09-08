@@ -1,7 +1,7 @@
 package nez.lang.expr;
 
 import nez.ast.SourcePosition;
-import nez.ast.Tag;
+import nez.ast.SymbolId;
 import nez.lang.Expression;
 import nez.lang.GrammarMap;
 import nez.lang.ExpressionTransducer;
@@ -12,14 +12,14 @@ import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
 public class Xdef extends Unary {
-	public final Tag tableName;
+	public final SymbolId tableName;
 	public final GrammarMap g;
 
-	Xdef(SourcePosition s, GrammarMap g, Tag table, Expression inner) {
+	Xdef(SourcePosition s, GrammarMap g, SymbolId table, Expression inner) {
 		super(s, inner);
 		this.g = g;
 		this.tableName = table;
-		g.setSymbolExpresion(tableName.getName(), inner);
+		g.setSymbolExpresion(tableName.getSymbol(), inner);
 	}
 
 	@Override
@@ -37,12 +37,12 @@ public class Xdef extends Unary {
 		return g;
 	}
 
-	public final Tag getTable() {
+	public final SymbolId getTable() {
 		return tableName;
 	}
 
 	public final String getTableName() {
-		return tableName.getName();
+		return tableName.getSymbol();
 	}
 
 	@Override

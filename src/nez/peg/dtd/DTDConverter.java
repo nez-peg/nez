@@ -11,7 +11,7 @@ import nez.NezOption;
 import nez.SourceContext;
 import nez.ast.AbstractTree;
 import nez.ast.AbstractTreeVisitor;
-import nez.ast.Tag;
+import nez.ast.SymbolId;
 import nez.lang.Expression;
 import nez.lang.Grammar;
 import nez.lang.GrammarFile;
@@ -312,14 +312,14 @@ public class DTDConverter extends AbstractTreeVisitor {
 
 	public Expression _AttDef(String type) {
 		String attName = attDefMap.get(attDefCount);
-		Expression[] l = { ExpressionCommons.newDefSymbol(null, gfile, Tag.tag("T" + currentElementID), gfile.newString(attName)), gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), gfile.newByteChar('='),
+		Expression[] l = { ExpressionCommons.newDefSymbol(null, gfile, SymbolId.tag("T" + currentElementID), gfile.newString(attName)), gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), gfile.newByteChar('='),
 				gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), ExpressionCommons.newNonTerminal(null, gfile, type), gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), };
 		return gfile.newSequence(l);
 	}
 
 	public Expression _AttDefQ(String type) {
 		String attName = attDefMap.get(attDefCount);
-		Expression[] l = { ExpressionCommons.newDefSymbol(null, gfile, Tag.tag("T" + currentElementID), gfile.newString(attName)), gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), gfile.newByteChar('='),
+		Expression[] l = { ExpressionCommons.newDefSymbol(null, gfile, SymbolId.tag("T" + currentElementID), gfile.newString(attName)), gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), gfile.newByteChar('='),
 				gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), gfile.newString("\""), ExpressionCommons.newNonTerminal(null, gfile, type), gfile.newString("\""), gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), };
 		return gfile.newSequence(l);
 	}
@@ -335,7 +335,7 @@ public class DTDConverter extends AbstractTreeVisitor {
 	}
 
 	public Expression genExAtt(AbstractTree<?> node, int[] requiredList) {
-		Tag tableName = Tag.tag("T" + currentElementID);
+		SymbolId tableName = SymbolId.tag("T" + currentElementID);
 		String attDefList = "AttDefList" + currentElementID;
 		gfile.defineProduction(node, attDefList, genExAttDefList(node, requiredList, tableName));
 		UList<Expression> seq = new UList<Expression>(new Expression[requiredList.length + 1]);
@@ -346,7 +346,7 @@ public class DTDConverter extends AbstractTreeVisitor {
 		return ExpressionCommons.newLocal(node, tableName, ExpressionCommons.newSequence(node, seq));
 	}
 
-	public Expression genExAttDefList(AbstractTree<?> node, int[] requiredList, Tag tableName) {
+	public Expression genExAttDefList(AbstractTree<?> node, int[] requiredList, SymbolId tableName) {
 		UList<Expression> l = new UList<Expression>(new Expression[requiredList.length + 1]);
 		for (int index : requiredList) {
 			Expression notexist = ExpressionCommons.newNot(node, ExpressionCommons.newExists(node, tableName, attDefMap.get(index)));

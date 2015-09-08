@@ -5,7 +5,7 @@ import java.util.Arrays;
 
 import nez.ast.Source;
 import nez.ast.SourcePosition;
-import nez.ast.Tag;
+import nez.ast.SymbolId;
 import nez.main.NezProfier;
 import nez.util.FileBuilder;
 import nez.util.StringUtils;
@@ -37,7 +37,7 @@ public class RelationExtracker {
 	// }
 
 	void recieve(RNode t) {
-		keyCount.count(t.getTag().getName());
+		keyCount.count(t.getTag().getSymbol());
 		if (t.subNodes() < 3) {
 			return; // Too small
 		}
@@ -345,7 +345,7 @@ class Schema {
 			}
 		}
 		if (t.size() == 0) {
-			add(t.getTag().getName(), t.getText(), wlist);
+			add(t.getTag().getSymbol(), t.getText(), wlist);
 		}
 		for (RNode sub : t) {
 			extractImpl(sub, wlist);
@@ -474,7 +474,7 @@ class WordCount {
 class RNode extends AbstractList<RNode> implements SourcePosition {
 	RelationExtracker tracker;
 	private Source source;
-	private Tag tag;
+	private SymbolId tag;
 	private long pos;
 	private int length;
 	private Object value = null;
@@ -483,13 +483,13 @@ class RNode extends AbstractList<RNode> implements SourcePosition {
 
 	public RNode(RelationExtracker tracker) {
 		this.tracker = tracker;
-		this.tag = Tag.tag("Text");
+		this.tag = SymbolId.tag("Text");
 		this.source = null;
 		this.pos = 0;
 		this.length = 0;
 	}
 
-	private RNode(RelationExtracker tracker, Tag tag, Source source, long pos, long epos, int size) {
+	private RNode(RelationExtracker tracker, SymbolId tag, Source source, long pos, long epos, int size) {
 		this.tracker = tracker;
 		this.tag = tag;
 		this.source = source;
@@ -522,7 +522,7 @@ class RNode extends AbstractList<RNode> implements SourcePosition {
 		this.set(index, child);
 	}
 
-	public Tag getTag() {
+	public SymbolId getTag() {
 		return this.tag;
 	}
 
@@ -577,7 +577,7 @@ class RNode extends AbstractList<RNode> implements SourcePosition {
 		return this.length;
 	}
 
-	public final boolean is(Tag t) {
+	public final boolean is(SymbolId t) {
 		return this.tag == t;
 	}
 
@@ -656,7 +656,7 @@ class RNode extends AbstractList<RNode> implements SourcePosition {
 		sb.append("\n");
 		sb.append(indent);
 		sb.append("(#");
-		sb.append(this.tag.name);
+		sb.append(this.tag.getSymbol());
 		if (this.subTree == null) {
 			sb.append(" ");
 			StringUtils.formatQuoteString(sb, '\'', this.getText(), '\'');

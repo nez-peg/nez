@@ -5,7 +5,7 @@ import java.util.ArrayList;
 
 import nez.NezOption;
 import nez.ast.AbstractTree;
-import nez.ast.Tag;
+import nez.ast.SymbolId;
 import nez.lang.expr.ExpressionCommons;
 import nez.util.StringUtils;
 import nez.util.UList;
@@ -47,14 +47,14 @@ public class NezGrammarLoader extends GrammarLoader {
 	}
 
 	private boolean binary = false;
-	public final static Tag _String = Tag.tag("String");
-	public final static Tag _Integer = Tag.tag("Integer");
-	public final static Tag _List = Tag.tag("List");
-	public final static Tag _Name = Tag.tag("Name");
-	public final static Tag _Format = Tag.tag("Format");
-	public final static Tag _Class = Tag.tag("Class");
+	public final static SymbolId _String = SymbolId.tag("String");
+	public final static SymbolId _Integer = SymbolId.tag("Integer");
+	public final static SymbolId _List = SymbolId.tag("List");
+	public final static SymbolId _Name = SymbolId.tag("Name");
+	public final static SymbolId _Format = SymbolId.tag("Format");
+	public final static SymbolId _Class = SymbolId.tag("Class");
 
-	public final static Tag _anno = Tag.tag("anno");
+	public final static SymbolId _anno = SymbolId.tag("anno");
 
 	public Production parseProduction(AbstractTree<?> node) {
 		AbstractTree<?> nameNode = node.get(_name);
@@ -196,15 +196,15 @@ public class NezGrammarLoader extends GrammarLoader {
 		return ExpressionCommons.newNew(node, false, null, p);
 	}
 
-	public final static Tag _name = Tag.tag("name");
-	public final static Tag _expr = Tag.tag("expr");
-	public final static Tag _symbol = Tag.tag("symbol");
+	public final static SymbolId _name = SymbolId.tag("name");
+	public final static SymbolId _expr = SymbolId.tag("expr");
+	public final static SymbolId _symbol = SymbolId.tag("symbol");
 
-	private Tag parseLabelNode(AbstractTree<?> node) {
-		Tag label = null;
+	private SymbolId parseLabelNode(AbstractTree<?> node) {
+		SymbolId label = null;
 		AbstractTree<?> labelNode = node.get(_name, null);
 		if (labelNode != null) {
-			label = Tag.tag(labelNode.toText());
+			label = SymbolId.tag(labelNode.toText());
 		}
 		return label;
 	}
@@ -220,7 +220,7 @@ public class NezGrammarLoader extends GrammarLoader {
 	}
 
 	public Expression newTagging(AbstractTree<?> node) {
-		return ExpressionCommons.newTagging(node, Tag.tag(node.toText()));
+		return ExpressionCommons.newTagging(node, SymbolId.tag(node.toText()));
 	}
 
 	public Expression newReplace(AbstractTree<?> node) {
@@ -248,23 +248,23 @@ public class NezGrammarLoader extends GrammarLoader {
 	}
 
 	public Expression newDef(AbstractTree<?> node) {
-		return ExpressionCommons.newDefSymbol(node, this.getGrammarFile(), Tag.tag(node.getText(_name, "")), newExpression(node.get(_expr)));
+		return ExpressionCommons.newDefSymbol(node, this.getGrammarFile(), SymbolId.tag(node.getText(_name, "")), newExpression(node.get(_expr)));
 	}
 
 	public Expression newIs(AbstractTree<?> node) {
-		return ExpressionCommons.newIsSymbol(node, this.getGrammarFile(), Tag.tag(node.getText(_name, "")));
+		return ExpressionCommons.newIsSymbol(node, this.getGrammarFile(), SymbolId.tag(node.getText(_name, "")));
 	}
 
 	public Expression newIsa(AbstractTree<?> node) {
-		return ExpressionCommons.newIsaSymbol(node, this.getGrammarFile(), Tag.tag(node.getText(_name, "")));
+		return ExpressionCommons.newIsaSymbol(node, this.getGrammarFile(), SymbolId.tag(node.getText(_name, "")));
 	}
 
 	public Expression newExists(AbstractTree<?> node) {
-		return ExpressionCommons.newExists(node, Tag.tag(node.getText(_name, "")), node.getText(_symbol, null));
+		return ExpressionCommons.newExists(node, SymbolId.tag(node.getText(_name, "")), node.getText(_symbol, null));
 	}
 
 	public Expression newLocal(AbstractTree<?> node) {
-		return ExpressionCommons.newLocal(node, Tag.tag(node.getText(_name, "")), newExpression(node.get(_expr)));
+		return ExpressionCommons.newLocal(node, SymbolId.tag(node.getText(_name, "")), newExpression(node.get(_expr)));
 	}
 
 	public Expression newDefIndent(AbstractTree<?> node) {

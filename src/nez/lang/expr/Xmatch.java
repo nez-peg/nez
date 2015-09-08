@@ -1,7 +1,7 @@
 package nez.lang.expr;
 
 import nez.ast.SourcePosition;
-import nez.ast.Tag;
+import nez.ast.SymbolId;
 import nez.lang.Contextual;
 import nez.lang.Expression;
 import nez.lang.ExpressionTransducer;
@@ -12,9 +12,9 @@ import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
 public class Xmatch extends Term implements Contextual {
-	public final Tag tableName;
+	public final SymbolId tableName;
 
-	Xmatch(SourcePosition s, Tag tableName) {
+	Xmatch(SourcePosition s, SymbolId tableName) {
 		super(s);
 		this.tableName = tableName;
 	}
@@ -28,12 +28,12 @@ public class Xmatch extends Term implements Contextual {
 		return false;
 	}
 
-	public final Tag getTable() {
+	public final SymbolId getTable() {
 		return tableName;
 	}
 
 	public final String getTableName() {
-		return tableName.getName();
+		return tableName.getSymbol();
 	}
 
 	@Override

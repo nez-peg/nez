@@ -3,7 +3,7 @@ package nez.generator;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import nez.ast.Tag;
+import nez.ast.SymbolId;
 import nez.lang.Expression;
 import nez.lang.Grammar;
 import nez.lang.Production;
@@ -480,8 +480,8 @@ public class JavaParserGenerator extends ParserGenerator {
 		Statement(_ccall("capture"));
 	}
 
-	protected String _tag(Tag tag) {
-		return StringUtils.quoteString('"', tag.getName(), '"');
+	protected String _tag(SymbolId tag) {
+		return StringUtils.quoteString('"', tag.getSymbol(), '"');
 	}
 
 	@Override

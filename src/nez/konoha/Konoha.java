@@ -5,7 +5,7 @@ import java.io.IOException;
 import nez.NezOption;
 import nez.SourceContext;
 import nez.ast.Source;
-import nez.ast.Tag;
+import nez.ast.SymbolId;
 import nez.ast.TreeTransducer;
 import nez.lang.Grammar;
 import nez.lang.GrammarFile;
@@ -35,15 +35,15 @@ public class Konoha extends TreeTransducer {
 
 	/* begin of tree transducer */
 
-	static final Tag Expression = Tag.tag("node");
+	static final SymbolId Expression = SymbolId.tag("node");
 
 	@Override
-	public Object newNode(Tag tag, Source s, long spos, long epos, int size, Object value) {
+	public Object newNode(SymbolId tag, Source s, long spos, long epos, int size, Object value) {
 		return new KonohaTree(tag == null ? Expression : tag, s, spos, (int) (epos - spos), size, value);
 	}
 
 	@Override
-	public void link(Object node, int index, Tag label, Object child) {
+	public void link(Object node, int index, SymbolId label, Object child) {
 		((KonohaTree) node).set(index, (KonohaTree) child);
 	}
 

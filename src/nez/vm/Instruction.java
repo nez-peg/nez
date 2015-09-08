@@ -2,26 +2,26 @@ package nez.vm;
 
 import java.util.Arrays;
 
-import nez.ast.Tag;
+import nez.ast.SymbolId;
 import nez.lang.Expression;
 import nez.lang.Production;
-import nez.lang.expr.Xblock;
 import nez.lang.expr.Cbyte;
+import nez.lang.expr.Cmulti;
 import nez.lang.expr.Cset;
+import nez.lang.expr.NonTerminal;
 import nez.lang.expr.Tcapture;
-import nez.lang.expr.Xdefindent;
+import nez.lang.expr.Tlink;
+import nez.lang.expr.Tnew;
+import nez.lang.expr.Treplace;
+import nez.lang.expr.Ttag;
+import nez.lang.expr.Xblock;
 import nez.lang.expr.Xdef;
+import nez.lang.expr.Xdefindent;
 import nez.lang.expr.Xexists;
 import nez.lang.expr.Xindent;
 import nez.lang.expr.Xis;
-import nez.lang.expr.Tlink;
 import nez.lang.expr.Xlocal;
 import nez.lang.expr.Xmatch;
-import nez.lang.expr.Cmulti;
-import nez.lang.expr.Tnew;
-import nez.lang.expr.NonTerminal;
-import nez.lang.expr.Treplace;
-import nez.lang.expr.Ttag;
 import nez.util.StringUtils;
 import nez.vm.RuntimeContext.StackData;
 
@@ -867,7 +867,7 @@ class INew extends Instruction {
 
 class ITLeftFold extends Instruction {
 	int shift;
-	Tag label;
+	SymbolId label;
 
 	ITLeftFold(Tnew e, Instruction next) {
 		super(InstructionSet.TLeftFold, e, next);
@@ -937,7 +937,7 @@ class IReplace extends Instruction {
 }
 
 class ITag extends Instruction {
-	public final Tag tag;
+	public final SymbolId tag;
 
 	ITag(Ttag e, Instruction next) {
 		super(InstructionSet.TTag, e, next);
@@ -946,7 +946,7 @@ class ITag extends Instruction {
 
 	@Override
 	protected String getOperand() {
-		return StringUtils.quoteString('"', tag.name, '"');
+		return StringUtils.quoteString('"', tag.getSymbol(), '"');
 	}
 
 	@Override
@@ -981,7 +981,7 @@ class ITPush extends Instruction {
 }
 
 class ITPop extends Instruction {
-	public final Tag label;
+	public final SymbolId label;
 
 	ITPop(Tlink e, Instruction next) {
 		super(InstructionSet.TPop, e, next);
@@ -990,7 +990,7 @@ class ITPop extends Instruction {
 
 	@Override
 	protected String getOperand() {
-		return label.getName();
+		return label.getSymbol();
 	}
 
 	@Override
@@ -1026,7 +1026,7 @@ class ITStart extends Instruction {
 }
 
 class ICommit extends Instruction {
-	public final Tag label;
+	public final SymbolId label;
 
 	ICommit(Tlink e, Instruction next) {
 		super(InstructionSet.TCommit, e, next);
@@ -1048,7 +1048,7 @@ class ICommit extends Instruction {
 }
 
 class ITLookup extends AbstractMemoizationInstruction {
-	public final Tag label;
+	public final SymbolId label;
 
 	ITLookup(Tlink e, MemoPoint m, boolean state, Instruction next, Instruction skip) {
 		super(InstructionSet.TLookup, e, m, state, next, skip);
@@ -1098,16 +1098,16 @@ class ITMemo extends AbstractMemoizationInstruction {
 /* Symbol */
 
 abstract class AbstractTableInstruction extends Instruction {
-	final Tag tableName;
+	final SymbolId tableName;
 
-	AbstractTableInstruction(byte opcode, Expression e, Tag tableName, Instruction next) {
+	AbstractTableInstruction(byte opcode, Expression e, SymbolId tableName, Instruction next) {
 		super(opcode, e, next);
 		this.tableName = tableName;
 	}
 
 	@Override
 	protected String getOperand() {
-		return tableName.getName();
+		return tableName.getSymbol();
 	}
 
 	@Override
@@ -1270,7 +1270,7 @@ class IIsaSymbol extends AbstractTableInstruction {
 }
 
 class IDefIndent extends Instruction {
-	public final static Tag _Indent = Tag.tag("Indent");
+	public final static SymbolId _Indent = SymbolId.tag("Indent");
 
 	IDefIndent(Xdefindent e, Instruction next) {
 		super(InstructionSet.Nop, e, next);
@@ -1316,7 +1316,7 @@ class IDefIndent extends Instruction {
 }
 
 class IIsIndent extends Instruction {
-	public final static Tag _Indent = Tag.tag("Indent");
+	public final static SymbolId _Indent = SymbolId.tag("Indent");
 
 	IIsIndent(Xindent e, Instruction next) {
 		super(InstructionSet.Nop, e, next);

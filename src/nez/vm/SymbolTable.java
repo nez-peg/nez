@@ -1,6 +1,6 @@
 package nez.vm;
 
-import nez.ast.Tag;
+import nez.ast.SymbolId;
 
 public class SymbolTable {
 	public final static byte[] NullSymbol = { 0, 0, 0, 0 }; // to distinguish
@@ -14,7 +14,7 @@ public class SymbolTable {
 
 	final class SymbolTableEntry2 {
 		int stateValue;
-		Tag table;
+		SymbolId table;
 		long code;
 		byte[] symbol; // if uft8 is null, hidden
 	}
@@ -45,7 +45,7 @@ public class SymbolTable {
 		}
 	}
 
-	private void push(Tag table, long code, byte[] utf8) {
+	private void push(SymbolId table, long code, byte[] utf8) {
 		if (!(tableSize < maxTableSize)) {
 			if (maxTableSize == 0) {
 				maxTableSize = 128;
@@ -94,15 +94,15 @@ public class SymbolTable {
 		return this.stateValue;
 	}
 
-	public final void addSymbol(Tag table, byte[] utf8) {
+	public final void addSymbol(SymbolId table, byte[] utf8) {
 		push(table, hash(utf8), utf8);
 	}
 
-	public final void addSymbolMask(Tag table) {
+	public final void addSymbolMask(SymbolId table) {
 		push(table, 0, NullSymbol);
 	}
 
-	public final boolean exists(Tag table) {
+	public final boolean exists(SymbolId table) {
 		for (int i = tableSize - 1; i >= 0; i--) {
 			SymbolTableEntry2 entry = tables[i];
 			if (entry.table == table) {
@@ -112,7 +112,7 @@ public class SymbolTable {
 		return false;
 	}
 
-	public final boolean exists(Tag table, byte[] symbol) {
+	public final boolean exists(SymbolId table, byte[] symbol) {
 		long code = hash(symbol);
 		for (int i = tableSize - 1; i >= 0; i--) {
 			SymbolTableEntry2 entry = tables[i];
@@ -127,7 +127,7 @@ public class SymbolTable {
 		return false;
 	}
 
-	public final boolean exists(Tag table, Tag xtable, byte[] symbol) {
+	public final boolean exists(SymbolId table, SymbolId xtable, byte[] symbol) {
 		long code = hash(symbol);
 		for (int i = tableSize - 1; i >= 0; i--) {
 			SymbolTableEntry2 entry = tables[i];
@@ -152,7 +152,7 @@ public class SymbolTable {
 		return false;
 	}
 
-	public final byte[] getSymbol(Tag table) {
+	public final byte[] getSymbol(SymbolId table) {
 		for (int i = tableSize - 1; i >= 0; i--) {
 			SymbolTableEntry2 entry = tables[i];
 			if (entry.table == table) {
@@ -162,7 +162,7 @@ public class SymbolTable {
 		return null;
 	}
 
-	public final boolean contains(Tag table, byte[] symbol) {
+	public final boolean contains(SymbolId table, byte[] symbol) {
 		long code = hash(symbol);
 		for (int i = tableSize - 1; i >= 0; i--) {
 			SymbolTableEntry2 entry = tables[i];
@@ -178,11 +178,11 @@ public class SymbolTable {
 		return false;
 	}
 
-	public final void setCount(Tag table, int number) {
+	public final void setCount(SymbolId table, int number) {
 		push(table, number, NullSymbol);
 	}
 
-	public final boolean count(Tag table) {
+	public final boolean count(SymbolId table) {
 		for (int i = tableSize - 1; i >= 0; i--) {
 			SymbolTableEntry2 entry = tables[i];
 			if (entry.table == table) {

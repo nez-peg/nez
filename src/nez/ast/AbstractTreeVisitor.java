@@ -11,7 +11,7 @@ public class AbstractTreeVisitor {
 	private HashMap<String, Method> methodMap = new HashMap<String, Method>();
 
 	public final Object visit(String method, AbstractTree<?> node) {
-		Tag tag = node.getTag();
+		SymbolId tag = node.getTag();
 		Method m = findMethod(method, tag);
 		if (m != null) {
 			try {
@@ -27,8 +27,8 @@ public class AbstractTreeVisitor {
 		return toUndefinedNode(node);
 	}
 
-	protected final Method findMethod(String method, Tag tag) {
-		String key = method + tag.getName();
+	protected final Method findMethod(String method, SymbolId tag) {
+		String key = method + tag.getSymbol();
 		Method m = this.methodMap.get(key);
 		if (m == null) {
 			try {
@@ -45,8 +45,8 @@ public class AbstractTreeVisitor {
 		return m;
 	}
 
-	protected Method getClassMethod(String method, Tag tag) throws NoSuchMethodException, SecurityException {
-		String name = method + tag.getName();
+	protected Method getClassMethod(String method, SymbolId tag) throws NoSuchMethodException, SecurityException {
+		String name = method + tag.getSymbol();
 		return this.getClass().getMethod(name, AbstractTree.class);
 	}
 
@@ -56,7 +56,7 @@ public class AbstractTreeVisitor {
 	}
 
 	public final Object visit(String method, Class<?> c1, AbstractTree<?> node, Object p1) {
-		Tag tag = node.getTag();
+		SymbolId tag = node.getTag();
 		Method m = findMethod(method, tag, c1);
 		if (m != null) {
 			try {
@@ -72,8 +72,8 @@ public class AbstractTreeVisitor {
 		return toUndefinedNode(node, p1);
 	}
 
-	protected final Method findMethod(String method, Tag tag, Class<?> c1) {
-		String key = method + tag.getName() + c1.getName();
+	protected final Method findMethod(String method, SymbolId tag, Class<?> c1) {
+		String key = method + tag.getSymbol() + c1.getName();
 		Method m = this.methodMap.get(key);
 		if (m == null) {
 			try {
@@ -90,8 +90,8 @@ public class AbstractTreeVisitor {
 		return m;
 	}
 
-	protected Method getClassMethod(String method, Tag tag, Class<?> c1) throws NoSuchMethodException, SecurityException {
-		String name = method + tag.getName();
+	protected Method getClassMethod(String method, SymbolId tag, Class<?> c1) throws NoSuchMethodException, SecurityException {
+		String name = method + tag.getSymbol();
 		return this.getClass().getMethod(name, AbstractTree.class, c1);
 	}
 

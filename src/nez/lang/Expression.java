@@ -14,14 +14,10 @@ import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
 public abstract class Expression extends AbstractList<Expression> {
-
 	SourcePosition s = null;
-
-	// int internId = 0;
 
 	protected Expression(SourcePosition s) {
 		this.s = s;
-		// this.internId = 0;
 	}
 
 	public final SourcePosition getSourcePosition() {
@@ -43,26 +39,11 @@ public abstract class Expression extends AbstractList<Expression> {
 	@Deprecated
 	public final int getId() {
 		return 0;
-		// return this.internId;
 	}
 
-	@Deprecated
-	public String getPredicate() {
-		return this.getClass().getSimpleName();
+	public final String getPredicate() {
+		return this.getClass().getSimpleName().substring(1);
 	}
-
-	// public final boolean isInterned() {
-	// return (this.internId > 0);
-	// }
-
-	// final Expression intern() {
-	// return ExpressionCommons.intern(this);
-	// }
-	//
-	//
-	// public String key() {
-	// return this.getPredicate();
-	// }
 
 	public abstract boolean isConsumed();
 
