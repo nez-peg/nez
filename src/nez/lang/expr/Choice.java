@@ -54,16 +54,6 @@ public class Choice extends ExpressionCommons {
 	}
 
 	@Override
-	public String getPredicate() {
-		return "/";
-	}
-
-	@Override
-	public String key() {
-		return "/";
-	}
-
-	@Override
 	public final void format(StringBuilder sb) {
 		for (int i = 0; i < this.size(); i++) {
 			if (i > 0) {

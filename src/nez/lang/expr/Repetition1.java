@@ -23,16 +23,6 @@ public class Repetition1 extends Repetition {
 	}
 
 	@Override
-	public String getPredicate() {
-		return "+";
-	}
-
-	@Override
-	public String key() {
-		return "+";
-	}
-
-	@Override
 	public final void format(StringBuilder sb) {
 		this.formatUnary(sb, this.inner, "+");
 	}

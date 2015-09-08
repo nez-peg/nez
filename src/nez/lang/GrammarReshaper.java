@@ -10,8 +10,8 @@ import nez.lang.expr.Choice;
 import nez.lang.expr.DefSymbol;
 import nez.lang.expr.Empty;
 import nez.lang.expr.ExistsSymbol;
-import nez.lang.expr.Failure;
 import nez.lang.expr.ExpressionCommons;
+import nez.lang.expr.Failure;
 import nez.lang.expr.IfFlag;
 import nez.lang.expr.IsIndent;
 import nez.lang.expr.IsSymbol;
@@ -237,91 +237,58 @@ public class GrammarReshaper {
 	}
 
 	protected final Expression updateInner(Option e, Expression inner) {
-		if (!e.isInterned()) {
-			e.inner = inner;
-			return e;
-		}
-		return (e.get(0) != inner) ? ExpressionCommons.newOption(e.getSourcePosition(), inner) : e;
+		e.inner = inner;
+		return e;
 	}
 
 	protected final Expression updateInner(Repetition e, Expression inner) {
-		if (!e.isInterned()) {
-			e.inner = inner;
-			return e;
-		}
-		return (e.get(0) != inner) ? ExpressionCommons.newRepetition(e.getSourcePosition(), inner) : e;
+		e.inner = inner;
+		return e;
 	}
 
 	protected final Expression updateInner(Repetition1 e, Expression inner) {
-		if (!e.isInterned()) {
-			e.inner = inner;
-			return e;
-		}
-		return (e.get(0) != inner) ? ExpressionCommons.newRepetition1(e.getSourcePosition(), inner) : e;
+		e.inner = inner;
+		return e;
 	}
 
 	protected final Expression updateInner(And e, Expression inner) {
-		if (!e.isInterned()) {
-			e.inner = inner;
-			return e;
-		}
-		return (e.get(0) != inner) ? ExpressionCommons.newAnd(e.getSourcePosition(), inner) : e;
+		e.inner = inner;
+		return e;
 	}
 
 	protected final Expression updateInner(Not e, Expression inner) {
-		if (!e.isInterned()) {
-			e.inner = inner;
-			return e;
-		}
-		return (e.get(0) != inner) ? ExpressionCommons.newNot(e.getSourcePosition(), inner) : e;
+		e.inner = inner;
+		return e;
 	}
 
 	protected final Expression updateInner(Match e, Expression inner) {
-		if (!e.isInterned()) {
-			e.inner = inner;
-			return e;
-		}
-		return (e.get(0) != inner) ? ExpressionCommons.newMatch(e.getSourcePosition(), inner) : e;
+		e.inner = inner;
+		return e;
 	}
 
 	protected final Expression updateInner(Link e, Expression inner) {
-		if (!e.isInterned()) {
-			e.inner = inner;
-			return e;
-		}
-		return (e.get(0) != inner) ? ExpressionCommons.newLink(e.getSourcePosition(), e.getLabel(), inner) : e;
+		e.inner = inner;
+		return e;
 	}
 
 	protected final Expression updateInner(Block e, Expression inner) {
-		if (!e.isInterned()) {
-			e.inner = inner;
-			return e;
-		}
-		return (e.get(0) != inner) ? ExpressionCommons.newBlock(e.getSourcePosition(), inner) : e;
+		e.inner = inner;
+		return e;
 	}
 
 	protected final Expression updateInner(LocalTable e, Expression inner) {
-		if (!e.isInterned()) {
-			e.inner = inner;
-			return e;
-		}
-		return (e.get(0) != inner) ? ExpressionCommons.newLocal(e.getSourcePosition(), e.getTable(), inner) : e;
+		e.inner = inner;
+		return e;
 	}
 
 	protected final Expression updateInner(DefSymbol e, Expression inner) {
-		if (!e.isInterned()) {
-			e.inner = inner;
-			return e;
-		}
-		return (e.get(0) != inner) ? ExpressionCommons.newDefSymbol(e.getSourcePosition(), e.getGrammarFile(), e.getTable(), inner) : e;
+		e.inner = inner;
+		return e;
 	}
 
 	protected final Expression updateInner(OnFlag e, Expression inner) {
-		if (!e.isInterned()) {
-			e.inner = inner;
-			return e;
-		}
-		return (e.get(0) != inner) ? ExpressionCommons.newOnFlag(e.getSourcePosition(), e.isPositive(), e.getFlagName(), inner) : e;
+		e.inner = inner;
+		return e;
 	}
 
 }

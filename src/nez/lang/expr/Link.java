@@ -32,18 +32,7 @@ public class Link extends Unary {
 	}
 
 	@Override
-	public String getPredicate() {
-		return (label != null) ? "link " + label : "link";
-	}
-
-	@Override
-	public String key() {
-		return (label != null) ? "@" + label : "@";
-	}
-
-	@Override
-	public
-	final void format(StringBuilder sb) {
+	public final void format(StringBuilder sb) {
 		formatUnary(sb, (label != null) ? "$" + label + "(" : "$(", this.get(0), ")");
 	}
 

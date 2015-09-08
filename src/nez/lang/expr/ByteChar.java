@@ -25,19 +25,8 @@ public class ByteChar extends Char {
 	}
 
 	@Override
-	public
-	final void format(StringBuilder sb) {
+	public final void format(StringBuilder sb) {
 		sb.append(StringUtils.stringfyCharacter(this.byteChar));
-	}
-
-	@Override
-	public String getPredicate() {
-		return "byte " + byteChar;
-	}
-
-	@Override
-	public String key() {
-		return binary ? "b'" + byteChar : "'" + byteChar;
 	}
 
 	@Override

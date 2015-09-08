@@ -27,16 +27,6 @@ public class Replace extends Term {
 	}
 
 	@Override
-	public String getPredicate() {
-		return "replace " + StringUtils.quoteString('"', value, '"');
-	}
-
-	@Override
-	public String key() {
-		return "`" + this.value;
-	}
-
-	@Override
 	public final void format(StringBuilder sb) {
 		sb.append(StringUtils.quoteString('`', this.value, '`'));
 	}

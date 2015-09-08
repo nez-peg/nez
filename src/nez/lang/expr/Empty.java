@@ -25,16 +25,6 @@ public class Empty extends Term {
 	}
 
 	@Override
-	public String getPredicate() {
-		return "empty";
-	}
-
-	@Override
-	public String key() {
-		return "";
-	}
-
-	@Override
 	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeEmpty(this);
 	}

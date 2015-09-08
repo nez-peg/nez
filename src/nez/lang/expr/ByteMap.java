@@ -37,19 +37,8 @@ public class ByteMap extends Char {
 	}
 
 	@Override
-	public
-	final void format(StringBuilder sb) {
+	public final void format(StringBuilder sb) {
 		sb.append(StringUtils.stringfyCharacterClass(this.byteMap));
-	}
-
-	@Override
-	public String getPredicate() {
-		return "byte " + StringUtils.stringfyBitmap(this.byteMap);
-	}
-
-	@Override
-	public String key() {
-		return binary ? "b[" + StringUtils.stringfyBitmap(this.byteMap) : "[" + StringUtils.stringfyBitmap(this.byteMap);
 	}
 
 	@Override

@@ -21,11 +21,6 @@ public class Block extends Unary {
 	}
 
 	@Override
-	public String getPredicate() {
-		return "block";
-	}
-
-	@Override
 	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeBlock(this);
 	}

@@ -25,16 +25,6 @@ public class Failure extends Term {
 	}
 
 	@Override
-	public String getPredicate() {
-		return "fail";
-	}
-
-	@Override
-	public String key() {
-		return "!!";
-	}
-
-	@Override
 	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeFailure(this);
 	}

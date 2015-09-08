@@ -40,6 +40,7 @@ public class OptimizedCompiler extends PlainCompiler {
 		return inner;
 	}
 
+	@Override
 	public final Instruction encodeOption(Option p, Instruction next) {
 		if (option.enabledLexicalOptimization) {
 			Expression inner = getInnerExpression(p);
@@ -59,6 +60,7 @@ public class OptimizedCompiler extends PlainCompiler {
 		return super.encodeOption(p, next);
 	}
 
+	@Override
 	public final Instruction encodeRepetition(Repetition p, Instruction next) {
 		if (option.enabledLexicalOptimization) {
 			Expression inner = getInnerExpression(p);
@@ -78,6 +80,7 @@ public class OptimizedCompiler extends PlainCompiler {
 		return super.encodeRepetition(p, next);
 	}
 
+	@Override
 	public final Instruction encodeNot(Not p, Instruction next, Instruction failjump) {
 		if (option.enabledLexicalOptimization) {
 			Expression inner = getInnerExpression(p);
@@ -101,6 +104,7 @@ public class OptimizedCompiler extends PlainCompiler {
 		return super.encodeNot(p, next, failjump);
 	}
 
+	@Override
 	public final Instruction encodeChoice(Choice p, Instruction next, Instruction failjump) {
 		if (option.enabledPrediction && p.predictedCase != null) {
 			return encodePredicatedChoice(p, next, failjump);
@@ -140,9 +144,9 @@ public class OptimizedCompiler extends PlainCompiler {
 	}
 
 	private int predictId(Expression[] predictedCase, int max, Expression predicted) {
-		if (predicted.isInterned()) {
-			return predicted.getId();
-		}
+		// if (predicted.isInterned()) {
+		// return predicted.getId();
+		// }
 		for (int i = 0; i < max; i++) {
 			if (predictedCase[i] != null && predicted.equalsExpression(predictedCase[i])) {
 				return i;

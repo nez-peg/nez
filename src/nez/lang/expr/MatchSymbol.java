@@ -37,16 +37,6 @@ public class MatchSymbol extends Term implements Contextual {
 	}
 
 	@Override
-	public String getPredicate() {
-		return "match " + tableName.getName();
-	}
-
-	@Override
-	public String key() {
-		return this.getPredicate();
-	}
-
-	@Override
 	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeMatchSymbol(this);
 	}

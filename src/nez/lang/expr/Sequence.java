@@ -63,16 +63,6 @@ public class Sequence extends ExpressionCommons {
 	}
 
 	@Override
-	public String getPredicate() {
-		return "seq";
-	}
-
-	@Override
-	public String key() {
-		return " ";
-	}
-
-	@Override
 	public final void format(StringBuilder sb) {
 		if (this.first instanceof ByteChar && this.next.getFirst() instanceof ByteChar) {
 			sb.append("'");

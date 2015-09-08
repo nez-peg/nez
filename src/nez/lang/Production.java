@@ -414,8 +414,7 @@ public class Production extends Expression {
 	}
 
 	@Override
-	public
-	final void format(StringBuilder sb) {
+	public final void format(StringBuilder sb) {
 		sb.append(this.getLocalName());
 		sb.append(" = ");
 		this.getExpression().format(sb);
@@ -513,18 +512,8 @@ public class Production extends Expression {
 		return this.getExpression().inferTypestate(v);
 	}
 
-	@Override
-	public String key() {
-		return this.getUniqueName() + "=";
-	}
-
 	public final void internRule() {
-		this.body = this.body.intern();
-	}
-
-	@Override
-	public String getPredicate() {
-		return this.getUniqueName() + "=";
+		// this.body = this.body.intern();
 	}
 
 	@Override

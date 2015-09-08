@@ -23,13 +23,7 @@ public class And extends Unary {
 	}
 
 	@Override
-	public String getPredicate() {
-		return "&";
-	}
-
-	@Override
-	public
-	final void format(StringBuilder sb) {
+	public final void format(StringBuilder sb) {
 		this.formatUnary(sb, "&", this.inner);
 	}
 

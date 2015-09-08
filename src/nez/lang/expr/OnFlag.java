@@ -44,11 +44,6 @@ public class OnFlag extends Unary implements Conditional {
 	}
 
 	@Override
-	public String getPredicate() {
-		return predicate ? "on " + this.flagName : "on !" + this.flagName;
-	}
-
-	@Override
 	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeOnFlag(this);
 	}

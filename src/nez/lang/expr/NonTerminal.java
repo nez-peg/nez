@@ -77,19 +77,8 @@ public class NonTerminal extends Expression {
 	}
 
 	@Override
-	public
-	final void format(StringBuilder sb) {
+	public final void format(StringBuilder sb) {
 		sb.append(this.getLocalName());
-	}
-
-	@Override
-	public String key() {
-		return getUniqueName();
-	}
-
-	@Override
-	public String getPredicate() {
-		return getUniqueName();
 	}
 
 	@Override

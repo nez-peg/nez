@@ -7,7 +7,6 @@ import nez.lang.GrammarReshaper;
 import nez.lang.PossibleAcceptance;
 import nez.lang.Typestate;
 import nez.lang.Visa;
-import nez.util.StringUtils;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
@@ -33,16 +32,6 @@ public class Tagging extends Term {
 			return this.tag == ((Tagging) o).tag;
 		}
 		return false;
-	}
-
-	@Override
-	public String getPredicate() {
-		return "tag " + StringUtils.quoteString('"', tag.getName(), '"');
-	}
-
-	@Override
-	public String key() {
-		return "#" + this.tag.getName();
 	}
 
 	@Override

@@ -20,11 +20,6 @@ public class DefIndent extends Term {
 	}
 
 	@Override
-	public String getPredicate() {
-		return "defindent";
-	}
-
-	@Override
 	public boolean isConsumed() {
 		return false;
 	}

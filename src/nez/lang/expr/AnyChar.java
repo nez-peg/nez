@@ -23,19 +23,8 @@ public class AnyChar extends Char {
 	}
 
 	@Override
-	public
-	final void format(StringBuilder sb) {
+	public final void format(StringBuilder sb) {
 		sb.append(".");
-	}
-
-	@Override
-	public String getPredicate() {
-		return "any";
-	}
-
-	@Override
-	public String key() {
-		return binary ? "b." : ".";
 	}
 
 	@Override

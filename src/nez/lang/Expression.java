@@ -16,11 +16,12 @@ import nez.vm.NezEncoder;
 public abstract class Expression extends AbstractList<Expression> {
 
 	SourcePosition s = null;
-	int internId = 0;
+
+	// int internId = 0;
 
 	protected Expression(SourcePosition s) {
 		this.s = s;
-		this.internId = 0;
+		// this.internId = 0;
 	}
 
 	public final SourcePosition getSourcePosition() {
@@ -39,23 +40,29 @@ public abstract class Expression extends AbstractList<Expression> {
 
 	public abstract void format(StringBuilder sb);
 
+	@Deprecated
 	public final int getId() {
-		return this.internId;
+		return 0;
+		// return this.internId;
 	}
 
-	public final boolean isInterned() {
-		return (this.internId > 0);
+	@Deprecated
+	public String getPredicate() {
+		return this.getClass().getSimpleName();
 	}
 
-	final Expression intern() {
-		return ExpressionCommons.intern(this);
-	}
+	// public final boolean isInterned() {
+	// return (this.internId > 0);
+	// }
 
-	public abstract String getPredicate();
-
-	public String key() {
-		return this.getPredicate();
-	}
+	// final Expression intern() {
+	// return ExpressionCommons.intern(this);
+	// }
+	//
+	//
+	// public String key() {
+	// return this.getPredicate();
+	// }
 
 	public abstract boolean isConsumed();
 
@@ -72,18 +79,6 @@ public abstract class Expression extends AbstractList<Expression> {
 	public abstract int inferTypestate(Visa v);
 
 	public abstract short acceptByte(int ch);
-
-	public final UList<Expression> toList() {
-		UList<Expression> l = new UList<Expression>(new Expression[this.size()]);
-		if (this.size() > 1) {
-			for (Expression e : this) {
-				l.add(e);
-			}
-		} else {
-			l.add(this);
-		}
-		return l;
-	}
 
 	public final void visit(GrammarVisitor visitor) {
 		visitor.visit(this);

@@ -37,27 +37,6 @@ public class New extends Term {
 	}
 
 	@Override
-	public String getPredicate() {
-		return "new";
-	}
-
-	@Override
-	public String key() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("{");
-		if (leftFold) {
-			sb.append("$");
-			if (label != null) {
-				sb.append(label);
-			}
-		}
-		if (shift != 0) {
-			sb.append("[" + shift + "]");
-		}
-		return sb.toString();
-	}
-
-	@Override
 	public final void format(StringBuilder sb) {
 		sb.append("{");
 		if (leftFold) {

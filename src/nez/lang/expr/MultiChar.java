@@ -33,23 +33,12 @@ public class MultiChar extends Char {
 	}
 
 	@Override
-	public
-	final void format(StringBuilder sb) {
+	public final void format(StringBuilder sb) {
 		sb.append("'");
 		for (int i = 0; i < this.byteSeq.length; i++) {
 			StringUtils.appendByteChar(sb, byteSeq[i] & 0xff, "\'");
 		}
 		sb.append("'");
-	}
-
-	@Override
-	public String getPredicate() {
-		return "byte " + this.toString();
-	}
-
-	@Override
-	public String key() {
-		return (binary ? "mb" : "m") + this.toString();
 	}
 
 	@Override

@@ -42,11 +42,6 @@ public class IfFlag extends Term implements Conditional {
 	}
 
 	@Override
-	public String getPredicate() {
-		return predicate ? "if " + this.flagName : "if !" + this.flagName;
-	}
-
-	@Override
 	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeIfFlag(this);
 	}

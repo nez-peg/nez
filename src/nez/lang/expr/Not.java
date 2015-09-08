@@ -23,18 +23,7 @@ public class Not extends Unary {
 	}
 
 	@Override
-	public String getPredicate() {
-		return "!";
-	}
-
-	@Override
-	public String key() {
-		return "!";
-	}
-
-	@Override
-	public
-	final void format(StringBuilder sb) {
+	public final void format(StringBuilder sb) {
 		this.formatUnary(sb, "!", this.inner);
 	}
 

@@ -21,16 +21,6 @@ public class IsIndent extends Term implements Contextual {
 	}
 
 	@Override
-	public String getPredicate() {
-		return "indent";
-	}
-
-	@Override
-	public String key() {
-		return "indent";
-	}
-
-	@Override
 	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeIsIndent(this);
 	}

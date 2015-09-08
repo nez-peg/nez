@@ -73,22 +73,22 @@ public abstract class NezEncoder {
 		ProductionCode c = this.pcodeMap.get(uname);
 		if (c == null) {
 			Expression deref = optimizeLocalProduction(p);
-			if (deref.isInterned()) {
-				String key = "#" + deref.getId();
-				c = this.pcodeMap.get(key);
-				if (c == null) {
-					c = newProductionCode(p, deref);
-					pcodeMap.put(key, c);
-				}
-				// else {
-				// Verbose.debug("alias " + uname + ", " +
-				// c.production.getUniqueName());
-				// }
-				pcodeMap.put(uname, c);
-			} else {
-				c = newProductionCode(p, deref);
-				pcodeMap.put(uname, c);
-			}
+			// if (deref.isInterned()) {
+			// String key = "#" + deref.getId();
+			// c = this.pcodeMap.get(key);
+			// if (c == null) {
+			// c = newProductionCode(p, deref);
+			// pcodeMap.put(key, c);
+			// }
+			// // else {
+			// // Verbose.debug("alias " + uname + ", " +
+			// // c.production.getUniqueName());
+			// // }
+			// pcodeMap.put(uname, c);
+			// } else {
+			c = newProductionCode(p, deref);
+			pcodeMap.put(uname, c);
+			// }
 		}
 		c.ref++;
 	}

@@ -26,16 +26,6 @@ public class Repetition extends Unary {
 	}
 
 	@Override
-	public String getPredicate() {
-		return "*";
-	}
-
-	@Override
-	public String key() {
-		return "*";
-	}
-
-	@Override
 	public void format(StringBuilder sb) {
 		this.formatUnary(sb, this.inner, "*");
 	}

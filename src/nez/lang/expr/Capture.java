@@ -23,16 +23,6 @@ public class Capture extends Term {
 	}
 
 	@Override
-	public String getPredicate() {
-		return "}";
-	}
-
-	@Override
-	public String key() {
-		return shift == 0 ? "}" : "}[" + shift + "]";
-	}
-
-	@Override
 	public final void format(StringBuilder sb) {
 		sb.append("}");
 	}

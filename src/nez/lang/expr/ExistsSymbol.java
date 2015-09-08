@@ -50,19 +50,6 @@ public class ExistsSymbol extends Term implements Contextual {
 	}
 
 	@Override
-	public String getPredicate() {
-		if (symbol == null) {
-			return "exists " + tableName.getName();
-		}
-		return "exists " + tableName.getName() + " '" + this.symbol + "'";
-	}
-
-	@Override
-	public String key() {
-		return this.getPredicate();
-	}
-
-	@Override
 	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeExistsSymbol(this);
 	}

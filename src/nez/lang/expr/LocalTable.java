@@ -36,16 +36,6 @@ public class LocalTable extends Unary {
 	}
 
 	@Override
-	public String getPredicate() {
-		return "local " + tableName.getName();
-	}
-
-	@Override
-	public String key() {
-		return "local " + tableName.getName();
-	}
-
-	@Override
 	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeLocalTable(this);
 	}

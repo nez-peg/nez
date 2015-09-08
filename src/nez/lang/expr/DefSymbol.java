@@ -46,16 +46,6 @@ public class DefSymbol extends Unary {
 	}
 
 	@Override
-	public String getPredicate() {
-		return "def " + tableName.getName();
-	}
-
-	@Override
-	public String key() {
-		return "def " + tableName.getName();
-	}
-
-	@Override
 	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeDefSymbol(this);
 	}

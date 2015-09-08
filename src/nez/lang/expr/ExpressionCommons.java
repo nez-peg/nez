@@ -32,7 +32,7 @@ public abstract class ExpressionCommons extends Expression {
 	@Override
 	public void format(StringBuilder sb) {
 		sb.append("<");
-		sb.append(this.getPredicate());
+		sb.append(this.getClass().getSimpleName());
 		for (Expression se : this) {
 			sb.append(" ");
 			se.format(sb);
@@ -294,47 +294,30 @@ public abstract class ExpressionCommons extends Expression {
 	/* Unary */
 
 	public final static Expression newOption(SourcePosition s, Expression p) {
-		s = p.isInterned() ? null : s;
-		return internImpl(s, new Option(s, p));
+		return new Option(s, p);
 	}
 
 	public final static Expression newRepetition(SourcePosition s, Expression p) {
-		s = p.isInterned() ? null : s;
-		return internImpl(s, new Repetition(s, p));
+		return new Repetition(s, p);
 	}
 
 	public final static Expression newRepetition1(SourcePosition s, Expression p) {
-		s = p.isInterned() ? null : s;
-		return internImpl(s, new Repetition1(s, p));
+		return new Repetition1(s, p);
 	}
 
 	public final static And newAnd(SourcePosition s, Expression p) {
-		s = p.isInterned() ? null : s;
-		return (And) internImpl(s, new And(s, p));
+		return new And(s, p);
 	}
 
 	public final static Not newNot(SourcePosition s, Expression p) {
-		s = p.isInterned() ? null : s;
-		return (Not) internImpl(s, new Not(s, p));
-	}
-
-	final static boolean isInterned(UList<Expression> l) {
-		for (int i = 0; i < l.size(); i++) {
-			if (!l.ArrayValues[i].isInterned()) {
-				return false;
-			}
-		}
-		return true;
+		return new Not(s, p);
 	}
 
 	public final static Expression newSequence(SourcePosition s, UList<Expression> l) {
 		if (l.size() == 0) {
-			return internImpl(s, newEmpty(s));
+			return newEmpty(s);
 		}
-		if (s != null && isInterned(l)) {
-			s = null;
-		}
-		return internImpl(s, newSequence(s, 0, l));
+		return newSequence(s, 0, l);
 	}
 
 	private final static Expression newSequence(SourcePosition s, int start, UList<Expression> l) {
@@ -364,10 +347,7 @@ public abstract class ExpressionCommons extends Expression {
 		if (size == 1) {
 			return l.ArrayValues[0];
 		}
-		if (s != null && isInterned(l)) {
-			s = null;
-		}
-		return internImpl(s, new Choice(s, l, size));
+		return new Choice(s, l, size);
 	}
 
 	public final static Expression newChoice(SourcePosition s, Expression p, Expression p2) {
@@ -384,10 +364,7 @@ public abstract class ExpressionCommons extends Expression {
 	// AST Construction
 
 	public final static Expression newMatch(SourcePosition s, Expression p) {
-		if (p.isInterned()) {
-			s = null;
-		}
-		return internImpl(s, new Match(s, p));
+		return new Match(s, p);
 	}
 
 	public final static Expression newLink(SourcePosition s, Expression p) {
@@ -395,18 +372,15 @@ public abstract class ExpressionCommons extends Expression {
 	}
 
 	public final static Expression newLink(SourcePosition s, Tag label, Expression p) {
-		if (p.isInterned()) {
-			s = null;
-		}
-		return internImpl(s, new Link(s, label, p));
+		return new Link(s, label, p);
 	}
 
 	public final static Expression newNew(SourcePosition s, boolean lefted, Tag label, int shift) {
-		return internImpl(s, new New(s, lefted, label, shift));
+		return new New(s, lefted, label, shift);
 	}
 
 	public final static Expression newCapture(SourcePosition s, int shift) {
-		return internImpl(s, new Capture(s, shift));
+		return new Capture(s, shift);
 	}
 
 	public final static Expression newNew(SourcePosition s, boolean lefted, Tag label, Expression e) {

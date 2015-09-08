@@ -50,16 +50,6 @@ public class IsSymbol extends Term implements Contextual {
 	}
 
 	@Override
-	public String getPredicate() {
-		return (is ? "is " : "isa ") + tableName.getName();
-	}
-
-	@Override
-	public String key() {
-		return this.getPredicate();
-	}
-
-	@Override
 	public Expression reshape(GrammarReshaper m) {
 		return m.reshapeIsSymbol(this);
 	}

@@ -9,8 +9,8 @@ import nez.lang.expr.ByteMap;
 import nez.lang.expr.Capture;
 import nez.lang.expr.Choice;
 import nez.lang.expr.Empty;
-import nez.lang.expr.Failure;
 import nez.lang.expr.ExpressionCommons;
+import nez.lang.expr.Failure;
 import nez.lang.expr.Link;
 import nez.lang.expr.New;
 import nez.lang.expr.NonTerminal;
@@ -98,11 +98,11 @@ public class GrammarOptimizer extends GrammarReshaper {
 		if (e instanceof Replace) {
 			return true;
 		}
-		if (e instanceof New && !e.isInterned()) {
+		if (e instanceof New) {
 			((New) e).shift -= 1;
 			return true;
 		}
-		if (e instanceof Capture && !e.isInterned()) {
+		if (e instanceof Capture) {
 			((Capture) e).shift -= 1;
 			return true;
 		}
@@ -113,7 +113,7 @@ public class GrammarOptimizer extends GrammarReshaper {
 	public Expression reshapeSequence(Sequence p) {
 		Expression first = p.getFirst().reshape(this);
 		Expression next = p.getNext().reshape(this);
-		if (this.enabledOutOfOrder && !p.isInterned()) {
+		if (this.enabledOutOfOrder) {
 			if (next instanceof Sequence) {
 				Sequence nextSequence = (Sequence) next;
 				if (isSingleCharacter(nextSequence.first) && isOutOfOrderExpression(first)) {
@@ -201,6 +201,7 @@ public class GrammarOptimizer extends GrammarReshaper {
 		return e;
 	}
 
+	@Override
 	public Expression reshapeLink(Link p) {
 		if (p.get(0) instanceof Choice) {
 			Expression inner = p.get(0);
