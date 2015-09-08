@@ -3,7 +3,7 @@ package nez.lang.expr;
 import nez.NezOption;
 import nez.ast.SourcePosition;
 import nez.lang.Expression;
-import nez.lang.GrammarReshaper;
+import nez.lang.ExpressionTransducer;
 import nez.lang.PossibleAcceptance;
 import nez.lang.Typestate;
 import nez.lang.Visa;
@@ -98,7 +98,7 @@ public class Sequence extends ExpressionCommons {
 	}
 
 	@Override
-	public Expression reshape(GrammarReshaper m) {
+	public Expression reshape(ExpressionTransducer m) {
 		return m.reshapeSequence(this);
 	}
 

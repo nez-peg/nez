@@ -421,7 +421,7 @@ public class Production extends Expression {
 	}
 
 	@Override
-	public Expression reshape(GrammarReshaper m) {
+	public Expression reshape(ExpressionTransducer m) {
 		return m.reshapeProduction(this);
 	}
 

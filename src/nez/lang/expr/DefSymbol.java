@@ -4,7 +4,7 @@ import nez.ast.SourcePosition;
 import nez.ast.Tag;
 import nez.lang.Expression;
 import nez.lang.GrammarMap;
-import nez.lang.GrammarReshaper;
+import nez.lang.ExpressionTransducer;
 import nez.lang.Typestate;
 import nez.lang.Visa;
 import nez.util.UMap;
@@ -46,7 +46,7 @@ public class DefSymbol extends Unary {
 	}
 
 	@Override
-	public Expression reshape(GrammarReshaper m) {
+	public Expression reshape(ExpressionTransducer m) {
 		return m.reshapeDefSymbol(this);
 	}
 

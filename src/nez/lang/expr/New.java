@@ -3,7 +3,7 @@ package nez.lang.expr;
 import nez.ast.SourcePosition;
 import nez.ast.Tag;
 import nez.lang.Expression;
-import nez.lang.GrammarReshaper;
+import nez.lang.ExpressionTransducer;
 import nez.lang.PossibleAcceptance;
 import nez.lang.Typestate;
 import nez.lang.Visa;
@@ -48,7 +48,7 @@ public class New extends Term {
 	}
 
 	@Override
-	public Expression reshape(GrammarReshaper m) {
+	public Expression reshape(ExpressionTransducer m) {
 		return m.reshapeNew(this);
 	}
 

@@ -20,7 +20,7 @@ import nez.lang.expr.Sequence;
 import nez.lang.expr.Tagging;
 import nez.util.UList;
 
-public class GrammarOptimizer extends GrammarReshaper {
+public class GrammarOptimizer extends ExpressionTransducer {
 	/* local optimizer option */
 	boolean enabledCommonLeftFactoring = true; // true;
 	boolean enabledCostBasedReduction = true;

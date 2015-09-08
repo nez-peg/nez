@@ -3,7 +3,7 @@ package nez.lang.expr;
 import nez.ast.SourcePosition;
 import nez.lang.Conditional;
 import nez.lang.Expression;
-import nez.lang.GrammarReshaper;
+import nez.lang.ExpressionTransducer;
 import nez.lang.Visa;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
@@ -44,7 +44,7 @@ public class OnFlag extends Unary implements Conditional {
 	}
 
 	@Override
-	public Expression reshape(GrammarReshaper m) {
+	public Expression reshape(ExpressionTransducer m) {
 		return m.reshapeOnFlag(this);
 	}
 

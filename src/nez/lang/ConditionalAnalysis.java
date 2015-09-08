@@ -6,7 +6,7 @@ import nez.lang.expr.IfFlag;
 import nez.lang.expr.NonTerminal;
 import nez.lang.expr.OnFlag;
 
-class ConditionalAnalysis extends GrammarReshaper {
+class ConditionalAnalysis extends ExpressionTransducer {
 	TreeMap<String, Boolean> condMap;
 
 	ConditionalAnalysis(TreeMap<String, Boolean> condMap) {

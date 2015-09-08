@@ -18,7 +18,7 @@ import nez.lang.expr.Replace;
 import nez.lang.expr.Tagging;
 import nez.util.UList;
 
-public class Typestate extends GrammarReshaper {
+public class Typestate extends ExpressionTransducer {
 	public final static int Undefined = -1;
 	public final static int BooleanType = 0;
 	public final static int ObjectType = 1;
@@ -80,7 +80,7 @@ public class Typestate extends GrammarReshaper {
 		if (p.leftFold) {
 			if (this.required != Typestate.OperationType) {
 				this.reportRemoved(p, "{@");
-				return p.reshape(GrammarReshaper.RemoveASTandRename);
+				return p.reshape(ExpressionTransducer.RemoveASTandRename);
 			}
 		} else {
 			if (this.required != Typestate.ObjectType) {
@@ -96,7 +96,7 @@ public class Typestate extends GrammarReshaper {
 	public Expression reshapeLink(Link p) {
 		if (this.required != Typestate.OperationType) {
 			reportRemoved(p, "@");
-			p.inner = p.inner.reshape(GrammarReshaper.RemoveASTandRename);
+			p.inner = p.inner.reshape(ExpressionTransducer.RemoveASTandRename);
 		}
 		this.required = Typestate.ObjectType;
 		Expression inn = p.inner.reshape(this);
@@ -111,7 +111,7 @@ public class Typestate extends GrammarReshaper {
 
 	@Override
 	public Expression reshapeMatch(Match p) {
-		return p.inner.reshape(GrammarReshaper.RemoveASTandRename);
+		return p.inner.reshape(ExpressionTransducer.RemoveASTandRename);
 	}
 
 	@Override
@@ -151,7 +151,7 @@ public class Typestate extends GrammarReshaper {
 		if (this.required == Typestate.ObjectType) {
 			if (t == Typestate.OperationType) {
 				reportRemoved(p, "AST operations");
-				return p.reshape(GrammarReshaper.RemoveASTandRename);
+				return p.reshape(ExpressionTransducer.RemoveASTandRename);
 			}
 			this.required = Typestate.OperationType;
 			return p;
@@ -187,7 +187,7 @@ public class Typestate extends GrammarReshaper {
 		Expression inn = p.inner.reshape(this);
 		if (required != Typestate.OperationType && this.required == Typestate.OperationType) {
 			checker.reportWarning(p.getSourcePosition(), "unable to create objects in repetition => removed!!");
-			inn = inn.reshape(GrammarReshaper.RemoveASTandRename);
+			inn = inn.reshape(ExpressionTransducer.RemoveASTandRename);
 			this.required = required;
 		}
 		return updateInner(p, inn);
@@ -199,7 +199,7 @@ public class Typestate extends GrammarReshaper {
 		Expression inn = p.inner.reshape(this);
 		if (required != Typestate.OperationType && this.required == Typestate.OperationType) {
 			checker.reportWarning(p.getSourcePosition(), "unable to create objects in repetition => removed!!");
-			inn = inn.reshape(GrammarReshaper.RemoveASTandRename);
+			inn = inn.reshape(ExpressionTransducer.RemoveASTandRename);
 			this.required = required;
 		}
 		return updateInner(p, inn);
@@ -211,7 +211,7 @@ public class Typestate extends GrammarReshaper {
 		Expression inn = p.inner.reshape(this);
 		if (required != Typestate.OperationType && this.required == Typestate.OperationType) {
 			checker.reportWarning(p.getSourcePosition(), "unable to create objects in repetition => removed!!");
-			inn = inn.reshape(GrammarReshaper.RemoveASTandRename);
+			inn = inn.reshape(ExpressionTransducer.RemoveASTandRename);
 			this.required = required;
 		}
 		return updateInner(p, inn);
@@ -232,7 +232,7 @@ public class Typestate extends GrammarReshaper {
 	public Expression reshapeNot(Not p) {
 		int t = p.inner.inferTypestate(null);
 		if (t == Typestate.ObjectType || t == Typestate.OperationType) {
-			updateInner(p, p.inner.reshape(GrammarReshaper.RemoveASTandRename));
+			updateInner(p, p.inner.reshape(ExpressionTransducer.RemoveASTandRename));
 		}
 		return p;
 	}
@@ -241,7 +241,7 @@ public class Typestate extends GrammarReshaper {
 	public Expression reshapeDefSymbol(DefSymbol p) {
 		int t = p.inner.inferTypestate(null);
 		if (t != Typestate.BooleanType) {
-			updateInner(p, p.inner.reshape(GrammarReshaper.RemoveASTandRename));
+			updateInner(p, p.inner.reshape(ExpressionTransducer.RemoveASTandRename));
 		}
 		return p;
 	}

@@ -66,7 +66,7 @@ public abstract class Expression extends AbstractList<Expression> {
 
 	public abstract boolean isConsumed();
 
-	public abstract Expression reshape(GrammarReshaper m);
+	public abstract Expression reshape(ExpressionTransducer m);
 
 	// boolean setOuterLefted(Expression outer) {
 	// return false;
@@ -79,10 +79,6 @@ public abstract class Expression extends AbstractList<Expression> {
 	public abstract int inferTypestate(Visa v);
 
 	public abstract short acceptByte(int ch);
-
-	public final void visit(GrammarVisitor visitor) {
-		visitor.visit(this);
-	}
 
 	public abstract Instruction encode(NezEncoder bc, Instruction next, Instruction failjump);
 

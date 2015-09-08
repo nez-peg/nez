@@ -153,7 +153,7 @@ public class GrammarFile extends GrammarMap {
 		return l;
 	}
 
-	public Production newReducedProduction(String localName, Production p, GrammarReshaper m) {
+	public Production newReducedProduction(String localName, Production p, ExpressionTransducer m) {
 		Production r = p.newProduction(localName);
 		this.addProduction(r);
 		m.updateProductionAttribute(p, r);

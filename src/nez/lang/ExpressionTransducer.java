@@ -33,9 +33,9 @@ import nez.lang.expr.Tagging;
 import nez.util.UFlag;
 import nez.util.UList;
 
-public class GrammarReshaper {
-	public final static GrammarReshaper RemoveASTandRename = new ASTConstructionEliminator(true);
-	public final static GrammarReshaper RemoveAST = new ASTConstructionEliminator(false);
+public class ExpressionTransducer {
+	public final static ExpressionTransducer RemoveASTandRename = new ASTConstructionEliminator(true);
+	public final static ExpressionTransducer RemoveAST = new ASTConstructionEliminator(false);
 
 	public Expression reshapeProduction(Production p) {
 		return p.getExpression().reshape(this);
@@ -293,7 +293,7 @@ public class GrammarReshaper {
 
 }
 
-class ASTConstructionEliminator extends GrammarReshaper {
+class ASTConstructionEliminator extends ExpressionTransducer {
 	boolean renaming;
 
 	ASTConstructionEliminator(boolean renaming) {

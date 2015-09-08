@@ -14,7 +14,7 @@ import nez.lang.expr.Sequence;
 import nez.util.StringUtils;
 import nez.util.UFlag;
 
-public class NameAnalysis extends GrammarReshaper {
+public class NameAnalysis extends ExpressionTransducer {
 
 	public void analyze(List<Production> l) {
 		for (Production p : l) {
@@ -105,5 +105,5 @@ public class NameAnalysis extends GrammarReshaper {
 	}
 }
 
-class StructualAnalysis extends GrammarReshaper {
+class StructualAnalysis extends ExpressionTransducer {
 }

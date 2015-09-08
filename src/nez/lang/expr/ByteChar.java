@@ -2,7 +2,7 @@ package nez.lang.expr;
 
 import nez.ast.SourcePosition;
 import nez.lang.Expression;
-import nez.lang.GrammarReshaper;
+import nez.lang.ExpressionTransducer;
 import nez.lang.PossibleAcceptance;
 import nez.util.StringUtils;
 import nez.vm.Instruction;
@@ -30,7 +30,7 @@ public class ByteChar extends Char {
 	}
 
 	@Override
-	public Expression reshape(GrammarReshaper m) {
+	public Expression reshape(ExpressionTransducer m) {
 		return m.reshapeByteChar(this);
 	}
 

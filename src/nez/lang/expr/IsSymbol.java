@@ -5,7 +5,7 @@ import nez.ast.Tag;
 import nez.lang.Contextual;
 import nez.lang.Expression;
 import nez.lang.GrammarMap;
-import nez.lang.GrammarReshaper;
+import nez.lang.ExpressionTransducer;
 import nez.lang.PossibleAcceptance;
 import nez.lang.Typestate;
 import nez.lang.Visa;
@@ -50,7 +50,7 @@ public class IsSymbol extends Term implements Contextual {
 	}
 
 	@Override
-	public Expression reshape(GrammarReshaper m) {
+	public Expression reshape(ExpressionTransducer m) {
 		return m.reshapeIsSymbol(this);
 	}
 
