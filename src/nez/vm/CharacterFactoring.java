@@ -2,9 +2,9 @@ package nez.vm;
 
 import nez.lang.Expression;
 import nez.lang.ExpressionTransducer;
-import nez.lang.expr.AnyChar;
-import nez.lang.expr.ByteChar;
-import nez.lang.expr.ByteMap;
+import nez.lang.expr.Cany;
+import nez.lang.expr.Cbyte;
+import nez.lang.expr.Cset;
 import nez.lang.expr.Choice;
 import nez.lang.expr.ExpressionCommons;
 import nez.lang.expr.Sequence;
@@ -25,15 +25,15 @@ public class CharacterFactoring extends ExpressionTransducer {
 		return r == e ? null : r;
 	}
 
-	public Expression reshapeByteChar(ByteChar e) {
+	public Expression reshapeByteChar(Cbyte e) {
 		return empty(e);
 	}
 
-	public Expression reshapeByteMap(ByteMap e) {
+	public Expression reshapeByteMap(Cset e) {
 		return empty(e);
 	}
 
-	public Expression reshapeAnyChar(AnyChar e) {
+	public Expression reshapeAnyChar(Cany e) {
 		return empty(e);
 	}
 

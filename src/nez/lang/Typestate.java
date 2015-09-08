@@ -1,21 +1,21 @@
 package nez.lang;
 
-import nez.lang.expr.And;
-import nez.lang.expr.Capture;
+import nez.lang.expr.Uand;
+import nez.lang.expr.Tcapture;
 import nez.lang.expr.Choice;
-import nez.lang.expr.DefSymbol;
+import nez.lang.expr.Xdef;
 import nez.lang.expr.ExpressionCommons;
-import nez.lang.expr.IsSymbol;
-import nez.lang.expr.Link;
-import nez.lang.expr.Match;
-import nez.lang.expr.New;
+import nez.lang.expr.Xis;
+import nez.lang.expr.Tlink;
+import nez.lang.expr.Umatch;
+import nez.lang.expr.Tnew;
 import nez.lang.expr.NonTerminal;
-import nez.lang.expr.Not;
-import nez.lang.expr.Option;
-import nez.lang.expr.Repetition;
-import nez.lang.expr.Repetition1;
-import nez.lang.expr.Replace;
-import nez.lang.expr.Tagging;
+import nez.lang.expr.Unot;
+import nez.lang.expr.Uoption;
+import nez.lang.expr.Uzero;
+import nez.lang.expr.Uone;
+import nez.lang.expr.Treplace;
+import nez.lang.expr.Ttag;
 import nez.util.UList;
 
 public class Typestate extends ExpressionTransducer {
@@ -76,7 +76,7 @@ public class Typestate extends ExpressionTransducer {
 	}
 
 	@Override
-	public Expression reshapeNew(New p) {
+	public Expression reshapeNew(Tnew p) {
 		if (p.leftFold) {
 			if (this.required != Typestate.OperationType) {
 				this.reportRemoved(p, "{@");
@@ -93,7 +93,7 @@ public class Typestate extends ExpressionTransducer {
 	}
 
 	@Override
-	public Expression reshapeLink(Link p) {
+	public Expression reshapeLink(Tlink p) {
 		if (this.required != Typestate.OperationType) {
 			reportRemoved(p, "@");
 			p.inner = p.inner.reshape(ExpressionTransducer.RemoveASTandRename);
@@ -110,12 +110,12 @@ public class Typestate extends ExpressionTransducer {
 	}
 
 	@Override
-	public Expression reshapeMatch(Match p) {
+	public Expression reshapeMatch(Umatch p) {
 		return p.inner.reshape(ExpressionTransducer.RemoveASTandRename);
 	}
 
 	@Override
-	public Expression reshapeTagging(Tagging p) {
+	public Expression reshapeTagging(Ttag p) {
 		if (this.required != Typestate.OperationType) {
 			reportRemoved(p, "#" + p.tag.getName());
 			return empty(p);
@@ -124,7 +124,7 @@ public class Typestate extends ExpressionTransducer {
 	}
 
 	@Override
-	public Expression reshapeReplace(Replace p) {
+	public Expression reshapeReplace(Treplace p) {
 		if (this.required != Typestate.OperationType) {
 			reportRemoved(p, "`" + p.value + "`");
 			return empty(p);
@@ -133,7 +133,7 @@ public class Typestate extends ExpressionTransducer {
 	}
 
 	@Override
-	public Expression reshapeCapture(Capture p) {
+	public Expression reshapeCapture(Tcapture p) {
 		if (this.required != Typestate.OperationType) {
 			reportRemoved(p, "}");
 			return empty(p);
@@ -182,7 +182,7 @@ public class Typestate extends ExpressionTransducer {
 	}
 
 	@Override
-	public Expression reshapeRepetition(Repetition p) {
+	public Expression reshapeRepetition(Uzero p) {
 		int required = this.required;
 		Expression inn = p.inner.reshape(this);
 		if (required != Typestate.OperationType && this.required == Typestate.OperationType) {
@@ -194,7 +194,7 @@ public class Typestate extends ExpressionTransducer {
 	}
 
 	@Override
-	public Expression reshapeRepetition1(Repetition1 p) {
+	public Expression reshapeRepetition1(Uone p) {
 		int required = this.required;
 		Expression inn = p.inner.reshape(this);
 		if (required != Typestate.OperationType && this.required == Typestate.OperationType) {
@@ -206,7 +206,7 @@ public class Typestate extends ExpressionTransducer {
 	}
 
 	@Override
-	public Expression reshapeOption(Option p) {
+	public Expression reshapeOption(Uoption p) {
 		int required = this.required;
 		Expression inn = p.inner.reshape(this);
 		if (required != Typestate.OperationType && this.required == Typestate.OperationType) {
@@ -218,7 +218,7 @@ public class Typestate extends ExpressionTransducer {
 	}
 
 	@Override
-	public Expression reshapeAnd(And p) {
+	public Expression reshapeAnd(Uand p) {
 		if (this.required == Typestate.ObjectType) {
 			this.required = Typestate.BooleanType;
 			Expression inn = p.inner.reshape(this);
@@ -229,7 +229,7 @@ public class Typestate extends ExpressionTransducer {
 	}
 
 	@Override
-	public Expression reshapeNot(Not p) {
+	public Expression reshapeNot(Unot p) {
 		int t = p.inner.inferTypestate(null);
 		if (t == Typestate.ObjectType || t == Typestate.OperationType) {
 			updateInner(p, p.inner.reshape(ExpressionTransducer.RemoveASTandRename));
@@ -238,7 +238,7 @@ public class Typestate extends ExpressionTransducer {
 	}
 
 	@Override
-	public Expression reshapeDefSymbol(DefSymbol p) {
+	public Expression reshapeDefSymbol(Xdef p) {
 		int t = p.inner.inferTypestate(null);
 		if (t != Typestate.BooleanType) {
 			updateInner(p, p.inner.reshape(ExpressionTransducer.RemoveASTandRename));
@@ -247,7 +247,7 @@ public class Typestate extends ExpressionTransducer {
 	}
 
 	@Override
-	public Expression reshapeIsSymbol(IsSymbol p) {
+	public Expression reshapeIsSymbol(Xis p) {
 		Expression e = p.getSymbolExpression();
 		if (e == null) {
 			checker.reportError(p.getSourcePosition(), "undefined table: " + p.getTableName());

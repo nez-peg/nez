@@ -1,35 +1,35 @@
 package nez.lang;
 
-import nez.lang.expr.And;
-import nez.lang.expr.AnyChar;
-import nez.lang.expr.Block;
-import nez.lang.expr.ByteChar;
-import nez.lang.expr.ByteMap;
-import nez.lang.expr.Capture;
+import nez.lang.expr.Uand;
+import nez.lang.expr.Cany;
+import nez.lang.expr.Xblock;
+import nez.lang.expr.Cbyte;
+import nez.lang.expr.Cset;
+import nez.lang.expr.Tcapture;
 import nez.lang.expr.Choice;
-import nez.lang.expr.DefSymbol;
+import nez.lang.expr.Xdef;
 import nez.lang.expr.Empty;
-import nez.lang.expr.ExistsSymbol;
+import nez.lang.expr.Xexists;
 import nez.lang.expr.ExpressionCommons;
 import nez.lang.expr.Failure;
-import nez.lang.expr.IfFlag;
-import nez.lang.expr.IsIndent;
-import nez.lang.expr.IsSymbol;
-import nez.lang.expr.Link;
-import nez.lang.expr.LocalTable;
-import nez.lang.expr.Match;
-import nez.lang.expr.MatchSymbol;
-import nez.lang.expr.MultiChar;
-import nez.lang.expr.New;
+import nez.lang.expr.Xif;
+import nez.lang.expr.Xindent;
+import nez.lang.expr.Xis;
+import nez.lang.expr.Tlink;
+import nez.lang.expr.Xlocal;
+import nez.lang.expr.Umatch;
+import nez.lang.expr.Xmatch;
+import nez.lang.expr.Cmulti;
+import nez.lang.expr.Tnew;
 import nez.lang.expr.NonTerminal;
-import nez.lang.expr.Not;
-import nez.lang.expr.OnFlag;
-import nez.lang.expr.Option;
-import nez.lang.expr.Repetition;
-import nez.lang.expr.Repetition1;
-import nez.lang.expr.Replace;
+import nez.lang.expr.Unot;
+import nez.lang.expr.Xon;
+import nez.lang.expr.Uoption;
+import nez.lang.expr.Uzero;
+import nez.lang.expr.Uone;
+import nez.lang.expr.Treplace;
 import nez.lang.expr.Sequence;
-import nez.lang.expr.Tagging;
+import nez.lang.expr.Ttag;
 import nez.util.UFlag;
 import nez.util.UList;
 
@@ -52,19 +52,19 @@ public class ExpressionTransducer {
 		return e;
 	}
 
-	public Expression reshapeByteChar(ByteChar e) {
+	public Expression reshapeByteChar(Cbyte e) {
 		return e;
 	}
 
-	public Expression reshapeByteMap(ByteMap e) {
+	public Expression reshapeByteMap(Cset e) {
 		return e;
 	}
 
-	public Expression reshapeAnyChar(AnyChar e) {
+	public Expression reshapeAnyChar(Cany e) {
 		return e;
 	}
 
-	public Expression reshapeCharMultiByte(MultiChar e) {
+	public Expression reshapeCharMultiByte(Cmulti e) {
 		return e;
 	}
 
@@ -133,93 +133,93 @@ public class ExpressionTransducer {
 		return ExpressionCommons.newChoice(e.getSourcePosition(), l);
 	}
 
-	public Expression reshapeOption(Option e) {
+	public Expression reshapeOption(Uoption e) {
 		Expression inner = e.get(0).reshape(this);
 		return updateInner(e, inner);
 	}
 
-	public Expression reshapeRepetition(Repetition e) {
+	public Expression reshapeRepetition(Uzero e) {
 		Expression inner = e.get(0).reshape(this);
 		return updateInner(e, inner);
 	}
 
-	public Expression reshapeRepetition1(Repetition1 e) {
+	public Expression reshapeRepetition1(Uone e) {
 		Expression inner = e.get(0).reshape(this);
 		return updateInner(e, inner);
 	}
 
-	public Expression reshapeAnd(And e) {
+	public Expression reshapeAnd(Uand e) {
 		Expression inner = e.get(0).reshape(this);
 		return updateInner(e, inner);
 	}
 
-	public Expression reshapeNot(Not e) {
+	public Expression reshapeNot(Unot e) {
 		Expression inner = e.get(0).reshape(this);
 		return updateInner(e, inner);
 	}
 
-	public Expression reshapeMatch(Match e) {
+	public Expression reshapeMatch(Umatch e) {
 		Expression inner = e.get(0).reshape(this);
 		return updateInner(e, inner);
 	}
 
-	public Expression reshapeNew(New e) {
+	public Expression reshapeNew(Tnew e) {
 		return e;
 	}
 
-	public Expression reshapeLink(Link e) {
+	public Expression reshapeLink(Tlink e) {
 		Expression inner = e.get(0).reshape(this);
 		return updateInner(e, inner);
 	}
 
-	public Expression reshapeTagging(Tagging e) {
+	public Expression reshapeTagging(Ttag e) {
 		return e;
 	}
 
-	public Expression reshapeReplace(Replace e) {
+	public Expression reshapeReplace(Treplace e) {
 		return e;
 	}
 
-	public Expression reshapeCapture(Capture e) {
+	public Expression reshapeCapture(Tcapture e) {
 		return e;
 	}
 
-	public Expression reshapeBlock(Block e) {
+	public Expression reshapeBlock(Xblock e) {
 		Expression inner = e.get(0).reshape(this);
 		return updateInner(e, inner);
 	}
 
-	public Expression reshapeLocalTable(LocalTable e) {
+	public Expression reshapeLocalTable(Xlocal e) {
 		Expression inner = e.get(0).reshape(this);
 		return updateInner(e, inner);
 	}
 
-	public Expression reshapeDefSymbol(DefSymbol e) {
+	public Expression reshapeDefSymbol(Xdef e) {
 		Expression inner = e.get(0).reshape(this);
 		return updateInner(e, inner);
 	}
 
-	public Expression reshapeMatchSymbol(MatchSymbol e) {
+	public Expression reshapeMatchSymbol(Xmatch e) {
 		return e;
 	}
 
-	public Expression reshapeIsSymbol(IsSymbol e) {
+	public Expression reshapeIsSymbol(Xis e) {
 		return e;
 	}
 
-	public Expression reshapeExistsSymbol(ExistsSymbol e) {
+	public Expression reshapeExistsSymbol(Xexists e) {
 		return e;
 	}
 
-	public Expression reshapeIsIndent(IsIndent e) {
+	public Expression reshapeIsIndent(Xindent e) {
 		return e;
 	}
 
-	public Expression reshapeIfFlag(IfFlag e) {
+	public Expression reshapeIfFlag(Xif e) {
 		return e;
 	}
 
-	public Expression reshapeOnFlag(OnFlag e) {
+	public Expression reshapeXon(Xon e) {
 		Expression inner = e.get(0).reshape(this);
 		return updateInner(e, inner);
 	}
@@ -236,57 +236,57 @@ public class ExpressionTransducer {
 		return ExpressionCommons.newFailure(null);
 	}
 
-	protected final Expression updateInner(Option e, Expression inner) {
+	protected final Expression updateInner(Uoption e, Expression inner) {
 		e.inner = inner;
 		return e;
 	}
 
-	protected final Expression updateInner(Repetition e, Expression inner) {
+	protected final Expression updateInner(Uzero e, Expression inner) {
 		e.inner = inner;
 		return e;
 	}
 
-	protected final Expression updateInner(Repetition1 e, Expression inner) {
+	protected final Expression updateInner(Uone e, Expression inner) {
 		e.inner = inner;
 		return e;
 	}
 
-	protected final Expression updateInner(And e, Expression inner) {
+	protected final Expression updateInner(Uand e, Expression inner) {
 		e.inner = inner;
 		return e;
 	}
 
-	protected final Expression updateInner(Not e, Expression inner) {
+	protected final Expression updateInner(Unot e, Expression inner) {
 		e.inner = inner;
 		return e;
 	}
 
-	protected final Expression updateInner(Match e, Expression inner) {
+	protected final Expression updateInner(Umatch e, Expression inner) {
 		e.inner = inner;
 		return e;
 	}
 
-	protected final Expression updateInner(Link e, Expression inner) {
+	protected final Expression updateInner(Tlink e, Expression inner) {
 		e.inner = inner;
 		return e;
 	}
 
-	protected final Expression updateInner(Block e, Expression inner) {
+	protected final Expression updateInner(Xblock e, Expression inner) {
 		e.inner = inner;
 		return e;
 	}
 
-	protected final Expression updateInner(LocalTable e, Expression inner) {
+	protected final Expression updateInner(Xlocal e, Expression inner) {
 		e.inner = inner;
 		return e;
 	}
 
-	protected final Expression updateInner(DefSymbol e, Expression inner) {
+	protected final Expression updateInner(Xdef e, Expression inner) {
 		e.inner = inner;
 		return e;
 	}
 
-	protected final Expression updateInner(OnFlag e, Expression inner) {
+	protected final Expression updateInner(Xon e, Expression inner) {
 		e.inner = inner;
 		return e;
 	}
@@ -329,32 +329,32 @@ class ASTConstructionEliminator extends ExpressionTransducer {
 	}
 
 	@Override
-	public Expression reshapeMatch(Match e) {
+	public Expression reshapeMatch(Umatch e) {
 		return e.get(0).reshape(this);
 	}
 
 	@Override
-	public Expression reshapeNew(New e) {
+	public Expression reshapeNew(Tnew e) {
 		return empty(e);
 	}
 
 	@Override
-	public Expression reshapeLink(Link e) {
+	public Expression reshapeLink(Tlink e) {
 		return e.get(0).reshape(this);
 	}
 
 	@Override
-	public Expression reshapeTagging(Tagging e) {
+	public Expression reshapeTagging(Ttag e) {
 		return empty(e);
 	}
 
 	@Override
-	public Expression reshapeReplace(Replace e) {
+	public Expression reshapeReplace(Treplace e) {
 		return empty(e);
 	}
 
 	@Override
-	public Expression reshapeCapture(Capture e) {
+	public Expression reshapeCapture(Tcapture e) {
 		return empty(e);
 	}
 

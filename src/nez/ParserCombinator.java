@@ -8,7 +8,7 @@ import nez.ast.Tag;
 import nez.lang.Expression;
 import nez.lang.Grammar;
 import nez.lang.GrammarFile;
-import nez.lang.expr.ByteMap;
+import nez.lang.expr.Cset;
 import nez.lang.expr.ExpressionCommons;
 import nez.main.Verbose;
 import nez.util.UList;
@@ -99,7 +99,7 @@ public class ParserCombinator {
 	}
 
 	protected final Expression c(int... chars) {
-		boolean[] b = ByteMap.newMap(false);
+		boolean[] b = Cset.newMap(false);
 		boolean binary = false;
 		for (int c : chars) {
 			b[c] = true;

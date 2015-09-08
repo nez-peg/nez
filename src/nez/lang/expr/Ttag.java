@@ -1,7 +1,7 @@
 package nez.lang.expr;
 
 import nez.ast.SourcePosition;
-import nez.lang.Contextual;
+import nez.ast.Tag;
 import nez.lang.Expression;
 import nez.lang.ExpressionTransducer;
 import nez.lang.PossibleAcceptance;
@@ -10,19 +10,33 @@ import nez.lang.Visa;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
-public class IsIndent extends Term implements Contextual {
-	IsIndent(SourcePosition s) {
+public class Ttag extends Term {
+	public Tag tag;
+
+	Ttag(SourcePosition s, Tag tag) {
 		super(s);
+		this.tag = tag;
+	}
+
+	Ttag(SourcePosition s, String name) {
+		this(s, Tag.tag(name));
+	}
+
+	public final String getTagName() {
+		return tag.getName();
 	}
 
 	@Override
 	public final boolean equalsExpression(Expression o) {
-		return (o instanceof IsIndent);
+		if (o instanceof Ttag) {
+			return this.tag == ((Ttag) o).tag;
+		}
+		return false;
 	}
 
 	@Override
-	public Expression reshape(ExpressionTransducer m) {
-		return m.reshapeIsIndent(this);
+	public final void format(StringBuilder sb) {
+		sb.append("#" + tag.getName());
 	}
 
 	@Override
@@ -32,19 +46,21 @@ public class IsIndent extends Term implements Contextual {
 
 	@Override
 	public int inferTypestate(Visa v) {
-		return Typestate.BooleanType;
+		return Typestate.OperationType;
 	}
 
 	@Override
 	public short acceptByte(int ch) {
-		if (ch == '\t' || ch == ' ') {
-			return PossibleAcceptance.Accept;
-		}
 		return PossibleAcceptance.Unconsumed;
 	}
 
 	@Override
+	public Expression reshape(ExpressionTransducer m) {
+		return m.reshapeTagging(this);
+	}
+
+	@Override
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
-		return bc.encodeIsIndent(this, next, failjump);
+		return bc.encodeTtag(this, next);
 	}
 }

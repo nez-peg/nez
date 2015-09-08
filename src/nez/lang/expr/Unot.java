@@ -9,27 +9,27 @@ import nez.lang.Visa;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
-public class Capture extends Term {
-	public int shift;
-
-	Capture(SourcePosition s, int shift) {
-		super(s);
-		this.shift = shift;
+public class Unot extends Unary {
+	Unot(SourcePosition s, Expression e) {
+		super(s, e);
 	}
 
 	@Override
 	public final boolean equalsExpression(Expression o) {
-		return (o instanceof Capture && this.shift == ((Capture) o).shift);
+		if (o instanceof Unot) {
+			return this.get(0).equalsExpression(o.get(0));
+		}
+		return false;
 	}
 
 	@Override
 	public final void format(StringBuilder sb) {
-		sb.append("}");
+		this.formatUnary(sb, "!", this.inner);
 	}
 
 	@Override
 	public Expression reshape(ExpressionTransducer m) {
-		return m.reshapeCapture(this);
+		return m.reshapeNot(this);
 	}
 
 	@Override
@@ -39,16 +39,17 @@ public class Capture extends Term {
 
 	@Override
 	public int inferTypestate(Visa v) {
-		return Typestate.OperationType;
+		return Typestate.BooleanType;
 	}
 
 	@Override
 	public short acceptByte(int ch) {
-		return PossibleAcceptance.Unconsumed;
+		return PossibleAcceptance.acceptNot(this, ch);
 	}
 
 	@Override
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
-		return bc.encodeCapture(this, next);
+		return bc.encodeUnot(this, next, failjump);
 	}
+
 }

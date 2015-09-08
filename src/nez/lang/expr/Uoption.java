@@ -9,14 +9,15 @@ import nez.lang.Visa;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
-public class Repetition1 extends Repetition {
-	Repetition1(SourcePosition s, Expression e) {
+public class Uoption extends Unary {
+	Uoption(SourcePosition s, Expression e) {
 		super(s, e);
+		// e.setOuterLefted(this);
 	}
 
 	@Override
 	public final boolean equalsExpression(Expression o) {
-		if (o instanceof Repetition1) {
+		if (o instanceof Uoption) {
 			return this.get(0).equalsExpression(o.get(0));
 		}
 		return false;
@@ -24,17 +25,17 @@ public class Repetition1 extends Repetition {
 
 	@Override
 	public final void format(StringBuilder sb) {
-		this.formatUnary(sb, this.inner, "+");
+		this.formatUnary(sb, this.inner, "?");
 	}
 
 	@Override
 	public Expression reshape(ExpressionTransducer m) {
-		return m.reshapeRepetition1(this);
+		return m.reshapeOption(this);
 	}
 
 	@Override
 	public boolean isConsumed() {
-		return this.inner.isConsumed();
+		return false;
 	}
 
 	@Override
@@ -48,12 +49,12 @@ public class Repetition1 extends Repetition {
 
 	@Override
 	public short acceptByte(int ch) {
-		return PossibleAcceptance.acceptUnary(this, ch);
+		return PossibleAcceptance.acceptOption(this, ch);
 	}
 
 	@Override
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
-		return bc.encodeRepetition1(this, next, failjump);
+		return bc.encodeUoption(this, next);
 	}
 
 }

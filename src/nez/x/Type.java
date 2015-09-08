@@ -6,17 +6,17 @@ import nez.ast.Tag;
 import nez.lang.Expression;
 import nez.lang.Production;
 import nez.lang.Typestate;
-import nez.lang.expr.And;
-import nez.lang.expr.Capture;
+import nez.lang.expr.Uand;
+import nez.lang.expr.Tcapture;
 import nez.lang.expr.Choice;
-import nez.lang.expr.Link;
-import nez.lang.expr.New;
+import nez.lang.expr.Tlink;
+import nez.lang.expr.Tnew;
 import nez.lang.expr.NonTerminal;
-import nez.lang.expr.Option;
-import nez.lang.expr.Repetition;
-import nez.lang.expr.Repetition1;
+import nez.lang.expr.Uoption;
+import nez.lang.expr.Uzero;
+import nez.lang.expr.Uone;
 import nez.lang.expr.Sequence;
-import nez.lang.expr.Tagging;
+import nez.lang.expr.Ttag;
 import nez.util.UList;
 
 public abstract class Type {
@@ -26,7 +26,7 @@ public abstract class Type {
 
 	abstract void tag(Tag t);
 
-	abstract void link(Link p, Type t);
+	abstract void link(Tlink p, Type t);
 
 	abstract boolean isRepetition();
 
@@ -48,8 +48,8 @@ public abstract class Type {
 	}
 
 	static Type inferType(Production name, Expression e, Type inf) {
-		if (e instanceof Tagging) {
-			inf.tag(((Tagging) e).tag);
+		if (e instanceof Ttag) {
+			inf.tag(((Ttag) e).tag);
 			return inf;
 		}
 		if (e instanceof Choice && e.inferTypestate() != Typestate.BooleanType) {
@@ -59,7 +59,7 @@ public abstract class Type {
 			}
 			return new UnionType(u);
 		}
-		if (e instanceof Option && e.get(0).inferTypestate() != Typestate.BooleanType) {
+		if (e instanceof Uoption && e.get(0).inferTypestate() != Typestate.BooleanType) {
 			UList<AtomType> u = new UList<AtomType>(new AtomType[e.size()]);
 			addUnionType(u, inferType(name, e.get(0), inf.dup()));
 			addUnionType(u, inf);
@@ -75,12 +75,12 @@ public abstract class Type {
 				return inf;
 			}
 		}
-		if (e instanceof Link) {
+		if (e instanceof Tlink) {
 			Type t2 = inferType(name, e.get(0), new AtomType());
-			inf.link((Link) e, t2);
+			inf.link((Tlink) e, t2);
 			return inf;
 		}
-		if (e instanceof New && ((New) e).leftFold) {
+		if (e instanceof Tnew && ((Tnew) e).leftFold) {
 			// if(((New) e).unRepeated) {
 			// System.out.println("TODO: Unrepeated left new is unsupported.");
 			// }
@@ -91,7 +91,7 @@ public abstract class Type {
 			left.right = inf;
 			return left;
 		}
-		if (e instanceof Capture) {
+		if (e instanceof Tcapture) {
 			/* avoid (Expr, Expr*) in Expr {@ Expr}* */
 			// System.out.println("*" + inf.isRepetition());
 			if (inf.isRepetition()) {
@@ -102,20 +102,20 @@ public abstract class Type {
 			}
 			return inf;
 		}
-		if (e instanceof Repetition1) {
+		if (e instanceof Uone) {
 			inf.startRepetition();
 			inf = inferType(name, e.get(0), inf);
 			inf.endRepetition();
 			inf = inferType(name, e.get(0), inf);
 			return inf;
 		}
-		if (e instanceof Repetition) {
+		if (e instanceof Uzero) {
 			inf.startRepetition();
 			inf = inferType(name, e.get(0), inf);
 			inf.endRepetition();
 			return inf;
 		}
-		if (e instanceof And) {
+		if (e instanceof Uand) {
 			return inferType(name, e.get(0), inf);
 		}
 		if (e instanceof Sequence) {
@@ -145,11 +145,11 @@ public abstract class Type {
 
 class LinkLog {
 	boolean isRepetition;
-	Link p;
+	Tlink p;
 	Type t;
 	LinkLog next;
 
-	LinkLog(boolean isRepetition, Link p, Type t, LinkLog next) {
+	LinkLog(boolean isRepetition, Tlink p, Type t, LinkLog next) {
 		this.isRepetition = isRepetition;
 		this.p = p;
 		this.t = t;
@@ -280,7 +280,7 @@ class AtomType extends Type {
 	}
 
 	@Override
-	void link(Link e, Type t) {
+	void link(Tlink e, Type t) {
 		this.link = new LinkLog(this.isRepetition, e, t, link);
 		this.size++;
 	}
@@ -386,7 +386,7 @@ class UnionType extends Type {
 	}
 
 	@Override
-	void link(Link p, Type t2) {
+	void link(Tlink p, Type t2) {
 		for (AtomType t : this.union) {
 			t.link(p, t2);
 		}

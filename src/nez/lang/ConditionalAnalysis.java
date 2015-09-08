@@ -2,9 +2,9 @@ package nez.lang;
 
 import java.util.TreeMap;
 
-import nez.lang.expr.IfFlag;
+import nez.lang.expr.Xif;
 import nez.lang.expr.NonTerminal;
-import nez.lang.expr.OnFlag;
+import nez.lang.expr.Xon;
 
 class ConditionalAnalysis extends ExpressionTransducer {
 	TreeMap<String, Boolean> condMap;
@@ -17,7 +17,7 @@ class ConditionalAnalysis extends ExpressionTransducer {
 		return eliminateConditionalFlag(start);
 	}
 
-	public Expression reshapeOnFlag(OnFlag p) {
+	public Expression reshapeXon(Xon p) {
 		String flagName = p.getFlagName();
 		Boolean bool = condMap.get(flagName);
 		if (bool != null) {
@@ -40,7 +40,7 @@ class ConditionalAnalysis extends ExpressionTransducer {
 		return p.get(0).reshape(this);
 	}
 
-	public Expression reshapeIfFlag(IfFlag p) {
+	public Expression reshapeIfFlag(Xif p) {
 		String flagName = p.getFlagName();
 		if (condMap.get(flagName)) {
 			return p.isPredicate() ? p.newEmpty() : p.newFailure();
@@ -116,10 +116,10 @@ class ConditionalAnalysis extends ExpressionTransducer {
 
 	// private static boolean hasReachableFlag(Expression e, String flagName,
 	// UMap<String> visited) {
-	// if(e instanceof OnFlag) {
-	// OnFlag f = (OnFlag)e;
+	// if(e instanceof Xon) {
+	// Xon f = (Xon)e;
 	//
-	// if(flagName.equals(((OnFlag) e).flagName)) {
+	// if(flagName.equals(((Xon) e).flagName)) {
 	// return false;
 	// }
 	// }

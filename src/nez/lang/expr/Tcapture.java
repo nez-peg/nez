@@ -6,29 +6,30 @@ import nez.lang.ExpressionTransducer;
 import nez.lang.PossibleAcceptance;
 import nez.lang.Typestate;
 import nez.lang.Visa;
-import nez.util.StringUtils;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
-public class Replace extends Term {
-	public String value;
+public class Tcapture extends Term {
+	public int shift;
 
-	Replace(SourcePosition s, String value) {
+	Tcapture(SourcePosition s, int shift) {
 		super(s);
-		this.value = value;
+		this.shift = shift;
 	}
 
 	@Override
 	public final boolean equalsExpression(Expression o) {
-		if (o instanceof Replace) {
-			return this.value.equals(((Replace) o).value);
-		}
-		return false;
+		return (o instanceof Tcapture && this.shift == ((Tcapture) o).shift);
 	}
 
 	@Override
 	public final void format(StringBuilder sb) {
-		sb.append(StringUtils.quoteString('`', this.value, '`'));
+		sb.append("}");
+	}
+
+	@Override
+	public Expression reshape(ExpressionTransducer m) {
+		return m.reshapeCapture(this);
 	}
 
 	@Override
@@ -47,12 +48,7 @@ public class Replace extends Term {
 	}
 
 	@Override
-	public Expression reshape(ExpressionTransducer m) {
-		return m.reshapeReplace(this);
-	}
-
-	@Override
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
-		return bc.encodeReplace(this, next);
+		return bc.encodeTcapture(this, next);
 	}
 }

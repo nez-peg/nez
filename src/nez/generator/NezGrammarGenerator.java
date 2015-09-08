@@ -3,27 +3,27 @@ package nez.generator;
 import nez.lang.Expression;
 import nez.lang.Grammar;
 import nez.lang.Production;
-import nez.lang.expr.And;
-import nez.lang.expr.AnyChar;
-import nez.lang.expr.Block;
-import nez.lang.expr.ByteChar;
-import nez.lang.expr.ByteMap;
-import nez.lang.expr.Capture;
+import nez.lang.expr.Uand;
+import nez.lang.expr.Cany;
+import nez.lang.expr.Xblock;
+import nez.lang.expr.Cbyte;
+import nez.lang.expr.Cset;
+import nez.lang.expr.Tcapture;
 import nez.lang.expr.Choice;
-import nez.lang.expr.DefSymbol;
-import nez.lang.expr.ExistsSymbol;
-import nez.lang.expr.IsSymbol;
-import nez.lang.expr.Link;
-import nez.lang.expr.LocalTable;
-import nez.lang.expr.MatchSymbol;
-import nez.lang.expr.New;
+import nez.lang.expr.Xdef;
+import nez.lang.expr.Xexists;
+import nez.lang.expr.Xis;
+import nez.lang.expr.Tlink;
+import nez.lang.expr.Xlocal;
+import nez.lang.expr.Xmatch;
+import nez.lang.expr.Tnew;
 import nez.lang.expr.NonTerminal;
-import nez.lang.expr.Not;
-import nez.lang.expr.Option;
-import nez.lang.expr.Repetition;
-import nez.lang.expr.Repetition1;
-import nez.lang.expr.Replace;
-import nez.lang.expr.Tagging;
+import nez.lang.expr.Unot;
+import nez.lang.expr.Uoption;
+import nez.lang.expr.Uzero;
+import nez.lang.expr.Uone;
+import nez.lang.expr.Treplace;
+import nez.lang.expr.Ttag;
 import nez.util.StringUtils;
 
 public class NezGrammarGenerator extends GrammarGenerator {
@@ -85,42 +85,42 @@ public class NezGrammarGenerator extends GrammarGenerator {
 	}
 
 	@Override
-	public void visitByteChar(ByteChar e) {
+	public void visitByteChar(Cbyte e) {
 		W(StringUtils.stringfyCharacter(e.byteChar));
 	}
 
 	@Override
-	public void visitByteMap(ByteMap e) {
+	public void visitByteMap(Cset e) {
 		W(StringUtils.stringfyCharacterClass(e.byteMap));
 	}
 
 	@Override
-	public void visitAnyChar(AnyChar e) {
+	public void visitAnyChar(Cany e) {
 		W(".");
 	}
 
 	@Override
-	public void visitOption(Option e) {
+	public void visitOption(Uoption e) {
 		Unary(null, e, "?");
 	}
 
 	@Override
-	public void visitRepetition(Repetition e) {
+	public void visitRepetition(Uzero e) {
 		Unary(null, e, "*");
 	}
 
 	@Override
-	public void visitRepetition1(Repetition1 e) {
+	public void visitRepetition1(Uone e) {
 		Unary(null, e, "+");
 	}
 
 	@Override
-	public void visitAnd(And e) {
+	public void visitAnd(Uand e) {
 		Unary("&", e, null);
 	}
 
 	@Override
-	public void visitNot(Not e) {
+	public void visitNot(Unot e) {
 		Unary("!", e, null);
 	}
 
@@ -135,28 +135,28 @@ public class NezGrammarGenerator extends GrammarGenerator {
 	}
 
 	@Override
-	public void visitNew(New e) {
+	public void visitNew(Tnew e) {
 		W(e.leftFold ? "{@" : "{");
 	}
 
 	@Override
-	public void visitCapture(Capture e) {
+	public void visitCapture(Tcapture e) {
 		W("}");
 	}
 
 	@Override
-	public void visitTagging(Tagging e) {
+	public void visitTagging(Ttag e) {
 		W("#");
 		W(e.tag.getName());
 	}
 
 	@Override
-	public void visitReplace(Replace e) {
+	public void visitReplace(Treplace e) {
 		W(StringUtils.quoteString('`', e.value, '`'));
 	}
 
 	@Override
-	public void visitLink(Link e) {
+	public void visitLink(Tlink e) {
 		String predicate = "$";
 		if (e.getLabel() != null) {
 			predicate += e.getLabel().toString();
@@ -176,14 +176,14 @@ public class NezGrammarGenerator extends GrammarGenerator {
 	}
 
 	@Override
-	public void visitBlock(Block e) {
+	public void visitBlock(Xblock e) {
 		W("<block ");
 		visitExpression(e.get(0));
 		W(">");
 	}
 
 	@Override
-	public void visitDefSymbol(DefSymbol e) {
+	public void visitDefSymbol(Xdef e) {
 		W("<def ");
 		W(e.getTableName());
 		W(" ");
@@ -192,21 +192,21 @@ public class NezGrammarGenerator extends GrammarGenerator {
 	}
 
 	@Override
-	public void visitMatchSymbol(MatchSymbol e) {
+	public void visitMatchSymbol(Xmatch e) {
 		W("<match ");
 		W(e.getTableName());
 		W(">");
 	};
 
 	@Override
-	public void visitIsSymbol(IsSymbol e) {
+	public void visitIsSymbol(Xis e) {
 		W("<is ");
 		W(e.getTableName());
 		W(">");
 	}
 
 	@Override
-	public void visitExistsSymbol(ExistsSymbol e) {
+	public void visitExistsSymbol(Xexists e) {
 		String symbol = e.getSymbol();
 		W("<exists ");
 		W(e.getTableName());
@@ -218,7 +218,7 @@ public class NezGrammarGenerator extends GrammarGenerator {
 	}
 
 	@Override
-	public void visitLocalTable(LocalTable e) {
+	public void visitLocalTable(Xlocal e) {
 		W("<local ");
 		W(e.getTableName());
 		W(" ");

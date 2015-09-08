@@ -9,17 +9,17 @@ import nez.lang.Visa;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
-public class Repetition extends Unary {
+public class Uzero extends Unary {
 	public boolean possibleInfiniteLoop = false;
 
-	Repetition(SourcePosition s, Expression e) {
+	Uzero(SourcePosition s, Expression e) {
 		super(s, e);
 		// e.setOuterLefted(this);
 	}
 
 	@Override
 	public boolean equalsExpression(Expression o) {
-		if (o instanceof Repetition) {
+		if (o instanceof Uzero) {
 			return this.get(0).equalsExpression(o.get(0));
 		}
 		return false;
@@ -56,7 +56,7 @@ public class Repetition extends Unary {
 
 	@Override
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
-		return bc.encodeRepetition(this, next);
+		return bc.encodeUzero(this, next);
 	}
 
 }

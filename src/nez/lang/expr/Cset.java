@@ -8,24 +8,24 @@ import nez.util.StringUtils;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
-public class ByteMap extends Char {
+public class Cset extends Char {
 	public boolean[] byteMap; // Immutable
 
-	ByteMap(SourcePosition s, boolean binary, int beginChar, int endChar) {
+	Cset(SourcePosition s, boolean binary, int beginChar, int endChar) {
 		super(s, binary);
 		this.byteMap = newMap(false);
 		appendRange(this.byteMap, beginChar, endChar);
 	}
 
-	ByteMap(SourcePosition s, boolean binary, boolean[] b) {
+	Cset(SourcePosition s, boolean binary, boolean[] b) {
 		super(s, binary);
 		this.byteMap = b;
 	}
 
 	@Override
 	public final boolean equalsExpression(Expression o) {
-		if (o instanceof ByteMap && this.binary == ((ByteMap) o).isBinary()) {
-			ByteMap e = (ByteMap) o;
+		if (o instanceof Cset && this.binary == ((Cset) o).isBinary()) {
+			Cset e = (Cset) o;
 			for (int i = 0; i < this.byteMap.length; i++) {
 				if (this.byteMap[i] != e.byteMap[i]) {
 					return false;
@@ -58,7 +58,7 @@ public class ByteMap extends Char {
 
 	@Override
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
-		return bc.encodeByteMap(this, next, failjump);
+		return bc.encodeCset(this, next, failjump);
 	}
 
 	// Utils

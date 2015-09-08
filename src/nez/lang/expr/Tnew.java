@@ -10,13 +10,13 @@ import nez.lang.Visa;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
-public class New extends Term {
+public class Tnew extends Term {
 	public boolean leftFold;
 	Tag label;
 	public Expression outer = null;
 	public int shift = 0;
 
-	New(SourcePosition s, boolean lefted, Tag label, int shift) {
+	Tnew(SourcePosition s, boolean lefted, Tag label, int shift) {
 		super(s);
 		this.leftFold = lefted;
 		this.label = label;
@@ -29,8 +29,8 @@ public class New extends Term {
 
 	@Override
 	public final boolean equalsExpression(Expression o) {
-		if (o instanceof New) {
-			New s = (New) o;
+		if (o instanceof Tnew) {
+			Tnew s = (Tnew) o;
 			return (this.leftFold == s.leftFold && this.label == s.label && this.shift == s.shift);
 		}
 		return false;
@@ -78,6 +78,6 @@ public class New extends Term {
 
 	@Override
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
-		return bc.encodeNew(this, next);
+		return bc.encodeTnew(this, next);
 	}
 }

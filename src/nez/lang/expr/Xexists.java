@@ -11,11 +11,11 @@ import nez.lang.Visa;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
-public class ExistsSymbol extends Term implements Contextual {
+public class Xexists extends Term implements Contextual {
 	public final Tag tableName;
 	String symbol;
 
-	ExistsSymbol(SourcePosition s, Tag tableName, String symbol) {
+	Xexists(SourcePosition s, Tag tableName, String symbol) {
 		super(s);
 		this.tableName = tableName;
 		this.symbol = symbol;
@@ -27,8 +27,8 @@ public class ExistsSymbol extends Term implements Contextual {
 
 	@Override
 	public final boolean equalsExpression(Expression o) {
-		if (o instanceof ExistsSymbol) {
-			ExistsSymbol s = (ExistsSymbol) o;
+		if (o instanceof Xexists) {
+			Xexists s = (Xexists) o;
 			return this.tableName == s.tableName && equals(this.symbol, s.symbol);
 		}
 		return false;
@@ -71,6 +71,6 @@ public class ExistsSymbol extends Term implements Contextual {
 
 	@Override
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
-		return bc.encodeExistsSymbol(this, next, failjump);
+		return bc.encodeXexists(this, next, failjump);
 	}
 }

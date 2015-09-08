@@ -64,9 +64,9 @@ public class Sequence extends ExpressionCommons {
 
 	@Override
 	public final void format(StringBuilder sb) {
-		if (this.first instanceof ByteChar && this.next.getFirst() instanceof ByteChar) {
+		if (this.first instanceof Cbyte && this.next.getFirst() instanceof Cbyte) {
 			sb.append("'");
-			formatString(sb, (ByteChar) this.first, this.next);
+			formatString(sb, (Cbyte) this.first, this.next);
 		} else {
 			formatInner(sb, this.first);
 			sb.append(" ");
@@ -74,7 +74,7 @@ public class Sequence extends ExpressionCommons {
 		}
 	}
 
-	private void formatString(StringBuilder sb, ByteChar b, Expression next) {
+	private void formatString(StringBuilder sb, Cbyte b, Expression next) {
 		while (b != null) {
 			StringUtils.appendByteChar(sb, b.byteChar, "'");
 			if (next == null) {
@@ -83,8 +83,8 @@ public class Sequence extends ExpressionCommons {
 			}
 			Expression first = next.getFirst();
 			b = null;
-			if (first instanceof ByteChar) {
-				b = (ByteChar) first;
+			if (first instanceof Cbyte) {
+				b = (Cbyte) first;
 				next = next.getNext();
 			}
 		}
@@ -145,9 +145,9 @@ public class Sequence extends ExpressionCommons {
 		NezOption option = bc.getOption();
 		if (option.enabledStringOptimization) {
 			Expression e = this.toMultiCharSequence();
-			if (e instanceof MultiChar) {
+			if (e instanceof Cmulti) {
 				// System.out.println("stringfy .. " + e);
-				return bc.encodeMultiChar((MultiChar) e, next, failjump);
+				return bc.encodeCmulti((Cmulti) e, next, failjump);
 			}
 			return bc.encodeSequence((Sequence) e, next, failjump);
 		}
@@ -155,17 +155,17 @@ public class Sequence extends ExpressionCommons {
 	}
 
 	public final boolean isMultiChar() {
-		return (this.getFirst() instanceof ByteChar && this.getNext() instanceof ByteChar);
+		return (this.getFirst() instanceof Cbyte && this.getNext() instanceof Cbyte);
 	}
 
 	public final Expression toMultiCharSequence() {
 		Expression f = this.getFirst();
 		Expression s = this.getNext().getFirst();
-		if (f instanceof ByteChar && s instanceof ByteChar) {
+		if (f instanceof Cbyte && s instanceof Cbyte) {
 			UList<Byte> l = new UList<Byte>(new Byte[16]);
-			l.add(((byte) ((ByteChar) f).byteChar));
+			l.add(((byte) ((Cbyte) f).byteChar));
 			Expression next = convertMultiByte(this, l);
-			Expression mb = this.newMultiChar(((ByteChar) f).isBinary(), toByteSeq(l));
+			Expression mb = this.newMultiChar(((Cbyte) f).isBinary(), toByteSeq(l));
 			if (next != null) {
 				return this.newSequence(mb, next);
 			}
@@ -176,8 +176,8 @@ public class Sequence extends ExpressionCommons {
 
 	private Expression convertMultiByte(Sequence seq, UList<Byte> l) {
 		Expression s = seq.getNext().getFirst();
-		while (s instanceof ByteChar) {
-			l.add((byte) ((ByteChar) s).byteChar);
+		while (s instanceof Cbyte) {
+			l.add((byte) ((Cbyte) s).byteChar);
 			Expression next = seq.getNext();
 			if (next instanceof Sequence) {
 				seq = (Sequence) next;

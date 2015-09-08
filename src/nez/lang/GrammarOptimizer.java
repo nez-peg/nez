@@ -3,21 +3,21 @@ package nez.lang;
 import java.util.HashMap;
 
 import nez.NezOption;
-import nez.lang.expr.AnyChar;
-import nez.lang.expr.ByteChar;
-import nez.lang.expr.ByteMap;
-import nez.lang.expr.Capture;
+import nez.lang.expr.Cany;
+import nez.lang.expr.Cbyte;
+import nez.lang.expr.Cset;
+import nez.lang.expr.Tcapture;
 import nez.lang.expr.Choice;
 import nez.lang.expr.Empty;
 import nez.lang.expr.ExpressionCommons;
 import nez.lang.expr.Failure;
-import nez.lang.expr.Link;
-import nez.lang.expr.New;
+import nez.lang.expr.Tlink;
+import nez.lang.expr.Tnew;
 import nez.lang.expr.NonTerminal;
-import nez.lang.expr.Not;
-import nez.lang.expr.Replace;
+import nez.lang.expr.Unot;
+import nez.lang.expr.Treplace;
 import nez.lang.expr.Sequence;
-import nez.lang.expr.Tagging;
+import nez.lang.expr.Ttag;
 import nez.util.UList;
 
 public class GrammarOptimizer extends ExpressionTransducer {
@@ -62,7 +62,7 @@ public class GrammarOptimizer extends ExpressionTransducer {
 
 	// used to test inlining
 	public final static boolean isSingleCharacter(Expression e) {
-		if (e instanceof ByteMap || e instanceof ByteChar || e instanceof AnyChar) {
+		if (e instanceof Cset || e instanceof Cbyte || e instanceof Cany) {
 			return true;
 		}
 		return false;
@@ -92,18 +92,18 @@ public class GrammarOptimizer extends ExpressionTransducer {
 	}
 
 	private boolean isOutOfOrderExpression(Expression e) {
-		if (e instanceof Tagging) {
+		if (e instanceof Ttag) {
 			return true;
 		}
-		if (e instanceof Replace) {
+		if (e instanceof Treplace) {
 			return true;
 		}
-		if (e instanceof New) {
-			((New) e).shift -= 1;
+		if (e instanceof Tnew) {
+			((Tnew) e).shift -= 1;
 			return true;
 		}
-		if (e instanceof Capture) {
-			((Capture) e).shift -= 1;
+		if (e instanceof Tcapture) {
+			((Tcapture) e).shift -= 1;
 			return true;
 		}
 		return false;
@@ -142,8 +142,8 @@ public class GrammarOptimizer extends ExpressionTransducer {
 	}
 
 	private boolean isNotChar(Expression p) {
-		if (p instanceof Not) {
-			return (p.get(0) instanceof ByteMap || p.get(0) instanceof ByteChar);
+		if (p instanceof Unot) {
+			return (p.get(0) instanceof Cset || p.get(0) instanceof Cbyte);
 		}
 		return false;
 	}
@@ -155,23 +155,23 @@ public class GrammarOptimizer extends ExpressionTransducer {
 		if (nextNext != null) {
 			next = next.getFirst();
 		}
-		if (next instanceof AnyChar) {
-			AnyChar any = (AnyChar) next;
+		if (next instanceof Cany) {
+			Cany any = (Cany) next;
 			isBinary = any.isBinary();
-			bany = ByteMap.newMap(true);
+			bany = Cset.newMap(true);
 			if (isBinary) {
 				bany[0] = false;
 			}
 		}
-		if (next instanceof ByteMap) {
-			ByteMap bm = (ByteMap) next;
+		if (next instanceof Cset) {
+			Cset bm = (Cset) next;
 			isBinary = bm.isBinary();
 			bany = bm.byteMap.clone();
 		}
-		if (next instanceof ByteChar) {
-			ByteChar bc = (ByteChar) next;
+		if (next instanceof Cbyte) {
+			Cbyte bc = (Cbyte) next;
 			isBinary = bc.isBinary();
-			bany = ByteMap.newMap(false);
+			bany = Cset.newMap(false);
 			if (isBinary) {
 				bany[0] = false;
 			}
@@ -180,16 +180,16 @@ public class GrammarOptimizer extends ExpressionTransducer {
 		if (bany == null) {
 			return null;
 		}
-		if (not instanceof ByteMap) {
-			ByteMap bm = (ByteMap) not;
+		if (not instanceof Cset) {
+			Cset bm = (Cset) not;
 			for (int c = 0; c < bany.length - 1; c++) {
 				if (bm.byteMap[c] && bany[c] == true) {
 					bany[c] = false;
 				}
 			}
 		}
-		if (not instanceof ByteChar) {
-			ByteChar bc = (ByteChar) not;
+		if (not instanceof Cbyte) {
+			Cbyte bc = (Cbyte) not;
 			if (bany[bc.byteChar] == true) {
 				bany[bc.byteChar] = false;
 			}
@@ -202,7 +202,7 @@ public class GrammarOptimizer extends ExpressionTransducer {
 	}
 
 	@Override
-	public Expression reshapeLink(Link p) {
+	public Expression reshapeLink(Tlink p) {
 		if (p.get(0) instanceof Choice) {
 			Expression inner = p.get(0);
 			UList<Expression> l = new UList<Expression>(new Expression[inner.size()]);
@@ -317,27 +317,27 @@ public class GrammarOptimizer extends ExpressionTransducer {
 	// OptimizerLibrary
 
 	private Expression convertByteMap(Choice choice, UList<Expression> choiceList) {
-		boolean byteMap[] = ByteMap.newMap(false);
+		boolean byteMap[] = Cset.newMap(false);
 		boolean binary = false;
 		for (Expression e : choiceList) {
 			if (e instanceof Failure) {
 				continue;
 			}
-			if (e instanceof ByteChar) {
-				byteMap[((ByteChar) e).byteChar] = true;
-				if (((ByteChar) e).isBinary()) {
+			if (e instanceof Cbyte) {
+				byteMap[((Cbyte) e).byteChar] = true;
+				if (((Cbyte) e).isBinary()) {
 					binary = true;
 				}
 				continue;
 			}
-			if (e instanceof ByteMap) {
-				ByteMap.appendBitMap(byteMap, ((ByteMap) e).byteMap);
-				if (((ByteMap) e).isBinary()) {
+			if (e instanceof Cset) {
+				Cset.appendBitMap(byteMap, ((Cset) e).byteMap);
+				if (((Cset) e).isBinary()) {
 					binary = true;
 				}
 				continue;
 			}
-			if (e instanceof AnyChar) {
+			if (e instanceof Cany) {
 				return e;
 			}
 			if (e instanceof Empty) {

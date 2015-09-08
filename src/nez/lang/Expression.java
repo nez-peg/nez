@@ -3,12 +3,12 @@ package nez.lang;
 import java.util.AbstractList;
 
 import nez.ast.SourcePosition;
-import nez.lang.expr.AnyChar;
-import nez.lang.expr.ByteChar;
-import nez.lang.expr.ByteMap;
+import nez.lang.expr.Cany;
+import nez.lang.expr.Cbyte;
+import nez.lang.expr.Cset;
 import nez.lang.expr.ExpressionCommons;
-import nez.lang.expr.Replace;
-import nez.lang.expr.Tagging;
+import nez.lang.expr.Treplace;
+import nez.lang.expr.Ttag;
 import nez.util.UList;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
@@ -85,11 +85,11 @@ public abstract class Expression extends AbstractList<Expression> {
 	// test
 
 	public static final boolean isByteConsumed(Expression e) {
-		return (e instanceof ByteChar || e instanceof ByteMap || e instanceof AnyChar);
+		return (e instanceof Cbyte || e instanceof Cset || e instanceof Cany);
 	}
 
 	public static final boolean isPositionIndependentOperation(Expression e) {
-		return (e instanceof Tagging || e instanceof Replace);
+		return (e instanceof Ttag || e instanceof Treplace);
 	}
 
 	// convinient interface

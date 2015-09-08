@@ -10,11 +10,11 @@ import nez.lang.Visa;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
-public class IfFlag extends Term implements Conditional {
+public class Xif extends Term implements Conditional {
 	boolean predicate;
 	String flagName;
 
-	IfFlag(SourcePosition s, boolean predicate, String flagName) {
+	Xif(SourcePosition s, boolean predicate, String flagName) {
 		super(s);
 		if (flagName.startsWith("!")) {
 			predicate = false;
@@ -26,8 +26,8 @@ public class IfFlag extends Term implements Conditional {
 
 	@Override
 	public final boolean equalsExpression(Expression o) {
-		if (o instanceof IfFlag) {
-			IfFlag e = (IfFlag) o;
+		if (o instanceof Xif) {
+			Xif e = (Xif) o;
 			return this.predicate == e.predicate && this.flagName.equals(e.flagName);
 		}
 		return false;
@@ -63,7 +63,7 @@ public class IfFlag extends Term implements Conditional {
 
 	@Override
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
-		return bc.encodeIfFlag(this, next, failjump);
+		return bc.encodeXif(this, next, failjump);
 	}
 
 }

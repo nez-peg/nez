@@ -162,14 +162,14 @@ public abstract class ExpressionCommons extends Expression {
 	/* Terminal */
 
 	public final static Expression newAnyChar(SourcePosition s, boolean binary) {
-		return internImpl(s, new AnyChar(s, binary));
+		return internImpl(s, new Cany(s, binary));
 	}
 
 	public final static Expression newByteChar(SourcePosition s, boolean binary, int ch) {
 		if (ch == 0) {
 			binary = true;
 		}
-		return internImpl(s, new ByteChar(s, binary, ch & 0xff));
+		return internImpl(s, new Cbyte(s, binary, ch & 0xff));
 	}
 
 	private static int uniqueByteChar(boolean[] byteMap) {
@@ -185,7 +185,7 @@ public abstract class ExpressionCommons extends Expression {
 	}
 
 	public static Expression newMultiChar(SourcePosition s, boolean binary, byte[] utf8) {
-		return internImpl(s, new MultiChar(s, binary, utf8));
+		return internImpl(s, new Cmulti(s, binary, utf8));
 	}
 
 	public static Expression newByteMap(SourcePosition s, boolean binary, boolean[] byteMap) {
@@ -193,7 +193,7 @@ public abstract class ExpressionCommons extends Expression {
 		if (byteChar != -1) {
 			return internImpl(s, newByteChar(s, binary, byteChar));
 		}
-		return internImpl(s, new ByteMap(s, binary, byteMap));
+		return internImpl(s, new Cset(s, binary, byteMap));
 	}
 
 	public static final Expression newString(SourcePosition s, String text) {
@@ -217,7 +217,7 @@ public abstract class ExpressionCommons extends Expression {
 
 	public final static Expression newCharSet(SourcePosition s, String text) {
 		boolean b[] = StringUtils.parseByteMap(text);
-		return internImpl(s, new ByteMap(s, false, b));
+		return internImpl(s, new Cset(s, false, b));
 	}
 
 	public final static Expression newCharSet(SourcePosition s, String t, String t2) {
@@ -239,7 +239,7 @@ public abstract class ExpressionCommons extends Expression {
 		if (c == c2) {
 			return newByteChar(s, binary, c);
 		}
-		return internImpl(s, new ByteMap(s, binary, c, c2));
+		return internImpl(s, new Cset(s, binary, c, c2));
 	}
 
 	private final static Expression newUnicodeRange(SourcePosition s, int c, int c2) {
@@ -294,23 +294,23 @@ public abstract class ExpressionCommons extends Expression {
 	/* Unary */
 
 	public final static Expression newOption(SourcePosition s, Expression p) {
-		return new Option(s, p);
+		return new Uoption(s, p);
 	}
 
 	public final static Expression newRepetition(SourcePosition s, Expression p) {
-		return new Repetition(s, p);
+		return new Uzero(s, p);
 	}
 
 	public final static Expression newRepetition1(SourcePosition s, Expression p) {
-		return new Repetition1(s, p);
+		return new Uone(s, p);
 	}
 
-	public final static And newAnd(SourcePosition s, Expression p) {
-		return new And(s, p);
+	public final static Uand newAnd(SourcePosition s, Expression p) {
+		return new Uand(s, p);
 	}
 
-	public final static Not newNot(SourcePosition s, Expression p) {
-		return new Not(s, p);
+	public final static Unot newNot(SourcePosition s, Expression p) {
+		return new Unot(s, p);
 	}
 
 	public final static Expression newSequence(SourcePosition s, UList<Expression> l) {
@@ -364,7 +364,7 @@ public abstract class ExpressionCommons extends Expression {
 	// AST Construction
 
 	public final static Expression newMatch(SourcePosition s, Expression p) {
-		return new Match(s, p);
+		return new Umatch(s, p);
 	}
 
 	public final static Expression newLink(SourcePosition s, Expression p) {
@@ -372,20 +372,20 @@ public abstract class ExpressionCommons extends Expression {
 	}
 
 	public final static Expression newLink(SourcePosition s, Tag label, Expression p) {
-		return new Link(s, label, p);
+		return new Tlink(s, label, p);
 	}
 
 	public final static Expression newNew(SourcePosition s, boolean lefted, Tag label, int shift) {
-		return new New(s, lefted, label, shift);
+		return new Tnew(s, lefted, label, shift);
 	}
 
 	public final static Expression newCapture(SourcePosition s, int shift) {
-		return new Capture(s, shift);
+		return new Tcapture(s, shift);
 	}
 
 	public final static Expression newNew(SourcePosition s, boolean lefted, Tag label, Expression e) {
 		UList<Expression> l = new UList<Expression>(new Expression[e.size() + 3]);
-		ExpressionCommons.addSequence(l, internImpl(s, new New(s, lefted, label, 0)));
+		ExpressionCommons.addSequence(l, internImpl(s, new Tnew(s, lefted, label, 0)));
 		ExpressionCommons.addSequence(l, e);
 		ExpressionCommons.addSequence(l, ExpressionCommons.newCapture(s, 0));
 		return newSequence(s, l);
@@ -393,7 +393,7 @@ public abstract class ExpressionCommons extends Expression {
 
 	public final static Expression newLeftFoldOption(SourcePosition s, Tag label, Expression e) {
 		UList<Expression> l = new UList<Expression>(new Expression[e.size() + 3]);
-		ExpressionCommons.addSequence(l, internImpl(s, new New(s, true, label, 0)));
+		ExpressionCommons.addSequence(l, internImpl(s, new Tnew(s, true, label, 0)));
 		ExpressionCommons.addSequence(l, e);
 		ExpressionCommons.addSequence(l, ExpressionCommons.newCapture(s, 0));
 		return newOption(s, ExpressionCommons.newSequence(s, l));
@@ -401,7 +401,7 @@ public abstract class ExpressionCommons extends Expression {
 
 	public final static Expression newLeftFoldRepetition(SourcePosition s, Tag label, Expression e) {
 		UList<Expression> l = new UList<Expression>(new Expression[e.size() + 3]);
-		ExpressionCommons.addSequence(l, internImpl(s, new New(s, true, label, 0)));
+		ExpressionCommons.addSequence(l, internImpl(s, new Tnew(s, true, label, 0)));
 		ExpressionCommons.addSequence(l, e);
 		ExpressionCommons.addSequence(l, ExpressionCommons.newCapture(s, 0));
 		return newRepetition(s, ExpressionCommons.newSequence(s, l));
@@ -409,18 +409,18 @@ public abstract class ExpressionCommons extends Expression {
 
 	public final static Expression newLeftFoldRepetition1(SourcePosition s, Tag label, Expression e) {
 		UList<Expression> l = new UList<Expression>(new Expression[e.size() + 3]);
-		ExpressionCommons.addSequence(l, internImpl(s, new New(s, true, label, 0)));
+		ExpressionCommons.addSequence(l, internImpl(s, new Tnew(s, true, label, 0)));
 		ExpressionCommons.addSequence(l, e);
 		ExpressionCommons.addSequence(l, ExpressionCommons.newCapture(s, 0));
 		return newRepetition1(s, ExpressionCommons.newSequence(s, l));
 	}
 
 	public final static Expression newTagging(SourcePosition s, Tag tag) {
-		return internImpl(s, new Tagging(s, tag));
+		return internImpl(s, new Ttag(s, tag));
 	}
 
 	public final static Expression newReplace(SourcePosition s, String msg) {
-		return internImpl(s, new Replace(s, msg));
+		return internImpl(s, new Treplace(s, msg));
 	}
 
 	// Conditional Parsing
@@ -429,47 +429,47 @@ public abstract class ExpressionCommons extends Expression {
 	// <on! FLAG e>
 
 	public final static Expression newIfFlag(SourcePosition s, String flagName) {
-		return internImpl(s, new IfFlag(s, true, flagName));
+		return internImpl(s, new Xif(s, true, flagName));
 	}
 
-	public final static Expression newOnFlag(SourcePosition s, boolean predicate, String flagName, Expression e) {
-		return internImpl(s, new OnFlag(s, predicate, flagName, e));
+	public final static Expression newXon(SourcePosition s, boolean predicate, String flagName, Expression e) {
+		return internImpl(s, new Xon(s, predicate, flagName, e));
 	}
 
 	public final static Expression newBlock(SourcePosition s, Expression e) {
-		return internImpl(s, new Block(s, e));
+		return internImpl(s, new Xblock(s, e));
 	}
 
 	public final static Expression newLocal(SourcePosition s, Tag tableName, Expression e) {
-		return internImpl(s, new LocalTable(s, tableName, e));
+		return internImpl(s, new Xlocal(s, tableName, e));
 	}
 
 	public final static Expression newDefSymbol(SourcePosition s, GrammarMap g, Tag tableName, Expression e) {
-		return internImpl(s, new DefSymbol(s, g, tableName, e));
+		return internImpl(s, new Xdef(s, g, tableName, e));
 	}
 
 	public final static Expression newMatchSymbol(SourcePosition s, Tag tableName) {
-		return internImpl(s, new MatchSymbol(s, tableName));
+		return internImpl(s, new Xmatch(s, tableName));
 	}
 
 	public final static Expression newIsSymbol(SourcePosition s, GrammarMap g, Tag tableName) {
-		return internImpl(s, new IsSymbol(s, g, tableName, /* is */true));
+		return internImpl(s, new Xis(s, g, tableName, /* is */true));
 	}
 
 	public final static Expression newIsaSymbol(SourcePosition s, GrammarMap g, Tag tableName) {
-		return internImpl(s, new IsSymbol(s, g, tableName, /* is */false));
+		return internImpl(s, new Xis(s, g, tableName, /* is */false));
 	}
 
 	public final static Expression newExists(SourcePosition s, Tag tableName, String symbol) {
-		return internImpl(s, new ExistsSymbol(s, tableName, symbol));
+		return internImpl(s, new Xexists(s, tableName, symbol));
 	}
 
 	public final static Expression newDefIndent(SourcePosition s) {
-		return internImpl(s, new DefIndent(s));
+		return internImpl(s, new Xdefindent(s));
 	}
 
 	public final static Expression newIndent(SourcePosition s) {
-		return internImpl(s, new IsIndent(s));
+		return internImpl(s, new Xindent(s));
 	}
 
 	@Deprecated
@@ -611,8 +611,8 @@ public abstract class ExpressionCommons extends Expression {
 	// return ExpressionCommons.newIfFlag(getSourcePosition(), flagName);
 	// }
 	//
-	// public final Expression newOnFlag(String flagName, Expression... seq) {
-	// return ExpressionCommons.newOnFlag(getSourcePosition(), true, flagName,
+	// public final Expression newXon(String flagName, Expression... seq) {
+	// return ExpressionCommons.newXon(getSourcePosition(), true, flagName,
 	// newSequence(seq));
 	// }
 	//

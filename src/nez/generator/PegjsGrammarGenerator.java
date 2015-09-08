@@ -3,22 +3,22 @@ package nez.generator;
 import nez.lang.Expression;
 import nez.lang.Grammar;
 import nez.lang.Production;
-import nez.lang.expr.And;
-import nez.lang.expr.AnyChar;
-import nez.lang.expr.ByteChar;
-import nez.lang.expr.ByteMap;
-import nez.lang.expr.Capture;
+import nez.lang.expr.Uand;
+import nez.lang.expr.Cany;
+import nez.lang.expr.Cbyte;
+import nez.lang.expr.Cset;
+import nez.lang.expr.Tcapture;
 import nez.lang.expr.Choice;
-import nez.lang.expr.Link;
-import nez.lang.expr.New;
+import nez.lang.expr.Tlink;
+import nez.lang.expr.Tnew;
 import nez.lang.expr.NonTerminal;
-import nez.lang.expr.Not;
-import nez.lang.expr.Option;
-import nez.lang.expr.Repetition;
-import nez.lang.expr.Repetition1;
-import nez.lang.expr.Replace;
+import nez.lang.expr.Unot;
+import nez.lang.expr.Uoption;
+import nez.lang.expr.Uzero;
+import nez.lang.expr.Uone;
+import nez.lang.expr.Treplace;
 import nez.lang.expr.Sequence;
-import nez.lang.expr.Tagging;
+import nez.lang.expr.Ttag;
 
 public class PegjsGrammarGenerator extends GrammarGenerator {
 
@@ -96,7 +96,7 @@ public class PegjsGrammarGenerator extends GrammarGenerator {
 		return "\"" + c + "\"";
 	}
 
-	public void visitByteChar(ByteChar e) {
+	public void visitByteChar(Cbyte e) {
 		W(this.stringfyByte(e.byteChar));
 	}
 
@@ -134,7 +134,7 @@ public class PegjsGrammarGenerator extends GrammarGenerator {
 		sb.append(c);
 	}
 
-	public void visitByteMap(ByteMap e) {
+	public void visitByteMap(Cset e) {
 		W("[");
 		boolean b[] = e.byteMap;
 		for (int start = 0; start < 256; start++) {
@@ -158,39 +158,39 @@ public class PegjsGrammarGenerator extends GrammarGenerator {
 	public void visitString(String s) {
 	}
 
-	public void visitAnyChar(AnyChar e) {
+	public void visitAnyChar(Cany e) {
 		W(".");
 	}
 
-	public void visitOption(Option e) {
+	public void visitOption(Uoption e) {
 		for (Expression sub : e) {
 			visitExpression(sub);
 		}
 		W("?");
 	}
 
-	public void visitRepetition(Repetition e) {
+	public void visitRepetition(Uzero e) {
 		for (Expression sub : e) {
 			visitExpression(sub);
 		}
 		W("*");
 	}
 
-	public void visitRepetition1(Repetition1 e) {
+	public void visitRepetition1(Uone e) {
 		for (Expression sub : e) {
 			visitExpression(sub);
 		}
 		W("+");
 	}
 
-	public void visitAnd(And e) {
+	public void visitAnd(Uand e) {
 		W("&");
 		for (Expression sub : e) {
 			visitExpression(sub);
 		}
 	}
 
-	public void visitNot(Not e) {
+	public void visitNot(Unot e) {
 		W("!");
 		for (Expression sub : e) {
 			visitExpression(sub);
@@ -219,22 +219,22 @@ public class PegjsGrammarGenerator extends GrammarGenerator {
 		W(")");
 	}
 
-	public void visitNew(New e) {
+	public void visitNew(Tnew e) {
 		for (Expression sub : e) {
 			visitExpression(sub);
 		}
 	}
 
-	public void visitCapture(Capture e) {
+	public void visitCapture(Tcapture e) {
 	}
 
-	public void visitTagging(Tagging e) {
+	public void visitTagging(Ttag e) {
 	}
 
-	public void visitReplace(Replace e) {
+	public void visitReplace(Treplace e) {
 	}
 
-	public void visitLink(Link e) {
+	public void visitLink(Tlink e) {
 		// if(e.index != -1) {
 		// C("Link", String.valueOf(e.index), e);
 		// }

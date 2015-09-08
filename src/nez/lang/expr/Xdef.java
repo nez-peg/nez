@@ -11,11 +11,11 @@ import nez.util.UMap;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
-public class DefSymbol extends Unary {
+public class Xdef extends Unary {
 	public final Tag tableName;
 	public final GrammarMap g;
 
-	DefSymbol(SourcePosition s, GrammarMap g, Tag table, Expression inner) {
+	Xdef(SourcePosition s, GrammarMap g, Tag table, Expression inner) {
 		super(s, inner);
 		this.g = g;
 		this.tableName = table;
@@ -24,8 +24,8 @@ public class DefSymbol extends Unary {
 
 	@Override
 	public final boolean equalsExpression(Expression o) {
-		if (o instanceof DefSymbol) {
-			DefSymbol e = (DefSymbol) o;
+		if (o instanceof Xdef) {
+			Xdef e = (Xdef) o;
 			if (this.tableName == e.tableName) {
 				return this.get(0).equalsExpression(e.get(0));
 			}
@@ -83,7 +83,7 @@ public class DefSymbol extends Unary {
 			}
 			return false;
 		}
-		if (e instanceof IsIndent || e instanceof IsSymbol) {
+		if (e instanceof Xindent || e instanceof Xis) {
 			return true;
 		}
 		return false;
@@ -91,7 +91,7 @@ public class DefSymbol extends Unary {
 
 	@Override
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
-		return bc.encodeDefSymbol(this, next, failjump);
+		return bc.encodeXdef(this, next, failjump);
 	}
 
 }

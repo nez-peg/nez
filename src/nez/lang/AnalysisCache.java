@@ -201,7 +201,7 @@
 //			map.put(key, true);
 //			return true;
 //		}
-//		if(e instanceof OnFlag && flagName.equals(((IfFlag)e).getFlagName())) {
+//		if(e instanceof Xon && flagName.equals(((IfFlag)e).getFlagName())) {
 //			return false;
 //		}
 //		if(set != null && e instanceof NonTerminal) {

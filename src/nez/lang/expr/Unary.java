@@ -32,7 +32,7 @@ public abstract class Unary extends ExpressionCommons {
 		if (prefix != null) {
 			sb.append(prefix);
 		}
-		if (inner instanceof NonTerminal || inner instanceof ByteChar || inner instanceof ByteMap) {
+		if (inner instanceof NonTerminal || inner instanceof Cbyte || inner instanceof Cset) {
 			inner.format(sb);
 		} else {
 			sb.append("(");

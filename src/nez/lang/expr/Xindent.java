@@ -1,6 +1,7 @@
 package nez.lang.expr;
 
 import nez.ast.SourcePosition;
+import nez.lang.Contextual;
 import nez.lang.Expression;
 import nez.lang.ExpressionTransducer;
 import nez.lang.PossibleAcceptance;
@@ -9,28 +10,20 @@ import nez.lang.Visa;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
-public class Option extends Unary {
-	Option(SourcePosition s, Expression e) {
-		super(s, e);
-		// e.setOuterLefted(this);
+@Deprecated
+public class Xindent extends Term implements Contextual {
+	Xindent(SourcePosition s) {
+		super(s);
 	}
 
 	@Override
 	public final boolean equalsExpression(Expression o) {
-		if (o instanceof Option) {
-			return this.get(0).equalsExpression(o.get(0));
-		}
-		return false;
-	}
-
-	@Override
-	public final void format(StringBuilder sb) {
-		this.formatUnary(sb, this.inner, "?");
+		return (o instanceof Xindent);
 	}
 
 	@Override
 	public Expression reshape(ExpressionTransducer m) {
-		return m.reshapeOption(this);
+		return m.reshapeIsIndent(this);
 	}
 
 	@Override
@@ -40,21 +33,19 @@ public class Option extends Unary {
 
 	@Override
 	public int inferTypestate(Visa v) {
-		int t = this.inner.inferTypestate(v);
-		if (t == Typestate.ObjectType) {
-			return Typestate.BooleanType;
-		}
-		return t;
+		return Typestate.BooleanType;
 	}
 
 	@Override
 	public short acceptByte(int ch) {
-		return PossibleAcceptance.acceptOption(this, ch);
+		if (ch == '\t' || ch == ' ') {
+			return PossibleAcceptance.Accept;
+		}
+		return PossibleAcceptance.Unconsumed;
 	}
 
 	@Override
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
-		return bc.encodeOption(this, next);
+		return bc.encodeXindent(this, next, failjump);
 	}
-
 }

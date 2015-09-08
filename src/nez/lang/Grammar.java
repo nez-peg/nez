@@ -8,7 +8,7 @@ import nez.SourceContext;
 import nez.ast.CommonTree;
 import nez.ast.CommonTreeTransducer;
 import nez.ast.TreeTransducer;
-import nez.lang.expr.IfFlag;
+import nez.lang.expr.Xif;
 import nez.lang.expr.NonTerminal;
 import nez.main.NezProfier;
 import nez.main.Verbose;
@@ -70,8 +70,8 @@ public class Grammar {
 		if (p instanceof NonTerminal) {
 			analyze(((NonTerminal) p).getProduction(), conditionMap);
 		}
-		if (p instanceof IfFlag) {
-			conditionMap.put(((IfFlag) p).getFlagName(), true);
+		if (p instanceof Xif) {
+			conditionMap.put(((Xif) p).getFlagName(), true);
 		}
 		for (Expression se : p) {
 			analyze(se, conditionMap);

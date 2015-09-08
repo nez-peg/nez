@@ -5,23 +5,23 @@ import java.util.Arrays;
 import nez.ast.Tag;
 import nez.lang.Expression;
 import nez.lang.Production;
-import nez.lang.expr.Block;
-import nez.lang.expr.ByteChar;
-import nez.lang.expr.ByteMap;
-import nez.lang.expr.Capture;
-import nez.lang.expr.DefIndent;
-import nez.lang.expr.DefSymbol;
-import nez.lang.expr.ExistsSymbol;
-import nez.lang.expr.IsIndent;
-import nez.lang.expr.IsSymbol;
-import nez.lang.expr.Link;
-import nez.lang.expr.LocalTable;
-import nez.lang.expr.MatchSymbol;
-import nez.lang.expr.MultiChar;
-import nez.lang.expr.New;
+import nez.lang.expr.Xblock;
+import nez.lang.expr.Cbyte;
+import nez.lang.expr.Cset;
+import nez.lang.expr.Tcapture;
+import nez.lang.expr.Xdefindent;
+import nez.lang.expr.Xdef;
+import nez.lang.expr.Xexists;
+import nez.lang.expr.Xindent;
+import nez.lang.expr.Xis;
+import nez.lang.expr.Tlink;
+import nez.lang.expr.Xlocal;
+import nez.lang.expr.Xmatch;
+import nez.lang.expr.Cmulti;
+import nez.lang.expr.Tnew;
 import nez.lang.expr.NonTerminal;
-import nez.lang.expr.Replace;
-import nez.lang.expr.Tagging;
+import nez.lang.expr.Treplace;
+import nez.lang.expr.Ttag;
 import nez.util.StringUtils;
 import nez.vm.RuntimeContext.StackData;
 
@@ -415,7 +415,7 @@ class IExit extends Instruction {
 abstract class AbstractByteInstruction extends Instruction {
 	public final int byteChar;
 
-	AbstractByteInstruction(byte bytecode, ByteChar e, Instruction next) {
+	AbstractByteInstruction(byte bytecode, Cbyte e, Instruction next) {
 		super(bytecode, e, next);
 		this.byteChar = e.byteChar;
 	}
@@ -432,7 +432,7 @@ abstract class AbstractByteInstruction extends Instruction {
 }
 
 class IByte extends AbstractByteInstruction {
-	IByte(ByteChar e, Instruction next) {
+	IByte(Cbyte e, Instruction next) {
 		super(InstructionSet.Byte, e, next);
 	}
 
@@ -447,7 +447,7 @@ class IByte extends AbstractByteInstruction {
 }
 
 class INByte extends AbstractByteInstruction {
-	INByte(ByteChar e, Instruction next) {
+	INByte(Cbyte e, Instruction next) {
 		super(InstructionSet.NByte, e, next);
 	}
 
@@ -461,7 +461,7 @@ class INByte extends AbstractByteInstruction {
 }
 
 class IOByte extends AbstractByteInstruction {
-	IOByte(ByteChar e, Instruction next) {
+	IOByte(Cbyte e, Instruction next) {
 		super(InstructionSet.OByte, e, next);
 	}
 
@@ -475,7 +475,7 @@ class IOByte extends AbstractByteInstruction {
 }
 
 class IRByte extends AbstractByteInstruction {
-	IRByte(ByteChar e, Instruction next) {
+	IRByte(Cbyte e, Instruction next) {
 		super(InstructionSet.RByte, e, next);
 	}
 
@@ -531,7 +531,7 @@ class INAny extends AbstractAnyInstruction {
 abstract class AbstractSetInstruction extends Instruction {
 	public final boolean[] byteMap;
 
-	AbstractSetInstruction(byte opcode, ByteMap e, Instruction next) {
+	AbstractSetInstruction(byte opcode, Cset e, Instruction next) {
 		super(opcode, e, next);
 		this.byteMap = e.byteMap;
 	}
@@ -548,7 +548,7 @@ abstract class AbstractSetInstruction extends Instruction {
 }
 
 class ISet extends AbstractSetInstruction {
-	ISet(ByteMap e, Instruction next) {
+	ISet(Cset e, Instruction next) {
 		super(InstructionSet.Set, e, next);
 	}
 
@@ -564,7 +564,7 @@ class ISet extends AbstractSetInstruction {
 }
 
 class IOSet extends AbstractSetInstruction {
-	IOSet(ByteMap e, Instruction next) {
+	IOSet(Cset e, Instruction next) {
 		super(InstructionSet.OSet, e, next);
 	}
 
@@ -579,7 +579,7 @@ class IOSet extends AbstractSetInstruction {
 }
 
 class INSet extends AbstractSetInstruction {
-	INSet(ByteMap e, Instruction next) {
+	INSet(Cset e, Instruction next) {
 		super(InstructionSet.NSet, e, next);
 	}
 
@@ -594,7 +594,7 @@ class INSet extends AbstractSetInstruction {
 }
 
 class IRSet extends AbstractSetInstruction {
-	IRSet(ByteMap e, Instruction next) {
+	IRSet(Cset e, Instruction next) {
 		super(InstructionSet.RSet, e, next);
 	}
 
@@ -612,7 +612,7 @@ class IRSet extends AbstractSetInstruction {
 abstract class AbstractStrInstruction extends Instruction {
 	final byte[] utf8;
 
-	public AbstractStrInstruction(byte opcode, MultiChar e, byte[] utf8, Instruction next) {
+	public AbstractStrInstruction(byte opcode, Cmulti e, byte[] utf8, Instruction next) {
 		super(opcode, e, next);
 		this.utf8 = utf8;
 	}
@@ -636,7 +636,7 @@ abstract class AbstractStrInstruction extends Instruction {
 }
 
 class IStr extends AbstractStrInstruction {
-	public IStr(MultiChar e, Instruction next) {
+	public IStr(Cmulti e, Instruction next) {
 		super(InstructionSet.Str, e, e.byteSeq, next);
 	}
 
@@ -651,7 +651,7 @@ class IStr extends AbstractStrInstruction {
 }
 
 class INStr extends AbstractStrInstruction {
-	public INStr(MultiChar e, Instruction next) {
+	public INStr(Cmulti e, Instruction next) {
 		super(InstructionSet.NStr, e, e.byteSeq, next);
 	}
 
@@ -665,7 +665,7 @@ class INStr extends AbstractStrInstruction {
 }
 
 class IOStr extends AbstractStrInstruction {
-	public IOStr(MultiChar e, Instruction next) {
+	public IOStr(Cmulti e, Instruction next) {
 		super(InstructionSet.OStr, e, e.byteSeq, next);
 	}
 
@@ -679,7 +679,7 @@ class IOStr extends AbstractStrInstruction {
 }
 
 class IRStr extends AbstractStrInstruction {
-	public IRStr(MultiChar e, Instruction next) {
+	public IRStr(Cmulti e, Instruction next) {
 		super(InstructionSet.RStr, e, e.byteSeq, next);
 	}
 
@@ -847,7 +847,7 @@ class IMemoFail extends AbstractMemoizationInstruction {
 class INew extends Instruction {
 	int shift;
 
-	INew(New e, Instruction next) {
+	INew(Tnew e, Instruction next) {
 		super(InstructionSet.TNew, e, next);
 		this.shift = e.shift;
 	}
@@ -869,7 +869,7 @@ class ITLeftFold extends Instruction {
 	int shift;
 	Tag label;
 
-	ITLeftFold(New e, Instruction next) {
+	ITLeftFold(Tnew e, Instruction next) {
 		super(InstructionSet.TLeftFold, e, next);
 		this.shift = e.shift;
 		this.label = e.getLabel();
@@ -892,7 +892,7 @@ class ITLeftFold extends Instruction {
 class ICapture extends Instruction {
 	int shift;
 
-	ICapture(Capture e, Instruction next) {
+	ICapture(Tcapture e, Instruction next) {
 		super(InstructionSet.TCapture, e, next);
 		this.shift = e.shift;
 	}
@@ -913,7 +913,7 @@ class ICapture extends Instruction {
 class IReplace extends Instruction {
 	public final String value;
 
-	IReplace(Replace e, Instruction next) {
+	IReplace(Treplace e, Instruction next) {
 		super(InstructionSet.TReplace, e, next);
 		this.value = e.value;
 	}
@@ -939,7 +939,7 @@ class IReplace extends Instruction {
 class ITag extends Instruction {
 	public final Tag tag;
 
-	ITag(Tagging e, Instruction next) {
+	ITag(Ttag e, Instruction next) {
 		super(InstructionSet.TTag, e, next);
 		this.tag = e.tag;
 	}
@@ -963,7 +963,7 @@ class ITag extends Instruction {
 }
 
 class ITPush extends Instruction {
-	ITPush(Link e, Instruction next) {
+	ITPush(Tlink e, Instruction next) {
 		super(InstructionSet.TPush, e, next);
 	}
 
@@ -983,7 +983,7 @@ class ITPush extends Instruction {
 class ITPop extends Instruction {
 	public final Tag label;
 
-	ITPop(Link e, Instruction next) {
+	ITPop(Tlink e, Instruction next) {
 		super(InstructionSet.TPop, e, next);
 		this.label = e.getLabel();
 	}
@@ -1007,7 +1007,7 @@ class ITPop extends Instruction {
 }
 
 class ITStart extends Instruction {
-	ITStart(Link e, Instruction next) {
+	ITStart(Tlink e, Instruction next) {
 		super(InstructionSet.TStart, e, next);
 	}
 
@@ -1028,7 +1028,7 @@ class ITStart extends Instruction {
 class ICommit extends Instruction {
 	public final Tag label;
 
-	ICommit(Link e, Instruction next) {
+	ICommit(Tlink e, Instruction next) {
 		super(InstructionSet.TCommit, e, next);
 		this.label = e.getLabel();
 	}
@@ -1050,7 +1050,7 @@ class ICommit extends Instruction {
 class ITLookup extends AbstractMemoizationInstruction {
 	public final Tag label;
 
-	ITLookup(Link e, MemoPoint m, boolean state, Instruction next, Instruction skip) {
+	ITLookup(Tlink e, MemoPoint m, boolean state, Instruction next, Instruction skip) {
 		super(InstructionSet.TLookup, e, m, state, next, skip);
 		this.label = e.getLabel();
 	}
@@ -1117,7 +1117,7 @@ abstract class AbstractTableInstruction extends Instruction {
 }
 
 class IBeginSymbolScope extends Instruction {
-	IBeginSymbolScope(Block e, Instruction next) {
+	IBeginSymbolScope(Xblock e, Instruction next) {
 		super(InstructionSet.SOpen, e, next);
 	}
 
@@ -1135,7 +1135,7 @@ class IBeginSymbolScope extends Instruction {
 }
 
 class IBeginLocalScope extends AbstractTableInstruction {
-	IBeginLocalScope(LocalTable e, Instruction next) {
+	IBeginLocalScope(Xlocal e, Instruction next) {
 		super(InstructionSet.SMask, e, e.getTable(), next);
 	}
 
@@ -1167,7 +1167,7 @@ class IEndSymbolScope extends Instruction {
 }
 
 class IDefSymbol extends AbstractTableInstruction {
-	IDefSymbol(DefSymbol e, Instruction next) {
+	IDefSymbol(Xdef e, Instruction next) {
 		super(InstructionSet.SDef, e, e.tableName, next);
 	}
 
@@ -1181,7 +1181,7 @@ class IDefSymbol extends AbstractTableInstruction {
 }
 
 class IExists extends AbstractTableInstruction {
-	IExists(ExistsSymbol e, Instruction next) {
+	IExists(Xexists e, Instruction next) {
 		super(InstructionSet.SExists, e, e.tableName, next);
 	}
 
@@ -1195,7 +1195,7 @@ class IExists extends AbstractTableInstruction {
 class IExistsSymbol extends AbstractTableInstruction {
 	byte[] symbol;
 
-	IExistsSymbol(ExistsSymbol e, Instruction next) {
+	IExistsSymbol(Xexists e, Instruction next) {
 		super(InstructionSet.SIsDef, e, e.tableName, next);
 		symbol = StringUtils.toUtf8(e.getSymbol());
 	}
@@ -1216,7 +1216,7 @@ class IExistsSymbol extends AbstractTableInstruction {
 }
 
 class IMatch extends AbstractTableInstruction {
-	IMatch(MatchSymbol e, Instruction next) {
+	IMatch(Xmatch e, Instruction next) {
 		super(InstructionSet.SMatch, e, e.getTable(), next);
 	}
 
@@ -1232,7 +1232,7 @@ class IMatch extends AbstractTableInstruction {
 }
 
 class IIsSymbol extends AbstractTableInstruction {
-	IIsSymbol(IsSymbol e, Instruction next) {
+	IIsSymbol(Xis e, Instruction next) {
 		super(InstructionSet.SIs, e, e.tableName, next);
 	}
 
@@ -1252,7 +1252,7 @@ class IIsSymbol extends AbstractTableInstruction {
 }
 
 class IIsaSymbol extends AbstractTableInstruction {
-	IIsaSymbol(IsSymbol e, Instruction next) {
+	IIsaSymbol(Xis e, Instruction next) {
 		super(InstructionSet.SIsa, e, e.tableName, next);
 	}
 
@@ -1272,7 +1272,7 @@ class IIsaSymbol extends AbstractTableInstruction {
 class IDefIndent extends Instruction {
 	public final static Tag _Indent = Tag.tag("Indent");
 
-	IDefIndent(DefIndent e, Instruction next) {
+	IDefIndent(Xdefindent e, Instruction next) {
 		super(InstructionSet.Nop, e, next);
 	}
 
@@ -1318,7 +1318,7 @@ class IDefIndent extends Instruction {
 class IIsIndent extends Instruction {
 	public final static Tag _Indent = Tag.tag("Indent");
 
-	IIsIndent(IsIndent e, Instruction next) {
+	IIsIndent(Xindent e, Instruction next) {
 		super(InstructionSet.Nop, e, next);
 	}
 

@@ -4,33 +4,33 @@ import nez.NezOption;
 import nez.lang.Expression;
 import nez.lang.Grammar;
 import nez.lang.Production;
-import nez.lang.expr.And;
-import nez.lang.expr.AnyChar;
-import nez.lang.expr.Block;
-import nez.lang.expr.ByteChar;
-import nez.lang.expr.ByteMap;
-import nez.lang.expr.Capture;
+import nez.lang.expr.Uand;
+import nez.lang.expr.Cany;
+import nez.lang.expr.Xblock;
+import nez.lang.expr.Cbyte;
+import nez.lang.expr.Cset;
+import nez.lang.expr.Tcapture;
 import nez.lang.expr.Choice;
-import nez.lang.expr.DefIndent;
-import nez.lang.expr.DefSymbol;
-import nez.lang.expr.ExistsSymbol;
-import nez.lang.expr.IfFlag;
-import nez.lang.expr.IsIndent;
-import nez.lang.expr.IsSymbol;
-import nez.lang.expr.Link;
-import nez.lang.expr.LocalTable;
-import nez.lang.expr.MatchSymbol;
-import nez.lang.expr.MultiChar;
-import nez.lang.expr.New;
+import nez.lang.expr.Xdefindent;
+import nez.lang.expr.Xdef;
+import nez.lang.expr.Xexists;
+import nez.lang.expr.Xif;
+import nez.lang.expr.Xindent;
+import nez.lang.expr.Xis;
+import nez.lang.expr.Tlink;
+import nez.lang.expr.Xlocal;
+import nez.lang.expr.Xmatch;
+import nez.lang.expr.Cmulti;
+import nez.lang.expr.Tnew;
 import nez.lang.expr.NonTerminal;
-import nez.lang.expr.Not;
-import nez.lang.expr.OnFlag;
-import nez.lang.expr.Option;
-import nez.lang.expr.Repetition;
-import nez.lang.expr.Repetition1;
-import nez.lang.expr.Replace;
+import nez.lang.expr.Unot;
+import nez.lang.expr.Xon;
+import nez.lang.expr.Uoption;
+import nez.lang.expr.Uzero;
+import nez.lang.expr.Uone;
+import nez.lang.expr.Treplace;
 import nez.lang.expr.Sequence;
-import nez.lang.expr.Tagging;
+import nez.lang.expr.Ttag;
 import nez.util.FileBuilder;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
@@ -61,22 +61,22 @@ public abstract class NezGenerator extends NezEncoder {
 		return e.encode(this, next, failjump);
 	}
 
-	public Instruction encodeAnyChar(AnyChar p, Instruction next, Instruction failjump) {
+	public Instruction encodeCany(Cany p, Instruction next, Instruction failjump) {
 		this.visitAnyChar(p);
 		return null;
 	}
 
-	public Instruction encodeByteChar(ByteChar p, Instruction next, Instruction failjump) {
+	public Instruction encodeCbyte(Cbyte p, Instruction next, Instruction failjump) {
 		this.visitByteChar(p);
 		return null;
 	}
 
-	public Instruction encodeByteMap(ByteMap p, Instruction next, Instruction failjump) {
+	public Instruction encodeCset(Cset p, Instruction next, Instruction failjump) {
 		this.visitByteMap(p);
 		return null;
 	}
 
-	public Instruction encodeMultiChar(MultiChar p, Instruction next, Instruction failjump) {
+	public Instruction encodeCmulti(Cmulti p, Instruction next, Instruction failjump) {
 		this.visitCharMultiByte(p);
 		return null;
 	}
@@ -86,27 +86,27 @@ public abstract class NezGenerator extends NezEncoder {
 		return null;
 	}
 
-	public Instruction encodeOption(Option p, Instruction next) {
+	public Instruction encodeUoption(Uoption p, Instruction next) {
 		this.visitOption(p);
 		return null;
 	}
 
-	public Instruction encodeRepetition(Repetition p, Instruction next) {
+	public Instruction encodeUzero(Uzero p, Instruction next) {
 		this.visitRepetition(p);
 		return null;
 	}
 
-	public Instruction encodeRepetition1(Repetition1 p, Instruction next, Instruction failjump) {
+	public Instruction encodeUone(Uone p, Instruction next, Instruction failjump) {
 		this.visitRepetition1(p);
 		return null;
 	}
 
-	public Instruction encodeAnd(And p, Instruction next, Instruction failjump) {
+	public Instruction encodeUand(Uand p, Instruction next, Instruction failjump) {
 		this.visitAnd(p);
 		return null;
 	}
 
-	public Instruction encodeNot(Not p, Instruction next, Instruction failjump) {
+	public Instruction encodeUnot(Unot p, Instruction next, Instruction failjump) {
 		this.visitNot(p);
 		return null;
 	}
@@ -128,7 +128,7 @@ public abstract class NezGenerator extends NezEncoder {
 
 	// AST Construction
 
-	public Instruction encodeLink(Link p, Instruction next, Instruction failjump) {
+	public Instruction encodeTlink(Tlink p, Instruction next, Instruction failjump) {
 		if (option.enabledASTConstruction) {
 			this.visitLink(p);
 		} else {
@@ -137,70 +137,70 @@ public abstract class NezGenerator extends NezEncoder {
 		return null;
 	}
 
-	public Instruction encodeNew(New p, Instruction next) {
+	public Instruction encodeTnew(Tnew p, Instruction next) {
 		if (option.enabledASTConstruction) {
 			this.visitNew(p);
 		}
 		return null;
 	}
 
-	public Instruction encodeCapture(Capture p, Instruction next) {
+	public Instruction encodeTcapture(Tcapture p, Instruction next) {
 		if (option.enabledASTConstruction) {
 			this.visitCapture(p);
 		}
 		return null;
 	}
 
-	public Instruction encodeTagging(Tagging p, Instruction next) {
+	public Instruction encodeTtag(Ttag p, Instruction next) {
 		if (option.enabledASTConstruction) {
 			this.visitTagging(p);
 		}
 		return null;
 	}
 
-	public Instruction encodeReplace(Replace p, Instruction next) {
+	public Instruction encodeTreplace(Treplace p, Instruction next) {
 		if (option.enabledASTConstruction) {
 			this.visitReplace(p);
 		}
 		return null;
 	}
 
-	public Instruction encodeBlock(Block p, Instruction next, Instruction failjump) {
+	public Instruction encodeXblock(Xblock p, Instruction next, Instruction failjump) {
 		this.visitBlock(p);
 		return null;
 	}
 
-	public Instruction encodeLocalTable(LocalTable p, Instruction next, Instruction failjump) {
+	public Instruction encodeXlocal(Xlocal p, Instruction next, Instruction failjump) {
 		this.visitLocalTable(p);
 		return null;
 	}
 
-	public Instruction encodeDefSymbol(DefSymbol p, Instruction next, Instruction failjump) {
+	public Instruction encodeXdef(Xdef p, Instruction next, Instruction failjump) {
 		this.visitDefSymbol(p);
 		return null;
 	}
 
-	public Instruction encodeExistsSymbol(ExistsSymbol p, Instruction next, Instruction failjump) {
+	public Instruction encodeXexists(Xexists p, Instruction next, Instruction failjump) {
 		this.visitExistsSymbol(p);
 		return null;
 	}
 
-	public Instruction encodeMatchSymbol(MatchSymbol p, Instruction next, Instruction failjump) {
+	public Instruction encodeXmatch(Xmatch p, Instruction next, Instruction failjump) {
 		this.visitMatchSymbol(p);
 		return null;
 	}
 
-	public Instruction encodeIsSymbol(IsSymbol p, Instruction next, Instruction failjump) {
+	public Instruction encodeXis(Xis p, Instruction next, Instruction failjump) {
 		this.visitIsSymbol(p);
 		return null;
 	}
 
-	public Instruction encodeDefIndent(DefIndent p, Instruction next, Instruction failjump) {
+	public Instruction encodeXdefindent(Xdefindent p, Instruction next, Instruction failjump) {
 		this.visitDefIndent(p);
 		return null;
 	}
 
-	public Instruction encodeIsIndent(IsIndent p, Instruction next, Instruction failjump) {
+	public Instruction encodeXindent(Xindent p, Instruction next, Instruction failjump) {
 		this.visitIsIndent(p);
 		return null;
 	}
@@ -210,11 +210,11 @@ public abstract class NezGenerator extends NezEncoder {
 		return null;
 	}
 
-	public Instruction encodeOnFlag(OnFlag p, Instruction next, Instruction failjump) {
+	public Instruction encodeXon(Xon p, Instruction next, Instruction failjump) {
 		return p.get(0).encode(this, next, failjump);
 	}
 
-	public Instruction encodeIfFlag(IfFlag ifFlag, Instruction next, Instruction failjump) {
+	public Instruction encodeXif(Xif ifFlag, Instruction next, Instruction failjump) {
 		return next;
 	}
 
@@ -236,21 +236,21 @@ public abstract class NezGenerator extends NezEncoder {
 
 	public abstract void visitFailure(Expression p);
 
-	public abstract void visitAnyChar(AnyChar p);
+	public abstract void visitAnyChar(Cany p);
 
-	public abstract void visitByteChar(ByteChar p);
+	public abstract void visitByteChar(Cbyte p);
 
-	public abstract void visitByteMap(ByteMap p);
+	public abstract void visitByteMap(Cset p);
 
-	public abstract void visitOption(Option p);
+	public abstract void visitOption(Uoption p);
 
-	public abstract void visitRepetition(Repetition p);
+	public abstract void visitRepetition(Uzero p);
 
-	public abstract void visitRepetition1(Repetition1 p);
+	public abstract void visitRepetition1(Uone p);
 
-	public abstract void visitAnd(And p);
+	public abstract void visitAnd(Uand p);
 
-	public abstract void visitNot(Not p);
+	public abstract void visitNot(Unot p);
 
 	public abstract void visitSequence(Sequence p);
 
@@ -258,35 +258,35 @@ public abstract class NezGenerator extends NezEncoder {
 
 	public abstract void visitNonTerminal(NonTerminal p);
 
-	public abstract void visitCharMultiByte(MultiChar p);
+	public abstract void visitCharMultiByte(Cmulti p);
 
 	// AST Construction
-	public abstract void visitLink(Link p);
+	public abstract void visitLink(Tlink p);
 
-	public abstract void visitNew(New p);
+	public abstract void visitNew(Tnew p);
 
-	public abstract void visitCapture(Capture p);
+	public abstract void visitCapture(Tcapture p);
 
-	public abstract void visitTagging(Tagging p);
+	public abstract void visitTagging(Ttag p);
 
-	public abstract void visitReplace(Replace p);
+	public abstract void visitReplace(Treplace p);
 
 	// Symbol Tables
-	public abstract void visitBlock(Block p);
+	public abstract void visitBlock(Xblock p);
 
-	public abstract void visitDefSymbol(DefSymbol p);
+	public abstract void visitDefSymbol(Xdef p);
 
-	public abstract void visitMatchSymbol(MatchSymbol p);
+	public abstract void visitMatchSymbol(Xmatch p);
 
-	public abstract void visitIsSymbol(IsSymbol p);
+	public abstract void visitIsSymbol(Xis p);
 
-	public abstract void visitDefIndent(DefIndent p);
+	public abstract void visitDefIndent(Xdefindent p);
 
-	public abstract void visitIsIndent(IsIndent p);
+	public abstract void visitIsIndent(Xindent p);
 
-	public abstract void visitExistsSymbol(ExistsSymbol p);
+	public abstract void visitExistsSymbol(Xexists p);
 
-	public abstract void visitLocalTable(LocalTable p);
+	public abstract void visitLocalTable(Xlocal p);
 
 	// ---------------------------------------------------------------------
 

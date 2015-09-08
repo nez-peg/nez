@@ -12,7 +12,7 @@ import nez.SourceContext;
 import nez.lang.Expression;
 import nez.lang.Grammar;
 import nez.lang.Production;
-import nez.lang.expr.Link;
+import nez.lang.expr.Tlink;
 import nez.lang.expr.NonTerminal;
 import nez.util.ConsoleUtils;
 
@@ -285,7 +285,7 @@ public class NezDebugger {
 				code = exec_code();
 				current = code.getExpression();
 			}
-		} else if (e instanceof Link) {
+		} else if (e instanceof Tlink) {
 			code = exec_code();
 			int stackTop = ((RuntimeContext) sc).getUsedStackTopForDebugger();
 			if (code.getExpression() instanceof Production) {
@@ -318,7 +318,7 @@ public class NezDebugger {
 				code = exec_code();
 				current = code.getExpression();
 			}
-		} else if (e instanceof Link) {
+		} else if (e instanceof Tlink) {
 			code = exec_code();
 			if (code.getExpression() instanceof Production) {
 				code = exec_code();

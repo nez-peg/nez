@@ -1,22 +1,31 @@
 package nez.lang.expr;
 
 import nez.ast.SourcePosition;
+import nez.ast.Tag;
 import nez.lang.Expression;
 import nez.lang.ExpressionTransducer;
-import nez.lang.PossibleAcceptance;
 import nez.lang.Typestate;
 import nez.lang.Visa;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
-public class Not extends Unary {
-	Not(SourcePosition s, Expression e) {
+public class Tlink extends Unary {
+	@Deprecated
+	public int index = -1;
+	Tag label;
+
+	Tlink(SourcePosition s, Tag label, Expression e) {
 		super(s, e);
+		this.label = label;
+	}
+
+	public final Tag getLabel() {
+		return this.label;
 	}
 
 	@Override
 	public final boolean equalsExpression(Expression o) {
-		if (o instanceof Not) {
+		if (o instanceof Tlink && this.label == ((Tlink) o).label) {
 			return this.get(0).equalsExpression(o.get(0));
 		}
 		return false;
@@ -24,32 +33,32 @@ public class Not extends Unary {
 
 	@Override
 	public final void format(StringBuilder sb) {
-		this.formatUnary(sb, "!", this.inner);
+		formatUnary(sb, (label != null) ? "$" + label + "(" : "$(", this.get(0), ")");
 	}
 
 	@Override
 	public Expression reshape(ExpressionTransducer m) {
-		return m.reshapeNot(this);
+		return m.reshapeLink(this);
 	}
 
 	@Override
 	public boolean isConsumed() {
-		return false;
+		return this.inner.isConsumed();
 	}
 
 	@Override
 	public int inferTypestate(Visa v) {
-		return Typestate.BooleanType;
+		return Typestate.OperationType;
 	}
 
 	@Override
 	public short acceptByte(int ch) {
-		return PossibleAcceptance.acceptNot(this, ch);
+		return inner.acceptByte(ch);
 	}
 
 	@Override
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
-		return bc.encodeNot(this, next, failjump);
+		return bc.encodeTlink(this, next, failjump);
 	}
 
 }

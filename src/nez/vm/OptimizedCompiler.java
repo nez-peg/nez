@@ -6,14 +6,14 @@ import nez.NezOption;
 import nez.lang.Expression;
 import nez.lang.GrammarOptimizer;
 import nez.lang.Production;
-import nez.lang.expr.AnyChar;
-import nez.lang.expr.ByteChar;
-import nez.lang.expr.ByteMap;
+import nez.lang.expr.Cany;
+import nez.lang.expr.Cbyte;
+import nez.lang.expr.Cset;
 import nez.lang.expr.Choice;
-import nez.lang.expr.MultiChar;
-import nez.lang.expr.Not;
-import nez.lang.expr.Option;
-import nez.lang.expr.Repetition;
+import nez.lang.expr.Cmulti;
+import nez.lang.expr.Unot;
+import nez.lang.expr.Uoption;
+import nez.lang.expr.Uzero;
 import nez.lang.expr.Sequence;
 import nez.main.Verbose;
 
@@ -41,67 +41,67 @@ public class OptimizedCompiler extends PlainCompiler {
 	}
 
 	@Override
-	public final Instruction encodeOption(Option p, Instruction next) {
+	public final Instruction encodeUoption(Uoption p, Instruction next) {
 		if (option.enabledLexicalOptimization) {
 			Expression inner = getInnerExpression(p);
-			if (inner instanceof ByteChar) {
+			if (inner instanceof Cbyte) {
 				this.optimizedUnary(p);
-				return new IOByte((ByteChar) inner, next);
+				return new IOByte((Cbyte) inner, next);
 			}
-			if (inner instanceof ByteMap) {
+			if (inner instanceof Cset) {
 				this.optimizedUnary(p);
-				return new IOSet((ByteMap) inner, next);
+				return new IOSet((Cset) inner, next);
 			}
-			if (inner instanceof MultiChar) {
+			if (inner instanceof Cmulti) {
 				this.optimizedUnary(p);
-				return new IOStr((MultiChar) inner, next);
+				return new IOStr((Cmulti) inner, next);
 			}
 		}
-		return super.encodeOption(p, next);
+		return super.encodeUoption(p, next);
 	}
 
 	@Override
-	public final Instruction encodeRepetition(Repetition p, Instruction next) {
+	public final Instruction encodeUzero(Uzero p, Instruction next) {
 		if (option.enabledLexicalOptimization) {
 			Expression inner = getInnerExpression(p);
-			if (inner instanceof ByteChar) {
+			if (inner instanceof Cbyte) {
 				this.optimizedUnary(p);
-				return new IRByte((ByteChar) inner, next);
+				return new IRByte((Cbyte) inner, next);
 			}
-			if (inner instanceof ByteMap) {
+			if (inner instanceof Cset) {
 				this.optimizedUnary(p);
-				return new IRSet((ByteMap) inner, next);
+				return new IRSet((Cset) inner, next);
 			}
-			if (inner instanceof MultiChar) {
+			if (inner instanceof Cmulti) {
 				this.optimizedUnary(p);
-				return new IRStr((MultiChar) inner, next);
+				return new IRStr((Cmulti) inner, next);
 			}
 		}
-		return super.encodeRepetition(p, next);
+		return super.encodeUzero(p, next);
 	}
 
 	@Override
-	public final Instruction encodeNot(Not p, Instruction next, Instruction failjump) {
+	public final Instruction encodeUnot(Unot p, Instruction next, Instruction failjump) {
 		if (option.enabledLexicalOptimization) {
 			Expression inner = getInnerExpression(p);
-			if (inner instanceof ByteMap) {
+			if (inner instanceof Cset) {
 				this.optimizedUnary(p);
-				return new INSet((ByteMap) inner, next);
+				return new INSet((Cset) inner, next);
 			}
-			if (inner instanceof ByteChar) {
+			if (inner instanceof Cbyte) {
 				this.optimizedUnary(p);
-				return new INByte((ByteChar) inner, next);
+				return new INByte((Cbyte) inner, next);
 			}
-			if (inner instanceof AnyChar) {
+			if (inner instanceof Cany) {
 				this.optimizedUnary(p);
-				return new INAny(inner, ((AnyChar) inner).isBinary(), next);
+				return new INAny(inner, ((Cany) inner).isBinary(), next);
 			}
-			if (inner instanceof MultiChar) {
+			if (inner instanceof Cmulti) {
 				this.optimizedUnary(p);
-				return new INStr((MultiChar) inner, next);
+				return new INStr((Cmulti) inner, next);
 			}
 		}
-		return super.encodeNot(p, next, failjump);
+		return super.encodeUnot(p, next, failjump);
 	}
 
 	@Override

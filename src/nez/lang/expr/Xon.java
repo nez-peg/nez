@@ -1,43 +1,51 @@
 package nez.lang.expr;
 
 import nez.ast.SourcePosition;
-import nez.ast.Tag;
+import nez.lang.Conditional;
 import nez.lang.Expression;
 import nez.lang.ExpressionTransducer;
 import nez.lang.Visa;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
-public class LocalTable extends Unary {
-	public final Tag tableName;
+public class Xon extends Unary implements Conditional {
+	boolean predicate;
 
-	LocalTable(SourcePosition s, Tag table, Expression inner) {
+	public final boolean isPositive() {
+		return predicate;
+	}
+
+	String flagName;
+
+	public final String getFlagName() {
+		return this.flagName;
+	}
+
+	Xon(SourcePosition s, boolean predicate, String flagName, Expression inner) {
 		super(s, inner);
-		this.tableName = table;
+		if (flagName.startsWith("!")) {
+			predicate = false;
+			flagName = flagName.substring(1);
+		}
+		this.predicate = predicate;
+		this.flagName = flagName;
 	}
 
 	@Override
 	public final boolean equalsExpression(Expression o) {
-		if (o instanceof LocalTable) {
-			LocalTable s = (LocalTable) o;
-			if (this.tableName == s.tableName) {
-				return this.get(0).equalsExpression(s.get(0));
+		if (o instanceof Xon) {
+			Xon e = (Xon) o;
+			if (this.predicate == e.predicate && this.flagName.equals(e.flagName)) {
+				return this.get(0).equalsExpression(e.get(0));
 			}
+			;
 		}
 		return false;
 	}
 
-	public final Tag getTable() {
-		return tableName;
-	}
-
-	public final String getTableName() {
-		return tableName.getName();
-	}
-
 	@Override
 	public Expression reshape(ExpressionTransducer m) {
-		return m.reshapeLocalTable(this);
+		return m.reshapeXon(this);
 	}
 
 	@Override
@@ -57,7 +65,6 @@ public class LocalTable extends Unary {
 
 	@Override
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
-		return bc.encodeLocalTable(this, next, failjump);
+		return bc.encodeXon(this, next, failjump);
 	}
-
 }

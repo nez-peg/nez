@@ -9,33 +9,33 @@ import nez.lang.Grammar;
 import nez.lang.GrammarOptimizer;
 import nez.lang.Production;
 import nez.lang.Typestate;
-import nez.lang.expr.And;
-import nez.lang.expr.AnyChar;
-import nez.lang.expr.Block;
-import nez.lang.expr.ByteChar;
-import nez.lang.expr.ByteMap;
-import nez.lang.expr.Capture;
+import nez.lang.expr.Uand;
+import nez.lang.expr.Cany;
+import nez.lang.expr.Xblock;
+import nez.lang.expr.Cbyte;
+import nez.lang.expr.Cset;
+import nez.lang.expr.Tcapture;
 import nez.lang.expr.Choice;
-import nez.lang.expr.DefIndent;
-import nez.lang.expr.DefSymbol;
-import nez.lang.expr.ExistsSymbol;
-import nez.lang.expr.IfFlag;
-import nez.lang.expr.IsIndent;
-import nez.lang.expr.IsSymbol;
-import nez.lang.expr.Link;
-import nez.lang.expr.LocalTable;
-import nez.lang.expr.MatchSymbol;
-import nez.lang.expr.MultiChar;
-import nez.lang.expr.New;
+import nez.lang.expr.Xdefindent;
+import nez.lang.expr.Xdef;
+import nez.lang.expr.Xexists;
+import nez.lang.expr.Xif;
+import nez.lang.expr.Xindent;
+import nez.lang.expr.Xis;
+import nez.lang.expr.Tlink;
+import nez.lang.expr.Xlocal;
+import nez.lang.expr.Xmatch;
+import nez.lang.expr.Cmulti;
+import nez.lang.expr.Tnew;
 import nez.lang.expr.NonTerminal;
-import nez.lang.expr.Not;
-import nez.lang.expr.OnFlag;
-import nez.lang.expr.Option;
-import nez.lang.expr.Repetition;
-import nez.lang.expr.Repetition1;
-import nez.lang.expr.Replace;
+import nez.lang.expr.Unot;
+import nez.lang.expr.Xon;
+import nez.lang.expr.Uoption;
+import nez.lang.expr.Uzero;
+import nez.lang.expr.Uone;
+import nez.lang.expr.Treplace;
 import nez.lang.expr.Sequence;
-import nez.lang.expr.Tagging;
+import nez.lang.expr.Ttag;
 import nez.main.Verbose;
 
 public abstract class NezEncoder {
@@ -159,23 +159,23 @@ public abstract class NezEncoder {
 
 	public abstract Instruction encodeFail(Expression p);
 
-	public abstract Instruction encodeAnyChar(AnyChar p, Instruction next, Instruction failjump);
+	public abstract Instruction encodeCany(Cany p, Instruction next, Instruction failjump);
 
-	public abstract Instruction encodeByteChar(ByteChar p, Instruction next, Instruction failjump);
+	public abstract Instruction encodeCbyte(Cbyte p, Instruction next, Instruction failjump);
 
-	public abstract Instruction encodeByteMap(ByteMap p, Instruction next, Instruction failjump);
+	public abstract Instruction encodeCset(Cset p, Instruction next, Instruction failjump);
 
-	public abstract Instruction encodeMultiChar(MultiChar p, Instruction next, Instruction failjump);
+	public abstract Instruction encodeCmulti(Cmulti p, Instruction next, Instruction failjump);
 
-	public abstract Instruction encodeOption(Option p, Instruction next);
+	public abstract Instruction encodeUoption(Uoption p, Instruction next);
 
-	public abstract Instruction encodeRepetition(Repetition p, Instruction next);
+	public abstract Instruction encodeUzero(Uzero p, Instruction next);
 
-	public abstract Instruction encodeRepetition1(Repetition1 p, Instruction next, Instruction failjump);
+	public abstract Instruction encodeUone(Uone p, Instruction next, Instruction failjump);
 
-	public abstract Instruction encodeAnd(And p, Instruction next, Instruction failjump);
+	public abstract Instruction encodeUand(Uand p, Instruction next, Instruction failjump);
 
-	public abstract Instruction encodeNot(Not p, Instruction next, Instruction failjump);
+	public abstract Instruction encodeUnot(Unot p, Instruction next, Instruction failjump);
 
 	public abstract Instruction encodeSequence(Sequence p, Instruction next, Instruction failjump);
 
@@ -184,32 +184,32 @@ public abstract class NezEncoder {
 	public abstract Instruction encodeNonTerminal(NonTerminal p, Instruction next, Instruction failjump);
 
 	// AST Construction
-	public abstract Instruction encodeLink(Link p, Instruction next, Instruction failjump);
+	public abstract Instruction encodeTlink(Tlink p, Instruction next, Instruction failjump);
 
-	public abstract Instruction encodeNew(New p, Instruction next);
+	public abstract Instruction encodeTnew(Tnew p, Instruction next);
 
-	public abstract Instruction encodeCapture(Capture p, Instruction next);
+	public abstract Instruction encodeTcapture(Tcapture p, Instruction next);
 
-	public abstract Instruction encodeTagging(Tagging p, Instruction next);
+	public abstract Instruction encodeTtag(Ttag p, Instruction next);
 
-	public abstract Instruction encodeReplace(Replace p, Instruction next);
+	public abstract Instruction encodeTreplace(Treplace p, Instruction next);
 
 	// Symbol Tables
-	public abstract Instruction encodeBlock(Block p, Instruction next, Instruction failjump);
+	public abstract Instruction encodeXblock(Xblock p, Instruction next, Instruction failjump);
 
-	public abstract Instruction encodeDefSymbol(DefSymbol p, Instruction next, Instruction failjump);
+	public abstract Instruction encodeXdef(Xdef p, Instruction next, Instruction failjump);
 
-	public abstract Instruction encodeMatchSymbol(MatchSymbol p, Instruction next, Instruction failjump);
+	public abstract Instruction encodeXmatch(Xmatch p, Instruction next, Instruction failjump);
 
-	public abstract Instruction encodeIsSymbol(IsSymbol p, Instruction next, Instruction failjump);
+	public abstract Instruction encodeXis(Xis p, Instruction next, Instruction failjump);
 
-	public abstract Instruction encodeDefIndent(DefIndent p, Instruction next, Instruction failjump);
+	public abstract Instruction encodeXdefindent(Xdefindent p, Instruction next, Instruction failjump);
 
-	public abstract Instruction encodeIsIndent(IsIndent p, Instruction next, Instruction failjump);
+	public abstract Instruction encodeXindent(Xindent p, Instruction next, Instruction failjump);
 
-	public abstract Instruction encodeExistsSymbol(ExistsSymbol existsSymbol, Instruction next, Instruction failjump);
+	public abstract Instruction encodeXexists(Xexists existsSymbol, Instruction next, Instruction failjump);
 
-	public abstract Instruction encodeLocalTable(LocalTable localTable, Instruction next, Instruction failjump);
+	public abstract Instruction encodeXlocal(Xlocal localTable, Instruction next, Instruction failjump);
 
 	// Extension
 	public abstract Instruction encodeExtension(Expression p, Instruction next, Instruction failjump);
@@ -218,11 +218,11 @@ public abstract class NezEncoder {
 		return next;
 	}
 
-	public Instruction encodeOnFlag(OnFlag p, Instruction next, Instruction failjump) {
+	public Instruction encodeXon(Xon p, Instruction next, Instruction failjump) {
 		return p.get(0).encode(this, next, failjump);
 	}
 
-	public Instruction encodeIfFlag(IfFlag ifFlag, Instruction next, Instruction failjump) {
+	public Instruction encodeXif(Xif ifFlag, Instruction next, Instruction failjump) {
 		return next;
 	}
 

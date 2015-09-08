@@ -2,14 +2,14 @@ package nez.lang;
 
 import java.util.List;
 
-import nez.lang.expr.And;
+import nez.lang.expr.Uand;
 import nez.lang.expr.Choice;
 import nez.lang.expr.ExpressionCommons;
 import nez.lang.expr.NonTerminal;
-import nez.lang.expr.Not;
-import nez.lang.expr.Option;
-import nez.lang.expr.Repetition;
-import nez.lang.expr.Repetition1;
+import nez.lang.expr.Unot;
+import nez.lang.expr.Uoption;
+import nez.lang.expr.Uzero;
+import nez.lang.expr.Uone;
 import nez.lang.expr.Sequence;
 import nez.util.StringUtils;
 import nez.util.UFlag;
@@ -62,10 +62,10 @@ public class NameAnalysis extends ExpressionTransducer {
 				return consumed;
 			}
 			boolean r = checkLeftRecursion(e.get(0), s);
-			if (e instanceof Repetition1) {
+			if (e instanceof Uone) {
 				return r;
 			}
-			if (e instanceof Not || e instanceof Repetition || e instanceof Option || e instanceof And) {
+			if (e instanceof Unot || e instanceof Uzero || e instanceof Uoption || e instanceof Uand) {
 				return false;
 			}
 			return r;

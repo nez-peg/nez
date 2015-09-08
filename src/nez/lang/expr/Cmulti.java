@@ -8,18 +8,18 @@ import nez.util.StringUtils;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
-public class MultiChar extends Char {
+public class Cmulti extends Char {
 	public byte[] byteSeq;
 
-	MultiChar(SourcePosition s, boolean binary, byte[] byteSeq) {
+	Cmulti(SourcePosition s, boolean binary, byte[] byteSeq) {
 		super(s, binary);
 		this.byteSeq = byteSeq;
 	}
 
 	@Override
 	public final boolean equalsExpression(Expression o) {
-		if (o instanceof MultiChar) {
-			MultiChar mb = (MultiChar) o;
+		if (o instanceof Cmulti) {
+			Cmulti mb = (Cmulti) o;
 			if (mb.byteSeq.length == this.byteSeq.length) {
 				for (int i = 0; i < this.byteSeq.length; i++) {
 					if (byteSeq[i] != mb.byteSeq[i]) {
@@ -58,6 +58,6 @@ public class MultiChar extends Char {
 
 	@Override
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
-		return bc.encodeMultiChar(this, next, failjump);
+		return bc.encodeCmulti(this, next, failjump);
 	}
 }

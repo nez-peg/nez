@@ -2,7 +2,7 @@ package nez.util;
 
 import java.io.UnsupportedEncodingException;
 
-import nez.lang.expr.ByteMap;
+import nez.lang.expr.Cset;
 import nez.main.Verbose;
 
 public abstract class StringUtils {
@@ -344,7 +344,7 @@ public abstract class StringUtils {
 	}
 
 	public static final boolean[] parseByteMap(String text) {
-		boolean[] b = ByteMap.newMap(false);
+		boolean[] b = Cset.newMap(false);
 		CharReader r = new CharReader(text);
 		char ch = r.readChar();
 		while (ch != 0) {
@@ -352,12 +352,12 @@ public abstract class StringUtils {
 			if (next == '-') {
 				int ch2 = r.readChar();
 				if (ch > 0 && ch2 < 128) {
-					ByteMap.appendRange(b, ch, ch2);
+					Cset.appendRange(b, ch, ch2);
 				}
 				ch = r.readChar();
 			} else {
 				if (ch > 0 && ch < 128) {
-					ByteMap.appendRange(b, ch, ch);
+					Cset.appendRange(b, ch, ch);
 				}
 				ch = next; // r.readChar();
 			}

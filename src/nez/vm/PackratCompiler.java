@@ -2,7 +2,7 @@ package nez.vm;
 
 import nez.NezOption;
 import nez.lang.Production;
-import nez.lang.expr.Link;
+import nez.lang.expr.Tlink;
 import nez.lang.expr.NonTerminal;
 import nez.main.Verbose;
 
@@ -49,7 +49,7 @@ public class PackratCompiler extends OptimizedCompiler {
 
 	// AST Construction
 
-	public final Instruction encodeLink(Link p, Instruction next, Instruction failjump) {
+	public final Instruction encodeTlink(Tlink p, Instruction next, Instruction failjump) {
 		if (option.enabledASTConstruction && p.get(0) instanceof NonTerminal) {
 			NonTerminal n = (NonTerminal) p.get(0);
 			ProductionCode pcode = this.getCodePoint(n.getProduction());
@@ -65,7 +65,7 @@ public class PackratCompiler extends OptimizedCompiler {
 				return new ITLookup(p, pcode.memoPoint, pcode.state, inside, next);
 			}
 		}
-		return super.encodeLink(p, next, failjump);
+		return super.encodeTlink(p, next, failjump);
 	}
 
 }

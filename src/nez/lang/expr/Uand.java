@@ -9,46 +9,51 @@ import nez.lang.Visa;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
-public class AnyChar extends Char {
-	AnyChar(SourcePosition s, boolean binary) {
-		super(s, binary);
+public class Uand extends Unary {
+	Uand(SourcePosition s, Expression e) {
+		super(s, e);
 	}
 
 	@Override
 	public final boolean equalsExpression(Expression o) {
-		if (o instanceof AnyChar) {
-			return this.binary == ((AnyChar) o).isBinary();
+		if (o instanceof Uand) {
+			return this.get(0).equalsExpression(o.get(0));
 		}
 		return false;
 	}
 
 	@Override
 	public final void format(StringBuilder sb) {
-		sb.append(".");
+		this.formatUnary(sb, "&", this.inner);
 	}
 
 	@Override
 	public Expression reshape(ExpressionTransducer m) {
-		return m.reshapeAnyChar(this);
+		return m.reshapeAnd(this);
 	}
 
 	@Override
 	public boolean isConsumed() {
-		return true;
+		return false;
 	}
 
 	@Override
 	public int inferTypestate(Visa v) {
-		return Typestate.BooleanType;
+		int t = this.inner.inferTypestate(v);
+		if (t == Typestate.ObjectType) { // typeCheck needs to report error
+			return Typestate.BooleanType;
+		}
+		return t;
 	}
 
 	@Override
 	public short acceptByte(int ch) {
-		return PossibleAcceptance.acceptAny(binary, ch);
+		return PossibleAcceptance.acceptAnd(this, ch);
 	}
 
 	@Override
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
-		return bc.encodeAnyChar(this, next, failjump);
+		return bc.encodeUand(this, next, failjump);
 	}
+
 }

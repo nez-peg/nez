@@ -3,50 +3,52 @@ package nez.lang.expr;
 import nez.ast.SourcePosition;
 import nez.lang.Expression;
 import nez.lang.ExpressionTransducer;
-import nez.lang.PossibleAcceptance;
-import nez.util.StringUtils;
+import nez.lang.Typestate;
+import nez.lang.Visa;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
-public class ByteChar extends Char {
-	public int byteChar;
-
-	ByteChar(SourcePosition s, boolean binary, int ch) {
-		super(s, binary);
-		this.byteChar = ch;
+public class Umatch extends Unary {
+	Umatch(SourcePosition s, Expression inner) {
+		super(s, inner);
 	}
 
 	@Override
 	public final boolean equalsExpression(Expression o) {
-		if (o instanceof ByteChar) {
-			return this.byteChar == ((ByteChar) o).byteChar && this.binary == ((ByteChar) o).isBinary();
+		if (o instanceof Umatch) {
+			return this.get(0).equalsExpression(o.get(0));
 		}
 		return false;
 	}
 
 	@Override
 	public final void format(StringBuilder sb) {
-		sb.append(StringUtils.stringfyCharacter(this.byteChar));
+		this.formatUnary(sb, "~", inner);
 	}
 
 	@Override
 	public Expression reshape(ExpressionTransducer m) {
-		return m.reshapeByteChar(this);
+		return m.reshapeMatch(this);
 	}
 
 	@Override
 	public boolean isConsumed() {
-		return true;
+		return this.inner.isConsumed();
+	}
+
+	@Override
+	public int inferTypestate(Visa v) {
+		return Typestate.BooleanType;
 	}
 
 	@Override
 	public short acceptByte(int ch) {
-		return PossibleAcceptance.acceptByteChar(byteChar, ch);
+		return this.inner.acceptByte(ch);
 	}
 
 	@Override
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
-		return bc.encodeByteChar(this, next, failjump);
+		return this.inner.encode(bc, next, failjump);
 	}
 
 }

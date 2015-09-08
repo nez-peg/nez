@@ -4,6 +4,7 @@ import nez.ast.SourcePosition;
 import nez.ast.Tag;
 import nez.lang.Contextual;
 import nez.lang.Expression;
+import nez.lang.GrammarMap;
 import nez.lang.ExpressionTransducer;
 import nez.lang.PossibleAcceptance;
 import nez.lang.Typestate;
@@ -11,21 +12,29 @@ import nez.lang.Visa;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
-public class MatchSymbol extends Term implements Contextual {
+public class Xis extends Term implements Contextual {
 	public final Tag tableName;
+	final GrammarMap g;
+	public final boolean is;
 
-	MatchSymbol(SourcePosition s, Tag tableName) {
+	Xis(SourcePosition s, GrammarMap g, Tag tableName, boolean is) {
 		super(s);
+		this.g = g;
 		this.tableName = tableName;
+		this.is = is;
 	}
 
 	@Override
 	public final boolean equalsExpression(Expression o) {
-		if (o instanceof MatchSymbol) {
-			MatchSymbol e = (MatchSymbol) o;
-			return this.tableName == e.tableName;
+		if (o instanceof Xis) {
+			Xis e = (Xis) o;
+			return this.tableName == e.tableName && this.g == e.g && this.is == e.is;
 		}
 		return false;
+	}
+
+	public final GrammarMap getGrammarMap() {
+		return g;
 	}
 
 	public final Tag getTable() {
@@ -36,13 +45,21 @@ public class MatchSymbol extends Term implements Contextual {
 		return tableName.getName();
 	}
 
+	public final Expression getSymbolExpression() {
+		return g.getSymbolExpresion(tableName.getName());
+	}
+
 	@Override
 	public Expression reshape(ExpressionTransducer m) {
-		return m.reshapeMatchSymbol(this);
+		return m.reshapeIsSymbol(this);
 	}
 
 	@Override
 	public boolean isConsumed() {
+		Expression inner = this.getSymbolExpression();
+		if (inner != null) {
+			return inner.isConsumed();
+		}
 		return false;
 	}
 
@@ -53,11 +70,14 @@ public class MatchSymbol extends Term implements Contextual {
 
 	@Override
 	public short acceptByte(int ch) {
+		// if(this.getSymbolExpression() != null) {
+		// return this.getSymbolExpression().acceptByte(ch);
+		// }
 		return PossibleAcceptance.Accept;
 	}
 
 	@Override
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
-		return bc.encodeMatchSymbol(this, next, failjump);
+		return bc.encodeXis(this, next, failjump);
 	}
 }

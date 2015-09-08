@@ -3,23 +3,23 @@ package nez.generator;
 import nez.lang.Expression;
 import nez.lang.Grammar;
 import nez.lang.Production;
-import nez.lang.expr.And;
-import nez.lang.expr.AnyChar;
-import nez.lang.expr.ByteChar;
-import nez.lang.expr.ByteMap;
-import nez.lang.expr.Capture;
+import nez.lang.expr.Uand;
+import nez.lang.expr.Cany;
+import nez.lang.expr.Cbyte;
+import nez.lang.expr.Cset;
+import nez.lang.expr.Tcapture;
 import nez.lang.expr.Choice;
 import nez.lang.expr.Empty;
 import nez.lang.expr.Failure;
-import nez.lang.expr.Link;
-import nez.lang.expr.New;
+import nez.lang.expr.Tlink;
+import nez.lang.expr.Tnew;
 import nez.lang.expr.NonTerminal;
-import nez.lang.expr.Not;
-import nez.lang.expr.Option;
-import nez.lang.expr.Repetition;
-import nez.lang.expr.Repetition1;
-import nez.lang.expr.Replace;
-import nez.lang.expr.Tagging;
+import nez.lang.expr.Unot;
+import nez.lang.expr.Uoption;
+import nez.lang.expr.Uzero;
+import nez.lang.expr.Uone;
+import nez.lang.expr.Treplace;
+import nez.lang.expr.Ttag;
 import nez.lang.expr.Unary;
 
 public class MouseGrammarGenerator extends GrammarGenerator {
@@ -74,15 +74,15 @@ public class MouseGrammarGenerator extends GrammarGenerator {
 		file.write(stringfyName(e.getLocalName().replaceAll("_", "under")));
 	}
 
-	public void visitByteChar(ByteChar e) {
+	public void visitByteChar(Cbyte e) {
 		file.write(stringfy("\"", e.byteChar, "\""));
 	}
 
-	public void visitByteMap(ByteMap e) {
+	public void visitByteMap(Cset e) {
 		file.write(stringfy(e.byteMap));
 	}
 
-	public void visitAnyChar(AnyChar e) {
+	public void visitAnyChar(Cany e) {
 		file.write("_");
 	}
 
@@ -166,23 +166,23 @@ public class MouseGrammarGenerator extends GrammarGenerator {
 		}
 	}
 
-	public void visitOption(Option e) {
+	public void visitOption(Uoption e) {
 		this.visit(null, e, "?");
 	}
 
-	public void visitRepetition(Repetition e) {
+	public void visitRepetition(Uzero e) {
 		this.visit(null, e, "*");
 	}
 
-	public void visitRepetition1(Repetition1 e) {
+	public void visitRepetition1(Uone e) {
 		this.visit(null, e, "+");
 	}
 
-	public void visitAnd(And e) {
+	public void visitAnd(Uand e) {
 		this.visit("&", e, null);
 	}
 
-	public void visitNot(Not e) {
+	public void visitNot(Unot e) {
 		this.visit("!", e, null);
 	}
 
@@ -237,25 +237,25 @@ public class MouseGrammarGenerator extends GrammarGenerator {
 		}
 	}
 
-	public void visitNew(New e) {
+	public void visitNew(Tnew e) {
 
 	}
 
-	public void visitCapture(Capture e) {
+	public void visitCapture(Tcapture e) {
 
 	}
 
-	public void visitTagging(Tagging e) {
+	public void visitTagging(Ttag e) {
 		// file.write("{");
 		// file.write(e.tag.toString().toLowerCase());
 		// file.write("}");
 	}
 
-	public void visitValue(Replace e) {
+	public void visitValue(Treplace e) {
 		// file.write(StringUtils.quoteString('`', e.value, '`'));
 	}
 
-	public void visitLink(Link e) {
+	public void visitLink(Tlink e) {
 		// String predicate = "@";
 		// if(e.index != -1) {
 		// predicate += "[" + e.index + "]";

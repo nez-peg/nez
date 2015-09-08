@@ -278,8 +278,8 @@ public class GrammarMap extends AbstractList<Production> {
 		return ExpressionCommons.newIfFlag(getSourcePosition(), flagName);
 	}
 
-	public final Expression newOnFlag(String flagName, Expression... seq) {
-		return ExpressionCommons.newOnFlag(getSourcePosition(), true, flagName, newSequence(seq));
+	public final Expression newXon(String flagName, Expression... seq) {
+		return ExpressionCommons.newXon(getSourcePosition(), true, flagName, newSequence(seq));
 	}
 
 	public final Expression newBlock(Expression... seq) {

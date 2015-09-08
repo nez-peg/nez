@@ -10,33 +10,33 @@ import nez.lang.Expression;
 import nez.lang.Grammar;
 import nez.lang.GrammarOptimizer;
 import nez.lang.Production;
-import nez.lang.expr.And;
-import nez.lang.expr.AnyChar;
-import nez.lang.expr.Block;
-import nez.lang.expr.ByteChar;
-import nez.lang.expr.ByteMap;
-import nez.lang.expr.Capture;
+import nez.lang.expr.Uand;
+import nez.lang.expr.Cany;
+import nez.lang.expr.Xblock;
+import nez.lang.expr.Cbyte;
+import nez.lang.expr.Cset;
+import nez.lang.expr.Tcapture;
 import nez.lang.expr.Choice;
-import nez.lang.expr.DefIndent;
-import nez.lang.expr.DefSymbol;
-import nez.lang.expr.ExistsSymbol;
-import nez.lang.expr.IfFlag;
-import nez.lang.expr.IsIndent;
-import nez.lang.expr.IsSymbol;
-import nez.lang.expr.Link;
-import nez.lang.expr.LocalTable;
-import nez.lang.expr.MatchSymbol;
-import nez.lang.expr.MultiChar;
-import nez.lang.expr.New;
+import nez.lang.expr.Xdefindent;
+import nez.lang.expr.Xdef;
+import nez.lang.expr.Xexists;
+import nez.lang.expr.Xif;
+import nez.lang.expr.Xindent;
+import nez.lang.expr.Xis;
+import nez.lang.expr.Tlink;
+import nez.lang.expr.Xlocal;
+import nez.lang.expr.Xmatch;
+import nez.lang.expr.Cmulti;
+import nez.lang.expr.Tnew;
 import nez.lang.expr.NonTerminal;
-import nez.lang.expr.Not;
-import nez.lang.expr.OnFlag;
-import nez.lang.expr.Option;
-import nez.lang.expr.Repetition;
-import nez.lang.expr.Repetition1;
-import nez.lang.expr.Replace;
+import nez.lang.expr.Unot;
+import nez.lang.expr.Xon;
+import nez.lang.expr.Uoption;
+import nez.lang.expr.Uzero;
+import nez.lang.expr.Uone;
+import nez.lang.expr.Treplace;
 import nez.lang.expr.Sequence;
-import nez.lang.expr.Tagging;
+import nez.lang.expr.Ttag;
 
 public class CParserGenerator extends ParserGenerator {
 
@@ -247,7 +247,7 @@ public class CParserGenerator extends ParserGenerator {
 		int count = 0;
 		for (int i = start; i < e.size(); i++) {
 			Expression inner = e.get(i);
-			if (inner instanceof ByteChar) {
+			if (inner instanceof Cbyte) {
 				count++;
 			}
 		}
@@ -260,7 +260,7 @@ public class CParserGenerator extends ParserGenerator {
 	public boolean checkByteMap(Choice e) {
 		for (int i = 0; i < e.size(); i++) {
 			Expression inner = e.get(i);
-			if (!(inner instanceof ByteChar || inner instanceof ByteMap)) {
+			if (!(inner instanceof Cbyte || inner instanceof Cset)) {
 				return false;
 			}
 		}
@@ -269,7 +269,7 @@ public class CParserGenerator extends ParserGenerator {
 
 	private boolean checkString(Sequence e) {
 		for (int i = 0; i < e.size(); i++) {
-			if (!(e.get(i) instanceof ByteChar)) {
+			if (!(e.get(i) instanceof Cbyte)) {
 				return false;
 			}
 		}
@@ -280,10 +280,10 @@ public class CParserGenerator extends ParserGenerator {
 		boolean[] map = new boolean[256];
 		for (int i = 0; i < e.size(); i++) {
 			Expression inner = e.get(i);
-			if (inner instanceof ByteChar) {
-				map[((ByteChar) inner).byteChar] = true;
-			} else if (inner instanceof ByteMap) {
-				boolean[] bmap = ((ByteMap) inner).byteMap;
+			if (inner instanceof Cbyte) {
+				map[((Cbyte) inner).byteChar] = true;
+			} else if (inner instanceof Cset) {
+				boolean[] bmap = ((Cset) inner).byteMap;
 				for (int j = 0; j < bmap.length; j++) {
 					if (bmap[j]) {
 						map[j] = true;
@@ -317,10 +317,10 @@ public class CParserGenerator extends ParserGenerator {
 		boolean[] map = new boolean[256];
 		for (int i = 0; i < e.size(); i++) {
 			Expression inner = e.get(i);
-			if (inner instanceof ByteChar) {
-				map[((ByteChar) inner).byteChar] = true;
-			} else if (inner instanceof ByteMap) {
-				boolean[] bmap = ((ByteMap) inner).byteMap;
+			if (inner instanceof Cbyte) {
+				map[((Cbyte) inner).byteChar] = true;
+			} else if (inner instanceof Cset) {
+				boolean[] bmap = ((Cset) inner).byteMap;
 				for (int j = 0; j < bmap.length; j++) {
 					if (bmap[j]) {
 						map[j] = true;
@@ -352,8 +352,8 @@ public class CParserGenerator extends ParserGenerator {
 	public void specializeNotString(Sequence e) {
 		for (int i = 0; i < e.size(); i++) {
 			Expression inner = e.get(i);
-			if (inner instanceof ByteChar) {
-				this.file.writeIndent("if((int)*(ctx->cur + " + i + ") == " + ((ByteChar) inner).byteChar + ")");
+			if (inner instanceof Cbyte) {
+				this.file.writeIndent("if((int)*(ctx->cur + " + i + ") == " + ((Cbyte) inner).byteChar + ")");
 				this.openBlock();
 			}
 		}
@@ -363,21 +363,21 @@ public class CParserGenerator extends ParserGenerator {
 		}
 	}
 
-	public boolean specializeNot(Not e) {
+	public boolean specializeNot(Unot e) {
 		Expression inner = e.get(0);
 		if (inner instanceof NonTerminal) {
 			inner = getNonTerminalRule(inner);
 		}
-		if (inner instanceof ByteChar) {
-			this.file.writeIndent("if((int)*ctx->cur == " + ((ByteChar) inner).byteChar + ")");
+		if (inner instanceof Cbyte) {
+			this.file.writeIndent("if((int)*ctx->cur == " + ((Cbyte) inner).byteChar + ")");
 			this.openBlock();
 			this.jumpFailureJump();
 			this.closeBlock();
 			return true;
 		}
-		if (inner instanceof ByteMap) {
+		if (inner instanceof Cset) {
 			int fid = this.fid++;
-			boolean[] map = ((ByteMap) inner).byteMap;
+			boolean[] map = ((Cset) inner).byteMap;
 			this.file.writeIndent("unsigned long bmap" + fid + "[] = {");
 			for (int i = 0; i < map.length - 1; i++) {
 				if (map[i]) {
@@ -418,10 +418,10 @@ public class CParserGenerator extends ParserGenerator {
 		boolean[] map = new boolean[256];
 		for (int i = 0; i < e.size(); i++) {
 			Expression inner = e.get(i);
-			if (inner instanceof ByteChar) {
-				map[((ByteChar) inner).byteChar] = true;
-			} else if (inner instanceof ByteMap) {
-				boolean[] bmap = ((ByteMap) inner).byteMap;
+			if (inner instanceof Cbyte) {
+				map[((Cbyte) inner).byteChar] = true;
+			} else if (inner instanceof Cset) {
+				boolean[] bmap = ((Cset) inner).byteMap;
 				for (int j = 0; j < bmap.length; j++) {
 					if (bmap[j]) {
 						map[j] = true;
@@ -457,8 +457,8 @@ public class CParserGenerator extends ParserGenerator {
 		this.let("char*", backtrack, "ctx->cur");
 		for (int i = 0; i < e.size(); i++) {
 			Expression inner = e.get(i);
-			if (inner instanceof ByteChar) {
-				this.file.writeIndent("if((int)*(ctx->cur++) == " + ((ByteChar) inner).byteChar + ")");
+			if (inner instanceof Cbyte) {
+				this.file.writeIndent("if((int)*(ctx->cur++) == " + ((Cbyte) inner).byteChar + ")");
 				this.openBlock();
 			}
 		}
@@ -470,21 +470,21 @@ public class CParserGenerator extends ParserGenerator {
 		this.exitLabel(label);
 	}
 
-	public boolean specializeOption(Option e) {
+	public boolean specializeOption(Uoption e) {
 		Expression inner = e.get(0);
 		if (inner instanceof NonTerminal) {
 			inner = getNonTerminalRule(inner);
 		}
-		if (inner instanceof ByteChar) {
-			this.file.writeIndent("if((int)*ctx->cur == " + ((ByteChar) inner).byteChar + ")");
+		if (inner instanceof Cbyte) {
+			this.file.writeIndent("if((int)*ctx->cur == " + ((Cbyte) inner).byteChar + ")");
 			this.openBlock();
 			this.file.writeIndent("ctx->cur++;");
 			this.closeBlock();
 			return true;
 		}
-		if (inner instanceof ByteMap) {
+		if (inner instanceof Cset) {
 			int fid = this.fid++;
-			boolean[] map = ((ByteMap) inner).byteMap;
+			boolean[] map = ((Cset) inner).byteMap;
 			this.file.writeIndent("unsigned long bmap" + fid + "[] = {");
 			for (int i = 0; i < map.length - 1; i++) {
 				if (map[i]) {
@@ -525,10 +525,10 @@ public class CParserGenerator extends ParserGenerator {
 		boolean[] b = new boolean[256];
 		for (int i = 0; i < e.size(); i++) {
 			Expression inner = e.get(i);
-			if (inner instanceof ByteChar) {
-				b[((ByteChar) inner).byteChar] = true;
-			} else if (inner instanceof ByteMap) {
-				boolean[] bmap = ((ByteMap) inner).byteMap;
+			if (inner instanceof Cbyte) {
+				b[((Cbyte) inner).byteChar] = true;
+			} else if (inner instanceof Cset) {
+				boolean[] bmap = ((Cset) inner).byteMap;
 				for (int j = 0; j < bmap.length; j++) {
 					if (bmap[j]) {
 						b[j] = true;
@@ -561,15 +561,15 @@ public class CParserGenerator extends ParserGenerator {
 		this.closeBlock();
 	}
 
-	public boolean specializeRepetition(Repetition e) {
+	public boolean specializeRepetition(Uzero e) {
 		Expression inner = e.get(0);
 		if (inner instanceof NonTerminal) {
 			inner = getNonTerminalRule(inner);
 		}
-		if (inner instanceof ByteChar) {
+		if (inner instanceof Cbyte) {
 			this.file.writeIndent("while(1)");
 			this.openBlock();
-			this.file.writeIndent("if((int)*ctx->cur != " + ((ByteChar) inner).byteChar + ")");
+			this.file.writeIndent("if((int)*ctx->cur != " + ((Cbyte) inner).byteChar + ")");
 			this.openBlock();
 			this.file.writeIndent("break;");
 			this.closeBlock();
@@ -577,8 +577,8 @@ public class CParserGenerator extends ParserGenerator {
 			this.closeBlock();
 			return true;
 		}
-		if (inner instanceof ByteMap) {
-			boolean[] b = ((ByteMap) inner).byteMap;
+		if (inner instanceof Cset) {
+			boolean[] b = ((Cset) inner).byteMap;
 			this.file.writeIndent("while(1)");
 			this.openBlock();
 			for (int start = 0; start < 256; start++) {
@@ -692,7 +692,7 @@ public class CParserGenerator extends ParserGenerator {
 	}
 
 	@Override
-	public void visitByteChar(ByteChar e) {
+	public void visitByteChar(Cbyte e) {
 		this.file.writeIndent("if((int)*ctx->cur != " + e.byteChar + ")");
 		this.openBlock();
 		this.jumpFailureJump();
@@ -710,7 +710,7 @@ public class CParserGenerator extends ParserGenerator {
 	}
 
 	@Override
-	public void visitByteMap(ByteMap e) {
+	public void visitByteMap(Cset e) {
 		int fid = this.fid++;
 		String label = "EXIT_BYTEMAP" + fid;
 		boolean b[] = e.byteMap;
@@ -761,7 +761,7 @@ public class CParserGenerator extends ParserGenerator {
 	}
 
 	@Override
-	public void visitAnyChar(AnyChar e) {
+	public void visitAnyChar(Cany e) {
 		this.file.writeIndent("if(*ctx->cur == 0)");
 		this.openBlock();
 		this.jumpFailureJump();
@@ -770,13 +770,13 @@ public class CParserGenerator extends ParserGenerator {
 	}
 
 	@Override
-	public void visitCharMultiByte(MultiChar p) {
+	public void visitCharMultiByte(Cmulti p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitOption(Option e) {
+	public void visitOption(Uoption e) {
 		if (!specializeOption(e)) {
 			this.pushFailureJumpPoint();
 			String label = "EXIT_OPTION" + this.fid;
@@ -791,7 +791,7 @@ public class CParserGenerator extends ParserGenerator {
 	}
 
 	@Override
-	public void visitRepetition(Repetition e) {
+	public void visitRepetition(Uzero e) {
 		if (!specializeRepetition(e)) {
 			this.pushFailureJumpPoint();
 			String backtrack = "c" + this.fid;
@@ -807,7 +807,7 @@ public class CParserGenerator extends ParserGenerator {
 	}
 
 	@Override
-	public void visitRepetition1(Repetition1 e) {
+	public void visitRepetition1(Uone e) {
 		visitExpression(e.get(0));
 		this.pushFailureJumpPoint();
 		String backtrack = "c" + this.fid;
@@ -822,7 +822,7 @@ public class CParserGenerator extends ParserGenerator {
 	}
 
 	@Override
-	public void visitAnd(And e) {
+	public void visitAnd(Uand e) {
 		this.pushFailureJumpPoint();
 		String label = "EXIT_AND" + this.fid;
 		String backtrack = "c" + this.fid;
@@ -837,7 +837,7 @@ public class CParserGenerator extends ParserGenerator {
 	}
 
 	@Override
-	public void visitNot(Not e) {
+	public void visitNot(Unot e) {
 		if (!specializeNot(e)) {
 			this.pushFailureJumpPoint();
 			String backtrack = "c" + this.fid;
@@ -967,7 +967,7 @@ public class CParserGenerator extends ParserGenerator {
 	Stack<String> markStack = new Stack<String>();
 
 	@Override
-	public void visitNew(New e) {
+	public void visitNew(Tnew e) {
 		if (this.option.enabledASTConstruction) {
 			this.pushFailureJumpPoint();
 			String mark = "mark" + this.fid;
@@ -978,7 +978,7 @@ public class CParserGenerator extends ParserGenerator {
 	}
 
 	@Override
-	public void visitCapture(Capture e) {
+	public void visitCapture(Tcapture e) {
 		if (this.option.enabledASTConstruction) {
 			String label = "EXIT_CAPTURE" + this.fid++;
 			this.file.writeIndent("nez_pushDataLog(ctx, LazyCapture_T, ctx->cur - ctx->inputs, 0, NULL, NULL);");
@@ -991,21 +991,21 @@ public class CParserGenerator extends ParserGenerator {
 	}
 
 	@Override
-	public void visitTagging(Tagging e) {
+	public void visitTagging(Ttag e) {
 		if (this.option.enabledASTConstruction) {
 			this.file.writeIndent("nez_pushDataLog(ctx, LazyTag_T, 0, 0, \"" + e.tag.getName() + "\", NULL);");
 		}
 	}
 
 	@Override
-	public void visitReplace(Replace e) {
+	public void visitReplace(Treplace e) {
 		if (this.option.enabledASTConstruction) {
 			this.file.writeIndent("nez_pushDataLog(ctx, LazyValue_T, 0, 0, \"" + e.value + "\", NULL);");
 		}
 	}
 
 	@Override
-	public void visitLink(Link e) {
+	public void visitLink(Tlink e) {
 		if (this.option.enabledASTConstruction) {
 			this.pushFailureJumpPoint();
 			String mark = "mark" + this.fid;
@@ -1027,7 +1027,7 @@ public class CParserGenerator extends ParserGenerator {
 
 	ArrayList<String> flagTable = new ArrayList<String>();
 
-	public void visitIfFlag(IfFlag e) {
+	public void visitIfFlag(Xif e) {
 		if (!flagTable.contains(e.getFlagName())) {
 			flagTable.add(e.getFlagName());
 		}
@@ -1044,7 +1044,7 @@ public class CParserGenerator extends ParserGenerator {
 		}
 	}
 
-	public void visitOnFlag(OnFlag e) {
+	public void visitXon(Xon e) {
 		if (!flagTable.contains(e.getFlagName())) {
 			flagTable.add(e.getFlagName());
 		}
@@ -1057,49 +1057,49 @@ public class CParserGenerator extends ParserGenerator {
 	}
 
 	@Override
-	public void visitBlock(Block p) {
+	public void visitBlock(Xblock p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitDefSymbol(DefSymbol p) {
+	public void visitDefSymbol(Xdef p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitIsSymbol(IsSymbol p) {
+	public void visitIsSymbol(Xis p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitMatchSymbol(MatchSymbol p) {
+	public void visitMatchSymbol(Xmatch p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitDefIndent(DefIndent p) {
+	public void visitDefIndent(Xdefindent p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitIsIndent(IsIndent p) {
+	public void visitIsIndent(Xindent p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitExistsSymbol(ExistsSymbol p) {
+	public void visitExistsSymbol(Xexists p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitLocalTable(LocalTable p) {
+	public void visitLocalTable(Xlocal p) {
 		// TODO Auto-generated method stub
 
 	}

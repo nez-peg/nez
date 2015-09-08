@@ -2,31 +2,31 @@ package nez.generator;
 
 import nez.lang.Expression;
 import nez.lang.Production;
-import nez.lang.expr.And;
-import nez.lang.expr.AnyChar;
-import nez.lang.expr.Block;
-import nez.lang.expr.ByteChar;
-import nez.lang.expr.ByteMap;
-import nez.lang.expr.Capture;
+import nez.lang.expr.Uand;
+import nez.lang.expr.Cany;
+import nez.lang.expr.Xblock;
+import nez.lang.expr.Cbyte;
+import nez.lang.expr.Cset;
+import nez.lang.expr.Tcapture;
 import nez.lang.expr.Choice;
-import nez.lang.expr.DefIndent;
-import nez.lang.expr.DefSymbol;
-import nez.lang.expr.ExistsSymbol;
-import nez.lang.expr.IsIndent;
-import nez.lang.expr.IsSymbol;
-import nez.lang.expr.Link;
-import nez.lang.expr.LocalTable;
-import nez.lang.expr.MatchSymbol;
-import nez.lang.expr.MultiChar;
-import nez.lang.expr.New;
+import nez.lang.expr.Xdefindent;
+import nez.lang.expr.Xdef;
+import nez.lang.expr.Xexists;
+import nez.lang.expr.Xindent;
+import nez.lang.expr.Xis;
+import nez.lang.expr.Tlink;
+import nez.lang.expr.Xlocal;
+import nez.lang.expr.Xmatch;
+import nez.lang.expr.Cmulti;
+import nez.lang.expr.Tnew;
 import nez.lang.expr.NonTerminal;
-import nez.lang.expr.Not;
-import nez.lang.expr.Option;
-import nez.lang.expr.Repetition;
-import nez.lang.expr.Repetition1;
-import nez.lang.expr.Replace;
+import nez.lang.expr.Unot;
+import nez.lang.expr.Uoption;
+import nez.lang.expr.Uzero;
+import nez.lang.expr.Uone;
+import nez.lang.expr.Treplace;
 import nez.lang.expr.Sequence;
-import nez.lang.expr.Tagging;
+import nez.lang.expr.Ttag;
 import nez.lang.expr.Unary;
 import nez.util.StringUtils;
 
@@ -242,40 +242,40 @@ public abstract class GrammarGenerator extends NezGenerator {
 		W(_NonTerminal(e.getProduction()));
 	}
 
-	public void visitByteChar(ByteChar e) {
+	public void visitByteChar(Cbyte e) {
 		W(StringUtils.stringfyByte(Quoatation(), e.byteChar, Quoatation()));
 	}
 
-	public void visitByteMap(ByteMap e) {
+	public void visitByteMap(Cset e) {
 		W(StringUtils.stringfyCharacterClass(e.byteMap));
 	}
 
-	public void visitAnyChar(AnyChar e) {
+	public void visitAnyChar(Cany e) {
 		W(_Any());
 	}
 
 	@Override
-	public void visitCharMultiByte(MultiChar p) {
+	public void visitCharMultiByte(Cmulti p) {
 		W(p.toString());
 	}
 
-	public void visitOption(Option e) {
+	public void visitOption(Uoption e) {
 		Unary(null, e, _Option());
 	}
 
-	public void visitRepetition(Repetition e) {
+	public void visitRepetition(Uzero e) {
 		Unary(null, e, _ZeroAndMore());
 	}
 
-	public void visitRepetition1(Repetition1 e) {
+	public void visitRepetition1(Uone e) {
 		Unary(null, e, _OneAndMore());
 	}
 
-	public void visitAnd(And e) {
+	public void visitAnd(Uand e) {
 		Unary(_And(), e, null);
 	}
 
-	public void visitNot(Not e) {
+	public void visitNot(Unot e) {
 		Unary(_Not(), e, null);
 	}
 
@@ -288,24 +288,24 @@ public abstract class GrammarGenerator extends NezGenerator {
 		}
 	}
 
-	public void visitNew(New e) {
+	public void visitNew(Tnew e) {
 		// W(e.lefted ? "{@" : "{");
 	}
 
-	public void visitCapture(Capture e) {
+	public void visitCapture(Tcapture e) {
 		// W("}");
 	}
 
-	public void visitTagging(Tagging e) {
+	public void visitTagging(Ttag e) {
 		// W("#");
 		// W(e.tag.getName());
 	}
 
-	public void visitValue(Replace e) {
+	public void visitValue(Treplace e) {
 		// W(StringUtils.quoteString('`', e.value, '`'));
 	}
 
-	public void visitLink(Link e) {
+	public void visitLink(Tlink e) {
 		// String predicate = "@";
 		// if(e.index != -1) {
 		// predicate += "[" + e.index + "]";
@@ -321,7 +321,7 @@ public abstract class GrammarGenerator extends NezGenerator {
 				W(_Delim());
 			}
 			Expression s = e.get(i);
-			if (s instanceof ByteChar && i + 1 < e.size() && e.get(i + 1) instanceof ByteChar) {
+			if (s instanceof Cbyte && i + 1 < e.size() && e.get(i + 1) instanceof Cbyte) {
 				i = checkString(e, i);
 				c++;
 				continue;
@@ -340,7 +340,7 @@ public abstract class GrammarGenerator extends NezGenerator {
 		int n = 0;
 		for (int i = start; i < l.size(); i++) {
 			Expression e = l.get(i);
-			if (e instanceof ByteChar) {
+			if (e instanceof Cbyte) {
 				n++;
 				continue;
 			}
@@ -348,7 +348,7 @@ public abstract class GrammarGenerator extends NezGenerator {
 		}
 		byte[] utf8 = new byte[n];
 		for (int i = 0; i < n; i++) {
-			utf8[i] = (byte) (((ByteChar) l.get(start + i)).byteChar);
+			utf8[i] = (byte) (((Cbyte) l.get(start + i)).byteChar);
 		}
 		visitString(StringUtils.newString(utf8));
 		return start + n - 1;
@@ -372,55 +372,55 @@ public abstract class GrammarGenerator extends NezGenerator {
 	}
 
 	@Override
-	public void visitReplace(Replace p) {
+	public void visitReplace(Treplace p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitBlock(Block p) {
+	public void visitBlock(Xblock p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitDefSymbol(DefSymbol p) {
+	public void visitDefSymbol(Xdef p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitMatchSymbol(MatchSymbol p) {
+	public void visitMatchSymbol(Xmatch p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitIsSymbol(IsSymbol p) {
+	public void visitIsSymbol(Xis p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitDefIndent(DefIndent p) {
+	public void visitDefIndent(Xdefindent p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitIsIndent(IsIndent p) {
+	public void visitIsIndent(Xindent p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitExistsSymbol(ExistsSymbol p) {
+	public void visitExistsSymbol(Xexists p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitLocalTable(LocalTable p) {
+	public void visitLocalTable(Xlocal p) {
 		// TODO Auto-generated method stub
 
 	}

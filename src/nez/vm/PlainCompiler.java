@@ -3,31 +3,31 @@ package nez.vm;
 import nez.NezOption;
 import nez.lang.Expression;
 import nez.lang.Production;
-import nez.lang.expr.And;
-import nez.lang.expr.AnyChar;
-import nez.lang.expr.Block;
-import nez.lang.expr.ByteChar;
-import nez.lang.expr.ByteMap;
-import nez.lang.expr.Capture;
+import nez.lang.expr.Uand;
+import nez.lang.expr.Cany;
+import nez.lang.expr.Xblock;
+import nez.lang.expr.Cbyte;
+import nez.lang.expr.Cset;
+import nez.lang.expr.Tcapture;
 import nez.lang.expr.Choice;
-import nez.lang.expr.DefIndent;
-import nez.lang.expr.DefSymbol;
-import nez.lang.expr.ExistsSymbol;
-import nez.lang.expr.IsIndent;
-import nez.lang.expr.IsSymbol;
-import nez.lang.expr.Link;
-import nez.lang.expr.LocalTable;
-import nez.lang.expr.MatchSymbol;
-import nez.lang.expr.MultiChar;
-import nez.lang.expr.New;
+import nez.lang.expr.Xdefindent;
+import nez.lang.expr.Xdef;
+import nez.lang.expr.Xexists;
+import nez.lang.expr.Xindent;
+import nez.lang.expr.Xis;
+import nez.lang.expr.Tlink;
+import nez.lang.expr.Xlocal;
+import nez.lang.expr.Xmatch;
+import nez.lang.expr.Cmulti;
+import nez.lang.expr.Tnew;
 import nez.lang.expr.NonTerminal;
-import nez.lang.expr.Not;
-import nez.lang.expr.Option;
-import nez.lang.expr.Repetition;
-import nez.lang.expr.Repetition1;
-import nez.lang.expr.Replace;
+import nez.lang.expr.Unot;
+import nez.lang.expr.Uoption;
+import nez.lang.expr.Uzero;
+import nez.lang.expr.Uone;
+import nez.lang.expr.Treplace;
 import nez.lang.expr.Sequence;
-import nez.lang.expr.Tagging;
+import nez.lang.expr.Ttag;
 
 public class PlainCompiler extends NezCompiler {
 
@@ -43,20 +43,20 @@ public class PlainCompiler extends NezCompiler {
 		return e.encode(this, next, failjump);
 	}
 
-	public Instruction encodeAnyChar(AnyChar p, Instruction next, Instruction failjump) {
+	public Instruction encodeCany(Cany p, Instruction next, Instruction failjump) {
 		return new IAny(p, next);
 	}
 
-	public Instruction encodeByteChar(ByteChar p, Instruction next, Instruction failjump) {
+	public Instruction encodeCbyte(Cbyte p, Instruction next, Instruction failjump) {
 		return new IByte(p, next);
 	}
 
-	public Instruction encodeByteMap(ByteMap p, Instruction next, Instruction failjump) {
+	public Instruction encodeCset(Cset p, Instruction next, Instruction failjump) {
 		return new ISet(p, next);
 	}
 
 	@Override
-	public Instruction encodeMultiChar(MultiChar p, Instruction next, Instruction failjump) {
+	public Instruction encodeCmulti(Cmulti p, Instruction next, Instruction failjump) {
 		return new IStr(p, next);
 	}
 
@@ -64,12 +64,12 @@ public class PlainCompiler extends NezCompiler {
 		return this.commonFailure;
 	}
 
-	public Instruction encodeOption(Option p, Instruction next) {
+	public Instruction encodeUoption(Uoption p, Instruction next) {
 		Instruction pop = new ISucc(p, next);
 		return new IAlt(p, next, encode(p.get(0), pop, next));
 	}
 
-	public Instruction encodeRepetition(Repetition p, Instruction next) {
+	public Instruction encodeUzero(Uzero p, Instruction next) {
 		// Expression skip = p.possibleInfiniteLoop ? new ISkip(p) : new
 		// ISkip(p);
 		Instruction skip = new ISkip(p);
@@ -78,16 +78,16 @@ public class PlainCompiler extends NezCompiler {
 		return new IAlt(p, next, start);
 	}
 
-	public Instruction encodeRepetition1(Repetition1 p, Instruction next, Instruction failjump) {
-		return encode(p.get(0), this.encodeRepetition(p, next), failjump);
+	public Instruction encodeUone(Uone p, Instruction next, Instruction failjump) {
+		return encode(p.get(0), this.encodeUzero(p, next), failjump);
 	}
 
-	public Instruction encodeAnd(And p, Instruction next, Instruction failjump) {
+	public Instruction encodeUand(Uand p, Instruction next, Instruction failjump) {
 		Instruction inner = encode(p.get(0), new IBack(p, next), failjump);
 		return new IPos(p, inner);
 	}
 
-	public Instruction encodeNot(Not p, Instruction next, Instruction failjump) {
+	public Instruction encodeUnot(Unot p, Instruction next, Instruction failjump) {
 		Instruction fail = new ISucc(p, new IFail(p));
 		return new IAlt(p, next, encode(p.get(0), fail, failjump));
 	}
@@ -118,7 +118,7 @@ public class PlainCompiler extends NezCompiler {
 
 	// AST Construction
 
-	public Instruction encodeLink(Link p, Instruction next, Instruction failjump) {
+	public Instruction encodeTlink(Tlink p, Instruction next, Instruction failjump) {
 		if (this.option.enabledASTConstruction) {
 			next = new ITPop(p, next);
 			next = encode(p.get(0), next, failjump);
@@ -127,51 +127,51 @@ public class PlainCompiler extends NezCompiler {
 		return encode(p.get(0), next, failjump);
 	}
 
-	public Instruction encodeNew(New p, Instruction next) {
+	public Instruction encodeTnew(Tnew p, Instruction next) {
 		if (this.option.enabledASTConstruction) {
 			return p.leftFold ? new ITLeftFold(p, next) : new INew(p, next);
 		}
 		return next;
 	}
 
-	public Instruction encodeCapture(Capture p, Instruction next) {
+	public Instruction encodeTcapture(Tcapture p, Instruction next) {
 		if (this.option.enabledASTConstruction) {
 			return new ICapture(p, next);
 		}
 		return next;
 	}
 
-	public Instruction encodeTagging(Tagging p, Instruction next) {
+	public Instruction encodeTtag(Ttag p, Instruction next) {
 		if (this.option.enabledASTConstruction) {
 			return new ITag(p, next);
 		}
 		return next;
 	}
 
-	public Instruction encodeReplace(Replace p, Instruction next) {
+	public Instruction encodeTreplace(Treplace p, Instruction next) {
 		if (this.option.enabledASTConstruction) {
 			return new IReplace(p, next);
 		}
 		return next;
 	}
 
-	public Instruction encodeBlock(Block p, Instruction next, Instruction failjump) {
+	public Instruction encodeXblock(Xblock p, Instruction next, Instruction failjump) {
 		next = new IEndSymbolScope(p, next);
 		next = encode(p.get(0), next, failjump);
 		return new IBeginSymbolScope(p, next);
 	}
 
-	public Instruction encodeLocalTable(LocalTable p, Instruction next, Instruction failjump) {
+	public Instruction encodeXlocal(Xlocal p, Instruction next, Instruction failjump) {
 		next = new IEndSymbolScope(p, next);
 		next = encode(p.get(0), next, failjump);
 		return new IBeginLocalScope(p, next);
 	}
 
-	public Instruction encodeDefSymbol(DefSymbol p, Instruction next, Instruction failjump) {
+	public Instruction encodeXdef(Xdef p, Instruction next, Instruction failjump) {
 		return new IPos(p, encode(p.get(0), new IDefSymbol(p, next), failjump));
 	}
 
-	public Instruction encodeExistsSymbol(ExistsSymbol p, Instruction next, Instruction failjump) {
+	public Instruction encodeXexists(Xexists p, Instruction next, Instruction failjump) {
 		String symbol = p.getSymbol();
 		if (symbol == null) {
 			return new IExists(p, next);
@@ -180,11 +180,11 @@ public class PlainCompiler extends NezCompiler {
 		}
 	}
 
-	public Instruction encodeMatchSymbol(MatchSymbol p, Instruction next, Instruction failjump) {
+	public Instruction encodeXmatch(Xmatch p, Instruction next, Instruction failjump) {
 		return new IMatch(p, next);
 	}
 
-	public Instruction encodeIsSymbol(IsSymbol p, Instruction next, Instruction failjump) {
+	public Instruction encodeXis(Xis p, Instruction next, Instruction failjump) {
 		if (p.is) {
 			return new IPos(p, encode(p.getSymbolExpression(), new IIsSymbol(p, next), failjump));
 		} else {
@@ -192,11 +192,11 @@ public class PlainCompiler extends NezCompiler {
 		}
 	}
 
-	public Instruction encodeDefIndent(DefIndent p, Instruction next, Instruction failjump) {
+	public Instruction encodeXdefindent(Xdefindent p, Instruction next, Instruction failjump) {
 		return new IDefIndent(p, next);
 	}
 
-	public Instruction encodeIsIndent(IsIndent p, Instruction next, Instruction failjump) {
+	public Instruction encodeXindent(Xindent p, Instruction next, Instruction failjump) {
 		return new IIsIndent(p, next);
 	}
 

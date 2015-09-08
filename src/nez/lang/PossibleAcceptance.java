@@ -1,11 +1,11 @@
 package nez.lang;
 
 import nez.ast.Source;
-import nez.lang.expr.And;
-import nez.lang.expr.AnyChar;
-import nez.lang.expr.ByteChar;
-import nez.lang.expr.ByteMap;
-import nez.lang.expr.Not;
+import nez.lang.expr.Uand;
+import nez.lang.expr.Cany;
+import nez.lang.expr.Cbyte;
+import nez.lang.expr.Cset;
+import nez.lang.expr.Unot;
 import nez.lang.expr.Unary;
 
 public class PossibleAcceptance {
@@ -40,14 +40,14 @@ public class PossibleAcceptance {
 		return (r == PossibleAcceptance.Accept) ? r : PossibleAcceptance.Unconsumed;
 	}
 
-	public static short acceptAnd(And e, int ch) {
+	public static short acceptAnd(Uand e, int ch) {
 		short r = e.get(0).acceptByte(ch);
 		return (r == PossibleAcceptance.Reject) ? r : PossibleAcceptance.Unconsumed;
 	}
 
-	public static short acceptNot(Not e, int ch) {
+	public static short acceptNot(Unot e, int ch) {
 		Expression inner = e.get(0);
-		if (inner instanceof ByteChar || inner instanceof ByteMap || inner instanceof AnyChar) {
+		if (inner instanceof Cbyte || inner instanceof Cset || inner instanceof Cany) {
 			return inner.acceptByte(ch) == PossibleAcceptance.Accept ? PossibleAcceptance.Reject : PossibleAcceptance.Unconsumed;
 		}
 		/* The code below works only if a single character in !(e) */

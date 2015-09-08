@@ -8,31 +8,31 @@ import nez.lang.Expression;
 import nez.lang.Grammar;
 import nez.lang.Production;
 import nez.lang.Typestate;
-import nez.lang.expr.And;
-import nez.lang.expr.AnyChar;
-import nez.lang.expr.Block;
-import nez.lang.expr.ByteChar;
-import nez.lang.expr.ByteMap;
-import nez.lang.expr.Capture;
+import nez.lang.expr.Uand;
+import nez.lang.expr.Cany;
+import nez.lang.expr.Xblock;
+import nez.lang.expr.Cbyte;
+import nez.lang.expr.Cset;
+import nez.lang.expr.Tcapture;
 import nez.lang.expr.Choice;
-import nez.lang.expr.DefIndent;
-import nez.lang.expr.DefSymbol;
-import nez.lang.expr.ExistsSymbol;
-import nez.lang.expr.IsIndent;
-import nez.lang.expr.IsSymbol;
-import nez.lang.expr.Link;
-import nez.lang.expr.LocalTable;
-import nez.lang.expr.MatchSymbol;
-import nez.lang.expr.MultiChar;
-import nez.lang.expr.New;
+import nez.lang.expr.Xdefindent;
+import nez.lang.expr.Xdef;
+import nez.lang.expr.Xexists;
+import nez.lang.expr.Xindent;
+import nez.lang.expr.Xis;
+import nez.lang.expr.Tlink;
+import nez.lang.expr.Xlocal;
+import nez.lang.expr.Xmatch;
+import nez.lang.expr.Cmulti;
+import nez.lang.expr.Tnew;
 import nez.lang.expr.NonTerminal;
-import nez.lang.expr.Not;
-import nez.lang.expr.Option;
-import nez.lang.expr.Repetition;
-import nez.lang.expr.Repetition1;
-import nez.lang.expr.Replace;
+import nez.lang.expr.Unot;
+import nez.lang.expr.Uoption;
+import nez.lang.expr.Uzero;
+import nez.lang.expr.Uone;
+import nez.lang.expr.Treplace;
 import nez.lang.expr.Sequence;
-import nez.lang.expr.Tagging;
+import nez.lang.expr.Ttag;
 import nez.util.StringUtils;
 
 public class JavaParserGenerator extends ParserGenerator {
@@ -297,7 +297,7 @@ public class JavaParserGenerator extends ParserGenerator {
 		return this;
 	}
 
-	public void writeLinkLogic(Link e) {
+	public void writeLinkLogic(Tlink e) {
 		VarNode(_left(), _cleft());
 		VarInt(_log(), _clog());
 		IfThen(_call(e.get(0))).Begin().Commit(_log(), _left()).End();
@@ -333,13 +333,13 @@ public class JavaParserGenerator extends ParserGenerator {
 		Comment(e);
 		if (e instanceof Choice) {
 			writeChoiceLogic(e);
-		} else if (e instanceof Link) {
-			writeLinkLogic((Link) e);
-		} else if (e instanceof Option) {
+		} else if (e instanceof Tlink) {
+			writeLinkLogic((Tlink) e);
+		} else if (e instanceof Uoption) {
 			writeOptionLogic(e);
-		} else if (e instanceof Repetition || e instanceof Repetition1) {
+		} else if (e instanceof Uzero || e instanceof Uone) {
 			writeRepetitionLogic(e);
-		} else if (e instanceof Not || e instanceof And) {
+		} else if (e instanceof Unot || e instanceof Uand) {
 			writePredicateLogic(e);
 		} else {
 			visitExpression(e);
@@ -412,49 +412,49 @@ public class JavaParserGenerator extends ParserGenerator {
 	}
 
 	@Override
-	public void visitByteChar(ByteChar e) {
+	public void visitByteChar(Cbyte e) {
 		IfNotThen(_match(e.byteChar)).Begin().Return(_false()).End();
 	}
 
 	@Override
-	public void visitByteMap(ByteMap e) {
+	public void visitByteMap(Cset e) {
 		IfNotThen(_match(e.byteMap)).Begin().Return(_false()).End();
 	}
 
 	@Override
-	public void visitAnyChar(AnyChar e) {
+	public void visitAnyChar(Cany e) {
 		IfNotThen(_match()).Begin().Return(_false()).End();
 	}
 
 	@Override
-	public void visitCharMultiByte(MultiChar p) {
+	public void visitCharMultiByte(Cmulti p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitOption(Option e) {
+	public void visitOption(Uoption e) {
 		Statement(_call(e));
 	}
 
 	@Override
-	public void visitRepetition(Repetition e) {
+	public void visitRepetition(Uzero e) {
 		Statement(_call(e));
 	}
 
 	@Override
-	public void visitRepetition1(Repetition1 e) {
+	public void visitRepetition1(Uone e) {
 		visitExpression(e.get(0));
 		Statement(_call(e));
 	}
 
 	@Override
-	public void visitAnd(And e) {
+	public void visitAnd(Uand e) {
 		IfNotThen(_call(e)).Begin().Return(_false()).End();
 	}
 
 	@Override
-	public void visitNot(Not e) {
+	public void visitNot(Unot e) {
 		IfThen(_call(e)).Begin().Return(_false()).End();
 	}
 
@@ -471,12 +471,12 @@ public class JavaParserGenerator extends ParserGenerator {
 	}
 
 	@Override
-	public void visitNew(New e) {
+	public void visitNew(Tnew e) {
 		Statement(_ccall("new"));
 	}
 
 	@Override
-	public void visitCapture(Capture e) {
+	public void visitCapture(Tcapture e) {
 		Statement(_ccall("capture"));
 	}
 
@@ -485,17 +485,17 @@ public class JavaParserGenerator extends ParserGenerator {
 	}
 
 	@Override
-	public void visitTagging(Tagging e) {
+	public void visitTagging(Ttag e) {
 		Statement(_ccall("tag", _tag(e.tag)));
 	}
 
 	@Override
-	public void visitReplace(Replace e) {
+	public void visitReplace(Treplace e) {
 		Statement(_ccall("replace", StringUtils.quoteString('"', e.value, '"')));
 	}
 
 	@Override
-	public void visitLink(Link e) {
+	public void visitLink(Tlink e) {
 		IfNotThen(_call(e)).Begin().Return(_false()).End();
 	}
 
@@ -511,49 +511,49 @@ public class JavaParserGenerator extends ParserGenerator {
 	}
 
 	@Override
-	public void visitBlock(Block p) {
+	public void visitBlock(Xblock p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitDefSymbol(DefSymbol p) {
+	public void visitDefSymbol(Xdef p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitIsSymbol(IsSymbol p) {
+	public void visitIsSymbol(Xis p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitMatchSymbol(MatchSymbol p) {
+	public void visitMatchSymbol(Xmatch p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitDefIndent(DefIndent p) {
+	public void visitDefIndent(Xdefindent p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitIsIndent(IsIndent p) {
+	public void visitIsIndent(Xindent p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitExistsSymbol(ExistsSymbol p) {
+	public void visitExistsSymbol(Xexists p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitLocalTable(LocalTable p) {
+	public void visitLocalTable(Xlocal p) {
 		// TODO Auto-generated method stub
 
 	}

@@ -1,42 +1,34 @@
 package nez.lang.expr;
 
 import nez.ast.SourcePosition;
-import nez.ast.Tag;
 import nez.lang.Expression;
 import nez.lang.ExpressionTransducer;
 import nez.lang.PossibleAcceptance;
 import nez.lang.Typestate;
 import nez.lang.Visa;
+import nez.util.StringUtils;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
-public class Tagging extends Term {
-	public Tag tag;
+public class Treplace extends Term {
+	public String value;
 
-	Tagging(SourcePosition s, Tag tag) {
+	Treplace(SourcePosition s, String value) {
 		super(s);
-		this.tag = tag;
-	}
-
-	Tagging(SourcePosition s, String name) {
-		this(s, Tag.tag(name));
-	}
-
-	public final String getTagName() {
-		return tag.getName();
+		this.value = value;
 	}
 
 	@Override
 	public final boolean equalsExpression(Expression o) {
-		if (o instanceof Tagging) {
-			return this.tag == ((Tagging) o).tag;
+		if (o instanceof Treplace) {
+			return this.value.equals(((Treplace) o).value);
 		}
 		return false;
 	}
 
 	@Override
 	public final void format(StringBuilder sb) {
-		sb.append("#" + tag.getName());
+		sb.append(StringUtils.quoteString('`', this.value, '`'));
 	}
 
 	@Override
@@ -56,11 +48,11 @@ public class Tagging extends Term {
 
 	@Override
 	public Expression reshape(ExpressionTransducer m) {
-		return m.reshapeTagging(this);
+		return m.reshapeReplace(this);
 	}
 
 	@Override
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
-		return bc.encodeTagging(this, next);
+		return bc.encodeTreplace(this, next);
 	}
 }

@@ -3,17 +3,17 @@ package nez.lang;
 import java.util.List;
 
 import nez.ast.SourcePosition;
-import nez.lang.expr.And;
-import nez.lang.expr.AnyChar;
-import nez.lang.expr.ByteChar;
-import nez.lang.expr.ByteMap;
+import nez.lang.expr.Uand;
+import nez.lang.expr.Cany;
+import nez.lang.expr.Cbyte;
+import nez.lang.expr.Cset;
 import nez.lang.expr.Choice;
 import nez.lang.expr.ExpressionCommons;
 import nez.lang.expr.NonTerminal;
-import nez.lang.expr.Not;
-import nez.lang.expr.Option;
-import nez.lang.expr.Repetition;
-import nez.lang.expr.Repetition1;
+import nez.lang.expr.Unot;
+import nez.lang.expr.Uoption;
+import nez.lang.expr.Uzero;
+import nez.lang.expr.Uone;
 import nez.lang.expr.Sequence;
 import nez.util.ConsoleUtils;
 import nez.util.UFlag;
@@ -90,7 +90,7 @@ public class Production extends Expression {
 	}
 
 	public final static void quickCheck(Production p, Expression e) {
-		if (e instanceof ByteChar || e instanceof ByteMap || e instanceof AnyChar) {
+		if (e instanceof Cbyte || e instanceof Cset || e instanceof Cany) {
 			p.flag = p.flag | ConsumedProduction | ConsumedChecked;
 			return;
 		}
@@ -137,11 +137,11 @@ public class Production extends Expression {
 			quickCheck(p, e.get(1));
 			return;
 		}
-		if (e instanceof Repetition1) {
+		if (e instanceof Uone) {
 			quickCheck(p, e.get(0));
 			return;
 		}
-		if (e instanceof Not || e instanceof Option || e instanceof Repetition || e instanceof And) {
+		if (e instanceof Unot || e instanceof Uoption || e instanceof Uzero || e instanceof Uand) {
 			boolean consumed = UFlag.is(p.flag, ConsumedProduction);
 			quickCheck(p, e.get(0));
 			if (!consumed) {
@@ -465,10 +465,10 @@ public class Production extends Expression {
 			return consumed;
 		}
 		if (e.size() > 0) {
-			if (e instanceof Repetition1) {
+			if (e instanceof Uone) {
 				return checkConsumed(e.get(0), s);
 			}
-			if (e instanceof Not || e instanceof Option || e instanceof Repetition || e instanceof And) {
+			if (e instanceof Unot || e instanceof Uoption || e instanceof Uzero || e instanceof Uand) {
 				return false;
 			}
 			return checkConsumed(e.get(0), s);

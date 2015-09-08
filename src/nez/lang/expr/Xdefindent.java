@@ -3,46 +3,45 @@ package nez.lang.expr;
 import nez.ast.SourcePosition;
 import nez.lang.Expression;
 import nez.lang.ExpressionTransducer;
+import nez.lang.PossibleAcceptance;
+import nez.lang.Typestate;
 import nez.lang.Visa;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
-public class Block extends Unary {
-	Block(SourcePosition s, Expression e) {
-		super(s, e);
+public class Xdefindent extends Term {
+	Xdefindent(SourcePosition s) {
+		super(s);
 	}
 
 	@Override
 	public final boolean equalsExpression(Expression o) {
-		if (o instanceof Block) {
-			return this.get(0).equalsExpression(o.get(0));
-		}
-		return false;
-	}
-
-	@Override
-	public Expression reshape(ExpressionTransducer m) {
-		return m.reshapeBlock(this);
+		return (o instanceof Xdef);
 	}
 
 	@Override
 	public boolean isConsumed() {
-		return this.inner.isConsumed();
+		return false;
 	}
 
 	@Override
 	public int inferTypestate(Visa v) {
-		return this.inner.inferTypestate(v);
+		return Typestate.BooleanType;
 	}
 
 	@Override
 	public short acceptByte(int ch) {
-		return this.inner.acceptByte(ch);
+		return PossibleAcceptance.Unconsumed;
 	}
 
 	@Override
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
-		return bc.encodeBlock(this, next, failjump);
+		return bc.encodeXdefindent(this, next, failjump);
+	}
+
+	@Override
+	public Expression reshape(ExpressionTransducer m) {
+		return m.reshapeUndefined(this);
 	}
 
 }

@@ -240,7 +240,7 @@ public class NezGrammarLoader extends GrammarLoader {
 	}
 
 	public Expression newOn(AbstractTree<?> node) {
-		return ExpressionCommons.newOnFlag(node, true, node.getText(_name, ""), newExpression(node.get(_expr)));
+		return ExpressionCommons.newXon(node, true, node.getText(_name, ""), newExpression(node.get(_expr)));
 	}
 
 	public Expression newBlock(AbstractTree<?> node) {
