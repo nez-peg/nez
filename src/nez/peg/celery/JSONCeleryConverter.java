@@ -39,8 +39,8 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 	public final void visitRoot(AbstractTree<?> node) {
 		for (AbstractTree<?> classNode : node) {
 			initPropertiesList();
-			this.visit("visit", classNode);
 			currentClassName = classNode.getText(0, null);
+			this.visit("visit", classNode);
 			if (useExtension) {
 				grammar.defineProduction(classNode, currentClassName, genExClassRule(currentClassName));
 			} else {
