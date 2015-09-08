@@ -123,7 +123,7 @@ public class NonTerminal extends Expression {
 	}
 
 	public final Expression newNonTerminal(String localName) {
-		return GrammarFactory.newNonTerminal(this.getSourcePosition(), this.getGrammar(), localName);
+		return ExpressionCommons.newNonTerminal(this.getSourcePosition(), this.getGrammar(), localName);
 	}
 
 }

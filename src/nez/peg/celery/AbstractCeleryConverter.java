@@ -4,7 +4,7 @@ import nez.ast.AbstractTree;
 import nez.ast.AbstractTreeVisitor;
 import nez.lang.Expression;
 import nez.lang.GrammarFile;
-import nez.lang.expr.GrammarFactory;
+import nez.lang.expr.ExpressionCommons;
 
 public abstract class AbstractCeleryConverter extends AbstractTreeVisitor {
 
@@ -42,23 +42,23 @@ public abstract class AbstractCeleryConverter extends AbstractTreeVisitor {
 	}
 
 	public final Expression toTBoolean(AbstractTree<?> node) {
-		return GrammarFactory.newNonTerminal(null, grammar, "BOOLEAN");
+		return ExpressionCommons.newNonTerminal(null, grammar, "BOOLEAN");
 	}
 
 	public final Expression toTInteger(AbstractTree<?> node) {
-		return GrammarFactory.newNonTerminal(null, grammar, "INT");
+		return ExpressionCommons.newNonTerminal(null, grammar, "INT");
 	}
 
 	public final Expression toTFloat(AbstractTree<?> node) {
-		return GrammarFactory.newNonTerminal(null, grammar, "Number");
+		return ExpressionCommons.newNonTerminal(null, grammar, "Number");
 	}
 
 	public final Expression toTString(AbstractTree<?> node) {
-		return GrammarFactory.newNonTerminal(null, grammar, "String");
+		return ExpressionCommons.newNonTerminal(null, grammar, "String");
 	}
 
 	public final Expression toTAny(AbstractTree<?> node) {
-		return GrammarFactory.newNonTerminal(null, grammar, "Any");
+		return ExpressionCommons.newNonTerminal(null, grammar, "Any");
 	}
 
 	abstract public Expression toTObject(AbstractTree<?> node);

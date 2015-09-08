@@ -13,7 +13,7 @@ import nez.ast.Tag;
 import nez.lang.Expression;
 import nez.lang.Grammar;
 import nez.lang.GrammarFile;
-import nez.lang.expr.GrammarFactory;
+import nez.lang.expr.ExpressionCommons;
 import nez.main.Verbose;
 import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
@@ -129,7 +129,7 @@ public class RegexGrammar extends AbstractTreeVisitor {
 	// pi(e*?, k) = A, A <- k / pi(e, A)
 	public Expression piLazyQuantifiers(CommonTree e, Expression k) {
 		String ruleName = "Repetition" + NonTerminalCount++;
-		Expression ne = GrammarFactory.newNonTerminal(e, this.grammar, ruleName);
+		Expression ne = ExpressionCommons.newNonTerminal(e, this.grammar, ruleName);
 		grammar.defineProduction(e, ruleName, toChoice(e, k, pi(e.get(0), ne)));
 		return ne;
 	}
@@ -137,7 +137,7 @@ public class RegexGrammar extends AbstractTreeVisitor {
 	// pi(e*, k) = A, A <- pi(e, A) / k
 	public Expression piRepetition(CommonTree e, Expression k) {
 		String ruleName = "Repetition" + NonTerminalCount++;
-		Expression ne = GrammarFactory.newNonTerminal(e, this.grammar, ruleName);
+		Expression ne = ExpressionCommons.newNonTerminal(e, this.grammar, ruleName);
 		grammar.defineProduction(e, ruleName, toChoice(e, pi(e.get(0), ne), k));
 		return ne;
 	}
@@ -156,7 +156,7 @@ public class RegexGrammar extends AbstractTreeVisitor {
 	}
 
 	public Expression piNegativeCharacterSet(CommonTree e, Expression k) {
-		Expression nce = toSeq(e, GrammarFactory.newNot(e, toCharacterSet(e)), toAny(e));
+		Expression nce = toSeq(e, ExpressionCommons.newNot(e, toCharacterSet(e)), toAny(e));
 		return toSeq(e, nce, k);
 	}
 
@@ -188,7 +188,7 @@ public class RegexGrammar extends AbstractTreeVisitor {
 		if (utf8.length != 1) {
 			ConsoleUtils.exit(1, "Error: not Character Literal");
 		}
-		return GrammarFactory.newByteChar(null, false, utf8[0]);
+		return ExpressionCommons.newByteChar(null, false, utf8[0]);
 	}
 
 	boolean byteMap[];
@@ -198,12 +198,12 @@ public class RegexGrammar extends AbstractTreeVisitor {
 		UList<Expression> l = new UList<Expression>(new Expression[e.size()]);
 		byteMap = new boolean[257];
 		for (CommonTree subnode : e) {
-			GrammarFactory.addChoice(l, toExpression(subnode));
+			ExpressionCommons.addChoice(l, toExpression(subnode));
 		}
 		if (useByteMap) {
-			return GrammarFactory.newByteMap(null, false, byteMap);
+			return ExpressionCommons.newByteMap(null, false, byteMap);
 		} else {
-			return GrammarFactory.newChoice(null, l);
+			return ExpressionCommons.newChoice(null, l);
 		}
 	}
 
@@ -213,58 +213,58 @@ public class RegexGrammar extends AbstractTreeVisitor {
 		for (byte i = begin[0]; i <= end[0]; i++) {
 			byteMap[i] = true;
 		}
-		return GrammarFactory.newCharSet(null, e.get(0).toText(), e.get(1).toText());
+		return ExpressionCommons.newCharSet(null, e.get(0).toText(), e.get(1).toText());
 	}
 
 	public Expression toCharacterSetItem(CommonTree c) {
 		byte[] utf8 = StringUtils.toUtf8(c.toText());
 		byteMap[utf8[0]] = true;
-		return GrammarFactory.newByteChar(null, false, utf8[0]);
+		return ExpressionCommons.newByteChar(null, false, utf8[0]);
 	}
 
 	public Expression toEmpty(CommonTree node) {
-		return GrammarFactory.newEmpty(null);
+		return ExpressionCommons.newEmpty(null);
 	}
 
 	public Expression toAny(CommonTree e) {
-		return GrammarFactory.newAnyChar(null, false);
+		return ExpressionCommons.newAnyChar(null, false);
 	}
 
 	public Expression toAnd(CommonTree e, Expression k) {
-		return toSeq(e, GrammarFactory.newAnd(null, pi(e.get(0), toEmpty(e))), k);
+		return toSeq(e, ExpressionCommons.newAnd(null, pi(e.get(0), toEmpty(e))), k);
 	}
 
 	public Expression toNot(CommonTree e, Expression k) {
-		return toSeq(e, GrammarFactory.newNot(null, pi(e.get(0), toEmpty(e))), k);
+		return toSeq(e, ExpressionCommons.newNot(null, pi(e.get(0), toEmpty(e))), k);
 	}
 
 	public Expression toChoice(CommonTree node, Expression e, Expression k) {
 		UList<Expression> l = new UList<Expression>(new Expression[2]);
-		GrammarFactory.addChoice(l, e);
+		ExpressionCommons.addChoice(l, e);
 		if (k != null) {
-			GrammarFactory.addChoice(l, k);
+			ExpressionCommons.addChoice(l, k);
 		} else {
-			GrammarFactory.addChoice(l, toEmpty(node));
+			ExpressionCommons.addChoice(l, toEmpty(node));
 		}
-		return GrammarFactory.newChoice(null, l);
+		return ExpressionCommons.newChoice(null, l);
 	}
 
 	public Expression toSeq(CommonTree e, Expression k) {
 		UList<Expression> l = new UList<Expression>(new Expression[2]);
-		GrammarFactory.addSequence(l, toExpression(e));
+		ExpressionCommons.addSequence(l, toExpression(e));
 		if (k != null) {
-			GrammarFactory.addSequence(l, k);
+			ExpressionCommons.addSequence(l, k);
 		}
-		return GrammarFactory.newSequence(null, l);
+		return ExpressionCommons.newSequence(null, l);
 	}
 
 	public Expression toSeq(CommonTree node, Expression e, Expression k) {
 		UList<Expression> l = new UList<Expression>(new Expression[2]);
-		GrammarFactory.addSequence(l, e);
+		ExpressionCommons.addSequence(l, e);
 		if (k != null) {
-			GrammarFactory.addSequence(l, k);
+			ExpressionCommons.addSequence(l, k);
 		}
-		return GrammarFactory.newSequence(null, l);
+		return ExpressionCommons.newSequence(null, l);
 	}
 
 }

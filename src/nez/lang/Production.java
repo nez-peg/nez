@@ -8,7 +8,7 @@ import nez.lang.expr.AnyChar;
 import nez.lang.expr.ByteChar;
 import nez.lang.expr.ByteMap;
 import nez.lang.expr.Choice;
-import nez.lang.expr.GrammarFactory;
+import nez.lang.expr.ExpressionCommons;
 import nez.lang.expr.NonTerminal;
 import nez.lang.expr.Not;
 import nez.lang.expr.Option;
@@ -55,7 +55,7 @@ public class Production extends Expression {
 		this.file = file;
 		this.name = name;
 		this.uname = file.uniqueName(name);
-		this.body = (body == null) ? GrammarFactory.newEmpty(s) : body;
+		this.body = (body == null) ? ExpressionCommons.newEmpty(s) : body;
 		this.flag = flag;
 		Production.quickCheck(this);
 	}
@@ -65,7 +65,7 @@ public class Production extends Expression {
 		this.file = orig.getGrammarFile();
 		this.name = name;
 		this.uname = file.uniqueName(name);
-		this.body = (body == null) ? GrammarFactory.newEmpty(s) : body;
+		this.body = (body == null) ? ExpressionCommons.newEmpty(s) : body;
 		Production.quickCheck(this);
 	}
 

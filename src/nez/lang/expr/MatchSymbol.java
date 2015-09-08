@@ -11,7 +11,7 @@ import nez.lang.Visa;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
-public class MatchSymbol extends Expression implements Contextual {
+public class MatchSymbol extends Term implements Contextual {
 	public final Tag tableName;
 
 	MatchSymbol(SourcePosition s, Tag tableName) {

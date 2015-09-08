@@ -9,7 +9,7 @@ import nez.lang.Expression;
 import nez.lang.Grammar;
 import nez.lang.GrammarFile;
 import nez.lang.expr.ByteMap;
-import nez.lang.expr.GrammarFactory;
+import nez.lang.expr.ExpressionCommons;
 import nez.main.Verbose;
 import nez.util.UList;
 
@@ -83,19 +83,19 @@ public class ParserCombinator {
 	}
 
 	protected final Expression P(String name) {
-		return GrammarFactory.newNonTerminal(src(), this.file, name);
+		return ExpressionCommons.newNonTerminal(src(), this.file, name);
 	}
 
 	protected final Expression t(char c) {
-		return GrammarFactory.newString(src(), String.valueOf(c));
+		return ExpressionCommons.newString(src(), String.valueOf(c));
 	}
 
 	protected final Expression t(String token) {
-		return GrammarFactory.newString(src(), token);
+		return ExpressionCommons.newString(src(), token);
 	}
 
 	protected final Expression c(String text) {
-		return GrammarFactory.newCharSet(src(), text);
+		return ExpressionCommons.newCharSet(src(), text);
 	}
 
 	protected final Expression c(int... chars) {
@@ -107,15 +107,15 @@ public class ParserCombinator {
 				binary = true;
 			}
 		}
-		return GrammarFactory.newByteMap(src(), binary, b);
+		return ExpressionCommons.newByteMap(src(), binary, b);
 	}
 
 	protected final Expression ByteChar(int byteChar) {
-		return GrammarFactory.newByteChar(src(), false, byteChar);
+		return ExpressionCommons.newByteChar(src(), false, byteChar);
 	}
 
 	protected final Expression AnyChar() {
-		return GrammarFactory.newAnyChar(src(), false);
+		return ExpressionCommons.newAnyChar(src(), false);
 	}
 
 	protected final Expression NotAny(String token) {
@@ -129,89 +129,89 @@ public class ParserCombinator {
 	protected final Expression Sequence(Expression... elist) {
 		UList<Expression> l = new UList<Expression>(new Expression[8]);
 		for (Expression e : elist) {
-			GrammarFactory.addSequence(l, e);
+			ExpressionCommons.addSequence(l, e);
 		}
-		return GrammarFactory.newSequence(src(), l);
+		return ExpressionCommons.newSequence(src(), l);
 	}
 
 	protected final Expression Choice(Expression... elist) {
 		UList<Expression> l = new UList<Expression>(new Expression[8]);
 		for (Expression e : elist) {
-			GrammarFactory.addChoice(l, e);
+			ExpressionCommons.addChoice(l, e);
 		}
-		return GrammarFactory.newChoice(src(), l);
+		return ExpressionCommons.newChoice(src(), l);
 	}
 
 	protected final Expression Option(Expression... e) {
-		return GrammarFactory.newOption(src(), Sequence(e));
+		return ExpressionCommons.newOption(src(), Sequence(e));
 	}
 
 	protected final Expression Option(String t) {
-		return GrammarFactory.newOption(src(), t(t));
+		return ExpressionCommons.newOption(src(), t(t));
 	}
 
 	protected final Expression ZeroMore(Expression... e) {
-		return GrammarFactory.newRepetition(src(), Sequence(e));
+		return ExpressionCommons.newRepetition(src(), Sequence(e));
 	}
 
 	protected final Expression OneMore(Expression... e) {
-		return GrammarFactory.newRepetition1(src(), Sequence(e));
+		return ExpressionCommons.newRepetition1(src(), Sequence(e));
 	}
 
 	protected final Expression Not(String t) {
-		return GrammarFactory.newNot(src(), GrammarFactory.newString(src(), t));
+		return ExpressionCommons.newNot(src(), ExpressionCommons.newString(src(), t));
 	}
 
 	protected final Expression Not(Expression... e) {
-		return GrammarFactory.newNot(src(), Sequence(e));
+		return ExpressionCommons.newNot(src(), Sequence(e));
 	}
 
 	protected final Expression And(Expression... e) {
-		return GrammarFactory.newAnd(src(), Sequence(e));
+		return ExpressionCommons.newAnd(src(), Sequence(e));
 	}
 
 	protected final Expression NCapture(int shift) {
-		return GrammarFactory.newNew(src(), false, null, shift);
+		return ExpressionCommons.newNew(src(), false, null, shift);
 	}
 
 	protected final Expression LCapture(int shift, String label) {
-		return GrammarFactory.newNew(src(), true, label == null ? null : Tag.tag(label), shift);
+		return ExpressionCommons.newNew(src(), true, label == null ? null : Tag.tag(label), shift);
 	}
 
 	protected final Expression Capture(int shift) {
-		return GrammarFactory.newCapture(src(), shift);
+		return ExpressionCommons.newCapture(src(), shift);
 	}
 
 	protected final Expression New(Expression... e) {
-		return GrammarFactory.newNew(src(), false, null, Sequence(e));
+		return ExpressionCommons.newNew(src(), false, null, Sequence(e));
 	}
 
 	protected final Expression LeftFoldOption(String label, Expression... e) {
-		return GrammarFactory.newLeftFoldOption(src(), label == null ? null : Tag.tag(label), Sequence(e));
+		return ExpressionCommons.newLeftFoldOption(src(), label == null ? null : Tag.tag(label), Sequence(e));
 	}
 
 	protected final Expression LeftFoldZeroMore(String label, Expression... e) {
-		return GrammarFactory.newLeftFoldRepetition(src(), label == null ? null : Tag.tag(label), Sequence(e));
+		return ExpressionCommons.newLeftFoldRepetition(src(), label == null ? null : Tag.tag(label), Sequence(e));
 	}
 
 	protected final Expression LeftFoldOneMore(String label, Expression... e) {
-		return GrammarFactory.newLeftFoldRepetition1(src(), label == null ? null : Tag.tag(label), Sequence(e));
+		return ExpressionCommons.newLeftFoldRepetition1(src(), label == null ? null : Tag.tag(label), Sequence(e));
 	}
 
 	protected Expression Link(String label, Expression e) {
-		return GrammarFactory.newLink(src(), label == null ? null : Tag.tag(label), e);
+		return ExpressionCommons.newLink(src(), label == null ? null : Tag.tag(label), e);
 	}
 
 	protected Expression Link(String label, String nonTerminal) {
-		return GrammarFactory.newLink(src(), label == null ? null : Tag.tag(label), P(nonTerminal));
+		return ExpressionCommons.newLink(src(), label == null ? null : Tag.tag(label), P(nonTerminal));
 	}
 
 	protected Expression OptionalLink(String label, String nonTerminal) {
-		return GrammarFactory.newOption(src(), GrammarFactory.newLink(src(), label == null ? null : Tag.tag(label), P(nonTerminal)));
+		return ExpressionCommons.newOption(src(), ExpressionCommons.newLink(src(), label == null ? null : Tag.tag(label), P(nonTerminal)));
 	}
 
 	protected Expression Msg(String label, String msg) {
-		return GrammarFactory.newLink(src(), Tag.tag(label), New(Replace(msg)));
+		return ExpressionCommons.newLink(src(), Tag.tag(label), New(Replace(msg)));
 	}
 
 	// protected final Expression Tag(Tag t) {
@@ -219,15 +219,15 @@ public class ParserCombinator {
 	// }
 
 	protected final Expression Tag(String tag) {
-		return GrammarFactory.newTagging(src(), Tag.tag(tag));
+		return ExpressionCommons.newTagging(src(), Tag.tag(tag));
 	}
 
 	protected final Expression Replace(char c) {
-		return GrammarFactory.newReplace(src(), String.valueOf(c));
+		return ExpressionCommons.newReplace(src(), String.valueOf(c));
 	}
 
 	protected final Expression Replace(String value) {
-		return GrammarFactory.newReplace(src(), value);
+		return ExpressionCommons.newReplace(src(), value);
 	}
 
 }

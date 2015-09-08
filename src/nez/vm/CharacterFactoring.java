@@ -6,7 +6,7 @@ import nez.lang.expr.AnyChar;
 import nez.lang.expr.ByteChar;
 import nez.lang.expr.ByteMap;
 import nez.lang.expr.Choice;
-import nez.lang.expr.GrammarFactory;
+import nez.lang.expr.ExpressionCommons;
 import nez.lang.expr.Sequence;
 import nez.util.UList;
 
@@ -43,11 +43,11 @@ public class CharacterFactoring extends GrammarReshaper {
 			return e;
 		}
 		UList<Expression> l = new UList<Expression>(new Expression[e.size()]);
-		GrammarFactory.addSequence(l, first);
+		ExpressionCommons.addSequence(l, first);
 		for (int i = 1; i < e.size(); i++) {
 			l.add(e.get(i));
 		}
-		return GrammarFactory.newSequence(e.getSourcePosition(), l);
+		return ExpressionCommons.newSequence(e.getSourcePosition(), l);
 	}
 
 	public Expression reshapeChoice(Choice e) {
@@ -58,7 +58,7 @@ public class CharacterFactoring extends GrammarReshaper {
 				return e;
 			}
 		}
-		return GrammarFactory.newChoice(e.getSourcePosition(), l);
+		return ExpressionCommons.newChoice(e.getSourcePosition(), l);
 	}
 
 }

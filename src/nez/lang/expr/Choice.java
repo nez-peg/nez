@@ -10,7 +10,7 @@ import nez.util.UList;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
-public class Choice extends Expression {
+public class Choice extends ExpressionCommons {
 	Expression[] inners;
 	public boolean isFlatten = false;
 	public Expression[] predictedCase = null;

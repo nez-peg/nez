@@ -11,7 +11,7 @@ import nez.lang.expr.DefSymbol;
 import nez.lang.expr.Empty;
 import nez.lang.expr.ExistsSymbol;
 import nez.lang.expr.Failure;
-import nez.lang.expr.GrammarFactory;
+import nez.lang.expr.ExpressionCommons;
 import nez.lang.expr.IfFlag;
 import nez.lang.expr.IsIndent;
 import nez.lang.expr.IsSymbol;
@@ -122,15 +122,15 @@ public class GrammarReshaper {
 		if (updated == null) {
 			return e;
 		}
-		UList<Expression> l = GrammarFactory.newList(e.size());
+		UList<Expression> l = ExpressionCommons.newList(e.size());
 		for (int j = 0; j < i; j++) {
 			l.add(e.get(j));
 		}
-		GrammarFactory.addChoice(l, updated);
+		ExpressionCommons.addChoice(l, updated);
 		for (int j = i + 1; j < e.size(); j++) {
-			GrammarFactory.addChoice(l, e.get(j).reshape(this));
+			ExpressionCommons.addChoice(l, e.get(j).reshape(this));
 		}
-		return GrammarFactory.newChoice(e.getSourcePosition(), l);
+		return ExpressionCommons.newChoice(e.getSourcePosition(), l);
 	}
 
 	public Expression reshapeOption(Option e) {
@@ -229,11 +229,11 @@ public class GrammarReshaper {
 	}
 
 	protected final Expression empty(Expression e) {
-		return GrammarFactory.newEmpty(null);
+		return ExpressionCommons.newEmpty(null);
 	}
 
 	protected final Expression fail(Expression e) {
-		return GrammarFactory.newFailure(null);
+		return ExpressionCommons.newFailure(null);
 	}
 
 	protected final Expression updateInner(Option e, Expression inner) {
@@ -241,7 +241,7 @@ public class GrammarReshaper {
 			e.inner = inner;
 			return e;
 		}
-		return (e.get(0) != inner) ? GrammarFactory.newOption(e.getSourcePosition(), inner) : e;
+		return (e.get(0) != inner) ? ExpressionCommons.newOption(e.getSourcePosition(), inner) : e;
 	}
 
 	protected final Expression updateInner(Repetition e, Expression inner) {
@@ -249,7 +249,7 @@ public class GrammarReshaper {
 			e.inner = inner;
 			return e;
 		}
-		return (e.get(0) != inner) ? GrammarFactory.newRepetition(e.getSourcePosition(), inner) : e;
+		return (e.get(0) != inner) ? ExpressionCommons.newRepetition(e.getSourcePosition(), inner) : e;
 	}
 
 	protected final Expression updateInner(Repetition1 e, Expression inner) {
@@ -257,7 +257,7 @@ public class GrammarReshaper {
 			e.inner = inner;
 			return e;
 		}
-		return (e.get(0) != inner) ? GrammarFactory.newRepetition1(e.getSourcePosition(), inner) : e;
+		return (e.get(0) != inner) ? ExpressionCommons.newRepetition1(e.getSourcePosition(), inner) : e;
 	}
 
 	protected final Expression updateInner(And e, Expression inner) {
@@ -265,7 +265,7 @@ public class GrammarReshaper {
 			e.inner = inner;
 			return e;
 		}
-		return (e.get(0) != inner) ? GrammarFactory.newAnd(e.getSourcePosition(), inner) : e;
+		return (e.get(0) != inner) ? ExpressionCommons.newAnd(e.getSourcePosition(), inner) : e;
 	}
 
 	protected final Expression updateInner(Not e, Expression inner) {
@@ -273,7 +273,7 @@ public class GrammarReshaper {
 			e.inner = inner;
 			return e;
 		}
-		return (e.get(0) != inner) ? GrammarFactory.newNot(e.getSourcePosition(), inner) : e;
+		return (e.get(0) != inner) ? ExpressionCommons.newNot(e.getSourcePosition(), inner) : e;
 	}
 
 	protected final Expression updateInner(Match e, Expression inner) {
@@ -281,7 +281,7 @@ public class GrammarReshaper {
 			e.inner = inner;
 			return e;
 		}
-		return (e.get(0) != inner) ? GrammarFactory.newMatch(e.getSourcePosition(), inner) : e;
+		return (e.get(0) != inner) ? ExpressionCommons.newMatch(e.getSourcePosition(), inner) : e;
 	}
 
 	protected final Expression updateInner(Link e, Expression inner) {
@@ -289,7 +289,7 @@ public class GrammarReshaper {
 			e.inner = inner;
 			return e;
 		}
-		return (e.get(0) != inner) ? GrammarFactory.newLink(e.getSourcePosition(), e.getLabel(), inner) : e;
+		return (e.get(0) != inner) ? ExpressionCommons.newLink(e.getSourcePosition(), e.getLabel(), inner) : e;
 	}
 
 	protected final Expression updateInner(Block e, Expression inner) {
@@ -297,7 +297,7 @@ public class GrammarReshaper {
 			e.inner = inner;
 			return e;
 		}
-		return (e.get(0) != inner) ? GrammarFactory.newBlock(e.getSourcePosition(), inner) : e;
+		return (e.get(0) != inner) ? ExpressionCommons.newBlock(e.getSourcePosition(), inner) : e;
 	}
 
 	protected final Expression updateInner(LocalTable e, Expression inner) {
@@ -305,7 +305,7 @@ public class GrammarReshaper {
 			e.inner = inner;
 			return e;
 		}
-		return (e.get(0) != inner) ? GrammarFactory.newLocal(e.getSourcePosition(), e.getTable(), inner) : e;
+		return (e.get(0) != inner) ? ExpressionCommons.newLocal(e.getSourcePosition(), e.getTable(), inner) : e;
 	}
 
 	protected final Expression updateInner(DefSymbol e, Expression inner) {
@@ -313,7 +313,7 @@ public class GrammarReshaper {
 			e.inner = inner;
 			return e;
 		}
-		return (e.get(0) != inner) ? GrammarFactory.newDefSymbol(e.getSourcePosition(), e.getGrammarFile(), e.getTable(), inner) : e;
+		return (e.get(0) != inner) ? ExpressionCommons.newDefSymbol(e.getSourcePosition(), e.getGrammarFile(), e.getTable(), inner) : e;
 	}
 
 	protected final Expression updateInner(OnFlag e, Expression inner) {
@@ -321,7 +321,7 @@ public class GrammarReshaper {
 			e.inner = inner;
 			return e;
 		}
-		return (e.get(0) != inner) ? GrammarFactory.newOnFlag(e.getSourcePosition(), e.isPositive(), e.getFlagName(), inner) : e;
+		return (e.get(0) != inner) ? ExpressionCommons.newOnFlag(e.getSourcePosition(), e.isPositive(), e.getFlagName(), inner) : e;
 	}
 
 }
@@ -343,7 +343,7 @@ class ASTConstructionEliminator extends GrammarReshaper {
 		if (renaming) {
 			Production r = removeASTOperator(e.getProduction());
 			if (!e.getLocalName().equals(r.getLocalName())) {
-				return GrammarFactory.newNonTerminal(e.getSourcePosition(), r.getGrammarFile(), r.getLocalName());
+				return ExpressionCommons.newNonTerminal(e.getSourcePosition(), r.getGrammarFile(), r.getLocalName());
 			}
 		}
 		return e;

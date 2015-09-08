@@ -8,7 +8,7 @@ import nez.lang.PossibleAcceptance;
 import nez.lang.Production;
 import nez.lang.expr.Choice;
 import nez.lang.expr.Empty;
-import nez.lang.expr.GrammarFactory;
+import nez.lang.expr.ExpressionCommons;
 import nez.lang.expr.NonTerminal;
 import nez.lang.expr.Option;
 import nez.lang.expr.Repetition;
@@ -50,13 +50,13 @@ class DuplicateGrammar extends GrammarReshaper {
 
 	@Override
 	public Expression reshapeNonTerminal(NonTerminal p) {
-		return GrammarFactory.newNonTerminal(p.getSourcePosition(), ns, p.getLocalName());
+		return ExpressionCommons.newNonTerminal(p.getSourcePosition(), ns, p.getLocalName());
 	}
 
 	@Override
 	public Expression reshapeOption(Option e) {
 		Expression inner = e.get(0).reshape(this);
-		return GrammarFactory.newChoice(e.getSourcePosition(), inner, empty(e));
+		return ExpressionCommons.newChoice(e.getSourcePosition(), inner, empty(e));
 	}
 
 	@Override
@@ -72,14 +72,14 @@ class DuplicateGrammar extends GrammarReshaper {
 			this.ns.defineProduction(e.getSourcePosition(), name, inner);
 		}
 		Expression p = ns.newNonTerminal(name);
-		Expression seq = GrammarFactory.newSequence(e.getSourcePosition(), inner, p);
-		return GrammarFactory.newChoice(e.getSourcePosition(), seq, empty(e));
+		Expression seq = ExpressionCommons.newSequence(e.getSourcePosition(), inner, p);
+		return ExpressionCommons.newChoice(e.getSourcePosition(), seq, empty(e));
 	}
 
 	@Override
 	public Expression reshapeRepetition1(Repetition1 e) {
 		Expression inner = e.get(0).reshape(this);
-		return GrammarFactory.newSequence(e.getSourcePosition(), inner, reshapeRepetition(e));
+		return ExpressionCommons.newSequence(e.getSourcePosition(), inner, reshapeRepetition(e));
 	}
 
 	@Override
@@ -104,7 +104,7 @@ class DuplicateGrammar extends GrammarReshaper {
 
 	private Expression joinChoice(Choice e, Expression e2) {
 		System.out.println("join** " + e + "\n\t" + e2);
-		UList<Expression> l = GrammarFactory.newList(e.size());
+		UList<Expression> l = ExpressionCommons.newList(e.size());
 		for (Expression se : e) {
 			l.add(e.newSequence(se, e2));
 		}
@@ -132,7 +132,7 @@ class InliningChoice extends GrammarReshaper {
 		this.inlining = true;
 		flattenChoiceList(p, choiceList);
 		this.inlining = stacked;
-		Expression newp = GrammarFactory.newChoice(p.getSourcePosition(), choiceList);
+		Expression newp = ExpressionCommons.newChoice(p.getSourcePosition(), choiceList);
 		// if(newp instanceof Choice) {
 		// p = (Choice)newp;
 		// if(p.predictedCase == null) {
@@ -237,7 +237,7 @@ class InliningChoice extends GrammarReshaper {
 			}
 		}
 		if (newChoiceList != null) {
-			return GrammarFactory.newChoice(choice.getSourcePosition(), newChoiceList).reshape(this);
+			return ExpressionCommons.newChoice(choice.getSourcePosition(), newChoiceList).reshape(this);
 		}
 		return commonPrifixed == true ? first.reshape(this) : first;
 	}
@@ -276,10 +276,10 @@ class InliningChoice extends GrammarReshaper {
 			l2.add(sequenceGetAt(e2, i));
 		}
 		UList<Expression> l3 = new UList<Expression>(new Expression[2]);
-		GrammarFactory.addChoice(l3, GrammarFactory.newSequence(null, l1));
-		GrammarFactory.addChoice(l3, GrammarFactory.newSequence(null, l2));
-		GrammarFactory.addSequence(common, GrammarFactory.newChoice(null, l3));
-		return GrammarFactory.newSequence(null, common);
+		ExpressionCommons.addChoice(l3, ExpressionCommons.newSequence(null, l1));
+		ExpressionCommons.addChoice(l3, ExpressionCommons.newSequence(null, l2));
+		ExpressionCommons.addSequence(common, ExpressionCommons.newChoice(null, l3));
+		return ExpressionCommons.newSequence(null, common);
 	}
 
 	private static final int sequenceSize(Expression e) {

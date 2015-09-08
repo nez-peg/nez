@@ -10,7 +10,7 @@ import nez.lang.expr.Capture;
 import nez.lang.expr.Choice;
 import nez.lang.expr.Empty;
 import nez.lang.expr.Failure;
-import nez.lang.expr.GrammarFactory;
+import nez.lang.expr.ExpressionCommons;
 import nez.lang.expr.Link;
 import nez.lang.expr.New;
 import nez.lang.expr.NonTerminal;
@@ -207,7 +207,7 @@ public class GrammarOptimizer extends GrammarReshaper {
 			UList<Expression> l = new UList<Expression>(new Expression[inner.size()]);
 			for (Expression subChoice : inner) {
 				subChoice = subChoice.reshape(this);
-				l.add(GrammarFactory.newLink(p.getSourcePosition(), p.getLabel(), subChoice));
+				l.add(ExpressionCommons.newLink(p.getSourcePosition(), p.getLabel(), subChoice));
 			}
 			return inner.newChoice(l);
 		}
@@ -381,7 +381,7 @@ public class GrammarOptimizer extends GrammarReshaper {
 			}
 		}
 		if (newChoiceList != null) {
-			return GrammarFactory.newChoice(choice.getSourcePosition(), newChoiceList);
+			return ExpressionCommons.newChoice(choice.getSourcePosition(), newChoiceList);
 		}
 		return commonPrifixed == true ? first.reshape(this) : first;
 	}
@@ -394,7 +394,7 @@ public class GrammarOptimizer extends GrammarReshaper {
 			if (ignoredFirstChar) {
 				ignoredFirstChar = false;
 				if (Expression.isByteConsumed(f) && Expression.isByteConsumed(f2)) {
-					l = GrammarFactory.newList(4);
+					l = ExpressionCommons.newList(4);
 					l.add(f);
 					e = e.getNext();
 					e2 = e2.getNext();
@@ -406,7 +406,7 @@ public class GrammarOptimizer extends GrammarReshaper {
 				break;
 			}
 			if (l == null) {
-				l = GrammarFactory.newList(4);
+				l = ExpressionCommons.newList(4);
 			}
 			l.add(f);
 			e = e.getNext();

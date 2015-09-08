@@ -4,7 +4,7 @@ import java.util.List;
 
 import nez.lang.expr.And;
 import nez.lang.expr.Choice;
-import nez.lang.expr.GrammarFactory;
+import nez.lang.expr.ExpressionCommons;
 import nez.lang.expr.NonTerminal;
 import nez.lang.expr.Not;
 import nez.lang.expr.Option;
@@ -90,7 +90,7 @@ public class NameAnalysis extends GrammarReshaper {
 		if (p == null) {
 			if (n.isTerminal()) {
 				n.getGrammar().reportNotice(n, "undefined terminal: " + n.getLocalName());
-				return GrammarFactory.newString(n.getSourcePosition(), StringUtils.unquoteString(n.getLocalName()));
+				return ExpressionCommons.newString(n.getSourcePosition(), StringUtils.unquoteString(n.getLocalName()));
 			}
 			n.getGrammar().reportWarning(n, "undefined production: " + n.getLocalName());
 			return n.newEmpty();

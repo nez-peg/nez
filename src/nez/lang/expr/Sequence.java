@@ -12,7 +12,7 @@ import nez.util.UList;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
-public class Sequence extends Expression {
+public class Sequence extends ExpressionCommons {
 	public Expression first;
 	public Expression next;
 
@@ -208,7 +208,7 @@ public class Sequence extends Expression {
 	}
 
 	public final Expression newMultiChar(boolean binary, byte[] byteSeq) {
-		return GrammarFactory.newMultiChar(this.getSourcePosition(), binary, byteSeq);
+		return ExpressionCommons.newMultiChar(this.getSourcePosition(), binary, byteSeq);
 	}
 
 }

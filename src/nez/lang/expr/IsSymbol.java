@@ -12,7 +12,7 @@ import nez.lang.Visa;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
-public class IsSymbol extends Expression implements Contextual {
+public class IsSymbol extends Term implements Contextual {
 	public final Tag tableName;
 	final GrammarMap g;
 	public final boolean is;

@@ -4,7 +4,7 @@ import nez.lang.expr.And;
 import nez.lang.expr.Capture;
 import nez.lang.expr.Choice;
 import nez.lang.expr.DefSymbol;
-import nez.lang.expr.GrammarFactory;
+import nez.lang.expr.ExpressionCommons;
 import nez.lang.expr.IsSymbol;
 import nez.lang.expr.Link;
 import nez.lang.expr.Match;
@@ -159,7 +159,7 @@ public class Typestate extends GrammarReshaper {
 		if (this.required == Typestate.OperationType) {
 			if (t == Typestate.ObjectType) {
 				reportInserted(p, "@");
-				return GrammarFactory.newLink(p.getSourcePosition(), null, p);
+				return ExpressionCommons.newLink(p.getSourcePosition(), null, p);
 			}
 		}
 		return p;
@@ -169,16 +169,16 @@ public class Typestate extends GrammarReshaper {
 	public Expression reshapeChoice(Choice p) {
 		int required = this.required;
 		int next = this.required;
-		UList<Expression> l = GrammarFactory.newList(p.size());
+		UList<Expression> l = ExpressionCommons.newList(p.size());
 		for (Expression e : p) {
 			this.required = required;
-			GrammarFactory.addChoice(l, e.reshape(this));
+			ExpressionCommons.addChoice(l, e.reshape(this));
 			if (this.required != required && this.required != next) {
 				next = this.required;
 			}
 		}
 		this.required = next;
-		return GrammarFactory.newChoice(p.getSourcePosition(), l);
+		return ExpressionCommons.newChoice(p.getSourcePosition(), l);
 	}
 
 	@Override
@@ -251,7 +251,7 @@ public class Typestate extends GrammarReshaper {
 		Expression e = p.getSymbolExpression();
 		if (e == null) {
 			checker.reportError(p.getSourcePosition(), "undefined table: " + p.getTableName());
-			return GrammarFactory.newFailure(p.getSourcePosition());
+			return ExpressionCommons.newFailure(p.getSourcePosition());
 		}
 		return p;
 	}

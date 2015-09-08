@@ -10,7 +10,7 @@ import nez.lang.Visa;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
-public class IsIndent extends Expression implements Contextual {
+public class IsIndent extends Term implements Contextual {
 	IsIndent(SourcePosition s) {
 		super(s);
 	}

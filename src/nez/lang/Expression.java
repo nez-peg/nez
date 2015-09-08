@@ -6,7 +6,7 @@ import nez.ast.SourcePosition;
 import nez.lang.expr.AnyChar;
 import nez.lang.expr.ByteChar;
 import nez.lang.expr.ByteMap;
-import nez.lang.expr.GrammarFactory;
+import nez.lang.expr.ExpressionCommons;
 import nez.lang.expr.Replace;
 import nez.lang.expr.Tagging;
 import nez.util.UList;
@@ -23,14 +23,8 @@ public abstract class Expression extends AbstractList<Expression> {
 		this.internId = 0;
 	}
 
-	@Override
-	public int size() {
-		return 0;
-	}
-
-	@Override
-	public Expression get(int index) {
-		return null;
+	public final SourcePosition getSourcePosition() {
+		return this.s;
 	}
 
 	public Expression getFirst() {
@@ -41,19 +35,9 @@ public abstract class Expression extends AbstractList<Expression> {
 		return null;
 	}
 
-	@Override
-	public final boolean equals(Object o) {
-		if (o instanceof Expression) {
-			return this.equalsExpression((Expression) o);
-		}
-		return false;
-	}
-
 	public abstract boolean equalsExpression(Expression o);
 
-	public final SourcePosition getSourcePosition() {
-		return this.s;
-	}
+	public abstract void format(StringBuilder sb);
 
 	public final int getId() {
 		return this.internId;
@@ -64,7 +48,7 @@ public abstract class Expression extends AbstractList<Expression> {
 	}
 
 	final Expression intern() {
-		return GrammarFactory.intern(this);
+		return ExpressionCommons.intern(this);
 	}
 
 	public abstract String getPredicate();
@@ -88,23 +72,6 @@ public abstract class Expression extends AbstractList<Expression> {
 	public abstract int inferTypestate(Visa v);
 
 	public abstract short acceptByte(int ch);
-
-	@Override
-	public final String toString() {
-		StringBuilder sb = new StringBuilder();
-		format(sb);
-		return sb.toString();
-	}
-
-	public void format(StringBuilder sb) {
-		sb.append("<");
-		sb.append(this.getPredicate());
-		for (Expression se : this) {
-			sb.append(" ");
-			se.format(sb);
-		}
-		sb.append(">");
-	}
 
 	public final UList<Expression> toList() {
 		UList<Expression> l = new UList<Expression>(new Expression[this.size()]);
@@ -137,31 +104,31 @@ public abstract class Expression extends AbstractList<Expression> {
 	// convinient interface
 
 	public final Expression newEmpty() {
-		return GrammarFactory.newEmpty(this.getSourcePosition());
+		return ExpressionCommons.newEmpty(this.getSourcePosition());
 	}
 
 	public final Expression newFailure() {
-		return GrammarFactory.newFailure(this.getSourcePosition());
+		return ExpressionCommons.newFailure(this.getSourcePosition());
 	}
 
 	public final Expression newByteMap(boolean isBinary, boolean[] byteMap) {
-		return GrammarFactory.newByteMap(this.getSourcePosition(), isBinary, byteMap);
+		return ExpressionCommons.newByteMap(this.getSourcePosition(), isBinary, byteMap);
 	}
 
 	public final Expression newSequence(Expression e, Expression e2) {
-		return GrammarFactory.newSequence(this.getSourcePosition(), e, e2);
+		return ExpressionCommons.newSequence(this.getSourcePosition(), e, e2);
 	}
 
 	public final Expression newSequence(UList<Expression> l) {
-		return GrammarFactory.newSequence(this.getSourcePosition(), l);
+		return ExpressionCommons.newSequence(this.getSourcePosition(), l);
 	}
 
 	public final Expression newChoice(Expression e, Expression e2) {
-		return GrammarFactory.newChoice(this.getSourcePosition(), e, e2);
+		return ExpressionCommons.newChoice(this.getSourcePosition(), e, e2);
 	}
 
 	public final Expression newChoice(UList<Expression> l) {
-		return GrammarFactory.newChoice(this.getSourcePosition(), l);
+		return ExpressionCommons.newChoice(this.getSourcePosition(), l);
 	}
 
 }
