@@ -1,21 +1,21 @@
 package nez.lang;
 
-import nez.lang.expr.Uand;
-import nez.lang.expr.Tcapture;
-import nez.lang.expr.Pchoice;
-import nez.lang.expr.Xdef;
 import nez.lang.expr.ExpressionCommons;
-import nez.lang.expr.Xis;
-import nez.lang.expr.Tlink;
-import nez.lang.expr.Umatch;
-import nez.lang.expr.Tnew;
 import nez.lang.expr.NonTerminal;
-import nez.lang.expr.Unot;
-import nez.lang.expr.Uoption;
-import nez.lang.expr.Uzero;
-import nez.lang.expr.Uone;
+import nez.lang.expr.Pchoice;
+import nez.lang.expr.Tcapture;
+import nez.lang.expr.Tlink;
+import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
+import nez.lang.expr.Uand;
+import nez.lang.expr.Umatch;
+import nez.lang.expr.Unot;
+import nez.lang.expr.Uone;
+import nez.lang.expr.Uoption;
+import nez.lang.expr.Uzero;
+import nez.lang.expr.Xdef;
+import nez.lang.expr.Xis;
 import nez.util.UList;
 
 public class Typestate extends ExpressionTransducer {
@@ -255,11 +255,5 @@ public class Typestate extends ExpressionTransducer {
 		}
 		return p;
 	}
-
-	// @Override
-	// public Expression reshapeBlock(Block p) {
-	// p.inner = p.inner.reshape(this);
-	// return p;
-	// }
 
 }

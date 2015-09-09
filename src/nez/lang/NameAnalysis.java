@@ -2,15 +2,15 @@ package nez.lang;
 
 import java.util.List;
 
-import nez.lang.expr.Uand;
-import nez.lang.expr.Pchoice;
 import nez.lang.expr.ExpressionCommons;
 import nez.lang.expr.NonTerminal;
+import nez.lang.expr.Pchoice;
+import nez.lang.expr.Psequence;
+import nez.lang.expr.Uand;
 import nez.lang.expr.Unot;
+import nez.lang.expr.Uone;
 import nez.lang.expr.Uoption;
 import nez.lang.expr.Uzero;
-import nez.lang.expr.Uone;
-import nez.lang.expr.Psequence;
 import nez.util.StringUtils;
 import nez.util.UFlag;
 
@@ -103,7 +103,4 @@ public class NameAnalysis extends ExpressionTransducer {
 		}
 		return n;
 	}
-}
-
-class StructualAnalysis extends ExpressionTransducer {
 }
