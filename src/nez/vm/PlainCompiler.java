@@ -9,7 +9,7 @@ import nez.lang.expr.Xblock;
 import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cset;
 import nez.lang.expr.Tcapture;
-import nez.lang.expr.Choice;
+import nez.lang.expr.Pchoice;
 import nez.lang.expr.Xdefindent;
 import nez.lang.expr.Xdef;
 import nez.lang.expr.Xexists;
@@ -26,7 +26,7 @@ import nez.lang.expr.Uoption;
 import nez.lang.expr.Uzero;
 import nez.lang.expr.Uone;
 import nez.lang.expr.Treplace;
-import nez.lang.expr.Sequence;
+import nez.lang.expr.Psequence;
 import nez.lang.expr.Ttag;
 
 public class PlainCompiler extends NezCompiler {
@@ -60,7 +60,7 @@ public class PlainCompiler extends NezCompiler {
 		return new IStr(p, next);
 	}
 
-	public Instruction encodeFail(Expression p) {
+	public Instruction encodePfail(Expression p) {
 		return this.commonFailure;
 	}
 
@@ -92,7 +92,7 @@ public class PlainCompiler extends NezCompiler {
 		return new IAlt(p, next, encode(p.get(0), fail, failjump));
 	}
 
-	public Instruction encodeSequence(Sequence p, Instruction next, Instruction failjump) {
+	public Instruction encodePsequence(Psequence p, Instruction next, Instruction failjump) {
 		// return encode(p.get(0), encode(p.get(1), next, failjump), failjump);
 		Instruction nextStart = next;
 		for (int i = p.size() - 1; i >= 0; i--) {
@@ -102,7 +102,7 @@ public class PlainCompiler extends NezCompiler {
 		return nextStart;
 	}
 
-	public Instruction encodeChoice(Choice p, Instruction next, Instruction failjump) {
+	public Instruction encodePchoice(Pchoice p, Instruction next, Instruction failjump) {
 		Instruction nextChoice = encode(p.get(p.size() - 1), next, failjump);
 		for (int i = p.size() - 2; i >= 0; i--) {
 			Expression e = p.get(i);

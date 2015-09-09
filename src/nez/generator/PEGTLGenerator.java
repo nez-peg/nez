@@ -8,7 +8,7 @@ import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cset;
 import nez.lang.expr.Tcapture;
-import nez.lang.expr.Choice;
+import nez.lang.expr.Pchoice;
 import nez.lang.expr.Tlink;
 import nez.lang.expr.Tnew;
 import nez.lang.expr.NonTerminal;
@@ -17,7 +17,7 @@ import nez.lang.expr.Uoption;
 import nez.lang.expr.Uzero;
 import nez.lang.expr.Uone;
 import nez.lang.expr.Treplace;
-import nez.lang.expr.Sequence;
+import nez.lang.expr.Psequence;
 import nez.lang.expr.Ttag;
 
 public class PEGTLGenerator extends GrammarGenerator {
@@ -132,11 +132,11 @@ public class PEGTLGenerator extends GrammarGenerator {
 		C("pegtl::not_at", e);
 	}
 
-	public void visitChoice(Choice e) {
+	public void visitChoice(Pchoice e) {
 		C("pegtl::sor", e);
 	}
 
-	public void visitSequence(Sequence e) {
+	public void visitSequence(Psequence e) {
 		W("pegtl::seq<");
 		super.visitSequence(e);
 		W(">");

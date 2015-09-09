@@ -10,7 +10,6 @@ import nez.lang.Visa;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
-@Deprecated
 public class Xindent extends Term implements Contextual {
 	Xindent(SourcePosition s) {
 		super(s);

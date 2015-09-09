@@ -9,12 +9,12 @@ import nez.lang.Production;
 import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cset;
-import nez.lang.expr.Choice;
+import nez.lang.expr.Pchoice;
 import nez.lang.expr.Cmulti;
 import nez.lang.expr.Unot;
 import nez.lang.expr.Uoption;
 import nez.lang.expr.Uzero;
-import nez.lang.expr.Sequence;
+import nez.lang.expr.Psequence;
 import nez.main.Verbose;
 
 public class OptimizedCompiler extends PlainCompiler {
@@ -33,8 +33,8 @@ public class OptimizedCompiler extends PlainCompiler {
 
 	public final Expression getInnerExpression(Expression p) {
 		Expression inner = GrammarOptimizer.resolveNonTerminal(p.get(0));
-		if (option.enabledStringOptimization && inner instanceof Sequence) {
-			inner = ((Sequence) inner).toMultiCharSequence();
+		if (option.enabledStringOptimization && inner instanceof Psequence) {
+			inner = ((Psequence) inner).toMultiCharSequence();
 			// System.out.println("Stringfy:" + inner);
 		}
 		return inner;
@@ -105,14 +105,14 @@ public class OptimizedCompiler extends PlainCompiler {
 	}
 
 	@Override
-	public final Instruction encodeChoice(Choice p, Instruction next, Instruction failjump) {
+	public final Instruction encodePchoice(Pchoice p, Instruction next, Instruction failjump) {
 		if (option.enabledPrediction && p.predictedCase != null) {
 			return encodePredicatedChoice(p, next, failjump);
 		}
-		return super.encodeChoice(p, next, failjump);
+		return super.encodePchoice(p, next, failjump);
 	}
 
-	private final Instruction encodePredicatedChoice(Choice choice, Instruction next, Instruction failjump) {
+	private final Instruction encodePredicatedChoice(Pchoice choice, Instruction next, Instruction failjump) {
 		HashMap<Integer, Instruction> m = new HashMap<Integer, Instruction>();
 		IFirst dispatch = new IFirst(choice, commonFailure);
 		for (int ch = 0; ch < choice.predictedCase.length; ch++) {
@@ -125,7 +125,7 @@ public class OptimizedCompiler extends PlainCompiler {
 			if (inst == null) {
 				// System.out.println("creating '" + (char)ch + "'("+ch+"): " +
 				// e);
-				if (predicted instanceof Choice) {
+				if (predicted instanceof Pchoice) {
 					// if(predicated == choice) {
 					/*
 					 * this is a rare case where the selected choice is the
@@ -155,8 +155,8 @@ public class OptimizedCompiler extends PlainCompiler {
 		return max;
 	}
 
-	public final Instruction encodeUnoptimizedChoice(Choice p, Instruction next, Instruction failjump) {
-		return super.encodeChoice(p, next, failjump);
+	public final Instruction encodeUnoptimizedChoice(Pchoice p, Instruction next, Instruction failjump) {
+		return super.encodePchoice(p, next, failjump);
 	}
 
 }

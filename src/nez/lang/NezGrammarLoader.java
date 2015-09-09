@@ -119,7 +119,7 @@ public class NezGrammarLoader extends GrammarLoader {
 				}
 			}
 		}
-		return ExpressionCommons.newChoice(node, l);
+		return ExpressionCommons.newPchoice(node, l);
 	}
 
 	public Expression newByte(AbstractTree<?> node) {
@@ -130,17 +130,17 @@ public class NezGrammarLoader extends GrammarLoader {
 			c = (c * 16) + StringUtils.hex(t.charAt(4));
 			c = (c * 16) + StringUtils.hex(t.charAt(5));
 			if (c < 128) {
-				return ExpressionCommons.newByteChar(node, this.binary, c);
+				return ExpressionCommons.newCbyte(node, this.binary, c);
 			}
 			String t2 = java.lang.String.valueOf((char) c);
 			return ExpressionCommons.newString(node, t2);
 		}
 		int c = StringUtils.hex(t.charAt(t.length() - 2)) * 16 + StringUtils.hex(t.charAt(t.length() - 1));
-		return ExpressionCommons.newByteChar(node, this.binary, c);
+		return ExpressionCommons.newCbyte(node, this.binary, c);
 	}
 
 	public Expression newAnyChar(AbstractTree<?> node) {
-		return ExpressionCommons.newAnyChar(node, this.binary);
+		return ExpressionCommons.newCany(node, this.binary);
 	}
 
 	public Expression newChoice(AbstractTree<?> node) {
@@ -148,7 +148,7 @@ public class NezGrammarLoader extends GrammarLoader {
 		for (int i = 0; i < node.size(); i++) {
 			ExpressionCommons.addChoice(l, newExpression(node.get(i)));
 		}
-		return ExpressionCommons.newChoice(node, l);
+		return ExpressionCommons.newPchoice(node, l);
 	}
 
 	public Expression newSequence(AbstractTree<?> node) {
@@ -156,23 +156,23 @@ public class NezGrammarLoader extends GrammarLoader {
 		for (int i = 0; i < node.size(); i++) {
 			ExpressionCommons.addSequence(l, newExpression(node.get(i)));
 		}
-		return ExpressionCommons.newSequence(node, l);
+		return ExpressionCommons.newPsequence(node, l);
 	}
 
 	public Expression newNot(AbstractTree<?> node) {
-		return ExpressionCommons.newNot(node, newExpression(node.get(_expr)));
+		return ExpressionCommons.newUnot(node, newExpression(node.get(_expr)));
 	}
 
 	public Expression newAnd(AbstractTree<?> node) {
-		return ExpressionCommons.newAnd(node, newExpression(node.get(_expr)));
+		return ExpressionCommons.newUand(node, newExpression(node.get(_expr)));
 	}
 
 	public Expression newOption(AbstractTree<?> node) {
-		return ExpressionCommons.newOption(node, newExpression(node.get(_expr)));
+		return ExpressionCommons.newUoption(node, newExpression(node.get(_expr)));
 	}
 
 	public Expression newRepetition1(AbstractTree<?> node) {
-		return ExpressionCommons.newRepetition1(node, newExpression(node.get(_expr)));
+		return ExpressionCommons.newUone(node, newExpression(node.get(_expr)));
 	}
 
 	public Expression newRepetition(AbstractTree<?> node) {
@@ -183,10 +183,10 @@ public class NezGrammarLoader extends GrammarLoader {
 				for (int i = 0; i < ntimes; i++) {
 					ExpressionCommons.addSequence(l, newExpression(node.get(0)));
 				}
-				return ExpressionCommons.newSequence(node, l);
+				return ExpressionCommons.newPsequence(node, l);
 			}
 		}
-		return ExpressionCommons.newRepetition(node, newExpression(node.get(_expr)));
+		return ExpressionCommons.newUzero(node, newExpression(node.get(_expr)));
 	}
 
 	// PEG4d TransCapturing
@@ -194,7 +194,7 @@ public class NezGrammarLoader extends GrammarLoader {
 	public Expression newNew(AbstractTree<?> node) {
 		AbstractTree<?> exprNode = node.get(_expr, null);
 		Expression p = (exprNode == null) ? ExpressionCommons.newEmpty(node) : newExpression(exprNode);
-		return ExpressionCommons.newNew(node, false, null, p);
+		return ExpressionCommons.newNewCapture(node, false, null, p);
 	}
 
 	public final static SymbolId _name = SymbolId.tag("name");
@@ -213,31 +213,31 @@ public class NezGrammarLoader extends GrammarLoader {
 	public Expression newLeftFold(AbstractTree<?> node) {
 		AbstractTree<?> exprNode = node.get(_expr, null);
 		Expression p = (exprNode == null) ? ExpressionCommons.newEmpty(node) : newExpression(exprNode);
-		return ExpressionCommons.newNew(node, true, parseLabelNode(node), p);
+		return ExpressionCommons.newNewCapture(node, true, parseLabelNode(node), p);
 	}
 
 	public Expression newLink(AbstractTree<?> node) {
-		return ExpressionCommons.newLink(node, parseLabelNode(node), newExpression(node.get(_expr)));
+		return ExpressionCommons.newTlink(node, parseLabelNode(node), newExpression(node.get(_expr)));
 	}
 
 	public Expression newTagging(AbstractTree<?> node) {
-		return ExpressionCommons.newTagging(node, SymbolId.tag(node.toText()));
+		return ExpressionCommons.newTtag(node, SymbolId.tag(node.toText()));
 	}
 
 	public Expression newReplace(AbstractTree<?> node) {
-		return ExpressionCommons.newReplace(node, node.toText());
+		return ExpressionCommons.newTreplace(node, node.toText());
 	}
 
 	public Expression newMatch(AbstractTree<?> node) {
 		AbstractTree<?> exprNode = node.get(_expr, null);
 		if (exprNode != null) {
-			return ExpressionCommons.newMatch(node, newExpression(exprNode));
+			return ExpressionCommons.newUmatch(node, newExpression(exprNode));
 		}
-		return ExpressionCommons.newMatchSymbol(node, parseLabelNode(node));
+		return ExpressionCommons.newXmatch(node, parseLabelNode(node));
 	}
 
 	public Expression newIf(AbstractTree<?> node) {
-		return ExpressionCommons.newIfFlag(node, node.getText(_name, ""));
+		return ExpressionCommons.newXif(node, node.getText(_name, ""));
 	}
 
 	public Expression newOn(AbstractTree<?> node) {
@@ -245,27 +245,27 @@ public class NezGrammarLoader extends GrammarLoader {
 	}
 
 	public Expression newBlock(AbstractTree<?> node) {
-		return ExpressionCommons.newBlock(node, newExpression(node.get(_expr)));
+		return ExpressionCommons.newXblock(node, newExpression(node.get(_expr)));
 	}
 
 	public Expression newDef(AbstractTree<?> node) {
-		return ExpressionCommons.newDefSymbol(node, this.getGrammarFile(), SymbolId.tag(node.getText(_name, "")), newExpression(node.get(_expr)));
+		return ExpressionCommons.newXdef(node, this.getGrammarFile(), SymbolId.tag(node.getText(_name, "")), newExpression(node.get(_expr)));
 	}
 
 	public Expression newIs(AbstractTree<?> node) {
-		return ExpressionCommons.newIsSymbol(node, this.getGrammarFile(), SymbolId.tag(node.getText(_name, "")));
+		return ExpressionCommons.newXis(node, this.getGrammarFile(), SymbolId.tag(node.getText(_name, "")));
 	}
 
 	public Expression newIsa(AbstractTree<?> node) {
-		return ExpressionCommons.newIsaSymbol(node, this.getGrammarFile(), SymbolId.tag(node.getText(_name, "")));
+		return ExpressionCommons.newXisa(node, this.getGrammarFile(), SymbolId.tag(node.getText(_name, "")));
 	}
 
 	public Expression newExists(AbstractTree<?> node) {
-		return ExpressionCommons.newExists(node, SymbolId.tag(node.getText(_name, "")), node.getText(_symbol, null));
+		return ExpressionCommons.newXexists(node, SymbolId.tag(node.getText(_name, "")), node.getText(_symbol, null));
 	}
 
 	public Expression newLocal(AbstractTree<?> node) {
-		return ExpressionCommons.newLocal(node, SymbolId.tag(node.getText(_name, "")), newExpression(node.get(_expr)));
+		return ExpressionCommons.newXlocal(node, SymbolId.tag(node.getText(_name, "")), newExpression(node.get(_expr)));
 	}
 
 	public Expression newDefIndent(AbstractTree<?> node) {

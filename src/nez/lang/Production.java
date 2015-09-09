@@ -7,14 +7,14 @@ import nez.lang.expr.Uand;
 import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cset;
-import nez.lang.expr.Choice;
+import nez.lang.expr.Pchoice;
 import nez.lang.expr.ExpressionCommons;
 import nez.lang.expr.NonTerminal;
 import nez.lang.expr.Unot;
 import nez.lang.expr.Uoption;
 import nez.lang.expr.Uzero;
 import nez.lang.expr.Uone;
-import nez.lang.expr.Sequence;
+import nez.lang.expr.Psequence;
 import nez.util.ConsoleUtils;
 import nez.util.UFlag;
 import nez.util.UList;
@@ -132,7 +132,7 @@ public class Production extends Expression {
 			}
 			return;
 		}
-		if (e instanceof Sequence) {
+		if (e instanceof Psequence) {
 			quickCheck(p, e.get(0));
 			quickCheck(p, e.get(1));
 			return;
@@ -149,7 +149,7 @@ public class Production extends Expression {
 			}
 			return;
 		}
-		if (e instanceof Choice) {
+		if (e instanceof Pchoice) {
 			boolean checkedConsumed = UFlag.is(p.flag, ConsumedProduction);
 			if (checkedConsumed) {
 				for (Expression sub : e) {
@@ -449,13 +449,13 @@ public class Production extends Expression {
 			}
 			return p.isConsumed();
 		}
-		if (e instanceof Sequence) {
+		if (e instanceof Psequence) {
 			if (checkConsumed(e.get(0), s)) {
 				return true;
 			}
 			return checkConsumed(e.get(1), s);
 		}
-		if (e instanceof Choice) {
+		if (e instanceof Pchoice) {
 			boolean consumed = true;
 			for (Expression se : e) {
 				if (!checkConsumed(se, s)) {

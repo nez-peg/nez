@@ -8,7 +8,7 @@ import nez.lang.expr.Xblock;
 import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cset;
 import nez.lang.expr.Tcapture;
-import nez.lang.expr.Choice;
+import nez.lang.expr.Pchoice;
 import nez.lang.expr.Xdefindent;
 import nez.lang.expr.Xdef;
 import nez.lang.expr.Xexists;
@@ -25,7 +25,7 @@ import nez.lang.expr.Uoption;
 import nez.lang.expr.Uzero;
 import nez.lang.expr.Uone;
 import nez.lang.expr.Treplace;
-import nez.lang.expr.Sequence;
+import nez.lang.expr.Psequence;
 import nez.lang.expr.Ttag;
 import nez.lang.expr.Unary;
 import nez.util.StringUtils;
@@ -217,7 +217,7 @@ public abstract class GrammarGenerator extends NezGenerator {
 		L(_NonTerminal(rule));
 		inc();
 		L(_RuleDef() + " ");
-		if (e instanceof Choice) {
+		if (e instanceof Pchoice) {
 			for (int i = 0; i < e.size(); i++) {
 				if (i > 0) {
 					L(_Choice() + " ");
@@ -279,7 +279,7 @@ public abstract class GrammarGenerator extends NezGenerator {
 		Unary(_Not(), e, null);
 	}
 
-	public void visitChoice(Choice e) {
+	public void visitChoice(Pchoice e) {
 		for (int i = 0; i < e.size(); i++) {
 			if (i > 0) {
 				W(" " + _Choice() + " ");
@@ -314,7 +314,7 @@ public abstract class GrammarGenerator extends NezGenerator {
 		visitExpression(e.get(0));
 	}
 
-	public void visitSequence(Sequence e) {
+	public void visitSequence(Psequence e) {
 		int c = 0;
 		for (int i = 0; i < e.size(); i++) {
 			if (c > 0) {
@@ -326,7 +326,7 @@ public abstract class GrammarGenerator extends NezGenerator {
 				c++;
 				continue;
 			}
-			if (s instanceof Choice || s instanceof Sequence) {
+			if (s instanceof Pchoice || s instanceof Psequence) {
 				visitGrouping(s);
 				c++;
 			} else {
@@ -336,7 +336,7 @@ public abstract class GrammarGenerator extends NezGenerator {
 		}
 	}
 
-	private int checkString(Sequence l, int start) {
+	private int checkString(Psequence l, int start) {
 		int n = 0;
 		for (int i = start; i < l.size(); i++) {
 			Expression e = l.get(i);

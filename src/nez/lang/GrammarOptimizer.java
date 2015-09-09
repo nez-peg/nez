@@ -7,16 +7,16 @@ import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cset;
 import nez.lang.expr.Tcapture;
-import nez.lang.expr.Choice;
-import nez.lang.expr.Empty;
+import nez.lang.expr.Pchoice;
+import nez.lang.expr.Pempty;
 import nez.lang.expr.ExpressionCommons;
-import nez.lang.expr.Failure;
+import nez.lang.expr.Pfail;
 import nez.lang.expr.Tlink;
 import nez.lang.expr.Tnew;
 import nez.lang.expr.NonTerminal;
 import nez.lang.expr.Unot;
 import nez.lang.expr.Treplace;
-import nez.lang.expr.Sequence;
+import nez.lang.expr.Psequence;
 import nez.lang.expr.Ttag;
 import nez.util.UList;
 
@@ -84,7 +84,7 @@ public class GrammarOptimizer extends ExpressionTransducer {
 			rewrite("deref", n, deref);
 			return deref;
 		}
-		if (deref instanceof Empty || deref instanceof Failure) {
+		if (deref instanceof Pempty || deref instanceof Pfail) {
 			rewrite("deref", n, deref);
 			return deref;
 		}
@@ -110,12 +110,12 @@ public class GrammarOptimizer extends ExpressionTransducer {
 	}
 
 	@Override
-	public Expression reshapeSequence(Sequence p) {
+	public Expression reshapePsequence(Psequence p) {
 		Expression first = p.getFirst().reshape(this);
 		Expression next = p.getNext().reshape(this);
 		if (this.enabledOutOfOrder) {
-			if (next instanceof Sequence) {
-				Sequence nextSequence = (Sequence) next;
+			if (next instanceof Psequence) {
+				Psequence nextSequence = (Psequence) next;
 				if (isSingleCharacter(nextSequence.first) && isOutOfOrderExpression(first)) {
 					rewrite_outoforder(first, nextSequence.first);
 					Expression temp = nextSequence.first;
@@ -203,12 +203,12 @@ public class GrammarOptimizer extends ExpressionTransducer {
 
 	@Override
 	public Expression reshapeTlink(Tlink p) {
-		if (p.get(0) instanceof Choice) {
+		if (p.get(0) instanceof Pchoice) {
 			Expression inner = p.get(0);
 			UList<Expression> l = new UList<Expression>(new Expression[inner.size()]);
 			for (Expression subChoice : inner) {
 				subChoice = subChoice.reshape(this);
-				l.add(ExpressionCommons.newLink(p.getSourcePosition(), p.getLabel(), subChoice));
+				l.add(ExpressionCommons.newTlink(p.getSourcePosition(), p.getLabel(), subChoice));
 			}
 			return inner.newChoice(l);
 		}
@@ -216,7 +216,7 @@ public class GrammarOptimizer extends ExpressionTransducer {
 	}
 
 	@Override
-	public Expression reshapeChoice(Choice p) {
+	public Expression reshapePchoice(Pchoice p) {
 		if (!p.isFlatten) {
 			p.isFlatten = true;
 			UList<Expression> choiceList = new UList<Expression>(new Expression[p.size()]);
@@ -251,7 +251,7 @@ public class GrammarOptimizer extends ExpressionTransducer {
 					if (predicted != null) {
 						singleChoice = predicted;
 						count++;
-						if (predicted instanceof Choice) {
+						if (predicted instanceof Pchoice) {
 							selected += predicted.size();
 						} else {
 							selected += 1;
@@ -273,9 +273,9 @@ public class GrammarOptimizer extends ExpressionTransducer {
 				return p;
 			}
 			Expression c = p.newChoice(choiceList);
-			if (c instanceof Choice) {
-				((Choice) c).isFlatten = true;
-				((Choice) c).predictedCase = p.predictedCase;
+			if (c instanceof Pchoice) {
+				((Pchoice) c).isFlatten = true;
+				((Pchoice) c).predictedCase = p.predictedCase;
 			}
 			// rewrite("flatten", p, c);
 			return c;
@@ -283,11 +283,11 @@ public class GrammarOptimizer extends ExpressionTransducer {
 		return p;
 	}
 
-	private void flattenChoiceList(Choice parentExpression, UList<Expression> l) {
+	private void flattenChoiceList(Pchoice parentExpression, UList<Expression> l) {
 		for (Expression subExpression : parentExpression) {
 			subExpression = resolveNonTerminal(subExpression);
-			if (subExpression instanceof Choice) {
-				flattenChoiceList((Choice) subExpression, l);
+			if (subExpression instanceof Pchoice) {
+				flattenChoiceList((Pchoice) subExpression, l);
 			} else {
 				subExpression = subExpression.reshape(this);
 				if (l.size() > 0 && this.enabledCommonLeftFactoring) {
@@ -316,11 +316,11 @@ public class GrammarOptimizer extends ExpressionTransducer {
 
 	// OptimizerLibrary
 
-	private Expression convertByteMap(Choice choice, UList<Expression> choiceList) {
+	private Expression convertByteMap(Pchoice choice, UList<Expression> choiceList) {
 		boolean byteMap[] = Cset.newMap(false);
 		boolean binary = false;
 		for (Expression e : choiceList) {
-			if (e instanceof Failure) {
+			if (e instanceof Pfail) {
 				continue;
 			}
 			if (e instanceof Cbyte) {
@@ -340,7 +340,7 @@ public class GrammarOptimizer extends ExpressionTransducer {
 			if (e instanceof Cany) {
 				return e;
 			}
-			if (e instanceof Empty) {
+			if (e instanceof Pempty) {
 				break;
 			}
 			return null;
@@ -348,7 +348,7 @@ public class GrammarOptimizer extends ExpressionTransducer {
 		return choice.newByteMap(binary, byteMap);
 	}
 
-	private Expression selectChoice(Choice choice, UList<Expression> choiceList, int ch) {
+	private Expression selectChoice(Pchoice choice, UList<Expression> choiceList, int ch) {
 		Expression first = null;
 		UList<Expression> newChoiceList = null;
 		boolean commonPrifixed = false;
@@ -382,12 +382,12 @@ public class GrammarOptimizer extends ExpressionTransducer {
 			}
 		}
 		if (newChoiceList != null) {
-			return ExpressionCommons.newChoice(choice.getSourcePosition(), newChoiceList);
+			return ExpressionCommons.newPchoice(choice.getSourcePosition(), newChoiceList);
 		}
 		return commonPrifixed == true ? first.reshape(this) : first;
 	}
 
-	public final static Expression tryCommonFactoring(Choice base, Expression e, Expression e2, boolean ignoredFirstChar) {
+	public final static Expression tryCommonFactoring(Pchoice base, Expression e, Expression e2, boolean ignoredFirstChar) {
 		UList<Expression> l = null;
 		while (e != null && e2 != null) {
 			Expression f = e.getFirst();

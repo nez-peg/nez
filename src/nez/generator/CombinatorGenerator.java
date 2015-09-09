@@ -8,9 +8,9 @@ import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cset;
 import nez.lang.expr.Tcapture;
-import nez.lang.expr.Choice;
-import nez.lang.expr.Empty;
-import nez.lang.expr.Failure;
+import nez.lang.expr.Pchoice;
+import nez.lang.expr.Pempty;
+import nez.lang.expr.Pfail;
 import nez.lang.expr.Tlink;
 import nez.lang.expr.Tnew;
 import nez.lang.expr.NonTerminal;
@@ -19,7 +19,7 @@ import nez.lang.expr.Uoption;
 import nez.lang.expr.Uzero;
 import nez.lang.expr.Uone;
 import nez.lang.expr.Treplace;
-import nez.lang.expr.Sequence;
+import nez.lang.expr.Psequence;
 import nez.lang.expr.Ttag;
 import nez.util.StringUtils;
 
@@ -56,11 +56,11 @@ public class CombinatorGenerator extends GrammarGenerator {
 		End();
 	}
 
-	public void visitEmpty(Empty e) {
+	public void visitEmpty(Pempty e) {
 		C("Empty");
 	}
 
-	public void visitFailure(Failure e) {
+	public void visitFailure(Pfail e) {
 		C("Failure");
 	}
 
@@ -104,11 +104,11 @@ public class CombinatorGenerator extends GrammarGenerator {
 		C("Not", e);
 	}
 
-	public void visitChoice(Choice e) {
+	public void visitChoice(Pchoice e) {
 		C("Choice", e);
 	}
 
-	public void visitSequence(Sequence e) {
+	public void visitSequence(Psequence e) {
 		W("Sequence(");
 		super.visitSequence(e);
 		W(")");

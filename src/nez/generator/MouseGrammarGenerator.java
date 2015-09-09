@@ -8,9 +8,9 @@ import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cset;
 import nez.lang.expr.Tcapture;
-import nez.lang.expr.Choice;
-import nez.lang.expr.Empty;
-import nez.lang.expr.Failure;
+import nez.lang.expr.Pchoice;
+import nez.lang.expr.Pempty;
+import nez.lang.expr.Pfail;
 import nez.lang.expr.Tlink;
 import nez.lang.expr.Tnew;
 import nez.lang.expr.NonTerminal;
@@ -48,7 +48,7 @@ public class MouseGrammarGenerator extends GrammarGenerator {
 		file.writeIndent(stringfyName(rule.getLocalName().replaceAll("_", "under")));
 		file.incIndent();
 		file.writeIndent("= ");
-		if (e instanceof Choice) {
+		if (e instanceof Pchoice) {
 			for (int i = 0; i < e.size(); i++) {
 				if (i > 0) {
 					file.writeIndent("/ ");
@@ -62,11 +62,11 @@ public class MouseGrammarGenerator extends GrammarGenerator {
 		file.decIndent();
 	}
 
-	public void visitEmpty(Empty e) {
+	public void visitEmpty(Pempty e) {
 		file.write("\"\"");
 	}
 
-	public void visitFailure(Failure e) {
+	public void visitFailure(Pfail e) {
 		file.write("!_");
 	}
 
@@ -228,7 +228,7 @@ public class MouseGrammarGenerator extends GrammarGenerator {
 	// return end - 1;
 	// }
 
-	public void visitChoice(Choice e) {
+	public void visitChoice(Pchoice e) {
 		for (int i = 0; i < e.size(); i++) {
 			if (i > 0) {
 				file.write(" / ");

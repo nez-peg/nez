@@ -62,7 +62,7 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 	public final void visitRequired(AbstractTree<?> node) {
 		String propertyName = node.getText(0, null);
 		requiredPropertiesList.add(propertyName);
-		Expression[] seq = { _DQuoat(), ExpressionCommons.newDefSymbol(node, grammar, SymbolId.tag(currentClassName), ExpressionCommons.newString(node, propertyName)), _DQuoat(), ExpressionCommons.newNonTerminal(null, grammar, "NAMESEP"), toExpression(node.get(1)),
+		Expression[] seq = { _DQuoat(), ExpressionCommons.newXdef(node, grammar, SymbolId.tag(currentClassName), ExpressionCommons.newString(node, propertyName)), _DQuoat(), ExpressionCommons.newNonTerminal(null, grammar, "NAMESEP"), toExpression(node.get(1)),
 				grammar.newOption(ExpressionCommons.newNonTerminal(null, grammar, "VALUESEP")) };
 		grammar.defineProduction(node, node.getText(0, null), grammar.newSequence(seq));
 	}
@@ -80,7 +80,7 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 		String propertyName = node.getText(0, null);
 		requiredPropertiesList.add(propertyName);
 		// inferType(node.get(2));
-		Expression[] seq = { _DQuoat(), ExpressionCommons.newDefSymbol(node, grammar, SymbolId.tag(currentClassName), ExpressionCommons.newString(node, propertyName)), _DQuoat(), ExpressionCommons.newNonTerminal(null, grammar, "NAMESEP"),
+		Expression[] seq = { _DQuoat(), ExpressionCommons.newXdef(node, grammar, SymbolId.tag(currentClassName), ExpressionCommons.newString(node, propertyName)), _DQuoat(), ExpressionCommons.newNonTerminal(null, grammar, "NAMESEP"),
 				ExpressionCommons.newNonTerminal(null, grammar, "Any"), grammar.newOption(ExpressionCommons.newNonTerminal(null, grammar, "VALUESEP")) };
 		grammar.defineProduction(node, node.getText(0, null), grammar.newSequence(seq));
 	}
@@ -215,7 +215,7 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 		grammar.defineProduction(null, memberList, genExMemberRule(className, requiredListSize));
 
 		// return grammar.newLocal(className, seq);
-		return ExpressionCommons.newLocal(null, SymbolId.tag(className), grammar.newSequence(seq));
+		return ExpressionCommons.newXlocal(null, SymbolId.tag(className), grammar.newSequence(seq));
 	}
 
 	private final Expression genExMemberRule(String className, int requiredListSize) {
@@ -234,7 +234,7 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 		}
 
 		ExpressionCommons.addChoice(choice, ExpressionCommons.newNonTerminal(null, grammar, "Any"));
-		return ExpressionCommons.newChoice(null, choice);
+		return ExpressionCommons.newPchoice(null, choice);
 	}
 
 	private final void genImpliedChoice(String ruleName) {

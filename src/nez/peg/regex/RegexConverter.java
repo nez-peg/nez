@@ -148,7 +148,7 @@ public class RegexConverter extends GrammarConverter {
 	}
 
 	public Expression piNegativeCharacterSet(CommonTree e, Expression k) {
-		Expression nce = toSeq(e, ExpressionCommons.newNot(e, toCharacterSet(e)), toAny(e));
+		Expression nce = toSeq(e, ExpressionCommons.newUnot(e, toCharacterSet(e)), toAny(e));
 		return toSeq(e, nce, k);
 	}
 
@@ -180,7 +180,7 @@ public class RegexConverter extends GrammarConverter {
 		if (utf8.length != 1) {
 			ConsoleUtils.exit(1, "Error: not Character Literal");
 		}
-		return ExpressionCommons.newByteChar(null, false, utf8[0]);
+		return ExpressionCommons.newCbyte(null, false, utf8[0]);
 	}
 
 	boolean byteMap[];
@@ -193,9 +193,9 @@ public class RegexConverter extends GrammarConverter {
 			ExpressionCommons.addChoice(l, toExpression(subnode));
 		}
 		if (useByteMap) {
-			return ExpressionCommons.newByteMap(null, false, byteMap);
+			return ExpressionCommons.newCset(null, false, byteMap);
 		} else {
-			return ExpressionCommons.newChoice(null, l);
+			return ExpressionCommons.newPchoice(null, l);
 		}
 	}
 
@@ -212,7 +212,7 @@ public class RegexConverter extends GrammarConverter {
 	public Expression toCharacterSetItem(AbstractTree<?> c) {
 		byte[] utf8 = StringUtils.toUtf8(c.toText());
 		byteMap[utf8[0]] = true;
-		return ExpressionCommons.newByteChar(null, false, utf8[0]);
+		return ExpressionCommons.newCbyte(null, false, utf8[0]);
 	}
 
 	public Expression toEmpty(AbstractTree<?> node) {
@@ -220,15 +220,15 @@ public class RegexConverter extends GrammarConverter {
 	}
 
 	public Expression toAny(AbstractTree<?> e) {
-		return ExpressionCommons.newAnyChar(null, false);
+		return ExpressionCommons.newCany(null, false);
 	}
 
 	public Expression toAnd(AbstractTree<?> e, Expression k) {
-		return toSeq(e, ExpressionCommons.newAnd(null, pi(e.get(0), toEmpty(e))), k);
+		return toSeq(e, ExpressionCommons.newUand(null, pi(e.get(0), toEmpty(e))), k);
 	}
 
 	public Expression toNot(AbstractTree<?> e, Expression k) {
-		return toSeq(e, ExpressionCommons.newNot(null, pi(e.get(0), toEmpty(e))), k);
+		return toSeq(e, ExpressionCommons.newUnot(null, pi(e.get(0), toEmpty(e))), k);
 	}
 
 	public Expression toChoice(AbstractTree<?> node, Expression e, Expression k) {
@@ -239,7 +239,7 @@ public class RegexConverter extends GrammarConverter {
 		} else {
 			ExpressionCommons.addChoice(l, toEmpty(node));
 		}
-		return ExpressionCommons.newChoice(null, l);
+		return ExpressionCommons.newPchoice(null, l);
 	}
 
 	public Expression toSeq(AbstractTree<?> e, Expression k) {
@@ -248,7 +248,7 @@ public class RegexConverter extends GrammarConverter {
 		if (k != null) {
 			ExpressionCommons.addSequence(l, k);
 		}
-		return ExpressionCommons.newSequence(null, l);
+		return ExpressionCommons.newPsequence(null, l);
 	}
 
 	public Expression toSeq(AbstractTree<?> node, Expression e, Expression k) {
@@ -257,7 +257,7 @@ public class RegexConverter extends GrammarConverter {
 		if (k != null) {
 			ExpressionCommons.addSequence(l, k);
 		}
-		return ExpressionCommons.newSequence(null, l);
+		return ExpressionCommons.newPsequence(null, l);
 	}
 
 	@Override

@@ -15,7 +15,7 @@ import nez.lang.expr.Xblock;
 import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cset;
 import nez.lang.expr.Tcapture;
-import nez.lang.expr.Choice;
+import nez.lang.expr.Pchoice;
 import nez.lang.expr.Xdefindent;
 import nez.lang.expr.Xdef;
 import nez.lang.expr.Xexists;
@@ -34,7 +34,7 @@ import nez.lang.expr.Uoption;
 import nez.lang.expr.Uzero;
 import nez.lang.expr.Uone;
 import nez.lang.expr.Treplace;
-import nez.lang.expr.Sequence;
+import nez.lang.expr.Psequence;
 import nez.lang.expr.Ttag;
 import nez.main.Verbose;
 
@@ -157,7 +157,7 @@ public abstract class NezEncoder {
 
 	public abstract Instruction encode(Expression e, Instruction next, Instruction failjump);
 
-	public abstract Instruction encodeFail(Expression p);
+	public abstract Instruction encodePfail(Expression p);
 
 	public abstract Instruction encodeCany(Cany p, Instruction next, Instruction failjump);
 
@@ -177,9 +177,9 @@ public abstract class NezEncoder {
 
 	public abstract Instruction encodeUnot(Unot p, Instruction next, Instruction failjump);
 
-	public abstract Instruction encodeSequence(Sequence p, Instruction next, Instruction failjump);
+	public abstract Instruction encodePsequence(Psequence p, Instruction next, Instruction failjump);
 
-	public abstract Instruction encodeChoice(Choice p, Instruction next, Instruction failjump);
+	public abstract Instruction encodePchoice(Pchoice p, Instruction next, Instruction failjump);
 
 	public abstract Instruction encodeNonTerminal(NonTerminal p, Instruction next, Instruction failjump);
 

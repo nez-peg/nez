@@ -14,7 +14,7 @@ import nez.lang.expr.Xblock;
 import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cset;
 import nez.lang.expr.Tcapture;
-import nez.lang.expr.Choice;
+import nez.lang.expr.Pchoice;
 import nez.lang.expr.Xdefindent;
 import nez.lang.expr.Xdef;
 import nez.lang.expr.Xexists;
@@ -31,7 +31,7 @@ import nez.lang.expr.Uoption;
 import nez.lang.expr.Uzero;
 import nez.lang.expr.Uone;
 import nez.lang.expr.Treplace;
-import nez.lang.expr.Sequence;
+import nez.lang.expr.Psequence;
 import nez.lang.expr.Ttag;
 import nez.util.StringUtils;
 import nez.util.UList;
@@ -485,28 +485,28 @@ public class PythonParserGenerator extends NezGenerator {
 		Else().Begin().Succ().End();
 	}
 
-	public void flattenSequence(Sequence seq, UList<Expression> l) {
+	public void flattenSequence(Psequence seq, UList<Expression> l) {
 		Expression first = seq.getFirst();
 		Expression last = seq.getNext();
-		if (first instanceof Sequence) {
-			flattenSequence((Sequence) first, l);
-			if (last instanceof Sequence) {
-				flattenSequence((Sequence) last, l);
+		if (first instanceof Psequence) {
+			flattenSequence((Psequence) first, l);
+			if (last instanceof Psequence) {
+				flattenSequence((Psequence) last, l);
 				return;
 			}
 			l.add(last);
 			return;
 		}
 		l.add(first);
-		if (last instanceof Sequence) {
-			flattenSequence((Sequence) last, l);
+		if (last instanceof Psequence) {
+			flattenSequence((Psequence) last, l);
 			return;
 		}
 		l.add(last);
 	}
 
 	@Override
-	public void visitSequence(Sequence p) {
+	public void visitSequence(Psequence p) {
 		Let("index" + p.getId(), _func("len", "self.compiler.func.list"));
 		boolean isLeftNew = false;
 		boolean isLink = false;
@@ -537,7 +537,7 @@ public class PythonParserGenerator extends NezGenerator {
 	}
 
 	@Override
-	public void visitChoice(Choice p) {
+	public void visitChoice(Pchoice p) {
 		String pos = "pos_c" + p.getId();
 		Let(pos, "self.pos");
 		for (int i = 0; i < p.size(); i++) {

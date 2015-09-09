@@ -156,7 +156,7 @@ public class RegexGrammar extends AbstractTreeVisitor {
 	}
 
 	public Expression piNegativeCharacterSet(CommonTree e, Expression k) {
-		Expression nce = toSeq(e, ExpressionCommons.newNot(e, toCharacterSet(e)), toAny(e));
+		Expression nce = toSeq(e, ExpressionCommons.newUnot(e, toCharacterSet(e)), toAny(e));
 		return toSeq(e, nce, k);
 	}
 
@@ -188,7 +188,7 @@ public class RegexGrammar extends AbstractTreeVisitor {
 		if (utf8.length != 1) {
 			ConsoleUtils.exit(1, "Error: not Character Literal");
 		}
-		return ExpressionCommons.newByteChar(null, false, utf8[0]);
+		return ExpressionCommons.newCbyte(null, false, utf8[0]);
 	}
 
 	boolean byteMap[];
@@ -201,9 +201,9 @@ public class RegexGrammar extends AbstractTreeVisitor {
 			ExpressionCommons.addChoice(l, toExpression(subnode));
 		}
 		if (useByteMap) {
-			return ExpressionCommons.newByteMap(null, false, byteMap);
+			return ExpressionCommons.newCset(null, false, byteMap);
 		} else {
-			return ExpressionCommons.newChoice(null, l);
+			return ExpressionCommons.newPchoice(null, l);
 		}
 	}
 
@@ -219,7 +219,7 @@ public class RegexGrammar extends AbstractTreeVisitor {
 	public Expression toCharacterSetItem(CommonTree c) {
 		byte[] utf8 = StringUtils.toUtf8(c.toText());
 		byteMap[utf8[0]] = true;
-		return ExpressionCommons.newByteChar(null, false, utf8[0]);
+		return ExpressionCommons.newCbyte(null, false, utf8[0]);
 	}
 
 	public Expression toEmpty(CommonTree node) {
@@ -227,15 +227,15 @@ public class RegexGrammar extends AbstractTreeVisitor {
 	}
 
 	public Expression toAny(CommonTree e) {
-		return ExpressionCommons.newAnyChar(null, false);
+		return ExpressionCommons.newCany(null, false);
 	}
 
 	public Expression toAnd(CommonTree e, Expression k) {
-		return toSeq(e, ExpressionCommons.newAnd(null, pi(e.get(0), toEmpty(e))), k);
+		return toSeq(e, ExpressionCommons.newUand(null, pi(e.get(0), toEmpty(e))), k);
 	}
 
 	public Expression toNot(CommonTree e, Expression k) {
-		return toSeq(e, ExpressionCommons.newNot(null, pi(e.get(0), toEmpty(e))), k);
+		return toSeq(e, ExpressionCommons.newUnot(null, pi(e.get(0), toEmpty(e))), k);
 	}
 
 	public Expression toChoice(CommonTree node, Expression e, Expression k) {
@@ -246,7 +246,7 @@ public class RegexGrammar extends AbstractTreeVisitor {
 		} else {
 			ExpressionCommons.addChoice(l, toEmpty(node));
 		}
-		return ExpressionCommons.newChoice(null, l);
+		return ExpressionCommons.newPchoice(null, l);
 	}
 
 	public Expression toSeq(CommonTree e, Expression k) {
@@ -255,7 +255,7 @@ public class RegexGrammar extends AbstractTreeVisitor {
 		if (k != null) {
 			ExpressionCommons.addSequence(l, k);
 		}
-		return ExpressionCommons.newSequence(null, l);
+		return ExpressionCommons.newPsequence(null, l);
 	}
 
 	public Expression toSeq(CommonTree node, Expression e, Expression k) {
@@ -264,7 +264,7 @@ public class RegexGrammar extends AbstractTreeVisitor {
 		if (k != null) {
 			ExpressionCommons.addSequence(l, k);
 		}
-		return ExpressionCommons.newSequence(null, l);
+		return ExpressionCommons.newPsequence(null, l);
 	}
 
 }

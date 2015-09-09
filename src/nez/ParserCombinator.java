@@ -106,15 +106,15 @@ public class ParserCombinator {
 				binary = true;
 			}
 		}
-		return ExpressionCommons.newByteMap(src(), binary, b);
+		return ExpressionCommons.newCset(src(), binary, b);
 	}
 
 	protected final Expression ByteChar(int byteChar) {
-		return ExpressionCommons.newByteChar(src(), false, byteChar);
+		return ExpressionCommons.newCbyte(src(), false, byteChar);
 	}
 
 	protected final Expression AnyChar() {
-		return ExpressionCommons.newAnyChar(src(), false);
+		return ExpressionCommons.newCany(src(), false);
 	}
 
 	protected final Expression NotAny(String token) {
@@ -130,7 +130,7 @@ public class ParserCombinator {
 		for (Expression e : elist) {
 			ExpressionCommons.addSequence(l, e);
 		}
-		return ExpressionCommons.newSequence(src(), l);
+		return ExpressionCommons.newPsequence(src(), l);
 	}
 
 	protected final Expression Choice(Expression... elist) {
@@ -138,51 +138,51 @@ public class ParserCombinator {
 		for (Expression e : elist) {
 			ExpressionCommons.addChoice(l, e);
 		}
-		return ExpressionCommons.newChoice(src(), l);
+		return ExpressionCommons.newPchoice(src(), l);
 	}
 
 	protected final Expression Option(Expression... e) {
-		return ExpressionCommons.newOption(src(), Sequence(e));
+		return ExpressionCommons.newUoption(src(), Sequence(e));
 	}
 
 	protected final Expression Option(String t) {
-		return ExpressionCommons.newOption(src(), t(t));
+		return ExpressionCommons.newUoption(src(), t(t));
 	}
 
 	protected final Expression ZeroMore(Expression... e) {
-		return ExpressionCommons.newRepetition(src(), Sequence(e));
+		return ExpressionCommons.newUzero(src(), Sequence(e));
 	}
 
 	protected final Expression OneMore(Expression... e) {
-		return ExpressionCommons.newRepetition1(src(), Sequence(e));
+		return ExpressionCommons.newUone(src(), Sequence(e));
 	}
 
 	protected final Expression Not(String t) {
-		return ExpressionCommons.newNot(src(), ExpressionCommons.newString(src(), t));
+		return ExpressionCommons.newUnot(src(), ExpressionCommons.newString(src(), t));
 	}
 
 	protected final Expression Not(Expression... e) {
-		return ExpressionCommons.newNot(src(), Sequence(e));
+		return ExpressionCommons.newUnot(src(), Sequence(e));
 	}
 
 	protected final Expression And(Expression... e) {
-		return ExpressionCommons.newAnd(src(), Sequence(e));
+		return ExpressionCommons.newUand(src(), Sequence(e));
 	}
 
 	protected final Expression NCapture(int shift) {
-		return ExpressionCommons.newNew(src(), false, null, shift);
+		return ExpressionCommons.newTnew(src(), false, null, shift);
 	}
 
 	protected final Expression LCapture(int shift, String label) {
-		return ExpressionCommons.newNew(src(), true, label == null ? null : SymbolId.tag(label), shift);
+		return ExpressionCommons.newTnew(src(), true, label == null ? null : SymbolId.tag(label), shift);
 	}
 
 	protected final Expression Capture(int shift) {
-		return ExpressionCommons.newCapture(src(), shift);
+		return ExpressionCommons.newTcapture(src(), shift);
 	}
 
 	protected final Expression New(Expression... e) {
-		return ExpressionCommons.newNew(src(), false, null, Sequence(e));
+		return ExpressionCommons.newNewCapture(src(), false, null, Sequence(e));
 	}
 
 	protected final Expression LeftFoldOption(String label, Expression... e) {
@@ -198,19 +198,19 @@ public class ParserCombinator {
 	}
 
 	protected Expression Link(String label, Expression e) {
-		return ExpressionCommons.newLink(src(), label == null ? null : SymbolId.tag(label), e);
+		return ExpressionCommons.newTlink(src(), label == null ? null : SymbolId.tag(label), e);
 	}
 
 	protected Expression Link(String label, String nonTerminal) {
-		return ExpressionCommons.newLink(src(), label == null ? null : SymbolId.tag(label), P(nonTerminal));
+		return ExpressionCommons.newTlink(src(), label == null ? null : SymbolId.tag(label), P(nonTerminal));
 	}
 
 	protected Expression OptionalLink(String label, String nonTerminal) {
-		return ExpressionCommons.newOption(src(), ExpressionCommons.newLink(src(), label == null ? null : SymbolId.tag(label), P(nonTerminal)));
+		return ExpressionCommons.newUoption(src(), ExpressionCommons.newTlink(src(), label == null ? null : SymbolId.tag(label), P(nonTerminal)));
 	}
 
 	protected Expression Msg(String label, String msg) {
-		return ExpressionCommons.newLink(src(), SymbolId.tag(label), New(Replace(msg)));
+		return ExpressionCommons.newTlink(src(), SymbolId.tag(label), New(Replace(msg)));
 	}
 
 	// protected final Expression Tag(Tag t) {
@@ -218,15 +218,15 @@ public class ParserCombinator {
 	// }
 
 	protected final Expression Tag(String tag) {
-		return ExpressionCommons.newTagging(src(), SymbolId.tag(tag));
+		return ExpressionCommons.newTtag(src(), SymbolId.tag(tag));
 	}
 
 	protected final Expression Replace(char c) {
-		return ExpressionCommons.newReplace(src(), String.valueOf(c));
+		return ExpressionCommons.newTreplace(src(), String.valueOf(c));
 	}
 
 	protected final Expression Replace(String value) {
-		return ExpressionCommons.newReplace(src(), value);
+		return ExpressionCommons.newTreplace(src(), value);
 	}
 
 }

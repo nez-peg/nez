@@ -9,7 +9,7 @@ import nez.lang.expr.Xblock;
 import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cset;
 import nez.lang.expr.Tcapture;
-import nez.lang.expr.Choice;
+import nez.lang.expr.Pchoice;
 import nez.lang.expr.Xdef;
 import nez.lang.expr.Xexists;
 import nez.lang.expr.Xis;
@@ -56,7 +56,7 @@ public class NezGrammarGenerator extends GrammarGenerator {
 		}
 		inc();
 		L("= ");
-		if (e instanceof Choice) {
+		if (e instanceof Pchoice) {
 			for (int i = 0; i < e.size(); i++) {
 				if (i > 0) {
 					L("/ ");
@@ -125,7 +125,7 @@ public class NezGrammarGenerator extends GrammarGenerator {
 	}
 
 	@Override
-	public void visitChoice(Choice e) {
+	public void visitChoice(Pchoice e) {
 		for (int i = 0; i < e.size(); i++) {
 			if (i > 0) {
 				W(" / ");

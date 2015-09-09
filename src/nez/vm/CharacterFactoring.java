@@ -5,9 +5,9 @@ import nez.lang.ExpressionTransducer;
 import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cset;
-import nez.lang.expr.Choice;
+import nez.lang.expr.Pchoice;
 import nez.lang.expr.ExpressionCommons;
-import nez.lang.expr.Sequence;
+import nez.lang.expr.Psequence;
 import nez.util.UList;
 
 public class CharacterFactoring extends ExpressionTransducer {
@@ -37,7 +37,7 @@ public class CharacterFactoring extends ExpressionTransducer {
 		return empty(e);
 	}
 
-	public Expression reshapeSequence(Sequence e) {
+	public Expression reshapePsequence(Psequence e) {
 		Expression first = e.get(0).reshape(this);
 		if (first == e.get(0)) {
 			return e;
@@ -47,10 +47,10 @@ public class CharacterFactoring extends ExpressionTransducer {
 		for (int i = 1; i < e.size(); i++) {
 			l.add(e.get(i));
 		}
-		return ExpressionCommons.newSequence(e.getSourcePosition(), l);
+		return ExpressionCommons.newPsequence(e.getSourcePosition(), l);
 	}
 
-	public Expression reshapeChoice(Choice e) {
+	public Expression reshapePchoice(Pchoice e) {
 		UList<Expression> l = new UList<Expression>(new Expression[e.size()]);
 		for (Expression sub : e) {
 			Expression p = sub.reshape(this);
@@ -58,7 +58,7 @@ public class CharacterFactoring extends ExpressionTransducer {
 				return e;
 			}
 		}
-		return ExpressionCommons.newChoice(e.getSourcePosition(), l);
+		return ExpressionCommons.newPchoice(e.getSourcePosition(), l);
 	}
 
 }

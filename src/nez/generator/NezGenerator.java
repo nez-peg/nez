@@ -10,7 +10,7 @@ import nez.lang.expr.Xblock;
 import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cset;
 import nez.lang.expr.Tcapture;
-import nez.lang.expr.Choice;
+import nez.lang.expr.Pchoice;
 import nez.lang.expr.Xdefindent;
 import nez.lang.expr.Xdef;
 import nez.lang.expr.Xexists;
@@ -29,7 +29,7 @@ import nez.lang.expr.Uoption;
 import nez.lang.expr.Uzero;
 import nez.lang.expr.Uone;
 import nez.lang.expr.Treplace;
-import nez.lang.expr.Sequence;
+import nez.lang.expr.Psequence;
 import nez.lang.expr.Ttag;
 import nez.util.FileBuilder;
 import nez.vm.Instruction;
@@ -81,7 +81,7 @@ public abstract class NezGenerator extends NezEncoder {
 		return null;
 	}
 
-	public Instruction encodeFail(Expression p) {
+	public Instruction encodePfail(Expression p) {
 		this.visitFailure(p);
 		return null;
 	}
@@ -111,12 +111,12 @@ public abstract class NezGenerator extends NezEncoder {
 		return null;
 	}
 
-	public Instruction encodeSequence(Sequence p, Instruction next, Instruction failjump) {
+	public Instruction encodePsequence(Psequence p, Instruction next, Instruction failjump) {
 		this.visitSequence(p);
 		return null;
 	}
 
-	public Instruction encodeChoice(Choice p, Instruction next, Instruction failjump) {
+	public Instruction encodePchoice(Pchoice p, Instruction next, Instruction failjump) {
 		this.visitChoice(p);
 		return null;
 	}
@@ -252,9 +252,9 @@ public abstract class NezGenerator extends NezEncoder {
 
 	public abstract void visitNot(Unot p);
 
-	public abstract void visitSequence(Sequence p);
+	public abstract void visitSequence(Psequence p);
 
-	public abstract void visitChoice(Choice p);
+	public abstract void visitChoice(Pchoice p);
 
 	public abstract void visitNonTerminal(NonTerminal p);
 

@@ -8,14 +8,14 @@ import nez.lang.Production;
 import nez.lang.Typestate;
 import nez.lang.expr.Uand;
 import nez.lang.expr.Tcapture;
-import nez.lang.expr.Choice;
+import nez.lang.expr.Pchoice;
 import nez.lang.expr.Tlink;
 import nez.lang.expr.Tnew;
 import nez.lang.expr.NonTerminal;
 import nez.lang.expr.Uoption;
 import nez.lang.expr.Uzero;
 import nez.lang.expr.Uone;
-import nez.lang.expr.Sequence;
+import nez.lang.expr.Psequence;
 import nez.lang.expr.Ttag;
 import nez.util.UList;
 
@@ -52,7 +52,7 @@ public abstract class Type {
 			inf.tag(((Ttag) e).tag);
 			return inf;
 		}
-		if (e instanceof Choice && e.inferTypestate() != Typestate.BooleanType) {
+		if (e instanceof Pchoice && e.inferTypestate() != Typestate.BooleanType) {
 			UList<AtomType> u = new UList<AtomType>(new AtomType[e.size()]);
 			for (int i = 0; i < e.size(); i++) {
 				addUnionType(u, inferType(name, e.get(i), inf.dup()));
@@ -118,7 +118,7 @@ public abstract class Type {
 		if (e instanceof Uand) {
 			return inferType(name, e.get(0), inf);
 		}
-		if (e instanceof Sequence) {
+		if (e instanceof Psequence) {
 			for (int i = e.size() - 1; i >= 0; i--) {
 				inf = inferType(name, e.get(i), inf);
 			}

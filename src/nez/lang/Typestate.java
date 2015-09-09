@@ -2,7 +2,7 @@ package nez.lang;
 
 import nez.lang.expr.Uand;
 import nez.lang.expr.Tcapture;
-import nez.lang.expr.Choice;
+import nez.lang.expr.Pchoice;
 import nez.lang.expr.Xdef;
 import nez.lang.expr.ExpressionCommons;
 import nez.lang.expr.Xis;
@@ -159,14 +159,14 @@ public class Typestate extends ExpressionTransducer {
 		if (this.required == Typestate.OperationType) {
 			if (t == Typestate.ObjectType) {
 				reportInserted(p, "@");
-				return ExpressionCommons.newLink(p.getSourcePosition(), null, p);
+				return ExpressionCommons.newTlink(p.getSourcePosition(), null, p);
 			}
 		}
 		return p;
 	}
 
 	@Override
-	public Expression reshapeChoice(Choice p) {
+	public Expression reshapePchoice(Pchoice p) {
 		int required = this.required;
 		int next = this.required;
 		UList<Expression> l = ExpressionCommons.newList(p.size());
@@ -178,7 +178,7 @@ public class Typestate extends ExpressionTransducer {
 			}
 		}
 		this.required = next;
-		return ExpressionCommons.newChoice(p.getSourcePosition(), l);
+		return ExpressionCommons.newPchoice(p.getSourcePosition(), l);
 	}
 
 	@Override

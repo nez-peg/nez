@@ -84,23 +84,23 @@ public abstract class Expression extends AbstractList<Expression> {
 	}
 
 	public final Expression newByteMap(boolean isBinary, boolean[] byteMap) {
-		return ExpressionCommons.newByteMap(this.getSourcePosition(), isBinary, byteMap);
+		return ExpressionCommons.newCset(this.getSourcePosition(), isBinary, byteMap);
 	}
 
 	public final Expression newSequence(Expression e, Expression e2) {
-		return ExpressionCommons.newSequence(this.getSourcePosition(), e, e2);
+		return ExpressionCommons.newPsequence(this.getSourcePosition(), e, e2);
 	}
 
 	public final Expression newSequence(UList<Expression> l) {
-		return ExpressionCommons.newSequence(this.getSourcePosition(), l);
+		return ExpressionCommons.newPsequence(this.getSourcePosition(), l);
 	}
 
 	public final Expression newChoice(Expression e, Expression e2) {
-		return ExpressionCommons.newChoice(this.getSourcePosition(), e, e2);
+		return ExpressionCommons.newPchoice(this.getSourcePosition(), e, e2);
 	}
 
 	public final Expression newChoice(UList<Expression> l) {
-		return ExpressionCommons.newChoice(this.getSourcePosition(), l);
+		return ExpressionCommons.newPchoice(this.getSourcePosition(), l);
 	}
 
 }

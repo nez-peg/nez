@@ -16,7 +16,7 @@ import nez.lang.expr.Xblock;
 import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cset;
 import nez.lang.expr.Tcapture;
-import nez.lang.expr.Choice;
+import nez.lang.expr.Pchoice;
 import nez.lang.expr.Xdefindent;
 import nez.lang.expr.Xdef;
 import nez.lang.expr.Xexists;
@@ -35,7 +35,7 @@ import nez.lang.expr.Uoption;
 import nez.lang.expr.Uzero;
 import nez.lang.expr.Uone;
 import nez.lang.expr.Treplace;
-import nez.lang.expr.Sequence;
+import nez.lang.expr.Psequence;
 import nez.lang.expr.Ttag;
 
 public class CParserGenerator extends ParserGenerator {
@@ -243,7 +243,7 @@ public class CParserGenerator extends ParserGenerator {
 		return e;
 	}
 
-	public int specializeString(Sequence e, int start) {
+	public int specializeString(Psequence e, int start) {
 		int count = 0;
 		for (int i = start; i < e.size(); i++) {
 			Expression inner = e.get(i);
@@ -257,7 +257,7 @@ public class CParserGenerator extends ParserGenerator {
 		return 0;
 	}
 
-	public boolean checkByteMap(Choice e) {
+	public boolean checkByteMap(Pchoice e) {
 		for (int i = 0; i < e.size(); i++) {
 			Expression inner = e.get(i);
 			if (!(inner instanceof Cbyte || inner instanceof Cset)) {
@@ -267,7 +267,7 @@ public class CParserGenerator extends ParserGenerator {
 		return true;
 	}
 
-	private boolean checkString(Sequence e) {
+	private boolean checkString(Psequence e) {
 		for (int i = 0; i < e.size(); i++) {
 			if (!(e.get(i) instanceof Cbyte)) {
 				return false;
@@ -276,7 +276,7 @@ public class CParserGenerator extends ParserGenerator {
 		return true;
 	}
 
-	public void specializeByteMap(Choice e) {
+	public void specializeByteMap(Pchoice e) {
 		boolean[] map = new boolean[256];
 		for (int i = 0; i < e.size(); i++) {
 			Expression inner = e.get(i);
@@ -313,7 +313,7 @@ public class CParserGenerator extends ParserGenerator {
 		this.file.writeIndent("ctx->cur++;");
 	}
 
-	public void specializeNotByteMap(Choice e) {
+	public void specializeNotByteMap(Pchoice e) {
 		boolean[] map = new boolean[256];
 		for (int i = 0; i < e.size(); i++) {
 			Expression inner = e.get(i);
@@ -349,7 +349,7 @@ public class CParserGenerator extends ParserGenerator {
 		this.closeBlock();
 	}
 
-	public void specializeNotString(Sequence e) {
+	public void specializeNotString(Psequence e) {
 		for (int i = 0; i < e.size(); i++) {
 			Expression inner = e.get(i);
 			if (inner instanceof Cbyte) {
@@ -398,23 +398,23 @@ public class CParserGenerator extends ParserGenerator {
 			this.closeBlock();
 			return true;
 		}
-		if (inner instanceof Choice) {
-			if (checkByteMap((Choice) inner)) {
-				specializeNotByteMap((Choice) inner);
+		if (inner instanceof Pchoice) {
+			if (checkByteMap((Pchoice) inner)) {
+				specializeNotByteMap((Pchoice) inner);
 				return true;
 			}
 		}
-		if (inner instanceof Sequence) {
-			if (checkString((Sequence) inner)) {
+		if (inner instanceof Psequence) {
+			if (checkString((Psequence) inner)) {
 				this.file.writeIndent("// Specialize not string");
-				specializeNotString((Sequence) inner);
+				specializeNotString((Psequence) inner);
 				return true;
 			}
 		}
 		return false;
 	}
 
-	public void specializeOptionByteMap(Choice e) {
+	public void specializeOptionByteMap(Pchoice e) {
 		boolean[] map = new boolean[256];
 		for (int i = 0; i < e.size(); i++) {
 			Expression inner = e.get(i);
@@ -450,7 +450,7 @@ public class CParserGenerator extends ParserGenerator {
 		this.closeBlock();
 	}
 
-	public void specializeOptionString(Sequence e) {
+	public void specializeOptionString(Psequence e) {
 		int fid = ++this.fid;
 		String label = "EXIT_OPTION" + fid;
 		String backtrack = "c" + fid;
@@ -505,23 +505,23 @@ public class CParserGenerator extends ParserGenerator {
 			this.closeBlock();
 			return true;
 		}
-		if (inner instanceof Choice) {
-			if (checkByteMap((Choice) inner)) {
-				specializeOptionByteMap((Choice) inner);
+		if (inner instanceof Pchoice) {
+			if (checkByteMap((Pchoice) inner)) {
+				specializeOptionByteMap((Pchoice) inner);
 				return true;
 			}
 		}
-		if (inner instanceof Sequence) {
-			if (checkString((Sequence) inner)) {
+		if (inner instanceof Psequence) {
+			if (checkString((Psequence) inner)) {
 				this.file.writeIndent("// specialize option string");
-				specializeOptionString((Sequence) inner);
+				specializeOptionString((Psequence) inner);
 				return true;
 			}
 		}
 		return false;
 	}
 
-	public void specializeZeroMoreByteMap(Choice e) {
+	public void specializeZeroMoreByteMap(Pchoice e) {
 		boolean[] b = new boolean[256];
 		for (int i = 0; i < e.size(); i++) {
 			Expression inner = e.get(i);
@@ -604,10 +604,10 @@ public class CParserGenerator extends ParserGenerator {
 			this.closeBlock();
 			return true;
 		}
-		if (inner instanceof Choice) {
-			if (checkByteMap((Choice) inner)) {
+		if (inner instanceof Pchoice) {
+			if (checkByteMap((Pchoice) inner)) {
 				this.file.writeIndent("// specialize repeat choice");
-				specializeZeroMoreByteMap((Choice) inner);
+				specializeZeroMoreByteMap((Pchoice) inner);
 				return true;
 			}
 		}
@@ -851,7 +851,7 @@ public class CParserGenerator extends ParserGenerator {
 	}
 
 	@Override
-	public void visitSequence(Sequence e) {
+	public void visitSequence(Psequence e) {
 		for (int i = 0; i < e.size(); i++) {
 			visitExpression(e.get(i));
 		}
@@ -872,7 +872,7 @@ public class CParserGenerator extends ParserGenerator {
 		return sb.toString();
 	}
 
-	private void showChoiceInfo(Choice e) {
+	private void showChoiceInfo(Pchoice e) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(e.toString() + ",").append(e.size() + ",");
 		if (e.predictedCase != null) {
@@ -883,7 +883,7 @@ public class CParserGenerator extends ParserGenerator {
 			for (int i = 0; i < e.predictedCase.length; i++) {
 				if (e.predictedCase[i] != null) {
 					notNullSize++;
-					if (e.predictedCase[i] instanceof Choice) {
+					if (e.predictedCase[i] instanceof Pchoice) {
 						subChoiceSize += e.predictedCase[i].size();
 					} else {
 						notChoiceSize++;
@@ -902,7 +902,7 @@ public class CParserGenerator extends ParserGenerator {
 	}
 
 	@Override
-	public void visitChoice(Choice e) {
+	public void visitChoice(Pchoice e) {
 		// showChoiceInfo(e);
 		if ((e.predictedCase != null && isPrediction && this.option.enabledPrediction)) {
 			predictionCount++;
@@ -933,7 +933,7 @@ public class CParserGenerator extends ParserGenerator {
 			for (int i = 0; i < l.size(); i++) {
 				Expression pe = l.get(i);
 				this.exitLabel("PREDICATE_JUMP" + formatId(fid) + "" + pe.getId());
-				if (!(pe instanceof Choice)) {
+				if (!(pe instanceof Pchoice)) {
 					this.choiceCount();
 				} else {
 					isPrediction = false;

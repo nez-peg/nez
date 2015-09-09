@@ -10,7 +10,7 @@ import nez.lang.expr.Xblock;
 import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cset;
 import nez.lang.expr.Tcapture;
-import nez.lang.expr.Choice;
+import nez.lang.expr.Pchoice;
 import nez.lang.expr.Xdefindent;
 import nez.lang.expr.Xdef;
 import nez.lang.expr.Xexists;
@@ -27,7 +27,7 @@ import nez.lang.expr.Uoption;
 import nez.lang.expr.Uzero;
 import nez.lang.expr.Uone;
 import nez.lang.expr.Treplace;
-import nez.lang.expr.Sequence;
+import nez.lang.expr.Psequence;
 import nez.lang.expr.Ttag;
 import nez.lang.expr.Unary;
 import nez.util.StringUtils;
@@ -74,7 +74,7 @@ public class LPegGrammarGenerator extends NezGenerator {
 		Expression e = rule.getExpression();
 		file.incIndent();
 		file.writeIndent(rule.getLocalName() + " = ");
-		if (e instanceof Choice) {
+		if (e instanceof Pchoice) {
 			for (int i = 0; i < e.size(); i++) {
 				if (i > 0) {
 					file.write(" + ");
@@ -260,7 +260,7 @@ public class LPegGrammarGenerator extends NezGenerator {
 		this.visitExpression(e.get(0));
 	}
 
-	private int appendAsString(Sequence l, int start) {
+	private int appendAsString(Psequence l, int start) {
 		int end = l.size();
 		String s = "";
 		for (int i = start; i < end; i++) {
@@ -281,7 +281,7 @@ public class LPegGrammarGenerator extends NezGenerator {
 		return end - 1;
 	}
 
-	public void visitSequence(Sequence l) {
+	public void visitSequence(Psequence l) {
 		for (int i = 0; i < l.size(); i++) {
 			if (i > 0) {
 				file.write(" ");
@@ -295,7 +295,7 @@ public class LPegGrammarGenerator extends NezGenerator {
 				continue;
 			}
 			Expression e = l.get(i);
-			if (e instanceof Choice || e instanceof Sequence) {
+			if (e instanceof Pchoice || e instanceof Psequence) {
 				file.write("( ");
 				visitExpression(e);
 				file.write(" )");
@@ -308,7 +308,7 @@ public class LPegGrammarGenerator extends NezGenerator {
 		}
 	}
 
-	public void visitChoice(Choice e) {
+	public void visitChoice(Pchoice e) {
 		for (int i = 0; i < e.size(); i++) {
 			if (i > 0) {
 				file.write(" + ");

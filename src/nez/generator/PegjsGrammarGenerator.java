@@ -8,7 +8,7 @@ import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cset;
 import nez.lang.expr.Tcapture;
-import nez.lang.expr.Choice;
+import nez.lang.expr.Pchoice;
 import nez.lang.expr.Tlink;
 import nez.lang.expr.Tnew;
 import nez.lang.expr.NonTerminal;
@@ -17,7 +17,7 @@ import nez.lang.expr.Uoption;
 import nez.lang.expr.Uzero;
 import nez.lang.expr.Uone;
 import nez.lang.expr.Treplace;
-import nez.lang.expr.Sequence;
+import nez.lang.expr.Psequence;
 import nez.lang.expr.Ttag;
 
 public class PegjsGrammarGenerator extends GrammarGenerator {
@@ -197,7 +197,7 @@ public class PegjsGrammarGenerator extends GrammarGenerator {
 		}
 	}
 
-	public void visitChoice(Choice e) {
+	public void visitChoice(Pchoice e) {
 		int checkFirst = 0;
 		W("(");
 		for (Expression sub : e) {
@@ -210,7 +210,7 @@ public class PegjsGrammarGenerator extends GrammarGenerator {
 		W(")");
 	}
 
-	public void visitSequence(Sequence e) {
+	public void visitSequence(Psequence e) {
 		W("(");
 		for (Expression sub : e) {
 			visitExpression(sub);

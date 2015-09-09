@@ -1,35 +1,35 @@
 package nez.lang;
 
-import nez.lang.expr.Uand;
 import nez.lang.expr.Cany;
-import nez.lang.expr.Xblock;
 import nez.lang.expr.Cbyte;
+import nez.lang.expr.Cmulti;
 import nez.lang.expr.Cset;
-import nez.lang.expr.Tcapture;
-import nez.lang.expr.Choice;
-import nez.lang.expr.Xdef;
-import nez.lang.expr.Empty;
-import nez.lang.expr.Xexists;
 import nez.lang.expr.ExpressionCommons;
-import nez.lang.expr.Failure;
+import nez.lang.expr.NonTerminal;
+import nez.lang.expr.Pchoice;
+import nez.lang.expr.Pempty;
+import nez.lang.expr.Pfail;
+import nez.lang.expr.Psequence;
+import nez.lang.expr.Tcapture;
+import nez.lang.expr.Tlink;
+import nez.lang.expr.Tnew;
+import nez.lang.expr.Treplace;
+import nez.lang.expr.Ttag;
+import nez.lang.expr.Uand;
+import nez.lang.expr.Umatch;
+import nez.lang.expr.Unot;
+import nez.lang.expr.Uone;
+import nez.lang.expr.Uoption;
+import nez.lang.expr.Uzero;
+import nez.lang.expr.Xblock;
+import nez.lang.expr.Xdef;
+import nez.lang.expr.Xexists;
 import nez.lang.expr.Xif;
 import nez.lang.expr.Xindent;
 import nez.lang.expr.Xis;
-import nez.lang.expr.Tlink;
 import nez.lang.expr.Xlocal;
-import nez.lang.expr.Umatch;
 import nez.lang.expr.Xmatch;
-import nez.lang.expr.Cmulti;
-import nez.lang.expr.Tnew;
-import nez.lang.expr.NonTerminal;
-import nez.lang.expr.Unot;
 import nez.lang.expr.Xon;
-import nez.lang.expr.Uoption;
-import nez.lang.expr.Uzero;
-import nez.lang.expr.Uone;
-import nez.lang.expr.Treplace;
-import nez.lang.expr.Sequence;
-import nez.lang.expr.Ttag;
 import nez.util.UFlag;
 import nez.util.UList;
 
@@ -44,11 +44,11 @@ public class ExpressionTransducer {
 	public void updateProductionAttribute(Production origProduction, Production newProduction) {
 	}
 
-	public Expression reshapeEmpty(Empty e) {
+	public Expression reshapePempty(Pempty e) {
 		return e;
 	}
 
-	public Expression reshapeFailure(Failure e) {
+	public Expression reshapePfailure(Pfail e) {
 		return e;
 	}
 
@@ -98,7 +98,7 @@ public class ExpressionTransducer {
 	// return GrammarFactory.newSequence(e.s, l);
 	// }
 
-	public Expression reshapeSequence(Sequence e) {
+	public Expression reshapePsequence(Psequence e) {
 		Expression first = e.getFirst().reshape(this);
 		Expression last = e.getNext().reshape(this);
 		if (first == e.getFirst() && last == e.getNext()) {
@@ -107,7 +107,7 @@ public class ExpressionTransducer {
 		return e.newSequence(first, last);
 	}
 
-	public Expression reshapeChoice(Choice e) {
+	public Expression reshapePchoice(Pchoice e) {
 		int i = 0;
 		Expression updated = null;
 		for (i = 0; i < e.size(); i++) {
@@ -130,7 +130,7 @@ public class ExpressionTransducer {
 		for (int j = i + 1; j < e.size(); j++) {
 			ExpressionCommons.addChoice(l, e.get(j).reshape(this));
 		}
-		return ExpressionCommons.newChoice(e.getSourcePosition(), l);
+		return ExpressionCommons.newPchoice(e.getSourcePosition(), l);
 	}
 
 	public Expression reshapeUoption(Uoption e) {
@@ -228,14 +228,6 @@ public class ExpressionTransducer {
 		return e;
 	}
 
-	protected final Expression empty(Expression e) {
-		return ExpressionCommons.newEmpty(null);
-	}
-
-	protected final Expression fail(Expression e) {
-		return ExpressionCommons.newFailure(null);
-	}
-
 	protected final Expression updateInner(Uoption e, Expression inner) {
 		e.inner = inner;
 		return e;
@@ -289,6 +281,14 @@ public class ExpressionTransducer {
 	protected final Expression updateInner(Xon e, Expression inner) {
 		e.inner = inner;
 		return e;
+	}
+
+	protected final Expression empty(Expression e) {
+		return ExpressionCommons.newEmpty(null);
+	}
+
+	protected final Expression fail(Expression e) {
+		return ExpressionCommons.newFailure(null);
 	}
 
 }
