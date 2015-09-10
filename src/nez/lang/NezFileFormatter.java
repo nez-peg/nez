@@ -9,7 +9,7 @@ public class NezFileFormatter extends NezLoader {
 	private FileBuilder f;
 
 	public NezFileFormatter() {
-		super(NezGrammar.newGrammarFile());
+		super(NezGrammar2.newGrammarFile());
 		f = new FileBuilder(null);
 	}
 

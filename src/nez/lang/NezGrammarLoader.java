@@ -23,7 +23,7 @@ public class NezGrammarLoader extends GrammarLoader {
 		if (nezGrammar == null) {
 			// if (this.getGrammarOption().classicMode) {
 			// Verbose.println("Loading classic Nez grammar");
-			nezGrammar = NezGrammarClassic.newGrammar("File", NezOption.newSafeOption());
+			nezGrammar = NezGrammar1.newGrammar("File", NezOption.newSafeOption());
 			assert (nezGrammar != null);
 			// } else {
 			// nezGrammar = NezGrammar.newGrammar("File",

@@ -117,6 +117,12 @@ public class Grammar extends GrammarBase {
 		}
 	}
 
+	public void dump() {
+		for (Production p : this) {
+			ConsoleUtils.println(p.getUniqueName() + " = " + p.getExpression());
+		}
+	}
+
 	public final void setSymbolExpresion(String tableName, Expression e) {
 		Production p = this.newProduction(Production.PublicProduction, "^" + tableName, e);
 		addProduction(p);
