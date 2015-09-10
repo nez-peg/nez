@@ -2,19 +2,20 @@ package nez.lang;
 
 import java.util.List;
 
+import nez.Grammar;
 import nez.ast.SourcePosition;
-import nez.lang.expr.Uand;
 import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cset;
-import nez.lang.expr.Pchoice;
 import nez.lang.expr.ExpressionCommons;
 import nez.lang.expr.NonTerminal;
+import nez.lang.expr.Pchoice;
+import nez.lang.expr.Psequence;
+import nez.lang.expr.Uand;
 import nez.lang.expr.Unot;
+import nez.lang.expr.Uone;
 import nez.lang.expr.Uoption;
 import nez.lang.expr.Uzero;
-import nez.lang.expr.Uone;
-import nez.lang.expr.Psequence;
 import nez.util.ConsoleUtils;
 import nez.util.UFlag;
 import nez.util.UList;
@@ -22,6 +23,7 @@ import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
 public class Production extends Expression {
+
 	public final static int PublicProduction = 1 << 0;
 	public final static int TerminalProduction = 1 << 1;
 	public final static int InlineProduction = 1 << 2;
@@ -45,26 +47,28 @@ public class Production extends Expression {
 	public final static int ResetFlag = 1 << 30;
 
 	int flag;
-	GrammarFile file;
+	Grammar g;
 	String name;
 	String uname;
 	Expression body;
+	Expression peg;
+	Expression ast;
 
-	public Production(SourcePosition s, int flag, GrammarFile file, String name, Expression body) {
+	Production(SourcePosition s, int flag, Grammar g, String name, Expression body) {
 		super(s);
-		this.file = file;
-		this.name = name;
-		this.uname = file.uniqueName(name);
-		this.body = (body == null) ? ExpressionCommons.newEmpty(s) : body;
 		this.flag = flag;
+		this.g = g;
+		this.name = name;
+		this.uname = g.uniqueName(name);
+		this.body = (body == null) ? ExpressionCommons.newEmpty(s) : body;
 		Production.quickCheck(this);
 	}
 
 	private Production(String name, Production orig, Expression body) {
 		super(orig.s);
-		this.file = orig.getGrammarFile();
+		this.g = orig.getGrammar();
 		this.name = name;
-		this.uname = file.uniqueName(name);
+		this.uname = g.uniqueName(name);
 		this.body = (body == null) ? ExpressionCommons.newEmpty(s) : body;
 		Production.quickCheck(this);
 	}
@@ -221,8 +225,8 @@ public class Production extends Expression {
 		return false;
 	}
 
-	public final GrammarFile getGrammarFile() {
-		return this.file;
+	public final Grammar getGrammar() {
+		return this.g;
 	}
 
 	public final boolean isPublic() {
@@ -544,28 +548,5 @@ public class Production extends Expression {
 			l.add("contextual");
 		}
 		ConsoleUtils.println(l + "\n" + this.getLocalName() + " = " + this.getExpression());
-	}
-}
-
-class ProductionStacker {
-	int n;
-	ProductionStacker prev;
-	Production p;
-
-	ProductionStacker(Production p, ProductionStacker prev) {
-		this.prev = prev;
-		this.p = p;
-		this.n = (prev == null) ? 0 : prev.n + 1;
-	}
-
-	boolean isVisited(Production p) {
-		ProductionStacker d = this;
-		while (d != null) {
-			if (d.p == p) {
-				return true;
-			}
-			d = d.prev;
-		}
-		return false;
 	}
 }

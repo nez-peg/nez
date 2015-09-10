@@ -7,8 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 
 import nez.Grammar;
-import nez.Parser;
 import nez.NezOption;
+import nez.Parser;
 import nez.ParserCombinator;
 import nez.ast.CommonTree;
 import nez.ast.SourcePosition;
@@ -160,12 +160,6 @@ public class GrammarFile extends Grammar {
 		this.addProduction(r);
 		m.updateProductionAttribute(p, r);
 		r.setExpression(p.getExpression().reshape(m));
-		return r;
-	}
-
-	public final Production newProduction(int flag, String name, Expression e) {
-		Production r = new Production(null, flag, this, name, e);
-		this.addProduction(r);
 		return r;
 	}
 

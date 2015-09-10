@@ -62,10 +62,10 @@ public class ConditionalAnalysis extends ExpressionTransducer {
 	private Production eliminateConditionalFlag(Production p) {
 		if (p.isConditional()) {
 			String flagedName = nameFlagedProduction(p);
-			Production newp = p.getGrammarFile().getProduction(flagedName);
+			Production newp = p.getGrammar().getProduction(flagedName);
 			if (newp == null) {
 				p = this.getBaseProduction(p);
-				newp = p.getGrammarFile().newReducedProduction(flagedName, p, this);
+				newp = ((GrammarFile) p.getGrammar()).newReducedProduction(flagedName, p, this);
 				// Verbose.debug("creating .. " + flagedName);
 			}
 			return newp;
@@ -79,7 +79,7 @@ public class ConditionalAnalysis extends ExpressionTransducer {
 		if (loc > 0) {
 			localName = localName.substring(0, loc);
 		}
-		return p.getGrammarFile().getProduction(localName);
+		return p.getGrammar().getProduction(localName);
 	}
 
 	private String nameFlagedProduction(Production p) {

@@ -88,7 +88,7 @@ public class Parser {
 		this.prof = prof;
 		if (prof != null) {
 			this.compile();
-			prof.setFile("G.File", this.start.getGrammarFile().getURN());
+			// prof.setFile("G.File", this.start.getGrammar().getURN());
 			prof.setCount("G.Production", this.productionMap.size());
 			prof.setCount("G.Instruction", this.compiledCode.getInstructionSize());
 			prof.setCount("G.MemoPoint", this.compiledCode.getMemoPointSize());

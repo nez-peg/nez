@@ -2,8 +2,8 @@ package nez.vm;
 
 import java.util.List;
 
-import nez.Parser;
 import nez.NezOption;
+import nez.Parser;
 import nez.lang.Expression;
 import nez.lang.GrammarOptimizer;
 import nez.lang.Production;
@@ -20,6 +20,40 @@ public abstract class NezCompiler extends NezEncoder {
 		super(option);
 	}
 
+	public final NezCode compile(ParserGrammar g) {
+		return this.compile(g, null);
+	}
+
+	public NezCode compile(ParserGrammar g, ByteCoder coder) {
+		long t = System.nanoTime();
+		List<MemoPoint> memoPointList = null;
+		if (option.enabledMemoization || option.enabledPackratParsing) {
+			memoPointList = new UList<MemoPoint>(new MemoPoint[4]);
+		}
+		UList<Instruction> codeList = new UList<Instruction>(new Instruction[64]);
+		for (Production p : g) {
+			this.encodeProduction(codeList, p, new IRet(p));
+		}
+		for (Instruction inst : codeList) {
+			if (inst instanceof ICall) {
+				ParseFunc deref = this.funcMap.get(((ICall) inst).rule.getUniqueName());
+				if (deref == null) {
+					Verbose.debug("no deref: " + ((ICall) inst).rule.getUniqueName());
+				}
+				((ICall) inst).setResolvedJump(deref.compiled);
+			}
+			// Verbose.debug("\t" + inst.id + "\t" + inst);
+		}
+		long t2 = System.nanoTime();
+		Verbose.printElapsedTime("CompilingTime", t, t2);
+		if (coder != null) {
+			coder.setHeader(codeList.size(), funcMap.size(), memoPointList == null ? 0 : memoPointList.size());
+			coder.setInstructions(codeList.ArrayValues, codeList.size());
+		}
+		this.funcMap = null;
+		return new NezCode(codeList.ArrayValues[0], codeList.size(), memoPointList);
+	}
+
 	public final NezCode compile(Parser grammar) {
 		return this.compile(grammar, null);
 	}
@@ -30,7 +64,7 @@ public abstract class NezCompiler extends NezEncoder {
 		if (option.enabledMemoization || option.enabledPackratParsing) {
 			memoPointList = new UList<MemoPoint>(new MemoPoint[4]);
 		}
-		initProductionCodeMap(grammar, memoPointList);
+		initParseFuncMap(grammar, memoPointList);
 		UList<Instruction> codeList = new UList<Instruction>(new Instruction[64]);
 		// Production start = grammar.getStartProduction();
 		// this.encodeProduction(codeList, start, new IRet(start));
@@ -44,7 +78,7 @@ public abstract class NezCompiler extends NezEncoder {
 		}
 		for (Instruction inst : codeList) {
 			if (inst instanceof ICall) {
-				ProductionCode deref = this.pcodeMap.get(((ICall) inst).rule.getUniqueName());
+				ParseFunc deref = this.funcMap.get(((ICall) inst).rule.getUniqueName());
 				if (deref == null) {
 					Verbose.debug("no deref: " + ((ICall) inst).rule.getUniqueName());
 				}
@@ -55,10 +89,10 @@ public abstract class NezCompiler extends NezEncoder {
 		long t2 = System.nanoTime();
 		Verbose.printElapsedTime("CompilingTime", t, t2);
 		if (coder != null) {
-			coder.setHeader(codeList.size(), pcodeMap.size(), memoPointList == null ? 0 : memoPointList.size());
+			coder.setHeader(codeList.size(), funcMap.size(), memoPointList == null ? 0 : memoPointList.size());
 			coder.setInstructions(codeList.ArrayValues, codeList.size());
 		}
-		this.pcodeMap = null;
+		this.funcMap = null;
 		return new NezCode(codeList.ArrayValues[0], codeList.size(), memoPointList);
 	}
 
@@ -70,10 +104,10 @@ public abstract class NezCompiler extends NezEncoder {
 
 	protected void encodeProduction(UList<Instruction> codeList, Production p, Instruction next) {
 		String uname = p.getUniqueName();
-		ProductionCode pcode = this.pcodeMap.get(uname);
+		ParseFunc pcode = this.funcMap.get(uname);
 		if (pcode != null) {
 			encodingProduction = p;
-			pcode.compiled = encode(pcode.localExpression, next, null/* failjump */);
+			pcode.compiled = encode(pcode.e, next, null/* failjump */);
 			Instruction block = new ILabel(p, pcode.compiled);
 			this.layoutCode(codeList, block);
 			// if(code.memoPoint != null) {
@@ -83,6 +117,7 @@ public abstract class NezCompiler extends NezEncoder {
 		}
 	}
 
+	@Override
 	protected Expression optimizeLocalProduction(Production p) {
 		return GrammarOptimizer.resolveNonTerminal(p.getExpression());
 	}

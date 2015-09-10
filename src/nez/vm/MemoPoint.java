@@ -14,7 +14,7 @@ public final class MemoPoint {
 	int maxLength = 0;
 	int memoMiss = 0;
 
-	MemoPoint(int id, String label, Expression e, boolean contextSensitive) {
+	public MemoPoint(int id, String label, Expression e, boolean contextSensitive) {
 		this.id = id;
 		this.label = label;
 		this.e = e;
@@ -81,6 +81,7 @@ public final class MemoPoint {
 		return false;
 	}
 
+	@Override
 	public String toString() {
 		return this.label + "[id=" + this.id + "]";
 	}

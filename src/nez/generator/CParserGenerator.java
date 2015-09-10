@@ -5,38 +5,38 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Stack;
 
-import nez.Parser;
 import nez.NezOption;
+import nez.Parser;
 import nez.lang.Expression;
 import nez.lang.GrammarOptimizer;
 import nez.lang.Production;
-import nez.lang.expr.Uand;
 import nez.lang.expr.Cany;
-import nez.lang.expr.Xblock;
 import nez.lang.expr.Cbyte;
+import nez.lang.expr.Cmulti;
 import nez.lang.expr.Cset;
-import nez.lang.expr.Tcapture;
+import nez.lang.expr.NonTerminal;
 import nez.lang.expr.Pchoice;
-import nez.lang.expr.Xdefindent;
+import nez.lang.expr.Psequence;
+import nez.lang.expr.Tcapture;
+import nez.lang.expr.Tlink;
+import nez.lang.expr.Tnew;
+import nez.lang.expr.Treplace;
+import nez.lang.expr.Ttag;
+import nez.lang.expr.Uand;
+import nez.lang.expr.Unot;
+import nez.lang.expr.Uone;
+import nez.lang.expr.Uoption;
+import nez.lang.expr.Uzero;
+import nez.lang.expr.Xblock;
 import nez.lang.expr.Xdef;
+import nez.lang.expr.Xdefindent;
 import nez.lang.expr.Xexists;
 import nez.lang.expr.Xif;
 import nez.lang.expr.Xindent;
 import nez.lang.expr.Xis;
-import nez.lang.expr.Tlink;
 import nez.lang.expr.Xlocal;
 import nez.lang.expr.Xmatch;
-import nez.lang.expr.Cmulti;
-import nez.lang.expr.Tnew;
-import nez.lang.expr.NonTerminal;
-import nez.lang.expr.Unot;
 import nez.lang.expr.Xon;
-import nez.lang.expr.Uoption;
-import nez.lang.expr.Uzero;
-import nez.lang.expr.Uone;
-import nez.lang.expr.Treplace;
-import nez.lang.expr.Psequence;
-import nez.lang.expr.Ttag;
 
 public class CParserGenerator extends ParserGenerator {
 
@@ -119,7 +119,13 @@ public class CParserGenerator extends ParserGenerator {
 		this.closeBlock();
 		this.closeBlock();
 		this.closeBlock();
-		this.file.writeIndent("nez_log(ctx, argv[1], \"" + grammar.getProductionList().get(0).getGrammarFile().getURN() + "\", " + grammar.getProductionList().size() + ", latency, \"\");");
+		this.file.writeIndent("nez_log(ctx, argv[1], \"" + /*
+															 * FIXME grammar.
+															 * getProductionList
+															 * (
+															 * ).get(0).getGrammar
+															 * ().getURN() +
+															 */"\", " + grammar.getProductionList().size() + ", latency, \"\");");
 		this.file.writeIndent("return 0;");
 		this.file.writeIndent();
 		this.closeBlock();

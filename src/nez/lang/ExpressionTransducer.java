@@ -310,7 +310,7 @@ class ASTConstructionEliminator extends ExpressionTransducer {
 		if (renaming) {
 			Production r = removeASTOperator(e.getProduction());
 			if (!e.getLocalName().equals(r.getLocalName())) {
-				return ExpressionCommons.newNonTerminal(e.getSourcePosition(), r.getGrammarFile(), r.getLocalName());
+				return ExpressionCommons.newNonTerminal(e.getSourcePosition(), r.getGrammar(), r.getLocalName());
 			}
 		}
 		return e;
@@ -321,9 +321,9 @@ class ASTConstructionEliminator extends ExpressionTransducer {
 			return p;
 		}
 		String name = "~" + p.getLocalName();
-		Production r = p.getGrammarFile().getProduction(name);
+		Production r = p.getGrammar().getProduction(name);
 		if (r == null) {
-			r = p.getGrammarFile().newReducedProduction(name, p, this);
+			r = /* FIXME */((GrammarFile) p.getGrammar()).newReducedProduction(name, p, this);
 		}
 		return r;
 	}

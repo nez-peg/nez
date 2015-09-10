@@ -3,39 +3,39 @@ package nez.vm;
 import java.util.HashMap;
 import java.util.List;
 
-import nez.Parser;
 import nez.NezOption;
+import nez.Parser;
 import nez.lang.Expression;
 import nez.lang.GrammarOptimizer;
 import nez.lang.Production;
 import nez.lang.Typestate;
-import nez.lang.expr.Uand;
 import nez.lang.expr.Cany;
-import nez.lang.expr.Xblock;
 import nez.lang.expr.Cbyte;
+import nez.lang.expr.Cmulti;
 import nez.lang.expr.Cset;
-import nez.lang.expr.Tcapture;
+import nez.lang.expr.NonTerminal;
 import nez.lang.expr.Pchoice;
-import nez.lang.expr.Xdefindent;
+import nez.lang.expr.Psequence;
+import nez.lang.expr.Tcapture;
+import nez.lang.expr.Tlink;
+import nez.lang.expr.Tnew;
+import nez.lang.expr.Treplace;
+import nez.lang.expr.Ttag;
+import nez.lang.expr.Uand;
+import nez.lang.expr.Unot;
+import nez.lang.expr.Uone;
+import nez.lang.expr.Uoption;
+import nez.lang.expr.Uzero;
+import nez.lang.expr.Xblock;
 import nez.lang.expr.Xdef;
+import nez.lang.expr.Xdefindent;
 import nez.lang.expr.Xexists;
 import nez.lang.expr.Xif;
 import nez.lang.expr.Xindent;
 import nez.lang.expr.Xis;
-import nez.lang.expr.Tlink;
 import nez.lang.expr.Xlocal;
 import nez.lang.expr.Xmatch;
-import nez.lang.expr.Cmulti;
-import nez.lang.expr.Tnew;
-import nez.lang.expr.NonTerminal;
-import nez.lang.expr.Unot;
 import nez.lang.expr.Xon;
-import nez.lang.expr.Uoption;
-import nez.lang.expr.Uzero;
-import nez.lang.expr.Uone;
-import nez.lang.expr.Treplace;
-import nez.lang.expr.Psequence;
-import nez.lang.expr.Ttag;
 import nez.main.Verbose;
 
 public abstract class NezEncoder {
@@ -51,15 +51,17 @@ public abstract class NezEncoder {
 
 	/* CodeMap */
 
-	protected HashMap<String, ProductionCode> pcodeMap = null;
+	protected HashMap<String, ParseFunc> funcMap = null;
 
-	protected ProductionCode newProductionCode(Production p, Expression localExpression) {
-		return new ProductionCode(p, localExpression);
+	protected ParseFunc newParseFunc(Production p, Expression localExpression) {
+		ParseFunc f = new ParseFunc(p.getLocalName(), p);
+		f.setExpression(localExpression);
+		return f;
 	}
 
-	protected ProductionCode getCodePoint(Production p) {
-		if (this.pcodeMap != null) {
-			return pcodeMap.get(p.getUniqueName());
+	protected ParseFunc getParseFunc(Production p) {
+		if (this.funcMap != null) {
+			return funcMap.get(p.getUniqueName());
 		}
 		return null;
 	}
@@ -70,14 +72,14 @@ public abstract class NezEncoder {
 
 	void count(Production p) {
 		String uname = p.getUniqueName();
-		ProductionCode c = this.pcodeMap.get(uname);
+		ParseFunc c = this.funcMap.get(uname);
 		if (c == null) {
 			Expression deref = optimizeLocalProduction(p);
 			// if (deref.isInterned()) {
 			// String key = "#" + deref.getId();
 			// c = this.pcodeMap.get(key);
 			// if (c == null) {
-			// c = newProductionCode(p, deref);
+			// c = newParseFunc(p, deref);
 			// pcodeMap.put(key, c);
 			// }
 			// // else {
@@ -86,11 +88,11 @@ public abstract class NezEncoder {
 			// // }
 			// pcodeMap.put(uname, c);
 			// } else {
-			c = newProductionCode(p, deref);
-			pcodeMap.put(uname, c);
+			c = newParseFunc(p, deref);
+			funcMap.put(uname, c);
 			// }
 		}
-		c.ref++;
+		c.refcount++;
 	}
 
 	void countNonTerminalReference(Expression e) {
@@ -103,8 +105,8 @@ public abstract class NezEncoder {
 		}
 	}
 
-	protected void initProductionCodeMap(Parser grammar, List<MemoPoint> memoPointList) {
-		this.pcodeMap = new HashMap<String, ProductionCode>();
+	protected void initParseFuncMap(Parser grammar, List<MemoPoint> memoPointList) {
+		this.funcMap = new HashMap<String, ParseFunc>();
 		Production start = grammar.getStartProduction();
 		count(start);
 		countNonTerminalReference(start.getExpression());
@@ -115,38 +117,38 @@ public abstract class NezEncoder {
 		}
 		if (option.enabledInlining) {
 			for (Production p : grammar.getProductionList()) {
-				ProductionCode cp = this.pcodeMap.get(p.getUniqueName());
+				ParseFunc cp = this.funcMap.get(p.getUniqueName());
 				this.checkInlining(cp);
 			}
 		}
 		if (memoPointList != null) {
 			for (Production p : grammar.getProductionList()) {
-				ProductionCode cp = this.pcodeMap.get(p.getUniqueName());
+				ParseFunc cp = this.funcMap.get(p.getUniqueName());
 				this.checkMemoizing(cp, memoPointList);
 			}
 		}
 	}
 
-	protected void checkInlining(ProductionCode pcode) {
-		if (pcode.ref == 1 || GrammarOptimizer.isSingleCharacter(pcode.localExpression)) {
+	protected void checkInlining(ParseFunc pcode) {
+		if (pcode.refcount == 1 || GrammarOptimizer.isSingleCharacter(pcode.e)) {
 			if (Verbose.PackratParsing) {
-				Verbose.println("Inlining: " + pcode.getLocalName());
+				Verbose.println("Inlining: " + pcode.name);
 			}
 			pcode.inlining = true;
 		}
 	}
 
-	protected void checkMemoizing(ProductionCode pcode, List<MemoPoint> memoPointList) {
+	protected void checkMemoizing(ParseFunc pcode, List<MemoPoint> memoPointList) {
 		if (pcode.inlining || pcode.memoPoint != null) {
 			return;
 		}
-		Production p = pcode.production;
-		if (pcode.ref > 1 && p.inferTypestate() != Typestate.OperationType) {
+		Production p = pcode.p;
+		if (pcode.refcount > 1 && p.inferTypestate() != Typestate.OperationType) {
 			int memoId = memoPointList.size();
-			pcode.memoPoint = new MemoPoint(memoId, p.getLocalName(), pcode.localExpression, p.isContextual());
+			pcode.memoPoint = new MemoPoint(memoId, p.getLocalName(), pcode.e, p.isContextual());
 			memoPointList.add(pcode.memoPoint);
 			if (Verbose.PackratParsing) {
-				Verbose.println("MemoPoint: " + pcode.memoPoint + " ref=" + pcode.ref + " pure? " + p.isNoNTreeConstruction() + " rec? " + p.isRecursive());
+				Verbose.println("MemoPoint: " + pcode.memoPoint + " ref=" + pcode.refcount + " pure? " + p.isNoNTreeConstruction() + " rec? " + p.isRecursive());
 			}
 		}
 	}
