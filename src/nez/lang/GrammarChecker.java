@@ -56,6 +56,7 @@ public class GrammarChecker extends ExpressionTransducer {
 			}
 			p.isNoNTreeConstruction();
 		}
+		int stackedTypeState = this.required;
 		Expression e = p.getExpression();
 		if (offAST) {
 			e = e.reshape(ExpressionTransducer.RemoveAST);
@@ -65,6 +66,7 @@ public class GrammarChecker extends ExpressionTransducer {
 		e = e.reshape(this);
 		f.setExpression(e);
 		lp.setExpression(e);
+		this.required = stackedTypeState;
 		return f;
 	}
 
@@ -128,7 +130,6 @@ public class GrammarChecker extends ExpressionTransducer {
 			f = checkFirstVisitedProduction(uname, p);
 		}
 		f.count();
-
 		int t = p.inferTypestate(null);
 		if (t == Typestate.BooleanType) {
 			return n;
