@@ -29,7 +29,7 @@ public class Tcapture extends Term {
 
 	@Override
 	public Expression reshape(ExpressionTransducer m) {
-		return m.reshapeCapture(this);
+		return m.reshapeTcapture(this);
 	}
 
 	@Override

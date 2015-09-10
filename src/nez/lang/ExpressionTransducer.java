@@ -181,7 +181,7 @@ public class ExpressionTransducer {
 		return e;
 	}
 
-	public Expression reshapeCapture(Tcapture e) {
+	public Expression reshapeTcapture(Tcapture e) {
 		return e;
 	}
 
@@ -355,7 +355,7 @@ class ASTConstructionEliminator extends ExpressionTransducer {
 	}
 
 	@Override
-	public Expression reshapeCapture(Tcapture e) {
+	public Expression reshapeTcapture(Tcapture e) {
 		return empty(e);
 	}
 

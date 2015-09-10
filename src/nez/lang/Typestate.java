@@ -133,7 +133,7 @@ public class Typestate extends ExpressionTransducer {
 	}
 
 	@Override
-	public Expression reshapeCapture(Tcapture p) {
+	public Expression reshapeTcapture(Tcapture p) {
 		if (this.required != Typestate.OperationType) {
 			reportRemoved(p, "}");
 			return empty(p);

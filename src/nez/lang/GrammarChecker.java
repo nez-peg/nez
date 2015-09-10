@@ -287,7 +287,7 @@ public class GrammarChecker extends ExpressionTransducer {
 	}
 
 	@Override
-	public Expression reshapeCapture(Tcapture p) {
+	public Expression reshapeTcapture(Tcapture p) {
 		if (this.required != Typestate.OperationType) {
 			reportRemoved(p, "}");
 			return empty(p);
@@ -386,6 +386,20 @@ public class GrammarChecker extends ExpressionTransducer {
 		return p;
 	}
 
+	/* static context */
+
+	void enterNonASTContext() {
+		this.boolMap.put("-", true);
+	}
+
+	void exitNonASTContext() {
+		this.boolMap.remove("-");
+	}
+
+	boolean isNonASTContext() {
+		return offAST || this.boolMap.get("-") != null;
+	}
+
 	/* uniquename */
 
 	String uniqueName(String uname, Production p) {
@@ -403,6 +417,7 @@ public class GrammarChecker extends ExpressionTransducer {
 	final static Short True = 1;
 	final static Short False = -1;
 	final static Short Unknown = 0;
+
 	HashMap<String, Short> flagMap = new HashMap<String, Short>();
 
 	private boolean hasProductionFlag(Production p, String flagName) {
