@@ -119,7 +119,7 @@ public class Grammar extends GrammarBase {
 
 	public void dump() {
 		for (Production p : this) {
-			ConsoleUtils.println(p.getUniqueName() + " = " + p.getExpression());
+			ConsoleUtils.println(p.getLocalName() + " = " + p.getExpression());
 		}
 	}
 
@@ -133,7 +133,7 @@ public class Grammar extends GrammarBase {
 		if (p != null) {
 			return p.getExpression();
 		}
-		return p;
+		return null;
 	}
 
 	// ----------------------------------------------------------------------

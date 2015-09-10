@@ -33,13 +33,13 @@ public class GrammarChecker extends ExpressionTransducer {
 	ParserGrammar g;
 	boolean offAST = true;
 	private int required = Typestate.BooleanType;
-	TreeMap<String, Boolean> ctx;
+	final TreeMap<String, Boolean> boolMap;
 	Reporter repo = new Reporter();
 
 	public GrammarChecker(ParserGrammar g, boolean offAST, TreeMap<String, Boolean> ctx, Production start) {
 		this.g = g;
 		this.offAST = offAST;
-		this.ctx = ctx == null ? new TreeMap<String, Boolean>() : ctx;
+		this.boolMap = (ctx == null) ? new TreeMap<String, Boolean>() : ctx;
 		String uname = uniqueName(start.getUniqueName(), start);
 		this.checkFirstVisitedProduction(uname, start);
 	}
@@ -58,9 +58,9 @@ public class GrammarChecker extends ExpressionTransducer {
 		}
 		Expression e = p.getExpression();
 		if (offAST) {
-			e = p.reshape(ExpressionTransducer.RemoveAST);
+			e = e.reshape(ExpressionTransducer.RemoveAST);
 		} else {
-			this.required = p.inferTypestate();
+			this.required = p.inferTypestate(null);
 		}
 		e = e.reshape(this);
 		f.setExpression(e);
@@ -118,7 +118,7 @@ public class GrammarChecker extends ExpressionTransducer {
 		if (n.isTerminal()) { /* Inlining Terminal */
 			Expression e = p.getExpression();
 			if (offAST) {
-				e = p.reshape(ExpressionTransducer.RemoveAST);
+				e = e.reshape(ExpressionTransducer.RemoveAST);
 			}
 			return e.reshape(this);
 		}
@@ -129,22 +129,22 @@ public class GrammarChecker extends ExpressionTransducer {
 		}
 		f.count();
 
-		int t = p.inferTypestate();
+		int t = p.inferTypestate(null);
 		if (t == Typestate.BooleanType) {
-			return p;
+			return n;
 		}
 		if (this.required == Typestate.ObjectType) {
 			if (t == Typestate.OperationType) {
-				reportRemoved(p, "AST operations");
-				return p.reshape(ExpressionTransducer.RemoveASTandRename);
+				reportRemoved(n, "AST operations");
+				return n.reshape(ExpressionTransducer.RemoveASTandRename);
 			}
 			this.required = Typestate.OperationType;
-			return p;
+			return n;
 		}
 		if (this.required == Typestate.OperationType) {
 			if (t == Typestate.ObjectType) {
-				reportInserted(p, ":");
-				return ExpressionCommons.newTlink(p.getSourcePosition(), null, p);
+				reportInserted(n, ":");
+				return ExpressionCommons.newTlink(n.getSourcePosition(), null, n);
 			}
 		}
 		return g.newNonTerminal(uname);
@@ -153,20 +153,20 @@ public class GrammarChecker extends ExpressionTransducer {
 	@Override
 	public Expression reshapeXon(Xon p) {
 		String flagName = p.getFlagName();
-		Boolean bool = ctx.get(flagName);
+		Boolean bool = boolMap.get(flagName);
 		if (bool != null) {
 			if (p.isPositive()) {
 				if (!bool) {
-					ctx.put(flagName, true);
+					boolMap.put(flagName, true);
 					Expression newe = p.get(0).reshape(this);
-					ctx.put(flagName, false);
+					boolMap.remove(flagName);
 					return newe;
 				}
 			} else {
 				if (bool) {
-					ctx.put(flagName, false);
+					boolMap.remove(flagName);
 					Expression newe = p.get(0).reshape(this);
-					ctx.put(flagName, true);
+					boolMap.put(flagName, true);
 					return newe;
 				}
 			}
@@ -178,7 +178,7 @@ public class GrammarChecker extends ExpressionTransducer {
 	@Override
 	public Expression reshapeXif(Xif p) {
 		String flagName = p.getFlagName();
-		if (ctx.get(flagName)) {
+		if (boolMap.get(flagName) != null) { /* true */
 			return p.isPredicate() ? p.newEmpty() : p.newFailure();
 		}
 		return p.isPredicate() ? p.newFailure() : p.newEmpty();
@@ -390,7 +390,7 @@ public class GrammarChecker extends ExpressionTransducer {
 	String uniqueName(String uname, Production p) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(uname);
-		for (String flagName : this.ctx.keySet()) {
+		for (String flagName : this.boolMap.keySet()) {
 			if (hasProductionFlag(p, flagName)) {
 				sb.append("!");
 				sb.append(flagName);

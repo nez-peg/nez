@@ -143,7 +143,7 @@ public abstract class NezEncoder {
 			return;
 		}
 		Production p = pcode.p;
-		if (pcode.refcount > 1 && p.inferTypestate() != Typestate.OperationType) {
+		if (pcode.refcount > 1 && p.inferTypestate(null) != Typestate.OperationType) {
 			int memoId = memoPointList.size();
 			pcode.memoPoint = new MemoPoint(memoId, p.getLocalName(), pcode.e, p.isContextual());
 			memoPointList.add(pcode.memoPoint);

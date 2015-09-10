@@ -16,8 +16,8 @@ import nez.main.Command;
 import nez.main.Verbose;
 import nez.peg.celery.Celery;
 import nez.peg.dtd.DTDConverter;
-import nez.util.ConsoleUtils;
 import nez.util.UList;
+import nez.vm.ParserGrammar;
 
 public class GrammarFile extends Grammar {
 
@@ -156,7 +156,7 @@ public class GrammarFile extends Grammar {
 	}
 
 	public Production newReducedProduction(String localName, Production p, ExpressionTransducer m) {
-		Production r = p.newProduction(localName);
+		Production r = p.getGrammar().newProduction(localName, null);
 		this.addProduction(r);
 		m.updateProductionAttribute(p, r);
 		r.setExpression(p.getExpression().reshape(m));
@@ -174,12 +174,6 @@ public class GrammarFile extends Grammar {
 
 	public final Parser newGrammar(String name) {
 		return this.newParser(name, NezOption.newDefaultOption());
-	}
-
-	public void dump() {
-		for (Production r : this.getProductionList()) {
-			ConsoleUtils.println(r);
-		}
 	}
 
 	private FormatterMap fmtMap;
@@ -235,7 +229,7 @@ public class GrammarFile extends Grammar {
 			if (p.isTerminal()) {
 				continue;
 			}
-			p.reshape(new Typestate(this));
+			new Typestate(this).reshapeProduction(p);
 		}
 		GrammarOptimizer optimizer = null;
 		if (!option.enabledAsIsGrammar) {
@@ -269,9 +263,10 @@ public class GrammarFile extends Grammar {
 				r.internRule();
 			}
 		}
+		ParserGrammar g = new ParserGrammar(this.getStartProduction(), option, null);
+		g.dump();
 		if (option.enabledExampleVerification) {
 			testExample(option);
 		}
 	}
-
 }

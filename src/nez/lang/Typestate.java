@@ -40,11 +40,11 @@ public class Typestate extends ExpressionTransducer {
 	}
 
 	@Override
-	public Expression reshapeProduction(Production p) {
+	public Production reshapeProduction(Production p) {
 		int t = checkNamingConvention(p.name);
 		this.required = p.inferTypestate(null);
 		if (t != Typestate.Undefined && this.required != t) {
-			checker.reportNotice(p.s, "invalid naming convention: " + p.name);
+			checker.reportNotice(p.getExpression()/* FIXME */, "invalid naming convention: " + p.name);
 		}
 		p.setExpression(p.getExpression().reshape(this));
 		return p;
@@ -144,7 +144,7 @@ public class Typestate extends ExpressionTransducer {
 	@Override
 	public Expression reshapeNonTerminal(NonTerminal p) {
 		Production r = p.getProduction();
-		int t = r.inferTypestate();
+		int t = r.inferTypestate(null);
 		if (t == Typestate.BooleanType) {
 			return p;
 		}

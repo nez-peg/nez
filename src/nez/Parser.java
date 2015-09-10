@@ -20,9 +20,7 @@ import nez.vm.Machine;
 import nez.vm.MemoTable;
 import nez.vm.NezCode;
 import nez.vm.NezCompiler;
-import nez.vm.NezDebugger;
 import nez.vm.PackratCompiler;
-import nez.vm.PlainCompiler;
 
 public class Parser {
 	Production start;
@@ -152,16 +150,16 @@ public class Parser {
 		return machine.run(pc, s);
 	}
 
-	public final boolean debug(SourceContext s) {
-		boolean matched;
-		Instruction pc;
-		s.init(getMemoTable(s), null);
-		NezCompiler c = new PlainCompiler(this.option);
-		pc = c.compile(this).getStartPoint();
-		NezDebugger debugger = new NezDebugger(this, pc, s);
-		matched = debugger.exec();
-		return matched;
-	}
+	// public final boolean debug(SourceContext s) {
+	// boolean matched;
+	// Instruction pc;
+	// s.init(getMemoTable(s), null);
+	// NezCompiler c = new PlainCompiler(this.option);
+	// pc = c.compile(this).getStartPoint();
+	// NezDebugger debugger = new NezDebugger(this, pc, s);
+	// matched = debugger.exec();
+	// return matched;
+	// }
 
 	/* --------------------------------------------------------------------- */
 

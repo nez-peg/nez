@@ -22,7 +22,7 @@ import nez.util.UList;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
-public class Production extends Expression {
+public class Production /* extends Expression */{
 
 	public final static int PublicProduction = 1 << 0;
 	public final static int TerminalProduction = 1 << 1;
@@ -55,7 +55,7 @@ public class Production extends Expression {
 	Expression ast;
 
 	Production(SourcePosition s, int flag, Grammar g, String name, Expression body) {
-		super(s);
+		// super(s);
 		this.flag = flag;
 		this.g = g;
 		this.name = name;
@@ -64,18 +64,18 @@ public class Production extends Expression {
 		Production.quickCheck(this);
 	}
 
-	private Production(String name, Production orig, Expression body) {
-		super(orig.s);
-		this.g = orig.getGrammar();
-		this.name = name;
-		this.uname = g.uniqueName(name);
-		this.body = (body == null) ? ExpressionCommons.newEmpty(s) : body;
-		Production.quickCheck(this);
-	}
-
-	Production newProduction(String localName) {
-		return new Production(localName, this, this.getExpression());
-	}
+	// private Production(String name, Production orig, Expression body) {
+	// // super(orig.s);
+	// this.g = orig.getGrammar();
+	// this.name = name;
+	// this.uname = g.uniqueName(name);
+	// this.body = (body == null) ? ExpressionCommons.newEmpty(s) : body;
+	// Production.quickCheck(this);
+	// }
+	//
+	// Production newProduction(String localName) {
+	// return new Production(localName, this, this.getExpression());
+	// }
 
 	void resetFlag() {
 		this.flag = (this.flag & Declared) | ResetFlag;
@@ -215,14 +215,6 @@ public class Production extends Expression {
 				l.add("uncontextual");
 		}
 		return l;
-	}
-
-	@Override
-	public final boolean equalsExpression(Expression o) {
-		if (o instanceof Production) {
-			return this.getExpression().equalsExpression(((Production) o).getExpression());
-		}
-		return false;
 	}
 
 	public final Grammar getGrammar() {
@@ -407,29 +399,18 @@ public class Production extends Expression {
 		this.body = e;
 	}
 
-	@Override
-	public Expression get(int index) {
-		return body;
-	}
+	// @Override
+	// public final void format(StringBuilder sb) {
+	// sb.append(this.getLocalName());
+	// sb.append(" = ");
+	// this.getExpression().format(sb);
+	// }
 
-	@Override
-	public int size() {
-		return 1;
-	}
+	// @Override
+	// public Expression reshape(ExpressionTransducer m) {
+	// return m.reshapeProduction(this);
+	// }
 
-	@Override
-	public final void format(StringBuilder sb) {
-		sb.append(this.getLocalName());
-		sb.append(" = ");
-		this.getExpression().format(sb);
-	}
-
-	@Override
-	public Expression reshape(ExpressionTransducer m) {
-		return m.reshapeProduction(this);
-	}
-
-	@Override
 	public boolean isConsumed() {
 		if (!UFlag.is(this.flag, ConsumedChecked)) {
 			checkConsumed(this.getExpression(), new ProductionStacker(this, null));
@@ -498,7 +479,7 @@ public class Production extends Expression {
 		this.flag |= ASTChecked;
 	}
 
-	@Override
+	// @Override
 	public int inferTypestate(Visa v) {
 		if (UFlag.is(this.flag, ASTChecked)) {
 			if (UFlag.is(this.flag, ObjectProduction)) {
@@ -520,12 +501,12 @@ public class Production extends Expression {
 		// this.body = this.body.intern();
 	}
 
-	@Override
+	// @Override
 	public short acceptByte(int ch) {
 		return this.getExpression().acceptByte(ch);
 	}
 
-	@Override
+	// @Override
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
 		return this.getExpression().encode(bc, next, failjump);
 	}

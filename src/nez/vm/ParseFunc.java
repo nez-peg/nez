@@ -16,6 +16,7 @@ public class ParseFunc {
 	Instruction compiled;
 
 	public ParseFunc(String uname, Production p) {
+		this.name = uname;
 		this.refcount = 0;
 		this.p = p;
 	}

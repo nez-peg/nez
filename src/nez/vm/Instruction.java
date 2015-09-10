@@ -228,7 +228,7 @@ class ILabel extends Instruction {
 	Production rule;
 
 	ILabel(Production rule, Instruction next) {
-		super(InstructionSet.Label, rule, next);
+		super(InstructionSet.Label, rule.getExpression(), next);
 		this.rule = rule;
 	}
 
@@ -254,7 +254,7 @@ class ICall extends Instruction {
 	public Instruction jump = null;
 
 	ICall(Production rule, Instruction next) {
-		super(InstructionSet.Call, rule, next);
+		super(InstructionSet.Call, rule.getExpression(), next);
 		this.rule = rule;
 	}
 
@@ -285,7 +285,7 @@ class ICall extends Instruction {
 
 class IRet extends Instruction {
 	IRet(Production e) {
-		super(InstructionSet.Ret, e, null);
+		super(InstructionSet.Ret, e.getExpression(), null);
 	}
 
 	@Override

@@ -16,7 +16,7 @@ public class LCtype extends Command {
 	public void exec(CommandContext config) {
 		GrammarFile peg = config.getGrammarFile(false);
 		for (Production r : peg.getProductionList()/* getDefinedRuleList() */) {
-			if (r.inferTypestate() == Typestate.ObjectType) {
+			if (r.inferTypestate(null) == Typestate.ObjectType) {
 				Type t = Type.inferType(r, r.getExpression());
 				System.out.println(r.getLocalName() + " : " + t);
 			}

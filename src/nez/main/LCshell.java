@@ -2,8 +2,8 @@ package nez.main;
 
 import java.util.HashMap;
 
-import nez.Parser;
 import nez.NezOption;
+import nez.Parser;
 import nez.SourceContext;
 import nez.ast.CommonTree;
 import nez.generator.GeneratorLoader;

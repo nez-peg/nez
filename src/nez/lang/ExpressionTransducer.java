@@ -37,8 +37,9 @@ public class ExpressionTransducer {
 	public final static ExpressionTransducer RemoveASTandRename = new ASTConstructionEliminator(true);
 	public final static ExpressionTransducer RemoveAST = new ASTConstructionEliminator(false);
 
-	public Expression reshapeProduction(Production p) {
-		return p.getExpression().reshape(this);
+	public Production reshapeProduction(Production p) {
+		p.setExpression(p.getExpression().reshape(this));
+		return p;
 	}
 
 	public void updateProductionAttribute(Production origProduction, Production newProduction) {

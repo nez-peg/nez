@@ -16,7 +16,7 @@ public class LCdebug extends Command {
 		Parser peg = config.getGrammar();
 		while (config.hasInputSource()) {
 			SourceContext file = config.nextInputSource();
-			peg.debug(file);
+			// peg.debug(file);
 			file = null;
 		}
 	}

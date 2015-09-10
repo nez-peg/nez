@@ -40,7 +40,7 @@ public class ParserGrammar extends Grammar {
 	HashMap<String, ParseFunc> funcMap;
 	List<MemoPoint> memoPointList = null;
 
-	ParserGrammar(Production start, NezOption option, TreeMap<String, Boolean> flagMap) {
+	public ParserGrammar(Production start, NezOption option, TreeMap<String, Boolean> flagMap) {
 		this.funcMap = new HashMap<String, ParseFunc>();
 		new GrammarChecker(this, !option.enabledASTConstruction, flagMap, start);
 		memo(option);
@@ -50,12 +50,12 @@ public class ParserGrammar extends Grammar {
 		return this.funcMap.get(name);
 	}
 
-	public ParseFunc setParserFunc(ParseFunc f) {
-		return this.funcMap.put(f.name, f);
+	public void setParserFunc(ParseFunc f) {
+		this.funcMap.put(f.name, f);
 	}
 
 	void memo(NezOption option) {
-		List<MemoPoint> memoPointList = null;
+		memoPointList = null;
 		if (option.enabledMemoization || option.enabledPackratParsing) {
 			memoPointList = new UList<MemoPoint>(new MemoPoint[4]);
 		}
@@ -85,7 +85,7 @@ public class ParserGrammar extends Grammar {
 			return;
 		}
 		Production p = f.p;
-		if (f.refcount > 1 && p.inferTypestate() != Typestate.OperationType) {
+		if (f.refcount > 1 && p.inferTypestate(null) != Typestate.OperationType) {
 			int memoId = memoPointList.size();
 			f.memoPoint = new MemoPoint(memoId, p.getLocalName(), f.e, p.isContextual());
 			memoPointList.add(f.memoPoint);
