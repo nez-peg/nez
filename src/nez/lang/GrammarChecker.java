@@ -397,7 +397,7 @@ public class GrammarChecker extends GrammarTransducer {
 		Expression inner = p.get(0);
 		int innerTypestate = this.isNonASTContext() ? Typestate.BooleanType : inner.inferTypestate(null);
 		if (innerTypestate != Typestate.BooleanType) {
-			reportWarning(p, "disallowed tree construction in !e");
+			// reportWarning(p, "disallowed tree construction in !e");
 			boolean stacked = this.enterNonASTContext();
 			inner = this.reshapeInner(inner);
 			this.exitNonASTContext(stacked);
