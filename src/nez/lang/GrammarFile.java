@@ -172,7 +172,7 @@ public class GrammarFile extends Grammar {
 		return null;
 	}
 
-	public final Parser newGrammar(String name) {
+	public final Parser newParser(String name) {
 		return this.newParser(name, NezOption.newDefaultOption());
 	}
 

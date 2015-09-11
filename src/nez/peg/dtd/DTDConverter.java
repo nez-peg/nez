@@ -32,7 +32,7 @@ public class DTDConverter extends AbstractTreeVisitor {
 				ConsoleUtils.exit(1, "can't load xmldtd.nez");
 			}
 		}
-		Parser p = dtdGrammar.newGrammar("File");
+		Parser p = dtdGrammar.newParser("File");
 		SourceContext dtdFile = SourceContext.newFileContext(filePath);
 		AbstractTree<?> node = p.parseCommonTree(dtdFile);
 		if (node == null) {

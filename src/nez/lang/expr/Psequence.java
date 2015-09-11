@@ -94,7 +94,13 @@ public class Psequence extends ExpressionCommons {
 	}
 
 	private void formatInner(StringBuilder sb, Expression e) {
-		e.format(sb);
+		if (e instanceof Pchoice) {
+			sb.append("(");
+			e.format(sb);
+			sb.append(")");
+		} else {
+			e.format(sb);
+		}
 	}
 
 	@Override

@@ -15,8 +15,8 @@ public class Grammar extends GrammarBase {
 
 	private int id;
 	private Grammar parent;
-	private UList<Production> prodList;
-	private HashMap<String, Production> prodMap = null;
+	protected UList<Production> prodList;
+	protected HashMap<String, Production> prodMap = null;
 
 	public Grammar() {
 		this(null);
@@ -56,6 +56,7 @@ public class Grammar extends GrammarBase {
 	}
 
 	public final Parser newParser(NezOption option) {
+
 		return new Parser(this.getStartProduction(), option);
 	}
 
@@ -87,6 +88,7 @@ public class Grammar extends GrammarBase {
 		return this.getLocalProduction(name) != null;
 	}
 
+	@Override
 	public final void addProduction(Production p) {
 		Production p2 = this.getLocalProduction(p.getLocalName());
 		if (p2 == null) {

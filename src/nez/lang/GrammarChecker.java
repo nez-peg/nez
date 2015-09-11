@@ -1,6 +1,7 @@
 package nez.lang;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.TreeMap;
 
 import nez.NezOption;
@@ -30,6 +31,7 @@ import nez.lang.expr.Xdef;
 import nez.lang.expr.Xif;
 import nez.lang.expr.Xis;
 import nez.lang.expr.Xon;
+import nez.main.Verbose;
 import nez.util.StringUtils;
 import nez.util.UFlag;
 import nez.util.UList;
@@ -44,7 +46,7 @@ public class GrammarChecker extends GrammarTransducer {
 	int stacktop = 0;
 	Reporter repo = new Reporter();
 
-	public GrammarChecker(ParserGrammar g, boolean offAST, TreeMap<String, Boolean> ctx, Production start) {
+	public GrammarChecker(ParserGrammar g, boolean offAST, TreeMap<String, Boolean> ctx, Production start, NezOption option) {
 		this.g = g;
 		this.boolMap = (ctx == null) ? new TreeMap<String, Boolean>() : ctx;
 
@@ -55,6 +57,8 @@ public class GrammarChecker extends GrammarTransducer {
 		}
 		String uname = uniqueName(start.getUniqueName(), start);
 		this.checkFirstVisitedProduction(uname, start); // start
+		new GrammarOptimizer2(g, option, repo);
+		repo.report(option);
 	}
 
 	@Override
@@ -74,7 +78,7 @@ public class GrammarChecker extends GrammarTransducer {
 	private ParseFunc checkFirstVisitedProduction(String uname, Production p) {
 		Production lp/* local production */= g.newProduction(uname, null);
 		ParseFunc f = new ParseFunc(uname, p);
-		g.setParserFunc(f);
+		g.setParseFunc(f);
 		if (UFlag.is(p.flag, Production.ResetFlag)) {
 			p.initFlag();
 			if (p.isRecursive()) {
@@ -144,7 +148,7 @@ public class GrammarChecker extends GrammarTransducer {
 
 		int innerTypestate = this.isNonASTContext() ? Typestate.BooleanType : p.inferTypestate(null);
 		String uname = this.uniqueName(n.getUniqueName(), p);
-		ParseFunc f = g.getParserFunc(uname);
+		ParseFunc f = g.getParseFunc(uname);
 		if (f == null) {
 			f = checkFirstVisitedProduction(uname, p);
 		}
@@ -176,7 +180,7 @@ public class GrammarChecker extends GrammarTransducer {
 	@Override
 	public Expression reshapeXon(Xon p) {
 		String flagName = p.getFlagName();
-		System.out.println("on " + flagName);
+		// System.out.println("on " + flagName);
 		Boolean stackedFlag = isFlag(flagName);
 		if (p.isPositive()) {
 			onFlag(flagName);
@@ -479,7 +483,8 @@ public class GrammarChecker extends GrammarTransducer {
 				sb.append(flagName);
 			}
 		}
-		System.out.println("unique: " + uname + ", " + this.boolMap.keySet() + "=>" + sb.toString());
+		// System.out.println("unique: " + uname + ", " + this.boolMap.keySet()
+		// + "=>" + sb.toString());
 		return sb.toString();
 	}
 
@@ -543,39 +548,133 @@ class GrammarOptimizer2 extends GrammarRewriter {
 	boolean enabledCommonLeftFactoring = true; // true;
 	boolean enabledCostBasedReduction = true;
 	boolean enabledOutOfOrder = false; // bugs!!
+	boolean enabledDuplicatedProduction = true;
 
+	ParserGrammar g;
 	NezOption option;
-	HashMap<String, String> optimizedMap = new HashMap<String, String>();
+	Reporter repo;
+	HashMap<String, Integer> optimizedMap = new HashMap<String, Integer>();
+	HashMap<String, Production> bodyMap = null;
+	HashMap<String, String> aliasMap = null;
 
-	public GrammarOptimizer2(NezOption option) {
+	public GrammarOptimizer2(ParserGrammar g, NezOption option, Reporter repo) {
+		this.g = g;
 		this.option = option;
+		this.repo = repo;
 		if (option.enabledPrediction) {
 			// seems slow when the prediction option is enabled
-			this.enabledCommonLeftFactoring = false;
+			this.enabledCommonLeftFactoring = true;
 		}
+		if (enabledDuplicatedProduction) {
+			this.bodyMap = new HashMap<String, Production>();
+			this.aliasMap = new HashMap<String, String>();
+		}
+		optimize();
 	}
 
-	public final Expression optimize(Production p) {
-		String uname = p.getUniqueName();
+	private void optimize() {
+		Production start = g.getStartProduction();
+		optimizeProduction(start);
+		countNonTerminal(start.getLocalName());
+
+		UList<Production> prodList = new UList<Production>(new Production[g.size()]);
+		for (Production p : g) {
+			String key = p.getLocalName();
+			int refc = optimizedMap.get(key);
+			// System.out.println(key + ": ref=" + refc);
+			if (refc > 0) {
+				ParseFunc f = g.getParseFunc(key);
+				f.update(p.getExpression(), refc);
+				prodList.add(p);
+			} else {
+				g.removeParseFunc(key);
+			}
+		}
+		g.updateProductionList(prodList);
+	}
+
+	Expression optimizeProduction(Production p) {
+		String uname = p.getLocalName();
 		if (!optimizedMap.containsKey(uname)) {
-			optimizedMap.put(uname, uname);
-			Expression optimized = resolveNonTerminal(p.getExpression()).reshape(this);
+			optimizedMap.put(uname, 0);
+			Expression inner = inlineNonTerminal(p.getExpression());
+			Expression optimized = this.reshapeInner(inner);
 			p.setExpression(optimized);
+			if (this.enabledDuplicatedProduction) {
+				checkDuplicatedProduction(p);
+			}
 			return optimized;
 		}
 		return p.getExpression();
 	}
 
-	private void rewrite_outoforder(Expression e, Expression e2) {
-		// Verbose.debug("out-of-order " + e + " <==> " + e2);
+	Expression inlineNonTerminal(Expression e) {
+		while (e instanceof NonTerminal) {
+			NonTerminal n = (NonTerminal) e;
+			e = optimizeProduction(n.getProduction());
+		}
+		return e;
 	}
 
-	private void rewrite(String msg, Expression e, Expression e2) {
-		// Verbose.debug(msg + " " + e + "\n\t=>" + e2);
+	void countNonTerminal(String uname) {
+		Integer n = optimizedMap.get(uname);
+		optimizedMap.put(uname, n + 1);
 	}
 
-	private void rewrite_common(Expression e, Expression e2, Expression e3) {
-		// Verbose.debug("common (" + e + " / " + e2 + ")\n\t=>" + e3);
+	void checkDuplicatedProduction(Production p) {
+		String key = p.getExpression().toString();
+		Production p2 = bodyMap.get(key);
+		if (p2 == null) {
+			bodyMap.put(key, p);
+			return;
+		}
+		aliasMap.put(p.getLocalName(), p2.getLocalName());
+		Verbose.debug("duplicated: " + p.getLocalName() + " " + p2.getLocalName() + "\n\t" + key);
+	}
+
+	String alias(String nname) {
+		if (aliasMap != null) {
+			String alias = aliasMap.get(nname);
+			if (alias != null) {
+				return alias;
+			}
+		}
+		return null;
+	}
+
+	@Override
+	public Expression reshapeNonTerminal(NonTerminal n) {
+		Production p = n.getProduction();
+		Expression deref = optimizeProduction(p);
+		// if (p.isRecursive()) {
+		// return n;
+		// }
+		// if (option.enabledInlining && p.isInline()) {
+		// rewrite("inline", n, optimized);
+		// return optimized;
+		// }
+		if (option.enabledInlining) {
+			ParseFunc f = g.getParseFunc(n.getLocalName());
+			if (f.getRefCount() == 1) {
+				rewrite("inline(ref=1)", n, deref);
+				return deref;
+			}
+			if (isSingleCharacter(deref)) {
+				rewrite("deref", n, deref);
+				return deref;
+			}
+			if (deref instanceof Pempty || deref instanceof Pfail) {
+				rewrite("deref", n, deref);
+				return deref;
+			}
+		}
+		String alias = alias(n.getLocalName());
+		if (alias != null) {
+			countNonTerminal(alias);
+			return n.newNonTerminal(alias);
+		}
+		countNonTerminal(n.getLocalName());
+		return n;
 	}
 
 	// used to test inlining
@@ -586,30 +685,7 @@ class GrammarOptimizer2 extends GrammarRewriter {
 		return false;
 	}
 
-	@Override
-	public Expression reshapeNonTerminal(NonTerminal n) {
-		Production p = n.getProduction();
-		if (p.isRecursive()) {
-			return n;
-		}
-		Expression optimized = this.optimize(p);
-		if (option.enabledInlining && p.isInline()) {
-			rewrite("inline", n, optimized);
-			return optimized;
-		}
-		Expression deref = resolveNonTerminal(optimized).reshape(this);
-		if (isSingleCharacter(deref)) {
-			rewrite("deref", n, deref);
-			return deref;
-		}
-		if (deref instanceof Pempty || deref instanceof Pfail) {
-			rewrite("deref", n, deref);
-			return deref;
-		}
-		return n;
-	}
-
-	private boolean isOutOfOrderExpression(Expression e) {
+	private boolean isOutOfOrdered(Expression e) {
 		if (e instanceof Ttag) {
 			return true;
 		}
@@ -629,34 +705,37 @@ class GrammarOptimizer2 extends GrammarRewriter {
 
 	@Override
 	public Expression reshapePsequence(Psequence p) {
-		Expression first = p.getFirst().reshape(this);
-		Expression next = p.getNext().reshape(this);
-		if (this.enabledOutOfOrder) {
-			if (next instanceof Psequence) {
-				Psequence nextSequence = (Psequence) next;
-				if (isSingleCharacter(nextSequence.first) && isOutOfOrderExpression(first)) {
-					rewrite_outoforder(first, nextSequence.first);
-					Expression temp = nextSequence.first;
-					nextSequence.first = first;
-					first = temp;
+		Expression e = super.reshapePsequence(p);
+		if (e instanceof Psequence) {
+			Expression first = e.getFirst();
+			Expression next = e.getNext();
+			if (this.enabledOutOfOrder) {
+				if (next instanceof Psequence) {
+					Psequence nextSequence = (Psequence) next;
+					if (isSingleCharacter(nextSequence.first) && isOutOfOrdered(first)) {
+						rewrite_outoforder(first, nextSequence.first);
+						Expression temp = nextSequence.first;
+						nextSequence.first = first;
+						first = temp;
+					}
+				} else {
+					if (isSingleCharacter(next) && isOutOfOrdered(first)) {
+						rewrite_outoforder(first, next);
+						Expression temp = first;
+						first = next;
+						next = temp;
+					}
 				}
-			} else {
-				if (isSingleCharacter(next) && isOutOfOrderExpression(first)) {
-					rewrite_outoforder(first, next);
-					Expression temp = first;
-					first = next;
-					next = temp;
+			}
+			if (isNotChar(first)) {
+				Expression optimized = convertBitMap(next, first.get(0));
+				if (optimized != null) {
+					rewrite("not-merge", p, optimized);
+					return optimized;
 				}
 			}
 		}
-		if (isNotChar(first)) {
-			Expression optimized = convertBitMap(next, first.get(0));
-			if (optimized != null) {
-				rewrite("not-merge", p, optimized);
-				return optimized;
-			}
-		}
-		return p.newSequence(first, next);
+		return e;
 	}
 
 	private boolean isNotChar(Expression p) {
@@ -722,13 +801,13 @@ class GrammarOptimizer2 extends GrammarRewriter {
 	@Override
 	public Expression reshapeTlink(Tlink p) {
 		if (p.get(0) instanceof Pchoice) {
-			Expression inner = p.get(0);
-			UList<Expression> l = new UList<Expression>(new Expression[inner.size()]);
-			for (Expression subChoice : inner) {
-				subChoice = subChoice.reshape(this);
-				l.add(ExpressionCommons.newTlink(p.getSourcePosition(), p.getLabel(), subChoice));
+			Expression choice = p.get(0);
+			UList<Expression> l = ExpressionCommons.newList(choice.size());
+			for (Expression inner : choice) {
+				inner = this.reshapeInner(inner);
+				l.add(ExpressionCommons.newTlink(p.getSourcePosition(), p.getLabel(), inner));
 			}
-			return inner.newChoice(l);
+			return choice.newChoice(l);
 		}
 		return super.reshapeTlink(p);
 	}
@@ -737,23 +816,26 @@ class GrammarOptimizer2 extends GrammarRewriter {
 	public Expression reshapePchoice(Pchoice p) {
 		if (!p.isFlatten) {
 			p.isFlatten = true;
-			UList<Expression> choiceList = new UList<Expression>(new Expression[p.size()]);
-			flattenChoiceList(p, choiceList);
+			UList<Expression> choiceList = ExpressionCommons.newList(p.size());
+			;
+			flattenChoiceList(p, choiceList, new HashSet<String>());
 			Expression optimized = convertByteMap(p, choiceList);
 			if (optimized != null) {
 				rewrite("choice-map", p, optimized);
 				return optimized;
 			}
-			boolean isFlatten = p.size() != choiceList.size();
-			for (int i = 0; i < choiceList.size(); i++) {
-				Expression sub = choiceList.ArrayValues[i];
-				if (!isFlatten) {
-					if (sub.equalsExpression(p.get(i))) {
-						continue;
-					}
-				}
-				choiceList.ArrayValues[i] = sub.reshape(this);
-			}
+			// FIXME
+			// boolean isFlatten = p.size() != choiceList.size();
+			// for (int i = 0; i < choiceList.size(); i++) {
+			// Expression sub = choiceList.ArrayValues[i];
+			// if (!isFlatten) {
+			// if (sub.equalsExpression(p.get(i))) {
+			// continue;
+			// }
+			// }
+			// choiceList.ArrayValues[i] = sub.reshape(this);
+			// }
+			choiceList = checkTrieTree(choiceList);
 			if (choiceList.size() == 1) {
 				rewrite("choice-single", p, choiceList.ArrayValues[0]);
 				return choiceList.ArrayValues[0];
@@ -787,49 +869,92 @@ class GrammarOptimizer2 extends GrammarRewriter {
 					p.predictedCase = null;
 				}
 			}
-			if (!isFlatten) {
-				return p;
-			}
+			// if (!isFlatten) {
+			// return p;
+			// }
 			Expression c = p.newChoice(choiceList);
 			if (c instanceof Pchoice) {
 				((Pchoice) c).isFlatten = true;
 				((Pchoice) c).predictedCase = p.predictedCase;
 			}
-			// rewrite("flatten", p, c);
 			return c;
 		}
 		return p;
 	}
 
-	private void flattenChoiceList(Pchoice parentExpression, UList<Expression> l) {
-		for (Expression subExpression : parentExpression) {
-			subExpression = resolveNonTerminal(subExpression);
-			if (subExpression instanceof Pchoice) {
-				flattenChoiceList((Pchoice) subExpression, l);
+	private void flattenChoiceList(Pchoice choice, UList<Expression> l, HashSet<String> ucheck) {
+		for (Expression inner : choice) {
+			inner = inlineNonTerminal(inner);
+			if (inner instanceof Pchoice) {
+				flattenChoiceList((Pchoice) inner, l, ucheck);
 			} else {
-				subExpression = subExpression.reshape(this);
-				if (l.size() > 0 && this.enabledCommonLeftFactoring) {
-					Expression lastExpression = l.ArrayValues[l.size() - 1];
-					Expression first = lastExpression.getFirst();
-					if (first.equalsExpression(subExpression.getFirst())) {
-						Expression next = lastExpression.newChoice(lastExpression.getNext(), subExpression.getNext());
-						Expression common = lastExpression.newSequence(first, next);
-						rewrite_common(lastExpression, subExpression, common);
-						l.ArrayValues[l.size() - 1] = common;
-						continue;
-					}
+				inner = reshapeInner(inner);
+				String key = inner.toString();
+				if (ucheck.contains(key)) {
+					repo.reportNotice(inner.getSourcePosition(), "duplicated choice: " + key);
+					continue;
 				}
-				l.add(subExpression);
+				ucheck.add(key);
+				// if (l.size() > 0 && this.enabledCommonLeftFactoring) {
+				// Expression lastExpression = l.ArrayValues[l.size() - 1];
+				// Expression first = lastExpression.getFirst();
+				// if (first.equalsExpression(inner.getFirst())) {
+				// Expression next =
+				// lastExpression.newChoice(lastExpression.getNext(),
+				// inner.getNext());
+				// Expression common = lastExpression.newSequence(first, next);
+				// rewrite_common(lastExpression, inner, common);
+				// l.ArrayValues[l.size() - 1] = common;
+				// continue;
+				// }
+				// }
+				l.add(inner);
 			}
 		}
 	}
 
-	public final static Expression resolveNonTerminal(Expression e) {
-		while (e instanceof NonTerminal) {
-			NonTerminal nterm = (NonTerminal) e;
-			e = nterm.deReference();
+	private UList<Expression> checkTrieTree(UList<Expression> l) {
+		for (Expression inner : l) {
+			if (inner instanceof Cbyte) {
+				continue;
+			}
+			if (inner instanceof Psequence && inner.getFirst() instanceof Cbyte) {
+				continue;
+			}
+			return l;
 		}
-		return e;
+		Object[] buffers = new Object[257];
+		for (Expression inner : l) {
+			Cbyte be = (Cbyte) inner.getFirst();
+			buffers[be.byteChar] = mergeChoice(buffers[be.byteChar], inner.getNext());
+		}
+		l = new UList<Expression>(new Expression[8]);
+		for (int ch = 0; ch < buffers.length; ch++) {
+			if (buffers[ch] == null)
+				continue;
+			@SuppressWarnings("unchecked")
+			UList<Expression> el = (UList<Expression>) buffers[ch];
+			Expression be = ExpressionCommons.newCbyte(null, false, ch);
+			if (el.size() == 1) {
+				l.add(ExpressionCommons.newPsequence(null, be, el.get(0)));
+			} else {
+				l.add(ExpressionCommons.newPsequence(null, be, ExpressionCommons.newPchoice(null, el)));
+			}
+		}
+		return l;
+	}
+
+	private UList<Expression> mergeChoice(Object e1, Expression e2) {
+		if (e2 == null) {
+			e2 = ExpressionCommons.newEmpty(null);
+		}
+		@SuppressWarnings("unchecked")
+		UList<Expression> l = (UList<Expression>) e1;
+		if (l == null) {
+			l = new UList<Expression>(new Expression[2]);
+		}
+		ExpressionCommons.addChoice(l, e2);
+		return l;
 	}
 
 	// OptimizerLibrary
@@ -930,7 +1055,6 @@ class GrammarOptimizer2 extends GrammarRewriter {
 			l.add(f);
 			e = e.getNext();
 			e2 = e2.getNext();
-			// System.out.println("l="+l.size()+",e="+e);
 		}
 		if (l == null) {
 			return null;
@@ -944,6 +1068,18 @@ class GrammarOptimizer2 extends GrammarRewriter {
 		Expression alt = base.newChoice(e, e2);
 		l.add(alt);
 		return base.newSequence(l);
+	}
+
+	private void rewrite_outoforder(Expression e, Expression e2) {
+		// Verbose.debug("out-of-order " + e + " <==> " + e2);
+	}
+
+	private void rewrite(String msg, Expression e, Expression e2) {
+		// Verbose.debug(msg + " " + e + "\n\t=>" + e2);
+	}
+
+	private void rewrite_common(Expression e, Expression e2, Expression e3) {
+		// Verbose.debug("common (" + e + " / " + e2 + ")\n\t=>" + e3);
 	}
 
 }

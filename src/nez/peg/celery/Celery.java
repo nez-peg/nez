@@ -22,7 +22,7 @@ public class Celery {
 				ConsoleUtils.exit(1, "can't load celery.nez");
 			}
 		}
-		Parser p = celeryGrammar.newGrammar("File");
+		Parser p = celeryGrammar.newParser("File");
 		SourceContext celeryFile = SourceContext.newFileContext(filePath);
 		CommonTree node = p.parseCommonTree(celeryFile);
 		if (node == null) {

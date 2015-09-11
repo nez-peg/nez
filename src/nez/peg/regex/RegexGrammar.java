@@ -31,7 +31,7 @@ public class RegexGrammar extends AbstractTreeVisitor {
 				ConsoleUtils.exit(1, "can't load regex.nez");
 			}
 		}
-		Parser p = regexGrammar.newGrammar("File");
+		Parser p = regexGrammar.newParser("File");
 		CommonTree node = p.parseCommonTree(regex);
 		if (node == null) {
 			throw new NezException(regex.getSyntaxErrorMessage());
@@ -46,10 +46,10 @@ public class RegexGrammar extends AbstractTreeVisitor {
 		return gfile;
 	}
 
-	public final static Parser newProduction(String pattern) {
+	public final static Parser newPrarser(String pattern) {
 		try {
 			GrammarFile grammar = loadGrammar(SourceContext.newStringContext(pattern), NezOption.newDefaultOption() /* FIXME */);
-			return grammar.newGrammar("File");
+			return grammar.newParser("File");
 		} catch (IOException e) {
 			Verbose.traceException(e);
 		}

@@ -51,8 +51,8 @@ public class ParserCombinator {
 		return file;
 	}
 
-	public final Parser newGrammar(String name) {
-		return this.load().newGrammar(name);
+	public final Parser newParser(String name) {
+		return this.load().newParser(name);
 	}
 
 	private SourcePosition src() {

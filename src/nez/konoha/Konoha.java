@@ -13,16 +13,16 @@ import nez.util.ConsoleUtils;
 
 public class Konoha extends TreeTransducer {
 	KonohaTransducer konoha;
-	Parser grammar;
+	Parser parser;
 
 	public Konoha() {
-		this.grammar = newKonohaGrammar();
+		this.parser = newKonohaParser();
 		this.konoha = new KonohaTransducer(this);
 	}
 
 	private static GrammarFile konohaGrammar = null;
 
-	public final static Parser newKonohaGrammar() {
+	public final static Parser newKonohaParser() {
 		if (konohaGrammar == null) {
 			try {
 				konohaGrammar = GrammarFile.loadGrammarFile("konoha.nez", NezOption.newDefaultOption());
@@ -30,7 +30,7 @@ public class Konoha extends TreeTransducer {
 				ConsoleUtils.exit(1, "can't load konoha.nez");
 			}
 		}
-		return konohaGrammar.newGrammar("File");
+		return konohaGrammar.newParser("File");
 	}
 
 	/* begin of tree transducer */
@@ -61,7 +61,7 @@ public class Konoha extends TreeTransducer {
 	public boolean loadFile(KonohaTransducer konoha, String path) {
 		try {
 			SourceContext source = SourceContext.newFileContext(path);
-			KonohaTree node = (KonohaTree) grammar.parse(source, this);
+			KonohaTree node = (KonohaTree) parser.parse(source, this);
 			if (node == null) {
 				ConsoleUtils.println(source.getSyntaxErrorMessage());
 				return false;
@@ -75,7 +75,7 @@ public class Konoha extends TreeTransducer {
 
 	public void parse(KonohaTransducer konoha, String urn, int linenum, String text) {
 		SourceContext source = SourceContext.newStringSourceContext(urn, linenum, text);
-		KonohaTree node = (KonohaTree) grammar.parse(source, this);
+		KonohaTree node = (KonohaTree) parser.parse(source, this);
 		if (node == null) {
 			ConsoleUtils.println(source.getSyntaxErrorMessage());
 		}

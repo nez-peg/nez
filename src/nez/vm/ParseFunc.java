@@ -29,4 +29,13 @@ public class ParseFunc {
 		this.refcount++;
 	}
 
+	public final int getRefCount() {
+		return this.refcount;
+	}
+
+	public final void update(Expression e, int refcount) {
+		this.setExpression(e);
+		this.refcount = refcount;
+	}
+
 }

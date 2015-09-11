@@ -11,7 +11,7 @@ public class ProductionTest {
 	@Test
 	public void test() {
 		GrammarFile ns = NezGrammar2.newGrammarFile();
-		Parser p = ns.newGrammar("DIGIT");
+		Parser p = ns.newParser("DIGIT");
 		assertTrue(p.match("8"));
 		assertTrue(!p.match("88"));
 		assertTrue(!p.match("x"));

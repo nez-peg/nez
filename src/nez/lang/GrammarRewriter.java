@@ -85,7 +85,7 @@ public class GrammarRewriter extends GrammarTransducer {
 		if (first instanceof Pempty) {
 			return next;
 		}
-		if (first instanceof Pfail) {
+		if (first instanceof Pfail || next instanceof Pempty) {
 			return first;
 		}
 		e.first = first;

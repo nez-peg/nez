@@ -42,16 +42,33 @@ public class ParserGrammar extends Grammar {
 
 	public ParserGrammar(Production start, NezOption option, TreeMap<String, Boolean> flagMap) {
 		this.funcMap = new HashMap<String, ParseFunc>();
-		new GrammarChecker(this, !option.enabledASTConstruction, flagMap, start);
+		new GrammarChecker(this, !option.enabledASTConstruction, flagMap, start, option);
 		memo(option);
 	}
 
-	public ParseFunc getParserFunc(String name) {
+	public ParseFunc getParseFunc(String name) {
 		return this.funcMap.get(name);
 	}
 
-	public void setParserFunc(ParseFunc f) {
+	public void setParseFunc(ParseFunc f) {
 		this.funcMap.put(f.name, f);
+	}
+
+	public void removeParseFunc(String name) {
+		if (this.prodMap != null) {
+			this.prodMap.remove(name);
+		}
+		this.funcMap.remove(name);
+	}
+
+	public void updateProductionList(UList<Production> prodList) {
+		this.prodList = prodList;
+		if (this.prodMap != null) {
+			this.prodMap = new HashMap<String, Production>();
+			for (Production p : prodList) {
+				this.prodMap.put(p.getLocalName(), p);
+			}
+		}
 	}
 
 	void memo(NezOption option) {

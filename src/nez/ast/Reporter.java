@@ -46,15 +46,14 @@ public class Reporter {
 
 	public final void reportWarning(SourcePosition s, String message) {
 		if (s != null) {
-			ConsoleUtils.println(s.formatSourceMessage("warning", message));
+			log(s.formatSourceMessage("warning", message));
 		}
 	}
 
 	public final void reportNotice(SourcePosition s, String message) {
 		if (s != null) {
-			ConsoleUtils.println(s.formatSourceMessage("notice", message));
+			log(s.formatSourceMessage("notice", message));
 		}
-		// }
 	}
 
 }
