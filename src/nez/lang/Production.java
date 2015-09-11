@@ -51,8 +51,6 @@ public class Production /* extends Expression */{
 	String name;
 	String uname;
 	Expression body;
-	Expression peg;
-	Expression ast;
 
 	Production(SourcePosition s, int flag, Grammar g, String name, Expression body) {
 		// super(s);
@@ -64,19 +62,6 @@ public class Production /* extends Expression */{
 		Production.quickCheck(this);
 	}
 
-	// private Production(String name, Production orig, Expression body) {
-	// // super(orig.s);
-	// this.g = orig.getGrammar();
-	// this.name = name;
-	// this.uname = g.uniqueName(name);
-	// this.body = (body == null) ? ExpressionCommons.newEmpty(s) : body;
-	// Production.quickCheck(this);
-	// }
-	//
-	// Production newProduction(String localName) {
-	// return new Production(localName, this, this.getExpression());
-	// }
-
 	void resetFlag() {
 		this.flag = (this.flag & Declared) | ResetFlag;
 	}
@@ -85,7 +70,6 @@ public class Production /* extends Expression */{
 		this.flag = this.flag | ConsumedChecked | ConditionalChecked | ContextualChecked | RecursiveChecked;
 		this.flag = UFlag.unsetFlag(this.flag, ResetFlag);
 		quickCheck(this, this.getExpression());
-		// System.out.println(this.getLocalName() + ":: " + flag());
 	}
 
 	public final static void quickCheck(Production p) {
@@ -398,18 +382,6 @@ public class Production /* extends Expression */{
 	public final void setExpression(Expression e) {
 		this.body = e;
 	}
-
-	// @Override
-	// public final void format(StringBuilder sb) {
-	// sb.append(this.getLocalName());
-	// sb.append(" = ");
-	// this.getExpression().format(sb);
-	// }
-
-	// @Override
-	// public Expression reshape(ExpressionTransducer m) {
-	// return m.reshapeProduction(this);
-	// }
 
 	public boolean isConsumed() {
 		if (!UFlag.is(this.flag, ConsumedChecked)) {
