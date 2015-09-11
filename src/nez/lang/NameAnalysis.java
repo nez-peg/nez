@@ -6,11 +6,11 @@
 //import nez.lang.expr.NonTerminal;
 //import nez.lang.expr.Pchoice;
 //import nez.lang.expr.Psequence;
-//import nez.lang.expr.Uand;
-//import nez.lang.expr.Unot;
-//import nez.lang.expr.Uone;
-//import nez.lang.expr.Uoption;
-//import nez.lang.expr.Uzero;
+//import nez.lang.expr.Pand;
+//import nez.lang.expr.Pnot;
+//import nez.lang.expr.Pone;
+//import nez.lang.expr.Poption;
+//import nez.lang.expr.Pzero;
 //import nez.util.StringUtils;
 //import nez.util.UFlag;
 //
@@ -62,10 +62,10 @@
 //				return consumed;
 //			}
 //			boolean r = checkLeftRecursion(e.get(0), s);
-//			if (e instanceof Uone) {
+//			if (e instanceof Pone) {
 //				return r;
 //			}
-//			if (e instanceof Unot || e instanceof Uzero || e instanceof Uoption || e instanceof Uand) {
+//			if (e instanceof Pnot || e instanceof Pzero || e instanceof Poption || e instanceof Pand) {
 //				return false;
 //			}
 //			return r;

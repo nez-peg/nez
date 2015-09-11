@@ -6,15 +6,15 @@ import nez.ast.SymbolId;
 import nez.lang.Expression;
 import nez.lang.Production;
 import nez.lang.Typestate;
-import nez.lang.expr.Uand;
+import nez.lang.expr.Pand;
 import nez.lang.expr.Tcapture;
 import nez.lang.expr.Pchoice;
 import nez.lang.expr.Tlink;
 import nez.lang.expr.Tnew;
 import nez.lang.expr.NonTerminal;
-import nez.lang.expr.Uoption;
-import nez.lang.expr.Uzero;
-import nez.lang.expr.Uone;
+import nez.lang.expr.Poption;
+import nez.lang.expr.Pzero;
+import nez.lang.expr.Pone;
 import nez.lang.expr.Psequence;
 import nez.lang.expr.Ttag;
 import nez.util.UList;
@@ -59,7 +59,7 @@ public abstract class Type {
 			}
 			return new UnionType(u);
 		}
-		if (e instanceof Uoption && e.get(0).inferTypestate() != Typestate.BooleanType) {
+		if (e instanceof Poption && e.get(0).inferTypestate() != Typestate.BooleanType) {
 			UList<AtomType> u = new UList<AtomType>(new AtomType[e.size()]);
 			addUnionType(u, inferType(name, e.get(0), inf.dup()));
 			addUnionType(u, inf);
@@ -102,20 +102,20 @@ public abstract class Type {
 			}
 			return inf;
 		}
-		if (e instanceof Uone) {
+		if (e instanceof Pone) {
 			inf.startRepetition();
 			inf = inferType(name, e.get(0), inf);
 			inf.endRepetition();
 			inf = inferType(name, e.get(0), inf);
 			return inf;
 		}
-		if (e instanceof Uzero) {
+		if (e instanceof Pzero) {
 			inf.startRepetition();
 			inf = inferType(name, e.get(0), inf);
 			inf.endRepetition();
 			return inf;
 		}
-		if (e instanceof Uand) {
+		if (e instanceof Pand) {
 			return inferType(name, e.get(0), inf);
 		}
 		if (e instanceof Psequence) {

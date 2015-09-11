@@ -4,7 +4,7 @@ import nez.Parser;
 import nez.NezOption;
 import nez.lang.Expression;
 import nez.lang.Production;
-import nez.lang.expr.Uand;
+import nez.lang.expr.Pand;
 import nez.lang.expr.Cany;
 import nez.lang.expr.Xblock;
 import nez.lang.expr.Cbyte;
@@ -23,11 +23,11 @@ import nez.lang.expr.Xmatch;
 import nez.lang.expr.Cmulti;
 import nez.lang.expr.Tnew;
 import nez.lang.expr.NonTerminal;
-import nez.lang.expr.Unot;
+import nez.lang.expr.Pnot;
 import nez.lang.expr.Xon;
-import nez.lang.expr.Uoption;
-import nez.lang.expr.Uzero;
-import nez.lang.expr.Uone;
+import nez.lang.expr.Poption;
+import nez.lang.expr.Pzero;
+import nez.lang.expr.Pone;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Psequence;
 import nez.lang.expr.Ttag;
@@ -86,27 +86,27 @@ public abstract class NezGenerator extends NezEncoder {
 		return null;
 	}
 
-	public Instruction encodeUoption(Uoption p, Instruction next) {
+	public Instruction encodePoption(Poption p, Instruction next) {
 		this.visitOption(p);
 		return null;
 	}
 
-	public Instruction encodeUzero(Uzero p, Instruction next) {
+	public Instruction encodePzero(Pzero p, Instruction next) {
 		this.visitRepetition(p);
 		return null;
 	}
 
-	public Instruction encodeUone(Uone p, Instruction next, Instruction failjump) {
+	public Instruction encodePone(Pone p, Instruction next, Instruction failjump) {
 		this.visitRepetition1(p);
 		return null;
 	}
 
-	public Instruction encodeUand(Uand p, Instruction next, Instruction failjump) {
+	public Instruction encodePand(Pand p, Instruction next, Instruction failjump) {
 		this.visitAnd(p);
 		return null;
 	}
 
-	public Instruction encodeUnot(Unot p, Instruction next, Instruction failjump) {
+	public Instruction encodePnot(Pnot p, Instruction next, Instruction failjump) {
 		this.visitNot(p);
 		return null;
 	}
@@ -242,15 +242,15 @@ public abstract class NezGenerator extends NezEncoder {
 
 	public abstract void visitByteMap(Cset p);
 
-	public abstract void visitOption(Uoption p);
+	public abstract void visitOption(Poption p);
 
-	public abstract void visitRepetition(Uzero p);
+	public abstract void visitRepetition(Pzero p);
 
-	public abstract void visitRepetition1(Uone p);
+	public abstract void visitRepetition1(Pone p);
 
-	public abstract void visitAnd(Uand p);
+	public abstract void visitAnd(Pand p);
 
-	public abstract void visitNot(Unot p);
+	public abstract void visitNot(Pnot p);
 
 	public abstract void visitSequence(Psequence p);
 

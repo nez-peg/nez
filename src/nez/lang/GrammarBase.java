@@ -75,23 +75,23 @@ public abstract class GrammarBase extends AbstractList<Production> {
 	}
 
 	public final Expression newOption(Expression... seq) {
-		return ExpressionCommons.newUoption(getSourcePosition(), newSequence(seq));
+		return ExpressionCommons.newPoption(getSourcePosition(), newSequence(seq));
 	}
 
 	public final Expression newRepetition(Expression... seq) {
-		return ExpressionCommons.newUzero(getSourcePosition(), newSequence(seq));
+		return ExpressionCommons.newPzero(getSourcePosition(), newSequence(seq));
 	}
 
 	public final Expression newRepetition1(Expression... seq) {
-		return ExpressionCommons.newUone(getSourcePosition(), newSequence(seq));
+		return ExpressionCommons.newPone(getSourcePosition(), newSequence(seq));
 	}
 
 	public final Expression newAnd(Expression... seq) {
-		return ExpressionCommons.newUand(getSourcePosition(), newSequence(seq));
+		return ExpressionCommons.newPand(getSourcePosition(), newSequence(seq));
 	}
 
 	public final Expression newNot(Expression... seq) {
-		return ExpressionCommons.newUnot(getSourcePosition(), newSequence(seq));
+		return ExpressionCommons.newPnot(getSourcePosition(), newSequence(seq));
 	}
 
 	// public final Expression newByteRange(int c, int c2) {
@@ -103,7 +103,7 @@ public abstract class GrammarBase extends AbstractList<Production> {
 
 	// PEG4d
 	public final Expression newMatch(Expression... seq) {
-		return ExpressionCommons.newUmatch(getSourcePosition(), newSequence(seq));
+		return ExpressionCommons.newPdetree(getSourcePosition(), newSequence(seq));
 	}
 
 	public final Expression newLink(Expression... seq) {

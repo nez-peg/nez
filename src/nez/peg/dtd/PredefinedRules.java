@@ -54,39 +54,39 @@ public class PredefinedRules {
 	}
 
 	final void defDocument() {
-		Expression[] l = { ExpressionCommons.newUoption(null, ExpressionCommons.newNonTerminal(null, grammar, "PROLOG")), ExpressionCommons.newUzero(null, ExpressionCommons.newNonTerminal(null, grammar, "MISC")),
-				ExpressionCommons.newUoption(null, ExpressionCommons.newNonTerminal(null, grammar, "DOCTYPE")), ExpressionCommons.newUzero(null, ExpressionCommons.newNonTerminal(null, grammar, "MISC")), ExpressionCommons.newNonTerminal(null, grammar, "Content"),
-				ExpressionCommons.newUzero(null, ExpressionCommons.newNonTerminal(null, grammar, "MISC")), };
+		Expression[] l = { ExpressionCommons.newPoption(null, ExpressionCommons.newNonTerminal(null, grammar, "PROLOG")), ExpressionCommons.newPzero(null, ExpressionCommons.newNonTerminal(null, grammar, "MISC")),
+				ExpressionCommons.newPoption(null, ExpressionCommons.newNonTerminal(null, grammar, "DOCTYPE")), ExpressionCommons.newPzero(null, ExpressionCommons.newNonTerminal(null, grammar, "MISC")), ExpressionCommons.newNonTerminal(null, grammar, "Content"),
+				ExpressionCommons.newPzero(null, ExpressionCommons.newNonTerminal(null, grammar, "MISC")), };
 		grammar.defineProduction(null, "Document", grammar.newSequence(l));
 	}
 
 	final void defProlog() {
-		Expression[] l = { ExpressionCommons.newString(null, "<?xml"), ExpressionCommons.newUzero(null, ExpressionCommons.newNonTerminal(null, grammar, "S")), ExpressionCommons.newUzero(null, ExpressionCommons.newNonTerminal(null, grammar, "ATTRIBUTE")),
-				ExpressionCommons.newUzero(null, ExpressionCommons.newNonTerminal(null, grammar, "S")), ExpressionCommons.newString(null, "?>"), };
+		Expression[] l = { ExpressionCommons.newString(null, "<?xml"), ExpressionCommons.newPzero(null, ExpressionCommons.newNonTerminal(null, grammar, "S")), ExpressionCommons.newPzero(null, ExpressionCommons.newNonTerminal(null, grammar, "ATTRIBUTE")),
+				ExpressionCommons.newPzero(null, ExpressionCommons.newNonTerminal(null, grammar, "S")), ExpressionCommons.newString(null, "?>"), };
 		grammar.defineProduction(null, "PROLOG", grammar.newSequence(l));
 	}
 
 	final void defDoctype() {
-		Expression[] l = { ExpressionCommons.newString(null, "<!DOCTYPE"), ExpressionCommons.newUzero(null, ExpressionCommons.newNonTerminal(null, grammar, "S")), ExpressionCommons.newUzero(null, ExpressionCommons.newNonTerminal(null, grammar, "NAME")),
-				ExpressionCommons.newUzero(null, ExpressionCommons.newNonTerminal(null, grammar, "S")), ExpressionCommons.newUoption(null, ExpressionCommons.newString(null, "SYSTEM")),
-				ExpressionCommons.newUzero(null, ExpressionCommons.newNonTerminal(null, grammar, "S")), ExpressionCommons.newNonTerminal(null, grammar, "STRING"), ExpressionCommons.newUzero(null, ExpressionCommons.newNonTerminal(null, grammar, "S")),
+		Expression[] l = { ExpressionCommons.newString(null, "<!DOCTYPE"), ExpressionCommons.newPzero(null, ExpressionCommons.newNonTerminal(null, grammar, "S")), ExpressionCommons.newPzero(null, ExpressionCommons.newNonTerminal(null, grammar, "NAME")),
+				ExpressionCommons.newPzero(null, ExpressionCommons.newNonTerminal(null, grammar, "S")), ExpressionCommons.newPoption(null, ExpressionCommons.newString(null, "SYSTEM")),
+				ExpressionCommons.newPzero(null, ExpressionCommons.newNonTerminal(null, grammar, "S")), ExpressionCommons.newNonTerminal(null, grammar, "STRING"), ExpressionCommons.newPzero(null, ExpressionCommons.newNonTerminal(null, grammar, "S")),
 				ExpressionCommons.newString(null, ">"), };
 		grammar.defineProduction(null, "DOCTYPE", grammar.newSequence(l));
 	}
 
 	final void defContent() {
 		Expression choice = grammar.newChoice(ExpressionCommons.newNonTerminal(null, grammar, "RootElement"), ExpressionCommons.newNonTerminal(null, grammar, "COMMENT"));
-		Expression[] l = { ExpressionCommons.newUone(null, choice) };
+		Expression[] l = { ExpressionCommons.newPone(null, choice) };
 		grammar.defineProduction(null, "Content", grammar.newSequence(l));
 	}
 
 	final void defName() {
-		Expression[] l = { ExpressionCommons.newCharSet(null, "A-Za-z_:"), ExpressionCommons.newUzero(null, ExpressionCommons.newCharSet(null, "-A-Za-z0-9:._")) };
+		Expression[] l = { ExpressionCommons.newCharSet(null, "A-Za-z_:"), ExpressionCommons.newPzero(null, ExpressionCommons.newCharSet(null, "-A-Za-z0-9:._")) };
 		grammar.defineProduction(null, "NAME", grammar.newSequence(l));
 	}
 
 	final void defString() {
-		Expression[] l = { ExpressionCommons.newCbyte(null, false, '"'), grammar.newRepetition(ExpressionCommons.newUnot(null, ExpressionCommons.newCbyte(null, false, '"')), ExpressionCommons.newCany(null, false)), ExpressionCommons.newCbyte(null, false, '"') };
+		Expression[] l = { ExpressionCommons.newCbyte(null, false, '"'), grammar.newRepetition(ExpressionCommons.newPnot(null, ExpressionCommons.newCbyte(null, false, '"')), ExpressionCommons.newCany(null, false)), ExpressionCommons.newCbyte(null, false, '"') };
 		grammar.defineProduction(null, "STRING", grammar.newSequence(l));
 	}
 
@@ -101,8 +101,8 @@ public class PredefinedRules {
 	}
 
 	final void defText() {
-		Expression onemoreExpr = grammar.newSequence(ExpressionCommons.newUnot(null, ExpressionCommons.newCharSet(null, "<&")), ExpressionCommons.newCany(null, false));
-		grammar.defineProduction(null, "TEXT", ExpressionCommons.newUone(null, onemoreExpr));
+		Expression onemoreExpr = grammar.newSequence(ExpressionCommons.newPnot(null, ExpressionCommons.newCharSet(null, "<&")), ExpressionCommons.newCany(null, false));
+		grammar.defineProduction(null, "TEXT", ExpressionCommons.newPone(null, onemoreExpr));
 	}
 
 	final void defAttribute() {
@@ -112,7 +112,7 @@ public class PredefinedRules {
 	}
 
 	final void defCDATASECT() {
-		Expression[] l = { ExpressionCommons.newString(null, "<![CDATA["), grammar.newRepetition(ExpressionCommons.newUnot(null, ExpressionCommons.newString(null, "]]>")), ExpressionCommons.newCany(null, false)), ExpressionCommons.newString(null, "]]>") };
+		Expression[] l = { ExpressionCommons.newString(null, "<![CDATA["), grammar.newRepetition(ExpressionCommons.newPnot(null, ExpressionCommons.newString(null, "]]>")), ExpressionCommons.newCany(null, false)), ExpressionCommons.newString(null, "]]>") };
 		grammar.defineProduction(null, "CDATASECT", grammar.newSequence(l));
 	}
 
@@ -121,7 +121,7 @@ public class PredefinedRules {
 	}
 
 	final void defCOMMENT() {
-		Expression[] l = { ExpressionCommons.newString(null, "<!--"), grammar.newRepetition(ExpressionCommons.newUnot(null, ExpressionCommons.newString(null, "-->")), ExpressionCommons.newCany(null, false)), ExpressionCommons.newString(null, "-->"),
+		Expression[] l = { ExpressionCommons.newString(null, "<!--"), grammar.newRepetition(ExpressionCommons.newPnot(null, ExpressionCommons.newString(null, "-->")), ExpressionCommons.newCany(null, false)), ExpressionCommons.newString(null, "-->"),
 				grammar.newRepetition(ExpressionCommons.newNonTerminal(null, grammar, "S")) };
 		grammar.defineProduction(null, "COMMENT", grammar.newSequence(l));
 	}
@@ -140,12 +140,12 @@ public class PredefinedRules {
 	}
 
 	final void defENDTAG() {
-		Expression l = grammar.newChoice(ExpressionCommons.newUand(null, ExpressionCommons.newCbyte(null, false, '>')), ExpressionCommons.newUand(null, ExpressionCommons.newString(null, "/>")));
+		Expression l = grammar.newChoice(ExpressionCommons.newPand(null, ExpressionCommons.newCbyte(null, false, '>')), ExpressionCommons.newPand(null, ExpressionCommons.newString(null, "/>")));
 		grammar.defineProduction(null, "ENDTAG", l);
 	}
 
 	final void defNotAny() {
-		Expression l = ExpressionCommons.newUnot(null, ExpressionCommons.newCany(null, false));
+		Expression l = ExpressionCommons.newPnot(null, ExpressionCommons.newCany(null, false));
 		grammar.defineProduction(null, "NotAny", l);
 	}
 

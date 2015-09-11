@@ -340,7 +340,7 @@ public class DTDConverter extends AbstractTreeVisitor {
 		String attDefList = "AttDefList" + currentElementID;
 		gfile.defineProduction(node, attDefList, genExAttDefList(node, requiredList, tableName));
 		UList<Expression> seq = new UList<Expression>(new Expression[requiredList.length + 1]);
-		seq.add(ExpressionCommons.newUzero(node, ExpressionCommons.newNonTerminal(node, gfile, attDefList)));
+		seq.add(ExpressionCommons.newPzero(node, ExpressionCommons.newNonTerminal(node, gfile, attDefList)));
 		for (int index : requiredList) {
 			seq.add(ExpressionCommons.newXexists(node, tableName, attDefMap.get(index)));
 		}
@@ -350,7 +350,7 @@ public class DTDConverter extends AbstractTreeVisitor {
 	public Expression genExAttDefList(AbstractTree<?> node, int[] requiredList, SymbolId tableName) {
 		UList<Expression> l = new UList<Expression>(new Expression[requiredList.length + 1]);
 		for (int index : requiredList) {
-			Expression notexist = ExpressionCommons.newUnot(node, ExpressionCommons.newXexists(node, tableName, attDefMap.get(index)));
+			Expression notexist = ExpressionCommons.newPnot(node, ExpressionCommons.newXexists(node, tableName, attDefMap.get(index)));
 			Expression nonterminal = ExpressionCommons.newNonTerminal(node, gfile, "AttDef" + currentElementID + "_" + index);
 			l.add(ExpressionCommons.newPsequence(node, notexist, nonterminal));
 		}

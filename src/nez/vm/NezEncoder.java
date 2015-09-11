@@ -21,11 +21,11 @@ import nez.lang.expr.Tlink;
 import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
-import nez.lang.expr.Uand;
-import nez.lang.expr.Unot;
-import nez.lang.expr.Uone;
-import nez.lang.expr.Uoption;
-import nez.lang.expr.Uzero;
+import nez.lang.expr.Pand;
+import nez.lang.expr.Pnot;
+import nez.lang.expr.Pone;
+import nez.lang.expr.Poption;
+import nez.lang.expr.Pzero;
 import nez.lang.expr.Xblock;
 import nez.lang.expr.Xdef;
 import nez.lang.expr.Xdefindent;
@@ -176,15 +176,15 @@ public abstract class NezEncoder {
 
 	public abstract Instruction encodeCmulti(Cmulti p, Instruction next, Instruction failjump);
 
-	public abstract Instruction encodeUoption(Uoption p, Instruction next);
+	public abstract Instruction encodePoption(Poption p, Instruction next);
 
-	public abstract Instruction encodeUzero(Uzero p, Instruction next);
+	public abstract Instruction encodePzero(Pzero p, Instruction next);
 
-	public abstract Instruction encodeUone(Uone p, Instruction next, Instruction failjump);
+	public abstract Instruction encodePone(Pone p, Instruction next, Instruction failjump);
 
-	public abstract Instruction encodeUand(Uand p, Instruction next, Instruction failjump);
+	public abstract Instruction encodePand(Pand p, Instruction next, Instruction failjump);
 
-	public abstract Instruction encodeUnot(Unot p, Instruction next, Instruction failjump);
+	public abstract Instruction encodePnot(Pnot p, Instruction next, Instruction failjump);
 
 	public abstract Instruction encodePsequence(Psequence p, Instruction next, Instruction failjump);
 

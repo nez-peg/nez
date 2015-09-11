@@ -9,30 +9,28 @@ import nez.lang.Visa;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
-public class Uzero extends Unary {
-	public boolean possibleInfiniteLoop = false;
-
-	Uzero(SourcePosition s, Expression e) {
+public class Poption extends Unary {
+	Poption(SourcePosition s, Expression e) {
 		super(s, e);
 		// e.setOuterLefted(this);
 	}
 
 	@Override
-	public boolean equalsExpression(Expression o) {
-		if (o instanceof Uzero) {
+	public final boolean equalsExpression(Expression o) {
+		if (o instanceof Poption) {
 			return this.get(0).equalsExpression(o.get(0));
 		}
 		return false;
 	}
 
 	@Override
-	public void format(StringBuilder sb) {
-		this.formatUnary(sb, this.inner, "*");
+	public final void format(StringBuilder sb) {
+		this.formatUnary(sb, this.inner, "?");
 	}
 
 	@Override
 	public Expression reshape(GrammarTransducer m) {
-		return m.reshapeUzero(this);
+		return m.reshapePoption(this);
 	}
 
 	@Override
@@ -56,7 +54,7 @@ public class Uzero extends Unary {
 
 	@Override
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
-		return bc.encodeUzero(this, next);
+		return bc.encodePoption(this, next);
 	}
 
 }

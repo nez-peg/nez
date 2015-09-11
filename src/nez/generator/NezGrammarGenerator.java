@@ -3,7 +3,7 @@ package nez.generator;
 import nez.Parser;
 import nez.lang.Expression;
 import nez.lang.Production;
-import nez.lang.expr.Uand;
+import nez.lang.expr.Pand;
 import nez.lang.expr.Cany;
 import nez.lang.expr.Xblock;
 import nez.lang.expr.Cbyte;
@@ -18,10 +18,10 @@ import nez.lang.expr.Xlocal;
 import nez.lang.expr.Xmatch;
 import nez.lang.expr.Tnew;
 import nez.lang.expr.NonTerminal;
-import nez.lang.expr.Unot;
-import nez.lang.expr.Uoption;
-import nez.lang.expr.Uzero;
-import nez.lang.expr.Uone;
+import nez.lang.expr.Pnot;
+import nez.lang.expr.Poption;
+import nez.lang.expr.Pzero;
+import nez.lang.expr.Pone;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
 import nez.util.StringUtils;
@@ -100,27 +100,27 @@ public class NezGrammarGenerator extends GrammarGenerator {
 	}
 
 	@Override
-	public void visitOption(Uoption e) {
+	public void visitOption(Poption e) {
 		Unary(null, e, "?");
 	}
 
 	@Override
-	public void visitRepetition(Uzero e) {
+	public void visitRepetition(Pzero e) {
 		Unary(null, e, "*");
 	}
 
 	@Override
-	public void visitRepetition1(Uone e) {
+	public void visitRepetition1(Pone e) {
 		Unary(null, e, "+");
 	}
 
 	@Override
-	public void visitAnd(Uand e) {
+	public void visitAnd(Pand e) {
 		Unary("&", e, null);
 	}
 
 	@Override
-	public void visitNot(Unot e) {
+	public void visitNot(Pnot e) {
 		Unary("!", e, null);
 	}
 

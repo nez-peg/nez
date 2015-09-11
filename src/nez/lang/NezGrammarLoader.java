@@ -160,19 +160,19 @@ public class NezGrammarLoader extends GrammarFileLoader {
 	}
 
 	public Expression newNot(AbstractTree<?> node) {
-		return ExpressionCommons.newUnot(node, newExpression(node.get(_expr)));
+		return ExpressionCommons.newPnot(node, newExpression(node.get(_expr)));
 	}
 
 	public Expression newAnd(AbstractTree<?> node) {
-		return ExpressionCommons.newUand(node, newExpression(node.get(_expr)));
+		return ExpressionCommons.newPand(node, newExpression(node.get(_expr)));
 	}
 
 	public Expression newOption(AbstractTree<?> node) {
-		return ExpressionCommons.newUoption(node, newExpression(node.get(_expr)));
+		return ExpressionCommons.newPoption(node, newExpression(node.get(_expr)));
 	}
 
 	public Expression newRepetition1(AbstractTree<?> node) {
-		return ExpressionCommons.newUone(node, newExpression(node.get(_expr)));
+		return ExpressionCommons.newPone(node, newExpression(node.get(_expr)));
 	}
 
 	public Expression newRepetition(AbstractTree<?> node) {
@@ -186,7 +186,7 @@ public class NezGrammarLoader extends GrammarFileLoader {
 				return ExpressionCommons.newPsequence(node, l);
 			}
 		}
-		return ExpressionCommons.newUzero(node, newExpression(node.get(_expr)));
+		return ExpressionCommons.newPzero(node, newExpression(node.get(_expr)));
 	}
 
 	// PEG4d TransCapturing
@@ -231,7 +231,7 @@ public class NezGrammarLoader extends GrammarFileLoader {
 	public Expression newMatch(AbstractTree<?> node) {
 		AbstractTree<?> exprNode = node.get(_expr, null);
 		if (exprNode != null) {
-			return ExpressionCommons.newUmatch(node, newExpression(exprNode));
+			return ExpressionCommons.newPdetree(node, newExpression(exprNode));
 		}
 		return ExpressionCommons.newXmatch(node, parseLabelNode(node));
 	}

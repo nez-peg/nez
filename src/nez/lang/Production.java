@@ -11,11 +11,11 @@ import nez.lang.expr.ExpressionCommons;
 import nez.lang.expr.NonTerminal;
 import nez.lang.expr.Pchoice;
 import nez.lang.expr.Psequence;
-import nez.lang.expr.Uand;
-import nez.lang.expr.Unot;
-import nez.lang.expr.Uone;
-import nez.lang.expr.Uoption;
-import nez.lang.expr.Uzero;
+import nez.lang.expr.Pand;
+import nez.lang.expr.Pnot;
+import nez.lang.expr.Pone;
+import nez.lang.expr.Poption;
+import nez.lang.expr.Pzero;
 import nez.util.ConsoleUtils;
 import nez.util.UFlag;
 import nez.util.UList;
@@ -125,11 +125,11 @@ public class Production /* extends Expression */{
 			quickCheck(p, e.get(1));
 			return;
 		}
-		if (e instanceof Uone) {
+		if (e instanceof Pone) {
 			quickCheck(p, e.get(0));
 			return;
 		}
-		if (e instanceof Unot || e instanceof Uoption || e instanceof Uzero || e instanceof Uand) {
+		if (e instanceof Pnot || e instanceof Poption || e instanceof Pzero || e instanceof Pand) {
 			boolean consumed = UFlag.is(p.flag, ConsumedProduction);
 			quickCheck(p, e.get(0));
 			if (!consumed) {
@@ -422,10 +422,10 @@ public class Production /* extends Expression */{
 			return consumed;
 		}
 		if (e.size() > 0) {
-			if (e instanceof Uone) {
+			if (e instanceof Pone) {
 				return checkConsumed(e.get(0), s);
 			}
-			if (e instanceof Unot || e instanceof Uoption || e instanceof Uzero || e instanceof Uand) {
+			if (e instanceof Pnot || e instanceof Poption || e instanceof Pzero || e instanceof Pand) {
 				return false;
 			}
 			return checkConsumed(e.get(0), s);

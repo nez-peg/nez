@@ -15,17 +15,23 @@ public class Grammar extends GrammarBase {
 	private static int serialNumbering = 0;
 
 	private int id;
+	private final String ns;
 	private Grammar parent;
 	protected UList<Production> prodList;
 	protected HashMap<String, Production> prodMap = null;
 
 	public Grammar() {
-		this(null);
+		this(null, null);
 	}
 
-	public Grammar(Grammar parent) {
+	public Grammar(String ns) {
+		this(ns, null);
+	}
+
+	public Grammar(String ns, Grammar parent) {
 		this.id = serialNumbering++;
 		this.parent = parent;
+		this.ns = ns != null ? ns : "g";
 		this.prodList = new UList<Production>(new Production[1]);
 	}
 
@@ -34,7 +40,7 @@ public class Grammar extends GrammarBase {
 	}
 
 	public final String uniqueName(String name) {
-		return "g" + this.id + ":" + name;
+		return this.ns + this.id + ":" + name;
 	}
 
 	@Override
@@ -54,25 +60,6 @@ public class Grammar extends GrammarBase {
 
 	public final Production getStartProduction() {
 		return this.prodList.ArrayValues[0];
-	}
-
-	public final Parser newParser(String name, NezOption option) {
-		Production p = this.getProduction(name);
-		if (p != null) {
-			GenerativeGrammar gg = new GenerativeGrammar(p, option, null);
-			return new Parser(gg, option);
-		}
-		Verbose.println("undefined production" + name);
-		return newParser(option);
-	}
-
-	public final Parser newParser(String name) {
-		return newParser(name, NezOption.newDefaultOption());
-	}
-
-	public final Parser newParser(NezOption option) {
-		GenerativeGrammar gg = (this instanceof GenerativeGrammar) ? (GenerativeGrammar) this : new GenerativeGrammar(this.getStartProduction(), option, null);
-		return new Parser(gg, option);
 	}
 
 	public final List<Production> getProductionList() {
@@ -153,41 +140,26 @@ public class Grammar extends GrammarBase {
 		return null;
 	}
 
-	// // ----------------------------------------------------------------------
-	//
-	// // Grammar
-	//
-	// public final void reportError(Expression p, String message) {
-	// this.reportError(p.getSourcePosition(), message);
-	// }
-	//
-	// public final void reportError(SourcePosition s, String message) {
-	// if (s != null) {
-	// ConsoleUtils.println(s.formatSourceMessage("error", message));
-	// }
-	// }
-	//
-	// public final void reportWarning(Expression p, String message) {
-	// this.reportWarning(p.getSourcePosition(), message);
-	// }
-	//
-	// public final void reportWarning(SourcePosition s, String message) {
-	// if (s != null) {
-	// ConsoleUtils.println(s.formatSourceMessage("warning", message));
-	// }
-	// }
-	//
-	// public final void reportNotice(Expression p, String message) {
-	// this.reportNotice(p.getSourcePosition(), message);
-	// }
-	//
-	// public final void reportNotice(SourcePosition s, String message) {
-	// // if (option.enabledNoticeReport) {
-	// if (s != null) {
-	// ConsoleUtils.println(s.formatSourceMessage("notice", message));
-	// }
-	// // }
-	// }
+	// ----------------------------------------------------------------------
+
+	public final Parser newParser(String name, NezOption option) {
+		Production p = this.getProduction(name);
+		if (p != null) {
+			GenerativeGrammar gg = new GenerativeGrammar(p, option, null);
+			return new Parser(gg, option);
+		}
+		Verbose.println("undefined production" + name);
+		return newParser(option);
+	}
+
+	public final Parser newParser(String name) {
+		return newParser(name, NezOption.newDefaultOption());
+	}
+
+	public final Parser newParser(NezOption option) {
+		GenerativeGrammar gg = (this instanceof GenerativeGrammar) ? (GenerativeGrammar) this : new GenerativeGrammar(this.getStartProduction(), option, null);
+		return new Parser(gg, option);
+	}
 
 	// ----------------------------------------------------------------------
 

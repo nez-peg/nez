@@ -4,7 +4,7 @@ import nez.Parser;
 import nez.NezOption;
 import nez.lang.Expression;
 import nez.lang.Production;
-import nez.lang.expr.Uand;
+import nez.lang.expr.Pand;
 import nez.lang.expr.Cany;
 import nez.lang.expr.Xblock;
 import nez.lang.expr.Cbyte;
@@ -22,10 +22,10 @@ import nez.lang.expr.Xmatch;
 import nez.lang.expr.Cmulti;
 import nez.lang.expr.Tnew;
 import nez.lang.expr.NonTerminal;
-import nez.lang.expr.Unot;
-import nez.lang.expr.Uoption;
-import nez.lang.expr.Uzero;
-import nez.lang.expr.Uone;
+import nez.lang.expr.Pnot;
+import nez.lang.expr.Poption;
+import nez.lang.expr.Pzero;
+import nez.lang.expr.Pone;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Psequence;
 import nez.lang.expr.Ttag;
@@ -221,23 +221,23 @@ public class LPegGrammarGenerator extends NezGenerator {
 		}
 	}
 
-	public void visitOption(Uoption e) {
+	public void visitOption(Poption e) {
 		this.visit(null, e, "^-1");
 	}
 
-	public void visitRepetition(Uzero e) {
+	public void visitRepetition(Pzero e) {
 		this.visit(null, e, "^0");
 	}
 
-	public void visitRepetition1(Uone e) {
+	public void visitRepetition1(Pone e) {
 		this.visit(null, e, "^1");
 	}
 
-	public void visitAnd(Uand e) {
+	public void visitAnd(Pand e) {
 		this.visit("#", e, null);
 	}
 
-	public void visitNot(Unot e) {
+	public void visitNot(Pnot e) {
 		this.visit("-", e, null);
 	}
 

@@ -15,13 +15,13 @@ import nez.lang.expr.Tlink;
 import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
-import nez.lang.expr.Uand;
-import nez.lang.expr.Umatch;
+import nez.lang.expr.Pand;
+import nez.lang.expr.Pdetree;
 import nez.lang.expr.Unary;
-import nez.lang.expr.Unot;
-import nez.lang.expr.Uone;
-import nez.lang.expr.Uoption;
-import nez.lang.expr.Uzero;
+import nez.lang.expr.Pnot;
+import nez.lang.expr.Pone;
+import nez.lang.expr.Poption;
+import nez.lang.expr.Pzero;
 import nez.lang.expr.Xblock;
 import nez.lang.expr.Xdef;
 import nez.lang.expr.Xexists;
@@ -128,28 +128,28 @@ public class GrammarTransducer {
 		return e.newChoice(l);
 	}
 
-	public Expression reshapeUoption(Uoption e) {
-		return ExpressionCommons.newUoption(e.getSourcePosition(), reshapeInner(e.get(0)));
+	public Expression reshapePoption(Poption e) {
+		return ExpressionCommons.newPoption(e.getSourcePosition(), reshapeInner(e.get(0)));
 	}
 
-	public Expression reshapeUzero(Uzero e) {
-		return ExpressionCommons.newUzero(e.getSourcePosition(), reshapeInner(e.get(0)));
+	public Expression reshapePzero(Pzero e) {
+		return ExpressionCommons.newPzero(e.getSourcePosition(), reshapeInner(e.get(0)));
 	}
 
-	public Expression reshapeUone(Uone e) {
-		return ExpressionCommons.newUone(e.getSourcePosition(), reshapeInner(e.get(0)));
+	public Expression reshapePone(Pone e) {
+		return ExpressionCommons.newPone(e.getSourcePosition(), reshapeInner(e.get(0)));
 	}
 
-	public Expression reshapeUand(Uand e) {
-		return ExpressionCommons.newUand(e.getSourcePosition(), reshapeInner(e.get(0)));
+	public Expression reshapePand(Pand e) {
+		return ExpressionCommons.newPand(e.getSourcePosition(), reshapeInner(e.get(0)));
 	}
 
-	public Expression reshapeUnot(Unot e) {
-		return ExpressionCommons.newUnot(e.getSourcePosition(), reshapeInner(e.get(0)));
+	public Expression reshapePnot(Pnot e) {
+		return ExpressionCommons.newPnot(e.getSourcePosition(), reshapeInner(e.get(0)));
 	}
 
-	public Expression reshapeUmatch(Umatch e) {
-		return ExpressionCommons.newUmatch(e.getSourcePosition(), reshapeInner(e.get(0)));
+	public Expression reshapePdetree(Pdetree e) {
+		return ExpressionCommons.newPdetree(e.getSourcePosition(), reshapeInner(e.get(0)));
 	}
 
 	public Expression reshapeTnew(Tnew e) {
@@ -251,7 +251,7 @@ class ASTConstructionEliminator extends GrammarTransducer {
 	}
 
 	@Override
-	public Expression reshapeUmatch(Umatch e) {
+	public Expression reshapePdetree(Pdetree e) {
 		return e.get(0).reshape(this);
 	}
 

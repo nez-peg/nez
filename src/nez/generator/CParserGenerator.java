@@ -22,11 +22,11 @@ import nez.lang.expr.Tlink;
 import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
-import nez.lang.expr.Uand;
-import nez.lang.expr.Unot;
-import nez.lang.expr.Uone;
-import nez.lang.expr.Uoption;
-import nez.lang.expr.Uzero;
+import nez.lang.expr.Pand;
+import nez.lang.expr.Pnot;
+import nez.lang.expr.Pone;
+import nez.lang.expr.Poption;
+import nez.lang.expr.Pzero;
 import nez.lang.expr.Xblock;
 import nez.lang.expr.Xdef;
 import nez.lang.expr.Xdefindent;
@@ -369,7 +369,7 @@ public class CParserGenerator extends ParserGenerator {
 		}
 	}
 
-	public boolean specializeNot(Unot e) {
+	public boolean specializeNot(Pnot e) {
 		Expression inner = e.get(0);
 		if (inner instanceof NonTerminal) {
 			inner = getNonTerminalRule(inner);
@@ -476,7 +476,7 @@ public class CParserGenerator extends ParserGenerator {
 		this.exitLabel(label);
 	}
 
-	public boolean specializeOption(Uoption e) {
+	public boolean specializeOption(Poption e) {
 		Expression inner = e.get(0);
 		if (inner instanceof NonTerminal) {
 			inner = getNonTerminalRule(inner);
@@ -567,7 +567,7 @@ public class CParserGenerator extends ParserGenerator {
 		this.closeBlock();
 	}
 
-	public boolean specializeRepetition(Uzero e) {
+	public boolean specializeRepetition(Pzero e) {
 		Expression inner = e.get(0);
 		if (inner instanceof NonTerminal) {
 			inner = getNonTerminalRule(inner);
@@ -782,7 +782,7 @@ public class CParserGenerator extends ParserGenerator {
 	}
 
 	@Override
-	public void visitOption(Uoption e) {
+	public void visitOption(Poption e) {
 		if (!specializeOption(e)) {
 			this.pushFailureJumpPoint();
 			String label = "EXIT_OPTION" + this.fid;
@@ -797,7 +797,7 @@ public class CParserGenerator extends ParserGenerator {
 	}
 
 	@Override
-	public void visitRepetition(Uzero e) {
+	public void visitRepetition(Pzero e) {
 		if (!specializeRepetition(e)) {
 			this.pushFailureJumpPoint();
 			String backtrack = "c" + this.fid;
@@ -813,7 +813,7 @@ public class CParserGenerator extends ParserGenerator {
 	}
 
 	@Override
-	public void visitRepetition1(Uone e) {
+	public void visitRepetition1(Pone e) {
 		visitExpression(e.get(0));
 		this.pushFailureJumpPoint();
 		String backtrack = "c" + this.fid;
@@ -828,7 +828,7 @@ public class CParserGenerator extends ParserGenerator {
 	}
 
 	@Override
-	public void visitAnd(Uand e) {
+	public void visitAnd(Pand e) {
 		this.pushFailureJumpPoint();
 		String label = "EXIT_AND" + this.fid;
 		String backtrack = "c" + this.fid;
@@ -843,7 +843,7 @@ public class CParserGenerator extends ParserGenerator {
 	}
 
 	@Override
-	public void visitNot(Unot e) {
+	public void visitNot(Pnot e) {
 		if (!specializeNot(e)) {
 			this.pushFailureJumpPoint();
 			String backtrack = "c" + this.fid;

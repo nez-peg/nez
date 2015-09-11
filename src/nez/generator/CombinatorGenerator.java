@@ -3,7 +3,7 @@ package nez.generator;
 import nez.Parser;
 import nez.lang.Expression;
 import nez.lang.Production;
-import nez.lang.expr.Uand;
+import nez.lang.expr.Pand;
 import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cset;
@@ -14,10 +14,10 @@ import nez.lang.expr.Pfail;
 import nez.lang.expr.Tlink;
 import nez.lang.expr.Tnew;
 import nez.lang.expr.NonTerminal;
-import nez.lang.expr.Unot;
-import nez.lang.expr.Uoption;
-import nez.lang.expr.Uzero;
-import nez.lang.expr.Uone;
+import nez.lang.expr.Pnot;
+import nez.lang.expr.Poption;
+import nez.lang.expr.Pzero;
+import nez.lang.expr.Pone;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Psequence;
 import nez.lang.expr.Ttag;
@@ -84,23 +84,23 @@ public class CombinatorGenerator extends GrammarGenerator {
 		C("AnyChar");
 	}
 
-	public void visitOption(Uoption e) {
+	public void visitOption(Poption e) {
 		C("Option", e);
 	}
 
-	public void visitRepetition(Uzero e) {
+	public void visitRepetition(Pzero e) {
 		C("ZeroMore", e);
 	}
 
-	public void visitRepetition1(Uone e) {
+	public void visitRepetition1(Pone e) {
 		C("OneMore", e);
 	}
 
-	public void visitAnd(Uand e) {
+	public void visitAnd(Pand e) {
 		C("And", e);
 	}
 
-	public void visitNot(Unot e) {
+	public void visitNot(Pnot e) {
 		C("Not", e);
 	}
 

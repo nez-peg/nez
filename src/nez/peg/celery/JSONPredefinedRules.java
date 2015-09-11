@@ -40,7 +40,7 @@ public class JSONPredefinedRules {
 	}
 
 	final void defAny() {
-		Expression l = grammar.newSequence(ExpressionCommons.newNonTerminal(null, grammar, "Member"), ExpressionCommons.newNonTerminal(null, grammar, "SPACING"), ExpressionCommons.newUoption(null, ExpressionCommons.newNonTerminal(null, grammar, "VALUESEP")));
+		Expression l = grammar.newSequence(ExpressionCommons.newNonTerminal(null, grammar, "Member"), ExpressionCommons.newNonTerminal(null, grammar, "SPACING"), ExpressionCommons.newPoption(null, ExpressionCommons.newNonTerminal(null, grammar, "VALUESEP")));
 		grammar.defineProduction(null, "Any", l);
 	}
 

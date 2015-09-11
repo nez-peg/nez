@@ -5,7 +5,7 @@ import nez.ast.AbstractTree;
 import nez.ast.SymbolId;
 import nez.util.FileBuilder;
 
-public class NezFileFormatter extends NezLoader {
+public class NezFileFormatter extends NezGrammarLoader {
 	private FileBuilder f;
 
 	public NezFileFormatter() {

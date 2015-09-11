@@ -3,7 +3,7 @@ package nez.vm;
 import nez.NezOption;
 import nez.lang.Expression;
 import nez.lang.Production;
-import nez.lang.expr.Uand;
+import nez.lang.expr.Pand;
 import nez.lang.expr.Cany;
 import nez.lang.expr.Xblock;
 import nez.lang.expr.Cbyte;
@@ -21,10 +21,10 @@ import nez.lang.expr.Xmatch;
 import nez.lang.expr.Cmulti;
 import nez.lang.expr.Tnew;
 import nez.lang.expr.NonTerminal;
-import nez.lang.expr.Unot;
-import nez.lang.expr.Uoption;
-import nez.lang.expr.Uzero;
-import nez.lang.expr.Uone;
+import nez.lang.expr.Pnot;
+import nez.lang.expr.Poption;
+import nez.lang.expr.Pzero;
+import nez.lang.expr.Pone;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Psequence;
 import nez.lang.expr.Ttag;
@@ -64,12 +64,12 @@ public class PlainCompiler extends NezCompiler {
 		return this.commonFailure;
 	}
 
-	public Instruction encodeUoption(Uoption p, Instruction next) {
+	public Instruction encodePoption(Poption p, Instruction next) {
 		Instruction pop = new ISucc(p, next);
 		return new IAlt(p, next, encode(p.get(0), pop, next));
 	}
 
-	public Instruction encodeUzero(Uzero p, Instruction next) {
+	public Instruction encodePzero(Pzero p, Instruction next) {
 		// Expression skip = p.possibleInfiniteLoop ? new ISkip(p) : new
 		// ISkip(p);
 		Instruction skip = new ISkip(p);
@@ -78,16 +78,16 @@ public class PlainCompiler extends NezCompiler {
 		return new IAlt(p, next, start);
 	}
 
-	public Instruction encodeUone(Uone p, Instruction next, Instruction failjump) {
-		return encode(p.get(0), this.encodeUzero(p, next), failjump);
+	public Instruction encodePone(Pone p, Instruction next, Instruction failjump) {
+		return encode(p.get(0), this.encodePzero(p, next), failjump);
 	}
 
-	public Instruction encodeUand(Uand p, Instruction next, Instruction failjump) {
+	public Instruction encodePand(Pand p, Instruction next, Instruction failjump) {
 		Instruction inner = encode(p.get(0), new IBack(p, next), failjump);
 		return new IPos(p, inner);
 	}
 
-	public Instruction encodeUnot(Unot p, Instruction next, Instruction failjump) {
+	public Instruction encodePnot(Pnot p, Instruction next, Instruction failjump) {
 		Instruction fail = new ISucc(p, new IFail(p));
 		return new IAlt(p, next, encode(p.get(0), fail, failjump));
 	}

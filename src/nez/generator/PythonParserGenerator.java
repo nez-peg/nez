@@ -8,7 +8,7 @@ import nez.Parser;
 import nez.NezOption;
 import nez.lang.Expression;
 import nez.lang.Production;
-import nez.lang.expr.Uand;
+import nez.lang.expr.Pand;
 import nez.lang.expr.Cany;
 import nez.lang.expr.Xblock;
 import nez.lang.expr.Cbyte;
@@ -26,10 +26,10 @@ import nez.lang.expr.Xmatch;
 import nez.lang.expr.Cmulti;
 import nez.lang.expr.Tnew;
 import nez.lang.expr.NonTerminal;
-import nez.lang.expr.Unot;
-import nez.lang.expr.Uoption;
-import nez.lang.expr.Uzero;
-import nez.lang.expr.Uone;
+import nez.lang.expr.Pnot;
+import nez.lang.expr.Poption;
+import nez.lang.expr.Pzero;
+import nez.lang.expr.Pone;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Psequence;
 import nez.lang.expr.Ttag;
@@ -435,7 +435,7 @@ public class PythonParserGenerator extends NezGenerator {
 	}
 
 	@Override
-	public void visitOption(Uoption p) {
+	public void visitOption(Poption p) {
 		String pos = "pos_op" + p.getId();
 		Let(pos, "self.pos");
 		visitExpression(p.get(0));
@@ -443,7 +443,7 @@ public class PythonParserGenerator extends NezGenerator {
 	}
 
 	@Override
-	public void visitRepetition(Uzero p) {
+	public void visitRepetition(Pzero p) {
 		String pos = "pos_op" + p.getId();
 		While("result").Begin();
 		Let(pos, "self.pos");
@@ -454,7 +454,7 @@ public class PythonParserGenerator extends NezGenerator {
 	}
 
 	@Override
-	public void visitRepetition1(Uone p) {
+	public void visitRepetition1(Pone p) {
 		visitExpression(p.get(0));
 		If("result").Begin();
 		String pos = "pos_op" + p.getId();
@@ -468,7 +468,7 @@ public class PythonParserGenerator extends NezGenerator {
 	}
 
 	@Override
-	public void visitAnd(Uand p) {
+	public void visitAnd(Pand p) {
 		String pos = "pos_and" + p.getId();
 		Let(pos, "self.pos");
 		visitExpression(p.get(0));
@@ -476,7 +476,7 @@ public class PythonParserGenerator extends NezGenerator {
 	}
 
 	@Override
-	public void visitNot(Unot p) {
+	public void visitNot(Pnot p) {
 		String pos = "pos_not" + p.getId();
 		Let(pos, "self.pos");
 		visitExpression(p.get(0));

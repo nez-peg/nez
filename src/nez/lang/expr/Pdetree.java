@@ -8,14 +8,14 @@ import nez.lang.Visa;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
-public class Umatch extends Unary {
-	Umatch(SourcePosition s, Expression inner) {
+public class Pdetree extends Unary {
+	Pdetree(SourcePosition s, Expression inner) {
 		super(s, inner);
 	}
 
 	@Override
 	public final boolean equalsExpression(Expression o) {
-		if (o instanceof Umatch) {
+		if (o instanceof Pdetree) {
 			return this.get(0).equalsExpression(o.get(0));
 		}
 		return false;
@@ -28,7 +28,7 @@ public class Umatch extends Unary {
 
 	@Override
 	public Expression reshape(GrammarTransducer m) {
-		return m.reshapeUmatch(this);
+		return m.reshapePdetree(this);
 	}
 
 	@Override

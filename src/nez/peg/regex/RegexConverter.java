@@ -148,7 +148,7 @@ public class RegexConverter extends GrammarConverter {
 	}
 
 	public Expression piNegativeCharacterSet(CommonTree e, Expression k) {
-		Expression nce = toSeq(e, ExpressionCommons.newUnot(e, toCharacterSet(e)), toAny(e));
+		Expression nce = toSeq(e, ExpressionCommons.newPnot(e, toCharacterSet(e)), toAny(e));
 		return toSeq(e, nce, k);
 	}
 
@@ -224,11 +224,11 @@ public class RegexConverter extends GrammarConverter {
 	}
 
 	public Expression toAnd(AbstractTree<?> e, Expression k) {
-		return toSeq(e, ExpressionCommons.newUand(null, pi(e.get(0), toEmpty(e))), k);
+		return toSeq(e, ExpressionCommons.newPand(null, pi(e.get(0), toEmpty(e))), k);
 	}
 
 	public Expression toNot(AbstractTree<?> e, Expression k) {
-		return toSeq(e, ExpressionCommons.newUnot(null, pi(e.get(0), toEmpty(e))), k);
+		return toSeq(e, ExpressionCommons.newPnot(null, pi(e.get(0), toEmpty(e))), k);
 	}
 
 	public Expression toChoice(AbstractTree<?> node, Expression e, Expression k) {

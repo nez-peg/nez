@@ -11,9 +11,9 @@ import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cset;
 import nez.lang.expr.Pchoice;
 import nez.lang.expr.Cmulti;
-import nez.lang.expr.Unot;
-import nez.lang.expr.Uoption;
-import nez.lang.expr.Uzero;
+import nez.lang.expr.Pnot;
+import nez.lang.expr.Poption;
+import nez.lang.expr.Pzero;
 import nez.lang.expr.Psequence;
 import nez.main.Verbose;
 
@@ -41,7 +41,7 @@ public class OptimizedCompiler extends PlainCompiler {
 	}
 
 	@Override
-	public final Instruction encodeUoption(Uoption p, Instruction next) {
+	public final Instruction encodePoption(Poption p, Instruction next) {
 		if (option.enabledLexicalOptimization) {
 			Expression inner = getInnerExpression(p);
 			if (inner instanceof Cbyte) {
@@ -57,11 +57,11 @@ public class OptimizedCompiler extends PlainCompiler {
 				return new IOStr((Cmulti) inner, next);
 			}
 		}
-		return super.encodeUoption(p, next);
+		return super.encodePoption(p, next);
 	}
 
 	@Override
-	public final Instruction encodeUzero(Uzero p, Instruction next) {
+	public final Instruction encodePzero(Pzero p, Instruction next) {
 		if (option.enabledLexicalOptimization) {
 			Expression inner = getInnerExpression(p);
 			if (inner instanceof Cbyte) {
@@ -77,11 +77,11 @@ public class OptimizedCompiler extends PlainCompiler {
 				return new IRStr((Cmulti) inner, next);
 			}
 		}
-		return super.encodeUzero(p, next);
+		return super.encodePzero(p, next);
 	}
 
 	@Override
-	public final Instruction encodeUnot(Unot p, Instruction next, Instruction failjump) {
+	public final Instruction encodePnot(Pnot p, Instruction next, Instruction failjump) {
 		if (option.enabledLexicalOptimization) {
 			Expression inner = getInnerExpression(p);
 			if (inner instanceof Cset) {
@@ -101,7 +101,7 @@ public class OptimizedCompiler extends PlainCompiler {
 				return new INStr((Cmulti) inner, next);
 			}
 		}
-		return super.encodeUnot(p, next, failjump);
+		return super.encodePnot(p, next, failjump);
 	}
 
 	@Override

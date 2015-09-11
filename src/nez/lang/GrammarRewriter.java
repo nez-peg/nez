@@ -14,12 +14,12 @@ import nez.lang.expr.Tlink;
 import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
-import nez.lang.expr.Uand;
-import nez.lang.expr.Umatch;
-import nez.lang.expr.Unot;
-import nez.lang.expr.Uone;
-import nez.lang.expr.Uoption;
-import nez.lang.expr.Uzero;
+import nez.lang.expr.Pand;
+import nez.lang.expr.Pdetree;
+import nez.lang.expr.Pnot;
+import nez.lang.expr.Pone;
+import nez.lang.expr.Poption;
+import nez.lang.expr.Pzero;
 import nez.lang.expr.Xblock;
 import nez.lang.expr.Xdef;
 import nez.lang.expr.Xexists;
@@ -103,37 +103,37 @@ public class GrammarRewriter extends GrammarTransducer {
 	}
 
 	@Override
-	public Expression reshapeUoption(Uoption e) {
+	public Expression reshapePoption(Poption e) {
 		e.set(0, this.reshapeInner(e.get(0)));
 		return e;
 	}
 
 	@Override
-	public Expression reshapeUzero(Uzero e) {
+	public Expression reshapePzero(Pzero e) {
 		e.set(0, this.reshapeInner(e.get(0)));
 		return e;
 	}
 
 	@Override
-	public Expression reshapeUone(Uone e) {
+	public Expression reshapePone(Pone e) {
 		e.set(0, this.reshapeInner(e.get(0)));
 		return e;
 	}
 
 	@Override
-	public Expression reshapeUand(Uand e) {
+	public Expression reshapePand(Pand e) {
 		e.set(0, this.reshapeInner(e.get(0)));
 		return e;
 	}
 
 	@Override
-	public Expression reshapeUnot(Unot e) {
+	public Expression reshapePnot(Pnot e) {
 		e.set(0, this.reshapeInner(e.get(0)));
 		return e;
 	}
 
 	@Override
-	public Expression reshapeUmatch(Umatch e) {
+	public Expression reshapePdetree(Pdetree e) {
 		e.set(0, this.reshapeInner(e.get(0)));
 		return e;
 	}

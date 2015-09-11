@@ -198,24 +198,24 @@ public abstract class ExpressionCommons extends Expression {
 
 	/* Unary */
 
-	public final static Expression newUoption(SourcePosition s, Expression p) {
-		return new Uoption(s, p);
+	public final static Expression newPoption(SourcePosition s, Expression p) {
+		return new Poption(s, p);
 	}
 
-	public final static Expression newUzero(SourcePosition s, Expression p) {
-		return new Uzero(s, p);
+	public final static Expression newPzero(SourcePosition s, Expression p) {
+		return new Pzero(s, p);
 	}
 
-	public final static Expression newUone(SourcePosition s, Expression p) {
-		return new Uone(s, p);
+	public final static Expression newPone(SourcePosition s, Expression p) {
+		return new Pone(s, p);
 	}
 
-	public final static Uand newUand(SourcePosition s, Expression p) {
-		return new Uand(s, p);
+	public final static Pand newPand(SourcePosition s, Expression p) {
+		return new Pand(s, p);
 	}
 
-	public final static Unot newUnot(SourcePosition s, Expression p) {
-		return new Unot(s, p);
+	public final static Pnot newPnot(SourcePosition s, Expression p) {
+		return new Pnot(s, p);
 	}
 
 	public final static Expression newPsequence(SourcePosition s, UList<Expression> l) {
@@ -269,8 +269,8 @@ public abstract class ExpressionCommons extends Expression {
 
 	// AST Construction
 
-	public final static Expression newUmatch(SourcePosition s, Expression p) {
-		return new Umatch(s, p);
+	public final static Expression newPdetree(SourcePosition s, Expression p) {
+		return new Pdetree(s, p);
 	}
 
 	public final static Expression newTlink(SourcePosition s, Expression p) {
@@ -474,7 +474,7 @@ public abstract class ExpressionCommons extends Expression {
 		ExpressionCommons.addSequence(l, new Tnew(s, true, label, 0));
 		ExpressionCommons.addSequence(l, e);
 		ExpressionCommons.addSequence(l, ExpressionCommons.newTcapture(s, 0));
-		return newUoption(s, ExpressionCommons.newPsequence(s, l));
+		return newPoption(s, ExpressionCommons.newPsequence(s, l));
 	}
 
 	public final static Expression newLeftFoldRepetition(SourcePosition s, SymbolId label, Expression e) {
@@ -482,7 +482,7 @@ public abstract class ExpressionCommons extends Expression {
 		ExpressionCommons.addSequence(l, new Tnew(s, true, label, 0));
 		ExpressionCommons.addSequence(l, e);
 		ExpressionCommons.addSequence(l, ExpressionCommons.newTcapture(s, 0));
-		return newUzero(s, ExpressionCommons.newPsequence(s, l));
+		return newPzero(s, ExpressionCommons.newPsequence(s, l));
 	}
 
 	public final static Expression newLeftFoldRepetition1(SourcePosition s, SymbolId label, Expression e) {
@@ -490,7 +490,7 @@ public abstract class ExpressionCommons extends Expression {
 		ExpressionCommons.addSequence(l, new Tnew(s, true, label, 0));
 		ExpressionCommons.addSequence(l, e);
 		ExpressionCommons.addSequence(l, ExpressionCommons.newTcapture(s, 0));
-		return newUone(s, ExpressionCommons.newPsequence(s, l));
+		return newPone(s, ExpressionCommons.newPsequence(s, l));
 	}
 
 }

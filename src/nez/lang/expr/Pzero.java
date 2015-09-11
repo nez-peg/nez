@@ -9,27 +9,30 @@ import nez.lang.Visa;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
-public class Unot extends Unary {
-	Unot(SourcePosition s, Expression e) {
+public class Pzero extends Unary {
+	public boolean possibleInfiniteLoop = false;
+
+	Pzero(SourcePosition s, Expression e) {
 		super(s, e);
+		// e.setOuterLefted(this);
 	}
 
 	@Override
-	public final boolean equalsExpression(Expression o) {
-		if (o instanceof Unot) {
+	public boolean equalsExpression(Expression o) {
+		if (o instanceof Pzero) {
 			return this.get(0).equalsExpression(o.get(0));
 		}
 		return false;
 	}
 
 	@Override
-	public final void format(StringBuilder sb) {
-		this.formatUnary(sb, "!", this.inner);
+	public void format(StringBuilder sb) {
+		this.formatUnary(sb, this.inner, "*");
 	}
 
 	@Override
 	public Expression reshape(GrammarTransducer m) {
-		return m.reshapeUnot(this);
+		return m.reshapePzero(this);
 	}
 
 	@Override
@@ -39,17 +42,21 @@ public class Unot extends Unary {
 
 	@Override
 	public int inferTypestate(Visa v) {
-		return Typestate.BooleanType;
+		int t = this.inner.inferTypestate(v);
+		if (t == Typestate.ObjectType) {
+			return Typestate.BooleanType;
+		}
+		return t;
 	}
 
 	@Override
 	public short acceptByte(int ch) {
-		return PossibleAcceptance.acceptNot(this, ch);
+		return PossibleAcceptance.acceptOption(this, ch);
 	}
 
 	@Override
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
-		return bc.encodeUnot(this, next, failjump);
+		return bc.encodePzero(this, next);
 	}
 
 }

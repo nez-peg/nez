@@ -138,7 +138,7 @@ public class GrammarOptimizer extends GrammarTransducer {
 	// }
 
 	// private boolean isNotChar(Expression p) {
-	// if (p instanceof Unot) {
+	// if (p instanceof Pnot) {
 	// return (p.get(0) instanceof Cset || p.get(0) instanceof Cbyte);
 	// }
 	// return false;

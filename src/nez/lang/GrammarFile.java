@@ -8,8 +8,6 @@ import java.util.List;
 
 import nez.Grammar;
 import nez.NezOption;
-import nez.Parser;
-import nez.ParserClassic;
 import nez.ParserCombinator;
 import nez.ast.CommonTree;
 import nez.ast.SourcePosition;
@@ -20,7 +18,6 @@ import nez.util.UList;
 
 public class GrammarFile extends Grammar {
 
-	private static int nsid = 0;
 	private static HashMap<String, GrammarFile> nsMap = new HashMap<String, GrammarFile>();
 
 	public final static boolean isLoaded(String urn) {
@@ -28,14 +25,14 @@ public class GrammarFile extends Grammar {
 	}
 
 	public static GrammarFile newGrammarFile(NezOption option) {
-		return new GrammarFile(nsid++, null, option);
+		return new GrammarFile(null, option);
 	}
 
 	public final static GrammarFile newGrammarFile(String urn, NezOption option) {
 		if (urn != null && nsMap.containsKey(urn)) {
 			return nsMap.get(urn);
 		}
-		GrammarFile ns = new GrammarFile(nsid++, urn, option);
+		GrammarFile ns = new GrammarFile(urn, option);
 		if (urn != null) {
 			nsMap.put(urn, ns);
 		}
@@ -58,7 +55,7 @@ public class GrammarFile extends Grammar {
 			}
 		}
 		if (ns == null) {
-			ns = new GrammarFile(nsid++, urn, option);
+			ns = new GrammarFile(urn, option);
 			NezGrammarLoader loader = new NezGrammarLoader(ns);
 			loader.load(urn);
 		}
@@ -89,30 +86,13 @@ public class GrammarFile extends Grammar {
 	}
 
 	// fields
-
-	// final int id;
 	final String urn;
-	// final String ns;
-	// final UMap<Production> ruleMap;
-	// final UList<String> nameList;
 	final NezOption option;
 
-	private GrammarFile(int id, String urn, NezOption option) {
+	private GrammarFile(String urn, NezOption option) {
 		super(null);
 		this.urn = urn;
 		this.option = option;
-		// this.id = id;
-		// String ns = "g";
-		// if (urn != null) {
-		// int loc = urn.lastIndexOf('/');
-		// if (loc != -1) {
-		// ns = urn.substring(loc + 1);
-		// }
-		// ns = ns.replace(".nez", "");
-		// }
-		// this.ns = ns;
-		// this.ruleMap = new UMap<Production>();
-		// this.nameList = new UList<String>(new String[8]);
 	}
 
 	public final NezOption getOption() {
@@ -162,18 +142,18 @@ public class GrammarFile extends Grammar {
 		return r;
 	}
 
-	public final Parser newParser0(String name, NezOption option) {
-		Production r = this.getProduction(name);
-		if (r != null) {
-			return new ParserClassic(r, option);
-		}
-		Verbose.debug("unfound production: " + this.getProductionList());
-		return null;
-	}
-
-	public final Parser newParser0(String name) {
-		return this.newParser0(name, NezOption.newDefaultOption());
-	}
+	// public final Parser newParser0(String name, NezOption option) {
+	// Production r = this.getProduction(name);
+	// if (r != null) {
+	// return new ParserClassic(r, option);
+	// }
+	// Verbose.debug("unfound production: " + this.getProductionList());
+	// return null;
+	// }
+	//
+	// public final Parser newParser0(String name) {
+	// return this.newParser0(name, NezOption.newDefaultOption());
+	// }
 
 	private FormatterMap fmtMap;
 

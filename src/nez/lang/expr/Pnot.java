@@ -9,15 +9,14 @@ import nez.lang.Visa;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
-public class Uoption extends Unary {
-	Uoption(SourcePosition s, Expression e) {
+public class Pnot extends Unary {
+	Pnot(SourcePosition s, Expression e) {
 		super(s, e);
-		// e.setOuterLefted(this);
 	}
 
 	@Override
 	public final boolean equalsExpression(Expression o) {
-		if (o instanceof Uoption) {
+		if (o instanceof Pnot) {
 			return this.get(0).equalsExpression(o.get(0));
 		}
 		return false;
@@ -25,12 +24,12 @@ public class Uoption extends Unary {
 
 	@Override
 	public final void format(StringBuilder sb) {
-		this.formatUnary(sb, this.inner, "?");
+		this.formatUnary(sb, "!", this.inner);
 	}
 
 	@Override
 	public Expression reshape(GrammarTransducer m) {
-		return m.reshapeUoption(this);
+		return m.reshapePnot(this);
 	}
 
 	@Override
@@ -40,21 +39,17 @@ public class Uoption extends Unary {
 
 	@Override
 	public int inferTypestate(Visa v) {
-		int t = this.inner.inferTypestate(v);
-		if (t == Typestate.ObjectType) {
-			return Typestate.BooleanType;
-		}
-		return t;
+		return Typestate.BooleanType;
 	}
 
 	@Override
 	public short acceptByte(int ch) {
-		return PossibleAcceptance.acceptOption(this, ch);
+		return PossibleAcceptance.acceptNot(this, ch);
 	}
 
 	@Override
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
-		return bc.encodeUoption(this, next);
+		return bc.encodePnot(this, next, failjump);
 	}
 
 }

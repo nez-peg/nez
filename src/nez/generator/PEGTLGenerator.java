@@ -3,7 +3,7 @@ package nez.generator;
 import nez.Parser;
 import nez.lang.Expression;
 import nez.lang.Production;
-import nez.lang.expr.Uand;
+import nez.lang.expr.Pand;
 import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cset;
@@ -12,10 +12,10 @@ import nez.lang.expr.Pchoice;
 import nez.lang.expr.Tlink;
 import nez.lang.expr.Tnew;
 import nez.lang.expr.NonTerminal;
-import nez.lang.expr.Unot;
-import nez.lang.expr.Uoption;
-import nez.lang.expr.Uzero;
-import nez.lang.expr.Uone;
+import nez.lang.expr.Pnot;
+import nez.lang.expr.Poption;
+import nez.lang.expr.Pzero;
+import nez.lang.expr.Pone;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Psequence;
 import nez.lang.expr.Ttag;
@@ -112,23 +112,23 @@ public class PEGTLGenerator extends GrammarGenerator {
 		W("pegtl::any");
 	}
 
-	public void visitOption(Uoption e) {
+	public void visitOption(Poption e) {
 		C("pegtl::opt", e);
 	}
 
-	public void visitRepetition(Uzero e) {
+	public void visitRepetition(Pzero e) {
 		C("pegtl::star", e);
 	}
 
-	public void visitRepetition1(Uone e) {
+	public void visitRepetition1(Pone e) {
 		C("pegtl::plus", e);
 	}
 
-	public void visitAnd(Uand e) {
+	public void visitAnd(Pand e) {
 		C("pegtl::at", e);
 	}
 
-	public void visitNot(Unot e) {
+	public void visitNot(Pnot e) {
 		C("pegtl::not_at", e);
 	}
 

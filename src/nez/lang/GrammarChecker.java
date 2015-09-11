@@ -20,13 +20,13 @@ import nez.lang.expr.Tlink;
 import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
-import nez.lang.expr.Uand;
-import nez.lang.expr.Umatch;
+import nez.lang.expr.Pand;
+import nez.lang.expr.Pdetree;
 import nez.lang.expr.Unary;
-import nez.lang.expr.Unot;
-import nez.lang.expr.Uone;
-import nez.lang.expr.Uoption;
-import nez.lang.expr.Uzero;
+import nez.lang.expr.Pnot;
+import nez.lang.expr.Pone;
+import nez.lang.expr.Poption;
+import nez.lang.expr.Pzero;
 import nez.lang.expr.Xdef;
 import nez.lang.expr.Xif;
 import nez.lang.expr.Xis;
@@ -119,10 +119,10 @@ public class GrammarChecker extends GrammarTransducer {
 				return consumed;
 			}
 			boolean r = checkLeftRecursion(e.get(0), s);
-			if (e instanceof Uone) {
+			if (e instanceof Pone) {
 				return r;
 			}
-			if (e instanceof Unot || e instanceof Uzero || e instanceof Uoption || e instanceof Uand) {
+			if (e instanceof Pnot || e instanceof Pzero || e instanceof Poption || e instanceof Pand) {
 				return false;
 			}
 			return r;
@@ -249,7 +249,7 @@ public class GrammarChecker extends GrammarTransducer {
 	// }
 
 	@Override
-	public Expression reshapeUmatch(Umatch p) {
+	public Expression reshapePdetree(Pdetree p) {
 		boolean stacked = this.enterNonASTContext();
 		Expression inner = this.reshapeInner(p.get(0));
 		this.exitNonASTContext(stacked);
@@ -352,18 +352,18 @@ public class GrammarChecker extends GrammarTransducer {
 	}
 
 	@Override
-	public Expression reshapeUzero(Uzero p) {
-		return ExpressionCommons.newUzero(p.getSourcePosition(), reshapeOptionalInner(p));
+	public Expression reshapePzero(Pzero p) {
+		return ExpressionCommons.newPzero(p.getSourcePosition(), reshapeOptionalInner(p));
 	}
 
 	@Override
-	public Expression reshapeUone(Uone p) {
-		return ExpressionCommons.newUone(p.getSourcePosition(), reshapeOptionalInner(p));
+	public Expression reshapePone(Pone p) {
+		return ExpressionCommons.newPone(p.getSourcePosition(), reshapeOptionalInner(p));
 	}
 
 	@Override
-	public Expression reshapeUoption(Uoption p) {
-		return ExpressionCommons.newUoption(p.getSourcePosition(), reshapeOptionalInner(p));
+	public Expression reshapePoption(Poption p) {
+		return ExpressionCommons.newPoption(p.getSourcePosition(), reshapeOptionalInner(p));
 	}
 
 	private Expression reshapeOptionalInner(Unary p) {
@@ -388,12 +388,12 @@ public class GrammarChecker extends GrammarTransducer {
 	}
 
 	@Override
-	public Expression reshapeUand(Uand p) {
-		return ExpressionCommons.newUand(p.getSourcePosition(), reshapeOptionalInner(p));
+	public Expression reshapePand(Pand p) {
+		return ExpressionCommons.newPand(p.getSourcePosition(), reshapeOptionalInner(p));
 	}
 
 	@Override
-	public Expression reshapeUnot(Unot p) {
+	public Expression reshapePnot(Pnot p) {
 		Expression inner = p.get(0);
 		int innerTypestate = this.isNonASTContext() ? Typestate.BooleanType : inner.inferTypestate(null);
 		if (innerTypestate != Typestate.BooleanType) {
@@ -404,7 +404,7 @@ public class GrammarChecker extends GrammarTransducer {
 		} else {
 			inner = this.reshapeInner(inner);
 		}
-		return ExpressionCommons.newUnot(p.getSourcePosition(), inner);
+		return ExpressionCommons.newPnot(p.getSourcePosition(), inner);
 	}
 
 	@Override
@@ -742,7 +742,7 @@ class GrammarOptimizer2 extends GrammarRewriter {
 	}
 
 	private boolean isNotChar(Expression p) {
-		if (p instanceof Unot) {
+		if (p instanceof Pnot) {
 			return (p.get(0) instanceof Cset || p.get(0) instanceof Cbyte);
 		}
 		return false;

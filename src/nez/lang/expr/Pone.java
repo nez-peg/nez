@@ -9,14 +9,14 @@ import nez.lang.Visa;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
-public class Uand extends Unary {
-	Uand(SourcePosition s, Expression e) {
+public class Pone extends Pzero {
+	Pone(SourcePosition s, Expression e) {
 		super(s, e);
 	}
 
 	@Override
 	public final boolean equalsExpression(Expression o) {
-		if (o instanceof Uand) {
+		if (o instanceof Pone) {
 			return this.get(0).equalsExpression(o.get(0));
 		}
 		return false;
@@ -24,23 +24,23 @@ public class Uand extends Unary {
 
 	@Override
 	public final void format(StringBuilder sb) {
-		this.formatUnary(sb, "&", this.inner);
+		this.formatUnary(sb, this.inner, "+");
 	}
 
 	@Override
 	public Expression reshape(GrammarTransducer m) {
-		return m.reshapeUand(this);
+		return m.reshapePone(this);
 	}
 
 	@Override
 	public boolean isConsumed() {
-		return false;
+		return this.inner.isConsumed();
 	}
 
 	@Override
 	public int inferTypestate(Visa v) {
 		int t = this.inner.inferTypestate(v);
-		if (t == Typestate.ObjectType) { // typeCheck needs to report error
+		if (t == Typestate.ObjectType) {
 			return Typestate.BooleanType;
 		}
 		return t;
@@ -48,12 +48,12 @@ public class Uand extends Unary {
 
 	@Override
 	public short acceptByte(int ch) {
-		return PossibleAcceptance.acceptAnd(this, ch);
+		return PossibleAcceptance.acceptUnary(this, ch);
 	}
 
 	@Override
 	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
-		return bc.encodeUand(this, next, failjump);
+		return bc.encodePone(this, next, failjump);
 	}
 
 }
