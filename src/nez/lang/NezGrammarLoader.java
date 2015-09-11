@@ -3,19 +3,19 @@ package nez.lang;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import nez.Parser;
 import nez.NezOption;
+import nez.Parser;
 import nez.ast.AbstractTree;
 import nez.ast.SymbolId;
 import nez.lang.expr.ExpressionCommons;
 import nez.util.StringUtils;
 import nez.util.UList;
 
-public class NezGrammarLoader extends GrammarLoader {
+public class NezGrammarLoader extends GrammarFileLoader {
 	static Parser nezGrammar;
 
 	public NezGrammarLoader(GrammarFile file) {
-		super(file);
+		super(file, null);
 	}
 
 	@Override

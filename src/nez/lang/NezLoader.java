@@ -2,12 +2,11 @@ package nez.lang;
 
 import java.io.IOException;
 
-import nez.Parser;
 import nez.NezOption;
+import nez.Parser;
 import nez.SourceContext;
 import nez.ast.AbstractTree;
 import nez.ast.AbstractTreeVisitor;
-import nez.ast.SourcePosition;
 import nez.util.ConsoleUtils;
 
 public abstract class NezLoader extends AbstractTreeVisitor {
@@ -52,15 +51,15 @@ public abstract class NezLoader extends AbstractTreeVisitor {
 
 	public abstract void parse(AbstractTree<?> node);
 
-	public final void reportError(SourcePosition s, String message) {
-		this.file.reportError(s, message);
-	}
-
-	public final void reportWarning(SourcePosition s, String message) {
-		this.file.reportWarning(s, message);
-	}
-
-	public final void reportNotice(SourcePosition s, String message) {
-		this.file.reportNotice(s, message);
-	}
+	// public final void reportError(SourcePosition s, String message) {
+	// this.file.reportError(s, message);
+	// }
+	//
+	// public final void reportWarning(SourcePosition s, String message) {
+	// this.file.reportWarning(s, message);
+	// }
+	//
+	// public final void reportNotice(SourcePosition s, String message) {
+	// this.file.reportNotice(s, message);
+	// }
 }

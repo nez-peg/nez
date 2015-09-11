@@ -3,7 +3,6 @@ package nez;
 import java.util.HashMap;
 import java.util.List;
 
-import nez.ast.SourcePosition;
 import nez.lang.Expression;
 import nez.lang.GrammarBase;
 import nez.lang.Production;
@@ -154,41 +153,41 @@ public class Grammar extends GrammarBase {
 		return null;
 	}
 
-	// ----------------------------------------------------------------------
-
-	// Grammar
-
-	public final void reportError(Expression p, String message) {
-		this.reportError(p.getSourcePosition(), message);
-	}
-
-	public final void reportError(SourcePosition s, String message) {
-		if (s != null) {
-			ConsoleUtils.println(s.formatSourceMessage("error", message));
-		}
-	}
-
-	public final void reportWarning(Expression p, String message) {
-		this.reportWarning(p.getSourcePosition(), message);
-	}
-
-	public final void reportWarning(SourcePosition s, String message) {
-		if (s != null) {
-			ConsoleUtils.println(s.formatSourceMessage("warning", message));
-		}
-	}
-
-	public final void reportNotice(Expression p, String message) {
-		this.reportNotice(p.getSourcePosition(), message);
-	}
-
-	public final void reportNotice(SourcePosition s, String message) {
-		// if (option.enabledNoticeReport) {
-		if (s != null) {
-			ConsoleUtils.println(s.formatSourceMessage("notice", message));
-		}
-		// }
-	}
+	// // ----------------------------------------------------------------------
+	//
+	// // Grammar
+	//
+	// public final void reportError(Expression p, String message) {
+	// this.reportError(p.getSourcePosition(), message);
+	// }
+	//
+	// public final void reportError(SourcePosition s, String message) {
+	// if (s != null) {
+	// ConsoleUtils.println(s.formatSourceMessage("error", message));
+	// }
+	// }
+	//
+	// public final void reportWarning(Expression p, String message) {
+	// this.reportWarning(p.getSourcePosition(), message);
+	// }
+	//
+	// public final void reportWarning(SourcePosition s, String message) {
+	// if (s != null) {
+	// ConsoleUtils.println(s.formatSourceMessage("warning", message));
+	// }
+	// }
+	//
+	// public final void reportNotice(Expression p, String message) {
+	// this.reportNotice(p.getSourcePosition(), message);
+	// }
+	//
+	// public final void reportNotice(SourcePosition s, String message) {
+	// // if (option.enabledNoticeReport) {
+	// if (s != null) {
+	// ConsoleUtils.println(s.formatSourceMessage("notice", message));
+	// }
+	// // }
+	// }
 
 	// ----------------------------------------------------------------------
 
