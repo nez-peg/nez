@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry excluding="nez/x/nezvm/|nez/x/" kind="src" path="src"/>
+	<classpathentry excluding="nezvm/" kind="src" path="src/nez/x"/>
+	<classpathentry kind="src" path="src/nez/x/nezvm"/>
+	<classpathentry kind="src" path="unit_test/java"/>
+	<classpathentry kind="lib" path="ext/asm-all-4.0.jar"/>
+	<classpathentry kind="lib" path="ext/jline-1.0.jar"/>
+	<classpathentry kind="lib" path="ext/junit-4.10.jar"/>
+	<classpathentry kind="lib" path="nez.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path="build"/>
+</classpath>
