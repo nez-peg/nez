@@ -98,9 +98,9 @@ public class NameAnalysis extends GrammarTransducer {
 		if (n.isTerminal()) {
 			return p.getExpression().reshape(this); // inlining terminal
 		}
-		if (n.syncProduction()) {
-			this.sync = true;
-		}
+		// if (n.syncProduction()) {
+		// this.sync = true;
+		// }
 		return n;
 	}
 }

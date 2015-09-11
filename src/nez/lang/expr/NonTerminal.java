@@ -10,7 +10,7 @@ import nez.lang.Visa;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
 
-public class NonTerminal extends Expression {
+public class NonTerminal extends ExpressionCommons {
 	private Grammar g;
 	private String localName;
 	private String uniqueName;
@@ -47,12 +47,12 @@ public class NonTerminal extends Expression {
 		return this.uniqueName;
 	}
 
-	public final boolean syncProduction() {
-		Production p = this.g.getProduction(this.localName);
-		boolean sync = (deref != p);
-		this.deref = p;
-		return sync;
-	}
+	// public final boolean syncProduction() {
+	// Production p = this.g.getProduction(this.localName);
+	// boolean sync = (deref != p);
+	// this.deref = p;
+	// return sync;
+	// }
 
 	public final Production getProduction() {
 		if (deref != null) {

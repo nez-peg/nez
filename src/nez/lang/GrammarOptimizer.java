@@ -26,13 +26,20 @@ public class GrammarOptimizer extends GrammarTransducer {
 	}
 
 	public final Expression optimize(Production p) {
-		String uname = p.getUniqueName();
-		if (!optimizedMap.containsKey(uname)) {
-			optimizedMap.put(uname, uname);
-			Expression optimized = resolveNonTerminal(p.getExpression()); // reshape(this);
-			p.setExpression(optimized);
-			return optimized;
-		}
+		// String uname = p.getUniqueName();
+		// if (!optimizedMap.containsKey(uname)) {
+		// optimizedMap.put(uname, uname);
+		// // System.out.println("prod: " + p + p.getUniqueName() + " <- " +
+		// // p.getExpression());
+		// Expression body = p.getExpression();
+		// Expression optimized = resolveNonTerminal(body); // reshape(this);
+		// if (p.getExpression() != optimized) {
+		// System.out.println("uname: " + uname + "\n\t" + body.toString() +
+		// " of " + body.getClass() + "\n\t" + optimized);
+		// }
+		// p.setExpression(optimized);
+		// return optimized;
+		// }
 		return p.getExpression();
 	}
 

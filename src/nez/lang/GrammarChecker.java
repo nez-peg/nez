@@ -31,7 +31,6 @@ import nez.lang.expr.Xdef;
 import nez.lang.expr.Xif;
 import nez.lang.expr.Xis;
 import nez.lang.expr.Xon;
-import nez.main.Verbose;
 import nez.util.StringUtils;
 import nez.util.UFlag;
 import nez.util.UList;
@@ -88,7 +87,7 @@ public class GrammarChecker extends GrammarTransducer {
 		}
 		int stackedTypestate = this.requiredTypestate;
 		this.requiredTypestate = this.isNonASTContext() ? Typestate.BooleanType : p.inferTypestate(null);
-		Expression e = this.reshapeInner(p.getExpression());
+		Expression e = this.reshapeInner(ExpressionCommons.resolveNonTerminal(p.getExpression()));
 		f.setExpression(e);
 		lp.setExpression(e);
 		this.requiredTypestate = stackedTypestate;
@@ -632,7 +631,8 @@ class GrammarOptimizer2 extends GrammarRewriter {
 			return;
 		}
 		aliasMap.put(p.getLocalName(), p2.getLocalName());
-		Verbose.debug("duplicated: " + p.getLocalName() + " " + p2.getLocalName() + "\n\t" + key);
+		// Verbose.debug("duplicated: " + p.getLocalName() + " " +
+		// p2.getLocalName() + "\n\t" + key);
 	}
 
 	String alias(String nname) {

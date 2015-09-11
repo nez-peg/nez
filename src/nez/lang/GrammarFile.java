@@ -231,41 +231,41 @@ public class GrammarFile extends Grammar {
 		// }
 		// new Typestate(this).reshapeProduction(p);
 		// }
-		GrammarOptimizer optimizer = null;
-		if (!option.enabledAsIsGrammar) {
-			optimizer = new GrammarOptimizer(this.option);
-		}
-		for (Production r : this.getProductionList()) {
-			// if (r.isTerminal()) {
-			// continue;
-			// }
-			// if (Verbose.Grammar) {
-			// r.dump();
-			// }
-			// if (Command.ReleasePreview) {
-			// boolean r1 = r.isConditional();
-			// boolean r2 = r.testCondition(r.getExpression(), null);
-			// if (r1 != r2) {
-			// Verbose.FIXME("mismatch condition: " + r.getLocalName() + " " +
-			// r1 + " " + r2);
-			// }
-			// }
-			// if (Command.ReleasePreview) {
-			// boolean r1 = r.isContextual();
-			// boolean r2 = r.testContextSensitive(r.getExpression(), null);
-			// if (r1 != r2) {
-			// Verbose.FIXME("mismatch contextual: " + r.getLocalName() + " " +
-			// r1 + " " + r2);
-			// }
-			// }
-
-			if (optimizer != null) {
-				optimizer.optimize(r);
-			}
-			// if (option.enabledInterning) {
-			// r.internRule();
-			// }
-		}
+		// GrammarOptimizer optimizer = null;
+		// if (!option.enabledAsIsGrammar) {
+		// optimizer = new GrammarOptimizer(this.option);
+		// }
+		// for (Production r : this.getProductionList()) {
+		// // if (r.isTerminal()) {
+		// // continue;
+		// // }
+		// // if (Verbose.Grammar) {
+		// // r.dump();
+		// // }
+		// // if (Command.ReleasePreview) {
+		// // boolean r1 = r.isConditional();
+		// // boolean r2 = r.testCondition(r.getExpression(), null);
+		// // if (r1 != r2) {
+		// // Verbose.FIXME("mismatch condition: " + r.getLocalName() + " " +
+		// // r1 + " " + r2);
+		// // }
+		// // }
+		// // if (Command.ReleasePreview) {
+		// // boolean r1 = r.isContextual();
+		// // boolean r2 = r.testContextSensitive(r.getExpression(), null);
+		// // if (r1 != r2) {
+		// // Verbose.FIXME("mismatch contextual: " + r.getLocalName() + " " +
+		// // r1 + " " + r2);
+		// // }
+		// // }
+		//
+		// if (optimizer != null) {
+		// optimizer.optimize(r);
+		// }
+		// // if (option.enabledInterning) {
+		// // r.internRule();
+		// // }
+		// }
 		// GenerativeGrammar g = new
 		// GenerativeGrammar(this.getStartProduction(), option, null);
 		// g.dump();
