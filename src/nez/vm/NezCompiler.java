@@ -18,11 +18,11 @@ public abstract class NezCompiler extends NezEncoder {
 		super(option);
 	}
 
-	public final NezCode compile(ParserGrammar g) {
+	public final NezCode compile(GenerativeGrammar g) {
 		return this.compile(g, null);
 	}
 
-	public NezCode compile(ParserGrammar gg, ByteCoder coder) {
+	public NezCode compile(GenerativeGrammar gg, ByteCoder coder) {
 		this.setGenerativeGrammar(gg);
 		long t = System.nanoTime();
 		UList<Instruction> codeList = new UList<Instruction>(new Instruction[64]);
@@ -33,7 +33,7 @@ public abstract class NezCompiler extends NezEncoder {
 			if (inst instanceof ICall) {
 				ParseFunc deref = this.getParseFunc(((ICall) inst).prod);
 				if (deref == null) {
-					Verbose.debug("no deref: " + ((ICall) inst).prod.getLocalName());
+					Verbose.debug("no parse func: " + ((ICall) inst).prod.getLocalName());
 				}
 				((ICall) inst).setResolvedJump(deref.compiled);
 			}
@@ -97,16 +97,10 @@ public abstract class NezCompiler extends NezEncoder {
 
 	protected void encodeProduction(UList<Instruction> codeList, Production p, Instruction next) {
 		ParseFunc f = this.getParseFunc(p);
-		if (f != null) {
-			encodingProduction = p;
-			f.compiled = encode(f.e, next, null/* failjump */);
-			Instruction block = new ILabel(p, f.compiled);
-			this.layoutCode(codeList, block);
-			// if(code.memoPoint != null) {
-			// code.memoStart = this.encodeMemoizingProduction(code);
-			// this.layoutCode(codeList, code.memoStart);
-			// }
-		}
+		encodingProduction = p;
+		f.compiled = encode(f.e, next, null/* failjump */);
+		Instruction block = new ILabel(p, f.compiled);
+		this.layoutCode(codeList, block);
 	}
 
 	public final void layoutCode(UList<Instruction> codeList, Instruction inst) {

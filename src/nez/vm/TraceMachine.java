@@ -5,21 +5,10 @@ import nez.main.Verbose;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
 
-public class Machine {
+public class TraceMachine extends ParsingMachine {
 
+	@Override
 	public boolean run(Instruction code, SourceContext sc) {
-		boolean result = false;
-		try {
-			while (true) {
-				code = code.exec(sc);
-			}
-		} catch (TerminationException e) {
-			result = e.status;
-		}
-		return result;
-	}
-
-	public boolean run_debug(Instruction code, SourceContext sc) {
 		boolean result = false;
 		String u = "Start";
 		UList<String> stack = new UList<String>(new String[128]);

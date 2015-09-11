@@ -51,10 +51,10 @@ public abstract class NezEncoder {
 	}
 
 	/* CodeMap */
-	private ParserGrammar gg = null;
+	private GenerativeGrammar gg = null;
 	private HashMap<String, ParseFunc> funcMap = null;
 
-	protected void setGenerativeGrammar(ParserGrammar gg) {
+	protected void setGenerativeGrammar(GenerativeGrammar gg) {
 		this.gg = gg;
 	}
 
@@ -70,7 +70,14 @@ public abstract class NezEncoder {
 
 	protected ParseFunc getParseFunc(Production p) {
 		if (gg != null) {
-			return gg.getParseFunc(p.getLocalName());
+			ParseFunc f = gg.getParseFunc(p.getLocalName());
+			if (f == null) {
+				f = gg.getParseFunc(p.getUniqueName());
+			}
+			if (f == null) {
+				Verbose.debug("unfound parsefunc: " + p.getLocalName() + " " + p.getUniqueName());
+			}
+			return f;
 		}
 		if (this.funcMap != null) {
 			return funcMap.get(p.getUniqueName());

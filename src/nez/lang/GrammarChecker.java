@@ -36,17 +36,17 @@ import nez.util.StringUtils;
 import nez.util.UFlag;
 import nez.util.UList;
 import nez.vm.ParseFunc;
-import nez.vm.ParserGrammar;
+import nez.vm.GenerativeGrammar;
 
 public class GrammarChecker extends GrammarTransducer {
-	ParserGrammar g;
+	GenerativeGrammar g;
 	private int requiredTypestate;
 	final TreeMap<String, Boolean> boolMap;
 	UList<Expression> stacked;
 	int stacktop = 0;
 	Reporter repo = new Reporter();
 
-	public GrammarChecker(ParserGrammar g, boolean offAST, TreeMap<String, Boolean> ctx, Production start, NezOption option) {
+	public GrammarChecker(GenerativeGrammar g, boolean offAST, TreeMap<String, Boolean> ctx, Production start, NezOption option) {
 		this.g = g;
 		this.boolMap = (ctx == null) ? new TreeMap<String, Boolean>() : ctx;
 
@@ -550,14 +550,14 @@ class GrammarOptimizer2 extends GrammarRewriter {
 	boolean enabledOutOfOrder = false; // bugs!!
 	boolean enabledDuplicatedProduction = true;
 
-	ParserGrammar g;
+	GenerativeGrammar g;
 	NezOption option;
 	Reporter repo;
 	HashMap<String, Integer> optimizedMap = new HashMap<String, Integer>();
 	HashMap<String, Production> bodyMap = null;
 	HashMap<String, String> aliasMap = null;
 
-	public GrammarOptimizer2(ParserGrammar g, NezOption option, Reporter repo) {
+	public GrammarOptimizer2(GenerativeGrammar g, NezOption option, Reporter repo) {
 		this.g = g;
 		this.option = option;
 		this.repo = repo;

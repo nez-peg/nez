@@ -43,13 +43,13 @@ public class LCshell extends Command {
 				continue;
 			}
 			if (text != null && GeneratorLoader.isSupported(command)) {
-				Parser g = getGrammar(gfile, text);
+				Parser g = newParser(gfile, text);
 				if (g != null) {
 					execCommand(command, g, option);
 				}
 				continue;
 			}
-			Parser g = getGrammar(gfile, command);
+			Parser g = newParser(gfile, command);
 			if (g == null) {
 				continue;
 			}
@@ -143,13 +143,13 @@ public class LCshell extends Command {
 		return true;
 	}
 
-	private Parser getGrammar(GrammarFile ns, String text) {
+	private Parser newParser(GrammarFile file, String text) {
 		String name = text.replace('\n', ' ').trim();
-		Parser g = ns.newParser(name);
-		if (g == null) {
+		Parser p = file.newParser2(name);
+		if (p == null) {
 			ConsoleUtils.println("NameError: name '" + name + "' is not defined");
 		}
-		return g;
+		return p;
 	}
 
 	private void defineProduction(GrammarFile ns, String text) {

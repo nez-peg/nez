@@ -9,6 +9,7 @@ import java.util.List;
 import nez.Grammar;
 import nez.NezOption;
 import nez.Parser;
+import nez.ParserClassic;
 import nez.ParserCombinator;
 import nez.ast.CommonTree;
 import nez.ast.SourcePosition;
@@ -17,7 +18,7 @@ import nez.main.Verbose;
 import nez.peg.celery.Celery;
 import nez.peg.dtd.DTDConverter;
 import nez.util.UList;
-import nez.vm.ParserGrammar;
+import nez.vm.GenerativeGrammar;
 
 public class GrammarFile extends Grammar {
 
@@ -166,7 +167,7 @@ public class GrammarFile extends Grammar {
 	public final Parser newParser(String name, NezOption option) {
 		Production r = this.getProduction(name);
 		if (r != null) {
-			return new Parser(r, option);
+			return new ParserClassic(r, option);
 		}
 		Verbose.debug("newParser" + this.getProductionList());
 		return null;
@@ -263,7 +264,7 @@ public class GrammarFile extends Grammar {
 				r.internRule();
 			}
 		}
-		ParserGrammar g = new ParserGrammar(this.getStartProduction(), option, null);
+		GenerativeGrammar g = new GenerativeGrammar(this.getStartProduction(), option, null);
 		g.dump();
 		if (option.enabledExampleVerification) {
 			testExample(option);

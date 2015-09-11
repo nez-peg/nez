@@ -9,7 +9,7 @@ import nez.lang.GrammarBase;
 import nez.lang.Production;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
-import nez.vm.ParserGrammar;
+import nez.vm.GenerativeGrammar;
 
 public class Grammar extends GrammarBase {
 	private static int serialNumbering = 0;
@@ -56,9 +56,22 @@ public class Grammar extends GrammarBase {
 		return this.prodList.ArrayValues[0];
 	}
 
-	public final Parser2 newParser(NezOption option) {
-		ParserGrammar g = (this instanceof ParserGrammar) ? (ParserGrammar) this : new ParserGrammar(this.getStartProduction(), option, null);
-		return new Parser2(g, option);
+	public final Parser newParser2(String name, NezOption option) {
+		Production p = this.getProduction(name);
+		if (p != null) {
+			GenerativeGrammar gg = new GenerativeGrammar(p, option, null);
+			return new Parser(gg, option);
+		}
+		return null;
+	}
+
+	public final Parser newParser2(String name) {
+		return newParser2(name, NezOption.newDefaultOption());
+	}
+
+	public final Parser newParser2(NezOption option) {
+		GenerativeGrammar gg = (this instanceof GenerativeGrammar) ? (GenerativeGrammar) this : new GenerativeGrammar(this.getStartProduction(), option, null);
+		return new Parser(gg, option);
 	}
 
 	public final List<Production> getProductionList() {
