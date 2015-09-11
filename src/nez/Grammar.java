@@ -9,6 +9,7 @@ import nez.lang.GrammarBase;
 import nez.lang.Production;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
+import nez.vm.ParserGrammar;
 
 public class Grammar extends GrammarBase {
 	private static int serialNumbering = 0;
@@ -55,9 +56,9 @@ public class Grammar extends GrammarBase {
 		return this.prodList.ArrayValues[0];
 	}
 
-	public final Parser newParser(NezOption option) {
-
-		return new Parser(this.getStartProduction(), option);
+	public final Parser2 newParser(NezOption option) {
+		ParserGrammar g = (this instanceof ParserGrammar) ? (ParserGrammar) this : new ParserGrammar(this.getStartProduction(), option, null);
+		return new Parser2(g, option);
 	}
 
 	public final List<Production> getProductionList() {

@@ -38,7 +38,7 @@ import nez.util.UList;
 
 public class ParserGrammar extends Grammar {
 	HashMap<String, ParseFunc> funcMap;
-	List<MemoPoint> memoPointList = null;
+	public List<MemoPoint> memoPointList = null;
 
 	public ParserGrammar(Production start, NezOption option, TreeMap<String, Boolean> flagMap) {
 		this.funcMap = new HashMap<String, ParseFunc>();

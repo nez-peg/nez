@@ -42,6 +42,7 @@ public abstract class NezEncoder {
 	protected NezOption option;
 
 	public NezEncoder(NezOption option) {
+		this.gg = null;
 		this.option = option;
 	}
 
@@ -50,8 +51,32 @@ public abstract class NezEncoder {
 	}
 
 	/* CodeMap */
+	private ParserGrammar gg = null;
+	private HashMap<String, ParseFunc> funcMap = null;
 
-	protected HashMap<String, ParseFunc> funcMap = null;
+	protected void setGenerativeGrammar(ParserGrammar gg) {
+		this.gg = gg;
+	}
+
+	protected int getParseFuncSize() {
+		if (gg != null) {
+			return gg.size();
+		}
+		if (this.funcMap != null) {
+			return funcMap.size();
+		}
+		return 0;
+	}
+
+	protected ParseFunc getParseFunc(Production p) {
+		if (gg != null) {
+			return gg.getParseFunc(p.getLocalName());
+		}
+		if (this.funcMap != null) {
+			return funcMap.get(p.getUniqueName());
+		}
+		return null;
+	}
 
 	protected ParseFunc newParseFunc(Production p, Expression localExpression) {
 		ParseFunc f = new ParseFunc(p.getLocalName(), p);
@@ -59,38 +84,13 @@ public abstract class NezEncoder {
 		return f;
 	}
 
-	protected ParseFunc getParseFunc(Production p) {
-		if (this.funcMap != null) {
-			return funcMap.get(p.getUniqueName());
-		}
-		return null;
-	}
-
-	protected Expression optimizeLocalProduction(Production p) {
-		return p.getExpression();
-	}
-
 	void count(Production p) {
 		String uname = p.getUniqueName();
 		ParseFunc c = this.funcMap.get(uname);
 		if (c == null) {
-			Expression deref = optimizeLocalProduction(p);
-			// if (deref.isInterned()) {
-			// String key = "#" + deref.getId();
-			// c = this.pcodeMap.get(key);
-			// if (c == null) {
-			// c = newParseFunc(p, deref);
-			// pcodeMap.put(key, c);
-			// }
-			// // else {
-			// // Verbose.debug("alias " + uname + ", " +
-			// // c.production.getUniqueName());
-			// // }
-			// pcodeMap.put(uname, c);
-			// } else {
+			Expression deref = p.getExpression();
 			c = newParseFunc(p, deref);
 			funcMap.put(uname, c);
-			// }
 		}
 		c.refcount++;
 	}

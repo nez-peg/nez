@@ -1,5 +1,7 @@
 package nez;
 
+import nez.ast.CommonTree;
+import nez.ast.CommonTreeTransducer;
 import nez.ast.TreeTransducer;
 import nez.main.NezProfier;
 import nez.main.Verbose;
@@ -19,10 +21,6 @@ public class Parser2 {
 	public Parser2(ParserGrammar g, NezOption option) {
 		this.g = g;
 		this.option = option;
-	}
-
-	private MemoTable getMemoTable(SourceContext sc) {
-		return MemoTable.newTable(option, sc.length(), 32, this.compiledCode.getMemoPointSize());
 	}
 
 	private NezProfier prof = null;
@@ -62,7 +60,7 @@ public class Parser2 {
 
 	public final boolean perform(Machine machine, SourceContext s, TreeTransducer treeTransducer) {
 		Instruction pc = this.compile();
-		s.init(getMemoTable(s), treeTransducer);
+		s.init(newMemoTable(s), treeTransducer);
 		if (prof != null) {
 			s.startProfiling(prof);
 			boolean matched = machine.run(pc, s);
@@ -73,6 +71,41 @@ public class Parser2 {
 			return matched;
 		}
 		return machine.run(pc, s);
+	}
+
+	private MemoTable newMemoTable(SourceContext sc) {
+		return MemoTable.newTable(option, sc.length(), 32, this.compiledCode.getMemoPointSize());
+	}
+
+	/* --------------------------------------------------------------------- */
+
+	public final boolean match(SourceContext s) {
+		return perform(new Machine(), s, null);
+	}
+
+	public final boolean match(String str) {
+		SourceContext sc = SourceContext.newStringContext(str);
+		if (perform(new Machine(), sc, null)) {
+			return (!sc.hasUnconsumed());
+		}
+		return false;
+	}
+
+	public Object parse(SourceContext sc, TreeTransducer treeTransducer) {
+		long startPosition = sc.getPosition();
+		if (!this.perform(new Machine(), sc, treeTransducer)) {
+			return null;
+		}
+		return sc.getParseResult(startPosition, sc.getPosition());
+	}
+
+	public final CommonTree parseCommonTree(SourceContext sc) {
+		return (CommonTree) this.parse(sc, new CommonTreeTransducer());
+	}
+
+	public final CommonTree parseCommonTree(String str) {
+		SourceContext sc = SourceContext.newStringContext(str);
+		return (CommonTree) this.parse(sc, new CommonTreeTransducer());
 	}
 
 }

@@ -28,7 +28,7 @@ public class Machine {
 			while (true) {
 				if (code instanceof ICall) {
 					stack.add(u);
-					u = ((ICall) code).rule.getLocalName();
+					u = ((ICall) code).prod.getLocalName();
 				}
 				if (code instanceof IRet) {
 					u = stack.ArrayValues[stack.size() - 1];

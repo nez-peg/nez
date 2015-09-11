@@ -249,13 +249,13 @@ class ILabel extends Instruction {
 }
 
 class ICall extends Instruction {
-	Production rule;
+	Production prod;
 	NonTerminal ne;
 	public Instruction jump = null;
 
 	ICall(Production rule, Instruction next) {
 		super(InstructionSet.Call, rule.getExpression(), next);
-		this.rule = rule;
+		this.prod = rule;
 	}
 
 	void setResolvedJump(Instruction jump) {
@@ -272,7 +272,7 @@ class ICall extends Instruction {
 	@Override
 	void encodeA(ByteCoder c) {
 		c.encodeJumpAddr(this.jump);
-		c.encodeNonTerminal(rule.getLocalName()); // debug information
+		c.encodeNonTerminal(prod.getLocalName()); // debug information
 	}
 
 	@Override
