@@ -15,6 +15,7 @@ import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
 import nez.lang.expr.Uand;
 import nez.lang.expr.Umatch;
+import nez.lang.expr.Unary;
 import nez.lang.expr.Unot;
 import nez.lang.expr.Uone;
 import nez.lang.expr.Uoption;
@@ -29,24 +30,44 @@ import nez.util.UList;
 import nez.vm.ParseFunc;
 import nez.vm.ParserGrammar;
 
-public class GrammarChecker extends ExpressionTransducer {
+public class GrammarChecker extends GrammarTransducer {
 	ParserGrammar g;
-	boolean offAST = true;
-	private int required = Typestate.BooleanType;
+	// boolean offAST = true;
+	private int requiredTypeState = Typestate.BooleanType;
 	final TreeMap<String, Boolean> boolMap;
+	UList<Expression> stacked;
+	int stacktop = 0;
 	Reporter repo = new Reporter();
 
 	public GrammarChecker(ParserGrammar g, boolean offAST, TreeMap<String, Boolean> ctx, Production start) {
 		this.g = g;
-		this.offAST = offAST;
 		this.boolMap = (ctx == null) ? new TreeMap<String, Boolean>() : ctx;
+
+		this.stacked = new UList<Expression>(new Expression[128]);
+		this.stacktop = 0;
+		if (offAST) {
+			this.enterNonASTContext();
+		}
 		String uname = uniqueName(start.getUniqueName(), start);
-		this.checkFirstVisitedProduction(uname, start);
+		this.checkFirstVisitedProduction(uname, start); // start
+	}
+
+	@Override
+	protected void push(Expression e) {
+		this.stacked.add(e);
+	}
+
+	@Override
+	protected void pop(Expression e) {
+		this.stacked.pop();
+		// Expression e2 = this.stacked.pop();
+		// if (e != e2) {
+		// Verbose.debug("FIXME push/pop \n\t" + e2 + "\n\t" + e);
+		// }
 	}
 
 	private ParseFunc checkFirstVisitedProduction(String uname, Production p) {
 		Production lp/* local production */= g.newProduction(uname, null);
-		g.addProduction(lp);
 		ParseFunc f = new ParseFunc(uname, p);
 		g.setParserFunc(f);
 		if (UFlag.is(p.flag, Production.ResetFlag)) {
@@ -56,17 +77,12 @@ public class GrammarChecker extends ExpressionTransducer {
 			}
 			p.isNoNTreeConstruction();
 		}
-		int stackedTypeState = this.required;
-		Expression e = p.getExpression();
-		if (offAST) {
-			e = e.reshape(ExpressionTransducer.RemoveAST);
-		} else {
-			this.required = p.inferTypestate(null);
-		}
-		e = e.reshape(this);
+		int stackedTypeState = this.requiredTypeState;
+		this.requiredTypeState = this.isNonASTContext() ? Typestate.BooleanType : p.inferTypestate(null);
+		Expression e = this.reshapeInner(p.getExpression());
 		f.setExpression(e);
 		lp.setExpression(e);
-		this.required = stackedTypeState;
+		this.requiredTypeState = stackedTypeState;
 		return f;
 	}
 
@@ -118,68 +134,55 @@ public class GrammarChecker extends ExpressionTransducer {
 			return n.newEmpty();
 		}
 		if (n.isTerminal()) { /* Inlining Terminal */
-			Expression e = p.getExpression();
-			if (offAST) {
-				e = e.reshape(ExpressionTransducer.RemoveAST);
-			}
-			return e.reshape(this);
+			return reshapeInner(p.getExpression());
 		}
+
+		int innerTypeState = this.isNonASTContext() ? Typestate.BooleanType : p.inferTypestate(null);
 		String uname = this.uniqueName(n.getUniqueName(), p);
 		ParseFunc f = g.getParserFunc(uname);
 		if (f == null) {
 			f = checkFirstVisitedProduction(uname, p);
 		}
 		f.count();
-		int t = p.inferTypestate(null);
-		if (t == Typestate.BooleanType) {
-			return n;
-		}
-		if (this.required == Typestate.ObjectType) {
-			if (t == Typestate.OperationType) {
-				reportRemoved(n, "AST operations");
-				return n.reshape(ExpressionTransducer.RemoveASTandRename);
-			}
-			this.required = Typestate.OperationType;
-			return n;
-		}
-		if (this.required == Typestate.OperationType) {
-			if (t == Typestate.ObjectType) {
-				reportInserted(n, ":");
-				return ExpressionCommons.newTlink(n.getSourcePosition(), null, n);
+
+		NonTerminal renamed = g.newNonTerminal(uname);
+		if (this.requiredTypeState == Typestate.ObjectType) {
+			if (innerTypeState == Typestate.OperationType) {
+				// FIXME removed tree construction
 			}
 		}
-		return g.newNonTerminal(uname);
+		if (this.requiredTypeState == Typestate.OperationType) {
+			if (innerTypeState == Typestate.ObjectType) {
+				reportInserted(n, "$");
+				return ExpressionCommons.newTlink(n.getSourcePosition(), null, renamed);
+			}
+		}
+		return renamed;
 	}
 
 	@Override
 	public Expression reshapeXon(Xon p) {
 		String flagName = p.getFlagName();
-		Boolean bool = boolMap.get(flagName);
-		if (bool != null) {
-			if (p.isPositive()) {
-				if (!bool) {
-					boolMap.put(flagName, true);
-					Expression newe = p.get(0).reshape(this);
-					boolMap.remove(flagName);
-					return newe;
-				}
-			} else {
-				if (bool) {
-					boolMap.remove(flagName);
-					Expression newe = p.get(0).reshape(this);
-					boolMap.put(flagName, true);
-					return newe;
-				}
-			}
+		System.out.println("on " + flagName);
+		Boolean stackedFlag = isFlag(flagName);
+		if (p.isPositive()) {
+			onFlag(flagName);
+		} else {
+			offFlag(flagName);
 		}
-		// unnecessary on
-		return p.get(0).reshape(this);
+		Expression newe = reshapeInner(p.get(0));
+		if (stackedFlag) {
+			onFlag(flagName);
+		} else {
+			offFlag(flagName);
+		}
+		return newe;
 	}
 
 	@Override
 	public Expression reshapeXif(Xif p) {
 		String flagName = p.getFlagName();
-		if (boolMap.get(flagName) != null) { /* true */
+		if (isFlag(flagName)) { /* true */
 			return p.isPredicate() ? p.newEmpty() : p.newFailure();
 		}
 		return p.isPredicate() ? p.newFailure() : p.newEmpty();
@@ -230,47 +233,52 @@ public class GrammarChecker extends ExpressionTransducer {
 	// }
 
 	@Override
+	public Expression reshapeUmatch(Umatch p) {
+		boolean stacked = this.enterNonASTContext();
+		Expression inner = this.reshapeInner(p.get(0));
+		this.exitNonASTContext(stacked);
+		return inner;
+	}
+
+	@Override
 	public Expression reshapeTnew(Tnew p) {
+		if (this.isNonASTContext()) {
+			return this.empty(p);
+		}
 		if (p.leftFold) {
-			if (this.required != Typestate.OperationType) {
-				this.reportRemoved(p, "{@");
-				return p.reshape(ExpressionTransducer.RemoveASTandRename);
+			if (this.requiredTypeState != Typestate.OperationType) {
+				this.reportRemoved(p, "{$");
+				return empty(p);
 			}
 		} else {
-			if (this.required != Typestate.ObjectType) {
+			if (this.requiredTypeState != Typestate.ObjectType) {
 				this.reportRemoved(p, "{");
 				return empty(p);
 			}
 		}
-		this.required = Typestate.OperationType;
-		return p;
+		this.requiredTypeState = Typestate.OperationType;
+		return super.reshapeTnew(p);
 	}
 
 	@Override
-	public Expression reshapeTlink(Tlink p) {
-		if (this.required != Typestate.OperationType) {
-			reportRemoved(p, "@");
-			p.inner = p.inner.reshape(ExpressionTransducer.RemoveASTandRename);
+	public Expression reshapeTcapture(Tcapture p) {
+		if (this.isNonASTContext()) {
+			return this.empty(p);
 		}
-		this.required = Typestate.ObjectType;
-		Expression inn = p.inner.reshape(this);
-		if (this.required != Typestate.OperationType) {
-			reportRemoved(p, "@");
-			this.required = Typestate.OperationType;
-			return updateInner(p, inn);
+		if (this.requiredTypeState != Typestate.OperationType) {
+			this.reportRemoved(p, "}");
+			return empty(p);
 		}
-		this.required = Typestate.OperationType;
-		return updateInner(p, inn);
-	}
-
-	@Override
-	public Expression reshapeUmatch(Umatch p) {
-		return p.inner.reshape(ExpressionTransducer.RemoveASTandRename);
+		this.requiredTypeState = Typestate.OperationType;
+		return super.reshapeTcapture(p);
 	}
 
 	@Override
 	public Expression reshapeTtag(Ttag p) {
-		if (this.required != Typestate.OperationType) {
+		if (this.isNonASTContext()) {
+			return this.empty(p);
+		}
+		if (this.requiredTypeState != Typestate.OperationType) {
 			reportRemoved(p, "#" + p.tag.getSymbol());
 			return empty(p);
 		}
@@ -279,7 +287,10 @@ public class GrammarChecker extends ExpressionTransducer {
 
 	@Override
 	public Expression reshapeTreplace(Treplace p) {
-		if (this.required != Typestate.OperationType) {
+		if (this.isNonASTContext()) {
+			return this.empty(p);
+		}
+		if (this.requiredTypeState != Typestate.OperationType) {
 			reportRemoved(p, "`" + p.value + "`");
 			return empty(p);
 		}
@@ -287,93 +298,110 @@ public class GrammarChecker extends ExpressionTransducer {
 	}
 
 	@Override
-	public Expression reshapeTcapture(Tcapture p) {
-		if (this.required != Typestate.OperationType) {
-			reportRemoved(p, "}");
-			return empty(p);
+	public Expression reshapeTlink(Tlink p) {
+		Expression inner = p.get(0);
+		if (this.isNonASTContext()) {
+			return this.reshapeInner(inner);
 		}
-		return p;
+		if (this.requiredTypeState != Typestate.OperationType) {
+			reportRemoved(p, "$");
+			return this.reshapeInner(inner);
+		}
+
+		int innerTypeState = this.isNonASTContext() ? Typestate.BooleanType : inner.inferTypestate(null);
+		if (innerTypeState != Typestate.ObjectType) {
+			reportInserted(p, "{");
+			inner = ExpressionCommons.newNewCapture(inner.getSourcePosition(), this.reshapeInner(inner));
+		} else {
+			this.requiredTypeState = Typestate.ObjectType;
+			inner = this.reshapeInner(p.get(0));
+		}
+		this.requiredTypeState = Typestate.OperationType;
+		return ExpressionCommons.newTlink(p.getSourcePosition(), p.getLabel(), inner);
 	}
 
 	@Override
 	public Expression reshapePchoice(Pchoice p) {
-		int required = this.required;
-		int next = this.required;
+		int required = this.requiredTypeState;
+		int next = this.requiredTypeState;
 		UList<Expression> l = ExpressionCommons.newList(p.size());
-		for (Expression e : p) {
-			this.required = required;
-			ExpressionCommons.addChoice(l, e.reshape(this));
-			if (this.required != required && this.required != next) {
-				next = this.required;
+		for (Expression inner : p) {
+			this.requiredTypeState = required;
+			ExpressionCommons.addChoice(l, this.reshapeInner(inner));
+			if (this.requiredTypeState != required && this.requiredTypeState != next) {
+				next = this.requiredTypeState;
 			}
 		}
-		this.required = next;
+		this.requiredTypeState = next;
 		return ExpressionCommons.newPchoice(p.getSourcePosition(), l);
 	}
 
 	@Override
 	public Expression reshapeUzero(Uzero p) {
-		int required = this.required;
-		Expression inn = p.inner.reshape(this);
-		if (required != Typestate.OperationType && this.required == Typestate.OperationType) {
-			reportWarning(p, "unable to create objects in repetition => removed!!");
-			inn = inn.reshape(ExpressionTransducer.RemoveASTandRename);
-			this.required = required;
-		}
-		return updateInner(p, inn);
+		return ExpressionCommons.newUzero(p.getSourcePosition(), reshapeOptionalInner(p));
 	}
 
 	@Override
 	public Expression reshapeUone(Uone p) {
-		int required = this.required;
-		Expression inn = p.inner.reshape(this);
-		if (required != Typestate.OperationType && this.required == Typestate.OperationType) {
-			reportWarning(p, "unable to create objects in repetition => removed!!");
-			inn = inn.reshape(ExpressionTransducer.RemoveASTandRename);
-			this.required = required;
-		}
-		return updateInner(p, inn);
+		return ExpressionCommons.newUone(p.getSourcePosition(), reshapeOptionalInner(p));
 	}
 
 	@Override
 	public Expression reshapeUoption(Uoption p) {
-		int required = this.required;
-		Expression inn = p.inner.reshape(this);
-		if (required != Typestate.OperationType && this.required == Typestate.OperationType) {
-			reportWarning(p, "unable to create objects in repetition => removed!!");
-			inn = inn.reshape(ExpressionTransducer.RemoveASTandRename);
-			this.required = required;
+		return ExpressionCommons.newUoption(p.getSourcePosition(), reshapeOptionalInner(p));
+	}
+
+	private Expression reshapeOptionalInner(Unary p) {
+		int innerTypeState = this.isNonASTContext() ? Typestate.BooleanType : p.get(0).inferTypestate(null);
+		if (innerTypeState == Typestate.ObjectType) {
+			if (this.requiredTypeState == Typestate.OperationType) {
+				this.reportInserted(p.get(0), "$");
+				Expression inner = reshapeInner(p.get(0));
+				return ExpressionCommons.newTlink(p.getSourcePosition(), inner);
+			} else {
+				reportWarning(p, "disallowed tree construction in e?, e*, e+, or &e  " + innerTypeState);
+				boolean stacked = this.enterNonASTContext();
+				Expression inner = reshapeInner(p.get(0));
+				this.exitNonASTContext(stacked);
+				return inner;
+			}
 		}
-		return updateInner(p, inn);
+		return reshapeInner(p.get(0));
 	}
 
 	@Override
 	public Expression reshapeUand(Uand p) {
-		if (this.required == Typestate.ObjectType) {
-			this.required = Typestate.BooleanType;
-			Expression inn = p.inner.reshape(this);
-			this.required = Typestate.ObjectType;
-			return updateInner(p, inn);
-		}
-		return updateInner(p, p.inner.reshape(this));
+		return ExpressionCommons.newUand(p.getSourcePosition(), reshapeOptionalInner(p));
 	}
 
 	@Override
 	public Expression reshapeUnot(Unot p) {
-		int t = p.inner.inferTypestate(null);
-		if (t == Typestate.ObjectType || t == Typestate.OperationType) {
-			updateInner(p, p.inner.reshape(ExpressionTransducer.RemoveASTandRename));
+		Expression inner = p.get(0);
+		int innerTypeState = this.isNonASTContext() ? Typestate.BooleanType : inner.inferTypestate(null);
+		if (innerTypeState != Typestate.BooleanType) {
+			reportWarning(p, "disallowed tree construction in !e");
+			boolean stacked = this.enterNonASTContext();
+			inner = this.reshapeInner(inner);
+			this.exitNonASTContext(stacked);
+		} else {
+			inner = this.reshapeInner(inner);
 		}
-		return p;
+		return ExpressionCommons.newUnot(p.getSourcePosition(), inner);
 	}
 
 	@Override
 	public Expression reshapeXdef(Xdef p) {
-		int t = p.inner.inferTypestate(null);
+		Expression inner = p.get(0);
+		int t = inner.inferTypestate(null);
 		if (t != Typestate.BooleanType) {
-			updateInner(p, p.inner.reshape(ExpressionTransducer.RemoveASTandRename));
+			boolean stacked = this.enterNonASTContext();
+			inner = this.reshapeInner(inner);
+			this.exitNonASTContext(stacked);
+		} else {
+			inner = this.reshapeInner(inner);
 		}
-		return p;
+		g.setSymbolExpresion(p.getTableName(), inner);
+		return ExpressionCommons.newXdef(p.getSourcePosition(), g, p.getTable(), inner);
 	}
 
 	@Override
@@ -383,34 +411,60 @@ public class GrammarChecker extends ExpressionTransducer {
 			reportError(p, "undefined table: " + p.getTableName());
 			return ExpressionCommons.newFailure(p.getSourcePosition());
 		}
-		return p;
+		return ExpressionCommons.newXis(p.getSourcePosition(), g, p.getTable(), p.is);
 	}
 
 	/* static context */
 
-	void enterNonASTContext() {
+	boolean enterNonASTContext() {
+		boolean b = this.boolMap.get("-") != null;
 		this.boolMap.put("-", true);
+		return b;
 	}
 
-	void exitNonASTContext() {
-		this.boolMap.remove("-");
+	void exitNonASTContext(boolean backed) {
+		if (backed) {
+			this.boolMap.put("-", true);
+		} else {
+			this.boolMap.remove("-");
+		}
 	}
 
 	boolean isNonASTContext() {
-		return offAST || this.boolMap.get("-") != null;
+		return this.boolMap.get("-") != null;
+	}
+
+	void onFlag(String flag) {
+		this.boolMap.remove(flag);
+	}
+
+	void offFlag(String flag) {
+		this.boolMap.put(flag, false);
+	}
+
+	boolean isFlag(String flag) {
+		return this.boolMap.get(flag) == null;
 	}
 
 	/* uniquename */
 
 	String uniqueName(String uname, Production p) {
+		boolean isNonTree = p.isNoNTreeConstruction();
 		StringBuilder sb = new StringBuilder();
 		sb.append(uname);
 		for (String flagName : this.boolMap.keySet()) {
-			if (hasProductionFlag(p, flagName)) {
+			if (flagName.equals("-")) {
+				if (!isNonTree) {
+					sb.append(flagName);
+				}
+				continue;
+			}
+			if (hasFlag(p, flagName) != False) {
 				sb.append("!");
 				sb.append(flagName);
 			}
 		}
+		System.out.println("unique: " + uname + ", " + this.boolMap.keySet() + "=>" + sb.toString());
 		return sb.toString();
 	}
 
@@ -420,20 +474,16 @@ public class GrammarChecker extends ExpressionTransducer {
 
 	HashMap<String, Short> flagMap = new HashMap<String, Short>();
 
-	private boolean hasProductionFlag(Production p, String flagName) {
+	private Short hasFlag(Production p, String flagName) {
 		if (flagMap == null) {
 			this.flagMap = new HashMap<String, Short>();
 		}
-		return (checkProduction(p, flagName) != False);
-	}
-
-	private Short checkProduction(Production p, String flagName) {
 		String key = p.getUniqueName() + "+" + flagName;
 		Short res = flagMap.get(key);
 		if (res == null) {
 			flagMap.put(key, Unknown);
 			res = hasFlag(p.getExpression(), flagName);
-			flagMap.put(key, res == Unknown ? False : res);
+			flagMap.put(key, res);
 		}
 		return res;
 	}
@@ -447,7 +497,7 @@ public class GrammarChecker extends ExpressionTransducer {
 			if (p == null) {
 				return False;
 			}
-			return checkProduction(p, flagName);
+			return hasFlag(p, flagName);
 		}
 		for (Expression se : e) {
 			if (hasFlag(se, flagName) == True) {

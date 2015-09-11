@@ -14,7 +14,7 @@ import nez.lang.expr.Uzero;
 import nez.util.StringUtils;
 import nez.util.UFlag;
 
-public class NameAnalysis extends ExpressionTransducer {
+public class NameAnalysis extends GrammarTransducer {
 
 	public void analyze(List<Production> l) {
 		for (Production p : l) {

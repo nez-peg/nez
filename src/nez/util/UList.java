@@ -71,8 +71,9 @@ public class UList<T> extends AbstractList<T> {
 		this.currentSize = index;
 	}
 
-	public void pop() {
+	public final T pop() {
 		this.currentSize -= 1;
+		return this.ArrayValues[this.currentSize];
 	}
 
 	public final T[] compactArray() {

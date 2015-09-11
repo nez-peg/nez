@@ -6,7 +6,7 @@ import nez.lang.expr.NonTerminal;
 import nez.lang.expr.Xif;
 import nez.lang.expr.Xon;
 
-public class ConditionalAnalysis extends ExpressionTransducer {
+public class ConditionalAnalysis extends GrammarTransducer {
 	TreeMap<String, Boolean> condMap;
 
 	public ConditionalAnalysis(TreeMap<String, Boolean> condMap) {

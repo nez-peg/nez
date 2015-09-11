@@ -3,7 +3,7 @@ package nez.lang.expr;
 import nez.Grammar;
 import nez.ast.SourcePosition;
 import nez.lang.Expression;
-import nez.lang.ExpressionTransducer;
+import nez.lang.GrammarTransducer;
 import nez.lang.PossibleAcceptance;
 import nez.lang.Production;
 import nez.lang.Visa;
@@ -82,7 +82,7 @@ public class NonTerminal extends Expression {
 	}
 
 	@Override
-	public Expression reshape(ExpressionTransducer m) {
+	public Expression reshape(GrammarTransducer m) {
 		return m.reshapeNonTerminal(this);
 	}
 

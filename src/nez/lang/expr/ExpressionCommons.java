@@ -147,7 +147,7 @@ public abstract class ExpressionCommons extends Expression {
 
 	// -----------------------------------------------------------------------
 
-	public final static Expression newNonTerminal(SourcePosition s, Grammar g, String name) {
+	public final static NonTerminal newNonTerminal(SourcePosition s, Grammar g, String name) {
 		return new NonTerminal(s, g, name);
 	}
 
@@ -326,6 +326,10 @@ public abstract class ExpressionCommons extends Expression {
 		return new Xmatch(s, tableName);
 	}
 
+	public final static Expression newXis(SourcePosition s, Grammar g, SymbolId tableName, boolean is) {
+		return new Xis(s, g, tableName, is);
+	}
+
 	public final static Expression newXis(SourcePosition s, Grammar g, SymbolId tableName) {
 		return new Xis(s, g, tableName, /* is */true);
 	}
@@ -451,6 +455,10 @@ public abstract class ExpressionCommons extends Expression {
 			l.add(newByteRange(s, false, b[b.length - 1] & 0xff, b2[b2.length - 1] & 0xff));
 			return newPsequence(s, l);
 		}
+	}
+
+	public final static Expression newNewCapture(SourcePosition s, Expression e) {
+		return newNewCapture(s, false, null, e);
 	}
 
 	public final static Expression newNewCapture(SourcePosition s, boolean lefted, SymbolId label, Expression e) {

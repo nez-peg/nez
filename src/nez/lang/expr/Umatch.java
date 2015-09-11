@@ -2,7 +2,7 @@ package nez.lang.expr;
 
 import nez.ast.SourcePosition;
 import nez.lang.Expression;
-import nez.lang.ExpressionTransducer;
+import nez.lang.GrammarTransducer;
 import nez.lang.Typestate;
 import nez.lang.Visa;
 import nez.vm.Instruction;
@@ -27,7 +27,7 @@ public class Umatch extends Unary {
 	}
 
 	@Override
-	public Expression reshape(ExpressionTransducer m) {
+	public Expression reshape(GrammarTransducer m) {
 		return m.reshapeUmatch(this);
 	}
 

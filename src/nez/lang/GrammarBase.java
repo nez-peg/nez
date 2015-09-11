@@ -6,6 +6,7 @@ import nez.Grammar;
 import nez.ast.SourcePosition;
 import nez.ast.SymbolId;
 import nez.lang.expr.ExpressionCommons;
+import nez.lang.expr.NonTerminal;
 import nez.util.UList;
 
 public abstract class GrammarBase extends AbstractList<Production> {
@@ -13,15 +14,19 @@ public abstract class GrammarBase extends AbstractList<Production> {
 		return null;
 	}
 
+	public abstract void addProduction(Production p);
+
 	public final Production newProduction(int flag, String name, Expression e) {
-		return new Production(getSourcePosition(), flag, (Grammar) this, name, e);
+		Production p = new Production(getSourcePosition(), flag, (Grammar) this, name, e);
+		addProduction(p);
+		return p;
 	}
 
 	public final Production newProduction(String name, Expression e) {
-		return new Production(getSourcePosition(), 0, (Grammar) this, name, e);
+		return newProduction(0, name, e);
 	}
 
-	public final Expression newNonTerminal(String name) {
+	public final NonTerminal newNonTerminal(String name) {
 		return ExpressionCommons.newNonTerminal(getSourcePosition(), (Grammar) this, name);
 	}
 

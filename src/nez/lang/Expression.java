@@ -47,7 +47,7 @@ public abstract class Expression extends AbstractList<Expression> {
 
 	public abstract boolean isConsumed();
 
-	public abstract Expression reshape(ExpressionTransducer m);
+	public abstract Expression reshape(GrammarTransducer m);
 
 	// boolean setOuterLefted(Expression outer) {
 	// return false;

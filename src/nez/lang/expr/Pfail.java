@@ -2,7 +2,7 @@ package nez.lang.expr;
 
 import nez.ast.SourcePosition;
 import nez.lang.Expression;
-import nez.lang.ExpressionTransducer;
+import nez.lang.GrammarTransducer;
 import nez.lang.PossibleAcceptance;
 import nez.lang.Typestate;
 import nez.lang.Visa;
@@ -25,8 +25,8 @@ public class Pfail extends Term {
 	}
 
 	@Override
-	public Expression reshape(ExpressionTransducer m) {
-		return m.reshapePfailure(this);
+	public Expression reshape(GrammarTransducer m) {
+		return m.reshapePfail(this);
 	}
 
 	@Override

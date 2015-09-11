@@ -155,7 +155,7 @@ public class GrammarFile extends Grammar {
 		return l;
 	}
 
-	public Production newReducedProduction(String localName, Production p, ExpressionTransducer m) {
+	public Production newReducedProduction(String localName, Production p, GrammarTransducer m) {
 		Production r = p.getGrammar().newProduction(localName, null);
 		this.addProduction(r);
 		m.updateProductionAttribute(p, r);

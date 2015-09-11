@@ -1,7 +1,7 @@
 package nez.vm;
 
 import nez.lang.Expression;
-import nez.lang.ExpressionTransducer;
+import nez.lang.GrammarTransducer;
 import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cset;
@@ -10,7 +10,7 @@ import nez.lang.expr.ExpressionCommons;
 import nez.lang.expr.Psequence;
 import nez.util.UList;
 
-public class CharacterFactoring extends ExpressionTransducer {
+public class CharacterFactoring extends GrammarTransducer {
 	public final static CharacterFactoring s = new CharacterFactoring();
 
 	/**

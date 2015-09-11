@@ -3,7 +3,7 @@ package nez.lang.expr;
 import nez.ast.SourcePosition;
 import nez.ast.SymbolId;
 import nez.lang.Expression;
-import nez.lang.ExpressionTransducer;
+import nez.lang.GrammarTransducer;
 import nez.lang.Visa;
 import nez.vm.Instruction;
 import nez.vm.NezEncoder;
@@ -36,7 +36,7 @@ public class Xlocal extends Unary {
 	}
 
 	@Override
-	public Expression reshape(ExpressionTransducer m) {
+	public Expression reshape(GrammarTransducer m) {
 		return m.reshapeXlocal(this);
 	}
 

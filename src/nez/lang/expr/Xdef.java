@@ -4,7 +4,7 @@ import nez.Grammar;
 import nez.ast.SourcePosition;
 import nez.ast.SymbolId;
 import nez.lang.Expression;
-import nez.lang.ExpressionTransducer;
+import nez.lang.GrammarTransducer;
 import nez.lang.Typestate;
 import nez.lang.Visa;
 import nez.util.UMap;
@@ -33,7 +33,7 @@ public class Xdef extends Unary {
 		return false;
 	}
 
-	public final Grammar getGrammarFile() {
+	public final Grammar getGrammar() {
 		return g;
 	}
 
@@ -46,7 +46,7 @@ public class Xdef extends Unary {
 	}
 
 	@Override
-	public Expression reshape(ExpressionTransducer m) {
+	public Expression reshape(GrammarTransducer m) {
 		return m.reshapeXdef(this);
 	}
 
