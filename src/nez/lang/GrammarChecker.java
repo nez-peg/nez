@@ -35,8 +35,8 @@ import nez.main.Verbose;
 import nez.util.StringUtils;
 import nez.util.UFlag;
 import nez.util.UList;
-import nez.vm.ParseFunc;
 import nez.vm.GenerativeGrammar;
+import nez.vm.ParseFunc;
 
 public class GrammarChecker extends GrammarTransducer {
 	GenerativeGrammar g;
@@ -548,24 +548,25 @@ class GrammarOptimizer2 extends GrammarRewriter {
 	boolean enabledCommonLeftFactoring = true; // true;
 	boolean enabledCostBasedReduction = true;
 	boolean enabledOutOfOrder = false; // bugs!!
-	boolean enabledDuplicatedProduction = true;
+	boolean enabledDuplicatedProduction = false;
 
-	GenerativeGrammar g;
+	GenerativeGrammar gg;
 	NezOption option;
 	Reporter repo;
 	HashMap<String, Integer> optimizedMap = new HashMap<String, Integer>();
 	HashMap<String, Production> bodyMap = null;
 	HashMap<String, String> aliasMap = null;
 
-	public GrammarOptimizer2(GenerativeGrammar g, NezOption option, Reporter repo) {
-		this.g = g;
+	public GrammarOptimizer2(GenerativeGrammar gg, NezOption option, Reporter repo) {
+		this.gg = gg;
 		this.option = option;
 		this.repo = repo;
 		if (option.enabledPrediction) {
 			// seems slow when the prediction option is enabled
 			this.enabledCommonLeftFactoring = true;
 		}
-		if (enabledDuplicatedProduction) {
+		if (option.enabledInlining) {
+			enabledDuplicatedProduction = true;
 			this.bodyMap = new HashMap<String, Production>();
 			this.aliasMap = new HashMap<String, String>();
 		}
@@ -573,24 +574,24 @@ class GrammarOptimizer2 extends GrammarRewriter {
 	}
 
 	private void optimize() {
-		Production start = g.getStartProduction();
+		Production start = gg.getStartProduction();
 		optimizeProduction(start);
 		countNonTerminal(start.getLocalName());
 
-		UList<Production> prodList = new UList<Production>(new Production[g.size()]);
-		for (Production p : g) {
+		UList<Production> prodList = new UList<Production>(new Production[gg.size()]);
+		for (Production p : gg) {
 			String key = p.getLocalName();
 			int refc = optimizedMap.get(key);
 			// System.out.println(key + ": ref=" + refc);
 			if (refc > 0) {
-				ParseFunc f = g.getParseFunc(key);
+				ParseFunc f = gg.getParseFunc(key);
 				f.update(p.getExpression(), refc);
 				prodList.add(p);
 			} else {
-				g.removeParseFunc(key);
+				gg.removeParseFunc(key);
 			}
 		}
-		g.updateProductionList(prodList);
+		gg.updateProductionList(prodList);
 	}
 
 	Expression optimizeProduction(Production p) {
@@ -609,9 +610,11 @@ class GrammarOptimizer2 extends GrammarRewriter {
 	}
 
 	Expression inlineNonTerminal(Expression e) {
-		while (e instanceof NonTerminal) {
-			NonTerminal n = (NonTerminal) e;
-			e = optimizeProduction(n.getProduction());
+		if (this.option.enabledInlining) {
+			while (e instanceof NonTerminal) {
+				NonTerminal n = (NonTerminal) e;
+				e = optimizeProduction(n.getProduction());
+			}
 		}
 		return e;
 	}
@@ -654,7 +657,7 @@ class GrammarOptimizer2 extends GrammarRewriter {
 		// return optimized;
 		// }
 		if (option.enabledInlining) {
-			ParseFunc f = g.getParseFunc(n.getLocalName());
+			ParseFunc f = gg.getParseFunc(n.getLocalName());
 			if (f.getRefCount() == 1) {
 				rewrite("inline(ref=1)", n, deref);
 				return deref;
