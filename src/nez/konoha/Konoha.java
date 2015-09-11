@@ -2,8 +2,8 @@ package nez.konoha;
 
 import java.io.IOException;
 
-import nez.Parser;
 import nez.NezOption;
+import nez.Parser;
 import nez.SourceContext;
 import nez.ast.Source;
 import nez.ast.SymbolId;

@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import nez.Parser;
 import nez.NezException;
 import nez.NezOption;
+import nez.Parser;
 import nez.SourceContext;
 import nez.ast.AbstractTreeVisitor;
 import nez.ast.CommonTree;
@@ -67,6 +67,7 @@ public class RegexGrammar extends AbstractTreeVisitor {
 		grammar.defineProduction(e, "Chunk", grammar.newNonTerminal("File"));
 	}
 
+	@Override
 	protected Method getClassMethod(String method, SymbolId tag) throws NoSuchMethodException, SecurityException {
 		String name = method + tag.getSymbol();
 		return this.getClass().getMethod(name, CommonTree.class, Expression.class);

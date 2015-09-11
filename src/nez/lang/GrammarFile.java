@@ -13,12 +13,10 @@ import nez.ParserClassic;
 import nez.ParserCombinator;
 import nez.ast.CommonTree;
 import nez.ast.SourcePosition;
-import nez.main.Command;
 import nez.main.Verbose;
 import nez.peg.celery.Celery;
 import nez.peg.dtd.DTDConverter;
 import nez.util.UList;
-import nez.vm.GenerativeGrammar;
 
 public class GrammarFile extends Grammar {
 
@@ -164,17 +162,17 @@ public class GrammarFile extends Grammar {
 		return r;
 	}
 
-	public final Parser newParser(String name, NezOption option) {
+	public final Parser newParser0(String name, NezOption option) {
 		Production r = this.getProduction(name);
 		if (r != null) {
 			return new ParserClassic(r, option);
 		}
-		Verbose.debug("newParser" + this.getProductionList());
+		Verbose.debug("unfound production: " + this.getProductionList());
 		return null;
 	}
 
-	public final Parser newParser(String name) {
-		return this.newParser(name, NezOption.newDefaultOption());
+	public final Parser newParser0(String name) {
+		return this.newParser0(name, NezOption.newDefaultOption());
 	}
 
 	private FormatterMap fmtMap;
@@ -220,54 +218,59 @@ public class GrammarFile extends Grammar {
 	}
 
 	public void verify() {
-		NameAnalysis nameAnalyzer = new NameAnalysis();
-		nameAnalyzer.analyze(this.getProductionList()/* getDefinedRuleList() */);
+		// NameAnalysis nameAnalyzer = new NameAnalysis();
+		// nameAnalyzer.analyze(this.getProductionList()/* getDefinedRuleList()
+		// */);
 		// if(this.foundError) {
 		// ConsoleUtils.exit(1, "FatalGrammarError");
 		// }
 		// type check
-		for (Production p : this.getProductionList()) {
-			if (p.isTerminal()) {
-				continue;
-			}
-			new Typestate(this).reshapeProduction(p);
-		}
+		// for (Production p : this.getProductionList()) {
+		// if (p.isTerminal()) {
+		// continue;
+		// }
+		// new Typestate(this).reshapeProduction(p);
+		// }
 		GrammarOptimizer optimizer = null;
 		if (!option.enabledAsIsGrammar) {
 			optimizer = new GrammarOptimizer(this.option);
 		}
 		for (Production r : this.getProductionList()) {
-			if (r.isTerminal()) {
-				continue;
-			}
-			if (Verbose.Grammar) {
-				r.dump();
-			}
-			if (Command.ReleasePreview) {
-				boolean r1 = r.isConditional();
-				boolean r2 = r.testCondition(r.getExpression(), null);
-				if (r1 != r2) {
-					Verbose.FIXME("mismatch condition: " + r.getLocalName() + " " + r1 + " " + r2);
-				}
-			}
-			if (Command.ReleasePreview) {
-				boolean r1 = r.isContextual();
-				boolean r2 = r.testContextSensitive(r.getExpression(), null);
-				if (r1 != r2) {
-					Verbose.FIXME("mismatch contextual: " + r.getLocalName() + " " + r1 + " " + r2);
-				}
-			}
+			// if (r.isTerminal()) {
+			// continue;
+			// }
+			// if (Verbose.Grammar) {
+			// r.dump();
+			// }
+			// if (Command.ReleasePreview) {
+			// boolean r1 = r.isConditional();
+			// boolean r2 = r.testCondition(r.getExpression(), null);
+			// if (r1 != r2) {
+			// Verbose.FIXME("mismatch condition: " + r.getLocalName() + " " +
+			// r1 + " " + r2);
+			// }
+			// }
+			// if (Command.ReleasePreview) {
+			// boolean r1 = r.isContextual();
+			// boolean r2 = r.testContextSensitive(r.getExpression(), null);
+			// if (r1 != r2) {
+			// Verbose.FIXME("mismatch contextual: " + r.getLocalName() + " " +
+			// r1 + " " + r2);
+			// }
+			// }
+
 			if (optimizer != null) {
 				optimizer.optimize(r);
 			}
-			if (option.enabledInterning) {
-				r.internRule();
-			}
+			// if (option.enabledInterning) {
+			// r.internRule();
+			// }
 		}
-		GenerativeGrammar g = new GenerativeGrammar(this.getStartProduction(), option, null);
-		g.dump();
-		if (option.enabledExampleVerification) {
-			testExample(option);
-		}
+		// GenerativeGrammar g = new
+		// GenerativeGrammar(this.getStartProduction(), option, null);
+		// g.dump();
+		// if (option.enabledExampleVerification) {
+		// testExample(option);
+		// }
 	}
 }

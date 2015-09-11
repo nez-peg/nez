@@ -2,9 +2,9 @@ package nez.peg.celery;
 
 import java.io.IOException;
 
-import nez.Parser;
 import nez.NezException;
 import nez.NezOption;
+import nez.Parser;
 import nez.SourceContext;
 import nez.ast.CommonTree;
 import nez.lang.GrammarFile;

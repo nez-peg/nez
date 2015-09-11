@@ -6,9 +6,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import nez.Parser;
 import nez.NezException;
 import nez.NezOption;
+import nez.Parser;
 import nez.SourceContext;
 import nez.ast.AbstractTree;
 import nez.ast.AbstractTreeVisitor;
@@ -320,7 +320,8 @@ public class DTDConverter extends AbstractTreeVisitor {
 	public Expression _AttDefQ(String type) {
 		String attName = attDefMap.get(attDefCount);
 		Expression[] l = { ExpressionCommons.newXdef(null, gfile, SymbolId.tag("T" + currentElementID), gfile.newString(attName)), gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), gfile.newByteChar('='),
-				gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), gfile.newString("\""), ExpressionCommons.newNonTerminal(null, gfile, type), gfile.newString("\""), gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), };
+				gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), gfile.newString("\""), ExpressionCommons.newNonTerminal(null, gfile, type), gfile.newString("\""),
+				gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), };
 		return gfile.newSequence(l);
 	}
 
@@ -385,7 +386,8 @@ public class DTDConverter extends AbstractTreeVisitor {
 	public Expression genProxAtt(AbstractTree<?> node, int[] attlist) {
 		int listLength = attlist.length;
 		if (listLength == 0) {
-			Expression[] l = { gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "AttChoice" + currentElementID)), gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), ExpressionCommons.newNonTerminal(null, gfile, "ENDTAG") };
+			Expression[] l = { gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "AttChoice" + currentElementID)), gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")),
+					ExpressionCommons.newNonTerminal(null, gfile, "ENDTAG") };
 			return gfile.newSequence(l);
 		} else {
 			int[][] permedList = perm(attlist);

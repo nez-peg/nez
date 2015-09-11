@@ -7,6 +7,7 @@ import nez.ast.SourcePosition;
 import nez.lang.Expression;
 import nez.lang.GrammarBase;
 import nez.lang.Production;
+import nez.main.Verbose;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
 import nez.vm.GenerativeGrammar;
@@ -56,20 +57,21 @@ public class Grammar extends GrammarBase {
 		return this.prodList.ArrayValues[0];
 	}
 
-	public final Parser newParser2(String name, NezOption option) {
+	public final Parser newParser(String name, NezOption option) {
 		Production p = this.getProduction(name);
 		if (p != null) {
 			GenerativeGrammar gg = new GenerativeGrammar(p, option, null);
 			return new Parser(gg, option);
 		}
-		return null;
+		Verbose.println("undefined production" + name);
+		return newParser(option);
 	}
 
-	public final Parser newParser2(String name) {
-		return newParser2(name, NezOption.newDefaultOption());
+	public final Parser newParser(String name) {
+		return newParser(name, NezOption.newDefaultOption());
 	}
 
-	public final Parser newParser2(NezOption option) {
+	public final Parser newParser(NezOption option) {
 		GenerativeGrammar gg = (this instanceof GenerativeGrammar) ? (GenerativeGrammar) this : new GenerativeGrammar(this.getStartProduction(), option, null);
 		return new Parser(gg, option);
 	}

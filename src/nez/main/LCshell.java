@@ -145,7 +145,7 @@ public class LCshell extends Command {
 
 	private Parser newParser(GrammarFile file, String text) {
 		String name = text.replace('\n', ' ').trim();
-		Parser p = file.newParser2(name);
+		Parser p = file.newParser(name);
 		if (p == null) {
 			ConsoleUtils.println("NameError: name '" + name + "' is not defined");
 		}

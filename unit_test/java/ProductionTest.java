@@ -5,7 +5,6 @@ import nez.lang.NezGrammar2;
 
 import org.junit.Test;
 
-
 public class ProductionTest {
 
 	@Test

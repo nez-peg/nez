@@ -2,8 +2,8 @@ package nez.main;
 
 import java.io.IOException;
 
-import nez.Parser;
 import nez.NezOption;
+import nez.Parser;
 import nez.SourceContext;
 import nez.generator.GeneratorLoader;
 import nez.generator.NezGenerator;
@@ -234,7 +234,7 @@ class CommandContext {
 		}
 	}
 
-	public final Parser getGrammar(String start, NezOption option) {
+	public final Parser getParser(String start, NezOption option) {
 		if (start == null) {
 			start = this.startingProduction;
 		}
@@ -252,11 +252,11 @@ class CommandContext {
 	}
 
 	public final Parser getGrammar(String start) {
-		return this.getGrammar(start, option);
+		return this.getParser(start, option);
 	}
 
 	public final Parser getGrammar() {
-		return this.getGrammar(this.startingProduction, option);
+		return this.getParser(this.startingProduction, option);
 	}
 
 	public final boolean hasInputSource() {

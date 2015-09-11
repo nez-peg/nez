@@ -1,7 +1,7 @@
 package nez.lang;
 
-import nez.Parser;
 import nez.NezOption;
+import nez.Parser;
 import nez.SourceContext;
 import nez.ast.AbstractTree;
 import nez.main.Verbose;

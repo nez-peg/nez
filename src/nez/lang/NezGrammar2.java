@@ -1,7 +1,7 @@
 package nez.lang;
 
-import nez.Parser;
 import nez.NezOption;
+import nez.Parser;
 import nez.ParserCombinator;
 
 public class NezGrammar2 extends ParserCombinator {
