@@ -16,11 +16,11 @@ import nez.lang.expr.Pnot;
 import nez.lang.expr.Pone;
 import nez.lang.expr.Poption;
 import nez.lang.expr.Pzero;
+import nez.parser.Instruction;
+import nez.parser.NezEncoder;
 import nez.util.ConsoleUtils;
 import nez.util.UFlag;
 import nez.util.UList;
-import nez.vm.Instruction;
-import nez.vm.NezEncoder;
 
 public class Production /* extends Expression */{
 

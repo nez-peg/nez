@@ -1,4 +1,4 @@
-package nez.vm;
+package nez.parser;
 
 class MemoEntry {
 	boolean failed;

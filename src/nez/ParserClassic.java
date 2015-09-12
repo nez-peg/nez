@@ -8,12 +8,12 @@ import nez.lang.Expression;
 import nez.lang.Production;
 import nez.lang.expr.NonTerminal;
 import nez.lang.expr.Xif;
+import nez.parser.Instruction;
+import nez.parser.NezCompiler;
+import nez.parser.PackratCompiler;
+import nez.parser.ParsingMachine;
 import nez.util.UList;
 import nez.util.UMap;
-import nez.vm.Instruction;
-import nez.vm.NezCompiler;
-import nez.vm.PackratCompiler;
-import nez.vm.ParsingMachine;
 
 public class ParserClassic extends Parser {
 	Production start;

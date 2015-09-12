@@ -8,12 +8,12 @@ import nez.ast.TreeTransducer;
 import nez.lang.Production;
 import nez.main.NezProfier;
 import nez.main.Verbose;
-import nez.vm.GenerativeGrammar;
-import nez.vm.Instruction;
-import nez.vm.MemoTable;
-import nez.vm.NezCode;
-import nez.vm.NezCompiler;
-import nez.vm.ParsingMachine;
+import nez.parser.GenerativeGrammar;
+import nez.parser.Instruction;
+import nez.parser.MemoTable;
+import nez.parser.NezCode;
+import nez.parser.NezCompiler;
+import nez.parser.ParsingMachine;
 
 public class Parser {
 	private GenerativeGrammar gg;

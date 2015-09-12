@@ -9,9 +9,9 @@ import nez.lang.expr.Cset;
 import nez.lang.expr.ExpressionCommons;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
+import nez.parser.Instruction;
+import nez.parser.NezEncoder;
 import nez.util.UList;
-import nez.vm.Instruction;
-import nez.vm.NezEncoder;
 
 public abstract class Expression extends AbstractList<Expression> {
 	SourcePosition s = null;

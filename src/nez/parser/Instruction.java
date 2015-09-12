@@ -1,4 +1,4 @@
-package nez.vm;
+package nez.parser;
 
 import java.util.Arrays;
 
@@ -22,8 +22,8 @@ import nez.lang.expr.Xindent;
 import nez.lang.expr.Xis;
 import nez.lang.expr.Xlocal;
 import nez.lang.expr.Xmatch;
+import nez.parser.RuntimeContext.StackData;
 import nez.util.StringUtils;
-import nez.vm.RuntimeContext.StackData;
 
 public abstract class Instruction {
 	public final byte opcode;

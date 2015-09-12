@@ -1,4 +1,4 @@
-package nez.vm;
+package nez.parser;
 
 import nez.lang.Expression;
 import nez.lang.GrammarTransducer;

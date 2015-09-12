@@ -1,4 +1,4 @@
-package nez.vm;
+package nez.parser;
 
 import nez.ast.Source;
 import nez.ast.SymbolId;

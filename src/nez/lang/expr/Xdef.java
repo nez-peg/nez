@@ -7,9 +7,9 @@ import nez.lang.Expression;
 import nez.lang.GrammarTransducer;
 import nez.lang.Typestate;
 import nez.lang.Visa;
+import nez.parser.Instruction;
+import nez.parser.NezEncoder;
 import nez.util.UMap;
-import nez.vm.Instruction;
-import nez.vm.NezEncoder;
 
 public class Xdef extends Unary {
 	public final SymbolId tableName;

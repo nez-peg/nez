@@ -1,10 +1,10 @@
 package nez.main;
 
 import nez.Parser;
-import nez.vm.ByteCoder;
-import nez.vm.NezCode;
-import nez.vm.NezCompiler;
-import nez.vm.PackratCompiler;
+import nez.parser.ByteCoder;
+import nez.parser.NezCode;
+import nez.parser.NezCompiler;
+import nez.parser.PackratCompiler;
 
 public class LCcompile extends Command {
 	@Override

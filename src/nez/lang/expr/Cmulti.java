@@ -4,9 +4,9 @@ import nez.ast.SourcePosition;
 import nez.lang.Expression;
 import nez.lang.GrammarTransducer;
 import nez.lang.PossibleAcceptance;
+import nez.parser.Instruction;
+import nez.parser.NezEncoder;
 import nez.util.StringUtils;
-import nez.vm.Instruction;
-import nez.vm.NezEncoder;
 
 public class Cmulti extends Char {
 	public byte[] byteSeq;

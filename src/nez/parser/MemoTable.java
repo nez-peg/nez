@@ -1,4 +1,4 @@
-package nez.vm;
+package nez.parser;
 
 import java.util.HashMap;
 

@@ -7,9 +7,9 @@ import nez.lang.Expression;
 import nez.lang.GrammarBase;
 import nez.lang.Production;
 import nez.main.Verbose;
+import nez.parser.GenerativeGrammar;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
-import nez.vm.GenerativeGrammar;
 
 public class Grammar extends GrammarBase {
 	private static int serialNumbering = 0;

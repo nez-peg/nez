@@ -31,11 +31,11 @@ import nez.lang.expr.Xdef;
 import nez.lang.expr.Xif;
 import nez.lang.expr.Xis;
 import nez.lang.expr.Xon;
+import nez.parser.GenerativeGrammar;
+import nez.parser.ParseFunc;
 import nez.util.StringUtils;
 import nez.util.UFlag;
 import nez.util.UList;
-import nez.vm.GenerativeGrammar;
-import nez.vm.ParseFunc;
 
 public class GrammarChecker extends GrammarTransducer {
 	GenerativeGrammar g;

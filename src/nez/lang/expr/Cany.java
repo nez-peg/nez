@@ -6,8 +6,8 @@ import nez.lang.GrammarTransducer;
 import nez.lang.PossibleAcceptance;
 import nez.lang.Typestate;
 import nez.lang.Visa;
-import nez.vm.Instruction;
-import nez.vm.NezEncoder;
+import nez.parser.Instruction;
+import nez.parser.NezEncoder;
 
 public class Cany extends Char {
 	Cany(SourcePosition s, boolean binary) {

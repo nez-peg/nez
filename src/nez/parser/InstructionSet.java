@@ -1,4 +1,4 @@
-package nez.vm;
+package nez.parser;
 
 public class InstructionSet {
 	public final static byte Nop = 0; // Do nothing

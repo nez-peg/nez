@@ -7,10 +7,10 @@ import nez.lang.GrammarTransducer;
 import nez.lang.PossibleAcceptance;
 import nez.lang.Typestate;
 import nez.lang.Visa;
+import nez.parser.Instruction;
+import nez.parser.NezEncoder;
 import nez.util.StringUtils;
 import nez.util.UList;
-import nez.vm.Instruction;
-import nez.vm.NezEncoder;
 
 public class Psequence extends ExpressionCommons {
 	public Expression first;

@@ -8,8 +8,8 @@ import java.io.InputStreamReader;
 
 import nez.io.FileContext;
 import nez.io.StringContext;
+import nez.parser.RuntimeContext;
 import nez.util.StringUtils;
-import nez.vm.RuntimeContext;
 
 public abstract class SourceContext extends RuntimeContext {
 

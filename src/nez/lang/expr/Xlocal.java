@@ -5,8 +5,8 @@ import nez.ast.SymbolId;
 import nez.lang.Expression;
 import nez.lang.GrammarTransducer;
 import nez.lang.Visa;
-import nez.vm.Instruction;
-import nez.vm.NezEncoder;
+import nez.parser.Instruction;
+import nez.parser.NezEncoder;
 
 public class Xlocal extends Unary {
 	public final SymbolId tableName;

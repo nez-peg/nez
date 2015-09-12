@@ -31,9 +31,9 @@ import nez.lang.expr.Pone;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Psequence;
 import nez.lang.expr.Ttag;
+import nez.parser.Instruction;
+import nez.parser.NezEncoder;
 import nez.util.FileBuilder;
-import nez.vm.Instruction;
-import nez.vm.NezEncoder;
 
 public abstract class NezGenerator extends NezEncoder {
 	public abstract String getDesc();

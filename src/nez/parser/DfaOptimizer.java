@@ -1,3 +1,4 @@
+package nez.parser;
 //package nez.vm;
 //
 //import nez.lang.Expression;

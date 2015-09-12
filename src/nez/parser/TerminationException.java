@@ -1,4 +1,4 @@
-package nez.vm;
+package nez.parser;
 
 @SuppressWarnings("serial")
 public class TerminationException extends Exception {
