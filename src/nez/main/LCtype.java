@@ -1,6 +1,6 @@
 package nez.main;
 
-import nez.lang.GrammarFile;
+import nez.Grammar;
 import nez.lang.Production;
 import nez.lang.Typestate;
 import nez.x.Type;
@@ -14,7 +14,7 @@ public class LCtype extends Command {
 
 	@Override
 	public void exec(CommandContext config) {
-		GrammarFile peg = config.getGrammarFile(false);
+		Grammar peg = config.getGrammar(false);
 		for (Production r : peg.getProductionList()/* getDefinedRuleList() */) {
 			if (r.inferTypestate(null) == Typestate.ObjectType) {
 				Type t = Type.inferType(r, r.getExpression());

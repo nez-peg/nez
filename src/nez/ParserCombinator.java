@@ -37,7 +37,7 @@ public class ParserCombinator {
 				}
 				try {
 					Expression e = (Expression) m.invoke(this);
-					file.defineProduction(e.getSourcePosition(), name, e);
+					file.addProduction(e.getSourcePosition(), name, e);
 				} catch (IllegalAccessException e1) {
 					Verbose.traceException(e1);
 				} catch (IllegalArgumentException e1) {
@@ -47,7 +47,6 @@ public class ParserCombinator {
 				}
 			}
 		}
-		file.verify();
 		return file;
 	}
 

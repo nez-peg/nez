@@ -6,12 +6,12 @@ import nez.NezOption;
 import nez.Parser;
 import nez.SourceContext;
 import nez.ast.CommonTree;
+import nez.ext.Gnez;
 import nez.generator.GeneratorLoader;
 import nez.generator.NezGenerator;
 import nez.generator.NezGrammarGenerator;
 import nez.lang.Formatter;
 import nez.lang.GrammarFile;
-import nez.lang.NezGrammarLoader;
 import nez.lang.Production;
 import nez.util.ConsoleUtils;
 
@@ -28,7 +28,7 @@ public class LCshell extends Command {
 	@Override
 	public void exec(CommandContext config) {
 		Command.displayVersion();
-		GrammarFile gfile = config.getGrammarFile(true);
+		GrammarFile gfile = (GrammarFile/* FIXME */) config.getGrammar(true);
 		ConsoleUtils.addCompleter(gfile.getNonterminalList());
 		NezOption option = config.getNezOption();
 
@@ -154,8 +154,8 @@ public class LCshell extends Command {
 
 	private void defineProduction(GrammarFile ns, String text) {
 		// ConsoleUtils.println("--\n"+text+"--");
-		NezGrammarLoader parser = new NezGrammarLoader(ns);
-		parser.eval("<stdio>", linenum, text);
+		Gnez loader = new Gnez();
+		loader.eval(ns, "<stdio>", linenum, text, null, null);
 		ConsoleUtils.addCompleter(ns.getNonterminalList());
 	}
 

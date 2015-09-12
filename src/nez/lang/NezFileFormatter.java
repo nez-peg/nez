@@ -3,13 +3,13 @@ package nez.lang;
 import nez.Parser;
 import nez.ast.AbstractTree;
 import nez.ast.SymbolId;
+import nez.ext.Gnez;
 import nez.util.FileBuilder;
 
-public class NezFileFormatter extends NezGrammarLoader {
+public class NezFileFormatter extends Gnez {
 	private FileBuilder f;
 
 	public NezFileFormatter() {
-		super(NezGrammar2.newGrammarFile());
 		f = new FileBuilder(null);
 	}
 
@@ -381,7 +381,7 @@ public class NezFileFormatter extends NezGrammarLoader {
 	}
 
 	@Override
-	public Parser getStartGrammar() {
+	public Parser getLoaderGrammar() {
 		throw new RuntimeException("FIXME");
 	}
 

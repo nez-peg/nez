@@ -4,6 +4,10 @@ import nez.main.Verbose;
 
 public class NezOption {
 
+	public static NezOption nullObject(NezOption option) {
+		return option == null ? newDefaultOption() : option;
+	}
+
 	public final static NezOption newDefaultOption() {
 		return new NezOption();
 	}

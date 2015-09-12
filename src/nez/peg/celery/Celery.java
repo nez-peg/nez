@@ -2,22 +2,24 @@ package nez.peg.celery;
 
 import java.io.IOException;
 
+import nez.Grammar;
 import nez.NezException;
 import nez.NezOption;
 import nez.Parser;
 import nez.SourceContext;
 import nez.ast.CommonTree;
 import nez.lang.GrammarFile;
+import nez.lang.GrammarFileLoader;
 import nez.util.ConsoleUtils;
 
 public class Celery {
-	static GrammarFile celeryGrammar = null;
+	static Grammar celeryGrammar = null;
 
 	public final static GrammarFile loadGrammar(String filePath, NezOption option) throws IOException {
 		option.setOption("notice", false);
 		if (celeryGrammar == null) {
 			try {
-				celeryGrammar = GrammarFile.loadGrammarFile("celery.nez", NezOption.newDefaultOption());
+				celeryGrammar = GrammarFileLoader.loadGrammar("celery.nez", null, null);
 			} catch (IOException e) {
 				ConsoleUtils.exit(1, "can't load celery.nez");
 			}
@@ -35,7 +37,6 @@ public class Celery {
 		converter.setRootClassName(filePath);
 		GrammarFile gfile = GrammarFile.newGrammarFile(filePath, option);
 		converter.convert(node, gfile);
-		gfile.verify();
 		return gfile;
 	}
 }

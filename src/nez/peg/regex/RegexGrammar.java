@@ -13,6 +13,7 @@ import nez.ast.CommonTree;
 import nez.ast.SymbolId;
 import nez.lang.Expression;
 import nez.lang.GrammarFile;
+import nez.lang.GrammarFileLoader;
 import nez.lang.expr.ExpressionCommons;
 import nez.main.Verbose;
 import nez.util.ConsoleUtils;
@@ -26,7 +27,7 @@ public class RegexGrammar extends AbstractTreeVisitor {
 	public final static GrammarFile loadGrammar(SourceContext regex, NezOption option) throws IOException {
 		if (regexGrammar == null) {
 			try {
-				regexGrammar = GrammarFile.loadGrammarFile("regex.nez", NezOption.newSafeOption());
+				regexGrammar = (GrammarFile) GrammarFileLoader.loadGrammar("regex.nez", null, null);
 			} catch (IOException e) {
 				ConsoleUtils.exit(1, "can't load regex.nez");
 			}
@@ -42,7 +43,6 @@ public class RegexGrammar extends AbstractTreeVisitor {
 		GrammarFile gfile = GrammarFile.newGrammarFile("re", option);
 		RegexGrammar conv = new RegexGrammar();
 		conv.convert(node, gfile);
-		gfile.verify();
 		return gfile;
 	}
 
@@ -63,8 +63,8 @@ public class RegexGrammar extends AbstractTreeVisitor {
 
 	void convert(CommonTree e, GrammarFile grammar) {
 		this.grammar = grammar;
-		grammar.defineProduction(e, "File", pi(e, null));
-		grammar.defineProduction(e, "Chunk", grammar.newNonTerminal("File"));
+		grammar.addProduction(e, "File", pi(e, null));
+		grammar.addProduction(e, "Chunk", grammar.newNonTerminal("File"));
 	}
 
 	@Override
@@ -131,7 +131,7 @@ public class RegexGrammar extends AbstractTreeVisitor {
 	public Expression piLazyQuantifiers(CommonTree e, Expression k) {
 		String ruleName = "Repetition" + NonTerminalCount++;
 		Expression ne = ExpressionCommons.newNonTerminal(e, this.grammar, ruleName);
-		grammar.defineProduction(e, ruleName, toChoice(e, k, pi(e.get(0), ne)));
+		grammar.addProduction(e, ruleName, toChoice(e, k, pi(e.get(0), ne)));
 		return ne;
 	}
 
@@ -139,7 +139,7 @@ public class RegexGrammar extends AbstractTreeVisitor {
 	public Expression piRepetition(CommonTree e, Expression k) {
 		String ruleName = "Repetition" + NonTerminalCount++;
 		Expression ne = ExpressionCommons.newNonTerminal(e, this.grammar, ruleName);
-		grammar.defineProduction(e, ruleName, toChoice(e, pi(e.get(0), ne), k));
+		grammar.addProduction(e, ruleName, toChoice(e, pi(e.get(0), ne), k));
 		return ne;
 	}
 

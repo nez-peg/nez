@@ -62,7 +62,7 @@ public class RegexConverter extends GrammarConverter {
 
 	@Override
 	public void convert(CommonTree e) {
-		grammar.defineProduction(e, "File", pi(e, null));
+		grammar.addProduction(e, "File", pi(e, null));
 		// System.out.println("\nConverted Rule: " + grammar.getResourceName());
 		// grammar.dump();
 		makeFile(e);
@@ -122,7 +122,7 @@ public class RegexConverter extends GrammarConverter {
 		if (k == null) {
 			k = ExpressionCommons.newEmpty(null);
 		}
-		grammar.defineProduction(e, ruleName, toChoice(e, k, pi(e.get(0), ne)));
+		grammar.addProduction(e, ruleName, toChoice(e, k, pi(e.get(0), ne)));
 		return ne;
 	}
 
@@ -130,7 +130,7 @@ public class RegexConverter extends GrammarConverter {
 	public Expression piRepetition(CommonTree e, Expression k) {
 		String ruleName = "Repetition" + NonTerminalCount++;
 		Expression ne = ExpressionCommons.newNonTerminal(e, this.grammar, ruleName);
-		grammar.defineProduction(e, ruleName, toChoice(e, pi(e.get(0), ne), k));
+		grammar.addProduction(e, ruleName, toChoice(e, pi(e.get(0), ne), k));
 		return ne;
 	}
 

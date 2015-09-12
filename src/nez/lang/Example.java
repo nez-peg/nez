@@ -11,7 +11,7 @@ public class Example {
 	AbstractTree<?> textNode;
 	boolean result;
 
-	Example(AbstractTree<?> nameNode, AbstractTree<?> textNode, boolean result) {
+	public Example(AbstractTree<?> nameNode, AbstractTree<?> textNode, boolean result) {
 		this.nameNode = nameNode;
 		this.textNode = textNode;
 		this.result = result;

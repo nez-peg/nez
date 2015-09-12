@@ -2,13 +2,14 @@ package nez.main;
 
 import java.io.IOException;
 
+import nez.Grammar;
 import nez.NezOption;
 import nez.Parser;
 import nez.SourceContext;
 import nez.generator.GeneratorLoader;
 import nez.generator.NezGenerator;
-import nez.lang.GrammarFile;
-import nez.lang.NezGrammar2;
+import nez.lang.GrammarFileLoader;
+import nez.lang.NezGrammar1;
 import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
 import nez.util.UList;
@@ -215,22 +216,22 @@ class CommandContext {
 		return "noname." + ext;
 	}
 
-	public final GrammarFile getGrammarFile(boolean grammarFileCreation) {
+	public final Grammar getGrammar(boolean grammarFileCreation) {
 		if (grammarFile != null) {
 			if (grammarFile.equals("nez")) {
-				return NezGrammar2.newGrammarFile();
+				return NezGrammar1.newGrammar();
 			}
 			try {
-				return GrammarFile.loadGrammarFile(grammarFile, option);
+				return GrammarFileLoader.loadGrammarFile(grammarFile, option);
 			} catch (IOException e) {
 				ConsoleUtils.exit(1, "cannot open " + grammarFile + "; " + e.getMessage());
 			}
 		}
 		if (grammarFileCreation) {
-			return GrammarFile.newGrammarFile(option);
+			return new Grammar();
 		} else {
 			ConsoleUtils.println("unspecifed grammar");
-			return NezGrammar2.newGrammarFile();
+			return NezGrammar1.newGrammar();
 		}
 	}
 
@@ -238,7 +239,7 @@ class CommandContext {
 		if (start == null) {
 			start = this.startingProduction;
 		}
-		Parser g = getGrammarFile(false).newParser(start, option);
+		Parser g = getGrammar(false).newParser(start, option);
 		if (g == null) {
 			ConsoleUtils.exit(1, "undefined production: " + start);
 		}

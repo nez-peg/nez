@@ -2,13 +2,13 @@ package nez.konoha;
 
 import java.io.IOException;
 
-import nez.NezOption;
+import nez.Grammar;
 import nez.Parser;
 import nez.SourceContext;
 import nez.ast.Source;
 import nez.ast.SymbolId;
 import nez.ast.TreeTransducer;
-import nez.lang.GrammarFile;
+import nez.lang.GrammarFileLoader;
 import nez.util.ConsoleUtils;
 
 public class Konoha extends TreeTransducer {
@@ -20,12 +20,12 @@ public class Konoha extends TreeTransducer {
 		this.konoha = new KonohaTransducer(this);
 	}
 
-	private static GrammarFile konohaGrammar = null;
+	private static Grammar konohaGrammar = null;
 
 	public final static Parser newKonohaParser() {
 		if (konohaGrammar == null) {
 			try {
-				konohaGrammar = GrammarFile.loadGrammarFile("konoha.nez", NezOption.newDefaultOption());
+				konohaGrammar = GrammarFileLoader.loadGrammar("konoha.nez", null, null);
 			} catch (IOException e) {
 				ConsoleUtils.exit(1, "can't load konoha.nez");
 			}

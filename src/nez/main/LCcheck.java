@@ -18,7 +18,7 @@ public class LCcheck extends Command {
 	public void exec(CommandContext conf) {
 		conf.getNezOption().setOption("example", true);
 
-		GrammarFile gfile = conf.getGrammarFile(true);
+		GrammarFile gfile = (GrammarFile/* FIXME */) conf.getGrammar(true);
 		Parser g = conf.getGrammar();
 
 		UList<String> unparsedInputs = new UList<String>(new String[4]);

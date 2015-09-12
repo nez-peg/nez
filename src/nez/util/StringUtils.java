@@ -405,4 +405,12 @@ public abstract class StringUtils {
 		return urn;
 	}
 
+	public static String parseFileExtension(String path) {
+		int loc = path.lastIndexOf('.');
+		if (loc > 0) {
+			return path.substring(loc + 1);
+		}
+		return path;
+	}
+
 }

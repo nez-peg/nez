@@ -1,77 +1,58 @@
 package nez.lang;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 
 import nez.Grammar;
 import nez.NezOption;
-import nez.ParserCombinator;
 import nez.ast.CommonTree;
 import nez.ast.SourcePosition;
 import nez.main.Verbose;
-import nez.peg.celery.Celery;
-import nez.peg.dtd.DTDConverter;
 import nez.util.UList;
 
 public class GrammarFile extends Grammar {
 
-	private static HashMap<String, GrammarFile> nsMap = new HashMap<String, GrammarFile>();
-
-	public final static boolean isLoaded(String urn) {
-		return nsMap.containsKey(urn);
-	}
-
-	public static GrammarFile newGrammarFile(NezOption option) {
-		return new GrammarFile(null, option);
-	}
-
+	// private static HashMap<String, GrammarFile> nsMap = new HashMap<String,
+	// GrammarFile>();
+	//
+	// public final static boolean isLoaded(String urn) {
+	// return nsMap.containsKey(urn);
+	// }
+	//
+	// public static GrammarFile newGrammarFile(NezOption option) {
+	// return new GrammarFile(null, option);
+	// }
+	//
 	public final static GrammarFile newGrammarFile(String urn, NezOption option) {
-		if (urn != null && nsMap.containsKey(urn)) {
-			return nsMap.get(urn);
-		}
-		GrammarFile ns = new GrammarFile(urn, option);
-		if (urn != null) {
-			nsMap.put(urn, ns);
-		}
-		return ns;
+		return new GrammarFile(null, urn, option);
 	}
 
-	public final static GrammarFile loadNezFile(String urn, NezOption option) throws IOException {
-		if (nsMap.containsKey(urn)) {
-			return nsMap.get(urn);
-		}
-		GrammarFile ns = null;
-		if (urn != null && !urn.endsWith(".nez")) {
-			try {
-				Class<?> c = Class.forName(urn);
-				ParserCombinator p = (ParserCombinator) c.newInstance();
-				ns = p.load();
-			} catch (ClassNotFoundException e) {
-			} catch (Exception e) {
-				Verbose.traceException(e);
-			}
-		}
-		if (ns == null) {
-			ns = new GrammarFile(urn, option);
-			NezGrammarLoader loader = new NezGrammarLoader(ns);
-			loader.load(urn);
-		}
-		nsMap.put(urn, ns);
-		return ns;
-	}
-
-	public final static GrammarFile loadGrammarFile(String urn, NezOption option) throws IOException {
-		if (urn.endsWith(".dtd")) {
-			return DTDConverter.loadGrammar(urn, option);
-		}
-		if (urn.endsWith(".celery")) {
-			return Celery.loadGrammar(urn, option);
-		}
-		return loadNezFile(urn, option);
-	}
+	//
+	// public final static GrammarFile loadNezFile(String urn, NezOption option)
+	// throws IOException {
+	// if (nsMap.containsKey(urn)) {
+	// return nsMap.get(urn);
+	// }
+	// GrammarFile ns = null;
+	// if (urn != null && !urn.endsWith(".nez")) {
+	// try {
+	// Class<?> c = Class.forName(urn);
+	// ParserCombinator p = (ParserCombinator) c.newInstance();
+	// ns = p.load();
+	// } catch (ClassNotFoundException e) {
+	// } catch (Exception e) {
+	// Verbose.traceException(e);
+	// }
+	// }
+	// if (ns == null) {
+	// ns = new GrammarFile(urn, option);
+	// NezGrammarLoader loader = new NezGrammarLoader(ns);
+	// loader.load(urn);
+	// }
+	// nsMap.put(urn, ns);
+	// return ns;
+	// }
 
 	public final static String nameUniqueName(String ns, String name) {
 		return ns + ":" + name;
@@ -89,8 +70,8 @@ public class GrammarFile extends Grammar {
 	final String urn;
 	final NezOption option;
 
-	private GrammarFile(String urn, NezOption option) {
-		super(null);
+	GrammarFile(String ns, String urn, NezOption option) {
+		super(ns);
 		this.urn = urn;
 		this.option = option;
 	}
@@ -103,11 +84,11 @@ public class GrammarFile extends Grammar {
 		return this.urn;
 	}
 
-	public final Production defineProduction(SourcePosition s, String localName, Expression e) {
-		return this.defineProduction(s, 0, localName, e);
+	public final Production addProduction(SourcePosition s, String localName, Expression e) {
+		return this.addProduction(s, 0, localName, e);
 	}
 
-	public final Production defineProduction(SourcePosition s, int flag, String localName, Expression e) {
+	public final Production addProduction(SourcePosition s, int flag, String localName, Expression e) {
 		Production p = new Production(s, flag, this, localName, e);
 		addProduction(p);
 		return p;
@@ -177,7 +158,7 @@ public class GrammarFile extends Grammar {
 
 	private UList<Example> exampleList;
 
-	final void addExample(Example ex) {
+	public final void addExample(Example ex) {
 		if (exampleList == null) {
 			exampleList = new UList<Example>(new Example[2]);
 		}
@@ -195,62 +176,5 @@ public class GrammarFile extends Grammar {
 				Verbose.println("Elapsed time (Example Tests): " + ((t2 - t1) / 1000000) + "ms");
 			}
 		}
-	}
-
-	public void verify() {
-		// NameAnalysis nameAnalyzer = new NameAnalysis();
-		// nameAnalyzer.analyze(this.getProductionList()/* getDefinedRuleList()
-		// */);
-		// if(this.foundError) {
-		// ConsoleUtils.exit(1, "FatalGrammarError");
-		// }
-		// type check
-		// for (Production p : this.getProductionList()) {
-		// if (p.isTerminal()) {
-		// continue;
-		// }
-		// new Typestate(this).reshapeProduction(p);
-		// }
-		// GrammarOptimizer optimizer = null;
-		// if (!option.enabledAsIsGrammar) {
-		// optimizer = new GrammarOptimizer(this.option);
-		// }
-		// for (Production r : this.getProductionList()) {
-		// // if (r.isTerminal()) {
-		// // continue;
-		// // }
-		// // if (Verbose.Grammar) {
-		// // r.dump();
-		// // }
-		// // if (Command.ReleasePreview) {
-		// // boolean r1 = r.isConditional();
-		// // boolean r2 = r.testCondition(r.getExpression(), null);
-		// // if (r1 != r2) {
-		// // Verbose.FIXME("mismatch condition: " + r.getLocalName() + " " +
-		// // r1 + " " + r2);
-		// // }
-		// // }
-		// // if (Command.ReleasePreview) {
-		// // boolean r1 = r.isContextual();
-		// // boolean r2 = r.testContextSensitive(r.getExpression(), null);
-		// // if (r1 != r2) {
-		// // Verbose.FIXME("mismatch contextual: " + r.getLocalName() + " " +
-		// // r1 + " " + r2);
-		// // }
-		// // }
-		//
-		// if (optimizer != null) {
-		// optimizer.optimize(r);
-		// }
-		// // if (option.enabledInterning) {
-		// // r.internRule();
-		// // }
-		// }
-		// GenerativeGrammar g = new
-		// GenerativeGrammar(this.getStartProduction(), option, null);
-		// g.dump();
-		// if (option.enabledExampleVerification) {
-		// testExample(option);
-		// }
 	}
 }
