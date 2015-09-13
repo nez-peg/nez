@@ -35,22 +35,23 @@ public class CommandContext extends ParserFactory {
 	public String inputText = null;
 
 	// -i, --input
-	private int InputFileIndex = -1; // shell mode
+	private int inputFileIndex = -1; // shell mode
 	public UList<String> inputFileLists = new UList<String>(new String[2]);
 
 	void addInputFile(String path) {
 		if (new File(path).isFile()) {
 			inputFileLists.add(path);
+			inputFileIndex = 0;
 		}
 	}
 
 	public final boolean hasInput() {
-		if (this.InputFileIndex == -1) {
+		if (this.inputFileIndex == -1) {
 			// this.inputText = ConsoleUtils.readMultiLine(">>> ", "... ");
 			// return this.inputText != null;
 			return false;
 		}
-		return this.inputText != null || this.InputFileIndex < this.inputFileLists.size();
+		return this.inputText != null || this.inputFileIndex < this.inputFileLists.size();
 	}
 
 	public final SourceContext nextInput() throws IOException {
@@ -59,9 +60,9 @@ public class CommandContext extends ParserFactory {
 			this.inputText = null;
 			return SourceContext.newStringContext(text);
 		}
-		if (this.InputFileIndex < this.inputFileLists.size()) {
-			String f = this.inputFileLists.ArrayValues[this.InputFileIndex];
-			this.InputFileIndex++;
+		if (this.inputFileIndex < this.inputFileLists.size()) {
+			String f = this.inputFileLists.ArrayValues[this.inputFileIndex];
+			this.inputFileIndex++;
 			return SourceContext.newFileContext(f);
 		}
 		return SourceContext.newStringContext(""); // empty input
@@ -109,6 +110,7 @@ public class CommandContext extends ParserFactory {
 	}
 
 	public void parseCommandOption(String[] args) throws IOException {
+		String gFileName = null;
 		int index = 0;
 		if (args.length > 0) {
 			if (!args[0].startsWith("-")) {
@@ -138,13 +140,12 @@ public class CommandContext extends ParserFactory {
 			} else if ((argument.equals("-t") || argument.equals("--text")) && (index < args.length)) {
 				inputText = args[index];
 				index = index + 1;
-				InputFileIndex = 0;
+				inputFileIndex = 0;
 			} else if ((argument.equals("-i") || argument.equals("--input")) && (index < args.length)) {
 				inputFileLists = new UList<String>(new String[4]);
 				while (index < args.length && !args[index].startsWith("-")) {
-					inputFileLists.add(args[index]);
+					this.addInputFile(args[index]);
 					index = index + 1;
-					InputFileIndex = 0;
 				}
 			} else if ((argument.equals("-d") || argument.equals("--dir")) && (index < args.length)) {
 				outputDirName = args[index];
@@ -179,6 +180,13 @@ public class CommandContext extends ParserFactory {
 			} else {
 				this.showUsage("unknown option: " + argument);
 			}
+		}
+		for (; index < args.length; index++) {
+			String path = args[index];
+			this.addInputFile(path);
+		}
+		if (gFileName != null) {
+			this.setGrammarFileName(gFileName);
 		}
 	}
 
@@ -224,19 +232,8 @@ public class CommandContext extends ParserFactory {
 	// }
 	// }
 
-	public final String getGrammarFileName(String ext) {
-		if (gFileName != null) {
-			int loc = gFileName.lastIndexOf('.');
-			if (loc > 0) {
-				return gFileName.substring(0, loc + 1) + ext;
-			}
-			return gFileName + "." + ext;
-		}
-		return "noname." + ext;
-	}
-
 	public final void setInputFileList(UList<String> list) {
-		this.InputFileIndex = 0;
+		this.inputFileIndex = 0;
 		this.inputFileLists = list;
 	}
 

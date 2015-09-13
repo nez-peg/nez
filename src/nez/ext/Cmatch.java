@@ -11,7 +11,7 @@ import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
 import nez.util.UList;
 
-class LCmatch extends Command {
+class Cmatch extends Command {
 	@Override
 	public String getDesc() {
 		return "grammar validator";

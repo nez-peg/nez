@@ -4,14 +4,14 @@ import java.io.IOException;
 
 import nez.Parser;
 import nez.SourceContext;
+import nez.ast.AbstractTree;
 import nez.ast.AbstractTreeWriter;
-import nez.ast.CommonTree;
 import nez.main.Command;
 import nez.main.CommandContext;
 import nez.main.NezProfier;
 import nez.util.ConsoleUtils;
 
-public class LCparse extends Command {
+public class Cparse extends Command {
 	@Override
 	public String getDesc() {
 		return "an AST parser";
@@ -21,34 +21,36 @@ public class LCparse extends Command {
 	public void exec(CommandContext config) throws IOException {
 		Parser g = config.newParser();
 		while (config.hasInput()) {
-			SourceContext source = config.nextInput();
-			CommonTree node = g.parseCommonTree(source);
+			SourceContext input = config.nextInput();
+			AbstractTree<?> node = g.parseCommonTree(input);
 			if (node == null) {
-				ConsoleUtils.println(source.getSyntaxErrorMessage());
+				ConsoleUtils.println(input.getSyntaxErrorMessage());
 				continue;
 			}
-			if (source.hasUnconsumed()) {
-				ConsoleUtils.println(source.getUnconsumedMessage());
+			if (input.hasUnconsumed()) {
+				ConsoleUtils.println(input.getUnconsumedMessage());
 			}
-			source = null;
 			record(g.getProfiler(), node);
 			g.logProfiler();
-			AbstractTreeWriter w = new AbstractTreeWriter(config.getOption(), config.getOutputFileName(source, "ast"));
-			w.writeTree(node);
-			w.writeNewLine();
-			w.close();
+			makeOutputFile(config, input, node);
 		}
 	}
 
-	private void record(NezProfier prof, CommonTree node) {
+	private void record(NezProfier prof, AbstractTree<?> node) {
 		if (prof != null) {
 			System.gc();
 			prof.setCount("O.Size", node.countSubNodes());
 			long t1 = System.nanoTime();
-			CommonTree t = node.dup();
+			AbstractTree<?> t = node.dup();
 			long t2 = System.nanoTime();
 			NezProfier.recordLatencyMS(prof, "O.Overhead", t1, t2);
 		}
 	}
 
+	protected void makeOutputFile(CommandContext config, SourceContext input, AbstractTree<?> node) {
+		AbstractTreeWriter w = new AbstractTreeWriter(config.getOption(), config.getOutputFileName(input, "ast"));
+		w.writeTree(node);
+		w.writeNewLine();
+		w.close();
+	}
 }

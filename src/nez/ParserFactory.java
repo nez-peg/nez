@@ -28,7 +28,7 @@ public class ParserFactory {
 	protected Grammar grammar = null;
 
 	// -p konoha.nez
-	protected String gFileName = null; // default
+	private String gFileName = null; // default
 
 	// -e "peg rule"
 	protected String grammarExpression = null;
@@ -46,6 +46,17 @@ public class ParserFactory {
 	protected final void setGrammarFileName(String path) throws IOException {
 		this.gFileName = path;
 		this.grammar = newGrammarImpl(path);
+	}
+
+	public final String getGrammarFileName(String ext) {
+		if (gFileName != null) {
+			int loc = gFileName.lastIndexOf('.');
+			if (loc > 0) {
+				return gFileName.substring(0, loc + 1) + ext;
+			}
+			return gFileName + "." + ext;
+		}
+		return "noname." + ext;
 	}
 
 	private Grammar newGrammarImpl(String path) throws IOException {
