@@ -1,5 +1,7 @@
 package nez.main;
 
+import java.io.IOException;
+
 
 public class LCformat extends Command {
 	@Override
@@ -8,7 +10,7 @@ public class LCformat extends Command {
 	}
 
 	@Override
-	public void exec(CommandContext config) {
+	public void exec(CommandContext config) throws IOException {
 		// Grammar gfile = config.getGrammar(false);
 		// Parser g = config.getGrammar();
 		// while (config.hasInputSource()) {

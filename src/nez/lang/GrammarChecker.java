@@ -11,22 +11,22 @@ import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cset;
 import nez.lang.expr.ExpressionCommons;
 import nez.lang.expr.NonTerminal;
+import nez.lang.expr.Pand;
 import nez.lang.expr.Pchoice;
+import nez.lang.expr.Pdetree;
 import nez.lang.expr.Pempty;
 import nez.lang.expr.Pfail;
+import nez.lang.expr.Pnot;
+import nez.lang.expr.Pone;
+import nez.lang.expr.Poption;
 import nez.lang.expr.Psequence;
+import nez.lang.expr.Pzero;
 import nez.lang.expr.Tcapture;
 import nez.lang.expr.Tlink;
 import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
-import nez.lang.expr.Pand;
-import nez.lang.expr.Pdetree;
 import nez.lang.expr.Unary;
-import nez.lang.expr.Pnot;
-import nez.lang.expr.Pone;
-import nez.lang.expr.Poption;
-import nez.lang.expr.Pzero;
 import nez.lang.expr.Xdef;
 import nez.lang.expr.Xif;
 import nez.lang.expr.Xis;
@@ -42,22 +42,20 @@ public class GrammarChecker extends GrammarTransducer {
 	private int requiredTypestate;
 	final TreeMap<String, Boolean> boolMap;
 	UList<Expression> stacked;
-	int stacktop = 0;
-	Reporter repo = new Reporter();
+	Reporter repo = null;
 
-	public GrammarChecker(GenerativeGrammar g, boolean offAST, TreeMap<String, Boolean> ctx, Production start, NezOption option) {
+	public GrammarChecker(GenerativeGrammar g, boolean offAST, TreeMap<String, Boolean> ctx, Production start, NezOption option, Reporter repo) {
 		this.g = g;
 		this.boolMap = (ctx == null) ? new TreeMap<String, Boolean>() : ctx;
+		this.repo = repo == null ? new Reporter() : repo;
 
 		this.stacked = new UList<Expression>(new Expression[128]);
-		this.stacktop = 0;
 		if (offAST) {
 			this.enterNonASTContext();
 		}
 		String uname = uniqueName(start.getUniqueName(), start);
 		this.checkFirstVisitedProduction(uname, start); // start
 		new GrammarOptimizer2(g, option, repo);
-		repo.report(option);
 	}
 
 	@Override

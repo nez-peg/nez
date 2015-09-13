@@ -1,58 +1,82 @@
 package nez.main;
 
+import java.io.File;
 import java.io.IOException;
 
-import nez.Grammar;
-import nez.NezOption;
-import nez.Parser;
+import nez.ParserFactory;
 import nez.SourceContext;
-import nez.generator.GeneratorLoader;
-import nez.generator.NezGenerator;
-import nez.lang.GrammarFileLoader;
-import nez.lang.NezGrammar1;
 import nez.util.ConsoleUtils;
+import nez.util.ExtensionLoader;
 import nez.util.StringUtils;
 import nez.util.UList;
 
-class CommandContext {
+public class CommandContext extends ParserFactory {
 
-	public CommandContext(String[] args) {
-		this.parseCommandOption(args);
+	public CommandContext() {
 	}
 
+	// nez [command]
 	public String commandName = "shell";
 
-	// -p konoha.nez
-	public String grammarFile = null; // default
-
-	// -e "peg rule"
-	public String grammarExpression = null;
-
-	// --option
-	private NezOption option = new NezOption(); // default
-
-	public final NezOption getNezOption() {
-		return this.option;
+	public Command newCommand() {
+		Command cmd = (Command) ExtensionLoader.newInstance("nez.ext.C", commandName);
+		if (cmd == null) {
+			// if (gFileName != null &&
+			// GeneratorLoader.isSupported(this.commandName)) {
+			// return new
+			// GrammarCommand(GeneratorLoader.load(this.commandName));
+			// }
+			this.showUsage("unknown command: " + this.commandName);
+		}
+		return cmd;
 	}
 
-	// -s, --start
-	private String startingProduction = "File"; // default
+	// -t, --text
+	public String inputText = null;
 
 	// -i, --input
 	private int InputFileIndex = -1; // shell mode
 	public UList<String> inputFileLists = new UList<String>(new String[2]);
 
-	// -t, --text
-	public String inputText = null;
+	void addInputFile(String path) {
+		if (new File(path).isFile()) {
+			inputFileLists.add(path);
+		}
+	}
 
-	// -o, --output
-	public String OutputFileName = null;
+	public final boolean hasInput() {
+		if (this.InputFileIndex == -1) {
+			// this.inputText = ConsoleUtils.readMultiLine(">>> ", "... ");
+			// return this.inputText != null;
+			return false;
+		}
+		return this.inputText != null || this.InputFileIndex < this.inputFileLists.size();
+	}
 
-	// -W
-	public int CheckerLevel = 1;
+	public final SourceContext nextInput() throws IOException {
+		if (this.inputText != null) {
+			String text = this.inputText;
+			this.inputText = null;
+			return SourceContext.newStringContext(text);
+		}
+		if (this.InputFileIndex < this.inputFileLists.size()) {
+			String f = this.inputFileLists.ArrayValues[this.InputFileIndex];
+			this.InputFileIndex++;
+			return SourceContext.newFileContext(f);
+		}
+		return SourceContext.newStringContext(""); // empty input
+	}
 
-	// -g
-	public int DebugLevel = 1;
+	// -d, --dir
+	public String outputDirName = null;
+
+	public final String getOutputFileName(SourceContext input, String ext) {
+		if (outputDirName != null) {
+			return StringUtils.toFileName(input.getResourceName(), outputDirName, ext);
+		} else {
+			return null; // stdout
+		}
+	}
 
 	// --verbose
 	public boolean VerboseMode = false;
@@ -61,10 +85,10 @@ class CommandContext {
 		ConsoleUtils.println("nez <command> optional files");
 		ConsoleUtils.println("  -p | --peg <filename>      Specify an Nez grammar file");
 		ConsoleUtils.println("  -e | --expr  <text>        Specify an Nez parsing expression");
-		ConsoleUtils.println("  -i | --input <filenames>   Specify input file(s)");
-		ConsoleUtils.println("  -t | --text  <string>      Specify an input text");
-		ConsoleUtils.println("  -o | --output <filename>   Specify an output file");
 		ConsoleUtils.println("  -s | --start <NAME>        Specify Non-Terminal as the starting point (default: File)");
+		// ConsoleUtils.println("  -i | --input <filenames>   Specify input file(s)");
+		ConsoleUtils.println("  -t | --text  <string>      Specify an input text");
+		ConsoleUtils.println("  -d | --dir <dirname>       Specify an output dir");
 		ConsoleUtils.println("  --option:(+enable:-disable)*");
 		ConsoleUtils.println("     grammars: +ast +symbol");
 		ConsoleUtils.println("     optimize: +lex +inline predict dfa");
@@ -84,7 +108,7 @@ class CommandContext {
 		ConsoleUtils.exit(0, Message);
 	}
 
-	public void parseCommandOption(String[] args) {
+	public void parseCommandOption(String[] args) throws IOException {
 		int index = 0;
 		if (args.length > 0) {
 			if (!args[0].startsWith("-")) {
@@ -100,16 +124,13 @@ class CommandContext {
 			index = index + 1;
 			if (argument.equals("-X") && (index < args.length)) {
 				try {
-					Class<?> c = Class.forName(args[index]);
-					// if(ParsingWriter.class.isAssignableFrom(c)) {
-					// OutputWriterClass = c;
-					// }
+					Class.forName(args[index]);
 				} catch (ClassNotFoundException e) {
 					ConsoleUtils.exit(1, "-X specified class is not found: " + args[index]);
 				}
 				index = index + 1;
 			} else if ((argument.equals("-p") || argument.equals("--peg")) && (index < args.length)) {
-				grammarFile = args[index];
+				gFileName = args[index];
 				index = index + 1;
 			} else if ((argument.equals("-e") || argument.equals("--expr")) && (index < args.length)) {
 				grammarExpression = args[index];
@@ -125,14 +146,12 @@ class CommandContext {
 					index = index + 1;
 					InputFileIndex = 0;
 				}
-			} else if ((argument.equals("-o") || argument.equals("--output")) && (index < args.length)) {
-				OutputFileName = args[index];
+			} else if ((argument.equals("-d") || argument.equals("--dir")) && (index < args.length)) {
+				outputDirName = args[index];
 				index = index + 1;
 			} else if ((argument.equals("-s") || argument.equals("--start")) && (index < args.length)) {
-				startingProduction = args[index];
+				startProduction = args[index];
 				index = index + 1;
-			} else if (argument.startsWith("-W")) {
-				CheckerLevel = StringUtils.parseInt(argument.substring(2), 0);
 			} else if (argument.startsWith("--option:")) {
 				String s = argument.substring(9);
 				this.option.setOption(s);
@@ -163,110 +182,57 @@ class CommandContext {
 		}
 	}
 
-	public final static String LoaderPoint = "nez.main.LC";
-
-	public final Command getCommand() {
-		Command cmd = null;
-		try {
-			Class<?> c = Class.forName(LoaderPoint + commandName);
-			cmd = (Command) c.newInstance();
-		} catch (ClassNotFoundException e) {
-
-		} catch (InstantiationException e) {
-			Verbose.traceException(e);
-		} catch (IllegalAccessException e) {
-			Verbose.traceException(e);
-		}
-		if (cmd == null) {
-			if (grammarFile != null && GeneratorLoader.isSupported(this.commandName)) {
-				return new GrammarCommand(GeneratorLoader.load(this.commandName));
-			}
-			this.showUsage("unknown command: " + this.commandName);
-		}
-		return cmd;
-	}
-
-	class GrammarCommand extends Command {
-		NezGenerator gen;
-
-		@Override
-		public String getDesc() {
-			return "parser generator";
-		}
-
-		GrammarCommand(NezGenerator gen) {
-			this.gen = gen;
-		}
-
-		@Override
-		public void exec(CommandContext config) {
-			Parser g = config.getGrammar();
-			gen.generate(g, option, OutputFileName);
-		}
-	}
+	//
+	// public final static String LoaderPoint = "nez.main.LC";
+	//
+	// public final Command getCommand() {
+	// Command cmd = null;
+	// try {
+	// Class<?> c = Class.forName(LoaderPoint + commandName);
+	// cmd = (Command) c.newInstance();
+	// } catch (ClassNotFoundException e) {
+	//
+	// } catch (InstantiationException e) {
+	// Verbose.traceException(e);
+	// } catch (IllegalAccessException e) {
+	// Verbose.traceException(e);
+	// }
+	// if (cmd == null) {
+	// if (gFileName != null && GeneratorLoader.isSupported(this.commandName)) {
+	// return new GrammarCommand(GeneratorLoader.load(this.commandName));
+	// }
+	// this.showUsage("unknown command: " + this.commandName);
+	// }
+	// return cmd;
+	// }
+	// class GrammarCommand extends Command {
+	// NezGenerator gen;
+	//
+	// @Override
+	// public String getDesc() {
+	// return "parser generator";
+	// }
+	//
+	// GrammarCommand(NezGenerator gen) {
+	// this.gen = gen;
+	// }
+	//
+	// @Override
+	// public void exec(CommandContext config) throws IOException {
+	// Parser g = config.newParser();
+	// gen.generate(g, option, OutputFileName);
+	// }
+	// }
 
 	public final String getGrammarFileName(String ext) {
-		if (grammarFile != null) {
-			int loc = grammarFile.lastIndexOf('.');
+		if (gFileName != null) {
+			int loc = gFileName.lastIndexOf('.');
 			if (loc > 0) {
-				return grammarFile.substring(0, loc + 1) + ext;
+				return gFileName.substring(0, loc + 1) + ext;
 			}
-			return grammarFile + "." + ext;
+			return gFileName + "." + ext;
 		}
 		return "noname." + ext;
-	}
-
-	public final Grammar getGrammar(boolean grammarFileCreation) {
-		if (grammarFile != null) {
-			if (grammarFile.equals("nez")) {
-				return NezGrammar1.newGrammar();
-			}
-			try {
-				return GrammarFileLoader.loadGrammarFile(grammarFile, option);
-			} catch (IOException e) {
-				ConsoleUtils.exit(1, "cannot open " + grammarFile + "; " + e.getMessage());
-			}
-		}
-		if (grammarFileCreation) {
-			return new Grammar();
-		} else {
-			ConsoleUtils.println("unspecifed grammar");
-			return NezGrammar1.newGrammar();
-		}
-	}
-
-	public final Parser getParser(String start, NezOption option) {
-		if (start == null) {
-			start = this.startingProduction;
-		}
-		Parser g = getGrammar(false).newParser(start, option);
-		if (g == null) {
-			ConsoleUtils.exit(1, "undefined production: " + start);
-		}
-		if (option.enabledProfiling) {
-			NezProfier rec = new NezProfier("nezprof.csv");
-			rec.setText("nez", Command.Version);
-			rec.setText("config", option.toString());
-			g.setProfiler(rec);
-		}
-		return g;
-	}
-
-	public final Parser getGrammar(String start) {
-		return this.getParser(start, option);
-	}
-
-	public final Parser getGrammar() {
-		return this.getParser(this.startingProduction, option);
-	}
-
-	public final boolean hasInputSource() {
-		if (this.InputFileIndex == -1) {
-			// this.inputText = ConsoleUtils.readMultiLine(">>> ", "... ");
-			// return this.inputText != null;
-			return false;
-		}
-		return this.inputText != null || this.InputFileIndex < this.inputFileLists.size();
 	}
 
 	public final void setInputFileList(UList<String> list) {
@@ -276,32 +242,6 @@ class CommandContext {
 
 	public final UList<String> getInputFileList() {
 		return this.inputFileLists;
-	}
-
-	public final SourceContext nextInputSource() {
-		if (this.inputText != null) {
-			String text = this.inputText;
-			this.inputText = null;
-			return SourceContext.newStringContext(text);
-		}
-		if (this.InputFileIndex < this.inputFileLists.size()) {
-			String f = this.inputFileLists.ArrayValues[this.InputFileIndex];
-			this.InputFileIndex++;
-			try {
-				return SourceContext.newFileContext(f);
-			} catch (IOException e) {
-				ConsoleUtils.exit(1, "cannot open: " + f);
-			}
-		}
-		return SourceContext.newStringContext(""); // empty input
-	}
-
-	public final String getOutputFileName(SourceContext input, String ext) {
-		return StringUtils.toFileName(input.getResourceName(), null, ext);
-	}
-
-	public final String getOutputFileName() {
-		return this.OutputFileName;
 	}
 
 }

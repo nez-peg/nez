@@ -1,21 +1,27 @@
-package nez.main;
+package nez.ext;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 
+import nez.Grammar;
 import nez.NezOption;
 import nez.Parser;
 import nez.SourceContext;
 import nez.ast.CommonTree;
-import nez.ext.Gnez;
 import nez.generator.GeneratorLoader;
 import nez.generator.NezGenerator;
 import nez.generator.NezGrammarGenerator;
 import nez.lang.Formatter;
 import nez.lang.GrammarFile;
 import nez.lang.Production;
+import nez.main.Command;
+import nez.main.CommandContext;
 import nez.util.ConsoleUtils;
 
-public class LCshell extends Command {
+public class Cshell extends Command {
 	@Override
 	public final String getDesc() {
 		return "starts an interactive parser";
@@ -26,11 +32,11 @@ public class LCshell extends Command {
 	int linenum = 0;
 
 	@Override
-	public void exec(CommandContext config) {
+	public void exec(CommandContext config) throws IOException {
 		Command.displayVersion();
-		GrammarFile gfile = (GrammarFile/* FIXME */) config.getGrammar(true);
-		ConsoleUtils.addCompleter(gfile.getNonterminalList());
-		NezOption option = config.getNezOption();
+		GrammarFile gfile = (/* FIXME */GrammarFile) config.newGrammar();
+		ConsoleUtils.addCompleter(getNonterminalList(gfile));
+		NezOption option = config.getOption();
 
 		while (readLine(">>> ")) {
 			if ((command != null && command.equals(""))) {
@@ -43,13 +49,13 @@ public class LCshell extends Command {
 				continue;
 			}
 			if (text != null && GeneratorLoader.isSupported(command)) {
-				Parser g = newParser(gfile, text);
+				Parser g = gfile.newParser(text);
 				if (g != null) {
 					execCommand(command, g, option);
 				}
 				continue;
 			}
-			Parser g = newParser(gfile, command);
+			Parser g = gfile.newParser(command);
 			if (g == null) {
 				continue;
 			}
@@ -72,6 +78,20 @@ public class LCshell extends Command {
 				}
 			}
 		}
+	}
+
+	public final List<String> getNonterminalList(Grammar g) {
+		ArrayList<String> l = new ArrayList<String>();
+		for (Production p : g) {
+			String s = p.getLocalName();
+			char c = s.charAt(0);
+			if (!Character.isUpperCase(c)) {
+				continue;
+			}
+			l.add(s);
+		}
+		Collections.sort(l);
+		return l;
 	}
 
 	private void displayGrammar(String command, Parser g) {
@@ -156,7 +176,7 @@ public class LCshell extends Command {
 		// ConsoleUtils.println("--\n"+text+"--");
 		Gnez loader = new Gnez();
 		loader.eval(ns, "<stdio>", linenum, text, null, null);
-		ConsoleUtils.addCompleter(ns.getNonterminalList());
+		ConsoleUtils.addCompleter(getNonterminalList(ns));
 	}
 
 	static HashMap<String, ShellCommand> cmdMap = new HashMap<String, ShellCommand>();

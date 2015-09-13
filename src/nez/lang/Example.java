@@ -18,7 +18,7 @@ public class Example {
 	}
 
 	boolean test(GrammarFile grammar, NezOption option) {
-		Parser g = grammar.newParser(nameNode.toText(), option);
+		Parser g = grammar.newParser(nameNode.toText(), option, null);
 		if (g == null) {
 			System.out.println(nameNode.formatSourceMessage("error", "undefined nonterminal"));
 			return false;

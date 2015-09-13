@@ -7,6 +7,7 @@ import java.util.TreeMap;
 
 import nez.Grammar;
 import nez.NezOption;
+import nez.ast.Reporter;
 import nez.lang.GrammarChecker;
 import nez.lang.GrammarOptimizer;
 import nez.lang.Production;
@@ -14,35 +15,13 @@ import nez.lang.Typestate;
 import nez.main.Verbose;
 import nez.util.UList;
 
-//class StaticParserContext extends TreeMap<String, Boolean> {
-//	private static final long serialVersionUID = 1L;
-//
-//	StaticParserContext(boolean noAST) {
-//		if (noAST) {
-//			on("@");
-//		}
-//	}
-//
-//	public void on(String name) {
-//		this.put(name, true);
-//	}
-//
-//	public void off(String name) {
-//		this.remove(name);
-//	}
-//
-//	public String name(String uname) {
-//		return uname;
-//	}
-//}
-
 public class GenerativeGrammar extends Grammar {
 	HashMap<String, ParseFunc> funcMap;
 	public List<MemoPoint> memoPointList = null;
 
-	public GenerativeGrammar(Production start, NezOption option, TreeMap<String, Boolean> flagMap) {
+	public GenerativeGrammar(Production start, NezOption option, TreeMap<String, Boolean> flagMap, Reporter repo) {
 		this.funcMap = new HashMap<String, ParseFunc>();
-		new GrammarChecker(this, !option.enabledASTConstruction, flagMap, start, option);
+		new GrammarChecker(this, !option.enabledASTConstruction, flagMap, start, option, repo);
 		memo(option);
 	}
 

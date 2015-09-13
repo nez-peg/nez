@@ -1,9 +1,5 @@
 package nez.lang;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import nez.Grammar;
 import nez.NezOption;
 import nez.ast.CommonTree;
@@ -99,20 +95,6 @@ public class GrammarFile extends Grammar {
 		// addProduction(p);
 		// return p;
 		throw new RuntimeException("FIXME");
-	}
-
-	public final List<String> getNonterminalList() {
-		ArrayList<String> l = new ArrayList<String>();
-		for (Production p : this.getProductionList()) {
-			String s = p.getLocalName();
-			char c = s.charAt(0);
-			if (!Character.isUpperCase(c)) {
-				continue;
-			}
-			l.add(s);
-		}
-		Collections.sort(l);
-		return l;
 	}
 
 	public Production newReducedProduction(String localName, Production p, GrammarTransducer m) {

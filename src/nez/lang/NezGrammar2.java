@@ -16,7 +16,7 @@ public class NezGrammar2 extends ParserCombinator {
 	}
 
 	public final static Parser newParser(String name, NezOption option) {
-		return newGrammarFile().newParser(name, option);
+		return newGrammarFile().newParser(name, option, null);
 	}
 
 	public Expression pEOT() {

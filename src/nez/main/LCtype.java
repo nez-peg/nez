@@ -1,5 +1,7 @@
 package nez.main;
 
+import java.io.IOException;
+
 import nez.Grammar;
 import nez.lang.Production;
 import nez.lang.Typestate;
@@ -13,8 +15,8 @@ public class LCtype extends Command {
 	}
 
 	@Override
-	public void exec(CommandContext config) {
-		Grammar peg = config.getGrammar(false);
+	public void exec(CommandContext config) throws IOException {
+		Grammar peg = config.newGrammar();
 		for (Production r : peg.getProductionList()/* getDefinedRuleList() */) {
 			if (r.inferTypestate(null) == Typestate.ObjectType) {
 				Type t = Type.inferType(r, r.getExpression());

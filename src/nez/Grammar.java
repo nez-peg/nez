@@ -3,6 +3,7 @@ package nez;
 import java.util.HashMap;
 import java.util.List;
 
+import nez.ast.Reporter;
 import nez.lang.Expression;
 import nez.lang.GrammarBase;
 import nez.lang.Production;
@@ -142,25 +143,23 @@ public class Grammar extends GrammarBase {
 
 	// ----------------------------------------------------------------------
 
-	public final Parser newParser(String name, NezOption option) {
-		Production p = this.getProduction(name);
-		if (p != null) {
-			GenerativeGrammar gg = new GenerativeGrammar(p, option, null);
-			return new Parser(gg, option);
-		}
-		Verbose.println("undefined production" + name);
-		return newParser(option);
-	}
-
-	public final Parser newParser(String name) {
-		return newParser(name, NezOption.newDefaultOption());
-	}
-
-	public final Parser newParser(NezOption option) {
-		GenerativeGrammar gg = (this instanceof GenerativeGrammar) ? (GenerativeGrammar) this : new GenerativeGrammar(this.getStartProduction(), option, null);
+	public final Parser newParser(NezOption option, Reporter repo) {
+		GenerativeGrammar gg = (this instanceof GenerativeGrammar) ? (GenerativeGrammar) this : new GenerativeGrammar(this.getStartProduction(), option, null, repo);
 		return new Parser(gg, option);
 	}
 
-	// ----------------------------------------------------------------------
+	public final Parser newParser(String name) {
+		return newParser(name, NezOption.newDefaultOption(), null);
+	}
+
+	public final Parser newParser(String name, NezOption option, Reporter repo) {
+		Production p = this.getProduction(name);
+		if (p != null) {
+			GenerativeGrammar gg = new GenerativeGrammar(p, option, null, repo);
+			return new Parser(gg, option);
+		}
+		Verbose.println("undefined production" + name);
+		return newParser(option, repo);
+	}
 
 }

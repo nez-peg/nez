@@ -1,7 +1,12 @@
-package nez.main;
+package nez.ext;
+
+import java.io.IOException;
 
 import nez.Parser;
 import nez.SourceContext;
+import nez.main.Command;
+import nez.main.CommandContext;
+import nez.main.Verbose;
 import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
 import nez.util.UList;
@@ -13,9 +18,9 @@ class LCmatch extends Command {
 	}
 
 	@Override
-	public void exec(CommandContext config) {
-		config.getNezOption().setOption("ast", false);
-		Parser g = config.getGrammar();
+	public void exec(CommandContext config) throws IOException {
+		config.getOption().setOption("ast", false);
+		Parser g = config.newParser();
 
 		UList<String> failedInputs = new UList<String>(new String[4]);
 		UList<String> unconsumedInputs = new UList<String>(new String[4]);
@@ -24,8 +29,8 @@ class LCmatch extends Command {
 		long consumed = 0;
 		long time = 0;
 
-		while (config.hasInputSource()) {
-			SourceContext file = config.nextInputSource();
+		while (config.hasInput()) {
+			SourceContext file = config.nextInput();
 			totalCount++;
 			long t = System.nanoTime();
 			boolean result = g.match(file);

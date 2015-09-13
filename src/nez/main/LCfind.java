@@ -1,5 +1,7 @@
 package nez.main;
 
+import java.io.IOException;
+
 
 public class LCfind extends Command {
 
@@ -9,7 +11,7 @@ public class LCfind extends Command {
 	}
 
 	@Override
-	public void exec(CommandContext config) {
+	public void exec(CommandContext config) throws IOException {
 		// String text = null;
 		// UList<Grammar> pList = load(config.getInputFileList());
 		// while ((text = ConsoleUtils.readMultiLine(">>> ", "    ")) != null) {

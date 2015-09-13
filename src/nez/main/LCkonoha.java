@@ -1,5 +1,6 @@
 package nez.main;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 
 import nez.util.ConsoleUtils;
@@ -11,7 +12,7 @@ public class LCkonoha extends Command {
 	}
 
 	@Override
-	public void exec(CommandContext config) {
+	public void exec(CommandContext config) throws IOException {
 		Class<?> c = null;
 		try {
 			c = Class.forName("nez.konoha.Konoha");

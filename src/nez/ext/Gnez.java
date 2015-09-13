@@ -347,8 +347,7 @@ public class Gnez extends GrammarFileLoader {
 			GrammarFile source = (GrammarFile) GrammarFileLoader.loadGrammar(urn, this.option, this.repo);
 			if (name.equals("*")) {
 				int c = 0;
-				for (String n : source.getNonterminalList()) {
-					Production p = source.getProduction(n);
+				for (Production p : source) {
 					if (p.isPublic()) {
 						checkDuplicatedName(node.get(0));
 						this.getGrammarFile().importProduction(ns, p);

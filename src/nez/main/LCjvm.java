@@ -1,5 +1,6 @@
 package nez.main;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -20,10 +21,10 @@ public class LCjvm extends Command {
 	private JCodeTreeTransducer treeTransducer;
 
 	@Override
-	public void exec(CommandContext config) {
+	public void exec(CommandContext config) throws IOException {
 		this.treeTransducer = new JCodeTreeTransducer();
-		this.grammar = config.getGrammar();
-		if (config.hasInputSource()) {
+		this.grammar = config.newParser();
+		if (config.hasInput()) {
 			JCodeTree node = parse(config);
 			execute(node);
 		} else {
@@ -31,8 +32,8 @@ public class LCjvm extends Command {
 		}
 	}
 
-	public final JCodeTree parse(CommandContext config) {
-		SourceContext source = config.nextInputSource();
+	public final JCodeTree parse(CommandContext config) throws IOException {
+		SourceContext source = config.nextInput();
 		JCodeTree node = (JCodeTree) this.grammar.parse(source, this.treeTransducer);
 		if (node == null) {
 			ConsoleUtils.println(source.getSyntaxErrorMessage());

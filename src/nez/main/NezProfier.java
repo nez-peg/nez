@@ -14,7 +14,7 @@ import nez.util.UMap;
 public class NezProfier {
 	final String logFile;
 
-	NezProfier(String logFile) {
+	public NezProfier(String logFile) {
 		this.logFile = logFile;
 	}
 
