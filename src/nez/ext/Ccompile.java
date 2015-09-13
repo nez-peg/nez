@@ -18,10 +18,10 @@ public class Ccompile extends Command {
 
 	@Override
 	public void exec(CommandContext config) throws IOException {
-		Parser g = config.newParser();
+		Parser parser = config.newParser();
 		NezCompiler compile = new PackratCompiler(config.getOption());
 		ByteCoder c = new ByteCoder();
-		NezCode code = compile.compile(g, c);
+		NezCode code = compile.compile(parser.getGrammar(), c);
 		c.writeTo(config.getGrammarFileName("nzc"));
 	}
 

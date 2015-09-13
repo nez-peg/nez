@@ -6,7 +6,7 @@ import nez.lang.Expression;
 import nez.lang.GrammarTransducer;
 import nez.lang.Visa;
 import nez.parser.Instruction;
-import nez.parser.NezEncoder;
+import nez.parser.AbstractGenerator;
 
 public class Xon extends Unary implements Conditional {
 	boolean predicate;
@@ -64,7 +64,7 @@ public class Xon extends Unary implements Conditional {
 	}
 
 	@Override
-	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
+	public Instruction encode(AbstractGenerator bc, Instruction next, Instruction failjump) {
 		return bc.encodeXon(this, next, failjump);
 	}
 }

@@ -7,7 +7,7 @@ import nez.lang.PossibleAcceptance;
 import nez.lang.Typestate;
 import nez.lang.Visa;
 import nez.parser.Instruction;
-import nez.parser.NezEncoder;
+import nez.parser.AbstractGenerator;
 
 public class Cany extends Char {
 	Cany(SourcePosition s, boolean binary) {
@@ -48,7 +48,7 @@ public class Cany extends Char {
 	}
 
 	@Override
-	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
+	public Instruction encode(AbstractGenerator bc, Instruction next, Instruction failjump) {
 		return bc.encodeCany(this, next, failjump);
 	}
 }

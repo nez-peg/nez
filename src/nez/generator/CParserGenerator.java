@@ -566,11 +566,11 @@ public class CParserGenerator extends GrammarGenerator {
 	}
 
 	@Override
-	public void visitEmpty(Expression e) {
+	public void visitPempty(Expression e) {
 	}
 
 	@Override
-	public void visitFailure(Expression e) {
+	public void visitPfail(Expression e) {
 		this.jumpFailureJump();
 	}
 
@@ -610,7 +610,7 @@ public class CParserGenerator extends GrammarGenerator {
 	}
 
 	@Override
-	public void visitByteChar(Cbyte e) {
+	public void visitCbyte(Cbyte e) {
 		L("if((int)*ctx->cur != " + e.byteChar + ")");
 		Begin();
 		this.jumpFailureJump();
@@ -628,7 +628,7 @@ public class CParserGenerator extends GrammarGenerator {
 	}
 
 	@Override
-	public void visitByteMap(Cset e) {
+	public void visitCset(Cset e) {
 		int fid = this.fid++;
 		String label = "EXIT_BYTEMAP" + fid;
 		boolean b[] = e.byteMap;
@@ -656,7 +656,7 @@ public class CParserGenerator extends GrammarGenerator {
 	}
 
 	@Override
-	public void visitAnyChar(Cany e) {
+	public void visitCany(Cany e) {
 		L("if(*ctx->cur == 0)");
 		Begin();
 		this.jumpFailureJump();
@@ -665,7 +665,7 @@ public class CParserGenerator extends GrammarGenerator {
 	}
 
 	@Override
-	public void visitCharMultiByte(Cmulti p) {
+	public void visitCmulti(Cmulti p) {
 		int len = p.byteSeq.length;
 		L("if (TAIL(ctx) - ctx->cur >= " + len + ")");
 		Begin();
@@ -684,7 +684,7 @@ public class CParserGenerator extends GrammarGenerator {
 	}
 
 	@Override
-	public void visitOption(Poption e) {
+	public void visitPoption(Poption e) {
 		if (!specializeOption(e)) {
 			this.pushFailureJumpPoint();
 			String label = "EXIT_OPTION" + this.fid;
@@ -699,7 +699,7 @@ public class CParserGenerator extends GrammarGenerator {
 	}
 
 	@Override
-	public void visitRepetition(Pzero e) {
+	public void visitPzero(Pzero e) {
 		if (!specializeRepetition(e)) {
 			this.pushFailureJumpPoint();
 			String backtrack = "c" + this.fid;
@@ -715,7 +715,7 @@ public class CParserGenerator extends GrammarGenerator {
 	}
 
 	@Override
-	public void visitRepetition1(Pone e) {
+	public void visitPone(Pone e) {
 		visitExpression(e.get(0));
 		this.pushFailureJumpPoint();
 		String backtrack = "c" + this.fid;
@@ -730,7 +730,7 @@ public class CParserGenerator extends GrammarGenerator {
 	}
 
 	@Override
-	public void visitAnd(Pand e) {
+	public void visitPand(Pand e) {
 		this.pushFailureJumpPoint();
 		String label = "EXIT_AND" + this.fid;
 		String backtrack = "c" + this.fid;
@@ -745,7 +745,7 @@ public class CParserGenerator extends GrammarGenerator {
 	}
 
 	@Override
-	public void visitNot(Pnot e) {
+	public void visitPnot(Pnot e) {
 		if (!specializeNot(e)) {
 			this.pushFailureJumpPoint();
 			String backtrack = "c" + this.fid;
@@ -759,7 +759,7 @@ public class CParserGenerator extends GrammarGenerator {
 	}
 
 	@Override
-	public void visitSequence(Psequence e) {
+	public void visitPsequence(Psequence e) {
 		for (int i = 0; i < e.size(); i++) {
 			visitExpression(e.get(i));
 		}
@@ -814,7 +814,7 @@ public class CParserGenerator extends GrammarGenerator {
 	}
 
 	@Override
-	public void visitChoice(Pchoice e) {
+	public void visitPchoice(Pchoice e) {
 		// showChoiceInfo(e);
 		if ((e.predictedCase != null && this.isPrediction && this.option.enabledPrediction)) {
 			this.predictionCount++;
@@ -879,7 +879,7 @@ public class CParserGenerator extends GrammarGenerator {
 	Stack<String> markStack = new Stack<String>();
 
 	@Override
-	public void visitNew(Tnew e) {
+	public void visitTnew(Tnew e) {
 		if (this.option.enabledASTConstruction) {
 			// this.pushFailureJumpPoint();
 			String mark = "mark" + this.fid++;
@@ -890,7 +890,7 @@ public class CParserGenerator extends GrammarGenerator {
 	}
 
 	@Override
-	public void visitCapture(Tcapture e) {
+	public void visitTcapture(Tcapture e) {
 		if (this.option.enabledASTConstruction) {
 			String label = "EXIT_CAPTURE" + this.fid++;
 			L("ast_log_capture(ctx->ast, ctx->cur);");
@@ -903,21 +903,21 @@ public class CParserGenerator extends GrammarGenerator {
 	}
 
 	@Override
-	public void visitTagging(Ttag e) {
+	public void visitTtag(Ttag e) {
 		if (this.option.enabledASTConstruction) {
 			L("ast_log_tag(ctx->ast, \"" + e.tag.getSymbol() + "\");");
 		}
 	}
 
 	@Override
-	public void visitReplace(Treplace e) {
+	public void visitTreplace(Treplace e) {
 		if (this.option.enabledASTConstruction) {
 			L("ast_log_replace(ctx->ast, \"" + e.value + "\");");
 		}
 	}
 
 	@Override
-	public void visitLink(Tlink e) {
+	public void visitTlink(Tlink e) {
 		this.pushFailureJumpPoint();
 		String mark = "mark" + this.fid;
 
@@ -966,7 +966,7 @@ public class CParserGenerator extends GrammarGenerator {
 	}
 
 	@Override
-	public void visitBlock(Xblock p) {
+	public void visitXblock(Xblock p) {
 		String mark = "mark" + this.fid;
 		L("int " + mark + " = symtable_savepoint(ctx->table);");
 		visitExpression(p.get(0));
@@ -974,43 +974,43 @@ public class CParserGenerator extends GrammarGenerator {
 	}
 
 	@Override
-	public void visitDefSymbol(Xdef p) {
+	public void visitXdef(Xdef p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitIsSymbol(Xis p) {
+	public void visitXis(Xis p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitMatchSymbol(Xmatch p) {
+	public void visitXmatch(Xmatch p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitDefIndent(Xdefindent p) {
+	public void visitXdefindent(Xdefindent p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitIsIndent(Xindent p) {
+	public void visitXindent(Xindent p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitExistsSymbol(Xexists p) {
+	public void visitXexists(Xexists p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitLocalTable(Xlocal p) {
+	public void visitXlocal(Xlocal p) {
 		// TODO Auto-generated method stub
 
 	}

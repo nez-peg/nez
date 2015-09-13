@@ -8,7 +8,7 @@ import nez.lang.PossibleAcceptance;
 import nez.lang.Typestate;
 import nez.lang.Visa;
 import nez.parser.Instruction;
-import nez.parser.NezEncoder;
+import nez.parser.AbstractGenerator;
 
 public class Ttag extends Term {
 	public SymbolId tag;
@@ -60,7 +60,7 @@ public class Ttag extends Term {
 	}
 
 	@Override
-	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
+	public Instruction encode(AbstractGenerator bc, Instruction next, Instruction failjump) {
 		return bc.encodeTtag(this, next);
 	}
 }

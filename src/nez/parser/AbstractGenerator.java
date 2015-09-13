@@ -1,31 +1,27 @@
 package nez.parser;
 
 import java.util.HashMap;
-import java.util.List;
 
 import nez.NezOption;
-import nez.Parser;
 import nez.lang.Expression;
-import nez.lang.GrammarOptimizer;
 import nez.lang.Production;
-import nez.lang.Typestate;
 import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cmulti;
 import nez.lang.expr.Cset;
 import nez.lang.expr.NonTerminal;
+import nez.lang.expr.Pand;
 import nez.lang.expr.Pchoice;
+import nez.lang.expr.Pnot;
+import nez.lang.expr.Pone;
+import nez.lang.expr.Poption;
 import nez.lang.expr.Psequence;
+import nez.lang.expr.Pzero;
 import nez.lang.expr.Tcapture;
 import nez.lang.expr.Tlink;
 import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
-import nez.lang.expr.Pand;
-import nez.lang.expr.Pnot;
-import nez.lang.expr.Pone;
-import nez.lang.expr.Poption;
-import nez.lang.expr.Pzero;
 import nez.lang.expr.Xblock;
 import nez.lang.expr.Xdef;
 import nez.lang.expr.Xdefindent;
@@ -38,10 +34,10 @@ import nez.lang.expr.Xmatch;
 import nez.lang.expr.Xon;
 import nez.main.Verbose;
 
-public abstract class NezEncoder {
+public abstract class AbstractGenerator {
 	protected NezOption option;
 
-	public NezEncoder(NezOption option) {
+	public AbstractGenerator(NezOption option) {
 		this.gg = null;
 		this.option = option;
 	}
@@ -52,11 +48,12 @@ public abstract class NezEncoder {
 
 	/* CodeMap */
 	private GenerativeGrammar gg = null;
-	private HashMap<String, ParseFunc> funcMap = null;
 
 	protected void setGenerativeGrammar(GenerativeGrammar gg) {
 		this.gg = gg;
 	}
+
+	private HashMap<String, ParseFunc> funcMap = null;
 
 	protected int getParseFuncSize() {
 		if (gg != null) {
@@ -85,80 +82,87 @@ public abstract class NezEncoder {
 		return null;
 	}
 
-	protected ParseFunc newParseFunc(Production p, Expression localExpression) {
-		ParseFunc f = new ParseFunc(p.getLocalName(), p);
-		f.setExpression(localExpression);
-		return f;
-	}
-
-	void count(Production p) {
-		String uname = p.getUniqueName();
-		ParseFunc c = this.funcMap.get(uname);
-		if (c == null) {
-			Expression deref = p.getExpression();
-			c = newParseFunc(p, deref);
-			funcMap.put(uname, c);
-		}
-		c.refcount++;
-	}
-
-	void countNonTerminalReference(Expression e) {
-		if (e instanceof NonTerminal) {
-			Production p = ((NonTerminal) e).getProduction();
-			count(p);
-		}
-		for (Expression sub : e) {
-			countNonTerminalReference(sub);
-		}
-	}
-
-	protected void initParseFuncMap(Parser grammar, List<MemoPoint> memoPointList) {
-		this.funcMap = new HashMap<String, ParseFunc>();
-		Production start = grammar.getStartProduction();
-		count(start);
-		countNonTerminalReference(start.getExpression());
-		for (Production p : grammar.getProductionList()) {
-			if (p != start) {
-				this.countNonTerminalReference(p.getExpression());
-			}
-		}
-		if (option.enabledInlining) {
-			for (Production p : grammar.getProductionList()) {
-				ParseFunc cp = this.funcMap.get(p.getUniqueName());
-				this.checkInlining(cp);
-			}
-		}
-		if (memoPointList != null) {
-			for (Production p : grammar.getProductionList()) {
-				ParseFunc cp = this.funcMap.get(p.getUniqueName());
-				this.checkMemoizing(cp, memoPointList);
-			}
-		}
-	}
-
-	protected void checkInlining(ParseFunc pcode) {
-		if (pcode.refcount == 1 || GrammarOptimizer.isSingleCharacter(pcode.e)) {
-			if (Verbose.PackratParsing) {
-				Verbose.println("Inlining: " + pcode.name);
-			}
-			pcode.inlining = true;
-		}
-	}
-
-	protected void checkMemoizing(ParseFunc pcode, List<MemoPoint> memoPointList) {
-		if (pcode.inlining || pcode.memoPoint != null) {
-			return;
-		}
-		Production p = pcode.p;
-		if (pcode.refcount > 1 && p.inferTypestate(null) != Typestate.OperationType) {
-			int memoId = memoPointList.size();
-			pcode.memoPoint = new MemoPoint(memoId, p.getLocalName(), pcode.e, p.isContextual());
-			memoPointList.add(pcode.memoPoint);
-			if (Verbose.PackratParsing) {
-				Verbose.println("MemoPoint: " + pcode.memoPoint + " ref=" + pcode.refcount + " pure? " + p.isNoNTreeConstruction() + " rec? " + p.isRecursive());
-			}
-		}
-	}
+	// protected ParseFunc newParseFunc(Production p, Expression
+	// localExpression) {
+	// ParseFunc f = new ParseFunc(p.getLocalName(), p);
+	// f.setExpression(localExpression);
+	// return f;
+	// }
+	//
+	// void count(Production p) {
+	// String uname = p.getUniqueName();
+	// ParseFunc c = this.funcMap.get(uname);
+	// if (c == null) {
+	// Expression deref = p.getExpression();
+	// c = newParseFunc(p, deref);
+	// funcMap.put(uname, c);
+	// }
+	// c.refcount++;
+	// }
+	//
+	// void countNonTerminalReference(Expression e) {
+	// if (e instanceof NonTerminal) {
+	// Production p = ((NonTerminal) e).getProduction();
+	// count(p);
+	// }
+	// for (Expression sub : e) {
+	// countNonTerminalReference(sub);
+	// }
+	// }
+	//
+	// protected void initParseFuncMap(Parser grammar, List<MemoPoint>
+	// memoPointList) {
+	// this.funcMap = new HashMap<String, ParseFunc>();
+	// Production start = grammar.getStartProduction();
+	// count(start);
+	// countNonTerminalReference(start.getExpression());
+	// for (Production p : grammar.getProductionList()) {
+	// if (p != start) {
+	// this.countNonTerminalReference(p.getExpression());
+	// }
+	// }
+	// if (option.enabledInlining) {
+	// for (Production p : grammar.getProductionList()) {
+	// ParseFunc cp = this.funcMap.get(p.getUniqueName());
+	// this.checkInlining(cp);
+	// }
+	// }
+	// if (memoPointList != null) {
+	// for (Production p : grammar.getProductionList()) {
+	// ParseFunc cp = this.funcMap.get(p.getUniqueName());
+	// this.checkMemoizing(cp, memoPointList);
+	// }
+	// }
+	// }
+	//
+	// protected void checkInlining(ParseFunc pcode) {
+	// if (pcode.refcount == 1 || GrammarOptimizer.isSingleCharacter(pcode.e)) {
+	// if (Verbose.PackratParsing) {
+	// Verbose.println("Inlining: " + pcode.name);
+	// }
+	// pcode.inlining = true;
+	// }
+	// }
+	//
+	// protected void checkMemoizing(ParseFunc pcode, List<MemoPoint>
+	// memoPointList) {
+	// if (pcode.inlining || pcode.memoPoint != null) {
+	// return;
+	// }
+	// Production p = pcode.p;
+	// if (pcode.refcount > 1 && p.inferTypestate(null) !=
+	// Typestate.OperationType) {
+	// int memoId = memoPointList.size();
+	// pcode.memoPoint = new MemoPoint(memoId, p.getLocalName(), pcode.e,
+	// p.isContextual());
+	// memoPointList.add(pcode.memoPoint);
+	// if (Verbose.PackratParsing) {
+	// Verbose.println("MemoPoint: " + pcode.memoPoint + " ref=" +
+	// pcode.refcount + " pure? " + p.isNoNTreeConstruction() + " rec? " +
+	// p.isRecursive());
+	// }
+	// }
+	// }
 
 	// encoding
 
@@ -223,7 +227,7 @@ public abstract class NezEncoder {
 	// Extension
 	public abstract Instruction encodeExtension(Expression p, Instruction next, Instruction failjump);
 
-	public Instruction encodeEmpty(Expression empty, Instruction next) {
+	public Instruction encodeTempty(Expression empty, Instruction next) {
 		return next;
 	}
 

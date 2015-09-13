@@ -1,14 +1,11 @@
 package nez.parser;
 
-import java.util.List;
-
 import nez.NezOption;
-import nez.Parser;
 import nez.lang.Production;
 import nez.main.Verbose;
 import nez.util.UList;
 
-public abstract class NezCompiler extends NezEncoder {
+public abstract class NezCompiler extends AbstractGenerator {
 
 	public final static NezCompiler newCompiler(NezOption option) {
 		return new PackratCompiler(option);
@@ -48,46 +45,49 @@ public abstract class NezCompiler extends NezEncoder {
 		return new NezCode(codeList.ArrayValues[0], codeList.size(), gg.memoPointList);
 	}
 
-	public final NezCode compile(Parser grammar) {
-		return this.compile(grammar, null);
-	}
-
-	public NezCode compile(Parser grammar, ByteCoder coder) {
-		long t = System.nanoTime();
-		List<MemoPoint> memoPointList = null;
-		if (option.enabledMemoization || option.enabledPackratParsing) {
-			memoPointList = new UList<MemoPoint>(new MemoPoint[4]);
-		}
-		initParseFuncMap(grammar, memoPointList);
-		UList<Instruction> codeList = new UList<Instruction>(new Instruction[64]);
-		// Production start = grammar.getStartProduction();
-		// this.encodeProduction(codeList, start, new IRet(start));
-		// for(Production p : grammar.getProductionList()) {
-		// if(p != start) {
-		// this.encodeProduction(codeList, p, new IRet(p));
-		// }
-		// }
-		for (Production p : grammar.getProductionList()) {
-			this.encodeProduction(codeList, p, new IRet(p));
-		}
-		for (Instruction inst : codeList) {
-			if (inst instanceof ICall) {
-				ParseFunc deref = this.getParseFunc(((ICall) inst).prod);
-				if (deref == null) {
-					Verbose.debug("no deref: " + ((ICall) inst).prod.getUniqueName());
-				}
-				((ICall) inst).setResolvedJump(deref.compiled);
-			}
-			// Verbose.debug("\t" + inst.id + "\t" + inst);
-		}
-		long t2 = System.nanoTime();
-		Verbose.printElapsedTime("CompilingTime", t, t2);
-		if (coder != null) {
-			coder.setHeader(codeList.size(), this.getParseFuncSize(), memoPointList == null ? 0 : memoPointList.size());
-			coder.setInstructions(codeList.ArrayValues, codeList.size());
-		}
-		return new NezCode(codeList.ArrayValues[0], codeList.size(), memoPointList);
-	}
+	// public final NezCode compile(Parser grammar) {
+	// return this.compile(grammar, null);
+	// }
+	//
+	// public NezCode compile(Parser grammar, ByteCoder coder) {
+	// long t = System.nanoTime();
+	// List<MemoPoint> memoPointList = null;
+	// if (option.enabledMemoization || option.enabledPackratParsing) {
+	// memoPointList = new UList<MemoPoint>(new MemoPoint[4]);
+	// }
+	// initParseFuncMap(grammar, memoPointList);
+	// UList<Instruction> codeList = new UList<Instruction>(new
+	// Instruction[64]);
+	// // Production start = grammar.getStartProduction();
+	// // this.encodeProduction(codeList, start, new IRet(start));
+	// // for(Production p : grammar.getProductionList()) {
+	// // if(p != start) {
+	// // this.encodeProduction(codeList, p, new IRet(p));
+	// // }
+	// // }
+	// for (Production p : grammar.getProductionList()) {
+	// this.encodeProduction(codeList, p, new IRet(p));
+	// }
+	// for (Instruction inst : codeList) {
+	// if (inst instanceof ICall) {
+	// ParseFunc deref = this.getParseFunc(((ICall) inst).prod);
+	// if (deref == null) {
+	// Verbose.debug("no deref: " + ((ICall) inst).prod.getUniqueName());
+	// }
+	// ((ICall) inst).setResolvedJump(deref.compiled);
+	// }
+	// // Verbose.debug("\t" + inst.id + "\t" + inst);
+	// }
+	// long t2 = System.nanoTime();
+	// Verbose.printElapsedTime("CompilingTime", t, t2);
+	// if (coder != null) {
+	// coder.setHeader(codeList.size(), this.getParseFuncSize(), memoPointList
+	// == null ? 0 : memoPointList.size());
+	// coder.setInstructions(codeList.ArrayValues, codeList.size());
+	// }
+	// return new NezCode(codeList.ArrayValues[0], codeList.size(),
+	// memoPointList);
+	// }
 
 	private Production encodingProduction;
 

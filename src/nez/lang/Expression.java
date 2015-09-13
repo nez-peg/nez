@@ -10,7 +10,7 @@ import nez.lang.expr.ExpressionCommons;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
 import nez.parser.Instruction;
-import nez.parser.NezEncoder;
+import nez.parser.AbstractGenerator;
 import nez.util.UList;
 
 public abstract class Expression extends AbstractList<Expression> {
@@ -61,7 +61,7 @@ public abstract class Expression extends AbstractList<Expression> {
 
 	public abstract short acceptByte(int ch);
 
-	public abstract Instruction encode(NezEncoder bc, Instruction next, Instruction failjump);
+	public abstract Instruction encode(AbstractGenerator bc, Instruction next, Instruction failjump);
 
 	// test
 

@@ -230,11 +230,11 @@ public abstract class GrammarGenerator extends NezGenerator {
 		dec();
 	}
 
-	public void visitEmpty(Expression e) {
+	public void visitPempty(Expression e) {
 		W("" + Quoatation() + Quoatation());
 	}
 
-	public void visitFailure(Expression e) {
+	public void visitPfail(Expression e) {
 		W(_Not() + Quoatation() + Quoatation());
 	}
 
@@ -242,44 +242,44 @@ public abstract class GrammarGenerator extends NezGenerator {
 		W(_NonTerminal(e.getProduction()));
 	}
 
-	public void visitByteChar(Cbyte e) {
+	public void visitCbyte(Cbyte e) {
 		W(StringUtils.stringfyByte(Quoatation(), e.byteChar, Quoatation()));
 	}
 
-	public void visitByteMap(Cset e) {
+	public void visitCset(Cset e) {
 		W(StringUtils.stringfyCharacterClass(e.byteMap));
 	}
 
-	public void visitAnyChar(Cany e) {
+	public void visitCany(Cany e) {
 		W(_Any());
 	}
 
 	@Override
-	public void visitCharMultiByte(Cmulti p) {
+	public void visitCmulti(Cmulti p) {
 		W(p.toString());
 	}
 
-	public void visitOption(Poption e) {
+	public void visitPoption(Poption e) {
 		Unary(null, e, _Option());
 	}
 
-	public void visitRepetition(Pzero e) {
+	public void visitPzero(Pzero e) {
 		Unary(null, e, _ZeroAndMore());
 	}
 
-	public void visitRepetition1(Pone e) {
+	public void visitPone(Pone e) {
 		Unary(null, e, _OneAndMore());
 	}
 
-	public void visitAnd(Pand e) {
+	public void visitPand(Pand e) {
 		Unary(_And(), e, null);
 	}
 
-	public void visitNot(Pnot e) {
+	public void visitPnot(Pnot e) {
 		Unary(_Not(), e, null);
 	}
 
-	public void visitChoice(Pchoice e) {
+	public void visitPchoice(Pchoice e) {
 		for (int i = 0; i < e.size(); i++) {
 			if (i > 0) {
 				W(" " + _Choice() + " ");
@@ -288,15 +288,15 @@ public abstract class GrammarGenerator extends NezGenerator {
 		}
 	}
 
-	public void visitNew(Tnew e) {
+	public void visitTnew(Tnew e) {
 		// W(e.lefted ? "{@" : "{");
 	}
 
-	public void visitCapture(Tcapture e) {
+	public void visitTcapture(Tcapture e) {
 		// W("}");
 	}
 
-	public void visitTagging(Ttag e) {
+	public void visitTtag(Ttag e) {
 		// W("#");
 		// W(e.tag.getName());
 	}
@@ -305,7 +305,7 @@ public abstract class GrammarGenerator extends NezGenerator {
 		// W(StringUtils.quoteString('`', e.value, '`'));
 	}
 
-	public void visitLink(Tlink e) {
+	public void visitTlink(Tlink e) {
 		// String predicate = "@";
 		// if(e.index != -1) {
 		// predicate += "[" + e.index + "]";
@@ -314,7 +314,7 @@ public abstract class GrammarGenerator extends NezGenerator {
 		visitExpression(e.get(0));
 	}
 
-	public void visitSequence(Psequence e) {
+	public void visitPsequence(Psequence e) {
 		int c = 0;
 		for (int i = 0; i < e.size(); i++) {
 			if (c > 0) {
@@ -372,55 +372,55 @@ public abstract class GrammarGenerator extends NezGenerator {
 	}
 
 	@Override
-	public void visitReplace(Treplace p) {
+	public void visitTreplace(Treplace p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitBlock(Xblock p) {
+	public void visitXblock(Xblock p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitDefSymbol(Xdef p) {
+	public void visitXdef(Xdef p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitMatchSymbol(Xmatch p) {
+	public void visitXmatch(Xmatch p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitIsSymbol(Xis p) {
+	public void visitXis(Xis p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitDefIndent(Xdefindent p) {
+	public void visitXdefindent(Xdefindent p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitIsIndent(Xindent p) {
+	public void visitXindent(Xindent p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitExistsSymbol(Xexists p) {
+	public void visitXexists(Xexists p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitLocalTable(Xlocal p) {
+	public void visitXlocal(Xlocal p) {
 		// TODO Auto-generated method stub
 
 	}

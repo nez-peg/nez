@@ -26,7 +26,7 @@ public class Parser {
 		this.option = option;
 	}
 
-	public final Grammar getGrammar() {
+	public final GenerativeGrammar getGrammar() {
 		return gg;
 	}
 

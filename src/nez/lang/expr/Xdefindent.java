@@ -7,7 +7,7 @@ import nez.lang.PossibleAcceptance;
 import nez.lang.Typestate;
 import nez.lang.Visa;
 import nez.parser.Instruction;
-import nez.parser.NezEncoder;
+import nez.parser.AbstractGenerator;
 
 public class Xdefindent extends Term {
 	Xdefindent(SourcePosition s) {
@@ -35,7 +35,7 @@ public class Xdefindent extends Term {
 	}
 
 	@Override
-	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
+	public Instruction encode(AbstractGenerator bc, Instruction next, Instruction failjump) {
 		return bc.encodeXdefindent(this, next, failjump);
 	}
 

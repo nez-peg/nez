@@ -8,7 +8,7 @@ import nez.lang.PossibleAcceptance;
 import nez.lang.Production;
 import nez.lang.Visa;
 import nez.parser.Instruction;
-import nez.parser.NezEncoder;
+import nez.parser.AbstractGenerator;
 
 public class NonTerminal extends ExpressionCommons {
 	private Grammar g;
@@ -107,7 +107,7 @@ public class NonTerminal extends ExpressionCommons {
 	}
 
 	@Override
-	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
+	public Instruction encode(AbstractGenerator bc, Instruction next, Instruction failjump) {
 		return bc.encodeNonTerminal(this, next, failjump);
 	}
 

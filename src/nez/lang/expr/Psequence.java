@@ -8,7 +8,7 @@ import nez.lang.PossibleAcceptance;
 import nez.lang.Typestate;
 import nez.lang.Visa;
 import nez.parser.Instruction;
-import nez.parser.NezEncoder;
+import nez.parser.AbstractGenerator;
 import nez.util.StringUtils;
 import nez.util.UList;
 
@@ -147,7 +147,7 @@ public class Psequence extends ExpressionCommons {
 	}
 
 	@Override
-	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
+	public Instruction encode(AbstractGenerator bc, Instruction next, Instruction failjump) {
 		NezOption option = bc.getOption();
 		if (option.enabledStringOptimization) {
 			Expression e = this.toMultiCharSequence();

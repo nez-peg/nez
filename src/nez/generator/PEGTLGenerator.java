@@ -75,11 +75,11 @@ public class PEGTLGenerator extends GrammarGenerator {
 		dec();
 	}
 
-	public void visitEmpty(Expression e) {
+	public void visitPempty(Expression e) {
 		C("pegtl::success");
 	}
 
-	public void visitFailure(Expression e) {
+	public void visitPfail(Expression e) {
 		C("pegtl::failure");
 	}
 
@@ -87,11 +87,11 @@ public class PEGTLGenerator extends GrammarGenerator {
 		W(_NonTerminal(e.getProduction()));
 	}
 
-	public void visitByteChar(Cbyte e) {
+	public void visitCbyte(Cbyte e) {
 		C("pegtl::one", e.byteChar);
 	}
 
-	public void visitByteMap(Cset e) {
+	public void visitCset(Cset e) {
 		C("pegtl::one", e.byteMap);
 	}
 
@@ -108,41 +108,41 @@ public class PEGTLGenerator extends GrammarGenerator {
 		W(_Close());
 	}
 
-	public void visitAnyChar(Cany e) {
+	public void visitCany(Cany e) {
 		W("pegtl::any");
 	}
 
-	public void visitOption(Poption e) {
+	public void visitPoption(Poption e) {
 		C("pegtl::opt", e);
 	}
 
-	public void visitRepetition(Pzero e) {
+	public void visitPzero(Pzero e) {
 		C("pegtl::star", e);
 	}
 
-	public void visitRepetition1(Pone e) {
+	public void visitPone(Pone e) {
 		C("pegtl::plus", e);
 	}
 
-	public void visitAnd(Pand e) {
+	public void visitPand(Pand e) {
 		C("pegtl::at", e);
 	}
 
-	public void visitNot(Pnot e) {
+	public void visitPnot(Pnot e) {
 		C("pegtl::not_at", e);
 	}
 
-	public void visitChoice(Pchoice e) {
+	public void visitPchoice(Pchoice e) {
 		C("pegtl::sor", e);
 	}
 
-	public void visitSequence(Psequence e) {
+	public void visitPsequence(Psequence e) {
 		W("pegtl::seq<");
-		super.visitSequence(e);
+		super.visitPsequence(e);
 		W(">");
 	}
 
-	public void visitNew(Tnew e) {
+	public void visitTnew(Tnew e) {
 		W("pegtl::success");
 		// if(e.lefted) {
 		// C("LCapture", e.shift);
@@ -152,22 +152,22 @@ public class PEGTLGenerator extends GrammarGenerator {
 		// }
 	}
 
-	public void visitCapture(Tcapture e) {
+	public void visitTcapture(Tcapture e) {
 		W("pegtl::success");
 		// C("Capture", e.shift);
 	}
 
-	public void visitTagging(Ttag e) {
+	public void visitTtag(Ttag e) {
 		W("pegtl::success");
 		// C("Tagging", e.getTagName());
 	}
 
-	public void visitReplace(Treplace e) {
+	public void visitTreplace(Treplace e) {
 		W("pegtl::success");
 		// C("Replace", StringUtils.quoteString('"', e.value, '"'));
 	}
 
-	public void visitLink(Tlink e) {
+	public void visitTlink(Tlink e) {
 		// if(e.index != -1) {
 		// C("Link", String.valueOf(e.index), e);
 		// }

@@ -6,7 +6,7 @@ import nez.lang.Expression;
 import nez.lang.GrammarTransducer;
 import nez.lang.Visa;
 import nez.parser.Instruction;
-import nez.parser.NezEncoder;
+import nez.parser.AbstractGenerator;
 
 public class Xlocal extends Unary {
 	public final SymbolId tableName;
@@ -56,7 +56,7 @@ public class Xlocal extends Unary {
 	}
 
 	@Override
-	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
+	public Instruction encode(AbstractGenerator bc, Instruction next, Instruction failjump) {
 		return bc.encodeXlocal(this, next, failjump);
 	}
 

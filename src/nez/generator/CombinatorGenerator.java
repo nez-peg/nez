@@ -68,11 +68,11 @@ public class CombinatorGenerator extends GrammarGenerator {
 		C("P", _NonTerminal(e.getProduction()));
 	}
 
-	public void visitByteChar(Cbyte e) {
+	public void visitCbyte(Cbyte e) {
 		C("t", StringUtils.stringfyByte('"', e.byteChar, '"'));
 	}
 
-	public void visitByteMap(Cset e) {
+	public void visitCset(Cset e) {
 		C("c", e.byteMap);
 	}
 
@@ -80,41 +80,41 @@ public class CombinatorGenerator extends GrammarGenerator {
 		C("t", s);
 	}
 
-	public void visitAnyChar(Cany e) {
+	public void visitCany(Cany e) {
 		C("AnyChar");
 	}
 
-	public void visitOption(Poption e) {
+	public void visitPoption(Poption e) {
 		C("Option", e);
 	}
 
-	public void visitRepetition(Pzero e) {
+	public void visitPzero(Pzero e) {
 		C("ZeroMore", e);
 	}
 
-	public void visitRepetition1(Pone e) {
+	public void visitPone(Pone e) {
 		C("OneMore", e);
 	}
 
-	public void visitAnd(Pand e) {
+	public void visitPand(Pand e) {
 		C("And", e);
 	}
 
-	public void visitNot(Pnot e) {
+	public void visitPnot(Pnot e) {
 		C("Not", e);
 	}
 
-	public void visitChoice(Pchoice e) {
+	public void visitPchoice(Pchoice e) {
 		C("Choice", e);
 	}
 
-	public void visitSequence(Psequence e) {
+	public void visitPsequence(Psequence e) {
 		W("Sequence(");
-		super.visitSequence(e);
+		super.visitPsequence(e);
 		W(")");
 	}
 
-	public void visitNew(Tnew e) {
+	public void visitTnew(Tnew e) {
 		if (e.leftFold) {
 			C("LCapture", e.shift);
 		} else {
@@ -122,19 +122,19 @@ public class CombinatorGenerator extends GrammarGenerator {
 		}
 	}
 
-	public void visitCapture(Tcapture e) {
+	public void visitTcapture(Tcapture e) {
 		C("Capture", e.shift);
 	}
 
-	public void visitTagging(Ttag e) {
+	public void visitTtag(Ttag e) {
 		C("Tagging", e.getTagName());
 	}
 
-	public void visitReplace(Treplace e) {
+	public void visitTreplace(Treplace e) {
 		C("Replace", StringUtils.quoteString('"', e.value, '"'));
 	}
 
-	public void visitLink(Tlink e) {
+	public void visitTlink(Tlink e) {
 		if (e.index != -1) {
 			C("Link", String.valueOf(e.index), e);
 		} else {

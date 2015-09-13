@@ -397,12 +397,12 @@ public class JavaParserGenerator extends ParserGenerator {
 	}
 
 	@Override
-	public void visitEmpty(Expression e) {
+	public void visitPempty(Expression e) {
 
 	}
 
 	@Override
-	public void visitFailure(Expression e) {
+	public void visitPfail(Expression e) {
 		Return(_false());
 	}
 
@@ -412,71 +412,71 @@ public class JavaParserGenerator extends ParserGenerator {
 	}
 
 	@Override
-	public void visitByteChar(Cbyte e) {
+	public void visitCbyte(Cbyte e) {
 		IfNotThen(_match(e.byteChar)).Begin().Return(_false()).End();
 	}
 
 	@Override
-	public void visitByteMap(Cset e) {
+	public void visitCset(Cset e) {
 		IfNotThen(_match(e.byteMap)).Begin().Return(_false()).End();
 	}
 
 	@Override
-	public void visitAnyChar(Cany e) {
+	public void visitCany(Cany e) {
 		IfNotThen(_match()).Begin().Return(_false()).End();
 	}
 
 	@Override
-	public void visitCharMultiByte(Cmulti p) {
+	public void visitCmulti(Cmulti p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitOption(Poption e) {
+	public void visitPoption(Poption e) {
 		Statement(_call(e));
 	}
 
 	@Override
-	public void visitRepetition(Pzero e) {
+	public void visitPzero(Pzero e) {
 		Statement(_call(e));
 	}
 
 	@Override
-	public void visitRepetition1(Pone e) {
+	public void visitPone(Pone e) {
 		visitExpression(e.get(0));
 		Statement(_call(e));
 	}
 
 	@Override
-	public void visitAnd(Pand e) {
+	public void visitPand(Pand e) {
 		IfNotThen(_call(e)).Begin().Return(_false()).End();
 	}
 
 	@Override
-	public void visitNot(Pnot e) {
+	public void visitPnot(Pnot e) {
 		IfThen(_call(e)).Begin().Return(_false()).End();
 	}
 
 	@Override
-	public void visitSequence(Psequence e) {
+	public void visitPsequence(Psequence e) {
 		for (Expression s : e) {
 			visitExpression(s);
 		}
 	}
 
 	@Override
-	public void visitChoice(Pchoice e) {
+	public void visitPchoice(Pchoice e) {
 		IfNotThen(_call(e)).Begin().Return(_false()).End();
 	}
 
 	@Override
-	public void visitNew(Tnew e) {
+	public void visitTnew(Tnew e) {
 		Statement(_ccall("new"));
 	}
 
 	@Override
-	public void visitCapture(Tcapture e) {
+	public void visitTcapture(Tcapture e) {
 		Statement(_ccall("capture"));
 	}
 
@@ -485,17 +485,17 @@ public class JavaParserGenerator extends ParserGenerator {
 	}
 
 	@Override
-	public void visitTagging(Ttag e) {
+	public void visitTtag(Ttag e) {
 		Statement(_ccall("tag", _tag(e.tag)));
 	}
 
 	@Override
-	public void visitReplace(Treplace e) {
+	public void visitTreplace(Treplace e) {
 		Statement(_ccall("replace", StringUtils.quoteString('"', e.value, '"')));
 	}
 
 	@Override
-	public void visitLink(Tlink e) {
+	public void visitTlink(Tlink e) {
 		IfNotThen(_call(e)).Begin().Return(_false()).End();
 	}
 
@@ -511,49 +511,49 @@ public class JavaParserGenerator extends ParserGenerator {
 	}
 
 	@Override
-	public void visitBlock(Xblock p) {
+	public void visitXblock(Xblock p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitDefSymbol(Xdef p) {
+	public void visitXdef(Xdef p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitIsSymbol(Xis p) {
+	public void visitXis(Xis p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitMatchSymbol(Xmatch p) {
+	public void visitXmatch(Xmatch p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitDefIndent(Xdefindent p) {
+	public void visitXdefindent(Xdefindent p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitIsIndent(Xindent p) {
+	public void visitXindent(Xindent p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitExistsSymbol(Xexists p) {
+	public void visitXexists(Xexists p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitLocalTable(Xlocal p) {
+	public void visitXlocal(Xlocal p) {
 		// TODO Auto-generated method stub
 
 	}

@@ -404,29 +404,29 @@ public class PythonParserGenerator extends NezGenerator {
 	}
 
 	@Override
-	public void visitEmpty(Expression p) {
+	public void visitPempty(Expression p) {
 		Pass();
 	}
 
 	@Override
-	public void visitFailure(Expression p) {
+	public void visitPfail(Expression p) {
 		Fail();
 	}
 
 	@Override
-	public void visitAnyChar(Cany p) {
+	public void visitCany(Cany p) {
 		If("self.inputs[self.pos] != '\\0'").Begin().Consume().End().Else().Begin().Fail().End();
 	}
 
 	@Override
-	public void visitByteChar(Cbyte p) {
+	public void visitCbyte(Cbyte p) {
 		If(_match(StringUtils.stringfyCharacter(p.byteChar))).Begin().Consume().End().Else().Begin().Fail().End();
 	}
 
 	ArrayList<Cset> byteMapList = new ArrayList<Cset>();
 
 	@Override
-	public void visitByteMap(Cset p) {
+	public void visitCset(Cset p) {
 		if (!byteMapList.contains(p)) {
 			byteMapList.add(p);
 		}
@@ -435,7 +435,7 @@ public class PythonParserGenerator extends NezGenerator {
 	}
 
 	@Override
-	public void visitOption(Poption p) {
+	public void visitPoption(Poption p) {
 		String pos = "pos_op" + p.getId();
 		Let(pos, "self.pos");
 		visitExpression(p.get(0));
@@ -443,7 +443,7 @@ public class PythonParserGenerator extends NezGenerator {
 	}
 
 	@Override
-	public void visitRepetition(Pzero p) {
+	public void visitPzero(Pzero p) {
 		String pos = "pos_op" + p.getId();
 		While("result").Begin();
 		Let(pos, "self.pos");
@@ -454,7 +454,7 @@ public class PythonParserGenerator extends NezGenerator {
 	}
 
 	@Override
-	public void visitRepetition1(Pone p) {
+	public void visitPone(Pone p) {
 		visitExpression(p.get(0));
 		If("result").Begin();
 		String pos = "pos_op" + p.getId();
@@ -468,7 +468,7 @@ public class PythonParserGenerator extends NezGenerator {
 	}
 
 	@Override
-	public void visitAnd(Pand p) {
+	public void visitPand(Pand p) {
 		String pos = "pos_and" + p.getId();
 		Let(pos, "self.pos");
 		visitExpression(p.get(0));
@@ -476,7 +476,7 @@ public class PythonParserGenerator extends NezGenerator {
 	}
 
 	@Override
-	public void visitNot(Pnot p) {
+	public void visitPnot(Pnot p) {
 		String pos = "pos_not" + p.getId();
 		Let(pos, "self.pos");
 		visitExpression(p.get(0));
@@ -506,7 +506,7 @@ public class PythonParserGenerator extends NezGenerator {
 	}
 
 	@Override
-	public void visitSequence(Psequence p) {
+	public void visitPsequence(Psequence p) {
 		Let("index" + p.getId(), _func("len", "self.compiler.func.list"));
 		boolean isLeftNew = false;
 		boolean isLink = false;
@@ -537,7 +537,7 @@ public class PythonParserGenerator extends NezGenerator {
 	}
 
 	@Override
-	public void visitChoice(Pchoice p) {
+	public void visitPchoice(Pchoice p) {
 		String pos = "pos_c" + p.getId();
 		Let(pos, "self.pos");
 		for (int i = 0; i < p.size(); i++) {
@@ -577,7 +577,7 @@ public class PythonParserGenerator extends NezGenerator {
 	}
 
 	@Override
-	public void visitLink(Tlink p) {
+	public void visitTlink(Tlink p) {
 		int memoPoint = 0;
 		if (!memoMap.containsKey(p.getId())) {
 			memoPoint = this.memoPoint++;
@@ -602,7 +602,7 @@ public class PythonParserGenerator extends NezGenerator {
 	Stack<Boolean> markStack = new Stack<Boolean>();
 
 	@Override
-	public void visitNew(Tnew p) {
+	public void visitTnew(Tnew p) {
 		if (p.leftFold) {
 			Ileftnew();
 			markStack.push(true);
@@ -613,7 +613,7 @@ public class PythonParserGenerator extends NezGenerator {
 	}
 
 	@Override
-	public void visitCapture(Tcapture p) {
+	public void visitTcapture(Tcapture p) {
 		if (markStack.pop()) {
 			If("result").Begin().Ileftcapture().End();
 			Else().Begin().Abort().End();
@@ -623,65 +623,65 @@ public class PythonParserGenerator extends NezGenerator {
 	}
 
 	@Override
-	public void visitTagging(Ttag p) {
+	public void visitTtag(Ttag p) {
 		Itag(p.getTagName());
 	}
 
 	@Override
-	public void visitReplace(Treplace p) {
+	public void visitTreplace(Treplace p) {
 		Ireplace(p.value);
 	}
 
 	@Override
-	public void visitBlock(Xblock p) {
+	public void visitXblock(Xblock p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitDefSymbol(Xdef p) {
+	public void visitXdef(Xdef p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitIsSymbol(Xis p) {
+	public void visitXis(Xis p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitMatchSymbol(Xmatch p) {
+	public void visitXmatch(Xmatch p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitDefIndent(Xdefindent p) {
+	public void visitXdefindent(Xdefindent p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitIsIndent(Xindent p) {
+	public void visitXindent(Xindent p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitExistsSymbol(Xexists p) {
+	public void visitXexists(Xexists p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitLocalTable(Xlocal p) {
+	public void visitXlocal(Xlocal p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitCharMultiByte(Cmulti p) {
+	public void visitCmulti(Cmulti p) {
 		// TODO Auto-generated method stub
 
 	}

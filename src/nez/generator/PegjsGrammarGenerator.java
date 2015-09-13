@@ -69,10 +69,10 @@ public class PegjsGrammarGenerator extends GrammarGenerator {
 		dec();
 	}
 
-	public void visitEmpty(Expression e) {
+	public void visitPempty(Expression e) {
 	}
 
-	public void visitFailure(Expression e) {
+	public void visitPfail(Expression e) {
 	}
 
 	public void visitNonTerminal(NonTerminal e) {
@@ -96,7 +96,7 @@ public class PegjsGrammarGenerator extends GrammarGenerator {
 		return "\"" + c + "\"";
 	}
 
-	public void visitByteChar(Cbyte e) {
+	public void visitCbyte(Cbyte e) {
 		W(this.stringfyByte(e.byteChar));
 	}
 
@@ -134,7 +134,7 @@ public class PegjsGrammarGenerator extends GrammarGenerator {
 		sb.append(c);
 	}
 
-	public void visitByteMap(Cset e) {
+	public void visitCset(Cset e) {
 		W("[");
 		boolean b[] = e.byteMap;
 		for (int start = 0; start < 256; start++) {
@@ -158,46 +158,46 @@ public class PegjsGrammarGenerator extends GrammarGenerator {
 	public void visitString(String s) {
 	}
 
-	public void visitAnyChar(Cany e) {
+	public void visitCany(Cany e) {
 		W(".");
 	}
 
-	public void visitOption(Poption e) {
+	public void visitPoption(Poption e) {
 		for (Expression sub : e) {
 			visitExpression(sub);
 		}
 		W("?");
 	}
 
-	public void visitRepetition(Pzero e) {
+	public void visitPzero(Pzero e) {
 		for (Expression sub : e) {
 			visitExpression(sub);
 		}
 		W("*");
 	}
 
-	public void visitRepetition1(Pone e) {
+	public void visitPone(Pone e) {
 		for (Expression sub : e) {
 			visitExpression(sub);
 		}
 		W("+");
 	}
 
-	public void visitAnd(Pand e) {
+	public void visitPand(Pand e) {
 		W("&");
 		for (Expression sub : e) {
 			visitExpression(sub);
 		}
 	}
 
-	public void visitNot(Pnot e) {
+	public void visitPnot(Pnot e) {
 		W("!");
 		for (Expression sub : e) {
 			visitExpression(sub);
 		}
 	}
 
-	public void visitChoice(Pchoice e) {
+	public void visitPchoice(Pchoice e) {
 		int checkFirst = 0;
 		W("(");
 		for (Expression sub : e) {
@@ -210,7 +210,7 @@ public class PegjsGrammarGenerator extends GrammarGenerator {
 		W(")");
 	}
 
-	public void visitSequence(Psequence e) {
+	public void visitPsequence(Psequence e) {
 		W("(");
 		for (Expression sub : e) {
 			visitExpression(sub);
@@ -219,22 +219,22 @@ public class PegjsGrammarGenerator extends GrammarGenerator {
 		W(")");
 	}
 
-	public void visitNew(Tnew e) {
+	public void visitTnew(Tnew e) {
 		for (Expression sub : e) {
 			visitExpression(sub);
 		}
 	}
 
-	public void visitCapture(Tcapture e) {
+	public void visitTcapture(Tcapture e) {
 	}
 
-	public void visitTagging(Ttag e) {
+	public void visitTtag(Ttag e) {
 	}
 
-	public void visitReplace(Treplace e) {
+	public void visitTreplace(Treplace e) {
 	}
 
-	public void visitLink(Tlink e) {
+	public void visitTlink(Tlink e) {
 		// if(e.index != -1) {
 		// C("Link", String.valueOf(e.index), e);
 		// }

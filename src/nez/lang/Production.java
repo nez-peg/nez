@@ -17,7 +17,7 @@ import nez.lang.expr.Pone;
 import nez.lang.expr.Poption;
 import nez.lang.expr.Pzero;
 import nez.parser.Instruction;
-import nez.parser.NezEncoder;
+import nez.parser.AbstractGenerator;
 import nez.util.ConsoleUtils;
 import nez.util.UFlag;
 import nez.util.UList;
@@ -479,7 +479,7 @@ public class Production /* extends Expression */{
 	}
 
 	// @Override
-	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
+	public Instruction encode(AbstractGenerator bc, Instruction next, Instruction failjump) {
 		return this.getExpression().encode(bc, next, failjump);
 	}
 

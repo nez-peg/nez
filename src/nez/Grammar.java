@@ -153,12 +153,14 @@ public class Grammar extends GrammarBase {
 	}
 
 	public final Parser newParser(String name, NezOption option, Reporter repo) {
-		Production p = this.getProduction(name);
-		if (p != null) {
-			GenerativeGrammar gg = new GenerativeGrammar(p, option, null, repo);
-			return new Parser(gg, option);
+		if (name != null) {
+			Production p = this.getProduction(name);
+			if (p != null) {
+				GenerativeGrammar gg = new GenerativeGrammar(p, option, null, repo);
+				return new Parser(gg, option);
+			}
 		}
-		Verbose.println("undefined production" + name);
+		Verbose.println("undefined production: " + name);
 		return newParser(option, repo);
 	}
 

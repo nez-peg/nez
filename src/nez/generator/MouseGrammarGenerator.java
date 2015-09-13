@@ -74,15 +74,15 @@ public class MouseGrammarGenerator extends GrammarGenerator {
 		file.write(stringfyName(e.getLocalName().replaceAll("_", "under")));
 	}
 
-	public void visitByteChar(Cbyte e) {
+	public void visitCbyte(Cbyte e) {
 		file.write(stringfy("\"", e.byteChar, "\""));
 	}
 
-	public void visitByteMap(Cset e) {
+	public void visitCset(Cset e) {
 		file.write(stringfy(e.byteMap));
 	}
 
-	public void visitAnyChar(Cany e) {
+	public void visitCany(Cany e) {
 		file.write("_");
 	}
 
@@ -166,23 +166,23 @@ public class MouseGrammarGenerator extends GrammarGenerator {
 		}
 	}
 
-	public void visitOption(Poption e) {
+	public void visitPoption(Poption e) {
 		this.visit(null, e, "?");
 	}
 
-	public void visitRepetition(Pzero e) {
+	public void visitPzero(Pzero e) {
 		this.visit(null, e, "*");
 	}
 
-	public void visitRepetition1(Pone e) {
+	public void visitPone(Pone e) {
 		this.visit(null, e, "+");
 	}
 
-	public void visitAnd(Pand e) {
+	public void visitPand(Pand e) {
 		this.visit("&", e, null);
 	}
 
-	public void visitNot(Pnot e) {
+	public void visitPnot(Pnot e) {
 		this.visit("!", e, null);
 	}
 
@@ -228,7 +228,7 @@ public class MouseGrammarGenerator extends GrammarGenerator {
 	// return end - 1;
 	// }
 
-	public void visitChoice(Pchoice e) {
+	public void visitPchoice(Pchoice e) {
 		for (int i = 0; i < e.size(); i++) {
 			if (i > 0) {
 				file.write(" / ");
@@ -237,15 +237,15 @@ public class MouseGrammarGenerator extends GrammarGenerator {
 		}
 	}
 
-	public void visitNew(Tnew e) {
+	public void visitTnew(Tnew e) {
 
 	}
 
-	public void visitCapture(Tcapture e) {
+	public void visitTcapture(Tcapture e) {
 
 	}
 
-	public void visitTagging(Ttag e) {
+	public void visitTtag(Ttag e) {
 		// file.write("{");
 		// file.write(e.tag.toString().toLowerCase());
 		// file.write("}");
@@ -255,7 +255,7 @@ public class MouseGrammarGenerator extends GrammarGenerator {
 		// file.write(StringUtils.quoteString('`', e.value, '`'));
 	}
 
-	public void visitLink(Tlink e) {
+	public void visitTlink(Tlink e) {
 		// String predicate = "@";
 		// if(e.index != -1) {
 		// predicate += "[" + e.index + "]";

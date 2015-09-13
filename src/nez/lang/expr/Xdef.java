@@ -8,7 +8,7 @@ import nez.lang.GrammarTransducer;
 import nez.lang.Typestate;
 import nez.lang.Visa;
 import nez.parser.Instruction;
-import nez.parser.NezEncoder;
+import nez.parser.AbstractGenerator;
 import nez.util.UMap;
 
 public class Xdef extends Unary {
@@ -90,7 +90,7 @@ public class Xdef extends Unary {
 	}
 
 	@Override
-	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
+	public Instruction encode(AbstractGenerator bc, Instruction next, Instruction failjump) {
 		return bc.encodeXdef(this, next, failjump);
 	}
 

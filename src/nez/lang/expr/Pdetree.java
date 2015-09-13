@@ -6,7 +6,7 @@ import nez.lang.GrammarTransducer;
 import nez.lang.Typestate;
 import nez.lang.Visa;
 import nez.parser.Instruction;
-import nez.parser.NezEncoder;
+import nez.parser.AbstractGenerator;
 
 public class Pdetree extends Unary {
 	Pdetree(SourcePosition s, Expression inner) {
@@ -47,7 +47,7 @@ public class Pdetree extends Unary {
 	}
 
 	@Override
-	public Instruction encode(NezEncoder bc, Instruction next, Instruction failjump) {
+	public Instruction encode(AbstractGenerator bc, Instruction next, Instruction failjump) {
 		return this.inner.encode(bc, next, failjump);
 	}
 

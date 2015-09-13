@@ -118,11 +118,11 @@ public class LPegGrammarGenerator extends NezGenerator {
 		file.writeIndent("evalExp(data)");
 	}
 
-	public void visitEmpty(Expression e) {
+	public void visitPempty(Expression e) {
 		file.write("lpeg.P\"\"");
 	}
 
-	public void visitFailure(Expression e) {
+	public void visitPfail(Expression e) {
 		file.write("- lpeg.P(1) ");
 	}
 
@@ -147,7 +147,7 @@ public class LPegGrammarGenerator extends NezGenerator {
 		return "\"" + c + "\"";
 	}
 
-	public void visitByteChar(Cbyte e) {
+	public void visitCbyte(Cbyte e) {
 		file.write("lpeg.P" + this.stringfyByte(e.byteChar) + " ");
 	}
 
@@ -177,7 +177,7 @@ public class LPegGrammarGenerator extends NezGenerator {
 		sb.append(c);
 	}
 
-	public void visitByteMap(Cset e) {
+	public void visitCset(Cset e) {
 		boolean b[] = e.byteMap;
 		for (int start = 0; start < 256; start++) {
 			if (b[start]) {
@@ -195,12 +195,12 @@ public class LPegGrammarGenerator extends NezGenerator {
 		}
 	}
 
-	public void visitAnyChar(Cany e) {
+	public void visitCany(Cany e) {
 		file.write("lpeg.P(1)");
 	}
 
 	@Override
-	public void visitCharMultiByte(Cmulti p) {
+	public void visitCmulti(Cmulti p) {
 		// TODO Auto-generated method stub
 
 	}
@@ -221,27 +221,27 @@ public class LPegGrammarGenerator extends NezGenerator {
 		}
 	}
 
-	public void visitOption(Poption e) {
+	public void visitPoption(Poption e) {
 		this.visit(null, e, "^-1");
 	}
 
-	public void visitRepetition(Pzero e) {
+	public void visitPzero(Pzero e) {
 		this.visit(null, e, "^0");
 	}
 
-	public void visitRepetition1(Pone e) {
+	public void visitPone(Pone e) {
 		this.visit(null, e, "^1");
 	}
 
-	public void visitAnd(Pand e) {
+	public void visitPand(Pand e) {
 		this.visit("#", e, null);
 	}
 
-	public void visitNot(Pnot e) {
+	public void visitPnot(Pnot e) {
 		this.visit("-", e, null);
 	}
 
-	public void visitTagging(Ttag e) {
+	public void visitTtag(Ttag e) {
 		file.write("lpeg.P\"\" --[[");
 		file.write(e.tag.toString());
 		file.write("]]");
@@ -251,7 +251,7 @@ public class LPegGrammarGenerator extends NezGenerator {
 		file.write("lpeg.P\"\"");
 	}
 
-	public void visitLink(Tlink e) {
+	public void visitTlink(Tlink e) {
 		// String predicate = "@";
 		// if(e.index != -1) {
 		// predicate += "[" + e.index + "]";
@@ -281,7 +281,7 @@ public class LPegGrammarGenerator extends NezGenerator {
 		return end - 1;
 	}
 
-	public void visitSequence(Psequence l) {
+	public void visitPsequence(Psequence l) {
 		for (int i = 0; i < l.size(); i++) {
 			if (i > 0) {
 				file.write(" ");
@@ -308,7 +308,7 @@ public class LPegGrammarGenerator extends NezGenerator {
 		}
 	}
 
-	public void visitChoice(Pchoice e) {
+	public void visitPchoice(Pchoice e) {
 		for (int i = 0; i < e.size(); i++) {
 			if (i > 0) {
 				file.write(" + ");
@@ -331,11 +331,11 @@ public class LPegGrammarGenerator extends NezGenerator {
 	// file.write(" )");
 	// }
 
-	public void visitNew(Tnew e) {
+	public void visitTnew(Tnew e) {
 
 	}
 
-	public void visitCapture(Tcapture e) {
+	public void visitTcapture(Tcapture e) {
 
 	}
 
@@ -357,55 +357,55 @@ public class LPegGrammarGenerator extends NezGenerator {
 	}
 
 	@Override
-	public void visitReplace(Treplace p) {
+	public void visitTreplace(Treplace p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitBlock(Xblock p) {
+	public void visitXblock(Xblock p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitMatchSymbol(Xmatch p) {
+	public void visitXmatch(Xmatch p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitDefSymbol(Xdef p) {
+	public void visitXdef(Xdef p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitIsSymbol(Xis p) {
+	public void visitXis(Xis p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitDefIndent(Xdefindent p) {
+	public void visitXdefindent(Xdefindent p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitIsIndent(Xindent p) {
+	public void visitXindent(Xindent p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitExistsSymbol(Xexists p) {
+	public void visitXexists(Xexists p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitLocalTable(Xlocal p) {
+	public void visitXlocal(Xlocal p) {
 		// TODO Auto-generated method stub
 
 	}
