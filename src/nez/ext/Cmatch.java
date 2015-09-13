@@ -3,7 +3,7 @@ package nez.ext;
 import java.io.IOException;
 
 import nez.Parser;
-import nez.SourceContext;
+import nez.io.SourceContext;
 import nez.main.Command;
 import nez.main.CommandContext;
 import nez.main.Verbose;

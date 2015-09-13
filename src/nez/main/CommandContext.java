@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.IOException;
 
 import nez.ParserFactory;
-import nez.SourceContext;
+import nez.io.SourceContext;
 import nez.util.ConsoleUtils;
 import nez.util.ExtensionLoader;
 import nez.util.StringUtils;

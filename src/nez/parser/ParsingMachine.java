@@ -1,6 +1,6 @@
 package nez.parser;
 
-import nez.SourceContext;
+import nez.io.SourceContext;
 
 public class ParsingMachine {
 

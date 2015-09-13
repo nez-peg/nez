@@ -4,10 +4,10 @@ import java.io.IOException;
 
 import nez.Grammar;
 import nez.Parser;
-import nez.SourceContext;
 import nez.ast.Source;
 import nez.ast.SymbolId;
 import nez.ast.TreeTransducer;
+import nez.io.SourceContext;
 import nez.lang.GrammarFileLoader;
 import nez.util.ConsoleUtils;
 

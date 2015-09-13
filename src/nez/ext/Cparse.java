@@ -3,9 +3,9 @@ package nez.ext;
 import java.io.IOException;
 
 import nez.Parser;
-import nez.SourceContext;
 import nez.ast.AbstractTree;
 import nez.ast.AbstractTreeWriter;
+import nez.io.SourceContext;
 import nez.main.Command;
 import nez.main.CommandContext;
 import nez.main.NezProfier;

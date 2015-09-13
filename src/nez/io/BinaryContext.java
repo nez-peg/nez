@@ -2,7 +2,6 @@ package nez.io;
 
 import java.io.UnsupportedEncodingException;
 
-import nez.SourceContext;
 import nez.ast.Source;
 import nez.util.StringUtils;
 

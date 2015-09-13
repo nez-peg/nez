@@ -2,8 +2,8 @@ package nez.lang;
 
 import nez.NezOption;
 import nez.Parser;
-import nez.SourceContext;
 import nez.ast.AbstractTree;
+import nez.io.SourceContext;
 import nez.main.Verbose;
 
 public class Example {

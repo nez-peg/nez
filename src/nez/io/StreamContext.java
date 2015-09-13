@@ -6,7 +6,6 @@ import java.io.UnsupportedEncodingException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import nez.SourceContext;
 import nez.util.StringUtils;
 
 public class StreamContext extends SourceContext {
