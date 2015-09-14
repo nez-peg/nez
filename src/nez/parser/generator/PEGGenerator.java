@@ -91,8 +91,7 @@ public class PEGGenerator extends ParserGenerator {
 
 	@Override
 	public void visitCmulti(Cmulti p) {
-		// TODO Auto-generated method stub
-
+		W(p.toString()); // FIXME
 	}
 
 	protected void visitUnary(String prefix, Unary e, String suffix) {

@@ -1,23 +1,11 @@
 package nez.lang;
 
-import nez.Grammar;
-import nez.NezOption;
-import nez.Parser;
-import nez.ParserCombinator;
+import nez.Combinator;
 
-public class NezGrammar1 extends ParserCombinator {
+public class NezGrammar1 extends Combinator {
 
-	private static Grammar file = null;
-
-	public final static Grammar newGrammar() {
-		if (file == null) {
-			file = new NezGrammar1().load();
-		}
-		return file;
-	}
-
-	public final static Parser newParser(String name, NezOption option) {
-		return newGrammar().newParser(name, option, null);
+	public NezGrammar1() {
+		super("nez", "File");
 	}
 
 	public Expression pEOT() {

@@ -1,7 +1,5 @@
 package nez.lang.expr;
 
-import java.util.List;
-
 import nez.NezOption;
 import nez.ast.SourcePosition;
 import nez.lang.Expression;
@@ -64,7 +62,7 @@ public class Psequence extends ExpressionCommons {
 		return this.next;
 	}
 
-	public final List<Expression> toList() {
+	public final UList<Expression> toList() {
 		UList<Expression> l = ExpressionCommons.newList(4);
 		Psequence p = this;
 		while (true) {

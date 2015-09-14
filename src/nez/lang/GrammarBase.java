@@ -16,14 +16,14 @@ public abstract class GrammarBase extends AbstractList<Production> {
 
 	public abstract void addProduction(Production p);
 
-	public final Production newProduction(int flag, String name, Expression e) {
-		Production p = new Production(getSourcePosition(), flag, (Grammar) this, name, e);
+	public final Production newProduction(SourcePosition s, int flag, String name, Expression e) {
+		Production p = new Production(s, flag, (Grammar) this, name, e);
 		addProduction(p);
 		return p;
 	}
 
 	public final Production newProduction(String name, Expression e) {
-		return newProduction(0, name, e);
+		return newProduction(getSourcePosition(), 0, name, e);
 	}
 
 	public final NonTerminal newNonTerminal(String name) {

@@ -34,7 +34,7 @@ public class GrammarOptimizer extends GrammarRewriter {
 	GenerativeGrammar gg;
 	NezOption option;
 	Reporter repo;
-	HashMap<String, Integer> optimizedMap = new HashMap<String, Integer>();
+	final HashMap<String, Integer> optimizedMap = new HashMap<String, Integer>();
 	HashMap<String, Production> bodyMap = null;
 	HashMap<String, String> aliasMap = null;
 
@@ -62,6 +62,8 @@ public class GrammarOptimizer extends GrammarRewriter {
 		UList<Production> prodList = new UList<Production>(new Production[gg.size()]);
 		for (Production p : gg) {
 			String key = p.getLocalName();
+			// System.out.println("optimizedMap: " + optimizedMap + "key=" +
+			// key);
 			int refc = optimizedMap.get(key);
 			// System.out.println(key + ": ref=" + refc);
 			if (refc > 0) {
@@ -172,37 +174,55 @@ public class GrammarOptimizer extends GrammarRewriter {
 
 	// @Override
 	// public Expression reshapePsequence(Psequence p) {
-	// Expression e = super.reshapePsequence(p);
-	// if (e instanceof Psequence) {
-	// Expression first = e.getFirst();
-	// Expression next = e.getNext();
+	// UList<Expression> l = p.toList();
+	// UList<Expression> l2 = ExpressionCommons.newList(l.size());
+	// for (int i = 0; i < l.size(); i++) {
+	// Expression inner = l.ArrayValues[i];
+	// push(inner);
+	// inner = inner.reshape(this);
+	// l2.add(inner);
+	// }
+	// for (int i = l.size() - 1; i >= 0; i--) {
+	// pop(l.ArrayValues[i]);
+	// }
 	// if (this.enabledOutOfOrder) {
-	// if (next instanceof Psequence) {
-	// Psequence nextSequence = (Psequence) next;
-	// if (isSingleCharacter(nextSequence.first) && isOutOfOrdered(first)) {
-	// rewrite_outoforder(first, nextSequence.first);
-	// Expression temp = nextSequence.first;
-	// nextSequence.first = first;
-	// first = temp;
+	// // // if (next instanceof Psequence) {
+	// // // Psequence nextSequence = (Psequence) next;
+	// // // if (isSingleCharacter(nextSequence.first) &&
+	// // isOutOfOrdered(first)) {
+	// // // rewrite_outoforder(first, nextSequence.first);
+	// // // Expression temp = nextSequence.first;
+	// // // nextSequence.first = first;
+	// // // first = temp;
+	// // // }
+	// // // } else {
+	// // // if (isSingleCharacter(next) && isOutOfOrdered(first)) {
+	// // // rewrite_outoforder(first, next);
+	// // // Expression temp = first;
+	// // // first = next;
+	// // // next = temp;
+	// // // }
+	// // // }
 	// }
-	// } else {
-	// if (isSingleCharacter(next) && isOutOfOrdered(first)) {
-	// rewrite_outoforder(first, next);
-	// Expression temp = first;
-	// first = next;
-	// next = temp;
-	// }
-	// }
-	// }
-	// if (isNotChar(first)) {
-	// Expression optimized = convertBitMap(next, first.get(0));
-	// if (optimized != null) {
-	// rewrite("not-merge", p, optimized);
-	// return optimized;
-	// }
-	// }
-	// }
-	// return e;
+	// // for (int i = 1; i < l.size(); i++) {
+	// // Expression first = l.get(i - 1);
+	// // Expression next = l.get(i);
+	// // if (isNotChar(first)) {
+	// // if (next instanceof Cany) {
+	// // l.ArrayValues[i] = convertBitMap(next, first.get(0));
+	// // l.ArrayValues[i - 1] = p.newEmpty();
+	// // // if (optimized != null) {
+	// // // rewrite("not-merge", p, optimized);
+	// // // return optimized;
+	// // // }
+	// // }
+	// // if (next instanceof Cset && isNotChar(first)) {
+	// // l.ArrayValues[i] = convertBitMap(next, first.get(0));
+	// // l.ArrayValues[i - 1] = p.newEmpty();
+	// // }
+	// // }
+	// // }
+	// return p.newSequence(l2);
 	// }
 
 	private boolean isOutOfOrdered(Expression e) {
@@ -241,7 +261,7 @@ public class GrammarOptimizer extends GrammarRewriter {
 			Cany any = (Cany) next;
 			isBinary = any.isBinary();
 			bany = Cset.newMap(true);
-			if (isBinary) {
+			if (!isBinary) {
 				bany[0] = false;
 			}
 		}
@@ -250,18 +270,7 @@ public class GrammarOptimizer extends GrammarRewriter {
 			isBinary = bm.isBinary();
 			bany = bm.byteMap.clone();
 		}
-		if (next instanceof Cbyte) {
-			Cbyte bc = (Cbyte) next;
-			isBinary = bc.isBinary();
-			bany = Cset.newMap(false);
-			if (isBinary) {
-				bany[0] = false;
-			}
-			bany[bc.byteChar] = true;
-		}
-		if (bany == null) {
-			return null;
-		}
+
 		if (not instanceof Cset) {
 			Cset bm = (Cset) not;
 			for (int c = 0; c < bany.length - 1; c++) {
@@ -276,11 +285,7 @@ public class GrammarOptimizer extends GrammarRewriter {
 				bany[bc.byteChar] = false;
 			}
 		}
-		Expression e = not.newByteMap(isBinary, bany);
-		if (nextNext != null) {
-			return not.newSequence(e, nextNext);
-		}
-		return e;
+		return not.newByteMap(isBinary, bany);
 	}
 
 	@Override

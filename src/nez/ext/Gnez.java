@@ -28,7 +28,7 @@ public class Gnez extends GrammarFileLoader {
 	@Override
 	public Parser getLoaderGrammar() {
 		if (nezParser == null) {
-			nezParser = NezGrammar1.newParser("File", NezOption.newSafeOption());
+			nezParser = new NezGrammar1().newParser(NezOption.newSafeOption(), null);
 			assert (nezParser != null);
 		}
 		return nezParser;

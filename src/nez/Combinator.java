@@ -6,53 +6,89 @@ import java.lang.reflect.Method;
 import nez.ast.SourcePosition;
 import nez.ast.SymbolId;
 import nez.lang.Expression;
-import nez.lang.GrammarFile;
 import nez.lang.expr.Cset;
 import nez.lang.expr.ExpressionCommons;
 import nez.main.Verbose;
 import nez.util.UList;
 
-public class ParserCombinator {
+public class Combinator extends Grammar {
 
-	protected GrammarFile file = null;
-
-	public final GrammarFile load() {
-		if (this.file == null) {
-			Class<?> c = this.getClass();
-			file = GrammarFile.newGrammarFile(c.getName(), NezOption.newDefaultOption());
-			if (file.isEmpty()) {
-				load(file);
-			}
-		}
-		return file;
+	public Combinator(String ns, String start) {
+		super(ns);
+		load(start);
 	}
 
-	public final GrammarFile load(GrammarFile file) {
+	//
+	// public final GrammarFile load() {
+	// if (this.file == null) {
+	// Class<?> c = this.getClass();
+	// file = GrammarFile.newGrammarFile(c.getName(),
+	// NezOption.newDefaultOption());
+	// if (file.isEmpty()) {
+	// load(file);
+	// }
+	// }
+	// return file;
+	// }
+
+	public final void load(String start) {
 		Class<?> c = this.getClass();
+		Method startMethod = null;
+		try {
+			startMethod = c.getMethod("p" + start);
+			addProduction(start, startMethod);
+		} catch (NoSuchMethodException e2) {
+			Verbose.println(e2.toString());
+		} catch (SecurityException e2) {
+			Verbose.traceException(e2);
+		}
 		for (Method m : c.getDeclaredMethods()) {
 			if (m.getReturnType() == Expression.class && m.getParameterTypes().length == 0) {
 				String name = m.getName();
 				if (name.startsWith("p")) {
 					name = name.substring(1);
 				}
-				try {
-					Expression e = (Expression) m.invoke(this);
-					file.addProduction(e.getSourcePosition(), name, e);
-				} catch (IllegalAccessException e1) {
-					Verbose.traceException(e1);
-				} catch (IllegalArgumentException e1) {
-					Verbose.traceException(e1);
-				} catch (InvocationTargetException e1) {
-					Verbose.traceException(e1);
-				}
+				addProduction(name, m);
 			}
 		}
-		return file;
 	}
 
-	public final Parser newParser(String name) {
-		return this.load().newParser(name);
+	private void addProduction(String name, Method m) {
+		try {
+			Expression e = (Expression) m.invoke(this);
+			this.newProduction(e.getSourcePosition(), 0, name, e);
+		} catch (IllegalAccessException e1) {
+			Verbose.traceException(e1);
+		} catch (IllegalArgumentException e1) {
+			Verbose.traceException(e1);
+		} catch (InvocationTargetException e1) {
+			Verbose.traceException(e1);
+		}
 	}
+
+	// public final GrammarFile load(GrammarFile file) {
+	// Class<?> c = this.getClass();
+	// for (Method m : c.getDeclaredMethods()) {
+	// if (m.getReturnType() == Expression.class && m.getParameterTypes().length
+	// == 0) {
+	// String name = m.getName();
+	// if (name.startsWith("p")) {
+	// name = name.substring(1);
+	// }
+	// try {
+	// Expression e = (Expression) m.invoke(this);
+	// file.addProduction(e.getSourcePosition(), name, e);
+	// } catch (IllegalAccessException e1) {
+	// Verbose.traceException(e1);
+	// } catch (IllegalArgumentException e1) {
+	// Verbose.traceException(e1);
+	// } catch (InvocationTargetException e1) {
+	// Verbose.traceException(e1);
+	// }
+	// }
+	// }
+	// return file;
+	// }
 
 	private SourcePosition src() {
 		Exception e = new Exception();
@@ -81,7 +117,7 @@ public class ParserCombinator {
 	}
 
 	protected final Expression P(String name) {
-		return ExpressionCommons.newNonTerminal(src(), this.file, name);
+		return ExpressionCommons.newNonTerminal(src(), this, name);
 	}
 
 	protected final Expression t(char c) {

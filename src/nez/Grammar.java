@@ -129,8 +129,7 @@ public class Grammar extends GrammarBase {
 	}
 
 	public final void setSymbolExpresion(String tableName, Expression e) {
-		Production p = this.newProduction(Production.PublicProduction, "^" + tableName, e);
-		addProduction(p);
+		this.newProduction(null, Production.PublicProduction, "^" + tableName, e);
 	}
 
 	public final Expression getSymbolExpresion(String tableName) {

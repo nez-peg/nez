@@ -33,14 +33,14 @@ import nez.util.UFlag;
 import nez.util.UList;
 
 public class GrammarChecker extends GrammarTransducer {
-	GenerativeGrammar g;
+	GenerativeGrammar gg;
 	private int requiredTypestate;
 	final TreeMap<String, Boolean> boolMap;
 	UList<Expression> stacked;
 	Reporter repo = null;
 
 	public GrammarChecker(GenerativeGrammar g, boolean offAST, TreeMap<String, Boolean> ctx, Production start, NezOption option, Reporter repo) {
-		this.g = g;
+		this.gg = g;
 		this.boolMap = (ctx == null) ? new TreeMap<String, Boolean>() : ctx;
 		this.repo = repo == null ? new Reporter() : repo;
 
@@ -68,9 +68,9 @@ public class GrammarChecker extends GrammarTransducer {
 	}
 
 	private ParseFunc checkFirstVisitedProduction(String uname, Production p) {
-		Production lp/* local production */= g.newProduction(uname, null);
+		Production lp/* local production */= gg.newProduction(uname, null);
 		ParseFunc f = new ParseFunc(uname, p);
-		g.setParseFunc(f);
+		gg.setParseFunc(f);
 		if (UFlag.is(p.flag, Production.ResetFlag)) {
 			p.initFlag();
 			if (p.isRecursive()) {
@@ -140,33 +140,33 @@ public class GrammarChecker extends GrammarTransducer {
 
 		int innerTypestate = this.isNonASTContext() ? Typestate.BooleanType : p.inferTypestate(null);
 		String uname = this.uniqueName(n.getUniqueName(), p);
-		ParseFunc f = g.getParseFunc(uname);
+		ParseFunc f = gg.getParseFunc(uname);
 		if (f == null) {
 			f = checkFirstVisitedProduction(uname, p);
 		}
 		f.count();
 		if (innerTypestate == Typestate.BooleanType) {
-			return g.newNonTerminal(uname);
+			return gg.newNonTerminal(uname);
 		}
 		int required = this.requiredTypestate;
 		if (required == Typestate.ObjectType) {
 			if (innerTypestate == Typestate.OperationType) {
 				reportInserted(n, "{");
 				this.requiredTypestate = Typestate.OperationType;
-				return ExpressionCommons.newNewCapture(n.getSourcePosition(), g.newNonTerminal(uname));
+				return ExpressionCommons.newNewCapture(n.getSourcePosition(), gg.newNonTerminal(uname));
 			}
 			this.requiredTypestate = Typestate.OperationType;
-			return g.newNonTerminal(uname);
+			return gg.newNonTerminal(uname);
 		}
 		if (required == Typestate.OperationType) {
 			if (innerTypestate == Typestate.ObjectType) {
 				reportInserted(n, "$");
 				this.requiredTypestate = Typestate.ObjectType;
-				return ExpressionCommons.newTlink(n.getSourcePosition(), null, g.newNonTerminal(uname));
+				return ExpressionCommons.newTlink(n.getSourcePosition(), null, gg.newNonTerminal(uname));
 			}
 			// return g.newNonTerminal(uname);
 		}
-		return g.newNonTerminal(uname);
+		return gg.newNonTerminal(uname);
 	}
 
 	@Override
@@ -417,8 +417,8 @@ public class GrammarChecker extends GrammarTransducer {
 		} else {
 			inner = this.reshapeInner(inner);
 		}
-		g.setSymbolExpresion(p.getTableName(), inner);
-		return ExpressionCommons.newXdef(p.getSourcePosition(), g, p.getTable(), inner);
+		gg.setSymbolExpresion(p.getTableName(), inner);
+		return ExpressionCommons.newXdef(p.getSourcePosition(), gg, p.getTable(), inner);
 	}
 
 	@Override
@@ -428,7 +428,7 @@ public class GrammarChecker extends GrammarTransducer {
 			reportError(p, "undefined table: " + p.getTableName());
 			return ExpressionCommons.newFailure(p.getSourcePosition());
 		}
-		return ExpressionCommons.newXis(p.getSourcePosition(), g, p.getTable(), p.is);
+		return ExpressionCommons.newXis(p.getSourcePosition(), gg, p.getTable(), p.is);
 	}
 
 	/* static context */
