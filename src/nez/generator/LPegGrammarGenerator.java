@@ -16,6 +16,7 @@ import nez.lang.expr.Psequence;
 import nez.lang.expr.Pzero;
 import nez.lang.expr.Tcapture;
 import nez.lang.expr.Tdetree;
+import nez.lang.expr.Tlfold;
 import nez.lang.expr.Tlink;
 import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
@@ -433,6 +434,12 @@ public class LPegGrammarGenerator extends ParserGenerator {
 
 	@Override
 	public void visitXon(Xon p) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void visitTlfold(Tlfold p) {
 		// TODO Auto-generated method stub
 
 	}

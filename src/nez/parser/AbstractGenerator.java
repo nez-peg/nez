@@ -19,6 +19,7 @@ import nez.lang.expr.Psequence;
 import nez.lang.expr.Pzero;
 import nez.lang.expr.Tcapture;
 import nez.lang.expr.Tdetree;
+import nez.lang.expr.Tlfold;
 import nez.lang.expr.Tlink;
 import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
@@ -114,9 +115,11 @@ public abstract class AbstractGenerator {
 	public abstract Instruction encodeNonTerminal(NonTerminal p, Instruction next, Instruction failjump);
 
 	// AST Construction
-	public abstract Instruction encodeTlink(Tlink p, Instruction next, Instruction failjump);
-
 	public abstract Instruction encodeTnew(Tnew p, Instruction next);
+
+	public abstract Instruction encodeTlfold(Tlfold p, Instruction next);
+
+	public abstract Instruction encodeTlink(Tlink p, Instruction next, Instruction failjump);
 
 	public abstract Instruction encodeTcapture(Tcapture p, Instruction next);
 

@@ -169,11 +169,11 @@ public class ParserCombinator {
 	}
 
 	protected final Expression NCapture(int shift) {
-		return ExpressionCommons.newTnew(src(), false, null, shift);
+		return ExpressionCommons.newTnew(src(), shift);
 	}
 
 	protected final Expression LCapture(int shift, String label) {
-		return ExpressionCommons.newTnew(src(), true, label == null ? null : SymbolId.tag(label), shift);
+		return ExpressionCommons.newTlfold(src(), label == null ? null : SymbolId.tag(label), shift);
 	}
 
 	protected final Expression Capture(int shift) {

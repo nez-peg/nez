@@ -281,8 +281,17 @@ public abstract class ExpressionCommons extends Expression {
 		return new Tlink(s, label, p);
 	}
 
-	public final static Expression newTnew(SourcePosition s, boolean lefted, SymbolId label, int shift) {
-		return new Tnew(s, lefted, label, shift);
+	// public final static Expression newTnew(SourcePosition s, boolean lefted,
+	// SymbolId label, int shift) {
+	// return new Tnew(s, lefted, label, shift);
+	// }
+
+	public final static Expression newTnew(SourcePosition s, int shift) {
+		return new Tnew(s, shift);
+	}
+
+	public final static Expression newTlfold(SourcePosition s, SymbolId label, int shift) {
+		return new Tlfold(s, label, shift);
 	}
 
 	public final static Expression newTcapture(SourcePosition s, int shift) {
@@ -463,7 +472,7 @@ public abstract class ExpressionCommons extends Expression {
 
 	public final static Expression newNewCapture(SourcePosition s, boolean lefted, SymbolId label, Expression e) {
 		UList<Expression> l = new UList<Expression>(new Expression[e.size() + 3]);
-		ExpressionCommons.addSequence(l, new Tnew(s, lefted, label, 0));
+		ExpressionCommons.addSequence(l, lefted ? new Tlfold(s, label, 0) : new Tnew(s, 0));
 		ExpressionCommons.addSequence(l, e);
 		ExpressionCommons.addSequence(l, ExpressionCommons.newTcapture(s, 0));
 		return newPsequence(s, l);
@@ -471,7 +480,7 @@ public abstract class ExpressionCommons extends Expression {
 
 	public final static Expression newLeftFoldOption(SourcePosition s, SymbolId label, Expression e) {
 		UList<Expression> l = new UList<Expression>(new Expression[e.size() + 3]);
-		ExpressionCommons.addSequence(l, new Tnew(s, true, label, 0));
+		ExpressionCommons.addSequence(l, new Tlfold(s, label, 0));
 		ExpressionCommons.addSequence(l, e);
 		ExpressionCommons.addSequence(l, ExpressionCommons.newTcapture(s, 0));
 		return newPoption(s, ExpressionCommons.newPsequence(s, l));
@@ -479,7 +488,7 @@ public abstract class ExpressionCommons extends Expression {
 
 	public final static Expression newLeftFoldRepetition(SourcePosition s, SymbolId label, Expression e) {
 		UList<Expression> l = new UList<Expression>(new Expression[e.size() + 3]);
-		ExpressionCommons.addSequence(l, new Tnew(s, true, label, 0));
+		ExpressionCommons.addSequence(l, new Tlfold(s, label, 0));
 		ExpressionCommons.addSequence(l, e);
 		ExpressionCommons.addSequence(l, ExpressionCommons.newTcapture(s, 0));
 		return newPzero(s, ExpressionCommons.newPsequence(s, l));
@@ -487,7 +496,7 @@ public abstract class ExpressionCommons extends Expression {
 
 	public final static Expression newLeftFoldRepetition1(SourcePosition s, SymbolId label, Expression e) {
 		UList<Expression> l = new UList<Expression>(new Expression[e.size() + 3]);
-		ExpressionCommons.addSequence(l, new Tnew(s, true, label, 0));
+		ExpressionCommons.addSequence(l, new Tlfold(s, label, 0));
 		ExpressionCommons.addSequence(l, e);
 		ExpressionCommons.addSequence(l, ExpressionCommons.newTcapture(s, 0));
 		return newPone(s, ExpressionCommons.newPsequence(s, l));

@@ -1,6 +1,7 @@
 package nez.lang.expr;
 
 import nez.ast.SourcePosition;
+import nez.ast.SymbolId;
 import nez.lang.Expression;
 import nez.lang.GrammarTransducer;
 import nez.lang.PossibleAcceptance;
@@ -9,34 +10,41 @@ import nez.lang.Visa;
 import nez.parser.AbstractGenerator;
 import nez.parser.Instruction;
 
-public class Tnew extends Term {
-	// public boolean leftFold;
-	// SymbolId label = null;
-	// public Expression outer = null;
+public class Tlfold extends Term {
+	SymbolId label;
+	public Expression outer = null;
 	public int shift = 0;
 
-	Tnew(SourcePosition s, int shift) {
+	Tlfold(SourcePosition s, SymbolId label, int shift) {
 		super(s);
+		this.label = label;
 		this.shift = shift;
+	}
+
+	public SymbolId getLabel() {
+		return this.label;
 	}
 
 	@Override
 	public final boolean equalsExpression(Expression o) {
-		if (o instanceof Tnew) {
-			Tnew s = (Tnew) o;
-			return (this.shift == s.shift);
+		if (o instanceof Tlfold) {
+			Tlfold s = (Tlfold) o;
+			return (this.label == s.label && this.shift == s.shift);
 		}
 		return false;
 	}
 
 	@Override
 	public final void format(StringBuilder sb) {
-		sb.append("{");
+		sb.append("{$");
+		if (label != null) {
+			sb.append(label);
+		}
 	}
 
 	@Override
 	public Expression reshape(GrammarTransducer m) {
-		return m.reshapeTnew(this);
+		return m.reshapeTlfold(this);
 	}
 
 	@Override
@@ -49,13 +57,22 @@ public class Tnew extends Term {
 		return PossibleAcceptance.Unconsumed;
 	}
 
+	// @Override
+	// boolean setOuterLefted(Expression outer) {
+	// if (this.leftFold) {
+	// this.outer = outer;
+	// return false;
+	// }
+	// return false;
+	// }
+
 	@Override
 	public int inferTypestate(Visa v) {
-		return Typestate.ObjectType;
+		return Typestate.OperationType;
 	}
 
 	@Override
 	public Instruction encode(AbstractGenerator bc, Instruction next, Instruction failjump) {
-		return bc.encodeTnew(this, next);
+		return bc.encodeTlfold(this, next);
 	}
 }

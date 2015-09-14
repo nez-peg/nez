@@ -10,6 +10,7 @@ import nez.lang.expr.Cmulti;
 import nez.lang.expr.Cset;
 import nez.lang.expr.NonTerminal;
 import nez.lang.expr.Tcapture;
+import nez.lang.expr.Tlfold;
 import nez.lang.expr.Tlink;
 import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
@@ -869,7 +870,7 @@ class ITLeftFold extends Instruction {
 	int shift;
 	SymbolId label;
 
-	ITLeftFold(Tnew e, Instruction next) {
+	ITLeftFold(Tlfold e, Instruction next) {
 		super(InstructionSet.TLeftFold, e, next);
 		this.shift = e.shift;
 		this.label = e.getLabel();

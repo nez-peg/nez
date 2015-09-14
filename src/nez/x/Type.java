@@ -6,16 +6,16 @@ import nez.ast.SymbolId;
 import nez.lang.Expression;
 import nez.lang.Production;
 import nez.lang.Typestate;
-import nez.lang.expr.Pand;
-import nez.lang.expr.Tcapture;
-import nez.lang.expr.Pchoice;
-import nez.lang.expr.Tlink;
-import nez.lang.expr.Tnew;
 import nez.lang.expr.NonTerminal;
-import nez.lang.expr.Poption;
-import nez.lang.expr.Pzero;
+import nez.lang.expr.Pand;
+import nez.lang.expr.Pchoice;
 import nez.lang.expr.Pone;
+import nez.lang.expr.Poption;
 import nez.lang.expr.Psequence;
+import nez.lang.expr.Pzero;
+import nez.lang.expr.Tcapture;
+import nez.lang.expr.Tlfold;
+import nez.lang.expr.Tlink;
 import nez.lang.expr.Ttag;
 import nez.util.UList;
 
@@ -80,7 +80,7 @@ public abstract class Type {
 			inf.link((Tlink) e, t2);
 			return inf;
 		}
-		if (e instanceof Tnew && ((Tnew) e).leftFold) {
+		if (e instanceof Tlfold) {
 			// if(((New) e).unRepeated) {
 			// System.out.println("TODO: Unrepeated left new is unsupported.");
 			// }

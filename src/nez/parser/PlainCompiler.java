@@ -17,6 +17,7 @@ import nez.lang.expr.Psequence;
 import nez.lang.expr.Pzero;
 import nez.lang.expr.Tcapture;
 import nez.lang.expr.Tdetree;
+import nez.lang.expr.Tlfold;
 import nez.lang.expr.Tlink;
 import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
@@ -145,7 +146,15 @@ public class PlainCompiler extends NezCompiler {
 	@Override
 	public Instruction encodeTnew(Tnew p, Instruction next) {
 		if (this.option.enabledASTConstruction) {
-			return p.leftFold ? new ITLeftFold(p, next) : new INew(p, next);
+			return new INew(p, next);
+		}
+		return next;
+	}
+
+	@Override
+	public Instruction encodeTlfold(Tlfold p, Instruction next) {
+		if (this.option.enabledASTConstruction) {
+			return new ITLeftFold(p, next);
 		}
 		return next;
 	}

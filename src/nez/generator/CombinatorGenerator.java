@@ -19,6 +19,7 @@ import nez.lang.expr.Psequence;
 import nez.lang.expr.Pzero;
 import nez.lang.expr.Tcapture;
 import nez.lang.expr.Tdetree;
+import nez.lang.expr.Tlfold;
 import nez.lang.expr.Tlink;
 import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
@@ -146,11 +147,12 @@ public class CombinatorGenerator extends ParserGenerator {
 
 	@Override
 	public void visitTnew(Tnew e) {
-		if (e.leftFold) {
-			C("LCapture", e.shift);
-		} else {
-			C("NCapture", e.shift);
-		}
+		C("NCapture", e.shift);
+	}
+
+	@Override
+	public void visitTlfold(Tlfold e) {
+		C("LCapture", e.shift);
 	}
 
 	@Override

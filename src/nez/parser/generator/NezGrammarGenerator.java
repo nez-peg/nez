@@ -17,6 +17,7 @@ import nez.lang.expr.Poption;
 import nez.lang.expr.Psequence;
 import nez.lang.expr.Pzero;
 import nez.lang.expr.Tcapture;
+import nez.lang.expr.Tlfold;
 import nez.lang.expr.Tlink;
 import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
@@ -160,7 +161,12 @@ public class NezGrammarGenerator extends PEGGenerator {
 
 	@Override
 	public void visitTnew(Tnew e) {
-		W(e.leftFold ? "{@" : "{");
+		W("{");
+	}
+
+	@Override
+	public void visitTlfold(Tlfold e) {
+		W(e.getLabel() == null ? "{$" : "{$" + e.getLabel());
 	}
 
 	@Override

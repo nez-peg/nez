@@ -20,6 +20,7 @@ import nez.lang.expr.Psequence;
 import nez.lang.expr.Pzero;
 import nez.lang.expr.Tcapture;
 import nez.lang.expr.Tdetree;
+import nez.lang.expr.Tlfold;
 import nez.lang.expr.Tlink;
 import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
@@ -522,10 +523,8 @@ public class PythonParserGenerator extends ParserGenerator {
 		System.out.println(list.toString());
 		for (int i = 0; i < list.size(); i++) {
 			If("result").Begin();
-			if (list.get(i) instanceof Tnew) {
-				if (((Tnew) list.get(i)).leftFold) {
-					isLeftNew = true;
-				}
+			if (list.get(i) instanceof Tlfold) {
+				isLeftNew = true;
 			}
 			if (list.get(i) instanceof Tlink) {
 				isLink = true;
@@ -610,13 +609,14 @@ public class PythonParserGenerator extends ParserGenerator {
 
 	@Override
 	public void visitTnew(Tnew p) {
-		if (p.leftFold) {
-			Ileftnew();
-			markStack.push(true);
-		} else {
-			Inew();
-			markStack.push(false);
-		}
+		Inew();
+		markStack.push(false);
+	}
+
+	@Override
+	public void visitTlfold(Tlfold p) {
+		Ileftnew();
+		markStack.push(true);
 	}
 
 	@Override

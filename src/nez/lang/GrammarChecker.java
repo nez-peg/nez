@@ -13,7 +13,6 @@ import nez.lang.expr.ExpressionCommons;
 import nez.lang.expr.NonTerminal;
 import nez.lang.expr.Pand;
 import nez.lang.expr.Pchoice;
-import nez.lang.expr.Tdetree;
 import nez.lang.expr.Pempty;
 import nez.lang.expr.Pfail;
 import nez.lang.expr.Pnot;
@@ -22,6 +21,8 @@ import nez.lang.expr.Poption;
 import nez.lang.expr.Psequence;
 import nez.lang.expr.Pzero;
 import nez.lang.expr.Tcapture;
+import nez.lang.expr.Tdetree;
+import nez.lang.expr.Tlfold;
 import nez.lang.expr.Tlink;
 import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
@@ -259,19 +260,25 @@ public class GrammarChecker extends GrammarTransducer {
 		if (this.isNonASTContext()) {
 			return this.empty(p);
 		}
-		if (p.leftFold) {
-			if (this.requiredTypestate != Typestate.OperationType) {
-				this.reportRemoved(p, "{$");
-				return empty(p);
-			}
-		} else {
-			if (this.requiredTypestate != Typestate.ObjectType) {
-				this.reportRemoved(p, "{");
-				return empty(p);
-			}
+		if (this.requiredTypestate != Typestate.ObjectType) {
+			this.reportRemoved(p, "{");
+			return empty(p);
 		}
 		this.requiredTypestate = Typestate.OperationType;
 		return super.reshapeTnew(p);
+	}
+
+	@Override
+	public Expression reshapeTlfold(Tlfold p) {
+		if (this.isNonASTContext()) {
+			return this.empty(p);
+		}
+		if (this.requiredTypestate != Typestate.OperationType) {
+			this.reportRemoved(p, "{$");
+			return empty(p);
+		}
+		this.requiredTypestate = Typestate.OperationType;
+		return super.reshapeTlfold(p);
 	}
 
 	@Override

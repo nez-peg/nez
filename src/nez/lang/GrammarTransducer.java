@@ -6,22 +6,23 @@ import nez.lang.expr.Cmulti;
 import nez.lang.expr.Cset;
 import nez.lang.expr.ExpressionCommons;
 import nez.lang.expr.NonTerminal;
+import nez.lang.expr.Pand;
 import nez.lang.expr.Pchoice;
 import nez.lang.expr.Pempty;
 import nez.lang.expr.Pfail;
+import nez.lang.expr.Pnot;
+import nez.lang.expr.Pone;
+import nez.lang.expr.Poption;
 import nez.lang.expr.Psequence;
+import nez.lang.expr.Pzero;
 import nez.lang.expr.Tcapture;
+import nez.lang.expr.Tdetree;
+import nez.lang.expr.Tlfold;
 import nez.lang.expr.Tlink;
 import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
-import nez.lang.expr.Pand;
-import nez.lang.expr.Tdetree;
 import nez.lang.expr.Unary;
-import nez.lang.expr.Pnot;
-import nez.lang.expr.Pone;
-import nez.lang.expr.Poption;
-import nez.lang.expr.Pzero;
 import nez.lang.expr.Xblock;
 import nez.lang.expr.Xdef;
 import nez.lang.expr.Xexists;
@@ -148,12 +149,12 @@ public class GrammarTransducer {
 		return ExpressionCommons.newPnot(e.getSourcePosition(), reshapeInner(e.get(0)));
 	}
 
-	public Expression reshapeTdetree(Tdetree e) {
-		return ExpressionCommons.newTdetree(e.getSourcePosition(), reshapeInner(e.get(0)));
+	public Expression reshapeTnew(Tnew e) {
+		return ExpressionCommons.newTnew(e.getSourcePosition(), e.shift);
 	}
 
-	public Expression reshapeTnew(Tnew e) {
-		return ExpressionCommons.newTnew(e.getSourcePosition(), e.leftFold, e.getLabel(), e.shift);
+	public Expression reshapeTlfold(Tlfold e) {
+		return ExpressionCommons.newTlfold(e.getSourcePosition(), e.getLabel(), e.shift);
 	}
 
 	public Expression reshapeTlink(Tlink e) {
@@ -170,6 +171,10 @@ public class GrammarTransducer {
 
 	public Expression reshapeTcapture(Tcapture e) {
 		return ExpressionCommons.newTcapture(e.getSourcePosition(), e.shift);
+	}
+
+	public Expression reshapeTdetree(Tdetree e) {
+		return ExpressionCommons.newTdetree(e.getSourcePosition(), reshapeInner(e.get(0)));
 	}
 
 	public Expression reshapeXblock(Xblock e) {

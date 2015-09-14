@@ -19,6 +19,7 @@ import nez.lang.expr.Psequence;
 import nez.lang.expr.Pzero;
 import nez.lang.expr.Tcapture;
 import nez.lang.expr.Tdetree;
+import nez.lang.expr.Tlfold;
 import nez.lang.expr.Tlink;
 import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
@@ -299,6 +300,8 @@ public abstract class ParserGenerator extends AbstractGenerator {
 
 	public abstract void visitTnew(Tnew p);
 
+	public abstract void visitTlfold(Tlfold p);
+
 	public abstract void visitTcapture(Tcapture p);
 
 	public abstract void visitTtag(Ttag p);
@@ -437,6 +440,14 @@ public abstract class ParserGenerator extends AbstractGenerator {
 	public final Instruction encodeTnew(Tnew p, Instruction next) {
 		if (option.enabledASTConstruction) {
 			this.visitTnew(p);
+		}
+		return null;
+	}
+
+	@Override
+	public final Instruction encodeTlfold(Tlfold p, Instruction next) {
+		if (option.enabledASTConstruction) {
+			this.visitTlfold(p);
 		}
 		return null;
 	}
