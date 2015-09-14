@@ -9,6 +9,7 @@ import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cmulti;
 import nez.lang.expr.Cset;
 import nez.lang.expr.NonTerminal;
+import nez.lang.expr.Pchoice;
 import nez.lang.expr.Tcapture;
 import nez.lang.expr.Tlfold;
 import nez.lang.expr.Tlink;
@@ -729,7 +730,7 @@ class IConsume extends Instruction {
 class IFirst extends Instruction {
 	Instruction[] jumpTable;
 
-	IFirst(Expression e, Instruction next) {
+	IFirst(Pchoice e, Instruction next) {
 		super(InstructionSet.First, e, next);
 		jumpTable = new Instruction[257];
 		Arrays.fill(jumpTable, next);
@@ -753,7 +754,12 @@ class IFirst extends Instruction {
 
 	@Override
 	Instruction exec(RuntimeContext sc) throws TerminationException {
+		// System.out.println("pos=" + sc.getPosition() + "<len=" +
+		// sc.length());
+		// System.out.println("jump[0] " + jumpTable[0].getClass() + " @ " +
+		// this.e);
 		int ch = sc.byteAt(sc.getPosition());
+		// System.out.println("ch=" + ch);
 		return jumpTable[ch].exec(sc);
 	}
 }

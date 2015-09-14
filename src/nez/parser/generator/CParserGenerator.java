@@ -8,7 +8,6 @@ import java.util.Stack;
 
 import nez.ast.SymbolId;
 import nez.lang.Expression;
-import nez.lang.GrammarOptimizer;
 import nez.lang.Production;
 import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
@@ -45,7 +44,7 @@ import nez.util.StringUtils;
 
 public class CParserGenerator extends ParserGenerator {
 
-	GrammarOptimizer optimizer = null;
+	// GrammarOptimizer optimizer = null;
 	int predictionCount = 0;
 	private boolean enableOpt = false;
 

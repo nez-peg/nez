@@ -4,17 +4,17 @@ import java.util.HashMap;
 
 import nez.NezOption;
 import nez.lang.Expression;
-import nez.lang.GrammarOptimizer;
 import nez.lang.Production;
 import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
-import nez.lang.expr.Cset;
-import nez.lang.expr.Pchoice;
 import nez.lang.expr.Cmulti;
+import nez.lang.expr.Cset;
+import nez.lang.expr.ExpressionCommons;
+import nez.lang.expr.Pchoice;
 import nez.lang.expr.Pnot;
 import nez.lang.expr.Poption;
-import nez.lang.expr.Pzero;
 import nez.lang.expr.Psequence;
+import nez.lang.expr.Pzero;
 import nez.main.Verbose;
 
 public class OptimizedCompiler extends PlainCompiler {
@@ -32,7 +32,7 @@ public class OptimizedCompiler extends PlainCompiler {
 	}
 
 	public final Expression getInnerExpression(Expression p) {
-		Expression inner = GrammarOptimizer.resolveNonTerminal(p.get(0));
+		Expression inner = ExpressionCommons.resolveNonTerminal(p.get(0));
 		if (option.enabledStringOptimization && inner instanceof Psequence) {
 			inner = ((Psequence) inner).toMultiCharSequence();
 			// System.out.println("Stringfy:" + inner);

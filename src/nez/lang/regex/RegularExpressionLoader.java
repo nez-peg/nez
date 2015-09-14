@@ -2,6 +2,8 @@ package nez.lang.regex;
 
 import java.io.IOException;
 
+import nez.Grammar;
+import nez.NezOption;
 import nez.Parser;
 import nez.ast.AbstractTree;
 import nez.lang.Expression;
@@ -23,7 +25,13 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 	public Parser getLoaderGrammar() {
 		if (lParser == null) {
 			try {
-				lParser = GrammarFileLoader.loadGrammar("regex.nez", null, null).newParser(option, repo);
+				NezOption option = NezOption.newSafeOption();
+				Grammar g = GrammarFileLoader.loadGrammar("regex.nez", option, null);
+				g.dump();
+				lParser = g.newParser(option, repo);
+				if (repo != null) {
+					repo.report(option);
+				}
 			} catch (IOException e) {
 				ConsoleUtils.exit(1, "unload: " + e.getMessage());
 			}
