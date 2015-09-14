@@ -5,7 +5,7 @@ import java.io.IOException;
 import nez.Grammar;
 import nez.lang.Production;
 import nez.lang.Typestate;
-import nez.x.Type;
+import nez.lang.type.Type;
 
 public class LCtype extends Command {
 

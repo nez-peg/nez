@@ -3,24 +3,27 @@ package nez.parser;
 import java.util.List;
 
 import nez.main.Verbose;
+import nez.util.UList;
 
 public class NezCode {
-	final Instruction startPoint;
-	final int instructionSize;
+	// final Instruction startPoint;
+	// final int instructionSize;
+	final GenerativeGrammar gg;
+	final UList<Instruction> codeList;
 	final List<MemoPoint> memoPointList;
 
-	public NezCode(Instruction instruction, int instSize, List<MemoPoint> memoPointList) {
-		this.startPoint = instruction;
-		this.instructionSize = instSize;
+	public NezCode(GenerativeGrammar gg, UList<Instruction> codeList, List<MemoPoint> memoPointList) {
+		this.gg = gg;
+		this.codeList = codeList;
 		this.memoPointList = memoPointList;
 	}
 
 	public final Instruction getStartPoint() {
-		return startPoint;
+		return codeList.get(0);
 	}
 
 	public final int getInstructionSize() {
-		return instructionSize;
+		return codeList.size();
 	}
 
 	public final int getMemoPointSize() {
@@ -37,4 +40,12 @@ public class NezCode {
 			Verbose.println("");
 		}
 	}
+
+	public final void encode(ByteCoder coder) {
+		if (coder != null) {
+			coder.setHeader(codeList.size(), this.gg.size(), memoPointList == null ? 0 : memoPointList.size());
+			coder.setInstructions(codeList.ArrayValues, codeList.size());
+		}
+	}
+
 }

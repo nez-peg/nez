@@ -5,6 +5,7 @@ import java.io.IOException;
 import nez.Parser;
 import nez.main.Command;
 import nez.main.CommandContext;
+import nez.main.Verbose;
 import nez.parser.ByteCoder;
 import nez.parser.NezCode;
 import nez.parser.NezCompiler;
@@ -20,9 +21,11 @@ public class Ccompile extends Command {
 	public void exec(CommandContext config) throws IOException {
 		Parser parser = config.newParser();
 		NezCompiler compile = new PackratCompiler(config.getOption());
+		Verbose.println("generating .." + config.getGrammarName() + ".moz");
+		NezCode code = compile.compile(parser.getGrammar());
 		ByteCoder c = new ByteCoder();
-		NezCode code = compile.compile(parser.getGrammar(), c);
-		c.writeTo(config.getGrammarName() + ".ncz");
+		code.encode(c);
+		c.writeTo(config.getGrammarName() + ".moz");
 	}
 
 }

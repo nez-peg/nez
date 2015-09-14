@@ -1,4 +1,4 @@
-package nez.x;
+package nez.lang.type;
 
 import java.util.ArrayList;
 
