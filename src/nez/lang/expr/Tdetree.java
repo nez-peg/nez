@@ -8,14 +8,14 @@ import nez.lang.Visa;
 import nez.parser.AbstractGenerator;
 import nez.parser.Instruction;
 
-public class Pdetree extends Unary {
-	Pdetree(SourcePosition s, Expression inner) {
+public class Tdetree extends Unary {
+	Tdetree(SourcePosition s, Expression inner) {
 		super(s, inner);
 	}
 
 	@Override
 	public final boolean equalsExpression(Expression o) {
-		if (o instanceof Pdetree) {
+		if (o instanceof Tdetree) {
 			return this.get(0).equalsExpression(o.get(0));
 		}
 		return false;
@@ -28,7 +28,7 @@ public class Pdetree extends Unary {
 
 	@Override
 	public Expression reshape(GrammarTransducer m) {
-		return m.reshapePdetree(this);
+		return m.reshapeTdetree(this);
 	}
 
 	@Override
@@ -48,7 +48,7 @@ public class Pdetree extends Unary {
 
 	@Override
 	public Instruction encode(AbstractGenerator bc, Instruction next, Instruction failjump) {
-		return this.inner.encode(bc, next, failjump);
+		return bc.encodeTdetree(this, next, failjump);
 	}
 
 }

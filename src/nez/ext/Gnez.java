@@ -232,7 +232,7 @@ public class Gnez extends GrammarFileLoader {
 	public Expression newMatch(AbstractTree<?> node) {
 		AbstractTree<?> exprNode = node.get(_expr, null);
 		if (exprNode != null) {
-			return ExpressionCommons.newPdetree(node, newExpression(exprNode));
+			return ExpressionCommons.newTdetree(node, newExpression(exprNode));
 		}
 		return ExpressionCommons.newXmatch(node, parseLabelNode(node));
 	}

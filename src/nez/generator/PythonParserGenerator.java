@@ -19,6 +19,7 @@ import nez.lang.expr.Poption;
 import nez.lang.expr.Psequence;
 import nez.lang.expr.Pzero;
 import nez.lang.expr.Tcapture;
+import nez.lang.expr.Tdetree;
 import nez.lang.expr.Tlink;
 import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
@@ -27,10 +28,12 @@ import nez.lang.expr.Xblock;
 import nez.lang.expr.Xdef;
 import nez.lang.expr.Xdefindent;
 import nez.lang.expr.Xexists;
+import nez.lang.expr.Xif;
 import nez.lang.expr.Xindent;
 import nez.lang.expr.Xis;
 import nez.lang.expr.Xlocal;
 import nez.lang.expr.Xmatch;
+import nez.lang.expr.Xon;
 import nez.parser.GenerativeGrammar;
 import nez.parser.ParserGenerator;
 import nez.util.StringUtils;
@@ -686,6 +689,24 @@ public class PythonParserGenerator extends ParserGenerator {
 
 	@Override
 	public void visitCmulti(Cmulti p) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void visitTdetree(Tdetree p) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void visitXif(Xif p) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void visitXon(Xon p) {
 		// TODO Auto-generated method stub
 
 	}

@@ -18,6 +18,7 @@ import nez.lang.expr.Poption;
 import nez.lang.expr.Psequence;
 import nez.lang.expr.Pzero;
 import nez.lang.expr.Tcapture;
+import nez.lang.expr.Tdetree;
 import nez.lang.expr.Tlink;
 import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
@@ -82,91 +83,7 @@ public abstract class AbstractGenerator {
 		return null;
 	}
 
-	// protected ParseFunc newParseFunc(Production p, Expression
-	// localExpression) {
-	// ParseFunc f = new ParseFunc(p.getLocalName(), p);
-	// f.setExpression(localExpression);
-	// return f;
-	// }
-	//
-	// void count(Production p) {
-	// String uname = p.getUniqueName();
-	// ParseFunc c = this.funcMap.get(uname);
-	// if (c == null) {
-	// Expression deref = p.getExpression();
-	// c = newParseFunc(p, deref);
-	// funcMap.put(uname, c);
-	// }
-	// c.refcount++;
-	// }
-	//
-	// void countNonTerminalReference(Expression e) {
-	// if (e instanceof NonTerminal) {
-	// Production p = ((NonTerminal) e).getProduction();
-	// count(p);
-	// }
-	// for (Expression sub : e) {
-	// countNonTerminalReference(sub);
-	// }
-	// }
-	//
-	// protected void initParseFuncMap(Parser grammar, List<MemoPoint>
-	// memoPointList) {
-	// this.funcMap = new HashMap<String, ParseFunc>();
-	// Production start = grammar.getStartProduction();
-	// count(start);
-	// countNonTerminalReference(start.getExpression());
-	// for (Production p : grammar.getProductionList()) {
-	// if (p != start) {
-	// this.countNonTerminalReference(p.getExpression());
-	// }
-	// }
-	// if (option.enabledInlining) {
-	// for (Production p : grammar.getProductionList()) {
-	// ParseFunc cp = this.funcMap.get(p.getUniqueName());
-	// this.checkInlining(cp);
-	// }
-	// }
-	// if (memoPointList != null) {
-	// for (Production p : grammar.getProductionList()) {
-	// ParseFunc cp = this.funcMap.get(p.getUniqueName());
-	// this.checkMemoizing(cp, memoPointList);
-	// }
-	// }
-	// }
-	//
-	// protected void checkInlining(ParseFunc pcode) {
-	// if (pcode.refcount == 1 || GrammarOptimizer.isSingleCharacter(pcode.e)) {
-	// if (Verbose.PackratParsing) {
-	// Verbose.println("Inlining: " + pcode.name);
-	// }
-	// pcode.inlining = true;
-	// }
-	// }
-	//
-	// protected void checkMemoizing(ParseFunc pcode, List<MemoPoint>
-	// memoPointList) {
-	// if (pcode.inlining || pcode.memoPoint != null) {
-	// return;
-	// }
-	// Production p = pcode.p;
-	// if (pcode.refcount > 1 && p.inferTypestate(null) !=
-	// Typestate.OperationType) {
-	// int memoId = memoPointList.size();
-	// pcode.memoPoint = new MemoPoint(memoId, p.getLocalName(), pcode.e,
-	// p.isContextual());
-	// memoPointList.add(pcode.memoPoint);
-	// if (Verbose.PackratParsing) {
-	// Verbose.println("MemoPoint: " + pcode.memoPoint + " ref=" +
-	// pcode.refcount + " pure? " + p.isNoNTreeConstruction() + " rec? " +
-	// p.isRecursive());
-	// }
-	// }
-	// }
-
 	// encoding
-
-	// private Instruction failed = new IFail(null);
 
 	public abstract Instruction encode(Expression e, Instruction next, Instruction failjump);
 
@@ -206,6 +123,8 @@ public abstract class AbstractGenerator {
 	public abstract Instruction encodeTtag(Ttag p, Instruction next);
 
 	public abstract Instruction encodeTreplace(Treplace p, Instruction next);
+
+	public abstract Instruction encodeTdetree(Tdetree p, Instruction next, Instruction failjump);
 
 	// Symbol Tables
 	public abstract Instruction encodeXblock(Xblock p, Instruction next, Instruction failjump);

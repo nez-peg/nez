@@ -103,7 +103,7 @@ public abstract class GrammarBase extends AbstractList<Production> {
 
 	// PEG4d
 	public final Expression newMatch(Expression... seq) {
-		return ExpressionCommons.newPdetree(getSourcePosition(), newSequence(seq));
+		return ExpressionCommons.newTdetree(getSourcePosition(), newSequence(seq));
 	}
 
 	public final Expression newLink(Expression... seq) {

@@ -18,6 +18,7 @@ import nez.lang.expr.Poption;
 import nez.lang.expr.Psequence;
 import nez.lang.expr.Pzero;
 import nez.lang.expr.Tcapture;
+import nez.lang.expr.Tdetree;
 import nez.lang.expr.Tlink;
 import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
@@ -119,11 +120,13 @@ public abstract class ParserGenerator extends AbstractGenerator {
 
 	// Generator Macro
 
+	@Deprecated
 	protected ParserGenerator inc() {
 		file.incIndent();
 		return this;
 	}
 
+	@Deprecated
 	protected ParserGenerator dec() {
 		file.decIndent();
 		return this;
@@ -144,14 +147,30 @@ public abstract class ParserGenerator extends AbstractGenerator {
 		return this;
 	}
 
-	protected ParserGenerator Begin() {
-		W(BeginIndent);
-		inc();
+	protected ParserGenerator Begin(String t) {
+		W(t);
+		file.incIndent();
 		return this;
 	}
 
+	protected ParserGenerator End(String t) {
+		file.decIndent();
+		if (t != null) {
+			L(t);
+		}
+		return this;
+	}
+
+	@Deprecated
+	protected ParserGenerator Begin() {
+		W(BeginIndent);
+		file.incIndent();
+		return this;
+	}
+
+	@Deprecated
 	protected ParserGenerator End() {
-		dec();
+		file.decIndent();
 		L(EndIndent);
 		return this;
 	}
@@ -244,6 +263,8 @@ public abstract class ParserGenerator extends AbstractGenerator {
 
 	public abstract void visitCset(Cset p);
 
+	public abstract void visitCmulti(Cmulti p);
+
 	public abstract void visitPoption(Poption p);
 
 	public abstract void visitPzero(Pzero p);
@@ -260,8 +281,6 @@ public abstract class ParserGenerator extends AbstractGenerator {
 
 	public abstract void visitNonTerminal(NonTerminal p);
 
-	public abstract void visitCmulti(Cmulti p);
-
 	// AST Construction
 	public abstract void visitTlink(Tlink p);
 
@@ -272,6 +291,8 @@ public abstract class ParserGenerator extends AbstractGenerator {
 	public abstract void visitTtag(Ttag p);
 
 	public abstract void visitTreplace(Treplace p);
+
+	public abstract void visitTdetree(Tdetree p);
 
 	// Symbol Tables
 	public abstract void visitXblock(Xblock p);
@@ -285,6 +306,10 @@ public abstract class ParserGenerator extends AbstractGenerator {
 	public abstract void visitXmatch(Xmatch p);
 
 	public abstract void visitXis(Xis p);
+
+	public abstract void visitXif(Xif p);
+
+	public abstract void visitXon(Xon p);
 
 	public abstract void visitXdefindent(Xdefindent p);
 
@@ -374,6 +399,16 @@ public abstract class ParserGenerator extends AbstractGenerator {
 	}
 
 	// AST Construction
+
+	@Override
+	public final Instruction encodeTdetree(Tdetree p, Instruction next, Instruction failjump) {
+		if (option.enabledASTConstruction) {
+			this.visitTdetree(p);
+		} else {
+			this.visitExpression(p.get(0));
+		}
+		return null;
+	}
 
 	@Override
 	public final Instruction encodeTlink(Tlink p, Instruction next, Instruction failjump) {
@@ -473,12 +508,14 @@ public abstract class ParserGenerator extends AbstractGenerator {
 
 	@Override
 	public final Instruction encodeXon(Xon p, Instruction next, Instruction failjump) {
-		return p.get(0).encode(this, next, failjump);
+		this.visitXon(p);
+		return null;
 	}
 
 	@Override
-	public final Instruction encodeXif(Xif ifFlag, Instruction next, Instruction failjump) {
-		return next;
+	public final Instruction encodeXif(Xif p, Instruction next, Instruction failjump) {
+		this.visitXif(p);
+		return null;
 	}
 
 	@Override

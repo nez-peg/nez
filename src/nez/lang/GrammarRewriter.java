@@ -15,7 +15,7 @@ import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
 import nez.lang.expr.Pand;
-import nez.lang.expr.Pdetree;
+import nez.lang.expr.Tdetree;
 import nez.lang.expr.Pnot;
 import nez.lang.expr.Pone;
 import nez.lang.expr.Poption;
@@ -133,7 +133,7 @@ public class GrammarRewriter extends GrammarTransducer {
 	}
 
 	@Override
-	public Expression reshapePdetree(Pdetree e) {
+	public Expression reshapeTdetree(Tdetree e) {
 		e.set(0, this.reshapeInner(e.get(0)));
 		return e;
 	}

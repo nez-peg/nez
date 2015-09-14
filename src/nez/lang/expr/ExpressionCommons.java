@@ -269,8 +269,8 @@ public abstract class ExpressionCommons extends Expression {
 
 	// AST Construction
 
-	public final static Expression newPdetree(SourcePosition s, Expression p) {
-		return new Pdetree(s, p);
+	public final static Expression newTdetree(SourcePosition s, Expression p) {
+		return new Tdetree(s, p);
 	}
 
 	public final static Expression newTlink(SourcePosition s, Expression p) {

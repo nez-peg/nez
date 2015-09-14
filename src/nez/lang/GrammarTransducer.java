@@ -16,7 +16,7 @@ import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
 import nez.lang.expr.Pand;
-import nez.lang.expr.Pdetree;
+import nez.lang.expr.Tdetree;
 import nez.lang.expr.Unary;
 import nez.lang.expr.Pnot;
 import nez.lang.expr.Pone;
@@ -148,8 +148,8 @@ public class GrammarTransducer {
 		return ExpressionCommons.newPnot(e.getSourcePosition(), reshapeInner(e.get(0)));
 	}
 
-	public Expression reshapePdetree(Pdetree e) {
-		return ExpressionCommons.newPdetree(e.getSourcePosition(), reshapeInner(e.get(0)));
+	public Expression reshapeTdetree(Tdetree e) {
+		return ExpressionCommons.newTdetree(e.getSourcePosition(), reshapeInner(e.get(0)));
 	}
 
 	public Expression reshapeTnew(Tnew e) {
@@ -251,7 +251,7 @@ class ASTConstructionEliminator extends GrammarTransducer {
 	}
 
 	@Override
-	public Expression reshapePdetree(Pdetree e) {
+	public Expression reshapeTdetree(Tdetree e) {
 		return e.get(0).reshape(this);
 	}
 

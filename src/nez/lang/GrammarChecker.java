@@ -13,7 +13,7 @@ import nez.lang.expr.ExpressionCommons;
 import nez.lang.expr.NonTerminal;
 import nez.lang.expr.Pand;
 import nez.lang.expr.Pchoice;
-import nez.lang.expr.Pdetree;
+import nez.lang.expr.Tdetree;
 import nez.lang.expr.Pempty;
 import nez.lang.expr.Pfail;
 import nez.lang.expr.Pnot;
@@ -247,7 +247,7 @@ public class GrammarChecker extends GrammarTransducer {
 	// }
 
 	@Override
-	public Expression reshapePdetree(Pdetree p) {
+	public Expression reshapeTdetree(Tdetree p) {
 		boolean stacked = this.enterNonASTContext();
 		Expression inner = this.reshapeInner(p.get(0));
 		this.exitNonASTContext(stacked);

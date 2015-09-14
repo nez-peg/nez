@@ -21,7 +21,6 @@ import nez.lang.expr.Tlink;
 import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
-import nez.lang.expr.Unary;
 import nez.lang.expr.Xblock;
 import nez.lang.expr.Xdef;
 import nez.lang.expr.Xdefindent;
@@ -31,10 +30,9 @@ import nez.lang.expr.Xis;
 import nez.lang.expr.Xlocal;
 import nez.lang.expr.Xmatch;
 import nez.parser.GenerativeGrammar;
-import nez.parser.ParserGenerator;
 import nez.util.StringUtils;
 
-public class NezGrammarGenerator extends ParserGenerator {
+public class NezGrammarGenerator extends PEGGenerator {
 
 	@Override
 	protected String getFileExtension() {
@@ -56,7 +54,7 @@ public class NezGrammarGenerator extends ParserGenerator {
 		} else {
 			L(name(rule.getLocalName()));
 		}
-		inc();
+		Begin("");
 		L("= ");
 		if (e instanceof Pchoice) {
 			for (int i = 0; i < e.size(); i++) {
@@ -68,7 +66,7 @@ public class NezGrammarGenerator extends ParserGenerator {
 		} else {
 			visitExpression(e);
 		}
-		dec();
+		End("");
 	}
 
 	@Override
@@ -104,23 +102,6 @@ public class NezGrammarGenerator extends ParserGenerator {
 	@Override
 	public void visitCany(Cany e) {
 		W(".");
-	}
-
-	protected void visitUnary(String prefix, Unary e, String suffix) {
-		if (prefix != null) {
-			W(prefix);
-		}
-		Expression inner = e.get(0);
-		if (inner instanceof Pchoice || inner instanceof Psequence) {
-			W("(");
-			this.visitExpression(e.get(0));
-			W(")");
-		} else {
-			this.visitExpression(e.get(0));
-		}
-		if (suffix != null) {
-			W(suffix);
-		}
 	}
 
 	@Override
