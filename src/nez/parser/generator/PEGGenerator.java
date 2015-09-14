@@ -173,13 +173,13 @@ public class PEGGenerator extends ParserGenerator {
 	protected void SemanticAction(String code) {
 		W("{");
 		W(code);
-		W("}");
+		W("} ");
 	}
 
 	protected void SemanticPredicate(String code) {
 		W("&{");
 		W(code);
-		W("}");
+		W("} ");
 	}
 
 	@Override
@@ -201,7 +201,7 @@ public class PEGGenerator extends ParserGenerator {
 
 	@Override
 	public void visitTtag(Ttag p) {
-		SemanticAction("tag(" + p.getTagName() + ")");
+		SemanticAction("tag(" + StringUtils.quoteString('"', p.getTagName(), '"') + ")");
 	}
 
 	@Override

@@ -33,6 +33,7 @@ import nez.lang.expr.Xis;
 import nez.lang.expr.Xlocal;
 import nez.lang.expr.Xmatch;
 import nez.lang.expr.Xon;
+import nez.main.Verbose;
 import nez.util.FileBuilder;
 import nez.util.StringUtils;
 
@@ -95,17 +96,29 @@ public abstract class ParserGenerator extends AbstractGenerator {
 				path = dir + "/" + path;
 			}
 			this.file = new FileBuilder(path);
+			Verbose.println("generating " + path + " ... ");
 		}
 	}
 
 	HashMap<String, String> m = new HashMap<String, String>();
 
 	protected String name(String s) {
-		return s;
+		String name = m.get(s);
+		if (name != null) {
+			return name;
+		}
+		int loc = s.lastIndexOf(':');
+		if (loc > 0) {
+			name = s.substring(loc + 1).replace("!", "_").replace("-", "PEG");
+		} else {
+			name = s.replace("!", "_").replace("-", "PEG");
+		}
+		m.put(s, name);
+		return name;
 	}
 
 	protected String name(Production p) {
-		return p.getLocalName();
+		return name(p.getLocalName());
 	}
 
 	protected String unique(Expression e) {

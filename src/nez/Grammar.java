@@ -159,8 +159,8 @@ public class Grammar extends GrammarBase {
 				GenerativeGrammar gg = new GenerativeGrammar(p, option, null, repo);
 				return new Parser(gg, option);
 			}
+			Verbose.println("undefined production: " + name);
 		}
-		Verbose.println("undefined production: " + name);
 		return newParser(option, repo);
 	}
 
