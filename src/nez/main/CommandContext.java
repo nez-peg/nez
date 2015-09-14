@@ -5,6 +5,7 @@ import java.io.IOException;
 
 import nez.ParserFactory;
 import nez.io.SourceContext;
+import nez.lang.regex.RegularExpression;
 import nez.parser.ParserGenerator;
 import nez.util.ConsoleUtils;
 import nez.util.ExtensionLoader;
@@ -128,6 +129,7 @@ public class CommandContext extends ParserFactory {
 
 	public void parseCommandOption(String[] args) throws IOException {
 		String gFileName = null;
+		String regex = null;
 		int index = 0;
 		if (args.length > 0) {
 			if (!args[0].startsWith("-")) {
@@ -150,6 +152,9 @@ public class CommandContext extends ParserFactory {
 				index = index + 1;
 			} else if ((argument.equals("-p") || argument.equals("--peg")) && (index < args.length)) {
 				gFileName = args[index];
+				index = index + 1;
+			} else if ((argument.equals("-r") || argument.equals("--re")) && (index < args.length)) {
+				regex = args[index];
 				index = index + 1;
 			} else if ((argument.equals("-e") || argument.equals("--expr")) && (index < args.length)) {
 				grammarExpression = args[index];
@@ -201,6 +206,10 @@ public class CommandContext extends ParserFactory {
 		for (; index < args.length; index++) {
 			String path = args[index];
 			this.addInputFile(path);
+		}
+		if (regex != null) {
+			this.grammar = RegularExpression.newGrammar(regex);
+			return;
 		}
 		if (gFileName != null) {
 			this.setGrammarFileName(gFileName);
