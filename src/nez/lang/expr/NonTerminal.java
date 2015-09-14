@@ -7,8 +7,8 @@ import nez.lang.GrammarTransducer;
 import nez.lang.PossibleAcceptance;
 import nez.lang.Production;
 import nez.lang.Visa;
-import nez.parser.Instruction;
 import nez.parser.AbstractGenerator;
+import nez.parser.Instruction;
 
 public class NonTerminal extends ExpressionCommons {
 	private Grammar g;

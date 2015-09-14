@@ -9,8 +9,8 @@ import nez.lang.GrammarTransducer;
 import nez.lang.PossibleAcceptance;
 import nez.lang.Typestate;
 import nez.lang.Visa;
-import nez.parser.Instruction;
 import nez.parser.AbstractGenerator;
+import nez.parser.Instruction;
 
 public class Xis extends Term implements Contextual {
 	public final SymbolId tableName;

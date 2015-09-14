@@ -4,8 +4,8 @@ import nez.ast.SourcePosition;
 import nez.lang.Expression;
 import nez.lang.GrammarTransducer;
 import nez.lang.PossibleAcceptance;
-import nez.parser.Instruction;
 import nez.parser.AbstractGenerator;
+import nez.parser.Instruction;
 import nez.util.StringUtils;
 
 public class Cmulti extends Char {

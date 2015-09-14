@@ -3,9 +3,9 @@ package nez.ext;
 import java.io.IOException;
 
 import nez.Parser;
-import nez.generator.CParserGenerator;
 import nez.main.Command;
 import nez.main.CommandContext;
+import nez.parser.ParserGenerator;
 
 public class Ccnez extends Command {
 	@Override
@@ -16,8 +16,8 @@ public class Ccnez extends Command {
 	@Override
 	public void exec(CommandContext config) throws IOException {
 		Parser p = config.newParser();
-		CParserGenerator gen = new CParserGenerator();
-		gen.generate(p, config.getOption(), null);
+		ParserGenerator pgen = config.newParserGenerator(nez.parser.generator.CParserGenerator.class);
+		pgen.generate(p.getGrammar());
 	}
 
 }

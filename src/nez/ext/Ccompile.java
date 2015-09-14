@@ -22,7 +22,7 @@ public class Ccompile extends Command {
 		NezCompiler compile = new PackratCompiler(config.getOption());
 		ByteCoder c = new ByteCoder();
 		NezCode code = compile.compile(parser.getGrammar(), c);
-		c.writeTo(config.getGrammarFileName("nzc"));
+		c.writeTo(config.getGrammarName() + ".ncz");
 	}
 
 }

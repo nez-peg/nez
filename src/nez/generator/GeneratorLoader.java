@@ -3,6 +3,7 @@ package nez.generator;
 import java.util.TreeMap;
 
 import nez.main.Verbose;
+import nez.parser.ParserGenerator;
 
 public class GeneratorLoader {
 	public final static String GeneratorLoaderPoint = "nez.main.ext.L";
@@ -22,11 +23,11 @@ public class GeneratorLoader {
 		return classMap.containsKey(key);
 	}
 
-	public final static NezGenerator load(String key) {
+	public final static ParserGenerator load(String key) {
 		Class<?> c = classMap.get(key);
 		if (c != null) {
 			try {
-				return (NezGenerator) c.newInstance();
+				return (ParserGenerator) c.newInstance();
 			} catch (InstantiationException e) {
 				Verbose.traceException(e);
 			} catch (IllegalAccessException e) {

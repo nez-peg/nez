@@ -5,8 +5,8 @@ import nez.lang.Expression;
 import nez.lang.GrammarTransducer;
 import nez.lang.Typestate;
 import nez.lang.Visa;
-import nez.parser.Instruction;
 import nez.parser.AbstractGenerator;
+import nez.parser.Instruction;
 
 public class Pdetree extends Unary {
 	Pdetree(SourcePosition s, Expression inner) {

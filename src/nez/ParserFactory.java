@@ -48,15 +48,15 @@ public class ParserFactory {
 		this.grammar = newGrammarImpl(path);
 	}
 
-	public final String getGrammarFileName(String ext) {
+	public final String getGrammarName() {
 		if (gFileName != null) {
 			int loc = gFileName.lastIndexOf('.');
 			if (loc > 0) {
-				return gFileName.substring(0, loc + 1) + ext;
+				return gFileName.substring(0, loc);
 			}
-			return gFileName + "." + ext;
+			return gFileName;
 		}
-		return "noname." + ext;
+		return "g";
 	}
 
 	private Grammar newGrammarImpl(String path) throws IOException {

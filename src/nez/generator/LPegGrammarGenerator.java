@@ -1,50 +1,48 @@
 package nez.generator;
 
-import nez.Parser;
-import nez.NezOption;
 import nez.lang.Expression;
 import nez.lang.Production;
-import nez.lang.expr.Pand;
 import nez.lang.expr.Cany;
-import nez.lang.expr.Xblock;
 import nez.lang.expr.Cbyte;
+import nez.lang.expr.Cmulti;
 import nez.lang.expr.Cset;
-import nez.lang.expr.Tcapture;
+import nez.lang.expr.NonTerminal;
+import nez.lang.expr.Pand;
 import nez.lang.expr.Pchoice;
-import nez.lang.expr.Xdefindent;
+import nez.lang.expr.Pnot;
+import nez.lang.expr.Pone;
+import nez.lang.expr.Poption;
+import nez.lang.expr.Psequence;
+import nez.lang.expr.Pzero;
+import nez.lang.expr.Tcapture;
+import nez.lang.expr.Tlink;
+import nez.lang.expr.Tnew;
+import nez.lang.expr.Treplace;
+import nez.lang.expr.Ttag;
+import nez.lang.expr.Unary;
+import nez.lang.expr.Xblock;
 import nez.lang.expr.Xdef;
+import nez.lang.expr.Xdefindent;
 import nez.lang.expr.Xexists;
 import nez.lang.expr.Xindent;
 import nez.lang.expr.Xis;
-import nez.lang.expr.Tlink;
 import nez.lang.expr.Xlocal;
 import nez.lang.expr.Xmatch;
-import nez.lang.expr.Cmulti;
-import nez.lang.expr.Tnew;
-import nez.lang.expr.NonTerminal;
-import nez.lang.expr.Pnot;
-import nez.lang.expr.Poption;
-import nez.lang.expr.Pzero;
-import nez.lang.expr.Pone;
-import nez.lang.expr.Treplace;
-import nez.lang.expr.Psequence;
-import nez.lang.expr.Ttag;
-import nez.lang.expr.Unary;
+import nez.parser.GenerativeGrammar;
+import nez.parser.ParserGenerator;
 import nez.util.StringUtils;
 
-public class LPegGrammarGenerator extends NezGenerator {
+public class LPegGrammarGenerator extends ParserGenerator {
 
 	@Override
-	public String getDesc() {
-		return "Lua script (required LPEG)";
+	protected String getFileExtension() {
+		return "lua";
 	}
 
 	@Override
-	public void generate(Parser grammar, NezOption option, String fileName) {
-		this.setOption(option);
-		this.setOutputFile(fileName);
+	public void makeBody(GenerativeGrammar gg) {
 		file.writeIndent("local lpeg = require \"lpeg\"");
-		for (Production r : grammar.getProductionList()) {
+		for (Production r : gg) {
 			if (!r.getLocalName().startsWith("\"")) {
 				String localName = r.getLocalName();
 				file.writeIndent("local " + localName + " = lpeg.V\"" + localName + "\"");
@@ -52,25 +50,22 @@ public class LPegGrammarGenerator extends NezGenerator {
 		}
 		file.writeIndent("G = lpeg.P{ File,");
 		file.incIndent();
-		for (Production r : grammar.getProductionList()) {
+		for (Production r : gg) {
 			if (!r.getLocalName().startsWith("\"")) {
-				visitProduction(r);
+				visitProduction(gg, r);
 			}
 		}
 		file.decIndent();
 		file.writeIndent("}");
 		file.writeIndent();
-		makeFooter(grammar);
-		file.writeNewLine();
-		file.flush();
 	}
 
 	@Override
-	public void makeHeader(Parser g) {
+	public void makeHeader(GenerativeGrammar gg) {
 	}
 
 	@Override
-	public void visitProduction(Production rule) {
+	public void visitProduction(GenerativeGrammar gg, Production rule) {
 		Expression e = rule.getExpression();
 		file.incIndent();
 		file.writeIndent(rule.getLocalName() + " = ");
@@ -89,7 +84,7 @@ public class LPegGrammarGenerator extends NezGenerator {
 	}
 
 	@Override
-	public void makeFooter(Parser g) {
+	public void makeFooter(GenerativeGrammar gg) {
 		file.writeIndent("function evalExp (s)");
 		file.incIndent();
 		file.writeIndent("for i = 0, 5 do");
@@ -118,14 +113,17 @@ public class LPegGrammarGenerator extends NezGenerator {
 		file.writeIndent("evalExp(data)");
 	}
 
+	@Override
 	public void visitPempty(Expression e) {
 		file.write("lpeg.P\"\"");
 	}
 
+	@Override
 	public void visitPfail(Expression e) {
 		file.write("- lpeg.P(1) ");
 	}
 
+	@Override
 	public void visitNonTerminal(NonTerminal e) {
 		file.write(e.getLocalName() + " ");
 	}
@@ -147,6 +145,7 @@ public class LPegGrammarGenerator extends NezGenerator {
 		return "\"" + c + "\"";
 	}
 
+	@Override
 	public void visitCbyte(Cbyte e) {
 		file.write("lpeg.P" + this.stringfyByte(e.byteChar) + " ");
 	}
@@ -177,6 +176,7 @@ public class LPegGrammarGenerator extends NezGenerator {
 		sb.append(c);
 	}
 
+	@Override
 	public void visitCset(Cset e) {
 		boolean b[] = e.byteMap;
 		for (int start = 0; start < 256; start++) {
@@ -195,6 +195,7 @@ public class LPegGrammarGenerator extends NezGenerator {
 		}
 	}
 
+	@Override
 	public void visitCany(Cany e) {
 		file.write("lpeg.P(1)");
 	}
@@ -221,26 +222,32 @@ public class LPegGrammarGenerator extends NezGenerator {
 		}
 	}
 
+	@Override
 	public void visitPoption(Poption e) {
 		this.visit(null, e, "^-1");
 	}
 
+	@Override
 	public void visitPzero(Pzero e) {
 		this.visit(null, e, "^0");
 	}
 
+	@Override
 	public void visitPone(Pone e) {
 		this.visit(null, e, "^1");
 	}
 
+	@Override
 	public void visitPand(Pand e) {
 		this.visit("#", e, null);
 	}
 
+	@Override
 	public void visitPnot(Pnot e) {
 		this.visit("-", e, null);
 	}
 
+	@Override
 	public void visitTtag(Ttag e) {
 		file.write("lpeg.P\"\" --[[");
 		file.write(e.tag.toString());
@@ -251,6 +258,7 @@ public class LPegGrammarGenerator extends NezGenerator {
 		file.write("lpeg.P\"\"");
 	}
 
+	@Override
 	public void visitTlink(Tlink e) {
 		// String predicate = "@";
 		// if(e.index != -1) {
@@ -281,6 +289,7 @@ public class LPegGrammarGenerator extends NezGenerator {
 		return end - 1;
 	}
 
+	@Override
 	public void visitPsequence(Psequence l) {
 		for (int i = 0; i < l.size(); i++) {
 			if (i > 0) {
@@ -308,6 +317,7 @@ public class LPegGrammarGenerator extends NezGenerator {
 		}
 	}
 
+	@Override
 	public void visitPchoice(Pchoice e) {
 		for (int i = 0; i < e.size(); i++) {
 			if (i > 0) {
@@ -331,10 +341,12 @@ public class LPegGrammarGenerator extends NezGenerator {
 	// file.write(" )");
 	// }
 
+	@Override
 	public void visitTnew(Tnew e) {
 
 	}
 
+	@Override
 	public void visitTcapture(Tcapture e) {
 
 	}
@@ -348,12 +360,6 @@ public class LPegGrammarGenerator extends NezGenerator {
 			visitExpression(se);
 		}
 		file.write("> ]]");
-	}
-
-	@Override
-	public void visitExpression(Expression e) {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
@@ -409,4 +415,5 @@ public class LPegGrammarGenerator extends NezGenerator {
 		// TODO Auto-generated method stub
 
 	}
+
 }

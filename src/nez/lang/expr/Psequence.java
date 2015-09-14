@@ -1,5 +1,7 @@
 package nez.lang.expr;
 
+import java.util.List;
+
 import nez.NezOption;
 import nez.ast.SourcePosition;
 import nez.lang.Expression;
@@ -7,8 +9,8 @@ import nez.lang.GrammarTransducer;
 import nez.lang.PossibleAcceptance;
 import nez.lang.Typestate;
 import nez.lang.Visa;
-import nez.parser.Instruction;
 import nez.parser.AbstractGenerator;
+import nez.parser.Instruction;
 import nez.util.StringUtils;
 import nez.util.UList;
 
@@ -60,6 +62,21 @@ public class Psequence extends ExpressionCommons {
 	@Override
 	public Expression getNext() {
 		return this.next;
+	}
+
+	public final List<Expression> toList() {
+		UList<Expression> l = ExpressionCommons.newList(4);
+		Psequence p = this;
+		while (true) {
+			l.add(p.getFirst());
+			Expression e = p.getNext();
+			if (!(e instanceof Psequence)) {
+				break;
+			}
+			p = (Psequence) e;
+		}
+		l.add(p.getNext());
+		return l;
 	}
 
 	@Override

@@ -11,8 +11,6 @@ import nez.NezOption;
 import nez.Parser;
 import nez.ast.CommonTree;
 import nez.generator.GeneratorLoader;
-import nez.generator.NezGenerator;
-import nez.generator.NezGrammarGenerator;
 import nez.io.SourceContext;
 import nez.lang.Formatter;
 import nez.lang.GrammarFile;
@@ -189,9 +187,9 @@ public class Cshell extends Command {
 	}
 
 	static void execCommand(String cmd, Parser g, NezOption option) {
-		NezGenerator gen = GeneratorLoader.load(cmd);
-		gen.generate(g, option, null);
-		ConsoleUtils.println("");
+		// ParserGenerator gen = GeneratorLoader.load(cmd);
+		// gen.generate(g, option, null);
+		// ConsoleUtils.println("");
 	}
 }
 
@@ -203,10 +201,10 @@ class NezCommand extends ShellCommand {
 
 	@Override
 	public void perform(Parser g) {
-		NezGrammarGenerator gen = new NezGrammarGenerator();
-		for (Production p : g.getProductionList()) {
-			gen.visitProduction(p);
-		}
+		// NezGrammarGenerator gen = new NezGrammarGenerator();
+		// for (Production p : g.getProductionList()) {
+		// gen.visitProduction(p);
+		// }
 	}
 
 }

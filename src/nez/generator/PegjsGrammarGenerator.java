@@ -3,28 +3,45 @@ package nez.generator;
 import nez.Parser;
 import nez.lang.Expression;
 import nez.lang.Production;
-import nez.lang.expr.Pand;
 import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
+import nez.lang.expr.Cmulti;
 import nez.lang.expr.Cset;
-import nez.lang.expr.Tcapture;
+import nez.lang.expr.NonTerminal;
+import nez.lang.expr.Pand;
 import nez.lang.expr.Pchoice;
+import nez.lang.expr.Pnot;
+import nez.lang.expr.Pone;
+import nez.lang.expr.Poption;
+import nez.lang.expr.Psequence;
+import nez.lang.expr.Pzero;
+import nez.lang.expr.Tcapture;
 import nez.lang.expr.Tlink;
 import nez.lang.expr.Tnew;
-import nez.lang.expr.NonTerminal;
-import nez.lang.expr.Pnot;
-import nez.lang.expr.Poption;
-import nez.lang.expr.Pzero;
-import nez.lang.expr.Pone;
 import nez.lang.expr.Treplace;
-import nez.lang.expr.Psequence;
 import nez.lang.expr.Ttag;
+import nez.lang.expr.Xblock;
+import nez.lang.expr.Xdef;
+import nez.lang.expr.Xdefindent;
+import nez.lang.expr.Xexists;
+import nez.lang.expr.Xindent;
+import nez.lang.expr.Xis;
+import nez.lang.expr.Xlocal;
+import nez.lang.expr.Xmatch;
+import nez.parser.GenerativeGrammar;
+import nez.parser.ParserGenerator;
 
-public class PegjsGrammarGenerator extends GrammarGenerator {
+public class PegjsGrammarGenerator extends ParserGenerator {
 
 	@Override
-	public String getDesc() {
-		return "generate a PEGjs Grammar";
+	protected String getFileExtension() {
+		return "pegjs";
+	}
+
+	@Override
+	public void visitCmulti(Cmulti p) {
+		// TODO Auto-generated method stub
+
 	}
 
 	public void makeHeader(Parser g) {
@@ -36,7 +53,8 @@ public class PegjsGrammarGenerator extends GrammarGenerator {
 
 	}
 
-	protected String _NonTerminal(Production p) {
+	@Override
+	protected String name(Production p) {
 		return p.getLocalName();
 	}
 
@@ -53,15 +71,15 @@ public class PegjsGrammarGenerator extends GrammarGenerator {
 	};
 
 	public void visitGrouping(Expression e) {
-		W(_OpenGrouping());
+		// W(_OpenGrouping());
 		visitExpression(e);
-		W(_CloseGrouping());
+		// W(_CloseGrouping());
 	}
 
 	@Override
-	public void visitProduction(Production p) {
+	public void visitProduction(GenerativeGrammar gg, Production p) {
 		Expression e = p.getExpression();
-		L(_NonTerminal(p));
+		L(name(p));
 		inc();
 		L("= ");
 		visitExpression(e);
@@ -69,14 +87,17 @@ public class PegjsGrammarGenerator extends GrammarGenerator {
 		dec();
 	}
 
+	@Override
 	public void visitPempty(Expression e) {
 	}
 
+	@Override
 	public void visitPfail(Expression e) {
 	}
 
+	@Override
 	public void visitNonTerminal(NonTerminal e) {
-		W("" + _NonTerminal(e.getProduction()));
+		W("" + name(e.getProduction()));
 	}
 
 	public String stringfyByte(int byteChar) {
@@ -96,6 +117,7 @@ public class PegjsGrammarGenerator extends GrammarGenerator {
 		return "\"" + c + "\"";
 	}
 
+	@Override
 	public void visitCbyte(Cbyte e) {
 		W(this.stringfyByte(e.byteChar));
 	}
@@ -134,6 +156,7 @@ public class PegjsGrammarGenerator extends GrammarGenerator {
 		sb.append(c);
 	}
 
+	@Override
 	public void visitCset(Cset e) {
 		W("[");
 		boolean b[] = e.byteMap;
@@ -158,10 +181,12 @@ public class PegjsGrammarGenerator extends GrammarGenerator {
 	public void visitString(String s) {
 	}
 
+	@Override
 	public void visitCany(Cany e) {
 		W(".");
 	}
 
+	@Override
 	public void visitPoption(Poption e) {
 		for (Expression sub : e) {
 			visitExpression(sub);
@@ -169,6 +194,7 @@ public class PegjsGrammarGenerator extends GrammarGenerator {
 		W("?");
 	}
 
+	@Override
 	public void visitPzero(Pzero e) {
 		for (Expression sub : e) {
 			visitExpression(sub);
@@ -176,6 +202,7 @@ public class PegjsGrammarGenerator extends GrammarGenerator {
 		W("*");
 	}
 
+	@Override
 	public void visitPone(Pone e) {
 		for (Expression sub : e) {
 			visitExpression(sub);
@@ -183,6 +210,7 @@ public class PegjsGrammarGenerator extends GrammarGenerator {
 		W("+");
 	}
 
+	@Override
 	public void visitPand(Pand e) {
 		W("&");
 		for (Expression sub : e) {
@@ -190,6 +218,7 @@ public class PegjsGrammarGenerator extends GrammarGenerator {
 		}
 	}
 
+	@Override
 	public void visitPnot(Pnot e) {
 		W("!");
 		for (Expression sub : e) {
@@ -197,6 +226,7 @@ public class PegjsGrammarGenerator extends GrammarGenerator {
 		}
 	}
 
+	@Override
 	public void visitPchoice(Pchoice e) {
 		int checkFirst = 0;
 		W("(");
@@ -210,6 +240,7 @@ public class PegjsGrammarGenerator extends GrammarGenerator {
 		W(")");
 	}
 
+	@Override
 	public void visitPsequence(Psequence e) {
 		W("(");
 		for (Expression sub : e) {
@@ -219,21 +250,26 @@ public class PegjsGrammarGenerator extends GrammarGenerator {
 		W(")");
 	}
 
+	@Override
 	public void visitTnew(Tnew e) {
 		for (Expression sub : e) {
 			visitExpression(sub);
 		}
 	}
 
+	@Override
 	public void visitTcapture(Tcapture e) {
 	}
 
+	@Override
 	public void visitTtag(Ttag e) {
 	}
 
+	@Override
 	public void visitTreplace(Treplace e) {
 	}
 
+	@Override
 	public void visitTlink(Tlink e) {
 		// if(e.index != -1) {
 		// C("Link", String.valueOf(e.index), e);
@@ -257,6 +293,54 @@ public class PegjsGrammarGenerator extends GrammarGenerator {
 		// visit(se);
 		// }
 		// W(">");
+	}
+
+	@Override
+	public void visitXblock(Xblock p) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void visitXlocal(Xlocal p) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void visitXdef(Xdef p) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void visitXexists(Xexists p) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void visitXmatch(Xmatch p) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void visitXis(Xis p) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void visitXdefindent(Xdefindent p) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void visitXindent(Xindent p) {
+		// TODO Auto-generated method stub
+
 	}
 
 }

@@ -1,10 +1,12 @@
-package nez.generator;
+package nez.parser.generator;
 
-import nez.Parser;
+import java.util.List;
+
 import nez.lang.Expression;
 import nez.lang.Production;
 import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
+import nez.lang.expr.Cmulti;
 import nez.lang.expr.Cset;
 import nez.lang.expr.NonTerminal;
 import nez.lang.expr.Pand;
@@ -12,47 +14,47 @@ import nez.lang.expr.Pchoice;
 import nez.lang.expr.Pnot;
 import nez.lang.expr.Pone;
 import nez.lang.expr.Poption;
+import nez.lang.expr.Psequence;
 import nez.lang.expr.Pzero;
 import nez.lang.expr.Tcapture;
 import nez.lang.expr.Tlink;
 import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
+import nez.lang.expr.Unary;
 import nez.lang.expr.Xblock;
 import nez.lang.expr.Xdef;
+import nez.lang.expr.Xdefindent;
 import nez.lang.expr.Xexists;
+import nez.lang.expr.Xindent;
 import nez.lang.expr.Xis;
 import nez.lang.expr.Xlocal;
 import nez.lang.expr.Xmatch;
+import nez.parser.GenerativeGrammar;
+import nez.parser.ParserGenerator;
 import nez.util.StringUtils;
 
-public class NezGrammarGenerator extends GrammarGenerator {
-	@Override
-	public String getDesc() {
-		return "a Nez grammar";
-	}
+public class NezGrammarGenerator extends ParserGenerator {
 
-	public NezGrammarGenerator() {
+	@Override
+	protected String getFileExtension() {
+		return "nez";
 	}
 
 	@Override
-	public void makeHeader(Parser g) {
+	public void makeHeader(GenerativeGrammar gg) {
 		L("// Parsing Expression Grammars for Nez");
 		L("// ");
 	}
 
-	String stringfyName(String s) {
-		return s;
-	}
-
 	@Override
-	public void visitProduction(Production rule) {
+	public void visitProduction(GenerativeGrammar gg, Production rule) {
 		Expression e = rule.getExpression();
 		if (rule.isPublic()) {
 			L("public ");
-			W(stringfyName(rule.getLocalName()));
+			W(name(rule.getLocalName()));
 		} else {
-			L(stringfyName(rule.getLocalName()));
+			L(name(rule.getLocalName()));
 		}
 		inc();
 		L("= ");
@@ -81,7 +83,7 @@ public class NezGrammarGenerator extends GrammarGenerator {
 
 	@Override
 	public void visitNonTerminal(NonTerminal e) {
-		W(stringfyName(e.getLocalName()));
+		W(name(e.getLocalName()));
 	}
 
 	@Override
@@ -95,33 +97,74 @@ public class NezGrammarGenerator extends GrammarGenerator {
 	}
 
 	@Override
+	public void visitCmulti(Cmulti p) {
+		W(p.toString());
+	}
+
+	@Override
 	public void visitCany(Cany e) {
 		W(".");
 	}
 
+	protected void visitUnary(String prefix, Unary e, String suffix) {
+		if (prefix != null) {
+			W(prefix);
+		}
+		Expression inner = e.get(0);
+		if (inner instanceof Pchoice || inner instanceof Psequence) {
+			W("(");
+			this.visitExpression(e.get(0));
+			W(")");
+		} else {
+			this.visitExpression(e.get(0));
+		}
+		if (suffix != null) {
+			W(suffix);
+		}
+	}
+
 	@Override
 	public void visitPoption(Poption e) {
-		Unary(null, e, "?");
+		visitUnary(null, e, "?");
 	}
 
 	@Override
 	public void visitPzero(Pzero e) {
-		Unary(null, e, "*");
+		visitUnary(null, e, "*");
 	}
 
 	@Override
 	public void visitPone(Pone e) {
-		Unary(null, e, "+");
+		visitUnary(null, e, "+");
 	}
 
 	@Override
 	public void visitPand(Pand e) {
-		Unary("&", e, null);
+		visitUnary("&", e, null);
 	}
 
 	@Override
 	public void visitPnot(Pnot e) {
-		Unary("!", e, null);
+		visitUnary("!", e, null);
+	}
+
+	@Override
+	public void visitPsequence(Psequence p) {
+		int c = 0;
+		List<Expression> l = p.toList();
+		for (Expression e : l) {
+			if (c > 0) {
+				W(" ");
+			}
+			if (e instanceof Pchoice) {
+				W("(");
+				visitExpression(e);
+				W(")");
+			} else {
+				visitExpression(e);
+			}
+			c++;
+		}
 	}
 
 	@Override
@@ -161,7 +204,7 @@ public class NezGrammarGenerator extends GrammarGenerator {
 		if (e.getLabel() != null) {
 			predicate += e.getLabel().toString();
 		}
-		Unary(predicate + "(", e, ")");
+		visitUnary(predicate + "(", e, ")");
 	}
 
 	@Override
@@ -224,6 +267,16 @@ public class NezGrammarGenerator extends GrammarGenerator {
 		W(" ");
 		visitExpression(e.get(0));
 		W(">");
+	}
+
+	@Override
+	public void visitXdefindent(Xdefindent p) {
+		this.visitUndefined(p);
+	}
+
+	@Override
+	public void visitXindent(Xindent p) {
+		this.visitUndefined(p);
 	}
 
 }

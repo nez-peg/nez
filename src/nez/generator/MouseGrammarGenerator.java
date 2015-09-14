@@ -1,41 +1,38 @@
 package nez.generator;
 
-import nez.Parser;
 import nez.lang.Expression;
 import nez.lang.Production;
-import nez.lang.expr.Pand;
 import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cset;
-import nez.lang.expr.Tcapture;
+import nez.lang.expr.NonTerminal;
+import nez.lang.expr.Pand;
 import nez.lang.expr.Pchoice;
 import nez.lang.expr.Pempty;
 import nez.lang.expr.Pfail;
-import nez.lang.expr.Tlink;
-import nez.lang.expr.Tnew;
-import nez.lang.expr.NonTerminal;
 import nez.lang.expr.Pnot;
+import nez.lang.expr.Pone;
 import nez.lang.expr.Poption;
 import nez.lang.expr.Pzero;
-import nez.lang.expr.Pone;
+import nez.lang.expr.Tcapture;
+import nez.lang.expr.Tlink;
+import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
 import nez.lang.expr.Unary;
+import nez.parser.GenerativeGrammar;
+import nez.parser.generator.NezGrammarGenerator;
 
-public class MouseGrammarGenerator extends GrammarGenerator {
-
-	@Override
-	public String getDesc() {
-		return "a PEG-style grammar for Mouse";
-	}
+public class MouseGrammarGenerator extends NezGrammarGenerator {
 
 	@Override
-	public void makeHeader(Parser g) {
+	public void makeHeader(GenerativeGrammar gg) {
 		file.write("// Parsing Expression Grammars for Mouse");
 		file.writeIndent("// Translated from Nez");
 	}
 
-	String stringfyName(String s) {
+	@Override
+	protected String name(String s) {
 		if (s.equals("_")) {
 			return "SPACING";
 		}
@@ -43,9 +40,9 @@ public class MouseGrammarGenerator extends GrammarGenerator {
 	}
 
 	@Override
-	public void visitProduction(Production rule) {
+	public void visitProduction(GenerativeGrammar gg, Production rule) {
 		Expression e = rule.getExpression();
-		file.writeIndent(stringfyName(rule.getLocalName().replaceAll("_", "under")));
+		file.writeIndent(name(rule.getLocalName().replaceAll("_", "under")));
 		file.incIndent();
 		file.writeIndent("= ");
 		if (e instanceof Pchoice) {
@@ -70,18 +67,22 @@ public class MouseGrammarGenerator extends GrammarGenerator {
 		file.write("!_");
 	}
 
+	@Override
 	public void visitNonTerminal(NonTerminal e) {
-		file.write(stringfyName(e.getLocalName().replaceAll("_", "under")));
+		file.write(name(e.getLocalName().replaceAll("_", "under")));
 	}
 
+	@Override
 	public void visitCbyte(Cbyte e) {
 		file.write(stringfy("\"", e.byteChar, "\""));
 	}
 
+	@Override
 	public void visitCset(Cset e) {
 		file.write(stringfy(e.byteMap));
 	}
 
+	@Override
 	public void visitCany(Cany e) {
 		file.write("_");
 	}
@@ -166,22 +167,27 @@ public class MouseGrammarGenerator extends GrammarGenerator {
 		}
 	}
 
+	@Override
 	public void visitPoption(Poption e) {
 		this.visit(null, e, "?");
 	}
 
+	@Override
 	public void visitPzero(Pzero e) {
 		this.visit(null, e, "*");
 	}
 
+	@Override
 	public void visitPone(Pone e) {
 		this.visit(null, e, "+");
 	}
 
+	@Override
 	public void visitPand(Pand e) {
 		this.visit("&", e, null);
 	}
 
+	@Override
 	public void visitPnot(Pnot e) {
 		this.visit("!", e, null);
 	}
@@ -228,6 +234,7 @@ public class MouseGrammarGenerator extends GrammarGenerator {
 	// return end - 1;
 	// }
 
+	@Override
 	public void visitPchoice(Pchoice e) {
 		for (int i = 0; i < e.size(); i++) {
 			if (i > 0) {
@@ -237,14 +244,17 @@ public class MouseGrammarGenerator extends GrammarGenerator {
 		}
 	}
 
+	@Override
 	public void visitTnew(Tnew e) {
 
 	}
 
+	@Override
 	public void visitTcapture(Tcapture e) {
 
 	}
 
+	@Override
 	public void visitTtag(Ttag e) {
 		// file.write("{");
 		// file.write(e.tag.toString().toLowerCase());
@@ -255,6 +265,7 @@ public class MouseGrammarGenerator extends GrammarGenerator {
 		// file.write(StringUtils.quoteString('`', e.value, '`'));
 	}
 
+	@Override
 	public void visitTlink(Tlink e) {
 		// String predicate = "@";
 		// if(e.index != -1) {

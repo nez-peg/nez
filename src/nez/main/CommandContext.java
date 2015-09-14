@@ -5,6 +5,7 @@ import java.io.IOException;
 
 import nez.ParserFactory;
 import nez.io.SourceContext;
+import nez.parser.ParserGenerator;
 import nez.util.ConsoleUtils;
 import nez.util.ExtensionLoader;
 import nez.util.StringUtils;
@@ -77,6 +78,22 @@ public class CommandContext extends ParserFactory {
 		} else {
 			return null; // stdout
 		}
+	}
+
+	// -d, --dir
+	public final ParserGenerator newParserGenerator(Class<?> c) {
+		try {
+			ParserGenerator gen;
+			gen = (ParserGenerator) c.newInstance();
+			gen.init(this.getOption(), outputDirName, this.getGrammarName());
+			return gen;
+		} catch (InstantiationException e) {
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		}
+		ConsoleUtils.exit(1, "error: new parser generator");
+		return null;
 	}
 
 	// --verbose

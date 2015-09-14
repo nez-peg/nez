@@ -4,8 +4,8 @@ import nez.ast.SourcePosition;
 import nez.lang.Expression;
 import nez.lang.GrammarTransducer;
 import nez.lang.Visa;
-import nez.parser.Instruction;
 import nez.parser.AbstractGenerator;
+import nez.parser.Instruction;
 
 public class Xblock extends Unary {
 	Xblock(SourcePosition s, Expression e) {
