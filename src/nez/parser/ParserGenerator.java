@@ -525,7 +525,7 @@ public abstract class ParserGenerator extends AbstractGenerator {
 	}
 
 	@Override
-	public final Instruction encodeTempty(Expression p, Instruction next) {
+	public final Instruction encodePempty(Expression p, Instruction next) {
 		this.visitPempty(p);
 		return null;
 	}

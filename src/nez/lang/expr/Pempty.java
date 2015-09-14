@@ -46,6 +46,6 @@ public class Pempty extends Term {
 
 	@Override
 	public Instruction encode(AbstractGenerator bc, Instruction next, Instruction failjump) {
-		return bc.encodeTempty(this, next);
+		return bc.encodePempty(this, next);
 	}
 }

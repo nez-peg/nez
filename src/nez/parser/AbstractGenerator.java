@@ -149,7 +149,7 @@ public abstract class AbstractGenerator {
 	// Extension
 	public abstract Instruction encodeExtension(Expression p, Instruction next, Instruction failjump);
 
-	public Instruction encodeTempty(Expression empty, Instruction next) {
+	public Instruction encodePempty(Expression empty, Instruction next) {
 		return next;
 	}
 

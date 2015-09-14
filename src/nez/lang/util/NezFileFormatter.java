@@ -1,19 +1,17 @@
-package nez.lang;
+package nez.lang.util;
 
-import nez.Parser;
 import nez.ast.AbstractTree;
+import nez.ast.AbstractTreeVisitor;
 import nez.ast.SymbolId;
-import nez.ext.Gnez;
 import nez.util.FileBuilder;
 
-public class NezFileFormatter extends Gnez {
+public class NezFileFormatter extends AbstractTreeVisitor {
 	private FileBuilder f;
 
 	public NezFileFormatter() {
 		f = new FileBuilder(null);
 	}
 
-	@Override
 	public void parse(AbstractTree<?> node) {
 		visit("p", node);
 	}
@@ -378,11 +376,6 @@ public class NezFileFormatter extends Gnez {
 		// this.reportError(node.get(1), "unfound: " + urn);
 		// }
 		return true;
-	}
-
-	@Override
-	public Parser getLoaderGrammar() {
-		throw new RuntimeException("FIXME");
 	}
 
 }
