@@ -84,11 +84,10 @@ public class PegjsGrammarGenerator extends ParserGenerator {
 	public void visitProduction(GenerativeGrammar gg, Production p) {
 		Expression e = p.getExpression();
 		L(name(p));
-		inc();
+		Begin("");
 		L("= ");
 		visitExpression(e);
-		L();
-		dec();
+		End("");
 	}
 
 	@Override

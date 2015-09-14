@@ -83,12 +83,11 @@ public class PEGTLGenerator extends ParserGenerator {
 	public void visitProduction(GenerativeGrammar gg, Production p) {
 		Expression e = p.getExpression();
 		L("struct " + name(p) + " : ");
-		inc();
-		L("");
+		Begin("");
 		W("pegtl::seq<");
 		visitExpression(e);
 		W(", pegtl::success> {};");
-		dec();
+		End("");
 	}
 
 	@Override

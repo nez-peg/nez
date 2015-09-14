@@ -240,10 +240,6 @@ public class Combinator extends Grammar {
 		return ExpressionCommons.newTlink(src(), label == null ? null : SymbolId.tag(label), P(nonTerminal));
 	}
 
-	protected Expression OptionalLink(String label, String nonTerminal) {
-		return ExpressionCommons.newPoption(src(), ExpressionCommons.newTlink(src(), label == null ? null : SymbolId.tag(label), P(nonTerminal)));
-	}
-
 	protected Expression Msg(String label, String msg) {
 		return ExpressionCommons.newTlink(src(), SymbolId.tag(label), New(Replace(msg)));
 	}

@@ -2,8 +2,8 @@ package nez.parser;
 
 import nez.NezOption;
 import nez.lang.Production;
-import nez.lang.expr.Tlink;
 import nez.lang.expr.NonTerminal;
+import nez.lang.expr.Tlink;
 import nez.main.Verbose;
 
 public class PackratCompiler extends OptimizedCompiler {
@@ -12,43 +12,34 @@ public class PackratCompiler extends OptimizedCompiler {
 		super(option);
 	}
 
-	protected Instruction encodeMemoizingProduction(ParseFunc cp) {
-		// if(cp.memoPoint != null) {
-		// Production p = cp.production;
-		// //boolean node = option.enabledASTConstruction ?
-		// !p.isNoNTreeConstruction() : false;
-		// boolean state = p.isContextual();
-		// Instruction next = new IMemo(p, cp.memoPoint, state, new IRet(p));
-		// Instruction inside = new ICall(cp.production, next);
-		// inside = new IAlt(p, new IMemoFail(p, state, cp.memoPoint), inside);
-		// return new ILookup(p, cp.memoPoint, state, inside, new IRet(p));
-		// }
-		return null;
-	}
-
-	public final Instruction encodeNonTerminal(NonTerminal p, Instruction next, Instruction failjump) {
-		Production r = p.getProduction();
-		ParseFunc pcode = this.getParseFunc(r);
+	@Override
+	public final Instruction encodeNonTerminal(NonTerminal n, Instruction next, Instruction failjump) {
+		Production p = n.getProduction();
+		if (p == null) {
+			Verbose.debug("unref: " + n.getLocalName());
+		}
+		ParseFunc pcode = this.getParseFunc(p);
 		if (pcode.inlining) {
-			this.optimizedInline(r);
+			this.optimizedInline(p);
 			return encode(pcode.e, next, failjump);
 		}
 		if (pcode.memoPoint != null) {
-			if (!option.enabledASTConstruction || r.isNoNTreeConstruction()) {
+			if (!option.enabledASTConstruction || p.isNoNTreeConstruction()) {
 				if (Verbose.PackratParsing) {
-					Verbose.println("memoize: " + p.getLocalName() + " at " + this.getEncodingProduction().getLocalName());
+					Verbose.println("memoize: " + n.getLocalName() + " at " + this.getEncodingProduction().getLocalName());
 				}
-				Instruction inside = new IMemo(p, pcode.memoPoint, pcode.state, next);
+				Instruction inside = new IMemo(n, pcode.memoPoint, pcode.state, next);
 				inside = new ICall(pcode.p, inside);
-				inside = new IAlt(p, new IMemoFail(p, pcode.state, pcode.memoPoint), inside);
-				return new ILookup(p, pcode.memoPoint, pcode.state, inside, next);
+				inside = new IAlt(n, new IMemoFail(n, pcode.state, pcode.memoPoint), inside);
+				return new ILookup(n, pcode.memoPoint, pcode.state, inside, next);
 			}
 		}
-		return new ICall(r, next);
+		return new ICall(p, next);
 	}
 
 	// AST Construction
 
+	@Override
 	public final Instruction encodeTlink(Tlink p, Instruction next, Instruction failjump) {
 		if (option.enabledASTConstruction && p.get(0) instanceof NonTerminal) {
 			NonTerminal n = (NonTerminal) p.get(0);

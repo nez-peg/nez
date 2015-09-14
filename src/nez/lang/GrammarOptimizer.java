@@ -14,7 +14,9 @@ import nez.lang.expr.Pchoice;
 import nez.lang.expr.Pempty;
 import nez.lang.expr.Pfail;
 import nez.lang.expr.Pnot;
+import nez.lang.expr.Poption;
 import nez.lang.expr.Psequence;
+import nez.lang.expr.Pzero;
 import nez.lang.expr.Tcapture;
 import nez.lang.expr.Tlink;
 import nez.lang.expr.Tnew;
@@ -62,10 +64,8 @@ public class GrammarOptimizer extends GrammarRewriter {
 		UList<Production> prodList = new UList<Production>(new Production[gg.size()]);
 		for (Production p : gg) {
 			String key = p.getLocalName();
-			// System.out.println("optimizedMap: " + optimizedMap + "key=" +
-			// key);
 			int refc = optimizedMap.get(key);
-			// System.out.println(key + ": ref=" + refc);
+			// Verbose.debug(key + ": ref=" + refc);
 			if (refc > 0) {
 				ParseFunc f = gg.getParseFunc(key);
 				f.update(p.getExpression(), refc);
@@ -136,22 +136,22 @@ public class GrammarOptimizer extends GrammarRewriter {
 		// if (p.isRecursive()) {
 		// return n;
 		// }
-		// if (option.enabledInlining && p.isInline()) {
-		// rewrite("inline", n, optimized);
-		// return optimized;
-		// }
 		if (option.enabledInlining) {
 			ParseFunc f = gg.getParseFunc(n.getLocalName());
 			if (f.getRefCount() == 1) {
-				rewrite("inline(ref=1)", n, deref);
+				reportInfo("inline(ref=1)", n, deref);
 				return deref;
 			}
 			if (isSingleCharacter(deref)) {
-				rewrite("deref", n, deref);
+				reportInfo("deref", n, deref);
 				return deref;
 			}
 			if (deref instanceof Pempty || deref instanceof Pfail) {
-				rewrite("deref", n, deref);
+				reportInfo("deref", n, deref);
+				return deref;
+			}
+			if (isSingleInstruction(deref)) {
+				reportInfo("deref", n, deref);
 				return deref;
 			}
 		}
@@ -172,58 +172,68 @@ public class GrammarOptimizer extends GrammarRewriter {
 		return false;
 	}
 
-	// @Override
-	// public Expression reshapePsequence(Psequence p) {
-	// UList<Expression> l = p.toList();
-	// UList<Expression> l2 = ExpressionCommons.newList(l.size());
-	// for (int i = 0; i < l.size(); i++) {
-	// Expression inner = l.ArrayValues[i];
-	// push(inner);
-	// inner = inner.reshape(this);
-	// l2.add(inner);
-	// }
-	// for (int i = l.size() - 1; i >= 0; i--) {
-	// pop(l.ArrayValues[i]);
-	// }
-	// if (this.enabledOutOfOrder) {
-	// // // if (next instanceof Psequence) {
-	// // // Psequence nextSequence = (Psequence) next;
-	// // // if (isSingleCharacter(nextSequence.first) &&
-	// // isOutOfOrdered(first)) {
-	// // // rewrite_outoforder(first, nextSequence.first);
-	// // // Expression temp = nextSequence.first;
-	// // // nextSequence.first = first;
-	// // // first = temp;
-	// // // }
-	// // // } else {
-	// // // if (isSingleCharacter(next) && isOutOfOrdered(first)) {
-	// // // rewrite_outoforder(first, next);
-	// // // Expression temp = first;
-	// // // first = next;
-	// // // next = temp;
-	// // // }
-	// // // }
-	// }
-	// // for (int i = 1; i < l.size(); i++) {
-	// // Expression first = l.get(i - 1);
-	// // Expression next = l.get(i);
-	// // if (isNotChar(first)) {
-	// // if (next instanceof Cany) {
-	// // l.ArrayValues[i] = convertBitMap(next, first.get(0));
-	// // l.ArrayValues[i - 1] = p.newEmpty();
-	// // // if (optimized != null) {
-	// // // rewrite("not-merge", p, optimized);
-	// // // return optimized;
-	// // // }
-	// // }
-	// // if (next instanceof Cset && isNotChar(first)) {
-	// // l.ArrayValues[i] = convertBitMap(next, first.get(0));
-	// // l.ArrayValues[i - 1] = p.newEmpty();
-	// // }
-	// // }
-	// // }
-	// return p.newSequence(l2);
-	// }
+	// used to test inlining
+	public final static boolean isSingleInstruction(Expression e) {
+		if (e instanceof Pnot || e instanceof Pzero || e instanceof Poption) {
+			return isSingleCharacter(e.get(0));
+		}
+		return false;
+	}
+
+	@Override
+	public Expression reshapePsequence(Psequence p) {
+		UList<Expression> l = p.toList();
+		UList<Expression> l2 = ExpressionCommons.newList(l.size());
+		for (int i = 0; i < l.size(); i++) {
+			Expression inner = l.ArrayValues[i];
+			push(inner);
+			inner = inner.reshape(this);
+			l2.add(inner);
+		}
+		// System.out.println("l1" + l);
+		// System.out.println("l2" + l2);
+		for (int i = l.size() - 1; i >= 0; i--) {
+			pop(l.ArrayValues[i]);
+		}
+		if (this.enabledOutOfOrder) {
+			// // if (next instanceof Psequence) {
+			// // Psequence nextSequence = (Psequence) next;
+			// // if (isSingleCharacter(nextSequence.first) &&
+			// isOutOfOrdered(first)) {
+			// // rewrite_outoforder(first, nextSequence.first);
+			// // Expression temp = nextSequence.first;
+			// // nextSequence.first = first;
+			// // first = temp;
+			// // }
+			// // } else {
+			// // if (isSingleCharacter(next) && isOutOfOrdered(first)) {
+			// // rewrite_outoforder(first, next);
+			// // Expression temp = first;
+			// // first = next;
+			// // next = temp;
+			// // }
+			// // }
+		}
+		for (int i = 1; i < l.size(); i++) {
+			Expression first = l.get(i - 1);
+			Expression next = l.get(i);
+			if (isNotChar(first)) {
+				if (next instanceof Cany) {
+					l.ArrayValues[i] = convertBitMap(next, first.get(0));
+					l.ArrayValues[i - 1] = p.newEmpty();
+					// if (optimized != null) {
+					// rewrite("not-merge", p, optimized);
+					// return optimized;
+					// }
+				}
+				if (next instanceof Cset && isNotChar(first)) {
+					l.ArrayValues[i] = convertBitMap(next, first.get(0));
+					l.ArrayValues[i - 1] = p.newEmpty();
+				}
+			}
+		}
+		return p.newSequence(l2);
+	}
 
 	private boolean isOutOfOrdered(Expression e) {
 		if (e instanceof Ttag) {
@@ -311,12 +321,12 @@ public class GrammarOptimizer extends GrammarRewriter {
 			flattenChoiceList(p, choiceList, new HashSet<String>());
 			Expression optimized = convertByteMap(p, choiceList);
 			if (optimized != null) {
-				rewrite("choice-map", p, optimized);
+				reportInfo("choice-map", p, optimized);
 				return optimized;
 			}
 			choiceList = checkTrieTree(choiceList);
 			if (choiceList.size() == 1) {
-				rewrite("choice-single", p, choiceList.ArrayValues[0]);
+				reportInfo("choice-single", p, choiceList.ArrayValues[0]);
 				return choiceList.ArrayValues[0];
 			}
 			if (option.enabledPrediction) {
@@ -341,7 +351,7 @@ public class GrammarOptimizer extends GrammarRewriter {
 				// Verbose.debug("reduced: " + choiceList.size() + " => " +
 				// reduced);
 				if (count == 1 && singleChoice != null) {
-					rewrite("choice-single", p, singleChoice);
+					reportInfo("choice-single", p, singleChoice);
 					return singleChoice;
 				}
 				if (this.enabledCostBasedReduction && reduced / choiceList.size() > 0.55) {
@@ -360,11 +370,12 @@ public class GrammarOptimizer extends GrammarRewriter {
 
 	private void flattenChoiceList(Pchoice choice, UList<Expression> l, HashSet<String> ucheck) {
 		for (Expression inner : choice) {
-			inner = inlineNonTerminal(inner);
+			inner = reshapeInner(inner);
+			// inner = inlineNonTerminal(inner); // FIXME
 			if (inner instanceof Pchoice) {
 				flattenChoiceList((Pchoice) inner, l, ucheck);
 			} else {
-				inner = reshapeInner(inner);
+				// inner = reshapeInner(inner);
 				String key = inner.toString();
 				if (ucheck.contains(key)) {
 					repo.reportNotice(inner.getSourcePosition(), "duplicated choice: " + key);
@@ -550,7 +561,7 @@ public class GrammarOptimizer extends GrammarRewriter {
 		// Verbose.debug("out-of-order " + e + " <==> " + e2);
 	}
 
-	private void rewrite(String msg, Expression e, Expression e2) {
+	private void reportInfo(String msg, Expression e, Expression e2) {
 		// Verbose.debug(msg + " " + e + "\n\t=>" + e2);
 	}
 

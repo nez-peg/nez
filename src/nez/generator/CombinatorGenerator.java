@@ -56,11 +56,11 @@ public class CombinatorGenerator extends ParserGenerator {
 		L("import nez.lang.Expression;");
 		L("");
 		L("class G extends ParserCombinator");
-		Begin();
+		Begin("{");
 	}
 
 	public void makeFooter(Parser g) {
-		End();
+		End("}");
 	}
 
 	@Override
@@ -69,11 +69,11 @@ public class CombinatorGenerator extends ParserGenerator {
 		L("public Expression p");
 		W(name(p));
 		W("() ");
-		Begin();
+		Begin("{");
 		L("return ");
 		visitExpression(e);
 		W(";");
-		End();
+		End("}");
 	}
 
 	public void visitEmpty(Pempty e) {
@@ -172,8 +172,8 @@ public class CombinatorGenerator extends ParserGenerator {
 
 	@Override
 	public void visitTlink(Tlink e) {
-		if (e.index != -1) {
-			C("Link", String.valueOf(e.index), e);
+		if (e.getLabel() != null) {
+			C("Link", e.getLabel().toString(), e);
 		} else {
 			C("Link", e);
 		}

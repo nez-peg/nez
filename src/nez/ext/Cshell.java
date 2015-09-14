@@ -93,7 +93,7 @@ public class Cshell extends Command {
 	}
 
 	private void displayGrammar(String command, Parser g) {
-		g.getStartProduction().dump();
+		g.getGrammar().dump();
 	}
 
 	private int indexOfOperator(String line) {

@@ -135,9 +135,9 @@ public class CParserGenerator extends ParserGenerator {
 	}
 
 	private void Label(String label) {
-		dec();
+		Begin("");
 		L(label + ": ;");
-		inc();
+		End("");
 	}
 
 	private void let(String type, String var, String expr) {
