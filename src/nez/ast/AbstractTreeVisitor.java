@@ -77,7 +77,7 @@ public class AbstractTreeVisitor {
 		Method m = this.methodMap.get(key);
 		if (m == null) {
 			try {
-				m = getClassMethod(method, tag);
+				m = getClassMethod(method, tag, c1);
 			} catch (NoSuchMethodException e) {
 				Verbose.printNoSuchMethodException(e);
 				return null;
@@ -96,7 +96,7 @@ public class AbstractTreeVisitor {
 	}
 
 	protected Object toUndefinedNode(AbstractTree<?> node, Object p1) {
-		ConsoleUtils.exit(1, "undefined node:" + node);
+		ConsoleUtils.exit(1, "undefined node:" + node + " with " + p1);
 		return null;
 	}
 

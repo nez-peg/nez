@@ -170,6 +170,41 @@ public class GrammarOptimizer extends GrammarRewriter {
 		return false;
 	}
 
+	// @Override
+	// public Expression reshapePsequence(Psequence p) {
+	// Expression e = super.reshapePsequence(p);
+	// if (e instanceof Psequence) {
+	// Expression first = e.getFirst();
+	// Expression next = e.getNext();
+	// if (this.enabledOutOfOrder) {
+	// if (next instanceof Psequence) {
+	// Psequence nextSequence = (Psequence) next;
+	// if (isSingleCharacter(nextSequence.first) && isOutOfOrdered(first)) {
+	// rewrite_outoforder(first, nextSequence.first);
+	// Expression temp = nextSequence.first;
+	// nextSequence.first = first;
+	// first = temp;
+	// }
+	// } else {
+	// if (isSingleCharacter(next) && isOutOfOrdered(first)) {
+	// rewrite_outoforder(first, next);
+	// Expression temp = first;
+	// first = next;
+	// next = temp;
+	// }
+	// }
+	// }
+	// if (isNotChar(first)) {
+	// Expression optimized = convertBitMap(next, first.get(0));
+	// if (optimized != null) {
+	// rewrite("not-merge", p, optimized);
+	// return optimized;
+	// }
+	// }
+	// }
+	// return e;
+	// }
+
 	private boolean isOutOfOrdered(Expression e) {
 		if (e instanceof Ttag) {
 			return true;
@@ -186,41 +221,6 @@ public class GrammarOptimizer extends GrammarRewriter {
 			return true;
 		}
 		return false;
-	}
-
-	@Override
-	public Expression reshapePsequence(Psequence p) {
-		Expression e = super.reshapePsequence(p);
-		if (e instanceof Psequence) {
-			Expression first = e.getFirst();
-			Expression next = e.getNext();
-			if (this.enabledOutOfOrder) {
-				if (next instanceof Psequence) {
-					Psequence nextSequence = (Psequence) next;
-					if (isSingleCharacter(nextSequence.first) && isOutOfOrdered(first)) {
-						rewrite_outoforder(first, nextSequence.first);
-						Expression temp = nextSequence.first;
-						nextSequence.first = first;
-						first = temp;
-					}
-				} else {
-					if (isSingleCharacter(next) && isOutOfOrdered(first)) {
-						rewrite_outoforder(first, next);
-						Expression temp = first;
-						first = next;
-						next = temp;
-					}
-				}
-			}
-			if (isNotChar(first)) {
-				Expression optimized = convertBitMap(next, first.get(0));
-				if (optimized != null) {
-					rewrite("not-merge", p, optimized);
-					return optimized;
-				}
-			}
-		}
-		return e;
 	}
 
 	private boolean isNotChar(Expression p) {
@@ -332,10 +332,6 @@ public class GrammarOptimizer extends GrammarRewriter {
 						}
 					}
 				}
-				// if (p.predictedCase[0] != null) {
-				// Verbose.debug("** " + p);
-				// // Verbose.debug(" [0] " + p.predictedCase[0]);
-				// }
 				double reduced = (double) selected / count;
 				// Verbose.debug("reduced: " + choiceList.size() + " => " +
 				// reduced);
@@ -347,9 +343,6 @@ public class GrammarOptimizer extends GrammarRewriter {
 					p.predictedCase = null;
 				}
 			}
-			// if (!isFlatten) {
-			// return p;
-			// }
 			Expression c = p.newChoice(choiceList);
 			if (c instanceof Pchoice) {
 				((Pchoice) c).isFlatten = true;

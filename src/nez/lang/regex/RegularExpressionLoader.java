@@ -27,7 +27,7 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 			try {
 				NezOption option = NezOption.newSafeOption();
 				Grammar g = GrammarFileLoader.loadGrammar("regex.nez", option, null);
-				g.dump();
+				// g.dump();
 				lParser = g.newParser(option, repo);
 				if (repo != null) {
 					repo.report(option);
