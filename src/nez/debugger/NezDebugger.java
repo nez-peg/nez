@@ -181,12 +181,17 @@ public class NezDebugger {
 			e = ((Icall) code).ne;
 		} else if (code instanceof Ialtstart) {
 			e = code.expr.get(0);
+		} else if (code instanceof Inop) {
+			if (running) {
+				ConsoleUtils.println(((Inop) code).p.getExpression().getSourcePosition().formatSourceMessage("debug", ""));
+				return;
+			}
 		} else {
 			e = code.getExpression();
 		}
 		if (running && e != null) {
 			ConsoleUtils.println(e.getSourcePosition().formatSourceMessage("debug", ""));
-		} else if (e == null) {
+		} else if (running && e == null) {
 			ConsoleUtils.println("e = null");
 		}
 	}

@@ -3,6 +3,7 @@ package nez.debugger;
 import java.util.ArrayList;
 import java.util.List;
 
+import nez.lang.Production;
 import nez.parser.GenerativeGrammar;
 import nez.util.ConsoleUtils;
 
@@ -19,9 +20,10 @@ public class Module {
 	}
 
 	public DebugVMInstruction getStartPoint() {
+		Production start = this.g.getStartProduction();
 		for (Function func : this.funcList) {
-			if (func.funcName.equals(this.g.getStartProduction())) {
-				Inop nop = new Inop(this.g.getStartProduction());
+			if (func.funcName.equals(start.getLocalName())) {
+				Inop nop = new Inop(start);
 				BasicBlock bb = func.get(0);
 				while (bb.size() == 0) {
 					bb = bb.getSingleSuccessor();
