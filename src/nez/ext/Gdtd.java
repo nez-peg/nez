@@ -24,6 +24,7 @@ public class Gdtd extends GrammarFileLoader {
 	}
 
 	static Parser dtdParser;
+	boolean enableNezExtension;
 
 	@Override
 	public Parser getLoaderGrammar() {
@@ -40,6 +41,7 @@ public class Gdtd extends GrammarFileLoader {
 			}
 			assert (dtdParser != null);
 		}
+		this.enableNezExtension = !option.disabledNezExtension;
 		return dtdParser;
 	}
 
@@ -53,8 +55,6 @@ public class Gdtd extends GrammarFileLoader {
 	int attDefCount = 0;
 	int elementCount = 0;
 	int entityCount = 0;
-
-	boolean enableNezExtension = !this.option.disabledNezExtension;
 
 	Map<Integer, String> elementNameMap = new HashMap<Integer, String>();
 	Map<Integer, String> attDefMap;
