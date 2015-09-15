@@ -87,12 +87,18 @@ public class NezGrammar1 extends Combinator {
 		return New(
 				t("example"),
 				P("S"),
-				Choice(Sequence(t("!"), Tag("Rebuttal")), Tag("Example")),
+				Tag("Example"),
+				// Choice(Sequence(t("!"), Tag("Rebuttal")), Tag("Example")),
 				Link("name", "NonTerminal"),
-				Option(t("&"), Link("name2", "NonTerminal")),
+				Option(P("_"), t("&"), Link("name2", "NonTerminal")),
+				Option(P("_"), t("~"), Link("hash", "Hash")),
 				ZeroMore(c(" \t")),
 				Choice(Sequence(t("'''"), P("EOL"), Link("text", New(ZeroMore(NotAny("\n'''")))), P("EOL"), t("'''")), Sequence(t("```"), P("EOL"), Link("text", New(ZeroMore(NotAny("\n```")))), P("EOL"), t("```")),
 						Sequence(t("\"\"\""), P("EOL"), Link("text", New(ZeroMore(NotAny("\n\"\"\"")))), P("EOL"), t("\"\"\"")), Sequence(Link("text", New(ZeroMore(NotAny(P("EOL"))))), P("EOL"))));
+	}
+
+	public Expression pHash() {
+		return New(OneMore(P("HEX")), Tag("String"));
 	}
 
 	public Expression pIndex() {
