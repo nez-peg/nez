@@ -1,7 +1,7 @@
 package nez.ext;
 
 import nez.Parser;
-import nez.debugger.DebugInputManager;
+import nez.debugger.DebugManager;
 import nez.main.Command;
 import nez.main.CommandContext;
 
@@ -18,7 +18,7 @@ public class Cndb extends Command {
 		config.getOption().setOption("asis", true);
 		config.getOption().setOption("intern", false);
 		Parser parser = config.newParser();
-		DebugInputManager manager = new DebugInputManager(config.inputFileLists);
+		DebugManager manager = new DebugManager(config.inputFileLists);
 		manager.exec(parser, config.getOption());
 	}
 

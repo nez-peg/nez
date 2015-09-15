@@ -10,11 +10,11 @@ import nez.ast.CommonTreeTransducer;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
 
-public class DebugInputManager {
+public class DebugManager {
 	private int index;
 	public UList<String> inputFileLists;
 
-	public DebugInputManager(UList<String> inputFileLists) {
+	public DebugManager(UList<String> inputFileLists) {
 		this.inputFileLists = inputFileLists;
 		this.index = 0;
 	}
