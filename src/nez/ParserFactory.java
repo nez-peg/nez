@@ -50,11 +50,16 @@ public class ParserFactory {
 
 	public final String getGrammarName() {
 		if (gFileName != null) {
-			int loc = gFileName.lastIndexOf('.');
+			String path = gFileName;
+			int loc = path.lastIndexOf('/');
 			if (loc > 0) {
-				return gFileName.substring(0, loc);
+				path = path.substring(loc + 1);
 			}
-			return gFileName;
+			loc = path.lastIndexOf('.');
+			if (loc > 0) {
+				return path.substring(0, loc);
+			}
+			return path;
 		}
 		return "g";
 	}
