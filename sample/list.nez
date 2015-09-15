@@ -20,6 +20,8 @@ S
 	= [ \t]
 
 
-example Expression A,B,C,D
+example Expression '''
+A,B,C,D
+'''
 
 
