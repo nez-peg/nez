@@ -201,6 +201,9 @@ public class Gnez extends GrammarFileLoader {
 	public final static SymbolId _name = SymbolId.tag("name");
 	public final static SymbolId _expr = SymbolId.tag("expr");
 	public final static SymbolId _symbol = SymbolId.tag("symbol");
+	public final static SymbolId _hash = SymbolId.tag("hash"); // example
+	public final static SymbolId _name2 = SymbolId.tag("name2"); // example
+	public final static SymbolId _text = SymbolId.tag("text"); // example
 
 	private SymbolId parseLabelNode(AbstractTree<?> node) {
 		SymbolId label = null;
@@ -283,14 +286,16 @@ public class Gnez extends GrammarFileLoader {
 	}
 
 	public boolean parseExample(AbstractTree<?> node) {
-		if (node.size() == 2) {
-			Example ex = new Example(node.get(0), node.get(1), true);
-			this.getGrammarFile().addExample(ex);
+		String hash = node.getText(_hash, null);
+		AbstractTree<?> textNode = node.get(_text);
+		AbstractTree<?> nameNode = node.get(_name2, null);
+		if (nameNode != null) {
+			this.getGrammarFile().addExample(new Example(true, nameNode, hash, textNode));
+			nameNode = node.get(_name);
+			this.getGrammarFile().addExample(new Example(false, nameNode, hash, textNode));
 		} else {
-			Example ex = new Example(node.get(0), node.get(2), true);
-			this.getGrammarFile().addExample(ex);
-			ex = new Example(node.get(1), node.get(2), true);
-			this.getGrammarFile().addExample(ex);
+			nameNode = node.get(_name);
+			this.getGrammarFile().addExample(new Example(true, nameNode, hash, textNode));
 		}
 		return true;
 	}

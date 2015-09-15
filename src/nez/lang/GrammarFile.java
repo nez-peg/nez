@@ -1,10 +1,11 @@
 package nez.lang;
 
+import java.util.List;
+
 import nez.Grammar;
 import nez.NezOption;
 import nez.ast.CommonTree;
 import nez.ast.SourcePosition;
-import nez.main.Verbose;
 import nez.util.UList;
 
 public class GrammarFile extends Grammar {
@@ -140,6 +141,10 @@ public class GrammarFile extends Grammar {
 
 	private UList<Example> exampleList;
 
+	public List<Example> getExampleList() {
+		return exampleList;
+	}
+
 	public final void addExample(Example ex) {
 		if (exampleList == null) {
 			exampleList = new UList<Example>(new Example[2]);
@@ -147,16 +152,29 @@ public class GrammarFile extends Grammar {
 		exampleList.add(ex);
 	}
 
-	final void testExample(NezOption option) {
+	public final List<String> getExampleList(String name) {
+		UList<String> l = new UList<String>(new String[4]);
 		if (exampleList != null) {
-			long t1 = System.nanoTime();
 			for (Example ex : exampleList) {
-				ex.test(this, option);
+				if (name.equals(ex.getName())) {
+					l.add(ex.getText());
+				}
 			}
-			long t2 = System.nanoTime();
-			if (Verbose.Example) {
-				Verbose.println("Elapsed time (Example Tests): " + ((t2 - t1) / 1000000) + "ms");
+		}
+		return l;
+	}
+
+	public final void checkExample() {
+		if (exampleList == null) {
+			for (Example ex : exampleList) {
+				if (ex.isPublic) {
+					Production p = this.getProduction(ex.getName());
+					if (p != null) {
+						p.flag |= Production.PublicProduction;
+					}
+				}
 			}
 		}
 	}
+
 }

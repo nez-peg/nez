@@ -142,12 +142,12 @@ SourceElement
 /* FIXME   / FunctionDeclaration */
 
 example FunctionDeclaration&SourceElement function func(){}
-example FunctionDeclaration&SourceElement function func(n) { return n+1; }
+example FunctionDeclaration&SourceElement ## function func(n) { return n+1; }
 
 FunctionDeclaration
     = { "function" __ @Identifier __ @FunctionParameterList __ @FunctionBody #FuncDecl }
 
-example FunctionExpression&Expression function(){}
+example FunctionExpression&Expression ~abc function(){}
 example FunctionExpression&Expression function(n){ return n+1; }
 
 FunctionExpression

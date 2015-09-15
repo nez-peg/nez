@@ -78,10 +78,12 @@ public abstract class AbstractTree<E extends AbstractTree<E>> extends AbstractLi
 		return this.length;
 	}
 
+	@Override
 	public int size() {
 		return this.labels.length;
 	}
 
+	@Override
 	public final boolean isEmpty() {
 		return this.size() == 0;
 	}
@@ -109,6 +111,7 @@ public abstract class AbstractTree<E extends AbstractTree<E>> extends AbstractLi
 		return c;
 	}
 
+	@Override
 	public E get(int index) {
 		return this.subTree[index];
 	}
@@ -178,7 +181,9 @@ public abstract class AbstractTree<E extends AbstractTree<E>> extends AbstractLi
 	}
 
 	public void stringfy(String indent, SymbolId label, StringBuilder sb) {
-		sb.append("\n");
+		if (indent.length() > 0) {
+			sb.append("\n");
+		}
 		sb.append(indent);
 		if (label != null) {
 			sb.append(label);
@@ -271,10 +276,12 @@ public abstract class AbstractTree<E extends AbstractTree<E>> extends AbstractLi
 		return defvalue;
 	}
 
+	@Override
 	public final String formatSourceMessage(String type, String msg) {
 		return this.getSource().formatPositionLine(type, this.getSourcePosition(), msg);
 	}
 
+	@Override
 	public final String formatDebugSourceMessage(String msg) {
 		return this.source.formatDebugPositionMessage(this.getSourcePosition(), msg);
 	}

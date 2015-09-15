@@ -23,6 +23,25 @@ public class ConsoleUtils {
 		System.out.print(s);
 	}
 
+	public final static void print(String tab, Object o) {
+		System.out.print(tab);
+		String s = o.toString();
+		for (int i = 0; i < s.length(); i++) {
+			char c = s.charAt(i);
+			if (c == '\n') {
+				System.out.println();
+				System.out.print(tab);
+			} else {
+				System.out.print(c);
+			}
+		}
+	}
+
+	public final static void println(String tab, Object o) {
+		print(tab, o);
+		System.out.println();
+	}
+
 	public final static void debug(String s) {
 		System.out.println(s);
 	}

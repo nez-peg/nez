@@ -1,67 +1,64 @@
 package nez.lang;
 
-import nez.NezOption;
 import nez.Parser;
 import nez.ast.AbstractTree;
+import nez.ast.AbstractTreeUtils;
 import nez.io.SourceContext;
-import nez.main.Verbose;
+import nez.util.ConsoleUtils;
 
 public class Example {
+	boolean isPublic;
 	AbstractTree<?> nameNode;
 	AbstractTree<?> textNode;
-	boolean result;
+	String hash;
 
-	public Example(AbstractTree<?> nameNode, AbstractTree<?> textNode, boolean result) {
+	public Example(boolean isPublic, AbstractTree<?> nameNode, String hash, AbstractTree<?> textNode) {
+		this.isPublic = true;
 		this.nameNode = nameNode;
 		this.textNode = textNode;
-		this.result = result;
+		this.hash = hash;
 	}
 
-	boolean test(GrammarFile grammar, NezOption option) {
-		Parser g = grammar.newParser(nameNode.toText(), option, null);
-		if (g == null) {
-			System.out.println(nameNode.formatSourceMessage("error", "undefined nonterminal"));
-			return false;
-		}
-		SourceContext source = textNode.newSourceContext();
-		String name = (this.result ? "" : "!") + nameNode.toText() + " (" + textNode.getSource().getResourceName() + ":" + textNode.getSource().linenum(textNode.getSourcePosition()) + ")";
-		boolean matchingResult = g.match(source);
-		boolean unConsumed = true;
-		if (matchingResult) {
-			while (source.hasUnconsumed()) {
-				int ch = source.byteAt(source.getPosition());
-				if (ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r') {
-					source.consume(1);
-					continue;
-				}
-				break;
-			}
-			unConsumed = source.hasUnconsumed();
-		}
-		if (result) {
-			if (!matchingResult) {
-				Verbose.println("[FAIL] " + name);
-				Verbose.println(source.getSyntaxErrorMessage());
-				return false;
-			}
-			if (unConsumed) {
-				Verbose.println("[FAIL] " + name);
-				Verbose.println(source.getUnconsumedMessage());
-				return false;
-			}
-			if (Verbose.Example) {
-				Verbose.println("[PASS] " + name);
-			}
-			return true;
-		} else {
-			if (!matchingResult || unConsumed) {
-				if (Verbose.Example) {
-					Verbose.println("[PASS] " + name);
-				}
-				return true;
-			}
-			Verbose.println("[FAIL] " + name);
-			return false;
-		}
+	public final String getName() {
+		return nameNode.toText();
 	}
+
+	public final String getText() {
+		return textNode.toText();
+	}
+
+	public String formatWarning(String msg) {
+		return nameNode.formatSourceMessage("warning", msg);
+	}
+
+	public boolean test(Parser p) {
+		SourceContext source = textNode.newSourceContext();
+		String name = nameNode.toText() + " (" + textNode.getSource().getResourceName() + ":" + textNode.getLinenum() + ")";
+		AbstractTree<?> node = p.parseCommonTree(source);
+		if (node == null) {
+			ConsoleUtils.println("[FAIL] " + name);
+			ConsoleUtils.println(source.getSyntaxErrorMessage());
+			return false;
+		}
+		String nodehash = AbstractTreeUtils.digestString(node);
+		if (hash == null) {
+			ConsoleUtils.println("[HASH] " + name + " ~" + nodehash);
+			ConsoleUtils.println("   ", this.getText());
+			ConsoleUtils.println("---");
+			ConsoleUtils.println("   ", node);
+			// ConsoleUtils.println(node);
+			this.hash = nodehash;
+			return true;
+		}
+		if (nodehash.startsWith(hash)) {
+			ConsoleUtils.println("[PASS] " + name + " ~" + nodehash);
+			return true;
+		}
+		ConsoleUtils.println("[FAIL] " + name + " ~" + nodehash + node + "\n");
+		ConsoleUtils.println("   ", this.getText());
+		ConsoleUtils.println("---");
+		ConsoleUtils.println("   ", node);
+		return false;
+	}
+
 }
