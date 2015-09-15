@@ -10,7 +10,6 @@ import nez.Grammar;
 import nez.NezOption;
 import nez.Parser;
 import nez.ast.CommonTree;
-import nez.generator.GeneratorLoader;
 import nez.io.SourceContext;
 import nez.lang.Formatter;
 import nez.lang.GrammarFile;
@@ -18,6 +17,7 @@ import nez.lang.Production;
 import nez.main.Command;
 import nez.main.CommandContext;
 import nez.util.ConsoleUtils;
+import nez.x.generator.GeneratorLoader;
 
 public class Cshell extends Command {
 	@Override

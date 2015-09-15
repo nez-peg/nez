@@ -1,6 +1,6 @@
 package nez.main.ext;
 
-import nez.generator.GeneratorLoader;
+import nez.x.generator.GeneratorLoader;
 
 public class Lcnez {
 	static {

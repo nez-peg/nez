@@ -1,4 +1,4 @@
-package nez.generator;
+package nez.x.generator;
 
 import nez.Parser;
 import nez.lang.Expression;

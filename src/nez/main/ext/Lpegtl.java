@@ -1,9 +1,9 @@
 package nez.main.ext;
 
-import nez.generator.GeneratorLoader;
+import nez.x.generator.GeneratorLoader;
 
 public class Lpegtl {
 	static {
-		GeneratorLoader.regist("pegtl", nez.generator.PEGTLGenerator.class);
+		GeneratorLoader.regist("pegtl", nez.x.generator.PEGTLGenerator.class);
 	}
 }
