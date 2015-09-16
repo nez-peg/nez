@@ -29,7 +29,7 @@ public class PackratCompiler extends OptimizedCompiler {
 					Verbose.println("memoize: " + n.getLocalName() + " at " + this.getEncodingProduction().getLocalName());
 				}
 				Instruction inside = new IMemo(n, pcode.memoPoint, pcode.state, next);
-				inside = new ICall(pcode.p, inside);
+				inside = new ICall(p, inside);
 				inside = new IAlt(n, new IMemoFail(n, pcode.state, pcode.memoPoint), inside);
 				return new ILookup(n, pcode.memoPoint, pcode.state, inside, next);
 			}
