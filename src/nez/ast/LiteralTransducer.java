@@ -2,11 +2,20 @@ package nez.ast;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import nez.Strategy;
 import nez.util.StringUtils;
 
 public class LiteralTransducer extends AbstractTreeVisitor {
+
+	Strategy strategy;
+
+	LiteralTransducer(Strategy strategy) {
+		this.strategy = strategy;
+	}
 
 	public Object newInstance(AbstractTree<?> node) {
 		return visit("new", node);
@@ -85,9 +94,17 @@ public class LiteralTransducer extends AbstractTreeVisitor {
 		}
 	}
 
-	public List<?> newList(AbstractTree<?> node) {
+	public String newText(AbstractTree<?> node) {
+		return node.toText();
+	}
+
+	protected List<Object> newList(int n) {
+		return new ArrayList<Object>(n);
+	}
+
+	public List<Object> newList(AbstractTree<?> node) {
 		try {
-			ArrayList<Object> l = new ArrayList<Object>(node.size());
+			List<Object> l = newList(node.size());
 			for (AbstractTree<?> sub : node) {
 				l.add(newInstance(sub));
 			}
@@ -95,8 +112,23 @@ public class LiteralTransducer extends AbstractTreeVisitor {
 		} catch (LiteralFormatException e) {
 			throw e;
 		} catch (RuntimeException e) {
-			return report(e, node, new ArrayList<Object>());
+			return report(e, node, newList(0));
 		}
+	}
+
+	protected Map<String, Object> newMap() {
+		return new HashMap<String, Object>();
+	}
+
+	public Map<String, Object> newMap(AbstractTree<?> node) {
+		Map<String, Object> m = newMap();
+		for (int i = 0; i < node.size(); i++) {
+			SymbolId label = node.getLabel(i);
+			if (label != null) {
+				m.put(label.getSymbol(), newInstance(node.get(i)));
+			}
+		}
+		return m;
 	}
 
 	// alias
@@ -108,16 +140,28 @@ public class LiteralTransducer extends AbstractTreeVisitor {
 	// report
 
 	private <T> T report(RuntimeException e, AbstractTree<?> node, T initValue) {
+		if (strategy == null) {
+			throw new LiteralFormatException(node.formatSourceMessage("error", e.getMessage()));
+		}
+		strategy.reportError(node, e.getMessage());
 		return initValue;
 	}
 
 	private <T> T report(String msg, AbstractTree<?> node, T initValue) {
+		if (strategy == null) {
+			throw new LiteralFormatException(node.formatSourceMessage("error", msg));
+		}
+		strategy.reportError(node, msg);
 		return initValue;
 	}
 
 }
 
 class LiteralFormatException extends RuntimeException {
+
+	public LiteralFormatException(String msg) {
+		super(msg);
+	}
 
 	/**
 	 * 
