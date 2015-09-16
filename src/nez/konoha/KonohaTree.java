@@ -3,7 +3,7 @@ package nez.konoha;
 import nez.ast.AbstractTree;
 import nez.ast.Source;
 import nez.ast.SymbolId;
-import nez.string.StringTransducer;
+import nez.ast.string.StringTransducer;
 
 public class KonohaTree extends AbstractTree<KonohaTree> {
 	KonohaType typed = null;

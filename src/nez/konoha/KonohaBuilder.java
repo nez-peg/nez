@@ -1,8 +1,8 @@
 package nez.konoha;
 
 import nez.ast.AbstractTree;
-import nez.string.StringTransducer;
-import nez.string.StringTransducerBuilder;
+import nez.ast.string.StringTransducer;
+import nez.ast.string.StringTransducerBuilder;
 
 public class KonohaBuilder implements StringTransducerBuilder {
 	StringTransducer defaultTransducer = new StringTransducer();

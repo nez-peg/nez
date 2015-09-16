@@ -2,8 +2,8 @@ package nez.konoha;
 
 import java.util.ArrayList;
 
-import nez.string.StringTransducer;
-import nez.string.StringTransducerCombinator;
+import nez.ast.string.StringTransducer;
+import nez.ast.string.StringTransducerCombinator;
 
 public class KonohaLanguage extends StringTransducerCombinator {
 

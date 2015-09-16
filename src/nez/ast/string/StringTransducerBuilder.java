@@ -1,4 +1,4 @@
-package nez.string;
+package nez.ast.string;
 
 import nez.ast.AbstractTree;
 

@@ -1,6 +1,6 @@
 package nez.konoha;
 
-import nez.string.StringTransducer;
+import nez.ast.string.StringTransducer;
 
 public abstract class KonohaTypeRule {
 	String name;

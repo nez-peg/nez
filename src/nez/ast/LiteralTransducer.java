@@ -11,7 +11,7 @@ import nez.util.StringUtils;
 
 public class LiteralTransducer extends AbstractTreeVisitor {
 
-	Strategy strategy;
+	protected Strategy strategy;
 
 	LiteralTransducer(Strategy strategy) {
 		this.strategy = strategy;
