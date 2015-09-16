@@ -5,8 +5,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import nez.NezException;
-import nez.Strategy;
 import nez.Parser;
+import nez.Strategy;
 import nez.ast.AbstractTreeVisitor;
 import nez.ast.CommonTree;
 import nez.ast.SymbolId;
@@ -27,7 +27,7 @@ public class RegexGrammar extends AbstractTreeVisitor {
 	public final static GrammarFile loadGrammar(SourceContext regex, Strategy option) throws IOException {
 		if (regexGrammar == null) {
 			try {
-				regexGrammar = (GrammarFile) GrammarFileLoader.loadGrammar("regex.nez", null, null);
+				regexGrammar = (GrammarFile) GrammarFileLoader.loadGrammar("regex.nez", null);
 			} catch (IOException e) {
 				ConsoleUtils.exit(1, "can't load regex.nez");
 			}

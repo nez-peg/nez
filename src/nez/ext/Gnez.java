@@ -28,7 +28,7 @@ public class Gnez extends GrammarFileLoader {
 	@Override
 	public Parser getLoaderGrammar() {
 		if (nezParser == null) {
-			nezParser = new NezGrammar1().newParser(Strategy.newSafeStrategy(), null);
+			nezParser = new NezGrammar1().newParser(Strategy.newSafeStrategy());
 			assert (nezParser != null);
 		}
 		return nezParser;
@@ -349,7 +349,7 @@ public class Gnez extends GrammarFileLoader {
 		}
 		String urn = path(node.getSource().getResourceName(), node.getText(1, ""));
 		try {
-			GrammarFile source = (GrammarFile) GrammarFileLoader.loadGrammar(urn, this.option, this.repo);
+			GrammarFile source = (GrammarFile) GrammarFileLoader.loadGrammar(urn, this.strategy);
 			if (name.equals("*")) {
 				int c = 0;
 				for (Production p : source) {

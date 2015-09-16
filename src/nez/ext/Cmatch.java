@@ -19,7 +19,7 @@ public class Cmatch extends Command {
 
 	@Override
 	public void exec(CommandContext config) throws IOException {
-		config.getOption().setEnabled("ast", false);
+		config.getStrategy().setEnabled("ast", false);
 		Parser g = config.newParser();
 
 		UList<String> failedInputs = new UList<String>(new String[4]);

@@ -31,17 +31,15 @@ public class Gdtd extends GrammarFileLoader {
 		if (dtdParser == null) {
 			try {
 				Strategy option = Strategy.newSafeStrategy();
-				Grammar g = GrammarFileLoader.loadGrammar("xmldtd.nez", option, null);
-				dtdParser = g.newParser(option, repo);
-				if (repo != null) {
-					repo.report(option);
-				}
+				Grammar g = GrammarFileLoader.loadGrammar("xmldtd.nez", option);
+				dtdParser = g.newParser(option);
+				strategy.report();
 			} catch (IOException e) {
 				ConsoleUtils.exit(1, "unload: " + e.getMessage());
 			}
 			assert (dtdParser != null);
 		}
-		this.enableNezExtension = !option.isEnabled("peg", Strategy.PEG);
+		this.enableNezExtension = !strategy.isEnabled("peg", Strategy.PEG);
 		return dtdParser;
 	}
 

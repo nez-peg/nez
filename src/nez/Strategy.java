@@ -144,9 +144,9 @@ public class Strategy {
 		}
 	}
 
-	public void report(Strategy strategy) {
+	public void report() {
 		for (String s : this.logs) {
-			if (!strategy.isEnabled("Wnotice", Strategy.Wnotice)) {
+			if (!this.isEnabled("Wnotice", Strategy.Wnotice)) {
 				if (s.indexOf("notice") != -1) {
 					continue; // skip notice
 				}

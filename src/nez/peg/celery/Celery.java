@@ -19,7 +19,7 @@ public class Celery {
 		option.setEnabled("Wnotice", false);
 		if (celeryGrammar == null) {
 			try {
-				celeryGrammar = GrammarFileLoader.loadGrammar("celery.nez", null, null);
+				celeryGrammar = GrammarFileLoader.loadGrammar("celery.nez", null);
 			} catch (IOException e) {
 				ConsoleUtils.exit(1, "can't load celery.nez");
 			}

@@ -7,7 +7,6 @@ import java.util.TreeMap;
 
 import nez.Grammar;
 import nez.Strategy;
-import nez.ast.Reporter;
 import nez.lang.GrammarChecker;
 import nez.lang.GrammarOptimizer;
 import nez.lang.Production;
@@ -19,10 +18,10 @@ public class GenerativeGrammar extends Grammar {
 	HashMap<String, ParseFunc> funcMap;
 	public List<MemoPoint> memoPointList = null;
 
-	public GenerativeGrammar(Production start, Strategy option, TreeMap<String, Boolean> flagMap, Reporter repo) {
+	public GenerativeGrammar(Production start, Strategy strategy, TreeMap<String, Boolean> flagMap) {
 		this.funcMap = new HashMap<String, ParseFunc>();
-		new GrammarChecker(this, !option.isEnabled("ast", Strategy.AST), flagMap, start, option, repo);
-		memo(option);
+		new GrammarChecker(this, !strategy.isEnabled("ast", Strategy.AST), flagMap, start, strategy);
+		memo(strategy);
 	}
 
 	public ParseFunc getParseFunc(String name) {

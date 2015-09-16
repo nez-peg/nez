@@ -4,11 +4,10 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import nez.Grammar;
-import nez.Strategy;
 import nez.Parser;
+import nez.Strategy;
 import nez.ast.AbstractTree;
 import nez.ast.AbstractTreeVisitor;
-import nez.ast.Reporter;
 import nez.ast.SourcePosition;
 import nez.io.SourceContext;
 import nez.main.Verbose;
@@ -21,8 +20,7 @@ import nez.util.StringUtils;
 public abstract class GrammarFileLoader extends AbstractTreeVisitor {
 
 	protected Grammar file;
-	protected Strategy option;
-	protected Reporter repo;
+	protected Strategy strategy;
 
 	public Grammar newGrammar(String ns, String urn) {
 		return new GrammarFile(ns, urn, null);
@@ -37,14 +35,13 @@ public abstract class GrammarFileLoader extends AbstractTreeVisitor {
 		return (GrammarFile) this.file;
 	}
 
-	public final Strategy getGrammarOption() {
-		return this.option;
+	public final Strategy getStrategy() {
+		return this.strategy;
 	}
 
-	public final void load(Grammar g, String urn, Strategy option, Reporter repo) throws IOException {
+	public final void load(Grammar g, String urn, Strategy strategy) throws IOException {
 		this.file = g;
-		this.option = Strategy.nullObject(option);
-		this.repo = repo;
+		this.strategy = Strategy.nullObject(strategy);
 
 		SourceContext sc = SourceContext.newFileContext(urn);
 		while (sc.hasUnconsumed()) {
@@ -56,10 +53,9 @@ public abstract class GrammarFileLoader extends AbstractTreeVisitor {
 		}
 	}
 
-	public void eval(Grammar g, String urn, int linenum, String text, Strategy option, Reporter repo) {
+	public void eval(Grammar g, String urn, int linenum, String text, Strategy strategy) {
 		this.file = g;
-		this.option = Strategy.nullObject(option);
-		this.repo = repo;
+		this.strategy = Strategy.nullObject(strategy);
 
 		SourceContext sc = SourceContext.newStringSourceContext(urn, linenum, text);
 		while (sc.hasUnconsumed()) {
@@ -90,20 +86,20 @@ public abstract class GrammarFileLoader extends AbstractTreeVisitor {
 	/* ------------------------------------------------------------------ */
 
 	public final void reportError(SourcePosition s, String message) {
-		if (this.repo != null) {
-			this.repo.reportError(s, message);
+		if (this.strategy != null) {
+			this.strategy.reportError(s, message);
 		}
 	}
 
 	public final void reportWarning(SourcePosition s, String message) {
-		if (this.repo != null) {
-			this.repo.reportWarning(s, message);
+		if (this.strategy != null) {
+			this.strategy.reportWarning(s, message);
 		}
 	}
 
 	public final void reportNotice(SourcePosition s, String message) {
-		if (this.repo != null) {
-			this.repo.reportNotice(s, message);
+		if (this.strategy != null) {
+			this.strategy.reportNotice(s, message);
 		}
 	}
 
@@ -111,25 +107,25 @@ public abstract class GrammarFileLoader extends AbstractTreeVisitor {
 
 	static HashMap<String, GrammarFileLoader> loaderMap = new HashMap<>();
 
-	public static Grammar loadGrammar(String path, Strategy option, Reporter repo) throws IOException {
+	public static Grammar loadGrammar(String path, Strategy strategy) throws IOException {
 		String ext = StringUtils.parseFileExtension(path);
 		GrammarFileLoader fl = (GrammarFileLoader) ExtensionLoader.newInstance("nez.ext.G", ext);
 		if (fl != null) {
 			Grammar g = fl.newGrammar(ext, path);
-			fl.load(g, path, option, repo);
+			fl.load(g, path, strategy);
 			return g;
 		}
 		return null;
 	}
 
-	public final static Grammar loadGrammarFile(String urn, Strategy option) throws IOException {
+	public final static Grammar loadGrammarFile(String urn, Strategy strategy) throws IOException {
 		if (urn.endsWith(".dtd")) {
-			return DTDConverter.loadGrammar(urn, option);
+			return DTDConverter.loadGrammar(urn, strategy);
 		}
 		if (urn.endsWith(".celery")) {
-			return Celery.loadGrammar(urn, option);
+			return Celery.loadGrammar(urn, strategy);
 		}
-		return loadGrammar(urn, option, null);
+		return loadGrammar(urn, strategy);
 	}
 
 }

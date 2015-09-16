@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.TreeMap;
 
 import nez.Strategy;
-import nez.ast.Reporter;
 import nez.lang.expr.ExpressionCommons;
 import nez.lang.expr.NonTerminal;
 import nez.lang.expr.Pand;
@@ -37,12 +36,12 @@ public class GrammarChecker extends GrammarTransducer {
 	private int requiredTypestate;
 	final TreeMap<String, Boolean> boolMap;
 	UList<Expression> stacked;
-	Reporter repo = null;
+	private final Strategy repo;
 
-	public GrammarChecker(GenerativeGrammar g, boolean offAST, TreeMap<String, Boolean> ctx, Production start, Strategy option, Reporter repo) {
+	public GrammarChecker(GenerativeGrammar g, boolean offAST, TreeMap<String, Boolean> ctx, Production start, Strategy strategy) {
 		this.gg = g;
 		this.boolMap = (ctx == null) ? new TreeMap<String, Boolean>() : ctx;
-		this.repo = repo == null ? new Reporter() : repo;
+		this.repo = strategy;
 
 		this.stacked = new UList<Expression>(new Expression[128]);
 		if (offAST) {
@@ -50,7 +49,9 @@ public class GrammarChecker extends GrammarTransducer {
 		}
 		String uname = uniqueName(start.getUniqueName(), start);
 		this.checkFirstVisitedProduction(uname, start); // start
-		new GrammarOptimizer(g, option, this.repo);
+		if (!strategy.isEnabled("Onone", true)) {
+			new GrammarOptimizer(g, strategy);
+		}
 	}
 
 	@Override
@@ -528,21 +529,15 @@ public class GrammarChecker extends GrammarTransducer {
 	// Report
 
 	public final void reportError(Expression p, String message) {
-		if (repo != null) {
-			this.repo.reportError(p.getSourcePosition(), message);
-		}
+		this.repo.reportError(p.getSourcePosition(), message);
 	}
 
 	public final void reportWarning(Expression p, String message) {
-		if (repo != null) {
-			this.repo.reportWarning(p.getSourcePosition(), message);
-		}
+		this.repo.reportWarning(p.getSourcePosition(), message);
 	}
 
 	public final void reportNotice(Expression p, String message) {
-		if (repo != null) {
-			this.repo.reportNotice(p.getSourcePosition(), message);
-		}
+		this.repo.reportNotice(p.getSourcePosition(), message);
 	}
 
 }

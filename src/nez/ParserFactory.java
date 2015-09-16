@@ -2,7 +2,6 @@ package nez;
 
 import java.io.IOException;
 
-import nez.ast.Reporter;
 import nez.lang.GrammarFileLoader;
 import nez.lang.NezGrammar1;
 import nez.main.Command;
@@ -10,17 +9,15 @@ import nez.main.NezProfier;
 
 public class ParserFactory {
 
-	protected Reporter repo = new Reporter();
-
 	// --option
-	protected Strategy option = new Strategy(); // default
+	protected Strategy strategy = new Strategy(); // default
 
-	public final void setOption(Strategy option) {
-		this.option = option;
+	public final void setStrategy(Strategy option) {
+		this.strategy = option;
 	}
 
-	public final Strategy getOption() {
-		return this.option;
+	public final Strategy getStrategy() {
+		return this.strategy;
 	}
 
 	/* Grammar */
@@ -68,7 +65,7 @@ public class ParserFactory {
 		if (path.equals("nez")) {
 			return new NezGrammar1();
 		}
-		return GrammarFileLoader.loadGrammar(path, option, repo);
+		return GrammarFileLoader.loadGrammar(path, strategy);
 	}
 
 	// -s, --start
@@ -79,13 +76,12 @@ public class ParserFactory {
 	}
 
 	public final Parser newParser() {
-		Reporter repo = new Reporter();
-		Parser p = newGrammar().newParser(this.startProduction, this.option, repo);
-		repo.report(option);
-		if (p != null && option.isEnabled("prof", Strategy.PROF)) {
+		Parser p = newGrammar().newParser(this.startProduction, this.strategy);
+		this.strategy.report();
+		if (p != null && strategy.isEnabled("prof", Strategy.PROF)) {
 			NezProfier rec = new NezProfier("nezprof.csv");
 			rec.setText("nez", Command.Version);
-			rec.setText("config", option.toString());
+			rec.setText("config", strategy.toString());
 			p.setProfiler(rec);
 		}
 		return p;

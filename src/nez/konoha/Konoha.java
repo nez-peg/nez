@@ -25,7 +25,7 @@ public class Konoha extends TreeTransducer {
 	public final static Parser newKonohaParser() {
 		if (konohaGrammar == null) {
 			try {
-				konohaGrammar = GrammarFileLoader.loadGrammar("konoha.nez", null, null);
+				konohaGrammar = GrammarFileLoader.loadGrammar("konoha.nez", null);
 			} catch (IOException e) {
 				ConsoleUtils.exit(1, "can't load konoha.nez");
 			}

@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 import nez.Strategy;
-import nez.ast.Reporter;
 import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cset;
@@ -34,21 +33,19 @@ public class GrammarOptimizer extends GrammarRewriter {
 	boolean enabledDuplicatedProduction = false;
 
 	GenerativeGrammar gg;
-	Strategy option;
-	Reporter repo;
+	Strategy strategy;
 	final HashMap<String, Integer> optimizedMap = new HashMap<String, Integer>();
 	HashMap<String, Production> bodyMap = null;
 	HashMap<String, String> aliasMap = null;
 
-	public GrammarOptimizer(GenerativeGrammar gg, Strategy option, Reporter repo) {
+	public GrammarOptimizer(GenerativeGrammar gg, Strategy strategy) {
 		this.gg = gg;
-		this.option = option;
-		this.repo = repo;
-		if (option.isEnabled("Ofirst", Strategy.Ofirst)) {
+		this.strategy = strategy;
+		if (strategy.isEnabled("Ofirst", Strategy.Ofirst)) {
 			// seems slow when the prediction option is enabled
 			this.enabledCommonLeftFactoring = true;
 		}
-		if (option.isEnabled("Oinline", Strategy.Oinline)) {
+		if (strategy.isEnabled("Oinline", Strategy.Oinline)) {
 			enabledDuplicatedProduction = true;
 			this.bodyMap = new HashMap<String, Production>();
 			this.aliasMap = new HashMap<String, String>();
@@ -93,7 +90,7 @@ public class GrammarOptimizer extends GrammarRewriter {
 	}
 
 	Expression inlineNonTerminal(Expression e) {
-		if (this.option.isEnabled("Oinline", Strategy.Oinline)) {
+		if (this.strategy.isEnabled("Oinline", Strategy.Oinline)) {
 			while (e instanceof NonTerminal) {
 				NonTerminal n = (NonTerminal) e;
 				e = optimizeProduction(n.getProduction());
@@ -136,7 +133,7 @@ public class GrammarOptimizer extends GrammarRewriter {
 		// if (p.isRecursive()) {
 		// return n;
 		// }
-		if (option.isEnabled("Oinline", Strategy.Oinline)) {
+		if (strategy.isEnabled("Oinline", Strategy.Oinline)) {
 			ParseFunc f = gg.getParseFunc(n.getLocalName());
 			if (f.getRefCount() == 1) {
 				reportInfo("inline(ref=1)", n, deref);
@@ -329,7 +326,7 @@ public class GrammarOptimizer extends GrammarRewriter {
 				reportInfo("choice-single", p, choiceList.ArrayValues[0]);
 				return choiceList.ArrayValues[0];
 			}
-			if (option.isEnabled("Ofirst", Strategy.Ofirst)) {
+			if (strategy.isEnabled("Ofirst", Strategy.Ofirst)) {
 				int count = 0;
 				int selected = 0;
 				p.predictedCase = new Expression[257];
@@ -378,7 +375,7 @@ public class GrammarOptimizer extends GrammarRewriter {
 				// inner = reshapeInner(inner);
 				String key = inner.toString();
 				if (ucheck.contains(key)) {
-					repo.reportNotice(inner.getSourcePosition(), "duplicated choice: " + key);
+					strategy.reportNotice(inner.getSourcePosition(), "duplicated choice: " + key);
 					continue;
 				}
 				ucheck.add(key);
@@ -570,20 +567,14 @@ public class GrammarOptimizer extends GrammarRewriter {
 	}
 
 	public final void reportError(Expression e, String message) {
-		if (repo != null) {
-			repo.reportError(e.getSourcePosition(), message);
-		}
+		strategy.reportError(e.getSourcePosition(), message);
 	}
 
 	public final void reportWarning(Expression e, String message) {
-		if (repo != null) {
-			repo.reportError(e.getSourcePosition(), message);
-		}
+		strategy.reportError(e.getSourcePosition(), message);
 	}
 
 	public final void reportNotice(Expression e, String message) {
-		if (repo != null) {
-			repo.reportError(e.getSourcePosition(), message);
-		}
+		strategy.reportError(e.getSourcePosition(), message);
 	}
 }

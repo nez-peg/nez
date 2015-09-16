@@ -26,12 +26,10 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 		if (lParser == null) {
 			try {
 				Strategy option = Strategy.newSafeStrategy();
-				Grammar g = GrammarFileLoader.loadGrammar("regex.nez", option, null);
+				Grammar g = GrammarFileLoader.loadGrammar("regex.nez", option);
 				// g.dump();
-				lParser = g.newParser(option, repo);
-				if (repo != null) {
-					repo.report(option);
-				}
+				lParser = g.newParser(option);
+				strategy.report();
 			} catch (IOException e) {
 				ConsoleUtils.exit(1, "unload: " + e.getMessage());
 			}

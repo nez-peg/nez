@@ -36,7 +36,7 @@ public class Ctest extends Command {
 				String name = ex.getName();
 				Parser p = parserMap.get(name);
 				if (p == null) {
-					p = g.newParser(name, config.getOption(), null);
+					p = g.newParser(name, config.getStrategy());
 					if (p == null) {
 						ConsoleUtils.println(ex.formatWarning("undefined nonterminal: " + name));
 						continue;

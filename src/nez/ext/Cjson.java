@@ -13,7 +13,7 @@ public class Cjson extends Cparse {
 
 	@Override
 	protected void makeOutputFile(CommandContext config, SourceContext source, AbstractTree<?> node) {
-		AbstractTreeWriter w = new AbstractTreeWriter(config.getOption(), config.getOutputFileName(source, "json"));
+		AbstractTreeWriter w = new AbstractTreeWriter(config.getStrategy(), config.getOutputFileName(source, "json"));
 		w.writeTree(node);
 		w.writeNewLine();
 		w.close();

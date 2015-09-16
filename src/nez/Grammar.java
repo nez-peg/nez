@@ -3,7 +3,6 @@ package nez;
 import java.util.HashMap;
 import java.util.List;
 
-import nez.ast.Reporter;
 import nez.lang.Expression;
 import nez.lang.GrammarBase;
 import nez.lang.Production;
@@ -142,25 +141,25 @@ public class Grammar extends GrammarBase {
 
 	// ----------------------------------------------------------------------
 
-	public final Parser newParser(Strategy option, Reporter repo) {
-		GenerativeGrammar gg = (this instanceof GenerativeGrammar) ? (GenerativeGrammar) this : new GenerativeGrammar(this.getStartProduction(), option, null, repo);
-		return new Parser(gg, option);
+	public final Parser newParser(Strategy strategy) {
+		GenerativeGrammar gg = (this instanceof GenerativeGrammar) ? (GenerativeGrammar) this : new GenerativeGrammar(this.getStartProduction(), strategy, null);
+		return new Parser(gg, strategy);
 	}
 
 	public final Parser newParser(String name) {
-		return newParser(name, Strategy.newDefaultStrategy(), null);
+		return newParser(name, Strategy.newDefaultStrategy());
 	}
 
-	public final Parser newParser(String name, Strategy option, Reporter repo) {
+	public final Parser newParser(String name, Strategy strategy) {
 		if (name != null) {
 			Production p = this.getProduction(name);
 			if (p != null) {
-				GenerativeGrammar gg = new GenerativeGrammar(p, option, null, repo);
-				return new Parser(gg, option);
+				GenerativeGrammar gg = new GenerativeGrammar(p, strategy, null);
+				return new Parser(gg, strategy);
 			}
 			Verbose.println("undefined production: " + name);
 		}
-		return newParser(option, repo);
+		return newParser(strategy);
 	}
 
 }

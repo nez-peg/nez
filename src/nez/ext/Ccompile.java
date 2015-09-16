@@ -20,7 +20,7 @@ public class Ccompile extends Command {
 	@Override
 	public void exec(CommandContext config) throws IOException {
 		Parser parser = config.newParser();
-		NezCompiler compile = new PackratCompiler(config.getOption());
+		NezCompiler compile = new PackratCompiler(config.getStrategy());
 		Verbose.println("generating .. " + config.getGrammarName() + ".moz");
 		NezCode code = compile.compile(parser.getGrammar());
 		ByteCoder c = new ByteCoder();

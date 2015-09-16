@@ -48,7 +48,7 @@ public class Cparse extends Command {
 	}
 
 	protected void makeOutputFile(CommandContext config, SourceContext source, AbstractTree<?> node) {
-		AbstractTreeWriter w = new AbstractTreeWriter(config.getOption(), config.getOutputFileName(source, "ast"));
+		AbstractTreeWriter w = new AbstractTreeWriter(config.getStrategy(), config.getOutputFileName(source, "ast"));
 		w.writeTree(node);
 		w.writeNewLine();
 		w.close();

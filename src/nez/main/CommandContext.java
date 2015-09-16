@@ -86,7 +86,7 @@ public class CommandContext extends ParserFactory {
 		try {
 			ParserGenerator gen;
 			gen = (ParserGenerator) c.newInstance();
-			gen.init(this.getOption(), outputDirName, this.getGrammarName());
+			gen.init(this.getStrategy(), outputDirName, this.getGrammarName());
 			return gen;
 		} catch (InstantiationException e) {
 			e.printStackTrace();
@@ -177,7 +177,7 @@ public class CommandContext extends ParserFactory {
 				index = index + 1;
 			} else if (argument.startsWith("--option:")) {
 				String s = argument.substring(9);
-				this.option.setOption(s);
+				this.strategy.setOption(s);
 			} else if (argument.startsWith("--verbose")) {
 				if (argument.equals("--verbose:example")) {
 					Verbose.Example = true;

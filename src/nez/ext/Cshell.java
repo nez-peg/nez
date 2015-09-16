@@ -7,8 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 
 import nez.Grammar;
-import nez.Strategy;
 import nez.Parser;
+import nez.Strategy;
 import nez.ast.CommonTree;
 import nez.io.SourceContext;
 import nez.lang.Formatter;
@@ -34,7 +34,7 @@ public class Cshell extends Command {
 		Command.displayVersion();
 		GrammarFile gfile = (/* FIXME */GrammarFile) config.newGrammar();
 		ConsoleUtils.addCompleter(getNonterminalList(gfile));
-		Strategy option = config.getOption();
+		Strategy option = config.getStrategy();
 
 		while (readLine(">>> ")) {
 			if ((command != null && command.equals(""))) {
@@ -173,7 +173,7 @@ public class Cshell extends Command {
 	private void defineProduction(GrammarFile ns, String text) {
 		// ConsoleUtils.println("--\n"+text+"--");
 		Gnez loader = new Gnez();
-		loader.eval(ns, "<stdio>", linenum, text, null, null);
+		loader.eval(ns, "<stdio>", linenum, text, null);
 		ConsoleUtils.addCompleter(getNonterminalList(ns));
 	}
 

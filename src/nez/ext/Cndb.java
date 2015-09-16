@@ -15,10 +15,10 @@ public class Cndb extends Command {
 	@Override
 	public void exec(CommandContext config) {
 		Command.displayVersion();
-		config.getOption().setEnabled("Onone", true);
+		config.getStrategy().setEnabled("Onone", true);
 		Parser parser = config.newParser();
 		DebugManager manager = new DebugManager(config.inputFileLists);
-		manager.exec(parser, config.getOption());
+		manager.exec(parser, config.getStrategy());
 	}
 
 }
