@@ -24,7 +24,7 @@ public class AbstractTreeVisitor {
 				Verbose.traceException(e);
 			}
 		}
-		return toUndefinedNode(node);
+		return visitUndefinedNode(node);
 	}
 
 	protected final Method findMethod(String method, SymbolId tag) {
@@ -50,7 +50,7 @@ public class AbstractTreeVisitor {
 		return this.getClass().getMethod(name, AbstractTree.class);
 	}
 
-	protected Object toUndefinedNode(AbstractTree<?> node) {
+	protected Object visitUndefinedNode(AbstractTree<?> node) {
 		ConsoleUtils.exit(1, "undefined node:" + node);
 		return null;
 	}
@@ -69,7 +69,7 @@ public class AbstractTreeVisitor {
 				Verbose.traceException(e);
 			}
 		}
-		return toUndefinedNode(node, p1);
+		return visitUndefinedNode(node, p1);
 	}
 
 	protected final Method findMethod(String method, SymbolId tag, Class<?> c1) {
@@ -95,7 +95,7 @@ public class AbstractTreeVisitor {
 		return this.getClass().getMethod(name, AbstractTree.class, c1);
 	}
 
-	protected Object toUndefinedNode(AbstractTree<?> node, Object p1) {
+	protected Object visitUndefinedNode(AbstractTree<?> node, Object p1) {
 		ConsoleUtils.exit(1, "undefined node:" + node + " with " + p1);
 		return null;
 	}
