@@ -44,11 +44,11 @@ public class GrammarOptimizer extends GrammarRewriter {
 		this.gg = gg;
 		this.option = option;
 		this.repo = repo;
-		if (option.enabledPrediction) {
+		if (option.isEnabled("Ofirst", Strategy.Ofirst)) {
 			// seems slow when the prediction option is enabled
 			this.enabledCommonLeftFactoring = true;
 		}
-		if (option.enabledInlining) {
+		if (option.isEnabled("Oinline", Strategy.Oinline)) {
 			enabledDuplicatedProduction = true;
 			this.bodyMap = new HashMap<String, Production>();
 			this.aliasMap = new HashMap<String, String>();
@@ -93,7 +93,7 @@ public class GrammarOptimizer extends GrammarRewriter {
 	}
 
 	Expression inlineNonTerminal(Expression e) {
-		if (this.option.enabledInlining) {
+		if (this.option.isEnabled("Oinline", Strategy.Oinline)) {
 			while (e instanceof NonTerminal) {
 				NonTerminal n = (NonTerminal) e;
 				e = optimizeProduction(n.getProduction());
@@ -136,7 +136,7 @@ public class GrammarOptimizer extends GrammarRewriter {
 		// if (p.isRecursive()) {
 		// return n;
 		// }
-		if (option.enabledInlining) {
+		if (option.isEnabled("Oinline", Strategy.Oinline)) {
 			ParseFunc f = gg.getParseFunc(n.getLocalName());
 			if (f.getRefCount() == 1) {
 				reportInfo("inline(ref=1)", n, deref);
@@ -329,7 +329,7 @@ public class GrammarOptimizer extends GrammarRewriter {
 				reportInfo("choice-single", p, choiceList.ArrayValues[0]);
 				return choiceList.ArrayValues[0];
 			}
-			if (option.enabledPrediction) {
+			if (option.isEnabled("Ofirst", Strategy.Ofirst)) {
 				int count = 0;
 				int selected = 0;
 				p.predictedCase = new Expression[257];

@@ -56,7 +56,7 @@ public abstract class ParserGenerator extends AbstractGenerator {
 	}
 
 	public final void init(Strategy option, String dir, String grammarName) {
-		this.option = option;
+		this.strategy = option;
 		this.dir = dir;
 		this.grammarName = grammarName;
 	}
@@ -418,7 +418,7 @@ public abstract class ParserGenerator extends AbstractGenerator {
 
 	@Override
 	public final Instruction encodeTdetree(Tdetree p, Instruction next, Instruction failjump) {
-		if (option.enabledASTConstruction) {
+		if (strategyASTConstruction) {
 			this.visitTdetree(p);
 		} else {
 			this.visitExpression(p.get(0));
@@ -428,7 +428,7 @@ public abstract class ParserGenerator extends AbstractGenerator {
 
 	@Override
 	public final Instruction encodeTlink(Tlink p, Instruction next, Instruction failjump) {
-		if (option.enabledASTConstruction) {
+		if (strategyASTConstruction) {
 			this.visitTlink(p);
 		} else {
 			this.visitExpression(p.get(0));
@@ -438,7 +438,7 @@ public abstract class ParserGenerator extends AbstractGenerator {
 
 	@Override
 	public final Instruction encodeTnew(Tnew p, Instruction next) {
-		if (option.enabledASTConstruction) {
+		if (strategyASTConstruction) {
 			this.visitTnew(p);
 		}
 		return null;
@@ -446,7 +446,7 @@ public abstract class ParserGenerator extends AbstractGenerator {
 
 	@Override
 	public final Instruction encodeTlfold(Tlfold p, Instruction next) {
-		if (option.enabledASTConstruction) {
+		if (strategyASTConstruction) {
 			this.visitTlfold(p);
 		}
 		return null;
@@ -454,7 +454,7 @@ public abstract class ParserGenerator extends AbstractGenerator {
 
 	@Override
 	public final Instruction encodeTcapture(Tcapture p, Instruction next) {
-		if (option.enabledASTConstruction) {
+		if (strategyASTConstruction) {
 			this.visitTcapture(p);
 		}
 		return null;
@@ -462,7 +462,7 @@ public abstract class ParserGenerator extends AbstractGenerator {
 
 	@Override
 	public final Instruction encodeTtag(Ttag p, Instruction next) {
-		if (option.enabledASTConstruction) {
+		if (strategyASTConstruction) {
 			this.visitTtag(p);
 		}
 		return null;
@@ -470,7 +470,7 @@ public abstract class ParserGenerator extends AbstractGenerator {
 
 	@Override
 	public final Instruction encodeTreplace(Treplace p, Instruction next) {
-		if (option.enabledASTConstruction) {
+		if (strategyASTConstruction) {
 			this.visitTreplace(p);
 		}
 		return null;

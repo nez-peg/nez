@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.Map;
 
 import nez.NezException;
-import nez.Strategy;
 import nez.Parser;
+import nez.Strategy;
 import nez.ast.AbstractTree;
 import nez.ast.AbstractTreeVisitor;
 import nez.ast.SymbolId;
@@ -25,7 +25,7 @@ public class DTDConverter extends AbstractTreeVisitor {
 	static GrammarFile dtdGrammar = null;
 
 	public final static GrammarFile loadGrammar(String filePath, Strategy option) throws IOException {
-		option.setOption("notice", false);
+		option.setEnabled("Wnotice", false);
 		if (dtdGrammar == null) {
 			try {
 				dtdGrammar = (GrammarFile) GrammarFileLoader.loadGrammarFile("xmldtd.nez", null);
@@ -42,7 +42,7 @@ public class DTDConverter extends AbstractTreeVisitor {
 		if (dtdFile.hasUnconsumed()) {
 			throw new NezException(dtdFile.getUnconsumedMessage());
 		}
-		DTDConverter conv = new DTDConverter(!option.disabledNezExtension);
+		DTDConverter conv = new DTDConverter(!option.isEnabled("peg", Strategy.PEG));
 		GrammarFile gfile = GrammarFile.newGrammarFile(filePath, option);
 		conv.convert(node, gfile);
 		return gfile;

@@ -13,7 +13,7 @@ public class ExampleTest {
 
 	@Test
 	public void test() throws IOException, URISyntaxException {
-		GrammarFile g = GrammarFile.newGrammarFile("", Strategy.newDefaultOption());
+		GrammarFile g = GrammarFile.newGrammarFile("", Strategy.newDefaultStrategy());
 		assertTrue(g != null);
 //		List<String> contents = Files.readAllLines(Paths.get(this.getClass().getResource("sample.txt").toURI()));
 //		assertEquals(1, contents.size());

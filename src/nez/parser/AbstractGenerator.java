@@ -37,15 +37,19 @@ import nez.lang.expr.Xon;
 import nez.main.Verbose;
 
 public abstract class AbstractGenerator {
-	protected Strategy option;
+	protected Strategy strategy;
+	protected final boolean strategyASTConstruction;
+	protected final boolean enabledPackratParsing;
 
-	public AbstractGenerator(Strategy option) {
+	public AbstractGenerator(Strategy strategy) {
 		this.gg = null;
-		this.option = option;
+		this.strategy = strategy;
+		this.strategyASTConstruction = strategy.isEnabled("ast", Strategy.AST);
+		this.enabledPackratParsing = strategy.isEnabled("memo", Strategy.MEMO);
 	}
 
 	public final Strategy getOption() {
-		return this.option;
+		return this.strategy;
 	}
 
 	/* CodeMap */

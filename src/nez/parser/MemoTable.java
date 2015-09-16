@@ -28,7 +28,7 @@ public abstract class MemoTable {
 		if (memoPointSize == 0) {
 			return new NullTable(length, windowSize, memoPointSize);
 		}
-		if (option.enabledPackratParsing) {
+		if (option.isEnabled("Mpackrat", Strategy.Mpackrat)) {
 			return new PackratHashTable(length, windowSize, memoPointSize);
 		}
 		return new ElasticTable(length, windowSize, memoPointSize);

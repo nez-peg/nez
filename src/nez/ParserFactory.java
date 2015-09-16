@@ -82,7 +82,7 @@ public class ParserFactory {
 		Reporter repo = new Reporter();
 		Parser p = newGrammar().newParser(this.startProduction, this.option, repo);
 		repo.report(option);
-		if (p != null && option.enabledProfiling) {
+		if (p != null && option.isEnabled("prof", Strategy.PROF)) {
 			NezProfier rec = new NezProfier("nezprof.csv");
 			rec.setText("nez", Command.Version);
 			rec.setText("config", option.toString());

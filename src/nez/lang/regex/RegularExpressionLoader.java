@@ -3,8 +3,8 @@ package nez.lang.regex;
 import java.io.IOException;
 
 import nez.Grammar;
-import nez.Strategy;
 import nez.Parser;
+import nez.Strategy;
 import nez.ast.AbstractTree;
 import nez.lang.Expression;
 import nez.lang.GrammarFileLoader;
@@ -25,7 +25,7 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 	public Parser getLoaderGrammar() {
 		if (lParser == null) {
 			try {
-				Strategy option = Strategy.newSafeOption();
+				Strategy option = Strategy.newSafeStrategy();
 				Grammar g = GrammarFileLoader.loadGrammar("regex.nez", option, null);
 				// g.dump();
 				lParser = g.newParser(option, repo);

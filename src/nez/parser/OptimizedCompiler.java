@@ -33,7 +33,7 @@ public class OptimizedCompiler extends PlainCompiler {
 
 	public final Expression getInnerExpression(Expression p) {
 		Expression inner = ExpressionCommons.resolveNonTerminal(p.get(0));
-		if (option.enabledStringOptimization && inner instanceof Psequence) {
+		if (strategy.isEnabled("Ostr", Strategy.Ostr) && inner instanceof Psequence) {
 			inner = ((Psequence) inner).toMultiCharSequence();
 			// System.out.println("Stringfy:" + inner);
 		}
@@ -42,7 +42,7 @@ public class OptimizedCompiler extends PlainCompiler {
 
 	@Override
 	public final Instruction encodePoption(Poption p, Instruction next) {
-		if (option.enabledLexicalOptimization) {
+		if (strategy.isEnabled("Olex", Strategy.Olex)) {
 			Expression inner = getInnerExpression(p);
 			if (inner instanceof Cbyte) {
 				this.optimizedUnary(p);
@@ -62,7 +62,7 @@ public class OptimizedCompiler extends PlainCompiler {
 
 	@Override
 	public final Instruction encodePzero(Pzero p, Instruction next) {
-		if (option.enabledLexicalOptimization) {
+		if (strategy.isEnabled("Olex", Strategy.Olex)) {
 			Expression inner = getInnerExpression(p);
 			if (inner instanceof Cbyte) {
 				this.optimizedUnary(p);
@@ -82,7 +82,7 @@ public class OptimizedCompiler extends PlainCompiler {
 
 	@Override
 	public final Instruction encodePnot(Pnot p, Instruction next, Instruction failjump) {
-		if (option.enabledLexicalOptimization) {
+		if (strategy.isEnabled("Olex", Strategy.Olex)) {
 			Expression inner = getInnerExpression(p);
 			if (inner instanceof Cset) {
 				this.optimizedUnary(p);
@@ -106,7 +106,7 @@ public class OptimizedCompiler extends PlainCompiler {
 
 	@Override
 	public final Instruction encodePchoice(Pchoice p, Instruction next, Instruction failjump) {
-		if (option.enabledPrediction && p.predictedCase != null) {
+		if (strategy.isEnabled("Ofirst", Strategy.Ofirst) && p.predictedCase != null) {
 			return encodePredicatedChoice(p, next, failjump);
 		}
 		return super.encodePchoice(p, next, failjump);

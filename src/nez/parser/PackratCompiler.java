@@ -24,7 +24,7 @@ public class PackratCompiler extends OptimizedCompiler {
 			return encode(pcode.e, next, failjump);
 		}
 		if (pcode.memoPoint != null) {
-			if (!option.enabledASTConstruction || p.isNoNTreeConstruction()) {
+			if (!strategyASTConstruction || p.isNoNTreeConstruction()) {
 				if (Verbose.PackratParsing) {
 					Verbose.println("memoize: " + n.getLocalName() + " at " + this.getEncodingProduction().getLocalName());
 				}
@@ -41,7 +41,7 @@ public class PackratCompiler extends OptimizedCompiler {
 
 	@Override
 	public final Instruction encodeTlink(Tlink p, Instruction next, Instruction failjump) {
-		if (option.enabledASTConstruction && p.get(0) instanceof NonTerminal) {
+		if (strategyASTConstruction && p.get(0) instanceof NonTerminal) {
 			NonTerminal n = (NonTerminal) p.get(0);
 			ParseFunc pcode = this.getParseFunc(n.getProduction());
 			if (pcode.memoPoint != null) {

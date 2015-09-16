@@ -15,8 +15,7 @@ public class Cndb extends Command {
 	@Override
 	public void exec(CommandContext config) {
 		Command.displayVersion();
-		config.getOption().setOption("asis", true);
-		config.getOption().setOption("intern", false);
+		config.getOption().setEnabled("Onone", true);
 		Parser parser = config.newParser();
 		DebugManager manager = new DebugManager(config.inputFileLists);
 		manager.exec(parser, config.getOption());

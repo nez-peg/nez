@@ -21,7 +21,7 @@ public class GenerativeGrammar extends Grammar {
 
 	public GenerativeGrammar(Production start, Strategy option, TreeMap<String, Boolean> flagMap, Reporter repo) {
 		this.funcMap = new HashMap<String, ParseFunc>();
-		new GrammarChecker(this, !option.enabledASTConstruction, flagMap, start, option, repo);
+		new GrammarChecker(this, !option.isEnabled("ast", Strategy.AST), flagMap, start, option, repo);
 		memo(option);
 	}
 
@@ -52,10 +52,10 @@ public class GenerativeGrammar extends Grammar {
 
 	void memo(Strategy option) {
 		memoPointList = null;
-		if (option.enabledMemoization || option.enabledPackratParsing) {
+		if (option.isEnabled("memo", Strategy.MEMO)) {
 			memoPointList = new UList<MemoPoint>(new MemoPoint[4]);
 		}
-		if (option.enabledInlining) {
+		if (option.isEnabled("Oinline", Strategy.Oinline)) {
 			for (Entry<String, ParseFunc> e : funcMap.entrySet()) {
 				this.checkInlining(e.getValue());
 			}

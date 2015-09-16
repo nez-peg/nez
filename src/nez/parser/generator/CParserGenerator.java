@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Stack;
 
+import nez.Strategy;
 import nez.ast.SymbolId;
 import nez.lang.Expression;
 import nez.lang.Production;
@@ -83,7 +84,7 @@ public class CParserGenerator extends ParserGenerator {
 		L("#define CNEZ_MEMO_SIZE       " + this.memoId);
 		// L("#define CNEZ_GRAMMAR_URN \"" + urn + "\"");
 		L("#define CNEZ_PRODUCTION_SIZE " + prodSize);
-		if (this.option.enabledASTConstruction) {
+		if (this.strategyASTConstruction) {
 			L("#define CNEZ_ENABLE_AST_CONSTRUCTION 1");
 		}
 		L("#include \"cnez_main.c\"");
@@ -175,7 +176,7 @@ public class CParserGenerator extends ParserGenerator {
 			L("else ");
 			Begin("{");
 			{
-				if (this.option.enabledASTConstruction) {
+				if (this.strategyASTConstruction) {
 					String tag = rule.getLocalName();
 					tag = StringUtils.quoteString('"', tag, '"');
 					L("ast_log_link(ctx->ast, " + tag + ", entry->result);");
@@ -527,25 +528,25 @@ public class CParserGenerator extends ParserGenerator {
 		L("int p" + name(rule.getLocalName()) + "(ParsingContext ctx)");
 		Begin("{");
 		this.pushFailureJumpPoint();
-		if (this.option.enabledPackratParsing) {
+		if (this.enabledPackratParsing) {
 			lookup(rule, this.memoId);
 		}
 		String pos = "c" + this.fid;
 		this.let("char *", pos, "ctx->cur");
 		Expression e = rule.getExpression();
 		visitExpression(e);
-		if (this.option.enabledPackratParsing) {
+		if (this.enabledPackratParsing) {
 			memoize(rule, this.memoId, pos);
 		}
 		L("return 0;");
 		this.popFailureJumpPoint(rule);
-		if (this.option.enabledPackratParsing) {
+		if (this.enabledPackratParsing) {
 			memoizeFail(rule, this.memoId, pos);
 		}
 		L("return 1;");
 		End("}");
 		N();
-		if (this.option.enabledPackratParsing) {
+		if (this.enabledPackratParsing) {
 			this.memoId++;
 		}
 	}
@@ -801,7 +802,7 @@ public class CParserGenerator extends ParserGenerator {
 	@Override
 	public void visitPchoice(Pchoice e) {
 		// showChoiceInfo(e);
-		if ((e.predictedCase != null && this.isPrediction && this.option.enabledPrediction)) {
+		if ((e.predictedCase != null && this.isPrediction && this.strategy.isEnabled("Ofirst", Strategy.Ofirst))) {
 			this.predictionCount++;
 			this.justPredictionCount++;
 			int fid = this.fid++;
@@ -865,7 +866,7 @@ public class CParserGenerator extends ParserGenerator {
 
 	@Override
 	public void visitTnew(Tnew e) {
-		if (this.option.enabledASTConstruction) {
+		if (this.strategyASTConstruction) {
 			// this.pushFailureJumpPoint();
 			String mark = "mark" + this.fid++;
 			// this.markStack.push(mark);
@@ -876,7 +877,7 @@ public class CParserGenerator extends ParserGenerator {
 
 	@Override
 	public void visitTcapture(Tcapture e) {
-		if (this.option.enabledASTConstruction) {
+		if (this.strategyASTConstruction) {
 			String label = "EXIT_CAPTURE" + this.fid++;
 			L("ast_log_capture(ctx->ast, ctx->cur);");
 			this.gotoLabel(label);
@@ -889,14 +890,14 @@ public class CParserGenerator extends ParserGenerator {
 
 	@Override
 	public void visitTtag(Ttag e) {
-		if (this.option.enabledASTConstruction) {
+		if (this.strategyASTConstruction) {
 			L("ast_log_tag(ctx->ast, \"" + e.tag.getSymbol() + "\");");
 		}
 	}
 
 	@Override
 	public void visitTreplace(Treplace e) {
-		if (this.option.enabledASTConstruction) {
+		if (this.strategyASTConstruction) {
 			L("ast_log_replace(ctx->ast, \"" + e.value + "\");");
 		}
 	}
@@ -906,11 +907,11 @@ public class CParserGenerator extends ParserGenerator {
 		this.pushFailureJumpPoint();
 		String mark = "mark" + this.fid;
 
-		if (this.option.enabledASTConstruction) {
+		if (this.strategyASTConstruction) {
 			L("int " + mark + " = ast_save_tx(ctx->ast);");
 		}
 		visitExpression(e.get(0));
-		if (this.option.enabledASTConstruction) {
+		if (this.strategyASTConstruction) {
 			String po = "ctx->left";
 			String label = "EXIT_LINK" + this.fid;
 			SymbolId sym = e.getLabel();

@@ -18,7 +18,7 @@ public class RegularExpression {
 	}
 
 	public final static Parser newParser(String regex) {
-		Strategy option = Strategy.newDefaultOption();
+		Strategy option = Strategy.newDefaultStrategy();
 		Reporter repo = new Reporter();
 		Grammar g = newGrammar(regex, option, repo);
 		return g.newParser(option, repo);

@@ -164,7 +164,7 @@ public class Psequence extends ExpressionCommons {
 	@Override
 	public Instruction encode(AbstractGenerator bc, Instruction next, Instruction failjump) {
 		Strategy option = bc.getOption();
-		if (option.enabledStringOptimization) {
+		if (option.isEnabled("Ostr", Strategy.Ostr)) {
 			Expression e = this.toMultiCharSequence();
 			if (e instanceof Cmulti) {
 				// System.out.println("stringfy .. " + e);

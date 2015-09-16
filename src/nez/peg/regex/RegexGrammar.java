@@ -48,7 +48,7 @@ public class RegexGrammar extends AbstractTreeVisitor {
 
 	public final static Parser newPrarser(String pattern) {
 		try {
-			GrammarFile grammar = loadGrammar(SourceContext.newStringContext(pattern), Strategy.newDefaultOption() /* FIXME */);
+			GrammarFile grammar = loadGrammar(SourceContext.newStringContext(pattern), Strategy.newDefaultStrategy() /* FIXME */);
 			return grammar.newParser("File");
 		} catch (IOException e) {
 			Verbose.traceException(e);

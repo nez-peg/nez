@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.Map;
 
 import nez.Grammar;
-import nez.Strategy;
 import nez.Parser;
+import nez.Strategy;
 import nez.ast.AbstractTree;
 import nez.ast.SymbolId;
 import nez.lang.Expression;
@@ -30,7 +30,7 @@ public class Gdtd extends GrammarFileLoader {
 	public Parser getLoaderGrammar() {
 		if (dtdParser == null) {
 			try {
-				Strategy option = Strategy.newSafeOption();
+				Strategy option = Strategy.newSafeStrategy();
 				Grammar g = GrammarFileLoader.loadGrammar("xmldtd.nez", option, null);
 				dtdParser = g.newParser(option, repo);
 				if (repo != null) {
@@ -41,7 +41,7 @@ public class Gdtd extends GrammarFileLoader {
 			}
 			assert (dtdParser != null);
 		}
-		this.enableNezExtension = !option.disabledNezExtension;
+		this.enableNezExtension = !option.isEnabled("peg", Strategy.PEG);
 		return dtdParser;
 	}
 

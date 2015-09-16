@@ -148,7 +148,7 @@ public class Grammar extends GrammarBase {
 	}
 
 	public final Parser newParser(String name) {
-		return newParser(name, Strategy.newDefaultOption(), null);
+		return newParser(name, Strategy.newDefaultStrategy(), null);
 	}
 
 	public final Parser newParser(String name, Strategy option, Reporter repo) {

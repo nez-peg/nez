@@ -28,10 +28,8 @@ public class Reporter {
 
 	public void report(Strategy option) {
 		for (String s : this.logs) {
-			if (!option.enabledNoticeReport) {
-				if (s.indexOf("notice") != -1) {
-					continue; // skip notice
-				}
+			if (s.indexOf("notice") != -1) {
+				continue; // skip notice
 			}
 			ConsoleUtils.println(s);
 		}
