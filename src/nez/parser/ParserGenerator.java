@@ -2,7 +2,7 @@ package nez.parser;
 
 import java.util.HashMap;
 
-import nez.NezOption;
+import nez.Strategy;
 import nez.lang.Expression;
 import nez.lang.Production;
 import nez.lang.expr.Cany;
@@ -55,7 +55,7 @@ public abstract class ParserGenerator extends AbstractGenerator {
 		this.file = null;
 	}
 
-	public final void init(NezOption option, String dir, String grammarName) {
+	public final void init(Strategy option, String dir, String grammarName) {
 		this.option = option;
 		this.dir = dir;
 		this.grammarName = grammarName;

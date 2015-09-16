@@ -2,7 +2,7 @@ package nez.parser;
 
 import java.util.HashMap;
 
-import nez.NezOption;
+import nez.Strategy;
 import nez.main.NezProfier;
 
 public abstract class MemoTable {
@@ -24,7 +24,7 @@ public abstract class MemoTable {
 		this.CountInvalidated = 0;
 	}
 
-	public static MemoTable newTable(NezOption option, long length, int windowSize, int memoPointSize) {
+	public static MemoTable newTable(Strategy option, long length, int windowSize, int memoPointSize) {
 		if (memoPointSize == 0) {
 			return new NullTable(length, windowSize, memoPointSize);
 		}

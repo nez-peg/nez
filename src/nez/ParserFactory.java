@@ -13,13 +13,13 @@ public class ParserFactory {
 	protected Reporter repo = new Reporter();
 
 	// --option
-	protected NezOption option = new NezOption(); // default
+	protected Strategy option = new Strategy(); // default
 
-	public final void setOption(NezOption option) {
+	public final void setOption(Strategy option) {
 		this.option = option;
 	}
 
-	public final NezOption getOption() {
+	public final Strategy getOption() {
 		return this.option;
 	}
 

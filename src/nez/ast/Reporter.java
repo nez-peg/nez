@@ -3,7 +3,7 @@ package nez.ast;
 import java.util.ArrayList;
 import java.util.HashSet;
 
-import nez.NezOption;
+import nez.Strategy;
 import nez.util.ConsoleUtils;
 
 public class Reporter {
@@ -26,7 +26,7 @@ public class Reporter {
 		}
 	}
 
-	public void report(NezOption option) {
+	public void report(Strategy option) {
 		for (String s : this.logs) {
 			if (!option.enabledNoticeReport) {
 				if (s.indexOf("notice") != -1) {

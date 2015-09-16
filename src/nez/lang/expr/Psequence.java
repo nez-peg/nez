@@ -1,6 +1,6 @@
 package nez.lang.expr;
 
-import nez.NezOption;
+import nez.Strategy;
 import nez.ast.SourcePosition;
 import nez.lang.Expression;
 import nez.lang.GrammarTransducer;
@@ -163,7 +163,7 @@ public class Psequence extends ExpressionCommons {
 
 	@Override
 	public Instruction encode(AbstractGenerator bc, Instruction next, Instruction failjump) {
-		NezOption option = bc.getOption();
+		Strategy option = bc.getOption();
 		if (option.enabledStringOptimization) {
 			Expression e = this.toMultiCharSequence();
 			if (e instanceof Cmulti) {

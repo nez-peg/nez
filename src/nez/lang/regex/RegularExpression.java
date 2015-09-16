@@ -1,7 +1,7 @@
 package nez.lang.regex;
 
 import nez.Grammar;
-import nez.NezOption;
+import nez.Strategy;
 import nez.Parser;
 import nez.ast.Reporter;
 
@@ -10,7 +10,7 @@ public class RegularExpression {
 		return newGrammar(regex, null, null);
 	}
 
-	public final static Grammar newGrammar(String regex, NezOption option, Reporter repo) {
+	public final static Grammar newGrammar(String regex, Strategy option, Reporter repo) {
 		RegularExpressionLoader l = new RegularExpressionLoader();
 		Grammar g = new Grammar("re");
 		l.eval(g, regex, 1, regex, option, repo);
@@ -18,7 +18,7 @@ public class RegularExpression {
 	}
 
 	public final static Parser newParser(String regex) {
-		NezOption option = NezOption.newDefaultOption();
+		Strategy option = Strategy.newDefaultOption();
 		Reporter repo = new Reporter();
 		Grammar g = newGrammar(regex, option, repo);
 		return g.newParser(option, repo);

@@ -5,7 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import nez.NezException;
-import nez.NezOption;
+import nez.Strategy;
 import nez.Parser;
 import nez.ast.AbstractTreeVisitor;
 import nez.ast.CommonTree;
@@ -24,7 +24,7 @@ public class RegexGrammar extends AbstractTreeVisitor {
 
 	static GrammarFile regexGrammar = null;
 
-	public final static GrammarFile loadGrammar(SourceContext regex, NezOption option) throws IOException {
+	public final static GrammarFile loadGrammar(SourceContext regex, Strategy option) throws IOException {
 		if (regexGrammar == null) {
 			try {
 				regexGrammar = (GrammarFile) GrammarFileLoader.loadGrammar("regex.nez", null, null);
@@ -48,7 +48,7 @@ public class RegexGrammar extends AbstractTreeVisitor {
 
 	public final static Parser newPrarser(String pattern) {
 		try {
-			GrammarFile grammar = loadGrammar(SourceContext.newStringContext(pattern), NezOption.newDefaultOption() /* FIXME */);
+			GrammarFile grammar = loadGrammar(SourceContext.newStringContext(pattern), Strategy.newDefaultOption() /* FIXME */);
 			return grammar.newParser("File");
 		} catch (IOException e) {
 			Verbose.traceException(e);

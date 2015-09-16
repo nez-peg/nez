@@ -3,7 +3,7 @@ package nez.lang;
 import java.util.List;
 
 import nez.Grammar;
-import nez.NezOption;
+import nez.Strategy;
 import nez.ast.CommonTree;
 import nez.ast.SourcePosition;
 import nez.util.UList;
@@ -21,7 +21,7 @@ public class GrammarFile extends Grammar {
 	// return new GrammarFile(null, option);
 	// }
 	//
-	public final static GrammarFile newGrammarFile(String urn, NezOption option) {
+	public final static GrammarFile newGrammarFile(String urn, Strategy option) {
 		return new GrammarFile(null, urn, option);
 	}
 
@@ -65,15 +65,15 @@ public class GrammarFile extends Grammar {
 
 	// fields
 	final String urn;
-	final NezOption option;
+	final Strategy option;
 
-	GrammarFile(String ns, String urn, NezOption option) {
+	GrammarFile(String ns, String urn, Strategy option) {
 		super(ns);
 		this.urn = urn;
 		this.option = option;
 	}
 
-	public final NezOption getOption() {
+	public final Strategy getOption() {
 		return this.option;
 	}
 

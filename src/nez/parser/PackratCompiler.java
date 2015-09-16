@@ -1,6 +1,6 @@
 package nez.parser;
 
-import nez.NezOption;
+import nez.Strategy;
 import nez.lang.Production;
 import nez.lang.expr.NonTerminal;
 import nez.lang.expr.Tlink;
@@ -8,7 +8,7 @@ import nez.main.Verbose;
 
 public class PackratCompiler extends OptimizedCompiler {
 
-	public PackratCompiler(NezOption option) {
+	public PackratCompiler(Strategy option) {
 		super(option);
 	}
 

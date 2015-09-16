@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import nez.NezException;
-import nez.NezOption;
+import nez.Strategy;
 import nez.Parser;
 import nez.ast.AbstractTree;
 import nez.ast.AbstractTreeVisitor;
@@ -24,7 +24,7 @@ public class DTDConverter extends AbstractTreeVisitor {
 
 	static GrammarFile dtdGrammar = null;
 
-	public final static GrammarFile loadGrammar(String filePath, NezOption option) throws IOException {
+	public final static GrammarFile loadGrammar(String filePath, Strategy option) throws IOException {
 		option.setOption("notice", false);
 		if (dtdGrammar == null) {
 			try {

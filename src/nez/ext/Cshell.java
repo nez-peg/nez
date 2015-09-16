@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import nez.Grammar;
-import nez.NezOption;
+import nez.Strategy;
 import nez.Parser;
 import nez.ast.CommonTree;
 import nez.io.SourceContext;
@@ -34,7 +34,7 @@ public class Cshell extends Command {
 		Command.displayVersion();
 		GrammarFile gfile = (/* FIXME */GrammarFile) config.newGrammar();
 		ConsoleUtils.addCompleter(getNonterminalList(gfile));
-		NezOption option = config.getOption();
+		Strategy option = config.getOption();
 
 		while (readLine(">>> ")) {
 			if ((command != null && command.equals(""))) {
@@ -186,7 +186,7 @@ public class Cshell extends Command {
 		return cmdMap.containsKey(cmd);
 	}
 
-	static void execCommand(String cmd, Parser g, NezOption option) {
+	static void execCommand(String cmd, Parser g, Strategy option) {
 		// ParserGenerator gen = GeneratorLoader.load(cmd);
 		// gen.generate(g, option, null);
 		// ConsoleUtils.println("");

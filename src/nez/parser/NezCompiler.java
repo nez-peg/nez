@@ -1,17 +1,17 @@
 package nez.parser;
 
-import nez.NezOption;
+import nez.Strategy;
 import nez.lang.Production;
 import nez.main.Verbose;
 import nez.util.UList;
 
 public abstract class NezCompiler extends AbstractGenerator {
 
-	public final static NezCompiler newCompiler(NezOption option) {
+	public final static NezCompiler newCompiler(Strategy option) {
 		return new PackratCompiler(option);
 	}
 
-	protected NezCompiler(NezOption option) {
+	protected NezCompiler(Strategy option) {
 		super(option);
 	}
 

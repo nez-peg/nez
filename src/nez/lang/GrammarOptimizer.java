@@ -3,7 +3,7 @@ package nez.lang;
 import java.util.HashMap;
 import java.util.HashSet;
 
-import nez.NezOption;
+import nez.Strategy;
 import nez.ast.Reporter;
 import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
@@ -34,13 +34,13 @@ public class GrammarOptimizer extends GrammarRewriter {
 	boolean enabledDuplicatedProduction = false;
 
 	GenerativeGrammar gg;
-	NezOption option;
+	Strategy option;
 	Reporter repo;
 	final HashMap<String, Integer> optimizedMap = new HashMap<String, Integer>();
 	HashMap<String, Production> bodyMap = null;
 	HashMap<String, String> aliasMap = null;
 
-	public GrammarOptimizer(GenerativeGrammar gg, NezOption option, Reporter repo) {
+	public GrammarOptimizer(GenerativeGrammar gg, Strategy option, Reporter repo) {
 		this.gg = gg;
 		this.option = option;
 		this.repo = repo;

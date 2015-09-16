@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import nez.Grammar;
-import nez.NezOption;
+import nez.Strategy;
 import nez.Parser;
 import nez.ast.AbstractTree;
 import nez.ast.AbstractTreeVisitor;
@@ -21,7 +21,7 @@ import nez.util.StringUtils;
 public abstract class GrammarFileLoader extends AbstractTreeVisitor {
 
 	protected Grammar file;
-	protected NezOption option;
+	protected Strategy option;
 	protected Reporter repo;
 
 	public Grammar newGrammar(String ns, String urn) {
@@ -37,13 +37,13 @@ public abstract class GrammarFileLoader extends AbstractTreeVisitor {
 		return (GrammarFile) this.file;
 	}
 
-	public final NezOption getGrammarOption() {
+	public final Strategy getGrammarOption() {
 		return this.option;
 	}
 
-	public final void load(Grammar g, String urn, NezOption option, Reporter repo) throws IOException {
+	public final void load(Grammar g, String urn, Strategy option, Reporter repo) throws IOException {
 		this.file = g;
-		this.option = NezOption.nullObject(option);
+		this.option = Strategy.nullObject(option);
 		this.repo = repo;
 
 		SourceContext sc = SourceContext.newFileContext(urn);
@@ -56,9 +56,9 @@ public abstract class GrammarFileLoader extends AbstractTreeVisitor {
 		}
 	}
 
-	public void eval(Grammar g, String urn, int linenum, String text, NezOption option, Reporter repo) {
+	public void eval(Grammar g, String urn, int linenum, String text, Strategy option, Reporter repo) {
 		this.file = g;
-		this.option = NezOption.nullObject(option);
+		this.option = Strategy.nullObject(option);
 		this.repo = repo;
 
 		SourceContext sc = SourceContext.newStringSourceContext(urn, linenum, text);
@@ -111,7 +111,7 @@ public abstract class GrammarFileLoader extends AbstractTreeVisitor {
 
 	static HashMap<String, GrammarFileLoader> loaderMap = new HashMap<>();
 
-	public static Grammar loadGrammar(String path, NezOption option, Reporter repo) throws IOException {
+	public static Grammar loadGrammar(String path, Strategy option, Reporter repo) throws IOException {
 		String ext = StringUtils.parseFileExtension(path);
 		GrammarFileLoader fl = (GrammarFileLoader) ExtensionLoader.newInstance("nez.ext.G", ext);
 		if (fl != null) {
@@ -122,7 +122,7 @@ public abstract class GrammarFileLoader extends AbstractTreeVisitor {
 		return null;
 	}
 
-	public final static Grammar loadGrammarFile(String urn, NezOption option) throws IOException {
+	public final static Grammar loadGrammarFile(String urn, Strategy option) throws IOException {
 		if (urn.endsWith(".dtd")) {
 			return DTDConverter.loadGrammar(urn, option);
 		}

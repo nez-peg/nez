@@ -6,7 +6,7 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import nez.Grammar;
-import nez.NezOption;
+import nez.Strategy;
 import nez.ast.Reporter;
 import nez.lang.GrammarChecker;
 import nez.lang.GrammarOptimizer;
@@ -19,7 +19,7 @@ public class GenerativeGrammar extends Grammar {
 	HashMap<String, ParseFunc> funcMap;
 	public List<MemoPoint> memoPointList = null;
 
-	public GenerativeGrammar(Production start, NezOption option, TreeMap<String, Boolean> flagMap, Reporter repo) {
+	public GenerativeGrammar(Production start, Strategy option, TreeMap<String, Boolean> flagMap, Reporter repo) {
 		this.funcMap = new HashMap<String, ParseFunc>();
 		new GrammarChecker(this, !option.enabledASTConstruction, flagMap, start, option, repo);
 		memo(option);
@@ -50,7 +50,7 @@ public class GenerativeGrammar extends Grammar {
 		}
 	}
 
-	void memo(NezOption option) {
+	void memo(Strategy option) {
 		memoPointList = null;
 		if (option.enabledMemoization || option.enabledPackratParsing) {
 			memoPointList = new UList<MemoPoint>(new MemoPoint[4]);

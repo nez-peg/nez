@@ -3,7 +3,7 @@ package nez.ext;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import nez.NezOption;
+import nez.Strategy;
 import nez.Parser;
 import nez.ast.AbstractTree;
 import nez.ast.SymbolId;
@@ -28,7 +28,7 @@ public class Gnez extends GrammarFileLoader {
 	@Override
 	public Parser getLoaderGrammar() {
 		if (nezParser == null) {
-			nezParser = new NezGrammar1().newParser(NezOption.newSafeOption(), null);
+			nezParser = new NezGrammar1().newParser(Strategy.newSafeOption(), null);
 			assert (nezParser != null);
 		}
 		return nezParser;

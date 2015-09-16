@@ -2,7 +2,7 @@ package nez.parser;
 
 import java.util.HashMap;
 
-import nez.NezOption;
+import nez.Strategy;
 import nez.lang.Expression;
 import nez.lang.Production;
 import nez.lang.expr.Cany;
@@ -37,14 +37,14 @@ import nez.lang.expr.Xon;
 import nez.main.Verbose;
 
 public abstract class AbstractGenerator {
-	protected NezOption option;
+	protected Strategy option;
 
-	public AbstractGenerator(NezOption option) {
+	public AbstractGenerator(Strategy option) {
 		this.gg = null;
 		this.option = option;
 	}
 
-	public final NezOption getOption() {
+	public final Strategy getOption() {
 		return this.option;
 	}
 

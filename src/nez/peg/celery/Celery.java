@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import nez.Grammar;
 import nez.NezException;
-import nez.NezOption;
+import nez.Strategy;
 import nez.Parser;
 import nez.ast.CommonTree;
 import nez.io.SourceContext;
@@ -15,7 +15,7 @@ import nez.util.ConsoleUtils;
 public class Celery {
 	static Grammar celeryGrammar = null;
 
-	public final static GrammarFile loadGrammar(String filePath, NezOption option) throws IOException {
+	public final static GrammarFile loadGrammar(String filePath, Strategy option) throws IOException {
 		option.setOption("notice", false);
 		if (celeryGrammar == null) {
 			try {

@@ -18,10 +18,10 @@ import nez.parser.ParsingMachine;
 
 public class Parser {
 	private GenerativeGrammar gg;
-	protected NezOption option;
+	protected Strategy option;
 	protected NezCode compiledCode = null;
 
-	public Parser(GenerativeGrammar gg, NezOption option) {
+	public Parser(GenerativeGrammar gg, Strategy option) {
 		this.gg = gg;
 		this.option = option;
 	}

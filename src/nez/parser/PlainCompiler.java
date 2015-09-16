@@ -1,6 +1,6 @@
 package nez.parser;
 
-import nez.NezOption;
+import nez.Strategy;
 import nez.lang.Expression;
 import nez.lang.Production;
 import nez.lang.expr.Cany;
@@ -35,7 +35,7 @@ public class PlainCompiler extends NezCompiler {
 
 	protected final Instruction commonFailure = new IFail(null);
 
-	public PlainCompiler(NezOption option) {
+	public PlainCompiler(Strategy option) {
 		super(option);
 	}
 

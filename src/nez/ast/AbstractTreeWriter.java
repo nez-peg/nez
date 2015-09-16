@@ -2,7 +2,7 @@ package nez.ast;
 
 import java.util.TreeMap;
 
-import nez.NezOption;
+import nez.Strategy;
 import nez.util.FileBuilder;
 import nez.util.StringUtils;
 
@@ -18,7 +18,7 @@ public class AbstractTreeWriter extends FileBuilder {
 		super(path);
 	}
 
-	public AbstractTreeWriter(NezOption option, String path) {
+	public AbstractTreeWriter(Strategy option, String path) {
 		super(path);
 	}
 
@@ -26,7 +26,7 @@ public class AbstractTreeWriter extends FileBuilder {
 		this(StringUtils.toFileName(path, dir, ext));
 	}
 
-	public AbstractTreeWriter(NezOption option, String path, String dir, String ext) {
+	public AbstractTreeWriter(Strategy option, String path, String dir, String ext) {
 		this(StringUtils.toFileName(path, dir, ext));
 	}
 

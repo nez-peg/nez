@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Stack;
 
-import nez.NezOption;
+import nez.Strategy;
 import nez.ast.CommonTree;
 import nez.lang.Expression;
 import nez.lang.Production;
@@ -46,7 +46,7 @@ public class DebugVMCompiler extends AbstractGenerator {
 	GrammarAnalyzer analyzer;
 	HashMap<Expression, DebugVMInstruction> altInstructionMap = new HashMap<Expression, DebugVMInstruction>();
 
-	public DebugVMCompiler(NezOption option) {
+	public DebugVMCompiler(Strategy option) {
 		super(option);
 		this.builder = new IRBuilder(new Module());
 	}

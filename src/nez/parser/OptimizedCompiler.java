@@ -2,7 +2,7 @@ package nez.parser;
 
 import java.util.HashMap;
 
-import nez.NezOption;
+import nez.Strategy;
 import nez.lang.Expression;
 import nez.lang.Production;
 import nez.lang.expr.Cany;
@@ -19,7 +19,7 @@ import nez.main.Verbose;
 
 public class OptimizedCompiler extends PlainCompiler {
 
-	public OptimizedCompiler(NezOption option) {
+	public OptimizedCompiler(Strategy option) {
 		super(option);
 	}
 

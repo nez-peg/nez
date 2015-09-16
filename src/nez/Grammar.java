@@ -142,16 +142,16 @@ public class Grammar extends GrammarBase {
 
 	// ----------------------------------------------------------------------
 
-	public final Parser newParser(NezOption option, Reporter repo) {
+	public final Parser newParser(Strategy option, Reporter repo) {
 		GenerativeGrammar gg = (this instanceof GenerativeGrammar) ? (GenerativeGrammar) this : new GenerativeGrammar(this.getStartProduction(), option, null, repo);
 		return new Parser(gg, option);
 	}
 
 	public final Parser newParser(String name) {
-		return newParser(name, NezOption.newDefaultOption(), null);
+		return newParser(name, Strategy.newDefaultOption(), null);
 	}
 
-	public final Parser newParser(String name, NezOption option, Reporter repo) {
+	public final Parser newParser(String name, Strategy option, Reporter repo) {
 		if (name != null) {
 			Production p = this.getProduction(name);
 			if (p != null) {

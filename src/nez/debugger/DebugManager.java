@@ -2,7 +2,7 @@ package nez.debugger;
 
 import java.io.IOException;
 
-import nez.NezOption;
+import nez.Strategy;
 import nez.Parser;
 import nez.ast.AbstractTreeWriter;
 import nez.ast.CommonTree;
@@ -19,7 +19,7 @@ public class DebugManager {
 		this.index = 0;
 	}
 
-	public void exec(Parser peg, NezOption option) {
+	public void exec(Parser peg, Strategy option) {
 		while (this.index < this.inputFileLists.size()) {
 			DebugSourceContext sc = this.nextInputSource();
 			boolean matched;

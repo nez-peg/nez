@@ -3,7 +3,7 @@ package nez.lang;
 import java.util.HashMap;
 import java.util.TreeMap;
 
-import nez.NezOption;
+import nez.Strategy;
 import nez.ast.Reporter;
 import nez.lang.expr.ExpressionCommons;
 import nez.lang.expr.NonTerminal;
@@ -39,7 +39,7 @@ public class GrammarChecker extends GrammarTransducer {
 	UList<Expression> stacked;
 	Reporter repo = null;
 
-	public GrammarChecker(GenerativeGrammar g, boolean offAST, TreeMap<String, Boolean> ctx, Production start, NezOption option, Reporter repo) {
+	public GrammarChecker(GenerativeGrammar g, boolean offAST, TreeMap<String, Boolean> ctx, Production start, Strategy option, Reporter repo) {
 		this.gg = g;
 		this.boolMap = (ctx == null) ? new TreeMap<String, Boolean>() : ctx;
 		this.repo = repo == null ? new Reporter() : repo;
