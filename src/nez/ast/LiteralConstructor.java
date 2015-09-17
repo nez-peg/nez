@@ -9,14 +9,15 @@ import java.util.Map;
 import nez.Strategy;
 import nez.util.StringUtils;
 
-public class LiteralTransducer extends AbstractTreeVisitor {
+public class LiteralConstructor extends AbstractTreeVisitor implements Constructor {
 
 	protected Strategy strategy;
 
-	LiteralTransducer(Strategy strategy) {
-		this.strategy = strategy;
+	public LiteralConstructor(Strategy strategy) {
+		this.strategy = Strategy.nullCheck(strategy);
 	}
 
+	@Override
 	public Object newInstance(AbstractTree<?> node) {
 		return visit("new", node);
 	}

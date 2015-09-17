@@ -9,7 +9,7 @@ import nez.util.ConsoleUtils;
 
 public class Strategy {
 
-	public static Strategy nullObject(Strategy strategy) {
+	public final static Strategy nullCheck(Strategy strategy) {
 		return strategy == null ? newDefaultStrategy() : strategy;
 	}
 

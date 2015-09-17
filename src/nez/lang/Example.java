@@ -27,6 +27,10 @@ public class Example {
 		return textNode.toText();
 	}
 
+	public final boolean hasHash() {
+		return this.hash != null;
+	}
+
 	public String formatWarning(String msg) {
 		return nameNode.formatSourceMessage("warning", msg);
 	}

@@ -38,14 +38,18 @@ public class Ctest extends Command {
 					}
 					parserMap.put(name, p);
 				}
-				if (ex.test(p)) {
+				if (ex.hasHash()) {
+					total++;
+				}
+				if (!ex.test(p)) {
 					fail++;
 				}
-				total++;
 			}
 			long t2 = System.nanoTime();
 			ConsoleUtils.println("Elapsed time (Example Tests): " + ((t2 - t1) / 1000000) + "ms");
-			ConsoleUtils.println("Failure: " + fail + "/" + total + " pass (" + ((total - fail) * 100 / total) + "%)");
+			if (total > 0) {
+				ConsoleUtils.println("Failure: " + fail + "/" + total + " Pass ratio: " + ((total - fail) * 100 / total) + "%");
+			}
 		}
 	}
 

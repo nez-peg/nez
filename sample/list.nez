@@ -3,9 +3,9 @@
  * 
  **/
 
-
-File
-	= Expression
+example Expression ~070f0a80 '''
+A,B,C,D
+'''
 
 Expression
 	= List / Term
@@ -18,10 +18,5 @@ Term
 
 S
 	= [ \t]
-
-
-example Expression '''
-A,B,C,D
-'''
 
 

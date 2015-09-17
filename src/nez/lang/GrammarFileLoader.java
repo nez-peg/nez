@@ -41,7 +41,7 @@ public abstract class GrammarFileLoader extends AbstractTreeVisitor {
 
 	public final void load(Grammar g, String urn, Strategy strategy) throws IOException {
 		this.file = g;
-		this.strategy = Strategy.nullObject(strategy);
+		this.strategy = Strategy.nullCheck(strategy);
 
 		SourceContext sc = SourceContext.newFileContext(urn);
 		while (sc.hasUnconsumed()) {
@@ -55,7 +55,7 @@ public abstract class GrammarFileLoader extends AbstractTreeVisitor {
 
 	public void eval(Grammar g, String urn, int linenum, String text, Strategy strategy) {
 		this.file = g;
-		this.strategy = Strategy.nullObject(strategy);
+		this.strategy = Strategy.nullCheck(strategy);
 
 		SourceContext sc = SourceContext.newStringSourceContext(urn, linenum, text);
 		while (sc.hasUnconsumed()) {
