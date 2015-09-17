@@ -13,6 +13,10 @@ public class LiteralConstructor extends AbstractTreeVisitor implements Construct
 
 	protected Strategy strategy;
 
+	public LiteralConstructor() {
+		this(null);
+	}
+
 	public LiteralConstructor(Strategy strategy) {
 		this.strategy = Strategy.nullCheck(strategy);
 	}
@@ -20,6 +24,17 @@ public class LiteralConstructor extends AbstractTreeVisitor implements Construct
 	@Override
 	public Object newInstance(AbstractTree<?> node) {
 		return visit("new", node);
+	}
+
+	@Override
+	protected Object visitUndefinedNode(AbstractTree<?> node) {
+		if (node.size() == 0) {
+			return newText(node);
+		}
+		if (node.isAllLabeled()) {
+			return newMap(node);
+		}
+		return newList(node);
 	}
 
 	public Boolean newBoolean(AbstractTree<?> node) {
