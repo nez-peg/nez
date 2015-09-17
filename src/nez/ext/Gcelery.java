@@ -10,8 +10,8 @@ import nez.Parser;
 import nez.ast.AbstractTree;
 import nez.ast.SymbolId;
 import nez.lang.GrammarFileLoader;
-import nez.lang.schema.JSONSchema;
-import nez.lang.schema.Schema;
+import nez.lang.schema.JSONSchemaGrammarGenerator;
+import nez.lang.schema.SchemaGrammarGenerator;
 import nez.lang.schema.Type;
 import nez.util.ConsoleUtils;
 
@@ -22,7 +22,7 @@ public class Gcelery extends GrammarFileLoader {
 
 	static Parser celeryParser;
 	boolean enableNezExtension;
-	private Schema schema;
+	private SchemaGrammarGenerator schema;
 
 	@Override
 	public Parser getLoaderGrammar() {
@@ -39,7 +39,7 @@ public class Gcelery extends GrammarFileLoader {
 			}
 			assert (celeryParser != null);
 		}
-		this.schema = new JSONSchema(getGrammarFile());
+		this.schema = new JSONSchemaGrammarGenerator(getGrammarFile());
 		this.enableNezExtension = !option.disabledNezExtension;
 		return celeryParser;
 	}
