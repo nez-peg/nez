@@ -54,11 +54,11 @@ public class Edge {
 
 }
 
-class EdgeComparator implements Comparator {
+class EdgeComparator implements Comparator<Edge> {
 	@Override
-	public int compare(Object o1, Object o2) {
-		Edge e1 = (Edge) o1;
-		Edge e2 = (Edge) o2;
+	public int compare(Edge o1, Edge o2) {
+		Edge e1 = o1;
+		Edge e2 = o2;
 		if (e1.getSrc() != e2.getSrc())
 			return Integer.compare(e1.getSrc(), e2.getSrc());
 		if (e1.getDst() != e2.getDst())

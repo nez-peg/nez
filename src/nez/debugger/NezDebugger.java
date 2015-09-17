@@ -7,7 +7,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 
 import jline.ArgumentCompletor;
@@ -443,15 +442,15 @@ public class NezDebugger {
 		if (this.breakPointMap.isEmpty()) {
 			ConsoleUtils.println("No breakpoints currently set");
 		} else {
-			List<Map.Entry> mapValuesList = new ArrayList<Map.Entry>(this.breakPointMap.entrySet());
-			Collections.sort(mapValuesList, new Comparator<Map.Entry>() {
+			List<Entry<String, BreakPoint>> mapValuesList = new ArrayList<>(this.breakPointMap.entrySet());
+			Collections.sort(mapValuesList, new Comparator<Entry<String, BreakPoint>>() {
 				@Override
-				public int compare(Entry entry1, Entry entry2) {
-					return (((BreakPoint) entry1.getValue()).id).compareTo(((BreakPoint) entry2.getValue()).id);
+				public int compare(Entry<String, BreakPoint> entry1, Entry<String, BreakPoint> entry2) {
+					return (entry1.getValue().id).compareTo(entry2.getValue().id);
 				}
 			});
-			for (Entry s : mapValuesList) {
-				BreakPoint br = (BreakPoint) s.getValue();
+			for (Entry<String, BreakPoint> s : mapValuesList) {
+				BreakPoint br = s.getValue();
 				Production rule = (br.pr);
 				ConsoleUtils.println(br.id + ": " + rule.getLocalName() + " " + rule.getExpression().getSourcePosition().formatDebugSourceMessage(""));
 			}

@@ -140,7 +140,12 @@ public class Grammar extends GrammarBase {
 	}
 
 	// ----------------------------------------------------------------------
-
+	/**
+	 * Create a new parser
+	 * 
+	 * @param strategy
+	 * @return
+	 */
 	public final Parser newParser(Strategy strategy) {
 		GenerativeGrammar gg = (this instanceof GenerativeGrammar) ? (GenerativeGrammar) this : new GenerativeGrammar(this.getStartProduction(), strategy, null);
 		return new Parser(gg, strategy);

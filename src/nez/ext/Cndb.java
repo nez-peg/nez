@@ -14,5 +14,4 @@ public class Cndb extends Command {
 		DebugManager manager = new DebugManager(config.inputFileLists);
 		manager.exec(parser, config.getStrategy());
 	}
-
 }
