@@ -131,6 +131,9 @@ public class RegexGrammar extends AbstractTreeVisitor {
 	public Expression piLazyQuantifiers(CommonTree e, Expression k) {
 		String ruleName = "Repetition" + NonTerminalCount++;
 		Expression ne = ExpressionCommons.newNonTerminal(e, this.grammar, ruleName);
+		if (k == null) {
+			k = ExpressionCommons.newEmpty(null);
+		}
 		grammar.addProduction(e, ruleName, toChoice(e, k, pi(e.get(0), ne)));
 		return ne;
 	}
@@ -153,7 +156,7 @@ public class RegexGrammar extends AbstractTreeVisitor {
 	}
 
 	public Expression piAny(CommonTree e, Expression k) {
-		return toAny(e);
+		return toSeq(e, k);
 	}
 
 	public Expression piNegativeCharacterSet(CommonTree e, Expression k) {
@@ -211,6 +214,7 @@ public class RegexGrammar extends AbstractTreeVisitor {
 	public Expression toCharacterRange(CommonTree e) {
 		byte[] begin = StringUtils.toUtf8(e.get(0).toText());
 		byte[] end = StringUtils.toUtf8(e.get(1).toText());
+		byteMap = new boolean[257];
 		for (byte i = begin[0]; i <= end[0]; i++) {
 			byteMap[i] = true;
 		}
