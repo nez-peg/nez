@@ -4,15 +4,15 @@ import nez.lang.Expression;
 import nez.lang.GrammarFile;
 import nez.lang.expr.ExpressionCommons;
 
-public class JSONPredefinedGrammar {
+public class JSONPredefinedGrammarGenerator {
 	GrammarFile grammar;
 	String rootClassName;
 
-	public JSONPredefinedGrammar(GrammarFile grammar) {
+	public JSONPredefinedGrammarGenerator(GrammarFile grammar) {
 		this.grammar = grammar;
 	}
 
-	public void defineRule() {
+	public void define() {
 		defFile();
 		defAny();
 		defMember();
