@@ -74,7 +74,7 @@ public abstract class AbstractTree<E extends AbstractTree<E>> extends AbstractLi
 		return this.source.column(this.pos);
 	}
 
-	protected final int getLength() {
+	public final int getLength() {
 		return this.length;
 	}
 

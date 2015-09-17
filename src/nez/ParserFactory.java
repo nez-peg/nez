@@ -61,6 +61,13 @@ public class ParserFactory {
 		return "g";
 	}
 
+	public final String getGrammarPath() {
+		if (gFileName != null) {
+			return gFileName;
+		}
+		return null;
+	}
+
 	private Grammar newGrammarImpl(String path) throws IOException {
 		if (path.equals("nez")) {
 			return new NezGrammar1();

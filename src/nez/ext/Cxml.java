@@ -7,11 +7,6 @@ import nez.main.CommandContext;
 
 public class Cxml extends Cparse {
 	@Override
-	public final String getDesc() {
-		return "an XML converter";
-	}
-
-	@Override
 	protected void makeOutputFile(CommandContext config, SourceContext source, AbstractTree<?> node) {
 		AbstractTreeWriter w = new AbstractTreeWriter(config.getStrategy(), config.getOutputFileName(source, "ast"));
 		w.writeTree(node);

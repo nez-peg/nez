@@ -20,11 +20,6 @@ import nez.util.ConsoleUtils;
 import nez.x.generator.GeneratorLoader;
 
 public class Cshell extends Command {
-	@Override
-	public final String getDesc() {
-		return "starts an interactive parser";
-	}
-
 	String command = null;
 	String text = null;
 	int linenum = 0;

@@ -13,11 +13,6 @@ import nez.util.UList;
 
 public class Cmatch extends Command {
 	@Override
-	public String getDesc() {
-		return "grammar validator";
-	}
-
-	@Override
 	public void exec(CommandContext config) throws IOException {
 		config.getStrategy().setEnabled("ast", false);
 		Parser g = config.newParser();

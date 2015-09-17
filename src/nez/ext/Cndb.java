@@ -6,12 +6,6 @@ import nez.main.Command;
 import nez.main.CommandContext;
 
 public class Cndb extends Command {
-
-	@Override
-	public String getDesc() {
-		return "Nez debugger";
-	}
-
 	@Override
 	public void exec(CommandContext config) {
 		Command.displayVersion();

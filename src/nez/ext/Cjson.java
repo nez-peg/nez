@@ -7,11 +7,6 @@ import nez.main.CommandContext;
 
 public class Cjson extends Cparse {
 	@Override
-	public final String getDesc() {
-		return "a JSON converter";
-	}
-
-	@Override
 	protected void makeOutputFile(CommandContext config, SourceContext source, AbstractTree<?> node) {
 		AbstractTreeWriter w = new AbstractTreeWriter(config.getStrategy(), config.getOutputFileName(source, "json"));
 		w.writeTree(node);

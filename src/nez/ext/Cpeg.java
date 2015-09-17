@@ -8,10 +8,6 @@ import nez.main.CommandContext;
 import nez.parser.ParserGenerator;
 
 public class Cpeg extends Command {
-	@Override
-	public String getDesc() {
-		return "an bytecode compiler";
-	}
 
 	@Override
 	public void exec(CommandContext config) throws IOException {

@@ -2,13 +2,7 @@ package nez.main;
 
 import java.io.IOException;
 
-
 public class LCfind extends Command {
-
-	@Override
-	public String getDesc() {
-		return "locate nonterminals that match the input";
-	}
 
 	@Override
 	public void exec(CommandContext config) throws IOException {

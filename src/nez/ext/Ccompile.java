@@ -13,11 +13,6 @@ import nez.parser.PackratCompiler;
 
 public class Ccompile extends Command {
 	@Override
-	public String getDesc() {
-		return "an bytecode compiler";
-	}
-
-	@Override
 	public void exec(CommandContext config) throws IOException {
 		Parser parser = config.newParser();
 		NezCompiler compile = new PackratCompiler(config.getStrategy());

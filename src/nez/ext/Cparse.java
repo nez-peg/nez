@@ -13,11 +13,6 @@ import nez.util.ConsoleUtils;
 
 public class Cparse extends Command {
 	@Override
-	public String getDesc() {
-		return "an AST parser";
-	}
-
-	@Override
 	public void exec(CommandContext config) throws IOException {
 		Parser g = config.newParser();
 		while (config.hasInput()) {

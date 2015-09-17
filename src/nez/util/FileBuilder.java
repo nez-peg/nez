@@ -116,4 +116,24 @@ public class FileBuilder {
 		this.write(text);
 	}
 
+	public void writeMultiLine(String sub) {
+		int start = 0;
+		boolean empty = true;
+		for (int i = 0; i < sub.length(); i++) {
+			char ch = sub.charAt(i);
+			if (ch == ' ' || ch == '\t') {
+				continue;
+			}
+			if (ch == '\n') {
+				if (!empty) {
+					this.writeIndent(sub.substring(start, i));
+				}
+				start = i + 1;
+				empty = true;
+				continue;
+			}
+			empty = false;
+		}
+	}
+
 }

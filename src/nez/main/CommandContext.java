@@ -153,6 +153,9 @@ public class CommandContext extends ParserFactory {
 			} else if ((argument.equals("-p") || argument.equals("--peg")) && (index < args.length)) {
 				gFileName = args[index];
 				index = index + 1;
+			} else if ((argument.equals("-g") || argument.equals("--grammar")) && (index < args.length)) {
+				gFileName = args[index];
+				index = index + 1;
 			} else if ((argument.equals("-r") || argument.equals("--re")) && (index < args.length)) {
 				regex = args[index];
 				index = index + 1;

@@ -14,11 +14,6 @@ import nez.util.ConsoleUtils;
 
 public class Ctest extends Command {
 	@Override
-	public String getDesc() {
-		return "an bytecode compiler";
-	}
-
-	@Override
 	public void exec(CommandContext config) throws IOException {
 		Grammar g = config.newGrammar();
 		if (g instanceof GrammarFile) {

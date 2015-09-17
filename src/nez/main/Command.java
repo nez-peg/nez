@@ -27,8 +27,6 @@ public abstract class Command {
 		}
 	}
 
-	public abstract String getDesc();
-
 	public abstract void exec(CommandContext config) throws IOException;
 
 	public final static void displayVersion() {
