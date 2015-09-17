@@ -16,13 +16,13 @@ Root
 ////////////////////////////////////////////////*/
 
 ClassDeclaration
-	= { 'struct' _ @Name _ '=' _ (@ClassMembers)+ _ #Struct}
+	= { 'struct' _ $Name(Name) _ '=' _ (@ClassMembers)+ _ #Struct}
 
 ClassMembers
 	= TypedParameter / UntypedParameter 
 
 TypedParameter
-	=  { @Name qualifier ':' _ @TypeDeclaration @DefaultValue } _ 
+	=  { $Name(Name)) qualifier ':' _ $Type(TypeDeclaration) @DefaultValue } _ 
 
 qualifier
 	= '?' #Option
