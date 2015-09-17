@@ -5,8 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import nez.Grammar;
-import nez.NezOption;
 import nez.Parser;
+import nez.Strategy;
 import nez.ast.AbstractTree;
 import nez.ast.SymbolId;
 import nez.lang.GrammarFileLoader;
@@ -28,19 +28,17 @@ public class Gcelery extends GrammarFileLoader {
 	public Parser getLoaderGrammar() {
 		if (celeryParser == null) {
 			try {
-				NezOption option = NezOption.newSafeOption();
-				Grammar g = GrammarFileLoader.loadGrammar("celery.nez", option, null);
-				celeryParser = g.newParser(option, repo);
-				if (repo != null) {
-					repo.report(option);
-				}
+				Strategy option = Strategy.newSafeStrategy();
+				Grammar g = GrammarFileLoader.loadGrammar("celery.nez", option);
+				celeryParser = g.newParser(option);
+				strategy.report();
 			} catch (IOException e) {
 				ConsoleUtils.exit(1, "unload: " + e.getMessage());
 			}
 			assert (celeryParser != null);
 		}
 		this.schema = new JSONSchemaGrammarGenerator(getGrammarFile());
-		this.enableNezExtension = !option.disabledNezExtension;
+		this.enableNezExtension = !strategy.isEnabled("peg", Strategy.PEG);
 		return celeryParser;
 	}
 
