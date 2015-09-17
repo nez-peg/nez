@@ -14,6 +14,11 @@ public class KonohaTree extends AbstractTree<KonohaTree> {
 	}
 
 	@Override
+	protected KonohaTree newInstance(Symbol tag, int size, Object value) {
+		return new KonohaTree(tag, this.getSource(), this.getSourcePosition(), 0, size, value);
+	}
+
+	@Override
 	protected KonohaTree dupImpl() {
 		return new KonohaTree(this.getTag(), this.getSource(), this.getSourcePosition(), this.getLength(), this.size(), getValue());
 	}

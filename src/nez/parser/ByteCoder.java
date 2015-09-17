@@ -230,7 +230,7 @@ public class ByteCoder {
 
 	public void encodeLabel(Symbol label) {
 		if (label == null) {
-			this.encodeTag(Symbol.NullTag);
+			this.encodeTag(Symbol.NullSymbol);
 		} else {
 			this.encodeTag(label);
 		}

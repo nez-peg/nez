@@ -26,8 +26,8 @@ public class Symbol {
 		return tagNameList.ArrayValues[tagId];
 	}
 
-	public final static Symbol NullTag = tag("");
-	public final static Symbol MetaTag = tag("keyvalue");
+	public final static Symbol NullSymbol = tag("");
+	public final static Symbol MetaSymbol = tag("$");
 
 	final int id;
 	final String symbol;

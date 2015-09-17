@@ -916,7 +916,7 @@ public class CParserGenerator extends ParserGenerator {
 			String label = "EXIT_LINK" + this.fid;
 			Symbol sym = e.getLabel();
 			if (sym == null) {
-				sym = Symbol.NullTag;
+				sym = Symbol.NullSymbol;
 			}
 			String tag = sym.getSymbol();
 			L("ast_commit_tx(ctx->ast, \"" + tag + "\", " + mark + ");");

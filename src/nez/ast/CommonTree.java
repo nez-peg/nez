@@ -7,6 +7,11 @@ public class CommonTree extends AbstractTree<CommonTree> {
 	}
 
 	@Override
+	protected CommonTree newInstance(Symbol tag, int size, Object value) {
+		return new CommonTree(tag, this.getSource(), this.getSourcePosition(), 0, size, value);
+	}
+
+	@Override
 	protected CommonTree dupImpl() {
 		return new CommonTree(this.getTag(), this.getSource(), this.getSourcePosition(), this.getLength(), this.size(), getValue());
 	}

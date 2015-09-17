@@ -27,6 +27,12 @@ class JCodeTreeImpl extends JCodeTree {
 		this.requiredPop = false;
 	}
 
+	@Override
+	protected JCodeTreeImpl newInstance(Symbol tag, int size, Object value) {
+		return new JCodeTreeImpl(tag, this.getSource(), this.getSourcePosition(), 0, size, value);
+	}
+
+	@Override
 	public void requirePop() {
 		for (JCodeTree child : this) {
 			((JCodeTreeImpl) child).setRequiredPop(true);
