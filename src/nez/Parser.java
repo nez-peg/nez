@@ -1,12 +1,9 @@
 package nez;
 
-import java.util.List;
-
 import nez.ast.CommonTree;
 import nez.ast.CommonTreeTransducer;
 import nez.ast.TreeTransducer;
 import nez.io.SourceContext;
-import nez.lang.Production;
 import nez.main.NezProfier;
 import nez.main.Verbose;
 import nez.parser.GenerativeGrammar;
@@ -32,16 +29,6 @@ public class Parser {
 
 	public final NezCode getCompiledCode() {
 		return compiledCode;
-	}
-
-	@Deprecated
-	public Production getStartProduction() {
-		return gg.getStartProduction();
-	}
-
-	@Deprecated
-	public List<Production> getProductionList() {
-		return gg.getProductionList();
 	}
 
 	protected NezProfier prof = null;

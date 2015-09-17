@@ -3,7 +3,7 @@ package nez.peg.celery;
 import java.io.IOException;
 
 import nez.Grammar;
-import nez.NezException;
+import nez.ParserException;
 import nez.Parser;
 import nez.Strategy;
 import nez.ast.CommonTree;
@@ -28,10 +28,10 @@ public class Celery {
 		SourceContext celeryFile = SourceContext.newFileContext(filePath);
 		CommonTree node = p.parseCommonTree(celeryFile);
 		if (node == null) {
-			throw new NezException(celeryFile.getSyntaxErrorMessage());
+			throw new ParserException(celeryFile.getSyntaxErrorMessage());
 		}
 		if (celeryFile.hasUnconsumed()) {
-			throw new NezException(celeryFile.getUnconsumedMessage());
+			throw new ParserException(celeryFile.getUnconsumedMessage());
 		}
 		JSONCeleryConverter converter = new JSONCeleryConverter(!option.isEnabled("peg", Strategy.PEG));
 		converter.setRootClassName(filePath);

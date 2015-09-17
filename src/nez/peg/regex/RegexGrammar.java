@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import nez.NezException;
+import nez.ParserException;
 import nez.Parser;
 import nez.Strategy;
 import nez.ast.AbstractTreeVisitor;
@@ -35,10 +35,10 @@ public class RegexGrammar extends AbstractTreeVisitor {
 		Parser p = regexGrammar.newParser("File");
 		CommonTree node = p.parseCommonTree(regex);
 		if (node == null) {
-			throw new NezException(regex.getSyntaxErrorMessage());
+			throw new ParserException(regex.getSyntaxErrorMessage());
 		}
 		if (regex.hasUnconsumed()) {
-			throw new NezException(regex.getUnconsumedMessage());
+			throw new ParserException(regex.getUnconsumedMessage());
 		}
 		GrammarFile gfile = GrammarFile.newGrammarFile("re", option);
 		RegexGrammar conv = new RegexGrammar();

@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import nez.NezException;
+import nez.ParserException;
 import nez.Parser;
 import nez.Strategy;
 import nez.ast.AbstractTree;
@@ -37,10 +37,10 @@ public class DTDConverter extends AbstractTreeVisitor {
 		SourceContext dtdFile = SourceContext.newFileContext(filePath);
 		AbstractTree<?> node = p.parseCommonTree(dtdFile);
 		if (node == null) {
-			throw new NezException(dtdFile.getSyntaxErrorMessage());
+			throw new ParserException(dtdFile.getSyntaxErrorMessage());
 		}
 		if (dtdFile.hasUnconsumed()) {
-			throw new NezException(dtdFile.getUnconsumedMessage());
+			throw new ParserException(dtdFile.getUnconsumedMessage());
 		}
 		DTDConverter conv = new DTDConverter(!option.isEnabled("peg", Strategy.PEG));
 		GrammarFile gfile = GrammarFile.newGrammarFile(filePath, option);
