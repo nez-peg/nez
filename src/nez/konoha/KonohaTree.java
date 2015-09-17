@@ -2,14 +2,14 @@ package nez.konoha;
 
 import nez.ast.AbstractTree;
 import nez.ast.Source;
-import nez.ast.SymbolId;
+import nez.ast.Symbol;
 import nez.ast.string.StringTransducer;
 
 public class KonohaTree extends AbstractTree<KonohaTree> {
 	KonohaType typed = null;
 	KonohaTypeRule matched = null;
 
-	public KonohaTree(SymbolId tag, Source source, long pos, int len, int size, Object value) {
+	public KonohaTree(Symbol tag, Source source, long pos, int len, int size, Object value) {
 		super(tag, source, pos, len, size > 0 ? new KonohaTree[size] : null, value);
 	}
 
@@ -37,7 +37,7 @@ public class KonohaTree extends AbstractTree<KonohaTree> {
 		return "#" + name;
 	}
 
-	public final static String keyTag(SymbolId t) {
+	public final static String keyTag(Symbol t) {
 		return keyTag(t.getSymbol());
 	}
 

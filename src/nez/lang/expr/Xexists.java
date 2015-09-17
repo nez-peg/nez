@@ -1,7 +1,7 @@
 package nez.lang.expr;
 
 import nez.ast.SourcePosition;
-import nez.ast.SymbolId;
+import nez.ast.Symbol;
 import nez.lang.Contextual;
 import nez.lang.Expression;
 import nez.lang.GrammarTransducer;
@@ -12,10 +12,10 @@ import nez.parser.AbstractGenerator;
 import nez.parser.Instruction;
 
 public class Xexists extends Term implements Contextual {
-	public final SymbolId tableName;
+	public final Symbol tableName;
 	String symbol;
 
-	Xexists(SourcePosition s, SymbolId tableName, String symbol) {
+	Xexists(SourcePosition s, Symbol tableName, String symbol) {
 		super(s);
 		this.tableName = tableName;
 		this.symbol = symbol;
@@ -41,7 +41,7 @@ public class Xexists extends Term implements Contextual {
 		return s == s2;
 	}
 
-	public final SymbolId getTable() {
+	public final Symbol getTable() {
 		return tableName;
 	}
 

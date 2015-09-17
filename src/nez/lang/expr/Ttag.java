@@ -1,7 +1,7 @@
 package nez.lang.expr;
 
 import nez.ast.SourcePosition;
-import nez.ast.SymbolId;
+import nez.ast.Symbol;
 import nez.lang.Expression;
 import nez.lang.GrammarTransducer;
 import nez.lang.PossibleAcceptance;
@@ -11,15 +11,15 @@ import nez.parser.AbstractGenerator;
 import nez.parser.Instruction;
 
 public class Ttag extends Term {
-	public SymbolId tag;
+	public Symbol tag;
 
-	Ttag(SourcePosition s, SymbolId tag) {
+	Ttag(SourcePosition s, Symbol tag) {
 		super(s);
 		this.tag = tag;
 	}
 
 	Ttag(SourcePosition s, String name) {
-		this(s, SymbolId.tag(name));
+		this(s, Symbol.tag(name));
 	}
 
 	public final String getTagName() {

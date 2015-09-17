@@ -2,7 +2,7 @@ package nez.konoha;
 
 import java.util.HashMap;
 
-import nez.ast.SymbolId;
+import nez.ast.Symbol;
 
 public abstract class KonohaType {
 	String name;
@@ -99,7 +99,7 @@ class KonohaStructType extends KonohaType {
 }
 
 class KonohaArrayType extends KonohaType {
-	public final static SymbolId ArrayTag = SymbolId.tag("Tarray");
+	public final static Symbol ArrayTag = Symbol.tag("Tarray");
 
 	public final static KonohaType newArrayType(KonohaType t) {
 		if (t == null)

@@ -1,6 +1,6 @@
 package nez.debugger;
 
-import nez.ast.SymbolId;
+import nez.ast.Symbol;
 import nez.lang.Expression;
 import nez.lang.Production;
 import nez.lang.expr.Cbyte;
@@ -511,7 +511,7 @@ class Imark extends DebugVMInstruction {
 }
 
 class Itag extends DebugVMInstruction {
-	SymbolId tag;
+	Symbol tag;
 
 	public Itag(Ttag e) {
 		super(e);
@@ -608,7 +608,7 @@ class Iabort extends DebugVMInstruction {
 }
 
 class Idef extends DebugVMInstruction {
-	SymbolId tableName;
+	Symbol tableName;
 
 	public Idef(Xdef e) {
 		super(e);
@@ -633,7 +633,7 @@ class Idef extends DebugVMInstruction {
 }
 
 class Iis extends JumpInstruction {
-	SymbolId tableName;
+	Symbol tableName;
 
 	public Iis(Xis e, BasicBlock jumpBB) {
 		super(e, jumpBB);
@@ -658,7 +658,7 @@ class Iis extends JumpInstruction {
 }
 
 class Iisa extends JumpInstruction {
-	SymbolId tableName;
+	Symbol tableName;
 
 	public Iisa(Xis e, BasicBlock jumpBB) {
 		super(e, jumpBB);
@@ -683,7 +683,7 @@ class Iisa extends JumpInstruction {
 }
 
 class Iexists extends JumpInstruction {
-	SymbolId tableName;
+	Symbol tableName;
 
 	public Iexists(Xexists e, BasicBlock jumpBB) {
 		super(e, jumpBB);
@@ -730,7 +730,7 @@ class Ibeginscope extends DebugVMInstruction {
 }
 
 class Ibeginlocalscope extends DebugVMInstruction {
-	SymbolId tableName;
+	Symbol tableName;
 
 	public Ibeginlocalscope(Xlocal e) {
 		super(e);

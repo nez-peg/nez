@@ -11,7 +11,7 @@ public class AbstractTreeVisitor {
 	private HashMap<String, Method> methodMap = new HashMap<String, Method>();
 
 	public final Object visit(String method, AbstractTree<?> node) {
-		SymbolId tag = node.getTag();
+		Symbol tag = node.getTag();
 		Method m = findMethod(method, tag);
 		if (m != null) {
 			try {
@@ -27,7 +27,7 @@ public class AbstractTreeVisitor {
 		return visitUndefinedNode(node);
 	}
 
-	protected final Method findMethod(String method, SymbolId tag) {
+	protected final Method findMethod(String method, Symbol tag) {
 		String key = method + tag.getSymbol();
 		Method m = this.methodMap.get(key);
 		if (m == null) {
@@ -45,7 +45,7 @@ public class AbstractTreeVisitor {
 		return m;
 	}
 
-	protected Method getClassMethod(String method, SymbolId tag) throws NoSuchMethodException, SecurityException {
+	protected Method getClassMethod(String method, Symbol tag) throws NoSuchMethodException, SecurityException {
 		String name = method + tag.getSymbol();
 		return this.getClass().getMethod(name, AbstractTree.class);
 	}
@@ -56,7 +56,7 @@ public class AbstractTreeVisitor {
 	}
 
 	public final Object visit(String method, Class<?> c1, AbstractTree<?> node, Object p1) {
-		SymbolId tag = node.getTag();
+		Symbol tag = node.getTag();
 		Method m = findMethod(method, tag, c1);
 		if (m != null) {
 			try {
@@ -72,7 +72,7 @@ public class AbstractTreeVisitor {
 		return visitUndefinedNode(node, p1);
 	}
 
-	protected final Method findMethod(String method, SymbolId tag, Class<?> c1) {
+	protected final Method findMethod(String method, Symbol tag, Class<?> c1) {
 		String key = method + tag.getSymbol() + c1.getName();
 		Method m = this.methodMap.get(key);
 		if (m == null) {
@@ -90,7 +90,7 @@ public class AbstractTreeVisitor {
 		return m;
 	}
 
-	protected Method getClassMethod(String method, SymbolId tag, Class<?> c1) throws NoSuchMethodException, SecurityException {
+	protected Method getClassMethod(String method, Symbol tag, Class<?> c1) throws NoSuchMethodException, SecurityException {
 		String name = method + tag.getSymbol();
 		return this.getClass().getMethod(name, AbstractTree.class, c1);
 	}

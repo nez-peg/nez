@@ -8,7 +8,7 @@ import java.util.Stack;
 
 import javax.lang.model.type.NullType;
 
-import nez.ast.SymbolId;
+import nez.ast.Symbol;
 import nez.ast.jcode.ClassBuilder.MethodBuilder;
 import nez.ast.jcode.ClassBuilder.VarEntry;
 
@@ -283,7 +283,7 @@ public class JCodeGenerator {
 		JCodeTree argsNode = node.get(1);
 		JCodeTree top = fieldNode.get(0);
 		VarEntry var = null;
-		if (SymbolId.tag("Name").equals(top.getTag())) {
+		if (Symbol.tag("Name").equals(top.getTag())) {
 			var = this.scope.getLocalVar(top.toText());
 			if (var != null) {
 				this.mBuilder.loadFromVar(var);
@@ -320,7 +320,7 @@ public class JCodeGenerator {
 	public void visitField(JCodeTree node) {
 		JCodeTree top = node.get(0);
 		VarEntry var = null;
-		if (SymbolId.tag("Name").equals(top.getTag())) {
+		if (Symbol.tag("Name").equals(top.getTag())) {
 			var = this.scope.getLocalVar(top.toText());
 			if (var != null) {
 				this.mBuilder.loadFromVar(var);
@@ -333,7 +333,7 @@ public class JCodeGenerator {
 		}
 		for (int i = 1; i < node.size(); i++) {
 			JCodeTree member = node.get(i);
-			if (SymbolId.tag("Name").equals(member.getTag())) {
+			if (Symbol.tag("Name").equals(member.getTag())) {
 				this.mBuilder.getField(Type.getType(var.getVarClass()), member.toText(), Type.getType(Object.class));
 				visit(member);
 			}

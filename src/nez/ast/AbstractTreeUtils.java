@@ -39,7 +39,7 @@ public class AbstractTreeUtils {
 		md.update((byte) '#');
 		md.update(StringUtils.toUtf8(node.getTag().getSymbol()));
 		for (int i = 0; i < node.size(); i++) {
-			SymbolId label = node.getLabel(i);
+			Symbol label = node.getLabel(i);
 			if (label != null) {
 				md.update((byte) '$');
 				md.update(StringUtils.toUtf8(label.getSymbol()));

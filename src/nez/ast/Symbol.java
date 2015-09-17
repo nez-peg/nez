@@ -4,14 +4,14 @@ import java.util.HashMap;
 
 import nez.util.UList;
 
-public class SymbolId {
-	private static HashMap<String, SymbolId> tagIdMap = new HashMap<String, SymbolId>();
-	private static UList<SymbolId> tagNameList = new UList<SymbolId>(new SymbolId[64]);
+public class Symbol {
+	private static HashMap<String, Symbol> tagIdMap = new HashMap<String, Symbol>();
+	private static UList<Symbol> tagNameList = new UList<Symbol>(new Symbol[64]);
 
-	public final static SymbolId tag(String tagName) {
-		SymbolId tag = tagIdMap.get(tagName);
+	public final static Symbol tag(String tagName) {
+		Symbol tag = tagIdMap.get(tagName);
 		if (tag == null) {
-			tag = new SymbolId(tagIdMap.size(), tagName);
+			tag = new Symbol(tagIdMap.size(), tagName);
 			tagIdMap.put(tagName, tag);
 			tagNameList.add(tag);
 		}
@@ -22,17 +22,17 @@ public class SymbolId {
 		return tag(tagName).id;
 	}
 
-	public final static SymbolId tag(int tagId) {
+	public final static Symbol tag(int tagId) {
 		return tagNameList.ArrayValues[tagId];
 	}
 
-	public final static SymbolId NullTag = tag("");
-	public final static SymbolId MetaTag = tag("keyvalue");
+	public final static Symbol NullTag = tag("");
+	public final static Symbol MetaTag = tag("keyvalue");
 
 	final int id;
 	final String symbol;
 
-	private SymbolId(int id, String symbol) {
+	private Symbol(int id, String symbol) {
 		this.id = id;
 		this.symbol = symbol;
 	}

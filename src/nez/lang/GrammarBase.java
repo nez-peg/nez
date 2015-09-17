@@ -4,7 +4,7 @@ import java.util.AbstractList;
 
 import nez.Grammar;
 import nez.ast.SourcePosition;
-import nez.ast.SymbolId;
+import nez.ast.Symbol;
 import nez.lang.expr.ExpressionCommons;
 import nez.lang.expr.NonTerminal;
 import nez.util.UList;
@@ -110,7 +110,7 @@ public abstract class GrammarBase extends AbstractList<Production> {
 		return ExpressionCommons.newTlink(getSourcePosition(), null, newSequence(seq));
 	}
 
-	public final Expression newLink(SymbolId label, Expression... seq) {
+	public final Expression newLink(Symbol label, Expression... seq) {
 		return ExpressionCommons.newTlink(getSourcePosition(), label, newSequence(seq));
 	}
 
@@ -124,7 +124,7 @@ public abstract class GrammarBase extends AbstractList<Production> {
 	// }
 
 	public final Expression newTagging(String tag) {
-		return ExpressionCommons.newTtag(getSourcePosition(), SymbolId.tag(tag));
+		return ExpressionCommons.newTtag(getSourcePosition(), Symbol.tag(tag));
 	}
 
 	public final Expression newReplace(String msg) {
@@ -149,23 +149,23 @@ public abstract class GrammarBase extends AbstractList<Production> {
 	}
 
 	public final Expression newDefSymbol(String table, Expression... seq) {
-		return ExpressionCommons.newXdef(getSourcePosition(), (Grammar) this, SymbolId.tag(table), newSequence(seq));
+		return ExpressionCommons.newXdef(getSourcePosition(), (Grammar) this, Symbol.tag(table), newSequence(seq));
 	}
 
 	public final Expression newIsSymbol(String table) {
-		return ExpressionCommons.newXis(getSourcePosition(), (Grammar) this, SymbolId.tag(table));
+		return ExpressionCommons.newXis(getSourcePosition(), (Grammar) this, Symbol.tag(table));
 	}
 
 	public final Expression newIsaSymbol(String table) {
-		return ExpressionCommons.newXisa(getSourcePosition(), (Grammar) this, SymbolId.tag(table));
+		return ExpressionCommons.newXisa(getSourcePosition(), (Grammar) this, Symbol.tag(table));
 	}
 
 	public final Expression newExists(String table, String symbol) {
-		return ExpressionCommons.newXexists(getSourcePosition(), SymbolId.tag(table), symbol);
+		return ExpressionCommons.newXexists(getSourcePosition(), Symbol.tag(table), symbol);
 	}
 
 	public final Expression newLocal(String table, Expression... seq) {
-		return ExpressionCommons.newXlocal(getSourcePosition(), SymbolId.tag(table), newSequence(seq));
+		return ExpressionCommons.newXlocal(getSourcePosition(), Symbol.tag(table), newSequence(seq));
 	}
 
 	public final Expression newScan(int number, Expression scan, Expression repeat) {

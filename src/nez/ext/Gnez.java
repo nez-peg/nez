@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import nez.Parser;
 import nez.Strategy;
 import nez.ast.AbstractTree;
-import nez.ast.SymbolId;
+import nez.ast.Symbol;
 import nez.lang.Example;
 import nez.lang.Expression;
 import nez.lang.Formatter;
@@ -49,14 +49,14 @@ public class Gnez extends GrammarFileLoader {
 	}
 
 	private boolean binary = false;
-	public final static SymbolId _String = SymbolId.tag("String");
-	public final static SymbolId _Integer = SymbolId.tag("Integer");
-	public final static SymbolId _List = SymbolId.tag("List");
-	public final static SymbolId _Name = SymbolId.tag("Name");
-	public final static SymbolId _Format = SymbolId.tag("Format");
-	public final static SymbolId _Class = SymbolId.tag("Class");
+	public final static Symbol _String = Symbol.tag("String");
+	public final static Symbol _Integer = Symbol.tag("Integer");
+	public final static Symbol _List = Symbol.tag("List");
+	public final static Symbol _Name = Symbol.tag("Name");
+	public final static Symbol _Format = Symbol.tag("Format");
+	public final static Symbol _Class = Symbol.tag("Class");
 
-	public final static SymbolId _anno = SymbolId.tag("anno");
+	public final static Symbol _anno = Symbol.tag("anno");
 
 	public Production parseProduction(AbstractTree<?> node) {
 		AbstractTree<?> nameNode = node.get(_name);
@@ -198,18 +198,18 @@ public class Gnez extends GrammarFileLoader {
 		return ExpressionCommons.newNewCapture(node, false, null, p);
 	}
 
-	public final static SymbolId _name = SymbolId.tag("name");
-	public final static SymbolId _expr = SymbolId.tag("expr");
-	public final static SymbolId _symbol = SymbolId.tag("symbol");
-	public final static SymbolId _hash = SymbolId.tag("hash"); // example
-	public final static SymbolId _name2 = SymbolId.tag("name2"); // example
-	public final static SymbolId _text = SymbolId.tag("text"); // example
+	public final static Symbol _name = Symbol.tag("name");
+	public final static Symbol _expr = Symbol.tag("expr");
+	public final static Symbol _symbol = Symbol.tag("symbol");
+	public final static Symbol _hash = Symbol.tag("hash"); // example
+	public final static Symbol _name2 = Symbol.tag("name2"); // example
+	public final static Symbol _text = Symbol.tag("text"); // example
 
-	private SymbolId parseLabelNode(AbstractTree<?> node) {
-		SymbolId label = null;
+	private Symbol parseLabelNode(AbstractTree<?> node) {
+		Symbol label = null;
 		AbstractTree<?> labelNode = node.get(_name, null);
 		if (labelNode != null) {
-			label = SymbolId.tag(labelNode.toText());
+			label = Symbol.tag(labelNode.toText());
 		}
 		return label;
 	}
@@ -225,7 +225,7 @@ public class Gnez extends GrammarFileLoader {
 	}
 
 	public Expression newTagging(AbstractTree<?> node) {
-		return ExpressionCommons.newTtag(node, SymbolId.tag(node.toText()));
+		return ExpressionCommons.newTtag(node, Symbol.tag(node.toText()));
 	}
 
 	public Expression newReplace(AbstractTree<?> node) {
@@ -253,23 +253,23 @@ public class Gnez extends GrammarFileLoader {
 	}
 
 	public Expression newDef(AbstractTree<?> node) {
-		return ExpressionCommons.newXdef(node, this.getGrammarFile(), SymbolId.tag(node.getText(_name, "")), newExpression(node.get(_expr)));
+		return ExpressionCommons.newXdef(node, this.getGrammarFile(), Symbol.tag(node.getText(_name, "")), newExpression(node.get(_expr)));
 	}
 
 	public Expression newIs(AbstractTree<?> node) {
-		return ExpressionCommons.newXis(node, this.getGrammarFile(), SymbolId.tag(node.getText(_name, "")));
+		return ExpressionCommons.newXis(node, this.getGrammarFile(), Symbol.tag(node.getText(_name, "")));
 	}
 
 	public Expression newIsa(AbstractTree<?> node) {
-		return ExpressionCommons.newXisa(node, this.getGrammarFile(), SymbolId.tag(node.getText(_name, "")));
+		return ExpressionCommons.newXisa(node, this.getGrammarFile(), Symbol.tag(node.getText(_name, "")));
 	}
 
 	public Expression newExists(AbstractTree<?> node) {
-		return ExpressionCommons.newXexists(node, SymbolId.tag(node.getText(_name, "")), node.getText(_symbol, null));
+		return ExpressionCommons.newXexists(node, Symbol.tag(node.getText(_name, "")), node.getText(_symbol, null));
 	}
 
 	public Expression newLocal(AbstractTree<?> node) {
-		return ExpressionCommons.newXlocal(node, SymbolId.tag(node.getText(_name, "")), newExpression(node.get(_expr)));
+		return ExpressionCommons.newXlocal(node, Symbol.tag(node.getText(_name, "")), newExpression(node.get(_expr)));
 	}
 
 	public Expression newDefIndent(AbstractTree<?> node) {

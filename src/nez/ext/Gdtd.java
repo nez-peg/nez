@@ -10,7 +10,7 @@ import nez.Grammar;
 import nez.Parser;
 import nez.Strategy;
 import nez.ast.AbstractTree;
-import nez.ast.SymbolId;
+import nez.ast.Symbol;
 import nez.lang.Expression;
 import nez.lang.GrammarFile;
 import nez.lang.GrammarFileLoader;
@@ -303,7 +303,7 @@ public class Gdtd extends GrammarFileLoader {
 	public Expression _AttDef(String type) {
 		GrammarFile gfile = getGrammarFile();
 		String attName = attDefMap.get(attDefCount);
-		Expression[] l = { ExpressionCommons.newXdef(null, gfile, SymbolId.tag("T" + currentElementID), gfile.newString(attName)), gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), gfile.newByteChar('='),
+		Expression[] l = { ExpressionCommons.newXdef(null, gfile, Symbol.tag("T" + currentElementID), gfile.newString(attName)), gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), gfile.newByteChar('='),
 				gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), ExpressionCommons.newNonTerminal(null, gfile, type), gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), };
 		return gfile.newSequence(l);
 	}
@@ -311,7 +311,7 @@ public class Gdtd extends GrammarFileLoader {
 	public Expression _AttDefQ(String type) {
 		GrammarFile gfile = getGrammarFile();
 		String attName = attDefMap.get(attDefCount);
-		Expression[] l = { ExpressionCommons.newXdef(null, gfile, SymbolId.tag("T" + currentElementID), gfile.newString(attName)), gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), gfile.newByteChar('='),
+		Expression[] l = { ExpressionCommons.newXdef(null, gfile, Symbol.tag("T" + currentElementID), gfile.newString(attName)), gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), gfile.newByteChar('='),
 				gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), gfile.newString("\""), ExpressionCommons.newNonTerminal(null, gfile, type), gfile.newString("\""),
 				gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), };
 		return gfile.newSequence(l);
@@ -330,7 +330,7 @@ public class Gdtd extends GrammarFileLoader {
 
 	public Expression genExAtt(AbstractTree<?> node, int[] requiredList) {
 		GrammarFile gfile = getGrammarFile();
-		SymbolId tableName = SymbolId.tag("T" + currentElementID);
+		Symbol tableName = Symbol.tag("T" + currentElementID);
 		String attDefList = "AttDefList" + currentElementID;
 		gfile.addProduction(node, attDefList, genExAttDefList(node, requiredList, tableName));
 		UList<Expression> seq = new UList<Expression>(new Expression[requiredList.length + 1]);
@@ -341,7 +341,7 @@ public class Gdtd extends GrammarFileLoader {
 		return ExpressionCommons.newXlocal(node, tableName, ExpressionCommons.newPsequence(node, seq));
 	}
 
-	public Expression genExAttDefList(AbstractTree<?> node, int[] requiredList, SymbolId tableName) {
+	public Expression genExAttDefList(AbstractTree<?> node, int[] requiredList, Symbol tableName) {
 		GrammarFile gfile = getGrammarFile();
 		UList<Expression> l = new UList<Expression>(new Expression[requiredList.length + 1]);
 		for (int index : requiredList) {

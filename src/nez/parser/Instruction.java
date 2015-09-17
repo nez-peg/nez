@@ -2,7 +2,7 @@ package nez.parser;
 
 import java.util.Arrays;
 
-import nez.ast.SymbolId;
+import nez.ast.Symbol;
 import nez.lang.Expression;
 import nez.lang.Production;
 import nez.lang.expr.Cbyte;
@@ -874,7 +874,7 @@ class INew extends Instruction {
 
 class ITLeftFold extends Instruction {
 	int shift;
-	SymbolId label;
+	Symbol label;
 
 	ITLeftFold(Tlfold e, Instruction next) {
 		super(InstructionSet.TLeftFold, e, next);
@@ -944,7 +944,7 @@ class IReplace extends Instruction {
 }
 
 class ITag extends Instruction {
-	public final SymbolId tag;
+	public final Symbol tag;
 
 	ITag(Ttag e, Instruction next) {
 		super(InstructionSet.TTag, e, next);
@@ -988,7 +988,7 @@ class ITPush extends Instruction {
 }
 
 class ITPop extends Instruction {
-	public final SymbolId label;
+	public final Symbol label;
 
 	ITPop(Tlink e, Instruction next) {
 		super(InstructionSet.TPop, e, next);
@@ -1033,7 +1033,7 @@ class ITStart extends Instruction {
 }
 
 class ICommit extends Instruction {
-	public final SymbolId label;
+	public final Symbol label;
 
 	ICommit(Tlink e, Instruction next) {
 		super(InstructionSet.TCommit, e, next);
@@ -1055,7 +1055,7 @@ class ICommit extends Instruction {
 }
 
 class ITLookup extends AbstractMemoizationInstruction {
-	public final SymbolId label;
+	public final Symbol label;
 
 	ITLookup(Tlink e, MemoPoint m, boolean state, Instruction next, Instruction skip) {
 		super(InstructionSet.TLookup, e, m, state, next, skip);
@@ -1105,9 +1105,9 @@ class ITMemo extends AbstractMemoizationInstruction {
 /* Symbol */
 
 abstract class AbstractTableInstruction extends Instruction {
-	final SymbolId tableName;
+	final Symbol tableName;
 
-	AbstractTableInstruction(byte opcode, Expression e, SymbolId tableName, Instruction next) {
+	AbstractTableInstruction(byte opcode, Expression e, Symbol tableName, Instruction next) {
 		super(opcode, e, next);
 		this.tableName = tableName;
 	}
@@ -1277,7 +1277,7 @@ class IIsaSymbol extends AbstractTableInstruction {
 }
 
 class IDefIndent extends Instruction {
-	public final static SymbolId _Indent = SymbolId.tag("Indent");
+	public final static Symbol _Indent = Symbol.tag("Indent");
 
 	IDefIndent(Xdefindent e, Instruction next) {
 		super(InstructionSet.Nop, e, next);
@@ -1323,7 +1323,7 @@ class IDefIndent extends Instruction {
 }
 
 class IIsIndent extends Instruction {
-	public final static SymbolId _Indent = SymbolId.tag("Indent");
+	public final static Symbol _Indent = Symbol.tag("Indent");
 
 	IIsIndent(Xindent e, Instruction next) {
 		super(InstructionSet.Nop, e, next);

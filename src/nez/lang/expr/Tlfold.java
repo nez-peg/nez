@@ -1,7 +1,7 @@
 package nez.lang.expr;
 
 import nez.ast.SourcePosition;
-import nez.ast.SymbolId;
+import nez.ast.Symbol;
 import nez.lang.Expression;
 import nez.lang.GrammarTransducer;
 import nez.lang.PossibleAcceptance;
@@ -11,17 +11,17 @@ import nez.parser.AbstractGenerator;
 import nez.parser.Instruction;
 
 public class Tlfold extends Term {
-	SymbolId label;
+	Symbol label;
 	public Expression outer = null;
 	public int shift = 0;
 
-	Tlfold(SourcePosition s, SymbolId label, int shift) {
+	Tlfold(SourcePosition s, Symbol label, int shift) {
 		super(s);
 		this.label = label;
 		this.shift = shift;
 	}
 
-	public SymbolId getLabel() {
+	public Symbol getLabel() {
 		return this.label;
 	}
 

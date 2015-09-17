@@ -6,7 +6,7 @@ import java.util.Stack;
 
 import nez.ast.CommonTreeTransducer;
 import nez.ast.Source;
-import nez.ast.SymbolId;
+import nez.ast.Symbol;
 import nez.ast.TreeTransducer;
 import nez.lang.Expression;
 import nez.lang.expr.Cset;
@@ -322,7 +322,7 @@ public abstract class Context implements Source {
 	public final Object logCommit(ASTLog start) {
 		assert(start.type == ASTLog.LazyNew);
 		long spos = start.pos, epos = spos;
-		SymbolId tag = null;
+		Symbol tag = null;
 		Object value = null;
 		int objectSize = 0;
 		Object left = null;
@@ -341,7 +341,7 @@ public abstract class Context implements Source {
 				epos = cur.pos;
 				break;
 			case ASTLog.LazyTag:
-				tag = (SymbolId) cur.value;
+				tag = (Symbol) cur.value;
 				break;
 			case ASTLog.LazyReplace:
 				value = cur.value;
@@ -360,7 +360,7 @@ public abstract class Context implements Source {
 		return commitNode(start, null, spos, epos, objectSize, left, tag, value);
 	}
 
-	private Object commitNode(ASTLog start, ASTLog end, long spos, long epos, int objectSize, Object left, SymbolId tag, Object value) {
+	private Object commitNode(ASTLog start, ASTLog end, long spos, long epos, int objectSize, Object left, Symbol tag, Object value) {
 		Object newnode = this.treeTransducer.newNode(tag, this, spos, epos, objectSize, value);
 		if (left != null) {
 			this.treeTransducer.link(newnode, 0, tag, left); // FIXME

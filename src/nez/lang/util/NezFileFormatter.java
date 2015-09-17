@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 import nez.ast.AbstractTree;
 import nez.ast.AbstractTreeVisitor;
-import nez.ast.SymbolId;
+import nez.ast.Symbol;
 import nez.util.FileBuilder;
 
 public class NezFileFormatter extends AbstractTreeVisitor {
@@ -18,9 +18,9 @@ public class NezFileFormatter extends AbstractTreeVisitor {
 		visit("p", node);
 	}
 
-	public final static SymbolId _name = SymbolId.tag("name");
-	public final static SymbolId _expr = SymbolId.tag("expr");
-	public final static SymbolId _symbol = SymbolId.tag("symbol");
+	public final static Symbol _name = Symbol.tag("name");
+	public final static Symbol _expr = Symbol.tag("expr");
+	public final static Symbol _symbol = Symbol.tag("symbol");
 
 	public boolean pSource(AbstractTree<?> node) {
 		ArrayList<AbstractTree<?>> l = new ArrayList<>(node.size() * 2);
@@ -62,13 +62,13 @@ public class NezFileFormatter extends AbstractTreeVisitor {
 		return start + node.getLength();
 	}
 
-	public final static SymbolId _Production = SymbolId.tag("Production");
-	public final static SymbolId _NonTerminal = SymbolId.tag("NonTerminal");
+	public final static Symbol _Production = Symbol.tag("Production");
+	public final static Symbol _NonTerminal = Symbol.tag("NonTerminal");
 
-	public final static SymbolId _Choice = SymbolId.tag("Choice");
-	public final static SymbolId _Sequence = SymbolId.tag("Sequence");
-	public final static SymbolId _List = SymbolId.tag("List");
-	public final static SymbolId _Class = SymbolId.tag("Class");
+	public final static Symbol _Choice = Symbol.tag("Choice");
+	public final static Symbol _Sequence = Symbol.tag("Sequence");
+	public final static Symbol _List = Symbol.tag("List");
+	public final static Symbol _Class = Symbol.tag("Class");
 
 	//
 	// public final static Tag _anno = Tag.tag("anno");
@@ -234,17 +234,17 @@ public class NezFileFormatter extends AbstractTreeVisitor {
 		return true;
 	}
 
-	private SymbolId parseLabelNode(AbstractTree<?> node) {
-		SymbolId label = null;
+	private Symbol parseLabelNode(AbstractTree<?> node) {
+		Symbol label = null;
 		AbstractTree<?> labelNode = node.get(_name, null);
 		if (labelNode != null) {
-			label = SymbolId.tag(labelNode.toText());
+			label = Symbol.tag(labelNode.toText());
 		}
 		return label;
 	}
 
 	public boolean pLeftFold(AbstractTree<?> node) {
-		SymbolId tag = parseLabelNode(node);
+		Symbol tag = parseLabelNode(node);
 		AbstractTree<?> exprNode = node.get(_expr, null);
 		String label = tag == null ? "$" : "$" + tag.toString();
 		if (exprNode != null) {
@@ -258,7 +258,7 @@ public class NezFileFormatter extends AbstractTreeVisitor {
 	}
 
 	public boolean pLink(AbstractTree<?> node) {
-		SymbolId tag = parseLabelNode(node);
+		Symbol tag = parseLabelNode(node);
 		f.write("$");
 		if (tag != null) {
 			f.write(tag.toString());
@@ -339,9 +339,9 @@ public class NezFileFormatter extends AbstractTreeVisitor {
 		return false;
 	}
 
-	public final static SymbolId _hash = SymbolId.tag("hash"); // example
-	public final static SymbolId _name2 = SymbolId.tag("name2"); // example
-	public final static SymbolId _text = SymbolId.tag("text"); // example
+	public final static Symbol _hash = Symbol.tag("hash"); // example
+	public final static Symbol _name2 = Symbol.tag("name2"); // example
+	public final static Symbol _text = Symbol.tag("text"); // example
 
 	public boolean pExample(AbstractTree<?> node) {
 		AbstractTree<?> nameNode = node.get(_name);

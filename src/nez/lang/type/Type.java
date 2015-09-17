@@ -2,7 +2,7 @@ package nez.lang.type;
 
 import java.util.ArrayList;
 
-import nez.ast.SymbolId;
+import nez.ast.Symbol;
 import nez.lang.Expression;
 import nez.lang.Production;
 import nez.lang.Typestate;
@@ -24,7 +24,7 @@ public abstract class Type {
 
 	abstract void ref(Production p);
 
-	abstract void tag(SymbolId t);
+	abstract void tag(Symbol t);
 
 	abstract void link(Tlink p, Type t);
 
@@ -177,7 +177,7 @@ class LinkLog {
 }
 
 class AtomType extends Type {
-	SymbolId tag = null;
+	Symbol tag = null;
 	Production p = null;
 	LinkLog link = null;
 	int size = 0;
@@ -250,7 +250,7 @@ class AtomType extends Type {
 	}
 
 	@Override
-	void tag(SymbolId tag) {
+	void tag(Symbol tag) {
 		if (this.tag == null) {
 			this.tag = tag;
 		}
@@ -372,7 +372,7 @@ class UnionType extends Type {
 	}
 
 	@Override
-	void tag(SymbolId tag) {
+	void tag(Symbol tag) {
 		for (AtomType t : this.union) {
 			t.tag(tag);
 		}

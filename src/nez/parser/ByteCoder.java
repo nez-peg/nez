@@ -7,7 +7,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import nez.ast.SymbolId;
+import nez.ast.Symbol;
 import nez.main.Verbose;
 import nez.util.StringUtils;
 
@@ -35,9 +35,9 @@ public class ByteCoder {
 
 	class TagEntry {
 		int id;
-		SymbolId data;
+		Symbol data;
 
-		TagEntry(int id, SymbolId data) {
+		TagEntry(int id, Symbol data) {
 			this.id = id;
 			this.data = data;
 		}
@@ -151,7 +151,7 @@ public class ByteCoder {
 		}
 	}
 
-	private void encodeData(SymbolId tag) {
+	private void encodeData(Symbol tag) {
 		write_utf8(StringUtils.toUtf8(tag.getSymbol()));
 	}
 
@@ -217,7 +217,7 @@ public class ByteCoder {
 		write_u16(entry.id);
 	}
 
-	public void encodeTag(SymbolId tag) {
+	public void encodeTag(Symbol tag) {
 		String key = tag.getSymbol();
 		TagEntry entry = TagPoolMap.get(key);
 		if (entry == null) {
@@ -228,15 +228,15 @@ public class ByteCoder {
 		write_u16(entry.id);
 	}
 
-	public void encodeLabel(SymbolId label) {
+	public void encodeLabel(Symbol label) {
 		if (label == null) {
-			this.encodeTag(SymbolId.NullTag);
+			this.encodeTag(Symbol.NullTag);
 		} else {
 			this.encodeTag(label);
 		}
 	}
 
-	public void encodeSymbolTable(SymbolId tableName) {
+	public void encodeSymbolTable(Symbol tableName) {
 		String key = tableName.getSymbol();
 		TagEntry entry = TablePoolMap.get(key);
 		if (entry == null) {

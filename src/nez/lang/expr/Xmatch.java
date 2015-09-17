@@ -1,7 +1,7 @@
 package nez.lang.expr;
 
 import nez.ast.SourcePosition;
-import nez.ast.SymbolId;
+import nez.ast.Symbol;
 import nez.lang.Contextual;
 import nez.lang.Expression;
 import nez.lang.GrammarTransducer;
@@ -12,9 +12,9 @@ import nez.parser.AbstractGenerator;
 import nez.parser.Instruction;
 
 public class Xmatch extends Term implements Contextual {
-	public final SymbolId tableName;
+	public final Symbol tableName;
 
-	Xmatch(SourcePosition s, SymbolId tableName) {
+	Xmatch(SourcePosition s, Symbol tableName) {
 		super(s);
 		this.tableName = tableName;
 	}
@@ -28,7 +28,7 @@ public class Xmatch extends Term implements Contextual {
 		return false;
 	}
 
-	public final SymbolId getTable() {
+	public final Symbol getTable() {
 		return tableName;
 	}
 

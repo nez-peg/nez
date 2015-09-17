@@ -2,7 +2,7 @@ package nez.lang.expr;
 
 import nez.Grammar;
 import nez.ast.SourcePosition;
-import nez.ast.SymbolId;
+import nez.ast.Symbol;
 import nez.lang.Contextual;
 import nez.lang.Expression;
 import nez.lang.GrammarTransducer;
@@ -13,11 +13,11 @@ import nez.parser.AbstractGenerator;
 import nez.parser.Instruction;
 
 public class Xis extends Term implements Contextual {
-	public final SymbolId tableName;
+	public final Symbol tableName;
 	final Grammar g;
 	public final boolean is;
 
-	Xis(SourcePosition s, Grammar g, SymbolId tableName, boolean is) {
+	Xis(SourcePosition s, Grammar g, Symbol tableName, boolean is) {
 		super(s);
 		this.g = g;
 		this.tableName = tableName;
@@ -37,7 +37,7 @@ public class Xis extends Term implements Contextual {
 		return g;
 	}
 
-	public final SymbolId getTable() {
+	public final Symbol getTable() {
 		return tableName;
 	}
 

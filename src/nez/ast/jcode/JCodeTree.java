@@ -2,12 +2,12 @@ package nez.ast.jcode;
 
 import nez.ast.AbstractTree;
 import nez.ast.Source;
-import nez.ast.SymbolId;
+import nez.ast.Symbol;
 
 public abstract class JCodeTree extends AbstractTree<JCodeTree> {
 	boolean requiredPop;
 
-	protected JCodeTree(SymbolId tag, Source source, long pos, int len, JCodeTree[] subTree, Object value) {
+	protected JCodeTree(Symbol tag, Source source, long pos, int len, JCodeTree[] subTree, Object value) {
 		super(tag, source, pos, len, subTree, value);
 	}
 
@@ -22,7 +22,7 @@ public abstract class JCodeTree extends AbstractTree<JCodeTree> {
 class JCodeTreeImpl extends JCodeTree {
 	Class<?> typed = Object.class;
 
-	public JCodeTreeImpl(SymbolId tag, Source source, long pos, int len, int size, Object value) {
+	public JCodeTreeImpl(Symbol tag, Source source, long pos, int len, int size, Object value) {
 		super(tag, source, pos, len, size > 0 ? new JCodeTreeImpl[size] : null, value);
 		this.requiredPop = false;
 	}

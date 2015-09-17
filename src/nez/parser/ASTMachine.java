@@ -1,7 +1,7 @@
 package nez.parser;
 
 import nez.ast.Source;
-import nez.ast.SymbolId;
+import nez.ast.Symbol;
 import nez.ast.TreeTransducer;
 import nez.main.Verbose;
 
@@ -34,7 +34,7 @@ class ASTMachine {
 		this.lastAppendedLog = this.firstLog;
 	}
 
-	private final void log(int type, long pos, SymbolId label, Object value) {
+	private final void log(int type, long pos, Symbol label, Object value) {
 		ASTLog l;
 		if (this.unusedDataLog == null) {
 			l = new ASTLog();
@@ -60,7 +60,7 @@ class ASTMachine {
 		log(ASTMachine.Capture, pos, null, null);
 	}
 
-	public final void logTag(SymbolId tag) {
+	public final void logTag(Symbol tag) {
 		log(ASTMachine.Tag, 0, null, tag);
 	}
 
@@ -68,7 +68,7 @@ class ASTMachine {
 		log(ASTMachine.Replace, 0, null, value);
 	}
 
-	public final void logLeftFold(long pos, SymbolId label) {
+	public final void logLeftFold(long pos, Symbol label) {
 		log(ASTMachine.LeftFold, pos, label, null);
 	}
 
@@ -76,7 +76,7 @@ class ASTMachine {
 		log(ASTMachine.Push, 0, null, null);
 	}
 
-	public final void logPop(SymbolId label) {
+	public final void logPop(Symbol label) {
 		log(ASTMachine.Pop, 0, label, null);
 	}
 
@@ -86,7 +86,7 @@ class ASTMachine {
 		return latestLinkedNode;
 	}
 
-	public final void logLink(SymbolId label, Object node) {
+	public final void logLink(Symbol label, Object node) {
 		log(ASTMachine.Link, 0, label, node);
 		latestLinkedNode = node;
 	}
@@ -109,7 +109,7 @@ class ASTMachine {
 		assert (lastAppendedLog.next == null);
 	}
 
-	public final void commitTransactionPoint(SymbolId label, Object point) {
+	public final void commitTransactionPoint(Symbol label, Object point) {
 		ASTLog save = (ASTLog) point;
 		Object node = createNode(save.next, null);
 		this.rollTransactionPoint(point);
@@ -130,7 +130,7 @@ class ASTMachine {
 			Verbose.debug("createNode.start: " + start + "     pushed:" + pushed);
 		}
 		long spos = cur.value, epos = spos;
-		SymbolId tag = null;
+		Symbol tag = null;
 		Object value = null;
 		int objectSize = 0;
 		for (cur = start; cur != null; cur = cur.next) {
@@ -147,7 +147,7 @@ class ASTMachine {
 				epos = cur.value;
 				break;
 			case ASTMachine.Tag:
-				tag = (SymbolId) cur.ref;
+				tag = (Symbol) cur.ref;
 				break;
 			case ASTMachine.Replace:
 				value = cur.ref;
@@ -183,7 +183,7 @@ class ASTMachine {
 		return constructLeft(start, null, spos, epos, objectSize, tag, value);
 	}
 
-	private Object constructLeft(ASTLog start, ASTLog end, long spos, long epos, int objectSize, SymbolId tag, Object value) {
+	private Object constructLeft(ASTLog start, ASTLog end, long spos, long epos, int objectSize, Symbol tag, Object value) {
 		Object newnode = this.treeTransducer.newNode(tag, source, spos, epos, objectSize, value);
 		int n = 0;
 		if (objectSize > 0) {
@@ -252,7 +252,7 @@ class ASTMachine {
 	class ASTLog {
 		int id;
 		int type;
-		SymbolId label;
+		Symbol label;
 		Object ref;
 		long value;
 
@@ -284,12 +284,12 @@ class ASTMachine {
 
 	class NoTreeTransducer extends TreeTransducer {
 		@Override
-		public Object newNode(SymbolId tag, Source s, long spos, long epos, int size, Object value) {
+		public Object newNode(Symbol tag, Source s, long spos, long epos, int size, Object value) {
 			return null;
 		}
 
 		@Override
-		public void link(Object node, int index, SymbolId label, Object child) {
+		public void link(Object node, int index, Symbol label, Object child) {
 		}
 
 		@Override

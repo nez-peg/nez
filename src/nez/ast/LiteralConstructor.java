@@ -139,7 +139,7 @@ public class LiteralConstructor extends AbstractTreeVisitor implements Construct
 	public Map<String, Object> newMap(AbstractTree<?> node) {
 		Map<String, Object> m = newMap();
 		for (int i = 0; i < node.size(); i++) {
-			SymbolId label = node.getLabel(i);
+			Symbol label = node.getLabel(i);
 			if (label != null) {
 				m.put(label.getSymbol(), newInstance(node.get(i)));
 			}

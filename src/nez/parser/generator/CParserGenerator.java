@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Stack;
 
 import nez.Strategy;
-import nez.ast.SymbolId;
+import nez.ast.Symbol;
 import nez.lang.Expression;
 import nez.lang.Production;
 import nez.lang.expr.Cany;
@@ -914,9 +914,9 @@ public class CParserGenerator extends ParserGenerator {
 		if (this.strategyASTConstruction) {
 			String po = "ctx->left";
 			String label = "EXIT_LINK" + this.fid;
-			SymbolId sym = e.getLabel();
+			Symbol sym = e.getLabel();
 			if (sym == null) {
-				sym = SymbolId.NullTag;
+				sym = Symbol.NullTag;
 			}
 			String tag = sym.getSymbol();
 			L("ast_commit_tx(ctx->ast, \"" + tag + "\", " + mark + ");");

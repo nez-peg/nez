@@ -2,7 +2,7 @@ package nez.lang.expr;
 
 import nez.Grammar;
 import nez.ast.SourcePosition;
-import nez.ast.SymbolId;
+import nez.ast.Symbol;
 import nez.lang.Expression;
 import nez.util.StringUtils;
 import nez.util.UList;
@@ -277,7 +277,7 @@ public abstract class ExpressionCommons extends Expression {
 		return newTlink(s, null, p);
 	}
 
-	public final static Expression newTlink(SourcePosition s, SymbolId label, Expression p) {
+	public final static Expression newTlink(SourcePosition s, Symbol label, Expression p) {
 		return new Tlink(s, label, p);
 	}
 
@@ -290,7 +290,7 @@ public abstract class ExpressionCommons extends Expression {
 		return new Tnew(s, shift);
 	}
 
-	public final static Expression newTlfold(SourcePosition s, SymbolId label, int shift) {
+	public final static Expression newTlfold(SourcePosition s, Symbol label, int shift) {
 		return new Tlfold(s, label, shift);
 	}
 
@@ -298,7 +298,7 @@ public abstract class ExpressionCommons extends Expression {
 		return new Tcapture(s, shift);
 	}
 
-	public final static Expression newTtag(SourcePosition s, SymbolId tag) {
+	public final static Expression newTtag(SourcePosition s, Symbol tag) {
 		return new Ttag(s, tag);
 	}
 
@@ -323,31 +323,31 @@ public abstract class ExpressionCommons extends Expression {
 		return new Xblock(s, e);
 	}
 
-	public final static Expression newXlocal(SourcePosition s, SymbolId tableName, Expression e) {
+	public final static Expression newXlocal(SourcePosition s, Symbol tableName, Expression e) {
 		return new Xlocal(s, tableName, e);
 	}
 
-	public final static Expression newXdef(SourcePosition s, Grammar g, SymbolId tableName, Expression e) {
+	public final static Expression newXdef(SourcePosition s, Grammar g, Symbol tableName, Expression e) {
 		return new Xdef(s, g, tableName, e);
 	}
 
-	public final static Expression newXmatch(SourcePosition s, SymbolId tableName) {
+	public final static Expression newXmatch(SourcePosition s, Symbol tableName) {
 		return new Xmatch(s, tableName);
 	}
 
-	public final static Expression newXis(SourcePosition s, Grammar g, SymbolId tableName, boolean is) {
+	public final static Expression newXis(SourcePosition s, Grammar g, Symbol tableName, boolean is) {
 		return new Xis(s, g, tableName, is);
 	}
 
-	public final static Expression newXis(SourcePosition s, Grammar g, SymbolId tableName) {
+	public final static Expression newXis(SourcePosition s, Grammar g, Symbol tableName) {
 		return new Xis(s, g, tableName, /* is */true);
 	}
 
-	public final static Expression newXisa(SourcePosition s, Grammar g, SymbolId tableName) {
+	public final static Expression newXisa(SourcePosition s, Grammar g, Symbol tableName) {
 		return new Xis(s, g, tableName, /* is */false);
 	}
 
-	public final static Expression newXexists(SourcePosition s, SymbolId tableName, String symbol) {
+	public final static Expression newXexists(SourcePosition s, Symbol tableName, String symbol) {
 		return new Xexists(s, tableName, symbol);
 	}
 
@@ -470,7 +470,7 @@ public abstract class ExpressionCommons extends Expression {
 		return newNewCapture(s, false, null, e);
 	}
 
-	public final static Expression newNewCapture(SourcePosition s, boolean lefted, SymbolId label, Expression e) {
+	public final static Expression newNewCapture(SourcePosition s, boolean lefted, Symbol label, Expression e) {
 		UList<Expression> l = new UList<Expression>(new Expression[e.size() + 3]);
 		ExpressionCommons.addSequence(l, lefted ? new Tlfold(s, label, 0) : new Tnew(s, 0));
 		ExpressionCommons.addSequence(l, e);
@@ -478,7 +478,7 @@ public abstract class ExpressionCommons extends Expression {
 		return newPsequence(s, l);
 	}
 
-	public final static Expression newLeftFoldOption(SourcePosition s, SymbolId label, Expression e) {
+	public final static Expression newLeftFoldOption(SourcePosition s, Symbol label, Expression e) {
 		UList<Expression> l = new UList<Expression>(new Expression[e.size() + 3]);
 		ExpressionCommons.addSequence(l, new Tlfold(s, label, 0));
 		ExpressionCommons.addSequence(l, e);
@@ -486,7 +486,7 @@ public abstract class ExpressionCommons extends Expression {
 		return newPoption(s, ExpressionCommons.newPsequence(s, l));
 	}
 
-	public final static Expression newLeftFoldRepetition(SourcePosition s, SymbolId label, Expression e) {
+	public final static Expression newLeftFoldRepetition(SourcePosition s, Symbol label, Expression e) {
 		UList<Expression> l = new UList<Expression>(new Expression[e.size() + 3]);
 		ExpressionCommons.addSequence(l, new Tlfold(s, label, 0));
 		ExpressionCommons.addSequence(l, e);
@@ -494,7 +494,7 @@ public abstract class ExpressionCommons extends Expression {
 		return newPzero(s, ExpressionCommons.newPsequence(s, l));
 	}
 
-	public final static Expression newLeftFoldRepetition1(SourcePosition s, SymbolId label, Expression e) {
+	public final static Expression newLeftFoldRepetition1(SourcePosition s, Symbol label, Expression e) {
 		UList<Expression> l = new UList<Expression>(new Expression[e.size() + 3]);
 		ExpressionCommons.addSequence(l, new Tlfold(s, label, 0));
 		ExpressionCommons.addSequence(l, e);
