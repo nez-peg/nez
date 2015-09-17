@@ -119,7 +119,7 @@ public class PythonParserGenerator extends ParserGenerator {
 
 	protected void makeByteMap() {
 		for (Cset map : this.byteMapList) {
-			L("map").W(String.valueOf(map.getId())).W(" = [");
+			L("map").W(String.valueOf(unique(map))).W(" = [");
 			for (int i = 0; i < map.byteMap.length; i++) {
 				if (map.byteMap[i]) {
 					W("True");
@@ -438,13 +438,13 @@ public class PythonParserGenerator extends ParserGenerator {
 		if (!byteMapList.contains(p)) {
 			byteMapList.add(p);
 		}
-		If("self.map" + p.getId() + "[ord(self.inputs[self.pos])]").Begin().Consume().End();
+		If("self.map" + unique(p) + "[ord(self.inputs[self.pos])]").Begin().Consume().End();
 		Else().Begin().Fail().End();
 	}
 
 	@Override
 	public void visitPoption(Poption p) {
-		String pos = "pos_op" + p.getId();
+		String pos = "pos_op" + unique(p);
 		Let(pos, "self.pos");
 		visitExpression(p.get(0));
 		If("not result").Begin().Let("self.pos", pos).Succ().End();
@@ -452,7 +452,7 @@ public class PythonParserGenerator extends ParserGenerator {
 
 	@Override
 	public void visitPzero(Pzero p) {
-		String pos = "pos_op" + p.getId();
+		String pos = "pos_op" + unique(p);
 		While("result").Begin();
 		Let(pos, "self.pos");
 		visitExpression(p.get(0));
@@ -465,7 +465,7 @@ public class PythonParserGenerator extends ParserGenerator {
 	public void visitPone(Pone p) {
 		visitExpression(p.get(0));
 		If("result").Begin();
-		String pos = "pos_op" + p.getId();
+		String pos = "pos_op" + unique(p);
 		While("result").Begin();
 		Let(pos, "self.pos");
 		visitExpression(p.get(0));
@@ -477,7 +477,7 @@ public class PythonParserGenerator extends ParserGenerator {
 
 	@Override
 	public void visitPand(Pand p) {
-		String pos = "pos_and" + p.getId();
+		String pos = "pos_and" + unique(p);
 		Let(pos, "self.pos");
 		visitExpression(p.get(0));
 		Let("self.pos", pos);
@@ -485,7 +485,7 @@ public class PythonParserGenerator extends ParserGenerator {
 
 	@Override
 	public void visitPnot(Pnot p) {
-		String pos = "pos_not" + p.getId();
+		String pos = "pos_not" + unique(p);
 		Let(pos, "self.pos");
 		visitExpression(p.get(0));
 		Let("self.pos", pos);
@@ -515,7 +515,7 @@ public class PythonParserGenerator extends ParserGenerator {
 
 	@Override
 	public void visitPsequence(Psequence p) {
-		Let("index" + p.getId(), _func("len", "self.compiler.func.list"));
+		Let("index" + unique(p), _func("len", "self.compiler.func.list"));
 		boolean isLeftNew = false;
 		boolean isLink = false;
 		UList<Expression> list = new UList<>(new Expression[p.size()]);
@@ -537,14 +537,14 @@ public class PythonParserGenerator extends ParserGenerator {
 		if (isLeftNew) {
 			If("not result").Begin().Abort().End();
 		} else if (isLink) {
-			If("not result").Begin().Abort("index" + p.getId()).End();
+			If("not result").Begin().Abort("index" + unique(p)).End();
 		}
 		isLeftNew = false;
 	}
 
 	@Override
 	public void visitPchoice(Pchoice p) {
-		String pos = "pos_c" + p.getId();
+		String pos = "pos_c" + unique(p);
 		Let(pos, "self.pos");
 		for (int i = 0; i < p.size(); i++) {
 			visitExpression(p.get(i));
@@ -557,7 +557,7 @@ public class PythonParserGenerator extends ParserGenerator {
 		}
 	}
 
-	HashMap<Integer, Integer> memoMap = new HashMap<Integer, Integer>();
+	HashMap<String, Integer> memoMap = new HashMap<String, Integer>();
 	int memoPoint = 0;
 
 	@Override
@@ -565,17 +565,17 @@ public class PythonParserGenerator extends ParserGenerator {
 		Production rule = p.getProduction();
 		if (rule.isNoNTreeConstruction()) {
 			int memoPoint = 0;
-			if (!memoMap.containsKey(p.getId())) {
+			if (!memoMap.containsKey(unique(p))) {
 				memoPoint = this.memoPoint++;
-				this.memoMap.put(p.getId(), memoPoint);
+				this.memoMap.put(unique(p), memoPoint);
 			} else {
-				memoPoint = memoMap.get(p.getId());
+				memoPoint = memoMap.get(unique(p));
 			}
 			Lookup(memoPoint);
 			Else().Begin();
-			Let("pos" + p.getId(), "self.pos");
+			Let("pos" + unique(p), "self.pos");
 			Let("result", _func("self.p" + p.getLocalName(), "result"));
-			Memoize(memoPoint, "pos" + p.getId());
+			Memoize(memoPoint, "pos" + unique(p));
 			End();
 		} else {
 			Let("result", _func("self.p" + p.getLocalName(), "result"));
@@ -585,16 +585,16 @@ public class PythonParserGenerator extends ParserGenerator {
 	@Override
 	public void visitTlink(Tlink p) {
 		int memoPoint = 0;
-		if (!memoMap.containsKey(p.getId())) {
+		if (!memoMap.containsKey(unique(p))) {
 			memoPoint = this.memoPoint++;
-			this.memoMap.put(p.getId(), memoPoint);
+			this.memoMap.put(unique(p), memoPoint);
 		} else {
-			memoPoint = memoMap.get(p.getId());
+			memoPoint = memoMap.get(unique(p));
 		}
 		LookupNode(memoPoint, p.index);
 		Else().Begin();
-		String inst = "inst" + p.getId();
-		String pos = "pos" + p.getId();
+		String inst = "inst" + unique(p);
+		String pos = "pos" + unique(p);
 		Let(pos, "self.pos");
 		Icall(inst);
 		visitExpression(p.get(0));

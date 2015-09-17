@@ -223,7 +223,7 @@ public class JavaParserGenerator extends ParserGenerator {
 	}
 
 	protected JavaParserGenerator FuncName(Expression e) {
-		W("e" + e.getId());
+		W(unique(e));
 		return this;
 	}
 

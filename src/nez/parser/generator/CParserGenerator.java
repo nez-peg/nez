@@ -807,18 +807,18 @@ public class CParserGenerator extends ParserGenerator {
 			this.justPredictionCount++;
 			int fid = this.fid++;
 			String label = "EXIT_CHOICE" + fid;
-			HashMap<Integer, Expression> m = new HashMap<Integer, Expression>();
+			HashMap<String, Expression> m = new HashMap<String, Expression>();
 			ArrayList<Expression> l = new ArrayList<Expression>();
 			L("void* jump_table" + formatId(fid) + "[] = {");
 			for (int ch = 0; ch < e.predictedCase.length; ch++) {
 				Expression pCase = e.predictedCase[ch];
 				if (pCase != null) {
-					Expression me = m.get(pCase.getId());
+					Expression me = m.get(unique(pCase));
 					if (me == null) {
-						m.put(pCase.getId(), pCase);
+						m.put(unique(pCase), pCase);
 						l.add(pCase);
 					}
-					W("&&PREDICATE_JUMP" + formatId(fid) + "" + pCase.getId());
+					W("&&PREDICATE_JUMP" + formatId(fid) + "" + unique(pCase));
 				} else {
 					W("&&PREDICATE_JUMP" + formatId(fid) + "" + 0);
 				}
@@ -830,7 +830,7 @@ public class CParserGenerator extends ParserGenerator {
 			L("goto *jump_table" + formatId(fid) + "[(uint8_t)*ctx->cur];");
 			for (int i = 0; i < l.size(); i++) {
 				Expression pe = l.get(i);
-				Label("PREDICATE_JUMP" + formatId(fid) + "" + pe.getId());
+				Label("PREDICATE_JUMP" + formatId(fid) + "" + unique(pe));
 				if (!(pe instanceof Pchoice)) {
 					this.choiceCount();
 				} else {

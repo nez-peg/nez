@@ -16,11 +16,7 @@ import nez.lang.expr.Pnot;
 import nez.lang.expr.Poption;
 import nez.lang.expr.Psequence;
 import nez.lang.expr.Pzero;
-import nez.lang.expr.Tcapture;
 import nez.lang.expr.Tlink;
-import nez.lang.expr.Tnew;
-import nez.lang.expr.Treplace;
-import nez.lang.expr.Ttag;
 import nez.parser.GenerativeGrammar;
 import nez.parser.ParseFunc;
 import nez.util.UList;
@@ -232,23 +228,23 @@ public class GrammarOptimizer extends GrammarRewriter {
 		return p.newSequence(l2);
 	}
 
-	private boolean isOutOfOrdered(Expression e) {
-		if (e instanceof Ttag) {
-			return true;
-		}
-		if (e instanceof Treplace) {
-			return true;
-		}
-		if (e instanceof Tnew) {
-			((Tnew) e).shift -= 1;
-			return true;
-		}
-		if (e instanceof Tcapture) {
-			((Tcapture) e).shift -= 1;
-			return true;
-		}
-		return false;
-	}
+	// private boolean isOutOfOrdered(Expression e) {
+	// if (e instanceof Ttag) {
+	// return true;
+	// }
+	// if (e instanceof Treplace) {
+	// return true;
+	// }
+	// if (e instanceof Tnew) {
+	// ((Tnew) e).shift -= 1;
+	// return true;
+	// }
+	// if (e instanceof Tcapture) {
+	// ((Tcapture) e).shift -= 1;
+	// return true;
+	// }
+	// return false;
+	// }
 
 	private boolean isNotChar(Expression p) {
 		if (p instanceof Pnot) {
@@ -554,17 +550,18 @@ public class GrammarOptimizer extends GrammarRewriter {
 		return base.newSequence(l);
 	}
 
-	private void rewrite_outoforder(Expression e, Expression e2) {
-		// Verbose.debug("out-of-order " + e + " <==> " + e2);
-	}
+	// private void rewrite_outoforder(Expression e, Expression e2) {
+	// // Verbose.debug("out-of-order " + e + " <==> " + e2);
+	// }
 
 	private void reportInfo(String msg, Expression e, Expression e2) {
 		// Verbose.debug(msg + " " + e + "\n\t=>" + e2);
 	}
 
-	private void rewrite_common(Expression e, Expression e2, Expression e3) {
-		// Verbose.debug("common (" + e + " / " + e2 + ")\n\t=>" + e3);
-	}
+	//
+	// private void rewrite_common(Expression e, Expression e2, Expression e3) {
+	// // Verbose.debug("common (" + e + " / " + e2 + ")\n\t=>" + e3);
+	// }
 
 	public final void reportError(Expression e, String message) {
 		strategy.reportError(e.getSourcePosition(), message);
