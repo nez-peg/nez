@@ -4,11 +4,11 @@ import nez.lang.Expression;
 import nez.lang.GrammarFile;
 import nez.lang.expr.ExpressionCommons;
 
-public class JSONPredefinedRules {
+public class JSONPredefinedGrammar {
 	GrammarFile grammar;
 	String rootClassName;
 
-	public JSONPredefinedRules(GrammarFile grammar) {
+	public JSONPredefinedGrammar(GrammarFile grammar) {
 		this.grammar = grammar;
 	}
 
