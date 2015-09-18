@@ -7,7 +7,7 @@ import nez.ast.Tree;
 import nez.lang.GrammarFile;
 
 public abstract class SchemaGrammarGenerator {
-	private GrammarFile gfile;
+	protected GrammarFile gfile;
 	private List<String> requiredList;
 	private List<String> membersList;
 
