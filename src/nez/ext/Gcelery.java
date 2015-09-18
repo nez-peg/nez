@@ -1,14 +1,12 @@
 package nez.ext;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import nez.Grammar;
 import nez.Parser;
 import nez.Strategy;
-import nez.ast.Tree;
 import nez.ast.Symbol;
+import nez.ast.Tree;
 import nez.lang.GrammarFileLoader;
 import nez.lang.schema.JSONSchemaGrammarGenerator;
 import nez.lang.schema.SchemaGrammarGenerator;
@@ -48,9 +46,6 @@ public class Gcelery extends GrammarFileLoader {
 		visit("visit", node);
 	}
 
-	private List<String> requiredList;
-	private List<String> membersList;
-
 	public final static Symbol _Name = Symbol.tag("Name");
 	public final static Symbol _Type = Symbol.tag("Type");
 
@@ -64,7 +59,7 @@ public class Gcelery extends GrammarFileLoader {
 
 	public final void visitStruct(Tree<?> node) {
 		String structName = node.getText(0, null);
-		initMemberList();
+		schema.initMemberList();
 		for (Tree<?> memberNode : node) {
 			this.visit("visit", memberNode);
 		}
@@ -77,14 +72,13 @@ public class Gcelery extends GrammarFileLoader {
 
 	public final void visitRequired(Tree<?> node) {
 		String elementName = node.getText(_Name, "");
-		requiredList.add(elementName);
-		membersList.add(elementName);
+		schema.addRequired(elementName);
 		schema.newElement(elementName, schema.newRequired(toType(node.get(_Type))));
 	}
 
 	public final void visitOption(Tree<?> node) {
 		String elementName = node.getText(_Name, "");
-		membersList.add(elementName);
+		schema.addMember(elementName);
 		schema.newElement(elementName, schema.newOption(toType(node.get(_Type))));
 	}
 
@@ -122,37 +116,22 @@ public class Gcelery extends GrammarFileLoader {
 
 	private final void genStruct(String structName) {
 		genMembers(structName);
-		schema.newStruct(structName, schema.newSet(structName, requiredList));
+		schema.newStruct(structName, schema.newSet(structName));
 	}
 
 	private final void genMembers(String structName) {
-		int membersListSize = membersList.size();
+		int membersListSize = schema.getMembers().size();
 		int count = 0;
 		Type[] alt = new Type[membersListSize + 1];
-		for (String elementName : membersList) {
+		for (String elementName : schema.getMembers()) {
 			alt[count++] = schema.newUniq(structName, elementName);
 		}
-		alt[count] = schema.newOtherAny(structName, membersList);
+		alt[count] = schema.newOtherAny(structName);
 		schema.newMembers(structName, alt);
 	}
 
 	private final void genStruct_Approximate(String structName) {
-		schema.newStruct(structName, schema.newPermutation(requiredList, extractImpliedMembers()));
-	}
-
-	private final void initMemberList() {
-		requiredList = new ArrayList<String>();
-		membersList = new ArrayList<String>();
-	}
-
-	private final List<String> extractImpliedMembers() {
-		List<String> impliedList = new ArrayList<String>();
-		for (int i = 0; i < membersList.size(); i++) {
-			if (!requiredList.contains(membersList.get(i))) {
-				impliedList.add(membersList.get(i));
-			}
-		}
-		return impliedList;
+		schema.newStruct(structName, schema.newPermutation());
 	}
 
 }
