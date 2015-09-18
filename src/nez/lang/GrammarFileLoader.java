@@ -32,7 +32,10 @@ public abstract class GrammarFileLoader extends AbstractTreeVisitor {
 
 	public final GrammarFile getGrammarFile() {
 		/* file is instantiated at newGrammar */
-		return (GrammarFile) this.file;
+		if (this.file instanceof GrammarFile) {
+			return (GrammarFile) this.file;
+		}
+		return null;
 	}
 
 	public final Strategy getStrategy() {
@@ -45,7 +48,7 @@ public abstract class GrammarFileLoader extends AbstractTreeVisitor {
 
 		SourceContext sc = SourceContext.newFileContext(urn);
 		while (sc.hasUnconsumed()) {
-			AbstractTree<?> node = getLoaderGrammar().parseCommonTree(sc);
+			AbstractTree<?> node = getLoaderParser().parseCommonTree(sc);
 			if (node == null) {
 				ConsoleUtils.exit(1, sc.getSyntaxErrorMessage());
 			}
@@ -57,9 +60,9 @@ public abstract class GrammarFileLoader extends AbstractTreeVisitor {
 		this.file = g;
 		this.strategy = Strategy.nullCheck(strategy);
 
-		SourceContext sc = SourceContext.newStringSourceContext(urn, linenum, text);
+		SourceContext sc = SourceContext.newStringContext(urn, linenum, text);
 		while (sc.hasUnconsumed()) {
-			AbstractTree<?> node = getLoaderGrammar().parseCommonTree(sc);
+			AbstractTree<?> node = getLoaderParser().parseCommonTree(sc);
 			if (node == null) {
 				Verbose.println(sc.getSyntaxErrorMessage());
 			}
@@ -79,7 +82,7 @@ public abstract class GrammarFileLoader extends AbstractTreeVisitor {
 	// }
 	// }
 
-	public abstract Parser getLoaderGrammar();
+	public abstract Parser getLoaderParser();
 
 	public abstract void parse(AbstractTree<?> node);
 

@@ -27,7 +27,7 @@ public class ScriptContext extends AbstractTreeVisitor {
 	}
 
 	public Object eval(String uri, int linenum, String script) {
-		return eval(SourceContext.newStringSourceContext(uri, linenum, script));
+		return eval(SourceContext.newStringContext(uri, linenum, script));
 	}
 
 	private Object eval(SourceContext source) {

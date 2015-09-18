@@ -2,14 +2,14 @@ package nez.lang.schema;
 
 import java.util.List;
 
+import nez.Grammar;
 import nez.ast.AbstractTree;
-import nez.lang.GrammarFile;
 
 public class JSONSchemaGrammarGenerator extends SchemaGrammarGenerator {
 
-	private GrammarFile gfile;
+	private Grammar gfile;
 
-	public JSONSchemaGrammarGenerator(GrammarFile gfile) {
+	public JSONSchemaGrammarGenerator(Grammar gfile) {
 		this.gfile = gfile;
 	}
 

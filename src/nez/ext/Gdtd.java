@@ -12,7 +12,6 @@ import nez.Strategy;
 import nez.ast.AbstractTree;
 import nez.ast.Symbol;
 import nez.lang.Expression;
-import nez.lang.GrammarFile;
 import nez.lang.GrammarFileLoader;
 import nez.lang.expr.ExpressionCommons;
 import nez.util.ConsoleUtils;
@@ -27,7 +26,7 @@ public class Gdtd extends GrammarFileLoader {
 	boolean enableNezExtension;
 
 	@Override
-	public Parser getLoaderGrammar() {
+	public Parser getLoaderParser() {
 		if (dtdParser == null) {
 			try {
 				Strategy option = Strategy.newSafeStrategy();
@@ -45,7 +44,7 @@ public class Gdtd extends GrammarFileLoader {
 
 	private final void loadPredefinedRules(AbstractTree<?> node) {
 		String rootElement = node.get(0).getText(0, null);
-		PredefinedRules preRules = new PredefinedRules(getGrammarFile(), rootElement);
+		PredefinedRules preRules = new PredefinedRules(getGrammar(), rootElement);
 		preRules.defineRule();
 	}
 
@@ -83,27 +82,27 @@ public class Gdtd extends GrammarFileLoader {
 	}
 
 	public void visitDoc(AbstractTree<?> node) {
-		GrammarFile gfile = getGrammarFile();
+		Grammar gfile = getGrammar();
 		for (AbstractTree<?> subnode : node) {
 			this.visit("visit", subnode);
 		}
 		for (int elementID = 0; elementID < elementCount; elementID++) {
 			String elementName = "Element_" + elementNameMap.get(elementID);
-			gfile.addProduction(node, elementName, genElement(node, elementID));
+			gfile.newProduction(node, 0, elementName, genElement(node, elementID));
 		}
-		gfile.addProduction(node, "Entity", genEntityList(node));
+		gfile.newProduction(node, 0, "Entity", genEntityList(node));
 	}
 
 	public void visitElement(AbstractTree<?> node) {
 		String elementName = node.getText(0, "");
 		elementNameMap.put(elementCount, elementName);
 		containsAttributeList.add(false);
-		getGrammarFile().addProduction(node, "Content" + elementCount, toExpression(node.get(1)));
+		getGrammar().newProduction(node, 0, "Content" + elementCount, toExpression(node.get(1)));
 		elementCount++;
 	}
 
 	private Expression genElement(AbstractTree<?> node, int elementID) {
-		GrammarFile gfile = getGrammarFile();
+		Grammar gfile = getGrammar();
 		String elementName = elementNameMap.get(elementID);
 		Expression[] contentSeq = { gfile.newByteChar('>'), gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), ExpressionCommons.newNonTerminal(null, gfile, "Content" + elementID),
 				gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), gfile.newString("</" + elementName + ">"), };
@@ -123,7 +122,7 @@ public class Gdtd extends GrammarFileLoader {
 	}
 
 	public void visitAttlist(AbstractTree<?> node) {
-		GrammarFile gfile = getGrammarFile();
+		Grammar gfile = getGrammar();
 		initAttCounter();
 		containsAttributeList.add(currentElementID, true);
 		String attListName = "Attribute" + currentElementID;
@@ -138,13 +137,13 @@ public class Gdtd extends GrammarFileLoader {
 
 		// generate Complete / Proximate Attribute list
 		if (enableNezExtension) {
-			gfile.addProduction(node, attListName, genExAtt(node, requiredRules));
+			gfile.newProduction(node, 0, attListName, genExAtt(node, requiredRules));
 		} else {
 			if (impliedAttList.isEmpty()) {
-				gfile.addProduction(node, attListName, genCompAtt(node, attDefList));
+				gfile.newProduction(node, 0, attListName, genCompAtt(node, attDefList));
 			} else {
-				gfile.addProduction(node, choiceListName, genImpliedChoice(node));
-				gfile.addProduction(node, attListName, genProxAtt(node, requiredRules));
+				gfile.newProduction(node, 0, choiceListName, genImpliedChoice(node));
+				gfile.newProduction(node, 0, attListName, genProxAtt(node, requiredRules));
 			}
 		}
 	}
@@ -153,7 +152,7 @@ public class Gdtd extends GrammarFileLoader {
 		String name = "AttDef" + currentElementID + "_" + attDefCount;
 		attDefMap.put(attDefCount, node.getText(0, ""));
 		requiredAttList.add(attDefCount);
-		getGrammarFile().addProduction(node, name, toExpression(node.get(1)));
+		getGrammar().newProduction(node, 0, name, toExpression(node.get(1)));
 		attDefCount++;
 	}
 
@@ -161,7 +160,7 @@ public class Gdtd extends GrammarFileLoader {
 		String name = "AttDef" + currentElementID + "_" + attDefCount;
 		attDefMap.put(attDefCount, node.getText(0, ""));
 		impliedAttList.add(attDefCount);
-		getGrammarFile().addProduction(node, name, toExpression(node.get(1)));
+		getGrammar().newProduction(node, 0, name, toExpression(node.get(1)));
 		attDefCount++;
 	}
 
@@ -169,7 +168,7 @@ public class Gdtd extends GrammarFileLoader {
 		String name = "AttDef" + currentElementID + "_" + attDefCount;
 		attDefMap.put(attDefCount, node.getText(0, ""));
 		impliedAttList.add(attDefCount);
-		getGrammarFile().addProduction(node, name, genFixedAtt(node));
+		getGrammar().newProduction(node, 0, name, genFixedAtt(node));
 		attDefCount++;
 	}
 
@@ -177,13 +176,13 @@ public class Gdtd extends GrammarFileLoader {
 		String name = "AttDef" + currentElementID + "_" + attDefCount;
 		attDefMap.put(attDefCount, node.getText(0, ""));
 		impliedAttList.add(attDefCount);
-		getGrammarFile().addProduction(node, name, toExpression(node.get(1)));
+		getGrammar().newProduction(node, 0, name, toExpression(node.get(1)));
 		attDefCount++;
 	}
 
 	public void visitEntity(AbstractTree<?> node) {
 		String name = "ENT_" + entityCount++;
-		getGrammarFile().addProduction(node, name, toExpression(node.get(1)));
+		getGrammar().newProduction(node, 0, name, toExpression(node.get(1)));
 	}
 
 	private Expression toExpression(AbstractTree<?> node) {
@@ -191,23 +190,23 @@ public class Gdtd extends GrammarFileLoader {
 	}
 
 	public Expression toEmpty(AbstractTree<?> node) {
-		return ExpressionCommons.newNonTerminal(null, getGrammarFile(), "EMPTY");
+		return ExpressionCommons.newNonTerminal(null, getGrammar(), "EMPTY");
 	}
 
 	public Expression toAny(AbstractTree<?> node) {
-		return ExpressionCommons.newNonTerminal(null, getGrammarFile(), "ANY");
+		return ExpressionCommons.newNonTerminal(null, getGrammar(), "ANY");
 	}
 
 	public Expression toZeroMore(AbstractTree<?> node) {
-		return getGrammarFile().newRepetition(toExpression(node.get(0)));
+		return getGrammar().newRepetition(toExpression(node.get(0)));
 	}
 
 	public Expression toOneMore(AbstractTree<?> node) {
-		return getGrammarFile().newRepetition1(toExpression(node.get(0)));
+		return getGrammar().newRepetition1(toExpression(node.get(0)));
 	}
 
 	public Expression toOption(AbstractTree<?> node) {
-		return getGrammarFile().newOption(toExpression(node.get(0)));
+		return getGrammar().newOption(toExpression(node.get(0)));
 	}
 
 	public Expression toChoice(AbstractTree<?> node) {
@@ -216,7 +215,7 @@ public class Gdtd extends GrammarFileLoader {
 		for (AbstractTree<?> subnode : node) {
 			l[count++] = toExpression(subnode);
 		}
-		return getGrammarFile().newChoice(l);
+		return getGrammar().newChoice(l);
 	}
 
 	public Expression toSeq(AbstractTree<?> node) {
@@ -225,7 +224,7 @@ public class Gdtd extends GrammarFileLoader {
 		for (AbstractTree<?> subnode : node) {
 			l[count++] = toExpression(subnode);
 		}
-		return getGrammarFile().newSequence(l);
+		return getGrammar().newSequence(l);
 	}
 
 	public Expression toCDATA(AbstractTree<?> node) {
@@ -285,7 +284,7 @@ public class Gdtd extends GrammarFileLoader {
 	}
 
 	public Expression _Att(String type) {
-		GrammarFile gfile = getGrammarFile();
+		Grammar gfile = getGrammar();
 		String attName = attDefMap.get(attDefCount);
 		Expression[] l = { gfile.newString(attName), gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), gfile.newByteChar('='), gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")),
 				ExpressionCommons.newNonTerminal(null, gfile, type), gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), };
@@ -293,7 +292,7 @@ public class Gdtd extends GrammarFileLoader {
 	}
 
 	public Expression _AttQ(String type) {
-		GrammarFile gfile = getGrammarFile();
+		Grammar gfile = getGrammar();
 		String attName = attDefMap.get(attDefCount);
 		Expression[] l = { gfile.newString(attName), gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), gfile.newByteChar('='), gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), gfile.newString("\""),
 				ExpressionCommons.newNonTerminal(null, gfile, type), gfile.newString("\""), gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), };
@@ -301,7 +300,7 @@ public class Gdtd extends GrammarFileLoader {
 	}
 
 	public Expression _AttDef(String type) {
-		GrammarFile gfile = getGrammarFile();
+		Grammar gfile = getGrammar();
 		String attName = attDefMap.get(attDefCount);
 		Expression[] l = { ExpressionCommons.newXdef(null, gfile, Symbol.tag("T" + currentElementID), gfile.newString(attName)), gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), gfile.newByteChar('='),
 				gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), ExpressionCommons.newNonTerminal(null, gfile, type), gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), };
@@ -309,7 +308,7 @@ public class Gdtd extends GrammarFileLoader {
 	}
 
 	public Expression _AttDefQ(String type) {
-		GrammarFile gfile = getGrammarFile();
+		Grammar gfile = getGrammar();
 		String attName = attDefMap.get(attDefCount);
 		Expression[] l = { ExpressionCommons.newXdef(null, gfile, Symbol.tag("T" + currentElementID), gfile.newString(attName)), gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), gfile.newByteChar('='),
 				gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), gfile.newString("\""), ExpressionCommons.newNonTerminal(null, gfile, type), gfile.newString("\""),
@@ -318,7 +317,7 @@ public class Gdtd extends GrammarFileLoader {
 	}
 
 	private Expression genFixedAtt(AbstractTree<?> node) {
-		GrammarFile gfile = getGrammarFile();
+		Grammar gfile = getGrammar();
 		String attName = attDefMap.get(attDefCount);
 		String fixedValue = "\"" + node.getText(2, "") + "\"";
 		Expression[] l = { gfile.newString(attName), gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), gfile.newByteChar('='), gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), gfile.newString(fixedValue),
@@ -329,10 +328,10 @@ public class Gdtd extends GrammarFileLoader {
 	}
 
 	public Expression genExAtt(AbstractTree<?> node, int[] requiredList) {
-		GrammarFile gfile = getGrammarFile();
+		Grammar gfile = getGrammar();
 		Symbol tableName = Symbol.tag("T" + currentElementID);
 		String attDefList = "AttDefList" + currentElementID;
-		gfile.addProduction(node, attDefList, genExAttDefList(node, requiredList, tableName));
+		gfile.newProduction(node, 0, attDefList, genExAttDefList(node, requiredList, tableName));
 		UList<Expression> seq = new UList<Expression>(new Expression[requiredList.length + 1]);
 		seq.add(ExpressionCommons.newPzero(node, ExpressionCommons.newNonTerminal(node, gfile, attDefList)));
 		for (int index : requiredList) {
@@ -342,7 +341,7 @@ public class Gdtd extends GrammarFileLoader {
 	}
 
 	public Expression genExAttDefList(AbstractTree<?> node, int[] requiredList, Symbol tableName) {
-		GrammarFile gfile = getGrammarFile();
+		Grammar gfile = getGrammar();
 		UList<Expression> l = new UList<Expression>(new Expression[requiredList.length + 1]);
 		for (int index : requiredList) {
 			Expression notexist = ExpressionCommons.newPnot(node, ExpressionCommons.newXexists(node, tableName, attDefMap.get(index)));
@@ -351,14 +350,14 @@ public class Gdtd extends GrammarFileLoader {
 		}
 		if (!impliedAttList.isEmpty()) {
 			String choiceListName = "AttChoice" + currentElementID;
-			gfile.addProduction(node, choiceListName, genImpliedChoice(node));
+			gfile.newProduction(node, 0, choiceListName, genImpliedChoice(node));
 			l.add(ExpressionCommons.newNonTerminal(node, gfile, choiceListName));
 		}
 		return ExpressionCommons.newPchoice(node, l);
 	}
 
 	public Expression genCompAtt(AbstractTree<?> node, int[] attlist) {
-		GrammarFile gfile = getGrammarFile();
+		Grammar gfile = getGrammar();
 		int listLength = attlist.length;
 		if (listLength == 1) {
 			Expression[] l = { ExpressionCommons.newNonTerminal(null, gfile, "AttDef" + currentElementID + "_" + attlist[0]), gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), ExpressionCommons.newNonTerminal(null, gfile, "ENDTAG") };
@@ -380,7 +379,7 @@ public class Gdtd extends GrammarFileLoader {
 	}
 
 	public Expression genProxAtt(AbstractTree<?> node, int[] attlist) {
-		GrammarFile gfile = getGrammarFile();
+		Grammar gfile = getGrammar();
 		int listLength = attlist.length;
 		if (listLength == 0) {
 			Expression[] l = { gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "AttChoice" + currentElementID)), gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")),
@@ -406,7 +405,7 @@ public class Gdtd extends GrammarFileLoader {
 	}
 
 	public Expression genImpliedChoice(AbstractTree<?> node) {
-		GrammarFile gfile = getGrammarFile();
+		Grammar gfile = getGrammar();
 		Expression[] l = new Expression[impliedAttList.size()];
 		String definitionName = "AttDef" + currentElementID + "_";
 		int choiceCount = 0;
@@ -417,7 +416,7 @@ public class Gdtd extends GrammarFileLoader {
 	}
 
 	public Expression toEnum(AbstractTree<?> node) {
-		GrammarFile gfile = getGrammarFile();
+		Grammar gfile = getGrammar();
 		String attName = attDefMap.get(attDefCount);
 		Expression[] l = { gfile.newString(attName), gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), gfile.newByteChar('='), gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), gfile.newByteChar('"'),
 				toChoice(node), gfile.newByteChar('"'), gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), };
@@ -426,28 +425,28 @@ public class Gdtd extends GrammarFileLoader {
 
 	public Expression toEntValue(AbstractTree<?> node) {
 		String replaceString = node.toText();
-		return getGrammarFile().newString(replaceString);
+		return getGrammar().newString(replaceString);
 	}
 
 	public Expression toElName(AbstractTree<?> node) {
 		String elementName = "Element_" + node.toText();
-		return ExpressionCommons.newNonTerminal(null, getGrammarFile(), elementName);
+		return ExpressionCommons.newNonTerminal(null, getGrammar(), elementName);
 	}
 
 	public Expression toName(AbstractTree<?> node) {
-		return getGrammarFile().newString(node.toText());
+		return getGrammar().newString(node.toText());
 	}
 
 	public Expression toData(AbstractTree<?> node) {
-		return ExpressionCommons.newNonTerminal(null, getGrammarFile(), "PCDATA");
+		return ExpressionCommons.newNonTerminal(null, getGrammar(), "PCDATA");
 	}
 
 	public Expression toOnlyData(AbstractTree<?> node) {
-		return ExpressionCommons.newPzero(null, ExpressionCommons.newNonTerminal(null, getGrammarFile(), "PCDATA"));
+		return ExpressionCommons.newPzero(null, ExpressionCommons.newNonTerminal(null, getGrammar(), "PCDATA"));
 	}
 
 	private Expression genEntityList(AbstractTree<?> node) {
-		GrammarFile gfile = getGrammarFile();
+		Grammar gfile = getGrammar();
 		if (entityCount == 0) {
 			return ExpressionCommons.newFailure(null);
 		} else {
@@ -485,10 +484,10 @@ public class Gdtd extends GrammarFileLoader {
 }
 
 class PredefinedRules {
-	GrammarFile grammar;
+	Grammar grammar;
 	String rootElement;
 
-	public PredefinedRules(GrammarFile grammar, String rootElement) {
+	public PredefinedRules(Grammar grammar, String rootElement) {
 		this.grammar = grammar;
 		this.rootElement = rootElement;
 	}
@@ -521,29 +520,29 @@ class PredefinedRules {
 	}
 
 	final void defToplevel() {
-		grammar.addProduction(null, "Toplevel", ExpressionCommons.newNonTerminal(null, grammar, "Document"));
+		grammar.newProduction(null, 0, "Toplevel", ExpressionCommons.newNonTerminal(null, grammar, "Document"));
 
 	}
 
 	final void defChunk() {
-		grammar.addProduction(null, "Chunk", ExpressionCommons.newNonTerminal(null, grammar, "Document"));
+		grammar.newProduction(null, 0, "Chunk", ExpressionCommons.newNonTerminal(null, grammar, "Document"));
 	}
 
 	final void defFile() {
-		grammar.addProduction(null, "File", ExpressionCommons.newNonTerminal(null, grammar, "Document"));
+		grammar.newProduction(null, 0, "File", ExpressionCommons.newNonTerminal(null, grammar, "Document"));
 	}
 
 	final void defDocument() {
 		Expression[] l = { ExpressionCommons.newPoption(null, ExpressionCommons.newNonTerminal(null, grammar, "PROLOG")), ExpressionCommons.newPzero(null, ExpressionCommons.newNonTerminal(null, grammar, "MISC")),
 				ExpressionCommons.newPoption(null, ExpressionCommons.newNonTerminal(null, grammar, "DOCTYPE")), ExpressionCommons.newPzero(null, ExpressionCommons.newNonTerminal(null, grammar, "MISC")),
 				ExpressionCommons.newNonTerminal(null, grammar, "Content"), ExpressionCommons.newPzero(null, ExpressionCommons.newNonTerminal(null, grammar, "MISC")), };
-		grammar.addProduction(null, "Document", grammar.newSequence(l));
+		grammar.newProduction(null, 0, "Document", grammar.newSequence(l));
 	}
 
 	final void defProlog() {
 		Expression[] l = { ExpressionCommons.newString(null, "<?xml"), ExpressionCommons.newPzero(null, ExpressionCommons.newNonTerminal(null, grammar, "S")), ExpressionCommons.newPzero(null, ExpressionCommons.newNonTerminal(null, grammar, "ATTRIBUTE")),
 				ExpressionCommons.newPzero(null, ExpressionCommons.newNonTerminal(null, grammar, "S")), ExpressionCommons.newString(null, "?>"), };
-		grammar.addProduction(null, "PROLOG", grammar.newSequence(l));
+		grammar.newProduction(null, 0, "PROLOG", grammar.newSequence(l));
 	}
 
 	final void defDoctype() {
@@ -551,100 +550,100 @@ class PredefinedRules {
 				ExpressionCommons.newPzero(null, ExpressionCommons.newNonTerminal(null, grammar, "S")), ExpressionCommons.newPoption(null, ExpressionCommons.newString(null, "SYSTEM")),
 				ExpressionCommons.newPzero(null, ExpressionCommons.newNonTerminal(null, grammar, "S")), ExpressionCommons.newNonTerminal(null, grammar, "STRING"), ExpressionCommons.newPzero(null, ExpressionCommons.newNonTerminal(null, grammar, "S")),
 				ExpressionCommons.newString(null, ">"), };
-		grammar.addProduction(null, "DOCTYPE", grammar.newSequence(l));
+		grammar.newProduction(null, 0, "DOCTYPE", grammar.newSequence(l));
 	}
 
 	final void defContent() {
 		Expression choice = grammar.newChoice(ExpressionCommons.newNonTerminal(null, grammar, "RootElement"), ExpressionCommons.newNonTerminal(null, grammar, "COMMENT"));
 		Expression[] l = { ExpressionCommons.newPone(null, choice) };
-		grammar.addProduction(null, "Content", grammar.newSequence(l));
+		grammar.newProduction(null, 0, "Content", grammar.newSequence(l));
 	}
 
 	final void defName() {
 		Expression[] l = { ExpressionCommons.newCharSet(null, "A-Za-z_:"), ExpressionCommons.newPzero(null, ExpressionCommons.newCharSet(null, "-A-Za-z0-9:._")) };
-		grammar.addProduction(null, "NAME", grammar.newSequence(l));
+		grammar.newProduction(null, 0, "NAME", grammar.newSequence(l));
 	}
 
 	final void defString() {
 		Expression[] l = { ExpressionCommons.newCbyte(null, false, '"'), grammar.newRepetition(ExpressionCommons.newPnot(null, ExpressionCommons.newCbyte(null, false, '"')), ExpressionCommons.newCany(null, false)),
 				ExpressionCommons.newCbyte(null, false, '"') };
-		grammar.addProduction(null, "STRING", grammar.newSequence(l));
+		grammar.newProduction(null, 0, "STRING", grammar.newSequence(l));
 	}
 
 	final void defNameToken() {
 		Expression[] l = { ExpressionCommons.newCbyte(null, false, '"'), ExpressionCommons.newNonTerminal(null, grammar, "NAME"), ExpressionCommons.newCbyte(null, false, '"') };
-		grammar.addProduction(null, "NMTOKEN", grammar.newSequence(l));
+		grammar.newProduction(null, 0, "NMTOKEN", grammar.newSequence(l));
 	}
 
 	final void defIdToken() {
 		Expression[] l = { ExpressionCommons.newCharSet(null, "-A-Za-z0-9:._"), grammar.newRepetition(ExpressionCommons.newCharSet(null, "\\-A-Za-z0-9:._")), };
-		grammar.addProduction(null, "IDTOKEN", grammar.newSequence(l));
+		grammar.newProduction(null, 0, "IDTOKEN", grammar.newSequence(l));
 	}
 
 	final void defText() {
 		Expression onemoreExpr = grammar.newSequence(ExpressionCommons.newPnot(null, ExpressionCommons.newCharSet(null, "<&")), ExpressionCommons.newCany(null, false));
-		grammar.addProduction(null, "TEXT", ExpressionCommons.newPone(null, onemoreExpr));
+		grammar.newProduction(null, 0, "TEXT", ExpressionCommons.newPone(null, onemoreExpr));
 	}
 
 	final void defAttribute() {
 		Expression[] l = { ExpressionCommons.newNonTerminal(null, grammar, "NAME"), grammar.newRepetition(ExpressionCommons.newNonTerminal(null, grammar, "S")), ExpressionCommons.newCbyte(null, false, '='),
 				grammar.newRepetition(ExpressionCommons.newNonTerminal(null, grammar, "S")), ExpressionCommons.newNonTerminal(null, grammar, "STRING"), grammar.newRepetition(ExpressionCommons.newNonTerminal(null, grammar, "S")) };
-		grammar.addProduction(null, "ATTRIBUTE", grammar.newSequence(l));
+		grammar.newProduction(null, 0, "ATTRIBUTE", grammar.newSequence(l));
 	}
 
 	final void defCDATASECT() {
 		Expression[] l = { ExpressionCommons.newString(null, "<![CDATA["), grammar.newRepetition(ExpressionCommons.newPnot(null, ExpressionCommons.newString(null, "]]>")), ExpressionCommons.newCany(null, false)), ExpressionCommons.newString(null, "]]>") };
-		grammar.addProduction(null, "CDATASECT", grammar.newSequence(l));
+		grammar.newProduction(null, 0, "CDATASECT", grammar.newSequence(l));
 	}
 
 	final void defMISC() {
-		grammar.addProduction(null, "MISC", grammar.newChoice(ExpressionCommons.newNonTerminal(null, grammar, "S"), ExpressionCommons.newNonTerminal(null, grammar, "COMMENT")));
+		grammar.newProduction(null, 0, "MISC", grammar.newChoice(ExpressionCommons.newNonTerminal(null, grammar, "S"), ExpressionCommons.newNonTerminal(null, grammar, "COMMENT")));
 	}
 
 	final void defCOMMENT() {
 		Expression[] l = { ExpressionCommons.newString(null, "<!--"), grammar.newRepetition(ExpressionCommons.newPnot(null, ExpressionCommons.newString(null, "-->")), ExpressionCommons.newCany(null, false)), ExpressionCommons.newString(null, "-->"),
 				grammar.newRepetition(ExpressionCommons.newNonTerminal(null, grammar, "S")) };
-		grammar.addProduction(null, "COMMENT", grammar.newSequence(l));
+		grammar.newProduction(null, 0, "COMMENT", grammar.newSequence(l));
 	}
 
 	final void defEMPTY() {
-		grammar.addProduction(null, "EMPTY", grammar.newRepetition(ExpressionCommons.newNonTerminal(null, grammar, "S")));
+		grammar.newProduction(null, 0, "EMPTY", grammar.newRepetition(ExpressionCommons.newNonTerminal(null, grammar, "S")));
 	}
 
 	final void defANY() {
 		Expression[] l = { grammar.newRepetition(ExpressionCommons.newNonTerminal(null, grammar, "S")), ExpressionCommons.newNonTerminal(null, grammar, "TEXT"), grammar.newRepetition(ExpressionCommons.newNonTerminal(null, grammar, "S")), };
-		grammar.addProduction(null, "ANY", grammar.newSequence(l));
+		grammar.newProduction(null, 0, "ANY", grammar.newSequence(l));
 	}
 
 	final void defSpacing() {
-		grammar.addProduction(null, "S", ExpressionCommons.newCharSet(null, " \t\r\n"));
+		grammar.newProduction(null, 0, "S", ExpressionCommons.newCharSet(null, " \t\r\n"));
 	}
 
 	final void defENDTAG() {
 		Expression l = grammar.newChoice(ExpressionCommons.newPand(null, ExpressionCommons.newCbyte(null, false, '>')), ExpressionCommons.newPand(null, ExpressionCommons.newString(null, "/>")));
-		grammar.addProduction(null, "ENDTAG", l);
+		grammar.newProduction(null, 0, "ENDTAG", l);
 	}
 
 	final void defNotAny() {
 		Expression l = ExpressionCommons.newPnot(null, ExpressionCommons.newCany(null, false));
-		grammar.addProduction(null, "NotAny", l);
+		grammar.newProduction(null, 0, "NotAny", l);
 	}
 
 	final void defPCDATA() {
 		Expression[] seq = { ExpressionCommons.newNonTerminal(null, grammar, "PreEntity"), ExpressionCommons.newNonTerminal(null, grammar, "Entity") };
 		Expression[] l = { ExpressionCommons.newNonTerminal(null, grammar, "TEXT"), grammar.newSequence(ExpressionCommons.newCbyte(null, false, '&'), grammar.newChoice(seq), ExpressionCommons.newCbyte(null, false, ';')) };
-		grammar.addProduction(null, "PCDATA", grammar.newChoice(l));
+		grammar.newProduction(null, 0, "PCDATA", grammar.newChoice(l));
 	}
 
 	final void defRootElement() {
 		String rootElementName = "Element_" + this.rootElement;
-		grammar.addProduction(null, "RootElement", ExpressionCommons.newNonTerminal(null, grammar, rootElementName));
+		grammar.newProduction(null, 0, "RootElement", ExpressionCommons.newNonTerminal(null, grammar, rootElementName));
 	}
 
 	final void defPreEntity() {
 		Expression[] keywords = { ExpressionCommons.newString(null, "lt"), ExpressionCommons.newString(null, "gt"), ExpressionCommons.newString(null, "amp"), ExpressionCommons.newString(null, "apos"), ExpressionCommons.newString(null, "quot"),
 				grammar.newRepetition1(ExpressionCommons.newCharSet(null, "#a-zA-Z0-9")) };
-		grammar.addProduction(null, "PreEntity", grammar.newChoice(keywords));
+		grammar.newProduction(null, 0, "PreEntity", grammar.newChoice(keywords));
 	}
 }
 

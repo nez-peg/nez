@@ -55,7 +55,7 @@ public class Cshell extends Command {
 			if (text == null) {
 				displayGrammar(command, p);
 			} else {
-				SourceContext sc = SourceContext.newStringSourceContext("<stdio>", linenum, text);
+				SourceContext sc = SourceContext.newStringContext("<stdio>", linenum, text);
 				CommonTree node = p.parseCommonTree(sc);
 				if (node == null) {
 					ConsoleUtils.println(sc.getSyntaxErrorMessage());

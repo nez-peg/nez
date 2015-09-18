@@ -22,7 +22,7 @@ public class NezConstructor extends GrammarFileLoader implements Constructor {
 	static Parser nezParser;
 
 	@Override
-	public Parser getLoaderGrammar() {
+	public Parser getLoaderParser() {
 		if (nezParser == null) {
 			nezParser = new NezGrammar1().newParser(Strategy.newSafeStrategy());
 			assert (nezParser != null);
@@ -73,7 +73,7 @@ public class NezConstructor extends GrammarFileLoader implements Constructor {
 		// productionFlag |= Production.InlineProduction;
 		// }
 		// }
-		Production rule = this.getGrammarFile().getProduction(localName);
+		Production rule = this.getGrammar().getProduction(localName);
 		if (rule != null) {
 			this.reportWarning(node, "duplicated rule name: " + localName);
 			rule = null;
@@ -94,12 +94,12 @@ public class NezConstructor extends GrammarFileLoader implements Constructor {
 
 	public Expression newNonTerminal(AbstractTree<?> node) {
 		String symbol = node.toText();
-		return ExpressionCommons.newNonTerminal(node, this.getGrammarFile(), symbol);
+		return ExpressionCommons.newNonTerminal(node, this.getGrammar(), symbol);
 	}
 
 	public Expression newString(AbstractTree<?> node) {
 		String name = GrammarFile.nameTerminalProduction(node.toText());
-		return ExpressionCommons.newNonTerminal(node, this.getGrammarFile(), name);
+		return ExpressionCommons.newNonTerminal(node, this.getGrammar(), name);
 	}
 
 	public Expression newCharacter(AbstractTree<?> node) {
@@ -252,15 +252,15 @@ public class NezConstructor extends GrammarFileLoader implements Constructor {
 	}
 
 	public Expression newDef(AbstractTree<?> node) {
-		return ExpressionCommons.newXdef(node, this.getGrammarFile(), Symbol.tag(node.getText(_name, "")), newExpression(node.get(_expr)));
+		return ExpressionCommons.newXdef(node, this.getGrammar(), Symbol.tag(node.getText(_name, "")), newExpression(node.get(_expr)));
 	}
 
 	public Expression newIs(AbstractTree<?> node) {
-		return ExpressionCommons.newXis(node, this.getGrammarFile(), Symbol.tag(node.getText(_name, "")));
+		return ExpressionCommons.newXis(node, this.getGrammar(), Symbol.tag(node.getText(_name, "")));
 	}
 
 	public Expression newIsa(AbstractTree<?> node) {
-		return ExpressionCommons.newXisa(node, this.getGrammarFile(), Symbol.tag(node.getText(_name, "")));
+		return ExpressionCommons.newXisa(node, this.getGrammar(), Symbol.tag(node.getText(_name, "")));
 	}
 
 	public Expression newExists(AbstractTree<?> node) {
@@ -285,6 +285,7 @@ public class NezConstructor extends GrammarFileLoader implements Constructor {
 	}
 
 	public boolean parseExample(AbstractTree<?> node) {
+
 		String hash = node.getText(_hash, null);
 		AbstractTree<?> textNode = node.get(_text);
 		AbstractTree<?> nameNode = node.get(_name2, null);
@@ -384,7 +385,7 @@ public class NezConstructor extends GrammarFileLoader implements Constructor {
 
 	private void checkDuplicatedName(AbstractTree<?> errorNode) {
 		String name = errorNode.toText();
-		if (this.getGrammarFile().hasProduction(name)) {
+		if (this.getGrammar().hasProduction(name)) {
 			this.reportWarning(errorNode, "duplicated production: " + name);
 		}
 	}

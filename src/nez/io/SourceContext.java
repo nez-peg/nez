@@ -209,7 +209,7 @@ public abstract class SourceContext extends RuntimeContext {
 		return new StringContext(str);
 	}
 
-	public final static SourceContext newStringSourceContext(String resource, long linenum, String str) {
+	public final static SourceContext newStringContext(String resource, long linenum, String str) {
 		return new StringContext(resource, linenum, str);
 	}
 

@@ -74,7 +74,7 @@ public class Konoha extends TreeTransducer {
 	}
 
 	public void parse(KonohaTransducer konoha, String urn, int linenum, String text) {
-		SourceContext source = SourceContext.newStringSourceContext(urn, linenum, text);
+		SourceContext source = SourceContext.newStringContext(urn, linenum, text);
 		KonohaTree node = (KonohaTree) parser.parse(source, this);
 		if (node == null) {
 			ConsoleUtils.println(source.getSyntaxErrorMessage());

@@ -295,7 +295,7 @@ public abstract class AbstractTree<E extends AbstractTree<E>> extends AbstractLi
 	 */
 
 	public final SourceContext newSourceContext() {
-		return SourceContext.newStringSourceContext(this.getSource().getResourceName(), this.getSource().linenum(this.getSourcePosition()), this.toText());
+		return SourceContext.newStringContext(this.getSource().getResourceName(), this.getSource().linenum(this.getSourcePosition()), this.toText());
 	}
 
 	public final boolean containsToken(String token) {
