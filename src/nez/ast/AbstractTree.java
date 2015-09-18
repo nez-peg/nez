@@ -13,7 +13,7 @@ public abstract class AbstractTree<E extends AbstractTree<E>> extends AbstractLi
 	protected int pos;
 	protected int length;
 	protected Object value;
-	protected AbstractTree<E> parent = null;
+	// protected AbstractTree<E> parent = null;
 	protected Symbol[] labels;
 	protected E[] subTree;
 
@@ -52,13 +52,13 @@ public abstract class AbstractTree<E extends AbstractTree<E>> extends AbstractLi
 		return t == this.getTag();
 	}
 
-	public final AbstractTree<E> getParent() {
-		return parent;
-	}
-
-	public final void setParent(AbstractTree<E> parent) {
-		this.parent = parent;
-	}
+	// public final AbstractTree<E> getParent() {
+	// return parent;
+	// }
+	//
+	// public final void setParent(AbstractTree<E> parent) {
+	// this.parent = parent;
+	// }
 
 	public final Source getSource() {
 		return this.source;
@@ -130,7 +130,7 @@ public abstract class AbstractTree<E extends AbstractTree<E>> extends AbstractLi
 		E oldValue = null;
 		oldValue = this.subTree[index];
 		this.subTree[index] = node;
-		node.setParent(this);
+		// node.setParent(this);
 		return oldValue;
 	}
 
@@ -188,6 +188,7 @@ public abstract class AbstractTree<E extends AbstractTree<E>> extends AbstractLi
 		}
 		sb.append(indent);
 		if (label != null) {
+			sb.append("$");
 			sb.append(label);
 			sb.append(" ");
 		}

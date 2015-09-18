@@ -22,7 +22,6 @@ import nez.lang.expr.Tlink;
 import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
-import nez.lang.expr.Unary;
 import nez.lang.expr.Xblock;
 import nez.lang.expr.Xdef;
 import nez.lang.expr.Xexists;
@@ -37,12 +36,6 @@ import nez.util.UList;
 
 public class GrammarTransducer {
 
-	protected void push(Expression inner) {
-	}
-
-	protected void pop(Expression inner) {
-	}
-
 	public final Expression reshapeInner(Expression inner) {
 		push(inner);
 		Expression inner2 = inner.reshape(this);
@@ -50,26 +43,24 @@ public class GrammarTransducer {
 		return inner2;
 	}
 
+	protected void push(Expression inner) {
+	}
+
+	protected void pop(Expression inner) {
+	}
+
 	public Production reshapeProduction(Production p) {
 		p.setExpression(this.reshapeInner(p.getExpression()));
 		return p;
 	}
 
-	public void updateProductionAttribute(Production origProduction, Production newProduction) {
-	}
-
-	protected final Expression updateInner(Unary e, Expression inner) {
-		e.inner = inner;
-		return e;
-	}
-
-	protected final Expression empty(Expression e) {
-		return ExpressionCommons.newEmpty(null);
-	}
-
-	protected final Expression fail(Expression e) {
-		return ExpressionCommons.newFailure(null);
-	}
+	// protected final Expression empty(Expression e) {
+	// return ExpressionCommons.newEmpty(null);
+	// }
+	//
+	// protected final Expression fail(Expression e) {
+	// return ExpressionCommons.newFailure(null);
+	// }
 
 	public Expression reshapePempty(Pempty e) {
 		return e; // immutable

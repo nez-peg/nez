@@ -253,11 +253,11 @@ public class GrammarChecker extends GrammarTransducer {
 	@Override
 	public Expression reshapeTnew(Tnew p) {
 		if (this.isNonASTContext()) {
-			return this.empty(p);
+			return p.newEmpty();
 		}
 		if (this.requiredTypestate != Typestate.ObjectType) {
 			this.reportRemoved(p, "{");
-			return empty(p);
+			return p.newEmpty();
 		}
 		this.requiredTypestate = Typestate.OperationType;
 		return super.reshapeTnew(p);
@@ -266,11 +266,11 @@ public class GrammarChecker extends GrammarTransducer {
 	@Override
 	public Expression reshapeTlfold(Tlfold p) {
 		if (this.isNonASTContext()) {
-			return this.empty(p);
+			return p.newEmpty();
 		}
 		if (this.requiredTypestate != Typestate.OperationType) {
 			this.reportRemoved(p, "{$");
-			return empty(p);
+			return p.newEmpty();
 		}
 		this.requiredTypestate = Typestate.OperationType;
 		return super.reshapeTlfold(p);
@@ -279,11 +279,11 @@ public class GrammarChecker extends GrammarTransducer {
 	@Override
 	public Expression reshapeTcapture(Tcapture p) {
 		if (this.isNonASTContext()) {
-			return this.empty(p);
+			return p.newEmpty();
 		}
 		if (this.requiredTypestate != Typestate.OperationType) {
 			this.reportRemoved(p, "}");
-			return empty(p);
+			return p.newEmpty();
 		}
 		this.requiredTypestate = Typestate.OperationType;
 		return super.reshapeTcapture(p);
@@ -292,11 +292,11 @@ public class GrammarChecker extends GrammarTransducer {
 	@Override
 	public Expression reshapeTtag(Ttag p) {
 		if (this.isNonASTContext()) {
-			return this.empty(p);
+			return p.newEmpty();
 		}
 		if (this.requiredTypestate != Typestate.OperationType) {
 			reportRemoved(p, "#" + p.tag.getSymbol());
-			return empty(p);
+			return p.newEmpty();
 		}
 		return p;
 	}
@@ -304,11 +304,11 @@ public class GrammarChecker extends GrammarTransducer {
 	@Override
 	public Expression reshapeTreplace(Treplace p) {
 		if (this.isNonASTContext()) {
-			return this.empty(p);
+			return p.newEmpty();
 		}
 		if (this.requiredTypestate != Typestate.OperationType) {
 			reportRemoved(p, "`" + p.value + "`");
-			return empty(p);
+			return p.newEmpty();
 		}
 		return p;
 	}
