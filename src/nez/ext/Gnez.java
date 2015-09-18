@@ -1,6 +1,6 @@
 package nez.ext;
 
-import nez.lang.NezConstructor;
+import nez.lang.util.NezConstructor;
 
 public class Gnez extends NezConstructor {
 
