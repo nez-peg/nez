@@ -55,10 +55,10 @@ public class Example {
 			return true;
 		}
 		if (nodehash.startsWith(hash)) {
-			ConsoleUtils.println("[PASS] " + name + " ~" + nodehash);
+			ConsoleUtils.println("[PASS] " + name);
 			return true;
 		}
-		ConsoleUtils.println("[FAIL] " + name + " ~" + nodehash + node + "\n");
+		ConsoleUtils.println("[FAIL] " + name + " ~" + nodehash + "\n");
 		ConsoleUtils.println("   ", this.getText());
 		ConsoleUtils.println("---");
 		ConsoleUtils.println("   ", node);

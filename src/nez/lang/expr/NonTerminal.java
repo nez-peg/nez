@@ -6,7 +6,9 @@ import nez.lang.Expression;
 import nez.lang.GrammarTransducer;
 import nez.lang.PossibleAcceptance;
 import nez.lang.Production;
+import nez.lang.Typestate;
 import nez.lang.Visa;
+import nez.main.Verbose;
 import nez.parser.AbstractGenerator;
 import nez.parser.Instruction;
 
@@ -47,13 +49,6 @@ public class NonTerminal extends ExpressionCommons {
 		return this.uniqueName;
 	}
 
-	// public final boolean syncProduction() {
-	// Production p = this.g.getProduction(this.localName);
-	// boolean sync = (deref != p);
-	// this.deref = p;
-	// return sync;
-	// }
-
 	public final Production getProduction() {
 		if (deref != null) {
 			return deref;
@@ -93,7 +88,14 @@ public class NonTerminal extends ExpressionCommons {
 
 	@Override
 	public int inferTypestate(Visa v) {
-		return this.getProduction().inferTypestate(v);
+		Production p = this.getProduction();
+		if (p == null) {
+			if (!this.isTerminal()) {
+				Verbose.debug("** unresolved name: " + this.getLocalName());
+			}
+			return Typestate.BooleanType;
+		}
+		return p.inferTypestate(v);
 	}
 
 	@Override

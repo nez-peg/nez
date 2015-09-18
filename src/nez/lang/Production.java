@@ -9,12 +9,12 @@ import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cset;
 import nez.lang.expr.ExpressionCommons;
 import nez.lang.expr.NonTerminal;
-import nez.lang.expr.Pchoice;
-import nez.lang.expr.Psequence;
 import nez.lang.expr.Pand;
+import nez.lang.expr.Pchoice;
 import nez.lang.expr.Pnot;
 import nez.lang.expr.Pone;
 import nez.lang.expr.Poption;
+import nez.lang.expr.Psequence;
 import nez.lang.expr.Pzero;
 import nez.parser.AbstractGenerator;
 import nez.parser.Instruction;
@@ -311,7 +311,11 @@ public class Production /* extends Expression */{
 
 	public final boolean isContextual() {
 		if (!UFlag.is(this.flag, Production.ContextualChecked)) {
-			checkContextual(this.getExpression(), null);
+			Expression e = this.getExpression();
+			if (e == null) {
+				return false;
+			}
+			checkContextual(e, null);
 			this.flag |= Production.ContextualChecked;
 		}
 		return UFlag.is(this.flag, Production.ContextualProduction);
@@ -324,6 +328,9 @@ public class Production /* extends Expression */{
 		}
 		if (e instanceof NonTerminal) {
 			Production p = ((NonTerminal) e).getProduction();
+			if (p == null) {
+				return;
+			}
 			if (UFlag.is(p.flag, Production.ContextualProduction)) {
 				this.flag |= Production.ContextualChecked | Production.ContextualProduction;
 				return;

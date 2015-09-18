@@ -2,9 +2,9 @@ package nez.lang.util;
 
 import java.util.ArrayList;
 
+import nez.ast.Symbol;
 import nez.ast.Tree;
 import nez.ast.TreeVisitor;
-import nez.ast.Symbol;
 import nez.util.FileBuilder;
 
 public class NezFileFormatter extends TreeVisitor {
@@ -14,7 +14,7 @@ public class NezFileFormatter extends TreeVisitor {
 		f = new FileBuilder(null);
 	}
 
-	boolean isBeforeComment = false;
+	boolean isBeforeComment = true;
 
 	void writeIndent(String s) {
 		if (s.startsWith("/*") || s.startsWith("//")) {
@@ -32,7 +32,7 @@ public class NezFileFormatter extends TreeVisitor {
 		f.write(s);
 	}
 
-	public void writeMultiLine(String sub) {
+	public void writeMultiLine(long prev, String sub) {
 		int start = 0;
 		boolean empty = true;
 		for (int i = 0; i < sub.length(); i++) {
@@ -42,7 +42,12 @@ public class NezFileFormatter extends TreeVisitor {
 			}
 			if (ch == '\n') {
 				if (!empty) {
-					writeIndent(sub.substring(start, i));
+					if (prev == 0) {
+						write(sub.substring(start, i));
+						prev = 1;
+					} else {
+						writeIndent(sub.substring(start, i));
+					}
 				}
 				start = i + 1;
 				empty = true;
@@ -86,7 +91,7 @@ public class NezFileFormatter extends TreeVisitor {
 			}
 		}
 		if (hasExample) {
-			writeIndent("/* Example */");
+			writeIndent("");
 			for (Tree<?> subnode : l) {
 				if (subnode.is(_Example)) {
 					parse(subnode);
@@ -94,13 +99,15 @@ public class NezFileFormatter extends TreeVisitor {
 			}
 		}
 		if (hasFormat) {
-			writeIndent("/* Format */");
+			writeIndent("");
 			for (Tree<?> subnode : l) {
 				if (subnode.is(_Format)) {
 					parse(subnode);
 				}
 			}
 		}
+		f.writeNewLine();
+		f.writeIndent("// formatted by $ nez format");
 		f.writeNewLine();
 		return true;
 	}
@@ -125,7 +132,7 @@ public class NezFileFormatter extends TreeVisitor {
 		long start = node.getSourcePosition();
 		if (prev < start) {
 			String sub = node.getSource().substring(prev, start);
-			writeMultiLine(sub);
+			writeMultiLine(prev, sub);
 		}
 		return start + node.getLength();
 	}

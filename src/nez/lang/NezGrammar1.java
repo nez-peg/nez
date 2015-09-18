@@ -233,7 +233,7 @@ public class NezGrammar1 extends Combinator {
 
 	public Expression pFunc() {
 		Expression _If = Sequence(t("if"), P("S"), Link("name", "FlagName"), Tag("If"));
-		Expression _On = Sequence(t("on"), P("S"), Link("name", "FlagName"), P("S"), Link("expr", "Expression"), Tag("On"));
+		Expression _On = Sequence(Choice(t("on"), t("with")), P("S"), Link("name", "FlagName"), P("S"), Link("expr", "Expression"), Tag("On"));
 		Expression _Def = Sequence(t("def"), P("S"), Link("name", "TableName"), P("S"), Link("expr", "Expression"), Tag("Def"));
 		Expression _Exists = Sequence(t("exists"), P("S"), Link("name", "TableName"), Option(P("S"), Link("symbol", "Character")), Tag("Exists"));
 		Expression _Match = Sequence(t("match"), P("S"), Link("name", "TableName"), Tag("Match"));

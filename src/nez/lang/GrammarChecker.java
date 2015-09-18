@@ -49,7 +49,7 @@ public class GrammarChecker extends GrammarTransducer {
 		}
 		String uname = uniqueName(start.getUniqueName(), start);
 		this.checkFirstVisitedProduction(uname, start); // start
-		if (!strategy.isEnabled("Onone", true)) {
+		if (strategy.isEnabled("Onone", Strategy.Onone)) {
 			new GrammarOptimizer(g, strategy);
 		}
 	}

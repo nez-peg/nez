@@ -1,8 +1,6 @@
 // Nez
 // Nested CDATA Section
 
-export
-        = Xml
 File
 	= PROLOG? DTD? Xml
 
