@@ -17,7 +17,7 @@ public class NezFileFormatter extends AbstractTreeVisitor {
 	boolean isBeforeComment = false;
 
 	void writeIndent(String s) {
-		if (s.startsWith("/*")) {
+		if (s.startsWith("/*") || s.startsWith("//")) {
 			if (!isBeforeComment) {
 				f.writeNewLine();
 			}
