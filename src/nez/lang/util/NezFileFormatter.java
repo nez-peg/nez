@@ -14,6 +14,44 @@ public class NezFileFormatter extends AbstractTreeVisitor {
 		f = new FileBuilder(null);
 	}
 
+	boolean isBeforeComment = false;
+
+	void writeIndent(String s) {
+		if (s.startsWith("/*")) {
+			if (!isBeforeComment) {
+				f.writeNewLine();
+			}
+			isBeforeComment = true;
+		} else {
+			isBeforeComment = false;
+		}
+		f.writeIndent(s);
+	}
+
+	void write(String s) {
+		f.write(s);
+	}
+
+	public void writeMultiLine(String sub) {
+		int start = 0;
+		boolean empty = true;
+		for (int i = 0; i < sub.length(); i++) {
+			char ch = sub.charAt(i);
+			if (ch == ' ' || ch == '\t') {
+				continue;
+			}
+			if (ch == '\n') {
+				if (!empty) {
+					writeIndent(sub.substring(start, i));
+				}
+				start = i + 1;
+				empty = true;
+				continue;
+			}
+			empty = false;
+		}
+	}
+
 	public void parse(AbstractTree<?> node) {
 		visit("p", node);
 	}
@@ -21,6 +59,9 @@ public class NezFileFormatter extends AbstractTreeVisitor {
 	public final static Symbol _name = Symbol.tag("name");
 	public final static Symbol _expr = Symbol.tag("expr");
 	public final static Symbol _symbol = Symbol.tag("symbol");
+
+	public final static Symbol _Production = Symbol.tag("Production");
+	public final static Symbol _Example = Symbol.tag("Example");
 	public final static Symbol _Format = Symbol.tag("Format");
 
 	public boolean pSource(AbstractTree<?> node) {
@@ -31,24 +72,36 @@ public class NezFileFormatter extends AbstractTreeVisitor {
 
 		long prev = 0;
 		boolean hasFormat = false;
+		boolean hasExample = false;
 		for (AbstractTree<?> subnode : l) {
 			prev = checkComment(prev, subnode);
-			if (!subnode.is(_Format)) {
-				parse(subnode);
-			} else {
+			if (subnode.is(_Format)) {
 				hasFormat = true;
 			}
+			if (subnode.is(_Example)) {
+				hasExample = true;
+			}
+			if (subnode.is(_Production)) {
+				parse(subnode);
+			}
 		}
-		f.writeNewLine();
+		if (hasExample) {
+			writeIndent("/* Example */");
+			for (AbstractTree<?> subnode : l) {
+				if (subnode.is(_Example)) {
+					parse(subnode);
+				}
+			}
+		}
 		if (hasFormat) {
-			f.writeIndent("/* Format */");
+			writeIndent("/* Format */");
 			for (AbstractTree<?> subnode : l) {
 				if (subnode.is(_Format)) {
 					parse(subnode);
 				}
 			}
-			f.writeNewLine();
 		}
+		f.writeNewLine();
 		return true;
 	}
 
@@ -72,12 +125,11 @@ public class NezFileFormatter extends AbstractTreeVisitor {
 		long start = node.getSourcePosition();
 		if (prev < start) {
 			String sub = node.getSource().substring(prev, start);
-			f.writeMultiLine(sub);
+			writeMultiLine(sub);
 		}
 		return start + node.getLength();
 	}
 
-	public final static Symbol _Production = Symbol.tag("Production");
 	public final static Symbol _NonTerminal = Symbol.tag("NonTerminal");
 
 	public final static Symbol _Choice = Symbol.tag("Choice");
@@ -93,12 +145,12 @@ public class NezFileFormatter extends AbstractTreeVisitor {
 		AbstractTree<?> exprNode = node.get(_expr);
 		String name = nameNode.is(_NonTerminal) ? nameNode.toText() : "\"" + nameNode.toText() + "\"";
 		String format = "%-" + this.prodLength + "s";
-		f.writeIndent(String.format(format, name));
+		writeIndent(String.format(format, name));
 		String delim = "= ";
 		if (exprNode.is(_Choice)) {
 			for (AbstractTree<?> sub : exprNode) {
 				if (!delim.startsWith("=")) {
-					f.writeIndent(String.format(format, ""));
+					writeIndent(String.format(format, ""));
 				}
 				f.write(delim);
 				pExpression(sub);
@@ -366,7 +418,7 @@ public class NezFileFormatter extends AbstractTreeVisitor {
 		String hash = node.getText(_hash, null);
 		AbstractTree<?> textNode = node.get(_text);
 
-		f.writeIndent("example " + nameNode.toText());
+		writeIndent("example " + nameNode.toText());
 		if (name2Node != null) {
 			f.write("&" + name2Node.toText());
 		}
@@ -375,8 +427,8 @@ public class NezFileFormatter extends AbstractTreeVisitor {
 		}
 		String s = "'''";
 		f.write(" " + s);
-		f.writeIndent(textNode.toText());
-		f.writeIndent(s);
+		writeIndent(textNode.toText());
+		writeIndent(s);
 		return true;
 	}
 
@@ -385,8 +437,8 @@ public class NezFileFormatter extends AbstractTreeVisitor {
 
 	public boolean pFormat(AbstractTree<?> node) {
 		// System.out.println("node:" + node);
-		f.writeIndent("format #" + node.getText(_name, ""));
-		f.write(" [" + node.getText(_size, "*") + "] ");
+		writeIndent("format #" + node.getText(_name, ""));
+		f.write("[" + node.getText(_size, "*") + "] ");
 		AbstractTree<?> formatNode = node.get(_format);
 		f.write("`" + formatNode.toText() + "`");
 		return true;

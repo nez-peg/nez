@@ -17,6 +17,7 @@ import nez.lang.GrammarFileLoader;
 import nez.lang.NezGrammar1;
 import nez.lang.Production;
 import nez.lang.expr.ExpressionCommons;
+import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
 import nez.util.UList;
 
@@ -37,9 +38,17 @@ public class NezConstructor extends GrammarFileLoader implements Constructor {
 		return nezParser;
 	}
 
+	private long debugPosition = -1; // to detected infinite loop
+
 	@Override
 	public void parse(AbstractTree<?> node) {
+		if (node.getSourcePosition() == debugPosition) {
+			ConsoleUtils.println(node.formatSourceMessage("panic", "parsed at the same position"));
+			ConsoleUtils.println("node: " + node);
+			throw new RuntimeException("");
+		}
 		visit("parse", node);
+		debugPosition = node.getSourcePosition();
 	}
 
 	public boolean parseSource(AbstractTree<?> node) {
