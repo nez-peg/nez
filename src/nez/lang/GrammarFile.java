@@ -65,16 +65,16 @@ public class GrammarFile extends Grammar {
 
 	// fields
 	final String urn;
-	final Strategy option;
+	final Strategy strategy;
 
-	GrammarFile(String ns, String urn, Strategy option) {
+	GrammarFile(String ns, String urn, Strategy strategy) {
 		super(ns);
 		this.urn = urn;
-		this.option = option;
+		this.strategy = strategy;
 	}
 
-	public final Strategy getOption() {
-		return this.option;
+	public final Strategy getStrategy() {
+		return this.strategy;
 	}
 
 	public final String getURN() {
@@ -98,13 +98,14 @@ public class GrammarFile extends Grammar {
 		throw new RuntimeException("FIXME");
 	}
 
-	public Production newReducedProduction(String localName, Production p, GrammarTransducer m) {
-		Production r = p.getGrammar().newProduction(localName, null);
-		this.addProduction(r);
-		m.updateProductionAttribute(p, r);
-		r.setExpression(p.getExpression().reshape(m));
-		return r;
-	}
+	// public Production newReducedProduction(String localName, Production p,
+	// GrammarTransducer m) {
+	// Production r = p.getGrammar().newProduction(localName, null);
+	// this.addProduction(r);
+	// m.updateProductionAttribute(p, r);
+	// r.setExpression(p.getExpression().reshape(m));
+	// return r;
+	// }
 
 	// public final Parser newParser0(String name, NezOption option) {
 	// Production r = this.getProduction(name);

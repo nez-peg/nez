@@ -33,12 +33,9 @@ import nez.lang.expr.Xlocal;
 import nez.lang.expr.Xmatch;
 import nez.lang.expr.Xon;
 import nez.main.Verbose;
-import nez.util.UFlag;
 import nez.util.UList;
 
 public class GrammarTransducer {
-	public final static GrammarTransducer RemoveASTandRename = new ASTConstructionEliminator(true);
-	public final static GrammarTransducer RemoveAST = new ASTConstructionEliminator(false);
 
 	protected void push(Expression inner) {
 	}
@@ -216,73 +213,6 @@ public class GrammarTransducer {
 	public Expression reshapeUndefined(Expression e) {
 		Verbose.println("TODO: implement reshape in " + this.getClass());
 		return e;
-	}
-
-}
-
-class ASTConstructionEliminator extends GrammarTransducer {
-	boolean renaming;
-
-	ASTConstructionEliminator(boolean renaming) {
-		this.renaming = renaming;
-	}
-
-	@Override
-	public void updateProductionAttribute(Production origProduction, Production newProduction) {
-		newProduction.flag = UFlag.unsetFlag(origProduction.flag, Production.ObjectProduction | Production.OperationalProduction);
-	}
-
-	@Override
-	public Expression reshapeNonTerminal(NonTerminal e) {
-		if (renaming) {
-			Production r = removeASTOperator(e.getProduction());
-			if (!e.getLocalName().equals(r.getLocalName())) {
-				return ExpressionCommons.newNonTerminal(e.getSourcePosition(), r.getGrammar(), r.getLocalName());
-			}
-		}
-		return e;
-	}
-
-	private Production removeASTOperator(Production p) {
-		if (p.inferTypestate(null) == Typestate.BooleanType) {
-			return p;
-		}
-		String name = "~" + p.getLocalName();
-		Production r = p.getGrammar().getProduction(name);
-		if (r == null) {
-			r = /* FIXME */((GrammarFile) p.getGrammar()).newReducedProduction(name, p, this);
-		}
-		return r;
-	}
-
-	@Override
-	public Expression reshapeTdetree(Tdetree e) {
-		return e.get(0).reshape(this);
-	}
-
-	@Override
-	public Expression reshapeTnew(Tnew e) {
-		return empty(e);
-	}
-
-	@Override
-	public Expression reshapeTlink(Tlink e) {
-		return e.get(0).reshape(this);
-	}
-
-	@Override
-	public Expression reshapeTtag(Ttag e) {
-		return empty(e);
-	}
-
-	@Override
-	public Expression reshapeTreplace(Treplace e) {
-		return empty(e);
-	}
-
-	@Override
-	public Expression reshapeTcapture(Tcapture e) {
-		return empty(e);
 	}
 
 }
