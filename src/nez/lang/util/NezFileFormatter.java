@@ -21,6 +21,7 @@ public class NezFileFormatter extends AbstractTreeVisitor {
 	public final static Symbol _name = Symbol.tag("name");
 	public final static Symbol _expr = Symbol.tag("expr");
 	public final static Symbol _symbol = Symbol.tag("symbol");
+	public final static Symbol _Format = Symbol.tag("Format");
 
 	public boolean pSource(AbstractTree<?> node) {
 		ArrayList<AbstractTree<?>> l = new ArrayList<>(node.size() * 2);
@@ -29,11 +30,25 @@ public class NezFileFormatter extends AbstractTreeVisitor {
 		}
 
 		long prev = 0;
+		boolean hasFormat = false;
 		for (AbstractTree<?> subnode : l) {
 			prev = checkComment(prev, subnode);
-			parse(subnode);
+			if (!subnode.is(_Format)) {
+				parse(subnode);
+			} else {
+				hasFormat = true;
+			}
 		}
 		f.writeNewLine();
+		if (hasFormat) {
+			f.writeIndent("/* Format */");
+			for (AbstractTree<?> subnode : l) {
+				if (subnode.is(_Format)) {
+					parse(subnode);
+				}
+			}
+			f.writeNewLine();
+		}
 		return true;
 	}
 
@@ -332,10 +347,12 @@ public class NezFileFormatter extends AbstractTreeVisitor {
 	}
 
 	public boolean pIndent(AbstractTree<?> node) {
+		f.write("<match indent>");
 		return true;
 	}
 
 	public boolean pUndefined(AbstractTree<?> node) {
+		f.write("<undefined>");
 		return false;
 	}
 
@@ -363,7 +380,15 @@ public class NezFileFormatter extends AbstractTreeVisitor {
 		return true;
 	}
 
+	public final static Symbol _size = Symbol.tag("hash"); // format
+	public final static Symbol _format = Symbol.tag("format"); // format
+
 	public boolean pFormat(AbstractTree<?> node) {
+		// System.out.println("node:" + node);
+		f.writeIndent("format #" + node.getText(_name, ""));
+		f.write(" [" + node.getText(_size, "*") + "] ");
+		AbstractTree<?> formatNode = node.get(_format);
+		f.write("`" + formatNode.toText() + "`");
 		return true;
 	}
 
