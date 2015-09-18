@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import nez.ast.AbstractTree;
+import nez.ast.Tree;
 import nez.ast.Symbol;
 import nez.lang.Expression;
 import nez.lang.expr.ExpressionCommons;
@@ -28,7 +28,7 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 	}
 
 	@Override
-	protected final void loadPredefinedRules(AbstractTree<?> node) {
+	protected final void loadPredefinedRules(Tree<?> node) {
 		JSONPredefinedRules preRules = new JSONPredefinedRules(grammar);
 		preRules.defineRule();
 	}
@@ -36,8 +36,8 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 	// visitor methods
 
 	@Override
-	public final void visitRoot(AbstractTree<?> node) {
-		for (AbstractTree<?> classNode : node) {
+	public final void visitRoot(Tree<?> node) {
+		for (Tree<?> classNode : node) {
 			initPropertiesList();
 			currentClassName = classNode.getText(0, null);
 			this.visit("visit", classNode);
@@ -52,14 +52,14 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 	}
 
 	@Override
-	public final void visitStruct(AbstractTree<?> node) {
-		for (AbstractTree<?> memberNode : node) {
+	public final void visitStruct(Tree<?> node) {
+		for (Tree<?> memberNode : node) {
 			this.visit("visit", memberNode);
 		}
 	}
 
 	@Override
-	public final void visitRequired(AbstractTree<?> node) {
+	public final void visitRequired(Tree<?> node) {
 		String propertyName = node.getText(0, null);
 		requiredPropertiesList.add(propertyName);
 		Expression[] seq = { _DQuoat(), ExpressionCommons.newXdef(node, grammar, Symbol.tag(currentClassName), ExpressionCommons.newString(node, propertyName)), _DQuoat(), ExpressionCommons.newNonTerminal(null, grammar, "NAMESEP"), toExpression(node.get(1)),
@@ -68,7 +68,7 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 	}
 
 	@Override
-	public final void visitOption(AbstractTree<?> node) {
+	public final void visitOption(Tree<?> node) {
 		String propertyName = node.getText(0, null);
 		impliedPropertiesList.add(propertyName);
 		Expression[] seq = { _DQuoat(), grammar.newString(propertyName), _DQuoat(), ExpressionCommons.newNonTerminal(null, grammar, "NAMESEP"), toExpression(node.get(1)), grammar.newOption(ExpressionCommons.newNonTerminal(null, grammar, "VALUESEP")) };
@@ -76,7 +76,7 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 	}
 
 	@Override
-	public final void visitUntypedRequired(AbstractTree<?> node) {
+	public final void visitUntypedRequired(Tree<?> node) {
 		String propertyName = node.getText(0, null);
 		requiredPropertiesList.add(propertyName);
 		// inferType(node.get(2));
@@ -86,7 +86,7 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 	}
 
 	@Override
-	public final void visitUntypedOption(AbstractTree<?> node) {
+	public final void visitUntypedOption(Tree<?> node) {
 		String propertyName = node.getText(0, null);
 		impliedPropertiesList.add(propertyName);
 		// inferType(node.get(2));
@@ -95,30 +95,30 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 		grammar.addProduction(node, node.getText(0, null), grammar.newSequence(seq));
 	}
 
-	public final void visitName(AbstractTree<?> node) {
+	public final void visitName(Tree<?> node) {
 	}
 
 	// to Expression Methods
 
 	@Override
-	public final Expression toTObject(AbstractTree<?> node) {
+	public final Expression toTObject(Tree<?> node) {
 		return ExpressionCommons.newNonTerminal(null, grammar, "JSONObject");
 	}
 
 	@Override
-	public final Expression toTClass(AbstractTree<?> node) {
+	public final Expression toTClass(Tree<?> node) {
 		return ExpressionCommons.newNonTerminal(null, grammar, node.toText());
 	}
 
 	@Override
-	public final Expression toTArray(AbstractTree<?> node) {
+	public final Expression toTArray(Tree<?> node) {
 		Expression type = toExpression(node.get(0));
 		Expression[] seq = { grammar.newByteChar('['), _SPACING(), type, grammar.newRepetition(ExpressionCommons.newNonTerminal(null, grammar, "VALUESEP"), type), grammar.newByteChar(']') };
 		return grammar.newSequence(seq);
 	}
 
 	@Override
-	public final Expression toTEnum(AbstractTree<?> node) {
+	public final Expression toTEnum(Tree<?> node) {
 		Expression[] choice = new Expression[node.size()];
 		for (int index = 0; index < choice.length; index++) {
 			choice[index] = grammar.newString(node.getText(index, null));

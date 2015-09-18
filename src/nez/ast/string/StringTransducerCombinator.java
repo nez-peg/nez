@@ -1,6 +1,6 @@
 package nez.ast.string;
 
-import nez.ast.AbstractTree;
+import nez.ast.Tree;
 
 public class StringTransducerCombinator {
 	public StringTransducer make(StringTransducer... list) {
@@ -59,7 +59,7 @@ class TextualStringTransducer extends StringTransducer {
 	}
 
 	@Override
-	protected <E extends AbstractTree<E>> void formatTo(AbstractTree<E> node, StringTransducerBuilder stream) {
+	protected <E extends Tree<E>> void formatTo(Tree<E> node, StringTransducerBuilder stream) {
 		stream.write(text);
 	}
 }
@@ -76,11 +76,11 @@ class NodeStringTransducer extends StringTransducer {
 	}
 
 	@Override
-	protected <E extends AbstractTree<E>> void formatTo(AbstractTree<E> node, StringTransducerBuilder stream) {
+	protected <E extends Tree<E>> void formatTo(Tree<E> node, StringTransducerBuilder stream) {
 		int size = node.size();
 		int index = NodeStringTransducer.index(this.index, size);
 		if (0 <= index && index < size) {
-			AbstractTree<E> sub = node.get(index);
+			Tree<E> sub = node.get(index);
 			StringTransducer st = stream.lookup(sub);
 			st.trasformTo(sub, stream);
 		}
@@ -99,7 +99,7 @@ class RangeNodeStringTransducer extends StringTransducer {
 	}
 
 	@Override
-	protected <E extends AbstractTree<E>> void formatTo(AbstractTree<E> node, StringTransducerBuilder stream) {
+	protected <E extends Tree<E>> void formatTo(Tree<E> node, StringTransducerBuilder stream) {
 		int size = node.size();
 		int s = NodeStringTransducer.index(this.start, size);
 		int e = NodeStringTransducer.index(this.end, size);
@@ -110,7 +110,7 @@ class RangeNodeStringTransducer extends StringTransducer {
 			if (i > s) {
 				delim.trasformTo(node, stream);
 			}
-			AbstractTree<E> sub = node.get(i);
+			Tree<E> sub = node.get(i);
 			StringTransducer st = stream.lookup(sub);
 			st.trasformTo(sub, stream);
 		}
@@ -119,27 +119,27 @@ class RangeNodeStringTransducer extends StringTransducer {
 
 class EmptyAction extends StringTransducer {
 	@Override
-	protected <E extends AbstractTree<E>> void formatTo(AbstractTree<E> node, StringTransducerBuilder stream) {
+	protected <E extends Tree<E>> void formatTo(Tree<E> node, StringTransducerBuilder stream) {
 	}
 }
 
 class IndentAction extends StringTransducer {
 	@Override
-	protected <E extends AbstractTree<E>> void formatTo(AbstractTree<E> node, StringTransducerBuilder stream) {
+	protected <E extends Tree<E>> void formatTo(Tree<E> node, StringTransducerBuilder stream) {
 		stream.writeNewLineIndent();
 	}
 }
 
 class IncAction extends StringTransducer {
 	@Override
-	protected <E extends AbstractTree<E>> void formatTo(AbstractTree<E> node, StringTransducerBuilder stream) {
+	protected <E extends Tree<E>> void formatTo(Tree<E> node, StringTransducerBuilder stream) {
 		stream.incIndent();
 	}
 }
 
 class DecAction extends StringTransducer {
 	@Override
-	protected <E extends AbstractTree<E>> void formatTo(AbstractTree<E> node, StringTransducerBuilder stream) {
+	protected <E extends Tree<E>> void formatTo(Tree<E> node, StringTransducerBuilder stream) {
 		stream.decIndent();
 	}
 }

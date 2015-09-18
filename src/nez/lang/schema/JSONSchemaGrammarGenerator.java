@@ -3,7 +3,7 @@ package nez.lang.schema;
 import java.util.List;
 
 import nez.Grammar;
-import nez.ast.AbstractTree;
+import nez.ast.Tree;
 
 public class JSONSchemaGrammarGenerator extends SchemaGrammarGenerator {
 
@@ -74,7 +74,7 @@ public class JSONSchemaGrammarGenerator extends SchemaGrammarGenerator {
 	}
 
 	@Override
-	public Type newTEnum(AbstractTree<?> node) {
+	public Type newTEnum(Tree<?> node) {
 		// TODO Auto-generated method stub
 		return null;
 	}

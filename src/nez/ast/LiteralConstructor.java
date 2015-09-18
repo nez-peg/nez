@@ -9,7 +9,7 @@ import java.util.Map;
 import nez.Strategy;
 import nez.util.StringUtils;
 
-public class LiteralConstructor extends AbstractTreeVisitor implements Constructor {
+public class LiteralConstructor extends TreeVisitor implements Constructor {
 
 	protected Strategy strategy;
 
@@ -22,12 +22,12 @@ public class LiteralConstructor extends AbstractTreeVisitor implements Construct
 	}
 
 	@Override
-	public Object newInstance(AbstractTree<?> node) {
+	public Object newInstance(Tree<?> node) {
 		return visit("new", node);
 	}
 
 	@Override
-	protected Object visitUndefinedNode(AbstractTree<?> node) {
+	protected Object visitUndefinedNode(Tree<?> node) {
 		if (node.size() == 0) {
 			return newText(node);
 		}
@@ -37,7 +37,7 @@ public class LiteralConstructor extends AbstractTreeVisitor implements Construct
 		return newList(node);
 	}
 
-	public Boolean newBoolean(AbstractTree<?> node) {
+	public Boolean newBoolean(Tree<?> node) {
 		try {
 			if (node.toText().equals("true")) {
 				return true;
@@ -50,7 +50,7 @@ public class LiteralConstructor extends AbstractTreeVisitor implements Construct
 		}
 	}
 
-	public Integer newInteger(AbstractTree<?> node) {
+	public Integer newInteger(Tree<?> node) {
 		try {
 			return Integer.parseInt(node.toText());
 		} catch (LiteralFormatException e) {
@@ -60,7 +60,7 @@ public class LiteralConstructor extends AbstractTreeVisitor implements Construct
 		}
 	}
 
-	public Long newLong(AbstractTree<?> node) {
+	public Long newLong(Tree<?> node) {
 		try {
 			return Long.parseLong(node.toText());
 		} catch (LiteralFormatException e) {
@@ -70,7 +70,7 @@ public class LiteralConstructor extends AbstractTreeVisitor implements Construct
 		}
 	}
 
-	public BigInteger newBigInteger(AbstractTree<?> node) {
+	public BigInteger newBigInteger(Tree<?> node) {
 		try {
 			return new BigInteger(node.toText());
 		} catch (LiteralFormatException e) {
@@ -80,7 +80,7 @@ public class LiteralConstructor extends AbstractTreeVisitor implements Construct
 		}
 	}
 
-	public Float newFloat(AbstractTree<?> node) {
+	public Float newFloat(Tree<?> node) {
 		try {
 			return Float.parseFloat(node.toText());
 		} catch (LiteralFormatException e) {
@@ -90,7 +90,7 @@ public class LiteralConstructor extends AbstractTreeVisitor implements Construct
 		}
 	}
 
-	public Double newDouble(AbstractTree<?> node) {
+	public Double newDouble(Tree<?> node) {
 		try {
 			return Double.parseDouble(node.toText());
 		} catch (LiteralFormatException e) {
@@ -100,7 +100,7 @@ public class LiteralConstructor extends AbstractTreeVisitor implements Construct
 		}
 	}
 
-	public String newString(AbstractTree<?> node) {
+	public String newString(Tree<?> node) {
 		try {
 			return StringUtils.unquoteString(node.toText());
 		} catch (LiteralFormatException e) {
@@ -110,7 +110,7 @@ public class LiteralConstructor extends AbstractTreeVisitor implements Construct
 		}
 	}
 
-	public String newText(AbstractTree<?> node) {
+	public String newText(Tree<?> node) {
 		return node.toText();
 	}
 
@@ -118,10 +118,10 @@ public class LiteralConstructor extends AbstractTreeVisitor implements Construct
 		return new ArrayList<Object>(n);
 	}
 
-	public List<Object> newList(AbstractTree<?> node) {
+	public List<Object> newList(Tree<?> node) {
 		try {
 			List<Object> l = newList(node.size());
-			for (AbstractTree<?> sub : node) {
+			for (Tree<?> sub : node) {
 				l.add(newInstance(sub));
 			}
 			return l;
@@ -136,7 +136,7 @@ public class LiteralConstructor extends AbstractTreeVisitor implements Construct
 		return new HashMap<String, Object>();
 	}
 
-	public Map<String, Object> newMap(AbstractTree<?> node) {
+	public Map<String, Object> newMap(Tree<?> node) {
 		Map<String, Object> m = newMap();
 		for (int i = 0; i < node.size(); i++) {
 			Symbol label = node.getLabel(i);
@@ -149,13 +149,13 @@ public class LiteralConstructor extends AbstractTreeVisitor implements Construct
 
 	// alias
 
-	public Integer newInt(AbstractTree<?> node) {
+	public Integer newInt(Tree<?> node) {
 		return newInteger(node);
 	}
 
 	// report
 
-	private <T> T report(RuntimeException e, AbstractTree<?> node, T initValue) {
+	private <T> T report(RuntimeException e, Tree<?> node, T initValue) {
 		if (strategy == null) {
 			throw new LiteralFormatException(node.formatSourceMessage("error", e.getMessage()));
 		}
@@ -163,7 +163,7 @@ public class LiteralConstructor extends AbstractTreeVisitor implements Construct
 		return initValue;
 	}
 
-	private <T> T report(String msg, AbstractTree<?> node, T initValue) {
+	private <T> T report(String msg, Tree<?> node, T initValue) {
 		if (strategy == null) {
 			throw new LiteralFormatException(node.formatSourceMessage("error", msg));
 		}

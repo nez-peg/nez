@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import nez.Strategy;
 import nez.Parser;
-import nez.ast.AbstractTreeWriter;
+import nez.ast.TreeWriter;
 import nez.ast.CommonTree;
 import nez.ast.CommonTreeTransducer;
 import nez.util.ConsoleUtils;
@@ -39,7 +39,7 @@ public class DebugManager {
 					node = treeTransducer.newNode(null, sc, startPosition, sc.getPosition(), 0, null);
 				}
 				CommonTree tree = (CommonTree) treeTransducer.commit(node);
-				AbstractTreeWriter w = new AbstractTreeWriter();
+				TreeWriter w = new TreeWriter();
 				w.writeTree(tree);
 				w.writeNewLine();
 				w.close();

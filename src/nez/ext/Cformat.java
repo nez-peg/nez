@@ -3,7 +3,7 @@ package nez.ext;
 import java.io.IOException;
 
 import nez.Parser;
-import nez.ast.AbstractTree;
+import nez.ast.Tree;
 import nez.io.SourceContext;
 import nez.lang.NezGrammar1;
 import nez.lang.util.NezFileFormatter;
@@ -16,7 +16,7 @@ public class Cformat extends Command {
 	public void exec(CommandContext config) throws IOException {
 		Parser p = new NezGrammar1().newParser(config.getStrategy());
 		SourceContext source = SourceContext.newFileContext(config.getGrammarPath());
-		AbstractTree<?> node = p.parseCommonTree(source);
+		Tree<?> node = p.parseCommonTree(source);
 		if (node == null) {
 			ConsoleUtils.println(source.getSyntaxErrorMessage());
 		}

@@ -6,8 +6,8 @@ import java.util.HashMap;
 import nez.Grammar;
 import nez.Parser;
 import nez.Strategy;
-import nez.ast.AbstractTree;
-import nez.ast.AbstractTreeVisitor;
+import nez.ast.Tree;
+import nez.ast.TreeVisitor;
 import nez.ast.SourcePosition;
 import nez.io.SourceContext;
 import nez.main.Verbose;
@@ -17,7 +17,7 @@ import nez.util.ConsoleUtils;
 import nez.util.ExtensionLoader;
 import nez.util.StringUtils;
 
-public abstract class GrammarFileLoader extends AbstractTreeVisitor {
+public abstract class GrammarFileLoader extends TreeVisitor {
 
 	protected Grammar file;
 	protected Strategy strategy;
@@ -48,7 +48,7 @@ public abstract class GrammarFileLoader extends AbstractTreeVisitor {
 
 		SourceContext sc = SourceContext.newFileContext(urn);
 		while (sc.hasUnconsumed()) {
-			AbstractTree<?> node = getLoaderParser().parseCommonTree(sc);
+			Tree<?> node = getLoaderParser().parseCommonTree(sc);
 			if (node == null) {
 				ConsoleUtils.exit(1, sc.getSyntaxErrorMessage());
 			}
@@ -62,7 +62,7 @@ public abstract class GrammarFileLoader extends AbstractTreeVisitor {
 
 		SourceContext sc = SourceContext.newStringContext(urn, linenum, text);
 		while (sc.hasUnconsumed()) {
-			AbstractTree<?> node = getLoaderParser().parseCommonTree(sc);
+			Tree<?> node = getLoaderParser().parseCommonTree(sc);
 			if (node == null) {
 				Verbose.println(sc.getSyntaxErrorMessage());
 			}
@@ -84,7 +84,7 @@ public abstract class GrammarFileLoader extends AbstractTreeVisitor {
 
 	public abstract Parser getLoaderParser();
 
-	public abstract void parse(AbstractTree<?> node);
+	public abstract void parse(Tree<?> node);
 
 	/* ------------------------------------------------------------------ */
 

@@ -1,6 +1,6 @@
 package nez.konoha;
 
-import nez.ast.AbstractTree;
+import nez.ast.Tree;
 import nez.ast.string.StringTransducer;
 import nez.ast.string.StringTransducerBuilder;
 
@@ -10,7 +10,7 @@ public class KonohaBuilder implements StringTransducerBuilder {
 	int indent;
 
 	@Override
-	public <E extends AbstractTree<E>> StringTransducer lookup(AbstractTree<E> sub) {
+	public <E extends Tree<E>> StringTransducer lookup(Tree<E> sub) {
 		KonohaTree node = (KonohaTree) sub;
 		StringTransducer st = node.getStringTransducer();
 		return st == null ? defaultTransducer : st;

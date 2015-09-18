@@ -2,7 +2,7 @@ package nez.lang.schema;
 
 import java.util.List;
 
-import nez.ast.AbstractTree;
+import nez.ast.Tree;
 
 public abstract class SchemaGrammarGenerator {
 	abstract public void loadPredefinedRules();
@@ -25,7 +25,7 @@ public abstract class SchemaGrammarGenerator {
 
 	abstract public Type newTArray(Type t);
 
-	abstract public Type newTEnum(AbstractTree<?> node);
+	abstract public Type newTEnum(Tree<?> node);
 
 	abstract public Type newTInteger();
 

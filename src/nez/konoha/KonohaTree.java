@@ -1,11 +1,11 @@
 package nez.konoha;
 
-import nez.ast.AbstractTree;
+import nez.ast.Tree;
 import nez.ast.Source;
 import nez.ast.Symbol;
 import nez.ast.string.StringTransducer;
 
-public class KonohaTree extends AbstractTree<KonohaTree> {
+public class KonohaTree extends Tree<KonohaTree> {
 	KonohaType typed = null;
 	KonohaTypeRule matched = null;
 

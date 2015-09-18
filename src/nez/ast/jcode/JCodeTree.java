@@ -1,10 +1,10 @@
 package nez.ast.jcode;
 
-import nez.ast.AbstractTree;
+import nez.ast.Tree;
 import nez.ast.Source;
 import nez.ast.Symbol;
 
-public abstract class JCodeTree extends AbstractTree<JCodeTree> {
+public abstract class JCodeTree extends Tree<JCodeTree> {
 	boolean requiredPop;
 
 	protected JCodeTree(Symbol tag, Source source, long pos, int len, JCodeTree[] subTree, Object value) {

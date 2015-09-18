@@ -15,7 +15,7 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.TreeSet;
 
-import nez.ast.AbstractTreeVisitor;
+import nez.ast.TreeVisitor;
 import nez.lang.Expression;
 import nez.lang.GrammarFile;
 import nez.lang.Production;
@@ -43,7 +43,7 @@ import nez.util.FileBuilder;
 
 // don't forget to insert \n to the end of input file
 // it causes java.lang.ArrayIndexOutOfBoundsException
-public class DFAConverter extends AbstractTreeVisitor {
+public class DFAConverter extends TreeVisitor {
 	static char epsilon = ' ';
 	final protected FileBuilder file;
 	final protected GrammarFile grammar;

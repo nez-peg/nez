@@ -7,10 +7,10 @@ import java.util.HashMap;
 import nez.main.Verbose;
 import nez.util.ConsoleUtils;
 
-public class AbstractTreeVisitor {
+public class TreeVisitor {
 	private HashMap<String, Method> methodMap = new HashMap<String, Method>();
 
-	public final Object visit(String method, AbstractTree<?> node) {
+	public final Object visit(String method, Tree<?> node) {
 		Symbol tag = node.getTag();
 		Method m = findMethod(method, tag);
 		if (m != null) {
@@ -47,15 +47,15 @@ public class AbstractTreeVisitor {
 
 	protected Method getClassMethod(String method, Symbol tag) throws NoSuchMethodException, SecurityException {
 		String name = method + tag.getSymbol();
-		return this.getClass().getMethod(name, AbstractTree.class);
+		return this.getClass().getMethod(name, Tree.class);
 	}
 
-	protected Object visitUndefinedNode(AbstractTree<?> node) {
+	protected Object visitUndefinedNode(Tree<?> node) {
 		ConsoleUtils.exit(1, "undefined node:" + node);
 		return null;
 	}
 
-	public final Object visit(String method, Class<?> c1, AbstractTree<?> node, Object p1) {
+	public final Object visit(String method, Class<?> c1, Tree<?> node, Object p1) {
 		Symbol tag = node.getTag();
 		Method m = findMethod(method, tag, c1);
 		if (m != null) {
@@ -92,10 +92,10 @@ public class AbstractTreeVisitor {
 
 	protected Method getClassMethod(String method, Symbol tag, Class<?> c1) throws NoSuchMethodException, SecurityException {
 		String name = method + tag.getSymbol();
-		return this.getClass().getMethod(name, AbstractTree.class, c1);
+		return this.getClass().getMethod(name, Tree.class, c1);
 	}
 
-	protected Object visitUndefinedNode(AbstractTree<?> node, Object p1) {
+	protected Object visitUndefinedNode(Tree<?> node, Object p1) {
 		ConsoleUtils.exit(1, "undefined node:" + node + " with " + p1);
 		return null;
 	}

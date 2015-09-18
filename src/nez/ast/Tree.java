@@ -5,7 +5,7 @@ import java.util.AbstractList;
 import nez.io.SourceContext;
 import nez.util.StringUtils;
 
-public abstract class AbstractTree<E extends AbstractTree<E>> extends AbstractList<E> implements SourcePosition {
+public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements SourcePosition {
 	private final static Symbol[] EmptyLabels = new Symbol[0];
 
 	protected Symbol tag;
@@ -17,7 +17,7 @@ public abstract class AbstractTree<E extends AbstractTree<E>> extends AbstractLi
 	protected Symbol[] labels;
 	protected E[] subTree;
 
-	protected AbstractTree(Symbol tag, Source source, long pos, int len, E[] subTree, Object value) {
+	protected Tree(Symbol tag, Source source, long pos, int len, E[] subTree, Object value) {
 		this.tag = tag;
 		this.source = source;
 		this.pos = (int) pos;

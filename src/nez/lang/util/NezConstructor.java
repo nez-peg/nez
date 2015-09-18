@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import nez.Grammar;
 import nez.Parser;
 import nez.Strategy;
-import nez.ast.AbstractTree;
+import nez.ast.Tree;
 import nez.ast.Constructor;
 import nez.ast.Symbol;
 import nez.lang.Example;
@@ -41,7 +41,7 @@ public class NezConstructor extends GrammarFileLoader implements Constructor {
 	private long debugPosition = -1; // to detected infinite loop
 
 	@Override
-	public void parse(AbstractTree<?> node) {
+	public void parse(Tree<?> node) {
 		if (node.getSourcePosition() == debugPosition) {
 			ConsoleUtils.println(node.formatSourceMessage("panic", "parsed at the same position"));
 			ConsoleUtils.println("node: " + node);
@@ -51,8 +51,8 @@ public class NezConstructor extends GrammarFileLoader implements Constructor {
 		debugPosition = node.getSourcePosition();
 	}
 
-	public boolean parseSource(AbstractTree<?> node) {
-		for (AbstractTree<?> subnode : node) {
+	public boolean parseSource(Tree<?> node) {
+		for (Tree<?> subnode : node) {
 			parse(subnode);
 		}
 		return true;
@@ -68,8 +68,8 @@ public class NezConstructor extends GrammarFileLoader implements Constructor {
 
 	public final static Symbol _anno = Symbol.tag("anno");
 
-	public Production parseProduction(AbstractTree<?> node) {
-		AbstractTree<?> nameNode = node.get(_name);
+	public Production parseProduction(Tree<?> node) {
+		Tree<?> nameNode = node.get(_name);
 		String localName = nameNode.toText();
 		int productionFlag = 0;
 		if (nameNode.is(_String)) {
@@ -100,33 +100,33 @@ public class NezConstructor extends GrammarFileLoader implements Constructor {
 	}
 
 	@Override
-	public final Object newInstance(AbstractTree<?> node) {
+	public final Object newInstance(Tree<?> node) {
 		return visit("new", node);
 	}
 
-	public Expression newExpression(AbstractTree<?> node) {
+	public Expression newExpression(Tree<?> node) {
 		return (Expression) visit("new", node);
 	}
 
-	public Expression newNonTerminal(AbstractTree<?> node) {
+	public Expression newNonTerminal(Tree<?> node) {
 		String symbol = node.toText();
 		return ExpressionCommons.newNonTerminal(node, this.getGrammar(), symbol);
 	}
 
-	public Expression newString(AbstractTree<?> node) {
+	public Expression newString(Tree<?> node) {
 		String name = GrammarFile.nameTerminalProduction(node.toText());
 		return ExpressionCommons.newNonTerminal(node, this.getGrammar(), name);
 	}
 
-	public Expression newCharacter(AbstractTree<?> node) {
+	public Expression newCharacter(Tree<?> node) {
 		return ExpressionCommons.newString(node, StringUtils.unquoteString(node.toText()));
 	}
 
-	public Expression newClass(AbstractTree<?> node) {
+	public Expression newClass(Tree<?> node) {
 		UList<Expression> l = new UList<Expression>(new Expression[2]);
 		if (node.size() > 0) {
 			for (int i = 0; i < node.size(); i++) {
-				AbstractTree<?> o = node.get(i);
+				Tree<?> o = node.get(i);
 				if (o.is(_List)) { // range
 					l.add(ExpressionCommons.newCharSet(node, o.getText(0, ""), o.getText(1, "")));
 				}
@@ -138,7 +138,7 @@ public class NezConstructor extends GrammarFileLoader implements Constructor {
 		return ExpressionCommons.newPchoice(node, l);
 	}
 
-	public Expression newByte(AbstractTree<?> node) {
+	public Expression newByte(Tree<?> node) {
 		String t = node.toText();
 		if (t.startsWith("U+")) {
 			int c = StringUtils.hex(t.charAt(2));
@@ -155,11 +155,11 @@ public class NezConstructor extends GrammarFileLoader implements Constructor {
 		return ExpressionCommons.newCbyte(node, this.binary, c);
 	}
 
-	public Expression newAnyChar(AbstractTree<?> node) {
+	public Expression newAnyChar(Tree<?> node) {
 		return ExpressionCommons.newCany(node, this.binary);
 	}
 
-	public Expression newChoice(AbstractTree<?> node) {
+	public Expression newChoice(Tree<?> node) {
 		UList<Expression> l = new UList<Expression>(new Expression[node.size()]);
 		for (int i = 0; i < node.size(); i++) {
 			ExpressionCommons.addChoice(l, newExpression(node.get(i)));
@@ -167,7 +167,7 @@ public class NezConstructor extends GrammarFileLoader implements Constructor {
 		return ExpressionCommons.newPchoice(node, l);
 	}
 
-	public Expression newSequence(AbstractTree<?> node) {
+	public Expression newSequence(Tree<?> node) {
 		UList<Expression> l = new UList<Expression>(new Expression[node.size()]);
 		for (int i = 0; i < node.size(); i++) {
 			ExpressionCommons.addSequence(l, newExpression(node.get(i)));
@@ -175,23 +175,23 @@ public class NezConstructor extends GrammarFileLoader implements Constructor {
 		return ExpressionCommons.newPsequence(node, l);
 	}
 
-	public Expression newNot(AbstractTree<?> node) {
+	public Expression newNot(Tree<?> node) {
 		return ExpressionCommons.newPnot(node, newExpression(node.get(_expr)));
 	}
 
-	public Expression newAnd(AbstractTree<?> node) {
+	public Expression newAnd(Tree<?> node) {
 		return ExpressionCommons.newPand(node, newExpression(node.get(_expr)));
 	}
 
-	public Expression newOption(AbstractTree<?> node) {
+	public Expression newOption(Tree<?> node) {
 		return ExpressionCommons.newPoption(node, newExpression(node.get(_expr)));
 	}
 
-	public Expression newRepetition1(AbstractTree<?> node) {
+	public Expression newRepetition1(Tree<?> node) {
 		return ExpressionCommons.newPone(node, newExpression(node.get(_expr)));
 	}
 
-	public Expression newRepetition(AbstractTree<?> node) {
+	public Expression newRepetition(Tree<?> node) {
 		if (node.size() == 2) {
 			int ntimes = StringUtils.parseInt(node.getText(1, ""), -1);
 			if (ntimes != 1) {
@@ -207,8 +207,8 @@ public class NezConstructor extends GrammarFileLoader implements Constructor {
 
 	// PEG4d TransCapturing
 
-	public Expression newNew(AbstractTree<?> node) {
-		AbstractTree<?> exprNode = node.get(_expr, null);
+	public Expression newNew(Tree<?> node) {
+		Tree<?> exprNode = node.get(_expr, null);
 		Expression p = (exprNode == null) ? ExpressionCommons.newEmpty(node) : newExpression(exprNode);
 		return ExpressionCommons.newNewCapture(node, false, null, p);
 	}
@@ -220,91 +220,91 @@ public class NezConstructor extends GrammarFileLoader implements Constructor {
 	public final static Symbol _name2 = Symbol.tag("name2"); // example
 	public final static Symbol _text = Symbol.tag("text"); // example
 
-	private Symbol parseLabelNode(AbstractTree<?> node) {
+	private Symbol parseLabelNode(Tree<?> node) {
 		Symbol label = null;
-		AbstractTree<?> labelNode = node.get(_name, null);
+		Tree<?> labelNode = node.get(_name, null);
 		if (labelNode != null) {
 			label = Symbol.tag(labelNode.toText());
 		}
 		return label;
 	}
 
-	public Expression newLeftFold(AbstractTree<?> node) {
-		AbstractTree<?> exprNode = node.get(_expr, null);
+	public Expression newLeftFold(Tree<?> node) {
+		Tree<?> exprNode = node.get(_expr, null);
 		Expression p = (exprNode == null) ? ExpressionCommons.newEmpty(node) : newExpression(exprNode);
 		return ExpressionCommons.newNewCapture(node, true, parseLabelNode(node), p);
 	}
 
-	public Expression newLink(AbstractTree<?> node) {
+	public Expression newLink(Tree<?> node) {
 		return ExpressionCommons.newTlink(node, parseLabelNode(node), newExpression(node.get(_expr)));
 	}
 
-	public Expression newTagging(AbstractTree<?> node) {
+	public Expression newTagging(Tree<?> node) {
 		return ExpressionCommons.newTtag(node, Symbol.tag(node.toText()));
 	}
 
-	public Expression newReplace(AbstractTree<?> node) {
+	public Expression newReplace(Tree<?> node) {
 		return ExpressionCommons.newTreplace(node, node.toText());
 	}
 
-	public Expression newMatch(AbstractTree<?> node) {
-		AbstractTree<?> exprNode = node.get(_expr, null);
+	public Expression newMatch(Tree<?> node) {
+		Tree<?> exprNode = node.get(_expr, null);
 		if (exprNode != null) {
 			return ExpressionCommons.newTdetree(node, newExpression(exprNode));
 		}
 		return ExpressionCommons.newXmatch(node, parseLabelNode(node));
 	}
 
-	public Expression newIf(AbstractTree<?> node) {
+	public Expression newIf(Tree<?> node) {
 		return ExpressionCommons.newXif(node, node.getText(_name, ""));
 	}
 
-	public Expression newOn(AbstractTree<?> node) {
+	public Expression newOn(Tree<?> node) {
 		return ExpressionCommons.newXon(node, true, node.getText(_name, ""), newExpression(node.get(_expr)));
 	}
 
-	public Expression newBlock(AbstractTree<?> node) {
+	public Expression newBlock(Tree<?> node) {
 		return ExpressionCommons.newXblock(node, newExpression(node.get(_expr)));
 	}
 
-	public Expression newDef(AbstractTree<?> node) {
+	public Expression newDef(Tree<?> node) {
 		return ExpressionCommons.newXdef(node, this.getGrammar(), Symbol.tag(node.getText(_name, "")), newExpression(node.get(_expr)));
 	}
 
-	public Expression newIs(AbstractTree<?> node) {
+	public Expression newIs(Tree<?> node) {
 		return ExpressionCommons.newXis(node, this.getGrammar(), Symbol.tag(node.getText(_name, "")));
 	}
 
-	public Expression newIsa(AbstractTree<?> node) {
+	public Expression newIsa(Tree<?> node) {
 		return ExpressionCommons.newXisa(node, this.getGrammar(), Symbol.tag(node.getText(_name, "")));
 	}
 
-	public Expression newExists(AbstractTree<?> node) {
+	public Expression newExists(Tree<?> node) {
 		return ExpressionCommons.newXexists(node, Symbol.tag(node.getText(_name, "")), node.getText(_symbol, null));
 	}
 
-	public Expression newLocal(AbstractTree<?> node) {
+	public Expression newLocal(Tree<?> node) {
 		return ExpressionCommons.newXlocal(node, Symbol.tag(node.getText(_name, "")), newExpression(node.get(_expr)));
 	}
 
-	public Expression newDefIndent(AbstractTree<?> node) {
+	public Expression newDefIndent(Tree<?> node) {
 		return ExpressionCommons.newDefIndent(node);
 	}
 
-	public Expression newIndent(AbstractTree<?> node) {
+	public Expression newIndent(Tree<?> node) {
 		return ExpressionCommons.newIndent(node);
 	}
 
-	public Expression newUndefined(AbstractTree<?> node) {
+	public Expression newUndefined(Tree<?> node) {
 		this.reportError(node, "undefined or deprecated notation");
 		return ExpressionCommons.newEmpty(node);
 	}
 
-	public boolean parseExample(AbstractTree<?> node) {
+	public boolean parseExample(Tree<?> node) {
 
 		String hash = node.getText(_hash, null);
-		AbstractTree<?> textNode = node.get(_text);
-		AbstractTree<?> nameNode = node.get(_name2, null);
+		Tree<?> textNode = node.get(_text);
+		Tree<?> nameNode = node.get(_name2, null);
 		if (nameNode != null) {
 			this.getGrammarFile().addExample(new Example(true, nameNode, hash, textNode));
 			nameNode = node.get(_name);
@@ -316,7 +316,7 @@ public class NezConstructor extends GrammarFileLoader implements Constructor {
 		return true;
 	}
 
-	public boolean parseFormat(AbstractTree<?> node) {
+	public boolean parseFormat(Tree<?> node) {
 		// System.out.println("node: " + node);
 		String tag = node.getText(0, "token");
 		int index = StringUtils.parseInt(node.getText(1, "*"), -1);
@@ -325,10 +325,10 @@ public class NezConstructor extends GrammarFileLoader implements Constructor {
 		return true;
 	}
 
-	Formatter toFormatter(AbstractTree<?> node) {
+	Formatter toFormatter(Tree<?> node) {
 		if (node.is(_List)) {
 			ArrayList<Formatter> l = new ArrayList<Formatter>(node.size());
-			for (AbstractTree<?> t : node) {
+			for (Tree<?> t : node) {
 				l.add(toFormatter(t));
 			}
 			return Formatter.newFormatter(l);
@@ -354,7 +354,7 @@ public class NezConstructor extends GrammarFileLoader implements Constructor {
 	}
 
 	/* import */
-	public boolean parseImport(AbstractTree<?> node) {
+	public boolean parseImport(Tree<?> node) {
 		// System.out.println("DEBUG? parsed: " + node);
 		String ns = null;
 		String name = node.getText(0, "*");
@@ -399,7 +399,7 @@ public class NezConstructor extends GrammarFileLoader implements Constructor {
 		return false;
 	}
 
-	private void checkDuplicatedName(AbstractTree<?> errorNode) {
+	private void checkDuplicatedName(Tree<?> errorNode) {
 		String name = errorNode.toText();
 		if (this.getGrammar().hasProduction(name)) {
 			this.reportWarning(errorNode, "duplicated production: " + name);

@@ -1,18 +1,18 @@
 package nez.lang;
 
 import nez.Parser;
-import nez.ast.AbstractTree;
-import nez.ast.AbstractTreeUtils;
+import nez.ast.Tree;
+import nez.ast.TreeUtils;
 import nez.io.SourceContext;
 import nez.util.ConsoleUtils;
 
 public class Example {
 	boolean isPublic;
-	AbstractTree<?> nameNode;
-	AbstractTree<?> textNode;
+	Tree<?> nameNode;
+	Tree<?> textNode;
 	String hash;
 
-	public Example(boolean isPublic, AbstractTree<?> nameNode, String hash, AbstractTree<?> textNode) {
+	public Example(boolean isPublic, Tree<?> nameNode, String hash, Tree<?> textNode) {
 		this.isPublic = true;
 		this.nameNode = nameNode;
 		this.textNode = textNode;
@@ -38,13 +38,13 @@ public class Example {
 	public boolean test(Parser p) {
 		SourceContext source = textNode.newSourceContext();
 		String name = nameNode.toText() + " (" + textNode.getSource().getResourceName() + ":" + textNode.getLinenum() + ")";
-		AbstractTree<?> node = p.parseCommonTree(source);
+		Tree<?> node = p.parseCommonTree(source);
 		if (node == null) {
 			ConsoleUtils.println("[FAIL] " + name);
 			ConsoleUtils.println(source.getSyntaxErrorMessage());
 			return false;
 		}
-		String nodehash = AbstractTreeUtils.digestString(node);
+		String nodehash = TreeUtils.digestString(node);
 		if (hash == null) {
 			ConsoleUtils.println("[HASH] " + name + " ~" + nodehash);
 			ConsoleUtils.println("   ", this.getText());

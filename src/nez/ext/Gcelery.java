@@ -7,7 +7,7 @@ import java.util.List;
 import nez.Grammar;
 import nez.Parser;
 import nez.Strategy;
-import nez.ast.AbstractTree;
+import nez.ast.Tree;
 import nez.ast.Symbol;
 import nez.lang.GrammarFileLoader;
 import nez.lang.schema.JSONSchemaGrammarGenerator;
@@ -43,7 +43,7 @@ public class Gcelery extends GrammarFileLoader {
 	}
 
 	@Override
-	public void parse(AbstractTree<?> node) {
+	public void parse(Tree<?> node) {
 		schema.loadPredefinedRules();
 		visit("visit", node);
 	}
@@ -54,18 +54,18 @@ public class Gcelery extends GrammarFileLoader {
 	public final static Symbol _Name = Symbol.tag("Name");
 	public final static Symbol _Type = Symbol.tag("Type");
 
-	public final void visitRoot(AbstractTree<?> node) {
+	public final void visitRoot(Tree<?> node) {
 		String rootStructName = node.get(0).getText(_Name, "");
-		for (AbstractTree<?> classNode : node) {
+		for (Tree<?> classNode : node) {
 			this.visit("visit", classNode);
 		}
 		schema.newRoot(rootStructName);
 	}
 
-	public final void visitStruct(AbstractTree<?> node) {
+	public final void visitStruct(Tree<?> node) {
 		String structName = node.getText(0, null);
 		initMemberList();
-		for (AbstractTree<?> memberNode : node) {
+		for (Tree<?> memberNode : node) {
 			this.visit("visit", memberNode);
 		}
 		if (enableNezExtension) {
@@ -75,48 +75,48 @@ public class Gcelery extends GrammarFileLoader {
 		}
 	}
 
-	public final void visitRequired(AbstractTree<?> node) {
+	public final void visitRequired(Tree<?> node) {
 		String elementName = node.getText(_Name, "");
 		requiredList.add(elementName);
 		membersList.add(elementName);
 		schema.newElement(elementName, schema.newRequired(toType(node.get(_Type))));
 	}
 
-	public final void visitOption(AbstractTree<?> node) {
+	public final void visitOption(Tree<?> node) {
 		String elementName = node.getText(_Name, "");
 		membersList.add(elementName);
 		schema.newElement(elementName, schema.newOption(toType(node.get(_Type))));
 	}
 
-	public final Type toType(AbstractTree<?> node) {
+	public final Type toType(Tree<?> node) {
 		return (Type) this.visit("to", node);
 	}
 
-	public final Type toTObject(AbstractTree<?> node) {
+	public final Type toTObject(Tree<?> node) {
 		return schema.newTObject();
 	}
 
-	public final Type toTStruct(AbstractTree<?> node) {
+	public final Type toTStruct(Tree<?> node) {
 		return schema.newTStruct();
 	}
 
-	public final Type toTAny(AbstractTree<?> node) {
+	public final Type toTAny(Tree<?> node) {
 		return schema.newTAny();
 	}
 
-	public final Type toTArray(AbstractTree<?> node) {
+	public final Type toTArray(Tree<?> node) {
 		return schema.newTArray(toType(node.get(0)));
 	}
 
-	public final Type toTEnum(AbstractTree<?> node) {
+	public final Type toTEnum(Tree<?> node) {
 		return schema.newTEnum(node);
 	}
 
-	public final Type toTInteger(AbstractTree<?> node) {
+	public final Type toTInteger(Tree<?> node) {
 		return schema.newTInteger();
 	}
 
-	public final Type toTFloat(AbstractTree<?> node) {
+	public final Type toTFloat(Tree<?> node) {
 		return schema.newTFloat();
 	}
 

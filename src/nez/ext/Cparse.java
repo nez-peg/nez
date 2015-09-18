@@ -3,8 +3,8 @@ package nez.ext;
 import java.io.IOException;
 
 import nez.Parser;
-import nez.ast.AbstractTree;
-import nez.ast.AbstractTreeWriter;
+import nez.ast.Tree;
+import nez.ast.TreeWriter;
 import nez.io.SourceContext;
 import nez.main.Command;
 import nez.main.CommandContext;
@@ -17,7 +17,7 @@ public class Cparse extends Command {
 		Parser g = config.newParser();
 		while (config.hasInput()) {
 			SourceContext input = config.nextInput();
-			AbstractTree<?> node = g.parseCommonTree(input);
+			Tree<?> node = g.parseCommonTree(input);
 			if (node == null) {
 				ConsoleUtils.println(input.getSyntaxErrorMessage());
 				continue;
@@ -31,19 +31,19 @@ public class Cparse extends Command {
 		}
 	}
 
-	private void record(NezProfier prof, AbstractTree<?> node) {
+	private void record(NezProfier prof, Tree<?> node) {
 		if (prof != null) {
 			System.gc();
 			prof.setCount("O.Size", node.countSubNodes());
 			long t1 = System.nanoTime();
-			AbstractTree<?> t = node.dup();
+			Tree<?> t = node.dup();
 			long t2 = System.nanoTime();
 			NezProfier.recordLatencyMS(prof, "O.Overhead", t1, t2);
 		}
 	}
 
-	protected void makeOutputFile(CommandContext config, SourceContext source, AbstractTree<?> node) {
-		AbstractTreeWriter w = new AbstractTreeWriter(config.getStrategy(), config.getOutputFileName(source, "ast"));
+	protected void makeOutputFile(CommandContext config, SourceContext source, Tree<?> node) {
+		TreeWriter w = new TreeWriter(config.getStrategy(), config.getOutputFileName(source, "ast"));
 		w.writeTree(node);
 		w.writeNewLine();
 		w.close();

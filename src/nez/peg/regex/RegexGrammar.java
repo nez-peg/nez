@@ -7,7 +7,7 @@ import java.lang.reflect.Method;
 import nez.ParserException;
 import nez.Parser;
 import nez.Strategy;
-import nez.ast.AbstractTreeVisitor;
+import nez.ast.TreeVisitor;
 import nez.ast.CommonTree;
 import nez.ast.Symbol;
 import nez.io.SourceContext;
@@ -20,7 +20,7 @@ import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
 import nez.util.UList;
 
-public class RegexGrammar extends AbstractTreeVisitor {
+public class RegexGrammar extends TreeVisitor {
 
 	static GrammarFile regexGrammar = null;
 

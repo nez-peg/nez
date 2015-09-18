@@ -2,12 +2,12 @@ package nez.lang.util;
 
 import java.util.ArrayList;
 
-import nez.ast.AbstractTree;
-import nez.ast.AbstractTreeVisitor;
+import nez.ast.Tree;
+import nez.ast.TreeVisitor;
 import nez.ast.Symbol;
 import nez.util.FileBuilder;
 
-public class NezFileFormatter extends AbstractTreeVisitor {
+public class NezFileFormatter extends TreeVisitor {
 	private FileBuilder f;
 
 	public NezFileFormatter() {
@@ -52,7 +52,7 @@ public class NezFileFormatter extends AbstractTreeVisitor {
 		}
 	}
 
-	public void parse(AbstractTree<?> node) {
+	public void parse(Tree<?> node) {
 		visit("p", node);
 	}
 
@@ -64,16 +64,16 @@ public class NezFileFormatter extends AbstractTreeVisitor {
 	public final static Symbol _Example = Symbol.tag("Example");
 	public final static Symbol _Format = Symbol.tag("Format");
 
-	public boolean pSource(AbstractTree<?> node) {
-		ArrayList<AbstractTree<?>> l = new ArrayList<>(node.size() * 2);
-		for (AbstractTree<?> subnode : node) {
+	public boolean pSource(Tree<?> node) {
+		ArrayList<Tree<?>> l = new ArrayList<>(node.size() * 2);
+		for (Tree<?> subnode : node) {
 			analyze(subnode, l);
 		}
 
 		long prev = 0;
 		boolean hasFormat = false;
 		boolean hasExample = false;
-		for (AbstractTree<?> subnode : l) {
+		for (Tree<?> subnode : l) {
 			prev = checkComment(prev, subnode);
 			if (subnode.is(_Format)) {
 				hasFormat = true;
@@ -87,7 +87,7 @@ public class NezFileFormatter extends AbstractTreeVisitor {
 		}
 		if (hasExample) {
 			writeIndent("/* Example */");
-			for (AbstractTree<?> subnode : l) {
+			for (Tree<?> subnode : l) {
 				if (subnode.is(_Example)) {
 					parse(subnode);
 				}
@@ -95,7 +95,7 @@ public class NezFileFormatter extends AbstractTreeVisitor {
 		}
 		if (hasFormat) {
 			writeIndent("/* Format */");
-			for (AbstractTree<?> subnode : l) {
+			for (Tree<?> subnode : l) {
 				if (subnode.is(_Format)) {
 					parse(subnode);
 				}
@@ -107,10 +107,10 @@ public class NezFileFormatter extends AbstractTreeVisitor {
 
 	private int prodLength = 8;
 
-	private void analyze(AbstractTree<?> node, ArrayList<AbstractTree<?>> l) {
+	private void analyze(Tree<?> node, ArrayList<Tree<?>> l) {
 		l.add(node);
 		if (node.is(_Production)) {
-			AbstractTree<?> name = node.get(_name);
+			Tree<?> name = node.get(_name);
 			int len = name.toText().length() + 2;
 			if (!name.is(_NonTerminal)) {
 				len += 2;
@@ -121,7 +121,7 @@ public class NezFileFormatter extends AbstractTreeVisitor {
 		}
 	}
 
-	private long checkComment(long prev, AbstractTree<?> node) {
+	private long checkComment(long prev, Tree<?> node) {
 		long start = node.getSourcePosition();
 		if (prev < start) {
 			String sub = node.getSource().substring(prev, start);
@@ -140,15 +140,15 @@ public class NezFileFormatter extends AbstractTreeVisitor {
 	//
 	// public final static Tag _anno = Tag.tag("anno");
 
-	public boolean pProduction(AbstractTree<?> node) {
-		AbstractTree<?> nameNode = node.get(_name);
-		AbstractTree<?> exprNode = node.get(_expr);
+	public boolean pProduction(Tree<?> node) {
+		Tree<?> nameNode = node.get(_name);
+		Tree<?> exprNode = node.get(_expr);
 		String name = nameNode.is(_NonTerminal) ? nameNode.toText() : "\"" + nameNode.toText() + "\"";
 		String format = "%-" + this.prodLength + "s";
 		writeIndent(String.format(format, name));
 		String delim = "= ";
 		if (exprNode.is(_Choice)) {
-			for (AbstractTree<?> sub : exprNode) {
+			for (Tree<?> sub : exprNode) {
 				if (!delim.startsWith("=")) {
 					writeIndent(String.format(format, ""));
 				}
@@ -163,34 +163,34 @@ public class NezFileFormatter extends AbstractTreeVisitor {
 		return true;
 	}
 
-	public boolean pExpression(AbstractTree<?> node) {
+	public boolean pExpression(Tree<?> node) {
 		return (Boolean) visit("p", node);
 	}
 
-	public boolean pNonTerminal(AbstractTree<?> node) {
+	public boolean pNonTerminal(Tree<?> node) {
 		f.write(node.toText());
 		return true;
 	}
 
-	public boolean pString(AbstractTree<?> node) {
+	public boolean pString(Tree<?> node) {
 		f.write("\"");
 		f.write(node.toText());
 		f.write("\"");
 		return true;
 	}
 
-	public boolean pCharacter(AbstractTree<?> node) {
+	public boolean pCharacter(Tree<?> node) {
 		f.write("'");
 		f.write(node.toText());
 		f.write("'");
 		return true;
 	}
 
-	public boolean pClass(AbstractTree<?> node) {
+	public boolean pClass(Tree<?> node) {
 		f.write("[");
 		if (node.size() > 0) {
 			for (int i = 0; i < node.size(); i++) {
-				AbstractTree<?> o = node.get(i);
+				Tree<?> o = node.get(i);
 				if (o.is(_List)) { // range
 					f.write(o.getText(0, ""));
 					f.write("-");
@@ -205,18 +205,18 @@ public class NezFileFormatter extends AbstractTreeVisitor {
 		return true;
 	}
 
-	public boolean pByte(AbstractTree<?> node) {
+	public boolean pByte(Tree<?> node) {
 		String t = node.toText();
 		f.write(t);
 		return true;
 	}
 
-	public boolean pAnyChar(AbstractTree<?> node) {
+	public boolean pAnyChar(Tree<?> node) {
 		f.write(".");
 		return true;
 	}
 
-	public boolean pChoice(AbstractTree<?> node) {
+	public boolean pChoice(Tree<?> node) {
 		boolean spacing = false;
 		for (int i = 0; i < node.size(); i++) {
 			if (spacing) {
@@ -227,13 +227,13 @@ public class NezFileFormatter extends AbstractTreeVisitor {
 		return spacing;
 	}
 
-	public boolean pSequence(AbstractTree<?> node) {
+	public boolean pSequence(Tree<?> node) {
 		boolean spacing = false;
 		for (int i = 0; i < node.size(); i++) {
 			if (spacing) {
 				f.write(" ");
 			}
-			AbstractTree<?> sub = node.get(i);
+			Tree<?> sub = node.get(i);
 			if (sub.is(_Choice)) {
 				f.write("(");
 			}
@@ -245,15 +245,15 @@ public class NezFileFormatter extends AbstractTreeVisitor {
 		return spacing;
 	}
 
-	private boolean needsParenthesis(AbstractTree<?> node) {
+	private boolean needsParenthesis(Tree<?> node) {
 		return node.is(_Choice) || node.is(_Sequence);
 	}
 
-	private boolean pUnary(String prefix, AbstractTree<?> node, String suffix) {
+	private boolean pUnary(String prefix, Tree<?> node, String suffix) {
 		if (prefix != null) {
 			f.write(prefix);
 		}
-		AbstractTree<?> exprNode = node.get(_expr);
+		Tree<?> exprNode = node.get(_expr);
 		if (needsParenthesis(exprNode)) {
 			f.write("( ");
 			pExpression(exprNode);
@@ -267,52 +267,52 @@ public class NezFileFormatter extends AbstractTreeVisitor {
 		return true;
 	}
 
-	public boolean pNot(AbstractTree<?> node) {
+	public boolean pNot(Tree<?> node) {
 		return pUnary("!", node, null);
 	}
 
-	public boolean pAnd(AbstractTree<?> node) {
+	public boolean pAnd(Tree<?> node) {
 		return pUnary("&", node, null);
 	}
 
-	public boolean pMatch(AbstractTree<?> node) {
+	public boolean pMatch(Tree<?> node) {
 		return pUnary("~", node, null);
 	}
 
-	public boolean pOption(AbstractTree<?> node) {
+	public boolean pOption(Tree<?> node) {
 		return pUnary(null, node, "?");
 	}
 
-	public boolean pRepetition1(AbstractTree<?> node) {
+	public boolean pRepetition1(Tree<?> node) {
 		return pUnary(null, node, "+");
 	}
 
-	public boolean pRepetition(AbstractTree<?> node) {
+	public boolean pRepetition(Tree<?> node) {
 		return pUnary(null, node, "*");
 	}
 
 	// PEG4d TransCapturing
 
-	public boolean pNew(AbstractTree<?> node) {
-		AbstractTree<?> exprNode = node.get(_expr, null);
+	public boolean pNew(Tree<?> node) {
+		Tree<?> exprNode = node.get(_expr, null);
 		f.write("{ ");
 		pExpression(exprNode);
 		f.write(" }");
 		return true;
 	}
 
-	private Symbol parseLabelNode(AbstractTree<?> node) {
+	private Symbol parseLabelNode(Tree<?> node) {
 		Symbol label = null;
-		AbstractTree<?> labelNode = node.get(_name, null);
+		Tree<?> labelNode = node.get(_name, null);
 		if (labelNode != null) {
 			label = Symbol.tag(labelNode.toText());
 		}
 		return label;
 	}
 
-	public boolean pLeftFold(AbstractTree<?> node) {
+	public boolean pLeftFold(Tree<?> node) {
 		Symbol tag = parseLabelNode(node);
-		AbstractTree<?> exprNode = node.get(_expr, null);
+		Tree<?> exprNode = node.get(_expr, null);
 		String label = tag == null ? "$" : "$" + tag.toString();
 		if (exprNode != null) {
 			f.write("{" + label + " ");
@@ -324,7 +324,7 @@ public class NezFileFormatter extends AbstractTreeVisitor {
 		return true;
 	}
 
-	public boolean pLink(AbstractTree<?> node) {
+	public boolean pLink(Tree<?> node) {
 		Symbol tag = parseLabelNode(node);
 		f.write("$");
 		if (tag != null) {
@@ -336,49 +336,49 @@ public class NezFileFormatter extends AbstractTreeVisitor {
 		return true;
 	}
 
-	public boolean pTagging(AbstractTree<?> node) {
+	public boolean pTagging(Tree<?> node) {
 		f.write("#");
 		f.write(node.toText());
 		return true;
 	}
 
-	public boolean pReplace(AbstractTree<?> node) {
+	public boolean pReplace(Tree<?> node) {
 		f.write("`");
 		f.write(node.toText());
 		f.write("`");
 		return true;
 	}
 
-	public boolean pIf(AbstractTree<?> node) {
+	public boolean pIf(Tree<?> node) {
 		f.write("<if " + node.getText(_name, "") + ">");
 		return true;
 	}
 
-	public boolean pOn(AbstractTree<?> node) {
+	public boolean pOn(Tree<?> node) {
 		String p = "<on " + node.getText(_name, "") + " ";
 		return pUnary(p, node, ">");
 	}
 
-	public boolean pBlock(AbstractTree<?> node) {
+	public boolean pBlock(Tree<?> node) {
 		return pUnary("<block ", node, ">");
 	}
 
-	public boolean pDef(AbstractTree<?> node) {
+	public boolean pDef(Tree<?> node) {
 		String p = "<on " + node.getText(_name, "") + " ";
 		return pUnary(p, node, ">");
 	}
 
-	public boolean pIs(AbstractTree<?> node) {
+	public boolean pIs(Tree<?> node) {
 		f.write("<is " + node.getText(_name, "") + ">");
 		return true;
 	}
 
-	public boolean pIsa(AbstractTree<?> node) {
+	public boolean pIsa(Tree<?> node) {
 		f.write("<isa " + node.getText(_name, "") + ">");
 		return true;
 	}
 
-	public boolean pExists(AbstractTree<?> node) {
+	public boolean pExists(Tree<?> node) {
 		String symbol = node.getText(_symbol, null);
 		if (symbol == null) {
 			f.write("<exists " + node.getText(_name, "") + ">");
@@ -388,22 +388,22 @@ public class NezFileFormatter extends AbstractTreeVisitor {
 		return true;
 	}
 
-	public boolean pLocal(AbstractTree<?> node) {
+	public boolean pLocal(Tree<?> node) {
 		String p = "<local " + node.getText(_name, "") + " ";
 		return pUnary(p, node, ">");
 	}
 
-	public boolean pDefIndent(AbstractTree<?> node) {
+	public boolean pDefIndent(Tree<?> node) {
 		f.write("<match indent>");
 		return true;
 	}
 
-	public boolean pIndent(AbstractTree<?> node) {
+	public boolean pIndent(Tree<?> node) {
 		f.write("<match indent>");
 		return true;
 	}
 
-	public boolean pUndefined(AbstractTree<?> node) {
+	public boolean pUndefined(Tree<?> node) {
 		f.write("<undefined>");
 		return false;
 	}
@@ -412,11 +412,11 @@ public class NezFileFormatter extends AbstractTreeVisitor {
 	public final static Symbol _name2 = Symbol.tag("name2"); // example
 	public final static Symbol _text = Symbol.tag("text"); // example
 
-	public boolean pExample(AbstractTree<?> node) {
-		AbstractTree<?> nameNode = node.get(_name);
-		AbstractTree<?> name2Node = node.get(_name2, null);
+	public boolean pExample(Tree<?> node) {
+		Tree<?> nameNode = node.get(_name);
+		Tree<?> name2Node = node.get(_name2, null);
 		String hash = node.getText(_hash, null);
-		AbstractTree<?> textNode = node.get(_text);
+		Tree<?> textNode = node.get(_text);
 
 		writeIndent("example " + nameNode.toText());
 		if (name2Node != null) {
@@ -435,11 +435,11 @@ public class NezFileFormatter extends AbstractTreeVisitor {
 	public final static Symbol _size = Symbol.tag("hash"); // format
 	public final static Symbol _format = Symbol.tag("format"); // format
 
-	public boolean pFormat(AbstractTree<?> node) {
+	public boolean pFormat(Tree<?> node) {
 		// System.out.println("node:" + node);
 		writeIndent("format #" + node.getText(_name, ""));
 		f.write("[" + node.getText(_size, "*") + "] ");
-		AbstractTree<?> formatNode = node.get(_format);
+		Tree<?> formatNode = node.get(_format);
 		f.write("`" + formatNode.toText() + "`");
 		return true;
 	}
@@ -474,7 +474,7 @@ public class NezFileFormatter extends AbstractTreeVisitor {
 	// }
 
 	/* import */
-	public boolean pImport(AbstractTree<?> node) {
+	public boolean pImport(Tree<?> node) {
 		// // System.out.println("DEBUG? parsed: " + node);
 		// String ns = null;
 		// String name = node.getText(0, "*");

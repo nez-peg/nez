@@ -1,14 +1,14 @@
 package nez.ext;
 
-import nez.ast.AbstractTree;
-import nez.ast.AbstractTreeWriter;
+import nez.ast.Tree;
+import nez.ast.TreeWriter;
 import nez.io.SourceContext;
 import nez.main.CommandContext;
 
 public class Cjson extends Cparse {
 	@Override
-	protected void makeOutputFile(CommandContext config, SourceContext source, AbstractTree<?> node) {
-		AbstractTreeWriter w = new AbstractTreeWriter(config.getStrategy(), config.getOutputFileName(source, "json"));
+	protected void makeOutputFile(CommandContext config, SourceContext source, Tree<?> node) {
+		TreeWriter w = new TreeWriter(config.getStrategy(), config.getOutputFileName(source, "json"));
 		w.writeTree(node);
 		w.writeNewLine();
 		w.close();

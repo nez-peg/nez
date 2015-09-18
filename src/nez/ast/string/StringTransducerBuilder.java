@@ -1,9 +1,9 @@
 package nez.ast.string;
 
-import nez.ast.AbstractTree;
+import nez.ast.Tree;
 
 public interface StringTransducerBuilder {
-	public <E extends AbstractTree<E>> StringTransducer lookup(AbstractTree<E> sub);
+	public <E extends Tree<E>> StringTransducer lookup(Tree<E> sub);
 
 	public void write(String text);
 

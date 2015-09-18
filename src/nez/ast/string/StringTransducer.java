@@ -1,6 +1,6 @@
 package nez.ast.string;
 
-import nez.ast.AbstractTree;
+import nez.ast.Tree;
 import nez.ast.Symbol;
 import nez.util.StringUtils;
 
@@ -8,11 +8,11 @@ public class StringTransducer {
 
 	StringTransducer next;
 
-	protected <E extends AbstractTree<E>> void formatTo(AbstractTree<E> node, StringTransducerBuilder stream) {
+	protected <E extends Tree<E>> void formatTo(Tree<E> node, StringTransducerBuilder stream) {
 		stream.write(node.toText());
 	}
 
-	public final <E extends AbstractTree<E>> void trasformTo(AbstractTree<E> node, StringTransducerBuilder stream) {
+	public final <E extends Tree<E>> void trasformTo(Tree<E> node, StringTransducerBuilder stream) {
 		StringTransducer st = this;
 		while (st != null) {
 			st.formatTo(node, stream);
@@ -27,7 +27,7 @@ public class StringTransducer {
 	private static final Symbol ListTag = Symbol.tag("List");
 	private static final Symbol IntTag = Symbol.tag("Integer");
 
-	public final static <E extends AbstractTree<E>> StringTransducer parseStringTransducer(AbstractTree<E> node) {
+	public final static <E extends Tree<E>> StringTransducer parseStringTransducer(Tree<E> node) {
 		if (node.is(NameTag)) {
 			return newActionStringTransducer(node.toText());
 		}
@@ -53,7 +53,7 @@ public class StringTransducer {
 		return new TextualStringTransducer(node.toText());
 	}
 
-	public final static <E extends AbstractTree<E>> StringTransducer newActionStringTransducer(String command) {
+	public final static <E extends Tree<E>> StringTransducer newActionStringTransducer(String command) {
 		switch (command) {
 		case "NL":
 			return new IndentAction();

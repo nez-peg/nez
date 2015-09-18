@@ -6,31 +6,31 @@ import nez.Strategy;
 import nez.util.FileBuilder;
 import nez.util.StringUtils;
 
-public class AbstractTreeWriter extends FileBuilder {
+public class TreeWriter extends FileBuilder {
 
 	boolean dataOption = true;
 
-	public AbstractTreeWriter() {
+	public TreeWriter() {
 		super(null);
 	}
 
-	public AbstractTreeWriter(String path) {
+	public TreeWriter(String path) {
 		super(path);
 	}
 
-	public AbstractTreeWriter(Strategy option, String path) {
+	public TreeWriter(Strategy option, String path) {
 		super(path);
 	}
 
-	public AbstractTreeWriter(String path, String dir, String ext) {
+	public TreeWriter(String path, String dir, String ext) {
 		this(StringUtils.toFileName(path, dir, ext));
 	}
 
-	public AbstractTreeWriter(Strategy option, String path, String dir, String ext) {
+	public TreeWriter(Strategy option, String path, String dir, String ext) {
 		this(StringUtils.toFileName(path, dir, ext));
 	}
 
-	public final void writeTree(AbstractTree<?> node) {
+	public final void writeTree(Tree<?> node) {
 		if (node == null) {
 			this.writeIndent("null");
 			return;
@@ -49,7 +49,7 @@ public class AbstractTreeWriter extends FileBuilder {
 		}
 	}
 
-	public final void writeXML(AbstractTree<?> node) {
+	public final void writeXML(Tree<?> node) {
 		if (node.size() == 2 && node.getTag() == Symbol.MetaSymbol) {
 			writeXML(node.get(0).toText(), node.get(1));
 		} else {
@@ -58,7 +58,7 @@ public class AbstractTreeWriter extends FileBuilder {
 		}
 	}
 
-	public final void writeXML(String tag, AbstractTree<?> node) {
+	public final void writeXML(String tag, Tree<?> node) {
 		this.writeIndent("<" + tag);
 		if (node.size() == 0) {
 			String s = node.toText();
@@ -71,7 +71,7 @@ public class AbstractTreeWriter extends FileBuilder {
 			}
 		} else {
 			for (int i = 0; i < node.size(); i++) {
-				AbstractTree<?> sub = node.get(i);
+				Tree<?> sub = node.get(i);
 				String stag = sub.getTag().toString();
 				if (stag.startsWith("@")) {
 					this.write(" ");
@@ -83,7 +83,7 @@ public class AbstractTreeWriter extends FileBuilder {
 			this.write(">");
 			this.incIndent();
 			for (int i = 0; i < node.size(); i++) {
-				AbstractTree<?> sub = node.get(i);
+				Tree<?> sub = node.get(i);
 				String stag = sub.getTag().toString();
 				if (!stag.startsWith("@")) {
 					this.writeXML(sub);
@@ -94,7 +94,7 @@ public class AbstractTreeWriter extends FileBuilder {
 		}
 	}
 
-	public void writeJSON(AbstractTree<?> node) {
+	public void writeJSON(Tree<?> node) {
 		if (node.size() == 0) {
 			if (dataOption) {
 				this.write(StringUtils.quoteString('"', node.toText(), '"'));
@@ -148,7 +148,7 @@ public class AbstractTreeWriter extends FileBuilder {
 		}
 	}
 
-	public void writeTag(AbstractTree<?> node) {
+	public void writeTag(Tree<?> node) {
 		TreeMap<String, Integer> m = new TreeMap<String, Integer>();
 		this.countTag(node, m);
 		for (String k : m.keySet()) {
@@ -157,7 +157,7 @@ public class AbstractTreeWriter extends FileBuilder {
 		this.writeNewLine();
 	}
 
-	private void countTag(AbstractTree<?> node, TreeMap<String, Integer> m) {
+	private void countTag(Tree<?> node, TreeMap<String, Integer> m) {
 		for (int i = 0; i < node.size(); i++) {
 			countTag(node.get(i), m);
 		}

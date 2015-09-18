@@ -9,8 +9,8 @@ import java.util.Map;
 import nez.ParserException;
 import nez.Parser;
 import nez.Strategy;
-import nez.ast.AbstractTree;
-import nez.ast.AbstractTreeVisitor;
+import nez.ast.Tree;
+import nez.ast.TreeVisitor;
 import nez.ast.Symbol;
 import nez.io.SourceContext;
 import nez.lang.Expression;
@@ -20,7 +20,7 @@ import nez.lang.expr.ExpressionCommons;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
 
-public class DTDConverter extends AbstractTreeVisitor {
+public class DTDConverter extends TreeVisitor {
 
 	static GrammarFile dtdGrammar = null;
 
@@ -35,7 +35,7 @@ public class DTDConverter extends AbstractTreeVisitor {
 		}
 		Parser p = dtdGrammar.newParser("File");
 		SourceContext dtdFile = SourceContext.newFileContext(filePath);
-		AbstractTree<?> node = p.parseCommonTree(dtdFile);
+		Tree<?> node = p.parseCommonTree(dtdFile);
 		if (node == null) {
 			throw new ParserException(dtdFile.getSyntaxErrorMessage());
 		}
@@ -58,13 +58,13 @@ public class DTDConverter extends AbstractTreeVisitor {
 		this.enableNezExtension = enableExtension;
 	}
 
-	final void convert(AbstractTree<?> node, GrammarFile grammar) {
+	final void convert(Tree<?> node, GrammarFile grammar) {
 		this.gfile = grammar;
 		this.loadPredfinedRules(node);
 		this.visit("visit", node);
 	}
 
-	final void loadPredfinedRules(AbstractTree<?> node) {
+	final void loadPredfinedRules(Tree<?> node) {
 		String rootElement = node.get(0).getText(0, null);
 		PredefinedRules preRules = new PredefinedRules(this.gfile, rootElement);
 		preRules.defineRule();
@@ -97,8 +97,8 @@ public class DTDConverter extends AbstractTreeVisitor {
 		return attDefList;
 	}
 
-	public void visitDoc(AbstractTree<?> node) {
-		for (AbstractTree<?> subnode : node) {
+	public void visitDoc(Tree<?> node) {
+		for (Tree<?> subnode : node) {
 			this.visit("visit", subnode);
 		}
 		for (int elementID = 0; elementID < elementCount; elementID++) {
@@ -108,7 +108,7 @@ public class DTDConverter extends AbstractTreeVisitor {
 		gfile.addProduction(node, "Entity", genEntityList(node));
 	}
 
-	public void visitElement(AbstractTree<?> node) {
+	public void visitElement(Tree<?> node) {
 		String elementName = node.getText(0, "");
 		elementNameMap.put(elementCount, elementName);
 		containsAttributeList.add(false);
@@ -116,7 +116,7 @@ public class DTDConverter extends AbstractTreeVisitor {
 		elementCount++;
 	}
 
-	private Expression genElement(AbstractTree<?> node, int elementID) {
+	private Expression genElement(Tree<?> node, int elementID) {
 		String elementName = elementNameMap.get(elementID);
 		Expression[] contentSeq = { gfile.newByteChar('>'), gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), ExpressionCommons.newNonTerminal(null, gfile, "Content" + elementID),
 				gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), gfile.newString("</" + elementName + ">"), };
@@ -135,7 +135,7 @@ public class DTDConverter extends AbstractTreeVisitor {
 		}
 	}
 
-	public void visitAttlist(AbstractTree<?> node) {
+	public void visitAttlist(Tree<?> node) {
 		initAttCounter();
 		containsAttributeList.add(currentElementID, true);
 		String attListName = "Attribute" + currentElementID;
@@ -161,7 +161,7 @@ public class DTDConverter extends AbstractTreeVisitor {
 		}
 	}
 
-	public void visitREQUIRED(AbstractTree<?> node) {
+	public void visitREQUIRED(Tree<?> node) {
 		String name = "AttDef" + currentElementID + "_" + attDefCount;
 		attDefMap.put(attDefCount, node.getText(0, ""));
 		requiredAttList.add(attDefCount);
@@ -169,7 +169,7 @@ public class DTDConverter extends AbstractTreeVisitor {
 		attDefCount++;
 	}
 
-	public void visitIMPLIED(AbstractTree<?> node) {
+	public void visitIMPLIED(Tree<?> node) {
 		String name = "AttDef" + currentElementID + "_" + attDefCount;
 		attDefMap.put(attDefCount, node.getText(0, ""));
 		impliedAttList.add(attDefCount);
@@ -177,7 +177,7 @@ public class DTDConverter extends AbstractTreeVisitor {
 		attDefCount++;
 	}
 
-	public void visitFIXED(AbstractTree<?> node) {
+	public void visitFIXED(Tree<?> node) {
 		String name = "AttDef" + currentElementID + "_" + attDefCount;
 		attDefMap.put(attDefCount, node.getText(0, ""));
 		impliedAttList.add(attDefCount);
@@ -185,7 +185,7 @@ public class DTDConverter extends AbstractTreeVisitor {
 		attDefCount++;
 	}
 
-	public void visitDefault(AbstractTree<?> node) {
+	public void visitDefault(Tree<?> node) {
 		String name = "AttDef" + currentElementID + "_" + attDefCount;
 		attDefMap.put(attDefCount, node.getText(0, ""));
 		impliedAttList.add(attDefCount);
@@ -193,103 +193,103 @@ public class DTDConverter extends AbstractTreeVisitor {
 		attDefCount++;
 	}
 
-	public void visitEntity(AbstractTree<?> node) {
+	public void visitEntity(Tree<?> node) {
 		String name = "ENT_" + entityCount++;
 		gfile.addProduction(node, name, toExpression(node.get(1)));
 	}
 
-	private Expression toExpression(AbstractTree<?> node) {
+	private Expression toExpression(Tree<?> node) {
 		return (Expression) this.visit("to", node);
 	}
 
-	public Expression toEmpty(AbstractTree<?> node) {
+	public Expression toEmpty(Tree<?> node) {
 		return ExpressionCommons.newNonTerminal(null, gfile, "EMPTY");
 	}
 
-	public Expression toAny(AbstractTree<?> node) {
+	public Expression toAny(Tree<?> node) {
 		return ExpressionCommons.newNonTerminal(null, gfile, "ANY");
 	}
 
-	public Expression toZeroMore(AbstractTree<?> node) {
+	public Expression toZeroMore(Tree<?> node) {
 		return gfile.newRepetition(toExpression(node.get(0)));
 	}
 
-	public Expression toOneMore(AbstractTree<?> node) {
+	public Expression toOneMore(Tree<?> node) {
 		return gfile.newRepetition1(toExpression(node.get(0)));
 	}
 
-	public Expression toOption(AbstractTree<?> node) {
+	public Expression toOption(Tree<?> node) {
 		return gfile.newOption(toExpression(node.get(0)));
 	}
 
-	public Expression toChoice(AbstractTree<?> node) {
+	public Expression toChoice(Tree<?> node) {
 		Expression[] l = new Expression[node.size()];
 		int count = 0;
-		for (AbstractTree<?> subnode : node) {
+		for (Tree<?> subnode : node) {
 			l[count++] = toExpression(subnode);
 		}
 		return gfile.newChoice(l);
 	}
 
-	public Expression toSeq(AbstractTree<?> node) {
+	public Expression toSeq(Tree<?> node) {
 		Expression[] l = new Expression[node.size()];
 		int count = 0;
-		for (AbstractTree<?> subnode : node) {
+		for (Tree<?> subnode : node) {
 			l[count++] = toExpression(subnode);
 		}
 		return gfile.newSequence(l);
 	}
 
-	public Expression toCDATA(AbstractTree<?> node) {
+	public Expression toCDATA(Tree<?> node) {
 		if (enableNezExtension) {
 			return _AttDef("STRING");
 		}
 		return _Att("STRING");
 	}
 
-	public Expression toID(AbstractTree<?> node) {
+	public Expression toID(Tree<?> node) {
 		if (enableNezExtension) {
 			return _AttDefQ("IDTOKEN");
 		}
 		return _AttQ("IDTOKEN");
 	}
 
-	public Expression toIDREF(AbstractTree<?> node) {
+	public Expression toIDREF(Tree<?> node) {
 		if (enableNezExtension) {
 			return _AttDefQ("IDTOKEN");
 		}
 		return _AttQ("IDTOKEN");
 	}
 
-	public Expression toIDREFS(AbstractTree<?> node) {
+	public Expression toIDREFS(Tree<?> node) {
 		if (enableNezExtension) {
 			return _AttDefQ("IDTOKENS");
 		}
 		return _AttQ("IDTOKENS");
 	}
 
-	public Expression toENTITY(AbstractTree<?> node) {
+	public Expression toENTITY(Tree<?> node) {
 		if (enableNezExtension) {
 			return _AttDefQ("entity");
 		}
 		return _AttQ("entity");
 	}
 
-	public Expression toENTITIES(AbstractTree<?> node) {
+	public Expression toENTITIES(Tree<?> node) {
 		if (enableNezExtension) {
 			return _AttDefQ("entities");
 		}
 		return _AttQ("entities");
 	}
 
-	public Expression toNMTOKEN(AbstractTree<?> node) {
+	public Expression toNMTOKEN(Tree<?> node) {
 		if (enableNezExtension) {
 			return _AttDef("NMTOKEN");
 		}
 		return _Att("NMTOKEN");
 	}
 
-	public Expression toNMTOKENS(AbstractTree<?> node) {
+	public Expression toNMTOKENS(Tree<?> node) {
 		if (enableNezExtension) {
 			return _AttDef("NMTOKENS");
 		}
@@ -325,7 +325,7 @@ public class DTDConverter extends AbstractTreeVisitor {
 		return gfile.newSequence(l);
 	}
 
-	private Expression genFixedAtt(AbstractTree<?> node) {
+	private Expression genFixedAtt(Tree<?> node) {
 		String attName = attDefMap.get(attDefCount);
 		String fixedValue = "\"" + node.getText(2, "") + "\"";
 		Expression[] l = { gfile.newString(attName), gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), gfile.newByteChar('='), gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), gfile.newString(fixedValue),
@@ -335,7 +335,7 @@ public class DTDConverter extends AbstractTreeVisitor {
 		return gfile.newSequence(l);
 	}
 
-	public Expression genExAtt(AbstractTree<?> node, int[] requiredList) {
+	public Expression genExAtt(Tree<?> node, int[] requiredList) {
 		Symbol tableName = Symbol.tag("T" + currentElementID);
 		String attDefList = "AttDefList" + currentElementID;
 		gfile.addProduction(node, attDefList, genExAttDefList(node, requiredList, tableName));
@@ -347,7 +347,7 @@ public class DTDConverter extends AbstractTreeVisitor {
 		return ExpressionCommons.newXlocal(node, tableName, ExpressionCommons.newPsequence(node, seq));
 	}
 
-	public Expression genExAttDefList(AbstractTree<?> node, int[] requiredList, Symbol tableName) {
+	public Expression genExAttDefList(Tree<?> node, int[] requiredList, Symbol tableName) {
 		UList<Expression> l = new UList<Expression>(new Expression[requiredList.length + 1]);
 		for (int index : requiredList) {
 			Expression notexist = ExpressionCommons.newPnot(node, ExpressionCommons.newXexists(node, tableName, attDefMap.get(index)));
@@ -362,7 +362,7 @@ public class DTDConverter extends AbstractTreeVisitor {
 		return ExpressionCommons.newPchoice(node, l);
 	}
 
-	public Expression genCompAtt(AbstractTree<?> node, int[] attlist) {
+	public Expression genCompAtt(Tree<?> node, int[] attlist) {
 		int listLength = attlist.length;
 		if (listLength == 1) {
 			Expression[] l = { ExpressionCommons.newNonTerminal(null, gfile, "AttDef" + currentElementID + "_" + attlist[0]), gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), ExpressionCommons.newNonTerminal(null, gfile, "ENDTAG") };
@@ -383,7 +383,7 @@ public class DTDConverter extends AbstractTreeVisitor {
 		}
 	}
 
-	public Expression genProxAtt(AbstractTree<?> node, int[] attlist) {
+	public Expression genProxAtt(Tree<?> node, int[] attlist) {
 		int listLength = attlist.length;
 		if (listLength == 0) {
 			Expression[] l = { gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "AttChoice" + currentElementID)), gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")),
@@ -408,7 +408,7 @@ public class DTDConverter extends AbstractTreeVisitor {
 		}
 	}
 
-	public Expression genImpliedChoice(AbstractTree<?> node) {
+	public Expression genImpliedChoice(Tree<?> node) {
 		Expression[] l = new Expression[impliedAttList.size()];
 		String definitionName = "AttDef" + currentElementID + "_";
 		int choiceCount = 0;
@@ -418,36 +418,36 @@ public class DTDConverter extends AbstractTreeVisitor {
 		return gfile.newChoice(l);
 	}
 
-	public Expression toEnum(AbstractTree<?> node) {
+	public Expression toEnum(Tree<?> node) {
 		String attName = attDefMap.get(attDefCount);
 		Expression[] l = { gfile.newString(attName), gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), gfile.newByteChar('='), gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), gfile.newByteChar('"'),
 				toChoice(node), gfile.newByteChar('"'), gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), };
 		return gfile.newSequence(l);
 	}
 
-	public Expression toEntValue(AbstractTree<?> node) {
+	public Expression toEntValue(Tree<?> node) {
 		String replaceString = node.toText();
 		return gfile.newString(replaceString);
 	}
 
-	public Expression toElName(AbstractTree<?> node) {
+	public Expression toElName(Tree<?> node) {
 		String elementName = "Element_" + node.toText();
 		return ExpressionCommons.newNonTerminal(null, gfile, elementName);
 	}
 
-	public Expression toName(AbstractTree<?> node) {
+	public Expression toName(Tree<?> node) {
 		return gfile.newString(node.toText());
 	}
 
-	public Expression toData(AbstractTree<?> node) {
+	public Expression toData(Tree<?> node) {
 		return ExpressionCommons.newNonTerminal(null, gfile, "PCDATA");
 	}
 
-	public Expression toOnlyData(AbstractTree<?> node) {
+	public Expression toOnlyData(Tree<?> node) {
 		return gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "PCDATA"));
 	}
 
-	private Expression genEntityList(AbstractTree<?> node) {
+	private Expression genEntityList(Tree<?> node) {
 		if (entityCount == 0) {
 			return ExpressionCommons.newFailure(null);
 		} else {

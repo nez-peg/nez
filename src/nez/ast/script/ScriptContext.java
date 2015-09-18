@@ -5,15 +5,15 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import nez.Parser;
-import nez.ast.AbstractTree;
-import nez.ast.AbstractTreeVisitor;
+import nez.ast.Tree;
+import nez.ast.TreeVisitor;
 import nez.ast.jcode.JCodeGenerator;
 import nez.ast.jcode.JCodeTree;
 import nez.ast.jcode.JCodeTreeTransducer;
 import nez.io.SourceContext;
 import nez.util.ConsoleUtils;
 
-public class ScriptContext extends AbstractTreeVisitor {
+public class ScriptContext extends TreeVisitor {
 	private Parser parser;
 	private JCodeTreeTransducer treeTransducer;
 
@@ -44,7 +44,7 @@ public class ScriptContext extends AbstractTreeVisitor {
 	}
 
 	@Override
-	public Object visitUndefinedNode(AbstractTree<?> node) {
+	public Object visitUndefinedNode(Tree<?> node) {
 		System.out.println("undefined: " + node);
 		return null;
 	}

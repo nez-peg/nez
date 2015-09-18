@@ -5,9 +5,9 @@ import java.security.NoSuchAlgorithmException;
 
 import nez.util.StringUtils;
 
-public class AbstractTreeUtils {
+public class TreeUtils {
 
-	public final static String digestString(AbstractTree<?> node) {
+	public final static String digestString(Tree<?> node) {
 		StringBuilder sb = new StringBuilder();
 		byte[] hash = digest(node);
 		for (int i = 0; i < hash.length; i++) {
@@ -23,7 +23,7 @@ public class AbstractTreeUtils {
 		return sb.toString();
 	}
 
-	public final static byte[] digest(AbstractTree<?> node) {
+	public final static byte[] digest(Tree<?> node) {
 		try {
 			MessageDigest md;
 			md = MessageDigest.getInstance("MD5");
@@ -35,7 +35,7 @@ public class AbstractTreeUtils {
 		return new byte[16];
 	}
 
-	static void updateDigest(AbstractTree<?> node, MessageDigest md) {
+	static void updateDigest(Tree<?> node, MessageDigest md) {
 		md.update((byte) '#');
 		md.update(StringUtils.toUtf8(node.getTag().getSymbol()));
 		for (int i = 0; i < node.size(); i++) {
