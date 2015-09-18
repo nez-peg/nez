@@ -7,7 +7,7 @@
 //
 //import nez.ast.AbstractTree;
 //import nez.ast.CommonTree;
-//import nez.ast.SymbolId;
+//import nez.ast.Symbol;
 //import nez.lang.Expression;
 //import nez.lang.GrammarFile;
 //import nez.lang.Production;
@@ -25,7 +25,7 @@
 //	}
 //
 //	public final Expression pi(AbstractTree<?> expr, Expression k) {
-//		SymbolId tag = expr.getTag();
+//		Symbol tag = expr.getTag();
 //		Method m = lookupPiMethod("pi", tag.id());
 //		if (m != null) {
 //			try {
@@ -46,7 +46,7 @@
 //		Integer key = tagId;
 //		Method m = this.methodMap.get(key);
 //		if (m == null) {
-//			String name = method + SymbolId.tag(tagId).getSymbol();
+//			String name = method + Symbol.tag(tagId).getSymbol();
 //			try {
 //				m = this.getClass().getMethod(name, CommonTree.class, Expression.class);
 //			} catch (NoSuchMethodException e) {

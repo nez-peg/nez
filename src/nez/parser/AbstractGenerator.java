@@ -38,17 +38,23 @@ import nez.main.Verbose;
 
 public abstract class AbstractGenerator {
 	protected Strategy strategy;
-	protected final boolean strategyASTConstruction;
-	protected final boolean enabledPackratParsing;
+	protected boolean enabledASTConstruction;
+	protected boolean enabledPackratParsing;
 
 	public AbstractGenerator(Strategy strategy) {
 		this.gg = null;
-		this.strategy = strategy;
-		this.strategyASTConstruction = strategy.isEnabled("ast", Strategy.AST);
-		this.enabledPackratParsing = strategy.isEnabled("memo", Strategy.MEMO);
+		this.initLocalOption(strategy);
 	}
 
-	public final Strategy getOption() {
+	protected void initLocalOption(Strategy strategy) {
+		this.strategy = strategy;
+		if (this.strategy != null) {
+			this.enabledASTConstruction = strategy.isEnabled("ast", Strategy.AST);
+			this.enabledPackratParsing = strategy.isEnabled("memo", Strategy.MEMO);
+		}
+	}
+
+	public final Strategy getStrategy() {
 		return this.strategy;
 	}
 

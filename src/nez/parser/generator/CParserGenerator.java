@@ -84,7 +84,7 @@ public class CParserGenerator extends ParserGenerator {
 		L("#define CNEZ_MEMO_SIZE       " + this.memoId);
 		// L("#define CNEZ_GRAMMAR_URN \"" + urn + "\"");
 		L("#define CNEZ_PRODUCTION_SIZE " + prodSize);
-		if (this.strategyASTConstruction) {
+		if (this.enabledASTConstruction) {
 			L("#define CNEZ_ENABLE_AST_CONSTRUCTION 1");
 		}
 		L("#include \"cnez_main.c\"");
@@ -176,7 +176,7 @@ public class CParserGenerator extends ParserGenerator {
 			L("else ");
 			Begin("{");
 			{
-				if (this.strategyASTConstruction) {
+				if (this.enabledASTConstruction) {
 					String tag = rule.getLocalName();
 					tag = StringUtils.quoteString('"', tag, '"');
 					L("ast_log_link(ctx->ast, " + tag + ", entry->result);");
@@ -866,7 +866,7 @@ public class CParserGenerator extends ParserGenerator {
 
 	@Override
 	public void visitTnew(Tnew e) {
-		if (this.strategyASTConstruction) {
+		if (this.enabledASTConstruction) {
 			// this.pushFailureJumpPoint();
 			String mark = "mark" + this.fid++;
 			// this.markStack.push(mark);
@@ -877,7 +877,7 @@ public class CParserGenerator extends ParserGenerator {
 
 	@Override
 	public void visitTcapture(Tcapture e) {
-		if (this.strategyASTConstruction) {
+		if (this.enabledASTConstruction) {
 			String label = "EXIT_CAPTURE" + this.fid++;
 			L("ast_log_capture(ctx->ast, ctx->cur);");
 			this.gotoLabel(label);
@@ -890,14 +890,14 @@ public class CParserGenerator extends ParserGenerator {
 
 	@Override
 	public void visitTtag(Ttag e) {
-		if (this.strategyASTConstruction) {
+		if (this.enabledASTConstruction) {
 			L("ast_log_tag(ctx->ast, \"" + e.tag.getSymbol() + "\");");
 		}
 	}
 
 	@Override
 	public void visitTreplace(Treplace e) {
-		if (this.strategyASTConstruction) {
+		if (this.enabledASTConstruction) {
 			L("ast_log_replace(ctx->ast, \"" + e.value + "\");");
 		}
 	}
@@ -907,11 +907,11 @@ public class CParserGenerator extends ParserGenerator {
 		this.pushFailureJumpPoint();
 		String mark = "mark" + this.fid;
 
-		if (this.strategyASTConstruction) {
+		if (this.enabledASTConstruction) {
 			L("int " + mark + " = ast_save_tx(ctx->ast);");
 		}
 		visitExpression(e.get(0));
-		if (this.strategyASTConstruction) {
+		if (this.enabledASTConstruction) {
 			String po = "ctx->left";
 			String label = "EXIT_LINK" + this.fid;
 			Symbol sym = e.getLabel();

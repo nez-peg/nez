@@ -135,7 +135,7 @@ public class PlainCompiler extends NezCompiler {
 
 	@Override
 	public Instruction encodeTlink(Tlink p, Instruction next, Instruction failjump) {
-		if (this.strategyASTConstruction) {
+		if (this.enabledASTConstruction) {
 			next = new ITPop(p, next);
 			next = encode(p.get(0), next, failjump);
 			return new ITPush(p, next);
@@ -145,7 +145,7 @@ public class PlainCompiler extends NezCompiler {
 
 	@Override
 	public Instruction encodeTnew(Tnew p, Instruction next) {
-		if (this.strategyASTConstruction) {
+		if (this.enabledASTConstruction) {
 			return new INew(p, next);
 		}
 		return next;
@@ -153,7 +153,7 @@ public class PlainCompiler extends NezCompiler {
 
 	@Override
 	public Instruction encodeTlfold(Tlfold p, Instruction next) {
-		if (this.strategyASTConstruction) {
+		if (this.enabledASTConstruction) {
 			return new ITLeftFold(p, next);
 		}
 		return next;
@@ -161,7 +161,7 @@ public class PlainCompiler extends NezCompiler {
 
 	@Override
 	public Instruction encodeTcapture(Tcapture p, Instruction next) {
-		if (this.strategyASTConstruction) {
+		if (this.enabledASTConstruction) {
 			return new ICapture(p, next);
 		}
 		return next;
@@ -169,7 +169,7 @@ public class PlainCompiler extends NezCompiler {
 
 	@Override
 	public Instruction encodeTtag(Ttag p, Instruction next) {
-		if (this.strategyASTConstruction) {
+		if (this.enabledASTConstruction) {
 			return new ITag(p, next);
 		}
 		return next;
@@ -177,7 +177,7 @@ public class PlainCompiler extends NezCompiler {
 
 	@Override
 	public Instruction encodeTreplace(Treplace p, Instruction next) {
-		if (this.strategyASTConstruction) {
+		if (this.enabledASTConstruction) {
 			return new IReplace(p, next);
 		}
 		return next;

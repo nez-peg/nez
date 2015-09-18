@@ -5,7 +5,7 @@
 //
 //import nez.ast.Source;
 //import nez.ast.SourcePosition;
-//import nez.ast.SymbolId;
+//import nez.ast.Symbol;
 //import nez.main.NezProfier;
 //import nez.util.FileBuilder;
 //import nez.util.StringUtils;
@@ -474,7 +474,7 @@
 //class RNode extends AbstractList<RNode> implements SourcePosition {
 //	RelationExtracker tracker;
 //	private Source source;
-//	private SymbolId tag;
+//	private Symbol tag;
 //	private long pos;
 //	private int length;
 //	private Object value = null;
@@ -483,13 +483,13 @@
 //
 //	public RNode(RelationExtracker tracker) {
 //		this.tracker = tracker;
-//		this.tag = SymbolId.tag("Text");
+//		this.tag = Symbol.tag("Text");
 //		this.source = null;
 //		this.pos = 0;
 //		this.length = 0;
 //	}
 //
-//	private RNode(RelationExtracker tracker, SymbolId tag, Source source, long pos, long epos, int size) {
+//	private RNode(RelationExtracker tracker, Symbol tag, Source source, long pos, long epos, int size) {
 //		this.tracker = tracker;
 //		this.tag = tag;
 //		this.source = source;
@@ -522,7 +522,7 @@
 //		this.set(index, child);
 //	}
 //
-//	public SymbolId getTag() {
+//	public Symbol getTag() {
 //		return this.tag;
 //	}
 //
@@ -577,7 +577,7 @@
 //		return this.length;
 //	}
 //
-//	public final boolean is(SymbolId t) {
+//	public final boolean is(Symbol t) {
 //		return this.tag == t;
 //	}
 //

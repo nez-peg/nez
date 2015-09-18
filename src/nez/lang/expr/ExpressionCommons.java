@@ -282,7 +282,7 @@ public abstract class ExpressionCommons extends Expression {
 	}
 
 	// public final static Expression newTnew(SourcePosition s, boolean lefted,
-	// SymbolId label, int shift) {
+	// Symbol label, int shift) {
 	// return new Tnew(s, lefted, label, shift);
 	// }
 

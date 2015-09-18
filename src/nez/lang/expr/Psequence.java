@@ -163,14 +163,13 @@ public class Psequence extends ExpressionCommons {
 
 	@Override
 	public Instruction encode(AbstractGenerator bc, Instruction next, Instruction failjump) {
-		Strategy option = bc.getOption();
+		Strategy option = bc.getStrategy();
 		if (option.isEnabled("Ostr", Strategy.Ostr)) {
 			Expression e = this.toMultiCharSequence();
 			if (e instanceof Cmulti) {
 				// System.out.println("stringfy .. " + e);
 				return bc.encodeCmulti((Cmulti) e, next, failjump);
 			}
-			return bc.encodePsequence((Psequence) e, next, failjump);
 		}
 		return bc.encodePsequence(this, next, failjump);
 	}

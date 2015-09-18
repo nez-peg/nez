@@ -131,12 +131,12 @@ public class CoffeeParserGenerator extends ParserGenerator {
 
 	@Override
 	public void visitPoption(Poption p) {
-		Let("pos" + p.getId(), _pos());
-		Let("posl" + p.getId(), "poss.length");
+		Let("pos" + unique(p), _pos());
+		Let("posl" + unique(p), "poss.length");
 		visitExpression(p.get(0));
 		If(StEq(_result(), "false")).Open();
-		Let(_pos(), "pos" + p.getId());
-		While(MoreThan("poss.length", "posl" + p.getId())).Open();
+		Let(_pos(), "pos" + unique(p));
+		While(MoreThan("poss.length", "posl" + unique(p))).Open();
 		Pop();
 		Close();
 		Close();
@@ -147,14 +147,14 @@ public class CoffeeParserGenerator extends ParserGenerator {
 	public void visitPzero(Pzero p) {
 		While(StNotEq("result", "false"));
 		Open();
-		Let("posl" + p.getId(), "poss.length");
-		Let("pos" + p.getId(), _pos());
+		Let("posl" + unique(p), "poss.length");
+		Let("pos" + unique(p), _pos());
 		for (Expression e : p) {
 			visitExpression(e);
 		}
 		Close();
-		Let(_pos(), "pos" + p.getId());
-		While(MoreThan("poss.length", "posl" + p.getId())).Open();
+		Let(_pos(), "pos" + unique(p));
+		While(MoreThan("poss.length", "posl" + unique(p))).Open();
 		Pop();
 		Close();
 		Let("result", "true");
@@ -168,14 +168,14 @@ public class CoffeeParserGenerator extends ParserGenerator {
 		If(StNotEq("result", "false")).Open();
 		While(StNotEq("result", "false"));
 		Open();
-		Let("pos" + p.getId(), _pos());
-		Let("posl" + p.getId(), "poss.length");
+		Let("pos" + unique(p), _pos());
+		Let("posl" + unique(p), "poss.length");
 		for (Expression e : p) {
 			visitExpression(e);
 		}
 		Close();
-		Let(_pos(), "pos" + p.getId());
-		While(MoreThan("poss.length", "posl" + p.getId())).Open();
+		Let(_pos(), "pos" + unique(p));
+		While(MoreThan("poss.length", "posl" + unique(p))).Open();
 		Pop();
 		Close();
 		Let("result", "true");
@@ -185,10 +185,10 @@ public class CoffeeParserGenerator extends ParserGenerator {
 
 	@Override
 	public void visitPand(Pand p) {
-		Let("pos" + p.getId(), _pos());
-		Let("outs" + p.getId(), _outobj());
+		Let("pos" + unique(p), _pos());
+		Let("outs" + unique(p), _outobj());
 		visitExpression(p.get(0));
-		Let(_pos(), "pos" + p.getId());
+		Let(_pos(), "pos" + unique(p));
 		If(StEq(_result(), "false")).Open();
 		Let(_result(), "false");
 		Close();
@@ -199,9 +199,9 @@ public class CoffeeParserGenerator extends ParserGenerator {
 
 	@Override
 	public void visitPnot(Pnot p) {
-		Let("pos" + p.getId(), _pos());
+		Let("pos" + unique(p), _pos());
 		visitExpression(p.get(0));
-		Let(_pos(), "pos" + p.getId());
+		Let(_pos(), "pos" + unique(p));
 		If(StEq(_result(), "false")).Open();
 		Let(_result(), "true");
 		Close();
@@ -287,15 +287,15 @@ public class CoffeeParserGenerator extends ParserGenerator {
 		for (Expression e : p) {
 			if (!isFirst) {
 				If(StEq("result", "false")).Open();
-				Let(_pos(), "pos" + p.getId());
-				While(MoreThan("poss.length", "posl" + p.getId())).Open();
+				Let(_pos(), "pos" + unique(p));
+				While(MoreThan("poss.length", "posl" + unique(p))).Open();
 				Pop();
 				Close();
 				Let(_result(), _true());
 				visitExpression(e);
 			} else {
-				Let("pos" + p.getId(), _pos());
-				Let("posl" + p.getId(), "poss.length");
+				Let("pos" + unique(p), _pos());
+				Let("posl" + unique(p), "poss.length");
 				Let(_result(), _true());
 				visitExpression(e);
 				isFirst = false;

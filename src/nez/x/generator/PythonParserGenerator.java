@@ -152,13 +152,11 @@ public class PythonParserGenerator extends ParserGenerator {
 		return this;
 	}
 
-	@Override
 	protected PythonParserGenerator Begin() {
 		file.incIndent();
 		return this;
 	}
 
-	@Override
 	protected PythonParserGenerator End() {
 		file.decIndent();
 		return this;

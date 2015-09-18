@@ -18,16 +18,27 @@ public class CommandContext extends ParserFactory {
 	}
 
 	// nez [command]
-	public String commandName = "shell";
+	private String commandName = "shell";
+	private String commandExt = null;
+
+	public void setCommand(String cmd) {
+		int loc = cmd.indexOf('.');
+		if (loc > 0) {
+			commandName = cmd.substring(0, loc);
+			commandExt = cmd.substring(loc + 1);
+		} else {
+			commandName = cmd;
+			commandExt = null;
+		}
+	}
+
+	public String getCommandExtension() {
+		return this.commandExt;
+	}
 
 	public Command newCommand() {
 		Command cmd = (Command) ExtensionLoader.newInstance("nez.ext.C", commandName);
 		if (cmd == null) {
-			// if (gFileName != null &&
-			// GeneratorLoader.isSupported(this.commandName)) {
-			// return new
-			// GrammarCommand(GeneratorLoader.load(this.commandName));
-			// }
 			this.showUsage("unknown command: " + this.commandName);
 		}
 		return cmd;
@@ -81,19 +92,20 @@ public class CommandContext extends ParserFactory {
 		}
 	}
 
-	// -d, --dir
 	public final ParserGenerator newParserGenerator(Class<?> c) {
-		try {
-			ParserGenerator gen;
-			gen = (ParserGenerator) c.newInstance();
-			gen.init(this.getStrategy(), outputDirName, this.getGrammarName());
-			return gen;
-		} catch (InstantiationException e) {
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
+		if (c != null) {
+			try {
+				ParserGenerator gen;
+				gen = (ParserGenerator) c.newInstance();
+				gen.init(this.getStrategy(), outputDirName, this.getGrammarName());
+				return gen;
+			} catch (InstantiationException e) {
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			}
+			ConsoleUtils.exit(1, "error: new parser generator");
 		}
-		ConsoleUtils.exit(1, "error: new parser generator");
 		return null;
 	}
 
@@ -133,7 +145,7 @@ public class CommandContext extends ParserFactory {
 		int index = 0;
 		if (args.length > 0) {
 			if (!args[0].startsWith("-")) {
-				commandName = args[0];
+				this.setCommand(args[0]);
 				index = 1;
 			}
 		}

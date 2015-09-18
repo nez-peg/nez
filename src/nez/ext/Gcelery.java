@@ -8,7 +8,7 @@ import nez.Grammar;
 import nez.Parser;
 import nez.Strategy;
 import nez.ast.AbstractTree;
-import nez.ast.SymbolId;
+import nez.ast.Symbol;
 import nez.lang.GrammarFileLoader;
 import nez.lang.schema.JSONSchemaGrammarGenerator;
 import nez.lang.schema.SchemaGrammarGenerator;
@@ -51,8 +51,8 @@ public class Gcelery extends GrammarFileLoader {
 	private List<String> requiredList;
 	private List<String> membersList;
 
-	public final static SymbolId _Name = SymbolId.tag("Name");
-	public final static SymbolId _Type = SymbolId.tag("Type");
+	public final static Symbol _Name = Symbol.tag("Name");
+	public final static Symbol _Type = Symbol.tag("Type");
 
 	public final void visitRoot(AbstractTree<?> node) {
 		String rootStructName = node.get(0).getText(_Name, "");

@@ -314,7 +314,7 @@ public class DebugVMCompiler extends AbstractGenerator {
 	@Override
 	public Instruction encodeTnew(Tnew p, Instruction next) {
 		this.leftedStack.push(false);
-		if (this.strategyASTConstruction) {
+		if (this.enabledASTConstruction) {
 			this.builder.createInew(p);
 		}
 		return null;
@@ -323,7 +323,7 @@ public class DebugVMCompiler extends AbstractGenerator {
 	@Override
 	public Instruction encodeTlfold(Tlfold p, Instruction next) {
 		this.leftedStack.push(false);
-		if (this.strategyASTConstruction) {
+		if (this.enabledASTConstruction) {
 			BasicBlock fbb = new BasicBlock();
 			this.builder.pushFailureJumpPoint(fbb);
 			this.builder.createImark(p);
@@ -337,7 +337,7 @@ public class DebugVMCompiler extends AbstractGenerator {
 
 	@Override
 	public Instruction encodeTlink(Tlink p, Instruction next, Instruction failjump) {
-		if (this.strategyASTConstruction) {
+		if (this.enabledASTConstruction) {
 			BasicBlock fbb = new BasicBlock();
 			BasicBlock endbb = new BasicBlock();
 			this.builder.pushFailureJumpPoint(fbb);
@@ -362,7 +362,7 @@ public class DebugVMCompiler extends AbstractGenerator {
 		int len = node.toText().length();
 		CommonTree newNode = new CommonTree(node.getTag(), node.getSource(), node.getSourcePosition() + len - 1, (int) (node.getSourcePosition() + len), 0, null);
 		p = (Tcapture) ExpressionCommons.newTcapture(newNode, p.shift);
-		if (this.strategyASTConstruction) {
+		if (this.enabledASTConstruction) {
 			if (this.leftedStack.pop()) {
 				BasicBlock endbb = new BasicBlock();
 				this.builder.createIcapture(p);
@@ -381,7 +381,7 @@ public class DebugVMCompiler extends AbstractGenerator {
 
 	@Override
 	public Instruction encodeTtag(Ttag p, Instruction next) {
-		if (this.strategyASTConstruction) {
+		if (this.enabledASTConstruction) {
 			this.builder.createItag(p);
 		}
 		return null;
@@ -389,7 +389,7 @@ public class DebugVMCompiler extends AbstractGenerator {
 
 	@Override
 	public Instruction encodeTreplace(Treplace p, Instruction next) {
-		if (this.strategyASTConstruction) {
+		if (this.enabledASTConstruction) {
 			this.builder.createIreplace(p);
 		}
 		return null;

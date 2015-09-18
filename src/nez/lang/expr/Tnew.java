@@ -11,7 +11,7 @@ import nez.parser.Instruction;
 
 public class Tnew extends Term {
 	// public boolean leftFold;
-	// SymbolId label = null;
+	// Symbol label = null;
 	// public Expression outer = null;
 	public int shift = 0;
 

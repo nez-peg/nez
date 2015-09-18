@@ -27,8 +27,8 @@ public class Cshell extends Command {
 	@Override
 	public void exec(CommandContext config) throws IOException {
 		Command.displayVersion();
-		GrammarFile gfile = (/* FIXME */GrammarFile) config.newGrammar();
-		ConsoleUtils.addCompleter(getNonterminalList(gfile));
+		Grammar g = config.newGrammar();
+		ConsoleUtils.addCompleter(getNonterminalList(g));
 		Strategy option = config.getStrategy();
 
 		while (readLine(">>> ")) {
@@ -38,25 +38,25 @@ public class Cshell extends Command {
 			// System.out.println("command: " + command);
 			// System.out.println("text: " + text);
 			if (command == null) {
-				defineProduction(gfile, text);
+				defineProduction(g, text);
 				continue;
 			}
 			if (text != null && GeneratorLoader.isSupported(command)) {
-				Parser g = gfile.newParser(text);
-				if (g != null) {
-					execCommand(command, g, option);
+				Parser p = g.newParser(text);
+				if (p != null) {
+					execCommand(command, p, option);
 				}
 				continue;
 			}
-			Parser g = gfile.newParser(command);
-			if (g == null) {
+			Parser p = g.newParser(command);
+			if (p == null) {
 				continue;
 			}
 			if (text == null) {
-				displayGrammar(command, g);
+				displayGrammar(command, p);
 			} else {
 				SourceContext sc = SourceContext.newStringSourceContext("<stdio>", linenum, text);
-				CommonTree node = g.parseCommonTree(sc);
+				CommonTree node = p.parseCommonTree(sc);
 				if (node == null) {
 					ConsoleUtils.println(sc.getSyntaxErrorMessage());
 					continue;
@@ -66,8 +66,11 @@ public class Cshell extends Command {
 				}
 				sc = null;
 				ConsoleUtils.println(node.toString());
-				if (Formatter.isSupported(gfile, node)) {
-					ConsoleUtils.println("Formatted: " + Formatter.format(gfile, node));
+				if (g instanceof GrammarFile) {
+					GrammarFile gfile2 = (GrammarFile) g;
+					if (Formatter.isSupported(gfile2, node)) {
+						ConsoleUtils.println("Formatted: " + Formatter.format(gfile2, node));
+					}
 				}
 			}
 		}
@@ -165,11 +168,11 @@ public class Cshell extends Command {
 		return p;
 	}
 
-	private void defineProduction(GrammarFile ns, String text) {
+	private void defineProduction(Grammar g, String text) {
 		// ConsoleUtils.println("--\n"+text+"--");
 		Gnez loader = new Gnez();
-		loader.eval(ns, "<stdio>", linenum, text, null);
-		ConsoleUtils.addCompleter(getNonterminalList(ns));
+		loader.eval(g, "<stdio>", linenum, text, null);
+		ConsoleUtils.addCompleter(getNonterminalList(g));
 	}
 
 	static HashMap<String, ShellCommand> cmdMap = new HashMap<String, ShellCommand>();

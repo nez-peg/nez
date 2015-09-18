@@ -55,8 +55,8 @@ public abstract class ParserGenerator extends AbstractGenerator {
 		this.file = null;
 	}
 
-	public final void init(Strategy option, String dir, String grammarName) {
-		this.strategy = option;
+	public final void init(Strategy strategy, String dir, String grammarName) {
+		this.initLocalOption(strategy);
 		this.dir = dir;
 		this.grammarName = grammarName;
 	}
@@ -175,20 +175,6 @@ public abstract class ParserGenerator extends AbstractGenerator {
 		return this;
 	}
 
-	@Deprecated
-	protected ParserGenerator Begin() {
-		W(BeginIndent);
-		file.incIndent();
-		return this;
-	}
-
-	@Deprecated
-	protected ParserGenerator End() {
-		file.decIndent();
-		L(EndIndent);
-		return this;
-	}
-
 	protected ParserGenerator C(String name, Expression e) {
 		int c = 0;
 		W(name).W(OpenClosure);
@@ -259,7 +245,7 @@ public abstract class ParserGenerator extends AbstractGenerator {
 		return this;
 	}
 
-	public void visitExpression(Expression e) {
+	public final void visitExpression(Expression e) {
 		e.encode(this, null, null);
 	}
 
@@ -418,7 +404,7 @@ public abstract class ParserGenerator extends AbstractGenerator {
 
 	@Override
 	public final Instruction encodeTdetree(Tdetree p, Instruction next, Instruction failjump) {
-		if (strategyASTConstruction) {
+		if (enabledASTConstruction) {
 			this.visitTdetree(p);
 		} else {
 			this.visitExpression(p.get(0));
@@ -428,7 +414,7 @@ public abstract class ParserGenerator extends AbstractGenerator {
 
 	@Override
 	public final Instruction encodeTlink(Tlink p, Instruction next, Instruction failjump) {
-		if (strategyASTConstruction) {
+		if (enabledASTConstruction) {
 			this.visitTlink(p);
 		} else {
 			this.visitExpression(p.get(0));
@@ -438,7 +424,7 @@ public abstract class ParserGenerator extends AbstractGenerator {
 
 	@Override
 	public final Instruction encodeTnew(Tnew p, Instruction next) {
-		if (strategyASTConstruction) {
+		if (enabledASTConstruction) {
 			this.visitTnew(p);
 		}
 		return null;
@@ -446,7 +432,7 @@ public abstract class ParserGenerator extends AbstractGenerator {
 
 	@Override
 	public final Instruction encodeTlfold(Tlfold p, Instruction next) {
-		if (strategyASTConstruction) {
+		if (enabledASTConstruction) {
 			this.visitTlfold(p);
 		}
 		return null;
@@ -454,7 +440,7 @@ public abstract class ParserGenerator extends AbstractGenerator {
 
 	@Override
 	public final Instruction encodeTcapture(Tcapture p, Instruction next) {
-		if (strategyASTConstruction) {
+		if (enabledASTConstruction) {
 			this.visitTcapture(p);
 		}
 		return null;
@@ -462,7 +448,7 @@ public abstract class ParserGenerator extends AbstractGenerator {
 
 	@Override
 	public final Instruction encodeTtag(Ttag p, Instruction next) {
-		if (strategyASTConstruction) {
+		if (enabledASTConstruction) {
 			this.visitTtag(p);
 		}
 		return null;
@@ -470,7 +456,7 @@ public abstract class ParserGenerator extends AbstractGenerator {
 
 	@Override
 	public final Instruction encodeTreplace(Treplace p, Instruction next) {
-		if (strategyASTConstruction) {
+		if (enabledASTConstruction) {
 			this.visitTreplace(p);
 		}
 		return null;
