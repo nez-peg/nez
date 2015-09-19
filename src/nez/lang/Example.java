@@ -116,9 +116,9 @@ public class Example {
 			ConsoleUtils.println("Elapsed time (Example Tests): " + ((t2 - t1) / 1000000) + "ms");
 			ConsoleUtils.println("Pass: " + result.getSucc() + "/" + result.getTotal() + " Pass ratio: " + result.getRatio() + "%");
 			float cov = Coverage.calc() * 100;
-			ConsoleUtils.println("git commit -m '" + g.getDesc() + " - " + cov + "%, " + result.getStatus() + "'");
+			ConsoleUtils.println("git commit -am '" + g.getDesc() + " - " + cov + "%, " + result.getStatus() + "'");
 		} else {
-			ConsoleUtils.println("git commit -m '" + g.getDesc() + " - 0.0% tested. DO NOT USE'");
+			ConsoleUtils.println("git commit -am '" + g.getDesc() + " - 0.0% tested. DO NOT USE'");
 		}
 	}
 }

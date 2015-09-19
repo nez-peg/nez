@@ -126,7 +126,7 @@ public class Coverage {
 		ConsoleUtils.println("Production coverage: " + ((100.f * prodEnter) / prodCount) + "%, " + ((100.f * prodExit) / prodCount) + "%");
 		// ConsoleUtils.println("Branch coverage: " + ((100.f * exprEnter) /
 		// exprCount) + "%, " + ((100.f * exprExit) / exprCount) + "%");
-		return 1.0f * prodEnter / prodCount;
+		return 1.0f * prodExit / prodCount;
 	}
 
 	public final static List<String> getUntestedProductionList() {
