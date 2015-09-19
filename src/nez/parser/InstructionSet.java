@@ -63,6 +63,9 @@ public class InstructionSet {
 	public final static byte SCount = 53;
 	public final static byte Exit = 54; // 7-bit only
 
+	public final static byte Cov = 55; // 7-bit only
+	public final static byte Covx = 56; // 7-bit only
+
 	public final static byte Label = 127; // 7-bit
 
 	public static String stringfy(byte opcode) {
