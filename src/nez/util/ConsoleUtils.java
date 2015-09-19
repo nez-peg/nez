@@ -42,6 +42,10 @@ public class ConsoleUtils {
 		System.out.println();
 	}
 
+	public final static boolean isDebug() {
+		return System.getenv("DEBUG") != null;
+	}
+
 	public final static void debug(String s) {
 		System.out.println(s);
 	}

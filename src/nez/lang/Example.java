@@ -8,6 +8,7 @@ import nez.Strategy;
 import nez.ast.Tree;
 import nez.ast.TreeUtils;
 import nez.io.SourceContext;
+import nez.main.Verbose;
 import nez.parser.Coverage;
 import nez.util.ConsoleUtils;
 
@@ -107,8 +108,15 @@ public class Example {
 					ex.test(p, result);
 				} catch (Exception e) {
 					ConsoleUtils.println((ex.formatPanic("exception detected: " + e)));
+					if (ConsoleUtils.isDebug()) {
+						e.printStackTrace();
+					}
+					Verbose.traceException(e);
 				} catch (Error e) {
 					ConsoleUtils.println((ex.formatPanic("error detected: " + e)));
+					if (ConsoleUtils.isDebug()) {
+						e.printStackTrace();
+					}
 				}
 			}
 			long t2 = System.nanoTime();
