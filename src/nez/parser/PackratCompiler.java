@@ -16,7 +16,8 @@ public class PackratCompiler extends OptimizedCompiler {
 	public final Instruction encodeNonTerminal(NonTerminal n, Instruction next, Instruction failjump) {
 		Production p = n.getProduction();
 		if (p == null) {
-			Verbose.debug("unref: " + n.getLocalName());
+			Verbose.debug("[PANIC] unresolved: " + n.getLocalName() + " ***** ");
+			return next;
 		}
 		ParseFunc f = this.getParseFunc(p);
 		if (f.inlining) {

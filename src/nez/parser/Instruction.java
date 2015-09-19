@@ -730,18 +730,22 @@ class IConsume extends Instruction {
 class IFirst extends Instruction {
 	Instruction[] jumpTable;
 
-	IFirst(Pchoice e, Instruction next) {
-		super(InstructionSet.First, e, next);
+	IFirst(byte opcode, Pchoice e, Instruction next) {
+		super(opcode, e, next);
 		jumpTable = new Instruction[257];
 		Arrays.fill(jumpTable, next);
 	}
 
+	IFirst(Pchoice e, Instruction next) {
+		this(InstructionSet.First, e, next);
+	}
+
 	void setJumpTable(int ch, Instruction inst) {
-		if (inst instanceof IFirst) {
-			jumpTable[ch] = ((IFirst) inst).jumpTable[ch];
-		} else {
-			jumpTable[ch] = Instruction.labeling(inst);
-		}
+		// if (inst instanceof IFirst) {
+		// jumpTable[ch] = ((IFirst) inst).jumpTable[ch];
+		// } else {
+		jumpTable[ch] = Instruction.labeling(inst);
+		// }
 	}
 
 	@Override
@@ -760,6 +764,19 @@ class IFirst extends Instruction {
 		// this.e);
 		int ch = sc.byteAt(sc.getPosition());
 		// System.out.println("ch=" + ch);
+		return jumpTable[ch].exec(sc);
+	}
+}
+
+class IDFirst extends IFirst {
+	IDFirst(Pchoice e, Instruction next) {
+		super(InstructionSet.DFirst, e, next);
+	}
+
+	@Override
+	Instruction exec(RuntimeContext sc) throws TerminationException {
+		int ch = sc.byteAt(sc.getPosition());
+		sc.consume(1);
 		return jumpTable[ch].exec(sc);
 	}
 }

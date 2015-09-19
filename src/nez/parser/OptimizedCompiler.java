@@ -106,13 +106,76 @@ public class OptimizedCompiler extends PlainCompiler {
 
 	@Override
 	public final Instruction encodePchoice(Pchoice p, Instruction next, Instruction failjump) {
-		if (strategy.isEnabled("Ofirst", Strategy.Ofirst) && p.predictedCase != null) {
-			return encodePredicatedChoice(p, next, failjump);
+		if (/* strategy.isEnabled("Ofirst", Strategy.Ofirst) && */p.predictedCase != null) {
+			if (p.isTrieTree) {
+				return encodeDFirstChoice(p, next, failjump);
+			}
+			return encodeFirstChoice(p, next, failjump);
 		}
 		return super.encodePchoice(p, next, failjump);
 	}
 
-	private final Instruction encodePredicatedChoice(Pchoice choice, Instruction next, Instruction failjump) {
+	private final Instruction encodeFirstChoice(Pchoice choice, Instruction next, Instruction failjump) {
+		Instruction[] compiled = new Instruction[choice.firstInners.length];
+		// Verbose.debug("TrieTree: " + choice.isTrieTree + " " + choice);
+		IFirst dispatch = new IFirst(choice, commonFailure);
+		for (int ch = 0; ch < choice.predictedCase.length; ch++) {
+			Expression predicted = choice.predictedCase[ch];
+			if (predicted == null) {
+				continue;
+			}
+			int index = findIndex(choice, predicted);
+			Instruction inst = compiled[index];
+			if (inst == null) {
+				// System.out.println("creating '" + (char)ch + "'("+ch+"): " +
+				// e);
+				if (predicted instanceof Pchoice) {
+					assert (((Pchoice) predicted).predictedCase == null);
+					inst = this.encodeUnoptimizedChoice(choice, next, failjump);
+				} else {
+					inst = encode(predicted, next, failjump);
+				}
+				compiled[index] = inst;
+			}
+			dispatch.setJumpTable(ch, inst);
+		}
+		return dispatch;
+	}
+
+	private final Instruction encodeDFirstChoice(Pchoice choice, Instruction next, Instruction failjump) {
+		Instruction[] compiled = new Instruction[choice.firstInners.length];
+		IDFirst dispatch = new IDFirst(choice, commonFailure);
+		for (int ch = 0; ch < choice.predictedCase.length; ch++) {
+			Expression predicted = choice.predictedCase[ch];
+			if (predicted == null) {
+				continue;
+			}
+			int index = findIndex(choice, predicted);
+			Instruction inst = compiled[index];
+			if (inst == null) {
+				Expression next2 = predicted.getNext();
+				if (next2 != null) {
+					inst = encode(next2, next, failjump);
+				} else {
+					inst = next;
+				}
+				compiled[index] = inst;
+			}
+			dispatch.setJumpTable(ch, inst);
+		}
+		return dispatch;
+	}
+
+	private int findIndex(Pchoice choice, Expression e) {
+		for (int i = 0; i < choice.firstInners.length; i++) {
+			if (choice.firstInners[i] == e) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	private final Instruction encodePredicatedChoice0(Pchoice choice, Instruction next, Instruction failjump) {
 		HashMap<Integer, Instruction> m = new HashMap<Integer, Instruction>();
 		IFirst dispatch = new IFirst(choice, commonFailure);
 		for (int ch = 0; ch < choice.predictedCase.length; ch++) {
@@ -126,12 +189,7 @@ public class OptimizedCompiler extends PlainCompiler {
 				// System.out.println("creating '" + (char)ch + "'("+ch+"): " +
 				// e);
 				if (predicted instanceof Pchoice) {
-					// if(predicated == choice) {
-					/*
-					 * this is a rare case where the selected choice is the
-					 * parent choice
-					 */
-					/* this cause the repeated calls of the same matchers */
+					assert (((Pchoice) predicted).predictedCase == null);
 					inst = this.encodeUnoptimizedChoice(choice, next, failjump);
 				} else {
 					inst = encode(predicted, next, failjump);

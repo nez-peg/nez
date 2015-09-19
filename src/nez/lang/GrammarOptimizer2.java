@@ -30,6 +30,7 @@ public class GrammarOptimizer2 extends GrammarRewriter {
 	boolean enabledDuplicatedProduction = false;
 	boolean enabledLexicalOptimization = false;
 	boolean enabledInlining = false;
+	boolean enabledfirstChoiceInlining = false;
 	boolean enabledSecondChoice = true;
 
 	GenerativeGrammar gg;
@@ -108,7 +109,7 @@ public class GrammarOptimizer2 extends GrammarRewriter {
 			for (Expression sub : choice.firstInners) {
 				recheckReference(sub);
 			}
-			return;
+			// return; // FIXME: when enableFirstInline
 		}
 		for (Expression sub : e) {
 			recheckReference(sub);
@@ -128,16 +129,6 @@ public class GrammarOptimizer2 extends GrammarRewriter {
 			return optimized;
 		}
 		return p.getExpression();
-	}
-
-	Expression inlineNonTerminal2(Expression e) {
-		if (this.enabledInlining) {
-			while (e instanceof NonTerminal) {
-				NonTerminal n = (NonTerminal) e;
-				e = optimizeProduction(n.getProduction());
-			}
-		}
-		return e;
 	}
 
 	void checkDuplicatedProduction(Production p) {
@@ -560,33 +551,30 @@ public class GrammarOptimizer2 extends GrammarRewriter {
 		}
 	}
 
+	private Expression firstChoiceInlining(Expression e) {
+		if (this.enabledfirstChoiceInlining) {
+			while (e instanceof NonTerminal) {
+				NonTerminal n = (NonTerminal) e;
+				e = n.getProduction().getExpression();
+			}
+		}
+		return e;
+	}
+
 	private void flattenChoiceList(Pchoice choice, UList<Expression> l, HashSet<String> ucheck) {
 		for (Expression inner : choice) {
-			inner = reshapeInner(inner);
-			// inner = inlineNonTerminal(inner); // FIXME
+			inner = firstChoiceInlining(inner);
 			if (inner instanceof Pchoice) {
 				flattenChoiceList((Pchoice) inner, l, ucheck);
 			} else {
-				// inner = reshapeInner(inner);
-				String key = inner.toString();
-				if (ucheck.contains(key)) {
-					strategy.reportNotice(inner.getSourcePosition(), "duplicated choice: " + key);
-					continue;
+				if (ucheck != null) {
+					String key = inner.toString();
+					if (ucheck.contains(key)) {
+						strategy.reportNotice(choice.getSourcePosition(), "duplicated choice: " + key);
+						continue;
+					}
+					ucheck.add(key);
 				}
-				ucheck.add(key);
-				// if (l.size() > 0 && this.enabledCommonLeftFactoring) {
-				// Expression lastExpression = l.ArrayValues[l.size() - 1];
-				// Expression first = lastExpression.getFirst();
-				// if (first.equalsExpression(inner.getFirst())) {
-				// Expression next =
-				// lastExpression.newChoice(lastExpression.getNext(),
-				// inner.getNext());
-				// Expression common = lastExpression.newSequence(first, next);
-				// rewrite_common(lastExpression, inner, common);
-				// l.ArrayValues[l.size() - 1] = common;
-				// continue;
-				// }
-				// }
 				l.add(inner);
 			}
 		}
@@ -632,9 +620,9 @@ public class GrammarOptimizer2 extends GrammarRewriter {
 		}
 		Expression p = ExpressionCommons.newPchoice(choice.getSourcePosition(), newlist);
 		newlist.clear(0);
-		// if (commonFactored && !(p instanceof Pchoice)) {
-		// tryFactoredSecondChoice(p);
-		// }
+		if (commonFactored && !(p instanceof Pchoice)) {
+			tryFactoredSecondChoice(p);
+		}
 		map.put(key, p);
 		return p;
 	}
@@ -642,12 +630,12 @@ public class GrammarOptimizer2 extends GrammarRewriter {
 	private void tryFactoredSecondChoice(Expression p) {
 		if (p instanceof Pchoice) {
 			if (((Pchoice) p).firstInners == null) {
-				Verbose.debug("second choice: " + p);
+				// Verbose.debug("Second choice: " + p);
 			}
 			return;
 		}
 		for (Expression sub : p) {
-			tryFactoredSecondChoice(p);
+			tryFactoredSecondChoice(sub);
 		}
 	}
 
