@@ -6,9 +6,9 @@ import java.util.HashMap;
 import nez.Grammar;
 import nez.Parser;
 import nez.Strategy;
+import nez.ast.SourcePosition;
 import nez.ast.Tree;
 import nez.ast.TreeVisitor;
-import nez.ast.SourcePosition;
 import nez.io.SourceContext;
 import nez.main.Verbose;
 import nez.peg.celery.Celery;
@@ -47,6 +47,10 @@ public abstract class GrammarFileLoader extends TreeVisitor {
 		this.strategy = Strategy.nullCheck(strategy);
 
 		SourceContext sc = SourceContext.newFileContext(urn);
+		String desc = this.parseGrammarDescription(sc);
+		if (desc != null) {
+			g.setDesc(desc);
+		}
 		while (sc.hasUnconsumed()) {
 			Tree<?> node = getLoaderParser().parseCommonTree(sc);
 			if (node == null) {
@@ -70,21 +74,13 @@ public abstract class GrammarFileLoader extends TreeVisitor {
 		}
 	}
 
-	// @Deprecated
-	// public final void load(String urn) throws IOException {
-	// SourceContext sc = SourceContext.newFileContext(urn);
-	// while (sc.hasUnconsumed()) {
-	// AbstractTree<?> node = getLoaderGrammar().parseCommonTree(sc);
-	// if (node == null) {
-	// ConsoleUtils.exit(1, sc.getSyntaxErrorMessage());
-	// }
-	// parse(node);
-	// }
-	// }
-
 	public abstract Parser getLoaderParser();
 
 	public abstract void parse(Tree<?> node);
+
+	public String parseGrammarDescription(SourceContext sc) {
+		return null;
+	}
 
 	/* ------------------------------------------------------------------ */
 

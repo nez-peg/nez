@@ -40,6 +40,9 @@ public class Grammar extends GrammarBase {
 	}
 
 	public final String uniqueName(String name) {
+		if (name.indexOf(':') == -1) {
+			return name; // already prefixed;
+		}
 		return this.ns + this.id + ":" + name;
 	}
 
@@ -128,15 +131,28 @@ public class Grammar extends GrammarBase {
 	}
 
 	public final void setSymbolExpresion(String tableName, Expression e) {
-		this.newProduction(null, Production.PublicProduction, "^" + tableName, e);
+		this.newProduction(null, Production.PublicProduction | Production.SymbolTableProduction, ":^" + tableName, e);
 	}
 
 	public final Expression getSymbolExpresion(String tableName) {
-		Production p = this.getProduction("^" + tableName);
+		Production p = this.getProduction(":^" + tableName);
 		if (p != null) {
 			return p.getExpression();
 		}
 		return null;
+	}
+
+	// ----------------------------------------------------------------------
+
+	public String getDesc() {
+		if (this.parent != null) {
+			return parent.getDesc();
+		}
+		return null;
+	}
+
+	public void setDesc(String desc) {
+		/* Description is supported in GrammarFile */
 	}
 
 	// ----------------------------------------------------------------------

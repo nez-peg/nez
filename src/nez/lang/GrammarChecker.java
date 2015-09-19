@@ -136,7 +136,13 @@ public class GrammarChecker extends GrammarTransducer {
 			return n.newEmpty();
 		}
 		if (n.isTerminal()) { /* Inlining Terminal */
-			return reshapeInner(p.getExpression());
+			try {
+				return reshapeInner(p.getExpression());
+			} catch (StackOverflowError e) {
+				/* Handling a bad grammar */
+				reportError(n, "terminal is recursive: " + n.getLocalName());
+				return ExpressionCommons.newString(n.getSourcePosition(), StringUtils.unquoteString(n.getLocalName()));
+			}
 		}
 
 		int innerTypestate = this.isNonASTContext() ? Typestate.BooleanType : p.inferTypestate(null);

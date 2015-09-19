@@ -6,9 +6,10 @@ import java.util.ArrayList;
 import nez.Grammar;
 import nez.Parser;
 import nez.Strategy;
-import nez.ast.Tree;
 import nez.ast.Constructor;
 import nez.ast.Symbol;
+import nez.ast.Tree;
+import nez.io.SourceContext;
 import nez.lang.Example;
 import nez.lang.Expression;
 import nez.lang.Formatter;
@@ -414,6 +415,29 @@ public class NezConstructor extends GrammarFileLoader implements Constructor {
 			}
 		}
 		return path2;
+	}
+
+	public String parseGrammarDescription(SourceContext sc) {
+		StringBuilder sb = new StringBuilder();
+		long pos = 0;
+		boolean found = false;
+		for (; pos < sc.length(); pos++) {
+			int ch = sc.byteAt(pos);
+			if (Character.isAlphabetic(ch)) {
+				found = true;
+				break;
+			}
+		}
+		if (found) {
+			for (; pos < sc.length(); pos++) {
+				int ch = sc.byteAt(pos);
+				if (ch == '\n' || ch == '\r' || ch == '-' || ch == '*') {
+					break;
+				}
+				sb.append((char) ch);
+			}
+		}
+		return sb.toString().trim();
 	}
 
 }

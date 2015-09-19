@@ -106,7 +106,7 @@ public class NezGrammar1 extends Combinator {
 	}
 
 	public Expression pFormat() {
-		return New(t("format"), Tag("Format"), P("_"), t("#"), Link("name", "Name"), t("["), P("_"), Link("size", "FormatSize"), P("_"), t("]"), P("_"), t("`"), Link("format", "Formatter"), t("`"));
+		return New(t("format"), Tag("Format"), P("_"), t("#"), Link("name", "TagName"), t("["), P("_"), Link("size", "FormatSize"), P("_"), t("]"), P("_"), t("`"), Link("format", "Formatter"), t("`"));
 	}
 
 	public Expression pFormatter() {
@@ -217,9 +217,21 @@ public class NezGrammar1 extends Combinator {
 		return New(t("{"), Choice(Sequence(t("$"), Option(Link("name", "Name")), P("S"), Tag("LeftFold")), Sequence(t("@"), P("S"), Tag("LeftFold")), Tag("New")), P("_"), Option(Link("expr", "Expression"), P("_")), t("}"));
 	}
 
+	/**
+	 * #ABC #$
+	 */
+	// public Expression pTagging() {
+	// Expression Tag = New(Choice(Sequence(c("A-Za-z0-9"),
+	// ZeroMore(c("A-Za-z0-9_")), t('$'))), Tag("Tagging"));
+	// return Sequence(Choice(t('#'), t(':')), Tag);
+	// }
+
+	public Expression pTagName() {
+		return New(c("A-Za-z0-9$"), ZeroMore(c("A-Za-z0-9_$")), Tag("Tagging"));
+	}
+
 	public Expression pTagging() {
-		Expression Tag = New(c("A-Za-z0-9"), ZeroMore(c("A-Za-z0-9_.")), Tag("Tagging"));
-		return Sequence(Choice(t('#'), t(':')), Tag);
+		return Sequence(Choice(t('#'), t(':')), P("TagName"));
 	}
 
 	public Expression pReplace() {
@@ -252,7 +264,7 @@ public class NezGrammar1 extends Combinator {
 	}
 
 	public Expression pTableName() {
-		return New(P("LETTER"), ZeroMore(P("W")), Tag("Name"));
+		return New(P("LETTER"), ZeroMore(Choice(P("W"), t('-'))), Tag("Name"));
 	}
 
 	public Expression pNonTerminal() {

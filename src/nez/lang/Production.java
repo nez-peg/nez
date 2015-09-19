@@ -26,14 +26,17 @@ public class Production /* extends Expression */{
 
 	public final static int PublicProduction = 1 << 0;
 	public final static int TerminalProduction = 1 << 1;
-	public final static int InlineProduction = 1 << 2;
-	public final static int Declared = PublicProduction | TerminalProduction | InlineProduction;
+	public final static int SymbolTableProduction = 1 << 2;
 
-	public final static int RecursiveChecked = 1 << 3;
-	public final static int RecursiveProduction = 1 << 4;
+	public final static int InlineProduction = 1 << 3;
 
-	public final static int ConsumedChecked = 1 << 5;
-	public final static int ConsumedProduction = 1 << 6;
+	public final static int Declared = PublicProduction | TerminalProduction | SymbolTableProduction | InlineProduction;
+
+	public final static int RecursiveChecked = 1 << 4;
+	public final static int RecursiveProduction = 1 << 5;
+
+	public final static int ConsumedChecked = 1 << 6;
+	public final static int ConsumedProduction = 1 << 7;
 
 	public final static int ASTChecked = 1 << 8;
 	public final static int ObjectProduction = 1 << 9;

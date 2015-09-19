@@ -1,6 +1,10 @@
 package nez.lang;
 
+import java.util.HashMap;
+import java.util.List;
+
 import nez.Parser;
+import nez.Strategy;
 import nez.ast.Tree;
 import nez.ast.TreeUtils;
 import nez.io.SourceContext;
@@ -35,34 +39,101 @@ public class Example {
 		return nameNode.formatSourceMessage("warning", msg);
 	}
 
-	public boolean test(Parser p) {
+	public boolean test(Parser p, TestResult result) {
 		SourceContext source = textNode.newSourceContext();
 		String name = nameNode.toText() + " (" + textNode.getSource().getResourceName() + ":" + textNode.getLinenum() + ")";
 		Tree<?> node = p.parseCommonTree(source);
 		if (node == null) {
-			ConsoleUtils.println("[FAIL] " + name);
+			ConsoleUtils.println("[ERR*] " + name);
 			ConsoleUtils.println(source.getSyntaxErrorMessage());
+			result.syntaxError += 1;
 			return false;
 		}
 		String nodehash = TreeUtils.digestString(node);
 		if (hash == null) {
-			ConsoleUtils.println("[HASH] " + name + " ~" + nodehash);
-			ConsoleUtils.println("   ", this.getText());
-			ConsoleUtils.println("---");
-			ConsoleUtils.println("   ", node);
-			// ConsoleUtils.println(node);
+			display("[TODO]", name, nodehash, node);
 			this.hash = nodehash;
+			result.untested += 1;
 			return true;
 		}
 		if (nodehash.startsWith(hash)) {
-			ConsoleUtils.println("[PASS] " + name);
+			display("[PASS]", name, null, null);
+			result.succ += 1;
 			return true;
 		}
-		ConsoleUtils.println("[FAIL] " + name + " ~" + nodehash + "\n");
-		ConsoleUtils.println("   ", this.getText());
-		ConsoleUtils.println("---");
-		ConsoleUtils.println("   ", node);
+		display("[FAIL]", name, nodehash, node);
+		result.failed += 1;
 		return false;
 	}
 
+	public void display(String msg, String name, String nodehash, Tree<?> node) {
+		if (nodehash != null) {
+			ConsoleUtils.println(msg + " " + name + " ~" + nodehash);
+		} else {
+			ConsoleUtils.println(msg + " " + name);
+		}
+		if (node != null) {
+			ConsoleUtils.println("   ", this.getText());
+			ConsoleUtils.println("---");
+			ConsoleUtils.println("   ", node);
+		}
+	}
+
+	public static void testAll(GrammarFile g, Strategy strategy) {
+		List<Example> exampleList = g.getExampleList();
+		if (exampleList != null) {
+			TestResult result = new TestResult();
+			HashMap<String, Parser> parserMap = new HashMap<>();
+			long t1 = System.nanoTime();
+			for (Example ex : exampleList) {
+				String name = ex.getName();
+				Parser p = parserMap.get(name);
+				if (p == null) {
+					p = g.newParser(name, strategy);
+					if (p == null) {
+						ConsoleUtils.println(ex.formatWarning("undefined nonterminal: " + name));
+						continue;
+					}
+					parserMap.put(name, p);
+				}
+				ex.test(p, result);
+			}
+			long t2 = System.nanoTime();
+			ConsoleUtils.println("Elapsed time (Example Tests): " + ((t2 - t1) / 1000000) + "ms");
+			ConsoleUtils.println("Pass: " + result.getSucc() + "/" + result.getTotal() + " Pass ratio: " + result.getRatio() + "%");
+			ConsoleUtils.println("Commit: git commit -m '" + g.getDesc() + " - " + result.getStatus() + "'");
+		}
+	}
+}
+
+class TestResult {
+	int syntaxError = 0;
+	int untested = 0;
+	int succ = 0;
+	int failed = 0;
+
+	int getTotal() {
+		return syntaxError + untested + succ + failed;
+	}
+
+	int getSucc() {
+		return succ;
+	}
+
+	float getRatio() {
+		return succ * 100.0f / this.getTotal();
+	}
+
+	String getStatus() {
+		if (syntaxError > 0) {
+			return "very bad (syntax error)";
+		}
+		if (failed > 0) {
+			return "bad";
+		}
+		if (untested > 0) {
+			return "unfinished";
+		}
+		return "good";
+	}
 }

@@ -10,46 +10,9 @@ import nez.util.UList;
 
 public class GrammarFile extends Grammar {
 
-	// private static HashMap<String, GrammarFile> nsMap = new HashMap<String,
-	// GrammarFile>();
-	//
-	// public final static boolean isLoaded(String urn) {
-	// return nsMap.containsKey(urn);
-	// }
-	//
-	// public static GrammarFile newGrammarFile(NezOption option) {
-	// return new GrammarFile(null, option);
-	// }
-	//
 	public final static GrammarFile newGrammarFile(String urn, Strategy option) {
 		return new GrammarFile(null, urn, option);
 	}
-
-	//
-	// public final static GrammarFile loadNezFile(String urn, NezOption option)
-	// throws IOException {
-	// if (nsMap.containsKey(urn)) {
-	// return nsMap.get(urn);
-	// }
-	// GrammarFile ns = null;
-	// if (urn != null && !urn.endsWith(".nez")) {
-	// try {
-	// Class<?> c = Class.forName(urn);
-	// ParserCombinator p = (ParserCombinator) c.newInstance();
-	// ns = p.load();
-	// } catch (ClassNotFoundException e) {
-	// } catch (Exception e) {
-	// Verbose.traceException(e);
-	// }
-	// }
-	// if (ns == null) {
-	// ns = new GrammarFile(urn, option);
-	// NezGrammarLoader loader = new NezGrammarLoader(ns);
-	// loader.load(urn);
-	// }
-	// nsMap.put(urn, ns);
-	// return ns;
-	// }
 
 	public final static String nameUniqueName(String ns, String name) {
 		return ns + ":" + name;
@@ -66,11 +29,13 @@ public class GrammarFile extends Grammar {
 	// fields
 	final String urn;
 	final Strategy strategy;
+	String desc;
 
 	GrammarFile(String ns, String urn, Strategy strategy) {
 		super(ns);
 		this.urn = urn;
 		this.strategy = strategy;
+		this.desc = "";
 	}
 
 	public final Strategy getStrategy() {
@@ -79,6 +44,14 @@ public class GrammarFile extends Grammar {
 
 	public final String getURN() {
 		return this.urn;
+	}
+
+	public final void setDesc(String desc) {
+		this.desc = desc;
+	}
+
+	public final String getDesc() {
+		return this.desc;
 	}
 
 	public final Production addProduction(SourcePosition s, String localName, Expression e) {
@@ -97,28 +70,6 @@ public class GrammarFile extends Grammar {
 		// return p;
 		throw new RuntimeException("FIXME");
 	}
-
-	// public Production newReducedProduction(String localName, Production p,
-	// GrammarTransducer m) {
-	// Production r = p.getGrammar().newProduction(localName, null);
-	// this.addProduction(r);
-	// m.updateProductionAttribute(p, r);
-	// r.setExpression(p.getExpression().reshape(m));
-	// return r;
-	// }
-
-	// public final Parser newParser0(String name, NezOption option) {
-	// Production r = this.getProduction(name);
-	// if (r != null) {
-	// return new ParserClassic(r, option);
-	// }
-	// Verbose.debug("unfound production: " + this.getProductionList());
-	// return null;
-	// }
-	//
-	// public final Parser newParser0(String name) {
-	// return this.newParser0(name, NezOption.newDefaultOption());
-	// }
 
 	private FormatterMap fmtMap;
 
