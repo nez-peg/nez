@@ -1,18 +1,20 @@
 package nez.parser;
 
 import java.util.HashMap;
+import java.util.List;
 
 import nez.lang.Expression;
 import nez.lang.Production;
 import nez.lang.expr.Pchoice;
 import nez.lang.expr.Unary;
+import nez.util.ConsoleUtils;
 import nez.util.UList;
 
 public class Coverage {
 	static UList<Coverage> covList = null;
 	static HashMap<String, Coverage> covMap;
 
-	public final void init() {
+	public final static void init() {
 		covList = new UList<Coverage>(new Coverage[128]);
 		covMap = new HashMap<>();
 	}
@@ -92,6 +94,63 @@ public class Coverage {
 			return new Icovx(cov, next);
 		}
 		return next;
+	}
+
+	public final static float calc() {
+		int prodCount = 0;
+		int prodEnter = 0;
+		int prodExit = 0;
+		// int exprCount = 0;
+		// int exprEnter = 0;
+		// int exprExit = 0;
+		for (Coverage cov : covList) {
+			if (cov.p != null) {
+				prodCount++;
+				if (cov.enterCount > 0) {
+					prodEnter++;
+				}
+				if (cov.exitCount > 0) {
+					prodExit++;
+				}
+			}
+			// if (cov.e != null) {
+			// exprCount++;
+			// if (cov.enterCount > 0) {
+			// exprEnter++;
+			// }
+			// if (cov.exitCount > 0) {
+			// exprExit++;
+			// }
+			// }
+		}
+		ConsoleUtils.println("Production coverage: " + ((100.f * prodEnter) / prodCount) + "%, " + ((100.f * prodExit) / prodCount) + "%");
+		// ConsoleUtils.println("Branch coverage: " + ((100.f * exprEnter) /
+		// exprCount) + "%, " + ((100.f * exprExit) / exprCount) + "%");
+		return 1.0f * prodEnter / prodCount;
+	}
+
+	public final static List<String> getUntestedProductionList() {
+		UList<String> l = new UList<String>(new String[10]);
+		for (Coverage cov : covList) {
+			if (cov.p != null) {
+				if (cov.enterCount == 0) {
+					l.add(cov.p.getLocalName());
+				}
+			}
+		}
+		return l;
+	}
+
+	public final static void dump() {
+		ConsoleUtils.println("Coverage:");
+		for (Coverage cov : covList) {
+			if (cov.p != null) {
+				ConsoleUtils.println(String.format("  %-40s: %d / %d", cov.p.getUniqueName(), cov.enterCount, cov.exitCount));
+			}
+			if (cov.e != null) {
+				ConsoleUtils.println(cov.e + ": " + cov.enterCount + " / " + cov.exitCount);
+			}
+		}
 	}
 
 	// Fields

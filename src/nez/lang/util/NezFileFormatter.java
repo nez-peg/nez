@@ -371,7 +371,7 @@ public class NezFileFormatter extends TreeVisitor {
 	}
 
 	public boolean pDef(Tree<?> node) {
-		String p = "<on " + node.getText(_name, "") + " ";
+		String p = "<def " + node.getText(_name, "") + " ";
 		return pUnary(p, node, ">");
 	}
 

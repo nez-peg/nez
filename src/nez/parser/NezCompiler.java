@@ -20,7 +20,9 @@ public abstract class NezCompiler extends AbstractGenerator {
 		long t = System.nanoTime();
 		UList<Instruction> codeList = new UList<Instruction>(new Instruction[64]);
 		for (Production p : gg) {
-			this.encodeProduction(codeList, p, new IRet(p));
+			if (!p.isSymbolTable()) {
+				this.encodeProduction(codeList, p, new IRet(p));
+			}
 		}
 		for (Instruction inst : codeList) {
 			if (inst instanceof ICall) {
@@ -45,8 +47,16 @@ public abstract class NezCompiler extends AbstractGenerator {
 
 	protected void encodeProduction(UList<Instruction> codeList, Production p, Instruction next) {
 		ParseFunc f = this.getParseFunc(p);
+		// System.out.println("inline: " + f.inlining + " name: " +
+		// p.getLocalName());
 		encodingProduction = p;
+		if (!f.inlining) {
+			next = Coverage.encodeExitCoverage(p, next);
+		}
 		f.compiled = encode(f.e, next, null/* failjump */);
+		if (!f.inlining) {
+			f.compiled = Coverage.encodeEnterCoverage(p, f.compiled);
+		}
 		Instruction block = new ILabel(p, f.compiled);
 		this.layoutCode(codeList, block);
 	}

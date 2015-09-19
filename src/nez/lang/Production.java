@@ -220,6 +220,10 @@ public class Production /* extends Expression */{
 		return UFlag.is(this.flag, Production.TerminalProduction);
 	}
 
+	public boolean isSymbolTable() {
+		return UFlag.is(this.flag, Production.SymbolTableProduction);
+	}
+
 	public final boolean isRecursive() {
 		if (!UFlag.is(this.flag, Production.RecursiveChecked)) {
 			checkRecursive(this.getExpression(), null);
@@ -512,4 +516,5 @@ public class Production /* extends Expression */{
 		}
 		ConsoleUtils.println(l + "\n" + this.getLocalName() + " = " + this.getExpression());
 	}
+
 }

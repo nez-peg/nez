@@ -8,6 +8,7 @@ import nez.Strategy;
 import nez.ast.Tree;
 import nez.ast.TreeUtils;
 import nez.io.SourceContext;
+import nez.parser.Coverage;
 import nez.util.ConsoleUtils;
 
 public class Example {
@@ -33,6 +34,10 @@ public class Example {
 
 	public final boolean hasHash() {
 		return this.hash != null;
+	}
+
+	public String formatPanic(String msg) {
+		return nameNode.formatSourceMessage("panic", msg);
 	}
 
 	public String formatWarning(String msg) {
@@ -82,26 +87,38 @@ public class Example {
 	public static void testAll(GrammarFile g, Strategy strategy) {
 		List<Example> exampleList = g.getExampleList();
 		if (exampleList != null) {
+			strategy.setEnabled("Winline", false);
+			Coverage.init();
 			TestResult result = new TestResult();
 			HashMap<String, Parser> parserMap = new HashMap<>();
 			long t1 = System.nanoTime();
 			for (Example ex : exampleList) {
-				String name = ex.getName();
-				Parser p = parserMap.get(name);
-				if (p == null) {
-					p = g.newParser(name, strategy);
+				try {
+					String name = ex.getName();
+					Parser p = parserMap.get(name);
 					if (p == null) {
-						ConsoleUtils.println(ex.formatWarning("undefined nonterminal: " + name));
-						continue;
+						p = g.newParser(name, strategy);
+						if (p == null) {
+							ConsoleUtils.println(ex.formatWarning("undefined nonterminal: " + name));
+							continue;
+						}
+						parserMap.put(name, p);
 					}
-					parserMap.put(name, p);
+					ex.test(p, result);
+				} catch (Exception e) {
+					ConsoleUtils.println((ex.formatPanic("exception detected: " + e)));
+				} catch (Error e) {
+					ConsoleUtils.println((ex.formatPanic("error detected: " + e)));
 				}
-				ex.test(p, result);
 			}
 			long t2 = System.nanoTime();
+			Coverage.dump();
 			ConsoleUtils.println("Elapsed time (Example Tests): " + ((t2 - t1) / 1000000) + "ms");
 			ConsoleUtils.println("Pass: " + result.getSucc() + "/" + result.getTotal() + " Pass ratio: " + result.getRatio() + "%");
-			ConsoleUtils.println("Commit: git commit -m '" + g.getDesc() + " - " + result.getStatus() + "'");
+			float cov = Coverage.calc() * 100;
+			ConsoleUtils.println("git commit -m '" + g.getDesc() + " - " + cov + "%, " + result.getStatus() + "'");
+		} else {
+			ConsoleUtils.println("git commit -m '" + g.getDesc() + " - 0.0% tested. DO NOT USE'");
 		}
 	}
 }
@@ -132,7 +149,7 @@ class TestResult {
 			return "bad";
 		}
 		if (untested > 0) {
-			return "unfinished";
+			return "fine";
 		}
 		return "good";
 	}
