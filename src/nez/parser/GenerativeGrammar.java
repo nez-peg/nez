@@ -7,8 +7,7 @@ import java.util.TreeMap;
 
 import nez.Grammar;
 import nez.Strategy;
-import nez.lang.GrammarChecker;
-import nez.lang.GrammarOptimizer;
+import nez.lang.GrammarChecker2;
 import nez.lang.Production;
 import nez.lang.Typestate;
 import nez.main.Verbose;
@@ -20,12 +19,18 @@ public class GenerativeGrammar extends Grammar {
 
 	public GenerativeGrammar(Production start, Strategy strategy, TreeMap<String, Boolean> flagMap) {
 		this.funcMap = new HashMap<String, ParseFunc>();
-		new GrammarChecker(this, !strategy.isEnabled("ast", Strategy.AST), flagMap, start, strategy);
+		new GrammarChecker2(this, !strategy.isEnabled("ast", Strategy.AST), flagMap, start, strategy);
 		memo(strategy);
 	}
 
 	public ParseFunc getParseFunc(String name) {
 		return this.funcMap.get(name);
+	}
+
+	public ParseFunc setParseFunc(String uname, Production p, Production parserProduction, int init) {
+		ParseFunc f = new ParseFunc(uname, p, parserProduction, init);
+		this.funcMap.put(uname, f);
+		return f;
 	}
 
 	public void setParseFunc(ParseFunc f) {
@@ -67,22 +72,22 @@ public class GenerativeGrammar extends Grammar {
 	}
 
 	void checkInlining(ParseFunc f) {
-		if (f.refcount == 1 || GrammarOptimizer.isSingleCharacter(f.e)) {
-			if (Verbose.PackratParsing) {
-				Verbose.println("Inlining: " + f.name);
-			}
-			f.inlining = true;
-		}
+		// if (f.refcount == 1 || GrammarOptimizer2.isSingleCharacter(f.e)) {
+		// if (Verbose.PackratParsing) {
+		// Verbose.println("Inlining: " + f.name);
+		// }
+		// f.inlining = true;
+		// }
 	}
 
 	void checkMemoizing(ParseFunc f) {
 		if (f.inlining || f.memoPoint != null) {
 			return;
 		}
-		Production p = f.p;
+		Production p = f.parserProduction;
 		if (f.refcount > 1 && p.inferTypestate(null) != Typestate.OperationType) {
 			int memoId = memoPointList.size();
-			f.memoPoint = new MemoPoint(memoId, p.getLocalName(), f.e, p.isContextual());
+			f.memoPoint = new MemoPoint(memoId, p.getLocalName(), f.getExpression(), p.isContextual());
 			memoPointList.add(f.memoPoint);
 			if (Verbose.PackratParsing) {
 				Verbose.println("MemoPoint: " + f.memoPoint + " ref=" + f.refcount + " pure? " + p.isNoNTreeConstruction() + " rec? " + p.isRecursive());

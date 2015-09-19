@@ -4,12 +4,12 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import nez.ParserException;
 import nez.Parser;
+import nez.ParserException;
 import nez.Strategy;
-import nez.ast.TreeVisitor;
 import nez.ast.CommonTree;
 import nez.ast.Symbol;
+import nez.ast.TreeVisitor;
 import nez.io.SourceContext;
 import nez.lang.Expression;
 import nez.lang.GrammarFile;
@@ -64,7 +64,7 @@ public class RegexGrammar extends TreeVisitor {
 	void convert(CommonTree e, GrammarFile grammar) {
 		this.grammar = grammar;
 		grammar.addProduction(e, "File", pi(e, null));
-		grammar.addProduction(e, "Chunk", grammar.newNonTerminal("File"));
+		grammar.addProduction(e, "Chunk", grammar.newNonTerminal(e, "File"));
 	}
 
 	@Override

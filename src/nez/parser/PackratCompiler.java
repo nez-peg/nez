@@ -18,20 +18,20 @@ public class PackratCompiler extends OptimizedCompiler {
 		if (p == null) {
 			Verbose.debug("unref: " + n.getLocalName());
 		}
-		ParseFunc pcode = this.getParseFunc(p);
-		if (pcode.inlining) {
+		ParseFunc f = this.getParseFunc(p);
+		if (f.inlining) {
 			this.optimizedInline(p);
-			return encode(pcode.e, next, failjump);
+			return encode(f.getExpression(), next, failjump);
 		}
-		if (pcode.memoPoint != null) {
+		if (f.memoPoint != null) {
 			if (!enabledASTConstruction || p.isNoNTreeConstruction()) {
 				if (Verbose.PackratParsing) {
 					Verbose.println("memoize: " + n.getLocalName() + " at " + this.getEncodingProduction().getLocalName());
 				}
-				Instruction inside = new IMemo(n, pcode.memoPoint, pcode.state, next);
+				Instruction inside = new IMemo(n, f.memoPoint, f.state, next);
 				inside = new ICall(p, inside);
-				inside = new IAlt(n, new IMemoFail(n, pcode.state, pcode.memoPoint), inside);
-				return new ILookup(n, pcode.memoPoint, pcode.state, inside, next);
+				inside = new IAlt(n, new IMemoFail(n, f.state, f.memoPoint), inside);
+				return new ILookup(n, f.memoPoint, f.state, inside, next);
 			}
 		}
 		return new ICall(p, next);

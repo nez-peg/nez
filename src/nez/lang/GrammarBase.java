@@ -26,8 +26,8 @@ public abstract class GrammarBase extends AbstractList<Production> {
 		return newProduction(getSourcePosition(), 0, name, e);
 	}
 
-	public final NonTerminal newNonTerminal(String name) {
-		return ExpressionCommons.newNonTerminal(getSourcePosition(), (Grammar) this, name);
+	public final NonTerminal newNonTerminal(SourcePosition s, String name) {
+		return ExpressionCommons.newNonTerminal(s, (Grammar) this, name);
 	}
 
 	public final Expression newEmpty() {

@@ -3,7 +3,6 @@ package nez;
 import java.util.HashMap;
 import java.util.List;
 
-import nez.lang.Expression;
 import nez.lang.GrammarBase;
 import nez.lang.Production;
 import nez.main.Verbose;
@@ -130,17 +129,18 @@ public class Grammar extends GrammarBase {
 		}
 	}
 
-	public final void setSymbolExpresion(String tableName, Expression e) {
-		this.newProduction(null, Production.PublicProduction | Production.SymbolTableProduction, ":^" + tableName, e);
-	}
-
-	public final Expression getSymbolExpresion(String tableName) {
-		Production p = this.getProduction(":^" + tableName);
-		if (p != null) {
-			return p.getExpression();
-		}
-		return null;
-	}
+	// public final void setSymbolExpresion(String tableName, Expression e) {
+	// this.newProduction(null, Production.PublicProduction |
+	// Production.SymbolTableProduction, ":^" + tableName, e);
+	// }
+	//
+	// public final Expression getSymbolExpresion(String tableName) {
+	// Production p = this.getProduction(":^" + tableName);
+	// if (p != null) {
+	// return p.getExpression();
+	// }
+	// return null;
+	// }
 
 	// ----------------------------------------------------------------------
 

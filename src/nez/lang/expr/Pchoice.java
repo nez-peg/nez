@@ -12,8 +12,10 @@ import nez.util.UList;
 
 public class Pchoice extends ExpressionCommons {
 	Expression[] inners;
-	public boolean isFlatten = false;
+	public boolean isTrieTree = false;
 	public Expression[] predictedCase = null;
+	public float reduced;
+	public Expression[] firstInners = null;
 
 	Pchoice(SourcePosition s, UList<Expression> l, int size) {
 		super(s);
@@ -21,6 +23,7 @@ public class Pchoice extends ExpressionCommons {
 		for (int i = 0; i < size; i++) {
 			this.inners[i] = l.get(i);
 		}
+		this.reduced = size;
 	}
 
 	@Override

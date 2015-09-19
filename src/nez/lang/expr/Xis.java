@@ -9,6 +9,7 @@ import nez.lang.GrammarTransducer;
 import nez.lang.PossibleAcceptance;
 import nez.lang.Typestate;
 import nez.lang.Visa;
+import nez.main.Verbose;
 import nez.parser.AbstractGenerator;
 import nez.parser.Instruction;
 
@@ -46,7 +47,12 @@ public class Xis extends Term implements Contextual {
 	}
 
 	public final Expression getSymbolExpression() {
-		return g.getSymbolExpresion(tableName.getSymbol());
+		try {
+			return g.getProduction(tableName.getSymbol()).getExpression();
+		} catch (NullPointerException e) {
+			Verbose.debug("no symbol expression: " + tableName.getSymbol());
+		}
+		return this.newEmpty(); // FIXME
 	}
 
 	@Override
@@ -56,10 +62,10 @@ public class Xis extends Term implements Contextual {
 
 	@Override
 	public boolean isConsumed() {
-		Expression inner = this.getSymbolExpression();
-		if (inner != null) {
-			return inner.isConsumed();
-		}
+		// Expression inner = this.getSymbolExpression();
+		// if (inner != null) {
+		// return inner.isConsumed();
+		// }
 		return false;
 	}
 

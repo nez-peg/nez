@@ -5,8 +5,8 @@ import nez.lang.Production;
 
 public class ParseFunc {
 	String name;
-	Production p;
-	Expression e;
+	Production grammarProduction;
+	Production parserProduction;
 
 	int refcount;
 	boolean inlining;
@@ -15,27 +15,28 @@ public class ParseFunc {
 
 	Instruction compiled;
 
-	public ParseFunc(String uname, Production p) {
+	public ParseFunc(String uname, Production p, Production pp, int init) {
 		this.name = uname;
 		this.refcount = 0;
-		this.p = p;
+		this.grammarProduction = p;
+		this.parserProduction = pp;
+		this.refcount = init;
 	}
 
-	public void setExpression(Expression e) {
-		this.e = e;
+	public Expression getExpression() {
+		return this.parserProduction.getExpression();
 	}
 
-	public void count() {
+	public void incCount() {
 		this.refcount++;
+	}
+
+	public void resetCount() {
+		this.refcount = 0;
 	}
 
 	public final int getRefCount() {
 		return this.refcount;
-	}
-
-	public final void update(Expression e, int refcount) {
-		this.setExpression(e);
-		this.refcount = refcount;
 	}
 
 }

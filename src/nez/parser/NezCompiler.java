@@ -53,7 +53,7 @@ public abstract class NezCompiler extends AbstractGenerator {
 		if (!f.inlining) {
 			next = Coverage.encodeExitCoverage(p, next);
 		}
-		f.compiled = encode(f.e, next, null/* failjump */);
+		f.compiled = encode(f.getExpression(), next, null/* failjump */);
 		if (!f.inlining) {
 			f.compiled = Coverage.encodeEnterCoverage(p, f.compiled);
 		}

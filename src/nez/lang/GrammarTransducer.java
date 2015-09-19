@@ -36,7 +36,7 @@ import nez.util.UList;
 
 public class GrammarTransducer {
 
-	public final Expression reshapeInner(Expression inner) {
+	public Expression reshapeInner(Expression inner) {
 		push(inner);
 		Expression inner2 = inner.reshape(this);
 		pop(inner);

@@ -19,7 +19,7 @@ public class Xdef extends Unary {
 		super(s, inner);
 		this.g = g;
 		this.tableName = table;
-		g.setSymbolExpresion(tableName.getSymbol(), inner);
+		// g.setSymbolExpresion(tableName.getSymbol(), inner);
 	}
 
 	@Override

@@ -103,7 +103,7 @@ public class NonTerminal extends ExpressionCommons {
 		try {
 			return this.deReference().acceptByte(ch);
 		} catch (StackOverflowError e) {
-			System.out.println(e + " at " + this.getLocalName());
+			Verbose.debug(e + " at " + this.getLocalName());
 			return PossibleAcceptance.Accept;
 		}
 	}
@@ -113,7 +113,7 @@ public class NonTerminal extends ExpressionCommons {
 		return bc.encodeNonTerminal(this, next, failjump);
 	}
 
-	public final Expression newNonTerminal(String localName) {
+	public final NonTerminal newNonTerminal(String localName) {
 		return ExpressionCommons.newNonTerminal(this.getSourcePosition(), this.getGrammar(), localName);
 	}
 
