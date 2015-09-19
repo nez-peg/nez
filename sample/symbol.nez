@@ -1,0 +1,19 @@
+/**
+ * symbol table example
+ * 
+ */
+
+
+example Symbol Apple Apple
+
+example Symbol Apple Orange
+
+Symbol = <def name NAME> S { <is name> #Name }?
+
+
+
+NAME = [A-Za-z]+
+S = [ \t]+
+
+
+

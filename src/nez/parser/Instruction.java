@@ -1250,7 +1250,7 @@ class IIsSymbol extends AbstractTableInstruction {
 			StackData s = sc.popStack();
 			byte[] captured = sc.subbyte(s.value, sc.getPosition());
 			if (symbol.length == captured.length && SymbolTable.equals(symbol, captured)) {
-				sc.consume(symbol.length);
+				// sc.consume(symbol.length);
 				return this.next;
 			}
 		}
@@ -1268,7 +1268,7 @@ class IIsaSymbol extends AbstractTableInstruction {
 		StackData s = sc.popStack();
 		byte[] captured = sc.subbyte(s.value, sc.getPosition());
 		if (sc.getSymbolTable().contains(this.tableName, captured)) {
-			sc.consume(captured.length);
+			// sc.consume(captured.length);
 			return this.next;
 
 		}

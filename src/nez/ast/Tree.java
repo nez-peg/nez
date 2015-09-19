@@ -225,7 +225,17 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements
 			return this.value.toString();
 		}
 		if (this.source != null) {
-			this.value = this.source.substring(this.getSourcePosition(), this.getSourcePosition() + this.length);
+			long pos = this.getSourcePosition();
+			long epos = pos + this.length;
+			this.value = this.source.substring(pos, epos);
+			// try {
+			// this.value = this.source.substring(pos, epos);
+			// } catch (Exception e) {
+			// System.out.println(e);
+			// System.out.println("pos: " + pos + " epos: " + epos + " < " +
+			// this.getSource().length());
+			// this.value = "";
+			// }
 			return this.value.toString();
 		}
 		return "";
