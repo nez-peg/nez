@@ -83,7 +83,7 @@ public abstract class Expression extends AbstractList<Expression> {
 		return ExpressionCommons.newFailure(this.getSourcePosition());
 	}
 
-	public final Expression newByteMap(boolean isBinary, boolean[] byteMap) {
+	public final Expression newCset(boolean isBinary, boolean[] byteMap) {
 		return ExpressionCommons.newCset(this.getSourcePosition(), isBinary, byteMap);
 	}
 

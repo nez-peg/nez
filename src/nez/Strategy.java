@@ -31,7 +31,10 @@ public class Strategy {
 	public final static boolean Onone = false;
 	public final static boolean Olex = true;
 	public final static boolean Ostr = true;
+	public final static boolean Otrie = false;
+
 	public final static boolean Oinline = true;
+	public final static boolean Oalias = false;
 	public final static boolean Ofirst = true;
 
 	public final static boolean Wnone = true;

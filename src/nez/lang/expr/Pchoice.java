@@ -12,10 +12,6 @@ import nez.util.UList;
 
 public class Pchoice extends ExpressionCommons {
 	Expression[] inners;
-	public boolean isTrieTree = false;
-	public Expression[] predictedCase = null;
-	public float reduced;
-	public Expression[] firstInners = null;
 
 	Pchoice(SourcePosition s, UList<Expression> l, int size) {
 		super(s);
@@ -112,6 +108,22 @@ public class Pchoice extends ExpressionCommons {
 	@Override
 	public Instruction encode(AbstractGenerator bc, Instruction next, Instruction failjump) {
 		return bc.encodePchoice(this, next, failjump);
+	}
+
+	/* optimized */
+
+	public boolean isTrieTree = false;
+	public Expression[] predictedCase = null;
+	public float reduced;
+	public Expression[] firstInners = null;
+	private final static Expression[] optimized = new Expression[0];
+
+	public boolean isOptimized() {
+		return this.firstInners != null;
+	}
+
+	public void setOptimized() {
+		this.firstInners = optimized;
 	}
 
 }

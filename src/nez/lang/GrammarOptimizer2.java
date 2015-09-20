@@ -71,19 +71,30 @@ public class GrammarOptimizer2 extends GrammarRewriter {
 		}
 		if (strategy.isEnabled("Oinline", Strategy.Oinline)) {
 			this.enabledInlining = true;
+		}
+
+		if (strategy.isEnabled("Oalias", Strategy.Oalias)) {
+			this.enabledInlining = true;
 			this.enabledAliasAnalysis = true;
 			this.bodyMap = new HashMap<String, Production>();
 			this.aliasMap = new HashMap<String, String>();
 		}
+
 		if (strategy.isEnabled("Olex", Strategy.Olex)) {
 			this.enabledLexicalOptimization = true;
 		}
+
+		if (strategy.isEnabled("Otrie", Strategy.Otrie)) {
+			this.enabledTrieTreeChoice = true;
+		}
+
 		if (strategy.isEnabled("Ofirst", Strategy.Ofirst)) {
 			// seems slow when the prediction option is enabled
 			this.enabledFirstChoice = true;
 			this.enabledCommonLeftFactoring = true;
 			this.toOptimizeChoiceList = new UList<Pchoice>(new Pchoice[8]);
 		}
+
 		this.verboseOption("Olex", enabledLexicalOptimization);
 		this.verboseOption("Oinline", enabledInlining);
 		this.verboseOption("Oalias", enabledAliasAnalysis);
@@ -420,7 +431,7 @@ public class GrammarOptimizer2 extends GrammarRewriter {
 				bany[bc.byteChar] = false;
 			}
 		}
-		return not.newByteMap(isBinary, bany);
+		return not.newCset(isBinary, bany);
 	}
 
 	@Override
@@ -439,11 +450,15 @@ public class GrammarOptimizer2 extends GrammarRewriter {
 
 	@Override
 	public Expression reshapePchoice(Pchoice p) {
-		UList<Expression> l = ExpressionCommons.newList(p.size());
-		for (Expression sub : p) {
-			ExpressionCommons.addChoice(l, this.reshapeInner(sub));
+		if (!p.isOptimized()) {
+			p.setOptimized();
+			UList<Expression> l = ExpressionCommons.newList(p.size());
+			for (Expression sub : p) {
+				ExpressionCommons.addChoice(l, this.reshapeInner(sub));
+			}
+			return this.reshapePchoice(p, l);
 		}
-		return this.reshapePchoice(p, l);
+		return super.reshapePchoice(p);
 	}
 
 	public Expression reshapePchoice(Pchoice p, UList<Expression> l) {
@@ -469,6 +484,7 @@ public class GrammarOptimizer2 extends GrammarRewriter {
 		boolean byteMap[] = Cset.newMap(false);
 		boolean binary = false;
 		for (Expression e : choiceList) {
+			e = ExpressionCommons.resolveNonTerminal(e);
 			if (e instanceof Pfail) {
 				continue;
 			}
@@ -494,7 +510,7 @@ public class GrammarOptimizer2 extends GrammarRewriter {
 			}
 			return null;
 		}
-		return choice.newByteMap(binary, byteMap);
+		return choice.newCset(binary, byteMap);
 	}
 
 	private boolean isTrieTreeHead(Expression inner) {
@@ -502,13 +518,6 @@ public class GrammarOptimizer2 extends GrammarRewriter {
 		if (first instanceof Cbyte || first instanceof Cset) {
 			return true;
 		}
-		// if (inner instanceof Cbyte) {
-		// return true;
-		// }
-		// if (inner instanceof Psequence && inner.getFirst() instanceof Cbyte)
-		// {
-		// return true;
-		// }
 		return false;
 	}
 
@@ -602,7 +611,7 @@ public class GrammarOptimizer2 extends GrammarRewriter {
 			p.reduced = 1.0f;
 		} else {
 			UList<Expression> choiceList = ExpressionCommons.newList(p.size());
-			flattenChoiceList(p, choiceList, new HashSet<String>());
+			flattenChoiceList(p, choiceList);
 			int count = 0;
 			int selected = 0;
 			UList<Expression> newlist = ExpressionCommons.newList(p.size());
@@ -648,20 +657,12 @@ public class GrammarOptimizer2 extends GrammarRewriter {
 		return e;
 	}
 
-	private void flattenChoiceList(Pchoice choice, UList<Expression> l, HashSet<String> ucheck) {
+	private void flattenChoiceList(Pchoice choice, UList<Expression> l) {
 		for (Expression inner : choice) {
 			inner = firstChoiceInlining(inner);
 			if (inner instanceof Pchoice) {
-				flattenChoiceList((Pchoice) inner, l, ucheck);
+				flattenChoiceList((Pchoice) inner, l);
 			} else {
-				if (ucheck != null) {
-					String key = inner.toString();
-					if (ucheck.contains(key)) {
-						strategy.reportNotice(choice.getSourcePosition(), "duplicated choice: " + key);
-						continue;
-					}
-					ucheck.add(key);
-				}
 				l.add(inner);
 			}
 		}
