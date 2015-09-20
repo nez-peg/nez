@@ -112,7 +112,7 @@ public class NezGrammarGenerator extends ExpressionVisitor<Expression, Grammar> 
 
 	@Override
 	public Expression visitNonTerminalExpr(NonTerminalExpr expr, Grammar param) {
-		return param.newNonTerminal(expr.getName());
+		return param.newNonTerminal(null/* FIXME */, expr.getName());
 	}
 
 	@Override
