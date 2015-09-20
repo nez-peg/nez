@@ -536,6 +536,9 @@ abstract class AbstractSetInstruction extends Instruction {
 	AbstractSetInstruction(byte opcode, Cset e, Instruction next) {
 		super(opcode, e, next);
 		this.byteMap = e.byteMap;
+		if (this.byteMap[0]) {
+			this.byteMap[0] = false; // for safety
+		}
 	}
 
 	@Override

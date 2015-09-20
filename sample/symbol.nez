@@ -1,8 +1,7 @@
 /**
- * symbol table example
- * 
+ * Symbol table example
+ * <def>, <match>, <is>, <isa>, <exists>
  */
-
 
 example SymbolMatch ~aa423cf Apple Apple
 example SymbolMatch ~aa423cf Apple AppleII

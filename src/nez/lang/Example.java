@@ -88,7 +88,6 @@ public class Example {
 	public static void testAll(GrammarFile g, Strategy strategy) {
 		List<Example> exampleList = g.getExampleList();
 		if (exampleList != null) {
-			strategy.setEnabled("Winline", false);
 			Coverage.init();
 			TestResult result = new TestResult();
 			HashMap<String, Parser> parserMap = new HashMap<>();
