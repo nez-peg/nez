@@ -54,23 +54,24 @@ public class Example {
 		if (node == null) {
 			ConsoleUtils.println("[ERR*] " + name);
 			ConsoleUtils.println(source.getSyntaxErrorMessage());
-			result.syntaxError += 1;
+			result.failSyntax += 1;
 			return false;
 		}
+		result.succSyntax += 1;
 		String nodehash = TreeUtils.digestString(node);
 		if (hash == null) {
 			display("[TODO]", name, nodehash, node);
 			this.hash = nodehash;
-			result.untested += 1;
+			result.untestedAST += 1;
 			return true;
 		}
 		if (nodehash.startsWith(hash)) {
 			display("[PASS]", name, null, null);
-			result.succ += 1;
+			result.succAST += 1;
 			return true;
 		}
 		display("[FAIL]", name, nodehash, node);
-		result.failed += 1;
+		result.failAST += 1;
 		return false;
 	}
 
@@ -123,9 +124,10 @@ public class Example {
 			long t2 = System.nanoTime();
 			Coverage.dump();
 			ConsoleUtils.println("Elapsed time (Example Tests): " + ((t2 - t1) / 1000000) + "ms");
-			ConsoleUtils.println("Pass: " + result.getSucc() + "/" + result.getTotal() + " Pass ratio: " + result.getRatio() + "%");
+			ConsoleUtils.print("Syntax Pass: " + result.getSuccSyntax() + "/" + result.getTotal() + " ratio: " + result.getRatioSyntax() + "%");
+			ConsoleUtils.println(", AST Pass: " + result.getSuccAST() + "/" + result.getTotal() + " ratio: " + result.getRatioAST() + "%");
 			float cov = Coverage.calc() * 100;
-			ConsoleUtils.println("git commit -am '" + g.getDesc() + " - " + cov + "%, " + result.getStatus() + "'");
+			ConsoleUtils.println("git commit -am '" + g.getDesc() + " - " + cov + "% tested, " + result.getStatus(cov) + "'");
 		} else {
 			ConsoleUtils.println("git commit -am '" + g.getDesc() + " - 0.0% tested. DO NOT USE'");
 		}
@@ -175,33 +177,47 @@ public class Example {
 }
 
 class TestResult {
-	int syntaxError = 0;
-	int untested = 0;
-	int succ = 0;
-	int failed = 0;
+	int succSyntax = 0;
+	int failSyntax = 0;
+
+	int untestedAST = 0;
+	int succAST = 0;
+	int failAST = 0;
 
 	int getTotal() {
-		return syntaxError + untested + succ + failed;
+		return succSyntax + failSyntax;
 	}
 
-	int getSucc() {
-		return succ;
+	int getSuccSyntax() {
+		return succSyntax;
 	}
 
-	float getRatio() {
-		return succ * 100.0f / this.getTotal();
+	int getSuccAST() {
+		return succAST;
 	}
 
-	String getStatus() {
-		if (syntaxError > 0) {
-			return "very bad (syntax error)";
+	float getRatioSyntax() {
+		return succSyntax * 100.0f / this.getTotal();
+	}
+
+	float getRatioAST() {
+		return succAST * 100.0f / this.getTotal();
+	}
+
+	String getStatus(float r) {
+		if (failSyntax > 0) {
+			return (succSyntax < failSyntax) ? "very bad" : "bad";
+		} else {
+			if (failAST > 0) {
+				return "not bad";
+			}
+			if (untestedAST > 0) {
+				return "rough";
+			}
+			if (r > 95.0) {
+				return "excellent";
+			}
+			return "good";
 		}
-		if (failed > 0) {
-			return "bad";
-		}
-		if (untested > 0) {
-			return "fine";
-		}
-		return "good";
 	}
 }
