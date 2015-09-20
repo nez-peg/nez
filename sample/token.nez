@@ -1,0 +1,27 @@
+/**
+ * Example of token construction
+ *  by Kimio Kuramitsu
+ */
+
+NAME = [A-Za-z] [A-Za-z0-9]*
+
+/* Token with #Name tag */
+
+Name = { NAME #Name }
+
+example Name ~7e7edc6 Banana
+example Name ~7e7edc6 Banana Republic
+
+/* Token with no tag */
+
+Name2 = { NAME }
+
+example Name2 ~484bc1 Banana
+
+/* Token that is replaced with 'Apple' */
+
+Name3 = { NAME #Name `Apple` }
+
+example Name3 ~fdb051 Banana
+
+

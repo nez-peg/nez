@@ -132,7 +132,7 @@ public class Example {
 			}
 			ConsoleUtils.println("Elapsed time (Example Tests): " + ((t2 - t1) / 1000000) + "ms");
 			ConsoleUtils.print("Syntax Pass: " + result.getSuccSyntax() + "/" + result.getTotal() + " ratio: " + result.getRatioSyntax() + "%");
-			ConsoleUtils.println(", AST Pass: " + result.getSuccAST() + "/" + result.getTotal() + " ratio: " + result.getRatioAST() + "%");
+			ConsoleUtils.println(", AST Pass: " + result.getSuccAST() + "/" + result.getTotalAST() + " ratio: " + result.getRatioAST() + "%");
 			if (!ExampleCommand) {
 				ConsoleUtils.println("git commit -am '" + g.getDesc() + " - " + cov + "% tested, " + result.getStatus(cov) + "'");
 			}
@@ -210,12 +210,16 @@ class TestResult {
 		return succAST;
 	}
 
+	int getTotalAST() {
+		return succSyntax + failSyntax - untestedAST;
+	}
+
 	float getRatioSyntax() {
 		return succSyntax * 100.0f / this.getTotal();
 	}
 
 	float getRatioAST() {
-		return succAST * 100.0f / this.getTotal();
+		return succAST * 100.0f / this.getTotalAST();
 	}
 
 	String getStatus(float r) {
@@ -225,7 +229,7 @@ class TestResult {
 			if (failAST > 0) {
 				return "not bad";
 			}
-			if (untestedAST > 0) {
+			if (untestedAST > succAST) {
 				return "rough";
 			}
 			if (r > 95.0) {
