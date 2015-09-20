@@ -32,7 +32,7 @@ public abstract class ExpressionCommons extends Expression {
 	@Override
 	public void format(StringBuilder sb) {
 		sb.append("<");
-		sb.append(this.getClass().getSimpleName());
+		sb.append(this.getPredicate());
 		for (Expression se : this) {
 			sb.append(" ");
 			se.format(sb);

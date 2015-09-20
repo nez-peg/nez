@@ -7,6 +7,7 @@ import nez.lang.Contextual;
 import nez.lang.Expression;
 import nez.lang.GrammarTransducer;
 import nez.lang.PossibleAcceptance;
+import nez.lang.Production;
 import nez.lang.Typestate;
 import nez.lang.Visa;
 import nez.main.Verbose;
@@ -34,7 +35,7 @@ public class Xis extends Term implements Contextual {
 		return false;
 	}
 
-	public final Grammar getGrammarMap() {
+	public final Grammar getGrammar() {
 		return g;
 	}
 
@@ -47,12 +48,11 @@ public class Xis extends Term implements Contextual {
 	}
 
 	public final Expression getSymbolExpression() {
-		try {
-			return g.getProduction(tableName.getSymbol()).getExpression();
-		} catch (NullPointerException e) {
+		Production p = g.getProduction(tableName.getSymbol());
+		if (p == null) {
 			Verbose.debug("no symbol expression: " + tableName.getSymbol());
 		}
-		return this.newEmpty(); // FIXME
+		return p.getExpression();
 	}
 
 	@Override

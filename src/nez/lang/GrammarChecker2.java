@@ -445,7 +445,10 @@ public class GrammarChecker2 extends GrammarTransducer {
 		String uname = p.getTableName();
 		Production pp = this.gg.newProduction(inner.getSourcePosition(), Production.SymbolTableProduction, uname, inner);
 		this.gg.setParseFunc(uname, null, pp, 2/* to avoid removal */);
-		return ExpressionCommons.newXdef(p.getSourcePosition(), gg, p.getTable(), gg.newNonTerminal(null, uname));
+		Expression ndef = ExpressionCommons.newXdef(p.getSourcePosition(), gg, p.getTable(), gg.newNonTerminal(null, uname));
+		// System.out.println("@@@@" + p + "\n\t" + ndef + "   " +
+		// gg.hasProduction(uname));
+		return ndef;
 	}
 
 	@Override
@@ -456,7 +459,6 @@ public class GrammarChecker2 extends GrammarTransducer {
 			return ExpressionCommons.newFailure(p.getSourcePosition());
 		}
 		f.incCount();
-		p.getSymbolExpression();
 		return ExpressionCommons.newXis(p.getSourcePosition(), gg, p.getTable(), p.is);
 	}
 

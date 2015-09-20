@@ -24,7 +24,7 @@ public class Pone extends Pzero {
 
 	@Override
 	public final void format(StringBuilder sb) {
-		this.formatUnary(sb, this.inner, "+");
+		this.formatUnary(sb, null, this.inner, "+");
 	}
 
 	@Override

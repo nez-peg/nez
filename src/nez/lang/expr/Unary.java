@@ -43,13 +43,4 @@ public abstract class Unary extends ExpressionCommons {
 			sb.append(suffix);
 		}
 	}
-
-	protected final void formatUnary(StringBuilder sb, String prefix, Expression inner) {
-		this.formatUnary(sb, prefix, inner, null);
-	}
-
-	protected final void formatUnary(StringBuilder sb, Expression inner, String suffix) {
-		this.formatUnary(sb, null, inner, suffix);
-	}
-
 }

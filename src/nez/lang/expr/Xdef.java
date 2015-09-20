@@ -9,7 +9,6 @@ import nez.lang.Typestate;
 import nez.lang.Visa;
 import nez.parser.AbstractGenerator;
 import nez.parser.Instruction;
-import nez.util.UMap;
 
 public class Xdef extends Unary {
 	public final Symbol tableName;
@@ -45,6 +44,19 @@ public class Xdef extends Unary {
 		return tableName.getSymbol();
 	}
 
+	public final Expression getSymbolExpression() {
+		return g.getProduction(tableName.getSymbol()).getExpression();
+	}
+
+	@Override
+	public void format(StringBuilder sb) {
+		sb.append("<def ");
+		sb.append(getTableName());
+		sb.append(" ");
+		inner.format(sb);
+		sb.append(">");
+	}
+
 	@Override
 	public Expression reshape(GrammarTransducer m) {
 		return m.reshapeXdef(this);
@@ -65,33 +77,35 @@ public class Xdef extends Unary {
 		return this.inner.acceptByte(ch);
 	}
 
-	// Utilities
-	public static boolean checkContextSensitivity(Expression e, UMap<String> visitedMap) {
-		if (e.size() > 0) {
-			for (int i = 0; i < e.size(); i++) {
-				if (checkContextSensitivity(e.get(i), visitedMap)) {
-					return true;
-				}
-			}
-			return false;
-		}
-		if (e instanceof NonTerminal) {
-			String un = ((NonTerminal) e).getUniqueName();
-			if (visitedMap.get(un) == null) {
-				visitedMap.put(un, un);
-				return checkContextSensitivity(((NonTerminal) e).getProduction().getExpression(), visitedMap);
-			}
-			return false;
-		}
-		if (e instanceof Xindent || e instanceof Xis) {
-			return true;
-		}
-		return false;
-	}
-
 	@Override
 	public Instruction encode(AbstractGenerator bc, Instruction next, Instruction failjump) {
 		return bc.encodeXdef(this, next, failjump);
 	}
+
+	// // Utilities
+	// public static boolean checkContextSensitivity(Expression e, UMap<String>
+	// visitedMap) {
+	// if (e.size() > 0) {
+	// for (int i = 0; i < e.size(); i++) {
+	// if (checkContextSensitivity(e.get(i), visitedMap)) {
+	// return true;
+	// }
+	// }
+	// return false;
+	// }
+	// if (e instanceof NonTerminal) {
+	// String un = ((NonTerminal) e).getUniqueName();
+	// if (visitedMap.get(un) == null) {
+	// visitedMap.put(un, un);
+	// return checkContextSensitivity(((NonTerminal)
+	// e).getProduction().getExpression(), visitedMap);
+	// }
+	// return false;
+	// }
+	// if (e instanceof Xindent || e instanceof Xis) {
+	// return true;
+	// }
+	// return false;
+	// }
 
 }

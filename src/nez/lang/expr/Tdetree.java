@@ -23,7 +23,7 @@ public class Tdetree extends Unary {
 
 	@Override
 	public final void format(StringBuilder sb) {
-		this.formatUnary(sb, "~", inner);
+		this.formatUnary(sb, "~", inner, null);
 	}
 
 	@Override

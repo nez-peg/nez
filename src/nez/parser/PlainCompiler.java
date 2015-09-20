@@ -219,6 +219,7 @@ public class PlainCompiler extends NezCompiler {
 
 	@Override
 	public Instruction encodeXis(Xis p, Instruction next, Instruction failjump) {
+		assert (p.getGrammar() instanceof GenerativeGrammar);
 		if (p.is) {
 			return new IPos(p, encode(p.getSymbolExpression(), new IIsSymbol(p, next), failjump));
 		} else {

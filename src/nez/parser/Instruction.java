@@ -741,11 +741,7 @@ class IFirst extends Instruction {
 	}
 
 	void setJumpTable(int ch, Instruction inst) {
-		// if (inst instanceof IFirst) {
-		// jumpTable[ch] = ((IFirst) inst).jumpTable[ch];
-		// } else {
 		jumpTable[ch] = Instruction.labeling(inst);
-		// }
 	}
 
 	@Override
@@ -758,12 +754,7 @@ class IFirst extends Instruction {
 
 	@Override
 	Instruction exec(RuntimeContext sc) throws TerminationException {
-		// System.out.println("pos=" + sc.getPosition() + "<len=" +
-		// sc.length());
-		// System.out.println("jump[0] " + jumpTable[0].getClass() + " @ " +
-		// this.e);
 		int ch = sc.byteAt(sc.getPosition());
-		// System.out.println("ch=" + ch);
 		return jumpTable[ch].exec(sc);
 	}
 }
@@ -1263,9 +1254,11 @@ class IIsSymbol extends AbstractTableInstruction {
 	@Override
 	Instruction exec(RuntimeContext sc) throws TerminationException {
 		byte[] symbol = sc.getSymbolTable().getSymbol(tableName);
+		// System.out.println("symbol:" + new String(symbol));
 		if (symbol != null) {
 			StackData s = sc.popStack();
 			byte[] captured = sc.subbyte(s.value, sc.getPosition());
+			// System.out.println("captured:" + new String(captured));
 			if (symbol.length == captured.length && SymbolTable.equals(symbol, captured)) {
 				// sc.consume(symbol.length);
 				return this.next;

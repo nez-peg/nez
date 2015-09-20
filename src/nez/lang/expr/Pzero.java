@@ -27,7 +27,7 @@ public class Pzero extends Unary {
 
 	@Override
 	public void format(StringBuilder sb) {
-		this.formatUnary(sb, this.inner, "*");
+		this.formatUnary(sb, null, this.inner, "*");
 	}
 
 	@Override

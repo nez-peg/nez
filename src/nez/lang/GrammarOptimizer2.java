@@ -153,12 +153,13 @@ public class GrammarOptimizer2 extends GrammarRewriter {
 		this.resetReferenceCount();
 		gg.getParseFunc(start.getLocalName()).incCount();
 		this.recheckReference(start);
+
 		UList<Production> prodList = new UList<Production>(new Production[gg.size()]);
 		for (Production p : gg) {
 			String key = p.getLocalName();
 			ParseFunc f = gg.getParseFunc(key);
 			verboseReference(key, f.getCount());
-			if (f.getCount() > 0) {
+			if (f.getCount() > 0 || p.isSymbolTable()) {
 				prodList.add(p);
 			} else {
 				gg.removeParseFunc(key);

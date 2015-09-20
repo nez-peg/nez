@@ -96,7 +96,6 @@ public class SymbolTable {
 
 	public final void addSymbol(Symbol table, byte[] utf8) {
 		push(table, hash(utf8), utf8);
-		System.out.println("<def " + new String(utf8));
 	}
 
 	public final void addSymbolMask(Symbol table) {

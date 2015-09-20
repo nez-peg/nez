@@ -24,7 +24,7 @@ public class Pand extends Unary {
 
 	@Override
 	public final void format(StringBuilder sb) {
-		this.formatUnary(sb, "&", this.inner);
+		this.formatUnary(sb, "&", this.inner, null);
 	}
 
 	@Override
