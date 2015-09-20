@@ -68,9 +68,10 @@ public class GrammarChecker2 extends GrammarTransducer {
 	@Override
 	protected void pop(Expression e) {
 		Expression e2 = this.stacked.pop();
-		if (e != e2) {
-			Verbose.debug("FIXME push/pop \n\t" + e2 + "\n\t" + e);
-		}
+		// Expression e2 = this.stacked.pop();
+		// if (e != e2) {
+		// Verbose.debug("FIXME push/pop \n\t" + e2 + "\n\t" + e);
+		// }
 	}
 
 	protected void dumpStack() {
