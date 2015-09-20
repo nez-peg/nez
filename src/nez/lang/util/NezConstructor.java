@@ -139,7 +139,7 @@ public class NezConstructor extends GrammarFileLoader implements Constructor {
 		return ExpressionCommons.newPchoice(node, l);
 	}
 
-	public Expression newByte(Tree<?> node) {
+	public Expression newByteChar(Tree<?> node) {
 		String t = node.toText();
 		if (t.startsWith("U+")) {
 			int c = StringUtils.hex(t.charAt(2));
@@ -417,6 +417,7 @@ public class NezConstructor extends GrammarFileLoader implements Constructor {
 		return path2;
 	}
 
+	@Override
 	public String parseGrammarDescription(SourceContext sc) {
 		StringBuilder sb = new StringBuilder();
 		long pos = 0;

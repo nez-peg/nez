@@ -212,7 +212,7 @@ public class NezFileFormatter extends TreeVisitor {
 		return true;
 	}
 
-	public boolean pByte(Tree<?> node) {
+	public boolean pByteChar(Tree<?> node) {
 		String t = node.toText();
 		f.write(t);
 		return true;
@@ -411,8 +411,7 @@ public class NezFileFormatter extends TreeVisitor {
 	}
 
 	public boolean pUndefined(Tree<?> node) {
-		f.write("<undefined>");
-		return false;
+		throw new RuntimeException("undefined node");
 	}
 
 	public final static Symbol _hash = Symbol.tag("hash"); // example

@@ -63,10 +63,10 @@ public class InstructionSet {
 	public final static byte SCount = 53;
 	public final static byte Exit = 54; // 7-bit only
 
-	public final static byte Cov = 55;
-	public final static byte Covx = 56;
-
-	public final static byte DFirst = 57; // Dfa
+	/* extended */
+	public final static byte DFirst = 55; // Dfa
+	public final static byte Cov = 56;
+	public final static byte Covx = 57;
 
 	public final static byte Label = 127; // 7-bit
 
