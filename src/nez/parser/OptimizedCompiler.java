@@ -107,7 +107,7 @@ public class OptimizedCompiler extends PlainCompiler {
 	@Override
 	public final Instruction encodePchoice(Pchoice p, Instruction next, Instruction failjump) {
 		if (/* strategy.isEnabled("Ofirst", Strategy.Ofirst) && */p.predictedCase != null) {
-			if (p.isTrieTree) {
+			if (p.isTrieTree && strategy.isEnabled("Odfa", Strategy.Odfa)) {
 				return encodeDFirstChoice(p, next, failjump);
 			}
 			return encodeFirstChoice(p, next, failjump);

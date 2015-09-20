@@ -35,7 +35,7 @@ public class ParseFunc {
 		this.refcount = 0;
 	}
 
-	public final int getRefCount() {
+	public final int getCount() {
 		return this.refcount;
 	}
 

@@ -502,4 +502,10 @@ public abstract class ExpressionCommons extends Expression {
 		return newPone(s, ExpressionCommons.newPsequence(s, l));
 	}
 
+	public static void swap(UList<Expression> l, int i, int j) {
+		Expression e = l.ArrayValues[i];
+		l.ArrayValues[i] = l.ArrayValues[j];
+		l.ArrayValues[j] = e;
+	}
+
 }
