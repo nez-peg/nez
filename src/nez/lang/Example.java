@@ -21,7 +21,7 @@ public class Example {
 	String hash;
 
 	public Example(boolean isPublic, Tree<?> nameNode, String hash, Tree<?> textNode) {
-		this.isPublic = true;
+		this.isPublic = isPublic;
 		this.nameNode = nameNode;
 		this.textNode = textNode;
 		this.hash = hash;
@@ -47,7 +47,7 @@ public class Example {
 		return nameNode.formatSourceMessage("warning", msg);
 	}
 
-	public boolean test(Parser p, TestResult result) {
+	public boolean test(Parser p, TestResult result, boolean verbose) {
 		SourceContext source = textNode.newSourceContext();
 		String name = nameNode.toText() + " (" + textNode.getSource().getResourceName() + ":" + textNode.getLinenum() + ")";
 		Tree<?> node = p.parseCommonTree(source);
@@ -66,7 +66,7 @@ public class Example {
 			return true;
 		}
 		if (nodehash.startsWith(hash)) {
-			display("[PASS]", name, null, null);
+			display("[PASS]", name, verbose ? nodehash : null, verbose ? node : null);
 			result.succAST += 1;
 			return true;
 		}
@@ -85,10 +85,11 @@ public class Example {
 			ConsoleUtils.println("   ", this.getText());
 			ConsoleUtils.println("---");
 			ConsoleUtils.println("   ", node);
+			ConsoleUtils.println("---");
 		}
 	}
 
-	public static void testAll(GrammarFile g, Strategy strategy) {
+	public static boolean testAll(GrammarFile g, Strategy strategy, boolean ExampleCommand) {
 		List<Example> exampleList = g.getExampleList();
 		if (exampleList != null) {
 			Coverage.init();
@@ -96,6 +97,9 @@ public class Example {
 			HashMap<String, Parser> parserMap = new HashMap<>();
 			long t1 = System.nanoTime();
 			for (Example ex : exampleList) {
+				if (ExampleCommand && !ex.isPublic) {
+					continue; // skip nonpublic
+				}
 				try {
 					String name = ex.getName();
 					Parser p = parserMap.get(name);
@@ -107,7 +111,7 @@ public class Example {
 						}
 						parserMap.put(name, p);
 					}
-					ex.test(p, result);
+					ex.test(p, result, ExampleCommand);
 				} catch (Exception e) {
 					ConsoleUtils.println((ex.formatPanic("exception detected: " + e)));
 					if (ConsoleUtils.isDebug()) {
@@ -122,15 +126,20 @@ public class Example {
 				}
 			}
 			long t2 = System.nanoTime();
-			Coverage.dump();
+			float cov = Coverage.calc() * 100;
+			if (!ExampleCommand) {
+				Coverage.dump();
+			}
 			ConsoleUtils.println("Elapsed time (Example Tests): " + ((t2 - t1) / 1000000) + "ms");
 			ConsoleUtils.print("Syntax Pass: " + result.getSuccSyntax() + "/" + result.getTotal() + " ratio: " + result.getRatioSyntax() + "%");
 			ConsoleUtils.println(", AST Pass: " + result.getSuccAST() + "/" + result.getTotal() + " ratio: " + result.getRatioAST() + "%");
-			float cov = Coverage.calc() * 100;
-			ConsoleUtils.println("git commit -am '" + g.getDesc() + " - " + cov + "% tested, " + result.getStatus(cov) + "'");
-		} else {
-			ConsoleUtils.println("git commit -am '" + g.getDesc() + " - 0.0% tested. DO NOT USE'");
+			if (!ExampleCommand) {
+				ConsoleUtils.println("git commit -am '" + g.getDesc() + " - " + cov + "% tested, " + result.getStatus(cov) + "'");
+			}
+			return !result.hasFailure();
 		}
+		ConsoleUtils.println("git commit -am '" + g.getDesc() + " - 0.0% tested. DO NOT USE'");
+		return false;
 	}
 
 	public static void testMoz(String baseName, GrammarFile g, Strategy strategy) {
@@ -188,6 +197,11 @@ class TestResult {
 		return succSyntax + failSyntax;
 	}
 
+	public boolean hasFailure() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 	int getSuccSyntax() {
 		return succSyntax;
 	}
@@ -219,5 +233,9 @@ class TestResult {
 			}
 			return "good";
 		}
+	}
+
+	boolean hasFailrue() {
+		return failSyntax > 0;
 	}
 }

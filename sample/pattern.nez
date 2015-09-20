@@ -1,0 +1,31 @@
+/**
+ * sample.nez - a flattened list
+ * 
+ **/
+
+example A ~f87cf2bcb ab
+
+A      = 'a'
+
+example STR ~185ac5ff30 ab
+
+STR    = 'ab'
+
+example CLASS ~f87cf2bcbf ab
+
+CLASS  = [ab]
+
+example SEQ ~9e18e2ba33 aa
+
+SEQ    = 'a' A
+
+example CHOICE ~f87cf2bcbf2 ab
+
+CHOICE = A / STR
+
+
+example RECUR ~f87cf2bcbf2 aaaaaaaaa
+
+RECUR = 'a' RECUR 'a' / 'a'
+
+
