@@ -1,5 +1,5 @@
 package nez.main;
 
 public class Revision {
-	public final static int REV=523;
+	public final static int REV=524;
 }

@@ -2,6 +2,7 @@ package nez.parser;
 
 import java.util.List;
 
+import nez.Parser;
 import nez.main.Verbose;
 import nez.util.UList;
 
@@ -46,6 +47,14 @@ public class NezCode {
 			coder.setHeader(codeList.size(), this.gg.size(), memoPointList == null ? 0 : memoPointList.size());
 			coder.setInstructions(codeList.ArrayValues, codeList.size());
 		}
+	}
+
+	public final static void writeMozCode(Parser parser, String path) {
+		NezCompiler compile = new PackratCompiler(parser.getStrategy());
+		NezCode code = compile.compile(parser.getGrammar());
+		ByteCoder c = new ByteCoder();
+		code.encode(c);
+		c.writeTo(path);
 	}
 
 }

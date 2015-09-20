@@ -10,7 +10,9 @@ import nez.ast.TreeUtils;
 import nez.io.SourceContext;
 import nez.main.Verbose;
 import nez.parser.Coverage;
+import nez.parser.NezCode;
 import nez.util.ConsoleUtils;
+import nez.util.FileBuilder;
 
 public class Example {
 	boolean isPublic;
@@ -128,6 +130,48 @@ public class Example {
 			ConsoleUtils.println("git commit -am '" + g.getDesc() + " - 0.0% tested. DO NOT USE'");
 		}
 	}
+
+	public static void testMoz(String baseName, GrammarFile g, Strategy strategy) {
+		List<Example> exampleList = g.getExampleList();
+		if (exampleList == null) {
+			ConsoleUtils.println("no example exists in " + baseName);
+			return;
+		}
+		int id = 0;
+		FileBuilder fb = new FileBuilder(baseName + "_test.sh");
+		fb.write("#!/bin/bash");
+		HashMap<String, Parser> parserMap = new HashMap<>();
+		for (Example ex : exampleList) {
+			String name = ex.getName();
+			Parser p = parserMap.get(name);
+			if (p == null) {
+				p = g.newParser(name, strategy);
+				if (p == null) {
+					ConsoleUtils.println(ex.formatWarning("undefined nonterminal: " + name));
+					continue;
+				}
+				parserMap.put(name, p);
+			}
+			String path = baseName + "_" + ex.getName() + ".moz";
+			NezCode.writeMozCode(p, path);
+			String path2 = String.format("%s_%s%03d.test_moz", baseName, ex.getName(), id);
+			id++;
+			ex.writeMozTest(path2);
+			fb.writeIndent("moz test -g " + path + " -t " + path2);
+		}
+		fb.close();
+		ConsoleUtils.println("run " + baseName + "_test.sh");
+	}
+
+	private void writeMozTest(String path) {
+		FileBuilder fb = new FileBuilder(path);
+		if (this.hash != null) {
+			fb.write(this.hash);
+		}
+		fb.writeIndent(this.textNode.toString());
+		fb.close();
+	}
+
 }
 
 class TestResult {

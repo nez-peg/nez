@@ -15,16 +15,20 @@ import nez.parser.ParsingMachine;
 
 public class Parser {
 	private GenerativeGrammar gg;
-	protected Strategy option;
+	protected Strategy strategy;
 	protected NezCode compiledCode = null;
 
 	public Parser(GenerativeGrammar gg, Strategy option) {
 		this.gg = gg;
-		this.option = option;
+		this.strategy = option;
 	}
 
 	public final GenerativeGrammar getGrammar() {
 		return gg;
+	}
+
+	public final Strategy getStrategy() {
+		return this.strategy;
 	}
 
 	public final NezCode getCompiledCode() {
@@ -58,7 +62,7 @@ public class Parser {
 
 	public Instruction compile() {
 		if (compiledCode == null) {
-			NezCompiler bc = NezCompiler.newCompiler(this.option);
+			NezCompiler bc = NezCompiler.newCompiler(this.strategy);
 			compiledCode = bc.compile(gg);
 		}
 		return compiledCode.getStartPoint();
@@ -85,7 +89,7 @@ public class Parser {
 	}
 
 	protected final MemoTable newMemoTable(SourceContext sc) {
-		return MemoTable.newTable(option, sc.length(), 32, this.compiledCode.getMemoPointSize());
+		return MemoTable.newTable(strategy, sc.length(), 32, this.compiledCode.getMemoPointSize());
 	}
 
 	/* --------------------------------------------------------------------- */

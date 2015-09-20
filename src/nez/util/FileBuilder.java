@@ -61,7 +61,7 @@ public class FileBuilder {
 	public final void close() {
 		this.flush();
 		if (this.fileName != null) {
-			Verbose.println("written to: " + this.fileName);
+			Verbose.println("generating: " + this.fileName);
 		}
 	}
 
