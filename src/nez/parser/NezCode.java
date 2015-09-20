@@ -54,6 +54,7 @@ public class NezCode {
 		NezCode code = compile.compile(parser.getGrammar());
 		ByteCoder c = new ByteCoder();
 		code.encode(c);
+		Verbose.println("generating " + path);
 		c.writeTo(path);
 	}
 
