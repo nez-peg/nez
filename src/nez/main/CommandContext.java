@@ -114,9 +114,12 @@ public class CommandContext extends ParserFactory {
 
 	void showUsage(String Message) {
 		ConsoleUtils.println("nez <command> optional files");
-		ConsoleUtils.println("  -p | --peg <filename>      Specify an Nez grammar file");
-		ConsoleUtils.println("  -e | --expr  <text>        Specify an Nez parsing expression");
-		ConsoleUtils.println("  -s | --start <NAME>        Specify Non-Terminal as the starting point (default: File)");
+		ConsoleUtils.println("  -g | --grammar <file>      Specify a grammar file");
+		ConsoleUtils.println("  -p | --peg <filename>      Specify a Nez grammar file");
+		ConsoleUtils.println("  -e | --expr  <text>        Specify a Nez parsing expression");
+		ConsoleUtils.println("  -r | --regex <text>        Specify a regular expression");
+		ConsoleUtils.println("  -a | --aux <file>          Specify a Nez Auxiliary grammar file");
+		ConsoleUtils.println("  -s | --start <NAME>        Specify a starting point");
 		// ConsoleUtils.println("  -i | --input <filenames>   Specify input file(s)");
 		ConsoleUtils.println("  -t | --text  <string>      Specify an input text");
 		ConsoleUtils.println("  -d | --dir <dirname>       Specify an output dir");
@@ -178,6 +181,9 @@ public class CommandContext extends ParserFactory {
 				inputText = args[index];
 				index = index + 1;
 				inputFileIndex = 0;
+			} else if ((argument.equals("-a") || argument.equals("--aux")) && (index < args.length)) {
+				this.addAuxiliaryGrammar(args[index]);
+				index = index + 1;
 			} else if ((argument.equals("-i") || argument.equals("--input")) && (index < args.length)) {
 				inputFileLists = new UList<String>(new String[4]);
 				while (index < args.length && !args[index].startsWith("-")) {
@@ -224,54 +230,13 @@ public class CommandContext extends ParserFactory {
 		}
 		if (regex != null) {
 			this.grammar = RegularExpression.newGrammar(regex);
+			this.grammar = aux(this.grammar);
 			return;
 		}
 		if (gFileName != null) {
 			this.setGrammarFileName(gFileName);
 		}
 	}
-
-	//
-	// public final static String LoaderPoint = "nez.main.LC";
-	//
-	// public final Command getCommand() {
-	// Command cmd = null;
-	// try {
-	// Class<?> c = Class.forName(LoaderPoint + commandName);
-	// cmd = (Command) c.newInstance();
-	// } catch (ClassNotFoundException e) {
-	//
-	// } catch (InstantiationException e) {
-	// Verbose.traceException(e);
-	// } catch (IllegalAccessException e) {
-	// Verbose.traceException(e);
-	// }
-	// if (cmd == null) {
-	// if (gFileName != null && GeneratorLoader.isSupported(this.commandName)) {
-	// return new GrammarCommand(GeneratorLoader.load(this.commandName));
-	// }
-	// this.showUsage("unknown command: " + this.commandName);
-	// }
-	// return cmd;
-	// }
-	// class GrammarCommand extends Command {
-	// NezGenerator gen;
-	//
-	// @Override
-	// public String getDesc() {
-	// return "parser generator";
-	// }
-	//
-	// GrammarCommand(NezGenerator gen) {
-	// this.gen = gen;
-	// }
-	//
-	// @Override
-	// public void exec(CommandContext config) throws IOException {
-	// Parser g = config.newParser();
-	// gen.generate(g, option, OutputFileName);
-	// }
-	// }
 
 	public final void setInputFileList(UList<String> list) {
 		this.inputFileIndex = 0;
