@@ -168,7 +168,7 @@ public class Example {
 			String path2 = String.format("%s_%s%03d.test_moz", baseName, ex.getName(), id);
 			id++;
 			ex.writeMozTest(path2);
-			fb.writeIndent("moz test -g " + path + " -t " + path2);
+			fb.writeIndent("moz -t -p " + path + " -i " + path2);
 		}
 		fb.close();
 		ConsoleUtils.println("run " + baseName + "_test.sh");
@@ -179,7 +179,7 @@ public class Example {
 		if (this.hash != null) {
 			fb.write(this.hash);
 		}
-		fb.writeIndent(this.textNode.toString());
+		fb.writeIndent(this.getText());
 		fb.close();
 	}
 
