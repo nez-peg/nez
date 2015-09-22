@@ -51,13 +51,13 @@ public abstract class GrammarFileLoader extends TreeVisitor {
 		if (desc != null) {
 			g.setDesc(desc);
 		}
-		while (sc.hasUnconsumed()) {
-			Tree<?> node = getLoaderParser().parseCommonTree(sc);
-			if (node == null) {
-				ConsoleUtils.exit(1, sc.getSyntaxErrorMessage());
-			}
-			parse(node);
+		// while (sc.hasUnconsumed()) {
+		Tree<?> node = getLoaderParser(null).parseCommonTree(sc);
+		if (node == null) {
+			ConsoleUtils.exit(1, sc.getSyntaxErrorMessage());
 		}
+		parse(node);
+		// }
 	}
 
 	public void eval(Grammar g, String urn, int linenum, String text, Strategy strategy) {
@@ -65,16 +65,16 @@ public abstract class GrammarFileLoader extends TreeVisitor {
 		this.strategy = Strategy.nullCheck(strategy);
 
 		SourceContext sc = SourceContext.newStringContext(urn, linenum, text);
-		while (sc.hasUnconsumed()) {
-			Tree<?> node = getLoaderParser().parseCommonTree(sc);
-			if (node == null) {
-				Verbose.println(sc.getSyntaxErrorMessage());
-			}
-			parse(node);
+		// while (sc.hasUnconsumed()) {
+		Tree<?> node = getLoaderParser(null).parseCommonTree(sc);
+		if (node == null) {
+			Verbose.println(sc.getSyntaxErrorMessage());
 		}
+		parse(node);
+		// }
 	}
 
-	public abstract Parser getLoaderParser();
+	public abstract Parser getLoaderParser(String start);
 
 	public abstract void parse(Tree<?> node);
 

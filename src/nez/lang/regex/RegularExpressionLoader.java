@@ -22,7 +22,7 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 	static Parser lParser;
 
 	@Override
-	public Parser getLoaderParser() {
+	public Parser getLoaderParser(String start) {
 		if (lParser == null) {
 			try {
 				Strategy option = Strategy.newSafeStrategy();

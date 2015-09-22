@@ -26,7 +26,7 @@ public class Gdtd extends GrammarFileLoader {
 	boolean enableNezExtension;
 
 	@Override
-	public Parser getLoaderParser() {
+	public Parser getLoaderParser(String start) {
 		if (dtdParser == null) {
 			try {
 				Strategy option = Strategy.newSafeStrategy();

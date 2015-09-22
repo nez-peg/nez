@@ -31,9 +31,9 @@ public class NezConstructor extends GrammarFileLoader implements Constructor {
 	static Parser nezParser;
 
 	@Override
-	public Parser getLoaderParser() {
+	public Parser getLoaderParser(String start) {
 		if (nezParser == null) {
-			nezParser = new NezGrammar1().newParser(Strategy.newSafeStrategy());
+			nezParser = new NezGrammar1().newParser(start, Strategy.newSafeStrategy());
 			assert (nezParser != null);
 		}
 		return nezParser;

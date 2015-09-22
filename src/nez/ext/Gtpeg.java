@@ -33,7 +33,7 @@ public class Gtpeg extends GrammarFileLoader {
 	private TypedPEG generated = null;
 
 	@Override
-	public Parser getLoaderParser() {
+	public Parser getLoaderParser(String start) {
 		if (parser == null) {
 			Strategy option = Strategy.newSafeStrategy();
 			try {

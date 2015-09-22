@@ -25,7 +25,7 @@ public class Gcelery extends GrammarFileLoader {
 	private SchemaGrammarGenerator schema;
 
 	@Override
-	public Parser getLoaderParser() {
+	public Parser getLoaderParser(String start) {
 		if (celeryParser == null) {
 			try {
 				Strategy option = Strategy.newSafeStrategy();

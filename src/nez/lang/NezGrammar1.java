@@ -65,7 +65,7 @@ public class NezGrammar1 extends Combinator {
 	}
 
 	public Expression pFile() {
-		return New(P("_"), ZeroMore(Link(null, "Chunk")), Tag("Source"));
+		return Sequence(New(P("_"), ZeroMore(Link(null, "Chunk")), Tag("Source")), P("EOT"));
 	}
 
 	public Expression pChunk() {
