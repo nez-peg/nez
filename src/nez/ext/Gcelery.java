@@ -21,6 +21,7 @@ public class Gcelery extends GrammarFileLoader {
 	static Parser celeryParser;
 	boolean enableNezExtension;
 	private SchemaGrammarGenerator schema;
+	private String currentStructName;
 
 	@Override
 	public Parser getLoaderParser(String start) {
@@ -58,28 +59,28 @@ public class Gcelery extends GrammarFileLoader {
 	}
 
 	public final void visitStruct(Tree<?> node) {
-		String structName = node.getText(0, null);
+		currentStructName = node.getText(0, null);
 		schema.initMemberList();
 		for (Tree<?> memberNode : node) {
 			this.visit("visit", memberNode);
 		}
 		if (enableNezExtension) {
-			genStruct(structName);
+			genStruct(currentStructName);
 		} else {
-			genStruct_Approximate(structName);
+			genStruct_Approximate(currentStructName);
 		}
 	}
 
 	public final void visitRequired(Tree<?> node) {
 		String elementName = node.getText(_Name, "");
 		schema.addRequired(elementName);
-		schema.newElement(elementName, schema.newRequired(toType(node.get(_Type))));
+		schema.newElement(schema.newRequired(elementName, toType(node.get(_Type))));
 	}
 
 	public final void visitOption(Tree<?> node) {
 		String elementName = node.getText(_Name, "");
 		schema.addMember(elementName);
-		schema.newElement(elementName, schema.newOption(toType(node.get(_Type))));
+		schema.newElement(schema.newOption(elementName, toType(node.get(_Type))));
 	}
 
 	public final Type toType(Tree<?> node) {
@@ -91,7 +92,7 @@ public class Gcelery extends GrammarFileLoader {
 	}
 
 	public final Type toTStruct(Tree<?> node) {
-		return schema.newTStruct();
+		return schema.newTStruct(node.getText(_Name, ""));
 	}
 
 	public final Type toTAny(Tree<?> node) {
@@ -103,7 +104,12 @@ public class Gcelery extends GrammarFileLoader {
 	}
 
 	public final Type toTEnum(Tree<?> node) {
-		return schema.newTEnum(node);
+		String[] candidates = new String[node.size()];
+		int index = 0;
+		for (Tree<?> subnode : node) {
+			candidates[index++] = subnode.toText();
+		}
+		return schema.newTEnum(candidates);
 	}
 
 	public final Type toTInteger(Tree<?> node) {
@@ -116,18 +122,18 @@ public class Gcelery extends GrammarFileLoader {
 
 	private final void genStruct(String structName) {
 		genMembers(structName);
-		schema.newStruct(structName, schema.newSet(structName));
+		schema.newStruct(structName, schema.newSet());
 	}
 
 	private final void genMembers(String structName) {
 		int membersListSize = schema.getMembers().size();
-		int count = 0;
+		int index = 0;
 		Type[] alt = new Type[membersListSize + 1];
 		for (String elementName : schema.getMembers()) {
-			alt[count++] = schema.newUniq(structName, elementName);
+			alt[index++] = schema.newUniq(elementName);
 		}
-		alt[count] = schema.newOtherAny(structName);
-		schema.newMembers(structName, alt);
+		alt[index] = schema.newOthers();
+		schema.newMembers(alt);
 	}
 
 	private final void genStruct_Approximate(String structName) {
