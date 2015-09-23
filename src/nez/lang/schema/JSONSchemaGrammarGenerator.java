@@ -31,7 +31,7 @@ public class JSONSchemaGrammarGenerator extends SchemaGrammarGenerator {
 
 	@Override
 	public void newStruct(String structName, Type t) {
-		Expression[] l = { _OpenWave(), t.getTypeExpression(), _CloseWave() };
+		Expression[] l = { _OpenWave(), _S(), t.getTypeExpression(), _S(), _CloseWave() };
 		gfile.addProduction(null, structName, gfile.newSequence(l));
 	}
 
@@ -70,7 +70,7 @@ public class JSONSchemaGrammarGenerator extends SchemaGrammarGenerator {
 	@Override
 	public Type newTArray(Type t) {
 		Expression tExpr = t.getTypeExpression();
-		Expression[] array = { _OpenSquare(), tExpr, gfile.newRepetition(_NonTerminal("VALUESEP"), tExpr), _CloseSquare() };
+		Expression[] array = { _OpenSquare(), _S(), tExpr, gfile.newRepetition(_NonTerminal("VALUESEP"), tExpr), _CloseSquare() };
 		return new Type(gfile.newSequence(array));
 	}
 
