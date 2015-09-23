@@ -11,13 +11,13 @@ import nez.util.ConsoleUtils;
 
 public class BFAtoDOT {
 	static char epsilon = ' ';
-	private Graph BFA_graph;
+	private EpsilonBFA BFA_graph;
 
-	public BFAtoDOT(Graph BFA_graph) {
+	public BFAtoDOT(EpsilonBFA BFA_graph) {
 		this.BFA_graph = BFA_graph;
 	}
 
-	public void setBFA(Graph BFA_graph) {
+	public void setBFA(EpsilonBFA BFA_graph) {
 		this.BFA_graph = BFA_graph;
 	}
 
