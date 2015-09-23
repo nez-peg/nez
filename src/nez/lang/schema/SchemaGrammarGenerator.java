@@ -3,13 +3,17 @@ package nez.lang.schema;
 import java.util.ArrayList;
 import java.util.List;
 
-import nez.ast.Tree;
+import nez.ast.Symbol;
+import nez.lang.Expression;
 import nez.lang.GrammarFile;
+import nez.lang.expr.ExpressionCommons;
+import nez.lang.expr.NonTerminal;
 
-public abstract class SchemaGrammarGenerator {
+public abstract class SchemaGrammarGenerator extends AbstractSchemaGrammarGenerator {
 	protected GrammarFile gfile;
 	private List<String> requiredList;
 	private List<String> membersList;
+	private int tableCounter = 0;
 
 	public void addRequired(String name) {
 		this.requiredList.add(name);
@@ -24,9 +28,22 @@ public abstract class SchemaGrammarGenerator {
 		return this.membersList;
 	}
 
+	public List<String> getRequiredList() {
+		return this.requiredList;
+	}
+
+	public int getTableCounter() {
+		return this.tableCounter;
+	}
+
+	public String getTableName() {
+		return "T" + getTableCounter();
+	}
+
 	public final void initMemberList() {
 		requiredList = new ArrayList<String>();
 		membersList = new ArrayList<String>();
+		tableCounter++;
 	}
 
 	protected final List<String> extractImpliedMembers() {
@@ -39,41 +56,23 @@ public abstract class SchemaGrammarGenerator {
 		return impliedList;
 	}
 
-	abstract public void loadPredefinedRules();
+	protected final NonTerminal _NonTerminal(String nonterm) {
+		return ExpressionCommons.newNonTerminal(null, gfile, nonterm);
+	}
 
-	abstract public void newRoot(String structName);
+	protected final Expression _String(String text) {
+		return ExpressionCommons.newString(null, text);
+	}
 
-	abstract public Element newElement(String name, Type t);
+	protected final Expression _DQuat() {
+		return gfile.newByteChar('"');
+	}
 
-	abstract public void newStruct(String name, Type t);
+	protected final Expression _S() {
+		return ExpressionCommons.newNonTerminal(null, gfile, "SPACING");
+	}
 
-	abstract public void newMembers(String structName, Type... types);
-
-	abstract public Type newOption(Type t);
-
-	abstract public Type newRequired(Type t);
-
-	abstract public Type newTObject();
-
-	abstract public Type newTStruct();
-
-	abstract public Type newTArray(Type t);
-
-	abstract public Type newTEnum(Tree<?> node);
-
-	abstract public Type newTInteger();
-
-	abstract public Type newTFloat();
-
-	abstract public Type newTString();
-
-	abstract public Type newTAny();
-
-	abstract public Type newSet(String table);
-
-	abstract public Type newPermutation();
-
-	abstract public Type newUniq(String table, String elementName);
-
-	abstract public Type newOtherAny(String table);
+	protected final Expression _Def(String table, String symbol) {
+		return ExpressionCommons.newXdef(null, gfile, Symbol.tag(table), _String(symbol));
+	}
 }
