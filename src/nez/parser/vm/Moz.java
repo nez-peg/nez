@@ -915,7 +915,7 @@ class Lookup extends Branch {
 	private int memoPoint;
 	private boolean state;
 
-	public Lookup(Expression e, Instruction next, Instruction jump, int memoPoint, boolean state) {
+	public Lookup(Expression e, Instruction next, boolean state, int memoPoint, Instruction jump) {
 		super(Moz.Lookup, e, next);
 		this.jump = jump;
 		this.memoPoint = memoPoint;
@@ -924,18 +924,16 @@ class Lookup extends Branch {
 
 	@Override
 	protected void encodeImpl(ByteCoder bc) {
-		bc.encodeJump(this.jump);
-		bc.encodeMemoPoint(this.memoPoint);
 		bc.encodeState(this.state);
+		bc.encodeMemoPoint(this.memoPoint);
+		bc.encodeJump(this.jump);
 	}
 
 	@Override
 	protected void formatImpl(StringBuilder sb) {
-		this.formatJump(sb, this.jump);
-
-		this.formatMemoPoint(sb, this.memoPoint);
-
 		this.formatState(sb, this.state);
+		this.formatMemoPoint(sb, this.memoPoint);
+		this.formatJump(sb, this.jump);
 	}
 
 	@Override
@@ -961,7 +959,7 @@ class Memo extends MozInst {
 	private int memoPoint;
 	private boolean state;
 
-	public Memo(Expression e, Instruction next, int memoPoint, boolean state) {
+	public Memo(Expression e, Instruction next, boolean state, int memoPoint) {
 		super(Moz.Memo, e, next);
 		this.memoPoint = memoPoint;
 		this.state = state;
@@ -969,15 +967,14 @@ class Memo extends MozInst {
 
 	@Override
 	protected void encodeImpl(ByteCoder bc) {
-		bc.encodeMemoPoint(this.memoPoint);
 		bc.encodeState(this.state);
+		bc.encodeMemoPoint(this.memoPoint);
 	}
 
 	@Override
 	protected void formatImpl(StringBuilder sb) {
-		this.formatMemoPoint(sb, this.memoPoint);
-
 		this.formatState(sb, this.state);
+		this.formatMemoPoint(sb, this.memoPoint);
 	}
 
 	@Override
@@ -995,7 +992,7 @@ class MemoFail extends MozInst {
 	private int memoPoint;
 	private boolean state;
 
-	public MemoFail(Expression e, Instruction next, int memoPoint, boolean state) {
+	public MemoFail(Expression e, Instruction next, boolean state, int memoPoint) {
 		super(Moz.MemoFail, e, next);
 		this.memoPoint = memoPoint;
 		this.state = state;
@@ -1003,15 +1000,14 @@ class MemoFail extends MozInst {
 
 	@Override
 	protected void encodeImpl(ByteCoder bc) {
-		bc.encodeMemoPoint(this.memoPoint);
 		bc.encodeState(this.state);
+		bc.encodeMemoPoint(this.memoPoint);
 	}
 
 	@Override
 	protected void formatImpl(StringBuilder sb) {
-		this.formatMemoPoint(sb, this.memoPoint);
-
 		this.formatState(sb, this.state);
+		this.formatMemoPoint(sb, this.memoPoint);
 	}
 
 	@Override
@@ -1294,7 +1290,7 @@ class TLookup extends Branch {
 	private boolean state;
 	private Symbol label;
 
-	public TLookup(Expression e, Instruction next, Instruction jump, int memoPoint, boolean state, Symbol label) {
+	public TLookup(Expression e, Instruction next, boolean state, int memoPoint, Instruction jump, Symbol label) {
 		super(Moz.TLookup, e, next);
 		this.jump = jump;
 		this.memoPoint = memoPoint;
@@ -1304,20 +1300,17 @@ class TLookup extends Branch {
 
 	@Override
 	protected void encodeImpl(ByteCoder bc) {
-		bc.encodeJump(this.jump);
-		bc.encodeMemoPoint(this.memoPoint);
 		bc.encodeState(this.state);
+		bc.encodeMemoPoint(this.memoPoint);
+		bc.encodeJump(this.jump);
 		bc.encodeLabel(this.label);
 	}
 
 	@Override
 	protected void formatImpl(StringBuilder sb) {
-		this.formatJump(sb, this.jump);
-
-		this.formatMemoPoint(sb, this.memoPoint);
-
 		this.formatState(sb, this.state);
-
+		this.formatMemoPoint(sb, this.memoPoint);
+		this.formatJump(sb, this.jump);
 		this.formatLabel(sb, this.label);
 	}
 
@@ -1346,7 +1339,7 @@ class TMemo extends MozInst {
 	private int memoPoint;
 	private boolean state;
 
-	public TMemo(Expression e, Instruction next, int memoPoint, boolean state) {
+	public TMemo(Expression e, Instruction next, boolean state, int memoPoint) {
 		super(Moz.TMemo, e, next);
 		this.memoPoint = memoPoint;
 		this.state = state;
@@ -1354,15 +1347,14 @@ class TMemo extends MozInst {
 
 	@Override
 	protected void encodeImpl(ByteCoder bc) {
-		bc.encodeMemoPoint(this.memoPoint);
 		bc.encodeState(this.state);
+		bc.encodeMemoPoint(this.memoPoint);
 	}
 
 	@Override
 	protected void formatImpl(StringBuilder sb) {
-		this.formatMemoPoint(sb, this.memoPoint);
-
 		this.formatState(sb, this.state);
+		this.formatMemoPoint(sb, this.memoPoint);
 	}
 
 	@Override
@@ -1736,7 +1728,7 @@ class DFirst extends BranchTable {
 
 // Label
 class Label extends MozInst {
-	private String nonTerminal;
+	String nonTerminal;
 
 	public Label(Expression e, Instruction next, String nonTerminal) {
 		super(Moz.Label, e, next);
@@ -1826,17 +1818,20 @@ class MozLoader {
 		return (uread() << 24) | (uread() << 16) | (uread() << 8) | uread();
 	}
 
-	public byte[] read_utf8() {
+	public byte[] read_utf8() throws IOException {
 		int len = read_u16();
 		byte[] b = new byte[len];
 		for (int i = 0; i < len; i++) {
 			b[i] = (byte) read();
 		}
-		assert (read() == 0);
+		int check = read();
+		if (check != 0) {
+			throw new IOException("Moz format error");
+		}
 		return b;
 	}
 
-	public String readString() {
+	public String readString() throws IOException {
 		return StringUtils.newString(read_utf8());
 	}
 
@@ -1936,37 +1931,39 @@ class MozLoader {
 	public void loadCode(byte[] buf) throws IOException {
 		this.buf = buf;
 		this.pos = 0;
-		if (read() != 'N' || read() != 'E' || read() != 'Z' || read() != '0') {
+		if (read() != 'N' || read() != 'E' || read() != 'Z') {
 			throw new IOException("Non moz format");
 		}
+		char c = (char) read();
+		p("Version: %c", c);
 		this.instSize = read_u16();
-		p("instSize=%d", instSize);
+		p("InstructionSize: %d", instSize);
 		this.memoSize = read_u16();
-		p("memoSize=%d", memoSize);
+		p("memoSize: %d", memoSize);
 		int jumpTableSize = read_u16();
-		p("jumpTableSize=%d", jumpTableSize);
+		p("jumpTableSize: %d", jumpTableSize);
 
 		int pool = read_u16();
 		poolNonTerminal = new String[pool];
-		p("NonTerminalPool: %d", pool);
+		p("NonTerminal: %d", pool);
 		for (int i = 0; i < pool; i++) {
 			poolNonTerminal[i] = readString();
-			p("NonTerminal: %d %s", i, poolNonTerminal[i]);
+			// p("NonTerminal: %d %s", i, poolNonTerminal[i]);
 		}
 		pool = read_u16();
-		p("BitmapSetPool: %d", pool);
+		// p("BitmapSetPool: %d", pool);
 		poolBset = new boolean[pool][];
 		for (int i = 0; i < pool; i++) {
 			poolBset[i] = read_byteMap();
 		}
 		pool = read_u16();
-		p("StringPool: %d", pool);
+		// p("StringPool: %d", pool);
 		poolBstr = new byte[pool][];
 		for (int i = 0; i < pool; i++) {
 			poolBstr[i] = read_utf8();
 		}
 		pool = read_u16();
-		p("SymbolPool: %d", pool);
+		// p("SymbolPool: %d", pool);
 		poolTag = new Symbol[pool];
 		for (int i = 0; i < pool; i++) {
 			poolTag[i] = Symbol.tag(readString());
@@ -1982,7 +1979,9 @@ class MozLoader {
 		for (int i = 0; i < instSize; i++) {
 			loadInstruction();
 		}
-		p("pos=%d, %d", this.pos, this.buf.length);
+		if (this.pos != this.buf.length) {
+			throw new IOException("Moz format error");
+		}
 		for (int i = 0; i < instSize; i++) {
 			Instruction inst = codeList.ArrayValues[i];
 			inst.next = rev(codeList.ArrayValues, (Ref) inst.next);
@@ -1996,7 +1995,14 @@ class MozLoader {
 					binst.jumpTable[j] = rev(codeList.ArrayValues, (Ref) binst.jumpTable[j]);
 				}
 			}
-			System.out.println(inst);
+			if (inst instanceof Label) {
+				p(((Label) inst).nonTerminal);
+			} else {
+				p(" L%d\t%s", inst.id, inst);
+				if (!inst.isIncrementedNext()) {
+					p(" \tjump L%d", inst.next.id);
+				}
+			}
 		}
 
 	}
@@ -2013,7 +2019,6 @@ class MozLoader {
 		opcode = 0b1111111 & opcode;
 
 		Instruction inst = newInstruction((byte) opcode);
-		System.out.println("inst=" + inst);
 		inst.id = codeList.size();
 		codeList.add(inst);
 		if (jumpNext) {
@@ -2128,20 +2133,20 @@ class MozLoader {
 			return new First(null, null, jumpTable);
 		}
 		case Moz.Lookup: {
-			Instruction jump = this.readJump();
-			int memoPoint = this.readMemoPoint();
 			boolean state = this.readState();
-			return new Lookup(null, null, jump, memoPoint, state);
+			int memoPoint = this.readMemoPoint();
+			Instruction jump = this.readJump();
+			return new Lookup(null, null, state, memoPoint, jump);
 		}
 		case Moz.Memo: {
-			int memoPoint = this.readMemoPoint();
 			boolean state = this.readState();
-			return new Memo(null, null, memoPoint, state);
+			int memoPoint = this.readMemoPoint();
+			return new Memo(null, null, state, memoPoint);
 		}
 		case Moz.MemoFail: {
-			int memoPoint = this.readMemoPoint();
 			boolean state = this.readState();
-			return new MemoFail(null, null, memoPoint, state);
+			int memoPoint = this.readMemoPoint();
+			return new MemoFail(null, null, state, memoPoint);
 		}
 		case Moz.TPush: {
 			return new TPush(null, null);
@@ -2182,16 +2187,16 @@ class MozLoader {
 			return new TAbort(null, null);
 		}
 		case Moz.TLookup: {
-			Instruction jump = this.readJump();
-			int memoPoint = this.readMemoPoint();
 			boolean state = this.readState();
+			int memoPoint = this.readMemoPoint();
+			Instruction jump = this.readJump();
 			Symbol label = this.readLabel();
-			return new TLookup(null, null, jump, memoPoint, state, label);
+			return new TLookup(null, null, state, memoPoint, jump, label);
 		}
 		case Moz.TMemo: {
-			int memoPoint = this.readMemoPoint();
 			boolean state = this.readState();
-			return new TMemo(null, null, memoPoint, state);
+			int memoPoint = this.readMemoPoint();
+			return new TMemo(null, null, state, memoPoint);
 		}
 		case Moz.SOpen: {
 			return new SOpen(null, null);
@@ -2252,5 +2257,4 @@ class MozLoader {
 		}
 		return null;
 	}
-
 }

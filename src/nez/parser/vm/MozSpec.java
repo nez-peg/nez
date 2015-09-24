@@ -37,9 +37,13 @@ public class MozSpec {
 			{ "Consume", "Shift" }, //
 			{ "First", "JumpTable" }, //
 
-			{ "Lookup", "Jump", "MemoPoint", "State" }, //
-			{ "Memo", "MemoPoint", "State" }, //
-			{ "MemoFail", "MemoPoint", "State" }, //
+			// { "Lookup", "Jump", "MemoPoint", "State" }, //
+			// { "Memo", "MemoPoint", "State" }, //
+			// { "MemoFail", "MemoPoint", "State" }, //
+
+			{ "Lookup", "State", "MemoPoint", "Jump" }, //
+			{ "Memo", "State", "MemoPoint" }, //
+			{ "MemoFail", "State", "MemoPoint" }, //
 
 			{ "TPush" }, //
 			{ "TPop", "Label" }, //
@@ -52,8 +56,11 @@ public class MozSpec {
 			{ "TCommit", "Label" }, //
 			{ "TAbort" }, //
 
-			{ "TLookup", "Jump", "MemoPoint", "State", "Label" }, //
-			{ "TMemo", "MemoPoint", "State" }, //
+			// { "TLookup", "Jump", "MemoPoint", "State", "Label" }, //
+			// { "TMemo", "MemoPoint", "State" }, //
+
+			{ "TLookup", "State", "MemoPoint", "Jump", "Label" }, //
+			{ "TMemo", "State", "MemoPoint" }, //
 
 			{ "SOpen" }, //
 			{ "SClose" }, //
@@ -68,10 +75,11 @@ public class MozSpec {
 			{ "SCount", "Table" }, //
 			{ "Exit", "State" }, //
 			{ "DFirst", "JumpTable" }, //
-			// { "Cov", "Id" }, //
-			// { "Covx", "Id" }, //
 
 			{ "Label", "NonTerminal" }, //
+
+	// { "Cov", "Id" }, //
+	// { "Covx", "Id" }, //
 	};
 
 	// public static String[][] Arguments = { //

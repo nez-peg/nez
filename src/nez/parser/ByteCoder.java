@@ -301,8 +301,6 @@ public class ByteCoder {
 		}
 
 		byte[] code = stream.toByteArray();
-		// System.out.println("Moz dump");
-		// Moz.dump(code);
 		try {
 			OutputStream out = new FileOutputStream(fileName);
 			out.write(code);
