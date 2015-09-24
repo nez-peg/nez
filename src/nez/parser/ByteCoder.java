@@ -9,7 +9,6 @@ import java.util.HashMap;
 
 import nez.ast.Symbol;
 import nez.main.Verbose;
-import nez.parser.vm.Moz;
 import nez.util.StringUtils;
 
 public class ByteCoder {
@@ -302,8 +301,8 @@ public class ByteCoder {
 		}
 
 		byte[] code = stream.toByteArray();
-		System.out.println("Moz dump");
-		Moz.dump(code);
+		// System.out.println("Moz dump");
+		// Moz.dump(code);
 		try {
 			OutputStream out = new FileOutputStream(fileName);
 			out.write(code);
