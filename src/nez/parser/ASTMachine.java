@@ -5,7 +5,7 @@ import nez.ast.Symbol;
 import nez.ast.TreeTransducer;
 import nez.main.Verbose;
 
-class ASTMachine {
+public class ASTMachine {
 	final static boolean debugMode = false;
 	final static int Nop = 0;
 	final static int Capture = 1;

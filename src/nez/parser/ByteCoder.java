@@ -9,6 +9,7 @@ import java.util.HashMap;
 
 import nez.ast.Symbol;
 import nez.main.Verbose;
+import nez.parser.vm.Moz;
 import nez.util.StringUtils;
 
 public class ByteCoder {
@@ -165,8 +166,23 @@ public class ByteCoder {
 		this.jumpTableSize += 1;
 	}
 
-	public final void encodeJumpAddr(Instruction jump) {
+	public final void encodeJump(Instruction jump) {
 		write_u24(jump.id);
+	}
+
+	public final void encodeJumpTable(Instruction[] table) {
+		this.jumpTableSize += 1;
+		for (Instruction j : table) {
+			encodeJump(j);
+		}
+	}
+
+	public void encodeState(boolean b) {
+		stream.write(b ? 1 : 0);
+	}
+
+	public void encodeMemoPoint(int id) {
+		this.write_u32(id);
 	}
 
 	public void encodeShift(int shift) {
@@ -177,11 +193,11 @@ public class ByteCoder {
 		write_i8(index);
 	}
 
-	public void encodeByteChar(int byteChar) {
+	public void encodeByte(int byteChar) {
 		stream.write(byteChar);
 	}
 
-	public void encodeByteMap(boolean[] byteMap) {
+	public void encodeBset(boolean[] byteMap) {
 		String key = StringUtils.stringfyBitmap(byteMap);
 		SetEntry entry = BSetPoolMap.get(key);
 		if (entry == null) {
@@ -192,7 +208,7 @@ public class ByteCoder {
 		write_u16(entry.id);
 	}
 
-	public void encodeMultiByte(byte[] utf8) {
+	public void encodeBstr(byte[] utf8) {
 		try {
 			String key = new String(utf8, StringUtils.DefaultEncoding);
 			StrEntry entry = BStrPoolMap.get(key);
@@ -236,7 +252,7 @@ public class ByteCoder {
 		}
 	}
 
-	public void encodeSymbolTable(Symbol tableName) {
+	public void encodeTable(Symbol tableName) {
 		String key = tableName.getSymbol();
 		TagEntry entry = TablePoolMap.get(key);
 		if (entry == null) {
@@ -286,6 +302,8 @@ public class ByteCoder {
 		}
 
 		byte[] code = stream.toByteArray();
+		System.out.println("Moz dump");
+		Moz.dump(code);
 		try {
 			OutputStream out = new FileOutputStream(fileName);
 			out.write(code);

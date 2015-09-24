@@ -209,7 +209,7 @@ public class Combinator extends Grammar {
 	}
 
 	protected final Expression LCapture(int shift, String label) {
-		return ExpressionCommons.newTlfold(src(), label == null ? null : Symbol.tag(label), shift);
+		return ExpressionCommons.newTlfold(src(), toSymbol(label), shift);
 	}
 
 	protected final Expression Capture(int shift) {
@@ -221,23 +221,33 @@ public class Combinator extends Grammar {
 	}
 
 	protected final Expression LeftFoldOption(String label, Expression... e) {
-		return ExpressionCommons.newLeftFoldOption(src(), label == null ? null : Symbol.tag(label), Sequence(e));
+		return ExpressionCommons.newLeftFoldOption(src(), toSymbol(label), Sequence(e));
 	}
 
 	protected final Expression LeftFoldZeroMore(String label, Expression... e) {
-		return ExpressionCommons.newLeftFoldRepetition(src(), label == null ? null : Symbol.tag(label), Sequence(e));
+		return ExpressionCommons.newLeftFoldRepetition(src(), toSymbol(label), Sequence(e));
 	}
 
 	protected final Expression LeftFoldOneMore(String label, Expression... e) {
-		return ExpressionCommons.newLeftFoldRepetition1(src(), label == null ? null : Symbol.tag(label), Sequence(e));
+		return ExpressionCommons.newLeftFoldRepetition1(src(), toSymbol(label), Sequence(e));
 	}
 
 	protected Expression Link(String label, Expression e) {
-		return ExpressionCommons.newTlink(src(), label == null ? null : Symbol.tag(label), e);
+		return ExpressionCommons.newTlink(src(), toSymbol(label), e);
 	}
 
 	protected Expression Link(String label, String nonTerminal) {
-		return ExpressionCommons.newTlink(src(), label == null ? null : Symbol.tag(label), P(nonTerminal));
+		return ExpressionCommons.newTlink(src(), toSymbol(label), P(nonTerminal));
+	}
+
+	private Symbol toSymbol(String label) {
+		if (label == null) {
+			return null;
+		}
+		if (label.startsWith("$")) {
+			return Symbol.tag(label.substring(1));
+		}
+		return Symbol.tag(label);
 	}
 
 	protected Expression Msg(String label, String msg) {

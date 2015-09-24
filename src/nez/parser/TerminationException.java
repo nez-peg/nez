@@ -4,7 +4,7 @@ package nez.parser;
 public class TerminationException extends Exception {
 	boolean status;
 
-	TerminationException(boolean status) {
+	public TerminationException(boolean status) {
 		super();
 		this.status = status;
 	}

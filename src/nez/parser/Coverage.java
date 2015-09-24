@@ -190,12 +190,14 @@ class Icov extends Instruction {
 	}
 
 	@Override
-	void encodeA(ByteCoder c) {
+	protected
+	void encodeImpl(ByteCoder c) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
+	public
 	Instruction exec(RuntimeContext sc) throws TerminationException {
 		Coverage.enter(this.covPoint);
 		return this.next;
@@ -212,12 +214,14 @@ class Icovx extends Instruction {
 	}
 
 	@Override
-	void encodeA(ByteCoder c) {
+	protected
+	void encodeImpl(ByteCoder c) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
+	public
 	Instruction exec(RuntimeContext sc) throws TerminationException {
 		Coverage.exit(this.covPoint);
 		return this.next;

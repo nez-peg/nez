@@ -1,11 +1,11 @@
 package nez.parser;
 
-class MemoEntry {
-	boolean failed;
-	int consumed;
-	Object result;
+public class MemoEntry {
+	public boolean failed;
+	public int consumed;
+	public Object result;
 	// int memoPoint;
-	int stateValue = 0;
+	public int stateValue = 0;
 }
 
 class MemoEntryKey extends MemoEntry {

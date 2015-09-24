@@ -15,7 +15,7 @@ public abstract class RuntimeContext implements Source {
 		return this.pos;
 	}
 
-	final void setPosition(long pos) {
+	public final void setPosition(long pos) {
 		this.pos = pos;
 	}
 
@@ -72,11 +72,6 @@ public abstract class RuntimeContext implements Source {
 
 	// ----------------------------------------------------------------------
 
-	class StackData {
-		Object ref;
-		long value;
-	}
-
 	private static int StackSize = 64;
 	private StackData[] stacks = null;
 	private int usedStackTop;
@@ -121,7 +116,7 @@ public abstract class RuntimeContext implements Source {
 		return stacks[usedStackTop];
 	}
 
-	final StackData popStack() {
+	public final StackData popStack() {
 		StackData s = stacks[this.usedStackTop];
 		usedStackTop--;
 		// assert(this.catchStackTop <= this.usedStackTop);

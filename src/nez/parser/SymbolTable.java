@@ -27,7 +27,7 @@ public class SymbolTable {
 		return hashCode;
 	}
 
-	static final boolean equals(byte[] utf8, byte[] b) {
+	public static final boolean equals(byte[] utf8, byte[] b) {
 		if (utf8.length == b.length) {
 			for (int i = 0; i < utf8.length; i++) {
 				if (utf8[i] != b[i]) {

@@ -116,6 +116,14 @@ public class FileBuilder {
 		this.write(text);
 	}
 
+	public final void write(String fmt, Object... args) {
+		write(String.format(fmt, args));
+	}
+
+	public final void writeIndent(String fmt, Object... args) {
+		writeIndent(String.format(fmt, args));
+	}
+
 	public void writeMultiLine(String sub) {
 		int start = 0;
 		boolean empty = true;
