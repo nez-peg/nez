@@ -1,0 +1,25 @@
+/**
+ * Nested name
+ * <block>, <is>
+ */
+
+
+START = (NAME S* / &'+' PAIR / S* )+
+PAIR = <block INNER > S*
+INNER = '+' <symbol NAME> S* START '-' <is NAME>
+
+NAME = [A-Za-z]+
+S = [ \t]+
+
+example START a a
+example START +a -a
+example START +a b -a
+example START +a +b -b -a
+
+Start2 = { ($(Pair2) S* / NAME S* / S*)+ } !.
+Pair2  = { <block INNER2 > }
+INNER2 = <symbol NAME> S* START2 <is NAME>
+
+example Start2 a a
+example Start2 a b a
+example Start2 a b b a

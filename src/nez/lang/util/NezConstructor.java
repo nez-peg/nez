@@ -271,7 +271,11 @@ public class NezConstructor extends GrammarFileLoader implements Constructor {
 
 	public Expression newDef(Tree<?> node) {
 		Grammar g = this.getGrammar();
-		NonTerminal pat = g.newNonTerminal(node, node.getText(_name, ""));
+		Tree<?> nameNode = node.get(_name);
+		NonTerminal pat = g.newNonTerminal(node, nameNode.toText());
+		Expression e = newExpression(node.get(_expr));
+		Production p = g.newProduction(pat.getLocalName(), e);
+		this.reportWarning(nameNode, "new production generated: " + p);
 		return ExpressionCommons.newXsymbol(node, pat);
 	}
 

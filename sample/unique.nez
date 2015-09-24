@@ -1,0 +1,20 @@
+/**
+ * unique
+ */
+
+File = { (UniqueName S)+ #List}
+UniqueName = !<isa Name> $(<symbol Name>) / NAME
+
+Name = { NAME #Name }
+NAME = [A-Za-z0-9]+
+S    = [ \t\n\r]*
+
+example File '''
+Apple Orange Banana Apple 
+'''
+
+List = { $(<symbol Name>) #List }
+Symbol = <symbol Name>
+
+example Symbol Apple
+example List Apple 
