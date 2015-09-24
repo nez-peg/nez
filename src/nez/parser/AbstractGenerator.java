@@ -25,7 +25,7 @@ import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
 import nez.lang.expr.Xblock;
-import nez.lang.expr.Xdef;
+import nez.lang.expr.Xsymbol;
 import nez.lang.expr.Xdefindent;
 import nez.lang.expr.Xexists;
 import nez.lang.expr.Xif;
@@ -142,7 +142,7 @@ public abstract class AbstractGenerator {
 	// Symbol Tables
 	public abstract Instruction encodeXblock(Xblock p, Instruction next, Instruction failjump);
 
-	public abstract Instruction encodeXdef(Xdef p, Instruction next, Instruction failjump);
+	public abstract Instruction encodeXsymbol(Xsymbol p, Instruction next, Instruction failjump);
 
 	public abstract Instruction encodeXmatch(Xmatch p, Instruction next, Instruction failjump);
 

@@ -21,9 +21,7 @@ import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
 import nez.lang.expr.Unary;
-import nez.lang.expr.Xdef;
 import nez.lang.expr.Xif;
-import nez.lang.expr.Xis;
 import nez.lang.expr.Xon;
 import nez.main.Verbose;
 import nez.parser.GenerativeGrammar;
@@ -33,14 +31,14 @@ import nez.util.StringUtils;
 import nez.util.UFlag;
 import nez.util.UList;
 
-public class GrammarChecker2 extends GrammarTransducer {
+public class GrammarChecker extends GrammarTransducer {
 	GenerativeGrammar gg;
 	private int requiredTypestate;
 	final TreeMap<String, Boolean> boolMap;
 	UList<Expression> stacked;
 	private final Strategy strategy;
 
-	public GrammarChecker2(GenerativeGrammar g, boolean offAST, TreeMap<String, Boolean> ctx, Production start, Strategy strategy) {
+	public GrammarChecker(GenerativeGrammar g, boolean offAST, TreeMap<String, Boolean> ctx, Production start, Strategy strategy) {
 		this.gg = g;
 		this.boolMap = (ctx == null) ? new TreeMap<String, Boolean>() : ctx;
 		this.strategy = strategy;
@@ -432,36 +430,40 @@ public class GrammarChecker2 extends GrammarTransducer {
 		return ExpressionCommons.newPnot(p.getSourcePosition(), inner);
 	}
 
-	@Override
-	public Expression reshapeXdef(Xdef p) {
-		Expression inner = p.get(0);
-		int t = inner.inferTypestate(null);
-		if (t != Typestate.BooleanType) {
-			boolean stacked = this.enterNonASTContext();
-			inner = this.reshapeInner(inner);
-			this.exitNonASTContext(stacked);
-		} else {
-			inner = this.reshapeInner(inner);
-		}
-		String uname = p.getTableName();
-		Production pp = this.gg.newProduction(inner.getSourcePosition(), Production.SymbolTableProduction, uname, inner);
-		this.gg.setParseFunc(uname, null, pp, 2/* to avoid removal */);
-		Expression ndef = ExpressionCommons.newXdef(p.getSourcePosition(), gg, p.getTable(), gg.newNonTerminal(null, uname));
-		// System.out.println("@@@@" + p + "\n\t" + ndef + "   " +
-		// gg.hasProduction(uname));
-		return ndef;
-	}
-
-	@Override
-	public Expression reshapeXis(Xis p) {
-		ParseFunc f = this.gg.getParseFunc(p.getTableName());
-		if (f == null) {
-			reportError(p, "undefined table: " + p.getTableName());
-			return ExpressionCommons.newFailure(p.getSourcePosition());
-		}
-		f.incCount();
-		return ExpressionCommons.newXis(p.getSourcePosition(), gg, p.getTable(), p.is);
-	}
+	// @Override
+	// public Expression reshapeXdef(Xdef p) {
+	// Expression inner = p.get(0);
+	// p.getGrammar().get
+	// // int t = inner.inferTypestate(null);
+	// // if (t != Typestate.BooleanType) {
+	// // boolean stacked = this.enterNonASTContext();
+	// // inner = this.reshapeInner(inner);
+	// // this.exitNonASTContext(stacked);
+	// // } else {
+	// inner = this.reshapeInner(inner);
+	// // }
+	// String uname = p.getTableName();
+	// Production pp = this.gg.newProduction(inner.getSourcePosition(),
+	// Production.SymbolTableProduction, uname, inner);
+	// this.gg.setParseFunc(uname, null, pp, 2/* to avoid removal */);
+	// Expression ndef = ExpressionCommons.newXdef(p.getSourcePosition(), gg,
+	// p.getTable(), gg.newNonTerminal(null, uname));
+	// // System.out.println("@@@@" + p + "\n\t" + ndef + "   " +
+	// // gg.hasProduction(uname));
+	// return ndef;
+	// }
+	//
+	// @Override
+	// public Expression reshapeXis(Xis p) {
+	// ParseFunc f = this.gg.getParseFunc(p.getTableName());
+	// if (f == null) {
+	// reportError(p, "undefined table: " + p.getTableName());
+	// return ExpressionCommons.newFailure(p.getSourcePosition());
+	// }
+	// f.incCount();
+	// return ExpressionCommons.newXis(p.getSourcePosition(), gg, p.getTable(),
+	// p.is);
+	// }
 
 	/* static context */
 

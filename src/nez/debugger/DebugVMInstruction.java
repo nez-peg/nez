@@ -11,7 +11,7 @@ import nez.lang.expr.Tlfold;
 import nez.lang.expr.Tlink;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
-import nez.lang.expr.Xdef;
+import nez.lang.expr.Xsymbol;
 import nez.lang.expr.Xexists;
 import nez.lang.expr.Xis;
 import nez.lang.expr.Xlocal;
@@ -610,7 +610,7 @@ class Iabort extends DebugVMInstruction {
 class Idef extends DebugVMInstruction {
 	Symbol tableName;
 
-	public Idef(Xdef e) {
+	public Idef(Xsymbol e) {
 		super(e);
 		this.op = Opcode.Idef;
 		this.tableName = e.tableName;

@@ -5,23 +5,23 @@ import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cmulti;
 import nez.lang.expr.Cset;
 import nez.lang.expr.NonTerminal;
+import nez.lang.expr.Pand;
 import nez.lang.expr.Pchoice;
 import nez.lang.expr.Pempty;
 import nez.lang.expr.Pfail;
+import nez.lang.expr.Pnot;
+import nez.lang.expr.Pone;
+import nez.lang.expr.Poption;
 import nez.lang.expr.Psequence;
+import nez.lang.expr.Pzero;
 import nez.lang.expr.Tcapture;
+import nez.lang.expr.Tdetree;
 import nez.lang.expr.Tlink;
 import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
-import nez.lang.expr.Pand;
-import nez.lang.expr.Tdetree;
-import nez.lang.expr.Pnot;
-import nez.lang.expr.Pone;
-import nez.lang.expr.Poption;
-import nez.lang.expr.Pzero;
 import nez.lang.expr.Xblock;
-import nez.lang.expr.Xdef;
+import nez.lang.expr.Xsymbol;
 import nez.lang.expr.Xexists;
 import nez.lang.expr.Xif;
 import nez.lang.expr.Xindent;
@@ -177,7 +177,7 @@ public class GrammarRewriter extends GrammarTransducer {
 	}
 
 	@Override
-	public Expression reshapeXdef(Xdef e) {
+	public Expression reshapeXdef(Xsymbol e) {
 		e.set(0, this.reshapeInner(e.get(0)));
 		return e;
 	}
@@ -189,6 +189,7 @@ public class GrammarRewriter extends GrammarTransducer {
 
 	@Override
 	public Expression reshapeXis(Xis e) {
+		e.set(0, this.reshapeInner(e.get(0)));
 		return e;
 	}
 

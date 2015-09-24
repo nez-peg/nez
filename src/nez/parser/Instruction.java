@@ -17,7 +17,7 @@ import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
 import nez.lang.expr.Xblock;
-import nez.lang.expr.Xdef;
+import nez.lang.expr.Xsymbol;
 import nez.lang.expr.Xdefindent;
 import nez.lang.expr.Xexists;
 import nez.lang.expr.Xindent;
@@ -1108,7 +1108,7 @@ class IEndSymbolScope extends Instruction {
 }
 
 class IDefSymbol extends AbstractTableInstruction {
-	IDefSymbol(Xdef e, Instruction next) {
+	IDefSymbol(Xsymbol e, Instruction next) {
 		super(InstructionSet.SDef, e, e.tableName, next);
 	}
 

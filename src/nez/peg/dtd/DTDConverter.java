@@ -6,12 +6,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import nez.ParserException;
 import nez.Parser;
+import nez.ParserException;
 import nez.Strategy;
+import nez.ast.Symbol;
 import nez.ast.Tree;
 import nez.ast.TreeVisitor;
-import nez.ast.Symbol;
 import nez.io.SourceContext;
 import nez.lang.Expression;
 import nez.lang.GrammarFile;
@@ -312,14 +312,14 @@ public class DTDConverter extends TreeVisitor {
 
 	public Expression _AttDef(String type) {
 		String attName = attDefMap.get(attDefCount);
-		Expression[] l = { ExpressionCommons.newXdef(null, gfile, Symbol.tag("T" + currentElementID), gfile.newString(attName)), gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), gfile.newByteChar('='),
+		Expression[] l = { ExpressionCommons.newXdef(null, gfile, "T" + currentElementID, gfile.newString(attName)), gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), gfile.newByteChar('='),
 				gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), ExpressionCommons.newNonTerminal(null, gfile, type), gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), };
 		return gfile.newSequence(l);
 	}
 
 	public Expression _AttDefQ(String type) {
 		String attName = attDefMap.get(attDefCount);
-		Expression[] l = { ExpressionCommons.newXdef(null, gfile, Symbol.tag("T" + currentElementID), gfile.newString(attName)), gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), gfile.newByteChar('='),
+		Expression[] l = { ExpressionCommons.newXdef(null, gfile, "T" + currentElementID, gfile.newString(attName)), gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), gfile.newByteChar('='),
 				gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), gfile.newString("\""), ExpressionCommons.newNonTerminal(null, gfile, type), gfile.newString("\""),
 				gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), };
 		return gfile.newSequence(l);

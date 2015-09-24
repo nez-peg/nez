@@ -23,7 +23,7 @@ import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
 import nez.lang.expr.Xblock;
-import nez.lang.expr.Xdef;
+import nez.lang.expr.Xsymbol;
 import nez.lang.expr.Xdefindent;
 import nez.lang.expr.Xexists;
 import nez.lang.expr.Xindent;
@@ -213,7 +213,7 @@ public class NezGrammarGenerator extends PEGGenerator {
 	}
 
 	@Override
-	public void visitXdef(Xdef e) {
+	public void visitXdef(Xsymbol e) {
 		W("<def ");
 		W(e.getTableName());
 		W(" ");

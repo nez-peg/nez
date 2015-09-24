@@ -16,7 +16,7 @@ public class Xdefindent extends Term {
 
 	@Override
 	public final boolean equalsExpression(Expression o) {
-		return (o instanceof Xdef);
+		return (o instanceof Xsymbol);
 	}
 
 	@Override

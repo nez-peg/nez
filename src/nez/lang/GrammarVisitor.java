@@ -22,7 +22,7 @@ import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
 import nez.lang.expr.Xblock;
-import nez.lang.expr.Xdef;
+import nez.lang.expr.Xsymbol;
 import nez.lang.expr.Xdefindent;
 import nez.lang.expr.Xexists;
 import nez.lang.expr.Xif;
@@ -92,7 +92,7 @@ public abstract class GrammarVisitor extends GrammarTransducer {
 
 	public abstract void visitXlocal(Xlocal p);
 
-	public abstract void visitXdef(Xdef p);
+	public abstract void visitXdef(Xsymbol p);
 
 	public abstract void visitXexists(Xexists p);
 
@@ -243,7 +243,7 @@ public abstract class GrammarVisitor extends GrammarTransducer {
 	}
 
 	@Override
-	public final Expression reshapeXdef(Xdef p) {
+	public final Expression reshapeXdef(Xsymbol p) {
 		this.visitXdef(p);
 		return null;
 	}

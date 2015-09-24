@@ -29,7 +29,7 @@ import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
 import nez.lang.expr.Xblock;
-import nez.lang.expr.Xdef;
+import nez.lang.expr.Xsymbol;
 import nez.lang.expr.Xdefindent;
 import nez.lang.expr.Xexists;
 import nez.lang.expr.Xindent;
@@ -417,7 +417,7 @@ public class DebugVMCompiler extends AbstractGenerator {
 	}
 
 	@Override
-	public Instruction encodeXdef(Xdef p, Instruction next, Instruction failjump) {
+	public Instruction encodeXsymbol(Xsymbol p, Instruction next, Instruction failjump) {
 		BasicBlock fbb = new BasicBlock();
 		BasicBlock endbb = new BasicBlock();
 		this.builder.pushFailureJumpPoint(fbb);
@@ -445,7 +445,7 @@ public class DebugVMCompiler extends AbstractGenerator {
 		} else {
 			this.builder.pushFailureJumpPoint(new BasicBlock());
 			this.builder.createIpush(p);
-			p.getSymbolExpression().encode(this, next, failjump);
+			p.get(0).encode(this, next, failjump);
 			this.builder.setInsertPoint(this.builder.popFailureJumpPoint());
 			this.builder.createIisa(p, this.builder.jumpFailureJump());
 			this.builder.setInsertPoint(new BasicBlock());

@@ -327,24 +327,39 @@ public abstract class ExpressionCommons extends Expression {
 		return new Xlocal(s, tableName, e);
 	}
 
-	public final static Expression newXdef(SourcePosition s, Grammar g, Symbol tableName, Expression e) {
-		return new Xdef(s, g, tableName, e);
+	@Deprecated
+	public final static Expression newXdef(SourcePosition s, Grammar g, String name, Expression e) {
+		NonTerminal pat = g.newNonTerminal(s, name);
+		g.newProduction(name, e);
+		return new Xsymbol(s, pat);
+	}
+
+	public final static Expression newXsymbol(SourcePosition s, NonTerminal pat) {
+		return new Xsymbol(s, pat);
+	}
+
+	public final static Expression newXsymbol(SourcePosition s, Symbol table, Expression e) {
+		return new Xsymbol(s, table, e);
 	}
 
 	public final static Expression newXmatch(SourcePosition s, Symbol tableName) {
 		return new Xmatch(s, tableName);
 	}
 
-	public final static Expression newXis(SourcePosition s, Grammar g, Symbol tableName, boolean is) {
-		return new Xis(s, g, tableName, is);
+	public final static Expression newXis(SourcePosition s, NonTerminal pat, boolean is) {
+		return new Xis(s, pat, is);
 	}
 
-	public final static Expression newXis(SourcePosition s, Grammar g, Symbol tableName) {
-		return new Xis(s, g, tableName, /* is */true);
+	public final static Expression newXis(SourcePosition s, Symbol table, Expression e, boolean is) {
+		return new Xis(s, table, e, is);
 	}
 
-	public final static Expression newXisa(SourcePosition s, Grammar g, Symbol tableName) {
-		return new Xis(s, g, tableName, /* is */false);
+	public final static Expression newXis(SourcePosition s, NonTerminal pat) {
+		return new Xis(s, pat, /* is */true);
+	}
+
+	public final static Expression newXisa(SourcePosition s, NonTerminal pat) {
+		return new Xis(s, pat, /* is */false);
 	}
 
 	public final static Expression newXexists(SourcePosition s, Symbol tableName, String symbol) {

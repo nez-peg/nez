@@ -2,7 +2,6 @@ package nez.lang.expr;
 
 import nez.ast.SourcePosition;
 import nez.ast.Symbol;
-import nez.lang.Contextual;
 import nez.lang.Expression;
 import nez.lang.GrammarTransducer;
 import nez.lang.Typestate;
@@ -10,28 +9,26 @@ import nez.lang.Visa;
 import nez.parser.AbstractGenerator;
 import nez.parser.Instruction;
 
-public class Xis extends Unary implements Contextual {
-	// final Grammar g;
+public class Xsymbol extends Unary {
 	public final Symbol tableName;
-	public final boolean is;
 
-	Xis(SourcePosition s, NonTerminal pat, boolean is) {
+	Xsymbol(SourcePosition s, NonTerminal pat) {
 		super(s, pat);
 		this.tableName = Symbol.tag(pat.getLocalName());
-		this.is = is;
 	}
 
-	Xis(SourcePosition s, Symbol tableName, Expression e, boolean is) {
-		super(s, e);
+	Xsymbol(SourcePosition s, Symbol tableName, Expression pat) {
+		super(s, pat);
 		this.tableName = tableName;
-		this.is = is;
 	}
 
 	@Override
 	public final boolean equalsExpression(Expression o) {
-		if (o instanceof Xis) {
-			Xis e = (Xis) o;
-			return this.get(0).equals(e.get(0)) && this.tableName == e.tableName && this.is == e.is;
+		if (o instanceof Xsymbol) {
+			Xsymbol e = (Xsymbol) o;
+			if (this.tableName == e.tableName) {
+				return this.get(0).equalsExpression(e.get(0));
+			}
 		}
 		return false;
 	}
@@ -45,19 +42,15 @@ public class Xis extends Unary implements Contextual {
 	}
 
 	@Override
-	public Expression reshape(GrammarTransducer m) {
-		return m.reshapeXis(this);
+	public void format(StringBuilder sb) {
+		sb.append("<symbol ");
+		sb.append(getTableName());
+		sb.append(">");
 	}
 
 	@Override
-	public void format(StringBuilder sb) {
-		if (this.is) {
-			sb.append("<is ");
-		} else {
-			sb.append("<isa ");
-		}
-		sb.append(getTableName());
-		sb.append(">");
+	public Expression reshape(GrammarTransducer m) {
+		return m.reshapeXdef(this);
 	}
 
 	@Override
@@ -77,6 +70,7 @@ public class Xis extends Unary implements Contextual {
 
 	@Override
 	public Instruction encode(AbstractGenerator bc, Instruction next, Instruction failjump) {
-		return bc.encodeXis(this, next, failjump);
+		return bc.encodeXsymbol(this, next, failjump);
 	}
+
 }
