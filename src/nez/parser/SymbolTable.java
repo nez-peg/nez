@@ -17,6 +17,19 @@ public class SymbolTable {
 		Symbol table;
 		long code;
 		byte[] symbol; // if uft8 is null, hidden
+
+		@Override
+		public String toString() {
+			StringBuilder sb = new StringBuilder();
+			sb.append('[');
+			sb.append(stateValue);
+			sb.append(", ");
+			sb.append(table);
+			sb.append(", ");
+			sb.append((symbol == null) ? "<null>" : new String(symbol));
+			sb.append("]");
+			return sb.toString();
+		}
 	}
 
 	final static long hash(byte[] utf8) {
@@ -105,6 +118,7 @@ public class SymbolTable {
 	public final boolean exists(Symbol table) {
 		for (int i = tableSize - 1; i >= 0; i--) {
 			SymbolTableEntry2 entry = tables[i];
+
 			if (entry.table == table) {
 				return entry.symbol != null;
 			}

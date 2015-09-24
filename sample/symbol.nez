@@ -7,7 +7,7 @@ example SymbolMatch ~aa423cf Apple Apple
 example SymbolMatch ~aa423cf Apple AppleII
 example SymbolMatch ~4ff367b1 Apple Orange
 
-SymbolMatch = { <symbol NAME> $( S { <symbol NAME> #Name })? #Fruit }
+SymbolMatch = { <symbol NAME> $( S { <match NAME> #Name })? #Fruit }
 
 example Symbol ~aa423cf Apple Apple
 example Symbol ~4ff367b1 Apple AppleII

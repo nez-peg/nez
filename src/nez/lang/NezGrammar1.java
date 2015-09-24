@@ -268,8 +268,8 @@ public class NezGrammar1 extends Combinator {
 		Expression _Symbol = Sequence(t("symbol"), P("S"), Link("$name", "NonTerminal"), Tag("Symbol"));
 		Expression _Exists = Sequence(t("exists"), P("S"), Link("$name", "TableName"), Option(P("S"), Link("$symbol", "Character")), Tag("Exists"));
 		Expression _Match = Sequence(t("match"), P("S"), Link("$name", "TableName"), Tag("Match"));
-		Expression _Is = Sequence(t("is"), P("S"), Link("$expr", "NonTerminal"), Tag("Is"));
-		Expression _Isa = Sequence(t("isa"), P("S"), Link("$expr", "NonTerminal"), Tag("Isa"));
+		Expression _Is = Sequence(t("is"), P("S"), Link("$name", "NonTerminal"), Tag("Is"));
+		Expression _Isa = Sequence(t("isa"), P("S"), Link("$name", "NonTerminal"), Tag("Isa"));
 		Expression _Block = Sequence(t("block"), P("S"), Link("$expr", "Expression"), Tag("Block"));
 		Expression _Local = Sequence(t("local"), P("S"), Link("$name", "TableName"), P("S"), Link("$expr", "Expression"), Tag("Local"));
 		// Expression _Number = Sequence(t("number"), P("S"), Link("$name",

@@ -17,13 +17,13 @@ import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
 import nez.lang.expr.Xblock;
-import nez.lang.expr.Xsymbol;
 import nez.lang.expr.Xdefindent;
 import nez.lang.expr.Xexists;
 import nez.lang.expr.Xindent;
 import nez.lang.expr.Xis;
 import nez.lang.expr.Xlocal;
 import nez.lang.expr.Xmatch;
+import nez.lang.expr.Xsymbol;
 import nez.util.StringUtils;
 
 public abstract class Instruction {
@@ -1116,6 +1116,8 @@ class IDefSymbol extends AbstractTableInstruction {
 	public Instruction exec(RuntimeContext sc) throws TerminationException {
 		StackData top = sc.popStack();
 		byte[] captured = sc.subbyte(top.value, sc.getPosition());
+		// System.out.println("symbol captured: " + new String(captured) + ", @"
+		// + this.tableName);
 		sc.getSymbolTable().addSymbol(this.tableName, captured);
 		return this.next;
 	}
@@ -1180,7 +1182,6 @@ class IIsSymbol extends AbstractTableInstruction {
 	@Override
 	public Instruction exec(RuntimeContext sc) throws TerminationException {
 		byte[] symbol = sc.getSymbolTable().getSymbol(tableName);
-		// System.out.println("symbol:" + new String(symbol));
 		if (symbol != null) {
 			StackData s = sc.popStack();
 			byte[] captured = sc.subbyte(s.value, sc.getPosition());
