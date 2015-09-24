@@ -543,9 +543,13 @@ public class JCodeGenerator {
 		this.mBuilder.push(false);
 	}
 
-	public void visitInteger(JCodeTree p) {
+	
+	public void visitInt(JCodeTree p) {
 		p.setType(int.class);
 		this.mBuilder.push(Integer.parseInt(p.toText()));
+	}
+	public void visitInteger(JCodeTree p) {
+		this.visitInt(p);
 	}
 
 	public void visitOctalInteger(JCodeTree p) {
