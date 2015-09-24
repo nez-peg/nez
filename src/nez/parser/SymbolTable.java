@@ -26,7 +26,7 @@ public class SymbolTable {
 			sb.append(", ");
 			sb.append(table);
 			sb.append(", ");
-			sb.append((symbol == null) ? "<null>" : new String(symbol));
+			sb.append((symbol == null) ? "<masked>" : new String(symbol));
 			sb.append("]");
 			return sb.toString();
 		}

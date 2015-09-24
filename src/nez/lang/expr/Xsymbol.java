@@ -4,7 +4,6 @@ import nez.ast.SourcePosition;
 import nez.ast.Symbol;
 import nez.lang.Expression;
 import nez.lang.GrammarTransducer;
-import nez.lang.Typestate;
 import nez.lang.Visa;
 import nez.parser.AbstractGenerator;
 import nez.parser.Instruction;
@@ -60,7 +59,7 @@ public class Xsymbol extends Unary {
 
 	@Override
 	public int inferTypestate(Visa v) {
-		return Typestate.BooleanType;
+		return this.inner.inferTypestate(v);
 	}
 
 	@Override

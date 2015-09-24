@@ -5,7 +5,6 @@ import nez.ast.Symbol;
 import nez.lang.Contextual;
 import nez.lang.Expression;
 import nez.lang.GrammarTransducer;
-import nez.lang.Typestate;
 import nez.lang.Visa;
 import nez.parser.AbstractGenerator;
 import nez.parser.Instruction;
@@ -54,7 +53,7 @@ public class Xis extends Unary implements Contextual {
 		if (this.is) {
 			sb.append("<is ");
 		} else {
-			sb.append("<isa ");
+			sb.append("<in ");
 		}
 		sb.append(getTableName());
 		sb.append(">");
@@ -67,7 +66,7 @@ public class Xis extends Unary implements Contextual {
 
 	@Override
 	public int inferTypestate(Visa v) {
-		return Typestate.BooleanType;
+		return this.inner.inferTypestate(v);
 	}
 
 	@Override
