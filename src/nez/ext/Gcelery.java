@@ -45,6 +45,7 @@ public class Gcelery extends GrammarFileLoader {
 	public void parse(Tree<?> node) {
 		schema.loadPredefinedRules();
 		visit("visit", node);
+		getGrammarFile().dump();
 	}
 
 	public final static Symbol _Name = Symbol.tag("Name");
@@ -69,6 +70,10 @@ public class Gcelery extends GrammarFileLoader {
 		} else {
 			genStruct_Approximate(currentStructName);
 		}
+	}
+
+	public final void visitName(Tree<?> node) {
+
 	}
 
 	public final void visitRequired(Tree<?> node) {
@@ -118,6 +123,10 @@ public class Gcelery extends GrammarFileLoader {
 
 	public final Type toTFloat(Tree<?> node) {
 		return schema.newTFloat();
+	}
+
+	public final Type toTString(Tree<?> node) {
+		return schema.newTString();
 	}
 
 	private final void genStruct(String structName) {
