@@ -15,7 +15,19 @@ public class PermutationGenerator {
 		this.flag = new boolean[this.number + 1];
 		this.perm_list = new int[this.list_size][this.number];
 		this.perm_list_index = 0;
-		this.createPermutation(0, this.target);
+		this.genPermutation(0, this.target);
+	}
+
+	public PermutationGenerator(int listLength) {
+		this(initList(listLength));
+	}
+
+	public static int[] initList(int listLength) {
+		int[] target = new int[listLength];
+		for (int i = 0; i < target.length; i++) {
+			target[i] = i;
+		}
+		return target;
 	}
 
 	public int[][] getPermList() {
@@ -35,7 +47,7 @@ public class PermutationGenerator {
 		}
 	}
 
-	public void createPermutation(int n, int[] target) {
+	public void genPermutation(int n, int[] target) {
 		if (n == this.number) {
 			for (int i = 0; i < n; i++) {
 				perm_list[perm_list_index][i] = perm[i];
@@ -47,7 +59,7 @@ public class PermutationGenerator {
 					continue;
 				perm[n] = target[i];
 				flag[i] = true;
-				createPermutation(n + 1, target);
+				genPermutation(n + 1, target);
 				flag[i] = false;
 			}
 		}

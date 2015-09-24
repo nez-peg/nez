@@ -1,7 +1,10 @@
 package nez.lang.schema;
 
+import java.util.List;
+
 import nez.lang.Expression;
 import nez.lang.GrammarFile;
+import nez.lang.expr.ExpressionCommons;
 
 public class JSONSchemaGrammarGenerator extends SchemaGrammarGenerator {
 
@@ -130,8 +133,70 @@ public class JSONSchemaGrammarGenerator extends SchemaGrammarGenerator {
 
 	@Override
 	public Type newPermutation() {
-		// TODO Auto-generated method stub
-		return null;
+		genImpliedChoice();
+		if (getRequiredList().isEmpty()) {
+			return newCompletePerm();
+		} else {
+			return newAproximatePerm();
+		}
+	}
+
+	// FIXME
+	private Type newCompletePerm() {
+		int listLength = getRequiredList().size();
+
+		if (listLength == 1) {
+			return new Type(_NonTerminal(getRequiredList().get(0)));
+		} else {
+			PermutationGenerator permGen = new PermutationGenerator(listLength);
+			int[][] permedList = permGen.getPermList();
+			Expression[] choiceList = new Expression[permedList.length];
+			int choiceCount = 0;
+			for (int[] targetLine : permedList) {
+				Expression[] seqList = new Expression[listLength];
+				for (int index = 0; index < targetLine.length; index++) {
+					seqList[index] = ExpressionCommons.newNonTerminal(null, gfile, getRequiredList().get(targetLine[index]));
+				}
+				choiceList[choiceCount++] = gfile.newSequence(seqList);
+			}
+			return new Type(gfile.newChoice(choiceList));
+		}
+	}
+
+	// FIXME
+	private Type newAproximatePerm() {
+		int listLength = getRequiredList().size();
+		if (listLength == 0) {
+			return new Type(_NonTerminal(getTableName() + "_implied"));
+		} else {
+			PermutationGenerator permGen = new PermutationGenerator(listLength);
+			int[][] permutedList = permGen.getPermList();
+			Expression[] choiceList = new Expression[permutedList.length];
+			Expression impliedChoiceRule = _NonTerminal(getTableName() + "_implied");
+			int choiceCount = 0;
+			for (int[] targetLine : permutedList) {
+				int seqCount = 0;
+				Expression[] seqList = new Expression[listLength * 2 + 1];
+				seqList[seqCount++] = gfile.newRepetition(impliedChoiceRule);
+				for (int index = 0; index < targetLine.length; index++) {
+					seqList[seqCount++] = ExpressionCommons.newNonTerminal(null, gfile, getRequiredList().get(targetLine[index]));
+					seqList[seqCount++] = gfile.newRepetition(impliedChoiceRule);
+				}
+				choiceList[choiceCount++] = gfile.newSequence(seqList);
+			}
+			return new Type(gfile.newChoice(choiceList));
+		}
+
+	}
+
+	private final void genImpliedChoice() {
+		List<String> impliedList = extractImpliedMembers();
+		Expression[] l = new Expression[impliedList.size()];
+		int choiceCount = 0;
+		for (String nonTerminalSymbol : impliedList) {
+			l[choiceCount++] = _NonTerminal(nonTerminalSymbol);
+		}
+		gfile.addProduction(null, getTableName() + "_implied", gfile.newChoice(l));
 	}
 
 	private final Expression _OpenSquare() {
