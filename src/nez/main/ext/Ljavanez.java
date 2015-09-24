@@ -1,9 +1,9 @@
 package nez.main.ext;
 
-import nez.generator.GeneratorLoader;
+import nez.x.generator.GeneratorLoader;
 
 public class Ljavanez {
 	static {
-		GeneratorLoader.regist("javanez", nez.generator.CombinatorGenerator.class);
+		GeneratorLoader.regist("javanez", nez.x.generator.CombinatorGenerator.class);
 	}
 }

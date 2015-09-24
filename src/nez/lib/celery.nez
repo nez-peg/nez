@@ -9,20 +9,20 @@ File
 	= _ Root _
 
 Root 
-	= { (@ClassDeclaration / @EnumDeclaration)+ #Root }
+	= { (@ClassDeclaration)+ #Root }
 
 /*////////////////////////////////////////////////
 ////////////////// Declaration ///////////////////
 ////////////////////////////////////////////////*/
 
 ClassDeclaration
-	= { 'class' _ @Name _ '{' _ (@ClassMembers)+ _ '}' _ #Class}
+	= { 'struct' _ $Name(Name) _ '=' _ (@ClassMembers)+ _ #Struct}
 
 ClassMembers
-	= TypedParameter/ EnumDeclaration / UntypedParameter 
+	= TypedParameter / UntypedParameter 
 
 TypedParameter
-	=  { @Name qualifier ':' _ @TypeDeclaration @DefaultValue } _ 
+	=  { $Name(Name)) qualifier ':' _ $Type(TypeDeclaration) @DefaultValue } _ 
 
 qualifier
 	= '?' #Option
@@ -38,6 +38,7 @@ untypedqualifier
 TypeDeclaration
 	= ArrayType
 	/ PrimaryType
+	/ EnumType
 	/ ClassType
 	
 ArrayType
@@ -57,8 +58,8 @@ ClassType
 DefaultValue 
 	= {(  _ '=' _ (@Literal / @FieldReference) (_ ',' _ (@Literal / @FieldReference) )* )? #DefaultValue}
 
-EnumDeclaration
-	= { 'enum' _ @Name _ '{' _ @EnumValue _ (',' _ @EnumValue _ )* '}' _ #TEnum }
+EnumType
+	= { 'enum' _ '{' _ @EnumValue _ (',' _ @EnumValue _ )* '}' _ #TEnum }
 
 FieldReference 
 	= { @Name '.' @Name #FieldReference }
@@ -141,7 +142,7 @@ HEX_ESCAPE
 	= '\\' 'u'+ HEX4
 	
 Name
-	= { NAMETOKEN #Name }
+	= { !KEYWORD NAMETOKEN #Name }
 
 NAMETOKEN
 	= [A-Za-z] ( '-' / [A-Za-z0-9_])*
@@ -154,6 +155,11 @@ HEX
 
 HEX4
 	= HEX HEX HEX HEX
+
+KEYWORD
+	= 'struct'
+	/ 'enum'
+	
 
 /*////////////////////////////////////////////////
 //////////////////// Keyword /////////////////////

@@ -4,52 +4,52 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import nez.NezOption;
-import nez.NezException;
-import nez.SourceContext;
+import nez.Parser;
+import nez.ParserException;
+import nez.Strategy;
 import nez.ast.CommonTree;
-import nez.ast.AbstractTreeVisitor;
-import nez.ast.Tag;
+import nez.ast.Symbol;
+import nez.ast.TreeVisitor;
+import nez.io.SourceContext;
 import nez.lang.Expression;
-import nez.lang.GrammarFactory;
-import nez.lang.Grammar;
 import nez.lang.GrammarFile;
+import nez.lang.GrammarFileLoader;
+import nez.lang.expr.ExpressionCommons;
 import nez.main.Verbose;
 import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
 import nez.util.UList;
 
-public class RegexGrammar extends AbstractTreeVisitor {
+public class RegexGrammar extends TreeVisitor {
 
 	static GrammarFile regexGrammar = null;
-	public final static GrammarFile loadGrammar(SourceContext regex, NezOption option) throws IOException {
-		if(regexGrammar == null) {
+
+	public final static GrammarFile loadGrammar(SourceContext regex, Strategy option) throws IOException {
+		if (regexGrammar == null) {
 			try {
-				regexGrammar = GrammarFile.loadGrammarFile("regex.nez", NezOption.newSafeOption());
-			}
-			catch(IOException e) {
+				regexGrammar = (GrammarFile) GrammarFileLoader.loadGrammar("regex.nez", null);
+			} catch (IOException e) {
 				ConsoleUtils.exit(1, "can't load regex.nez");
 			}
 		}
-		Grammar p = regexGrammar.newGrammar("File");
+		Parser p = regexGrammar.newParser("File");
 		CommonTree node = p.parseCommonTree(regex);
 		if (node == null) {
-			throw new NezException(regex.getSyntaxErrorMessage());
+			throw new ParserException(regex.getSyntaxErrorMessage());
 		}
 		if (regex.hasUnconsumed()) {
-			throw new NezException(regex.getUnconsumedMessage());
+			throw new ParserException(regex.getUnconsumedMessage());
 		}
 		GrammarFile gfile = GrammarFile.newGrammarFile("re", option);
 		RegexGrammar conv = new RegexGrammar();
 		conv.convert(node, gfile);
-		gfile.verify();
 		return gfile;
 	}
-	
-	public final static Grammar newProduction(String pattern) {
+
+	public final static Parser newPrarser(String pattern) {
 		try {
-			GrammarFile grammar = loadGrammar(SourceContext.newStringContext(pattern), NezOption.newDefaultOption() /* FIXME */);
-			return grammar.newGrammar("File");
+			GrammarFile grammar = loadGrammar(SourceContext.newStringContext(pattern), Strategy.newDefaultStrategy() /* FIXME */);
+			return grammar.newParser("File");
 		} catch (IOException e) {
 			Verbose.traceException(e);
 		}
@@ -58,26 +58,27 @@ public class RegexGrammar extends AbstractTreeVisitor {
 
 	RegexGrammar() {
 	}
-	
+
 	private GrammarFile grammar;
 
 	void convert(CommonTree e, GrammarFile grammar) {
 		this.grammar = grammar;
-		grammar.defineProduction(e, "File", pi(e, null));
-		grammar.defineProduction(e, "Chunk", grammar.newNonTerminal("File"));
+		grammar.addProduction(e, "File", pi(e, null));
+		grammar.addProduction(e, "Chunk", grammar.newNonTerminal(e, "File"));
 	}
-	
-	protected Method getClassMethod(String method, Tag tag) throws NoSuchMethodException, SecurityException {
-		String name = method + tag.getName();
+
+	@Override
+	protected Method getClassMethod(String method, Symbol tag) throws NoSuchMethodException, SecurityException {
+		String name = method + tag.getSymbol();
 		return this.getClass().getMethod(name, CommonTree.class, Expression.class);
 	}
 
 	final Expression pi(CommonTree expr, Expression k) {
-		Tag tag = expr.getTag();
+		Symbol tag = expr.getTag();
 		Method m = findMethod("pi", tag);
-		if(m != null) {
+		if (m != null) {
 			try {
-				return (Expression)m.invoke(this, expr, k);
+				return (Expression) m.invoke(this, expr, k);
 			} catch (IllegalAccessException e) {
 				e.printStackTrace();
 			} catch (IllegalArgumentException e) {
@@ -88,7 +89,7 @@ public class RegexGrammar extends AbstractTreeVisitor {
 		}
 		return null;
 	}
-		
+
 	public Expression piPattern(CommonTree e, Expression k) {
 		return this.pi(e.get(0), k);
 	}
@@ -129,19 +130,22 @@ public class RegexGrammar extends AbstractTreeVisitor {
 	// pi(e*?, k) = A, A <- k / pi(e, A)
 	public Expression piLazyQuantifiers(CommonTree e, Expression k) {
 		String ruleName = "Repetition" + NonTerminalCount++;
-		Expression ne = GrammarFactory.newNonTerminal(e, this.grammar, ruleName);
-		grammar.defineProduction(e, ruleName, toChoice(e, k, pi(e.get(0), ne)));
+		Expression ne = ExpressionCommons.newNonTerminal(e, this.grammar, ruleName);
+		if (k == null) {
+			k = ExpressionCommons.newEmpty(null);
+		}
+		grammar.addProduction(e, ruleName, toChoice(e, k, pi(e.get(0), ne)));
 		return ne;
 	}
 
 	// pi(e*, k) = A, A <- pi(e, A) / k
 	public Expression piRepetition(CommonTree e, Expression k) {
 		String ruleName = "Repetition" + NonTerminalCount++;
-		Expression ne = GrammarFactory.newNonTerminal(e, this.grammar, ruleName);
-		grammar.defineProduction(e, ruleName, toChoice(e, pi(e.get(0), ne), k));
+		Expression ne = ExpressionCommons.newNonTerminal(e, this.grammar, ruleName);
+		grammar.addProduction(e, ruleName, toChoice(e, pi(e.get(0), ne), k));
 		return ne;
 	}
-	
+
 	// pi(e?, k) = pi(e, k) / k
 	public Expression piOption(CommonTree e, Expression k) {
 		return toChoice(e, pi(e.get(0), k), k);
@@ -152,11 +156,11 @@ public class RegexGrammar extends AbstractTreeVisitor {
 	}
 
 	public Expression piAny(CommonTree e, Expression k) {
-		return toAny(e);
+		return toSeq(e, k);
 	}
 
 	public Expression piNegativeCharacterSet(CommonTree e, Expression k) {
-		Expression nce = toSeq(e, GrammarFactory.newNot(e, toCharacterSet(e)), toAny(e));
+		Expression nce = toSeq(e, ExpressionCommons.newPnot(e, toCharacterSet(e)), toAny(e));
 		return toSeq(e, nce, k);
 	}
 
@@ -167,7 +171,7 @@ public class RegexGrammar extends AbstractTreeVisitor {
 	public Expression piCharacterRange(CommonTree e, Expression k) {
 		return toSeq(e, k);
 	}
-	
+
 	public Expression piCharacterSetItem(CommonTree e, Expression k) {
 		return toSeq(e, k);
 	}
@@ -177,95 +181,95 @@ public class RegexGrammar extends AbstractTreeVisitor {
 	public Expression piCharacter(CommonTree c, Expression k) {
 		return toSeq(c, k);
 	}
-	
+
 	private Expression toExpression(CommonTree e) {
-		return (Expression)this.visit("to", e);
+		return (Expression) this.visit("to", e);
 	}
-	
+
 	public Expression toCharacter(CommonTree c) {
 		String text = c.toText();
 		byte[] utf8 = StringUtils.toUtf8(text);
-		if (utf8.length !=1) {
+		if (utf8.length != 1) {
 			ConsoleUtils.exit(1, "Error: not Character Literal");
 		}
-		return GrammarFactory.newByteChar(null, false, utf8[0]);
+		return ExpressionCommons.newCbyte(null, false, utf8[0]);
 	}
-	
+
 	boolean byteMap[];
 	boolean useByteMap = true;
+
 	public Expression toCharacterSet(CommonTree e) {
 		UList<Expression> l = new UList<Expression>(new Expression[e.size()]);
 		byteMap = new boolean[257];
-		for(CommonTree subnode: e) {
-			GrammarFactory.addChoice(l, toExpression(subnode));
+		for (CommonTree subnode : e) {
+			ExpressionCommons.addChoice(l, toExpression(subnode));
 		}
 		if (useByteMap) {
-			return GrammarFactory.newByteMap(null, false, byteMap);
-		}
-		else {
-			return GrammarFactory.newChoice(null, l);
+			return ExpressionCommons.newCset(null, false, byteMap);
+		} else {
+			return ExpressionCommons.newPchoice(null, l);
 		}
 	}
-	
+
 	public Expression toCharacterRange(CommonTree e) {
 		byte[] begin = StringUtils.toUtf8(e.get(0).toText());
 		byte[] end = StringUtils.toUtf8(e.get(1).toText());
-		for(byte i = begin[0]; i <= end[0]; i++) {
+		byteMap = new boolean[257];
+		for (byte i = begin[0]; i <= end[0]; i++) {
 			byteMap[i] = true;
 		}
-		return GrammarFactory.newCharSet(null, e.get(0).toText(), e.get(1).toText());
+		return ExpressionCommons.newCharSet(null, e.get(0).toText(), e.get(1).toText());
 	}
-	
+
 	public Expression toCharacterSetItem(CommonTree c) {
 		byte[] utf8 = StringUtils.toUtf8(c.toText());
 		byteMap[utf8[0]] = true;
-		return GrammarFactory.newByteChar(null, false, utf8[0]);
+		return ExpressionCommons.newCbyte(null, false, utf8[0]);
 	}
-	
+
 	public Expression toEmpty(CommonTree node) {
-		return GrammarFactory.newEmpty(null);
+		return ExpressionCommons.newEmpty(null);
 	}
 
 	public Expression toAny(CommonTree e) {
-		return GrammarFactory.newAnyChar(null, false);
+		return ExpressionCommons.newCany(null, false);
 	}
-	
+
 	public Expression toAnd(CommonTree e, Expression k) {
-		return toSeq(e, GrammarFactory.newAnd(null, pi(e.get(0), toEmpty(e))), k);
+		return toSeq(e, ExpressionCommons.newPand(null, pi(e.get(0), toEmpty(e))), k);
 	}
-	
+
 	public Expression toNot(CommonTree e, Expression k) {
-		return toSeq(e, GrammarFactory.newNot(null, pi(e.get(0), toEmpty(e))), k);
+		return toSeq(e, ExpressionCommons.newPnot(null, pi(e.get(0), toEmpty(e))), k);
 	}
 
 	public Expression toChoice(CommonTree node, Expression e, Expression k) {
 		UList<Expression> l = new UList<Expression>(new Expression[2]);
-		GrammarFactory.addChoice(l, e);
+		ExpressionCommons.addChoice(l, e);
 		if (k != null) {
-			GrammarFactory.addChoice(l, k);
+			ExpressionCommons.addChoice(l, k);
+		} else {
+			ExpressionCommons.addChoice(l, toEmpty(node));
 		}
-		else {
-			GrammarFactory.addChoice(l, toEmpty(node));
-		}
-		return GrammarFactory.newChoice(null, l);
+		return ExpressionCommons.newPchoice(null, l);
 	}
 
 	public Expression toSeq(CommonTree e, Expression k) {
 		UList<Expression> l = new UList<Expression>(new Expression[2]);
-		GrammarFactory.addSequence(l, toExpression(e));
-		if(k != null) {
-			GrammarFactory.addSequence(l, k);
+		ExpressionCommons.addSequence(l, toExpression(e));
+		if (k != null) {
+			ExpressionCommons.addSequence(l, k);
 		}
-		return GrammarFactory.newSequence(null, l);
+		return ExpressionCommons.newPsequence(null, l);
 	}
-	
+
 	public Expression toSeq(CommonTree node, Expression e, Expression k) {
 		UList<Expression> l = new UList<Expression>(new Expression[2]);
-		GrammarFactory.addSequence(l, e);
+		ExpressionCommons.addSequence(l, e);
 		if (k != null) {
-			GrammarFactory.addSequence(l, k);
+			ExpressionCommons.addSequence(l, k);
 		}
-		return GrammarFactory.newSequence(null, l);
+		return ExpressionCommons.newPsequence(null, l);
 	}
 
 }

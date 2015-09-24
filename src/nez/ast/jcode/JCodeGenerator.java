@@ -8,7 +8,7 @@ import java.util.Stack;
 
 import javax.lang.model.type.NullType;
 
-import nez.ast.Tag;
+import nez.ast.Symbol;
 import nez.ast.jcode.ClassBuilder.MethodBuilder;
 import nez.ast.jcode.ClassBuilder.VarEntry;
 
@@ -77,8 +77,8 @@ public class JCodeGenerator {
 	private VarEntry var;
 
 	public final void visit(JCodeTree node) {
-		Method m = lookupMethod("visit", node.getTag().getName());
-		if(m != null) {
+		Method m = lookupMethod("visit", node.getTag().getSymbol());
+		if (m != null) {
 			try {
 				m.invoke(this, node);
 			} catch (IllegalAccessException e) {
@@ -95,7 +95,7 @@ public class JCodeGenerator {
 
 	protected final Method lookupMethod(String method, String tagName) {
 		Method m = this.methodMap.get(tagName);
-		if(m == null) {
+		if (m == null) {
 			String name = method + tagName;
 			try {
 				m = this.getClass().getMethod(name, JCodeTree.class);
@@ -108,9 +108,9 @@ public class JCodeGenerator {
 		}
 		return m;
 	}
-	
-	protected final void popUnusedValue(JCodeTree node){
-		if(node.requiredPop){
+
+	protected final void popUnusedValue(JCodeTree node) {
+		if (node.requiredPop) {
 			this.mBuilder.pop();
 		}
 	}
@@ -119,7 +119,7 @@ public class JCodeGenerator {
 		node.requirePop();
 		this.mBuilder = this.cBuilder.newMethodBuilder(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, void.class, "main");
 		this.mBuilder.enterScope();
-		for(JCodeTree child : node) {
+		for (JCodeTree child : node) {
 			this.visit(child);
 		}
 		this.mBuilder.exitScope();
@@ -130,7 +130,7 @@ public class JCodeGenerator {
 
 	public void visitBlock(JCodeTree node) {
 		node.requirePop();
-		for(JCodeTree stmt : node) {
+		for (JCodeTree stmt : node) {
 			visit(stmt);
 		}
 	}
@@ -142,14 +142,13 @@ public class JCodeGenerator {
 		String name = nameNode.toText();
 		Class<?> funcType = nameNode.getTypedClass();
 		Class<?>[] paramClasses = new Class<?>[args.size()];
-		for(int i = 0; i < paramClasses.length; i++) {
+		for (int i = 0; i < paramClasses.length; i++) {
 			paramClasses[i] = args.get(i).getTypedClass();
 		}
-		this.mBuilder = this.cBuilder.newMethodBuilder(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, funcType, name,
-				paramClasses);
+		this.mBuilder = this.cBuilder.newMethodBuilder(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, funcType, name, paramClasses);
 		this.mBuilder.enterScope();
 		this.pushScope();
-		for(JCodeTree arg : args) {
+		for (JCodeTree arg : args) {
 			this.scope.setLocalVar(arg.toText(), this.mBuilder.defineArgument(arg.getTypedClass()));
 		}
 		visit(node.get(2));
@@ -157,7 +156,7 @@ public class JCodeGenerator {
 		this.popScope();
 		this.mBuilder.returnValue();
 		this.mBuilder.endMethod();
-		//this.mBuilder = this.mBuilderStack.pop();
+		// this.mBuilder = this.mBuilderStack.pop();
 	}
 
 	public void visitVarDeclStmt(JCodeTree node) {
@@ -165,7 +164,7 @@ public class JCodeGenerator {
 	}
 
 	public void visitVarDecl(JCodeTree node) {
-		if(node.size() > 1) {
+		if (node.size() > 1) {
 			JCodeTree varNode = node.get(0);
 			JCodeTree valueNode = node.get(1);
 			visit(valueNode);
@@ -270,7 +269,7 @@ public class JCodeGenerator {
 		JCodeTree valueNode = node.get(1);
 		VarEntry var = this.scope.getLocalVar(nameNode.toText());
 		visit(valueNode);
-		if(var != null) {
+		if (var != null) {
 			this.mBuilder.storeToVar(var);
 		} else {
 			this.scope.setLocalVar(nameNode.toText(), this.mBuilder.createNewVarAndStore(valueNode.getTypedClass()));
@@ -282,9 +281,9 @@ public class JCodeGenerator {
 		JCodeTree argsNode = node.get(1);
 		JCodeTree top = fieldNode.get(0);
 		VarEntry var = null;
-		if(Tag.tag("Name").equals(top.getTag())) {
+		if (Symbol.tag("Name").equals(top.getTag())) {
 			var = this.scope.getLocalVar(top.toText());
-			if(var != null) {
+			if (var != null) {
 				this.mBuilder.loadFromVar(var);
 			} else {
 				this.generateRunTimeLibrary(fieldNode, argsNode);
@@ -297,18 +296,18 @@ public class JCodeGenerator {
 	public void generateRunTimeLibrary(JCodeTree fieldNode, JCodeTree argsNode) {
 		String classPath = "";
 		String methodName = null;
-		for(int i = 0; i < fieldNode.size(); i++) {
-			if(i < fieldNode.size() - 2) {
+		for (int i = 0; i < fieldNode.size(); i++) {
+			if (i < fieldNode.size() - 2) {
 				classPath += fieldNode.get(i).toText();
 				classPath += ".";
-			} else if(i == fieldNode.size() - 2) {
+			} else if (i == fieldNode.size() - 2) {
 				classPath += fieldNode.get(i).toText();
 			} else {
 				methodName = fieldNode.get(i).toText();
 			}
 		}
 		Type[] argTypes = new Type[argsNode.size()];
-		for(int i = 0; i < argsNode.size(); i++) {
+		for (int i = 0; i < argsNode.size(); i++) {
 			JCodeTree arg = argsNode.get(i);
 			this.visit(arg);
 			argTypes[i] = Type.getType(arg.getTypedClass());
@@ -319,9 +318,9 @@ public class JCodeGenerator {
 	public void visitField(JCodeTree node) {
 		JCodeTree top = node.get(0);
 		VarEntry var = null;
-		if(Tag.tag("Name").equals(top.getTag())) {
+		if (Symbol.tag("Name").equals(top.getTag())) {
 			var = this.scope.getLocalVar(top.toText());
-			if(var != null) {
+			if (var != null) {
 				this.mBuilder.loadFromVar(var);
 			} else {
 				// TODO
@@ -330,9 +329,9 @@ public class JCodeGenerator {
 		} else {
 			visit(top);
 		}
-		for(int i = 1; i < node.size(); i++) {
+		for (int i = 1; i < node.size(); i++) {
 			JCodeTree member = node.get(i);
-			if(Tag.tag("Name").equals(member.getTag())) {
+			if (Symbol.tag("Name").equals(member.getTag())) {
 				this.mBuilder.getField(Type.getType(var.getVarClass()), member.toText(), Type.getType(Object.class));
 				visit(member);
 			}
@@ -345,8 +344,7 @@ public class JCodeGenerator {
 		this.visit(left);
 		this.visit(right);
 		node.setType(typeInfferBinary(node, left, right));
-		this.mBuilder.callStaticMethod(JCodeOperator.class, node.getTypedClass(), node.getTag().getName(),
-				left.getTypedClass(), right.getTypedClass());
+		this.mBuilder.callStaticMethod(JCodeOperator.class, node.getTypedClass(), node.getTag().getSymbol(), left.getTypedClass(), right.getTypedClass());
 		this.popUnusedValue(node);
 	}
 
@@ -356,44 +354,42 @@ public class JCodeGenerator {
 		this.visit(left);
 		this.visit(right);
 		node.setType(boolean.class);
-		this.mBuilder.callStaticMethod(JCodeOperator.class, node.getTypedClass(), node.getTag().getName(),
-				left.getTypedClass(), right.getTypedClass());
+		this.mBuilder.callStaticMethod(JCodeOperator.class, node.getTypedClass(), node.getTag().getSymbol(), left.getTypedClass(), right.getTypedClass());
 		this.popUnusedValue(node);
 	}
 
 	private Class<?> typeInfferBinary(JCodeTree binary, JCodeTree left, JCodeTree right) {
 		Class<?> leftType = left.getTypedClass();
 		Class<?> rightType = right.getTypedClass();
-		if(leftType == int.class) {
-			if(rightType == int.class) {
-				if(binary.getTag().getName().equals("Div")) {
+		if (leftType == int.class) {
+			if (rightType == int.class) {
+				if (binary.getTag().getSymbol().equals("Div")) {
 					return double.class;
 				}
 				return int.class;
-			} else if(rightType == double.class) {
+			} else if (rightType == double.class) {
 				return double.class;
-			} else if(rightType == String.class) {
+			} else if (rightType == String.class) {
 				return String.class;
 			}
-		} else if(leftType == double.class) {
-			if(rightType == int.class) {
+		} else if (leftType == double.class) {
+			if (rightType == int.class) {
 				return double.class;
-			} else if(rightType == double.class) {
+			} else if (rightType == double.class) {
 				return double.class;
-			} else if(rightType == String.class) {
+			} else if (rightType == String.class) {
 				return String.class;
 			}
-		} else if(leftType == String.class) {
+		} else if (leftType == String.class) {
 			return String.class;
-		} else if(leftType == boolean.class) {
-			if(rightType == boolean.class) {
+		} else if (leftType == boolean.class) {
+			if (rightType == boolean.class) {
 				return boolean.class;
-			} else if(rightType == String.class) {
+			} else if (rightType == String.class) {
 				return String.class;
 			}
 		}
-		new RuntimeException("type error: " + left + ", " + right);
-		return null;
+		throw new RuntimeException("type error: " + left + ", " + right);
 	}
 
 	public void visitAdd(JCodeTree node) {
@@ -444,8 +440,7 @@ public class JCodeGenerator {
 		JCodeTree child = node.get(0);
 		this.visit(child);
 		node.setType(this.typeInfferUnary(node.get(0)));
-		this.mBuilder.callStaticMethod(JCodeOperator.class, node.getTypedClass(), node.getTag().getName(),
-				child.getTypedClass());
+		this.mBuilder.callStaticMethod(JCodeOperator.class, node.getTypedClass(), node.getTag().getSymbol(), child.getTypedClass());
 		this.popUnusedValue(node);
 	}
 
@@ -457,31 +452,31 @@ public class JCodeGenerator {
 		this.visitUnaryNode(node);
 	}
 
-	private void evalPrefixInc(JCodeTree node, int amount){
+	private void evalPrefixInc(JCodeTree node, int amount) {
 		JCodeTree nameNode = node.get(0);
 		VarEntry var = this.scope.getLocalVar(nameNode.toText());
-		if(var != null) {
+		if (var != null) {
 			node.setType(int.class);
 			this.mBuilder.callIinc(var, amount);
-			if(!node.requiredPop){
+			if (!node.requiredPop) {
 				this.mBuilder.loadFromVar(var);
 			}
 		} else {
-			new RuntimeException("undefined variable " + nameNode.toText());
+			throw new RuntimeException("undefined variable " + nameNode.toText());
 		}
 	}
-	
-	private void evalSuffixInc(JCodeTree node, int amount){
+
+	private void evalSuffixInc(JCodeTree node, int amount) {
 		JCodeTree nameNode = node.get(0);
 		VarEntry var = this.scope.getLocalVar(nameNode.toText());
-		if(var != null) {
+		if (var != null) {
 			node.setType(int.class);
-			if(!node.requiredPop){
+			if (!node.requiredPop) {
 				this.mBuilder.loadFromVar(var);
 			}
 			this.mBuilder.callIinc(var, amount);
 		} else {
-			new RuntimeException("undefined variable " + nameNode.toText());
+			throw new RuntimeException("undefined variable " + nameNode.toText());
 		}
 	}
 
@@ -503,13 +498,12 @@ public class JCodeGenerator {
 
 	private Class<?> typeInfferUnary(JCodeTree node) {
 		Class<?> nodeType = node.getTypedClass();
-		if(nodeType == int.class) {
+		if (nodeType == int.class) {
 			return int.class;
-		} else if(nodeType == double.class) {
+		} else if (nodeType == double.class) {
 			return double.class;
 		}
-		new RuntimeException("type error: " + node);
-		return null;
+		throw new RuntimeException("type error: " + node);
 	}
 
 	public void visitNull(JCodeTree p) {
@@ -521,14 +515,14 @@ public class JCodeGenerator {
 	// this.mBuilder.newArray(Object.class);
 	// }
 
-	public void visitName(JCodeTree node){
+	public void visitName(JCodeTree node) {
 		VarEntry var = this.scope.getLocalVar(node.toText());
 		node.setType(var.getVarClass());
 		this.mBuilder.loadFromVar(var);
 	}
 
 	public void visitList(JCodeTree node) {
-		for(JCodeTree element : node) {
+		for (JCodeTree element : node) {
 			visit(element);
 		}
 	}
@@ -543,11 +537,11 @@ public class JCodeGenerator {
 		this.mBuilder.push(false);
 	}
 
-	
 	public void visitInt(JCodeTree p) {
 		p.setType(int.class);
 		this.mBuilder.push(Integer.parseInt(p.toText()));
 	}
+
 	public void visitInteger(JCodeTree p) {
 		this.visitInt(p);
 	}
@@ -557,7 +551,7 @@ public class JCodeGenerator {
 		this.mBuilder.push(Integer.parseInt(p.toText(), 8));
 	}
 
-	public void visitHexInteger(JCodeTree p){
+	public void visitHexInteger(JCodeTree p) {
 		p.setType(int.class);
 		this.mBuilder.push(Integer.parseInt(p.toText(), 16));
 	}
@@ -580,7 +574,7 @@ public class JCodeGenerator {
 	}
 
 	public void visitUndefined(JCodeTree p) {
-		System.out.println("undefined: " + p.getTag().getName());
+		System.out.println("undefined: " + p.getTag().getSymbol());
 	}
 
 }

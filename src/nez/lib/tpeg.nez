@@ -1,0 +1,72 @@
+// typed PEG definition
+
+File
+    = { _ ( @RuleExpr LINE_END )* #RootExpr }
+
+EOF = !.
+
+W = [0-9a-zA-Z_]+
+
+IDENTIFIER = [a-zA-Z_][0-9a-zA-Z_]*
+
+_ = ([ \t\r\n] / COMMENT)*
+
+WS = ([ \t] / COMMENT)*
+
+COMMENT = '//' (![\r\n] .)*
+
+LINE_END
+    = _ (EOF / ';')? _
+
+RuleExpr
+    = { @{ IDENTIFIER #Name } @TypeAnnotation _ '=' _ @ParsingExpression #RuleExpr }
+
+TypeAnnotation
+    = _ ':' _ { IDENTIFIER #Name }
+    / {#Empty}
+
+ParsingExpression
+    = ChoiceExpr
+
+ChoiceExpr
+    = SequenceExpr {@ _ '/' _ @SequenceExpr #ChoiceExpr }*
+
+SequenceExpr
+    = LabeledExpr {@ _ @LabeledExpr #SequenceExpr }*
+
+LabeledExpr
+    = {'$' @{ IDENTIFIER #Name } _ ':' _ @PrefixExpr  #LabeledExpr }
+    / PrefixExpr
+
+PrefixExpr
+    = { ('&' #AndExpr / '!' #NotExpr ) _ @SuffixExpr }
+    / SuffixExpr
+
+SuffixExpr
+    = PrimaryExpr {@ _ ('*' #ZeroMoreExpr / '+' #OneMoreExpr / '?' #OptionalExpr) }*
+
+PrimaryExpr
+    = '(' _ ParsingExpression _ ')'
+    / { IDENTIFIER !(_ [:=<]) #NonTerminalExpr }
+    / { '.' #AnyExpr }
+    / { '\''  ('\\\'' / '\\\\' / !['\n\r] .)*  '\'' #StringExpr }
+    / Charset
+
+Charset
+       = { '[' (@({ CHAR #Class } ({@ '-' @({ CHAR #Class }) #List })?))* ']'  #CharClassExpr }
+
+CHAR
+    = '\\u' HEX HEX HEX HEX
+    / '\\x' HEX HEX
+    / '\\n'
+    / '\\t'
+    / '\\\\'
+    / '\\r'
+    / '\\v'
+    / '\\f'
+    / '\\-'
+    / '\\]'
+    / !(']') .
+
+HEX
+    = [0-9A-Fa-f]

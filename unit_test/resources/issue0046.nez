@@ -1,0 +1,12 @@
+/**
+ * Reported at https://github.com/nez-peg/nez/issues/46
+ * java -jar ../nez.jar compile -p hoge.nez
+ * generating .. hoge.moz
+ * Exception in thread "main" java.lang.StackOverflowError
+ **/
+
+File
+    = { TERM #Tag }
+
+TERM
+    = 'A' (TERM / 'B') 'C'*

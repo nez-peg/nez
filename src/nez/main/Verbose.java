@@ -25,7 +25,7 @@ public class Verbose {
 	public static boolean NFA = true;
 	public static boolean TraceException = true;
 	public static boolean Time = false;
-	
+
 	public static void setAll() {
 		General = true;
 		Example = true;
@@ -38,78 +38,78 @@ public class Verbose {
 	}
 
 	public final static void print(String msg) {
-		if(General) {
+		if (General) {
 			ConsoleUtils.println(msg);
 		}
 	}
 
 	public final static void println(String msg) {
-		if(General) {
+		if (General) {
 			ConsoleUtils.println(msg);
 		}
 	}
-	
+
 	public static void todo(Object msg) {
-		if(General) {
+		if (General) {
 			ConsoleUtils.println("TODO " + msg);
 		}
 	}
-	
+
 	public final static void printElapsedTime(String msg, long t1, long t2) {
-		if(Time) {
+		if (Time) {
 			double d = (t2 - t1) / 1000000;
 			ConsoleUtils.println(msg + ": " + String.format("%f", d) + "[ms]");
 		}
 	}
 
 	public static void noticeOptimize(String key, Expression p) {
-		if(ParsingExpression) {
+		if (ParsingExpression) {
 			ConsoleUtils.println("optimizing " + key + "\n\t" + p);
 		}
 	}
 
 	public static void noticeOptimize(String key, Expression p, Expression pp) {
-		if(ParsingExpression) {
+		if (ParsingExpression) {
 			ConsoleUtils.println("optimizing " + key + "\n\t" + p + "\n\t => " + pp);
 		}
 	}
 
 	public final static void debug(Object s) {
-		if(Command.ReleasePreview) {
+		if (Command.ReleasePreview) {
 			ConsoleUtils.println("debug: " + s);
 		}
 	}
 
 	public final static void FIXME(Object s) {
-		if(Command.ReleasePreview) {
+		if (Command.ReleasePreview) {
 			ConsoleUtils.println("FIXME: " + s);
 		}
 	}
 
 	public final static void printSelfTesting(Object s) {
-		if(SelfTesting) {
+		if (SelfTesting) {
 			ConsoleUtils.println(s);
 		}
 	}
 
 	public final static void printSelfTestingIndent(Object s) {
-		if(SelfTesting) {
+		if (SelfTesting) {
 			ConsoleUtils.println("   " + s);
 		}
 	}
 
 	public final static void printNFA(Object s) {
-		if(NFA) {
+		if (NFA) {
 			ConsoleUtils.println("NFA: " + s);
 		}
 	}
 
 	public static void traceException(Exception e) {
-		if(TraceException) {
-			if(e instanceof InvocationTargetException) {
+		if (TraceException) {
+			if (e instanceof InvocationTargetException) {
 				Throwable e2 = ((InvocationTargetException) e).getTargetException();
-				if(e2 instanceof RuntimeException) {
-					throw (RuntimeException)e2;
+				if (e2 instanceof RuntimeException) {
+					throw (RuntimeException) e2;
 				}
 			}
 			e.printStackTrace();
@@ -117,11 +117,9 @@ public class Verbose {
 	}
 
 	public static void printNoSuchMethodException(NoSuchMethodException e) {
-		if(General) {
+		if (General) {
 			ConsoleUtils.println(e);
-		}		
+		}
 	}
 
-
-	
 }

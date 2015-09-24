@@ -1,0 +1,39 @@
+/**
+ * Symbol table example
+ * <def>, <match>, <is>, <isa>, <exists>
+ */
+
+example SymbolMatch ~aa423cf Apple Apple
+example SymbolMatch ~aa423cf Apple AppleII
+example SymbolMatch ~4ff367b1 Apple Orange
+
+SymbolMatch = { <def name NAME> $( S { <match name> #Name })? #Fruit }
+
+example Symbol ~aa423cf Apple Apple
+example Symbol ~4ff367b1 Apple AppleII
+example Symbol ~4ff367b1 Apple Orange
+
+Symbol = { <def name NAME> $( S { <is name> #Name })? #Fruit }
+
+example SymbolSet ~aa423cf Apple Banana Apple
+example SymbolSet ~aa423cf Banana Apple Apple
+example SymbolSet ~4874287 Banana Orange Apple
+
+SymbolSet = { <def name NAME> S <def name NAME> $( S { <isa name> #Name })? #Fruit }
+
+example Exists ~80cf8a6e Apple
+example Exists ~2c60065e 1234
+
+Exists = <def name NAME>? { <exists name> #yes / #no }
+
+example ExistsSymbol ~80cf8a6e Apple
+example ExistsSymbol ~2c60065e Orange
+
+ExistsSymbol = <def name NAME> { <exists name 'Apple'> #yes / #no }
+
+
+NAME = [A-Za-z]+
+S = [ \t]+
+
+
+

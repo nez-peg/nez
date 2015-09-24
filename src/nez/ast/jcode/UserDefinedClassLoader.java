@@ -59,7 +59,7 @@ public class UserDefinedClassLoader extends ClassLoader {
 	@Override
 	protected Class<?> findClass(String name) throws ClassNotFoundException {
 		byte[] byteCode = this.byteCodeMap.remove(name);
-		if(byteCode == null) {
+		if (byteCode == null) {
 			throw new ClassNotFoundException("not found class: " + name);
 		}
 		return this.defineClass(name, byteCode, 0, byteCode.length);
@@ -67,24 +67,24 @@ public class UserDefinedClassLoader extends ClassLoader {
 
 	@Override
 	protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
-		if(this.allowedPackageName == null) { // allow all package name
+		if (this.allowedPackageName == null) { // allow all package name
 			return super.loadClass(name, resolve);
 		}
 
 		Class<?> foundClass = this.findLoadedClass(name);
-		if(foundClass == null) {
+		if (foundClass == null) {
 			ClassLoader parent = this.getParent();
-			if((parent instanceof UserDefinedClassLoader) || !name.startsWith(this.allowedPackageName)) {
+			if ((parent instanceof UserDefinedClassLoader) || !name.startsWith(this.allowedPackageName)) {
 				try {
 					foundClass = parent.loadClass(name);
 				} catch (ClassNotFoundException e) {
 				}
 			}
 		}
-		if(foundClass == null) {
+		if (foundClass == null) {
 			foundClass = this.findClass(name);
 		}
-		if(resolve) {
+		if (resolve) {
 			this.resolveClass(foundClass);
 		}
 		return foundClass;
@@ -100,7 +100,7 @@ public class UserDefinedClassLoader extends ClassLoader {
 	 */
 	public void addByteCode(String className, byte[] byteCode) {
 		String binaryName = toBinaryName(className);
-		if(this.byteCodeMap.put(binaryName, byteCode) != null) {
+		if (this.byteCodeMap.put(binaryName, byteCode) != null) {
 			throw new RuntimeException("already defined class: " + className);
 		}
 		this.dump(binaryName, byteCode);
@@ -141,13 +141,13 @@ public class UserDefinedClassLoader extends ClassLoader {
 	 * for debug purpose.
 	 */
 	private void dump(String binaryClassName, byte[] byteCode) {
-		if(!this.enableDump) {
+		if (!this.enableDump) {
 			return;
 		}
 		int index = binaryClassName.lastIndexOf('.');
 		String classFileName = binaryClassName.substring(index + 1) + ".class";
 		System.err.println("@@@@ Dump ByteCode: " + classFileName + " @@@@");
-		try(FileOutputStream stream = new FileOutputStream(classFileName)) {
+		try (FileOutputStream stream = new FileOutputStream(classFileName)) {
 			stream.write(byteCode);
 			stream.close();
 		} catch (IOException e) {

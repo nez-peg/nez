@@ -53,19 +53,18 @@ public class ClassBuilder extends ClassWriter implements Opcodes {
 	 * @param interfaces
 	 *            may be null, if has no interface
 	 */
-	public ClassBuilder(int accessFlag, String fullyQualifiedClassName, String sourceName, Class<?> superClass,
-			Class<?>[] interfaces) {
+	public ClassBuilder(int accessFlag, String fullyQualifiedClassName, String sourceName, Class<?> superClass, Class<?>[] interfaces) {
 		super(ClassWriter.COMPUTE_FRAMES);
 		this.internalName = fullyQualifiedClassName;
 		String[] interfaceNames = null;
 
-		if(superClass == null) {
+		if (superClass == null) {
 			superClass = Object.class;
 		}
-		if(interfaces != null) {
+		if (interfaces != null) {
 			final int size = interfaces.length;
 			interfaceNames = new String[size];
-			for(int i = 0; i < size; i++) {
+			for (int i = 0; i < size; i++) {
 				interfaceNames[i] = Type.getInternalName(interfaces[i]);
 			}
 		}
@@ -106,8 +105,7 @@ public class ClassBuilder extends ClassWriter implements Opcodes {
 	 * @param paramClasses
 	 * @return
 	 */
-	public MethodBuilder newMethodBuilder(int accessFlag, Class<?> returnClass, String methodName,
-			Class<?>... paramClasses) {
+	public MethodBuilder newMethodBuilder(int accessFlag, Class<?> returnClass, String methodName, Class<?>... paramClasses) {
 		Method method = Methods.method(returnClass, methodName, paramClasses);
 		return new MethodBuilder(accessFlag, method, this);
 	}
@@ -141,12 +139,11 @@ public class ClassBuilder extends ClassWriter implements Opcodes {
 		protected int currentLineNum = -1;
 
 		protected MethodBuilder(int accessFlag, Method method, ClassVisitor cv) {
-			super(Opcodes.ASM4, toMethodVisitor(accessFlag, method, cv), accessFlag, method.getName(),
-					method.getDescriptor());
+			super(Opcodes.ASM4, toMethodVisitor(accessFlag, method, cv), accessFlag, method.getName(), method.getDescriptor());
 			this.loopLabels = new ArrayDeque<>();
 			this.tryLabels = new ArrayDeque<>();
 			int startIndex = 0;
-			if((accessFlag & ACC_STATIC) != ACC_STATIC) {
+			if ((accessFlag & ACC_STATIC) != ACC_STATIC) {
 				startIndex = 1;
 			}
 			this.varScopes = new VarScopes(startIndex);
@@ -162,8 +159,7 @@ public class ClassBuilder extends ClassWriter implements Opcodes {
 		 */
 		private static MethodVisitor toMethodVisitor(int access, Method method, ClassVisitor cv) {
 			MethodVisitor visitor = cv.visitMethod(access, method.getName(), method.getDescriptor(), null, null);
-			JSRInlinerAdapter inlinerAdapter = new JSRInlinerAdapter(visitor, access, method.getName(),
-					method.getDescriptor(), null, null);
+			JSRInlinerAdapter inlinerAdapter = new JSRInlinerAdapter(visitor, access, method.getName(), method.getDescriptor(), null, null);
 			return inlinerAdapter;
 		}
 
@@ -185,7 +181,7 @@ public class ClassBuilder extends ClassWriter implements Opcodes {
 			Label startLabel = this.newLabel();
 			Label endLabel = this.newLabel();
 			Label finallyLabel = null;
-			if(existFinally) {
+			if (existFinally) {
 				finallyLabel = this.newLabel();
 			}
 			return new TryCatchLabel(startLabel, endLabel, finallyLabel);
@@ -211,13 +207,13 @@ public class ClassBuilder extends ClassWriter implements Opcodes {
 
 		private void jumpToFinally(TryCatchLabel label) {
 			Label finallyLabel = label.getFinallyLabel();
-			if(finallyLabel != null) {
+			if (finallyLabel != null) {
 				this.visitJumpInsn(JSR, finallyLabel);
 			}
 		}
 
 		public void jumpToMultipleFinally() {
-			for(TryCatchLabel label : this.tryLabels) {
+			for (TryCatchLabel label : this.tryLabels) {
 				this.jumpToFinally(label);
 			}
 		}
@@ -229,9 +225,9 @@ public class ClassBuilder extends ClassWriter implements Opcodes {
 		 *            - stack top type. if type is void, not generate pop ins
 		 */
 		public void pop(Type type) {
-			if(type.equals(Type.LONG_TYPE) || type.equals(Type.DOUBLE_TYPE)) {
+			if (type.equals(Type.LONG_TYPE) || type.equals(Type.DOUBLE_TYPE)) {
 				this.pop2();
-			} else if(!type.equals(Type.VOID_TYPE)) {
+			} else if (!type.equals(Type.VOID_TYPE)) {
 				this.pop();
 			}
 		}
@@ -319,7 +315,7 @@ public class ClassBuilder extends ClassWriter implements Opcodes {
 		 * @param lineNum
 		 */
 		public void setLineNum(int lineNum) {
-			if(lineNum > this.currentLineNum) {
+			if (lineNum > this.currentLineNum) {
 				this.visitLineNumber(lineNum, this.mark());
 			}
 		}
@@ -342,8 +338,7 @@ public class ClassBuilder extends ClassWriter implements Opcodes {
 		 * @param paramClasses
 		 *            parameter classes (not contains receiver class)
 		 */
-		public void callInstanceMethod(Class<?> ownerClass, Class<?> returnClass, String methodName,
-				Class<?>... paramClasses) {
+		public void callInstanceMethod(Class<?> ownerClass, Class<?> returnClass, String methodName, Class<?>... paramClasses) {
 			Method methodDesc = Methods.method(returnClass, methodName, paramClasses);
 			this.invokeVirtual(Type.getType(ownerClass), methodDesc);
 		}
@@ -357,14 +352,12 @@ public class ClassBuilder extends ClassWriter implements Opcodes {
 		 * @param methodName
 		 * @param paramClasses
 		 */
-		public void callStaticMethod(Class<?> ownerClass, Class<?> returnClass, String methodName,
-				Class<?>... paramClasses) {
+		public void callStaticMethod(Class<?> ownerClass, Class<?> returnClass, String methodName, Class<?>... paramClasses) {
 			Method methodDesc = Methods.method(returnClass, methodName, paramClasses);
 			this.invokeStatic(Type.getType(ownerClass), methodDesc);
 		}
 
-		public void callInterfaceMethod(Class<?> ownerClass, Class<?> returnClass, String methodName,
-				Class<?>... paramClasses) {
+		public void callInterfaceMethod(Class<?> ownerClass, Class<?> returnClass, String methodName, Class<?>... paramClasses) {
 			Method methodDesc = Methods.method(returnClass, methodName, paramClasses);
 			this.invokeInterface(Type.getType(ownerClass), methodDesc);
 		}
@@ -375,7 +368,7 @@ public class ClassBuilder extends ClassWriter implements Opcodes {
 		 * @param target
 		 */
 		public void callInvocationTarget(InvocationTarget target) {
-			switch(target.getInvocationType()) {
+			switch (target.getInvocationType()) {
 			case INVOKE_STATIC:
 				this.invokeStatic(target.getOwnerTypeDesc(), target.getMethodDesc());
 				break;
@@ -403,13 +396,10 @@ public class ClassBuilder extends ClassWriter implements Opcodes {
 		 * @param argTypes
 		 *            types of arguments
 		 */
-		public void callDynamicMethod(String bsmClassPath, String bsmName, String methodName, String invokeClassPath,
-				Type... argTypes) {
-			MethodType mt = MethodType.methodType(CallSite.class, MethodHandles.Lookup.class, String.class,
-					MethodType.class, String.class);
+		public void callDynamicMethod(String bsmClassPath, String bsmName, String methodName, String invokeClassPath, Type... argTypes) {
+			MethodType mt = MethodType.methodType(CallSite.class, MethodHandles.Lookup.class, String.class, MethodType.class, String.class);
 			Handle bsm = new Handle(Opcodes.H_INVOKESTATIC, bsmClassPath, bsmName, mt.toMethodDescriptorString());
-			this.invokeDynamic(methodName, Type.getMethodDescriptor(Type.getType(Object.class), argTypes), bsm,
-					invokeClassPath);
+			this.invokeDynamic(methodName, Type.getMethodDescriptor(Type.getType(Object.class), argTypes), bsm, invokeClassPath);
 		}
 
 		public void getStatic(StaticField field) {
@@ -471,7 +461,7 @@ public class ClassBuilder extends ClassWriter implements Opcodes {
 
 		public void createNewScope() {
 			int startIndex = this.startVarIndex;
-			if(!this.isEmpty()) {
+			if (!this.isEmpty()) {
 				startIndex = this.peek().getEndIndex();
 			}
 			this.push(new LocalVarScope(startIndex));

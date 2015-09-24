@@ -12,7 +12,7 @@ public class KonohaTransducer {
 	HashMap<String, KonohaTypeRule> typeRuleMap;
 	HashMap<String, KonohaType> typeMap;
 	HashMap<String, KonohaTree> nameMap;
-	
+
 	public KonohaTransducer(Konoha root) {
 		this.root = root;
 		this.parent = null;
@@ -29,19 +29,19 @@ public class KonohaTransducer {
 		this.setType("int", new KonohaPrimitiveType("int"));
 		this.setType("float", new KonohaPrimitiveType("float"));
 		this.setType("string", new KonohaPrimitiveType("string"));
-//		for(char c = 'a'; c <= 'z'; c++) {
-//			String n = String.valueOf(c);
-//			this.setType(n, new KonohaGreekType(n));
-//		}
+		// for(char c = 'a'; c <= 'z'; c++) {
+		// String n = String.valueOf(c);
+		// this.setType(n, new KonohaGreekType(n));
+		// }
 		new KonohaLanguage(this);
 	}
-		
+
 	public void setTypeRule(KonohaTypeRule rule) {
-		if(this.typeRuleMap == null) {
+		if (this.typeRuleMap == null) {
 			this.typeRuleMap = new HashMap<>();
 		}
-		OperatorTypeRule oldTypeRule = (OperatorTypeRule)this.typeRuleMap.get(rule.getName());
-		if(oldTypeRule != null){
+		OperatorTypeRule oldTypeRule = (OperatorTypeRule) this.typeRuleMap.get(rule.getName());
+		if (oldTypeRule != null) {
 			oldTypeRule.appendTypes(rule);
 		} else {
 			this.typeRuleMap.put(rule.getName(), rule);
@@ -49,13 +49,13 @@ public class KonohaTransducer {
 	}
 
 	public final KonohaType typeCheck(KonohaType req, KonohaTree node) {
-		if(req instanceof KonohaErrorType) {
+		if (req instanceof KonohaErrorType) {
 			req = null;
 		}
 		KonohaType t = typeCheck(this, req, node);
-		if(req != null && t != null) {
-			if(!req.matchType(t)) {
-				if(!(t instanceof KonohaErrorType)) {
+		if (req != null && t != null) {
+			if (!req.matchType(t)) {
+				if (!(t instanceof KonohaErrorType)) {
 					t = new KonohaErrorType(node, "typeerror " + req + " <> " + t);
 					node.typed = t;
 				}
@@ -63,23 +63,23 @@ public class KonohaTransducer {
 		}
 		return t;
 	}
-	
+
 	private KonohaType typeCheck(KonohaTransducer konoha, KonohaType req, KonohaTree node) {
-		if(node.matched != null) {
-			if(node.typed != null) {
+		if (node.matched != null) {
+			if (node.typed != null) {
 				node.matched.match(konoha, node);
 			}
 			return node.typed;
 		}
 		String ruleName = node.getRuleName();
 		boolean found = false;
-		while(konoha != null) {
-			if(konoha.typeRuleMap != null) {
+		while (konoha != null) {
+			if (konoha.typeRuleMap != null) {
 				KonohaTypeRule rule = konoha.typeRuleMap.get(ruleName);
-				while(rule != null) {
+				while (rule != null) {
 					found = true;
 					rule.match(this, node);
-					if(node.matched != null) {
+					if (node.matched != null) {
 						return node.typed;
 					}
 					rule = rule.nextChoice;
@@ -87,15 +87,14 @@ public class KonohaTransducer {
 			}
 			konoha = konoha.parent;
 		}
-		if(!found) {
+		if (!found) {
 			Verbose.println("undefined rule: '" + ruleName + "'\n" + node);
 		}
 		return null;
 	}
-	
-	
+
 	public final void setType(String name, KonohaType t) {
-		if(this.typeMap == null) {
+		if (this.typeMap == null) {
 			this.typeMap = new HashMap<>();
 		}
 		this.typeMap.put(name, t);
@@ -106,10 +105,10 @@ public class KonohaTransducer {
 	}
 
 	private KonohaType getType(KonohaTransducer konoha, String name) {
-		while(konoha != null) {
-			if(konoha.typeMap != null) {
+		while (konoha != null) {
+			if (konoha.typeMap != null) {
 				KonohaType t = konoha.typeMap.get(name);
-				if(t != null) {
+				if (t != null) {
 					return t;
 				}
 			}
@@ -119,10 +118,10 @@ public class KonohaTransducer {
 	}
 
 	public final KonohaType getType(KonohaTree node) {
-		if(node.size() == 0) {
+		if (node.size() == 0) {
 			return getType(this, node.toText());
 		}
-		if(node.getTag() == KonohaArrayType.ArrayTag) {
+		if (node.getTag() == KonohaArrayType.ArrayTag) {
 			KonohaType t = getType(node.get(0));
 			KonohaArrayType.newArrayType(t);
 		}
@@ -130,10 +129,8 @@ public class KonohaTransducer {
 		return null;
 	}
 
-	
-	
 	public final void setName(String name, KonohaTree nameNode) {
-		if(this.nameMap == null) {
+		if (this.nameMap == null) {
 			this.nameMap = new HashMap<>();
 		}
 		this.nameMap.put(name, nameNode);
@@ -144,10 +141,10 @@ public class KonohaTransducer {
 	}
 
 	private KonohaTree getName(KonohaTransducer konoha, String name) {
-		while(konoha != null) {
-			if(konoha.nameMap != null) {
+		while (konoha != null) {
+			if (konoha.nameMap != null) {
 				KonohaTree t = konoha.nameMap.get(name);
-				if(t != null) {
+				if (t != null) {
 					return t;
 				}
 			}
@@ -162,7 +159,7 @@ public class KonohaTransducer {
 	}
 
 	boolean eval(KonohaTree node) {
-		if(node != null) {
+		if (node != null) {
 			this.typeCheck(null, node);
 			Verbose.println("typed: \n" + node);
 			return true;

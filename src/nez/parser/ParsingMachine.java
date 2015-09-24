@@ -1,0 +1,19 @@
+package nez.parser;
+
+import nez.io.SourceContext;
+
+public class ParsingMachine {
+
+	public boolean run(Instruction code, SourceContext sc) {
+		boolean result = false;
+		try {
+			while (true) {
+				code = code.exec(sc);
+			}
+		} catch (TerminationException e) {
+			result = e.status;
+		}
+		return result;
+	}
+
+}
