@@ -4,11 +4,11 @@ import java.util.Map;
 import java.util.Set;
 
 public class BFA {
-	Set<State> S;
-	Map<Tau, State> tau;
-	State f;
-	Set<State> F;
-	Set<State> L;
+	public Set<State> S;
+	public Map<Tau, State> tau;
+	public State f;
+	public Set<State> F;
+	public Set<State> L;
 
 	public BFA() {
 	}
@@ -30,7 +30,7 @@ public class BFA {
 	}
 
 	public State getf() {
-		this.f.setBFA(this);
+		// this.f.setBFA(this);
 		return this.f;
 	}
 
@@ -76,6 +76,7 @@ public class BFA {
 		}
 		return null;
 	}
+
 	// State next = bfa.getNextState(this, context.charAt(0)
 
 }

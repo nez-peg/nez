@@ -17,6 +17,8 @@ import java.util.TreeSet;
 
 import nez.Grammar;
 import nez.ast.AbstractTreeVisitor;
+import nez.io.SourceContext;
+import nez.io.StringContext;
 import nez.lang.Expression;
 import nez.lang.Production;
 import nez.lang.expr.Cany;
@@ -218,7 +220,8 @@ public class DFAConverter extends AbstractTreeVisitor {
 		Set<Integer> oldS = BFA_graph.getS();
 		Set<State> newS = new TreeSet<State>(new StateComparator());
 		for (Integer i : oldS) {
-			newS.add(new State(null, i));
+			// newS.add(new State(null, i));
+			newS.add(new State(i));
 		}
 		final_bfa.setS(newS);
 
@@ -226,7 +229,8 @@ public class DFAConverter extends AbstractTreeVisitor {
 		Set<Integer> oldInitialState = BFA_graph.getInitialState();
 		assert (oldInitialState.size() == 1);
 		for (Integer i : oldInitialState) {
-			final_bfa.setf(new State(null, i));
+			// final_bfa.setf(new State(null, i));
+			final_bfa.setf(new State(i));
 			break;
 		}
 
@@ -234,7 +238,8 @@ public class DFAConverter extends AbstractTreeVisitor {
 		Set<Integer> oldF = BFA_graph.getAcceptingState();
 		Set<State> newF = new TreeSet<State>(new StateComparator());
 		for (Integer i : oldF) {
-			newF.add(new State(null, i));
+			// newF.add(new State(null, i));
+			newF.add(new State(i));
 		}
 		final_bfa.setF(newF);
 
@@ -242,29 +247,36 @@ public class DFAConverter extends AbstractTreeVisitor {
 		Set<Integer> oldL = BFA_graph.getAcceptingStateLA();
 		Set<State> newL = new TreeSet<State>(new StateComparator());
 		for (Integer i : oldL) {
-			newL.add(new State(null, i));
+			// newL.add(new State(null, i));
+			newL.add(new State(i));
 		}
 		final_bfa.setL(newL);
 
 		// Map<Tau, State> tau;
 		Map<Tau, State> newTau = new TreeMap<Tau, State>(new TauComparator());
+		int nV = V;
 		for (int stateID = 0; stateID < V; stateID++) {
 			// for (Character label : allLabels) {
 			for (char label = 0; label < 256; label++) {
 				// TauConstructor tc = new TauConstructor(BFA_graph,
 				// final_bfa,stateID, label);
-				TauConstructor tc = new TauConstructor(BFA_graph, final_bfa, stateID, label, V);
-				this.V = tc.getV(); //
-				if (Character.isAlphabetic(label)) {
-					// System.out.println("stateID = " + stateID + ", label = "
-					// + label);
-					// System.out.println("state = " + tc.constructTau(stateID,
-					// false));
-					// System.out.println("");
-				}
-				newTau.put(new Tau(new State(null, stateID), label), tc.constructTau(stateID, false));
+
+				TauConstructor tc = new TauConstructor(BFA_graph, final_bfa, stateID, label, nV);
+
+				// if (Character.isAlphabetic(label)) {
+				// System.out.println("stateID = " + stateID + ", label = "
+				// + label);
+				// System.out.println("state = " + tc.constructTau(stateID,
+				// false));
+				// System.out.println("");
+				// }
+				// newTau.put(new Tau(new State(null, stateID), label),
+				// tc.constructTau(stateID, false));
+				newTau.put(new Tau(new State(stateID), label), tc.constructTau(stateID, false));
+				nV = tc.getV(); //
 			}
 		}
+		V = nV;
 		final_bfa.setTau(newTau);
 
 	}
@@ -783,13 +795,24 @@ public class DFAConverter extends AbstractTreeVisitor {
 	 * return false; }
 	 */
 	// public Map<ExecMemoState, Boolean> execMemo = null;
-	final int H = 1000;
+	final int H = 10000;
 	final int W = 10000;
-	public byte[][] execMemo = null; // execMemo[stateID][top]
+	public static byte[][] execMemo = null; // execMemo[stateID][top]
+	public static Map<Tau, State> staticTau = null;
+	public static Set<State> staticF = null;
 
-	private void initExecMemo() {
+	public static SourceContext staticSc = null;
+
+	private void initExec() {
 		if (execMemo == null) {
 			execMemo = new byte[H][W];
+			// staticTau = new TreeMap<Tau, State>(new TauComparator());
+			// staticF = new TreeSet<State>(new StateComparator());
+			staticTau = final_bfa.getTau();
+			staticF = final_bfa.getF();
+			for (State state : final_bfa.getL()) {
+				staticF.add(state);
+			}
 		}
 		for (int i = 0; i < H; i++) {
 			for (int j = 0; j < W; j++) {
@@ -805,12 +828,20 @@ public class DFAConverter extends AbstractTreeVisitor {
 		 * if (execMemo == null) { execMemo = new TreeMap<ExecMemoState,
 		 * Boolean>(new ExecMemoStateComparator()); } execMemo.clear();
 		 */
-		initExecMemo();
+		initExec();
 
-		Context context = new Context(text);
+		for (Map.Entry<Tau, State> e : staticTau.entrySet()) {
+			if (e.getKey().getSigma() != 'a' && e.getKey().getSigma() != 'b') {
+				continue;
+			}
+		}
+
+		staticSc = new StringContext(text);
+		// Context context = new Context(text);
 		// System.out.println("f = " + final_bfa.getf());
 		long st = System.currentTimeMillis();
-		boolean result = final_bfa.getf().accept(context, execMemo);
+		// boolean result = final_bfa.getf().accept(context);
+		boolean result = final_bfa.getf().accept(0);
 		long ed = System.currentTimeMillis();
 		System.out.println((ed - st) + "ms");
 		return result;

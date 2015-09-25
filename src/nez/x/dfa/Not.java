@@ -20,15 +20,17 @@ public class Not extends State {
 
 	@Override
 	// boolean accept(Context context) {
-	// boolean accept(Context context, Map<ExecMemoState, Boolean> execMemo) {
-	boolean accept(Context context, byte[][] execMemo) {
+	boolean accept(int top) {
+		// boolean accept(Context context, Map<ExecMemoState, Boolean> execMemo)
+		// {
+		// boolean accept(Context context, byte[][] execMemo) {
 		// System.out.println(this);
-		if (execMemo[this.id][context.getTop()] != -1) {
-			return execMemo[this.id][context.getTop()] == 1;
+		if (DFAConverter.execMemo[this.id][top] != -1) {
+			return DFAConverter.execMemo[this.id][top] == 1;
 		}
-		Context nextContext = context.getContext();
-		boolean result = !this.inner.accept(nextContext, execMemo);
-		execMemo[this.id][context.getTop()] = (result ? (byte) 1 : (byte) 0);
+		// Context nextContext = context.getContext();
+		boolean result = !this.inner.accept(top);
+		DFAConverter.execMemo[this.id][top] = (result ? (byte) 1 : (byte) 0);
 		return result;
 		// return !this.inner.accept(nextContext, execMemo);
 	}

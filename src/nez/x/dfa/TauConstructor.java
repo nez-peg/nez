@@ -55,7 +55,8 @@ public class TauConstructor {
 	private State constructAllSigma(Set<Integer> transitions) {
 		State state = null;
 		for (Integer i : transitions) {
-			state = new State(final_bfa, i);
+			// state = new State(final_bfa, i);
+			state = new State(i);
 			break;
 		}
 		assert (state != null);
@@ -64,7 +65,8 @@ public class TauConstructor {
 			return state;
 		}
 		for (Integer stateID : transitions) {
-			state = mergeState(state, new State(final_bfa, stateID), OR);
+			// state = mergeState(state, new State(final_bfa, stateID), OR);
+			state = mergeState(state, new State(stateID), OR);
 		}
 		return state;
 	}
@@ -121,9 +123,11 @@ public class TauConstructor {
 		}
 		if (predicateTransition.isEmpty() && sigmaTransition.isEmpty()) {
 			if (alreadyMoved) {
-				return new State(final_bfa, stateID);
+				// return new State(final_bfa, stateID);
+				return new State(stateID);
 			} else {
-				return new State(final_bfa, -1); // ////
+				// return new State(final_bfa, -1); // ////
+				return new State(-1); // ////
 			}
 		}
 		if (predicateTransition.size() > 0) {
@@ -169,7 +173,7 @@ public class TauConstructor {
 	}
 
 	public int getV() {
-		return V;
+		return this.V;
 	}
 
 	@Override
