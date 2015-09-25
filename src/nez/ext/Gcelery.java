@@ -79,13 +79,13 @@ public class Gcelery extends GrammarFileLoader {
 	public final void visitRequired(Tree<?> node) {
 		String elementName = node.getText(_Name, "");
 		schema.addRequired(elementName);
-		schema.newElement(schema.newRequired(elementName, toType(node.get(_Type))));
+		schema.newElement(getUniqueName(elementName), schema.newRequired(elementName, toType(node.get(_Type))));
 	}
 
 	public final void visitOption(Tree<?> node) {
 		String elementName = node.getText(_Name, "");
 		schema.addMember(elementName);
-		schema.newElement(schema.newOption(elementName, toType(node.get(_Type))));
+		schema.newElement(getUniqueName(elementName), schema.newOption(elementName, toType(node.get(_Type))));
 	}
 
 	public final Type toType(Tree<?> node) {
@@ -131,7 +131,7 @@ public class Gcelery extends GrammarFileLoader {
 
 	private final void genStruct(String structName) {
 		genMembers(structName);
-		schema.newStruct(structName, schema.newSet());
+		schema.newStruct(structName, schema.newSet(structName));
 	}
 
 	private final void genMembers(String structName) {
@@ -139,14 +139,18 @@ public class Gcelery extends GrammarFileLoader {
 		int index = 0;
 		Type[] alt = new Type[membersListSize + 1];
 		for (String elementName : schema.getMembers()) {
-			alt[index++] = schema.newUniq(elementName);
+			alt[index++] = schema.newUniq(getUniqueName(elementName));
 		}
 		alt[index] = schema.newOthers();
-		schema.newMembers(alt);
+		schema.newMembers(currentStructName, alt);
 	}
 
 	private final void genStruct_Approximate(String structName) {
 		schema.newStruct(structName, schema.newPermutation());
+	}
+
+	private final String getUniqueName(String localName) {
+		return currentStructName + "_" + localName;
 	}
 
 }

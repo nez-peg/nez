@@ -5,11 +5,11 @@ public abstract class AbstractSchemaGrammarGenerator {
 
 	abstract public void newRoot(String structName);
 
-	abstract public void newElement(Type t);
+	abstract public void newElement(String elementName, Type t);
 
 	abstract public void newStruct(String structName, Type t);
 
-	abstract public void newMembers(Type... types);
+	abstract public void newMembers(String structName, Type... types);
 
 	abstract public Type newRequired(String elementName, Type t);
 
@@ -31,7 +31,7 @@ public abstract class AbstractSchemaGrammarGenerator {
 
 	abstract public Type newTAny();
 
-	abstract public Type newSet();
+	abstract public Type newSet(String structName);
 
 	abstract public Type newPermutation();
 

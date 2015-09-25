@@ -27,9 +27,9 @@ public class JSONSchemaGrammarGenerator extends SchemaGrammarGenerator {
 	}
 
 	@Override
-	public void newElement(Type t) {
+	public void newElement(String elementName, Type t) {
 		Expression[] l = { _DQuat(), t.getTypeExpression(), _DQuat(), _NonTerminal("NAMESEP"), t.next().getTypeExpression(), gfile.newOption(_NonTerminal("VALUESEP")) };
-		gfile.addProduction(null, t.getElementName(), gfile.newSequence(l));
+		gfile.addProduction(null, elementName, gfile.newSequence(l));
 	}
 
 	@Override
@@ -39,19 +39,19 @@ public class JSONSchemaGrammarGenerator extends SchemaGrammarGenerator {
 	}
 
 	@Override
-	public void newMembers(Type... types) {
+	public void newMembers(String structName, Type... types) {
 		Expression[] l = new Expression[types.length];
 		int index = 0;
 		for (Type type : types) {
 			l[index++] = type.getTypeExpression();
 		}
-		gfile.addProduction(null, getTableName() + "_Members", gfile.newChoice(l));
+		gfile.addProduction(null, structName + "_SMembers", gfile.newChoice(l));
 	}
 
 	@Override
 	public Type newRequired(String name, Type t) {
-		Expression def = _Def(getTableName(), name);
-		return new Type(name, def, t);
+		Expression expr = _String(name);
+		return new Type(name, expr, t);
 	}
 
 	@Override
@@ -109,20 +109,19 @@ public class JSONSchemaGrammarGenerator extends SchemaGrammarGenerator {
 
 	// FIXME
 	@Override
-	public Type newSet() {
-		String tableName = getTableName();
+	public Type newSet(String structName) {
 		Expression[] l = new Expression[getRequiredList().size() + 1];
 		int index = 1;
-		l[0] = gfile.newRepetition(_NonTerminal(getTableName() + "_Members"));
+		l[0] = gfile.newRepetition(_NonTerminal(structName + "_SMembers"));
 		for (String required : getRequiredList()) {
-			l[index++] = gfile.newExists(tableName, required);
+			l[index++] = _Exists(structName + "_" + required);
 		}
-		return new Type(gfile.newLocal(tableName, gfile.newSequence(l)));
+		return new Type(gfile.newBlock(gfile.newSequence(l)));
 	}
 
 	@Override
 	public Type newUniq(String elementName) {
-		Expression expr = gfile.newSequence(gfile.newNot(gfile.newExists("T" + getTableCounter(), elementName)), _NonTerminal(elementName));
+		Expression expr = gfile.newSequence(gfile.newNot(_Exists(elementName)), _Def(elementName));
 		return new Type(expr);
 	}
 
