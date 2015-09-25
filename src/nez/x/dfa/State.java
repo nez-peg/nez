@@ -1,13 +1,16 @@
 package nez.x.dfa;
 
 import java.util.Comparator;
-import java.util.Map;
 
 public class State implements Comparable<State> {
 	BFA bfa = null;
-	int id = -1;
+	public int id = -1;
 
 	public State() {
+	}
+
+	public State(int stateID) {
+		this.id = stateID;
 	}
 
 	public State(BFA bfa, int id) {
@@ -28,8 +31,9 @@ public class State implements Comparable<State> {
 	}
 
 	// boolean accept(Context context) {
-	boolean accept(Context context, Map<ExecMemoState, Boolean> execMemo) {
-		System.out.println(this);
+	// boolean accept(Context context, Map<ExecMemoState, Boolean> execMemo) {
+	boolean accept(Context context, byte[][] execMemo) {
+		// System.out.println(this);
 		// System.out.println("-----curretID = " + this.id);
 		// System.out.println(context.getTop() + " | current char = " +
 		// context.getChar() + " id = " + this.id);
@@ -38,10 +42,12 @@ public class State implements Comparable<State> {
 		}
 
 		// ----- MEMO -----
-
-		ExecMemoState ems = new ExecMemoState(this.id, context.getTop());
-		if (execMemo.containsKey(ems)) {
-			return execMemo.get(ems);
+		/*
+		 * ExecMemoState ems = new ExecMemoState(this.id, context.getTop()); if
+		 * (execMemo.containsKey(ems)) { return execMemo.get(ems); }
+		 */
+		if (execMemo[this.id][context.getTop()] != -1) {
+			return execMemo[this.id][context.getTop()] == 1;
 		}
 
 		// ----- MEMO -----
@@ -66,7 +72,8 @@ public class State implements Comparable<State> {
 
 		// ----- MEMO -----
 		boolean result = next.accept(nextContext, execMemo);
-		execMemo.put(ems, result);
+		// execMemo.put(ems, result);
+		execMemo[this.id][context.getTop()] = (result ? (byte) 1 : (byte) 0);
 		return result;
 		// ----- MEMO -----
 		// return next.accept(nextContext);

@@ -125,6 +125,8 @@ public class DFAConverter extends AbstractTreeVisitor {
 		removeRedundantEdges1(); // arbitrary
 		eliminateEpsilonTransition();
 
+		fixStateID();
+
 		for (int i = 0; i < V; i++) {
 			bfa[i].clear();
 		}
@@ -137,6 +139,63 @@ public class DFAConverter extends AbstractTreeVisitor {
 		System.out.println("final state = " + BFA_graph); // for debug
 
 		buildBFA();
+
+		System.out.println("V = " + V);
+
+	}
+
+	// stateID が飛び飛びになっているので０から順番に付け直す
+	public void fixStateID() {
+		Map<Integer, Integer> stateIDTable = new HashMap<Integer, Integer>();
+		V = 0;
+		Set<Edge> newEdges = new TreeSet<Edge>(new EdgeComparator());
+		for (Edge e : BFA_graph.getEdges()) {
+			int src = e.getSrc();
+			if (!stateIDTable.containsKey(src)) {
+				stateIDTable.put(src, V++);
+			}
+			src = stateIDTable.get(src);
+
+			int dst = e.getDst();
+			if (!stateIDTable.containsKey(dst)) {
+				stateIDTable.put(dst, V++);
+			}
+			dst = stateIDTable.get(dst);
+			newEdges.add(new Edge(src, dst, e.getLabel(), e.getPredicate()));
+		}
+		BFA_graph.setEdges(newEdges);
+		Set<Integer> newS = new HashSet<Integer>();
+		for (int i = 0; i < V; i++) {
+			newS.add(i);
+		}
+		BFA_graph.setS(newS);
+
+		Set<Integer> newInitialState = new HashSet<Integer>();
+		for (Integer i : BFA_graph.getInitialState()) {
+			if (!stateIDTable.containsKey(i)) {
+				System.out.println("INVALID... CANNOT FIND INITIAL STATE");
+			}
+			newInitialState.add(stateIDTable.get(i));
+		}
+		BFA_graph.setInitialState(newInitialState);
+
+		Set<Integer> newAcceptingState = new HashSet<Integer>();
+		for (Integer i : BFA_graph.getAcceptingState()) {
+			if (!stateIDTable.containsKey(i)) {
+				continue;
+			}
+			newAcceptingState.add(stateIDTable.get(i));
+		}
+		BFA_graph.setAcceptingState(newAcceptingState);
+
+		Set<Integer> newAcceptingStateLA = new HashSet<Integer>();
+		for (Integer i : BFA_graph.getAcceptingStateLA()) {
+			if (!stateIDTable.containsKey(i)) {
+				continue;
+			}
+			newAcceptingStateLA.add(stateIDTable.get(i));
+		}
+		BFA_graph.setAcceptingStateLA(newAcceptingStateLA);
 
 	}
 
@@ -192,7 +251,10 @@ public class DFAConverter extends AbstractTreeVisitor {
 		for (int stateID = 0; stateID < V; stateID++) {
 			// for (Character label : allLabels) {
 			for (char label = 0; label < 256; label++) {
-				TauConstructor tc = new TauConstructor(BFA_graph, final_bfa, stateID, label);
+				// TauConstructor tc = new TauConstructor(BFA_graph,
+				// final_bfa,stateID, label);
+				TauConstructor tc = new TauConstructor(BFA_graph, final_bfa, stateID, label, V);
+				this.V = tc.getV(); //
 				if (Character.isAlphabetic(label)) {
 					// System.out.println("stateID = " + stateID + ", label = "
 					// + label);
@@ -580,9 +642,9 @@ public class DFAConverter extends AbstractTreeVisitor {
 		updateBFA();
 	}
 
-	private Map<Integer, String> memo;
 	/*
-	 * private String computeNextBooleanExpression(Integer booleanVariable) { if
+	 * private Map<Integer, String> memo; private String
+	 * computeNextBooleanExpression(Integer booleanVariable) { if
 	 * (memo.containsKey(booleanVariable)) { return memo.get(booleanVariable); }
 	 * boolean fin = true; for (int i = 0; i < bfa[booleanVariable].size(); i++)
 	 * { Edge e = bfa[booleanVariable].get(i); if (e.getLabel() == epsilon) {
@@ -720,19 +782,38 @@ public class DFAConverter extends AbstractTreeVisitor {
 	 * (inVerifyPredicateAcceptingStateLA.contains(v)) { return true; } } }
 	 * return false; }
 	 */
-	public Map<ExecMemoState, Boolean> execMemo = null;
+	// public Map<ExecMemoState, Boolean> execMemo = null;
+	final int H = 1000;
+	final int W = 10000;
+	public byte[][] execMemo = null; // execMemo[stateID][top]
+
+	private void initExecMemo() {
+		if (execMemo == null) {
+			execMemo = new byte[H][W];
+		}
+		for (int i = 0; i < H; i++) {
+			for (int j = 0; j < W; j++) {
+				execMemo[i][j] = -1;
+			}
+		}
+	}
 
 	// execute on DFA
 	// On-the-Fly
 	public boolean exec(String text) {
-		if (execMemo == null) {
-			execMemo = new TreeMap<ExecMemoState, Boolean>(new ExecMemoStateComparator());
-		}
-		execMemo.clear();
+		/*
+		 * if (execMemo == null) { execMemo = new TreeMap<ExecMemoState,
+		 * Boolean>(new ExecMemoStateComparator()); } execMemo.clear();
+		 */
+		initExecMemo();
 
 		Context context = new Context(text);
-		System.out.println("f = " + final_bfa.getf());
-		return final_bfa.getf().accept(context, execMemo);
+		// System.out.println("f = " + final_bfa.getf());
+		long st = System.currentTimeMillis();
+		boolean result = final_bfa.getf().accept(context, execMemo);
+		long ed = System.currentTimeMillis();
+		System.out.println((ed - st) + "ms");
+		return result;
 		// return final_bfa.getf().accept(context);
 	}
 

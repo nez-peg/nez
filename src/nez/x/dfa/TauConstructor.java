@@ -18,6 +18,16 @@ public class TauConstructor {
 	ArrayList<Edge>[] bfa;
 	int s;
 	char sigma;
+	int V;
+
+	public TauConstructor(EpsilonBFA BFA_graph, BFA final_bfa, int s, char sigma, int V) {
+		this.BFA_graph = BFA_graph;
+		this.final_bfa = final_bfa;
+		this.s = s;
+		this.sigma = sigma;
+		this.V = V;
+		initBFA();
+	}
 
 	public TauConstructor(EpsilonBFA BFA_graph, BFA final_bfa, int s, char sigma) {
 		this.BFA_graph = BFA_graph;
@@ -30,12 +40,12 @@ public class TauConstructor {
 	// type 0 : and, type 1 : or
 	private State mergeState(State left, State right, int type) {
 		if (type == 0) {
-			And and = new And();
+			And and = new And(V++); // <---------------
 			and.setLeft(left);
 			and.setRight(right);
 			return and;
 		} else {
-			Or or = new Or();
+			Or or = new Or(V++);// <---------------
 			or.setLeft(left);
 			or.setRight(right);
 			return or;
@@ -60,7 +70,7 @@ public class TauConstructor {
 	}
 
 	private Not addNot(State state) {
-		Not nextState = new Not();
+		Not nextState = new Not(V++); // <---------------
 		nextState.setInner(state);
 		return nextState;
 	}
@@ -150,8 +160,16 @@ public class TauConstructor {
 		return s;
 	}
 
+	public void setV(int V) {
+		this.V = V;
+	}
+
 	public char getSigma() {
 		return sigma;
+	}
+
+	public int getV() {
+		return V;
 	}
 
 	@Override

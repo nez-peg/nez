@@ -1,11 +1,11 @@
 package nez.x.dfa;
 
-import java.util.Map;
-
 public class Or extends State {
 	public Or() {
-		// super(bfa, id);
-		// TODO Auto-generated constructor stub
+	}
+
+	public Or(int stateID) {
+		super(stateID);
 	}
 
 	State left, right;
@@ -28,11 +28,19 @@ public class Or extends State {
 
 	@Override
 	// boolean accept(Context context) {
-	boolean accept(Context context, Map<ExecMemoState, Boolean> execMemo) {
-		System.out.println(this);
+	// boolean accept(Context context, Map<ExecMemoState, Boolean> execMemo) {
+	boolean accept(Context context, byte[][] execMemo) {
+		// System.out.println(this);
+		if (execMemo[this.id][context.getTop()] != -1) {
+			return execMemo[this.id][context.getTop()] == 1;
+		}
 		Context nextContext1 = context.getContext();
 		Context nextContext2 = context.getContext();
-		return this.left.accept(nextContext1, execMemo) || this.right.accept(nextContext2, execMemo);
+		boolean result = this.left.accept(nextContext1, execMemo) || this.right.accept(nextContext2, execMemo);
+		execMemo[this.id][context.getTop()] = (result ? (byte) 1 : (byte) 0);
+		return result;
+		// return this.left.accept(nextContext1, execMemo) ||
+		// this.right.accept(nextContext2, execMemo);
 	}
 
 	@Override

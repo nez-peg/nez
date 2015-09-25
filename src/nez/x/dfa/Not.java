@@ -1,11 +1,11 @@
 package nez.x.dfa;
 
-import java.util.Map;
-
 public class Not extends State {
 	public Not() {
-		// super(bfa, id);
-		// TODO Auto-generated constructor stub
+	}
+
+	public Not(int stateID) {
+		super(stateID);
 	}
 
 	public State inner;
@@ -20,10 +20,17 @@ public class Not extends State {
 
 	@Override
 	// boolean accept(Context context) {
-	boolean accept(Context context, Map<ExecMemoState, Boolean> execMemo) {
-		System.out.println(this);
+	// boolean accept(Context context, Map<ExecMemoState, Boolean> execMemo) {
+	boolean accept(Context context, byte[][] execMemo) {
+		// System.out.println(this);
+		if (execMemo[this.id][context.getTop()] != -1) {
+			return execMemo[this.id][context.getTop()] == 1;
+		}
 		Context nextContext = context.getContext();
-		return !this.inner.accept(nextContext, execMemo);
+		boolean result = !this.inner.accept(nextContext, execMemo);
+		execMemo[this.id][context.getTop()] = (result ? (byte) 1 : (byte) 0);
+		return result;
+		// return !this.inner.accept(nextContext, execMemo);
 	}
 
 	@Override
