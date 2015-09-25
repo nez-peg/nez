@@ -1,45 +1,83 @@
 package nez.lang.schema;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import nez.ast.Tree;
+import nez.ast.Symbol;
+import nez.lang.Expression;
+import nez.lang.GrammarFile;
+import nez.lang.expr.ExpressionCommons;
+import nez.lang.expr.NonTerminal;
 
-public abstract class SchemaGrammarGenerator {
-	abstract public void loadPredefinedRules();
+public abstract class SchemaGrammarGenerator extends AbstractSchemaGrammarGenerator {
+	protected GrammarFile gfile;
+	private List<String> requiredList;
+	private List<String> membersList;
+	private int tableCounter = 0;
 
-	abstract public void newRoot(String structName);
+	public void addRequired(String name) {
+		this.requiredList.add(name);
+		this.membersList.add(name);
+	}
 
-	abstract public Element newElement(String name, Type t);
+	public void addMember(String name) {
+		this.membersList.add(name);
+	}
 
-	abstract public void newStruct(String name, Type t);
+	public List<String> getMembers() {
+		return this.membersList;
+	}
 
-	abstract public void newMembers(String structName, Type... types);
+	public List<String> getRequiredList() {
+		return this.requiredList;
+	}
 
-	abstract public Type newOption(Type t);
+	public int getTableCounter() {
+		return this.tableCounter;
+	}
 
-	abstract public Type newRequired(Type t);
+	public String getTableName() {
+		return "T" + getTableCounter();
+	}
 
-	abstract public Type newTObject();
+	public final void initMemberList() {
+		requiredList = new ArrayList<String>();
+		membersList = new ArrayList<String>();
+		tableCounter++;
+	}
 
-	abstract public Type newTStruct();
+	protected final List<String> extractImpliedMembers() {
+		List<String> impliedList = new ArrayList<String>();
+		for (int i = 0; i < membersList.size(); i++) {
+			if (!requiredList.contains(membersList.get(i))) {
+				impliedList.add(membersList.get(i));
+			}
+		}
+		return impliedList;
+	}
 
-	abstract public Type newTArray(Type t);
+	protected final NonTerminal _NonTerminal(String nonterm) {
+		return ExpressionCommons.newNonTerminal(null, gfile, nonterm);
+	}
 
-	abstract public Type newTEnum(Tree<?> node);
+	protected final Expression _String(String text) {
+		return ExpressionCommons.newString(null, text);
+	}
 
-	abstract public Type newTInteger();
+	protected final Expression _DQuat() {
+		return gfile.newByteChar('"');
+	}
 
-	abstract public Type newTFloat();
+	protected final Expression _S() {
+		return ExpressionCommons.newNonTerminal(null, gfile, "SPACING");
+	}
 
-	abstract public Type newTString();
+	protected final Expression _Def(String nterm) {
+		return ExpressionCommons.newXsymbol(null, _NonTerminal(nterm));
+	}
 
-	abstract public Type newTAny();
+	protected final Expression _Exists(String table) {
+		return ExpressionCommons.newXexists(null, Symbol.tag(table), null);
+	}
 
-	abstract public Type newSet(String table, List<String> list);
-
-	abstract public Type newPermutation(List<String> required, List<String> implied);
-
-	abstract public Type newUniq(String table, String elementName);
-
-	abstract public Type newOtherAny(String table, List<String> members);
 }
