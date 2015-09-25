@@ -3,6 +3,7 @@ package nez.lang.schema;
 import java.util.ArrayList;
 import java.util.List;
 
+import nez.ast.Symbol;
 import nez.lang.Expression;
 import nez.lang.GrammarFile;
 import nez.lang.expr.ExpressionCommons;
@@ -73,5 +74,9 @@ public abstract class SchemaGrammarGenerator extends AbstractSchemaGrammarGenera
 
 	protected final Expression _Def(String table, String symbol) {
 		return ExpressionCommons.newXsymbol(null, _NonTerminal(symbol));
+	}
+
+	protected final Expression _Exists(String table) {
+		return ExpressionCommons.newXexists(null, Symbol.tag(table), null);
 	}
 }
