@@ -14,6 +14,8 @@ public class ParseFunc {
 	MemoPoint memoPoint = null;
 
 	Instruction compiled;
+	Instruction compiled_memo;
+	Instruction compiled_memoAST;
 
 	public ParseFunc(String uname, Production p, Production pp, int init) {
 		this.name = uname;

@@ -8,7 +8,6 @@ import nez.lang.Production;
 import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cmulti;
 import nez.lang.expr.Cset;
-import nez.lang.expr.NonTerminal;
 import nez.lang.expr.Pchoice;
 import nez.lang.expr.Tcapture;
 import nez.lang.expr.Tlfold;
@@ -231,19 +230,33 @@ class ILabel extends Instruction {
 }
 
 class ICall extends Instruction {
-	Production prod;
-	NonTerminal ne;
+	ParseFunc f;
+	String name;
 	public Instruction jump = null;
 
-	ICall(Production rule, Instruction next) {
-		super(InstructionSet.Call, rule.getExpression(), next);
-		this.prod = rule;
+	ICall(ParseFunc f, String name, Instruction next) {
+		super(InstructionSet.Call, null, next);
+		this.f = f;
+		this.name = name;
 	}
 
-	void setResolvedJump(Instruction jump) {
-		assert (this.jump == null);
-		this.jump = labeling(this.next);
-		this.next = labeling(jump);
+	ICall(ParseFunc f, String name, Instruction jump, Instruction next) {
+		super(InstructionSet.Call, null, jump);
+		this.name = name;
+		this.f = f;
+		this.jump = next;
+	}
+
+	void sync() {
+		if (this.jump == null) {
+			this.jump = labeling(this.next);
+			this.next = labeling(f.compiled);
+		}
+		this.f = null;
+	}
+
+	public final String getNonTerminalName() {
+		return this.name;
 	}
 
 	@Override
@@ -254,7 +267,7 @@ class ICall extends Instruction {
 	@Override
 	protected void encodeImpl(ByteCoder c) {
 		c.encodeJump(this.jump);
-		c.encodeNonTerminal(prod.getLocalName()); // debug information
+		c.encodeNonTerminal(name); // debug information
 	}
 
 	@Override
@@ -268,6 +281,10 @@ class ICall extends Instruction {
 class IRet extends Instruction {
 	IRet(Production e) {
 		super(InstructionSet.Ret, e.getExpression(), null);
+	}
+
+	IRet(Expression e) {
+		super(InstructionSet.Ret, e, null);
 	}
 
 	@Override

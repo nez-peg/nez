@@ -24,13 +24,10 @@ public abstract class NezCompiler extends AbstractGenerator {
 				this.encodeProduction(codeList, p, new IRet(p));
 			}
 		}
+		this.layoutCachedInstruction(codeList);
 		for (Instruction inst : codeList) {
 			if (inst instanceof ICall) {
-				ParseFunc deref = this.getParseFunc(((ICall) inst).prod);
-				if (deref == null) {
-					Verbose.debug("no parse func: " + ((ICall) inst).prod.getLocalName());
-				}
-				((ICall) inst).setResolvedJump(deref.compiled);
+				((ICall) inst).sync();
 			}
 			// Verbose.debug("\t" + inst.id + "\t" + inst);
 		}
@@ -43,6 +40,23 @@ public abstract class NezCompiler extends AbstractGenerator {
 
 	protected final Production getEncodingProduction() {
 		return this.encodingProduction;
+	}
+
+	private UList<Instruction> cachedInstruction;
+
+	protected void addCachedInstruction(Instruction inst) {
+		if (this.cachedInstruction == null) {
+			this.cachedInstruction = new UList<Instruction>(new Instruction[32]);
+		}
+		this.cachedInstruction.add(inst);
+	}
+
+	private void layoutCachedInstruction(UList<Instruction> codeList) {
+		if (this.cachedInstruction != null) {
+			for (Instruction inst : this.cachedInstruction) {
+				layoutCode(codeList, inst);
+			}
+		}
 	}
 
 	protected void encodeProduction(UList<Instruction> codeList, Production p, Instruction next) {
