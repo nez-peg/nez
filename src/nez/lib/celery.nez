@@ -53,7 +53,7 @@ PrimaryType
 	/ 'object' {       #TObject}
 
 ClassType 
-	= { NAMETOKEN #TClass }
+	= { NAMETOKEN #TStruct }
 
 DefaultValue 
 	= {(  _ '=' _ (@Literal / @FieldReference) (_ ',' _ (@Literal / @FieldReference) )* )? #DefaultValue}
