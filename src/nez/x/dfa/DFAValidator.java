@@ -40,6 +40,24 @@ public class DFAValidator {
 		for (int i = 0; i < theNumberOfNonTerminal; i++) {
 			constructAPartOfGraph(i);
 		}
+		/*
+		 * for (int i = 0; i < theNumberOfNonTerminal; i++) { for (int j = 0; j
+		 * < nonTerminalRelationGraph[i].size(); j++) {
+		 * System.out.print(nonTerminalRelationGraph[i].get(j) + " "); }
+		 * System.out.println(""); }
+		 */
+
+		System.out.println("((((((((((((((");
+		boolean result = removeUselessNonTerminal();
+		for (int i = 0; i < theNumberOfNonTerminal; i++) {
+			System.out.println(i + "-th is " + alreadyVerified[i]);
+		}
+		System.out.println("))))))))))))))");
+		for (int i = 0; i < theNumberOfNonTerminal; i++) {
+			System.out.println(productions.get(i).getLocalName() + " | " + nonTerminalIDTable.get(productions.get(i).getLocalName()) + " ---------------");
+			System.out.println(stringContext[i]);
+			System.out.println("---------------");
+		}
 		for (int i = 0; i < theNumberOfNonTerminal; i++) {
 			for (int j = 0; j < nonTerminalRelationGraph[i].size(); j++) {
 				System.out.print(nonTerminalRelationGraph[i].get(j) + " ");
@@ -47,31 +65,20 @@ public class DFAValidator {
 			System.out.println("");
 		}
 
-		System.out.println("((((((((((((((");
-		boolean result = removeUselessNonTerminal();
 		if (!result) {
 			return false;
-		}
-		for (int i = 0; i < theNumberOfNonTerminal; i++) {
-			System.out.println(i + "-th is " + alreadyVerified[i]);
-		}
-		System.out.println("))))))))))))))");
-		for (int i = 0; i < theNumberOfNonTerminal; i++) {
-			System.out.println(stringContext[i]);
-		}
-		for (int i = 0; i < theNumberOfNonTerminal; i++) {
-			for (int j = 0; j < nonTerminalRelationGraph[i].size(); j++) {
-				System.out.print(nonTerminalRelationGraph[i].get(j) + " ");
-			}
-			System.out.println("");
 		}
 
 		compressRedundantEdge();
 
 		expandOne();
 
+		for (Map.Entry<String, Integer> e : nonTerminalIDTable.entrySet()) {
+			System.out.println(e.getKey() + " : " + e.getValue());
+		}
+
 		for (int i = 0; i < theNumberOfNonTerminal; i++) {
-			System.out.println(stringContext[i]);
+			System.out.println(alreadyVerified[i] + " | " + stringContext[i]);
 		}
 
 		for (int i = 0; i < theNumberOfNonTerminal; i++) {
@@ -108,17 +115,19 @@ public class DFAValidator {
 			if (hasSelfLoop[i]) {
 				continue;
 			}
-			for (int j = 0; j < stringContext[i].length(); j++) {
-				if (Character.isDigit(stringContext[i].charAt(j))) {
-					int ID = 0;
-					while (j < stringContext[i].length() && stringContext[i].charAt(j) != '$') {
-						ID *= 10;
-						ID += (stringContext[i].charAt(j++) - '0');
-					}
-					if (i == ID) {
-						hasSelfLoop[i] = true;
-						break;
-					}
+			/*
+			 * for (int j = 0; j < stringContext[i].length(); j++) { if
+			 * (Character.isDigit(stringContext[i].charAt(j))) { int ID = 0;
+			 * while (j < stringContext[i].length() &&
+			 * stringContext[i].charAt(j) != '$') { ID *= 10; ID +=
+			 * (stringContext[i].charAt(j++) - '0'); } if (i == ID) {
+			 * hasSelfLoop[i] = true; break; } } }
+			 */
+			for (int j = 0; j < nonTerminalRelationGraph[i].size(); j++) {
+				ValidateEdge ve = (ValidateEdge) nonTerminalRelationGraph[i].get(j);
+				if (ve.getSrc() == ve.getDst()) {
+					hasSelfLoop[i] = true;
+					break;
 				}
 			}
 		}
@@ -136,7 +145,7 @@ public class DFAValidator {
 			updateHasSelfLoop();
 			System.out.println("----------------");
 			for (int i = 0; i < theNumberOfNonTerminal; i++) {
-				System.out.println(i + "-th : " + stringContext[i]);
+				System.out.println(i + "-th : " + stringContext[i] + " | verify " + alreadyVerified[i] + " | loop " + hasSelfLoop[i]);
 				for (int j = 0; j < nonTerminalRelationGraph[i].size(); j++) {
 					System.out.println(nonTerminalRelationGraph[i].get(j) + " ");
 				}
@@ -159,7 +168,16 @@ public class DFAValidator {
 						base = target;
 						target = tmp;
 					}
+					System.out.println("in-compress " + base + " " + target);
 					compress(base, target);
+					// targetを潰してしまうため、その他の非終端記号内にあるtargetをbaseに置き換える
+					for (int k = 0; k < theNumberOfNonTerminal; k++) {
+						if (alreadyVerified[k] || k == base) {
+							continue;
+						}
+						stringContext[k] = replaceAllNonTerminal(stringContext[k], new Integer(target).toString() + "$", new Integer(base).toString() + "$");
+					}
+					System.out.println("out-compress");
 					update = true;
 					break;
 				}
@@ -187,7 +205,7 @@ public class DFAValidator {
 					if (ve.getDst() == target) {
 						veArray.add(ve);
 						if (i != base) {
-							nonTerminalRelationGraph[base].add(new ValidateEdge(ve.getSrc(), base, ve.getHasLeft(), ve.getHasRight()));
+							nonTerminalRelationGraph[i].add(new ValidateEdge(i, base, ve.getHasLeft(), ve.getHasRight()));
 						}
 					}
 				}
