@@ -46,6 +46,7 @@ public class DFAValidator {
 			}
 			System.out.println("");
 		}
+
 		System.out.println("((((((((((((((");
 		boolean result = removeUselessNonTerminal();
 		if (!result) {
@@ -67,6 +68,12 @@ public class DFAValidator {
 
 		compressRedundantEdge();
 
+		expandOne();
+
+		for (int i = 0; i < theNumberOfNonTerminal; i++) {
+			System.out.println(stringContext[i]);
+		}
+
 		for (int i = 0; i < theNumberOfNonTerminal; i++) {
 			if (alreadyVerified[i]) {
 				continue;
@@ -77,6 +84,21 @@ public class DFAValidator {
 		}
 
 		return true;
+	}
+
+	private void expandOne() {
+		StringBuilder[] sb = new StringBuilder[theNumberOfNonTerminal];
+		for (int i = 0; i < theNumberOfNonTerminal; i++) {
+			sb[i] = stringContext[i];
+		}
+		for (int i = 0; i < theNumberOfNonTerminal; i++) {
+			for (int j = 0; j < theNumberOfNonTerminal; j++) {
+				if (i == j) {
+					continue;
+				}
+				stringContext[i] = replaceAllNonTerminal(stringContext[i], new Integer(j).toString(), sb[j].toString());
+			}
+		}
 	}
 
 	private boolean[] hasSelfLoop;
@@ -214,11 +236,10 @@ public class DFAValidator {
 			if (Character.isDigit(context.charAt(i))) {
 				int ID = 0;
 				int L = i;
-				while (i < context.length() && Character.isDigit(context.charAt(i))) {
+				while (i < context.length() && context.charAt(i) != '$') {
 					ID *= 10;
 					ID += (context.charAt(i++) - '0');
 				}
-				--i;
 				int R = i;
 				if (ID == nonTerminalID) {
 					boolean hasLeft = hasChar(context, L - 1, -1);
@@ -266,7 +287,6 @@ public class DFAValidator {
 			for (int i = 0; i < theNumberOfNonTerminal; i++) {
 				for (int j = 0; j < nonTerminalRelationGraph[i].size(); j++) {
 					ValidateEdge ve = (ValidateEdge) nonTerminalRelationGraph[i].get(j);
-					System.out.println(theNumberOfNonTerminal + " > " + ve);
 					++in_degree[ve.getDst()];
 					in_vertexID[ve.getDst()].add(i);
 					in_edge[ve.getDst()].add(ve);
@@ -361,16 +381,24 @@ public class DFAValidator {
 		StringBuilder newContext = new StringBuilder();
 		for (int i = 0; i < context.length(); i++) {
 			char c = context.charAt(i);
-			if (c == '\'') {
+			if (Character.isWhitespace(c)) {
+				continue;
+			}
+			if (c == '\'' || c == '\"') {
 				boolean emptyChar = true;
 				++i;
 				while (i < context.length()) {
-					if (i - 1 >= 0 && context.charAt(i - 1) == '\\' && context.charAt(i) == '\'') {
+					if (i + 1 < context.length() && context.charAt(i) == '\\' && context.charAt(i + 1) == '\\') {
+						i += 2;
 						emptyChar = false;
-						++i;
 						continue;
 					}
-					if (context.charAt(i) == '\'') {
+					if (i + 1 < context.length() && context.charAt(i) == '\\' && context.charAt(i + 1) == c) {
+						emptyChar = false;
+						i += 2;
+						continue;
+					}
+					if (context.charAt(i) == c) {
 						break;
 					}
 					emptyChar = false;
@@ -391,7 +419,7 @@ public class DFAValidator {
 					newContext.append("a");
 				}
 			} else if (c == '!' || c == '&') {
-				if (i + 1 < context.length() && context.charAt(i + 1) == '(') {
+				if (i + 1 < context.length() && (context.charAt(i + 1) == '(' || context.charAt(i + 1) == '{')) {
 					newContext.append('{');
 					++i;
 				} else {
@@ -399,11 +427,26 @@ public class DFAValidator {
 				}
 			} else if (c == '/' || c == '(' || c == ')') {
 				newContext.append(c);
-			} else if (Character.isAlphabetic(c)) {
+			} else if (c == '{') {
+				newContext.append('(');
+			} else if (c == '}') {
+				newContext.append(')');
+			} else if (c == '[') {
+				boolean foundChar = false;
+				while (i < context.length() && context.charAt(i) != ']') {
+					if (context.charAt(i) != ' ') {
+						foundChar = true;
+					}
+					++i;
+				}
+				if (foundChar) {
+					newContext.append('a');
+				}
+			} else if (Character.isAlphabetic(c) || c == '_') {
 				StringBuilder nonTerminalName = new StringBuilder();
 				while (i < context.length()) {
 					char c2 = context.charAt(i);
-					if (!Character.isAlphabetic(c2) && !Character.isDigit(c2)) {
+					if (!Character.isDigit(c2) && !Character.isAlphabetic(c2) && c2 != '_') {
 						break;
 					}
 					nonTerminalName.append(c2);
@@ -411,6 +454,9 @@ public class DFAValidator {
 				}
 				--i;
 				assert nonTerminalIDTable.containsKey(nonTerminalName.toString()) == true : "no such non-terminal : " + nonTerminalName;
+				if (nonTerminalIDTable.containsKey(nonTerminalName.toString()) == false) {
+					System.out.println("no such non-terminal : " + nonTerminalName);
+				}
 				newContext.append(nonTerminalIDTable.get(nonTerminalName.toString()));
 				newContext.append('$');
 
