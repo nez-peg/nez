@@ -100,9 +100,9 @@ public class DFAValidator {
 		}
 		for (int i = 0; i < theNumberOfNonTerminal; i++) {
 			for (int j = 0; j < theNumberOfNonTerminal; j++) {
-				if (i == j) {
-					continue;
-				}
+				/*
+				 * if (i == j) { continue; }
+				 */
 				stringContext[i] = replaceAllNonTerminal(stringContext[i], new Integer(j).toString(), sb[j].toString());
 			}
 		}
