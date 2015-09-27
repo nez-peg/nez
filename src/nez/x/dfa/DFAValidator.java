@@ -64,15 +64,126 @@ public class DFAValidator {
 			}
 			System.out.println("");
 		}
+
+		compressRedundantEdge();
+
+		for (int i = 0; i < theNumberOfNonTerminal; i++) {
+			if (alreadyVerified[i]) {
+				continue;
+			}
+			if (!eval(i, stringContext[i].toString())) {
+				return false;
+			}
+		}
+
 		return true;
 	}
 
+	private boolean[] hasSelfLoop;
+
+	private void updateHasSelfLoop() {
+		for (int i = 0; i < theNumberOfNonTerminal; i++) {
+			if (hasSelfLoop[i]) {
+				continue;
+			}
+			for (int j = 0; j < stringContext[i].length(); j++) {
+				if (Character.isDigit(stringContext[i].charAt(j))) {
+					int ID = 0;
+					while (j < stringContext[i].length() && stringContext[i].charAt(j) != '$') {
+						ID *= 10;
+						ID += (stringContext[i].charAt(j++) - '0');
+					}
+					if (i == ID) {
+						hasSelfLoop[i] = true;
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	private void compressRedundantEdge() {
+		hasSelfLoop = new boolean[theNumberOfNonTerminal];
+		for (int i = 0; i < theNumberOfNonTerminal; i++) {
+			hasSelfLoop[i] = false;
+		}
+
+		boolean update = true;
+		while (update) {
+			update = false;
+			updateHasSelfLoop();
+			System.out.println("----------------");
+			for (int i = 0; i < theNumberOfNonTerminal; i++) {
+				System.out.println(i + "-th : " + stringContext[i]);
+				for (int j = 0; j < nonTerminalRelationGraph[i].size(); j++) {
+					System.out.println(nonTerminalRelationGraph[i].get(j) + " ");
+				}
+			}
+			System.out.println("------");
+			System.out.println("");
+			for (int i = 0; i < theNumberOfNonTerminal; i++) {
+				if (alreadyVerified[i]) {
+					continue;
+				}
+				for (int j = 0; j < nonTerminalRelationGraph[i].size(); j++) {
+					ValidateEdge ve = (ValidateEdge) nonTerminalRelationGraph[i].get(j);
+					if (hasSelfLoop[ve.getSrc()] && hasSelfLoop[ve.getDst()]) {
+						continue;
+					}
+					int base = ve.getSrc();
+					int target = ve.getDst();
+					if (hasSelfLoop[target]) {
+						int tmp = base;
+						base = target;
+						target = tmp;
+					}
+					compress(base, target);
+					update = true;
+					break;
+				}
+				if (update) {
+					break;
+				}
+			}
+		}
+	}
+
+	private void compress(int base, int target) {
+		stringContext[base] = replaceAllNonTerminal(stringContext[base], new Integer(target).toString() + "$", stringContext[target].toString());
+		for (int i = 0; i < theNumberOfNonTerminal; i++) {
+			if (i == target) {
+				for (int j = 0; j < nonTerminalRelationGraph[i].size(); j++) {
+					ValidateEdge ve = (ValidateEdge) nonTerminalRelationGraph[i].get(j);
+					nonTerminalRelationGraph[base].add(new ValidateEdge(base, ve.getDst(), ve.getHasLeft(), ve.getHasRight()));
+				}
+				alreadyVerified[i] = true;
+				nonTerminalRelationGraph[i].clear();
+			} else {
+				ArrayList<ValidateEdge> veArray = new ArrayList<ValidateEdge>();
+				for (int j = 0; j < nonTerminalRelationGraph[i].size(); j++) {
+					ValidateEdge ve = (ValidateEdge) nonTerminalRelationGraph[i].get(j);
+					if (ve.getDst() == target) {
+						veArray.add(ve);
+						if (i != base) {
+							nonTerminalRelationGraph[base].add(new ValidateEdge(ve.getSrc(), base, ve.getHasLeft(), ve.getHasRight()));
+						}
+					}
+				}
+				for (int j = 0; j < veArray.size(); j++) {
+					nonTerminalRelationGraph[i].remove(veArray.get(j));
+				}
+			}
+		}
+	}
+
 	private StringBuilder replaceAllNonTerminal(StringBuilder context, String before, String after) {
+		// System.out.println("before " + context + " | " + before + " -> " +
+		// after);
 		StringBuilder newContext = new StringBuilder();
 		int before_len = before.length();
-		for (int i = 0; i < context.length() - before_len + 1; i++) {
+		for (int i = 0; i < context.length(); i++) {
 			char c = context.charAt(i);
-			if (c == before.charAt(0)) {
+			if (c == before.charAt(0) && i + before_len - 1 < context.length()) {
 
 				String part = context.substring(i, i + before_len);
 
@@ -94,6 +205,7 @@ public class DFAValidator {
 				newContext.append(c);
 			}
 		}
+		// System.out.println("after " + newContext);
 		return newContext;
 	}
 
@@ -113,12 +225,15 @@ public class DFAValidator {
 					boolean hasRight = hasChar(context, R + 1, +1);
 					if (!hasLeft && !hasRight) {
 						System.out.println("FOUND : A <- A");
+						return false;
 					} else if (hasLeft && !hasRight) {
 						// VALID
 					} else if (!hasLeft && hasRight) {
 						System.out.println("FOUND : A <- Aa");
+						return false;
 					} else if (hasLeft && hasRight) {
 						System.out.println("FOUND : A <- aAa");
+						return false;
 					}
 				}
 			}
@@ -141,19 +256,20 @@ public class DFAValidator {
 			update = false;
 
 			ArrayList[] in_vertexID = new ArrayList[theNumberOfNonTerminal];
-			ArrayList[] in_edgeID = new ArrayList[theNumberOfNonTerminal];
+			ArrayList[] in_edge = new ArrayList[theNumberOfNonTerminal];
 
 			for (int i = 0; i < theNumberOfNonTerminal; i++) {
 				in_degree[i] = 0;
 				in_vertexID[i] = new ArrayList<Integer>();
-				in_edgeID[i] = new ArrayList<Integer>();
+				in_edge[i] = new ArrayList<ValidateEdge>();
 			}
 			for (int i = 0; i < theNumberOfNonTerminal; i++) {
 				for (int j = 0; j < nonTerminalRelationGraph[i].size(); j++) {
 					ValidateEdge ve = (ValidateEdge) nonTerminalRelationGraph[i].get(j);
+					System.out.println(theNumberOfNonTerminal + " > " + ve);
 					++in_degree[ve.getDst()];
 					in_vertexID[ve.getDst()].add(i);
-					in_edgeID[ve.getDst()].add(j);
+					in_edge[ve.getDst()].add(ve);
 				}
 			}
 
@@ -175,10 +291,8 @@ public class DFAValidator {
 					if (nonTerminalRelationGraph[i].isEmpty() && in_degree[i] > 0) {
 						for (int j = 0; j < in_degree[i]; j++) {
 							int vertexID = (int) in_vertexID[i].get(j);
-							int edgeID = (int) in_edgeID[i].get(j);
-							stringContext[vertexID] = replaceAllNonTerminal(stringContext[vertexID], new Integer(i).toString(), stringContext[i].toString());
-							nonTerminalRelationGraph[vertexID].remove(edgeID);
-
+							stringContext[vertexID] = replaceAllNonTerminal(stringContext[vertexID], (new Integer(i).toString()) + "$", stringContext[i].toString());
+							nonTerminalRelationGraph[vertexID].remove(in_edge[i].get(j));
 						}
 						update = true;
 						break;
@@ -203,11 +317,10 @@ public class DFAValidator {
 			if (Character.isDigit(context.charAt(i))) {
 				int ID = 0;
 				int L = i;
-				while (i < context.length() && Character.isDigit(context.charAt(i))) {
+				while (i < context.length() && context.charAt(i) != '$') {
 					ID *= 10;
 					ID += (context.charAt(i++) - '0');
 				}
-				--i;
 				int R = i;
 				boolean hasLeft = hasChar(context, L - 1, -1);
 				boolean hasRight = hasChar(context, R + 1, +1);
@@ -299,6 +412,8 @@ public class DFAValidator {
 				--i;
 				assert nonTerminalIDTable.containsKey(nonTerminalName.toString()) == true : "no such non-terminal : " + nonTerminalName;
 				newContext.append(nonTerminalIDTable.get(nonTerminalName.toString()));
+				newContext.append('$');
+
 			}
 		}
 
@@ -321,7 +436,9 @@ public class DFAValidator {
 		}
 
 		StringBuilder newContext2 = new StringBuilder();
+
 		for (int i = 0; i < newContext.length(); i++) {
+
 			char c = newContext.charAt(i);
 			if (c == '!' || c == '&') {
 				++i;
@@ -334,13 +451,13 @@ public class DFAValidator {
 				} else {
 					boolean debug = false;
 					newContext2.append('{');
-					while (i < newContext.length() && Character.isDigit(newContext.charAt(i))) {
+					while (i < newContext.length() && newContext.charAt(i) != '$') {
 						debug = true;
 						newContext2.append(newContext.charAt(i++));
 					}
+					newContext2.append('$');
 					newContext2.append('}');
 					assert debug == true;
-					--i;
 				}
 			} else {
 				newContext2.append(c);

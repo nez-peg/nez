@@ -28,6 +28,12 @@ public class ValidateEdge extends Edge {
 	}
 
 	@Override
+	public boolean equals(Object obj) {
+		ValidateEdge ve = (ValidateEdge) obj;
+		return (ve.getSrc() == super.getSrc()) && (ve.getDst() == super.getDst()) && (ve.getHasLeft() == this.hasLeft) && (ve.getHasRight() == this.hasRight);
+	}
+
+	@Override
 	public String toString() {
 		return "(" + super.getSrc() + "=>" + super.getDst() + ",[" + this.hasLeft + "," + this.hasRight + "])";
 	}
