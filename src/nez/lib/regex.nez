@@ -40,6 +40,9 @@ addQuantifiers
 	/ '*' #Repetition
 	/ '+' #OneMoreRepetition
 	/ '?' #Option
+	/ '{' @{ INT #N } '}' #NTimesRepetition
+	/ '{' @{ INT #N } ',}' #NMoreRepetition
+	/ '{' @{ INT #N } ',' @{ INT #M } '}' #NtoMTimesRepetition
 
 Terminal
 	= CharacterSet
