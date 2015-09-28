@@ -177,6 +177,14 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 		return toSeq(c, k);
 	}
 
+	public Expression piHeader(Tree<?> e, Expression k) {
+		return toSeq(e, k);
+	}
+
+	public Expression piTerminator(Tree<?> e, Expression k) {
+		return toSeq(e, k);
+	}
+
 	private Expression toExpression(Tree<?> e) {
 		return (Expression) this.visit("to", e);
 	}
@@ -224,6 +232,14 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 
 	public Expression toAny(Tree<?> e) {
 		return ExpressionCommons.newCany(null, false);
+	}
+
+	// stub
+	// public Expression toHeader(Tree<?> e) {
+	// }
+
+	public Expression toTerminator(Tree<?> e) {
+		return ExpressionCommons.newPnot(null, ExpressionCommons.newCany(null, false));
 	}
 
 	public Expression toAnd(Tree<?> e, Expression k) {
