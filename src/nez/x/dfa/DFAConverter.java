@@ -299,6 +299,7 @@ public class DFAConverter extends AbstractTreeVisitor {
 
 			EpsilonMemoState nextState = new EpsilonMemoState(e.getDst(), state.getPredicate());
 			if (e.getPredicate() != -1) {
+				allEpsilon = false;
 				// nextState.changePredicate(e.getPredicate());
 				nextStateIDs.add(new EpsilonMemoState(e.getDst(), e.getPredicate()));
 				continue;
@@ -348,6 +349,7 @@ public class DFAConverter extends AbstractTreeVisitor {
 				if (nextStateIDs.size() == 0) {
 					continue;
 				}
+
 				for (Character label : allLabels) {
 					// System.out.println("label = " + label);
 					for (EpsilonMemoState ems : nextStateIDs) {
@@ -363,10 +365,17 @@ public class DFAConverter extends AbstractTreeVisitor {
 
 						Set<EpsilonMemoState> tmp = new TreeSet<EpsilonMemoState>(new EpsilonMemoStateComparator());
 						int nextStateID = ems.getStateID();
+						boolean notPredicateFlag = (ems.getPredicate() == 1);
 						// System.out.println("nextStateID = " + nextStateID);
 						for (int i = 0; i < bfa[nextStateID].size(); i++) {
 							Edge e = bfa[nextStateID].get(i);
-							if (e.getLabel() == label || e.getLabel() == '.') {
+							boolean flag = (e.getLabel() == label || e.getLabel() == '.');
+							if (notPredicateFlag) {
+								flag = !flag;
+							}
+							// if ((e.getLabel() == label || e.getLabel() ==
+							// '.')) {
+							if (flag) {
 								Set<EpsilonMemoState> tmp2 = moveEpsilonTransition(new EpsilonMemoState(e.getDst(), ems.getPredicate()));
 								for (EpsilonMemoState ems2 : tmp2) {
 									Edge new_e = new Edge(stateID, ems2.getStateID(), label, ems2.getPredicate());
@@ -830,13 +839,14 @@ public class DFAConverter extends AbstractTreeVisitor {
 		 */
 		initExec();
 
-		for (Map.Entry<Tau, State> e : staticTau.entrySet()) {
-			if (e.getKey().getSigma() != 'a' && e.getKey().getSigma() != 'b') {
-				continue;
-			}
-		}
+		/*
+		 * for (Map.Entry<Tau, State> e : staticTau.entrySet()) { if
+		 * (e.getKey().getSigma() != 'a' && e.getKey().getSigma() != 'b') {
+		 * continue; } }
+		 */
 
 		staticSc = new StringContext(text);
+
 		// Context context = new Context(text);
 		// System.out.println("f = " + final_bfa.getf());
 		long st = System.currentTimeMillis();

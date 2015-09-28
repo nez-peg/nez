@@ -38,6 +38,7 @@ public class Or extends State {
 			// return DFAConverter.execMemo[this.id][context.getTop()] == 1;
 			return DFAConverter.execMemo[this.id][top] == 1;
 		}
+
 		/*
 		 * Context nextContext1 = context.getContext(); Context nextContext2 =
 		 * context.getContext();
