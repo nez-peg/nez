@@ -159,14 +159,14 @@ public class JCodeGenerator {
 		// this.mBuilder = this.mBuilderStack.pop();
 	}
 
-	public void visitVarDeclStmt(JCodeTree node) {
+	public void visitVarDeclList(JCodeTree node) {
 		visit(node.get(0));
 	}
 
 	public void visitVarDecl(JCodeTree node) {
 		if (node.size() > 1) {
-			JCodeTree varNode = node.get(0);
-			JCodeTree valueNode = node.get(1);
+			JCodeTree varNode = node.get(Symbol.tag("name"));
+			JCodeTree valueNode = node.get(Symbol.tag("expr"));
 			visit(valueNode);
 			varNode.setType(valueNode.getTypedClass());
 			this.scope.setLocalVar(varNode.toText(), this.mBuilder.createNewVarAndStore(valueNode.getTypedClass()));
@@ -262,6 +262,10 @@ public class JCodeGenerator {
 	}
 
 	public void visitWith(JCodeTree node) {
+	}
+
+	public void visitExpression(JCodeTree node) {
+		this.visit(node.get(0));
 	}
 
 	public void visitAssign(JCodeTree node) {
