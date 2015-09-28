@@ -16,7 +16,7 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
-public class JCodeGenerator {
+public class JCodeGenerator implements CommonSymbols {
 	private Map<String, Class<?>> generatedClassMap = new HashMap<String, Class<?>>();
 	private final static String packagePrefix = "nez/ast/jcode/";
 
