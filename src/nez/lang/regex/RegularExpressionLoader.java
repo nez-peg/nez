@@ -33,7 +33,7 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 			} catch (IOException e) {
 				ConsoleUtils.exit(1, "unload: " + e.getMessage());
 			}
-			assert (lParser != null);
+			assert(lParser != null);
 		}
 		return lParser;
 	}
@@ -169,7 +169,6 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 	public Expression toCharacterRange(Tree<?> e) {
 		byte[] begin = StringUtils.toUtf8(e.get(0).toText());
 		byte[] end = StringUtils.toUtf8(e.get(1).toText());
-		byteMap = new boolean[257];
 		for (byte i = begin[0]; i <= end[0]; i++) {
 			byteMap[i] = true;
 		}
