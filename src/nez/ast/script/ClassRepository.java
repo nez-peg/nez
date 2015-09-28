@@ -9,6 +9,7 @@ public class ClassRepository {
 
 	public ClassRepository() {
 		add(DynamicOperator.class);
+		add(StaticOperator.class);
 	}
 
 	void add(Class<?> c) {
@@ -38,8 +39,9 @@ public class ClassRepository {
 	}
 
 	boolean accept(Class<?> p, Class<?> a) {
-		if (a == null)
+		if (a == null) {
 			return true;
+		}
 		System.out.printf("%s %s %s\n", p, a, p.isAssignableFrom(a));
 		return p.isAssignableFrom(a);
 	}

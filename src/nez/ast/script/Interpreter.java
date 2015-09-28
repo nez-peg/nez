@@ -47,7 +47,7 @@ public class Interpreter extends TreeVisitor implements KonohaSymbols {
 
 	//
 	Class<?> typeof(Object o) {
-		return o == null ? Object.class : o.getClass();
+		return o == null ? null : o.getClass();
 	}
 
 	Object evalOperator(Tree<?> node, String name, Object a1, Object a2) {
@@ -71,5 +71,4 @@ public class Interpreter extends TreeVisitor implements KonohaSymbols {
 		}
 		throw new RuntimeException("fail: " + name);
 	}
-
 }
