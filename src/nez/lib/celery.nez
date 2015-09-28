@@ -22,7 +22,7 @@ ClassMembers
 	= TypedParameter / UntypedParameter 
 
 TypedParameter
-	=  { $Name(Name)) qualifier ':' _ $Type(TypeDeclaration) @DefaultValue } _ 
+	=  { $Name(Name) qualifier ':' _ $Type(TypeDeclaration) @DefaultValue } _ 
 
 qualifier
 	= '?' #Option

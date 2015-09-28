@@ -23,7 +23,6 @@ import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
 import nez.lang.expr.Xblock;
-import nez.lang.expr.Xdef;
 import nez.lang.expr.Xexists;
 import nez.lang.expr.Xif;
 import nez.lang.expr.Xindent;
@@ -31,6 +30,7 @@ import nez.lang.expr.Xis;
 import nez.lang.expr.Xlocal;
 import nez.lang.expr.Xmatch;
 import nez.lang.expr.Xon;
+import nez.lang.expr.Xsymbol;
 import nez.main.Verbose;
 import nez.util.UList;
 
@@ -173,8 +173,8 @@ public class GrammarTransducer {
 		return ExpressionCommons.newXlocal(e.getSourcePosition(), e.getTable(), reshapeInner(e.get(0)));
 	}
 
-	public Expression reshapeXdef(Xdef e) {
-		return ExpressionCommons.newXdef(e.getSourcePosition(), e.getGrammar(), e.getTable(), reshapeInner(e.get(0)));
+	public Expression reshapeXdef(Xsymbol e) {
+		return ExpressionCommons.newXsymbol(e.getSourcePosition(), e.getTable(), reshapeInner(e.get(0)));
 	}
 
 	public Expression reshapeXmatch(Xmatch e) {
@@ -182,7 +182,7 @@ public class GrammarTransducer {
 	}
 
 	public Expression reshapeXis(Xis e) {
-		return e; // immutable
+		return ExpressionCommons.newXis(e.getSourcePosition(), e.getTable(), reshapeInner(e.get(0)), e.is);
 	}
 
 	public Expression reshapeXexists(Xexists e) {

@@ -41,7 +41,7 @@ Product
 	= Value {$left ( "*" #Mul / "/" #Div / "%" #Mod ) $right(Value) }*
 
 Value
-	= { [0-9]+ #Int } _
+	= { [0-9]+ #Integer } _
 	/ { [A-Za-z0-9_]+ #Variable } _
 	/ "(" Expression ")"
 

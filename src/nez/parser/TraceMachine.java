@@ -17,7 +17,7 @@ public class TraceMachine extends ParsingMachine {
 			while (true) {
 				if (code instanceof ICall) {
 					stack.add(u);
-					u = ((ICall) code).prod.getLocalName();
+					u = ((ICall) code).getNonTerminalName();
 				}
 				if (code instanceof IRet) {
 					u = stack.ArrayValues[stack.size() - 1];

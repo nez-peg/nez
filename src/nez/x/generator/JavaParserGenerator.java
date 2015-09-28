@@ -27,7 +27,7 @@ import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
 import nez.lang.expr.Xblock;
-import nez.lang.expr.Xdef;
+import nez.lang.expr.Xsymbol;
 import nez.lang.expr.Xdefindent;
 import nez.lang.expr.Xexists;
 import nez.lang.expr.Xif;
@@ -558,7 +558,7 @@ public class JavaParserGenerator extends ParserGenerator {
 	}
 
 	@Override
-	public void visitXdef(Xdef p) {
+	public void visitXdef(Xsymbol p) {
 		// TODO Auto-generated method stub
 
 	}

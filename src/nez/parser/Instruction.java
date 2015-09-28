@@ -8,7 +8,6 @@ import nez.lang.Production;
 import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cmulti;
 import nez.lang.expr.Cset;
-import nez.lang.expr.NonTerminal;
 import nez.lang.expr.Pchoice;
 import nez.lang.expr.Tcapture;
 import nez.lang.expr.Tlfold;
@@ -17,13 +16,13 @@ import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
 import nez.lang.expr.Xblock;
-import nez.lang.expr.Xdef;
 import nez.lang.expr.Xdefindent;
 import nez.lang.expr.Xexists;
 import nez.lang.expr.Xindent;
 import nez.lang.expr.Xis;
 import nez.lang.expr.Xlocal;
 import nez.lang.expr.Xmatch;
+import nez.lang.expr.Xsymbol;
 import nez.util.StringUtils;
 
 public abstract class Instruction {
@@ -231,19 +230,33 @@ class ILabel extends Instruction {
 }
 
 class ICall extends Instruction {
-	Production prod;
-	NonTerminal ne;
+	ParseFunc f;
+	String name;
 	public Instruction jump = null;
 
-	ICall(Production rule, Instruction next) {
-		super(InstructionSet.Call, rule.getExpression(), next);
-		this.prod = rule;
+	ICall(ParseFunc f, String name, Instruction next) {
+		super(InstructionSet.Call, null, next);
+		this.f = f;
+		this.name = name;
 	}
 
-	void setResolvedJump(Instruction jump) {
-		assert (this.jump == null);
-		this.jump = labeling(this.next);
-		this.next = labeling(jump);
+	ICall(ParseFunc f, String name, Instruction jump, Instruction next) {
+		super(InstructionSet.Call, null, jump);
+		this.name = name;
+		this.f = f;
+		this.jump = next;
+	}
+
+	void sync() {
+		if (this.jump == null) {
+			this.jump = labeling(this.next);
+			this.next = labeling(f.compiled);
+		}
+		this.f = null;
+	}
+
+	public final String getNonTerminalName() {
+		return this.name;
 	}
 
 	@Override
@@ -254,7 +267,7 @@ class ICall extends Instruction {
 	@Override
 	protected void encodeImpl(ByteCoder c) {
 		c.encodeJump(this.jump);
-		c.encodeNonTerminal(prod.getLocalName()); // debug information
+		c.encodeNonTerminal(name); // debug information
 	}
 
 	@Override
@@ -268,6 +281,10 @@ class ICall extends Instruction {
 class IRet extends Instruction {
 	IRet(Production e) {
 		super(InstructionSet.Ret, e.getExpression(), null);
+	}
+
+	IRet(Expression e) {
+		super(InstructionSet.Ret, e, null);
 	}
 
 	@Override
@@ -1108,7 +1125,7 @@ class IEndSymbolScope extends Instruction {
 }
 
 class IDefSymbol extends AbstractTableInstruction {
-	IDefSymbol(Xdef e, Instruction next) {
+	IDefSymbol(Xsymbol e, Instruction next) {
 		super(InstructionSet.SDef, e, e.tableName, next);
 	}
 
@@ -1116,6 +1133,8 @@ class IDefSymbol extends AbstractTableInstruction {
 	public Instruction exec(RuntimeContext sc) throws TerminationException {
 		StackData top = sc.popStack();
 		byte[] captured = sc.subbyte(top.value, sc.getPosition());
+		// System.out.println("symbol captured: " + new String(captured) + ", @"
+		// + this.tableName);
 		sc.getSymbolTable().addSymbol(this.tableName, captured);
 		return this.next;
 	}
@@ -1180,7 +1199,6 @@ class IIsSymbol extends AbstractTableInstruction {
 	@Override
 	public Instruction exec(RuntimeContext sc) throws TerminationException {
 		byte[] symbol = sc.getSymbolTable().getSymbol(tableName);
-		// System.out.println("symbol:" + new String(symbol));
 		if (symbol != null) {
 			StackData s = sc.popStack();
 			byte[] captured = sc.subbyte(s.value, sc.getPosition());

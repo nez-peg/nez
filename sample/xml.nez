@@ -1,0 +1,60 @@
+// XML Standard 1.0 
+// 
+
+File       = PROLOG? DTD? Xml
+Chunk      = Xml
+Expr       = Xml
+PROLOG     = '<?xml' ( !'?>' . )* '?>' S*
+DTD        = '<!' ( !'>' . )* '>' S*
+Xml        = <block { '<' $key(<symbol Name>) S* $(Attribute)* ('/>' / '>' S* ( $value(Content) / COMMENT )* '</' ~(<is Name>) '>') #Element } > S*
+Name       = { NAME #Name }
+NAME       = [A-Z_a-z:] ( '-' / [.0-9:A-Z_a-z] )*
+Attribute  = { #Attr $key(Name) S* '=' S* $value(String) #Attr } S*
+String     = '"' { ( !'"' . )* #Value } '"'
+Content    = Xml
+           / CDataSec
+           / Text
+CDataSec   = '<![CDATA[' { CDATA #CDATA } ']]>' S*
+CDATA      = ( !']]>' !'<![CDATA[' . )* ( '<![CDATA[' CDATA ']]>' CDATA )?
+COMMENT    = '<!--' ( !'-->' . )* '-->' S*
+Text       = { ( !'<' . )+ #Text }
+S          = [ \t\r\n]
+
+/* Example */
+example File '''
+<a><b>c</b></a>
+'''
+
+/* from https://en.wikipedia.org/wiki/XML */
+example File ~84da13d '''
+<?xml version="1.0"?>
+<catalog>
+   <book id="bk101">
+      <author>Gambardella, Matthew</author>
+      <title>XML Developer's Guide</title>
+      <genre>Computer</genre>
+      <price>44.95</price>
+      <publish_date>2000-10-01</publish_date>
+      <description>An in-depth look at creating applications 
+      with XML.</description>
+   </book>
+   <book id="bk102">
+      <author>Ralls, Kim</author>
+      <title>Midnight Rain</title>
+      <genre>Fantasy</genre>
+      <price>5.95</price>
+      <publish_date>2000-12-16</publish_date>
+      <description>A former architect battles corporate zombies, 
+      an evil sorceress, and her own childhood to become queen 
+      of the world.</description>
+   </book>
+</catalog>
+'''
+
+example Xml '''
+<p>
+<!--- <test pattern="SECAM" /><test pattern="NTSC" /> -->
+</p>
+'''
+
+// formatted by $ nez format

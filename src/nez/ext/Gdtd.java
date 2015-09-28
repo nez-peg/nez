@@ -9,8 +9,8 @@ import java.util.Map;
 import nez.Grammar;
 import nez.Parser;
 import nez.Strategy;
-import nez.ast.Tree;
 import nez.ast.Symbol;
+import nez.ast.Tree;
 import nez.lang.Expression;
 import nez.lang.GrammarFileLoader;
 import nez.lang.expr.ExpressionCommons;
@@ -302,7 +302,7 @@ public class Gdtd extends GrammarFileLoader {
 	public Expression _AttDef(String type) {
 		Grammar gfile = getGrammar();
 		String attName = attDefMap.get(attDefCount);
-		Expression[] l = { ExpressionCommons.newXdef(null, gfile, Symbol.tag("T" + currentElementID), gfile.newString(attName)), gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), gfile.newByteChar('='),
+		Expression[] l = { ExpressionCommons.newXdef(null, gfile, "T" + currentElementID, gfile.newString(attName)), gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), gfile.newByteChar('='),
 				gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), ExpressionCommons.newNonTerminal(null, gfile, type), gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), };
 		return gfile.newSequence(l);
 	}
@@ -310,7 +310,7 @@ public class Gdtd extends GrammarFileLoader {
 	public Expression _AttDefQ(String type) {
 		Grammar gfile = getGrammar();
 		String attName = attDefMap.get(attDefCount);
-		Expression[] l = { ExpressionCommons.newXdef(null, gfile, Symbol.tag("T" + currentElementID), gfile.newString(attName)), gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), gfile.newByteChar('='),
+		Expression[] l = { ExpressionCommons.newXdef(null, gfile, "T" + currentElementID, gfile.newString(attName)), gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), gfile.newByteChar('='),
 				gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), gfile.newString("\""), ExpressionCommons.newNonTerminal(null, gfile, type), gfile.newString("\""),
 				gfile.newRepetition(ExpressionCommons.newNonTerminal(null, gfile, "S")), };
 		return gfile.newSequence(l);

@@ -265,17 +265,22 @@ public class NezGrammar1 extends Combinator {
 	public Expression pFunc() {
 		Expression _If = Sequence(t("if"), P("S"), Link("$name", "FlagName"), Tag("If"));
 		Expression _On = Sequence(Choice(t("on"), t("with")), P("S"), Link("$name", "FlagName"), P("S"), Link("$expr", "Expression"), Tag("On"));
-		Expression _Def = Sequence(t("def"), P("S"), Link("$name", "TableName"), P("S"), Link("$expr", "Expression"), Tag("Def"));
+		Expression _Symbol = Sequence(t("symbol"), P("S"), Link("$name", "NonTerminal"), Tag("Symbol"));
 		Expression _Exists = Sequence(t("exists"), P("S"), Link("$name", "TableName"), Option(P("S"), Link("$symbol", "Character")), Tag("Exists"));
 		Expression _Match = Sequence(t("match"), P("S"), Link("$name", "TableName"), Tag("Match"));
-		Expression _Is = Sequence(t("is"), P("S"), Link("$name", "TableName"), Tag("Is"));
-		Expression _Isa = Sequence(t("isa"), P("S"), Link("$name", "TableName"), Tag("Isa"));
+		Expression _Is = Sequence(t("is"), P("S"), Link("$name", "NonTerminal"), Tag("Is"));
+		Expression _Isa = Sequence(t("isa"), P("S"), Link("$name", "NonTerminal"), Tag("Isa"));
 		Expression _Block = Sequence(t("block"), P("S"), Link("$expr", "Expression"), Tag("Block"));
 		Expression _Local = Sequence(t("local"), P("S"), Link("$name", "TableName"), P("S"), Link("$expr", "Expression"), Tag("Local"));
+		// Expression _Number = Sequence(t("number"), P("S"), Link("$name",
+		// "NonTerminal"), Tag("Number"));
+		// Expression _Repeat = Sequence(t("repeat"), P("S"), Link("$expr",
+		// "Expression"), Tag("Repeat"));
+		Expression _Def = Sequence(t("def"), P("S"), Link("$name", "TableName"), P("S"), Link("$expr", "Expression"), Tag("Def"));
 		// Expression _Uniq = ;
 		// Expression _Set = ;
 		Expression _Undefined = Sequence(OneMore(Not(">"), AnyChar()), Tag("Undefined"));
-		return Sequence(t("<"), New(Choice(_If, _On, _Def, _Exists, _Match, _Is, _Isa, _Block, _Local, _Undefined)), P("_"), t(">"));
+		return Sequence(t("<"), New(Choice(_If, _On, _Symbol, _Def, _Exists, _Match, _Is, _Isa, _Block, _Local, _Undefined)), P("_"), t(">"));
 	}
 
 	public Expression pFlagName() {

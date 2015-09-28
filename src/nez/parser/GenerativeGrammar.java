@@ -7,7 +7,7 @@ import java.util.TreeMap;
 
 import nez.Grammar;
 import nez.Strategy;
-import nez.lang.GrammarChecker2;
+import nez.lang.GrammarChecker;
 import nez.lang.Production;
 import nez.lang.Typestate;
 import nez.main.Verbose;
@@ -19,7 +19,7 @@ public class GenerativeGrammar extends Grammar {
 
 	public GenerativeGrammar(Production start, Strategy strategy, TreeMap<String, Boolean> flagMap) {
 		this.funcMap = new HashMap<String, ParseFunc>();
-		new GrammarChecker2(this, !strategy.isEnabled("ast", Strategy.AST), flagMap, start, strategy);
+		new GrammarChecker(this, !strategy.isEnabled("ast", Strategy.AST), flagMap, start, strategy);
 		memo(strategy);
 	}
 

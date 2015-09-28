@@ -13,12 +13,16 @@ import nez.ast.jcode.JCodeTreeTransducer;
 import nez.io.SourceContext;
 import nez.util.ConsoleUtils;
 
-public class ScriptContext extends TreeVisitor {
+public class ScriptContext extends TreeVisitor implements KonohaSymbols {
 	private Parser parser;
+	private ClassRepository base;
+	private Interpreter interpreter;
 	private JCodeTreeTransducer treeTransducer;
 
 	public ScriptContext(Parser parser) {
 		this.parser = parser;
+		this.base = new ClassRepository();
+		this.interpreter = new Interpreter(base);
 		this.treeTransducer = new JCodeTreeTransducer();
 	}
 
@@ -31,23 +35,29 @@ public class ScriptContext extends TreeVisitor {
 	}
 
 	private Object eval(SourceContext source) {
-		JCodeTree node = (JCodeTree) this.parser.parse(source, this.treeTransducer);
+		Tree<?> node = this.parser.parseCommonTree(source);
 		if (node == null) {
 			println(source.getSyntaxErrorMessage());
 			return this; // nothing
 		}
-		Object result = null;
-		for (JCodeTree sub : node) {
-			result = this.visit("eval", sub);
-		}
-		return result;
+		System.out.println("evaluating " + node + "...\n");
+		return interpreter.visit("eval", node);
 	}
 
-	@Override
-	public Object visitUndefinedNode(Tree<?> node) {
-		System.out.println("undefined: " + node);
-		return null;
-	}
+	// @Override
+	// public Object visitUndefinedNode(Tree<?> node) {
+	// System.out.println("undefined: " + node);
+	// return null;
+	// }
+	//
+	// public void evalSource(Tree<?> node) {
+	// System.out.println(node);
+	// }
+	//
+	// public void evalExpression(Tree<?> node) {
+	// System.out.println("Expression: " + node);
+	// interpreter.eval(node.get(0));
+	// }
 
 	public void execute(JCodeTree node) {
 		JCodeGenerator generator = new JCodeGenerator("GeneratedClass");

@@ -18,6 +18,7 @@ import nez.lang.GrammarFileLoader;
 import nez.lang.NezGrammar1;
 import nez.lang.Production;
 import nez.lang.expr.ExpressionCommons;
+import nez.lang.expr.NonTerminal;
 import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
 import nez.util.UList;
@@ -269,15 +270,31 @@ public class NezConstructor extends GrammarFileLoader implements Constructor {
 	}
 
 	public Expression newDef(Tree<?> node) {
-		return ExpressionCommons.newXdef(node, this.getGrammar(), Symbol.tag(node.getText(_name, "")), newExpression(node.get(_expr)));
+		Grammar g = this.getGrammar();
+		Tree<?> nameNode = node.get(_name);
+		NonTerminal pat = g.newNonTerminal(node, nameNode.toText());
+		Expression e = newExpression(node.get(_expr));
+		Production p = g.newProduction(pat.getLocalName(), e);
+		this.reportWarning(nameNode, "new production generated: " + p);
+		return ExpressionCommons.newXsymbol(node, pat);
+	}
+
+	public Expression newSymbol(Tree<?> node) {
+		Grammar g = this.getGrammar();
+		NonTerminal pat = g.newNonTerminal(node, node.getText(_name, ""));
+		return ExpressionCommons.newXsymbol(node, pat);
 	}
 
 	public Expression newIs(Tree<?> node) {
-		return ExpressionCommons.newXis(node, this.getGrammar(), Symbol.tag(node.getText(_name, "")));
+		Grammar g = this.getGrammar();
+		NonTerminal pat = g.newNonTerminal(node, node.getText(_name, ""));
+		return ExpressionCommons.newXis(node, pat);
 	}
 
 	public Expression newIsa(Tree<?> node) {
-		return ExpressionCommons.newXisa(node, this.getGrammar(), Symbol.tag(node.getText(_name, "")));
+		Grammar g = this.getGrammar();
+		NonTerminal pat = g.newNonTerminal(node, node.getText(_name, ""));
+		return ExpressionCommons.newXisa(node, pat);
 	}
 
 	public Expression newExists(Tree<?> node) {

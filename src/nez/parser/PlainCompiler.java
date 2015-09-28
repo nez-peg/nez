@@ -23,13 +23,13 @@ import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
 import nez.lang.expr.Xblock;
-import nez.lang.expr.Xdef;
 import nez.lang.expr.Xdefindent;
 import nez.lang.expr.Xexists;
 import nez.lang.expr.Xindent;
 import nez.lang.expr.Xis;
 import nez.lang.expr.Xlocal;
 import nez.lang.expr.Xmatch;
+import nez.lang.expr.Xsymbol;
 
 public class PlainCompiler extends NezCompiler {
 
@@ -126,9 +126,10 @@ public class PlainCompiler extends NezCompiler {
 	}
 
 	@Override
-	public Instruction encodeNonTerminal(NonTerminal p, Instruction next, Instruction failjump) {
-		Production r = p.getProduction();
-		return new ICall(r, next);
+	public Instruction encodeNonTerminal(NonTerminal n, Instruction next, Instruction failjump) {
+		Production p = n.getProduction();
+		ParseFunc f = this.getParseFunc(p);
+		return new ICall(f, p.getLocalName(), next);
 	}
 
 	// AST Construction
@@ -198,7 +199,7 @@ public class PlainCompiler extends NezCompiler {
 	}
 
 	@Override
-	public Instruction encodeXdef(Xdef p, Instruction next, Instruction failjump) {
+	public Instruction encodeXsymbol(Xsymbol p, Instruction next, Instruction failjump) {
 		return new IPos(p, encode(p.get(0), new IDefSymbol(p, next), failjump));
 	}
 
@@ -219,11 +220,10 @@ public class PlainCompiler extends NezCompiler {
 
 	@Override
 	public Instruction encodeXis(Xis p, Instruction next, Instruction failjump) {
-		assert (p.getGrammar() instanceof GenerativeGrammar);
 		if (p.is) {
-			return new IPos(p, encode(p.getSymbolExpression(), new IIsSymbol(p, next), failjump));
+			return new IPos(p, encode(p.get(0), new IIsSymbol(p, next), failjump));
 		} else {
-			return new IPos(p, encode(p.getSymbolExpression(), new IIsaSymbol(p, next), failjump));
+			return new IPos(p, encode(p.get(0), new IIsaSymbol(p, next), failjump));
 		}
 	}
 

@@ -148,16 +148,16 @@ public abstract class GrammarBase extends AbstractList<Production> {
 		return ExpressionCommons.newXblock(getSourcePosition(), newSequence(seq));
 	}
 
-	public final Expression newDefSymbol(String table, Expression... seq) {
-		return ExpressionCommons.newXdef(getSourcePosition(), (Grammar) this, Symbol.tag(table), newSequence(seq));
+	public final Expression newDefSymbol(NonTerminal n) {
+		return ExpressionCommons.newXsymbol(getSourcePosition(), n);
 	}
 
-	public final Expression newIsSymbol(String table) {
-		return ExpressionCommons.newXis(getSourcePosition(), (Grammar) this, Symbol.tag(table));
+	public final Expression newIsSymbol(NonTerminal n) {
+		return ExpressionCommons.newXis(getSourcePosition(), n);
 	}
 
-	public final Expression newIsaSymbol(String table) {
-		return ExpressionCommons.newXisa(getSourcePosition(), (Grammar) this, Symbol.tag(table));
+	public final Expression newIsaSymbol(NonTerminal n) {
+		return ExpressionCommons.newXisa(getSourcePosition(), n);
 	}
 
 	public final Expression newExists(String table, String symbol) {

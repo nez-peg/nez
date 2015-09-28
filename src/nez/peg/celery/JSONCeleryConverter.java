@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import nez.ast.Tree;
 import nez.ast.Symbol;
+import nez.ast.Tree;
 import nez.lang.Expression;
 import nez.lang.expr.ExpressionCommons;
 import nez.util.UList;
@@ -62,7 +62,7 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 	public final void visitRequired(Tree<?> node) {
 		String propertyName = node.getText(0, null);
 		requiredPropertiesList.add(propertyName);
-		Expression[] seq = { _DQuoat(), ExpressionCommons.newXdef(node, grammar, Symbol.tag(currentClassName), ExpressionCommons.newString(node, propertyName)), _DQuoat(), ExpressionCommons.newNonTerminal(null, grammar, "NAMESEP"), toExpression(node.get(1)),
+		Expression[] seq = { _DQuoat(), ExpressionCommons.newXdef(node, grammar, currentClassName, ExpressionCommons.newString(node, propertyName)), _DQuoat(), ExpressionCommons.newNonTerminal(null, grammar, "NAMESEP"), toExpression(node.get(1)),
 				grammar.newOption(ExpressionCommons.newNonTerminal(null, grammar, "VALUESEP")) };
 		grammar.addProduction(node, node.getText(0, null), grammar.newSequence(seq));
 	}
@@ -80,7 +80,7 @@ public class JSONCeleryConverter extends AbstractCeleryConverter {
 		String propertyName = node.getText(0, null);
 		requiredPropertiesList.add(propertyName);
 		// inferType(node.get(2));
-		Expression[] seq = { _DQuoat(), ExpressionCommons.newXdef(node, grammar, Symbol.tag(currentClassName), ExpressionCommons.newString(node, propertyName)), _DQuoat(), ExpressionCommons.newNonTerminal(null, grammar, "NAMESEP"),
+		Expression[] seq = { _DQuoat(), ExpressionCommons.newXdef(node, grammar, currentClassName, ExpressionCommons.newString(node, propertyName)), _DQuoat(), ExpressionCommons.newNonTerminal(null, grammar, "NAMESEP"),
 				ExpressionCommons.newNonTerminal(null, grammar, "Any"), grammar.newOption(ExpressionCommons.newNonTerminal(null, grammar, "VALUESEP")) };
 		grammar.addProduction(node, node.getText(0, null), grammar.newSequence(seq));
 	}

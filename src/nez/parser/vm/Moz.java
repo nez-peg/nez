@@ -87,9 +87,9 @@ public class Moz {
 
 }
 
-abstract class MozInst extends Instruction {
+abstract class MozInstruction extends Instruction {
 
-	public MozInst(byte opcode, Expression e, Instruction next) {
+	public MozInstruction(byte opcode, Expression e, Instruction next) {
 		super(opcode, e, next);
 		// TODO Auto-generated constructor stub
 	}
@@ -180,7 +180,7 @@ abstract class MozInst extends Instruction {
 
 }
 
-abstract class Branch extends MozInst {
+abstract class Branch extends MozInstruction {
 	protected Instruction jump;
 
 	public Branch(byte opcode, Expression e, Instruction next) {
@@ -188,7 +188,7 @@ abstract class Branch extends MozInst {
 	}
 }
 
-abstract class BranchTable extends MozInst {
+abstract class BranchTable extends MozInstruction {
 	protected Instruction[] jumpTable;
 
 	public BranchTable(byte opcode, Expression e, Instruction next) {
@@ -197,7 +197,7 @@ abstract class BranchTable extends MozInst {
 }
 
 // Nop
-class Nop extends MozInst {
+class Nop extends MozInstruction {
 	public Nop(Expression e, Instruction next) {
 		super(Moz.Nop, e, next);
 	}
@@ -213,7 +213,7 @@ class Nop extends MozInst {
 }
 
 // Fail
-class Fail extends MozInst {
+class Fail extends MozInstruction {
 	public Fail(Expression e, Instruction next) {
 		super(Moz.Fail, e, next);
 	}
@@ -257,7 +257,7 @@ class Alt extends Branch {
 }
 
 // Succ
-class Succ extends MozInst {
+class Succ extends MozInstruction {
 	public Succ(Expression e, Instruction next) {
 		super(Moz.Succ, e, next);
 	}
@@ -335,7 +335,7 @@ class Call extends Branch {
 }
 
 // Ret
-class Ret extends MozInst {
+class Ret extends MozInstruction {
 	public Ret(Expression e, Instruction next) {
 		super(Moz.Ret, e, next);
 	}
@@ -356,7 +356,7 @@ class Ret extends MozInst {
 }
 
 // Pos
-class Pos extends MozInst {
+class Pos extends MozInstruction {
 	public Pos(Expression e, Instruction next) {
 		super(Moz.Pos, e, next);
 	}
@@ -379,7 +379,7 @@ class Pos extends MozInst {
 }
 
 // Back
-class Back extends MozInst {
+class Back extends MozInstruction {
 	public Back(Expression e, Instruction next) {
 		super(Moz.Back, e, next);
 	}
@@ -402,7 +402,7 @@ class Back extends MozInst {
 }
 
 // Skip
-class Skip extends MozInst {
+class Skip extends MozInstruction {
 	public Skip(Expression e, Instruction next) {
 		super(Moz.Skip, e, next);
 	}
@@ -423,7 +423,7 @@ class Skip extends MozInst {
 }
 
 // Byte
-class Byte extends MozInst {
+class Byte extends MozInstruction {
 	private int byteChar;
 
 	public Byte(Expression e, Instruction next, int byteChar) {
@@ -453,7 +453,7 @@ class Byte extends MozInst {
 }
 
 // Any
-class Any extends MozInst {
+class Any extends MozInstruction {
 	public Any(Expression e, Instruction next) {
 		super(Moz.Any, e, next);
 	}
@@ -478,7 +478,7 @@ class Any extends MozInst {
 }
 
 // Str
-class Str extends MozInst {
+class Str extends MozInstruction {
 	private byte[] utf8;
 
 	public Str(Expression e, Instruction next, byte[] utf8) {
@@ -508,7 +508,7 @@ class Str extends MozInst {
 }
 
 // Set
-class Set extends MozInst {
+class Set extends MozInstruction {
 	private boolean[] byteMap;
 
 	public Set(Expression e, Instruction next, boolean[] byteMap) {
@@ -539,7 +539,7 @@ class Set extends MozInst {
 }
 
 // NByte
-class NByte extends MozInst {
+class NByte extends MozInstruction {
 	private int byteChar;
 
 	public NByte(Expression e, Instruction next, int byteChar) {
@@ -568,7 +568,7 @@ class NByte extends MozInst {
 }
 
 // NAny
-class NAny extends MozInst {
+class NAny extends MozInstruction {
 	public NAny(Expression e, Instruction next) {
 		super(Moz.NAny, e, next);
 	}
@@ -592,7 +592,7 @@ class NAny extends MozInst {
 }
 
 // NStr
-class NStr extends MozInst {
+class NStr extends MozInstruction {
 	private byte[] utf8;
 
 	public NStr(Expression e, Instruction next, byte[] utf8) {
@@ -621,7 +621,7 @@ class NStr extends MozInst {
 }
 
 // NSet
-class NSet extends MozInst {
+class NSet extends MozInstruction {
 	private boolean[] byteMap;
 
 	public NSet(Expression e, Instruction next, boolean[] byteMap) {
@@ -651,7 +651,7 @@ class NSet extends MozInst {
 }
 
 // OByte
-class OByte extends MozInst {
+class OByte extends MozInstruction {
 	private int byteChar;
 
 	public OByte(Expression e, Instruction next, int byteChar) {
@@ -680,7 +680,7 @@ class OByte extends MozInst {
 }
 
 // OAny
-class OAny extends MozInst {
+class OAny extends MozInstruction {
 	public OAny(Expression e, Instruction next) {
 		super(Moz.OAny, e, next);
 	}
@@ -695,7 +695,7 @@ class OAny extends MozInst {
 }
 
 // OStr
-class OStr extends MozInst {
+class OStr extends MozInstruction {
 	private byte[] utf8;
 
 	public OStr(Expression e, Instruction next, byte[] utf8) {
@@ -724,7 +724,7 @@ class OStr extends MozInst {
 }
 
 // OSet
-class OSet extends MozInst {
+class OSet extends MozInstruction {
 	private boolean[] byteMap;
 
 	public OSet(Expression e, Instruction next, boolean[] byteMap) {
@@ -754,7 +754,7 @@ class OSet extends MozInst {
 }
 
 // RByte
-class RByte extends MozInst {
+class RByte extends MozInstruction {
 	private int byteChar;
 
 	public RByte(Expression e, Instruction next, int byteChar) {
@@ -783,7 +783,7 @@ class RByte extends MozInst {
 }
 
 // RAny
-class RAny extends MozInst {
+class RAny extends MozInstruction {
 	public RAny(Expression e, Instruction next) {
 		super(Moz.RAny, e, next);
 	}
@@ -798,7 +798,7 @@ class RAny extends MozInst {
 }
 
 // RStr
-class RStr extends MozInst {
+class RStr extends MozInstruction {
 	private byte[] utf8;
 
 	public RStr(Expression e, Instruction next, byte[] utf8) {
@@ -827,7 +827,7 @@ class RStr extends MozInst {
 }
 
 // RSet
-class RSet extends MozInst {
+class RSet extends MozInstruction {
 	private boolean[] byteMap;
 
 	public RSet(Expression e, Instruction next, boolean[] byteMap) {
@@ -858,7 +858,7 @@ class RSet extends MozInst {
 }
 
 // Consume
-class Consume extends MozInst {
+class Consume extends MozInstruction {
 	private int shift;
 
 	public Consume(Expression e, Instruction next, int shift) {
@@ -955,7 +955,7 @@ class Lookup extends Branch {
 }
 
 // Memo
-class Memo extends MozInst {
+class Memo extends MozInstruction {
 	private int memoPoint;
 	private boolean state;
 
@@ -988,7 +988,7 @@ class Memo extends MozInst {
 }
 
 // MemoFail
-class MemoFail extends MozInst {
+class MemoFail extends MozInstruction {
 	private int memoPoint;
 	private boolean state;
 
@@ -1019,7 +1019,7 @@ class MemoFail extends MozInst {
 }
 
 // TPush
-class TPush extends MozInst {
+class TPush extends MozInstruction {
 	public TPush(Expression e, Instruction next) {
 		super(Moz.TPush, e, next);
 	}
@@ -1042,7 +1042,7 @@ class TPush extends MozInst {
 }
 
 // TPop
-class TPop extends MozInst {
+class TPop extends MozInstruction {
 	private Symbol label;
 
 	public TPop(Expression e, Instruction next, Symbol label) {
@@ -1070,7 +1070,7 @@ class TPop extends MozInst {
 }
 
 // TLeftFold
-class TLeftFold extends MozInst {
+class TLeftFold extends MozInstruction {
 	private int shift;
 	private Symbol label;
 
@@ -1103,7 +1103,7 @@ class TLeftFold extends MozInst {
 }
 
 // TNew
-class TNew extends MozInst {
+class TNew extends MozInstruction {
 	private int shift;
 
 	public TNew(Expression e, Instruction next, int shift) {
@@ -1131,7 +1131,7 @@ class TNew extends MozInst {
 }
 
 // TCapture
-class TCapture extends MozInst {
+class TCapture extends MozInstruction {
 	private int shift;
 
 	public TCapture(Expression e, Instruction next, int shift) {
@@ -1159,7 +1159,7 @@ class TCapture extends MozInst {
 }
 
 // TTag
-class TTag extends MozInst {
+class TTag extends MozInstruction {
 	private Symbol tag;
 
 	public TTag(Expression e, Instruction next, Symbol tag) {
@@ -1187,7 +1187,7 @@ class TTag extends MozInst {
 }
 
 // TReplace
-class TReplace extends MozInst {
+class TReplace extends MozInstruction {
 	private byte[] utf8;
 	String value;
 
@@ -1217,7 +1217,7 @@ class TReplace extends MozInst {
 }
 
 // TStart
-class TStart extends MozInst {
+class TStart extends MozInstruction {
 	public TStart(Expression e, Instruction next) {
 		super(Moz.TStart, e, next);
 	}
@@ -1241,7 +1241,7 @@ class TStart extends MozInst {
 }
 
 // TCommit
-class TCommit extends MozInst {
+class TCommit extends MozInstruction {
 	private Symbol label;
 
 	public TCommit(Expression e, Instruction next, Symbol label) {
@@ -1270,7 +1270,7 @@ class TCommit extends MozInst {
 }
 
 // TAbort
-class TAbort extends MozInst {
+class TAbort extends MozInstruction {
 	public TAbort(Expression e, Instruction next) {
 		super(Moz.TAbort, e, next);
 	}
@@ -1335,7 +1335,7 @@ class TLookup extends Branch {
 }
 
 // TMemo
-class TMemo extends MozInst {
+class TMemo extends MozInstruction {
 	private int memoPoint;
 	private boolean state;
 
@@ -1369,7 +1369,7 @@ class TMemo extends MozInst {
 }
 
 // SOpen
-class SOpen extends MozInst {
+class SOpen extends MozInstruction {
 	public SOpen(Expression e, Instruction next) {
 		super(Moz.SOpen, e, next);
 	}
@@ -1392,7 +1392,7 @@ class SOpen extends MozInst {
 }
 
 // SClose
-class SClose extends MozInst {
+class SClose extends MozInstruction {
 	public SClose(Expression e, Instruction next) {
 		super(Moz.SClose, e, next);
 	}
@@ -1415,7 +1415,7 @@ class SClose extends MozInst {
 }
 
 // SMask
-class SMask extends MozInst {
+class SMask extends MozInstruction {
 	private Symbol table;
 
 	public SMask(Expression e, Instruction next, Symbol table) {
@@ -1445,7 +1445,7 @@ class SMask extends MozInst {
 }
 
 // SDef
-class SDef extends MozInst {
+class SDef extends MozInstruction {
 	private Symbol table;
 
 	public SDef(Expression e, Instruction next, Symbol table) {
@@ -1474,7 +1474,7 @@ class SDef extends MozInst {
 }
 
 // SIsDef
-class SIsDef extends MozInst {
+class SIsDef extends MozInstruction {
 	private Symbol table;
 	private byte[] utf8;
 
@@ -1508,7 +1508,7 @@ class SIsDef extends MozInst {
 }
 
 // SExists
-class SExists extends MozInst {
+class SExists extends MozInstruction {
 	private Symbol table;
 
 	public SExists(Expression e, Instruction next, Symbol table) {
@@ -1535,7 +1535,7 @@ class SExists extends MozInst {
 }
 
 // SMatch
-class SMatch extends MozInst {
+class SMatch extends MozInstruction {
 	private Symbol table;
 
 	public SMatch(Expression e, Instruction next, Symbol table) {
@@ -1565,7 +1565,7 @@ class SMatch extends MozInst {
 }
 
 // SIs
-class SIs extends MozInst {
+class SIs extends MozInstruction {
 	private Symbol table;
 
 	public SIs(Expression e, Instruction next, Symbol table) {
@@ -1602,7 +1602,7 @@ class SIs extends MozInst {
 }
 
 // SIsa
-class SIsa extends MozInst {
+class SIsa extends MozInstruction {
 	private Symbol table;
 
 	public SIsa(Expression e, Instruction next, Symbol table) {
@@ -1635,7 +1635,7 @@ class SIsa extends MozInst {
 }
 
 // SDefNum
-class SDefNum extends MozInst {
+class SDefNum extends MozInstruction {
 	private Symbol table;
 
 	public SDefNum(Expression e, Instruction next, Symbol table) {
@@ -1655,7 +1655,7 @@ class SDefNum extends MozInst {
 }
 
 // SCount
-class SCount extends MozInst {
+class SCount extends MozInstruction {
 	private Symbol table;
 
 	public SCount(Expression e, Instruction next, Symbol table) {
@@ -1675,7 +1675,7 @@ class SCount extends MozInst {
 }
 
 // Exit
-class Exit extends MozInst {
+class Exit extends MozInstruction {
 	boolean state;
 
 	public Exit(Expression e, Instruction next, boolean state) {
@@ -1727,7 +1727,7 @@ class DFirst extends BranchTable {
 }
 
 // Label
-class Label extends MozInst {
+class Label extends MozInstruction {
 	String nonTerminal;
 
 	public Label(Expression e, Instruction next, String nonTerminal) {
