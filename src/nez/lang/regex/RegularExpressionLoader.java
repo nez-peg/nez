@@ -49,7 +49,10 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 	}
 
 	public Expression piPattern(Tree<?> e, Expression k) {
-		return this.pi(e.get(0), k);
+		Expression notPattern = toSeq(null, ExpressionCommons.newPnot(null, pi(e.get(0), k)), toAny(null));
+		Expression zeroMore = ExpressionCommons.newPzero(null, notPattern);
+		Expression oneMore = ExpressionCommons.newPone(null, toSeq(null, pi(e.get(0), k), zeroMore));
+		return toSeq(null, zeroMore, oneMore);
 	}
 
 	// pi(e, k) e: regular expression, k: continuation
