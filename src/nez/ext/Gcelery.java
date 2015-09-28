@@ -97,7 +97,7 @@ public class Gcelery extends GrammarFileLoader {
 	}
 
 	public final Type toTStruct(Tree<?> node) {
-		return schema.newTStruct(node.getText(_Name, ""));
+		return schema.newTStruct(node.toText());
 	}
 
 	public final Type toTAny(Tree<?> node) {
