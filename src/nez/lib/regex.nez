@@ -51,6 +51,7 @@ Terminal
 	= CharacterSet
 	/ { '.' #Any }
 	/ '(' { @Expr #Capture } ')'
+	/ PositionAnchor
 	/ Character
 
 CharacterSet
@@ -77,6 +78,10 @@ CHARACTER_SET_ITEM
 
 HEX
 	= [0-9A-Fa-f]
+
+PositionAnchor
+	= { '^' #Header }
+	/ { '$' #Terminator }
 
 Character
 	= { CHARACTER #Character }
