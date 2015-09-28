@@ -111,7 +111,7 @@ public class JCodeGenerator {
 
 	protected final void popUnusedValue(JCodeTree node) {
 		if (node.requiredPop) {
-			this.mBuilder.pop();
+			// this.mBuilder.pop();
 		}
 	}
 
