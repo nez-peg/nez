@@ -58,6 +58,7 @@ public class DFAValidator {
 			System.out.println(stringContext[i]);
 			System.out.println("---------------");
 		}
+
 		for (int i = 0; i < theNumberOfNonTerminal; i++) {
 			for (int j = 0; j < nonTerminalRelationGraph[i].size(); j++) {
 				System.out.print(nonTerminalRelationGraph[i].get(j) + " ");
@@ -70,15 +71,14 @@ public class DFAValidator {
 		}
 
 		compressRedundantEdge();
-
-		expandOne();
+		expandN(theNumberOfNonTerminal);
 
 		for (Map.Entry<String, Integer> e : nonTerminalIDTable.entrySet()) {
 			System.out.println(e.getKey() + " : " + e.getValue());
 		}
 
 		for (int i = 0; i < theNumberOfNonTerminal; i++) {
-			System.out.println(alreadyVerified[i] + " | " + stringContext[i]);
+			System.out.println(i + "-th : " + alreadyVerified[i] + " | " + stringContext[i]);
 		}
 
 		for (int i = 0; i < theNumberOfNonTerminal; i++) {
@@ -89,22 +89,87 @@ public class DFAValidator {
 				return false;
 			}
 		}
-
 		return true;
 	}
 
-	private void expandOne() {
-		StringBuilder[] sb = new StringBuilder[theNumberOfNonTerminal];
-		for (int i = 0; i < theNumberOfNonTerminal; i++) {
-			sb[i] = stringContext[i];
-		}
-		for (int i = 0; i < theNumberOfNonTerminal; i++) {
-			for (int j = 0; j < theNumberOfNonTerminal; j++) {
-				/*
-				 * if (i == j) { continue; }
-				 */
-				stringContext[i] = replaceAllNonTerminal(stringContext[i], new Integer(j).toString(), sb[j].toString());
+	private StringBuilder removeRedundantWords(StringBuilder context) {
+		boolean update = true;
+		while (update) {
+			update = false;
+			StringBuilder sb = new StringBuilder();
+			for (int i = 0; i < context.length(); i++) {
+				char c = context.charAt(i);
+				int len = sb.length();
+				if (len == 0) {
+					sb.append(c);
+					continue;
+				}
+				if (c == 'a') {
+					if (sb.charAt(len - 1) != 'a') {
+						sb.append(c);
+					}
+				} else if (c == '/') {
+					if (len - 2 >= 0 && sb.charAt(len - 2) == '/' && sb.charAt(len - 1) == 'a') {
+
+					} else {
+						sb.append(c);
+					}
+				} else {
+					sb.append(c);
+				}
 			}
+			if (!context.toString().equals(sb.toString())) {
+				context = sb;
+				update = true;
+			}
+		}
+		return context;
+	}
+
+	// replaceの整数$つけ忘れあったら$つける
+	private void expandN(int loopCounter) {
+		while (loopCounter > 0) {
+
+			for (int i = 0; i < theNumberOfNonTerminal; i++) {
+				stringContext[i] = removeRedundantWords(stringContext[i]);
+				if (!eval(i, stringContext[i].toString())) {
+					return;
+				}
+			}
+
+			StringBuilder[] sb = new StringBuilder[theNumberOfNonTerminal];
+			for (int i = 0; i < theNumberOfNonTerminal; i++) {
+				sb[i] = stringContext[i];
+			}
+
+			for (int i = 0; i < theNumberOfNonTerminal; i++) {
+				int pos = 0;
+				StringBuilder tmp = new StringBuilder();
+				while (pos < stringContext[i].length()) {
+					char c = stringContext[i].charAt(pos);
+					if (Character.isDigit(c)) {
+						int ID = 0;
+						while (pos < stringContext[i].length() && Character.isDigit(stringContext[i].charAt(pos))) {
+							ID *= 10;
+							ID += (stringContext[i].charAt(pos++) - '0');
+						}
+						// stringContext[i].charAt(pos) == $
+						tmp.append(sb[ID]);
+						++pos;
+					} else {
+						tmp.append(c);
+						++pos;
+					}
+				}
+				stringContext[i] = tmp;
+			}
+			/*
+			 * System.out.println("^^^^^^^^^"); for (int i = 0; i <
+			 * theNumberOfNonTerminal; i++) {
+			 * System.out.println(alreadyVerified[i] + " | " +
+			 * stringContext[i]); } System.out.println("^^^^^^^^^");
+			 */
+			--loopCounter;
 		}
 	}
 
@@ -264,14 +329,17 @@ public class DFAValidator {
 					boolean hasRight = hasChar(context, R + 1, +1);
 					if (!hasLeft && !hasRight) {
 						System.out.println("FOUND : A <- A");
+						System.out.println(nonTerminalID + "-th : " + context);
 						return false;
 					} else if (hasLeft && !hasRight) {
 						// VALID
 					} else if (!hasLeft && hasRight) {
 						System.out.println("FOUND : A <- Aa");
+						System.out.println(nonTerminalID + "-th : " + context);
 						return false;
 					} else if (hasLeft && hasRight) {
 						System.out.println("FOUND : A <- aAa");
+						System.out.println(nonTerminalID + "-th : " + context);
 						return false;
 					}
 				}
@@ -350,7 +418,7 @@ public class DFAValidator {
 		String context = e.toString();
 		context = eliminateRedundantCharacters(context);
 		stringContext[nonTerminalID] = new StringBuilder(context);
-		System.out.println("context = " + stringContext[nonTerminalID]);
+		System.out.println(nonTerminalID + " | " + nonTerminalContext[nonTerminalID] + " : context = " + stringContext[nonTerminalID]);
 		for (int i = 0; i < context.length(); i++) {
 			if (Character.isDigit(context.charAt(i))) {
 				int ID = 0;
