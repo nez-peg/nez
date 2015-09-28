@@ -4,7 +4,8 @@
 
   Author:
     Shun Honda (https://github.com/shun-honda)
-    
+		Masanori Sato (https://github.com/masanori-10)
+
 */
 
 File
@@ -48,7 +49,7 @@ Terminal
 
 CharacterSet
 	= '[^' { @CharacterRange (@CharacterRange)* #NegativeCharacterSet} ']'
-	/'[' !'^' CharacterRange {@ (@CharacterRange)+ #CharacterSet}? ']' 
+	/'[' !'^' CharacterRange {@ (@CharacterRange)+ #CharacterSet}? ']'
 
 CharacterRange
 	= CharacterSetItem {@ '-' @CharacterSetItem #CharacterRange }?
@@ -87,5 +88,3 @@ CHARACTER
 METACHARACTER
 	= '+' / '*' / '?' / '.' / '^' / '$' / '|' / '/'
 	/ '(' / ')' / '[' / ']' / '{' / '}' / '-'
-
-
