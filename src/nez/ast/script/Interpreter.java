@@ -23,6 +23,24 @@ public class Interpreter extends TreeVisitor implements KonohaSymbols {
 		return evalOperator(node, "opAdd", left, right);
 	}
 
+	public Object evalSub(Tree<?> node) {
+		Object left = eval(node.get(0));
+		Object right = eval(node.get(1));
+		return evalOperator(node, "opSub", left, right);
+	}
+
+	public Object evalMul(Tree<?> node) {
+		Object left = eval(node.get(0));
+		Object right = eval(node.get(1));
+		return evalOperator(node, "opMul", left, right);
+	}
+
+	public Object evalDiv(Tree<?> node) {
+		Object left = eval(node.get(0));
+		Object right = eval(node.get(1));
+		return evalOperator(node, "opDiv", left, right);
+	}
+
 	public Object evalInteger(Tree<?> node) {
 		return Integer.parseInt(node.toText());
 	}
