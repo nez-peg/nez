@@ -1,28 +1,58 @@
 package nez.ext;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 
+import nez.ast.script.ScriptContext;
 import nez.main.Command;
 import nez.main.CommandContext;
 import nez.util.ConsoleUtils;
 
 public class Ckonoha extends Command {
+
 	@Override
 	public void exec(CommandContext config) throws IOException {
-		Class<?> c = null;
-		try {
-			c = Class.forName("nez.konoha.Konoha");
-		} catch (ClassNotFoundException e) {
-			ConsoleUtils.exit(1, "unsupported konoha");
-		}
-		try {
-			Object konoha = c.newInstance();
-			Method shell = c.getMethod("shell");
-			shell.invoke(konoha);
-		} catch (Exception e) {
-			e.printStackTrace();
+		ScriptContext sc = new ScriptContext(config.newParser());
+		int linenum = 1;
+		String command = null;
+		while ((command = readLine()) != null) {
+			sc.eval("<stdio>", linenum, command);
+			linenum += (command.split("\n").length);
 		}
 	}
+
+	private static String readLine() {
+		ConsoleUtils.println("\n>>>");
+		Object console = ConsoleUtils.getConsoleReader();
+		StringBuilder sb = new StringBuilder();
+		while (true) {
+			String line = ConsoleUtils.readSingleLine(console, "   ");
+			if (line == null) {
+				return null;
+			}
+			if (line.equals("")) {
+				return sb.toString();
+			}
+			ConsoleUtils.addHistory(console, line);
+			sb.append(line);
+			sb.append("\n");
+		}
+	}
+
+	// @Override
+	// public void exec(CommandContext config) throws IOException {
+	// Class<?> c = null;
+	// try {
+	// c = Class.forName("nez.konoha.Konoha");
+	// } catch (ClassNotFoundException e) {
+	// ConsoleUtils.exit(1, "unsupported konoha");
+	// }
+	// try {
+	// Object konoha = c.newInstance();
+	// Method shell = c.getMethod("shell");
+	// shell.invoke(konoha);
+	// } catch (Exception e) {
+	// e.printStackTrace();
+	// }
+	// }
 
 }

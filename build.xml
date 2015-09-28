@@ -1,4 +1,4 @@
-<project name="libbun" default="jar">
+<project name="nez" default="jar">
 	<!-- directory / file definition -->
 	<property name="BinaryName" value="nez" />
 	<property name="source_dir" value="src" />

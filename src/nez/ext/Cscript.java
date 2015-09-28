@@ -15,13 +15,13 @@ import nez.util.ConsoleUtils;
 
 public class Cscript extends Command {
 
-	private Parser grammar;
+	private Parser parser;
 	private JCodeTreeTransducer treeTransducer;
 
 	@Override
 	public void exec(CommandContext config) throws IOException {
 		this.treeTransducer = new JCodeTreeTransducer();
-		this.grammar = config.newParser();
+		this.parser = config.newParser();
 		if (config.hasInput()) {
 			JCodeTree node = parse(config);
 			execute(node);
@@ -32,7 +32,7 @@ public class Cscript extends Command {
 
 	public final JCodeTree parse(CommandContext config) throws IOException {
 		SourceContext source = config.nextInput();
-		JCodeTree node = (JCodeTree) this.grammar.parse(source, this.treeTransducer);
+		JCodeTree node = (JCodeTree) this.parser.parse(source, this.treeTransducer);
 		if (node == null) {
 			ConsoleUtils.println(source.getSyntaxErrorMessage());
 		}
@@ -42,11 +42,11 @@ public class Cscript extends Command {
 
 	public JCodeTree parse(String urn, int linenum, String text) {
 		SourceContext source = SourceContext.newStringContext(urn, linenum, text);
-		JCodeTree node = (JCodeTree) grammar.parse(source, treeTransducer);
+		JCodeTree node = (JCodeTree) parser.parse(source, treeTransducer);
 		if (node == null) {
 			ConsoleUtils.println(source.getSyntaxErrorMessage());
 		}
-		System.out.println("parsed:\n" + node + "\n");
+		// System.out.println("parsed:\n" + node + "\n");
 		return node;
 	}
 
@@ -92,13 +92,5 @@ public class Cscript extends Command {
 			System.out.println("Invocation problem");
 			e.printStackTrace();
 		}
-	}
-}
-
-class ScriptContext {
-	Parser p;
-
-	void eval() {
-
 	}
 }
