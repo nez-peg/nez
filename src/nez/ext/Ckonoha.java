@@ -15,7 +15,8 @@ public class Ckonoha extends Command {
 		int linenum = 1;
 		String command = null;
 		while ((command = readLine()) != null) {
-			sc.eval("<stdio>", linenum, command);
+			Object result = sc.eval("<stdio>", linenum, command);
+			System.out.println(result);
 			linenum += (command.split("\n").length);
 		}
 	}
