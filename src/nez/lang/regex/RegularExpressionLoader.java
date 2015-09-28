@@ -113,6 +113,36 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 		return pi(e.get(0), piRepetition(e, k));
 	}
 
+	// pi(e{3}, k) = pi(e, pi(e, pi(e, k)))
+	public Expression piNTimesRepetition(Tree<?> e, Expression k) {
+		final int N = e.getInt(1, 0);
+		Expression ne = k;
+		for (int i = 0; i < N; i++) {
+			ne = pi(e.get(0), ne);
+		}
+		return ne;
+	}
+
+	// pi(e{N,}, k) = pi(e{N}, A), A <- pi(e, A) / k
+	public Expression piNMoreRepetition(Tree<?> e, Expression k) {
+		return piNTimesRepetition(e, piRepetition(e, k));
+	}
+
+	// pi(e{N,M}, k) = pi(e{N}, A0), A0 <- pi(e, A1) / k, ... A(M-N) <- k
+	public Expression piNtoMTimesRepetition(Tree<?> e, Expression k) {
+		final int DIF = e.getInt(2, 0) - e.getInt(1, 0);
+		String ruleName = "Repetition" + NonTerminalCount++;
+		Expression ne = ExpressionCommons.newNonTerminal(e, this.getGrammar(), ruleName);
+		getGrammar().newProduction(ruleName, k);
+		for (int i = 0; i < DIF; i++) {
+			ruleName = "Repetition" + NonTerminalCount++;
+			Expression nne = ne;
+			ne = ExpressionCommons.newNonTerminal(e, this.getGrammar(), ruleName);
+			getGrammar().newProduction(ruleName, toChoice(e, pi(e.get(0), nne), k));
+		}
+		return piNTimesRepetition(e, ne);
+	}
+
 	public Expression piAny(Tree<?> e, Expression k) {
 		return toSeq(e, k);
 	}
