@@ -65,6 +65,7 @@ public class Gcelery extends GrammarFileLoader {
 		for (Tree<?> memberNode : node) {
 			this.visit("visit", memberNode);
 		}
+		schema.newUniqNames();
 		if (enableNezExtension) {
 			genStruct(currentStructName);
 		} else {
@@ -79,13 +80,13 @@ public class Gcelery extends GrammarFileLoader {
 	public final void visitRequired(Tree<?> node) {
 		String elementName = node.getText(_Name, "");
 		schema.addRequired(elementName);
-		schema.newElement(getUniqueName(elementName), schema.newRequired(elementName, toType(node.get(_Type))));
+		schema.newElement(getUniqueName(elementName), schema.newUniq(elementName, toType(node.get(_Type))));
 	}
 
 	public final void visitOption(Tree<?> node) {
 		String elementName = node.getText(_Name, "");
 		schema.addMember(elementName);
-		schema.newElement(getUniqueName(elementName), schema.newOption(elementName, toType(node.get(_Type))));
+		schema.newElement(getUniqueName(elementName), schema.newUniq(elementName, toType(node.get(_Type))));
 	}
 
 	public final Type toType(Tree<?> node) {
@@ -139,7 +140,7 @@ public class Gcelery extends GrammarFileLoader {
 		int index = 0;
 		Type[] alt = new Type[membersListSize + 1];
 		for (String elementName : schema.getMembers()) {
-			alt[index++] = schema.newUniq(getUniqueName(elementName));
+			alt[index++] = schema.newAlt(getUniqueName(elementName));
 		}
 		alt[index] = schema.newOthers();
 		schema.newMembers(currentStructName, alt);

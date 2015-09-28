@@ -9,7 +9,9 @@ public abstract class AbstractSchemaGrammarGenerator {
 
 	abstract public void newStruct(String structName, Type t);
 
-	abstract public void newMembers(String structName, Type... types);
+	abstract public void newMembers(String structName, Type... members);
+
+	abstract public void newUniqNames();
 
 	abstract public Type newRequired(String elementName, Type t);
 
@@ -35,7 +37,10 @@ public abstract class AbstractSchemaGrammarGenerator {
 
 	abstract public Type newPermutation();
 
-	abstract public Type newUniq(String elementName);
+	abstract public Type newUniq(String elementName, Type t);
+
+	abstract public Type newAlt(String elementName);
 
 	abstract public Type newOthers();
+
 }

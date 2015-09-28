@@ -72,12 +72,12 @@ public abstract class SchemaGrammarGenerator extends AbstractSchemaGrammarGenera
 		return ExpressionCommons.newNonTerminal(null, gfile, "SPACING");
 	}
 
-	protected final Expression _Def(String nterm) {
-		return ExpressionCommons.newXsymbol(null, _NonTerminal(nterm));
+	protected final Expression _Def(String tableName) {
+		return ExpressionCommons.newXsymbol(null, _NonTerminal(tableName));
 	}
 
-	protected final Expression _Exists(String table) {
-		return ExpressionCommons.newXexists(null, Symbol.tag(table), null);
+	protected final Expression _Exists(String table, String name) {
+		return ExpressionCommons.newXexists(null, Symbol.tag(table), name);
 	}
 
 }
