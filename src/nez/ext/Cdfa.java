@@ -71,6 +71,7 @@ public class Cdfa extends Command {
 					Grammar g2 = GrammarFileLoader.loadGrammar(fileName, null, null);
 					if (g2 == null) {
 						ConsoleUtils.println("invalid file");
+						ConsoleUtils.print(">>>");
 						continue;
 					}
 					/*
