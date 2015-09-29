@@ -4,10 +4,10 @@ import java.lang.reflect.Method;
 
 import nez.util.UList;
 
-public class ClassRepository {
+public class TypeSystem {
 	UList<Class<?>> classList = new UList<Class<?>>(new Class<?>[4]);
 
-	public ClassRepository() {
+	public TypeSystem() {
 		add(DynamicOperator.class);
 		add(StaticOperator.class);
 	}
@@ -23,27 +23,41 @@ public class ClassRepository {
 				if (!name.equals(m.getName())) {
 					continue;
 				}
-				Class<?>[] p = m.getParameterTypes();
-				if (args.length != p.length) {
-					continue;
+				if (acceptArguments(true, m, args)) {
+					return m;
 				}
-				for (int j = 0; j < args.length; j++) {
-					if (!accept(p[j], args[j])) {
-						continue;
-					}
-				}
-				return m;
 			}
 		}
 		return null;
 	}
 
-	boolean accept(Class<?> p, Class<?> a) {
+	boolean acceptArguments(boolean autoBoxing, Method m, Class<?>... args) {
+		Class<?>[] p = m.getParameterTypes();
+		if (args.length != p.length) {
+			return false;
+		}
+		for (int j = 0; j < args.length; j++) {
+			if (!accept(autoBoxing, p[j], args[j])) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	boolean accept(boolean autoBoxing, Class<?> p, Class<?> a) {
 		if (a == null) {
 			return true;
 		}
+		if (autoBoxing) {
+			if (p == int.class && a == Integer.class) {
+				return true;
+			}
+		}
 		System.out.printf("%s %s %s\n", p, a, p.isAssignableFrom(a));
-		return p.isAssignableFrom(a);
+		if (p.isAssignableFrom(a)) {
+			return true;
+		}
+		return false;
 	}
 
 }

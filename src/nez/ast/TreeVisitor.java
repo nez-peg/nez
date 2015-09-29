@@ -34,7 +34,7 @@ public class TreeVisitor {
 			try {
 				m = getClassMethod(method, tag);
 			} catch (NoSuchMethodException e) {
-				Verbose.printNoSuchMethodException(e);
+				// Verbose.printNoSuchMethodException(e);
 				return null;
 			} catch (SecurityException e) {
 				Verbose.traceException(e);
@@ -51,7 +51,7 @@ public class TreeVisitor {
 	}
 
 	protected Object visitUndefinedNode(Tree<?> node) {
-		ConsoleUtils.exit(1, "undefined node:" + node);
+		ConsoleUtils.exit(1, "TODO: undefined node:" + node);
 		return null;
 	}
 
