@@ -16,6 +16,10 @@ public class TypeSystem {
 		classList.add(c);
 	}
 
+	void add(String path) throws ClassNotFoundException {
+		add(Class.forName(path));
+	}
+
 	Method findMethod(String name, Class<?>... args) {
 		for (int i = classList.size() - 1; i >= 0; i--) {
 			Class<?> c = classList.ArrayValues[i];
@@ -50,6 +54,9 @@ public class TypeSystem {
 		}
 		if (autoBoxing) {
 			if (p == int.class && a == Integer.class) {
+				return true;
+			}
+			if (p == double.class && a == Double.class) {
 				return true;
 			}
 		}

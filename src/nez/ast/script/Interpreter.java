@@ -84,6 +84,46 @@ public class Interpreter extends TreeVisitor implements KonohaSymbols {
 		return right;
 	}
 
+	public Object evalApply(Tree<?> node) {
+		String name = node.getText(_name, null);
+		Object[] args = (Object[]) eval(node.get(_param));
+		return evalFunction(node, name, args);
+	}
+
+	public Object evalList(Tree<?> node) {
+		Object[] args = new Object[node.size()];
+		for (int i = 0; i < node.size(); i++) {
+			args[i] = eval(node.get(i));
+		}
+		return args;
+	}
+
+	public Object evalImport(Tree<?> node) {
+		String path = (String) eval(node.get(0));
+		try {
+			base.add(path);
+		} catch (ClassNotFoundException e) {
+			perror(node, "undefined class name: %s", path);
+		}
+		return empty;
+	}
+
+	public Object evalQualifiedName(Tree<?> node) {
+		StringBuilder sb = new StringBuilder();
+		s(sb, node);
+		return sb.toString();
+	}
+
+	public void s(StringBuilder sb, Tree<?> node) {
+		Tree<?> prefix = node.get(_prefix);
+		if (prefix.size() == 2) {
+			s(sb, prefix);
+		} else {
+			sb.append(prefix.toText());
+		}
+		sb.append(".").append(node.getText(_name, null));
+	}
+
 	public Object evalInteger(Tree<?> node) {
 		return Integer.parseInt(node.toText());
 	}
@@ -126,4 +166,29 @@ public class Interpreter extends TreeVisitor implements KonohaSymbols {
 		}
 		return empty;
 	}
+
+	Object evalFunction(Tree<?> node, String name, Object... args) {
+		Class<?>[] classArray = new Class<?>[args.length];
+		for (int i = 0; i < args.length; i++) {
+			classArray[i] = typeof(args[i]);
+		}
+		Method m = base.findMethod(name, classArray);
+		if (m == null) {
+			perror(node, "undefined function: %s", name);
+		}
+		try {
+			return m.invoke(null, args);
+		} catch (IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalArgumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return empty;
+	}
+
 }
