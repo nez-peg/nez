@@ -1,4 +1,4 @@
-package nez.ast.jcode;
+package nez.ast.script.asm;
 
 import nez.ast.Symbol;
 

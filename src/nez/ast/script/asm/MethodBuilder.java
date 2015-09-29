@@ -1,10 +1,12 @@
-package nez.ast.jcode;
+package nez.ast.script.asm;
 
 import java.lang.invoke.CallSite;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.util.ArrayDeque;
 import java.util.Deque;
+
+import nez.ast.jcode.StaticField;
 
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.Handle;
@@ -24,8 +26,8 @@ import org.objectweb.asm.commons.Method;
  */
 public class MethodBuilder extends GeneratorAdapter {
 	/**
-	 * contains loop statement label(break, continue). left is break label
-	 * and right is continue label.
+	 * contains loop statement label(break, continue). left is break label and
+	 * right is continue label.
 	 */
 	protected final Deque<Pair<Label, Label>> loopLabels;
 
@@ -44,7 +46,7 @@ public class MethodBuilder extends GeneratorAdapter {
 	 */
 	protected int currentLineNum = -1;
 
-	protected MethodBuilder(int accessFlag, Method method, ClassVisitor cv) {
+	public MethodBuilder(int accessFlag, Method method, ClassVisitor cv) {
 		super(Opcodes.ASM4, toMethodVisitor(accessFlag, method, cv), accessFlag, method.getName(), method.getDescriptor());
 		this.loopLabels = new ArrayDeque<>();
 		this.tryLabels = new ArrayDeque<>();
@@ -63,6 +65,7 @@ public class MethodBuilder extends GeneratorAdapter {
 	 * @param cv
 	 * @return
 	 */
+
 	private static MethodVisitor toMethodVisitor(int access, Method method, ClassVisitor cv) {
 		MethodVisitor visitor = cv.visitMethod(access, method.getName(), method.getDescriptor(), null, null);
 		JSRInlinerAdapter inlinerAdapter = new JSRInlinerAdapter(visitor, access, method.getName(), method.getDescriptor(), null, null);
@@ -72,9 +75,10 @@ public class MethodBuilder extends GeneratorAdapter {
 	/**
 	 * get loop labels
 	 * 
-	 * @return - stack of label pair. pair's left value is break label,
-	 *         right value is continue label.
+	 * @return - stack of label pair. pair's left value is break label, right
+	 *         value is continue label.
 	 */
+
 	public Deque<Pair<Label, Label>> getLoopLabels() {
 		return this.loopLabels;
 	}
@@ -96,6 +100,7 @@ public class MethodBuilder extends GeneratorAdapter {
 	/**
 	 * create new ret adrr entry and store return address
 	 */
+
 	public void storeReturnAddr() {
 		VarEntry entry = this.varScopes.peek().newRetAddressEntry();
 		this.visitVarInsn(ClassBuilder.ASTORE, entry.getVarIndex());
@@ -162,7 +167,7 @@ public class MethodBuilder extends GeneratorAdapter {
 	 * @param argClass
 	 * @return
 	 */
-	public VarEntry defineArgument(Class<?> argClass) {
+	public VarEntry defineArgument(String name, Class<?> argClass) {
 		assert this.varScopes.size() == 1;
 		return this.varScopes.peek().newVarEntry(argClass);
 	}
@@ -181,10 +186,13 @@ public class MethodBuilder extends GeneratorAdapter {
 	 * create new local variable entry and store stack top value to created
 	 * entry
 	 * 
+	 * @param name
+	 * 
 	 * @param varClass
 	 * @return
 	 */
-	public VarEntry createNewVarAndStore(Class<?> varClass) {
+
+	public VarEntry createNewVarAndStore(String FIXME, Class<?> varClass) {
 		VarEntry entry = this.varScopes.peek().newVarEntry(varClass);
 		Type typeDesc = Type.getType(varClass);
 		this.visitVarInsn(typeDesc.getOpcode(ClassBuilder.ISTORE), entry.getVarIndex());
@@ -302,6 +310,7 @@ public class MethodBuilder extends GeneratorAdapter {
 	 * @param argTypes
 	 *            types of arguments
 	 */
+
 	public void callDynamicMethod(String bsmClassPath, String bsmName, String methodName, String invokeClassPath, Type... argTypes) {
 		MethodType mt = MethodType.methodType(CallSite.class, MethodHandles.Lookup.class, String.class, MethodType.class, String.class);
 		Handle bsm = new Handle(Opcodes.H_INVOKESTATIC, bsmClassPath, bsmName, mt.toMethodDescriptorString());
@@ -311,4 +320,5 @@ public class MethodBuilder extends GeneratorAdapter {
 	public void getStatic(StaticField field) {
 		this.getStatic(field.getOwnerType(), field.getFieldName(), field.getFieldType());
 	}
+
 }

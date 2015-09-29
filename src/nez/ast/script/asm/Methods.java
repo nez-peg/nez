@@ -1,4 +1,4 @@
-package nez.ast.jcode;
+package nez.ast.script.asm;
 
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.Method;

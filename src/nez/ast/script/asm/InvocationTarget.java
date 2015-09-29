@@ -1,8 +1,9 @@
-package nez.ast.jcode;
+package nez.ast.script.asm;
 
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.Method;
 
+@Deprecated
 public class InvocationTarget {
 	public static enum InvocationType {
 		INVOKE_STATIC, INVOKE_VIRTUAL, INVOKE_INTERFACE;

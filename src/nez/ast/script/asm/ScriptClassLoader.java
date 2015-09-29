@@ -113,6 +113,7 @@ public class ScriptClassLoader extends ClassLoader {
 	 * @param byteCode
 	 * @return - if class loading failed, call System.exit(1).
 	 */
+
 	public Class<?> definedAndLoadClass(String className, byte[] byteCode) {
 		String binaryName = toBinaryName(className);
 		this.addByteCode(binaryName, byteCode);

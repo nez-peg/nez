@@ -2,6 +2,7 @@ package nez.ast.script;
 
 import java.lang.reflect.Method;
 
+import nez.ast.Tree;
 import nez.util.UList;
 
 public class TypeSystem {
@@ -65,6 +66,12 @@ public class TypeSystem {
 			return true;
 		}
 		return false;
+	}
+
+	// typeof
+
+	public Class<?> typeof(Tree<?> node) {
+		return Object.class; // untyped
 	}
 
 }

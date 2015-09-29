@@ -1,4 +1,4 @@
-package nez.ast.jcode;
+package nez.ast.script.asm;
 
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
@@ -12,20 +12,7 @@ import org.objectweb.asm.commons.Method;
  *
  */
 public class ClassBuilder extends ClassWriter implements Opcodes {
-	private final String internalName;
-
-	/**
-	 * equivalent to ClassBuilder(ACC_PUBLIC | ACC_FINAL,
-	 * fullyQualifiedClassName, sourceName, superClass, interfaces)
-	 * 
-	 * @param fullyQualifiedClassName
-	 * @param sourceName
-	 * @param superClass
-	 * @param interfaces
-	 */
-	public ClassBuilder(String fullyQualifiedClassName, String sourceName, Class<?> superClass, Class<?>[] interfaces) {
-		this(ACC_PUBLIC | ACC_FINAL, fullyQualifiedClassName, sourceName, superClass, interfaces);
-	}
+	private final String qualifiedClassName;
 
 	/**
 	 * generate new class builder
@@ -41,9 +28,10 @@ public class ClassBuilder extends ClassWriter implements Opcodes {
 	 * @param interfaces
 	 *            may be null, if has no interface
 	 */
+
 	public ClassBuilder(int accessFlag, String fullyQualifiedClassName, String sourceName, Class<?> superClass, Class<?>[] interfaces) {
 		super(ClassWriter.COMPUTE_FRAMES);
-		this.internalName = fullyQualifiedClassName;
+		this.qualifiedClassName = fullyQualifiedClassName;
 		String[] interfaceNames = null;
 
 		if (superClass == null) {
@@ -56,8 +44,21 @@ public class ClassBuilder extends ClassWriter implements Opcodes {
 				interfaceNames[i] = Type.getInternalName(interfaces[i]);
 			}
 		}
-		this.visit(V1_7, accessFlag, this.internalName, null, Type.getInternalName(superClass), interfaceNames);
+		this.visit(V1_7, accessFlag, this.qualifiedClassName, null, Type.getInternalName(superClass), interfaceNames);
 		this.visitSource(sourceName, null);
+	}
+
+	/**
+	 * equivalent to ClassBuilder(ACC_PUBLIC | ACC_FINAL,
+	 * fullyQualifiedClassName, sourceName, superClass, interfaces)
+	 * 
+	 * @param fullyQualifiedClassName
+	 * @param sourceName
+	 * @param superClass
+	 * @param interfaces
+	 */
+	public ClassBuilder(String fullyQualifiedClassName, String sourceName, Class<?> superClass, Class<?>[] interfaces) {
+		this(ACC_PUBLIC | ACC_FINAL, fullyQualifiedClassName, sourceName, superClass, interfaces);
 	}
 
 	/**
@@ -66,8 +67,8 @@ public class ClassBuilder extends ClassWriter implements Opcodes {
 	 * 
 	 * @return
 	 */
-	public String getInternalName() {
-		return this.internalName;
+	public String getQualifiedClassName() {
+		return this.qualifiedClassName;
 	}
 
 	/**
@@ -75,13 +76,14 @@ public class ClassBuilder extends ClassWriter implements Opcodes {
 	 * 
 	 * @return
 	 */
+
 	public Type getTypeDesc() {
-		return Type.getType("L" + this.internalName + ";");
+		return Type.getType("L" + this.qualifiedClassName + ";");
 	}
 
 	@Override
 	public String toString() {
-		return this.getInternalName();
+		return this.getQualifiedClassName();
 	}
 
 	/**

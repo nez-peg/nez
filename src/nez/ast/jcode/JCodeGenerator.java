@@ -8,7 +8,12 @@ import java.util.Stack;
 
 import javax.lang.model.type.NullType;
 
+import nez.ast.script.asm.ClassBuilder;
+import nez.ast.script.asm.CommonSymbols;
+import nez.ast.script.asm.MethodBuilder;
+import nez.ast.script.asm.Methods;
 import nez.ast.script.asm.ScriptClassLoader;
+import nez.ast.script.asm.VarEntry;
 
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
@@ -27,7 +32,7 @@ public class JCodeGenerator implements CommonSymbols {
 
 	class JCodeScope {
 		JCodeScope prev;
-		Map<String, nez.ast.jcode.VarEntry> varMap;
+		Map<String, nez.ast.script.asm.VarEntry> varMap;
 
 		public JCodeScope() {
 			this.varMap = new HashMap<String, VarEntry>();
@@ -68,7 +73,7 @@ public class JCodeGenerator implements CommonSymbols {
 	public Class<?> generateClass() {
 		ScriptClassLoader loader = new ScriptClassLoader();
 		loader.setDump(true);
-		return loader.definedAndLoadClass(this.cBuilder.getInternalName(), cBuilder.toByteArray());
+		return loader.definedAndLoadClass(this.cBuilder.getQualifiedClassName(), cBuilder.toByteArray());
 	}
 
 	HashMap<String, Method> methodMap = new HashMap<String, Method>();
@@ -152,7 +157,7 @@ public class JCodeGenerator implements CommonSymbols {
 		this.mBuilder.enterScope();// FIXME
 		this.pushScope();
 		for (JCodeTree arg : args) {
-			this.scope.setLocalVar(arg.toText(), this.mBuilder.defineArgument(arg.getTypedClass()));
+			this.scope.setLocalVar(arg.toText(), this.mBuilder.defineArgument(arg.toText(), arg.getTypedClass()));
 		}
 		this.mBuilder.loadArgs();
 		visit(node.get(_body));
@@ -173,7 +178,7 @@ public class JCodeGenerator implements CommonSymbols {
 			JCodeTree valueNode = node.get(_expr);
 			visit(valueNode);
 			varNode.setType(valueNode.getTypedClass());
-			this.scope.setLocalVar(varNode.toText(), this.mBuilder.createNewVarAndStore(valueNode.getTypedClass()));
+			this.scope.setLocalVar(varNode.toText(), this.mBuilder.createNewVarAndStore(null, valueNode.getTypedClass()));
 		}
 	}
 
@@ -280,7 +285,7 @@ public class JCodeGenerator implements CommonSymbols {
 		if (var != null) {
 			this.mBuilder.storeToVar(var);
 		} else {
-			this.scope.setLocalVar(nameNode.toText(), this.mBuilder.createNewVarAndStore(valueNode.getTypedClass()));
+			this.scope.setLocalVar(nameNode.toText(), this.mBuilder.createNewVarAndStore(null, valueNode.getTypedClass()));
 		}
 	}
 
