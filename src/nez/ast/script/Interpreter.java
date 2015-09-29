@@ -69,6 +69,42 @@ public class Interpreter extends TreeVisitor implements KonohaSymbols {
 		return evalOperator(node, "opDiv", left, right);
 	}
 
+	public Object evalEquals(Tree<?> node) {
+		Object left = eval(node.get(_left));
+		Object right = eval(node.get(_right));
+		return evalOperator(node, "opEquals", left, right);
+	}
+
+	public Object evalNotEquals(Tree<?> node) {
+		Object left = eval(node.get(_left));
+		Object right = eval(node.get(_right));
+		return evalOperator(node, "opNotEquals", left, right);
+	}
+
+	public Object evalLessThan(Tree<?> node) {
+		Object left = eval(node.get(_left));
+		Object right = eval(node.get(_right));
+		return evalOperator(node, "opLessThan", left, right);
+	}
+
+	public Object evalGreaterThan(Tree<?> node) {
+		Object left = eval(node.get(_left));
+		Object right = eval(node.get(_right));
+		return evalOperator(node, "opGreaterThan", left, right);
+	}
+
+	public Object evalLessThanEquals(Tree<?> node) {
+		Object left = eval(node.get(_left));
+		Object right = eval(node.get(_right));
+		return evalOperator(node, "opLessThanEquals", left, right);
+	}
+
+	public Object evalGreaterThanEquals(Tree<?> node) {
+		Object left = eval(node.get(_left));
+		Object right = eval(node.get(_right));
+		return evalOperator(node, "opGreaterThanEquals", left, right);
+	}
+
 	public Object evalName(Tree<?> node) {
 		String name = node.toText();
 		if (!this.globalVariables.containsKey(name)) {
@@ -122,6 +158,26 @@ public class Interpreter extends TreeVisitor implements KonohaSymbols {
 			sb.append(prefix.toText());
 		}
 		sb.append(".").append(node.getText(_name, null));
+	}
+
+	public Object evalIf(Tree<?> node) {
+		Boolean cond = (Boolean) eval(node.get(_cond));
+		Tree<?> thenNode = node.get(_then);
+		if (cond) {
+			return eval(thenNode);
+		} else if (node.size() == 3) {
+			Tree<?> elseNode = node.get(_else);
+			return eval(elseNode);
+		}
+		return empty;
+	}
+
+	public Object evalBlock(Tree<?> node) {
+		Object retVal = null;
+		for (Tree<?> child : node) {
+			retVal = eval(child);
+		}
+		return retVal;
 	}
 
 	public Object evalInteger(Tree<?> node) {
