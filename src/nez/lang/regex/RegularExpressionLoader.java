@@ -217,6 +217,9 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 	public Expression toCharacterRange(Tree<?> e) {
 		byte[] begin = StringUtils.toUtf8(e.get(0).toText());
 		byte[] end = StringUtils.toUtf8(e.get(1).toText());
+		if (byteMap == null) {
+			byteMap = new boolean[257];
+		}
 		for (byte i = begin[0]; i <= end[0]; i++) {
 			byteMap[i] = true;
 		}
