@@ -5,7 +5,7 @@ import nez.ast.script.TypeSystem;
 
 public class ScriptCompiler {
 	TypeSystem typeSystem;
-	final ScriptClassLoader cLoader = null;
+	final ScriptClassLoader cLoader;
 
 	public ScriptCompiler(TypeSystem typeSystem) {
 		this.typeSystem = typeSystem;
