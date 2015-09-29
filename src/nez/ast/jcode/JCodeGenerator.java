@@ -8,6 +8,8 @@ import java.util.Stack;
 
 import javax.lang.model.type.NullType;
 
+import nez.ast.script.asm.ScriptClassLoader;
+
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -19,7 +21,7 @@ public class JCodeGenerator implements CommonSymbols {
 	private static int nameSuffix = -1;
 
 	private ClassBuilder cBuilder;
-	private UserDefinedClassLoader cLoader;
+	private ScriptClassLoader cLoader;
 	private MethodBuilder mBuilder;
 	private Stack<MethodBuilder> mBuilderStack = new Stack<MethodBuilder>();
 
@@ -60,11 +62,11 @@ public class JCodeGenerator implements CommonSymbols {
 
 	public JCodeGenerator(String name) {
 		this.cBuilder = new ClassBuilder(packagePrefix + name + ++nameSuffix, null, null, null);
-		this.cLoader = new UserDefinedClassLoader();
+		this.cLoader = new ScriptClassLoader();
 	}
 
 	public Class<?> generateClass() {
-		UserDefinedClassLoader loader = new UserDefinedClassLoader();
+		ScriptClassLoader loader = new ScriptClassLoader();
 		loader.setDump(true);
 		return loader.definedAndLoadClass(this.cBuilder.getInternalName(), cBuilder.toByteArray());
 	}

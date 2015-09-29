@@ -1,4 +1,4 @@
-package nez.ast.jcode;
+package nez.ast.script.asm;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -11,7 +11,7 @@ import java.util.Map;
  * @author skgchxngsxyz-osx
  *
  */
-public class UserDefinedClassLoader extends ClassLoader {
+public class ScriptClassLoader extends ClassLoader {
 	/**
 	 * if true, dump byte code.
 	 */
@@ -33,13 +33,13 @@ public class UserDefinedClassLoader extends ClassLoader {
 	 * @param packageName
 	 *            not null
 	 */
-	public UserDefinedClassLoader(String packageName) {
+	public ScriptClassLoader(String packageName) {
 		super();
 		this.allowedPackageName = toBinaryName(packageName);
 		this.byteCodeMap = new HashMap<>();
 	}
 
-	public UserDefinedClassLoader() {
+	public ScriptClassLoader() {
 		super();
 		this.allowedPackageName = null;
 		this.byteCodeMap = new HashMap<>();
@@ -50,7 +50,7 @@ public class UserDefinedClassLoader extends ClassLoader {
 	 * 
 	 * @param classLoader
 	 */
-	protected UserDefinedClassLoader(UserDefinedClassLoader classLoader) {
+	protected ScriptClassLoader(ScriptClassLoader classLoader) {
 		super(classLoader);
 		this.allowedPackageName = classLoader.allowedPackageName;
 		this.byteCodeMap = new HashMap<>();
@@ -74,7 +74,7 @@ public class UserDefinedClassLoader extends ClassLoader {
 		Class<?> foundClass = this.findLoadedClass(name);
 		if (foundClass == null) {
 			ClassLoader parent = this.getParent();
-			if ((parent instanceof UserDefinedClassLoader) || !name.startsWith(this.allowedPackageName)) {
+			if ((parent instanceof ScriptClassLoader) || !name.startsWith(this.allowedPackageName)) {
 				try {
 					foundClass = parent.loadClass(name);
 				} catch (ClassNotFoundException e) {
@@ -131,8 +131,8 @@ public class UserDefinedClassLoader extends ClassLoader {
 	 * 
 	 * @return
 	 */
-	public UserDefinedClassLoader createChild() {
-		UserDefinedClassLoader loader = new UserDefinedClassLoader(this);
+	public ScriptClassLoader createChild() {
+		ScriptClassLoader loader = new ScriptClassLoader(this);
 		loader.setDump(this.enableDump);
 		return loader;
 	}
