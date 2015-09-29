@@ -75,10 +75,6 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements
 		return t == this.getTag();
 	}
 
-	public <T> T getType() {
-		return null;
-	}
-
 	@Override
 	public int size() {
 		return this.labels.length;
