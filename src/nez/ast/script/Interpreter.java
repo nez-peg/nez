@@ -69,6 +69,42 @@ public class Interpreter extends TreeVisitor implements KonohaSymbols {
 		return evalOperator(node, "opDiv", left, right);
 	}
 
+	public Object evalEquals(Tree<?> node) {
+		Object left = eval(node.get(_left));
+		Object right = eval(node.get(_right));
+		return evalOperator(node, "opEquals", left, right);
+	}
+
+	public Object evalNotEquals(Tree<?> node) {
+		Object left = eval(node.get(_left));
+		Object right = eval(node.get(_right));
+		return evalOperator(node, "opNotEquals", left, right);
+	}
+
+	public Object evalLessThan(Tree<?> node) {
+		Object left = eval(node.get(_left));
+		Object right = eval(node.get(_right));
+		return evalOperator(node, "opLessThan", left, right);
+	}
+
+	public Object evalGreaterThan(Tree<?> node) {
+		Object left = eval(node.get(_left));
+		Object right = eval(node.get(_right));
+		return evalOperator(node, "opGreaterThan", left, right);
+	}
+
+	public Object evalLessThanEquals(Tree<?> node) {
+		Object left = eval(node.get(_left));
+		Object right = eval(node.get(_right));
+		return evalOperator(node, "opLessThanEquals", left, right);
+	}
+
+	public Object evalGreaterThanEquals(Tree<?> node) {
+		Object left = eval(node.get(_left));
+		Object right = eval(node.get(_right));
+		return evalOperator(node, "opGreaterThanEquals", left, right);
+	}
+
 	public Object evalName(Tree<?> node) {
 		String name = node.toText();
 		if (!this.globalVariables.containsKey(name)) {
