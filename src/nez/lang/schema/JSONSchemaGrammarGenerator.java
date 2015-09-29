@@ -49,6 +49,16 @@ public class JSONSchemaGrammarGenerator extends SchemaGrammarGenerator {
 	}
 
 	@Override
+	public void newUniqNames() {
+		Expression[] l = new Expression[getMembers().size()];
+		int index = 0;
+		for (String name : getMembers()) {
+			l[index++] = _String(name);
+		}
+		gfile.addProduction(null, getTableName(), gfile.newChoice(l));
+	}
+
+	@Override
 	public Type newRequired(String name, Type t) {
 		Expression expr = _String(name);
 		return new Type(name, expr, t);
@@ -114,15 +124,20 @@ public class JSONSchemaGrammarGenerator extends SchemaGrammarGenerator {
 		int index = 1;
 		l[0] = gfile.newRepetition(_NonTerminal(structName + "_SMembers"));
 		for (String required : getRequiredList()) {
-			l[index++] = _Exists(structName + "_" + required);
+			l[index++] = _Exists(getTableName(), required);
 		}
-		return new Type(gfile.newBlock(gfile.newSequence(l)));
+		return new Type(gfile.newLocal(getTableName(), l));
 	}
 
 	@Override
-	public Type newUniq(String elementName) {
-		Expression expr = gfile.newSequence(gfile.newNot(_Exists(elementName)), _Def(elementName));
-		return new Type(expr);
+	public Type newUniq(String elementName, Type t) {
+		Expression expr = gfile.newSequence(gfile.newAnd(_String(elementName)), gfile.newNot(_Exists(getTableName(), elementName)), _Def(getTableName()));
+		return new Type(elementName, expr, t);
+	}
+
+	@Override
+	public Type newAlt(String name) {
+		return new Type(_NonTerminal(name));
 	}
 
 	@Override
