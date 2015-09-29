@@ -160,6 +160,26 @@ public class Interpreter extends TreeVisitor implements KonohaSymbols {
 		sb.append(".").append(node.getText(_name, null));
 	}
 
+	public Object evalIf(Tree<?> node) {
+		Boolean cond = (Boolean) eval(node.get(_cond));
+		Tree<?> thenNode = node.get(_then);
+		if (cond) {
+			return eval(thenNode);
+		} else if (node.size() == 3) {
+			Tree<?> elseNode = node.get(_else);
+			return eval(elseNode);
+		}
+		return empty;
+	}
+
+	public Object evalBlock(Tree<?> node) {
+		Object retVal = null;
+		for (Tree<?> child : node) {
+			retVal = eval(child);
+		}
+		return retVal;
+	}
+
 	public Object evalInteger(Tree<?> node) {
 		return Integer.parseInt(node.toText());
 	}
