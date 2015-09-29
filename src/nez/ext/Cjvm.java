@@ -91,7 +91,7 @@ public class Cjvm extends Command {
 		try {
 			System.out.println("\n@@@@ Execute Byte Code @@@@");
 			Method method = mainClass.getMethod("main");
-			method.invoke(null);
+			System.out.println(method.invoke(null));
 		} catch (NoSuchMethodException | SecurityException e) {
 			e.printStackTrace();
 		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {

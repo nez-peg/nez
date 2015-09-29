@@ -31,5 +31,6 @@ public interface CommonSymbols {
 	public final static Symbol _recv 	= Symbol.tag("recv");
 	public final static Symbol _size 	= Symbol.tag("size");
 	public final static Symbol _prefix 	= Symbol.tag("prefix");
-
+	
+	public final static Symbol _Name	= Symbol.tag("Name");
 }
