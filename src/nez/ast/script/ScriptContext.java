@@ -15,13 +15,13 @@ import nez.util.ConsoleUtils;
 
 public class ScriptContext extends TreeVisitor implements KonohaSymbols {
 	private Parser parser;
-	private ClassRepository base;
+	private TypeSystem base;
 	private Interpreter interpreter;
 	private JCodeTreeTransducer treeTransducer;
 
 	public ScriptContext(Parser parser) {
 		this.parser = parser;
-		this.base = new ClassRepository();
+		this.base = new TypeSystem();
 		this.interpreter = new Interpreter(base);
 		this.treeTransducer = new JCodeTreeTransducer();
 	}

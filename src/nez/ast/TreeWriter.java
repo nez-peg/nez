@@ -103,7 +103,7 @@ public class TreeWriter extends FileBuilder {
 				this.write("\"#\":");
 				this.write(StringUtils.quoteString('"', node.getTag().toString(), '"'));
 				this.write(",\"linenum\":");
-				this.write("" + node.getLinenum());
+				this.write("" + node.getLineNum());
 				this.write(",\"column\":");
 				this.write("" + node.getColumn());
 				this.write(",\"text\":");

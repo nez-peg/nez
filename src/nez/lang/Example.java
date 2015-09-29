@@ -49,7 +49,7 @@ public class Example {
 
 	public boolean test(Parser p, TestResult result, boolean verbose) {
 		SourceContext source = textNode.newSourceContext();
-		String name = nameNode.toText() + " (" + textNode.getSource().getResourceName() + ":" + textNode.getLinenum() + ")";
+		String name = nameNode.toText() + " (" + textNode.getSource().getResourceName() + ":" + textNode.getLineNum() + ")";
 		Tree<?> node = p.parseCommonTree(source);
 		if (node == null) {
 			ConsoleUtils.println("[ERR*] " + name);

@@ -13,7 +13,6 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements
 	protected int pos;
 	protected int length;
 	protected Object value;
-	// protected AbstractTree<E> parent = null;
 	protected Symbol[] labels;
 	protected E[] subTree;
 
@@ -44,21 +43,7 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements
 		return t;
 	}
 
-	public final Symbol getTag() {
-		return this.tag;
-	}
-
-	public final boolean is(Symbol t) {
-		return t == this.getTag();
-	}
-
-	// public final AbstractTree<E> getParent() {
-	// return parent;
-	// }
-	//
-	// public final void setParent(AbstractTree<E> parent) {
-	// this.parent = parent;
-	// }
+	/* Source */
 
 	public final Source getSource() {
 		return this.source;
@@ -68,7 +53,7 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements
 		return this.pos;
 	}
 
-	public final int getLinenum() {
+	public final int getLineNum() {
 		return (int) this.source.linenum(this.pos);
 	}
 
@@ -78,6 +63,20 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements
 
 	public final int getLength() {
 		return this.length;
+	}
+
+	/* Tag, Type */
+
+	public final Symbol getTag() {
+		return this.tag;
+	}
+
+	public final boolean is(Symbol t) {
+		return t == this.getTag();
+	}
+
+	public <T> T getType() {
+		return null;
 	}
 
 	@Override
