@@ -49,9 +49,12 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 	}
 
 	public Expression piPattern(Tree<?> e, Expression k) {
-		Expression notPattern = toSeq(null, ExpressionCommons.newPnot(null, pi(e.get(0), k)), toAny(null));
+		String ruleName = "Pattern";
+		Expression ne = ExpressionCommons.newNonTerminal(e, this.getGrammar(), ruleName);
+		getGrammar().newProduction(ruleName, pi(e.get(0), k));
+		Expression notPattern = toSeq(null, ExpressionCommons.newPnot(null, ne), toAny(null));
 		Expression zeroMore = ExpressionCommons.newPzero(null, notPattern);
-		Expression oneMore = ExpressionCommons.newPone(null, toSeq(null, pi(e.get(0), k), zeroMore));
+		Expression oneMore = ExpressionCommons.newPone(null, toSeq(null, ne, zeroMore));
 		return toSeq(null, zeroMore, oneMore);
 	}
 
