@@ -6,23 +6,22 @@ import java.lang.reflect.Method;
 
 import nez.Parser;
 import nez.ast.Tree;
-import nez.ast.TreeVisitor;
 import nez.ast.jcode.JCodeGenerator;
 import nez.ast.jcode.JCodeTree;
 import nez.ast.jcode.JCodeTreeTransducer;
 import nez.io.SourceContext;
 import nez.util.ConsoleUtils;
 
-public class ScriptContext extends TreeVisitor implements KonohaSymbols {
+public class ScriptContext {
 	private Parser parser;
-	private TypeSystem base;
+	private TypeSystem typeSystem;
 	private Interpreter interpreter;
 	private JCodeTreeTransducer treeTransducer;
 
 	public ScriptContext(Parser parser) {
 		this.parser = parser;
-		this.base = new TypeSystem();
-		this.interpreter = new Interpreter(base);
+		this.typeSystem = new TypeSystem();
+		this.interpreter = new Interpreter(typeSystem);
 		this.treeTransducer = new JCodeTreeTransducer();
 	}
 
