@@ -8,16 +8,13 @@ import java.util.Stack;
 
 import javax.lang.model.type.NullType;
 
-import nez.ast.Symbol;
-import nez.ast.jcode.ClassBuilder.MethodBuilder;
-import nez.ast.jcode.ClassBuilder.VarEntry;
 import nez.ast.script.asm.ScriptClassLoader;
 
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
-public class JCodeGenerator {
+public class JCodeGenerator implements CommonSymbols {
 	private Map<String, Class<?>> generatedClassMap = new HashMap<String, Class<?>>();
 	private final static String packagePrefix = "nez/ast/jcode/";
 
@@ -30,7 +27,7 @@ public class JCodeGenerator {
 
 	class JCodeScope {
 		JCodeScope prev;
-		Map<String, nez.ast.jcode.ClassBuilder.VarEntry> varMap;
+		Map<String, nez.ast.jcode.VarEntry> varMap;
 
 		public JCodeScope() {
 			this.varMap = new HashMap<String, VarEntry>();
@@ -112,7 +109,7 @@ public class JCodeGenerator {
 
 	protected final void popUnusedValue(JCodeTree node) {
 		if (node.requiredPop) {
-			this.mBuilder.pop();
+			// this.mBuilder.pop();
 		}
 	}
 
@@ -120,41 +117,45 @@ public class JCodeGenerator {
 		node.requirePop();
 		this.mBuilder = this.cBuilder.newMethodBuilder(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, void.class, "main");
 		this.mBuilder.enterScope();
+		this.pushScope();
 		for (JCodeTree child : node) {
 			this.visit(child);
 		}
 		this.mBuilder.exitScope();
+		this.popScope();
 		this.mBuilder.returnValue(); // return stack top value
 		this.mBuilder.endMethod();
 		this.cBuilder.visitEnd();
 	}
 
+	// FIXME Block scope
 	public void visitBlock(JCodeTree node) {
-		node.requirePop();
+		// node.requirePop();
+		this.mBuilder.enterScope();
 		for (JCodeTree stmt : node) {
 			visit(stmt);
 		}
+		this.mBuilder.exitScope();
 	}
 
 	public void visitFuncDecl(JCodeTree node) {
-		this.mBuilderStack.push(this.mBuilder);
-		JCodeTree nameNode = node.get(0);
-		JCodeTree args = node.get(1);
+		// this.mBuilderStack.push(this.mBuilder);
+		JCodeTree nameNode = node.get(_name);
+		JCodeTree args = node.get(_param);
 		String name = nameNode.toText();
 		Class<?> funcType = nameNode.getTypedClass();
-		Class<?>[] paramClasses = new Class<?>[args.size()];
-		for (int i = 0; i < paramClasses.length; i++) {
-			paramClasses[i] = args.get(i).getTypedClass();
+		Class<?>[] paramTypes = new Class<?>[args.size()];
+		for (int i = 0; i < paramTypes.length; i++) {
+			paramTypes[i] = args.get(i).getTypedClass();
 		}
-		// System.out.println(funcType.toGenericString());
-		// System.out.println(paramClasses[0].toGenericString());
-		this.mBuilder = this.cBuilder.newMethodBuilder(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, funcType, name, paramClasses);
-		this.mBuilder.enterScope();
+		this.mBuilder = this.cBuilder.newMethodBuilder(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, funcType, name, paramTypes);
+		this.mBuilder.enterScope();// FIXME
 		this.pushScope();
 		for (JCodeTree arg : args) {
 			this.scope.setLocalVar(arg.toText(), this.mBuilder.defineArgument(arg.getTypedClass()));
 		}
-		visit(node.get(2));
+		this.mBuilder.loadArgs();
+		visit(node.get(_body));
 		this.mBuilder.exitScope();
 		this.popScope();
 		this.mBuilder.returnValue();
@@ -162,14 +163,14 @@ public class JCodeGenerator {
 		// this.mBuilder = this.mBuilderStack.pop();
 	}
 
-	public void visitVarDeclStmt(JCodeTree node) {
+	public void visitVarDeclList(JCodeTree node) {
 		visit(node.get(0));
 	}
 
 	public void visitVarDecl(JCodeTree node) {
 		if (node.size() > 1) {
-			JCodeTree varNode = node.get(0);
-			JCodeTree valueNode = node.get(1);
+			JCodeTree varNode = node.get(_name);
+			JCodeTree valueNode = node.get(_expr);
 			visit(valueNode);
 			varNode.setType(valueNode.getTypedClass());
 			this.scope.setLocalVar(varNode.toText(), this.mBuilder.createNewVarAndStore(valueNode.getTypedClass()));
@@ -267,6 +268,10 @@ public class JCodeGenerator {
 	public void visitWith(JCodeTree node) {
 	}
 
+	public void visitExpression(JCodeTree node) {
+		this.visit(node.get(0));
+	}
+
 	public void visitAssign(JCodeTree node) {
 		JCodeTree nameNode = node.get(0);
 		JCodeTree valueNode = node.get(1);
@@ -280,20 +285,28 @@ public class JCodeGenerator {
 	}
 
 	public void visitApply(JCodeTree node) {
-		JCodeTree fieldNode = node.get(0);
-		JCodeTree argsNode = node.get(1);
-		JCodeTree top = fieldNode.get(0);
-		VarEntry var = null;
-		if (Symbol.tag("Name").equals(top.getTag())) {
-			var = this.scope.getLocalVar(top.toText());
-			if (var != null) {
-				this.mBuilder.loadFromVar(var);
-			} else {
-				this.generateRunTimeLibrary(fieldNode, argsNode);
-				this.popUnusedValue(node);
-				return;
-			}
+		// JCodeTree fieldNode = node.get(_recv"));
+		JCodeTree argsNode = node.get(_param);
+		JCodeTree name = node.get(_name);
+		// VarEntry var = null;
+
+		Class<?>[] argTypes = new Class<?>[argsNode.size()];
+		for (int i = 0; i < argsNode.size(); i++) {
+			JCodeTree arg = argsNode.get(i);
+			this.visit(arg);
+			argTypes[i] = arg.getTypedClass();
 		}
+		org.objectweb.asm.commons.Method method = Methods.method(node.getTypedClass(), name.toText(), argTypes);
+		this.mBuilder.invokeStatic(this.cBuilder.getTypeDesc(), method);
+		// var = this.scope.getLocalVar(top.toText());
+		// if (var != null) {
+		// this.mBuilder.loadFromVar(var);
+		//
+		// } else {
+		// this.generateRunTimeLibrary(top, argsNode);
+		// this.popUnusedValue(node);
+		// return;
+		// }
 	}
 
 	public void generateRunTimeLibrary(JCodeTree fieldNode, JCodeTree argsNode) {
@@ -321,7 +334,7 @@ public class JCodeGenerator {
 	public void visitField(JCodeTree node) {
 		JCodeTree top = node.get(0);
 		VarEntry var = null;
-		if (Symbol.tag("Name").equals(top.getTag())) {
+		if (_Name.equals(top.getTag())) {
 			var = this.scope.getLocalVar(top.toText());
 			if (var != null) {
 				this.mBuilder.loadFromVar(var);
@@ -334,7 +347,7 @@ public class JCodeGenerator {
 		}
 		for (int i = 1; i < node.size(); i++) {
 			JCodeTree member = node.get(i);
-			if (Symbol.tag("Name").equals(member.getTag())) {
+			if (_Name.equals(member.getTag())) {
 				this.mBuilder.getField(Type.getType(var.getVarClass()), member.toText(), Type.getType(Object.class));
 				visit(member);
 			}
@@ -540,9 +553,13 @@ public class JCodeGenerator {
 		this.mBuilder.push(false);
 	}
 
-	public void visitInteger(JCodeTree p) {
+	public void visitInt(JCodeTree p) {
 		p.setType(int.class);
 		this.mBuilder.push(Integer.parseInt(p.toText()));
+	}
+
+	public void visitInteger(JCodeTree p) {
+		this.visitInt(p);
 	}
 
 	public void visitOctalInteger(JCodeTree p) {
