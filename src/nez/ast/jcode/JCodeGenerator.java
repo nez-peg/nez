@@ -11,6 +11,7 @@ import javax.lang.model.type.NullType;
 import nez.ast.Symbol;
 import nez.ast.jcode.ClassBuilder.MethodBuilder;
 import nez.ast.jcode.ClassBuilder.VarEntry;
+import nez.ast.script.asm.ScriptClassLoader;
 
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
@@ -23,7 +24,7 @@ public class JCodeGenerator {
 	private static int nameSuffix = -1;
 
 	private ClassBuilder cBuilder;
-	private UserDefinedClassLoader cLoader;
+	private ScriptClassLoader cLoader;
 	private MethodBuilder mBuilder;
 	private Stack<MethodBuilder> mBuilderStack = new Stack<MethodBuilder>();
 
@@ -64,11 +65,11 @@ public class JCodeGenerator {
 
 	public JCodeGenerator(String name) {
 		this.cBuilder = new ClassBuilder(packagePrefix + name + ++nameSuffix, null, null, null);
-		this.cLoader = new UserDefinedClassLoader();
+		this.cLoader = new ScriptClassLoader();
 	}
 
 	public Class<?> generateClass() {
-		UserDefinedClassLoader loader = new UserDefinedClassLoader();
+		ScriptClassLoader loader = new ScriptClassLoader();
 		loader.setDump(true);
 		return loader.definedAndLoadClass(this.cBuilder.getInternalName(), cBuilder.toByteArray());
 	}
