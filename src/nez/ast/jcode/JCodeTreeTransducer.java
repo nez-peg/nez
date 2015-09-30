@@ -25,6 +25,7 @@ public class JCodeTreeTransducer extends TreeTransducer {
 
 	@Override
 	public void abort(Object arg0) {
+
 	}
 
 }

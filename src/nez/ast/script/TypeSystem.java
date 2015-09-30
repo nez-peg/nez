@@ -6,11 +6,9 @@ import nez.ast.Tree;
 import nez.util.UList;
 
 public class TypeSystem {
-	TypeChecker checker;
 	UList<Class<?>> classList = new UList<Class<?>>(new Class<?>[4]);
 
-	public TypeSystem(ScriptContext context) {
-		checker = new TypeChecker(context, this);
+	public TypeSystem() {
 		add(DynamicOperator.class);
 		add(StaticOperator.class);
 	}
@@ -23,7 +21,28 @@ public class TypeSystem {
 		add(Class.forName(path));
 	}
 
-	Method findMethod(String name, Class<?>... args) {
+	public Method findDefaultMethod(String name, int paramsize) {
+		for (int i = 0; i < classList.size(); i++) {
+			Class<?> c = classList.ArrayValues[i];
+			for (Method m : c.getMethods()) {
+				if (name.equals(m.getName()) && m.getParameterTypes().length == paramsize) {
+					return m;
+				}
+			}
+		}
+		return null;
+	}
+
+	public TypedTree enforceType(Class<?> req, TypedTree node) {
+		if (accept(false, req, node.getType())) {
+			return node;
+		}
+		;
+		System.out.printf("TODO: needs cast %s %s\n", req, node.getType());
+		return node;
+	}
+
+	public Method findCompiledMethod(String name, Class<?>... args) {
 		for (int i = classList.size() - 1; i >= 0; i--) {
 			Class<?> c = classList.ArrayValues[i];
 			for (Method m : c.getMethods()) {
@@ -63,7 +82,7 @@ public class TypeSystem {
 				return true;
 			}
 		}
-		System.out.printf("%s %s %s\n", p, a, p.isAssignableFrom(a));
+		// System.out.printf("%s %s %s\n", p, a, p.isAssignableFrom(a));
 		if (p.isAssignableFrom(a)) {
 			return true;
 		}
@@ -73,24 +92,13 @@ public class TypeSystem {
 	// typeof
 
 	public Class<?> typeof(Tree<?> node) {
-		Class<?> type = checker.type(node);
-		if (type != null) {
-			System.out.println(node); // for debug
-			return type;
+		if (node instanceof TypedTree) {
+			Class<?> type = ((TypedTree) node).type;
+			if (type != null) {
+				return type;
+			}
 		}
 		return Object.class; // untyped
-	}
-
-	public void setVarType(String name, Class<?> type) {
-		checker.scope.setVarType(name, type);
-	}
-
-	public Class<?> getVarType(String name) {
-		return checker.scope.getVarType(name);
-	}
-
-	public boolean containsVariable(String name) {
-		return checker.scope.containsVariable(name);
 	}
 
 }

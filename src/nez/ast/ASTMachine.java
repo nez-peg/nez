@@ -1,8 +1,5 @@
-package nez.parser;
+package nez.ast;
 
-import nez.ast.Source;
-import nez.ast.Symbol;
-import nez.ast.TreeTransducer;
 import nez.main.Verbose;
 
 public class ASTMachine {
@@ -18,17 +15,15 @@ public class ASTMachine {
 	final static int New = 8;
 
 	Source source;
-	TreeTransducer treeTransducer;
+	// TreeTransducer treeTransducer;
+	Tree<?> prototype;
 	ASTLog firstLog = null;
 	ASTLog lastAppendedLog = null;
 	ASTLog unusedDataLog = null;
 
-	public ASTMachine(Source source, TreeTransducer treeTransducer) {
+	public ASTMachine(Source source, Tree<?> prototype) {
 		this.source = source;
-		this.treeTransducer = treeTransducer;
-		if (this.treeTransducer == null) {
-			this.treeTransducer = new NoTreeTransducer();
-		}
+		this.prototype = prototype == null ? new EmptyTree() : prototype;
 		// this.log(ASTMachine.Nop, 0, null);
 		this.firstLog = new ASTLog();
 		this.lastAppendedLog = this.firstLog;
@@ -124,7 +119,7 @@ public class ASTMachine {
 		}
 	}
 
-	public final Object createNode(ASTLog start, ASTLog pushed) {
+	public final Tree<?> createNode(ASTLog start, ASTLog pushed) {
 		ASTLog cur = start;
 		if (debugMode) {
 			Verbose.debug("createNode.start: " + start + "     pushed:" + pushed);
@@ -170,7 +165,7 @@ public class ASTMachine {
 				pushed.value = cur.value;
 				// TODO unused
 				pushed.next = cur.next;
-				return pushed.ref;
+				return (Tree<?>) pushed.ref;
 			case ASTMachine.Push:
 				createNode(cur.next, cur);
 				assert (cur.type == ASTMachine.Link);
@@ -183,8 +178,14 @@ public class ASTMachine {
 		return constructLeft(start, null, spos, epos, objectSize, tag, value);
 	}
 
-	private Object constructLeft(ASTLog start, ASTLog end, long spos, long epos, int objectSize, Symbol tag, Object value) {
-		Object newnode = this.treeTransducer.newNode(tag, source, spos, epos, objectSize, value);
+	private static final Symbol _token = Symbol.tag("token");
+	private static final Symbol _tree = Symbol.tag("tree");
+
+	private Tree<?> constructLeft(ASTLog start, ASTLog end, long spos, long epos, int objectSize, Symbol tag, Object value) {
+		if (tag == null) {
+			tag = objectSize > 0 ? _tree : _token;
+		}
+		Tree<?> newnode = this.prototype.newInstance(tag, source, spos, (int) (epos - spos), objectSize, value);
 		int n = 0;
 		if (objectSize > 0) {
 			for (ASTLog cur = start; cur != end; cur = cur.next) {
@@ -192,13 +193,16 @@ public class ASTMachine {
 					if (cur.ref == null) {
 						Verbose.debug("@@ linking null child at " + cur.value);
 					} else {
-						this.treeTransducer.link(newnode, n, cur.label, cur.ref);
+						// this.treeTransducer.link(newnode, n, cur.label,
+						// cur.ref);
+						newnode.link(n, cur.label, cur.ref);
 					}
 					n++;
 				}
 			}
 		}
-		return this.treeTransducer.commit(newnode);
+		// return this.treeTransducer.commit(newnode);
+		return newnode;
 	}
 
 	// private Object constructTree(ASTLog start, ASTLog end, long spos, long
@@ -223,9 +227,9 @@ public class ASTMachine {
 	// return this.treeTransducer.commit(newnode);
 	// }
 
-	private Object parseResult = null;
+	private Tree<?> parseResult = null;
 
-	public final Object getParseResult(long startpos, long endpos) {
+	public final Tree<?> getParseResult(long startpos, long endpos) {
 		if (parseResult != null) {
 			return parseResult;
 		}
@@ -239,7 +243,7 @@ public class ASTMachine {
 			}
 		}
 		if (parseResult == null) {
-			parseResult = treeTransducer.newNode(null, source, startpos, endpos, 0, null);
+			parseResult = prototype.newInstance(_token, source, startpos, 0, 0, null);
 		}
 		this.firstLog = null;
 		this.unusedDataLog = null;
