@@ -122,6 +122,7 @@ public class DFAConverter extends AbstractTreeVisitor {
 		removeEpsilonCycle(); // must for exec
 		removeRedundantEdges1(); // arbitrary
 
+		// 全てのε遷移を消すことはできない（どうしても意味が変わってしまう場合があるため）
 		eliminateEpsilonTransition();
 
 		fixStateID();
@@ -343,90 +344,215 @@ public class DFAConverter extends AbstractTreeVisitor {
 	}
 
 	/*
-	 * New Type のε遷移除去 ε遷移を潰す
+	 * private void eliminateEpsilonTransition() { int cnt = 3; // while (true)
+	 * { while (cnt > 0) { --cnt; Set<Edge> edges = BFA_graph.getEdges();
+	 * Set<Integer> initialState = BFA_graph.getInitialState(); Set<Integer>
+	 * acceptingState = BFA_graph.getAcceptingState(); Set<Integer>
+	 * acceptingStateLA = BFA_graph.getAcceptingStateLA();
+	 * 
+	 * Set<Edge> specialEpsilonEdgeSet = new TreeSet<Edge>(new
+	 * EdgeComparator());
+	 * 
+	 * Edge removeEdge = null; for (Edge e : edges) { if (e.getLabel() ==
+	 * epsilon && e.getPredicate() == -1) { boolean cannotRemove = false; for
+	 * (Edge e2 : edges) { if (e.getDst() == e2.getSrc() && e2.getPredicate() !=
+	 * -1) { cannotRemove = true; break; } if (e.getSrc() == e2.getSrc() &&
+	 * e2.getPredicate() != -1) { cannotRemove = true; break; } } if
+	 * (cannotRemove) { specialEpsilonEdgeSet.add(e); continue; } removeEdge =
+	 * e; break; } } if (removeEdge == null) { break; }
+	 * 
+	 * if (initialState.contains(removeEdge.getDst())) {
+	 * initialState.remove(removeEdge.getDst());
+	 * initialState.add(removeEdge.getSrc()); } if
+	 * (acceptingState.contains(removeEdge.getDst())) {
+	 * acceptingState.remove(removeEdge.getDst());
+	 * acceptingState.add(removeEdge.getSrc()); } if
+	 * (acceptingStateLA.contains(removeEdge.getDst())) {
+	 * acceptingStateLA.remove(removeEdge.getDst());
+	 * acceptingStateLA.add(removeEdge.getSrc()); }
+	 * 
+	 * // removeEdge (v,w) // w を v にまーじ Set<Edge> removeEdgeSet = new
+	 * TreeSet<Edge>(new EdgeComparator()); Set<Edge> addEdgeSet = new
+	 * TreeSet<Edge>(new EdgeComparator());
+	 * 
+	 * for (Edge e : BFA_graph.getEdges()) { if (e.getDst() ==
+	 * removeEdge.getDst()) { removeEdgeSet.add(e); if (e.getSrc() ==
+	 * removeEdge.getDst()) { addEdgeSet.add(new Edge(removeEdge.getSrc(),
+	 * removeEdge.getSrc(), e.getLabel(), e.getPredicate())); } else {
+	 * addEdgeSet.add(new Edge(e.getSrc(), removeEdge.getSrc(), e.getLabel(),
+	 * e.getPredicate())); } } else if (e.getSrc() == removeEdge.getDst()) {
+	 * removeEdgeSet.add(e); if (e.getDst() == removeEdge.getDst()) {
+	 * addEdgeSet.add(new Edge(removeEdge.getSrc(), removeEdge.getSrc(),
+	 * e.getLabel(), e.getPredicate())); } else { addEdgeSet.add(new
+	 * Edge(removeEdge.getSrc(), e.getDst(), e.getLabel(), e.getPredicate())); }
+	 * } }
+	 * 
+	 * for (Edge e : addEdgeSet) { edges.add(e); }
+	 * 
+	 * for (Edge e : edges) { if (e.getSrc() == e.getDst() && e.getLabel() ==
+	 * epsilon && e.getPredicate() == -1) { removeEdgeSet.add(new
+	 * Edge(e.getSrc(), e.getDst(), e.getLabel(), e.getPredicate())); } }
+	 * 
+	 * for (Edge e : removeEdgeSet) { edges.remove(e); }
+	 * 
+	 * for (Edge e : specialEpsilonEdgeSet) { edges.add(e); }
+	 * 
+	 * BFA_graph.setEdges(edges); BFA_graph.setInitialState(initialState);
+	 * BFA_graph.setAcceptingState(acceptingState);
+	 * BFA_graph.setAcceptingStateLA(acceptingStateLA); }
+	 * 
+	 * Set<Edge> newEdges = BFA_graph.getEdges(); Set<Edge> epsilonEdges = new
+	 * TreeSet<Edge>(new EdgeComparator());
+	 * 
+	 * // remove useless vertices Set<Integer> initialState =
+	 * BFA_graph.getInitialState(); Set<Integer> acceptingState =
+	 * BFA_graph.getAcceptingState(); Set<Integer> acceptingStateLA =
+	 * BFA_graph.getAcceptingStateLA(); boolean update = true; while (update) {
+	 * update = false; epsilonEdges.clear(); int in_degree[] = new int[V]; int
+	 * out_degree[] = new int[V]; for (int i = 0; i < V; i++) { in_degree[i] =
+	 * out_degree[i] = 0; } for (Edge e : newEdges) { ++in_degree[e.getDst()];
+	 * ++out_degree[e.getSrc()]; }
+	 * 
+	 * Set<Integer> uselessVertices = new HashSet<Integer>(); for (int i = 0; i
+	 * < V; i++) { if (out_degree[i] == 0 && !initialState.contains(i) &&
+	 * !acceptingState.contains(i) && !acceptingStateLA.contains(i)) {
+	 * uselessVertices.add(i); } } for (Edge e : newEdges) { if
+	 * ((in_degree[e.getSrc()] == 0 && !initialState.contains(e.getSrc())) ||
+	 * uselessVertices.contains(e.getDst())) { epsilonEdges.add(e); update =
+	 * true; } }
+	 * 
+	 * for (Edge e : epsilonEdges) { newEdges.remove(e); } }
+	 * 
+	 * for (int i = 0; i < V; i++) { bfa[i].clear(); }
+	 * 
+	 * for (Edge e : newEdges) { int src = e.getSrc(); bfa[src].add(e); } //
+	 * remove useless edges for (int i = 0; i < V; i++) { Set<Integer> hasAny =
+	 * new HashSet<Integer>(); for (int j = 0; j < bfa[i].size(); j++) { if
+	 * (((Edge) bfa[i].get(j)).getLabel() == '.') { hasAny.add(((Edge)
+	 * bfa[i].get(j)).getDst()); } } for (int j = 0; j < bfa[i].size(); j++) {
+	 * Edge e = (Edge) bfa[i].get(j); if (e.getLabel() == '.') continue; if
+	 * (e.getPredicate() != -1) continue; if (hasAny.contains(e.getDst())) {
+	 * newEdges.remove(e); } } }
+	 * 
+	 * BFA_graph.setEdges(newEdges);
+	 * 
+	 * }
 	 */
+
 	private void eliminateEpsilonTransition() {
-		while (true) {
+		if (epsilonMemo == null) {
+			epsilonMemo = new TreeMap<EpsilonMemoState, Set<EpsilonMemoState>>(new EpsilonMemoStateComparator());
+		}
+		ArrayList<Edge> epsilonEdges = new ArrayList<Edge>();
+		Set<Character> allLabels = new HashSet<Character>();
+		Set<Edge> specialEpsilonEdges = new TreeSet<Edge>(new EdgeComparator());
+		for (Edge e : BFA_graph.getEdges()) {
+			if (e.getLabel() != epsilon) {
+				allLabels.add(e.getLabel());
+			}
+			if (e.getLabel() == epsilon && e.getPredicate() == -1) {
+				epsilonEdges.add(e);
+			}
+			for (Edge e2 : BFA_graph.getEdges()) {
+				if (e.getDst() == e2.getSrc() && e2.getPredicate() != -1) {
+					specialEpsilonEdges.add(e);
+				} else if (e.getSrc() == e2.getSrc() && e2.getPredicate() != -1) {
+					specialEpsilonEdges.add(e);
+				}
+			}
+		}
+
+		boolean update = true;
+		while (update) {
+			update = false;
+			for (int i = 0; i < V; i++) {
+				bfa[i].clear();
+			}
 			Set<Edge> edges = BFA_graph.getEdges();
-			Set<Integer> initialState = BFA_graph.getInitialState();
-			Set<Integer> acceptingState = BFA_graph.getAcceptingState();
-			Set<Integer> acceptingStateLA = BFA_graph.getAcceptingStateLA();
-			Edge removeEdge = null;
-			for (Edge e : edges) {
-				if (e.getLabel() == epsilon && e.getPredicate() == -1) {
-					removeEdge = e;
-					break;
-				}
-			}
-			if (removeEdge == null) {
-				break;
-			}
-
-			if (initialState.contains(removeEdge.getDst())) {
-				initialState.remove(removeEdge.getDst());
-				initialState.add(removeEdge.getSrc());
-			}
-			if (acceptingState.contains(removeEdge.getDst())) {
-				acceptingState.remove(removeEdge.getDst());
-				acceptingState.add(removeEdge.getSrc());
-			}
-			if (acceptingStateLA.contains(removeEdge.getDst())) {
-				acceptingStateLA.remove(removeEdge.getDst());
-				acceptingStateLA.add(removeEdge.getSrc());
-			}
-
-			// removeEdge (v,w)
-			// w を v にまーじ
-			Set<Edge> removeEdgeSet = new TreeSet<Edge>(new EdgeComparator());
-			Set<Edge> addEdgeSet = new TreeSet<Edge>(new EdgeComparator());
-
-			for (Edge e : BFA_graph.getEdges()) {
-				if (e.getDst() == removeEdge.getDst()) {
-					removeEdgeSet.add(e);
-					if (e.getSrc() == removeEdge.getDst()) {
-						addEdgeSet.add(new Edge(removeEdge.getSrc(), removeEdge.getSrc(), e.getLabel(), e.getPredicate()));
-					} else {
-						addEdgeSet.add(new Edge(e.getSrc(), removeEdge.getSrc(), e.getLabel(), e.getPredicate()));
-					}
-				} else if (e.getSrc() == removeEdge.getDst()) {
-					removeEdgeSet.add(e);
-					if (e.getDst() == removeEdge.getDst()) {
-						addEdgeSet.add(new Edge(removeEdge.getSrc(), removeEdge.getSrc(), e.getLabel(), e.getPredicate()));
-					} else {
-						addEdgeSet.add(new Edge(removeEdge.getSrc(), e.getDst(), e.getLabel(), e.getPredicate()));
-					}
-				}
-			}
-
-			for (Edge e : addEdgeSet) {
-				edges.add(e);
-			}
+			/*
+			 * srcまたはdstが先読みの遷移をもつ場合はそのε辺は削除しないので残すためspecialEpsilonEdgesに保存
+			 * その辺を消すと意味が変わる
+			 */
 
 			for (Edge e : edges) {
-				if (e.getSrc() == e.getDst() && e.getLabel() == epsilon && e.getPredicate() == -1) {
-					System.out.println(e + "?");
-					removeEdgeSet.add(new Edge(e.getSrc(), e.getDst(), e.getLabel(), e.getPredicate()));
+				int src = e.getSrc();
+				bfa[src].add(e);
+			}
+
+			for (int stateID = 0; stateID < V; stateID++) {
+				// for (int stateID = 0; stateID < 1; stateID++) {
+				Set<EpsilonMemoState> nextStateIDs = moveEpsilonTransition(new EpsilonMemoState(stateID, -1));
+				System.out.println(stateID + " -> ");
+				for (EpsilonMemoState ems : nextStateIDs) {
+					System.out.print(ems + " | ");
+				}
+				System.out.println("");
+				System.out.println("");
+				for (EpsilonMemoState ems : nextStateIDs) {
+
+				}
+				if (nextStateIDs.size() == 0) {
+					continue;
+				}
+
+				for (Character label : allLabels) {
+					// System.out.println("label = " + label);
+					for (EpsilonMemoState ems : nextStateIDs) {
+
+						/*
+						 * if (ems.getPredicate() != -1) { Edge new_e = new
+						 * Edge(stateID, ems.getStateID(), epsilon,
+						 * ems.getPredicate()); if (!edges.contains(new_e)) {
+						 * update = true; edges.add(new_e); } continue; }
+						 */
+						if (ems.getPredicate() != -1) {
+							System.out.println("INVALID EDGE!!!! --- this program has some bugs");
+							continue;
+						}
+
+						Set<EpsilonMemoState> tmp = new TreeSet<EpsilonMemoState>(new EpsilonMemoStateComparator());
+						int nextStateID = ems.getStateID();
+						boolean notPredicateFlag = (ems.getPredicate() == 1);
+
+						for (int i = 0; i < bfa[nextStateID].size(); i++) {
+							Edge e = (Edge) bfa[nextStateID].get(i);
+							boolean flag = (e.getLabel() == label || e.getLabel() == '.');
+							if (notPredicateFlag) {
+								flag = !flag;
+							}
+							// if ((e.getLabel() == label || e.getLabel() ==
+							// '.')) {
+							if (flag) {
+								Set<EpsilonMemoState> tmp2 = moveEpsilonTransition(new EpsilonMemoState(e.getDst(), ems.getPredicate()));
+								for (EpsilonMemoState ems2 : tmp2) {
+									Edge new_e = new Edge(stateID, ems2.getStateID(), label, ems2.getPredicate());
+									if (!edges.contains(new_e)) {
+										update = true;
+										edges.add(new_e);
+									}
+								}
+							}
+						}
+					}
 				}
 			}
-
-			for (Edge e : removeEdgeSet) {
-				edges.remove(e);
-			}
-
 			BFA_graph.setEdges(edges);
-			BFA_graph.setInitialState(initialState);
-			BFA_graph.setAcceptingState(acceptingState);
-			BFA_graph.setAcceptingStateLA(acceptingStateLA);
+			// update = false;// ///<<<---------
 		}
 
 		Set<Edge> newEdges = BFA_graph.getEdges();
-		Set<Edge> epsilonEdges = new TreeSet<Edge>(new EdgeComparator());
+		for (int i = 0; i < epsilonEdges.size(); i++) {
+			newEdges.remove(epsilonEdges.get(i));
+		}
+		for (Edge e : specialEpsilonEdges) {
+			newEdges.add(e);
+		}
 
 		// remove useless vertices
 		Set<Integer> initialState = BFA_graph.getInitialState();
 		Set<Integer> acceptingState = BFA_graph.getAcceptingState();
 		Set<Integer> acceptingStateLA = BFA_graph.getAcceptingStateLA();
-		boolean update = true;
+		update = true;
 		while (update) {
 			update = false;
 			epsilonEdges.clear();
@@ -446,11 +572,13 @@ public class DFAConverter extends AbstractTreeVisitor {
 					uselessVertices.add(i);
 				}
 			}
+
 			for (Edge e : newEdges) {
 				if ((in_degree[e.getSrc()] == 0 && !initialState.contains(e.getSrc())) || uselessVertices.contains(e.getDst())) {
 					epsilonEdges.add(e);
 					update = true;
 				}
+
 			}
 
 			for (Edge e : epsilonEdges) {
@@ -487,92 +615,8 @@ public class DFAConverter extends AbstractTreeVisitor {
 		}
 
 		BFA_graph.setEdges(newEdges);
-
 	}
 
-	/*
-	 * private void eliminateEpsilonTransition() { if (epsilonMemo == null) {
-	 * epsilonMemo = new TreeMap<EpsilonMemoState, Set<EpsilonMemoState>>(new
-	 * EpsilonMemoStateComparator()); } ArrayList<Edge> epsilonEdges = new
-	 * ArrayList<Edge>(); Set<Character> allLabels = new HashSet<Character>();
-	 * for (Edge e : BFA_graph.getEdges()) { if (e.getLabel() != epsilon) {
-	 * allLabels.add(e.getLabel()); } if (e.getLabel() == epsilon &&
-	 * e.getPredicate() == -1) { epsilonEdges.add(e); } }
-	 * 
-	 * boolean update = true; while (update) {
-	 * 
-	 * update = false; for (int i = 0; i < V; i++) { bfa[i].clear(); } Set<Edge>
-	 * edges = BFA_graph.getEdges(); for (Edge e : edges) { int src =
-	 * e.getSrc(); bfa[src].add(e); }
-	 * 
-	 * for (int stateID = 0; stateID < V; stateID++) { // for (int stateID = 0;
-	 * stateID < 1; stateID++) { Set<EpsilonMemoState> nextStateIDs =
-	 * moveEpsilonTransition(new EpsilonMemoState(stateID, -1));
-	 * 
-	 * if (nextStateIDs.size() == 0) { continue; }
-	 * 
-	 * for (Character label : allLabels) { // System.out.println("label = " +
-	 * label); for (EpsilonMemoState ems : nextStateIDs) {
-	 * 
-	 * if (ems.getPredicate() != -1) {
-	 * System.out.println("INVALID EDGE!!!! --- this program has some bugs");
-	 * continue; }
-	 * 
-	 * Set<EpsilonMemoState> tmp = new TreeSet<EpsilonMemoState>(new
-	 * EpsilonMemoStateComparator()); int nextStateID = ems.getStateID();
-	 * boolean notPredicateFlag = (ems.getPredicate() == 1);
-	 * 
-	 * for (int i = 0; i < bfa[nextStateID].size(); i++) { Edge e = (Edge)
-	 * bfa[nextStateID].get(i); boolean flag = (e.getLabel() == label ||
-	 * e.getLabel() == '.'); if (notPredicateFlag) { flag = !flag; } // if
-	 * ((e.getLabel() == label || e.getLabel() == // '.')) { if (flag) {
-	 * Set<EpsilonMemoState> tmp2 = moveEpsilonTransition(new
-	 * EpsilonMemoState(e.getDst(), ems.getPredicate())); for (EpsilonMemoState
-	 * ems2 : tmp2) { Edge new_e = new Edge(stateID, ems2.getStateID(), label,
-	 * ems2.getPredicate()); if (!edges.contains(new_e)) { update = true;
-	 * edges.add(new_e); } } } } } } } BFA_graph.setEdges(edges); // update =
-	 * false;// ///<<<--------- }
-	 * 
-	 * 
-	 * Set<Edge> newEdges = BFA_graph.getEdges(); for (int i = 0; i <
-	 * epsilonEdges.size(); i++) { newEdges.remove(epsilonEdges.get(i)); }
-	 * 
-	 * // remove useless vertices Set<Integer> initialState =
-	 * BFA_graph.getInitialState(); Set<Integer> acceptingState =
-	 * BFA_graph.getAcceptingState(); Set<Integer> acceptingStateLA =
-	 * BFA_graph.getAcceptingStateLA(); update = true; while (update) { update =
-	 * false; epsilonEdges.clear(); int in_degree[] = new int[V]; int
-	 * out_degree[] = new int[V]; for (int i = 0; i < V; i++) { in_degree[i] =
-	 * out_degree[i] = 0; } for (Edge e : newEdges) { ++in_degree[e.getDst()];
-	 * ++out_degree[e.getSrc()]; }
-	 * 
-	 * Set<Integer> uselessVertices = new HashSet<Integer>(); for (int i = 0; i
-	 * < V; i++) { if (out_degree[i] == 0 && !initialState.contains(i) &&
-	 * !acceptingState.contains(i) && !acceptingStateLA.contains(i)) {
-	 * uselessVertices.add(i); } }
-	 * 
-	 * for (Edge e : newEdges) { if ((in_degree[e.getSrc()] == 0 &&
-	 * !initialState.contains(e.getSrc())) ||
-	 * uselessVertices.contains(e.getDst())) { epsilonEdges.add(e); update =
-	 * true; }
-	 * 
-	 * }
-	 * 
-	 * for (Edge e : epsilonEdges) { newEdges.remove(e); } }
-	 * 
-	 * for (int i = 0; i < V; i++) { bfa[i].clear(); }
-	 * 
-	 * for (Edge e : newEdges) { int src = e.getSrc(); bfa[src].add(e); } //
-	 * remove useless edges for (int i = 0; i < V; i++) { Set<Integer> hasAny =
-	 * new HashSet<Integer>(); for (int j = 0; j < bfa[i].size(); j++) { if
-	 * (((Edge) bfa[i].get(j)).getLabel() == '.') { hasAny.add(((Edge)
-	 * bfa[i].get(j)).getDst()); } } for (int j = 0; j < bfa[i].size(); j++) {
-	 * Edge e = (Edge) bfa[i].get(j); if (e.getLabel() == '.') continue; if
-	 * (e.getPredicate() != -1) continue; if (hasAny.contains(e.getDst())) {
-	 * newEdges.remove(e); } } }
-	 * 
-	 * BFA_graph.setEdges(newEdges); }
-	 */
 	// change
 	// ((vertex1,epsilon),vertex2"normal) -> ((vertex2,epsilon),vertex3"normal") => ((vertex1,epsilon),vertex3"normal)
 	// vertex2 is neither initialState nor acceptingState
@@ -911,8 +955,8 @@ public class DFAConverter extends AbstractTreeVisitor {
 	 * return false; }
 	 */
 	// public Map<ExecMemoState, Boolean> execMemo = null;
-	final int H = 10000;
-	final int W = 10000;
+	final int H = 20000;
+	final int W = 20000;
 	public static byte[][] execMemo = null; // execMemo[stateID][top]
 	public static Map<Tau, State> staticTau = null;
 	public static Set<State> staticF = null;
