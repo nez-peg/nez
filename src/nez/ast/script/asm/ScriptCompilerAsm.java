@@ -32,7 +32,7 @@ public class ScriptCompilerAsm implements CommonSymbols {
 	}
 
 	public void openClass(String name) {
-		this.cBuilder = new ClassBuilder(name, null, null, null);
+		this.cBuilder = new ClassBuilder("nez/ast/script/" + name, null, null, null);
 	}
 
 	public Class<?> closeClass() {
@@ -141,12 +141,6 @@ public class ScriptCompilerAsm implements CommonSymbols {
 		// TODO this.mBuilder.invokeStatic(args, function);
 	}
 
-	public void visitName(TypedTree node) {
-		VarEntry var = this.mBuilder.getVar(node.toText());
-		node.setType(var.getVarClass());
-		this.mBuilder.loadFromVar(var);
-	}
-
 	public void visitIf(TypedTree node) {
 		visit(node.get(_cond));
 		this.mBuilder.push(true);
@@ -166,6 +160,16 @@ public class ScriptCompilerAsm implements CommonSymbols {
 
 		// merge
 		this.mBuilder.mark(mergeLabel);
+	}
+
+	public void visitExpression(TypedTree node) {
+		this.visit(node.get(0));
+	}
+
+	public void visitName(TypedTree node) {
+		VarEntry var = this.mBuilder.getVar(node.toText());
+		node.setType(var.getVarClass());
+		this.mBuilder.loadFromVar(var);
 	}
 
 	private Class<?> typeInfferBinary(TypedTree binary, TypedTree left, TypedTree right) {

@@ -161,8 +161,7 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 
 	public void addVariable(Tree<?> nameNode, String name, Type type) {
 		if (inFunction) {
-			System.out.printf("TODO: var decl %s : %s\n", name, type);
-
+			scope.setVarType(name, type);
 		} else {
 			typeSystem.declGlobalVariable(name, type);
 		}
