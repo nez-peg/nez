@@ -88,7 +88,7 @@ public class TypeEnv {
 	 * @throws TypeException
 	 */
 	private LType registerType(String mangledName, LType type) throws TypeException {
-		if (this.typeMap.put(mangledName, type) == null) { // FIXME:nonNull
+		if (this.typeMap.put(mangledName, type) != null) {
 			typeError("already defined type: " + type.getSimpleName());
 		}
 		return type;
