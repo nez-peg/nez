@@ -6,9 +6,9 @@ import java.util.HashMap;
 
 import javax.lang.model.type.NullType;
 
-import nez.ast.jcode.JCodeTree;
 import nez.ast.script.CommonSymbols;
 import nez.ast.script.TypeSystem;
+import nez.ast.script.TypedTree;
 
 import org.objectweb.asm.Opcodes;
 
@@ -42,7 +42,7 @@ public class ScriptCompilerAsm implements CommonSymbols {
 	HashMap<String, Method> methodMap = new HashMap<String, Method>();
 	private VarEntry var;
 
-	public final void visit(JCodeTree node) {
+	public final void visit(TypedTree node) {
 		Method m = lookupMethod("visit", node.getTag().getSymbol());
 		if (m != null) {
 			try {
@@ -64,7 +64,7 @@ public class ScriptCompilerAsm implements CommonSymbols {
 		if (m == null) {
 			String name = method + tagName;
 			try {
-				m = this.getClass().getMethod(name, JCodeTree.class);
+				m = this.getClass().getMethod(name, TypedTree.class);
 			} catch (NoSuchMethodException e) {
 				return null;
 			} catch (SecurityException e) {
@@ -75,31 +75,31 @@ public class ScriptCompilerAsm implements CommonSymbols {
 		return m;
 	}
 
-	public Class<?> compileFuncDecl(String className, JCodeTree node) {
+	public Class<?> compileFuncDecl(String className, TypedTree node) {
 		this.openClass(className);
 		this.visitFuncDecl(node);
 		return this.closeClass();
 	}
 
-	private Class<?> t(JCodeTree node) {
+	private Class<?> typeof(TypedTree node) {
 		// node.getTypedClass();
 		return typeSystem.typeof(node);
 	}
 
-	public void visitFuncDecl(JCodeTree node) {
+	public void visitFuncDecl(TypedTree node) {
 		// this.mBuilderStack.push(this.mBuilder);
-		JCodeTree nameNode = node.get(_name);
-		JCodeTree args = node.get(_param);
+		TypedTree nameNode = node.get(_name);
+		TypedTree args = node.get(_param);
 		String name = nameNode.toText();
-		Class<?> funcType = nameNode.getTypedClass();
+		Class<?> funcType = typeof(nameNode);
 		Class<?>[] paramTypes = new Class<?>[args.size()];
 		for (int i = 0; i < paramTypes.length; i++) {
-			paramTypes[i] = t(args.get(i));
+			paramTypes[i] = typeof(args.get(i));
 		}
 		this.mBuilder = this.cBuilder.newMethodBuilder(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, funcType, name, paramTypes);
 		this.mBuilder.enterScope();// FIXME
-		for (JCodeTree arg : args) {
-			this.mBuilder.defineArgument(arg.toText(), t(arg));
+		for (TypedTree arg : args) {
+			this.mBuilder.defineArgument(arg.toText(), typeof(arg));
 		}
 		this.mBuilder.loadArgs();
 		visit(node.get(_body));
@@ -109,38 +109,39 @@ public class ScriptCompilerAsm implements CommonSymbols {
 	}
 
 	// FIXME Block scope
-	public void visitBlock(JCodeTree node) {
+	public void visitBlock(TypedTree node) {
 		this.mBuilder.enterScope();
-		for (JCodeTree stmt : node) {
+		for (TypedTree stmt : node) {
 			visit(stmt);
 		}
 		this.mBuilder.exitScope();
 	}
 
-	public void visitVarDecl(JCodeTree node) {
+	public void visitVarDecl(TypedTree node) {
 		if (node.size() > 1) {
-			JCodeTree varNode = node.get(_name);
-			JCodeTree valueNode = node.get(_expr);
+			TypedTree varNode = node.get(_name);
+			TypedTree valueNode = node.get(_expr);
 			visit(valueNode);
-			varNode.setType(t(valueNode));
-			this.mBuilder.createNewVarAndStore(varNode.toText(), valueNode.getTypedClass());
+			varNode.setType(typeof(valueNode));
+			this.mBuilder.createNewVarAndStore(varNode.toText(), typeof(valueNode));
 		}
 	}
 
-	public void visitVarDeclList(JCodeTree node) {
+	public void visitVarDeclList(TypedTree node) {
 		visit(node.get(0));
 	}
 
-	// public void visitName(JCodeTree node) {
-	// VarEntry var = this.mBuilder.getLocalVar(node.toText());
-	// node.setType(var.getVarClass());
-	// this.mBuilder.loadFromVar(var);
-	// }
+	public void visitName(TypedTree node) {
+		VarEntry var = this.mBuilder.getVar(node.toText());
+		node.setType(var.getVarClass());
+		this.mBuilder.loadFromVar(var);
+	}
+
 	//
 	//
 	//
 	//
-	// public void visitIf(JCodeTree node) {
+	// public void visitIf(TypedTree node) {
 	// visit(node.get(0));
 	// this.mBuilder.push(true);
 	//
@@ -161,7 +162,7 @@ public class ScriptCompilerAsm implements CommonSymbols {
 	// this.mBuilder.mark(mergeLabel);
 	// }
 	//
-	// public void visitWhile(JCodeTree node) {
+	// public void visitWhile(TypedTree node) {
 	// Label beginLabel = this.mBuilder.newLabel();
 	// Label condLabel = this.mBuilder.newLabel();
 	//
@@ -179,7 +180,7 @@ public class ScriptCompilerAsm implements CommonSymbols {
 	// this.mBuilder.ifCmp(Type.BOOLEAN_TYPE, this.mBuilder.EQ, beginLabel);
 	// }
 	//
-	// public void visitDoWhile(JCodeTree node) {
+	// public void visitDoWhile(TypedTree node) {
 	// Label beginLabel = this.mBuilder.newLabel();
 	//
 	// // Do
@@ -193,7 +194,7 @@ public class ScriptCompilerAsm implements CommonSymbols {
 	// this.mBuilder.ifCmp(Type.BOOLEAN_TYPE, this.mBuilder.EQ, beginLabel);
 	// }
 	//
-	// public void visitFor(JCodeTree node) {
+	// public void visitFor(TypedTree node) {
 	// Label beginLabel = this.mBuilder.newLabel();
 	// Label condLabel = this.mBuilder.newLabel();
 	// node.requirePop();
@@ -215,29 +216,29 @@ public class ScriptCompilerAsm implements CommonSymbols {
 	// this.mBuilder.ifCmp(Type.BOOLEAN_TYPE, this.mBuilder.EQ, beginLabel);
 	// }
 	//
-	// public void visitContinue(JCodeTree node) {
+	// public void visitContinue(TypedTree node) {
 	// }
 	//
-	// public void visitBreak(JCodeTree node) {
+	// public void visitBreak(TypedTree node) {
 	// }
 	//
-	// public void visitReturn(JCodeTree node) {
+	// public void visitReturn(TypedTree node) {
 	// this.mBuilder.returnValue();
 	// }
 	//
-	// public void visitThrow(JCodeTree node) {
+	// public void visitThrow(TypedTree node) {
 	// }
 	//
-	// public void visitWith(JCodeTree node) {
+	// public void visitWith(TypedTree node) {
 	// }
 	//
-	// public void visitExpression(JCodeTree node) {
+	// public void visitExpression(TypedTree node) {
 	// this.visit(node.get(0));
 	// }
 	//
-	// public void visitAssign(JCodeTree node) {
-	// JCodeTree nameNode = node.get(0);
-	// JCodeTree valueNode = node.get(1);
+	// public void visitAssign(TypedTree node) {
+	// TypedTree nameNode = node.get(0);
+	// TypedTree valueNode = node.get(1);
 	// VarEntry var = this.scope.getLocalVar(nameNode.toText());
 	// visit(valueNode);
 	// if (var != null) {
@@ -248,15 +249,15 @@ public class ScriptCompilerAsm implements CommonSymbols {
 	// }
 	// }
 	//
-	// public void visitApply(JCodeTree node) {
-	// // JCodeTree fieldNode = node.get(_recv"));
-	// JCodeTree argsNode = node.get(_param);
-	// JCodeTree name = node.get(_name);
+	// public void visitApply(TypedTree node) {
+	// // TypedTree fieldNode = node.get(_recv"));
+	// TypedTree argsNode = node.get(_param);
+	// TypedTree name = node.get(_name);
 	// // VarEntry var = null;
 	//
 	// Class<?>[] argTypes = new Class<?>[argsNode.size()];
 	// for (int i = 0; i < argsNode.size(); i++) {
-	// JCodeTree arg = argsNode.get(i);
+	// TypedTree arg = argsNode.get(i);
 	// this.visit(arg);
 	// argTypes[i] = arg.getTypedClass();
 	// }
@@ -274,7 +275,7 @@ public class ScriptCompilerAsm implements CommonSymbols {
 	// // }
 	// }
 	//
-	// public void generateRunTimeLibrary(JCodeTree fieldNode, JCodeTree
+	// public void generateRunTimeLibrary(TypedTree fieldNode, TypedTree
 	// argsNode) {
 	// String classPath = "";
 	// String methodName = null;
@@ -290,7 +291,7 @@ public class ScriptCompilerAsm implements CommonSymbols {
 	// }
 	// Type[] argTypes = new Type[argsNode.size()];
 	// for (int i = 0; i < argsNode.size(); i++) {
-	// JCodeTree arg = argsNode.get(i);
+	// TypedTree arg = argsNode.get(i);
 	// this.visit(arg);
 	// argTypes[i] = Type.getType(arg.getTypedClass());
 	// }
@@ -298,8 +299,8 @@ public class ScriptCompilerAsm implements CommonSymbols {
 	// "bootstrap", methodName, classPath, argTypes);
 	// }
 	//
-	// public void visitField(JCodeTree node) {
-	// JCodeTree top = node.get(0);
+	// public void visitField(TypedTree node) {
+	// TypedTree top = node.get(0);
 	// VarEntry var = null;
 	// if (_Name.equals(top.getTag())) {
 	// var = this.scope.getLocalVar(top.toText());
@@ -313,7 +314,7 @@ public class ScriptCompilerAsm implements CommonSymbols {
 	// visit(top);
 	// }
 	// for (int i = 1; i < node.size(); i++) {
-	// JCodeTree member = node.get(i);
+	// TypedTree member = node.get(i);
 	// if (_Name.equals(member.getTag())) {
 	// this.mBuilder.getField(Type.getType(var.getVarClass()), member.toText(),
 	// Type.getType(Object.class));
@@ -322,9 +323,9 @@ public class ScriptCompilerAsm implements CommonSymbols {
 	// }
 	// }
 	//
-	// public void visitBinaryNode(JCodeTree node) {
-	// JCodeTree left = node.get(0);
-	// JCodeTree right = node.get(1);
+	// public void visitBinaryNode(TypedTree node) {
+	// TypedTree left = node.get(0);
+	// TypedTree right = node.get(1);
 	// this.visit(left);
 	// this.visit(right);
 	// node.setType(typeInfferBinary(node, left, right));
@@ -333,9 +334,9 @@ public class ScriptCompilerAsm implements CommonSymbols {
 	// this.popUnusedValue(node);
 	// }
 	//
-	// public void visitCompNode(JCodeTree node) {
-	// JCodeTree left = node.get(0);
-	// JCodeTree right = node.get(1);
+	// public void visitCompNode(TypedTree node) {
+	// TypedTree left = node.get(0);
+	// TypedTree right = node.get(1);
 	// this.visit(left);
 	// this.visit(right);
 	// node.setType(boolean.class);
@@ -344,8 +345,8 @@ public class ScriptCompilerAsm implements CommonSymbols {
 	// this.popUnusedValue(node);
 	// }
 	//
-	// private Class<?> typeInfferBinary(JCodeTree binary, JCodeTree left,
-	// JCodeTree right) {
+	// private Class<?> typeInfferBinary(TypedTree binary, TypedTree left,
+	// TypedTree right) {
 	// Class<?> leftType = left.getTypedClass();
 	// Class<?> rightType = right.getTypedClass();
 	// if (leftType == int.class) {
@@ -379,52 +380,52 @@ public class ScriptCompilerAsm implements CommonSymbols {
 	// throw new RuntimeException("type error: " + left + ", " + right);
 	// }
 	//
-	// public void visitAdd(JCodeTree node) {
+	// public void visitAdd(TypedTree node) {
 	// this.visitBinaryNode(node);
 	// }
 	//
-	// public void visitSub(JCodeTree node) {
+	// public void visitSub(TypedTree node) {
 	// this.visitBinaryNode(node);
 	// }
 	//
-	// public void visitMul(JCodeTree node) {
+	// public void visitMul(TypedTree node) {
 	// this.visitBinaryNode(node);
 	// }
 	//
-	// public void visitDiv(JCodeTree node) {
+	// public void visitDiv(TypedTree node) {
 	// this.visitBinaryNode(node);
 	// }
 	//
-	// public void visitNotEquals(JCodeTree node) {
+	// public void visitNotEquals(TypedTree node) {
 	// this.visitCompNode(node);
 	// }
 	//
-	// public void visitLessThan(JCodeTree node) {
+	// public void visitLessThan(TypedTree node) {
 	// this.visitCompNode(node);
 	// }
 	//
-	// public void visitLessThanEquals(JCodeTree node) {
+	// public void visitLessThanEquals(TypedTree node) {
 	// this.visitCompNode(node);
 	// }
 	//
-	// public void visitGreaterThan(JCodeTree node) {
+	// public void visitGreaterThan(TypedTree node) {
 	// this.visitCompNode(node);
 	// }
 	//
-	// public void visitGreaterThanEquals(JCodeTree node) {
+	// public void visitGreaterThanEquals(TypedTree node) {
 	// this.visitCompNode(node);
 	// }
 	//
-	// public void visitLogicalAnd(JCodeTree node) {
+	// public void visitLogicalAnd(TypedTree node) {
 	// this.visitCompNode(node);
 	// }
 	//
-	// public void visitLogicalOr(JCodeTree node) {
+	// public void visitLogicalOr(TypedTree node) {
 	// this.visitCompNode(node);
 	// }
 	//
-	// public void visitUnaryNode(JCodeTree node) {
-	// JCodeTree child = node.get(0);
+	// public void visitUnaryNode(TypedTree node) {
+	// TypedTree child = node.get(0);
 	// this.visit(child);
 	// node.setType(this.typeInfferUnary(node.get(0)));
 	// this.mBuilder.callStaticMethod(JCodeOperator.class, node.getTypedClass(),
@@ -432,16 +433,16 @@ public class ScriptCompilerAsm implements CommonSymbols {
 	// this.popUnusedValue(node);
 	// }
 	//
-	// public void visitPlus(JCodeTree node) {
+	// public void visitPlus(TypedTree node) {
 	// this.visitUnaryNode(node);
 	// }
 	//
-	// public void visitMinus(JCodeTree node) {
+	// public void visitMinus(TypedTree node) {
 	// this.visitUnaryNode(node);
 	// }
 	//
-	// private void evalPrefixInc(JCodeTree node, int amount) {
-	// JCodeTree nameNode = node.get(0);
+	// private void evalPrefixInc(TypedTree node, int amount) {
+	// TypedTree nameNode = node.get(0);
 	// VarEntry var = this.scope.getLocalVar(nameNode.toText());
 	// if (var != null) {
 	// node.setType(int.class);
@@ -454,8 +455,8 @@ public class ScriptCompilerAsm implements CommonSymbols {
 	// }
 	// }
 	//
-	// private void evalSuffixInc(JCodeTree node, int amount) {
-	// JCodeTree nameNode = node.get(0);
+	// private void evalSuffixInc(TypedTree node, int amount) {
+	// TypedTree nameNode = node.get(0);
 	// VarEntry var = this.scope.getLocalVar(nameNode.toText());
 	// if (var != null) {
 	// node.setType(int.class);
@@ -468,23 +469,23 @@ public class ScriptCompilerAsm implements CommonSymbols {
 	// }
 	// }
 	//
-	// public void visitSuffixInc(JCodeTree node) {
+	// public void visitSuffixInc(TypedTree node) {
 	// this.evalSuffixInc(node, 1);
 	// }
 	//
-	// public void visitSuffixDec(JCodeTree node) {
+	// public void visitSuffixDec(TypedTree node) {
 	// this.evalSuffixInc(node, -1);
 	// }
 	//
-	// public void visitPrefixInc(JCodeTree node) {
+	// public void visitPrefixInc(TypedTree node) {
 	// this.evalPrefixInc(node, 1);
 	// }
 	//
-	// public void visitPrefixDec(JCodeTree node) {
+	// public void visitPrefixDec(TypedTree node) {
 	// this.evalPrefixInc(node, -1);
 	// }
 	//
-	// private Class<?> typeInfferUnary(JCodeTree node) {
+	// private Class<?> typeInfferUnary(TypedTree node) {
 	// Class<?> nodeType = node.getTypedClass();
 	// if (nodeType == int.class) {
 	// return int.class;
@@ -494,68 +495,68 @@ public class ScriptCompilerAsm implements CommonSymbols {
 	// throw new RuntimeException("type error: " + node);
 	// }
 
-	public void visitNull(JCodeTree p) {
+	public void visitNull(TypedTree p) {
 		p.setType(NullType.class);
 		this.mBuilder.pushNull();
 	}
 
-	// void visitArray(JCodeTree p){
+	// void visitArray(TypedTree p){
 	// this.mBuilder.newArray(Object.class);
 	// }
 
-	public void visitList(JCodeTree node) {
-		for (JCodeTree element : node) {
+	public void visitList(TypedTree node) {
+		for (TypedTree element : node) {
 			visit(element);
 		}
 	}
 
-	public void visitTrue(JCodeTree p) {
+	public void visitTrue(TypedTree p) {
 		p.setType(boolean.class);
 		this.mBuilder.push(true);
 	}
 
-	public void visitFalse(JCodeTree p) {
+	public void visitFalse(TypedTree p) {
 		p.setType(boolean.class);
 		this.mBuilder.push(false);
 	}
 
-	public void visitInt(JCodeTree p) {
+	public void visitInt(TypedTree p) {
 		p.setType(int.class);
 		this.mBuilder.push(Integer.parseInt(p.toText()));
 	}
 
-	public void visitInteger(JCodeTree p) {
+	public void visitInteger(TypedTree p) {
 		this.visitInt(p);
 	}
 
-	public void visitOctalInteger(JCodeTree p) {
+	public void visitOctalInteger(TypedTree p) {
 		p.setType(int.class);
 		this.mBuilder.push(Integer.parseInt(p.toText(), 8));
 	}
 
-	public void visitHexInteger(JCodeTree p) {
+	public void visitHexInteger(TypedTree p) {
 		p.setType(int.class);
 		this.mBuilder.push(Integer.parseInt(p.toText(), 16));
 	}
 
-	public void visitDouble(JCodeTree p) {
+	public void visitDouble(TypedTree p) {
 		p.setType(double.class);
 		this.mBuilder.push(Double.parseDouble(p.toText()));
 	}
 
-	public void visitString(JCodeTree p) {
+	public void visitString(TypedTree p) {
 		p.setType(String.class);
 		this.mBuilder.push(p.toText());
 	}
 
-	public void visitCharacter(JCodeTree p) {
+	public void visitCharacter(TypedTree p) {
 		p.setType(String.class);
 		this.mBuilder.push(p.toText());
 		// p.setType(char.class);
 		// this.mBuilder.push(p.toText().charAt(0));
 	}
 
-	public void visitUndefined(JCodeTree p) {
+	public void visitUndefined(TypedTree p) {
 		System.out.println("undefined: " + p.getTag().getSymbol());
 	}
 
