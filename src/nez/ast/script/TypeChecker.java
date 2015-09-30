@@ -49,6 +49,12 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		}
 	}
 
+	public void typed(Tree<?> node, Class<?> c) {
+		if (node instanceof TypedTree) {
+			((TypedTree) node).setType(c);
+		}
+	}
+
 	/* TopLevel */
 
 	public Class<?> typeSource(Tree<?> node) {
@@ -73,13 +79,15 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 			Class<?> type = typeSystem.resolveType(node.get(_type, null), null);
 			if (type != null) {
 				this.addVariable(node.get(_type), "return", type);
+				typed(node.get(_type), type);
 			}
-			Tree<?> paramsNode = node.get(_body, null);
+			Tree<?> paramsNode = node.get(_param, null);
 			if (paramsNode != null) {
 				for (Tree<?> p : paramsNode) {
-					String pname = node.getText(_name, null);
-					Class<?> ptype = typeSystem.resolveType(node.get(_type, null), Object.class);
+					String pname = p.getText(_name, null);
+					Class<?> ptype = typeSystem.resolveType(p.get(_type, null), Object.class);
 					this.addVariable(p.get(_name), pname, ptype);
+					typed(p, ptype);
 				}
 			}
 			type(bodyNode);
