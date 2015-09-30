@@ -22,6 +22,7 @@ public class TypeSystem implements CommonSymbols {
 		this.setType("long", long.class);
 		this.setType("double", double.class);
 		this.setType("String", String.class);
+		this.setType("Array", UList.class);
 	}
 
 	public void setType(String name, Class<?> type) {
@@ -36,6 +37,14 @@ public class TypeSystem implements CommonSymbols {
 			Class<?> t = this.nameMap.get(node.toText());
 			return t == null ? deftype : t;
 		}
+		if (node.is(_ArrayType)) {
+			GenericType t = new GenericType(UList.class, resolveType(node.get(_base), TypeSystem.class));
+			System.out.println("@@ " + t.resolve("T", null));
+			System.out.println("@@ " + t.resolve("K", null));
+			return UList.class;
+
+		}
+
 		return deftype;
 	}
 
