@@ -63,7 +63,40 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		return null;
 	}
 
+	/* FuncDecl */
+
+	public Class<?> typeFuncDecl(Tree<?> node) {
+		String name = node.getText(_name, null);
+		Tree<?> bodyNode = node.get(_body, null);
+		if (bodyNode != null) {
+			this.enterFunction();
+			Class<?> type = typeSystem.resolveType(node.get(_type, null), null);
+			if (type != null) {
+				this.addVariable(node.get(_type), "return", type);
+			}
+			Tree<?> paramsNode = node.get(_body, null);
+			if (paramsNode != null) {
+				for (Tree<?> p : paramsNode) {
+					String pname = node.getText(_name, null);
+					Class<?> ptype = typeSystem.resolveType(node.get(_type, null), Object.class);
+					this.addVariable(p.get(_name), pname, ptype);
+				}
+			}
+			type(bodyNode);
+			this.exitFunction();
+		}
+		return void.class;
+	}
+
 	/* Statement */
+
+	public Class<?> typeBlock(Tree<?> node) {
+		Class<?> t = null;
+		for (Tree<?> sub : node) {
+			t = type(sub);
+		}
+		return void.class;
+	}
 
 	public Class<?> typeVarDecl(Tree<?> node) {
 		String name = node.getText(_name, null);
@@ -81,11 +114,11 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 				enforceType(type, node, _expr);
 			}
 		}
-		performVarDecl(node.get(_name), name, type);
+		addVariable(node.get(_name), name, type);
 		return void.class;
 	}
 
-	public void performVarDecl(Tree<?> nameNode, String name, Class<?> type) {
+	public void addVariable(Tree<?> nameNode, String name, Class<?> type) {
 		if (inFunction) {
 			System.out.printf("TODO: var decl %s : %s\n", name, type);
 
