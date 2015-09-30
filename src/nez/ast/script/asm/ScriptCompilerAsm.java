@@ -36,7 +36,7 @@ public class ScriptCompilerAsm implements CommonSymbols {
 	}
 
 	public Class<?> closeClass() {
-		// loader.setDump(true);
+		cLoader.setDump(true);
 		Class<?> c = cLoader.definedAndLoadClass(this.cBuilder.getQualifiedClassName(), cBuilder.toByteArray());
 		this.cBuilder = null; //
 		return c;
@@ -107,7 +107,7 @@ public class ScriptCompilerAsm implements CommonSymbols {
 		// this.mBuilder.loadArgs();
 		visit(node.get(_body));
 		this.mBuilder.exitScope();
-		this.mBuilder.returnValue();
+		// this.mBuilder.returnValue();
 		this.mBuilder.endMethod();
 	}
 
@@ -166,9 +166,14 @@ public class ScriptCompilerAsm implements CommonSymbols {
 		this.visit(node.get(0));
 	}
 
+	public void visitReturn(TypedTree node) {
+		this.visit(node.get(_expr));
+		this.mBuilder.returnValue();
+	}
+
 	public void visitName(TypedTree node) {
 		VarEntry var = this.mBuilder.getVar(node.toText());
-		node.setType(var.getVarClass());
+		// node.setType(var.getVarClass());
 		this.mBuilder.loadFromVar(var);
 	}
 
