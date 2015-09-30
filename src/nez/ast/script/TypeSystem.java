@@ -50,7 +50,7 @@ public class TypeSystem implements CommonSymbols {
 		return t == null ? deftype : t;
 	}
 
-	void add(Class<?> c) {
+	public void add(Class<?> c) {
 		classList.add(c);
 	}
 

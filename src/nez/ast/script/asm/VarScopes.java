@@ -22,10 +22,11 @@ class VarScopes extends ArrayDeque<LocalVarScope> {
 		if (!this.isEmpty()) {
 			startIndex = this.peek().getEndIndex();
 		}
-		this.push(new LocalVarScope(startIndex));
+		this.push(new LocalVarScope(startIndex, this.peek()));
 	}
 
 	public void removeCurrentScope() {
 		this.pop();
 	}
+
 }
