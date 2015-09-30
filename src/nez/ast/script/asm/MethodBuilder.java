@@ -167,9 +167,9 @@ public class MethodBuilder extends GeneratorAdapter {
 	 * @param argClass
 	 * @return
 	 */
-	public VarEntry defineArgument(String name, Class<?> argClass) {
+	public VarEntry defineArgument(String argName, Class<?> argClass) {
 		assert this.varScopes.size() == 1;
-		return this.varScopes.peek().newVarEntry(argClass);
+		return this.varScopes.peek().newVarEntry(argName, argClass);
 	}
 
 	/**
@@ -178,8 +178,8 @@ public class MethodBuilder extends GeneratorAdapter {
 	 * @param varClass
 	 * @return
 	 */
-	public VarEntry createNewVar(Class<?> varClass) {
-		return this.varScopes.peek().newVarEntry(varClass);
+	public VarEntry createNewVar(String varName, Class<?> varClass) {
+		return this.varScopes.peek().newVarEntry(varName, varClass);
 	}
 
 	/**
@@ -192,8 +192,8 @@ public class MethodBuilder extends GeneratorAdapter {
 	 * @return
 	 */
 
-	public VarEntry createNewVarAndStore(String FIXME, Class<?> varClass) {
-		VarEntry entry = this.varScopes.peek().newVarEntry(varClass);
+	public VarEntry createNewVarAndStore(String varName, Class<?> varClass) {
+		VarEntry entry = this.varScopes.peek().newVarEntry(varName, varClass);
 		Type typeDesc = Type.getType(varClass);
 		this.visitVarInsn(typeDesc.getOpcode(ClassBuilder.ISTORE), entry.getVarIndex());
 		return entry;
@@ -217,6 +217,10 @@ public class MethodBuilder extends GeneratorAdapter {
 	public void loadFromVar(VarEntry entry) {
 		Type typeDesc = Type.getType(entry.getVarClass());
 		this.visitVarInsn(typeDesc.getOpcode(ClassBuilder.ILOAD), entry.getVarIndex());
+	}
+
+	public VarEntry getVar(String varName) {
+		return this.varScopes.getLast().getLocalVar(varName);
 	}
 
 	public void callIinc(VarEntry entry, int amount) {

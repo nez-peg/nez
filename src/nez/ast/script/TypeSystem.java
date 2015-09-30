@@ -13,7 +13,7 @@ public class TypeSystem {
 		add(StaticOperator.class);
 	}
 
-	void add(Class<?> c) {
+	public void add(Class<?> c) {
 		classList.add(c);
 	}
 
