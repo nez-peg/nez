@@ -22,6 +22,6 @@ public class ScriptCompiler {
 
 	public void compileFuncDecl(Tree<?> node) {
 		Class<?> function = this.compilerAsm.compileFuncDecl(node.getText(CommonSymbols._name, null), (TypedTree) node);
-		typeSystem.add(function);
+		typeSystem.addBaseClass(function);
 	}
 }

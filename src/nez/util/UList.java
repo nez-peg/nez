@@ -117,4 +117,8 @@ public class UList<T> extends AbstractList<T> {
 		return this.ArrayValues[index];
 	}
 
+	public UList<T> f() {
+		return null;
+	}
+
 }

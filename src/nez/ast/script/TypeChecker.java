@@ -1,11 +1,13 @@
 package nez.ast.script;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 
 import nez.ast.Symbol;
 import nez.ast.Tree;
 import nez.ast.TreeVisitor;
 import nez.util.ConsoleUtils;
+import nez.util.UList;
 
 public class TypeChecker extends TreeVisitor implements CommonSymbols {
 	ScriptContext context;
@@ -19,7 +21,7 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 	}
 
 	boolean inFunction = false;
-	Class<?> returnType = null;
+	Type returnType = null;
 
 	public void enterFunction() {
 		returnType = null;
@@ -30,23 +32,23 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		inFunction = false;
 	}
 
-	public void setReturnType(Class<?> t) {
+	public void setReturnType(Type t) {
 		this.returnType = t;
 	}
 
-	public Class<?> getReturnType() {
+	public Type getReturnType() {
 		return this.returnType;
 	}
 
-	public Class<?> type(Tree<?> node) {
-		Class<?> c = (Class<?>) visit("type", node);
+	public Type type(Tree<?> node) {
+		Type c = (Type) visit("type", node);
 		if (c != null && node instanceof TypedTree) {
 			((TypedTree) node).setType(c);
 		}
 		return c;
 	}
 
-	public void enforceType(Class<?> req, Tree<?> node, Symbol label) {
+	public void enforceType(Type req, Tree<?> node, Symbol label) {
 		Tree<?> unode = node.get(label, null);
 		if (unode instanceof TypedTree) {
 			TypedTree tnode = (TypedTree) unode;
@@ -59,7 +61,7 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		}
 	}
 
-	public void typed(Tree<?> node, Class<?> c) {
+	public void typed(Tree<?> node, Type c) {
 		if (node instanceof TypedTree) {
 			((TypedTree) node).setType(c);
 		}
@@ -67,26 +69,26 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 
 	/* TopLevel */
 
-	public Class<?> typeSource(Tree<?> node) {
-		Class<?> t = null;
+	public Type typeSource(Tree<?> node) {
+		Type t = null;
 		for (Tree<?> sub : node) {
 			t = type(sub);
 		}
 		return t;
 	}
 
-	public Class<?> typeImport(Tree<?> node) {
+	public Type typeImport(Tree<?> node) {
 		return null;
 	}
 
 	/* FuncDecl */
 
-	public Class<?> typeFuncDecl(Tree<?> node) {
+	public Type typeFuncDecl(Tree<?> node) {
 		String name = node.getText(_name, null);
 		Tree<?> bodyNode = node.get(_body, null);
 		if (bodyNode != null) {
 			this.enterFunction();
-			Class<?> type = typeSystem.resolveType(node.get(_type, null), null);
+			Type type = typeSystem.resolveType(node.get(_type, null), null);
 			if (type != null) {
 				this.setReturnType(type);
 				typed(node.get(_type), type);
@@ -95,7 +97,7 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 			if (paramsNode != null) {
 				for (Tree<?> p : paramsNode) {
 					String pname = p.getText(_name, null);
-					Class<?> ptype = typeSystem.resolveType(p.get(_type, null), Object.class);
+					Type ptype = typeSystem.resolveType(p.get(_type, null), Object.class);
 					this.addVariable(p.get(_name), pname, ptype);
 					typed(p, ptype);
 				}
@@ -110,8 +112,8 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		return void.class;
 	}
 
-	public Class<?> typeReturn(Tree<?> node) {
-		Class<?> t = this.getReturnType();
+	public Type typeReturn(Tree<?> node) {
+		Type t = this.getReturnType();
 		Tree<?> exprNode = node.get(_expr, null);
 		if (t == null) {
 			if (exprNode == null) {
@@ -129,17 +131,17 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 
 	/* Statement */
 
-	public Class<?> typeBlock(Tree<?> node) {
-		Class<?> t = null;
+	public Type typeBlock(Tree<?> node) {
+		Type t = null;
 		for (Tree<?> sub : node) {
 			t = type(sub);
 		}
 		return void.class;
 	}
 
-	public Class<?> typeVarDecl(Tree<?> node) {
+	public Type typeVarDecl(Tree<?> node) {
 		String name = node.getText(_name, null);
-		Class<?> type = typeSystem.resolveType(node.get(_type, null), null);
+		Type type = typeSystem.resolveType(node.get(_type, null), null);
 		Tree<?> exprNode = node.get(_expr, null);
 		if (type == null) {
 			if (exprNode == null) {
@@ -157,7 +159,7 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		return void.class;
 	}
 
-	public void addVariable(Tree<?> nameNode, String name, Class<?> type) {
+	public void addVariable(Tree<?> nameNode, String name, Type type) {
 		if (inFunction) {
 			System.out.printf("TODO: var decl %s : %s\n", name, type);
 
@@ -166,7 +168,7 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		}
 	}
 
-	public Class<?> typeName(Tree<?> node) {
+	public Type typeName(Tree<?> node) {
 		String name = node.toText();
 		if (!this.scope.containsVariable(name)) {
 			perror(node, "undefined name: " + name);
@@ -175,154 +177,190 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 	}
 
 	/* StatementExpression */
-	public Class<?> typeExpression(Tree<?> node) {
+	public Type typeExpression(Tree<?> node) {
 		type(node.get(0));
 		return void.class;
 	}
 
 	/* Expression */
 
-	public Class<?> typeAssign(Tree<?> node) {
+	public Type typeAssign(Tree<?> node) {
 		String name = node.getText(_left, null);
-		Class<?> right = type(node.get(_right));
+		Type right = type(node.get(_right));
 		this.scope.setVarType(name, right);
 		return right;
 	}
 
-	public Class<?>[] typeList(Tree<?> node) {
-		Class<?>[] args = new Class<?>[node.size()];
+	public Type[] typeList(Tree<?> node) {
+		Type[] args = new Type[node.size()];
 		for (int i = 0; i < node.size(); i++) {
 			args[i] = type(node.get(i));
 		}
 		return args;
 	}
 
-	public Class<?> typeApply(Tree<?> node) {
+	public Type typeApply(Tree<?> node) {
 		String name = node.getText(_name, "");
 		Tree<?> args = node.get(_param);
-		Class<?>[] types = new Class<?>[args.size()];
+		Type[] types = new Type[args.size()];
 		for (int i = 0; i < args.size(); i++) {
 			types[i] = type(node.get(i));
 		}
 		return this.resolve("function", node, name, args, types);
 	}
 
-	public Class<?> typeAdd(Tree<?> node) {
-		Class<?> left = type(node.get(_left));
-		Class<?> right = type(node.get(_right));
+	public Type typeMethodApply(Tree<?> node) {
+		Type recv = type(node.get(_recv));
+		String name = node.getText(_name, "");
+		Tree<?> args = node.get(_param);
+		Type[] types = new Type[args.size()];
+		for (int i = 0; i < args.size(); i++) {
+			types[i] = type(node.get(i));
+		}
+		return this.resolve("method", node, recv, name, args, types);
+	}
+
+	public Type typeAdd(Tree<?> node) {
+		Type left = type(node.get(_left));
+		Type right = type(node.get(_right));
 		return this.resolve("operator", node, "opAdd", node, left, right);
 	}
 
-	public Class<?> typeSub(Tree<?> node) {
-		Class<?> left = type(node.get(_left));
-		Class<?> right = type(node.get(_right));
+	public Type typeSub(Tree<?> node) {
+		Type left = type(node.get(_left));
+		Type right = type(node.get(_right));
 		return this.resolve("operator", node, "opSub", node, left, right);
 	}
 
-	public Class<?> typeMul(Tree<?> node) {
-		Class<?> left = type(node.get(_left));
-		Class<?> right = type(node.get(_right));
+	public Type typeMul(Tree<?> node) {
+		Type left = type(node.get(_left));
+		Type right = type(node.get(_right));
 		return this.resolve("operator", node, "opMul", node, left, right);
 	}
 
-	public Class<?> typeDiv(Tree<?> node) {
-		Class<?> left = type(node.get(_left));
-		Class<?> right = type(node.get(_right));
+	public Type typeDiv(Tree<?> node) {
+		Type left = type(node.get(_left));
+		Type right = type(node.get(_right));
 		return this.resolve("operator", node, "opDiv", node, left, right);
 	}
 
-	public Class<?> typeEquals(Tree<?> node) {
-		Class<?> left = type(node.get(_left));
-		Class<?> right = type(node.get(_right));
+	public Type typeEquals(Tree<?> node) {
+		Type left = type(node.get(_left));
+		Type right = type(node.get(_right));
 		return this.resolve("operator", node, "opEquals", node, left, right);
 	}
 
-	public Class<?> typeNotEquals(Tree<?> node) {
-		Class<?> left = type(node.get(_left));
-		Class<?> right = type(node.get(_right));
+	public Type typeNotEquals(Tree<?> node) {
+		Type left = type(node.get(_left));
+		Type right = type(node.get(_right));
 		return this.resolve("operator", node, "opNotEquals", node, left, right);
 	}
 
-	public Class<?> typeLessThan(Tree<?> node) {
-		Class<?> left = type(node.get(_left));
-		Class<?> right = type(node.get(_right));
+	public Type typeLessThan(Tree<?> node) {
+		Type left = type(node.get(_left));
+		Type right = type(node.get(_right));
 		return this.resolve("operator", node, "opLessThan", node, left, right);
 	}
 
-	public Class<?> typeLessThanEquals(Tree<?> node) {
-		Class<?> left = type(node.get(_left));
-		Class<?> right = type(node.get(_right));
+	public Type typeLessThanEquals(Tree<?> node) {
+		Type left = type(node.get(_left));
+		Type right = type(node.get(_right));
 		return this.resolve("operator", node, "opLessThanEquals", node, left, right);
 	}
 
-	public Class<?> typeGreaterThan(Tree<?> node) {
-		Class<?> left = type(node.get(_left));
-		Class<?> right = type(node.get(_right));
+	public Type typeGreaterThan(Tree<?> node) {
+		Type left = type(node.get(_left));
+		Type right = type(node.get(_right));
 		return this.resolve("operator", node, "opGreaterThan", node, left, right);
 	}
 
-	public Class<?> typeGreaterThanEquals(Tree<?> node) {
-		Class<?> left = type(node.get(_left));
-		Class<?> right = type(node.get(_right));
+	public Type typeGreaterThanEquals(Tree<?> node) {
+		Type left = type(node.get(_left));
+		Type right = type(node.get(_right));
 		return this.resolve("operator", node, "opGreaterThanEquals", node, left, right);
 	}
 
-	public Class<?> typeNull(Tree<?> node) {
-		return Object.class;
+	public Type typeNull(Tree<?> node) {
+		return UList.class;
 	}
 
-	public Class<?> typeTrue(Tree<?> node) {
+	public Type typeTrue(Tree<?> node) {
 		return boolean.class;
 	}
 
-	public Class<?> typeFalse(Tree<?> node) {
+	public Type typeFalse(Tree<?> node) {
 		return boolean.class;
 	}
 
-	public Class<?> typeShort(Tree<?> node) {
+	public Type typeShort(Tree<?> node) {
 		return int.class;
 	}
 
-	public Class<?> typeInteger(Tree<?> node) {
+	public Type typeInteger(Tree<?> node) {
 		return int.class;
 	}
 
-	public Class<?> typeLong(Tree<?> node) {
+	public Type typeLong(Tree<?> node) {
 		return long.class;
 	}
 
-	public Class<?> typeFloat(Tree<?> node) {
+	public Type typeFloat(Tree<?> node) {
 		return double.class;
 	}
 
-	public Class<?> typeDouble(Tree<?> node) {
+	public Type typeDouble(Tree<?> node) {
 		return double.class;
 	}
 
-	public Class<?> typeString(Tree<?> node) {
+	public Type typeString(Tree<?> node) {
 		return String.class;
 	}
 
 	// Utilities
 
-	private Class<?> resolve(String method, Tree<?> node, String name, Tree<?> argsNode, Class<?>... args) {
+	private Type resolve(String method, Tree<?> node, String name, Tree<?> argsNode, Type... args) {
 		Method m = typeSystem.findCompiledMethod(name, args);
 		if (m == null && argsNode instanceof TypedTree) {
 			TypedTree typedNode = (TypedTree) argsNode;
 			m = typeSystem.findDefaultMethod(name, args.length);
 			if (m != null) {
-				Class<?>[] p = m.getParameterTypes();
+				Type[] p = m.getParameterTypes();
 				for (int i = 0; i < p.length; i++) {
 					typedNode.set(i, typeSystem.enforceType(p[i], typedNode.get(i)));
 				}
 			}
 		}
 		if (m == null) {
-			perror(node, "undefined %s: %s", method, args);
+			perror(node, "undefined %s: %s", method, name);
 			return null;
 		}
 		if (node instanceof TypedTree) {
 			((TypedTree) node).setMethod(m);
+		}
+		return m.getReturnType();
+	}
+
+	private Type resolve(String method, Tree<?> node, Type recv, String name, Tree<?> argsNode, Type... args) {
+		Method m = typeSystem.findCompiledMethod(TypeSystem.toClass(recv), name, args);
+		if (m == null && argsNode instanceof TypedTree) {
+			TypedTree typedNode = (TypedTree) argsNode;
+			m = typeSystem.findDefaultMethod(TypeSystem.toClass(recv), name, args.length);
+			if (m != null) {
+				Type[] p = m.getParameterTypes();
+				for (int i = 0; i < p.length; i++) {
+					typedNode.set(i, typeSystem.enforceType(p[i], typedNode.get(i)));
+				}
+			}
+		}
+		if (m == null) {
+			perror(node, "undefined %s: %s", method, name);
+			return null;
+		}
+		if (node instanceof TypedTree) {
+			((TypedTree) node).setMethod(m);
+		}
+		if (recv instanceof GenericType) {
+			return ((GenericType) recv).resolve(m.getGenericReturnType());
 		}
 		return m.getReturnType();
 	}

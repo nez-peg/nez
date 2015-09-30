@@ -1,13 +1,14 @@
 package nez.ast.script;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 
 import nez.ast.Source;
 import nez.ast.Symbol;
 import nez.ast.Tree;
 
 public class TypedTree extends Tree<TypedTree> {
-	Class<?> type;
+	Type type;
 	Method resolvedMethod;
 
 	TypedTree() {
@@ -38,11 +39,11 @@ public class TypedTree extends Tree<TypedTree> {
 		return new TypedTree(this.getTag(), this.getSource(), this.getSourcePosition(), this.getLength(), this.size(), getValue());
 	}
 
-	public final Class<?> getType() {
-		return this.type;
+	public final Class<?> getClassType() {
+		return TypeSystem.toClass(this.type);
 	}
 
-	public void setType(Class<?> type) {
+	public void setType(Type type) {
 		this.type = type;
 	}
 
@@ -59,7 +60,7 @@ public class TypedTree extends Tree<TypedTree> {
 		super.stringfy(indent, label, sb);
 		if (type != null) {
 			sb.append(" :");
-			sb.append(type.getSimpleName());
+			sb.append(type.toString());
 		}
 	}
 

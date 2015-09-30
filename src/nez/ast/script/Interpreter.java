@@ -146,7 +146,7 @@ public class Interpreter extends TreeVisitor implements CommonSymbols {
 	public Object evalImport(Tree<?> node) {
 		String path = (String) eval(node.get(0));
 		try {
-			base.add(path);
+			base.addBaseClass(path);
 		} catch (ClassNotFoundException e) {
 			perror(node, "undefined class name: %s", path);
 		}

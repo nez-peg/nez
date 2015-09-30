@@ -1,13 +1,16 @@
 package nez.ast.script;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 
 import nez.ast.Tree;
 import nez.util.UList;
+import nez.util.UMap;
 
 public class TypeSystem implements CommonSymbols {
-	HashMap<String, Class<?>> nameMap = new HashMap<>();
+	HashMap<String, Type> nameMap = new HashMap<>();
 	UList<Class<?>> classList = new UList<Class<?>>(new Class<?>[4]);
 
 	public TypeSystem() {
@@ -15,56 +18,135 @@ public class TypeSystem implements CommonSymbols {
 	}
 
 	void init() {
-		add(DynamicOperator.class);
-		add(StaticOperator.class);
+		addBaseClass(DynamicOperator.class);
+		addBaseClass(StaticOperator.class);
+		this.setType("void", void.class);
 		this.setType("boolean", boolean.class);
 		this.setType("int", int.class);
 		this.setType("long", long.class);
 		this.setType("double", double.class);
 		this.setType("String", String.class);
 		this.setType("Array", UList.class);
+		this.setType("Dict", UMap.class);
 	}
 
-	public void setType(String name, Class<?> type) {
+	public void setType(String name, Type type) {
 		this.nameMap.put(name, type);
 	}
 
-	public final Class<?> resolveType(Tree<?> node, Class<?> deftype) {
+	public final Type resolveType(Tree<?> node, Type deftype) {
 		if (node == null) {
 			return deftype;
 		}
 		if (node.size() == 0) {
-			Class<?> t = this.nameMap.get(node.toText());
+			Type t = this.nameMap.get(node.toText());
 			return t == null ? deftype : t;
 		}
 		if (node.is(_ArrayType)) {
-			GenericType t = new GenericType(UList.class, resolveType(node.get(_base), TypeSystem.class));
-			System.out.println("@@ " + t.resolve("T", null));
-			System.out.println("@@ " + t.resolve("K", null));
-			return UList.class;
-
+			return GenericType.newType(UList.class, resolveType(node.get(_base), Object.class));
 		}
-
+		// if (node.is(_GenericType)) {
+		// //
+		// return GenericType.newGenericType(UList.class,
+		// resolveType(node.get(_base), TypeSystem.class));
+		// }
 		return deftype;
 	}
 
-	public boolean declGlobalVariable(String name, Class<?> type) {
-		Class<?> t = this.nameMap.get(name);
+	public boolean declGlobalVariable(String name, Type type) {
+		Type t = this.nameMap.get(name);
 		this.nameMap.put(name, type);
 		return true;
 	}
 
-	public Class<?> resolveGlobalVariableType(String name, Class<?> deftype) {
-		Class<?> t = this.nameMap.get(name);
+	public Type resolveGlobalVariableType(String name, Type deftype) {
+		Type t = this.nameMap.get(name);
 		return t == null ? deftype : t;
 	}
 
-	public void add(Class<?> c) {
-		classList.add(c);
+	/* Method Map */
+
+	private HashMap<String, Method> methodMap = new HashMap<String, Method>();
+
+	private Method getMethodMap(String key) {
+		return this.methodMap.get(key);
 	}
 
-	void add(String path) throws ClassNotFoundException {
-		add(Class.forName(path));
+	private Method setMethodMap(String key, Method method) {
+		return this.methodMap.put(key, method);
+	}
+
+	private String cast_key(Class<?> f, Class<?> t) {
+		return f.getName() + "&" + t.getName();
+	}
+
+	public void addCastMethod(Class<?> f, Class<?> t, Method m) {
+		this.setMethodMap(cast_key(f, t), m);
+	}
+
+	public Method getCastMethod(Class<?> f, Class<?> t) {
+		return this.getMethodMap(cast_key(f, t));
+	}
+
+	private String convert_key(Class<?> f, Class<?> t) {
+		return f.getName() + "!" + t.getName();
+	}
+
+	public void addConvertMethod(Class<?> f, Class<?> t, Method m) {
+		this.setMethodMap(convert_key(f, t), m);
+	}
+
+	public Method getConvertMethod(Class<?> f, Class<?> t) {
+		return this.getMethodMap(convert_key(f, t));
+	}
+
+	public void addBaseClass(Class<?> c) {
+		classList.add(c);
+		for (Method m : c.getMethods()) {
+			if (isStatic(m)) {
+				String name = m.getName();
+				if (name.startsWith("to")) {
+					Class<?>[] p = m.getParameterTypes();
+					if (p.length == 1) {
+						Class<?> f = p[1];
+						Class<?> t = m.getReturnType();
+						if (m.getName().startsWith("to_")) {
+							addCastMethod(f, t, m);
+						} else {
+							addConvertMethod(f, t, m);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	public TypedTree enforceType(Type req, TypedTree node) {
+		if (accept(false, req, node.getClassType())) {
+			return node;
+		}
+		Method m = this.getCastMethod(toClass(req), node.getClassType());
+		if (m != null) {
+			TypedTree newnode = node.newInstance(_Cast, 1, null);
+			newnode.set(0, _expr, node);
+			node.setMethod(m);
+			node.setType(req);
+			return newnode;
+		}
+		return node;
+	}
+
+	public void addBaseClass(String path) throws ClassNotFoundException {
+		addBaseClass(Class.forName(path));
+	}
+
+	public Method findDefaultMethod(Class<?> c, String name, int paramsize) {
+		for (Method m : c.getMethods()) {
+			if (name.equals(m.getName()) && m.getParameterTypes().length == paramsize) {
+				return m;
+			}
+		}
+		return null;
 	}
 
 	public Method findDefaultMethod(String name, int paramsize) {
@@ -79,16 +161,19 @@ public class TypeSystem implements CommonSymbols {
 		return null;
 	}
 
-	public TypedTree enforceType(Class<?> req, TypedTree node) {
-		if (accept(false, req, node.getType())) {
-			return node;
+	public Method findCompiledMethod(Class<?> c, String name, Type... args) {
+		for (Method m : c.getMethods()) {
+			if (!name.equals(m.getName())) {
+				continue;
+			}
+			if (acceptArguments(true, m, args)) {
+				return m;
+			}
 		}
-		;
-		System.out.printf("TODO: needs cast %s %s\n", req, node.getType());
-		return node;
+		return null;
 	}
 
-	public Method findCompiledMethod(String name, Class<?>... args) {
+	public Method findCompiledMethod(String name, Type... args) {
 		for (int i = classList.size() - 1; i >= 0; i--) {
 			Class<?> c = classList.ArrayValues[i];
 			for (Method m : c.getMethods()) {
@@ -103,7 +188,7 @@ public class TypeSystem implements CommonSymbols {
 		return null;
 	}
 
-	boolean acceptArguments(boolean autoBoxing, Method m, Class<?>... args) {
+	boolean acceptArguments(boolean autoBoxing, Method m, Type... args) {
 		Class<?>[] p = m.getParameterTypes();
 		if (args.length != p.length) {
 			return false;
@@ -116,8 +201,8 @@ public class TypeSystem implements CommonSymbols {
 		return true;
 	}
 
-	boolean accept(boolean autoBoxing, Class<?> p, Class<?> a) {
-		if (a == null) {
+	boolean accept(boolean autoBoxing, Type p, Type a) {
+		if (a == null || p == a) {
 			return true;
 		}
 		if (autoBoxing) {
@@ -129,7 +214,7 @@ public class TypeSystem implements CommonSymbols {
 			}
 		}
 		// System.out.printf("%s %s %s\n", p, a, p.isAssignableFrom(a));
-		if (p.isAssignableFrom(a)) {
+		if (TypeSystem.toClass(p).isAssignableFrom(TypeSystem.toClass(a))) {
 			return true;
 		}
 		return false;
@@ -139,12 +224,23 @@ public class TypeSystem implements CommonSymbols {
 
 	public Class<?> typeof(Tree<?> node) {
 		if (node instanceof TypedTree) {
-			Class<?> type = ((TypedTree) node).type;
+			Class<?> type = ((TypedTree) node).getClassType();
 			if (type != null) {
 				return type;
 			}
 		}
 		return Object.class; // untyped
+	}
+
+	public final boolean isStatic(Method m) {
+		return Modifier.isStatic(m.getModifiers());
+	}
+
+	public final static Class<?> toClass(Type type) {
+		if (type instanceof Class<?>) {
+			return (Class<?>) type;
+		}
+		return ((GenericType) type).base;
 	}
 
 }
