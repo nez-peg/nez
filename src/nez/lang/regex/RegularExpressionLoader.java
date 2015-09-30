@@ -48,14 +48,23 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 		return (Expression) visit("pi", Expression.class, expr, k);
 	}
 
+	boolean headFlag = false;
+
 	public Expression piPattern(Tree<?> e, Expression k) {
+		headFlag = false;
 		String ruleName = "Pattern";
 		Expression ne = ExpressionCommons.newNonTerminal(e, this.getGrammar(), ruleName);
 		getGrammar().newProduction(ruleName, pi(e.get(0), k));
 		Expression notPattern = toSeq(null, ExpressionCommons.newPnot(null, ne), toAny(null));
 		Expression zeroMore = ExpressionCommons.newPzero(null, notPattern);
 		Expression oneMore = ExpressionCommons.newPone(null, toSeq(null, ne, zeroMore));
-		return toSeq(null, zeroMore, oneMore);
+		Expression main = toSeq(null, zeroMore, oneMore);
+		headFlag = true;
+		ruleName = "headPattern";
+		ne = ExpressionCommons.newNonTerminal(e, this.getGrammar(), ruleName);
+		getGrammar().newProduction(ruleName, pi(e.get(0), k));
+		Expression head = toChoice(null, ne, ExpressionCommons.newEmpty(null));
+		return toSeq(null, head, main);
 	}
 
 	// pi(e, k) e: regular expression, k: continuation
@@ -240,9 +249,12 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 		return ExpressionCommons.newCany(null, false);
 	}
 
-	// stub
-	// public Expression toHeader(Tree<?> e) {
-	// }
+	public Expression toHeader(Tree<?> e) {
+		if (headFlag) {
+			return ExpressionCommons.newEmpty(null);
+		}
+		return ExpressionCommons.newFailure(null);
+	}
 
 	public Expression toTerminator(Tree<?> e) {
 		return ExpressionCommons.newPnot(null, ExpressionCommons.newCany(null, false));
