@@ -2,6 +2,7 @@ package nez.ast.script;
 
 import java.lang.reflect.Method;
 
+import nez.ast.Symbol;
 import nez.ast.Tree;
 import nez.ast.TreeVisitor;
 import nez.util.ConsoleUtils;
@@ -17,12 +18,35 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		this.scope = new TypeScope();
 	}
 
+	boolean inFunction = false;
+
+	public void enterFunction() {
+		inFunction = true;
+	}
+
+	public void exitFunction() {
+		inFunction = false;
+	}
+
 	public Class<?> type(Tree<?> node) {
 		Class<?> c = (Class<?>) visit("type", node);
 		if (c != null && node instanceof TypedTree) {
 			((TypedTree) node).setType(c);
 		}
 		return c;
+	}
+
+	public void enforceType(Class<?> req, Tree<?> node, Symbol label) {
+		Tree<?> unode = node.get(label, null);
+		if (unode instanceof TypedTree) {
+			TypedTree tnode = (TypedTree) unode;
+			type(tnode);
+			((TypedTree) node).set(label, this.typeSystem.enforceType(req, tnode));
+			return;
+		}
+		if (unode != null) {
+			type(unode);
+		}
 	}
 
 	/* TopLevel */
@@ -41,6 +65,43 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 
 	/* Statement */
 
+	public Class<?> typeVarDecl(Tree<?> node) {
+		String name = node.getText(_name, null);
+		Class<?> type = typeSystem.resolveType(node.get(_type, null), null);
+		Tree<?> exprNode = node.get(_expr, null);
+		if (type == null) {
+			if (exprNode == null) {
+				perror(node.get(_name), "ungiven type");
+				type = Object.class;
+			} else {
+				type = type(exprNode);
+			}
+		} else {
+			if (exprNode != null) {
+				enforceType(type, node, _expr);
+			}
+		}
+		performVarDecl(node.get(_name), name, type);
+		return void.class;
+	}
+
+	public void performVarDecl(Tree<?> nameNode, String name, Class<?> type) {
+		if (inFunction) {
+			System.out.printf("TODO: var decl %s : %s\n", name, type);
+
+		} else {
+			typeSystem.declGlobalVariable(name, type);
+		}
+	}
+
+	public Class<?> typeName(Tree<?> node) {
+		String name = node.toText();
+		if (!this.scope.containsVariable(name)) {
+			perror(node, "undefined name: " + name);
+		}
+		return this.scope.getVarType(name);
+	}
+
 	/* StatementExpression */
 	public Class<?> typeExpression(Tree<?> node) {
 		type(node.get(0));
@@ -48,14 +109,6 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 	}
 
 	/* Expression */
-
-	public Object typeName(Tree<?> node) {
-		String name = node.toText();
-		if (!this.scope.containsVariable(name)) {
-			perror(node, "undefined name: " + name);
-		}
-		return this.scope.getVarType(name);
-	}
 
 	public Class<?> typeAssign(Tree<?> node) {
 		String name = node.getText(_left, null);

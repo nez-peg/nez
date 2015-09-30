@@ -1,16 +1,53 @@
 package nez.ast.script;
 
 import java.lang.reflect.Method;
+import java.util.HashMap;
 
 import nez.ast.Tree;
 import nez.util.UList;
 
-public class TypeSystem {
+public class TypeSystem implements CommonSymbols {
+	HashMap<String, Class<?>> nameMap = new HashMap<>();
 	UList<Class<?>> classList = new UList<Class<?>>(new Class<?>[4]);
 
 	public TypeSystem() {
+		init();
+	}
+
+	void init() {
 		add(DynamicOperator.class);
 		add(StaticOperator.class);
+		this.setType("boolean", boolean.class);
+		this.setType("int", int.class);
+		this.setType("long", long.class);
+		this.setType("double", double.class);
+		this.setType("String", String.class);
+	}
+
+	public void setType(String name, Class<?> type) {
+		this.nameMap.put(name, type);
+	}
+
+	public final Class<?> resolveType(Tree<?> node, Class<?> deftype) {
+		if (node == null) {
+			return deftype;
+		}
+		if (node.size() == 0) {
+			Class<?> t = this.nameMap.get(node.toText());
+			return t == null ? deftype : t;
+		}
+		return deftype;
+	}
+
+	public boolean declGlobalVariable(String name, Class<?> type) {
+		Class<?> t = this.nameMap.get(name);
+		this.nameMap.put(name, type);
+		return true;
+	}
+
+	public Class<?> resolveGlobalVariableType(String name, Class<?> deftype) {
+		Class<?> t = this.nameMap.get(name);
+		return t == null ? deftype : t;
 	}
 
 	void add(Class<?> c) {
