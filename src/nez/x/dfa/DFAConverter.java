@@ -482,15 +482,13 @@ public class DFAConverter extends AbstractTreeVisitor {
 			for (int stateID = 0; stateID < V; stateID++) {
 				// for (int stateID = 0; stateID < 1; stateID++) {
 				Set<EpsilonMemoState> nextStateIDs = moveEpsilonTransition(new EpsilonMemoState(stateID, -1));
-				System.out.println(stateID + " -> ");
-				for (EpsilonMemoState ems : nextStateIDs) {
-					System.out.print(ems + " | ");
-				}
-				System.out.println("");
-				System.out.println("");
-				for (EpsilonMemoState ems : nextStateIDs) {
 
+				System.out.println(stateID + " stateID---");
+				for (EpsilonMemoState ems : nextStateIDs) {
+					System.out.print(ems + ", ");
 				}
+				System.out.println("");
+
 				if (nextStateIDs.size() == 0) {
 					continue;
 				}
@@ -514,6 +512,23 @@ public class DFAConverter extends AbstractTreeVisitor {
 						int nextStateID = ems.getStateID();
 						boolean notPredicateFlag = (ems.getPredicate() == 1);
 
+						// /<-----------------
+						boolean hasPredicate = false;
+						for (int i = 0; i < bfa[nextStateID].size(); i++) {
+							Edge e = (Edge) bfa[nextStateID].get(i);
+							if (e.getPredicate() != -1) {
+								hasPredicate = true;
+								break;
+							}
+						}
+						if (hasPredicate) {
+							if (stateID != nextStateID) {
+								specialEpsilonEdges.add(new Edge(stateID, nextStateID, epsilon, -1));
+							}
+							continue;
+						}
+						// /<-----------------
+
 						for (int i = 0; i < bfa[nextStateID].size(); i++) {
 							Edge e = (Edge) bfa[nextStateID].get(i);
 							boolean flag = (e.getLabel() == label || e.getLabel() == '.');
@@ -524,6 +539,11 @@ public class DFAConverter extends AbstractTreeVisitor {
 							// '.')) {
 							if (flag) {
 								Set<EpsilonMemoState> tmp2 = moveEpsilonTransition(new EpsilonMemoState(e.getDst(), ems.getPredicate()));
+								System.out.println(e.getDst() + " -> ");
+								for (EpsilonMemoState ems3 : tmp2) {
+									System.out.print(ems3 + ",, ");
+								}
+								System.out.println("");
 								for (EpsilonMemoState ems2 : tmp2) {
 									Edge new_e = new Edge(stateID, ems2.getStateID(), label, ems2.getPredicate());
 									if (!edges.contains(new_e)) {
