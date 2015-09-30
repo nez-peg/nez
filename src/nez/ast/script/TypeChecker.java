@@ -113,6 +113,23 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		return right;
 	}
 
+	public Class<?> typeApply(Tree<?> node) {
+		String name = node.getText(_name, null);
+		return this.resolve("function", name, node, typeList(node.get(_param)));
+	}
+
+	public Class<?>[] typeList(Tree<?> node) {
+		Class<?>[] args = new Class<?>[node.size()];
+		for (int i = 0; i < node.size(); i++) {
+			args[i] = type(node.get(i));
+		}
+		return args;
+	}
+
+	public Class<?> typeImport(Tree<?> node) {
+		return null;
+	}
+
 	public Class<?> typeString(Tree<?> node) {
 		return String.class;
 	}
