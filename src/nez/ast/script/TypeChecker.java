@@ -25,6 +25,8 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		return c;
 	}
 
+	/* TopLevel */
+
 	public Class<?> typeSource(Tree<?> node) {
 		Class<?> t = null;
 		for (Tree<?> sub : node) {
@@ -33,12 +35,41 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		return t;
 	}
 
+	public Class<?> typeImport(Tree<?> node) {
+		return null;
+	}
+
 	/* Statement */
 
 	/* StatementExpression */
 	public Class<?> typeExpression(Tree<?> node) {
 		type(node.get(0));
 		return void.class;
+	}
+
+	/* Expression */
+
+	public Object typeName(Tree<?> node) {
+		String name = node.toText();
+		if (!this.scope.containsVariable(name)) {
+			perror(node, "undefined name: " + name);
+		}
+		return this.scope.getVarType(name);
+	}
+
+	public Class<?> typeAssign(Tree<?> node) {
+		String name = node.getText(_left, null);
+		Class<?> right = type(node.get(_right));
+		this.scope.setVarType(name, right);
+		return right;
+	}
+
+	public Class<?>[] typeList(Tree<?> node) {
+		Class<?>[] args = new Class<?>[node.size()];
+		for (int i = 0; i < node.size(); i++) {
+			args[i] = type(node.get(i));
+		}
+		return args;
 	}
 
 	public Class<?> typeApply(Tree<?> node) {
@@ -111,43 +142,40 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		return this.resolve("operator", node, "opGreaterThanEquals", node, left, right);
 	}
 
-	public Object typeName(Tree<?> node) {
-		String name = node.toText();
-		if (!this.scope.containsVariable(name)) {
-			perror(node, "undefined name: " + name);
-		}
-		return this.scope.getVarType(name);
+	public Class<?> typeNull(Tree<?> node) {
+		return Object.class;
 	}
 
-	public Class<?> typeAssign(Tree<?> node) {
-		String name = node.getText(_left, null);
-		Class<?> right = type(node.get(_right));
-		this.scope.setVarType(name, right);
-		return right;
+	public Class<?> typeTrue(Tree<?> node) {
+		return boolean.class;
 	}
 
-	public Class<?>[] typeList(Tree<?> node) {
-		Class<?>[] args = new Class<?>[node.size()];
-		for (int i = 0; i < node.size(); i++) {
-			args[i] = type(node.get(i));
-		}
-		return args;
+	public Class<?> typeFalse(Tree<?> node) {
+		return boolean.class;
 	}
 
-	public Class<?> typeImport(Tree<?> node) {
-		return null;
-	}
-
-	public Class<?> typeString(Tree<?> node) {
-		return String.class;
+	public Class<?> typeShort(Tree<?> node) {
+		return int.class;
 	}
 
 	public Class<?> typeInteger(Tree<?> node) {
 		return int.class;
 	}
 
+	public Class<?> typeLong(Tree<?> node) {
+		return long.class;
+	}
+
+	public Class<?> typeFloat(Tree<?> node) {
+		return double.class;
+	}
+
 	public Class<?> typeDouble(Tree<?> node) {
 		return double.class;
+	}
+
+	public Class<?> typeString(Tree<?> node) {
+		return String.class;
 	}
 
 	// Utilities
