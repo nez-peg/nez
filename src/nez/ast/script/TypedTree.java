@@ -40,4 +40,20 @@ public class TypedTree extends Tree<TypedTree> {
 		this.resolvedMethod = m;
 	}
 
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		this.stringfy("", null, sb);
+		return sb.toString();
+	}
+
+	@Override
+	public void stringfy(String indent, Symbol label, StringBuilder sb) {
+		super.stringfy(indent, null, sb);
+		if (this.type != null) {
+			sb.append(" :");
+			sb.append(this.type.toString());
+		}
+	}
+
 }

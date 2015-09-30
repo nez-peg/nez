@@ -5,10 +5,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import nez.Parser;
-import nez.ast.Tree;
 import nez.ast.jcode.JCodeGenerator;
 import nez.ast.jcode.JCodeTree;
-import nez.ast.jcode.JCodeTreeTransducer;
 import nez.io.SourceContext;
 import nez.util.ConsoleUtils;
 
@@ -16,13 +14,13 @@ public class ScriptContext {
 	private Parser parser;
 	private TypeSystem typeSystem;
 	private Interpreter interpreter;
-	private JCodeTreeTransducer treeTransducer;
+	private TypedTreeTransducer treeTransducer;
 
 	public ScriptContext(Parser parser) {
 		this.parser = parser;
-		this.typeSystem = new TypeSystem();
+		this.typeSystem = new TypeSystem(this);
 		this.interpreter = new Interpreter(typeSystem);
-		this.treeTransducer = new JCodeTreeTransducer();
+		this.treeTransducer = new TypedTreeTransducer();
 	}
 
 	public void load(String path) throws IOException {
@@ -34,12 +32,13 @@ public class ScriptContext {
 	}
 
 	private Object eval(SourceContext source) {
-		Tree<?> node = this.parser.parseCommonTree(source);
+		TypedTree node = (TypedTree) this.parser.parse(source, treeTransducer);
 		if (node == null) {
 			println(source.getSyntaxErrorMessage());
 			return this; // nothing
 		}
 		System.out.println("evaluating " + node + "...\n");
+		this.typeSystem.typeof(node); // for debug
 		return interpreter.visit("eval", node);
 	}
 
@@ -127,7 +126,7 @@ public class ScriptContext {
 	// Object console = ConsoleUtils.getConsoleReader();
 	// StringBuilder sb = new StringBuilder();
 	// while (true) {
-	// String line = ConsoleUtils.readSingleLine(console, "   ");
+	// String line = ConsoleUtils.readSingleLine(console, " ");
 	// if (line == null) {
 	// return null;
 	// }

@@ -6,9 +6,11 @@ import nez.ast.Tree;
 import nez.util.UList;
 
 public class TypeSystem {
+	TypeChecker checker;
 	UList<Class<?>> classList = new UList<Class<?>>(new Class<?>[4]);
 
-	public TypeSystem() {
+	public TypeSystem(ScriptContext context) {
+		checker = new TypeChecker(context, this);
 		add(DynamicOperator.class);
 		add(StaticOperator.class);
 	}
@@ -71,6 +73,11 @@ public class TypeSystem {
 	// typeof
 
 	public Class<?> typeof(Tree<?> node) {
+		Class<?> type = checker.type(node);
+		if (type != null) {
+			System.out.println(node); // for debug
+			return type;
+		}
 		return Object.class; // untyped
 	}
 
