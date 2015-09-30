@@ -19,13 +19,23 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 	}
 
 	boolean inFunction = false;
+	Class<?> returnType = null;
 
 	public void enterFunction() {
+		returnType = null;
 		inFunction = true;
 	}
 
 	public void exitFunction() {
 		inFunction = false;
+	}
+
+	public void setReturnType(Class<?> t) {
+		this.returnType = t;
+	}
+
+	public Class<?> getReturnType() {
+		return this.returnType;
 	}
 
 	public Class<?> type(Tree<?> node) {
@@ -78,7 +88,7 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 			this.enterFunction();
 			Class<?> type = typeSystem.resolveType(node.get(_type, null), null);
 			if (type != null) {
-				this.addVariable(node.get(_type), "return", type);
+				this.setReturnType(type);
 				typed(node.get(_type), type);
 			}
 			Tree<?> paramsNode = node.get(_param, null);
@@ -92,6 +102,27 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 			}
 			type(bodyNode);
 			this.exitFunction();
+		}
+		if (this.getReturnType() == null) {
+			this.setReturnType(void.class);
+		}
+		typed(node.get(_name), this.getReturnType());
+		return void.class;
+	}
+
+	public Class<?> typeReturn(Tree<?> node) {
+		Class<?> t = this.getReturnType();
+		Tree<?> exprNode = node.get(_expr, null);
+		if (t == null) {
+			if (exprNode == null) {
+				this.setReturnType(void.class);
+			} else {
+				this.setReturnType(type(exprNode));
+			}
+			return void.class;
+		}
+		if (t != void.class) {
+			this.enforceType(t, node, _expr);
 		}
 		return void.class;
 	}
