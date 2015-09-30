@@ -10,10 +10,12 @@ import nez.util.ConsoleUtils;
 public class TypeChecker extends TreeVisitor implements CommonSymbols {
 	ScriptContext context;
 	TypeSystem typeSystem;
+	TypeScope scope;
 
 	public TypeChecker(ScriptContext context, TypeSystem typeSystem) {
 		this.context = context;
 		this.typeSystem = typeSystem;
+		this.scope = new TypeScope();
 	}
 
 	public Class<?> type(Tree<?> node) {
@@ -98,16 +100,16 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 
 	public Object typeName(Tree<?> node) {
 		String name = node.toText();
-		if (!this.typeSystem.containsVariable(name)) {
+		if (!this.scope.containsVariable(name)) {
 			perror(node, "undefined name: " + name);
 		}
-		return this.typeSystem.getVarType(name);
+		return this.scope.getVarType(name);
 	}
 
 	public Class<?> typeAssign(Tree<?> node) {
 		String name = node.getText(_left, null);
 		Class<?> right = type(node.get(_right));
-		this.typeSystem.setVarType(name, right);
+		this.scope.setVarType(name, right);
 		return right;
 	}
 
@@ -145,6 +147,14 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 
 	private void perror(Tree<?> node, String fmt, Object... args) {
 		perror(node, String.format(fmt, args));
+	}
+
+	public void pushScope() {
+		this.scope = new TypeScope(this.scope);
+	}
+
+	public void popScope() {
+		this.scope = this.scope.parent;
 	}
 
 }
