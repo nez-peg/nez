@@ -97,11 +97,11 @@ public class ScriptCompilerAsm implements CommonSymbols {
 			paramTypes[i] = typeof(args.get(i));
 		}
 		this.mBuilder = this.cBuilder.newMethodBuilder(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, funcType, name, paramTypes);
-		this.mBuilder.enterScope();// FIXME
+		this.mBuilder.enterScope();
 		for (TypedTree arg : args) {
 			this.mBuilder.defineArgument(arg.toText(), typeof(arg));
 		}
-		this.mBuilder.loadArgs();
+		// this.mBuilder.loadArgs();
 		visit(node.get(_body));
 		this.mBuilder.exitScope();
 		this.mBuilder.returnValue();
@@ -127,8 +127,15 @@ public class ScriptCompilerAsm implements CommonSymbols {
 		}
 	}
 
-	public void visitVarDeclList(TypedTree node) {
-		visit(node.get(0));
+	public void visitApply(TypedTree node) {
+		String name = node.getText(_name, null);
+		TypedTree argsNode = node.get(_param);
+		Class<?>[] args = new Class<?>[argsNode.size()];
+		for (int i = 0; i < args.length; i++) {
+			args[i] = typeof(argsNode.get(i));
+		}
+		Method function = typeSystem.findCompiledMethod(name, args);
+		// TODO this.mBuilder.invokeStatic(args, function);
 	}
 
 	public void visitName(TypedTree node) {
