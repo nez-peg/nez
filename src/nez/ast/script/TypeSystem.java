@@ -82,7 +82,7 @@ public class TypeSystem {
 				return true;
 			}
 		}
-		System.out.printf("%s %s %s\n", p, a, p.isAssignableFrom(a));
+		// System.out.printf("%s %s %s\n", p, a, p.isAssignableFrom(a));
 		if (p.isAssignableFrom(a)) {
 			return true;
 		}

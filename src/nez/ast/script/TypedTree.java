@@ -54,8 +54,9 @@ public class TypedTree extends Tree<TypedTree> {
 		this.resolvedMethod = m;
 	}
 
-	public void stringfy(String indent, StringBuilder sb) {
-		super.stringfy(indent, null, sb);
+	@Override
+	protected void stringfy(String indent, Symbol label, StringBuilder sb) {
+		super.stringfy(indent, label, sb);
 		if (type != null) {
 			sb.append(" :");
 			sb.append(type.getSimpleName());

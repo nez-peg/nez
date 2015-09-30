@@ -191,7 +191,7 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements
 		return sb.toString();
 	}
 
-	public void stringfy(String indent, Symbol label, StringBuilder sb) {
+	protected void stringfy(String indent, Symbol label, StringBuilder sb) {
 		if (indent.length() > 0) {
 			sb.append("\n");
 		}
