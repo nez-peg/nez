@@ -44,11 +44,7 @@ import nez.util.ConsoleUtils;
 import nez.util.FileBuilder;
 
 /*
- * 高速化のためにできること memo
- * 1. 論理式の木のつなぎ方を逆にしたほうが良いかもしれない
- * exec の際に木を左->右の順に見ていくので、左にsigmaがあれば文字数を明らかに超えるのとかは即終了できる、入力次第だけどましな気はする
- * 2. execMemo をより活用するために、 And, Or, Not にもユニークな stateID を割り振る
- * 現在特別割り振っていない（確か全て-1にしてる）ので、これらにも番号つければメモ化できるよ 
+ *ArrayList[] を ArrayList<ArrayList<>>にしたほうが良い
  */
 
 // don't forget to insert \n at the end of an input file
@@ -61,7 +57,7 @@ public class DFAConverter extends AbstractTreeVisitor {
 	private HashMap<String, Integer> acceptingStateOfNonTerminal;
 	private int V; // the number of vertices
 	static int MAX = 10000; // maximum number of vertices
-	private ArrayList<Edge>[] bfa;
+	private ArrayList[] bfa;
 	private EpsilonBFA BFA_graph;
 	private BFA final_bfa;
 	private boolean showBooleanExpression;
@@ -125,6 +121,7 @@ public class DFAConverter extends AbstractTreeVisitor {
 		removeRedundantEdges1(); // arbitrary
 		removeEpsilonCycle(); // must for exec
 		removeRedundantEdges1(); // arbitrary
+
 		eliminateEpsilonTransition();
 
 		fixStateID();
@@ -255,8 +252,10 @@ public class DFAConverter extends AbstractTreeVisitor {
 		// Map<Tau, State> tau;
 		Map<Tau, State> newTau = new TreeMap<Tau, State>(new TauComparator());
 		int nV = V;
+		// for (int stateID = 0; stateID < 1/* V */; stateID++) {
 		for (int stateID = 0; stateID < V; stateID++) {
 			// for (Character label : allLabels) {
+			// for (char label = /* 0 */'d'; label < /* 256 */'e'; label++) {
 			for (char label = 0; label < 256; label++) {
 				// TauConstructor tc = new TauConstructor(BFA_graph,
 				// final_bfa,stateID, label);
@@ -287,11 +286,21 @@ public class DFAConverter extends AbstractTreeVisitor {
 		if (epsilonMemo.containsKey(state)) {
 			return epsilonMemo.get(state);
 		}
-		Set<EpsilonMemoState> nextStateIDs = new HashSet<EpsilonMemoState>();
+		// Set<EpsilonMemoState> nextStateIDs = new HashSet<EpsilonMemoState>();
+		Set<EpsilonMemoState> nextStateIDs = new TreeSet<EpsilonMemoState>(new EpsilonMemoStateComparator());
 		int currentStateID = state.getStateID();
 		boolean allEpsilon = true;
+
+		/*
+		 * state から先読みの遷移が出ている場合はこのstateで処理を止める必要があるため
+		 * 一時的にmoveCandidateに遷移先の候補を保存しておき、
+		 * 先読み遷移がない場合に限りmoveCandidateのstateへ移動する
+		 */
+		Set<EpsilonMemoState> moveCandidate = new TreeSet<EpsilonMemoState>(new EpsilonMemoStateComparator());
+
+		boolean hasPredicate = false;
 		for (int i = 0; i < bfa[currentStateID].size(); i++) {
-			Edge e = bfa[currentStateID].get(i);
+			Edge e = (Edge) bfa[currentStateID].get(i);
 			if (e.getLabel() != epsilon) {
 				allEpsilon = false;
 				continue;
@@ -300,18 +309,35 @@ public class DFAConverter extends AbstractTreeVisitor {
 			EpsilonMemoState nextState = new EpsilonMemoState(e.getDst(), state.getPredicate());
 			if (e.getPredicate() != -1) {
 				allEpsilon = false;
+				hasPredicate = true;
 				// nextState.changePredicate(e.getPredicate());
-				nextStateIDs.add(new EpsilonMemoState(e.getDst(), e.getPredicate()));
+				// nextStateIDs.add(new EpsilonMemoState(e.getDst(),
+				// e.getPredicate()));
 				continue;
 			}
-			Set<EpsilonMemoState> partOfStateIDs = moveEpsilonTransition(nextState);
-			for (EpsilonMemoState ems : partOfStateIDs) {
-				nextStateIDs.add(ems);
-			}
+
+			moveCandidate.add(nextState);
+			/*
+			 * Set<EpsilonMemoState> partOfStateIDs =
+			 * moveEpsilonTransition(nextState); for (EpsilonMemoState ems :
+			 * partOfStateIDs) { nextStateIDs.add(ems); }
+			 */
+
 		}
-		if (!allEpsilon || (bfa[currentStateID].size() == 0)) {
+
+		if (!allEpsilon || (bfa[currentStateID].size() == 0) || hasPredicate) {
 			nextStateIDs.add(state);
 		}
+
+		if (!hasPredicate) {
+			for (EpsilonMemoState mcand : moveCandidate) {
+				Set<EpsilonMemoState> partOfStateIDs = moveEpsilonTransition(mcand);
+				for (EpsilonMemoState ems : partOfStateIDs) {
+					nextStateIDs.add(ems);
+				}
+			}
+		}
+
 		epsilonMemo.put(state, nextStateIDs);
 		return nextStateIDs;
 	}
@@ -326,7 +352,7 @@ public class DFAConverter extends AbstractTreeVisitor {
 			if (e.getLabel() != epsilon) {
 				allLabels.add(e.getLabel());
 			}
-			if (e.getLabel() == epsilon) {
+			if (e.getLabel() == epsilon && e.getPredicate() == -1) {
 				epsilonEdges.add(e);
 			}
 		}
@@ -345,7 +371,9 @@ public class DFAConverter extends AbstractTreeVisitor {
 			}
 
 			for (int stateID = 0; stateID < V; stateID++) {
+				// for (int stateID = 0; stateID < 1; stateID++) {
 				Set<EpsilonMemoState> nextStateIDs = moveEpsilonTransition(new EpsilonMemoState(stateID, -1));
+
 				if (nextStateIDs.size() == 0) {
 					continue;
 				}
@@ -354,21 +382,23 @@ public class DFAConverter extends AbstractTreeVisitor {
 					// System.out.println("label = " + label);
 					for (EpsilonMemoState ems : nextStateIDs) {
 
+						/*
+						 * if (ems.getPredicate() != -1) { Edge new_e = new
+						 * Edge(stateID, ems.getStateID(), epsilon,
+						 * ems.getPredicate()); if (!edges.contains(new_e)) {
+						 * update = true; edges.add(new_e); } continue; }
+						 */
 						if (ems.getPredicate() != -1) {
-							Edge new_e = new Edge(stateID, ems.getStateID(), epsilon, ems.getPredicate());
-							if (!edges.contains(new_e)) {
-								update = true;
-								edges.add(new_e);
-							}
+							System.out.println("INVALID EDGE!!!! --- this program has some bugs");
 							continue;
 						}
 
 						Set<EpsilonMemoState> tmp = new TreeSet<EpsilonMemoState>(new EpsilonMemoStateComparator());
 						int nextStateID = ems.getStateID();
 						boolean notPredicateFlag = (ems.getPredicate() == 1);
-						// System.out.println("nextStateID = " + nextStateID);
+
 						for (int i = 0; i < bfa[nextStateID].size(); i++) {
-							Edge e = bfa[nextStateID].get(i);
+							Edge e = (Edge) bfa[nextStateID].get(i);
 							boolean flag = (e.getLabel() == label || e.getLabel() == '.');
 							if (notPredicateFlag) {
 								flag = !flag;
@@ -390,6 +420,7 @@ public class DFAConverter extends AbstractTreeVisitor {
 				}
 			}
 			BFA_graph.setEdges(edges);
+			// update = false;// ///<<<---------
 		}
 
 		Set<Edge> newEdges = BFA_graph.getEdges();
@@ -447,12 +478,12 @@ public class DFAConverter extends AbstractTreeVisitor {
 		for (int i = 0; i < V; i++) {
 			Set<Integer> hasAny = new HashSet<Integer>();
 			for (int j = 0; j < bfa[i].size(); j++) {
-				if (bfa[i].get(j).getLabel() == '.') {
-					hasAny.add(bfa[i].get(j).getDst());
+				if (((Edge) bfa[i].get(j)).getLabel() == '.') {
+					hasAny.add(((Edge) bfa[i].get(j)).getDst());
 				}
 			}
 			for (int j = 0; j < bfa[i].size(); j++) {
-				Edge e = bfa[i].get(j);
+				Edge e = (Edge) bfa[i].get(j);
 				if (e.getLabel() == '.')
 					continue;
 				if (e.getPredicate() != -1)
@@ -484,14 +515,14 @@ public class DFAConverter extends AbstractTreeVisitor {
 				in_degree[i] = 0;
 			for (int i = 0; i < V; i++) {
 				for (int j = 0; j < bfa[i].size(); j++) {
-					int dst = bfa[i].get(j).getDst();
+					int dst = ((Edge) bfa[i].get(j)).getDst();
 					++in_degree[dst];
 				}
 			}
 
 			for (int vertex1 = 0; vertex1 < V; vertex1++) {
 				for (int j = 0; j < bfa[vertex1].size(); j++) {
-					Edge e1 = bfa[vertex1].get(j);
+					Edge e1 = (Edge) bfa[vertex1].get(j);
 					int vertex2 = e1.getDst();
 					if (in_degree[vertex2] != 1)
 						continue;
@@ -500,7 +531,7 @@ public class DFAConverter extends AbstractTreeVisitor {
 					if (bfa[vertex2].size() != 1)
 						continue;
 					for (int k = 0; k < bfa[vertex2].size(); k++) {
-						Edge e2 = bfa[vertex2].get(k);
+						Edge e2 = (Edge) bfa[vertex2].get(k);
 						int vertex3 = e2.getDst();
 						if (e1.getLabel() == epsilon && e1.getPredicate() == -1 && e2.getLabel() == epsilon && e2.getPredicate() == -1) {
 							edges.remove(e1);
