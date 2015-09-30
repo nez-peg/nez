@@ -92,6 +92,12 @@ public class TypeSystem {
 	// typeof
 
 	public Class<?> typeof(Tree<?> node) {
+		if (node instanceof TypedTree) {
+			Class<?> type = ((TypedTree) node).type;
+			if (type != null) {
+				return type;
+			}
+		}
 		return Object.class; // untyped
 	}
 

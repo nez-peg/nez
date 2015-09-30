@@ -10,10 +10,12 @@ import nez.util.ConsoleUtils;
 public class TypeChecker extends TreeVisitor implements CommonSymbols {
 	ScriptContext context;
 	TypeSystem typeSystem;
+	TypeScope scope;
 
 	public TypeChecker(ScriptContext context, TypeSystem typeSystem) {
 		this.context = context;
 		this.typeSystem = typeSystem;
+		this.scope = new TypeScope();
 	}
 
 	public Class<?> type(Tree<?> node) {
@@ -54,6 +56,87 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		Class<?> left = type(node.get(_left));
 		Class<?> right = type(node.get(_right));
 		return this.resolve("operator", node, "opAdd", node, left, right);
+	}
+
+	public Class<?> typeSub(Tree<?> node) {
+		Class<?> left = type(node.get(_left));
+		Class<?> right = type(node.get(_right));
+		return this.resolve("operator", node, "opSub", node, left, right);
+	}
+
+	public Class<?> typeMul(Tree<?> node) {
+		Class<?> left = type(node.get(_left));
+		Class<?> right = type(node.get(_right));
+		return this.resolve("operator", node, "opMul", node, left, right);
+	}
+
+	public Class<?> typeDiv(Tree<?> node) {
+		Class<?> left = type(node.get(_left));
+		Class<?> right = type(node.get(_right));
+		return this.resolve("operator", node, "opDiv", node, left, right);
+	}
+
+	public Class<?> typeEquals(Tree<?> node) {
+		Class<?> left = type(node.get(_left));
+		Class<?> right = type(node.get(_right));
+		return this.resolve("operator", node, "opEquals", node, left, right);
+	}
+
+	public Class<?> typeNotEquals(Tree<?> node) {
+		Class<?> left = type(node.get(_left));
+		Class<?> right = type(node.get(_right));
+		return this.resolve("operator", node, "opNotEquals", node, left, right);
+	}
+
+	public Class<?> typeLessThan(Tree<?> node) {
+		Class<?> left = type(node.get(_left));
+		Class<?> right = type(node.get(_right));
+		return this.resolve("operator", node, "opLessThan", node, left, right);
+	}
+
+	public Class<?> typeLessThanEquals(Tree<?> node) {
+		Class<?> left = type(node.get(_left));
+		Class<?> right = type(node.get(_right));
+		return this.resolve("operator", node, "opLessThanEquals", node, left, right);
+	}
+
+	public Class<?> typeGreaterThan(Tree<?> node) {
+		Class<?> left = type(node.get(_left));
+		Class<?> right = type(node.get(_right));
+		return this.resolve("operator", node, "opGreaterThan", node, left, right);
+	}
+
+	public Class<?> typeGreaterThanEquals(Tree<?> node) {
+		Class<?> left = type(node.get(_left));
+		Class<?> right = type(node.get(_right));
+		return this.resolve("operator", node, "opGreaterThanEquals", node, left, right);
+	}
+
+	public Object typeName(Tree<?> node) {
+		String name = node.toText();
+		if (!this.scope.containsVariable(name)) {
+			perror(node, "undefined name: " + name);
+		}
+		return this.scope.getVarType(name);
+	}
+
+	public Class<?> typeAssign(Tree<?> node) {
+		String name = node.getText(_left, null);
+		Class<?> right = type(node.get(_right));
+		this.scope.setVarType(name, right);
+		return right;
+	}
+
+	public Class<?>[] typeList(Tree<?> node) {
+		Class<?>[] args = new Class<?>[node.size()];
+		for (int i = 0; i < node.size(); i++) {
+			args[i] = type(node.get(i));
+		}
+		return args;
+	}
+
+	public Class<?> typeImport(Tree<?> node) {
+		return null;
 	}
 
 	public Class<?> typeString(Tree<?> node) {
@@ -100,6 +183,14 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 
 	private void perror(Tree<?> node, String fmt, Object... args) {
 		perror(node, String.format(fmt, args));
+	}
+
+	public void pushScope() {
+		this.scope = new TypeScope(this.scope);
+	}
+
+	public void popScope() {
+		this.scope = this.scope.parent;
 	}
 
 }
