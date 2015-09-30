@@ -49,7 +49,7 @@ public class TypedTree extends Tree<TypedTree> {
 
 	@Override
 	public void stringfy(String indent, Symbol label, StringBuilder sb) {
-		super.stringfy(indent, null, sb);
+		super.stringfy(indent, label, sb);
 		if (this.type != null) {
 			sb.append(" :");
 			sb.append(this.type.toString());
