@@ -1,7 +1,7 @@
 package nez;
 
 import nez.ast.CommonTree;
-import nez.ast.CommonTreeTransducer;
+import nez.ast.Tree;
 import nez.ast.TreeTransducer;
 import nez.io.SourceContext;
 import nez.main.NezProfier;
@@ -68,9 +68,9 @@ public class Parser {
 		return compiledCode.getStartPoint();
 	}
 
-	public final boolean perform(ParsingMachine machine, SourceContext s, TreeTransducer treeTransducer) {
+	public final boolean perform(ParsingMachine machine, SourceContext s, Tree<?> prototype) {
 		Instruction pc = this.compile();
-		s.init(newMemoTable(s), treeTransducer);
+		s.init(newMemoTable(s), prototype);
 		if (prof != null) {
 			s.startProfiling(prof);
 			boolean matched = machine.run(pc, s);
@@ -106,21 +106,26 @@ public class Parser {
 		return false;
 	}
 
-	public Object parse(SourceContext sc, TreeTransducer treeTransducer) {
+	public Tree<?> parse(SourceContext sc, Tree<?> prototype) {
 		long startPosition = sc.getPosition();
-		if (!this.perform(newParsingMachine(), sc, treeTransducer)) {
+		if (!this.perform(newParsingMachine(), sc, prototype)) {
 			return null;
 		}
 		return sc.getParseResult(startPosition, sc.getPosition());
 	}
 
+	@Deprecated
+	public Tree<?> parse(SourceContext sc, TreeTransducer t) {
+		return parseCommonTree(sc);
+	}
+
 	public final CommonTree parseCommonTree(SourceContext sc) {
-		return (CommonTree) this.parse(sc, new CommonTreeTransducer());
+		return (CommonTree) this.parse(sc, new CommonTree());
 	}
 
 	public final CommonTree parseCommonTree(String str) {
 		SourceContext sc = SourceContext.newStringContext(str);
-		return (CommonTree) this.parse(sc, new CommonTreeTransducer());
+		return (CommonTree) this.parse(sc, new CommonTree());
 	}
 
 }

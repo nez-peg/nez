@@ -24,10 +24,20 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		return c;
 	}
 
+	public Class<?> typeApply(Tree<?> node) {
+		String name = node.getText(_name, "");
+		Tree<?> args = node.get(_param);
+		Class<?>[] types = new Class<?>[args.size()];
+		for (int i = 0; i < args.size(); i++) {
+			types[i] = type(node.get(i));
+		}
+		return this.resolve("function", node, name, args, types);
+	}
+
 	public Class<?> typeAdd(Tree<?> node) {
 		Class<?> left = type(node.get(_left));
 		Class<?> right = type(node.get(_right));
-		return this.resolve("operator", "opAdd", node, left, right);
+		return this.resolve("operator", node, "opAdd", node, left, right);
 	}
 
 	public Class<?> typeString(Tree<?> node) {
@@ -44,8 +54,18 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 
 	// Utilities
 
-	private Class<?> resolve(String method, String name, Tree<?> node, Class<?>... args) {
-		Method m = typeSystem.findMethod(name, args);
+	private Class<?> resolve(String method, Tree<?> node, String name, Tree<?> argsNode, Class<?>... args) {
+		Method m = typeSystem.findCompiledMethod(name, args);
+		if (m == null && argsNode instanceof TypedTree) {
+			TypedTree typedNode = (TypedTree) argsNode;
+			m = typeSystem.findDefaultMethod(name, args.length);
+			if (m != null) {
+				Class<?>[] p = m.getParameterTypes();
+				for (int i = 0; i < p.length; i++) {
+					typedNode.set(i, typeSystem.enforceType(p[i], typedNode.get(i)));
+				}
+			}
+		}
 		if (m == null) {
 			perror(node, "undefined %s: %s", method, args);
 			return null;

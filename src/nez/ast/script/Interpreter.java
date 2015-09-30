@@ -204,7 +204,7 @@ public class Interpreter extends TreeVisitor implements KonohaSymbols {
 	}
 
 	Object evalOperator(Tree<?> node, String name, Object a1, Object a2) {
-		Method m = base.findMethod(name, typeof(a1), typeof(a2));
+		Method m = base.findCompiledMethod(name, typeof(a1), typeof(a2));
 		if (m == null) {
 			perror(node, "undefined operator: %s %s", typeof(a1), typeof(a2));
 		}
@@ -228,7 +228,7 @@ public class Interpreter extends TreeVisitor implements KonohaSymbols {
 		for (int i = 0; i < args.length; i++) {
 			classArray[i] = typeof(args[i]);
 		}
-		Method m = base.findMethod(name, classArray);
+		Method m = base.findCompiledMethod(name, classArray);
 		if (m == null) {
 			perror(node, "undefined function: %s", name);
 		}

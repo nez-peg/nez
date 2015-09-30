@@ -2,6 +2,7 @@ package nez.parser;
 
 import java.util.Arrays;
 
+import nez.ast.ASTMachine;
 import nez.ast.Symbol;
 import nez.lang.Expression;
 import nez.lang.Production;

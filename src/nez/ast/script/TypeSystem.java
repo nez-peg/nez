@@ -21,7 +21,28 @@ public class TypeSystem {
 		add(Class.forName(path));
 	}
 
-	Method findMethod(String name, Class<?>... args) {
+	public Method findDefaultMethod(String name, int paramsize) {
+		for (int i = 0; i < classList.size(); i++) {
+			Class<?> c = classList.ArrayValues[i];
+			for (Method m : c.getMethods()) {
+				if (name.equals(m.getName()) && m.getParameterTypes().length == paramsize) {
+					return m;
+				}
+			}
+		}
+		return null;
+	}
+
+	public TypedTree enforceType(Class<?> req, TypedTree node) {
+		if (accept(false, req, node.getType())) {
+			return node;
+		}
+		;
+		System.out.printf("TODO: needs cast %s %s\n", req, node.getType());
+		return node;
+	}
+
+	public Method findCompiledMethod(String name, Class<?>... args) {
 		for (int i = classList.size() - 1; i >= 0; i--) {
 			Class<?> c = classList.ArrayValues[i];
 			for (Method m : c.getMethods()) {

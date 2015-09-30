@@ -26,7 +26,11 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements
 		this.labels = (this.subTree != null) ? new Symbol[this.subTree.length] : EmptyLabels;
 	}
 
-	protected abstract E newInstance(Symbol tag, int len, Object value);
+	protected abstract E newInstance(Symbol tag, Source source, long pos, int len, int objectsize, Object value);
+
+	protected abstract void link(int n, Symbol label, Object child);
+
+	public abstract E newInstance(Symbol tag, int objectsize, Object value);
 
 	protected abstract E dupImpl();
 

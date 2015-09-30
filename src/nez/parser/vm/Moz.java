@@ -2,9 +2,9 @@ package nez.parser.vm;
 
 import java.io.IOException;
 
+import nez.ast.ASTMachine;
 import nez.ast.Symbol;
 import nez.lang.Expression;
-import nez.parser.ASTMachine;
 import nez.parser.ByteCoder;
 import nez.parser.Instruction;
 import nez.parser.MemoEntry;

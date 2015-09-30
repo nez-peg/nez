@@ -1,7 +1,8 @@
 package nez.parser;
 
+import nez.ast.ASTMachine;
 import nez.ast.Source;
-import nez.ast.TreeTransducer;
+import nez.ast.Tree;
 import nez.main.NezProfier;
 import nez.main.Verbose;
 import nez.util.ConsoleUtils;
@@ -56,7 +57,7 @@ public abstract class RuntimeContext implements Source {
 		return astMachine;
 	}
 
-	public final Object getParseResult(long startpos, long endpos) {
+	public final Tree<?> getParseResult(long startpos, long endpos) {
 		return astMachine.getParseResult(startpos, endpos);
 	}
 
@@ -77,8 +78,8 @@ public abstract class RuntimeContext implements Source {
 	private int usedStackTop;
 	private int catchStackTop;
 
-	public final void init(MemoTable memoTable, TreeTransducer treeTransducer) {
-		this.astMachine = new ASTMachine(this, treeTransducer);
+	public final void init(MemoTable memoTable, Tree<?> prototype) {
+		this.astMachine = new ASTMachine(this, prototype);
 		this.stacks = new StackData[StackSize];
 		for (int i = 0; i < StackSize; i++) {
 			this.stacks[i] = new StackData();

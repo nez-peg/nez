@@ -15,7 +15,17 @@ public class TypedTree extends Tree<TypedTree> {
 	}
 
 	@Override
-	protected TypedTree newInstance(Symbol tag, int size, Object value) {
+	protected TypedTree newInstance(Symbol tag, Source source, long pos, int len, int objectsize, Object value) {
+		return new TypedTree(tag, source, pos, len, objectsize, value);
+	}
+
+	@Override
+	protected void link(int n, Symbol label, Object child) {
+		this.set(n, label, (TypedTree) child);
+	}
+
+	@Override
+	public TypedTree newInstance(Symbol tag, int size, Object value) {
 		return new TypedTree(tag, this.getSource(), this.getSourcePosition(), 0, size, value);
 	}
 
@@ -38,6 +48,14 @@ public class TypedTree extends Tree<TypedTree> {
 
 	public void setMethod(Method m) {
 		this.resolvedMethod = m;
+	}
+
+	public void stringfy(String indent, StringBuilder sb) {
+		super.stringfy(indent, null, sb);
+		if (type != null) {
+			sb.append(" :");
+			sb.append(type.getSimpleName());
+		}
 	}
 
 }

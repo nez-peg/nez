@@ -1,8 +1,8 @@
 package nez.ast.jcode;
 
-import nez.ast.Tree;
 import nez.ast.Source;
 import nez.ast.Symbol;
+import nez.ast.Tree;
 
 public abstract class JCodeTree extends Tree<JCodeTree> {
 	boolean requiredPop;
@@ -28,7 +28,7 @@ class JCodeTreeImpl extends JCodeTree {
 	}
 
 	@Override
-	protected JCodeTreeImpl newInstance(Symbol tag, int size, Object value) {
+	public JCodeTreeImpl newInstance(Symbol tag, int size, Object value) {
 		return new JCodeTreeImpl(tag, this.getSource(), this.getSourcePosition(), 0, size, value);
 	}
 
@@ -57,5 +57,17 @@ class JCodeTreeImpl extends JCodeTree {
 	public Class<?> setType(Class<?> type) {
 		this.typed = type;
 		return this.typed;
+	}
+
+	@Override
+	protected JCodeTree newInstance(Symbol tag, Source source, long pos, int len, int objectsize, Object value) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	protected void link(int n, Symbol label, Object child) {
+		// TODO Auto-generated method stub
+
 	}
 }

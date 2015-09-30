@@ -1,8 +1,8 @@
 package nez.konoha;
 
-import nez.ast.Tree;
 import nez.ast.Source;
 import nez.ast.Symbol;
+import nez.ast.Tree;
 import nez.ast.string.StringTransducer;
 
 public class KonohaTree extends Tree<KonohaTree> {
@@ -14,7 +14,7 @@ public class KonohaTree extends Tree<KonohaTree> {
 	}
 
 	@Override
-	protected KonohaTree newInstance(Symbol tag, int size, Object value) {
+	public KonohaTree newInstance(Symbol tag, int size, Object value) {
 		return new KonohaTree(tag, this.getSource(), this.getSourcePosition(), 0, size, value);
 	}
 
@@ -54,6 +54,16 @@ public class KonohaTree extends Tree<KonohaTree> {
 
 	public StringTransducer getStringTransducer() {
 		return matched != null ? matched.st : null;
+	}
+
+	@Override
+	protected KonohaTree newInstance(Symbol tag, Source source, long pos, int len, int objectsize, Object value) {
+		return new KonohaTree(tag, source, pos, len, objectsize, value);
+	}
+
+	@Override
+	protected void link(int n, Symbol label, Object child) {
+		this.link(n, label, child);
 	}
 
 }
