@@ -31,7 +31,7 @@ public class TypeEnv {
 	private LType boolType;
 	private LType stringType;
 
-	public TypeEnv() {
+	TypeEnv() { // not call it directory
 
 		// generate package name
 		int num = new Random(System.currentTimeMillis()).nextInt();
@@ -53,6 +53,14 @@ public class TypeEnv {
 		} catch (TypeException e) {
 			throw new RuntimeException(e.getMessage());
 		}
+	}
+
+	private static final class Holder {
+		private final static TypeEnv INSTANCE = new TypeEnv();
+	}
+
+	public static TypeEnv getInstance() {
+		return Holder.INSTANCE;
 	}
 
 	public String getPackageName() {
