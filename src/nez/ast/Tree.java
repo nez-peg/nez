@@ -16,6 +16,16 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements
 	protected Symbol[] labels;
 	protected E[] subTree;
 
+	protected Tree() {
+		this.tag = Symbol.tag("prototype");
+		this.source = null;
+		this.pos = 0;
+		this.length = 0;
+		this.subTree = null;
+		this.value = null;
+		this.labels = EmptyLabels;
+	}
+
 	protected Tree(Symbol tag, Source source, long pos, int len, E[] subTree, Object value) {
 		this.tag = tag;
 		this.source = source;

@@ -9,10 +9,12 @@ import nez.ast.TreeVisitor;
 import nez.util.ConsoleUtils;
 
 public class Interpreter extends TreeVisitor implements KonohaSymbols {
+	ScriptContext context;
 	TypeSystem base;
 	HashMap<String, Object> globalVariables;
 
-	public Interpreter(TypeSystem base) {
+	public Interpreter(ScriptContext sc, TypeSystem base) {
+		this.context = sc;
 		this.base = base;
 		this.globalVariables = new HashMap<>();
 	}

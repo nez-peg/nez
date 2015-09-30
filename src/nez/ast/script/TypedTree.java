@@ -10,6 +10,10 @@ public class TypedTree extends Tree<TypedTree> {
 	Class<?> type;
 	Method resolvedMethod;
 
+	TypedTree() {
+		super();
+	}
+
 	public TypedTree(Symbol tag, Source source, long pos, int len, int size, Object value) {
 		super(tag, source, pos, len, size > 0 ? new TypedTree[size] : null, value);
 	}

@@ -116,7 +116,8 @@ public class Parser {
 
 	@Deprecated
 	public Tree<?> parse(SourceContext sc, TreeTransducer t) {
-		return parseCommonTree(sc);
+		throw new RuntimeException("FIXME");
+		// return parseCommonTree(sc);
 	}
 
 	public final CommonTree parseCommonTree(SourceContext sc) {
