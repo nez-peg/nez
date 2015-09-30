@@ -4,7 +4,6 @@ import java.lang.reflect.Method;
 
 import nez.ast.Tree;
 import nez.ast.TreeVisitor;
-import nez.ast.script.asm.CommonSymbols;
 import nez.util.ConsoleUtils;
 
 public class TypeChecker extends TreeVisitor implements CommonSymbols {

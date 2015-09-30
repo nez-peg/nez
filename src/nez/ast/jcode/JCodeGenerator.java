@@ -8,8 +8,8 @@ import java.util.Stack;
 
 import javax.lang.model.type.NullType;
 
+import nez.ast.script.CommonSymbols;
 import nez.ast.script.asm.ClassBuilder;
-import nez.ast.script.asm.CommonSymbols;
 import nez.ast.script.asm.MethodBuilder;
 import nez.ast.script.asm.Methods;
 import nez.ast.script.asm.ScriptClassLoader;

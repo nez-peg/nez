@@ -8,7 +8,7 @@ import nez.ast.Tree;
 import nez.ast.TreeVisitor;
 import nez.util.ConsoleUtils;
 
-public class Interpreter extends TreeVisitor implements KonohaSymbols {
+public class Interpreter extends TreeVisitor implements CommonSymbols {
 	ScriptContext context;
 	TypeSystem base;
 	HashMap<String, Object> globalVariables;

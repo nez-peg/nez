@@ -7,6 +7,7 @@ import java.util.HashMap;
 import javax.lang.model.type.NullType;
 
 import nez.ast.jcode.JCodeTree;
+import nez.ast.script.CommonSymbols;
 import nez.ast.script.TypeSystem;
 
 import org.objectweb.asm.Opcodes;
