@@ -96,6 +96,21 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		return this.resolve("operator", "opGreaterThanEquals", node, left, right);
 	}
 
+	public Object typeName(Tree<?> node) {
+		String name = node.toText();
+		if (!this.typeSystem.containsVariable(name)) {
+			perror(node, "undefined name: " + name);
+		}
+		return this.typeSystem.getVarType(name);
+	}
+
+	public Class<?> typeAssign(Tree<?> node) {
+		String name = node.getText(_left, null);
+		Class<?> right = type(node.get(_right));
+		this.typeSystem.setVarType(name, right);
+		return right;
+	}
+
 	public Class<?> typeString(Tree<?> node) {
 		return String.class;
 	}

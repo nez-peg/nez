@@ -117,6 +117,7 @@ public class Interpreter extends TreeVisitor implements KonohaSymbols {
 		Object right = eval(node.get(_right));
 		String name = node.getText(_left, null);
 		this.globalVariables.put(name, right);
+		this.base.setVarType(name, this.base.typeof(node.get(_right)));
 		return right;
 	}
 

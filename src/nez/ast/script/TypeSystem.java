@@ -1,13 +1,20 @@
 package nez.ast.script;
 
 import java.lang.reflect.Method;
+import java.util.HashMap;
 
 import nez.ast.Tree;
 import nez.util.UList;
 
 public class TypeSystem {
+	TypeSystem parent;
 	TypeChecker checker;
 	UList<Class<?>> classList = new UList<Class<?>>(new Class<?>[4]);
+	private HashMap<String, Class<?>> variableTypes = new HashMap<String, Class<?>>();
+
+	public TypeSystem(TypeSystem parent) {
+		checker = new TypeChecker(parent.checker.context, this);
+	}
 
 	public TypeSystem(ScriptContext context) {
 		checker = new TypeChecker(context, this);
@@ -79,6 +86,18 @@ public class TypeSystem {
 			return type;
 		}
 		return Object.class; // untyped
+	}
+
+	public void setVarType(String name, Class<?> type) {
+		variableTypes.put(name, type);
+	}
+
+	public Class<?> getVarType(String name) {
+		return variableTypes.get(name);
+	}
+
+	public boolean containsVariable(String name) {
+		return variableTypes.containsKey(name);
 	}
 
 }
