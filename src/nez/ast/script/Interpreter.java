@@ -6,6 +6,7 @@ import java.util.HashMap;
 
 import nez.ast.Tree;
 import nez.ast.TreeVisitor;
+import nez.ast.script.asm.ScriptCompiler;
 import nez.util.ConsoleUtils;
 
 public class Interpreter extends TreeVisitor implements CommonSymbols {
@@ -120,6 +121,12 @@ public class Interpreter extends TreeVisitor implements CommonSymbols {
 		String name = node.getText(_left, null);
 		this.globalVariables.put(name, right);
 		return right;
+	}
+
+	public Object evalFuncDecl(Tree<?> node) {
+		ScriptCompiler compiler = new ScriptCompiler(this.base);
+		compiler.compileFuncDecl(node);
+		return null;
 	}
 
 	public Object evalApply(Tree<?> node) {
