@@ -36,7 +36,7 @@ public class ScriptCompilerAsm implements CommonSymbols {
 	}
 
 	public Class<?> closeClass() {
-		// cLoader.setDump(true);
+		cLoader.setDump(true);
 		Class<?> c = cLoader.definedAndLoadClass(this.cBuilder.getQualifiedClassName(), cBuilder.toByteArray());
 		this.cBuilder = null; //
 		return c;
@@ -104,7 +104,6 @@ public class ScriptCompilerAsm implements CommonSymbols {
 		for (TypedTree arg : args) {
 			this.mBuilder.defineArgument(arg.getText(_name, null), typeof(arg));
 		}
-		// this.mBuilder.loadArgs();
 		visit(node.get(_body));
 		this.mBuilder.exitScope();
 		// this.mBuilder.returnValue();
@@ -126,7 +125,7 @@ public class ScriptCompilerAsm implements CommonSymbols {
 			TypedTree valueNode = node.get(_expr);
 			visit(valueNode);
 			varNode.setType(typeof(valueNode));
-			this.mBuilder.createNewVarAndStore(varNode.getText(_name, null), typeof(valueNode));
+			this.mBuilder.createNewVarAndStore(varNode.toText(), typeof(valueNode));
 		}
 	}
 
@@ -138,7 +137,7 @@ public class ScriptCompilerAsm implements CommonSymbols {
 			args[i] = typeof(argsNode.get(i));
 		}
 		Method function = typeSystem.findCompiledMethod(name, args);
-		// TODO this.mBuilder.invokeStatic(args, function);
+		this.mBuilder.callStaticMethod(function.getDeclaringClass(), function.getReturnType(), function.getName(), args);
 	}
 
 	public void visitIf(TypedTree node) {
@@ -160,6 +159,71 @@ public class ScriptCompilerAsm implements CommonSymbols {
 
 		// merge
 		this.mBuilder.mark(mergeLabel);
+	}
+
+	public void visitWhile(TypedTree node) {
+		Label beginLabel = this.mBuilder.newLabel();
+		Label condLabel = this.mBuilder.newLabel();
+
+		this.mBuilder.goTo(condLabel);
+
+		// Block
+		this.mBuilder.mark(beginLabel);
+		visit(node.get(_body));
+
+		// Condition
+		this.mBuilder.mark(condLabel);
+		visit(node.get(_cond));
+		this.mBuilder.push(true);
+
+		this.mBuilder.ifCmp(Type.BOOLEAN_TYPE, this.mBuilder.EQ, beginLabel);
+	}
+
+	public void visitDoWhile(TypedTree node) {
+		Label beginLabel = this.mBuilder.newLabel();
+
+		// Do
+		this.mBuilder.mark(beginLabel);
+		visit(node.get(_body));
+
+		// Condition
+		visit(node.get(_cond));
+		this.mBuilder.push(true);
+
+		this.mBuilder.ifCmp(Type.BOOLEAN_TYPE, this.mBuilder.EQ, beginLabel);
+	}
+
+	public void visitFor(TypedTree node) {
+		Label beginLabel = this.mBuilder.newLabel();
+		Label condLabel = this.mBuilder.newLabel();
+
+		// Initialize
+		visit(node.get(_init));
+
+		this.mBuilder.goTo(condLabel);
+
+		// Block
+		this.mBuilder.mark(beginLabel);
+		visit(node.get(_body));
+		visit(node.get(_iter));
+
+		// Condition
+		this.mBuilder.mark(condLabel);
+		visit(node.get(_cond));
+		this.mBuilder.push(true);
+		this.mBuilder.ifCmp(Type.BOOLEAN_TYPE, this.mBuilder.EQ, beginLabel);
+	}
+
+	public void visitAssign(TypedTree node) {
+		String name = node.getText(_name, null);
+		TypedTree valueNode = node.get(_expr);
+		VarEntry var = this.mBuilder.getVar(name);
+		visit(valueNode);
+		if (var != null) {
+			this.mBuilder.storeToVar(var);
+		} else {
+			this.mBuilder.createNewVarAndStore(name, typeof(valueNode));
+		}
 	}
 
 	public void visitExpression(TypedTree node) {
@@ -212,8 +276,8 @@ public class ScriptCompilerAsm implements CommonSymbols {
 	}
 
 	public void visitBinaryNode(TypedTree node) {
-		TypedTree left = node.get(0);
-		TypedTree right = node.get(1);
+		TypedTree left = node.get(_left);
+		TypedTree right = node.get(_right);
 		this.visit(left);
 		this.visit(right);
 		node.setType(typeInfferBinary(node, left, right));
@@ -221,8 +285,8 @@ public class ScriptCompilerAsm implements CommonSymbols {
 	}
 
 	public void visitCompNode(TypedTree node) {
-		TypedTree left = node.get(0);
-		TypedTree right = node.get(1);
+		TypedTree left = node.get(_left);
+		TypedTree right = node.get(_right);
 		this.visit(left);
 		this.visit(right);
 		node.setType(boolean.class);
@@ -273,59 +337,6 @@ public class ScriptCompilerAsm implements CommonSymbols {
 		this.visitCompNode(node);
 	}
 
-	// public void visitWhile(TypedTree node) {
-	// Label beginLabel = this.mBuilder.newLabel();
-	// Label condLabel = this.mBuilder.newLabel();
-	//
-	// this.mBuilder.goTo(condLabel);
-	//
-	// // Block
-	// this.mBuilder.mark(beginLabel);
-	// visit(node.get(1));
-	//
-	// // Condition
-	// this.mBuilder.mark(condLabel);
-	// visit(node.get(0));
-	// this.mBuilder.push(true);
-	//
-	// this.mBuilder.ifCmp(Type.BOOLEAN_TYPE, this.mBuilder.EQ, beginLabel);
-	// }
-	//
-	// public void visitDoWhile(TypedTree node) {
-	// Label beginLabel = this.mBuilder.newLabel();
-	//
-	// // Do
-	// this.mBuilder.mark(beginLabel);
-	// visit(node.get(0));
-	//
-	// // Condition
-	// visit(node.get(1));
-	// this.mBuilder.push(true);
-	//
-	// this.mBuilder.ifCmp(Type.BOOLEAN_TYPE, this.mBuilder.EQ, beginLabel);
-	// }
-	//
-	// public void visitFor(TypedTree node) {
-	// Label beginLabel = this.mBuilder.newLabel();
-	// Label condLabel = this.mBuilder.newLabel();
-	// node.requirePop();
-	//
-	// // Initialize
-	// visit(node.get(0));
-	//
-	// this.mBuilder.goTo(condLabel);
-	//
-	// // Block
-	// this.mBuilder.mark(beginLabel);
-	// visit(node.get(3));
-	// visit(node.get(2));
-	//
-	// // Condition
-	// this.mBuilder.mark(condLabel);
-	// visit(node.get(1));
-	// this.mBuilder.push(true);
-	// this.mBuilder.ifCmp(Type.BOOLEAN_TYPE, this.mBuilder.EQ, beginLabel);
-	// }
 	//
 	// public void visitContinue(TypedTree node) {
 	// }
@@ -347,18 +358,7 @@ public class ScriptCompilerAsm implements CommonSymbols {
 	// this.visit(node.get(0));
 	// }
 	//
-	// public void visitAssign(TypedTree node) {
-	// TypedTree nameNode = node.get(0);
-	// TypedTree valueNode = node.get(1);
-	// VarEntry var = this.scope.getLocalVar(nameNode.toText());
-	// visit(valueNode);
-	// if (var != null) {
-	// this.mBuilder.storeToVar(var);
-	// } else {
-	// this.scope.setLocalVar(nameNode.toText(),
-	// this.mBuilder.createNewVarAndStore(valueNode.getTypedClass()));
-	// }
-	// }
+
 	//
 	// public void visitApply(TypedTree node) {
 	// // TypedTree fieldNode = node.get(_recv"));
