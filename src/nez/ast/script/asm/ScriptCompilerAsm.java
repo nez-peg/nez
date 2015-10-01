@@ -36,7 +36,7 @@ public class ScriptCompilerAsm implements CommonSymbols {
 	}
 
 	public Class<?> closeClass() {
-		cLoader.setDump(true);
+		// cLoader.setDump(true);
 		Class<?> c = cLoader.definedAndLoadClass(this.cBuilder.getQualifiedClassName(), cBuilder.toByteArray());
 		this.cBuilder = null; //
 		return c;
