@@ -45,11 +45,6 @@ public class TypeSystem implements CommonSymbols {
 		if (node.is(_ArrayType)) {
 			return GenericType.newType(UList.class, resolveType(node.get(_base), Object.class));
 		}
-		// if (node.is(_GenericType)) {
-		// //
-		// return GenericType.newGenericType(UList.class,
-		// resolveType(node.get(_base), TypeSystem.class));
-		// }
 		return deftype;
 	}
 
@@ -108,9 +103,9 @@ public class TypeSystem implements CommonSymbols {
 				if (name.startsWith("to")) {
 					Class<?>[] p = m.getParameterTypes();
 					if (p.length == 1) {
-						Class<?> f = p[1];
+						Class<?> f = p[0];
 						Class<?> t = m.getReturnType();
-						if (m.getName().startsWith("to_")) {
+						if (name.startsWith("to_")) {
 							addCastMethod(f, t, m);
 						} else {
 							addConvertMethod(f, t, m);
@@ -129,8 +124,20 @@ public class TypeSystem implements CommonSymbols {
 		if (m != null) {
 			TypedTree newnode = node.newInstance(_Cast, 1, null);
 			newnode.set(0, _expr, node);
-			node.setMethod(m);
-			node.setType(req);
+			newnode.setMethod(m);
+			newnode.setType(req);
+			return newnode;
+		}
+		return node;
+	}
+
+	public TypedTree makeCast(Type req, TypedTree node) {
+		Method m = this.getCastMethod(toClass(req), node.getClassType());
+		if (m != null) {
+			TypedTree newnode = node.newInstance(_Cast, 1, null);
+			newnode.set(0, _expr, node);
+			newnode.setMethod(m);
+			newnode.setType(req);
 			return newnode;
 		}
 		return node;

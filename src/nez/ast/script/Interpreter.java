@@ -22,12 +22,36 @@ public class Interpreter extends TreeVisitor implements CommonSymbols {
 
 	private static EmptyResult empty = new EmptyResult();
 
-	public Object eval(Tree<?> node) {
-		try {
-			return visit("eval", node);
-		} catch (RuntimeException e) {
+	public Object eval(Tree<?> unode) {
+		if (unode instanceof TypedTree) {
+			TypedTree node = (TypedTree) unode;
+			if (node.size() == 0 && node.getValue() != null) {
+				return node.getValue();
+			}
+			Method m = node.getMethod();
+			// System.out.println("untyped: method " + m);
+			if (m != null) {
+				if (node.size() == 2 && node.indexOf(_right) != -1 && node.indexOf(_left) != -1) {
+					return invokeMethod(m, null, eval(node.get(_left)), eval(node.get(_right)));
+				}
+			}
 		}
-		return empty;
+		// System.out.println("untyped");
+		return visit("eval", unode);
+	}
+
+	private Object invokeMethod(Method m, Object self, Object... args) {
+		try {
+			return m.invoke(self, args);
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			e.getTargetException();
+			throw (RuntimeException) e.getTargetException();
+		}
+		return null;
 	}
 
 	@Override
@@ -44,8 +68,45 @@ public class Interpreter extends TreeVisitor implements CommonSymbols {
 		return result;
 	}
 
+	/* TopLevel */
+
+	public Object evalImport(Tree<?> node) {
+		String path = (String) eval(node.get(0));
+		try {
+			base.addBaseClass(path);
+		} catch (ClassNotFoundException e) {
+			perror(node, "undefined class name: %s", path);
+		}
+		return empty;
+	}
+
+	public Object evalQualifiedName(Tree<?> node) {
+		StringBuilder sb = new StringBuilder();
+		s(sb, node);
+		return sb.toString();
+	}
+
+	public void s(StringBuilder sb, Tree<?> node) {
+		Tree<?> prefix = node.get(_prefix);
+		if (prefix.size() == 2) {
+			s(sb, prefix);
+		} else {
+			sb.append(prefix.toText());
+		}
+		sb.append(".").append(node.getText(_name, null));
+	}
+
 	public Object evalExpression(Tree<?> node) {
 		return eval(node.get(0));
+	}
+
+	public Object evalCast(Tree<?> node) {
+		Object v = eval(node.get(_expr));
+		Method m = ((TypedTree) node).getMethod();
+		if (m != null) {
+			return this.invokeMethod(m, null, v);
+		}
+		return v;
 	}
 
 	public Object evalAdd(Tree<?> node) {
@@ -143,32 +204,6 @@ public class Interpreter extends TreeVisitor implements CommonSymbols {
 		return args;
 	}
 
-	public Object evalImport(Tree<?> node) {
-		String path = (String) eval(node.get(0));
-		try {
-			base.addBaseClass(path);
-		} catch (ClassNotFoundException e) {
-			perror(node, "undefined class name: %s", path);
-		}
-		return empty;
-	}
-
-	public Object evalQualifiedName(Tree<?> node) {
-		StringBuilder sb = new StringBuilder();
-		s(sb, node);
-		return sb.toString();
-	}
-
-	public void s(StringBuilder sb, Tree<?> node) {
-		Tree<?> prefix = node.get(_prefix);
-		if (prefix.size() == 2) {
-			s(sb, prefix);
-		} else {
-			sb.append(prefix.toText());
-		}
-		sb.append(".").append(node.getText(_name, null));
-	}
-
 	public Object evalIf(Tree<?> node) {
 		Boolean cond = (Boolean) eval(node.get(_cond));
 		Tree<?> thenNode = node.get(_then);
@@ -217,19 +252,7 @@ public class Interpreter extends TreeVisitor implements CommonSymbols {
 		if (m == null) {
 			perror(node, "undefined operator: %s %s", typeof(a1), typeof(a2));
 		}
-		try {
-			return m.invoke(null, a1, a2);
-		} catch (IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalArgumentException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InvocationTargetException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return empty;
+		return this.invokeMethod(m, null, a1, a2);
 	}
 
 	Object evalFunction(Tree<?> node, String name, Object... args) {
@@ -241,19 +264,7 @@ public class Interpreter extends TreeVisitor implements CommonSymbols {
 		if (m == null) {
 			perror(node, "undefined function: %s", name);
 		}
-		try {
-			return m.invoke(null, args);
-		} catch (IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalArgumentException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InvocationTargetException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return empty;
+		return this.invokeMethod(m, null, args);
 	}
 
 }

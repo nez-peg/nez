@@ -225,8 +225,12 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements
 		}
 	}
 
-	protected final Object getValue() {
+	public final Object getValue() {
 		return this.value;
+	}
+
+	public final void setValue(Object value) {
+		this.value = value;
 	}
 
 	public final String toText() {

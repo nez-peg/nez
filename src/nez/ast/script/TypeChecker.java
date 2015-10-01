@@ -2,12 +2,13 @@ package nez.ast.script;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.math.BigInteger;
 
 import nez.ast.Symbol;
 import nez.ast.Tree;
 import nez.ast.TreeVisitor;
 import nez.util.ConsoleUtils;
-import nez.util.UList;
+import nez.util.StringUtils;
 
 public class TypeChecker extends TreeVisitor implements CommonSymbols {
 	ScriptContext context;
@@ -58,6 +59,14 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		}
 		if (unode != null) {
 			type(unode);
+		}
+	}
+
+	public void makeCast(Type req, Tree<?> node, Symbol label) {
+		Tree<?> unode = node.get(label, null);
+		if (unode instanceof TypedTree) {
+			TypedTree tnode = (TypedTree) unode;
+			((TypedTree) node).set(label, this.typeSystem.makeCast(req, tnode));
 		}
 	}
 
@@ -220,10 +229,43 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		return this.resolve("method", node, recv, name, args, types);
 	}
 
-	public Type typeAdd(Tree<?> node) {
+	private Type checkMathematicType(Type t, Type t2) {
+		if (t == t2) {
+			return t;
+		}
+		if (t == BigInteger.class || t2 == BigInteger.class) {
+			return BigInteger.class;
+		}
+		if (t == double.class || t2 == double.class || t == Double.class || t2 == Double.class) {
+			return double.class;
+		}
+		if (t == float.class || t2 == float.class || t == Float.class || t2 == Float.class) {
+			return double.class;
+		}
+		if (t == long.class || t2 == long.class || t == Long.class || t2 == Long.class) {
+			return long.class;
+		}
+		if (t == int.class || t2 == int.class || t == Integer.class || t2 == Integer.class) {
+			return int.class;
+		}
+		return t;
+	}
+
+	private Type typeBinary(Tree<?> node, String name) {
 		Type left = type(node.get(_left));
 		Type right = type(node.get(_right));
-		return this.resolve("operator", node, "opAdd", node, left, right);
+		Type common = checkMathematicType(left, right);
+		if (left != common) {
+			this.makeCast(common, node, _left);
+		}
+		if (right != common) {
+			this.makeCast(common, node, _right);
+		}
+		return this.resolve("operator", node, name, node, common, common);
+	}
+
+	public Type typeAdd(Tree<?> node) {
+		return typeBinary(node, "opAdd");
 	}
 
 	public Type typeSub(Tree<?> node) {
@@ -281,38 +323,73 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 	}
 
 	public Type typeNull(Tree<?> node) {
-		return UList.class;
+		return Object.class;
 	}
 
 	public Type typeTrue(Tree<?> node) {
+		node.setValue(true);
 		return boolean.class;
 	}
 
 	public Type typeFalse(Tree<?> node) {
+		node.setValue(false);
 		return boolean.class;
 	}
 
 	public Type typeShort(Tree<?> node) {
-		return int.class;
+		return typeInteger(node);
 	}
 
 	public Type typeInteger(Tree<?> node) {
+		try {
+			String n = node.toText();
+			node.setValue(Integer.parseInt(n));
+		} catch (NumberFormatException e) {
+			perror(node, e.getMessage());
+			node.setValue(0);
+		}
 		return int.class;
 	}
 
 	public Type typeLong(Tree<?> node) {
+		try {
+			String n = node.toText();
+			node.setValue(Long.parseLong(n));
+		} catch (NumberFormatException e) {
+			perror(node, e.getMessage());
+			node.setValue(0L);
+		}
 		return long.class;
 	}
 
 	public Type typeFloat(Tree<?> node) {
-		return double.class;
+		return typeDouble(node);
 	}
 
 	public Type typeDouble(Tree<?> node) {
+		try {
+			String n = node.toText();
+			node.setValue(Double.parseDouble(n));
+		} catch (NumberFormatException e) {
+			perror(node, e.getMessage());
+			node.setValue(0L);
+		}
 		return double.class;
 	}
 
 	public Type typeString(Tree<?> node) {
+		String t = node.toText();
+		node.setValue(StringUtils.unquoteString(t));
+		return String.class;
+	}
+
+	public Type typeCharacter(Tree<?> node) {
+		String t = StringUtils.unquoteString(node.toText());
+		if (t.length() == 1) {
+			node.setValue(t.charAt(0));
+			return char.class;
+		}
+		node.setValue(t);
 		return String.class;
 	}
 

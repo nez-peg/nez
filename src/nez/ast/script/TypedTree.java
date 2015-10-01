@@ -47,7 +47,7 @@ public class TypedTree extends Tree<TypedTree> {
 		this.type = type;
 	}
 
-	public Method getMethod() {
+	public final Method getMethod() {
 		return this.resolvedMethod;
 	}
 
