@@ -102,7 +102,7 @@ public class ScriptCompilerAsm implements CommonSymbols {
 		this.mBuilder = this.cBuilder.newMethodBuilder(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, funcType, name, paramTypes);
 		this.mBuilder.enterScope();
 		for (TypedTree arg : args) {
-			this.mBuilder.defineArgument(arg.toText(), typeof(arg));
+			this.mBuilder.defineArgument(arg.getText(_name, null), typeof(arg));
 		}
 		// this.mBuilder.loadArgs();
 		visit(node.get(_body));
@@ -126,7 +126,7 @@ public class ScriptCompilerAsm implements CommonSymbols {
 			TypedTree valueNode = node.get(_expr);
 			visit(valueNode);
 			varNode.setType(typeof(valueNode));
-			this.mBuilder.createNewVarAndStore(varNode.toText(), typeof(valueNode));
+			this.mBuilder.createNewVarAndStore(varNode.getText(_name, null), typeof(valueNode));
 		}
 	}
 
