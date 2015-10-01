@@ -93,6 +93,7 @@ public interface CommonSymbols {
 	public final static Symbol _Switch = Symbol.tag("Switch");
 	public final static Symbol _SwitchCase = Symbol.tag("SwitchCase");
 	public final static Symbol _SwitchDefault = Symbol.tag("SwitchDefault");
+
 	public final static Symbol _Assign = Symbol.tag("Assign");
 	public final static Symbol _AssignMul = Symbol.tag("AssignMul");
 	public final static Symbol _AssignDiv = Symbol.tag("AssignDiv");
@@ -100,45 +101,63 @@ public interface CommonSymbols {
 	public final static Symbol _AssignAdd = Symbol.tag("AssignAdd");
 	public final static Symbol _AssignSub = Symbol.tag("AssignSub");
 	public final static Symbol _AssignLeftShift = Symbol.tag("AssignLeftShift");
+	public final static Symbol _AssignRightShift = Symbol.tag("AssignRightShift");
 	public final static Symbol _AssignArithmeticRightShift = Symbol.tag("AssignArithmeticRightShift");
 	public final static Symbol _AssignLogicalRightShift = Symbol.tag("AssignLogicalRightShift");
 	public final static Symbol _AssignBitwiseAnd = Symbol.tag("AssignBitwiseAnd");
 	public final static Symbol _AssignBitwiseXOr = Symbol.tag("AssignBitwiseXOr");
 	public final static Symbol _AssignBitwiseOr = Symbol.tag("AssignBitwiseOr");
+
 	public final static Symbol _Conditional = Symbol.tag("Conditional");
 	public final static Symbol _Or = Symbol.tag("Or");
 	public final static Symbol _And = Symbol.tag("And");
+	public final static Symbol _BitwiseNot = Symbol.tag("BitwiseNot");
 	public final static Symbol _BitwiseOr = Symbol.tag("BitwiseOr");
 	public final static Symbol _BitwiseXor = Symbol.tag("BitwiseXor");
 	public final static Symbol _BitwiseAnd = Symbol.tag("BitwiseAnd");
+	public final static Symbol _LogicalNot = Symbol.tag("LogicalNot");
+	public final static Symbol _LogicalAnd = Symbol.tag("LogicalAnd");
+	public final static Symbol _LogicalOr = Symbol.tag("LogicalOr");
 	public final static Symbol _Equals = Symbol.tag("Equals");
 	public final static Symbol _NotEquals = Symbol.tag("NotEquals");
 	public final static Symbol _LessThanEquals = Symbol.tag("LessThanEquals");
 	public final static Symbol _GreaterThanEquals = Symbol.tag("GreaterThanEquals");
 	public final static Symbol _LessThan = Symbol.tag("LessThan");
 	public final static Symbol _GreaterThan = Symbol.tag("GreaterThan");
+
 	public final static Symbol _InstanceOf = Symbol.tag("InstanceOf");
+
 	public final static Symbol _LeftShift = Symbol.tag("LeftShift");
+	public final static Symbol _RightShift = Symbol.tag("RightShift");
 	public final static Symbol _ArithmeticRightShift = Symbol.tag("ArithmeticRightShift");
 	public final static Symbol _LogicalRightShift = Symbol.tag("LogicalRightShift");
+
 	public final static Symbol _Add = Symbol.tag("Add");
 	public final static Symbol _Sub = Symbol.tag("Sub");
 	public final static Symbol _Mul = Symbol.tag("Mul");
 	public final static Symbol _Div = Symbol.tag("Div");
 	public final static Symbol _Mod = Symbol.tag("Mod");
+
+	public final static Symbol _Inc = Symbol.tag("Inc");
+	public final static Symbol _Dec = Symbol.tag("Dec");
+	public final static Symbol _SuffixInc = Symbol.tag("SuffixInc");
+	public final static Symbol _SuffixDec = Symbol.tag("SuffixDec");
 	public final static Symbol _PreInc = Symbol.tag("PreInc");
 	public final static Symbol _PreDec = Symbol.tag("PreDec");
+	public final static Symbol _PrefixInc = Symbol.tag("PrefixInc");
+	public final static Symbol _PrefixDec = Symbol.tag("PrefixDec");
 	public final static Symbol _Plus = Symbol.tag("Plus");
 	public final static Symbol _Minus = Symbol.tag("Minus");
 	public final static Symbol _Compl = Symbol.tag("Compl");
 	public final static Symbol _Not = Symbol.tag("Not");
+
 	public final static Symbol _MethodApply = Symbol.tag("MethodApply");
 	public final static Symbol _Index = Symbol.tag("Index");
 	public final static Symbol _Field = Symbol.tag("Field");
-	public final static Symbol _Inc = Symbol.tag("Inc");
-	public final static Symbol _Dec = Symbol.tag("Dec");
+
 	public final static Symbol _This = Symbol.tag("This");
 	public final static Symbol _Super = Symbol.tag("Super");
+	public final static Symbol _Final = Symbol.tag("Final");
 	public final static Symbol _Apply = Symbol.tag("Apply");
 	public final static Symbol _New = Symbol.tag("New");
 	public final static Symbol _NewArray = Symbol.tag("NewArray");
@@ -146,6 +165,7 @@ public interface CommonSymbols {
 	public final static Symbol _AddArgumentExpressionList = Symbol.tag("AddArgumentExpressionList");
 	public final static Symbol _LambdaParameters = Symbol.tag("LambdaParameters");
 	public final static Symbol _InferredFormalParameterList = Symbol.tag("InferredFormalParameterList");
+
 	public final static Symbol _QualifiedName = Symbol.tag("QualifiedName");
 	public final static Symbol _Null = Symbol.tag("Null");
 	public final static Symbol _True = Symbol.tag("True");
@@ -156,10 +176,10 @@ public interface CommonSymbols {
 	public final static Symbol _Double = Symbol.tag("Double");
 	public final static Symbol _String = Symbol.tag("String");
 	public final static Symbol _Character = Symbol.tag("Character");
+
 	public final static Symbol _PackageDeclaration = Symbol.tag("PackageDeclaration");
 	public final static Symbol _ImportDeclaration = Symbol.tag("ImportDeclaration");
 	public final static Symbol _StaticImportDeclaration = Symbol.tag("StaticImportDeclaration");
-	public final static Symbol _Final = Symbol.tag("Final");
 	public final static Symbol _VarName = Symbol.tag("VarName");
 	public final static Symbol _Tvoid = Symbol.tag("Tvoid");
 	public final static Symbol _Tbyte = Symbol.tag("Tbyte");
@@ -170,17 +190,8 @@ public interface CommonSymbols {
 	public final static Symbol _Tdouble = Symbol.tag("Tdouble");
 	public final static Symbol _Tarray = Symbol.tag("Tarray");
 	public final static Symbol _Comma = Symbol.tag("Comma");
-	public final static Symbol _AssignRightShift = Symbol.tag("AssignRightShift");
-	public final static Symbol _LogicalAnd = Symbol.tag("LogicalAnd");
-	public final static Symbol _LogicalOr = Symbol.tag("LogicalOr");
 	public final static Symbol _HashIn = Symbol.tag("HashIn");
-	public final static Symbol _RightShift = Symbol.tag("RightShift");
-	public final static Symbol _PrefixInc = Symbol.tag("PrefixInc");
-	public final static Symbol _PrefixDec = Symbol.tag("PrefixDec");
-	public final static Symbol _BitwiseNot = Symbol.tag("BitwiseNot");
-	public final static Symbol _LogicalNot = Symbol.tag("LogicalNot");
-	public final static Symbol _SuffixInc = Symbol.tag("SuffixInc");
-	public final static Symbol _SuffixDec = Symbol.tag("SuffixDec");
+
 	public final static Symbol _Object = Symbol.tag("Object");
 	public final static Symbol _Property = Symbol.tag("Property");
 
