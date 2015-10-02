@@ -48,11 +48,7 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 		return (Expression) visit("pi", Expression.class, expr, k);
 	}
 
-	boolean headFlag = false;
-	boolean existHead = false;
-
 	public Expression piPattern(Tree<?> e, Expression k) {
-		headFlag = false;
 		String ruleName = "Pattern";
 		Expression ne = ExpressionCommons.newNonTerminal(e, this.getGrammar(), ruleName);
 		getGrammar().newProduction(ruleName, pi(e.get(0), k));
@@ -60,14 +56,6 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 		Expression zeroMore = ExpressionCommons.newPzero(null, notPattern);
 		Expression oneMore = ExpressionCommons.newPone(null, toSeq(null, ne, zeroMore));
 		Expression main = toSeq(null, zeroMore, oneMore);
-		if (existHead) {
-			headFlag = true;
-			ruleName = "headPattern";
-			ne = ExpressionCommons.newNonTerminal(e, this.getGrammar(), ruleName);
-			getGrammar().newProduction(ruleName, pi(e.get(0), k));
-			Expression head = toChoice(null, ne, ExpressionCommons.newEmpty(null));
-			return toSeq(null, head, main);
-		}
 		return main;
 	}
 
@@ -193,14 +181,13 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 		return toSeq(c, k);
 	}
 
-	public Expression piHeader(Tree<?> e, Expression k) {
-		existHead = true;
-		return toSeq(e, k);
-	}
+	// stub
+	// public Expression piStartOfString(Tree<?> e, Expression k) {
+	// }
 
-	public Expression piTerminator(Tree<?> e, Expression k) {
-		return toSeq(e, k);
-	}
+	// stub
+	// public Expression piEndOfString(Tree<?> e, Expression k) {
+	// }
 
 	private Expression toExpression(Tree<?> e) {
 		return (Expression) this.visit("to", e);
@@ -252,17 +239,6 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 
 	public Expression toAny(Tree<?> e) {
 		return ExpressionCommons.newCany(null, false);
-	}
-
-	public Expression toHeader(Tree<?> e) {
-		if (headFlag) {
-			return ExpressionCommons.newEmpty(null);
-		}
-		return ExpressionCommons.newFailure(null);
-	}
-
-	public Expression toTerminator(Tree<?> e) {
-		return _LineTerminator();
 	}
 
 	public Expression toAnd(Tree<?> e, Expression k) {
