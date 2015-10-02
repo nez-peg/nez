@@ -167,7 +167,7 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 	}
 
 	public Expression piCapture(Tree<?> e, Expression k) {
-		return pi(e.get(0), k);
+		return pi(e.get(0), k); // TODO Capture
 	}
 
 	public Expression piNegativeCharacterSet(Tree<?> e, Expression k) {
