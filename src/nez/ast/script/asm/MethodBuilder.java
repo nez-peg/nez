@@ -220,7 +220,7 @@ public class MethodBuilder extends GeneratorAdapter {
 	}
 
 	public VarEntry getVar(String varName) {
-		return this.varScopes.getLast().getLocalVar(varName);
+		return this.varScopes.getFirst().getLocalVar(varName);
 	}
 
 	public void callIinc(VarEntry entry, int amount) {
