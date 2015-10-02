@@ -3,6 +3,7 @@ package nez.ext;
 import java.io.IOException;
 
 import nez.ast.script.ScriptContext;
+import nez.ast.script.ScriptRuntimeException;
 import nez.main.Command;
 import nez.main.CommandContext;
 import nez.util.ConsoleUtils;
@@ -15,8 +16,14 @@ public class Ckonoha extends Command {
 		int linenum = 1;
 		String command = null;
 		while ((command = readLine()) != null) {
-			Object result = sc.eval("<stdio>", linenum, command);
-			System.out.println(result);
+			try {
+				Object result = sc.eval2("<stdio>", linenum, command);
+				ConsoleUtils.println(result);
+			} catch (ScriptRuntimeException e) {
+				ConsoleUtils.println(e.getMessage());
+			} catch (RuntimeException e) {
+				ConsoleUtils.println(e);
+			}
 			linenum += (command.split("\n").length);
 		}
 	}

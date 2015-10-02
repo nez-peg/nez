@@ -11,10 +11,12 @@ import nez.util.UList;
 import nez.util.UMap;
 
 public class TypeSystem implements CommonSymbols {
+	ScriptContext context;
 	HashMap<String, Type> nameMap = new HashMap<>();
 	UList<Class<?>> classList = new UList<Class<?>>(new Class<?>[4]);
 
-	public TypeSystem() {
+	public TypeSystem(ScriptContext context) {
+		this.context = context;
 		init();
 		initMethod();
 	}
@@ -120,11 +122,39 @@ public class TypeSystem implements CommonSymbols {
 		}
 	}
 
+	// type check
+
+	public String pwarn(TypedTree node, String msg) {
+		msg = node.formatSourceMessage("warning", msg);
+		context.log(msg);
+		return msg;
+	}
+
+	public String pwarn(TypedTree node, String fmt, Object... args) {
+		return pwarn(node, String.format(fmt, args));
+	}
+
+	public TypedTree newError(Type req, TypedTree node, String fmt, Object... args) {
+		TypedTree newnode = node.newInstance(_StupidCast, 1, null);
+		String msg = node.formatSourceMessage("error", String.format(fmt, args));
+		newnode.set(0, _msg, node.newStringConst(msg));
+		context.log(msg);
+		newnode.setMethod(true, this.StaticErrorMethod);
+		newnode.setType(req);
+		return newnode;
+	}
+
+	public String name(Type t) {
+		return t == null ? "untyped" : t.toString();
+	}
+
 	public TypedTree enforceType(Type req, TypedTree node) {
-		if (accept(false, req, node.getClassType())) {
+		Class<?> vt = toClass(req);
+		Class<?> et = node.getClassType();
+		if (accept(false, vt, et)) {
 			return node;
 		}
-		Method m = this.getCastMethod(toClass(req), node.getClassType());
+		Method m = this.getCastMethod(vt, et);
 		if (m != null) {
 			TypedTree newnode = node.newInstance(_Cast, 1, null);
 			newnode.set(0, _expr, node);
@@ -132,7 +162,15 @@ public class TypeSystem implements CommonSymbols {
 			newnode.setType(req);
 			return newnode;
 		}
-		return node;
+		if (et.isAssignableFrom(vt)) {
+			pwarn(node, "unexpected downcast: %s => %s", name(et), name(vt));
+			TypedTree newnode = node.newInstance(_DownCast, 1, null);
+			newnode.set(0, _expr, node);
+			newnode.setValue(vt);
+			newnode.setType(req);
+			return newnode;
+		}
+		return this.newError(req, node, "type mismatch: requested=%s given=%s", name(req), name(node.getType()));
 	}
 
 	public TypedTree makeCast(Type req, TypedTree node) {
@@ -347,16 +385,22 @@ public class TypeSystem implements CommonSymbols {
 	public static BinaryTypeUnifier UnifyComparator = new TComparator();
 	public static BinaryTypeUnifier UnifyBitwise = new Bitwise();
 
+	protected Method StaticErrorMethod = null;
 	protected Method InterpolationMethod = null;
 
 	void initMethod() {
 		try {
+			this.StaticErrorMethod = this.getClass().getMethod("throwStaticError", String.class);
 			this.InterpolationMethod = this.getClass().getMethod("joinString", Object[].class);
 		} catch (NoSuchMethodException e) {
 			e.printStackTrace();
 		} catch (SecurityException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public final static String throwStaticError(String msg) {
+		throw new ScriptRuntimeException(msg);
 	}
 
 	public final static String joinString(Object... args) {

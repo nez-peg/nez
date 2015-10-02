@@ -14,7 +14,7 @@ public class ScriptContext {
 
 	public ScriptContext(Parser parser) {
 		this.parser = parser;
-		this.typeSystem = new TypeSystem();
+		this.typeSystem = new TypeSystem(this);
 		this.typechecker = new TypeChecker(this, typeSystem);
 		this.interpreter = new Interpreter(this, typeSystem);
 	}
@@ -23,7 +23,7 @@ public class ScriptContext {
 		eval(SourceContext.newFileContext(path));
 	}
 
-	public Object eval(String uri, int linenum, String script) {
+	public Object eval2(String uri, int linenum, String script) {
 		return eval(SourceContext.newStringContext(uri, linenum, script));
 	}
 
@@ -49,6 +49,10 @@ public class ScriptContext {
 
 	public final void println(Object o) {
 		ConsoleUtils.println(o);
+	}
+
+	public void log(String msg) {
+		ConsoleUtils.println(msg);
 	}
 
 }

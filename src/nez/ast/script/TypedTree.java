@@ -35,13 +35,29 @@ public class TypedTree extends Tree<TypedTree> {
 		return new TypedTree(tag, this.getSource(), this.getSourcePosition(), 0, size, value);
 	}
 
+	public TypedTree newStringConst(String s) {
+		TypedTree t = new TypedTree(CommonSymbols._String, this.getSource(), this.getSourcePosition(), 0, 0, s);
+		t.setType(String.class);
+		return t;
+	}
+
 	@Override
 	protected TypedTree dupImpl() {
 		return new TypedTree(this.getTag(), this.getSource(), this.getSourcePosition(), this.getLength(), this.size(), getValue());
 	}
 
+	public void changed(Symbol tag, int n, Object v) {
+		this.tag = tag;
+		this.subTree = new TypedTree[n];
+		this.value = v;
+	}
+
 	public final Class<?> getClassType() {
 		return TypeSystem.toClass(this.type);
+	}
+
+	public Type getType() {
+		return this.type;
 	}
 
 	public void setType(Type type) {
@@ -64,6 +80,10 @@ public class TypedTree extends Tree<TypedTree> {
 			sb.append(" :");
 			sb.append(type.toString());
 		}
+	}
+
+	public void done() {
+		this.setTag(CommonSymbols._Empty);
 	}
 
 }
