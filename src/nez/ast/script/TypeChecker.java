@@ -319,7 +319,7 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 
 	private Type resolvedMethod(TypedTree node, boolean isStaticNormalMethod, Method m, int start, String fmt, Object... args) {
 		if (m != null) {
-			node.setMethod(true, m);
+			node.setMethod(isStaticNormalMethod, m);
 			return m.getReturnType();
 		}
 		String msg = String.format(fmt, args);
