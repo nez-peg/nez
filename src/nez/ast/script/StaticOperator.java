@@ -2,13 +2,69 @@ package nez.ast.script;
 
 public class StaticOperator {
 	/* double */
+	public final static double opPlus(double a) {
+		return +a;
+	}
+
+	public final static double opMinus(double a) {
+		return -a;
+	}
+
 	public final static double opAdd(double a, double b) {
 		return a + b;
+	}
+
+	public final static double opSub(double a, double b) {
+		return a - b;
+	}
+
+	public final static double opMul(double a, double b) {
+		return a * b;
+	}
+
+	public final static double opDiv(double a, double b) {
+		return a / b;
+	}
+
+	public final static double opMod(double a, double b) {
+		return a % b;
+	}
+
+	public final static boolean opEquals(double a, double b) {
+		return a == b;
+	}
+
+	public final static boolean opNotEquals(double a, double b) {
+		return a != b;
+	}
+
+	public final static boolean opLessThan(double a, double b) {
+		return a < b;
+	}
+
+	public final static boolean opGreaterThan(double a, double b) {
+		return a > b;
+	}
+
+	public final static boolean opLessThanEquals(double a, double b) {
+		return a <= b;
+	}
+
+	public final static boolean opGreaterThanEquals(double a, double b) {
+		return a >= b;
 	}
 
 	/* long */
 
 	/* int */
+
+	public final static int opPlus(int a) {
+		return +a;
+	}
+
+	public final static int opMinus(int a) {
+		return -a;
+	}
 
 	public final static int opAdd(int a, int b) {
 		return a + b;
@@ -52,6 +108,22 @@ public class StaticOperator {
 
 	public final static boolean opGreaterThanEquals(int a, int b) {
 		return a >= b;
+	}
+
+	public final static int opBitwiseAnd(int a, int b) {
+		return a & b;
+	}
+
+	public final static int opBitwiseOr(int a, int b) {
+		return a | b;
+	}
+
+	public final static int opBitwiseXor(int a, int b) {
+		return a ^ b;
+	}
+
+	public final static int opCompl(int a) {
+		return ~a;
 	}
 
 	/* double */
@@ -114,6 +186,22 @@ public class StaticOperator {
 		return a.longValue();
 	}
 
+	public final static long to_long(short a) {
+		return a;
+	}
+
+	public final static long to_long(Short a) {
+		return a.longValue();
+	}
+
+	public final static long to_long(byte a) {
+		return a & 0xff;
+	}
+
+	public final static long to_long(Byte a) {
+		return a.longValue();
+	}
+
 	/* int */
 
 	public final static int to_int(Integer a) {
@@ -142,6 +230,22 @@ public class StaticOperator {
 
 	public final static int to_int(Long a) {
 		return a.intValue();
+	}
+
+	public final static int to_int(short a) {
+		return a;
+	}
+
+	public final static int to_int(Short a) {
+		return a.intValue();
+	}
+
+	public final static int to_int(byte a) {
+		return a & 0xff;
+	}
+
+	public final static int to_int(Byte a) {
+		return a.intValue() & 0xff;
 	}
 
 }

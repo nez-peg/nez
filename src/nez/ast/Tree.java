@@ -85,6 +85,10 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements
 		return this.tag;
 	}
 
+	public final void setTag(Symbol tag) {
+		this.tag = tag;
+	}
+
 	public final boolean is(Symbol t) {
 		return t == this.getTag();
 	}

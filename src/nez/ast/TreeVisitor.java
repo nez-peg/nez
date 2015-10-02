@@ -8,7 +8,16 @@ import nez.main.Verbose;
 import nez.util.ConsoleUtils;
 
 public class TreeVisitor {
+	private final Class<?> treeType;
 	private HashMap<String, Method> methodMap = new HashMap<String, Method>();
+
+	protected TreeVisitor(Class<?> treeType) {
+		this.treeType = treeType;
+	}
+
+	protected TreeVisitor() {
+		this(Tree.class);
+	}
 
 	public final Object visit(String method, Tree<?> node) {
 		Symbol tag = node.getTag();
@@ -47,7 +56,7 @@ public class TreeVisitor {
 
 	protected Method getClassMethod(String method, Symbol tag) throws NoSuchMethodException, SecurityException {
 		String name = method + tag.getSymbol();
-		return this.getClass().getMethod(name, Tree.class);
+		return this.getClass().getMethod(name, this.treeType);
 	}
 
 	protected Object visitUndefinedNode(Tree<?> node) {
@@ -92,7 +101,7 @@ public class TreeVisitor {
 
 	protected Method getClassMethod(String method, Symbol tag, Class<?> c1) throws NoSuchMethodException, SecurityException {
 		String name = method + tag.getSymbol();
-		return this.getClass().getMethod(name, Tree.class, c1);
+		return this.getClass().getMethod(name, this.treeType, c1);
 	}
 
 	protected Object visitUndefinedNode(Tree<?> node, Object p1) {

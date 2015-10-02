@@ -10,6 +10,7 @@ import nez.ast.Tree;
 public class TypedTree extends Tree<TypedTree> {
 	Type type;
 	Method resolvedMethod;
+	boolean isStaticNormalMethod;
 
 	TypedTree() {
 		super();
@@ -51,7 +52,8 @@ public class TypedTree extends Tree<TypedTree> {
 		return this.resolvedMethod;
 	}
 
-	public void setMethod(Method m) {
+	public void setMethod(boolean isStaticNormalMethod, Method m) {
+		this.isStaticNormalMethod = isStaticNormalMethod;
 		this.resolvedMethod = m;
 	}
 

@@ -37,5 +37,8 @@ public interface CommonSymbols {
 	public final static Symbol _GenericType = Symbol.tag("GenericType");
 
 	public final static Symbol _Cast = Symbol.tag("Cast");
-	public final static Symbol _StupidCast = Symbol.tag("StupidCast");
+	public final static Symbol _UpCast = Symbol.tag("UpCast");
+	public final static Symbol _DownCast = Symbol.tag("DownCast");
+	public final static Symbol _StupidCast = Symbol.tag("StupidCast"); // type
+																		// error
 }

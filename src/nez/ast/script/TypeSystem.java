@@ -3,6 +3,7 @@ package nez.ast.script;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
+import java.math.BigInteger;
 import java.util.HashMap;
 
 import nez.ast.Tree;
@@ -15,13 +16,16 @@ public class TypeSystem implements CommonSymbols {
 
 	public TypeSystem() {
 		init();
+		initMethod();
 	}
 
 	void init() {
 		addBaseClass(DynamicOperator.class);
 		addBaseClass(StaticOperator.class);
+		addBaseClass(StringOperator.class);
 		this.setType("void", void.class);
 		this.setType("boolean", boolean.class);
+		this.setType("byte", byte.class);
 		this.setType("int", int.class);
 		this.setType("long", long.class);
 		this.setType("double", double.class);
@@ -124,7 +128,7 @@ public class TypeSystem implements CommonSymbols {
 		if (m != null) {
 			TypedTree newnode = node.newInstance(_Cast, 1, null);
 			newnode.set(0, _expr, node);
-			newnode.setMethod(m);
+			newnode.setMethod(true, m);
 			newnode.setType(req);
 			return newnode;
 		}
@@ -136,7 +140,7 @@ public class TypeSystem implements CommonSymbols {
 		if (m != null) {
 			TypedTree newnode = node.newInstance(_Cast, 1, null);
 			newnode.set(0, _expr, node);
-			newnode.setMethod(m);
+			newnode.setMethod(true, m);
 			newnode.setType(req);
 			return newnode;
 		}
@@ -225,6 +229,142 @@ public class TypeSystem implements CommonSymbols {
 			return true;
 		}
 		return false;
+	}
+
+	public Type PrimitiveType(Type t) {
+		if (t == Double.class || t == Float.class || t == float.class) {
+			return double.class;
+		}
+		if (t == Long.class) {
+			return long.class;
+		}
+		if (t == Integer.class || t == Short.class || t == short.class) {
+			return int.class;
+		}
+		if (t == Character.class) {
+			return char.class;
+		}
+		if (t == Character.class) {
+			return char.class;
+		}
+		if (t == Boolean.class) {
+			return boolean.class;
+		}
+		if (t == Byte.class) {
+			return byte.class;
+		}
+		return t;
+	}
+
+	public static interface BinaryTypeUnifier {
+		Type unify(Type t, Type t2);
+	}
+
+	private static class Additive implements BinaryTypeUnifier {
+		@Override
+		public Type unify(Type t, Type t2) {
+			if (t == t2) {
+				return t;
+			}
+			if (t == BigInteger.class || t2 == BigInteger.class) {
+				return BigInteger.class;
+			}
+			if (t == double.class || t2 == double.class) {
+				return double.class;
+			}
+			if (t == long.class || t2 == long.class) {
+				return long.class;
+			}
+			if (t == int.class || t2 == int.class || t == byte.class || t2 == byte.class) {
+				return int.class;
+			}
+			return t;
+		}
+	}
+
+	private static class Equator implements BinaryTypeUnifier {
+		@Override
+		public Type unify(Type t, Type t2) {
+			if (t == t2) {
+				return t;
+			}
+			if (t == BigInteger.class || t2 == BigInteger.class) {
+				return BigInteger.class;
+			}
+			if (t == double.class || t2 == double.class) {
+				return double.class;
+			}
+			if (t == long.class || t2 == long.class) {
+				return long.class;
+			}
+			if (t == int.class || t2 == int.class) {
+				return int.class;
+			}
+			return t;
+		}
+	}
+
+	private static class TComparator implements BinaryTypeUnifier {
+		@Override
+		public Type unify(Type t, Type t2) {
+			if (t == t2) {
+				return t;
+			}
+			if (t == BigInteger.class || t2 == BigInteger.class) {
+				return BigInteger.class;
+			}
+			if (t == double.class || t2 == double.class) {
+				return double.class;
+			}
+			if (t == long.class || t2 == long.class) {
+				return long.class;
+			}
+			if (t == int.class || t2 == int.class) {
+				return int.class;
+			}
+			return t;
+		}
+	}
+
+	private static class Bitwise implements BinaryTypeUnifier {
+		@Override
+		public Type unify(Type t, Type t2) {
+			if (t == BigInteger.class || t2 == BigInteger.class) {
+				return BigInteger.class;
+			}
+			if (t == long.class || t2 == long.class) {
+				return long.class;
+			}
+			if (t == int.class || t2 == int.class) {
+				return int.class;
+			}
+			return t;
+		}
+	}
+
+	public static BinaryTypeUnifier UnifyAdditive = new Additive();
+	public static BinaryTypeUnifier UnifyEquator = new Equator();
+	public static BinaryTypeUnifier UnifyComparator = new TComparator();
+	public static BinaryTypeUnifier UnifyBitwise = new Bitwise();
+
+	protected Method InterpolationMethod = null;
+
+	void initMethod() {
+		try {
+			this.InterpolationMethod = this.getClass().getMethod("joinString", Object[].class);
+		} catch (NoSuchMethodException e) {
+			e.printStackTrace();
+		} catch (SecurityException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public final static String joinString(Object... args) {
+		StringBuilder sb = new StringBuilder();
+		for (Object a : args) {
+			sb.append(a);
+		}
+		return sb.toString();
 	}
 
 	// typeof

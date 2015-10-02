@@ -1,5 +1,7 @@
 package nez.ast.script;
 
+import java.util.Comparator;
+
 public class DynamicOperator {
 	public static final Object opAdd(Object x, Object y) {
 		if (x instanceof String || y instanceof String) {
@@ -11,15 +13,20 @@ public class DynamicOperator {
 		return null;
 	}
 
-	public static final Integer opSub(Integer x, Integer y) {
-		return x - y;
+	@SuppressWarnings("unchecked")
+	public static final Object opEquals(Object x, Object y) {
+		if (x instanceof Comparator<?>) {
+			return ((Comparator<Object>) x).compare(x, y) == 0;
+		}
+		return x == y;
 	}
 
-	public static final Integer opMul(Integer x, Integer y) {
-		return x * y;
+	@SuppressWarnings("unchecked")
+	public static final Object opNotEquals(Object x, Object y) {
+		if (x instanceof Comparator<?>) {
+			return ((Comparator<Object>) x).compare(x, y) != 0;
+		}
+		return x != y;
 	}
 
-	public static final Integer opDiv(Integer x, Integer y) {
-		return x / y;
-	}
 }
