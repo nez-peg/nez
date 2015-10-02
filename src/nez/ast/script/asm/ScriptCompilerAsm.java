@@ -6,11 +6,14 @@ import java.util.HashMap;
 
 import javax.lang.model.type.NullType;
 
+import nez.ast.jcode.JCodeOperator;
 import nez.ast.script.CommonSymbols;
 import nez.ast.script.TypeSystem;
 import nez.ast.script.TypedTree;
 
+import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 
 public class ScriptCompilerAsm implements CommonSymbols {
 	// private Map<String, Class<?>> generatedClassMap = new HashMap<String,
@@ -29,11 +32,11 @@ public class ScriptCompilerAsm implements CommonSymbols {
 	}
 
 	public void openClass(String name) {
-		this.cBuilder = new ClassBuilder(name, null, null, null);
+		this.cBuilder = new ClassBuilder("nez/ast/script/" + name, null, null, null);
 	}
 
 	public Class<?> closeClass() {
-		// loader.setDump(true);
+		cLoader.setDump(true);
 		Class<?> c = cLoader.definedAndLoadClass(this.cBuilder.getQualifiedClassName(), cBuilder.toByteArray());
 		this.cBuilder = null; //
 		return c;
@@ -97,14 +100,13 @@ public class ScriptCompilerAsm implements CommonSymbols {
 			paramTypes[i] = typeof(args.get(i));
 		}
 		this.mBuilder = this.cBuilder.newMethodBuilder(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, funcType, name, paramTypes);
-		this.mBuilder.enterScope();// FIXME
+		this.mBuilder.enterScope();
 		for (TypedTree arg : args) {
-			this.mBuilder.defineArgument(arg.toText(), typeof(arg));
+			this.mBuilder.defineArgument(arg.getText(_name, null), typeof(arg));
 		}
-		this.mBuilder.loadArgs();
 		visit(node.get(_body));
 		this.mBuilder.exitScope();
-		this.mBuilder.returnValue();
+		// this.mBuilder.returnValue();
 		this.mBuilder.endMethod();
 	}
 
@@ -127,94 +129,214 @@ public class ScriptCompilerAsm implements CommonSymbols {
 		}
 	}
 
-	public void visitVarDeclList(TypedTree node) {
-		visit(node.get(0));
+	public void visitApply(TypedTree node) {
+		String name = node.getText(_name, null);
+		TypedTree argsNode = node.get(_param);
+		Class<?>[] args = new Class<?>[argsNode.size()];
+		for (int i = 0; i < args.length; i++) {
+			args[i] = typeof(argsNode.get(i));
+		}
+		Method function = typeSystem.findCompiledMethod(name, args);
+		this.mBuilder.callStaticMethod(function.getDeclaringClass(), function.getReturnType(), function.getName(), args);
+	}
+
+	public void visitIf(TypedTree node) {
+		visit(node.get(_cond));
+		this.mBuilder.push(true);
+
+		Label elseLabel = this.mBuilder.newLabel();
+		Label mergeLabel = this.mBuilder.newLabel();
+
+		this.mBuilder.ifCmp(Type.BOOLEAN_TYPE, this.mBuilder.NE, elseLabel);
+
+		// then
+		visit(node.get(_then));
+		this.mBuilder.goTo(mergeLabel);
+
+		// else
+		this.mBuilder.mark(elseLabel);
+		visit(node.get(_else));
+
+		// merge
+		this.mBuilder.mark(mergeLabel);
+	}
+
+	public void visitWhile(TypedTree node) {
+		Label beginLabel = this.mBuilder.newLabel();
+		Label condLabel = this.mBuilder.newLabel();
+
+		this.mBuilder.goTo(condLabel);
+
+		// Block
+		this.mBuilder.mark(beginLabel);
+		visit(node.get(_body));
+
+		// Condition
+		this.mBuilder.mark(condLabel);
+		visit(node.get(_cond));
+		this.mBuilder.push(true);
+
+		this.mBuilder.ifCmp(Type.BOOLEAN_TYPE, this.mBuilder.EQ, beginLabel);
+	}
+
+	public void visitDoWhile(TypedTree node) {
+		Label beginLabel = this.mBuilder.newLabel();
+
+		// Do
+		this.mBuilder.mark(beginLabel);
+		visit(node.get(_body));
+
+		// Condition
+		visit(node.get(_cond));
+		this.mBuilder.push(true);
+
+		this.mBuilder.ifCmp(Type.BOOLEAN_TYPE, this.mBuilder.EQ, beginLabel);
+	}
+
+	public void visitFor(TypedTree node) {
+		Label beginLabel = this.mBuilder.newLabel();
+		Label condLabel = this.mBuilder.newLabel();
+
+		// Initialize
+		visit(node.get(_init));
+
+		this.mBuilder.goTo(condLabel);
+
+		// Block
+		this.mBuilder.mark(beginLabel);
+		visit(node.get(_body));
+		visit(node.get(_iter));
+
+		// Condition
+		this.mBuilder.mark(condLabel);
+		visit(node.get(_cond));
+		this.mBuilder.push(true);
+		this.mBuilder.ifCmp(Type.BOOLEAN_TYPE, this.mBuilder.EQ, beginLabel);
+	}
+
+	public void visitAssign(TypedTree node) {
+		String name = node.getText(_name, null);
+		TypedTree valueNode = node.get(_expr);
+		VarEntry var = this.mBuilder.getVar(name);
+		visit(valueNode);
+		if (var != null) {
+			this.mBuilder.storeToVar(var);
+		} else {
+			this.mBuilder.createNewVarAndStore(name, typeof(valueNode));
+		}
+	}
+
+	public void visitExpression(TypedTree node) {
+		this.visit(node.get(0));
+	}
+
+	public void visitReturn(TypedTree node) {
+		this.visit(node.get(_expr));
+		this.mBuilder.returnValue();
 	}
 
 	public void visitName(TypedTree node) {
 		VarEntry var = this.mBuilder.getVar(node.toText());
-		node.setType(var.getVarClass());
+		// node.setType(var.getVarClass());
 		this.mBuilder.loadFromVar(var);
 	}
 
-	//
-	//
-	//
-	//
-	// public void visitIf(TypedTree node) {
-	// visit(node.get(0));
-	// this.mBuilder.push(true);
-	//
-	// Label elseLabel = this.mBuilder.newLabel();
-	// Label mergeLabel = this.mBuilder.newLabel();
-	//
-	// this.mBuilder.ifCmp(Type.BOOLEAN_TYPE, this.mBuilder.NE, elseLabel);
-	//
-	// // then
-	// visit(node.get(1));
-	// this.mBuilder.goTo(mergeLabel);
-	//
-	// // else
-	// this.mBuilder.mark(elseLabel);
-	// visit(node.get(2));
-	//
-	// // merge
-	// this.mBuilder.mark(mergeLabel);
-	// }
-	//
-	// public void visitWhile(TypedTree node) {
-	// Label beginLabel = this.mBuilder.newLabel();
-	// Label condLabel = this.mBuilder.newLabel();
-	//
-	// this.mBuilder.goTo(condLabel);
-	//
-	// // Block
-	// this.mBuilder.mark(beginLabel);
-	// visit(node.get(1));
-	//
-	// // Condition
-	// this.mBuilder.mark(condLabel);
-	// visit(node.get(0));
-	// this.mBuilder.push(true);
-	//
-	// this.mBuilder.ifCmp(Type.BOOLEAN_TYPE, this.mBuilder.EQ, beginLabel);
-	// }
-	//
-	// public void visitDoWhile(TypedTree node) {
-	// Label beginLabel = this.mBuilder.newLabel();
-	//
-	// // Do
-	// this.mBuilder.mark(beginLabel);
-	// visit(node.get(0));
-	//
-	// // Condition
-	// visit(node.get(1));
-	// this.mBuilder.push(true);
-	//
-	// this.mBuilder.ifCmp(Type.BOOLEAN_TYPE, this.mBuilder.EQ, beginLabel);
-	// }
-	//
-	// public void visitFor(TypedTree node) {
-	// Label beginLabel = this.mBuilder.newLabel();
-	// Label condLabel = this.mBuilder.newLabel();
-	// node.requirePop();
-	//
-	// // Initialize
-	// visit(node.get(0));
-	//
-	// this.mBuilder.goTo(condLabel);
-	//
-	// // Block
-	// this.mBuilder.mark(beginLabel);
-	// visit(node.get(3));
-	// visit(node.get(2));
-	//
-	// // Condition
-	// this.mBuilder.mark(condLabel);
-	// visit(node.get(1));
-	// this.mBuilder.push(true);
-	// this.mBuilder.ifCmp(Type.BOOLEAN_TYPE, this.mBuilder.EQ, beginLabel);
-	// }
+	private Class<?> typeInfferBinary(TypedTree binary, TypedTree left, TypedTree right) {
+		Class<?> leftType = typeof(left);
+		Class<?> rightType = typeof(right);
+		if (leftType == int.class) {
+			if (rightType == int.class) {
+				if (binary.getTag().getSymbol().equals("Div")) {
+					return double.class;
+				}
+				return int.class;
+			} else if (rightType == double.class) {
+				return double.class;
+			} else if (rightType == String.class) {
+				return String.class;
+			}
+		} else if (leftType == double.class) {
+			if (rightType == int.class) {
+				return double.class;
+			} else if (rightType == double.class) {
+				return double.class;
+			} else if (rightType == String.class) {
+				return String.class;
+			}
+		} else if (leftType == String.class) {
+			return String.class;
+		} else if (leftType == boolean.class) {
+			if (rightType == boolean.class) {
+				return boolean.class;
+			} else if (rightType == String.class) {
+				return String.class;
+			}
+		}
+		throw new RuntimeException("type error: " + left + ", " + right);
+	}
+
+	public void visitBinaryNode(TypedTree node) {
+		TypedTree left = node.get(_left);
+		TypedTree right = node.get(_right);
+		this.visit(left);
+		this.visit(right);
+		node.setType(typeInfferBinary(node, left, right));
+		this.mBuilder.callStaticMethod(JCodeOperator.class, typeof(node), node.getTag().getSymbol(), typeof(left), typeof(right));
+	}
+
+	public void visitCompNode(TypedTree node) {
+		TypedTree left = node.get(_left);
+		TypedTree right = node.get(_right);
+		this.visit(left);
+		this.visit(right);
+		node.setType(boolean.class);
+		this.mBuilder.callStaticMethod(JCodeOperator.class, typeof(node), node.getTag().getSymbol(), typeof(left), typeof(right));
+	}
+
+	public void visitAdd(TypedTree node) {
+		this.visitBinaryNode(node);
+	}
+
+	public void visitSub(TypedTree node) {
+		this.visitBinaryNode(node);
+	}
+
+	public void visitMul(TypedTree node) {
+		this.visitBinaryNode(node);
+	}
+
+	public void visitDiv(TypedTree node) {
+		this.visitBinaryNode(node);
+	}
+
+	public void visitNotEquals(TypedTree node) {
+		this.visitCompNode(node);
+	}
+
+	public void visitLessThan(TypedTree node) {
+		this.visitCompNode(node);
+	}
+
+	public void visitLessThanEquals(TypedTree node) {
+		this.visitCompNode(node);
+	}
+
+	public void visitGreaterThan(TypedTree node) {
+		this.visitCompNode(node);
+	}
+
+	public void visitGreaterThanEquals(TypedTree node) {
+		this.visitCompNode(node);
+	}
+
+	public void visitLogicalAnd(TypedTree node) {
+		this.visitCompNode(node);
+	}
+
+	public void visitLogicalOr(TypedTree node) {
+		this.visitCompNode(node);
+	}
+
 	//
 	// public void visitContinue(TypedTree node) {
 	// }
@@ -236,18 +358,7 @@ public class ScriptCompilerAsm implements CommonSymbols {
 	// this.visit(node.get(0));
 	// }
 	//
-	// public void visitAssign(TypedTree node) {
-	// TypedTree nameNode = node.get(0);
-	// TypedTree valueNode = node.get(1);
-	// VarEntry var = this.scope.getLocalVar(nameNode.toText());
-	// visit(valueNode);
-	// if (var != null) {
-	// this.mBuilder.storeToVar(var);
-	// } else {
-	// this.scope.setLocalVar(nameNode.toText(),
-	// this.mBuilder.createNewVarAndStore(valueNode.getTypedClass()));
-	// }
-	// }
+
 	//
 	// public void visitApply(TypedTree node) {
 	// // TypedTree fieldNode = node.get(_recv"));
@@ -323,107 +434,7 @@ public class ScriptCompilerAsm implements CommonSymbols {
 	// }
 	// }
 	//
-	// public void visitBinaryNode(TypedTree node) {
-	// TypedTree left = node.get(0);
-	// TypedTree right = node.get(1);
-	// this.visit(left);
-	// this.visit(right);
-	// node.setType(typeInfferBinary(node, left, right));
-	// this.mBuilder.callStaticMethod(JCodeOperator.class, node.getTypedClass(),
-	// node.getTag().getSymbol(), left.getTypedClass(), right.getTypedClass());
-	// this.popUnusedValue(node);
-	// }
-	//
-	// public void visitCompNode(TypedTree node) {
-	// TypedTree left = node.get(0);
-	// TypedTree right = node.get(1);
-	// this.visit(left);
-	// this.visit(right);
-	// node.setType(boolean.class);
-	// this.mBuilder.callStaticMethod(JCodeOperator.class, node.getTypedClass(),
-	// node.getTag().getSymbol(), left.getTypedClass(), right.getTypedClass());
-	// this.popUnusedValue(node);
-	// }
-	//
-	// private Class<?> typeInfferBinary(TypedTree binary, TypedTree left,
-	// TypedTree right) {
-	// Class<?> leftType = left.getTypedClass();
-	// Class<?> rightType = right.getTypedClass();
-	// if (leftType == int.class) {
-	// if (rightType == int.class) {
-	// if (binary.getTag().getSymbol().equals("Div")) {
-	// return double.class;
-	// }
-	// return int.class;
-	// } else if (rightType == double.class) {
-	// return double.class;
-	// } else if (rightType == String.class) {
-	// return String.class;
-	// }
-	// } else if (leftType == double.class) {
-	// if (rightType == int.class) {
-	// return double.class;
-	// } else if (rightType == double.class) {
-	// return double.class;
-	// } else if (rightType == String.class) {
-	// return String.class;
-	// }
-	// } else if (leftType == String.class) {
-	// return String.class;
-	// } else if (leftType == boolean.class) {
-	// if (rightType == boolean.class) {
-	// return boolean.class;
-	// } else if (rightType == String.class) {
-	// return String.class;
-	// }
-	// }
-	// throw new RuntimeException("type error: " + left + ", " + right);
-	// }
-	//
-	// public void visitAdd(TypedTree node) {
-	// this.visitBinaryNode(node);
-	// }
-	//
-	// public void visitSub(TypedTree node) {
-	// this.visitBinaryNode(node);
-	// }
-	//
-	// public void visitMul(TypedTree node) {
-	// this.visitBinaryNode(node);
-	// }
-	//
-	// public void visitDiv(TypedTree node) {
-	// this.visitBinaryNode(node);
-	// }
-	//
-	// public void visitNotEquals(TypedTree node) {
-	// this.visitCompNode(node);
-	// }
-	//
-	// public void visitLessThan(TypedTree node) {
-	// this.visitCompNode(node);
-	// }
-	//
-	// public void visitLessThanEquals(TypedTree node) {
-	// this.visitCompNode(node);
-	// }
-	//
-	// public void visitGreaterThan(TypedTree node) {
-	// this.visitCompNode(node);
-	// }
-	//
-	// public void visitGreaterThanEquals(TypedTree node) {
-	// this.visitCompNode(node);
-	// }
-	//
-	// public void visitLogicalAnd(TypedTree node) {
-	// this.visitCompNode(node);
-	// }
-	//
-	// public void visitLogicalOr(TypedTree node) {
-	// this.visitCompNode(node);
-	// }
-	//
+	// //
 	// public void visitUnaryNode(TypedTree node) {
 	// TypedTree child = node.get(0);
 	// this.visit(child);

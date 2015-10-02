@@ -102,6 +102,12 @@ public class Interpreter extends TreeVisitor implements CommonSymbols {
 		sb.append(".").append(node.getText(_name, null));
 	}
 
+	public Object evalFuncDecl(TypedTree node) {
+		ScriptCompiler compiler = new ScriptCompiler(this.base);
+		compiler.compileFuncDecl(node);
+		return empty;
+	}
+
 	public Object evalExpression(TypedTree node) {
 		return eval(node.get(0));
 	}
@@ -188,12 +194,6 @@ public class Interpreter extends TreeVisitor implements CommonSymbols {
 		String name = node.getText(_left, null);
 		this.globalVariables.put(name, right);
 		return right;
-	}
-
-	public Object evalFuncDecl(TypedTree node) {
-		ScriptCompiler compiler = new ScriptCompiler(this.base);
-		compiler.compileFuncDecl(node);
-		return empty;
 	}
 
 	public Object evalApply(TypedTree node) {
