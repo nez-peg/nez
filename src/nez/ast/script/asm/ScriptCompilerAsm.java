@@ -14,6 +14,7 @@ import nez.ast.script.TypedTree;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import org.objectweb.asm.commons.GeneratorAdapter;
 
 public class ScriptCompilerAsm implements CommonSymbols {
 	// private Map<String, Class<?>> generatedClassMap = new HashMap<String,
@@ -148,7 +149,7 @@ public class ScriptCompilerAsm implements CommonSymbols {
 		Label elseLabel = this.mBuilder.newLabel();
 		Label mergeLabel = this.mBuilder.newLabel();
 
-		this.mBuilder.ifCmp(Type.BOOLEAN_TYPE, this.mBuilder.NE, elseLabel);
+		this.mBuilder.ifCmp(Type.BOOLEAN_TYPE, GeneratorAdapter.NE, elseLabel);
 
 		// then
 		visit(node.get(_then));

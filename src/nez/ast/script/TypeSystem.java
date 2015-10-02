@@ -1,5 +1,6 @@
 package nez.ast.script;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
@@ -216,7 +217,7 @@ public class TypeSystem implements CommonSymbols {
 	public Method resolveObjectMethod(Class<?> c, String name, Type[] types, UList<Method> buf, TypedTree params) {
 		int start = buf != null ? buf.size() : 0;
 		while (c != null) {
-			Method m = this.matchMethod(c, true, name, types, buf);
+			Method m = this.matchMethod(c, false, name, types, buf);
 			if (m != null) {
 				return m;
 			}
@@ -458,11 +459,15 @@ public class TypeSystem implements CommonSymbols {
 	public static BinaryTypeUnifier UnifyComparator = new TComparator();
 	public static BinaryTypeUnifier UnifyBitwise = new Bitwise();
 
+	protected Method DynamicGetter = null;
+	protected Method DynamicSetter = null;
 	protected Method StaticErrorMethod = null;
 	protected Method InterpolationMethod = null;
 
 	void initMethod() {
 		try {
+			this.DynamicGetter = this.getClass().getMethod("getDynamicField", Object.class, String.class);
+			this.DynamicSetter = this.getClass().getMethod("setDynamicField", Object.class, String.class, Object.class);
 			this.StaticErrorMethod = this.getClass().getMethod("throwStaticError", String.class);
 			this.InterpolationMethod = this.getClass().getMethod("joinString", Object[].class);
 		} catch (NoSuchMethodException e) {
@@ -470,6 +475,45 @@ public class TypeSystem implements CommonSymbols {
 		} catch (SecurityException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public final static Object getDynamicField(Object o, String name) {
+		try {
+			Field f = o.getClass().getField(name);
+			return f.get(o);
+		} catch (NoSuchFieldException e) {
+			e.printStackTrace();
+		} catch (IllegalArgumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SecurityException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		throw new ScriptRuntimeException("undefined field: %s of %s", name, o.getClass().getSimpleName());
+	}
+
+	public final static void setDynamicField(Object o, String name, Object v) {
+		try {
+			Field f = o.getClass().getField(name);
+			f.set(o, v);
+			return;
+		} catch (NoSuchFieldException e) {
+			e.printStackTrace();
+		} catch (IllegalArgumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SecurityException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		throw new ScriptRuntimeException("undefined field: %s of %s", name, o.getClass().getSimpleName());
 	}
 
 	public final static String throwStaticError(String msg) {
@@ -505,6 +549,26 @@ public class TypeSystem implements CommonSymbols {
 			return (Class<?>) type;
 		}
 		return ((GenericType) type).base;
+	}
+
+	public Field getField(Class<?> c, String name) {
+		try {
+			Field f = c.getField(name);
+			if (Modifier.isPublic(f.getModifiers())) {
+				return f;
+			}
+		} catch (NoSuchFieldException e) {
+		} catch (SecurityException e) {
+		}
+		return null;
+	}
+
+	public boolean isDynamic(Class<?> c) {
+		return c == Object.class;
+	}
+
+	public Type dynamicType() {
+		return Object.class;
 	}
 
 }

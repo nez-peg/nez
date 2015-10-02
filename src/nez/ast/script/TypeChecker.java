@@ -1,5 +1,6 @@
 package nez.ast.script;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
@@ -270,6 +271,21 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 			args[i] = type(node.get(i));
 		}
 		return args;
+	}
+
+	public Type typeField(TypedTree node) {
+		Class<?> c = TypeSystem.toClass(type(node.get(_recv)));
+		String name = node.getText(_name, "");
+		Field f = typeSystem.getField(c, name);
+		if (f != null) {
+			node.setValue(f);
+			return f.getType();
+		}
+		if (typeSystem.isDynamic(c)) {
+			node.setMethod(true, typeSystem.DynamicGetter);
+			return typeSystem.dynamicType();
+		}
+		throw new TypeCheckerException(typeSystem, node, "undefined field %s of %s", name, typeSystem.name(c));
 	}
 
 	public Type typeApply(TypedTree node) {
