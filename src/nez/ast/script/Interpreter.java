@@ -101,66 +101,6 @@ public class Interpreter extends TreeVisitor implements CommonSymbols {
 		return v;
 	}
 
-	// public Object evalAdd(TypedTree node) {
-	// Object left = eval(node.get(_left));
-	// Object right = eval(node.get(_right));
-	// return evalOperator(node, "opAdd", left, right);
-	// }
-	//
-	// public Object evalSub(TypedTree node) {
-	// Object left = eval(node.get(_left));
-	// Object right = eval(node.get(_right));
-	// return evalOperator(node, "opSub", left, right);
-	// }
-	//
-	// public Object evalMul(TypedTree node) {
-	// Object left = eval(node.get(_left));
-	// Object right = eval(node.get(_right));
-	// return evalOperator(node, "opMul", left, right);
-	// }
-	//
-	// public Object evalDiv(TypedTree node) {
-	// Object left = eval(node.get(_left));
-	// Object right = eval(node.get(_right));
-	// return evalOperator(node, "opDiv", left, right);
-	// }
-	//
-	// public Object evalEquals(TypedTree node) {
-	// Object left = eval(node.get(_left));
-	// Object right = eval(node.get(_right));
-	// return evalOperator(node, "opEquals", left, right);
-	// }
-	//
-	// public Object evalNotEquals(TypedTree node) {
-	// Object left = eval(node.get(_left));
-	// Object right = eval(node.get(_right));
-	// return evalOperator(node, "opNotEquals", left, right);
-	// }
-	//
-	// public Object evalLessThan(TypedTree node) {
-	// Object left = eval(node.get(_left));
-	// Object right = eval(node.get(_right));
-	// return evalOperator(node, "opLessThan", left, right);
-	// }
-	//
-	// public Object evalGreaterThan(TypedTree node) {
-	// Object left = eval(node.get(_left));
-	// Object right = eval(node.get(_right));
-	// return evalOperator(node, "opGreaterThan", left, right);
-	// }
-	//
-	// public Object evalLessThanEquals(TypedTree node) {
-	// Object left = eval(node.get(_left));
-	// Object right = eval(node.get(_right));
-	// return evalOperator(node, "opLessThanEquals", left, right);
-	// }
-	//
-	// public Object evalGreaterThanEquals(TypedTree node) {
-	// Object left = eval(node.get(_left));
-	// Object right = eval(node.get(_right));
-	// return evalOperator(node, "opGreaterThanEquals", left, right);
-	// }
-
 	public Object evalName(TypedTree node) {
 		String name = node.toText();
 		if (!this.globalVariables.containsKey(name)) {
@@ -179,7 +119,7 @@ public class Interpreter extends TreeVisitor implements CommonSymbols {
 	public Object evalApply(TypedTree node) {
 		String name = node.getText(_name, null);
 		Object[] args = (Object[]) eval(node.get(_param));
-		return evalFunction(node, name, args);
+		return this.invokeStaticMethod(node.getMethod(), args);
 	}
 
 	public Object evalList(TypedTree node) {
@@ -221,27 +161,6 @@ public class Interpreter extends TreeVisitor implements CommonSymbols {
 	//
 	Class<?> typeof(Object o) {
 		return o == null ? null : o.getClass();
-	}
-
-	Object evalOperator(TypedTree node, String name, Object a1, Object a2) {
-		Method m = base.findCompiledMethod(name, typeof(a1), typeof(a2));
-		if (m == null) {
-			// perror(node, "undefined operator: %s %s", typeof(a1),
-			// typeof(a2));
-		}
-		return this.invokeMethod(m, null, a1, a2);
-	}
-
-	Object evalFunction(TypedTree node, String name, Object... args) {
-		Class<?>[] classArray = new Class<?>[args.length];
-		for (int i = 0; i < args.length; i++) {
-			classArray[i] = typeof(args[i]);
-		}
-		Method m = base.findCompiledMethod(name, classArray);
-		if (m == null) {
-			// perror(node, "undefined function: %s", name);
-		}
-		return this.invokeMethod(m, null, args);
 	}
 
 }

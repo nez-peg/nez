@@ -4,6 +4,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.HashMap;
 
 import nez.ast.Tree;
@@ -122,6 +123,111 @@ public class TypeSystem implements CommonSymbols {
 		}
 	}
 
+	// find method
+
+	public Method matchMethod(Class<?> c, boolean isStaticOnly, String name, Type[] types, UList<Method> buf) {
+		for (Method m : c.getMethods()) {
+			if (isStaticOnly && !this.isStatic(m)) {
+				continue;
+			}
+			if (!name.equals(m.getName())) {
+				continue;
+			}
+			Class<?>[] p = m.getParameterTypes();
+			if (p.length != types.length) {
+				continue;
+			}
+			if (this.acceptParameters(p, types)) {
+				return m;
+			}
+			if (buf != null) {
+				buf.add(m);
+			}
+		}
+		return null;
+	}
+
+	private boolean acceptParameters(Class<?>[] p, Type[] types) {
+		for (int j = 0; j < types.length; j++) {
+			if (!accept(false, p[j], types[j])) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private Method tryTypeEnforcement(int start, UList<Method> buf, TypedTree params) {
+		if (buf != null && start < buf.size()) {
+			TypedTree[] a = new TypedTree[params.size()];
+			for (int j = start; j < buf.size(); j++) {
+				Method m = buf.ArrayValues[j];
+				Arrays.fill(a, null);
+				Class<?>[] p = m.getParameterTypes();
+				if (this.checkTypeEnforce(a, p, params)) {
+					for (int i = 0; i < a.length; i++) {
+						params.set(i, a[i]);
+					}
+					buf.clear(start);
+					return m;
+				}
+			}
+		}
+		return null;
+	}
+
+	private boolean checkTypeEnforce(TypedTree[] a, Class<?>[] p, TypedTree params) {
+		for (int i = 0; i < p.length; i++) {
+			TypedTree sub = params.get(i);
+			a[i] = this.checkTypeEnforce(p[i], sub);
+			if (a[i] == null) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/* static method */
+
+	public Method resolveStaticMethod(Class<?> c, String name, Type[] types, UList<Method> buf, TypedTree params) {
+		int start = buf != null ? buf.size() : 0;
+		Method m = matchMethod(c, true/* StaticOnly */, name, types, buf);
+		if (m != null) {
+			return m;
+		}
+		return this.tryTypeEnforcement(start, buf, params);
+	}
+
+	// function, operator
+
+	public Method resolveFunctionMethod(String name, Type[] types, UList<Method> buf, TypedTree params) {
+		int start = buf != null ? buf.size() : 0;
+		for (int i = classList.size() - 1; i >= 0; i--) {
+			Class<?> c = classList.ArrayValues[i];
+			Method m = this.matchMethod(c, true, name, types, buf);
+			if (m != null) {
+				return m;
+			}
+		}
+		return this.tryTypeEnforcement(start, buf, params);
+	}
+
+	// object method
+
+	public Method resolveObjectMethod(Class<?> c, String name, Type[] types, UList<Method> buf, TypedTree params) {
+		int start = buf != null ? buf.size() : 0;
+		while (c != null) {
+			Method m = this.matchMethod(c, true, name, types, buf);
+			if (m != null) {
+				return m;
+			}
+			if (c == Object.class) {
+				break;
+			}
+			c = c.getSuperclass();
+		}
+		return this.tryTypeEnforcement(start, buf, params);
+	}
+
 	// type check
 
 	public String pwarn(TypedTree node, String msg) {
@@ -146,6 +252,21 @@ public class TypeSystem implements CommonSymbols {
 
 	public String name(Type t) {
 		return t == null ? "untyped" : t.toString();
+	}
+
+	public TypedTree checkTypeEnforce(Class<?> vt, TypedTree node) {
+		Class<?> et = node.getClassType();
+		if (accept(false, vt, et)) {
+			return node;
+		}
+		Method m = this.getCastMethod(vt, et);
+		if (m != null) {
+			TypedTree newnode = node.newInstance(_Cast, 1, null);
+			newnode.set(0, _expr, node);
+			newnode.setMethod(true, m);
+			return newnode;
+		}
+		return null;
 	}
 
 	public TypedTree enforceType(Type req, TypedTree node) {
@@ -187,54 +308,6 @@ public class TypeSystem implements CommonSymbols {
 
 	public void addBaseClass(String path) throws ClassNotFoundException {
 		addBaseClass(Class.forName(path));
-	}
-
-	public Method findDefaultMethod(Class<?> c, String name, int paramsize) {
-		for (Method m : c.getMethods()) {
-			if (name.equals(m.getName()) && m.getParameterTypes().length == paramsize) {
-				return m;
-			}
-		}
-		return null;
-	}
-
-	public Method findDefaultMethod(String name, int paramsize) {
-		for (int i = 0; i < classList.size(); i++) {
-			Class<?> c = classList.ArrayValues[i];
-			for (Method m : c.getMethods()) {
-				if (name.equals(m.getName()) && m.getParameterTypes().length == paramsize) {
-					return m;
-				}
-			}
-		}
-		return null;
-	}
-
-	public Method findCompiledMethod(Class<?> c, String name, Type... args) {
-		for (Method m : c.getMethods()) {
-			if (!name.equals(m.getName())) {
-				continue;
-			}
-			if (acceptArguments(true, m, args)) {
-				return m;
-			}
-		}
-		return null;
-	}
-
-	public Method findCompiledMethod(String name, Type... args) {
-		for (int i = classList.size() - 1; i >= 0; i--) {
-			Class<?> c = classList.ArrayValues[i];
-			for (Method m : c.getMethods()) {
-				if (!name.equals(m.getName())) {
-					continue;
-				}
-				if (acceptArguments(true, m, args)) {
-					return m;
-				}
-			}
-		}
-		return null;
 	}
 
 	boolean acceptArguments(boolean autoBoxing, Method m, Type... args) {

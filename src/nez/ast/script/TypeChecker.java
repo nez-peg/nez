@@ -7,6 +7,7 @@ import nez.ast.Symbol;
 import nez.ast.TreeVisitor;
 import nez.ast.script.TypeSystem.BinaryTypeUnifier;
 import nez.util.StringUtils;
+import nez.util.UList;
 
 public class TypeChecker extends TreeVisitor implements CommonSymbols {
 	ScriptContext context;
@@ -53,13 +54,6 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		if (unode != null) {
 			type(unode);
 			node.set(label, this.typeSystem.enforceType(req, unode));
-		}
-	}
-
-	public void makeCast(Type req, TypedTree node, Symbol label) {
-		TypedTree unode = node.get(label, null);
-		if (unode != null) {
-			node.set(label, this.typeSystem.makeCast(req, unode));
 		}
 	}
 
@@ -281,22 +275,114 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 	public Type typeApply(TypedTree node) {
 		String name = node.getText(_name, "");
 		TypedTree args = node.get(_param);
+		Type[] types = typeApplyArguments(args);
+		int start = this.bufferMethods.size();
+		Method m = this.typeSystem.resolveFunctionMethod(name, types, bufferMethods, args);
+		return this.resolvedMethod(node, false, m, start, "funciton: %s", name);
+	}
+
+	private Type[] typeApplyArguments(TypedTree args) {
 		Type[] types = new Type[args.size()];
 		for (int i = 0; i < args.size(); i++) {
-			types[i] = type(node.get(i));
+			types[i] = type(args.get(i));
 		}
-		return this.resolveStaticMethod("function", node, name, args, types);
+		return types;
+	}
+
+	UList<Method> bufferMethods = new UList<Method>(new Method[128]);
+
+	private String methods(UList<Method> bufferMethods, int start) {
+		StringBuilder sb = new StringBuilder();
+		for (int i = start; i < bufferMethods.size(); i++) {
+			sb.append(" ");
+			sb.append(bufferMethods.ArrayValues[i]);
+		}
+		bufferMethods.clear(start);
+		return sb.toString();
+	}
+
+	private Type resolvedMethod(TypedTree node, boolean isStaticNormalMethod, Method m, int start, String fmt, Object... args) {
+		if (m != null) {
+			node.setMethod(true, m);
+			return m.getReturnType();
+		}
+		String msg = String.format(fmt, args);
+		if (this.bufferMethods.size() > start) {
+			msg = "mismatched " + msg + methods(bufferMethods, start);
+		} else {
+			msg = "undefined " + msg;
+		}
+		throw new TypeCheckerException(this.typeSystem, node, msg);
 	}
 
 	public Type typeMethodApply(TypedTree node) {
-		Type recv = type(node.get(_recv));
+		if (isStaticMethodApply(node)) {
+			return this.typeStaticMethodApply(node);
+		}
+		Class<?> c = TypeSystem.toClass(type(node.get(_recv)));
 		String name = node.getText(_name, "");
 		TypedTree args = node.get(_param);
-		Type[] types = new Type[args.size()];
-		for (int i = 0; i < args.size(); i++) {
-			types[i] = type(node.get(i));
+		Type[] types = this.typeApplyArguments(args);
+		int start = this.bufferMethods.size();
+		Method m = this.typeSystem.resolveObjectMethod(c, name, types, bufferMethods, args);
+		return this.resolvedMethod(node, false, m, start, "method %s of %s", name, typeSystem.name(c));
+	}
+
+	private boolean isStaticMethodApply(TypedTree node) {
+		if (node.get(_recv).is(_Name)) {
+			Type t = this.typeSystem.resolveType(node.get(_recv), null);
+			return t != null;
 		}
-		return this.resolveMethod("method", node, recv, name, args, types);
+		return false;
+	}
+
+	public Type typeStaticMethodApply(TypedTree node) {
+		Class<?> c = TypeSystem.toClass(this.typeSystem.resolveType(node.get(_recv), null));
+		String name = node.getText(_name, "");
+		TypedTree args = node.get(_param);
+		Type[] types = this.typeApplyArguments(args);
+		int start = this.bufferMethods.size();
+		Method m = this.typeSystem.resolveStaticMethod(c, name, types, bufferMethods, args);
+		return this.resolvedMethod(node, true, m, start, "static method %s of %s", name, typeSystem.name(c));
+	}
+
+	private Type typeUnary(TypedTree node, String name) {
+		Type left = type(node.get(_expr));
+		Type common = typeSystem.PrimitiveType(left);
+		if (left != common) {
+			left = this.tryPrecast(common, node, _expr);
+		}
+		Type[] types = new Type[] { left };
+		int start = this.bufferMethods.size();
+		Method m = this.typeSystem.resolveFunctionMethod(name, types, bufferMethods, node);
+		return this.resolvedMethod(node, true, m, start, "operator %s", OperatorNames.name(name));
+	}
+
+	private Type typeBinary(TypedTree node, String name, BinaryTypeUnifier unifier) {
+		Type left = type(node.get(_left));
+		Type right = type(node.get(_right));
+		Type common = unifier.unify(typeSystem.PrimitiveType(left), typeSystem.PrimitiveType(right));
+		if (left != common) {
+			left = this.tryPrecast(common, node, _left);
+		}
+		if (right != common) {
+			right = this.tryPrecast(common, node, _right);
+		}
+
+		Type[] types = new Type[] { left, right };
+		int start = this.bufferMethods.size();
+		Method m = this.typeSystem.resolveFunctionMethod(name, types, bufferMethods, node);
+		return this.resolvedMethod(node, true, m, start, "operator %s", OperatorNames.name(name));
+	}
+
+	private Type tryPrecast(Type req, TypedTree node, Symbol label) {
+		TypedTree unode = node.get(label);
+		TypedTree cnode = this.typeSystem.makeCast(req, unode);
+		if (unode == cnode) {
+			return node.getType();
+		}
+		node.set(label, cnode);
+		return req;
 	}
 
 	public Type typeAnd(TypedTree node) {
@@ -316,19 +402,6 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		return boolean.class;
 	}
 
-	private Type typeBinary(TypedTree node, String name, BinaryTypeUnifier unifier) {
-		Type left = type(node.get(_left));
-		Type right = type(node.get(_right));
-		Type common = unifier.unify(typeSystem.PrimitiveType(left), typeSystem.PrimitiveType(right));
-		if (left != common) {
-			this.makeCast(common, node, _left);
-		}
-		if (right != common) {
-			this.makeCast(common, node, _right);
-		}
-		return this.resolveStaticMethod("operator", node, name, node, common, common);
-	}
-
 	public Type typeAdd(TypedTree node) {
 		return typeBinary(node, "opAdd", TypeSystem.UnifyAdditive);
 	}
@@ -346,13 +419,11 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 	}
 
 	public Type typePlus(TypedTree node) {
-		Type t = type(node.get(_expr));
-		return this.resolveStaticMethod("operator", node, "opPlus", node, t);
+		return this.typeUnary(node, "opPlus");
 	}
 
 	public Type typeMinus(TypedTree node) {
-		Type t = type(node.get(_expr));
-		return this.resolveStaticMethod("operator", node, "opMinus", node, t);
+		return this.typeUnary(node, "opMinus");
 	}
 
 	public Type typeEquals(TypedTree node) {
@@ -392,8 +463,7 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 	}
 
 	public Type typeCompl(TypedTree node) {
-		Type t = type(node.get(_expr));
-		return this.resolveStaticMethod("operator", node, "opCompl", node, t);
+		return this.typeUnary(node, "opCompl");
 	}
 
 	public Type typeNull(TypedTree node) {
@@ -473,51 +543,6 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		}
 		node.setMethod(true, this.typeSystem.InterpolationMethod);
 		return String.class;
-	}
-
-	// Utilities
-
-	private Type resolveStaticMethod(String method, TypedTree node, String name, TypedTree argsNode, Type... args) {
-		Method m = typeSystem.findCompiledMethod(name, args);
-		if (m == null && argsNode instanceof TypedTree) {
-			TypedTree typedNode = argsNode;
-			m = typeSystem.findDefaultMethod(name, args.length);
-			if (m != null) {
-				Type[] p = m.getParameterTypes();
-				for (int i = 0; i < p.length; i++) {
-					typedNode.set(i, typeSystem.enforceType(p[i], typedNode.get(i)));
-				}
-			}
-		}
-		if (m == null) {
-			perror(node, "undefined %s: %s", method, name);
-			return null;
-		}
-		node.setMethod(true, m);
-		return m.getReturnType();
-	}
-
-	private Type resolveMethod(String method, TypedTree node, Type recv, String name, TypedTree argsNode, Type... args) {
-		Method m = typeSystem.findCompiledMethod(TypeSystem.toClass(recv), name, args);
-		if (m == null && argsNode instanceof TypedTree) {
-			TypedTree typedNode = argsNode;
-			m = typeSystem.findDefaultMethod(TypeSystem.toClass(recv), name, args.length);
-			if (m != null) {
-				Type[] p = m.getParameterTypes();
-				for (int i = 0; i < p.length; i++) {
-					typedNode.set(i, typeSystem.enforceType(p[i], typedNode.get(i)));
-				}
-			}
-		}
-		if (m == null) {
-			perror(node, "undefined %s: %s", method, name);
-			return null;
-		}
-		node.setMethod(false, m);
-		if (recv instanceof GenericType) {
-			return ((GenericType) recv).resolve(m.getGenericReturnType());
-		}
-		return m.getReturnType();
 	}
 
 	private void perror(TypedTree node, String msg) {
