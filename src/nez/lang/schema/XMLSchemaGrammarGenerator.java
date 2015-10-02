@@ -1,6 +1,12 @@
 package nez.lang.schema;
 
+import nez.lang.GrammarFile;
+
 public class XMLSchemaGrammarGenerator extends SchemaGrammarGenerator {
+
+	public XMLSchemaGrammarGenerator(GrammarFile gfile) {
+		super(gfile);
+	}
 
 	@Override
 	public void loadPredefinedRules() {

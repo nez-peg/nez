@@ -9,7 +9,7 @@ import nez.lang.expr.ExpressionCommons;
 public class JSONSchemaGrammarGenerator extends SchemaGrammarGenerator {
 
 	public JSONSchemaGrammarGenerator(GrammarFile gfile) {
-		this.gfile = gfile;
+		super(gfile);
 	}
 
 	@Override

@@ -15,6 +15,10 @@ public abstract class SchemaGrammarGenerator extends AbstractSchemaGrammarGenera
 	private List<String> membersList;
 	private int tableCounter = 0;
 
+	public SchemaGrammarGenerator(GrammarFile gfile) {
+		this.gfile = gfile;
+	}
+
 	public void addRequired(String name) {
 		this.requiredList.add(name);
 		this.membersList.add(name);
