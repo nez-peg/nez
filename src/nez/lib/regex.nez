@@ -33,7 +33,7 @@ Predicate
 
 PositionAnchor
 	= { '^' @Concatenation #StartOfString }
-	= { @Concatenation '$' #EndOfString }
+	/ { @Concatenation '$' #EndOfString }
 	/ SuffixTerminal
 
 SuffixTerminal
