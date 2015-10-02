@@ -43,7 +43,8 @@ public class ScriptCompilerAsm implements CommonSymbols {
 	}
 
 	HashMap<String, Method> methodMap = new HashMap<String, Method>();
-	private VarEntry var;
+
+	// private VarEntry var;
 
 	public final void visit(TypedTree node) {
 		Method m = lookupMethod("visit", node.getTag().getSymbol());
@@ -136,7 +137,9 @@ public class ScriptCompilerAsm implements CommonSymbols {
 		for (int i = 0; i < args.length; i++) {
 			args[i] = typeof(argsNode.get(i));
 		}
-		Method function = typeSystem.findCompiledMethod(name, args);
+		// Method function = typeSystem.findCompiledMethod(name, args);
+		Method function = node.getMethod();
+		// FIXME
 		this.mBuilder.callStaticMethod(function.getDeclaringClass(), function.getReturnType(), function.getName(), args);
 	}
 

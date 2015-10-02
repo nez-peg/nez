@@ -12,12 +12,14 @@ public class Interpreter extends TreeVisitor implements CommonSymbols {
 	ScriptContext context;
 	TypeSystem base;
 	HashMap<String, Object> globalVariables;
+	private ScriptCompiler compiler;
 
 	public Interpreter(ScriptContext sc, TypeSystem base) {
 		super(TypedTree.class);
 		this.context = sc;
 		this.base = base;
 		this.globalVariables = new HashMap<>();
+		this.compiler = new ScriptCompiler(this.base);
 	}
 
 	private static EmptyResult empty = new EmptyResult();
@@ -33,9 +35,10 @@ public class Interpreter extends TreeVisitor implements CommonSymbols {
 	}
 
 	private Object evalStaticNormalMethod(TypedTree node) {
-		Object[] args = new Object[node.size()];
+		TypedTree argsNode = node.get(_param);
+		Object[] args = new Object[argsNode.size()];
 		for (int i = 0; i < args.length; i++) {
-			args[i] = eval(node.get(i));
+			args[i] = eval(argsNode.get(i));
 		}
 		return invokeStaticMethod(node.getMethod(), args);
 	}
@@ -54,7 +57,12 @@ public class Interpreter extends TreeVisitor implements CommonSymbols {
 			// e.printStackTrace();
 		} catch (InvocationTargetException e) {
 			e.getTargetException();
-			throw (RuntimeException) e.getTargetException();
+			Throwable cause = e.getTargetException();
+			if (cause instanceof RuntimeException) {
+				throw (RuntimeException) cause;
+			} else {
+				throw new RuntimeException(cause);
+			}
 		}
 		return null;
 	}
@@ -76,8 +84,7 @@ public class Interpreter extends TreeVisitor implements CommonSymbols {
 	/* TopLevel */
 
 	public Object evalFuncDecl(TypedTree node) {
-		ScriptCompiler compiler = new ScriptCompiler(this.base);
-		compiler.compileFuncDecl(node);
+		this.compiler.compileFuncDecl(node);
 		return empty;
 	}
 
