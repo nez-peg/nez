@@ -262,7 +262,7 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 	}
 
 	public Expression toTerminator(Tree<?> e) {
-		return ExpressionCommons.newPnot(null, ExpressionCommons.newCany(null, false));
+		return _LineTerminator();
 	}
 
 	public Expression toAnd(Tree<?> e, Expression k) {
@@ -302,4 +302,8 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 		return ExpressionCommons.newPsequence(null, l);
 	}
 
+	private final Expression _LineTerminator() {
+		Expression l[] = { ExpressionCommons.newCbyte(null, false, '\n'), ExpressionCommons.newCbyte(null, false, '\r'), ExpressionCommons.newString(null, "\r\n"), };
+		return ExpressionCommons.newPchoice(null, new UList<>(l));
+	}
 }
