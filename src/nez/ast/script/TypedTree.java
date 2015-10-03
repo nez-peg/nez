@@ -1,5 +1,6 @@
 package nez.ast.script;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
@@ -8,9 +9,9 @@ import nez.ast.Symbol;
 import nez.ast.Tree;
 
 public class TypedTree extends Tree<TypedTree> {
+	public Hint hint = Hint.Unique;
 	Type type;
 	Method resolvedMethod;
-	boolean isStaticNormalMethod;
 
 	TypedTree() {
 		super();
@@ -37,7 +38,7 @@ public class TypedTree extends Tree<TypedTree> {
 
 	public TypedTree newStringConst(String s) {
 		TypedTree t = new TypedTree(CommonSymbols._String, this.getSource(), this.getSourcePosition(), 0, 0, s);
-		t.setType(String.class);
+		t.setConst(String.class, s);
 		return t;
 	}
 
@@ -64,13 +65,38 @@ public class TypedTree extends Tree<TypedTree> {
 		this.type = type;
 	}
 
-	public final Method getMethod() {
-		return this.resolvedMethod;
+	public Type setConst(Type type, Object value) {
+		this.hint = Hint.Constant;
+		this.setValue(value);
+		this.type = type;
+		return this.type;
 	}
 
-	public void setMethod(boolean isStaticNormalMethod, Method m) {
-		this.isStaticNormalMethod = isStaticNormalMethod;
-		this.resolvedMethod = m;
+	public void setClass(Hint hint, Class<?> c) {
+		this.hint = hint;
+		this.setValue(c);
+	}
+
+	public Type setMethod(Hint hint, Method m) {
+		this.hint = hint;
+		this.setValue(m);
+		this.type = m.getReturnType();
+		return this.type;
+	}
+
+	public final Method getMethod() {
+		return (Method) this.getValue();
+	}
+
+	public final Field getField() {
+		return (Field) this.getValue();
+	}
+
+	public Type setField(Hint hint, Field f) {
+		this.hint = hint;
+		this.setValue(f);
+		this.type = f.getType();
+		return this.type;
 	}
 
 	@Override
@@ -84,6 +110,10 @@ public class TypedTree extends Tree<TypedTree> {
 
 	public void done() {
 		this.setTag(CommonSymbols._Empty);
+	}
+
+	public Hint hint() {
+		return this.hint;
 	}
 
 }

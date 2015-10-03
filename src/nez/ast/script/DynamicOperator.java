@@ -29,4 +29,28 @@ public class DynamicOperator {
 		return x != y;
 	}
 
+	public final static Object to_Object(byte a) {
+		return a;
+	}
+
+	public final static Object to_Object(short a) {
+		return (int) a;
+	}
+
+	public final static Object to_Object(int a) {
+		return a;
+	}
+
+	public final static Object to_Object(long a) {
+		return a;
+	}
+
+	public final static Object to_Object(float a) {
+		return (double) a;
+	}
+
+	public final static Object to_Object(double a) {
+		return a;
+	}
+
 }

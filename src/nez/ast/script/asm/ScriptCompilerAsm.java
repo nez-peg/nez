@@ -1,13 +1,11 @@
 package nez.ast.script.asm;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.HashMap;
-
 import javax.lang.model.type.NullType;
 
+import nez.ast.TreeVisitor;
 import nez.ast.jcode.JCodeOperator;
 import nez.ast.script.CommonSymbols;
+import nez.ast.script.Hint;
 import nez.ast.script.TypeSystem;
 import nez.ast.script.TypedTree;
 
@@ -15,22 +13,77 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
+import org.objectweb.asm.commons.Method;
 
-public class ScriptCompilerAsm implements CommonSymbols {
-	// private Map<String, Class<?>> generatedClassMap = new HashMap<String,
-	// Class<?>>();
+public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 	private TypeSystem typeSystem;
 	private ScriptClassLoader cLoader;
 	private ClassBuilder cBuilder;
 	private MethodBuilder mBuilder;
 
-	// private Stack<MethodBuilder> mBuilderStack = new Stack<MethodBuilder>();
-
 	public ScriptCompilerAsm(TypeSystem typeSystem, ScriptClassLoader cLoader) {
+		super(TypedTree.class);
 		this.typeSystem = typeSystem;
 		this.cLoader = cLoader;
 
 	}
+
+	private void visit(TypedTree node) {
+		this.visit("visit", node);
+	}
+
+	private Class<?> typeof(TypedTree node) {
+		// node.getTypedClass();
+		return typeSystem.typeof(node);
+	}
+
+	private void TODO(String fmt, Object... args) {
+		System.err.println("TODO: " + String.format(fmt, args));
+	}
+
+	/* typechecker hints */
+
+	private void visitConstantHint(TypedTree node) {
+		assert (node.hint() == Hint.Constant);
+		Object v = node.getValue();
+		if (v instanceof String) {
+			this.mBuilder.push((String) v);
+		} else if (v instanceof Integer || v instanceof Character || v instanceof Byte) {
+			this.mBuilder.push(((Number) v).intValue());
+		} else if (v instanceof Double) {
+			this.mBuilder.push(((Double) v).doubleValue());
+		} else if (v instanceof Boolean) {
+			this.mBuilder.push(((Boolean) v).booleanValue());
+		} else if (v instanceof Long) {
+			this.mBuilder.push(((Long) v).longValue());
+		} else if (v instanceof Type) {
+			this.mBuilder.push((Type) v);
+		} else if (v == null) {
+			this.mBuilder.pushNull();
+		} else {
+			TODO("FIXME: Constant %s", v.getClass().getName());
+		}
+	}
+
+	private void visitStaticInvocationHint(TypedTree node) {
+		for (TypedTree sub : node) {
+			visit(sub);
+		}
+		Type owner = Type.getType(node.getMethod().getDeclaringClass());
+		Method methodDesc = Method.getMethod(node.getMethod());
+		this.mBuilder.invokeStatic(owner, methodDesc);
+	}
+
+	private void visitApplyHint(TypedTree node) {
+		for (TypedTree sub : node.get(_param)) {
+			visit(sub);
+		}
+		Type owner = Type.getType(node.getMethod().getDeclaringClass());
+		Method methodDesc = Method.getMethod(node.getMethod());
+		this.mBuilder.invokeStatic(owner, methodDesc);
+	}
+
+	/* class */
 
 	public void openClass(String name) {
 		this.cBuilder = new ClassBuilder("nez/ast/script/" + name, null, null, null);
@@ -43,51 +96,12 @@ public class ScriptCompilerAsm implements CommonSymbols {
 		return c;
 	}
 
-	HashMap<String, Method> methodMap = new HashMap<String, Method>();
-	private VarEntry var;
-
-	public final void visit(TypedTree node) {
-		Method m = lookupMethod("visit", node.getTag().getSymbol());
-		if (m != null) {
-			try {
-				m.invoke(this, node);
-			} catch (IllegalAccessException e) {
-				e.printStackTrace();
-			} catch (IllegalArgumentException e) {
-				e.printStackTrace();
-			} catch (InvocationTargetException e) {
-				e.printStackTrace();
-			}
-		} else {
-			visitUndefined(node);
-		}
-	}
-
-	protected final Method lookupMethod(String method, String tagName) {
-		Method m = this.methodMap.get(tagName);
-		if (m == null) {
-			String name = method + tagName;
-			try {
-				m = this.getClass().getMethod(name, TypedTree.class);
-			} catch (NoSuchMethodException e) {
-				return null;
-			} catch (SecurityException e) {
-				return null;
-			}
-			this.methodMap.put(tagName, m);
-		}
-		return m;
-	}
+	/* static function */
 
 	public Class<?> compileFuncDecl(String className, TypedTree node) {
 		this.openClass(className);
 		this.visitFuncDecl(node);
 		return this.closeClass();
-	}
-
-	private Class<?> typeof(TypedTree node) {
-		// node.getTypedClass();
-		return typeSystem.typeof(node);
 	}
 
 	public void visitFuncDecl(TypedTree node) {
@@ -137,8 +151,8 @@ public class ScriptCompilerAsm implements CommonSymbols {
 		for (int i = 0; i < args.length; i++) {
 			args[i] = typeof(argsNode.get(i));
 		}
-		Method function = node.getMethod(); // typeSystem.findCompiledMethod(name,
-											// args);
+		java.lang.reflect.Method function = node.getMethod(); // typeSystem.findCompiledMethod(name,
+		// args);
 		this.mBuilder.callStaticMethod(function.getDeclaringClass(), function.getReturnType(), function.getName(), args);
 	}
 
@@ -213,7 +227,7 @@ public class ScriptCompilerAsm implements CommonSymbols {
 		this.mBuilder.mark(condLabel);
 		visit(node.get(_cond));
 		this.mBuilder.push(true);
-		this.mBuilder.ifCmp(Type.BOOLEAN_TYPE, this.mBuilder.EQ, beginLabel);
+		this.mBuilder.ifCmp(Type.BOOLEAN_TYPE, MethodBuilder.EQ, beginLabel);
 	}
 
 	public void visitAssign(TypedTree node) {
@@ -228,13 +242,13 @@ public class ScriptCompilerAsm implements CommonSymbols {
 		}
 	}
 
-	public void visitExpression(TypedTree node) {
-		this.visit(node.get(0));
-	}
-
 	public void visitReturn(TypedTree node) {
 		this.visit(node.get(_expr));
 		this.mBuilder.returnValue();
+	}
+
+	public void visitExpression(TypedTree node) {
+		this.visit(node.get(0));
 	}
 
 	public void visitName(TypedTree node) {

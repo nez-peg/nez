@@ -8,25 +8,28 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import konoha.Function;
 import nez.ast.Tree;
+import nez.ast.script.asm.ScriptCompiler;
 import nez.util.UList;
 import nez.util.UMap;
 
 public class TypeSystem implements CommonSymbols {
 	ScriptContext context;
-	HashMap<String, Type> nameMap = new HashMap<>();
-	UList<Class<?>> classList = new UList<Class<?>>(new Class<?>[4]);
+	ScriptCompiler compl;
 
-	public TypeSystem(ScriptContext context) {
+	public TypeSystem(ScriptContext context, ScriptCompiler compl) {
 		this.context = context;
+		this.compl = compl;
 		init();
 		initMethod();
+		initDebug();
 	}
 
 	void init() {
-		addBaseClass(DynamicOperator.class);
-		addBaseClass(StaticOperator.class);
-		addBaseClass(StringOperator.class);
+		loadStaticFunctionClass(DynamicOperator.class, false);
+		loadStaticFunctionClass(StaticOperator.class, false);
+		loadStaticFunctionClass(StringOperator.class, false);
 		this.setType("void", void.class);
 		this.setType("boolean", boolean.class);
 		this.setType("byte", byte.class);
@@ -36,10 +39,26 @@ public class TypeSystem implements CommonSymbols {
 		this.setType("String", String.class);
 		this.setType("Array", UList.class);
 		this.setType("Dict", UMap.class);
+		this.setType("Func", Function.class);
+
 	}
 
+	void initDebug() {
+		this.setType("Math", Math.class);
+		this.setType("System", System.class);
+		this.addGlobalVariable(int.class, "a", nez.ast.script.stub.G_a.class);
+		this.addGlobalVariable(int.class, "b", nez.ast.script.stub.G_b.class);
+		this.addGlobalVariable(Function.class, "f", nez.ast.script.stub.G_f.class);
+		this.addGlobalVariable(Function.class, "g", nez.ast.script.stub.G_g.class);
+		this.addGlobalVariable(String.class, "s", nez.ast.script.stub.G_s.class);
+	}
+
+	/* Types */
+
+	HashMap<String, Type> TypeNames = new HashMap<>();
+
 	public void setType(String name, Type type) {
-		this.nameMap.put(name, type);
+		this.TypeNames.put(name, type);
 	}
 
 	public final Type resolveType(Tree<?> node, Type deftype) {
@@ -47,7 +66,7 @@ public class TypeSystem implements CommonSymbols {
 			return deftype;
 		}
 		if (node.size() == 0) {
-			Type t = this.nameMap.get(node.toText());
+			Type t = this.TypeNames.get(node.toText());
 			return t == null ? deftype : t;
 		}
 		if (node.is(_ArrayType)) {
@@ -56,19 +75,30 @@ public class TypeSystem implements CommonSymbols {
 		return deftype;
 	}
 
-	public boolean declGlobalVariable(String name, Type type) {
-		Type t = this.nameMap.get(name);
-		this.nameMap.put(name, type);
-		return true;
+	/* GlobalVariables */
+
+	HashMap<String, GlobalVariable> GlobalVariables = new HashMap<>();
+
+	public boolean hasGlobalVariable(String name) {
+		return this.GlobalVariables.containsKey(name);
 	}
 
-	public Type resolveGlobalVariableType(String name, Type deftype) {
-		Type t = this.nameMap.get(name);
-		return t == null ? deftype : t;
+	public void addGlobalVariable(Type type, String name, Class<?> varClass) {
+		GlobalVariable gv = new GlobalVariable(type, varClass);
+		this.GlobalVariables.put(name, gv);
 	}
+
+	public GlobalVariable getGlobalVariable(String name) {
+		return this.GlobalVariables.get(name);
+	}
+
+	// public Object setGlobalVariable(String name, Object v) {
+	// GlobalVariable gv = this.GlobalVariables.get(name);
+	// return gv.set(v);
+	// }
 
 	/* Method Map */
-
+	private UList<Method> StaticFunctionMethodList = new UList<Method>(new Method[256]);
 	private HashMap<String, Method> methodMap = new HashMap<String, Method>();
 
 	private Method getMethodMap(String key) {
@@ -84,10 +114,12 @@ public class TypeSystem implements CommonSymbols {
 	}
 
 	public void addCastMethod(Class<?> f, Class<?> t, Method m) {
+		// System.out.println("cast: " + cast_key(f, t) + " " + m);
 		this.setMethodMap(cast_key(f, t), m);
 	}
 
 	public Method getCastMethod(Class<?> f, Class<?> t) {
+		// System.out.println("cast: " + cast_key(f, t) + " ? ");
 		return this.getMethodMap(cast_key(f, t));
 	}
 
@@ -103,8 +135,8 @@ public class TypeSystem implements CommonSymbols {
 		return this.getMethodMap(convert_key(f, t));
 	}
 
-	public void addBaseClass(Class<?> c) {
-		classList.add(c);
+	public void loadStaticFunctionClass(Class<?> c, boolean isGenerated) {
+		// StaticFunctionMethodList.add(c);
 		for (Method m : c.getMethods()) {
 			if (isStatic(m)) {
 				String name = m.getName();
@@ -119,33 +151,50 @@ public class TypeSystem implements CommonSymbols {
 							addConvertMethod(f, t, m);
 						}
 					}
+					if (!isGenerated) {
+						continue;
+					}
 				}
+				this.StaticFunctionMethodList.add(m);
 			}
 		}
 	}
 
+	public void importStaticClass(String path) throws ClassNotFoundException {
+		Class<?> c = Class.forName(path);
+		loadStaticFunctionClass(c, false);
+		this.setType(c.getSimpleName(), c);
+	}
+
 	// find method
 
-	public Method matchMethod(Class<?> c, boolean isStaticOnly, String name, Type[] types, UList<Method> buf) {
+	private Method matchMethod(Class<?> c, boolean isStaticOnly, String name, Type[] types, UList<Method> buf) {
 		for (Method m : c.getMethods()) {
-			if (isStaticOnly && !this.isStatic(m)) {
-				continue;
-			}
-			if (!name.equals(m.getName())) {
-				continue;
-			}
-			Class<?>[] p = m.getParameterTypes();
-			if (p.length != types.length) {
-				continue;
-			}
-			if (this.acceptParameters(p, types)) {
+			if (matchMethod(m, isStaticOnly, name, types, buf)) {
 				return m;
-			}
-			if (buf != null) {
-				buf.add(m);
 			}
 		}
 		return null;
+	}
+
+	private boolean matchMethod(Method m, boolean isStaticOnly, String name, Type[] types, UList<Method> buf) {
+		if (isStaticOnly && !this.isStatic(m)) {
+			return false;
+		}
+		if (!name.equals(m.getName())) {
+			return false;
+		}
+		Class<?>[] p = m.getParameterTypes();
+		if (p.length != types.length) {
+			return false;
+		}
+		if (this.acceptParameters(p, types)) {
+			return true;
+		}
+		if (buf != null) {
+			buf.add(m);
+		}
+		return false;
 	}
 
 	private boolean acceptParameters(Class<?>[] p, Type[] types) {
@@ -202,10 +251,9 @@ public class TypeSystem implements CommonSymbols {
 
 	public Method resolveFunctionMethod(String name, Type[] types, UList<Method> buf, TypedTree params) {
 		int start = buf != null ? buf.size() : 0;
-		for (int i = classList.size() - 1; i >= 0; i--) {
-			Class<?> c = classList.ArrayValues[i];
-			Method m = this.matchMethod(c, true, name, types, buf);
-			if (m != null) {
+		for (int i = StaticFunctionMethodList.size() - 1; i >= 0; i--) {
+			Method m = StaticFunctionMethodList.ArrayValues[i];
+			if (this.matchMethod(m, true, name, types, buf)) {
 				return m;
 			}
 		}
@@ -231,6 +279,20 @@ public class TypeSystem implements CommonSymbols {
 
 	// type check
 
+	public TypedTree newError(Type req, TypedTree node, String fmt, Object... args) {
+		TypedTree newnode = node.newInstance(_StupidCast, 1, null);
+		String msg = node.formatSourceMessage("error", String.format(fmt, args));
+		newnode.set(0, _msg, node.newStringConst(msg));
+		context.log(msg);
+		newnode.setMethod(Hint.StaticInvocation, this.StaticErrorMethod);
+		node.setValue(null);
+		return newnode;
+	}
+
+	public String name(Type t) {
+		return t == null ? "untyped" : t.toString();
+	}
+
 	public String pwarn(TypedTree node, String msg) {
 		msg = node.formatSourceMessage("warning", msg);
 		context.log(msg);
@@ -241,30 +303,16 @@ public class TypeSystem implements CommonSymbols {
 		return pwarn(node, String.format(fmt, args));
 	}
 
-	public TypedTree newError(Type req, TypedTree node, String fmt, Object... args) {
-		TypedTree newnode = node.newInstance(_StupidCast, 1, null);
-		String msg = node.formatSourceMessage("error", String.format(fmt, args));
-		newnode.set(0, _msg, node.newStringConst(msg));
-		context.log(msg);
-		newnode.setMethod(true, this.StaticErrorMethod);
-		newnode.setType(req);
-		return newnode;
-	}
-
-	public String name(Type t) {
-		return t == null ? "untyped" : t.toString();
-	}
-
 	public TypedTree checkTypeEnforce(Class<?> vt, TypedTree node) {
 		Class<?> et = node.getClassType();
 		if (accept(false, vt, et)) {
 			return node;
 		}
-		Method m = this.getCastMethod(vt, et);
+		Method m = this.getCastMethod(et, vt);
 		if (m != null) {
 			TypedTree newnode = node.newInstance(_Cast, 1, null);
 			newnode.set(0, _expr, node);
-			newnode.setMethod(true, m);
+			newnode.setMethod(Hint.StaticInvocation, m);
 			return newnode;
 		}
 		return null;
@@ -276,19 +324,18 @@ public class TypeSystem implements CommonSymbols {
 		if (accept(false, vt, et)) {
 			return node;
 		}
-		Method m = this.getCastMethod(vt, et);
+		Method m = this.getCastMethod(et, vt);
 		if (m != null) {
 			TypedTree newnode = node.newInstance(_Cast, 1, null);
 			newnode.set(0, _expr, node);
-			newnode.setMethod(true, m);
-			newnode.setType(req);
+			newnode.setMethod(Hint.StaticInvocation, m);
 			return newnode;
 		}
 		if (et.isAssignableFrom(vt)) {
 			pwarn(node, "unexpected downcast: %s => %s", name(et), name(vt));
 			TypedTree newnode = node.newInstance(_DownCast, 1, null);
 			newnode.set(0, _expr, node);
-			newnode.setValue(vt);
+			newnode.setClass(Hint.DownCast, vt);
 			newnode.setType(req);
 			return newnode;
 		}
@@ -296,19 +343,15 @@ public class TypeSystem implements CommonSymbols {
 	}
 
 	public TypedTree makeCast(Type req, TypedTree node) {
-		Method m = this.getCastMethod(toClass(req), node.getClassType());
+		Method m = this.getCastMethod(node.getClassType(), toClass(req));
 		if (m != null) {
 			TypedTree newnode = node.newInstance(_Cast, 1, null);
 			newnode.set(0, _expr, node);
-			newnode.setMethod(true, m);
+			newnode.setMethod(Hint.StaticInvocation, m);
 			newnode.setType(req);
 			return newnode;
 		}
 		return node;
-	}
-
-	public void addBaseClass(String path) throws ClassNotFoundException {
-		addBaseClass(Class.forName(path));
 	}
 
 	boolean acceptArguments(boolean autoBoxing, Method m, Type... args) {

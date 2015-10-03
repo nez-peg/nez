@@ -23,6 +23,7 @@ public class Ckonoha extends Command {
 				ConsoleUtils.println(e.getMessage());
 			} catch (RuntimeException e) {
 				ConsoleUtils.println(e);
+				e.printStackTrace();
 			}
 			linenum += (command.split("\n").length);
 		}

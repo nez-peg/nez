@@ -13,6 +13,19 @@ public class OperatorNames {
 	static {
 		s("+", "opAdd");
 		s("-", "opSub");
+		s("*", "opMul");
+		s("/", "opDiv");
+		s("%", "opMod");
+		s("==", "opEquals");
+		s("!=", "opNotEquals");
+		s("<=", "opLessThanEquals");
+		s("<", "opLessThan");
+		s(">", "opGreaterThan");
+		s(">=", "opGreaterThanEquals");
+		s("&", "opBitwiseAnd");
+		s("|", "opBitwiseOr");
+		s("^", "opBitwiseXor");
+		s("~", "opCompl");
 	}
 
 	public final static String name(String n) {

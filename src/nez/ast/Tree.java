@@ -234,12 +234,15 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements
 	}
 
 	public final void setValue(Object value) {
+		assert (!(value instanceof Tree<?>));
 		this.value = value;
 	}
 
 	public final String toText() {
 		if (this.value != null) {
-			return this.value.toString();
+			if (!(this.value instanceof Tree<?>)) {
+				return this.value.toString();
+			}
 		}
 		if (this.source != null) {
 			long pos = this.getSourcePosition();

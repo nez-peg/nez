@@ -14,7 +14,7 @@ public class ScriptContext {
 
 	public ScriptContext(Parser parser) {
 		this.parser = parser;
-		this.typeSystem = new TypeSystem(this);
+		this.typeSystem = new TypeSystem(this, null/* FIXME */);
 		this.typechecker = new TypeChecker(this, typeSystem);
 		this.interpreter = new Interpreter(this, typeSystem);
 	}
@@ -33,9 +33,11 @@ public class ScriptContext {
 			println(source.getSyntaxErrorMessage());
 			return this; // nothing
 		}
-		System.out.println("typechecking " + node + "...\n");
+		ConsoleUtils.println("[typechcking]");
+		ConsoleUtils.println("|    ", node);
 		typechecker.type(node);
-		System.out.println("evaluating " + node + "...\n");
+		ConsoleUtils.println("[evaluating]");
+		ConsoleUtils.println("|    ", node);
 		return interpreter.eval(node);
 	}
 
