@@ -39,7 +39,7 @@ public interface CommonSymbols {
 	public final static Symbol _Cast = Symbol.tag("Cast");
 	public final static Symbol _UpCast = Symbol.tag("UpCast");
 	public final static Symbol _DownCast = Symbol.tag("DownCast");
-	public final static Symbol _StupidCast = Symbol.tag("StupidCast"); // type
+	public final static Symbol _Error = Symbol.tag("Error"); // type
 																		// error
 
 	public final static Symbol _Source = Symbol.tag("Source");

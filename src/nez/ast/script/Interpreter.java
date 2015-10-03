@@ -85,8 +85,11 @@ public class Interpreter extends TreeVisitor implements CommonSymbols {
 	}
 
 	public Object evalSource(TypedTree node) {
-		Object result = void.class;
+		Object result = empty;
 		for (TypedTree sub : node) {
+			if (sub.is(_Error)) {
+				return empty;
+			}
 			result = eval(sub);
 		}
 		return result;

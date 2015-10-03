@@ -26,6 +26,10 @@ public class TypeSystem implements CommonSymbols {
 		initDebug();
 	}
 
+	public void init(ScriptCompiler compl) {
+		this.compl = compl; // this is called when the complier is instatiated
+	}
+
 	void init() {
 		loadStaticFunctionClass(DynamicOperator.class, false);
 		loadStaticFunctionClass(StaticOperator.class, false);
@@ -46,11 +50,6 @@ public class TypeSystem implements CommonSymbols {
 	void initDebug() {
 		this.setType("Math", Math.class);
 		this.setType("System", System.class);
-		this.addGlobalVariable(int.class, "a", nez.ast.script.stub.G_a.class);
-		this.addGlobalVariable(int.class, "b", nez.ast.script.stub.G_b.class);
-		this.addGlobalVariable(Function.class, "f", nez.ast.script.stub.G_f.class);
-		this.addGlobalVariable(Function.class, "g", nez.ast.script.stub.G_g.class);
-		this.addGlobalVariable(String.class, "s", nez.ast.script.stub.G_s.class);
 	}
 
 	/* Types */
@@ -83,19 +82,15 @@ public class TypeSystem implements CommonSymbols {
 		return this.GlobalVariables.containsKey(name);
 	}
 
-	public void addGlobalVariable(Type type, String name, Class<?> varClass) {
-		GlobalVariable gv = new GlobalVariable(type, varClass);
-		this.GlobalVariables.put(name, gv);
-	}
-
 	public GlobalVariable getGlobalVariable(String name) {
 		return this.GlobalVariables.get(name);
 	}
 
-	// public Object setGlobalVariable(String name, Object v) {
-	// GlobalVariable gv = this.GlobalVariables.get(name);
-	// return gv.set(v);
-	// }
+	public void addGlobalVariable(Type type, String name) {
+		Class<?> varClass = this.compl.compileGlobalVariable(TypeSystem.toClass(type), name);
+		GlobalVariable gv = new GlobalVariable(type, varClass);
+		this.GlobalVariables.put(name, gv);
+	}
 
 	/* Method Map */
 	private UList<Method> StaticFunctionMethodList = new UList<Method>(new Method[256]);
@@ -279,8 +274,12 @@ public class TypeSystem implements CommonSymbols {
 
 	// type check
 
+	public TypeCheckerException error(TypedTree node, String fmt, Object... args) {
+		return new TypeCheckerException(this, 1, node, fmt, args);
+	}
+
 	public TypedTree newError(Type req, TypedTree node, String fmt, Object... args) {
-		TypedTree newnode = node.newInstance(_StupidCast, 1, null);
+		TypedTree newnode = node.newInstance(_Error, 1, null);
 		String msg = node.formatSourceMessage("error", String.format(fmt, args));
 		newnode.set(0, _msg, node.newStringConst(msg));
 		context.log(msg);

@@ -25,7 +25,6 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 		super(TypedTree.class);
 		this.typeSystem = typeSystem;
 		this.cLoader = cLoader;
-
 	}
 
 	private void visit(TypedTree node) {
@@ -89,6 +88,10 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 		this.cBuilder = new ClassBuilder("nez/ast/script/" + name, null, null, null);
 	}
 
+	public void openClass(String name, Class<?> superClass, Class<?>... interfaces) {
+		this.cBuilder = new ClassBuilder("nez/ast/script/" + name, null, superClass, interfaces);
+	}
+
 	public Class<?> closeClass() {
 		cLoader.setDump(true);
 		Class<?> c = cLoader.definedAndLoadClass(this.cBuilder.getQualifiedClassName(), cBuilder.toByteArray());
@@ -96,9 +99,39 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 		return c;
 	}
 
+	/* global variable */
+
+	public Class<?> compileGlobalVariableClass(Class<?> t, String name) {
+		this.openClass("G_" + name);
+		this.cBuilder.addField(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "v", t, null);
+		return this.closeClass();
+	}
+
+	/* generate function class */
+
+	public Class<?> compileFunctionClass(java.lang.reflect.Method staticMethod) {
+		this.openClass("C" + staticMethod.getName(), null, null, konoha.Function.class);
+		Class<?> returnType = staticMethod.getReturnType();
+		Class<?>[] paramTypes = staticMethod.getParameterTypes();
+		this.mBuilder = this.cBuilder.newMethodBuilder(Opcodes.ACC_PUBLIC, returnType, "f", paramTypes);
+		int index = 1;
+		for (int i = 0; i < paramTypes.length; i++) {
+			Type AsmType = Type.getType(paramTypes[i]);
+			// this.mBuilder.visitVarInsn(AsmType.getOpcode(ILOAD), index);
+			this.mBuilder.loadLocal(index, AsmType);
+			index += AsmType.getSize();
+		}
+		Type owner = Type.getType(staticMethod.getDeclaringClass());
+		Method methodDesc = Method.getMethod(staticMethod);
+		this.mBuilder.invokeStatic(owner, methodDesc);
+		this.mBuilder.returnValue();
+		this.mBuilder.endMethod();
+		return this.closeClass();
+	}
+
 	/* static function */
 
-	public Class<?> compileFuncDecl(String className, TypedTree node) {
+	public Class<?> compileStaticFuncDecl(String className, TypedTree node) {
 		this.openClass(className);
 		this.visitFuncDecl(node);
 		return this.closeClass();
@@ -245,6 +278,17 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 		this.visit(node.get(_expr));
 		this.mBuilder.returnValue();
 	}
+
+	// @Override public void VisitReturnNode(ZReturnNode Node) {
+	// if(Node.HasReturnExpr()) {
+	// Node.ExprNode().Accept(this);
+	// Type type = this.AsmType(Node.ExprNode().Type);
+	// this.mBuilder.visitInsn(type.getOpcode(IRETURN));
+	// }
+	// else {
+	// this.mBuilder.visitInsn(RETURN);
+	// }
+	// }
 
 	public void visitExpression(TypedTree node) {
 		this.visit(node.get(0));
@@ -585,5 +629,346 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 	public void visitUndefined(TypedTree p) {
 		System.out.println("undefined: " + p.getTag().getSymbol());
 	}
+
+	/* code copied from libzen */
+
+	// private JavaStaticFieldNode GenerateFunctionAsSymbolField(String
+	// FuncName, ZFunctionNode Node) {
+	// @Var ZFuncType FuncType = Node.GetFuncType();
+	// String ClassName = this.NameFunctionClass(FuncName, FuncType);
+	// Class<?> FuncClass = this.LoadFuncClass(FuncType);
+	// @Var AsmClassBuilder ClassBuilder =
+	// this.AsmLoader.NewClass(ACC_PUBLIC|ACC_FINAL, Node, ClassName,
+	// FuncClass);
+	//
+	// AsmMethodBuilder InvokeMethod = ClassBuilder.NewMethod(ACC_PUBLIC |
+	// ACC_FINAL, "Invoke", FuncType);
+	// int index = 1;
+	// for(int i = 0; i < FuncType.GetFuncParamSize(); i++) {
+	// Type AsmType = this.AsmType(FuncType.GetFuncParamType(i));
+	// InvokeMethod.visitVarInsn(AsmType.getOpcode(ILOAD), index);
+	// index += AsmType.getSize();
+	// }
+	// InvokeMethod.visitMethodInsn(INVOKESTATIC, ClassName, "f", FuncType);
+	// InvokeMethod.visitReturn(FuncType.GetReturnType());
+	// InvokeMethod.Finish();
+	//
+	// ClassBuilder.AddField(ACC_PUBLIC | ACC_STATIC | ACC_FINAL, "function",
+	// FuncClass, null);
+	//
+	// // static init
+	// AsmMethodBuilder StaticInitMethod = ClassBuilder.NewMethod(ACC_PUBLIC |
+	// ACC_STATIC , "<clinit>", "()V");
+	// StaticInitMethod.visitTypeInsn(NEW, ClassName);
+	// StaticInitMethod.visitInsn(DUP);
+	// StaticInitMethod.visitMethodInsn(INVOKESPECIAL, ClassName, "<init>",
+	// "()V");
+	// StaticInitMethod.visitFieldInsn(PUTSTATIC, ClassName, "function",
+	// FuncClass);
+	// StaticInitMethod.visitInsn(RETURN);
+	// StaticInitMethod.Finish();
+	//
+	// AsmMethodBuilder InitMethod = ClassBuilder.NewMethod(ACC_PRIVATE,
+	// "<init>", "()V");
+	// InitMethod.visitVarInsn(ALOAD, 0);
+	// InitMethod.visitLdcInsn(FuncType.TypeId);
+	// InitMethod.visitLdcInsn(FuncName);
+	// InitMethod.visitMethodInsn(INVOKESPECIAL,
+	// Type.getInternalName(FuncClass), "<init>", "(ILjava/lang/String;)V");
+	// InitMethod.visitInsn(RETURN);
+	// InitMethod.Finish();
+	//
+	// AsmMethodBuilder StaticFuncMethod = ClassBuilder.NewMethod(ACC_PUBLIC |
+	// ACC_STATIC, "f", FuncType);
+	// for(int i = 0; i < Node.GetListSize(); i++) {
+	// ZParamNode ParamNode = Node.GetParamNode(i);
+	// Class<?> DeclClass = this.GetJavaClass(ParamNode.DeclType());
+	// StaticFuncMethod.AddLocal(DeclClass, ParamNode.GetName());
+	// }
+	// Node.BlockNode().Accept(this);
+	// StaticFuncMethod.Finish();
+	//
+	// FuncClass = this.AsmLoader.LoadGeneratedClass(ClassName);
+	// this.SetGeneratedClass(ClassName, FuncClass);
+	// return new JavaStaticFieldNode(null, FuncClass, FuncType, "function");
+	// }
+
+	// @Override public void VisitArrayLiteralNode(ZArrayLiteralNode Node) {
+	// if(Node.IsUntyped()) {
+	// ZLogger._LogError(Node.SourceToken, "ambigious array");
+	// this.mBuilder.visitInsn(Opcodes.ACONST_NULL);
+	// }
+	// else {
+	// Class<?> ArrayClass = LibAsm.AsArrayClass(Node.Type);
+	// String Owner = Type.getInternalName(ArrayClass);
+	// this.mBuilder.visitTypeInsn(NEW, Owner);
+	// this.mBuilder.visitInsn(DUP);
+	// this.mBuilder.PushInt(Node.Type.TypeId);
+	// this.mBuilder.PushNodeListAsArray(LibAsm.AsElementClass(Node.Type), 0,
+	// Node);
+	// this.mBuilder.SetLineNumber(Node);
+	// this.mBuilder.visitMethodInsn(INVOKESPECIAL, Owner, "<init>",
+	// LibAsm.NewArrayDescriptor(Node.Type));
+	// }
+	// }
+
+	// @Override
+	// public void VisitMapLiteralNode(ZMapLiteralNode Node) {
+	// if (Node.IsUntyped()) {
+	// ZLogger._LogError(Node.SourceToken, "ambigious map");
+	// this.mBuilder.visitInsn(Opcodes.ACONST_NULL);
+	// } else {
+	// String Owner = Type.getInternalName(ZObjectMap.class);
+	// this.mBuilder.visitTypeInsn(NEW, Owner);
+	// this.mBuilder.visitInsn(DUP);
+	// this.mBuilder.PushInt(Node.Type.TypeId);
+	// this.mBuilder.PushInt(Node.GetListSize() * 2);
+	// this.mBuilder.visitTypeInsn(ANEWARRAY,
+	// Type.getInternalName(Object.class));
+	// for (int i = 0; i < Node.GetListSize(); i++) {
+	// ZMapEntryNode EntryNode = Node.GetMapEntryNode(i);
+	// this.mBuilder.visitInsn(DUP);
+	// this.mBuilder.PushInt(i * 2);
+	// this.mBuilder.PushNode(String.class, EntryNode.KeyNode());
+	// this.mBuilder.visitInsn(Opcodes.AASTORE);
+	// this.mBuilder.visitInsn(DUP);
+	// this.mBuilder.PushInt(i * 2 + 1);
+	// this.mBuilder.PushNode(Object.class, EntryNode.ValueNode());
+	// this.mBuilder.visitInsn(Opcodes.AASTORE);
+	// }
+	// this.mBuilder.SetLineNumber(Node);
+	// String Desc = Type.getMethodDescriptor(Type.getType(void.class), new
+	// Type[] { Type.getType(int.class), Type.getType(Object[].class) });
+	// this.mBuilder.visitMethodInsn(INVOKESPECIAL, Owner, "<init>", Desc);
+	// }
+	// }
+	//
+	// @Override
+	// public void VisitNewObjectNode(ZNewObjectNode Node) {
+	// if (Node.IsUntyped()) {
+	// ZLogger._LogError(Node.SourceToken, "no class for new operator");
+	// this.mBuilder.visitInsn(Opcodes.ACONST_NULL);
+	// } else {
+	// String ClassName = Type.getInternalName(this.GetJavaClass(Node.Type));
+	// this.mBuilder.visitTypeInsn(NEW, ClassName);
+	// this.mBuilder.visitInsn(DUP);
+	// Constructor<?> jMethod = this.GetConstructor(Node.Type, Node);
+	// if (jMethod != null) {
+	// Class<?>[] P = jMethod.getParameterTypes();
+	// for (int i = 0; i < P.length; i++) {
+	// this.mBuilder.PushNode(P[i], Node.GetListAt(i));
+	// }
+	// this.mBuilder.SetLineNumber(Node);
+	// this.mBuilder.visitMethodInsn(INVOKESPECIAL, ClassName, "<init>",
+	// Type.getConstructorDescriptor(jMethod));
+	// } else {
+	// ZLogger._LogError(Node.SourceToken, "no constructor: " + Node.Type);
+	// this.mBuilder.visitInsn(Opcodes.ACONST_NULL);
+	// }
+	// }
+	// }
+	//
+	// public void VisitStaticFieldNode(JavaStaticFieldNode Node) {
+	// this.mBuilder.visitFieldInsn(Opcodes.GETSTATIC,
+	// Type.getInternalName(Node.StaticClass), Node.FieldName,
+	// this.GetJavaClass(Node.Type));
+	// }
+	//
+	// @Override
+	// public void VisitGlobalNameNode(ZGlobalNameNode Node) {
+	// if (Node.IsFuncNameNode()) {
+	// this.mBuilder.visitFieldInsn(Opcodes.GETSTATIC,
+	// this.NameFunctionClass(Node.GlobalName, Node.FuncType), "f",
+	// this.GetJavaClass(Node.Type));
+	// } else if (!Node.IsUntyped()) {
+	// this.mBuilder.visitFieldInsn(Opcodes.GETSTATIC,
+	// this.NameGlobalNameClass(Node.GlobalName), "_",
+	// this.GetJavaClass(Node.Type));
+	// } else {
+	// ZLogger._LogError(Node.SourceToken, "undefined symbol: " +
+	// Node.GlobalName);
+	// this.mBuilder.visitInsn(Opcodes.ACONST_NULL);
+	// }
+	// }
+	//
+	// @Override
+	// public void VisitGetterNode(ZGetterNode Node) {
+	// if (Node.IsUntyped()) {
+	// Method sMethod = JavaMethodTable.GetStaticMethod("GetField");
+	// ZNode NameNode = new ZStringNode(Node, null, Node.GetName());
+	// this.mBuilder.ApplyStaticMethod(Node, sMethod, new ZNode[] {
+	// Node.RecvNode(), NameNode });
+	// } else {
+	// Class<?> RecvClass = this.GetJavaClass(Node.RecvNode().Type);
+	// Field jField = this.GetField(RecvClass, Node.GetName());
+	// String Owner = Type.getType(RecvClass).getInternalName();
+	// String Desc = Type.getType(jField.getType()).getDescriptor();
+	// if (Modifier.isStatic(jField.getModifiers())) {
+	// this.mBuilder.visitFieldInsn(Opcodes.GETSTATIC, Owner, Node.GetName(),
+	// Desc);
+	// } else {
+	// this.mBuilder.PushNode(null, Node.RecvNode());
+	// this.mBuilder.visitFieldInsn(GETFIELD, Owner, Node.GetName(), Desc);
+	// }
+	// this.mBuilder.CheckReturnCast(Node, jField.getType());
+	// }
+	// }
+	//
+	// @Override
+	// public void VisitSetterNode(ZSetterNode Node) {
+	// if (Node.IsUntyped()) {
+	// Method sMethod = JavaMethodTable.GetStaticMethod("SetField");
+	// ZNode NameNode = new ZStringNode(Node, null, Node.GetName());
+	// this.mBuilder.ApplyStaticMethod(Node, sMethod, new ZNode[] {
+	// Node.RecvNode(), NameNode, Node.ExprNode() });
+	// } else {
+	// Class<?> RecvClass = this.GetJavaClass(Node.RecvNode().Type);
+	// Field jField = this.GetField(RecvClass, Node.GetName());
+	// String Owner = Type.getType(RecvClass).getInternalName();
+	// String Desc = Type.getType(jField.getType()).getDescriptor();
+	// if (Modifier.isStatic(jField.getModifiers())) {
+	// this.mBuilder.PushNode(jField.getType(), Node.ExprNode());
+	// this.mBuilder.visitFieldInsn(PUTSTATIC, Owner, Node.GetName(), Desc);
+	// } else {
+	// this.mBuilder.PushNode(null, Node.RecvNode());
+	// this.mBuilder.PushNode(jField.getType(), Node.ExprNode());
+	// this.mBuilder.visitFieldInsn(PUTFIELD, Owner, Node.GetName(), Desc);
+	// }
+	// }
+	// }
+	//
+	// @Override
+	// public void VisitGetIndexNode(ZGetIndexNode Node) {
+	// Method sMethod =
+	// JavaMethodTable.GetBinaryStaticMethod(Node.RecvNode().Type, "[]",
+	// Node.IndexNode().Type);
+	// this.mBuilder.ApplyStaticMethod(Node, sMethod, new ZNode[] {
+	// Node.RecvNode(), Node.IndexNode() });
+	// }
+	//
+	// @Override
+	// public void VisitSetIndexNode(ZSetIndexNode Node) {
+	// Method sMethod =
+	// JavaMethodTable.GetBinaryStaticMethod(Node.RecvNode().Type, "[]=",
+	// Node.IndexNode().Type);
+	// this.mBuilder.ApplyStaticMethod(Node, sMethod, new ZNode[] {
+	// Node.RecvNode(), Node.IndexNode(), Node.ExprNode() });
+	// }
+	//
+	// @Override
+	// public void VisitMethodCallNode(ZMethodCallNode Node) {
+	// this.mBuilder.SetLineNumber(Node);
+	// Method jMethod = this.GetMethod(Node.RecvNode().Type, Node.MethodName(),
+	// Node);
+	// if (jMethod != null) {
+	// if (!Modifier.isStatic(jMethod.getModifiers())) {
+	// this.mBuilder.PushNode(null, Node.RecvNode());
+	// }
+	// Class<?>[] P = jMethod.getParameterTypes();
+	// for (int i = 0; i < P.length; i++) {
+	// this.mBuilder.PushNode(P[i], Node.GetListAt(i));
+	// }
+	// int inst = this.GetInvokeType(jMethod);
+	// String owner = Type.getInternalName(jMethod.getDeclaringClass());
+	// this.mBuilder.visitMethodInsn(inst, owner, jMethod.getName(),
+	// Type.getMethodDescriptor(jMethod));
+	// this.mBuilder.CheckReturnCast(Node, jMethod.getReturnType());
+	// } else {
+	// jMethod = JavaMethodTable.GetStaticMethod("InvokeUnresolvedMethod");
+	// this.mBuilder.PushNode(Object.class, Node.RecvNode());
+	// this.mBuilder.PushConst(Node.MethodName());
+	// this.mBuilder.PushNodeListAsArray(Object.class, 0, Node);
+	// this.mBuilder.ApplyStaticMethod(Node, jMethod);
+	// }
+	// }
+	//
+	// @Override
+	// public void VisitInstanceOfNode(ZInstanceOfNode Node) {
+	// if (!(Node.LeftNode().Type instanceof ZGenericType)) {
+	// this.VisitNativeInstanceOfNode(Node);
+	// return;
+	// }
+	// Node.LeftNode().Accept(this);
+	// this.mBuilder.Pop(Node.LeftNode().Type);
+	// this.mBuilder.PushLong(Node.LeftNode().Type.TypeId);
+	// this.mBuilder.PushLong(Node.TargetType().TypeId);
+	// Method method = JavaMethodTable.GetBinaryStaticMethod(ZType.IntType,
+	// "==", ZType.IntType);
+	// String owner = Type.getInternalName(method.getDeclaringClass());
+	// this.mBuilder.visitMethodInsn(INVOKESTATIC, owner, method.getName(),
+	// Type.getMethodDescriptor(method));
+	// }
+	//
+	// private void VisitNativeInstanceOfNode(ZInstanceOfNode Node) {
+	// Class<?> JavaClass = this.GetJavaClass(Node.TargetType());
+	// if (Node.TargetType().IsIntType()) {
+	// JavaClass = Long.class;
+	// } else if (Node.TargetType().IsFloatType()) {
+	// JavaClass = Double.class;
+	// } else if (Node.TargetType().IsBooleanType()) {
+	// JavaClass = Boolean.class;
+	// }
+	// this.invokeBoxingMethod(Node.LeftNode());
+	// this.mBuilder.visitTypeInsn(INSTANCEOF, JavaClass);
+	// }
+	//
+	// private void invokeBoxingMethod(ZNode TargetNode) {
+	// Class<?> TargetClass = Object.class;
+	// if (TargetNode.Type.IsIntType()) {
+	// TargetClass = Long.class;
+	// } else if (TargetNode.Type.IsFloatType()) {
+	// TargetClass = Double.class;
+	// } else if (TargetNode.Type.IsBooleanType()) {
+	// TargetClass = Boolean.class;
+	// }
+	// Class<?> SourceClass = this.GetJavaClass(TargetNode.Type);
+	// Method Method = JavaMethodTable.GetCastMethod(TargetClass, SourceClass);
+	// TargetNode.Accept(this);
+	// if (!TargetClass.equals(Object.class)) {
+	// String owner = Type.getInternalName(Method.getDeclaringClass());
+	// this.mBuilder.visitMethodInsn(INVOKESTATIC, owner, Method.getName(),
+	// Type.getMethodDescriptor(Method));
+	// }
+	// }
+	//
+	// @Override
+	// public void VisitAndNode(ZAndNode Node) {
+	// Label elseLabel = new Label();
+	// Label mergeLabel = new Label();
+	// this.mBuilder.PushNode(boolean.class, Node.LeftNode());
+	// this.mBuilder.visitJumpInsn(IFEQ, elseLabel);
+	//
+	// this.mBuilder.PushNode(boolean.class, Node.RightNode());
+	// this.mBuilder.visitJumpInsn(IFEQ, elseLabel);
+	//
+	// this.mBuilder.visitLdcInsn(true);
+	// this.mBuilder.visitJumpInsn(GOTO, mergeLabel);
+	//
+	// this.mBuilder.visitLabel(elseLabel);
+	// this.mBuilder.visitLdcInsn(false);
+	// this.mBuilder.visitJumpInsn(GOTO, mergeLabel);
+	//
+	// this.mBuilder.visitLabel(mergeLabel);
+	// }
+	//
+	// @Override
+	// public void VisitOrNode(ZOrNode Node) {
+	// Label thenLabel = new Label();
+	// Label mergeLabel = new Label();
+	// this.mBuilder.PushNode(boolean.class, Node.LeftNode());
+	// this.mBuilder.visitJumpInsn(IFNE, thenLabel);
+	//
+	// this.mBuilder.PushNode(boolean.class, Node.RightNode());
+	// this.mBuilder.visitJumpInsn(IFNE, thenLabel);
+	//
+	// this.mBuilder.visitLdcInsn(false);
+	// this.mBuilder.visitJumpInsn(GOTO, mergeLabel);
+	//
+	// this.mBuilder.visitLabel(thenLabel);
+	// this.mBuilder.visitLdcInsn(true);
+	// this.mBuilder.visitJumpInsn(GOTO, mergeLabel);
+	//
+	// this.mBuilder.visitLabel(mergeLabel);
+	// }
 
 }

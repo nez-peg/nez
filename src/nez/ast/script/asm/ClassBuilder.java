@@ -4,6 +4,7 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.Method;
+import org.objectweb.asm.tree.FieldNode;
 
 /**
  * wrapper class of ClassWriter
@@ -81,9 +82,9 @@ public class ClassBuilder extends ClassWriter implements Opcodes {
 		return Type.getType("L" + this.qualifiedClassName + ";");
 	}
 
-	@Override
-	public String toString() {
-		return this.getQualifiedClassName();
+	public void addField(int acc, String name, Class<?> fieldClass, Object value) {
+		FieldNode fn = new FieldNode(acc, name, Type.getDescriptor(fieldClass), null, value);
+		fn.accept(this);
 	}
 
 	/**
@@ -95,8 +96,15 @@ public class ClassBuilder extends ClassWriter implements Opcodes {
 	 * @param paramClasses
 	 * @return
 	 */
+
 	public MethodBuilder newMethodBuilder(int accessFlag, Class<?> returnClass, String methodName, Class<?>... paramClasses) {
 		Method method = Methods.method(returnClass, methodName, paramClasses);
 		return new MethodBuilder(accessFlag, method, this);
 	}
+
+	@Override
+	public String toString() {
+		return this.getQualifiedClassName();
+	}
+
 }
