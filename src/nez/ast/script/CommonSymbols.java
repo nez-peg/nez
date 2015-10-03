@@ -40,7 +40,7 @@ public interface CommonSymbols {
 	public final static Symbol _UpCast = Symbol.tag("UpCast");
 	public final static Symbol _DownCast = Symbol.tag("DownCast");
 	public final static Symbol _Error = Symbol.tag("Error"); // type
-																		// error
+																// error
 
 	public final static Symbol _Source = Symbol.tag("Source");
 	public final static Symbol _Modifiers = Symbol.tag("Modifiers");
@@ -155,7 +155,7 @@ public interface CommonSymbols {
 	public final static Symbol _Not = Symbol.tag("Not");
 
 	public final static Symbol _MethodApply = Symbol.tag("MethodApply");
-	public final static Symbol _Index = Symbol.tag("Index");
+	public final static Symbol _Indexer = Symbol.tag("Indexer");
 	public final static Symbol _Field = Symbol.tag("Field");
 
 	public final static Symbol _This = Symbol.tag("This");

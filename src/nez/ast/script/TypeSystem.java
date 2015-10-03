@@ -42,7 +42,7 @@ public class TypeSystem implements CommonSymbols {
 		this.setType("long", long.class);
 		this.setType("double", double.class);
 		this.setType("String", String.class);
-		this.setType("Array", UList.class);
+		this.setType("Array", konoha.Array.class);
 		this.setType("Dict", UMap.class);
 		this.setType("Func", Function.class);
 
@@ -70,7 +70,7 @@ public class TypeSystem implements CommonSymbols {
 			return t == null ? deftype : t;
 		}
 		if (node.is(_ArrayType)) {
-			return GenericType.newType(UList.class, resolveType(node.get(_base), Object.class));
+			return GenericType.newType(konoha.Array.class, resolveType(node.get(_base), Object.class));
 		}
 		return deftype;
 	}
@@ -81,6 +81,10 @@ public class TypeSystem implements CommonSymbols {
 			return deftype;
 		}
 		return TypeSystem.toClass(t);
+	}
+
+	public Type newArrayType(Type elementType) {
+		return GenericType.newType(konoha.Array.class, elementType);
 	}
 
 	/* GlobalVariables */
@@ -173,16 +177,18 @@ public class TypeSystem implements CommonSymbols {
 
 	// find method
 
-	private Method matchMethod(Class<?> c, boolean isStaticOnly, String name, Type[] types, UList<Method> buf) {
-		for (Method m : c.getMethods()) {
-			if (matchMethod(m, isStaticOnly, name, types, buf)) {
-				return m;
+	private Method matchMethod(Class<?> c, boolean isStaticOnly, TypeVarMatcher matcher, String name, Type[] types, UList<Method> buf) {
+		for (Method m : isStaticOnly ? c.getMethods() : c.getDeclaredMethods()) {
+			if (Modifier.isPublic(m.getModifiers())) {
+				if (matchMethod(m, isStaticOnly, matcher, name, types, buf)) {
+					return m;
+				}
 			}
 		}
 		return null;
 	}
 
-	private boolean matchMethod(Method m, boolean isStaticOnly, String name, Type[] types, UList<Method> buf) {
+	private boolean matchMethod(Method m, boolean isStaticOnly, TypeVarMatcher matcher, String name, Type[] types, UList<Method> buf) {
 		if (isStaticOnly && !this.isStatic(m)) {
 			return false;
 		}
@@ -193,8 +199,16 @@ public class TypeSystem implements CommonSymbols {
 		if (p.length != types.length) {
 			return false;
 		}
-		if (this.acceptParameters(p, types)) {
-			return true;
+		if (matcher == null || !isGenericMethod(m)) {
+			if (this.acceptParameters(null, p, types)) {
+				return true;
+			}
+		} else {
+			Type[] gp = m.getGenericParameterTypes();
+			if (this.acceptParameters(matcher, gp, types)) {
+				return true;
+			}
+			matcher.init();
 		}
 		if (buf != null) {
 			buf.add(m);
@@ -202,13 +216,39 @@ public class TypeSystem implements CommonSymbols {
 		return false;
 	}
 
-	private boolean acceptParameters(Class<?>[] p, Type[] types) {
+	private boolean isGenericMethod(Method m) {
+		Type r = m.getGenericReturnType();
+		if (!(r instanceof Class<?>)) {
+			return true;
+		}
+		for (Type t : m.getGenericParameterTypes()) {
+			if (!(t instanceof Class<?>)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private boolean acceptParameters(TypeVarMatcher matcher, Type[] p, Type[] types) {
 		for (int j = 0; j < types.length; j++) {
-			if (!accept(false, p[j], types[j])) {
+			if (!accept(matcher, p[j], types[j])) {
 				return false;
 			}
 		}
 		return true;
+	}
+
+	private final boolean accept(TypeVarMatcher matcher, Type p, Type a) {
+		if (a == null || p == a) {
+			return true;
+		}
+		if (p instanceof Class<?> || matcher == null) {
+			if (((Class<?>) p).isAssignableFrom(TypeSystem.toClass(a))) {
+				return true;
+			}
+			return false;
+		}
+		return matcher.match(p, a);
 	}
 
 	private Method tryTypeEnforcement(int start, UList<Method> buf, TypedTree params) {
@@ -241,11 +281,26 @@ public class TypeSystem implements CommonSymbols {
 		return true;
 	}
 
+	public TypedTree checkTypeEnforce(Class<?> vt, TypedTree node) {
+		Class<?> et = node.getClassType();
+		if (accept(null, vt, et)) {
+			return node;
+		}
+		Method m = this.getCastMethod(et, vt);
+		if (m != null) {
+			TypedTree newnode = node.newInstance(_Cast, 1, null);
+			newnode.set(0, _expr, node);
+			newnode.setMethod(Hint.StaticInvocation, m, null);
+			return newnode;
+		}
+		return null;
+	}
+
 	/* static method */
 
 	public Method resolveStaticMethod(Class<?> c, String name, Type[] types, UList<Method> buf, TypedTree params) {
 		int start = buf != null ? buf.size() : 0;
-		Method m = matchMethod(c, true/* StaticOnly */, name, types, buf);
+		Method m = matchMethod(c, true/* StaticOnly */, null, name, types, buf);
 		if (m != null) {
 			return m;
 		}
@@ -258,7 +313,7 @@ public class TypeSystem implements CommonSymbols {
 		int start = buf != null ? buf.size() : 0;
 		for (int i = StaticFunctionMethodList.size() - 1; i >= 0; i--) {
 			Method m = StaticFunctionMethodList.ArrayValues[i];
-			if (this.matchMethod(m, true, name, types, buf)) {
+			if (this.matchMethod(m, true, null, name, types, buf)) {
 				return m;
 			}
 		}
@@ -267,10 +322,11 @@ public class TypeSystem implements CommonSymbols {
 
 	// object method
 
-	public Method resolveObjectMethod(Class<?> c, String name, Type[] types, UList<Method> buf, TypedTree params) {
+	public Method resolveObjectMethod(Type t, TypeVarMatcher matcher, String name, Type[] types, UList<Method> buf, TypedTree params) {
 		int start = buf != null ? buf.size() : 0;
+		Class<?> c = TypeSystem.toClass(t);
 		while (c != null) {
-			Method m = this.matchMethod(c, false, name, types, buf);
+			Method m = this.matchMethod(c, false, matcher, name, types, buf);
 			if (m != null) {
 				return m;
 			}
@@ -293,7 +349,7 @@ public class TypeSystem implements CommonSymbols {
 		String msg = node.formatSourceMessage("error", String.format(fmt, args));
 		newnode.set(0, _msg, node.newStringConst(msg));
 		context.log(msg);
-		newnode.setMethod(Hint.StaticInvocation, this.StaticErrorMethod);
+		newnode.setMethod(Hint.StaticInvocation, this.StaticErrorMethod, null);
 		return newnode;
 	}
 
@@ -321,32 +377,17 @@ public class TypeSystem implements CommonSymbols {
 		return reportWarning(node, String.format(fmt, args));
 	}
 
-	public TypedTree checkTypeEnforce(Class<?> vt, TypedTree node) {
-		Class<?> et = node.getClassType();
-		if (accept(false, vt, et)) {
-			return node;
-		}
-		Method m = this.getCastMethod(et, vt);
-		if (m != null) {
-			TypedTree newnode = node.newInstance(_Cast, 1, null);
-			newnode.set(0, _expr, node);
-			newnode.setMethod(Hint.StaticInvocation, m);
-			return newnode;
-		}
-		return null;
-	}
-
 	public TypedTree enforceType(Type req, TypedTree node) {
 		Class<?> vt = toClass(req);
 		Class<?> et = node.getClassType();
-		if (accept(false, vt, et)) {
+		if (accept(null, vt, et)) {
 			return node;
 		}
 		Method m = this.getCastMethod(et, vt);
 		if (m != null) {
 			TypedTree newnode = node.newInstance(_Cast, 1, null);
 			newnode.set(0, _expr, node);
-			newnode.setMethod(Hint.StaticInvocation, m);
+			newnode.setMethod(Hint.StaticInvocation, m, null);
 			return newnode;
 		}
 		if (et.isAssignableFrom(vt)) {
@@ -365,44 +406,25 @@ public class TypeSystem implements CommonSymbols {
 		if (m != null) {
 			TypedTree newnode = node.newInstance(_Cast, 1, null);
 			newnode.set(0, _expr, node);
-			newnode.setMethod(Hint.StaticInvocation, m);
+			newnode.setMethod(Hint.StaticInvocation, m, null);
 			newnode.setType(req);
 			return newnode;
 		}
 		return node;
 	}
 
-	boolean acceptArguments(boolean autoBoxing, Method m, Type... args) {
-		Class<?>[] p = m.getParameterTypes();
-		if (args.length != p.length) {
-			return false;
-		}
-		for (int j = 0; j < args.length; j++) {
-			if (!accept(autoBoxing, p[j], args[j])) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	boolean accept(boolean autoBoxing, Type p, Type a) {
-		if (a == null || p == a) {
-			return true;
-		}
-		if (autoBoxing) {
-			if (p == int.class && a == Integer.class) {
-				return true;
-			}
-			if (p == double.class && a == Double.class) {
-				return true;
-			}
-		}
-		// System.out.printf("%s %s %s\n", p, a, p.isAssignableFrom(a));
-		if (TypeSystem.toClass(p).isAssignableFrom(TypeSystem.toClass(a))) {
-			return true;
-		}
-		return false;
-	}
+	// boolean acceptArguments(boolean autoBoxing, Method m, Type... args) {
+	// Class<?>[] p = m.getParameterTypes();
+	// if (args.length != p.length) {
+	// return false;
+	// }
+	// for (int j = 0; j < args.length; j++) {
+	// if (!accept(autoBoxing, p[j], args[j])) {
+	// return false;
+	// }
+	// }
+	// return true;
+	// }
 
 	public Type PrimitiveType(Type t) {
 		if (t == Double.class || t == Float.class || t == float.class) {

@@ -5,6 +5,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
+import konoha.Array;
+import konoha.IArray;
 import nez.ast.Tree;
 import nez.ast.TreeVisitor;
 import nez.ast.script.asm.ScriptCompiler;
@@ -118,6 +120,10 @@ public class Interpreter extends TreeVisitor implements CommonSymbols {
 
 	/* Expression Statement */
 	public Object evalExpression(TypedTree node) {
+		if (node.getType() == void.class) {
+			eval(node.get(0));
+			return empty;
+		}
 		return eval(node.get(0));
 	}
 
@@ -151,8 +157,11 @@ public class Interpreter extends TreeVisitor implements CommonSymbols {
 	// }
 
 	public Object evalField(TypedTree node) {
-		Object recv = nullEval(node.get(_recv, null)); // static field is null
 		Field f = node.getField();
+		Object recv = null;
+		if (!Modifier.isStatic(f.getModifiers())) {
+			recv = eval(node.get(_recv));
+		}
 		// System.out.println("eval field:" + recv + " . " + f);
 		try {
 			Object v = f.get(recv);
@@ -204,6 +213,17 @@ public class Interpreter extends TreeVisitor implements CommonSymbols {
 			args[i] = eval(node.get(i));
 		}
 		return args;
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public Object evalArray(TypedTree node) {
+		Object[] args = evalApplyArgument(node);
+		Class<?> atype = node.getClassType();
+		if (atype == IArray.class) {
+			Object a = new IArray<Object>(args, args.length);
+			System.out.println("AAA " + a + " " + a.getClass());
+		}
+		return new Array(args, args.length);
 	}
 
 }

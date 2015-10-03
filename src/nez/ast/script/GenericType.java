@@ -5,9 +5,6 @@ import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.HashMap;
 
-import nez.util.IArray;
-import nez.util.UList;
-
 public class GenericType implements Type {
 	int id;
 	String name;
@@ -21,7 +18,7 @@ public class GenericType implements Type {
 		this.name = shortName(base, params);
 	}
 
-	public Type resolve(String name, Type def) {
+	public Type resolveType(String name, Type def) {
 		int c = 0;
 		TypeVariable<?>[] p = base.getTypeParameters();
 		for (TypeVariable<?> v : p) {
@@ -30,7 +27,19 @@ public class GenericType implements Type {
 			}
 			c++;
 		}
-		return null;
+		return def;
+	}
+
+	public Class<?> resolveClass(String name, Class<?> def) {
+		int c = 0;
+		TypeVariable<?>[] p = base.getTypeParameters();
+		for (TypeVariable<?> v : p) {
+			if (name.equals(v.getName())) {
+				return TypeSystem.toClass(params[c]);
+			}
+			c++;
+		}
+		return def;
 	}
 
 	@Override
@@ -38,33 +47,33 @@ public class GenericType implements Type {
 		return this.name;
 	}
 
-	public Type resolve(Type t) {
+	public Type resolveType(Type t) {
 		if (t instanceof Class<?> || t instanceof GenericType) {
 			return t;
 		}
 		if (t instanceof TypeVariable) {
-			return resolve(((TypeVariable<?>) t).getName(), Object.class);
+			return resolveType(((TypeVariable<?>) t).getName(), Object.class);
 		}
 		if (t instanceof ParameterizedType) {
-			Type raw = resolve(((ParameterizedType) t).getRawType());
+			Class<?> raw = TypeSystem.toClass(((ParameterizedType) t).getRawType());
 			Type[] params = ((ParameterizedType) t).getActualTypeArguments().clone();
 			for (int i = 0; i < params.length; i++) {
-				params[i] = resolve(params[i]);
+				params[i] = resolveClass(params[i]);
 			}
-			return GenericType.newType((Class<?>) raw, params);
+			return GenericType.newType(raw, params);
 		}
 		System.out.println("TODO: " + t.getClass() + " as " + t);
 		return Object.class;
 	}
 
+	public Class<?> resolveClass(Type t) {
+		return TypeSystem.toClass(this.resolveType(t));
+	}
+
 	static HashMap<String, Type> uniqueMap = new HashMap<>();
 
 	static {
-		// int[]
-		// uniqueMap.put(key(UList.class, int.class), new
-		// GenericType(uniqueMap.size(), IArray.class, int.class));
-		uniqueMap.put(key(UList.class, int.class), IArray.class);
-
+		uniqueMap.put(key(konoha.Array.class, int.class), konoha.IArray.class);
 	}
 
 	public final static Type newType(Class<?> base, Type... params) {

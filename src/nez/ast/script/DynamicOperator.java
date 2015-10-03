@@ -12,7 +12,7 @@ public class DynamicOperator {
 			return +((Number) a).longValue();
 		}
 		if (a instanceof Number) {
-			return -((Number) a).intValue();
+			return +((Number) a).intValue();
 		}
 		throw new ScriptRuntimeException("unsupproted operation + %s", c(a));
 	}

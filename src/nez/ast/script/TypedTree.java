@@ -77,10 +77,10 @@ public class TypedTree extends Tree<TypedTree> {
 		this.setValue(c);
 	}
 
-	public Type setMethod(Hint hint, Method m) {
+	public Type setMethod(Hint hint, Method m, TypeVarMatcher matcher) {
 		this.hint = hint;
 		this.setValue(m);
-		this.type = m.getReturnType();
+		this.type = matcher == null ? m.getReturnType() : matcher.resolve(m.getGenericReturnType());
 		return this.type;
 	}
 
