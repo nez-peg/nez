@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -74,6 +75,14 @@ public class TypeSystem implements CommonSymbols {
 		return deftype;
 	}
 
+	public final Class<?> resolveClass(Tree<?> node, Class<?> deftype) {
+		Type t = this.resolveType(node, deftype);
+		if (t == null) {
+			return deftype;
+		}
+		return TypeSystem.toClass(t);
+	}
+
 	/* GlobalVariables */
 
 	HashMap<String, GlobalVariable> GlobalVariables = new HashMap<>();
@@ -86,10 +95,11 @@ public class TypeSystem implements CommonSymbols {
 		return this.GlobalVariables.get(name);
 	}
 
-	public void addGlobalVariable(Type type, String name) {
+	public GlobalVariable newGlobalVariable(Type type, String name) {
 		Class<?> varClass = this.compl.compileGlobalVariable(TypeSystem.toClass(type), name);
 		GlobalVariable gv = new GlobalVariable(type, varClass);
 		this.GlobalVariables.put(name, gv);
+		return gv;
 	}
 
 	/* Method Map */
@@ -284,22 +294,31 @@ public class TypeSystem implements CommonSymbols {
 		newnode.set(0, _msg, node.newStringConst(msg));
 		context.log(msg);
 		newnode.setMethod(Hint.StaticInvocation, this.StaticErrorMethod);
-		node.setValue(null);
 		return newnode;
 	}
 
 	public String name(Type t) {
-		return t == null ? "untyped" : t.toString();
+		if (t == null) {
+			return "untyped";
+		}
+		if (t instanceof Class<?>) {
+			String n = ((Class) t).getName();
+			if (n.startsWith("java.lang.") || n.startsWith("java.util.")) {
+				return n.substring(10);
+			}
+			return n;
+		}
+		return t.toString();
 	}
 
-	public String pwarn(TypedTree node, String msg) {
+	public String reportWarning(TypedTree node, String msg) {
 		msg = node.formatSourceMessage("warning", msg);
 		context.log(msg);
 		return msg;
 	}
 
-	public String pwarn(TypedTree node, String fmt, Object... args) {
-		return pwarn(node, String.format(fmt, args));
+	public String reportWarning(TypedTree node, String fmt, Object... args) {
+		return reportWarning(node, String.format(fmt, args));
 	}
 
 	public TypedTree checkTypeEnforce(Class<?> vt, TypedTree node) {
@@ -331,7 +350,7 @@ public class TypeSystem implements CommonSymbols {
 			return newnode;
 		}
 		if (et.isAssignableFrom(vt)) {
-			pwarn(node, "unexpected downcast: %s => %s", name(et), name(vt));
+			reportWarning(node, "unexpected downcast: %s => %s", name(et), name(vt));
 			TypedTree newnode = node.newInstance(_DownCast, 1, null);
 			newnode.set(0, _expr, node);
 			newnode.setClass(Hint.DownCast, vt);
@@ -420,6 +439,12 @@ public class TypeSystem implements CommonSymbols {
 			if (t == t2) {
 				return t;
 			}
+			if (t == Object.class || t2 == Object.class) {
+				return Object.class;
+			}
+			if (t == BigDecimal.class || t2 == BigDecimal.class) {
+				return BigDecimal.class;
+			}
 			if (t == BigInteger.class || t2 == BigInteger.class) {
 				return BigInteger.class;
 			}
@@ -441,6 +466,12 @@ public class TypeSystem implements CommonSymbols {
 		public Type unify(Type t, Type t2) {
 			if (t == t2) {
 				return t;
+			}
+			if (t == Object.class || t2 == Object.class) {
+				return Object.class;
+			}
+			if (t == BigDecimal.class || t2 == BigDecimal.class) {
+				return BigDecimal.class;
 			}
 			if (t == BigInteger.class || t2 == BigInteger.class) {
 				return BigInteger.class;
@@ -464,6 +495,9 @@ public class TypeSystem implements CommonSymbols {
 			if (t == t2) {
 				return t;
 			}
+			if (t == BigDecimal.class || t2 == BigDecimal.class) {
+				return BigDecimal.class;
+			}
 			if (t == BigInteger.class || t2 == BigInteger.class) {
 				return BigInteger.class;
 			}
@@ -483,6 +517,9 @@ public class TypeSystem implements CommonSymbols {
 	private static class Bitwise implements BinaryTypeUnifier {
 		@Override
 		public Type unify(Type t, Type t2) {
+			if (t == Object.class || t2 == Object.class) {
+				return Object.class;
+			}
 			if (t == BigInteger.class || t2 == BigInteger.class) {
 				return BigInteger.class;
 			}
@@ -524,16 +561,16 @@ public class TypeSystem implements CommonSymbols {
 			Field f = o.getClass().getField(name);
 			return f.get(o);
 		} catch (NoSuchFieldException e) {
-			e.printStackTrace();
+			// e.printStackTrace();
 		} catch (IllegalArgumentException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			// e.printStackTrace();
 		} catch (IllegalAccessException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			// e.printStackTrace();
 		} catch (SecurityException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			// e.printStackTrace();
 		}
 		throw new ScriptRuntimeException("undefined field: %s of %s", name, o.getClass().getSimpleName());
 	}
@@ -544,21 +581,21 @@ public class TypeSystem implements CommonSymbols {
 			f.set(o, v);
 			return;
 		} catch (NoSuchFieldException e) {
-			e.printStackTrace();
+			// e.printStackTrace();
 		} catch (IllegalArgumentException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			// e.printStackTrace();
 		} catch (IllegalAccessException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			// e.printStackTrace();
 		} catch (SecurityException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			// e.printStackTrace();
 		}
 		throw new ScriptRuntimeException("undefined field: %s of %s", name, o.getClass().getSimpleName());
 	}
 
-	public final static String throwStaticError(String msg) {
+	public final static void throwStaticError(String msg) {
 		throw new ScriptRuntimeException(msg);
 	}
 

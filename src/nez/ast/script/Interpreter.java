@@ -51,15 +51,6 @@ public class Interpreter extends TreeVisitor implements CommonSymbols {
 	public Object visitUndefinedNode(Tree<?> node) {
 		System.out.println("TODO: define " + node);
 		return empty;
-		// =======
-		// private Object evalStaticNormalMethod(TypedTree node) {
-		// TypedTree argsNode = node.get(_param);
-		// Object[] args = new Object[argsNode.size()];
-		// for (int i = 0; i < args.length; i++) {
-		// args[i] = eval(argsNode.get(i));
-		// }
-		// return invokeStaticMethod(node.getMethod(), args);
-		// >>>>>>> 1129f6ce6b8f6cc55a2d37f48a4ed63624234d75
 	}
 
 	private Object invokeStaticMethod(Method m, Object... args) {
@@ -162,6 +153,7 @@ public class Interpreter extends TreeVisitor implements CommonSymbols {
 	public Object evalField(TypedTree node) {
 		Object recv = nullEval(node.get(_recv, null)); // static field is null
 		Field f = node.getField();
+		// System.out.println("eval field:" + recv + " . " + f);
 		try {
 			Object v = f.get(recv);
 			return v;
@@ -174,10 +166,10 @@ public class Interpreter extends TreeVisitor implements CommonSymbols {
 
 	private Object evalSetField(TypedTree node) {
 		Object recv = null;
-		Object value = node.get(_right); // right comes from assingment
+		Object value = eval(node.get(_expr));
 		Field f = node.getField();
 		if (!Modifier.isStatic(f.getModifiers())) {
-			recv = nullEval(node.get(_left, null));
+			recv = nullEval(node.get(_recv, null));
 		}
 		try {
 			f.set(recv, value);

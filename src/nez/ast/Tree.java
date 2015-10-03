@@ -188,6 +188,17 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements
 		}
 	}
 
+	public final void rename(Symbol oldlabel, Symbol newlabel) {
+		if (tag == oldlabel) {
+			this.tag = newlabel;
+		}
+		for (int i = 0; i < labels.length; i++) {
+			if (labels[i] == oldlabel) {
+				labels[i] = newlabel;
+			}
+		}
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
