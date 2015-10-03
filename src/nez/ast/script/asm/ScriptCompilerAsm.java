@@ -152,7 +152,6 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 			args[i] = typeof(argsNode.get(i));
 		}
 		java.lang.reflect.Method function = node.getMethod(); // typeSystem.findCompiledMethod(name,
-		// args);
 		this.mBuilder.callStaticMethod(function.getDeclaringClass(), function.getReturnType(), function.getName(), args);
 	}
 

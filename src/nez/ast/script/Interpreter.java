@@ -12,11 +12,13 @@ import nez.ast.script.asm.ScriptCompiler;
 public class Interpreter extends TreeVisitor implements CommonSymbols {
 	ScriptContext context;
 	TypeSystem typeSystem;
+	private ScriptCompiler compiler;
 
 	public Interpreter(ScriptContext sc, TypeSystem base) {
 		super(TypedTree.class);
 		this.context = sc;
 		this.typeSystem = base;
+		this.compiler = new ScriptCompiler(this.typeSystem);
 	}
 
 	private static EmptyResult empty = new EmptyResult();
@@ -49,6 +51,15 @@ public class Interpreter extends TreeVisitor implements CommonSymbols {
 	public Object visitUndefinedNode(Tree<?> node) {
 		System.out.println("TODO: define " + node);
 		return empty;
+		// =======
+		// private Object evalStaticNormalMethod(TypedTree node) {
+		// TypedTree argsNode = node.get(_param);
+		// Object[] args = new Object[argsNode.size()];
+		// for (int i = 0; i < args.length; i++) {
+		// args[i] = eval(argsNode.get(i));
+		// }
+		// return invokeStaticMethod(node.getMethod(), args);
+		// >>>>>>> 1129f6ce6b8f6cc55a2d37f48a4ed63624234d75
 	}
 
 	private Object invokeStaticMethod(Method m, Object... args) {
@@ -84,8 +95,7 @@ public class Interpreter extends TreeVisitor implements CommonSymbols {
 	/* TopLevel */
 
 	public Object evalFuncDecl(TypedTree node) {
-		ScriptCompiler compiler = new ScriptCompiler(this.typeSystem);
-		compiler.compileFuncDecl(node);
+		this.compiler.compileFuncDecl(node);
 		return empty;
 	}
 
