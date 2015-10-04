@@ -110,6 +110,18 @@ public class StaticOperator {
 		return a >= b;
 	}
 
+	public final static int opLeftShift(int a, int b) {
+		return a << b;
+	}
+
+	public final static int opRightShift(int a, int b) {
+		return a >> b;
+	}
+
+	public final static int opLogicalRightShift(int a, int b) {
+		return a >>> b;
+	}
+
 	public final static int opBitwiseAnd(int a, int b) {
 		return a & b;
 	}

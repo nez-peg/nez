@@ -201,6 +201,36 @@ public class DynamicOperator {
 		throw new ScriptRuntimeException("unsupproted operation %s >= %s", c(a), c(b));
 	}
 
+	public final static Object opLeftShift(Object a, Object b) {
+		if (a instanceof Number && b instanceof Number) {
+			if (a instanceof Long || a instanceof Long) {
+				return ((Number) a).longValue() << ((Number) b).longValue();
+			}
+			return ((Number) a).intValue() << ((Number) b).intValue();
+		}
+		throw new ScriptRuntimeException("unsupproted operation %s << %s", c(a), c(b));
+	}
+
+	public final static Object opRightShift(Object a, Object b) {
+		if (a instanceof Number && b instanceof Number) {
+			if (a instanceof Long || a instanceof Long) {
+				return ((Number) a).longValue() >> ((Number) b).longValue();
+			}
+			return ((Number) a).intValue() >> ((Number) b).intValue();
+		}
+		throw new ScriptRuntimeException("unsupproted operation %s >> %s", c(a), c(b));
+	}
+
+	public final static Object opLogicalRightShift(Object a, Object b) {
+		if (a instanceof Number && b instanceof Number) {
+			if (a instanceof Long || a instanceof Long) {
+				return ((Number) a).longValue() >>> ((Number) b).longValue();
+			}
+			return ((Number) a).intValue() >>> ((Number) b).intValue();
+		}
+		throw new ScriptRuntimeException("unsupproted operation %s >>> %s", c(a), c(b));
+	}
+
 	public final static Object opBitwiseAnd(Object a, Object b) {
 		if (a instanceof Number && b instanceof Number) {
 			if (a instanceof Long || a instanceof Long) {

@@ -607,10 +607,10 @@ public class TypeSystem implements CommonSymbols {
 			this.ObjectSetIndexer = this.getClass().getMethod("setObjectIndexer", Object.class, Object.class, Object.class);
 			this.StaticErrorMethod = this.getClass().getMethod("throwStaticError", String.class);
 			this.InterpolationMethod = this.getClass().getMethod("joinString", Object[].class);
-			this.invokeDynamicMethods[0] = this.getClass().getMethod("invoke0", Object.class, String.class);
-			this.invokeDynamicMethods[1] = this.getClass().getMethod("invoke1", Object.class, String.class, Object.class);
-			this.invokeDynamicMethods[2] = this.getClass().getMethod("invoke2", Object.class, String.class, Object.class, Object.class);
-			this.invokeDynamicMethods[3] = this.getClass().getMethod("invoke3", Object.class, String.class, Object.class, Object.class, Object.class);
+			this.invokeDynamicMethods[0] = this.getClass().getMethod("invoke", Object.class, String.class);
+			this.invokeDynamicMethods[1] = this.getClass().getMethod("invoke", Object.class, String.class, Object.class);
+			this.invokeDynamicMethods[2] = this.getClass().getMethod("invoke", Object.class, String.class, Object.class, Object.class);
+			this.invokeDynamicMethods[3] = this.getClass().getMethod("invoke", Object.class, String.class, Object.class, Object.class, Object.class);
 		} catch (NoSuchMethodException | SecurityException e) {
 			e.printStackTrace();
 		}
@@ -655,7 +655,7 @@ public class TypeSystem implements CommonSymbols {
 		return o.getClass();
 	}
 
-	public final static Object invoke0(Object self, String name) {
+	public final static Object invoke(Object self, String name) {
 		try {
 			Method m = self.getClass().getMethod(name);
 			return m.invoke(self);
@@ -665,7 +665,7 @@ public class TypeSystem implements CommonSymbols {
 		}
 	}
 
-	public final static Object invoke1(Object self, String name, Object a1) {
+	public final static Object invoke(Object self, String name, Object a1) {
 		try {
 			Class<?>[] p = { prim(a1) };
 			Method m = self.getClass().getMethod(name, p);
@@ -676,7 +676,7 @@ public class TypeSystem implements CommonSymbols {
 		}
 	}
 
-	public final static Object invoke2(Object self, String name, Object a1, Object a2) {
+	public final static Object invoke(Object self, String name, Object a1, Object a2) {
 		try {
 			Class<?>[] p = { prim(a1), prim(a2) };
 			Method m = self.getClass().getMethod(name, p);
@@ -687,7 +687,7 @@ public class TypeSystem implements CommonSymbols {
 		}
 	}
 
-	public final static Object invoke3(Object self, String name, Object a1, Object a2, Object a3) {
+	public final static Object invoke(Object self, String name, Object a1, Object a2, Object a3) {
 		try {
 			Class<?>[] p = { prim(a1), prim(a2), prim(a3) };
 			Method m = self.getClass().getMethod(name, p);
@@ -698,14 +698,12 @@ public class TypeSystem implements CommonSymbols {
 		}
 	}
 
-	public final static Object getObjectIndexer(Object o, Object index) {
-		// Method m = o.getClass().getMethod("get", index.getClass());
-		return null;
+	public final static Object getObjectIndexer(Object self, Object index) {
+		return invoke(self, "get", index);
 	}
 
-	public final static Object setObjectIndexer(Object o, Object index, Object value) {
-		// Method m = o.getClass().getMethod("get", index.getClass());
-		return null;
+	public final static Object setObjectIndexer(Object self, Object index, Object value) {
+		return invoke(self, "set", index, value);
 	}
 
 	public final static Object getDynamicField(Object o, String name) {

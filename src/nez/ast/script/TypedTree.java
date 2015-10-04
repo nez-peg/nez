@@ -12,7 +12,8 @@ import nez.util.UList;
 public class TypedTree extends Tree<TypedTree> {
 	public Hint hint = Hint.Unique;
 	Type type;
-	Method resolvedMethod;
+
+	// Method resolvedMethod;
 
 	TypedTree() {
 		super();
@@ -45,14 +46,17 @@ public class TypedTree extends Tree<TypedTree> {
 
 	@Override
 	protected TypedTree dupImpl() {
-		return new TypedTree(this.getTag(), this.getSource(), this.getSourcePosition(), this.getLength(), this.size(), getValue());
+		TypedTree t = new TypedTree(this.getTag(), this.getSource(), this.getSourcePosition(), this.getLength(), this.size(), getValue());
+		t.hint = this.hint;
+		t.type = this.type;
+		return t;
 	}
 
-	public void changed(Symbol tag, int n, Object v) {
-		this.tag = tag;
-		this.subTree = new TypedTree[n];
-		this.value = v;
-	}
+	// public void changed(Symbol tag, int n, Object v) {
+	// this.tag = tag;
+	// this.subTree = new TypedTree[n];
+	// this.value = v;
+	// }
 
 	public final Class<?> getClassType() {
 		return TypeSystem.toClass(this.type);

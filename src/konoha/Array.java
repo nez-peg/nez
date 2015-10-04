@@ -3,9 +3,8 @@ package konoha;
 import java.util.AbstractList;
 
 import nez.util.StringUtils;
-import nez.util.UList;
 
-public class Array<T> extends AbstractList<T> {
+public class Array<T> extends AbstractList<T> implements KonohaArray {
 	private int currentSize;
 	public T[] ArrayValues;
 
@@ -17,6 +16,11 @@ public class Array<T> extends AbstractList<T> {
 	public Array(T[] values, int size) {
 		this.ArrayValues = values;
 		this.currentSize = size;
+	}
+
+	@Override
+	public final Class<?> getElementType() {
+		return this.ArrayValues.getClass().getComponentType();
 	}
 
 	@Override
@@ -75,7 +79,7 @@ public class Array<T> extends AbstractList<T> {
 
 	private T[] newArray(int orgsize, int newsize) {
 		@SuppressWarnings("unchecked")
-		T[] newarrays = (T[]) java.lang.reflect.Array.newInstance(this.ArrayValues.getClass().getComponentType(), newsize);
+		T[] newarrays = (T[]) java.lang.reflect.Array.newInstance(this.getElementType(), newsize);
 		System.arraycopy(this.ArrayValues, 0, newarrays, 0, orgsize);
 		return newarrays;
 	}
@@ -107,7 +111,7 @@ public class Array<T> extends AbstractList<T> {
 			return this.ArrayValues;
 		} else {
 			@SuppressWarnings("unchecked")
-			T[] newValues = (T[]) java.lang.reflect.Array.newInstance(this.ArrayValues.getClass().getComponentType(), this.currentSize);
+			T[] newValues = (T[]) java.lang.reflect.Array.newInstance(this.getElementType(), this.currentSize);
 			System.arraycopy(this.ArrayValues, 0, newValues, 0, this.currentSize);
 			return newValues;
 		}
@@ -126,10 +130,6 @@ public class Array<T> extends AbstractList<T> {
 		}
 		this.currentSize = this.currentSize - 1;
 		return e;
-	}
-
-	public UList<T> f() {
-		return null;
 	}
 
 }

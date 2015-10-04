@@ -1,6 +1,6 @@
 package konoha;
 
-public class IArray<T> {
+public class IArray<T> implements KonohaArray {
 	private int currentSize;
 	public int[] ArrayValues;
 
@@ -16,6 +16,11 @@ public class IArray<T> {
 			Object o = v[i];
 			this.ArrayValues[i] = (o instanceof Number) ? ((Number) o).intValue() : 0;
 		}
+	}
+
+	@Override
+	public Class<?> getElementType() {
+		return int.class;
 	}
 
 	public final int size() {

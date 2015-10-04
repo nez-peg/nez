@@ -243,7 +243,7 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 	/* Expression */
 
 	public Type typeName(TypedTree node) {
-		Type t = this.tryCheckNameType(node);
+		Type t = this.tryCheckNameType(node, true);
 		if (t == null) {
 			String name = node.toText();
 			throw error(node, "undefined name: %s", name);
@@ -251,7 +251,7 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		return t;
 	}
 
-	private Type tryCheckNameType(TypedTree node) {
+	private Type tryCheckNameType(TypedTree node, boolean rewrite) {
 		String name = node.toText();
 		if (this.inFunction) {
 			if (this.scope.containsVariable(name)) {
@@ -260,6 +260,9 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		}
 		if (this.typeSystem.hasGlobalVariable(name)) {
 			GlobalVariable gv = this.typeSystem.getGlobalVariable(name);
+			if (rewrite) {
+				node.setField(Hint.GetField, gv.field);
+			}
 			return gv.getType();
 		}
 		return null;
@@ -281,6 +284,7 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		}
 		Type left = type(leftnode);
 		this.enforceType(left, node, _right);
+
 		if (leftnode.hint == Hint.GetField) {
 			Field f = leftnode.getField();
 			if (Modifier.isFinal(f.getModifiers())) {
@@ -716,6 +720,60 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		}
 		Type arrayType = typeSystem.newArrayType(elementType);
 		return arrayType;
+	}
+
+	// Syntax Sugar
+
+	private Type typeSelfAssign(TypedTree node, Symbol optag) {
+		TypedTree op = node.newInstance(optag, 0, null);
+		op.make(_left, node.get(_left).dup(), _right, node.get(_right));
+		node.set(_right, op);
+		node.setTag(_Assign);
+		return typeAssign(node);
+	}
+
+	public Type typeAssignAdd(TypedTree node) {
+		return this.typeSelfAssign(node, _Add);
+	}
+
+	public Type typeAssignSub(TypedTree node) {
+		return this.typeSelfAssign(node, _Sub);
+	}
+
+	public Type typeAssignMul(TypedTree node) {
+		return this.typeSelfAssign(node, _Mul);
+	}
+
+	public Type typeAssignDiv(TypedTree node) {
+		return this.typeSelfAssign(node, _Div);
+	}
+
+	public Type typeAssignMod(TypedTree node) {
+		return this.typeSelfAssign(node, _Mod);
+	}
+
+	public Type typeAssignLeftShift(TypedTree node) {
+		return this.typeSelfAssign(node, _LeftShift);
+	}
+
+	public Type typeAssignRightShift(TypedTree node) {
+		return this.typeSelfAssign(node, _RightShift);
+	}
+
+	public Type typeAssignLogicalRightShift(TypedTree node) {
+		return this.typeSelfAssign(node, _LogicalRightShift);
+	}
+
+	public Type typeAssignBitwiseAnd(TypedTree node) {
+		return this.typeSelfAssign(node, _BitwiseAnd);
+	}
+
+	public Type typeAssignBitwiseXOr(TypedTree node) {
+		return this.typeSelfAssign(node, _BitwiseXor);
+	}
+
+	public Type typeAssignBitwiseOr(TypedTree node) {
+		return this.typeSelfAssign(node, _BitwiseOr);
 	}
 
 	private TypeCheckerException error(TypedTree node, String fmt, Object... args) {
