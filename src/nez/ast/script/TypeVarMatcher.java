@@ -82,7 +82,7 @@ public class TypeVarMatcher {
 		return this.match(p, false, a);
 	}
 
-	public Type resolve(Type p) {
+	public Type resolve(Type p, Class<?> unresolved) {
 		if (p instanceof Class<?>) {
 			return p;
 		}
@@ -98,13 +98,13 @@ public class TypeVarMatcher {
 					return t;
 				}
 			}
-			return Object.class; // not found
+			return unresolved; // not found
 		}
 		if (p instanceof ParameterizedType) {
 			Type rawtype = ((ParameterizedType) p).getRawType();
 			Type[] params = ((ParameterizedType) p).getActualTypeArguments().clone();
 			for (int i = 0; i < params.length; i++) {
-				params[i] = resolve(params[i]);
+				params[i] = resolve(params[i], Object.class);
 			}
 			return GenericType.newType((Class<?>) rawtype, params);
 		}
@@ -115,7 +115,7 @@ public class TypeVarMatcher {
 			System.out.printf("TODO: GenericArrayType %s\n", p.getClass().getName());
 		}
 		System.out.printf("TODO: unknown %s\n", p.getClass().getName());
-		return Object.class;
+		return unresolved;
 	}
 
 }

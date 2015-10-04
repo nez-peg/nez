@@ -1,6 +1,7 @@
 package nez.ast.script;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
@@ -127,6 +128,10 @@ public class TypeSystem implements CommonSymbols {
 		this.setMethodMap(cast_key(f, t), m);
 	}
 
+	public Method getCastMethod(Type f, Type t) {
+		return this.getMethodMap(cast_key(TypeSystem.toClass(f), TypeSystem.toClass(t)));
+	}
+
 	public Method getCastMethod(Class<?> f, Class<?> t) {
 		// System.out.println("cast: " + cast_key(f, t) + " ? ");
 		return this.getMethodMap(cast_key(f, t));
@@ -175,7 +180,10 @@ public class TypeSystem implements CommonSymbols {
 		this.setType(c.getSimpleName(), c);
 	}
 
-	// find method
+	/**
+	 * Resolving method
+	 * 
+	 */
 
 	private Method matchMethod(Class<?> c, boolean isStaticOnly, TypeVarMatcher matcher, String name, Type[] types, UList<Method> buf) {
 		for (Method m : isStaticOnly ? c.getMethods() : c.getDeclaredMethods()) {
@@ -251,16 +259,19 @@ public class TypeSystem implements CommonSymbols {
 		return matcher.match(p, a);
 	}
 
-	private Method tryTypeEnforcement(int start, UList<Method> buf, TypedTree params) {
+	private Method checkMethodTypeEnforcement(int start, UList<Method> buf, TypeVarMatcher matcher, TypedTree params) {
 		if (buf != null && start < buf.size()) {
-			TypedTree[] a = new TypedTree[params.size()];
+			TypedTree[] results = new TypedTree[params.size()];
 			for (int j = start; j < buf.size(); j++) {
 				Method m = buf.ArrayValues[j];
-				Arrays.fill(a, null);
-				Class<?>[] p = m.getParameterTypes();
-				if (this.checkTypeEnforce(a, p, params)) {
-					for (int i = 0; i < a.length; i++) {
-						params.set(i, a[i]);
+				Arrays.fill(results, null);
+				Type[] p = m.getParameterTypes();
+				if (matcher != null && isGenericMethod(m)) {
+					p = m.getGenericParameterTypes();
+				}
+				if (this.checkArgumentTypeEnforcement(results, matcher, p, params)) {
+					for (int i = 0; i < results.length; i++) {
+						params.set(i, results[i]);
 					}
 					buf.clear(start);
 					return m;
@@ -270,15 +281,33 @@ public class TypeSystem implements CommonSymbols {
 		return null;
 	}
 
-	private boolean checkTypeEnforce(TypedTree[] a, Class<?>[] p, TypedTree params) {
+	private boolean checkArgumentTypeEnforcement(TypedTree[] results, TypeVarMatcher matcher, Type[] p, TypedTree params) {
 		for (int i = 0; i < p.length; i++) {
 			TypedTree sub = params.get(i);
-			a[i] = this.checkTypeEnforce(p[i], sub);
-			if (a[i] == null) {
+			results[i] = matcher != null ? this.checkTypeEnforce(matcher, p[i], sub) : this.checkTypeEnforce((Class<?>) p[i], sub);
+			if (results[i] == null) {
+				matcher.init();
 				return false;
 			}
 		}
 		return true;
+	}
+
+	public TypedTree checkTypeEnforce(TypeVarMatcher matcher, Type p, TypedTree node) {
+		if (accept(matcher, p, node.getType())) {
+			return node;
+		}
+		Type resolved = matcher.resolve(p, null);
+		if (resolved != null) {
+			Method m = this.getCastMethod(node.getType(), resolved);
+			if (m != null) {
+				TypedTree newnode = node.newInstance(_Cast, 1, null);
+				newnode.set(0, _expr, node);
+				newnode.setMethod(Hint.StaticInvocation, m, null);
+				return newnode;
+			}
+		}
+		return null;
 	}
 
 	public TypedTree checkTypeEnforce(Class<?> vt, TypedTree node) {
@@ -304,7 +333,7 @@ public class TypeSystem implements CommonSymbols {
 		if (m != null) {
 			return m;
 		}
-		return this.tryTypeEnforcement(start, buf, params);
+		return this.checkMethodTypeEnforcement(start, buf, null, params);
 	}
 
 	// function, operator
@@ -317,7 +346,7 @@ public class TypeSystem implements CommonSymbols {
 				return m;
 			}
 		}
-		return this.tryTypeEnforcement(start, buf, params);
+		return this.checkMethodTypeEnforcement(start, buf, null, params);
 	}
 
 	// object method
@@ -335,7 +364,7 @@ public class TypeSystem implements CommonSymbols {
 			}
 			c = c.getSuperclass();
 		}
-		return this.tryTypeEnforcement(start, buf, params);
+		return this.checkMethodTypeEnforcement(start, buf, matcher, params);
 	}
 
 	// type check
@@ -562,20 +591,121 @@ public class TypeSystem implements CommonSymbols {
 
 	protected Method DynamicGetter = null;
 	protected Method DynamicSetter = null;
+	protected Method ObjectIndexer = null;
+	protected Method ObjectSetIndexer = null;
+
 	protected Method StaticErrorMethod = null;
 	protected Method InterpolationMethod = null;
+
+	protected Method[] invokeDynamicMethods = new Method[4];
 
 	void initMethod() {
 		try {
 			this.DynamicGetter = this.getClass().getMethod("getDynamicField", Object.class, String.class);
 			this.DynamicSetter = this.getClass().getMethod("setDynamicField", Object.class, String.class, Object.class);
+			this.ObjectIndexer = this.getClass().getMethod("getObjectIndexer", Object.class, Object.class);
+			this.ObjectSetIndexer = this.getClass().getMethod("setObjectIndexer", Object.class, Object.class, Object.class);
 			this.StaticErrorMethod = this.getClass().getMethod("throwStaticError", String.class);
 			this.InterpolationMethod = this.getClass().getMethod("joinString", Object[].class);
-		} catch (NoSuchMethodException e) {
-			e.printStackTrace();
-		} catch (SecurityException e) {
+			this.invokeDynamicMethods[0] = this.getClass().getMethod("invoke0", Object.class, String.class);
+			this.invokeDynamicMethods[1] = this.getClass().getMethod("invoke1", Object.class, String.class, Object.class);
+			this.invokeDynamicMethods[2] = this.getClass().getMethod("invoke2", Object.class, String.class, Object.class, Object.class);
+			this.invokeDynamicMethods[3] = this.getClass().getMethod("invoke3", Object.class, String.class, Object.class, Object.class, Object.class);
+		} catch (NoSuchMethodException | SecurityException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public Method getInvokeDynamicFunction(int paramsize) {
+		if (paramsize < this.invokeDynamicMethods.length) {
+			return this.invokeDynamicMethods[paramsize];
+		}
+		return null;
+	}
+
+	private final static Class<?> prim(Object o) {
+		if (o instanceof Number) {
+			Class<?> t = o.getClass();
+			if (t == Integer.class) {
+				return int.class;
+			}
+			if (t == Double.class) {
+				return double.class;
+			}
+			if (t == Long.class) {
+				return long.class;
+			}
+			if (t == Byte.class) {
+				return byte.class;
+			}
+			if (t == Float.class) {
+				return float.class;
+			}
+			if (t == Character.class) {
+				return char.class;
+			}
+			if (t == Short.class) {
+				return short.class;
+			}
+			return t;
+		}
+		if (o instanceof Boolean) {
+			return boolean.class;
+		}
+		return o.getClass();
+	}
+
+	public final static Object invoke0(Object self, String name) {
+		try {
+			Method m = self.getClass().getMethod(name);
+			return m.invoke(self);
+		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+			// e.printStackTrace();
+			throw new ScriptRuntimeException(e.getMessage());
+		}
+	}
+
+	public final static Object invoke1(Object self, String name, Object a1) {
+		try {
+			Class<?>[] p = { prim(a1) };
+			Method m = self.getClass().getMethod(name, p);
+			return m.invoke(self, a1);
+		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+			// e.printStackTrace();
+			throw new ScriptRuntimeException(e.getMessage());
+		}
+	}
+
+	public final static Object invoke2(Object self, String name, Object a1, Object a2) {
+		try {
+			Class<?>[] p = { prim(a1), prim(a2) };
+			Method m = self.getClass().getMethod(name, p);
+			return m.invoke(self, a1, a2);
+		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+			// e.printStackTrace();
+			throw new ScriptRuntimeException(e.getMessage());
+		}
+	}
+
+	public final static Object invoke3(Object self, String name, Object a1, Object a2, Object a3) {
+		try {
+			Class<?>[] p = { prim(a1), prim(a2), prim(a3) };
+			Method m = self.getClass().getMethod(name, p);
+			return m.invoke(self, a1, a2, a3);
+		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+			// e.printStackTrace();
+			throw new ScriptRuntimeException(e.getMessage());
+		}
+	}
+
+	public final static Object getObjectIndexer(Object o, Object index) {
+		// Method m = o.getClass().getMethod("get", index.getClass());
+		return null;
+	}
+
+	public final static Object setObjectIndexer(Object o, Object index, Object value) {
+		// Method m = o.getClass().getMethod("get", index.getClass());
+		return null;
 	}
 
 	public final static Object getDynamicField(Object o, String name) {
@@ -664,7 +794,7 @@ public class TypeSystem implements CommonSymbols {
 		return null;
 	}
 
-	public boolean isDynamic(Class<?> c) {
+	public boolean isDynamic(Type c) {
 		return c == Object.class;
 	}
 

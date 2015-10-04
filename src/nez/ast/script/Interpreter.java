@@ -220,8 +220,8 @@ public class Interpreter extends TreeVisitor implements CommonSymbols {
 		Object[] args = evalApplyArgument(node);
 		Class<?> atype = node.getClassType();
 		if (atype == IArray.class) {
-			Object a = new IArray<Object>(args, args.length);
-			System.out.println("AAA " + a + " " + a.getClass());
+			return new IArray<Object>(args, args.length);
+			// System.out.println("AAA " + a + " " + a.getClass());
 		}
 		return new Array(args, args.length);
 	}

@@ -8,5 +8,6 @@ public enum Hint {
 	MethodApply, //
 	GetField, //
 	SetField, //
-	DownCast,
+	DownCast, //
+	StaticDynamicInvocation, //
 }

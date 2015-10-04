@@ -12,6 +12,7 @@ import nez.util.StringUtils;
 import nez.util.UList;
 
 public class TypeChecker extends TreeVisitor implements CommonSymbols {
+	boolean isShellMode = true;
 	ScriptContext context;
 	TypeSystem typeSystem;
 	TypeScope scope;
@@ -234,7 +235,23 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		return void.class;
 	}
 
-	private Type resolveNameType(TypedTree node) {
+	/* StatementExpression */
+	public Type typeExpression(TypedTree node) {
+		return type(node.get(0));
+	}
+
+	/* Expression */
+
+	public Type typeName(TypedTree node) {
+		Type t = this.tryCheckNameType(node);
+		if (t == null) {
+			String name = node.toText();
+			throw error(node, "undefined name: %s", name);
+		}
+		return t;
+	}
+
+	private Type tryCheckNameType(TypedTree node) {
 		String name = node.toText();
 		if (this.inFunction) {
 			if (this.scope.containsVariable(name)) {
@@ -248,35 +265,26 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		return null;
 	}
 
-	public Type typeName(TypedTree node) {
-		String name = node.toText();
-		if (this.inFunction) {
-			if (this.scope.containsVariable(name)) {
-				return this.scope.getVarType(name);
-			}
-		}
-		if (this.typeSystem.hasGlobalVariable(name)) {
-			GlobalVariable gv = this.typeSystem.getGlobalVariable(name);
-			node.setField(Hint.GetField, gv.field);
-			return gv.getType();
-		}
-		throw error(node, "undefined name: %s", name);
-	}
-
 	public Type typeAssign(TypedTree node) {
 		TypedTree leftnode = node.get(_left);
-		if (!this.inFunction && leftnode.is(_Name)) {
+		if (isShellMode && !this.inFunction && leftnode.is(_Name)) {
 			String name = node.getText(_left, null);
 			if (!this.typeSystem.hasGlobalVariable(name)) {
 				this.typeSystem.newGlobalVariable(Object.class, name);
 			}
+		}
+		if (leftnode.is(_Indexer)) {
+			return typeSetIndexer(node, //
+					node.get(_left).get(_recv), //
+					node.get(_left).get(_param), //
+					node.get(_right));
 		}
 		Type left = type(leftnode);
 		this.enforceType(left, node, _right);
 		if (leftnode.hint == Hint.GetField) {
 			Field f = leftnode.getField();
 			if (Modifier.isFinal(f.getModifiers())) {
-				throw error(node.get(_left), "readonly variable");
+				throw error(node.get(_left), "readonly");
 			}
 			if (!Modifier.isStatic(f.getModifiers())) {
 				node.set(_left, leftnode.get(_recv));
@@ -286,11 +294,6 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 			node.setField(Hint.SetField, f);
 		}
 		return left;
-	}
-
-	/* StatementExpression */
-	public Type typeExpression(TypedTree node) {
-		return type(node.get(0));
 	}
 
 	/* Expression */
@@ -308,7 +311,8 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 			m = typeSystem.getConvertMethod(exp, req);
 		}
 		if (m != null) {
-			return node.setMethod(Hint.Apply, m, null);
+			node.makeFlattenedList(node.get(_expr));
+			return node.setMethod(Hint.StaticInvocation, m, null);
 		}
 		if (req.isAssignableFrom(exp)) { // upcast
 			node.setTag(_UpCast);
@@ -321,13 +325,13 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		throw error(node.get(_type), "undefined cast: %s => %s", name(inner), name(t));
 	}
 
-	public Type[] typeList(TypedTree node) {
-		Type[] args = new Type[node.size()];
-		for (int i = 0; i < node.size(); i++) {
-			args[i] = type(node.get(i));
-		}
-		return args;
-	}
+	// public Type[] typeList(TypedTree node) {
+	// Type[] args = new Type[node.size()];
+	// for (int i = 0; i < node.size(); i++) {
+	// args[i] = type(node.get(i));
+	// }
+	// return args;
+	// }
 
 	public Type typeField(TypedTree node) {
 		if (isStaticClassRecv(node)) {
@@ -358,22 +362,37 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		throw error(node.get(_name), "undefined field %s of %s", name, name(c));
 	}
 
-	public Type typeApply(TypedTree node) {
-		String name = node.getText(_name, "");
-		TypedTree args = node.get(_param);
-		Type[] types = typeApplyArguments(args);
+	public Type typeIndexer(TypedTree node) {
+		Type recv_t = type(node.get(_recv));
+		Type[] param_t = this.typeApplyArguments(node.get(_param));
 		int start = this.bufferMethods.size();
-		Method m = this.typeSystem.resolveFunctionMethod(name, types, bufferMethods, args);
-		return m != null ? this.resolvedMethod(node, Hint.StaticInvocation, m, null) //
-				: this.errorMethod(node, start, "funciton: %s", name);
+		Method m = this.typeSystem.resolveObjectMethod(recv_t, this.bufferMatcher, "get", param_t, null, null);
+		if (m != null) {
+			return this.resolvedMethod(node, Hint.MethodApply, m, bufferMatcher);
+		}
+		if (this.typeSystem.isDynamic(recv_t)) {
+			node.makeFlattenedList(node.get(_recv), node.get(_param));
+			return node.setMethod(Hint.StaticInvocation, typeSystem.ObjectIndexer, null);
+		}
+		return this.errorMethod(node, start, "unsupported indexer [] for %s", name(recv_t));
 	}
 
-	private Type[] typeApplyArguments(TypedTree args) {
-		Type[] types = new Type[args.size()];
-		for (int i = 0; i < args.size(); i++) {
-			types[i] = type(args.get(i));
+	private Type typeSetIndexer(TypedTree node, TypedTree recv, TypedTree param, TypedTree expr) {
+		param.makeFlattenedList(param, expr);
+		node.make(_recv, recv, _param, param);
+		Type recv_t = type(node.get(_recv));
+		Type[] param_t = this.typeApplyArguments(node.get(_param));
+		int start = this.bufferMethods.size();
+		this.bufferMatcher.init(recv_t);
+		Method m = this.typeSystem.resolveObjectMethod(recv_t, this.bufferMatcher, "set", param_t, this.bufferMethods, node.get(_param));
+		if (m != null) {
+			return this.resolvedMethod(node, Hint.MethodApply, m, bufferMatcher);
 		}
-		return types;
+		if (this.typeSystem.isDynamic(recv_t)) {
+			node.makeFlattenedList(node.get(_recv), node.get(_param));
+			return node.setMethod(Hint.StaticInvocation, typeSystem.ObjectSetIndexer, null);
+		}
+		return this.errorMethod(node, start, "unsupported set indexer [] for %s", name(recv_t));
 	}
 
 	TypeVarMatcher bufferMatcher = new TypeVarMatcher();
@@ -403,6 +422,24 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		throw error(node, msg);
 	}
 
+	public Type typeApply(TypedTree node) {
+		String name = node.getText(_name, "");
+		TypedTree args = node.get(_param);
+		Type[] types = typeApplyArguments(args);
+		int start = this.bufferMethods.size();
+		Method m = this.typeSystem.resolveFunctionMethod(name, types, bufferMethods, args);
+		return m != null ? this.resolvedMethod(node, Hint.StaticInvocation, m, null) //
+				: this.errorMethod(node, start, "funciton: %s", name);
+	}
+
+	private Type[] typeApplyArguments(TypedTree args) {
+		Type[] types = new Type[args.size()];
+		for (int i = 0; i < args.size(); i++) {
+			types[i] = type(args.get(i));
+		}
+		return types;
+	}
+
 	public Type typeMethodApply(TypedTree node) {
 		if (isStaticClassRecv(node)) {
 			return this.typeStaticMethodApply(node);
@@ -414,8 +451,17 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		int start = this.bufferMethods.size();
 		this.bufferMatcher.init(recv);
 		Method m = this.typeSystem.resolveObjectMethod(recv, this.bufferMatcher, name, types, bufferMethods, args);
-		return m != null ? this.resolvedMethod(node, Hint.MethodApply, m, bufferMatcher) //
-				: this.errorMethod(node, start, "method %s of %s", name, name(recv));
+		if (m != null) {
+			this.resolvedMethod(node, Hint.MethodApply, m, bufferMatcher);
+		}
+		if (typeSystem.isDynamic(recv)) {
+			m = this.typeSystem.getInvokeDynamicFunction(node.get(_param).size());
+			if (m != null) {
+				node.makeFlattenedList(node.get(_recv), node.newStringConst(name), node.get(_param));
+				return node.setMethod(Hint.StaticDynamicInvocation, m, null);
+			}
+		}
+		return this.errorMethod(node, start, "method %s of %s", name, name(recv));
 	}
 
 	private boolean isStaticClassRecv(TypedTree node) {
@@ -670,16 +716,6 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		}
 		Type arrayType = typeSystem.newArrayType(elementType);
 		return arrayType;
-	}
-
-	public Type typeIndexer(TypedTree node) {
-		Type recv = type(node.get(_recv));
-		Type[] types = this.typeApplyArguments(node.get(_param));
-		int start = this.bufferMethods.size();
-		this.bufferMatcher.init(recv);
-		Method m = this.typeSystem.resolveObjectMethod(recv, this.bufferMatcher, "get", types, null, null);
-		return m != null ? this.resolvedMethod(node, Hint.MethodApply, m, bufferMatcher) //
-				: this.errorMethod(node, start, "unsupported indexer [] for %s", name(recv));
 	}
 
 	private TypeCheckerException error(TypedTree node, String fmt, Object... args) {

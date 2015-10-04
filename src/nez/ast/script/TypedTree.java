@@ -7,6 +7,7 @@ import java.lang.reflect.Type;
 import nez.ast.Source;
 import nez.ast.Symbol;
 import nez.ast.Tree;
+import nez.util.UList;
 
 public class TypedTree extends Tree<TypedTree> {
 	public Hint hint = Hint.Unique;
@@ -80,7 +81,7 @@ public class TypedTree extends Tree<TypedTree> {
 	public Type setMethod(Hint hint, Method m, TypeVarMatcher matcher) {
 		this.hint = hint;
 		this.setValue(m);
-		this.type = matcher == null ? m.getReturnType() : matcher.resolve(m.getGenericReturnType());
+		this.type = matcher == null ? m.getReturnType() : matcher.resolve(m.getGenericReturnType(), Object.class);
 		return this.type;
 	}
 
@@ -114,6 +115,38 @@ public class TypedTree extends Tree<TypedTree> {
 
 	public Hint hint() {
 		return this.hint;
+	}
+
+	/* Tree Manipulation */
+
+	public void makeFlattenedList(TypedTree... args) {
+		UList<TypedTree> l = new UList<TypedTree>(new TypedTree[4]);
+		for (TypedTree t : args) {
+			if (t.size() == 0) {
+				l.add(t);
+			} else {
+				for (TypedTree sub : t) {
+					l.add(sub);
+				}
+			}
+		}
+		this.subTree = l.compactArray();
+		this.labels = new Symbol[l.size()];
+	}
+
+	public void make(Symbol l1, TypedTree t1) {
+		this.subTree = new TypedTree[] { t1 };
+		this.labels = new Symbol[] { l1 };
+	}
+
+	public void make(Symbol l1, TypedTree t1, Symbol l2, TypedTree t2) {
+		this.subTree = new TypedTree[] { t1, t2 };
+		this.labels = new Symbol[] { l1, l2 };
+	}
+
+	public void make(Symbol l1, TypedTree t1, Symbol l2, TypedTree t2, Symbol l3, TypedTree t3) {
+		this.subTree = new TypedTree[] { t1, t2, t3 };
+		this.labels = new Symbol[] { l1, l2, l3 };
 	}
 
 }
