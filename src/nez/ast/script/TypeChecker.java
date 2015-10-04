@@ -432,7 +432,7 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		Type[] types = typeApplyArguments(args);
 		int start = this.bufferMethods.size();
 		Method m = this.typeSystem.resolveFunctionMethod(name, types, bufferMethods, args);
-		return m != null ? this.resolvedMethod(node, Hint.StaticInvocation, m, null) //
+		return m != null ? this.resolvedMethod(node, Hint.Apply, m, null) //
 				: this.errorMethod(node, start, "funciton: %s", name);
 	}
 

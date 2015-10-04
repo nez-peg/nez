@@ -130,9 +130,11 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 	}
 
 	/* static function */
+	int unique = 0;
 
 	public Class<?> compileStaticFuncDecl(String className, TypedTree node) {
-		this.openClass(className);
+		this.openClass("F_" + className + "_" + unique);
+		unique++;
 		this.visitFuncDecl(node);
 		return this.closeClass();
 	}
