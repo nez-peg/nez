@@ -48,6 +48,8 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 		return (Expression) visit("pi", Expression.class, expr, k);
 	}
 
+	boolean isSOS = false;
+
 	public Expression piPattern(Tree<?> e, Expression k) {
 		String ruleName = "Pattern";
 		Expression ne = ExpressionCommons.newNonTerminal(e, this.getGrammar(), ruleName);
@@ -56,7 +58,12 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 		Expression zeroMore = ExpressionCommons.newPzero(null, notPattern);
 		Expression oneMore = ExpressionCommons.newPone(null, toSeq(null, ne, zeroMore));
 		Expression main = toSeq(null, zeroMore, oneMore);
-		return main;
+		ruleName = "SOSPattern";
+		isSOS = true;
+		ne = ExpressionCommons.newNonTerminal(e, this.getGrammar(), ruleName);
+		getGrammar().newProduction(ruleName, pi(e.get(0), k));
+		Expression SOS = toSeq(null, ne, ExpressionCommons.newPzero(null, toAny(null)));
+		return toChoice(null, SOS, main);
 	}
 
 	// pi(e, k) e: regular expression, k: continuation
@@ -181,9 +188,13 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 		return toSeq(c, k);
 	}
 
-	// stub
-	// public Expression piStartOfString(Tree<?> e, Expression k) {
-	// }
+	// TODO modify implementation
+	public Expression piStartOfString(Tree<?> e, Expression k) {
+		if (isSOS) {
+			return pi(e.get(0), k);
+		}
+		return ExpressionCommons.newFailure(null);
+	}
 
 	public Expression piEndOfString(Tree<?> e, Expression k) {
 		return pi(e.get(0), toSeq(null, ExpressionCommons.newPnot(null, toAny(null)), k));
