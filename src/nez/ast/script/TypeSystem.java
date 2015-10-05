@@ -14,7 +14,6 @@ import konoha.Function;
 import nez.ast.Tree;
 import nez.ast.script.asm.ScriptCompiler;
 import nez.util.UList;
-import nez.util.UMap;
 
 public class TypeSystem implements CommonSymbols {
 	ScriptContext context;
@@ -28,10 +27,6 @@ public class TypeSystem implements CommonSymbols {
 		initDebug();
 	}
 
-	public void init(ScriptCompiler compl) {
-		this.compl = compl; // this is called when the complier is instatiated
-	}
-
 	void init() {
 		loadStaticFunctionClass(DynamicOperator.class, false);
 		loadStaticFunctionClass(StaticOperator.class, false);
@@ -39,14 +34,20 @@ public class TypeSystem implements CommonSymbols {
 		this.setType("void", void.class);
 		this.setType("boolean", boolean.class);
 		this.setType("byte", byte.class);
+		this.setType("char", char.class);
+		this.setType("short", int.class);
 		this.setType("int", int.class);
 		this.setType("long", long.class);
+		this.setType("float", double.class);
 		this.setType("double", double.class);
 		this.setType("String", String.class);
 		this.setType("Array", konoha.Array.class);
-		this.setType("Dict", UMap.class);
+		this.setType("Dict", konoha.Dict.class);
 		this.setType("Func", Function.class);
+	}
 
+	public void init(ScriptCompiler compl) {
+		this.compl = compl; // this is called when the complier is instatiated
 	}
 
 	void initDebug() {
@@ -62,21 +63,41 @@ public class TypeSystem implements CommonSymbols {
 		this.TypeNames.put(name, type);
 	}
 
-	public final Type resolveType(Tree<?> node, Type deftype) {
+	public final Type resolveType(TypedTree node, Type deftype) {
 		if (node == null) {
 			return deftype;
 		}
 		if (node.size() == 0) {
 			Type t = this.TypeNames.get(node.toText());
+			if (t == null) {
+				throw this.error(node, "undefined type %s", node.toText());
+			}
 			return t == null ? deftype : t;
 		}
 		if (node.is(_ArrayType)) {
 			return GenericType.newType(konoha.Array.class, resolveType(node.get(_base), Object.class));
 		}
+		if (node.is(_GenericType)) {
+			Class<?> base = this.resolveClass(node.get(_base), null);
+			if (base == null) {
+				return deftype;
+			}
+			int paramSize = base.getTypeParameters().length;
+			if (node.get(_param).size() != paramSize) {
+				throw this.error(node, "mismatched parameter number %s", base);
+			}
+			Type[] p = new Type[paramSize];
+			int c = 0;
+			for (TypedTree sub : node.get(_param)) {
+				p[c] = resolveType(sub, Object.class);
+				c++;
+			}
+			return GenericType.newType(base, p);
+		}
 		return deftype;
 	}
 
-	public final Class<?> resolveClass(Tree<?> node, Class<?> deftype) {
+	public final Class<?> resolveClass(TypedTree node, Class<?> deftype) {
 		Type t = this.resolveType(node, deftype);
 		if (t == null) {
 			return deftype;
@@ -387,7 +408,7 @@ public class TypeSystem implements CommonSymbols {
 			return "untyped";
 		}
 		if (t instanceof Class<?>) {
-			String n = ((Class) t).getName();
+			String n = ((Class<?>) t).getName();
 			if (n.startsWith("java.lang.") || n.startsWith("java.util.")) {
 				return n.substring(10);
 			}

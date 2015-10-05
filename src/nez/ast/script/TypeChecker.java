@@ -15,34 +15,41 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 	boolean isShellMode = true;
 	ScriptContext context;
 	TypeSystem typeSystem;
-	TypeScope scope;
+
+	// TypeScope scope;
 
 	public TypeChecker(ScriptContext context, TypeSystem typeSystem) {
 		super(TypedTree.class);
 		this.context = context;
 		this.typeSystem = typeSystem;
-		this.scope = new TypeScope();
 	}
 
-	boolean inFunction = false;
-	Type returnType = null;
+	FunctionBuilder function = null;
 
-	public void enterFunction() {
-		returnType = null;
-		inFunction = true;
+	//
+	// boolean inFunction = false;
+	// Type returnType = null;
+
+	public final FunctionBuilder enterFunction(String name) {
+		this.function = new FunctionBuilder(this.function, name);
+		return this.function;
 	}
 
-	public void exitFunction() {
-		inFunction = false;
+	public final void exitFunction() {
+		this.function = this.function.pop();
 	}
 
-	public void setReturnType(Type t) {
-		this.returnType = t;
+	public final boolean inFunction() {
+		return this.function != null;
 	}
 
-	public Type getReturnType() {
-		return this.returnType;
-	}
+	// public void setReturnType(Type t) {
+	// this.returnType = t;
+	// }
+	//
+	// public Type getReturnType() {
+	// return this.returnType;
+	// }
 
 	public Type type(TypedTree node) {
 		Type c = (Type) visit("type", node);
@@ -114,10 +121,10 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		String name = node.getText(_name, null);
 		TypedTree bodyNode = node.get(_body, null);
 		if (bodyNode != null) {
-			this.enterFunction();
+			FunctionBuilder f = this.enterFunction(name);
 			Type type = typeSystem.resolveType(node.get(_type, null), null);
 			if (type != null) {
-				this.setReturnType(type);
+				f.setReturnType(type);
 				typed(node.get(_type), type);
 			}
 			TypedTree paramsNode = node.get(_param, null);
@@ -125,28 +132,31 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 				for (TypedTree p : paramsNode) {
 					String pname = p.getText(_name, null);
 					Type ptype = typeSystem.resolveType(p.get(_type, null), Object.class);
-					scope.setVarType(pname, ptype);
+					f.setVarType(pname, ptype);
 					typed(p, ptype);
 				}
 			}
 			type(bodyNode);
 			this.exitFunction();
+			if (f.getReturnType() == null) {
+				f.setReturnType(void.class);
+			}
+			typed(node.get(_name), f.getReturnType());
 		}
-		if (this.getReturnType() == null) {
-			this.setReturnType(void.class);
-		}
-		typed(node.get(_name), this.getReturnType());
 		return void.class;
 	}
 
 	public Type typeReturn(TypedTree node) {
-		Type t = this.getReturnType();
+		if (!inFunction()) {
+			throw this.error(node, "return must be inside function");
+		}
+		Type t = this.function.getReturnType();
 		TypedTree exprNode = node.get(_expr, null);
 		if (t == null) {
 			if (exprNode == null) {
-				this.setReturnType(void.class);
+				this.function.setReturnType(void.class);
 			} else {
-				this.setReturnType(type(exprNode));
+				this.function.setReturnType(type(exprNode));
 			}
 			return void.class;
 		}
@@ -159,6 +169,9 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 	/* Statement */
 
 	public Type typeBlock(TypedTree node) {
+		if (inFunction()) {
+			this.function.beginLocalVarScope();
+		}
 		for (int i = 0; i < node.size(); i++) {
 			TypedTree sub = node.get(i);
 			try {
@@ -167,6 +180,9 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 				sub = e.errorTree;
 				node.set(i, sub);
 			}
+		}
+		if (inFunction()) {
+			this.function.endLocalVarScope();
 		}
 		return void.class;
 	}
@@ -178,6 +194,16 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 			type(node.get(_else));
 		}
 		return void.class;
+	}
+
+	public Type typeConditional(TypedTree node) {
+		this.enforceType(boolean.class, node, _cond);
+		Type then_t = type(node.get(_then));
+		Type else_t = type(node.get(_else));
+		if (then_t != else_t) {
+			this.enforceType(then_t, node, _else);
+		}
+		return then_t;
 	}
 
 	public Type typeWhile(TypedTree node) {
@@ -203,9 +229,9 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 			}
 		}
 		typed(node.get(_name), type);
-		if (inFunction) {
+		if (this.inFunction()) {
 			// System.out.println("local variable");
-			scope.setVarType(name, type);
+			this.function.setVarType(name, type);
 			if (exprNode == null) {
 				node.done();
 				return void.class;
@@ -253,9 +279,9 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 
 	private Type tryCheckNameType(TypedTree node, boolean rewrite) {
 		String name = node.toText();
-		if (this.inFunction) {
-			if (this.scope.containsVariable(name)) {
-				return this.scope.getVarType(name);
+		if (this.inFunction()) {
+			if (this.function.containsVariable(name)) {
+				return this.function.getVarType(name);
 			}
 		}
 		if (this.typeSystem.hasGlobalVariable(name)) {
@@ -270,7 +296,7 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 
 	public Type typeAssign(TypedTree node) {
 		TypedTree leftnode = node.get(_left);
-		if (isShellMode && !this.inFunction && leftnode.is(_Name)) {
+		if (isShellMode && !this.inFunction() && leftnode.is(_Name)) {
 			String name = node.getText(_left, null);
 			if (!this.typeSystem.hasGlobalVariable(name)) {
 				this.typeSystem.newGlobalVariable(Object.class, name);
@@ -778,14 +804,6 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 
 	private TypeCheckerException error(TypedTree node, String fmt, Object... args) {
 		return this.typeSystem.error(node, fmt, args);
-	}
-
-	public void pushScope() {
-		this.scope = new TypeScope(this.scope);
-	}
-
-	public void popScope() {
-		this.scope = this.scope.parent;
 	}
 
 }
