@@ -54,16 +54,14 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 		String ruleName = "Pattern";
 		Expression ne = ExpressionCommons.newNonTerminal(e, this.getGrammar(), ruleName);
 		getGrammar().newProduction(ruleName, pi(e.get(0), k));
-		Expression notPattern = toSeq(null, ExpressionCommons.newPnot(null, ne), toAny(null));
-		Expression zeroMore = ExpressionCommons.newPzero(null, notPattern);
-		Expression oneMore = ExpressionCommons.newPone(null, toSeq(null, ne, zeroMore));
-		Expression main = toSeq(null, zeroMore, oneMore);
+		Expression zeroMore = ExpressionCommons.newPzero(null, toSeq(null, ExpressionCommons.newPnot(null, ne), toAny(null)));
+		Expression main = toSeq(null, zeroMore, ExpressionCommons.newPone(null, toSeq(null, ne, zeroMore)));
 		ruleName = "SOSPattern";
 		isSOS = true;
-		ne = ExpressionCommons.newNonTerminal(e, this.getGrammar(), ruleName);
+		Expression sose = ExpressionCommons.newNonTerminal(e, this.getGrammar(), ruleName);
 		getGrammar().newProduction(ruleName, pi(e.get(0), k));
-		Expression SOS = toSeq(null, ne, ExpressionCommons.newPzero(null, toAny(null)));
-		return toChoice(null, SOS, main);
+		Expression sos = toSeq(null, sose, ExpressionCommons.newPzero(null, toSeq(null, zeroMore, ne)));
+		return toChoice(null, sos, main);
 	}
 
 	// pi(e, k) e: regular expression, k: continuation
