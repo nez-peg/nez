@@ -1,5 +1,8 @@
 package nez.ast.script.asm;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+
 import javax.lang.model.type.NullType;
 
 import nez.ast.TreeVisitor;
@@ -28,12 +31,43 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 	}
 
 	private void visit(TypedTree node) {
+		switch (node.hint) {
+		case Apply:
+			visitApplyHint(node);
+			return;
+		case Constant:
+			visitConstantHint(node);
+			return;
+		case DownCast:
+			break;
+		case GetField:
+			this.visitGetFieldHint(node);
+			return;
+		case MethodApply:
+			break;
+		case SetField:
+			this.visitSetFieldHint(node);
+			return;
+		case StaticDynamicInvocation:
+		case StaticInvocation:
+			visitStaticInvocationHint(node);
+			return;
+		case Unique:
+			break;
+		default:
+			break;
+		}
+		TRACE("compiling (no hint): " + node.getTag());
 		this.visit("visit", node);
 	}
 
 	private Class<?> typeof(TypedTree node) {
 		// node.getTypedClass();
 		return typeSystem.typeof(node);
+	}
+
+	private void TRACE(String fmt, Object... args) {
+		System.err.println("TRACE: " + String.format(fmt, args));
 	}
 
 	private void TODO(String fmt, Object... args) {
@@ -82,14 +116,48 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 		this.mBuilder.invokeStatic(owner, methodDesc);
 	}
 
+	private void visitGetFieldHint(TypedTree node) {
+		Field f = node.getField();
+		if (Modifier.isStatic(f.getModifiers())) {
+			Type owner = Type.getType(f.getDeclaringClass());
+			String name = f.getName();
+			Type fieldType = Type.getType(f.getType());
+			this.mBuilder.getStatic(owner, name, fieldType);
+		} else {
+			visit(node.get(_recv));
+			Type owner = Type.getType(f.getDeclaringClass());
+			String name = f.getName();
+			Type fieldType = Type.getType(f.getType());
+			this.mBuilder.getField(owner, name, fieldType);
+		}
+	}
+
+	private void visitSetFieldHint(TypedTree node) {
+		Field f = node.getField();
+		if (Modifier.isStatic(f.getModifiers())) {
+			visit(node.get(_expr));
+			Type owner = Type.getType(f.getDeclaringClass());
+			String name = f.getName();
+			Type fieldType = Type.getType(f.getType());
+			this.mBuilder.putStatic(owner, name, fieldType);
+		} else {
+			visit(node.get(_recv));
+			visit(node.get(_expr));
+			Type owner = Type.getType(f.getDeclaringClass());
+			String name = f.getName();
+			Type fieldType = Type.getType(f.getType());
+			this.mBuilder.putField(owner, name, fieldType);
+		}
+	}
+
 	/* class */
 
 	public void openClass(String name) {
-		this.cBuilder = new ClassBuilder("nez/ast/script/" + name, null, null, null);
+		this.cBuilder = new ClassBuilder("konoha/runtime" + name, null, null, null);
 	}
 
 	public void openClass(String name, Class<?> superClass, Class<?>... interfaces) {
-		this.cBuilder = new ClassBuilder("nez/ast/script/" + name, null, superClass, interfaces);
+		this.cBuilder = new ClassBuilder("konoha/runtime" + name, null, superClass, interfaces);
 	}
 
 	public Class<?> closeClass() {
@@ -277,7 +345,9 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 	}
 
 	public void visitReturn(TypedTree node) {
-		this.visit(node.get(_expr));
+		if (node.get(_expr, null) != null) {
+			this.visit(node.get(_expr));
+		}
 		this.mBuilder.returnValue();
 	}
 
