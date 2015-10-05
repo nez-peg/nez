@@ -185,9 +185,9 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 	// public Expression piStartOfString(Tree<?> e, Expression k) {
 	// }
 
-	// stub
-	// public Expression piEndOfString(Tree<?> e, Expression k) {
-	// }
+	public Expression piEndOfString(Tree<?> e, Expression k) {
+		return pi(e.get(0), toSeq(null, ExpressionCommons.newPnot(null, toAny(null)), k));
+	}
 
 	private Expression toExpression(Tree<?> e) {
 		return (Expression) this.visit("to", e);
