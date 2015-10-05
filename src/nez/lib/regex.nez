@@ -21,7 +21,7 @@ Expr
 	= Concatenation {@ ('|' @Concatenation) #Or }*
 
 Concatenation
-	= IndependentExpr {@ (@IndependentExpr) #Concatenation }*
+	= IndependentExpr {@ (@IndependentExpr) #Concatenation }* {@ '$' #EndOfString }?
 
 IndependentExpr
 	= { '(?>' @Concatenation ')' #IndependentExpr }
@@ -33,7 +33,6 @@ Predicate
 
 PositionAnchor
 	= { '^' @Concatenation #StartOfString }
-	/ { @Concatenation '$' #EndOfString }
 	/ SuffixTerminal
 
 SuffixTerminal
