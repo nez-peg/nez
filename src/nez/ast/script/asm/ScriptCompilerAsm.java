@@ -161,7 +161,7 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 	}
 
 	public Class<?> closeClass() {
-		cLoader.setDump(true);
+		// cLoader.setDump(true);
 		Class<?> c = cLoader.definedAndLoadClass(this.cBuilder.getQualifiedClassName(), cBuilder.toByteArray());
 		this.cBuilder = null; //
 		return c;
@@ -273,7 +273,9 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 
 		// else
 		this.mBuilder.mark(elseLabel);
-		visit(node.get(_else));
+		if (node.size() > 2) {
+			visit(node.get(_else));
+		}
 
 		// merge
 		this.mBuilder.mark(mergeLabel);
