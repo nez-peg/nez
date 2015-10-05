@@ -73,7 +73,7 @@ example ConditionalSection ~28c214 '''
 <!ELEMENT book (title,author,summary)>
 ]]
 '''
-example ConditionalSection ~0fa540 '''
+example ConditionalSection ~837bd6 '''
 [INCLUDE[
 <!ELEMENT book (comments*,title,author,summary)>
 ]]
@@ -85,7 +85,7 @@ example ConditionalSection ~0fa540 '''
 /* Element Declaration */
 
 ElementDeclaration
-	= "ELEMENT" {$name(Name) $(Content) {$ &'' _Qualifier}? #Element} _
+	= "ELEMENT" {$name(Name) $member(Content) {$ &'' _Qualifier}? #Element} _
 
 Content
 	= SpecialContent 
@@ -120,12 +120,12 @@ _Qualifier
 	/ '*' #ZeroMore
 	/ '?' #Option 
 
-example ElementDeclaration ~ee9633 ELEMENT a EMPTY
-example ElementDeclaration ~4fe4e2 ELEMENT a (#PCDATA)
-example ElementDeclaration ~a1fd30 ELEMENT a (b|c)
-example ElementDeclaration ~dd8c72 ELEMENT a (b,c)
-example ElementDeclaration ~16417a ELEMENT a (b|c)*
-example ElementDeclaration ~45a592 ELEMENT a ((b|c),(d|e))
+example ElementDeclaration ~d7cf5b ELEMENT a EMPTY
+example ElementDeclaration ~cbca6a ELEMENT a (#PCDATA)
+example ElementDeclaration ~3a22b9 ELEMENT a (b|c)
+example ElementDeclaration ~9eac9b ELEMENT a (b,c)
+example ElementDeclaration ~5a7c57 ELEMENT a (b|c)*
+example ElementDeclaration ~abe358 ELEMENT a ((b|c),(d|e))
 
 
 /* Attribute Declaration */
@@ -156,7 +156,7 @@ _AttributeQualifier
 	= "#REQUIRED" #REQUIRED 
 	/ "#IMPLIED" #IMPLIED
 	/ "#FIXED" _DefaultValue #FIXED 
-	/ _DefaultValue
+	/ _DefaultValue #Default
 	
 _DefaultValue
 	= '"' $value({ (![<&"].)* #Value}) '"' 
@@ -166,7 +166,12 @@ example AttributeListDeclaration ~9ed8f3 ATTLIST a b CDATA #REQUIRED
 example AttributeListDeclaration ~a4844a ATTLIST a b CDATA #IMPLIED
 example AttributeListDeclaration ~13c524 ATTLIST a b (a|b) #REQUIRED
 example AttributeListDeclaration ~83503c ATTLIST a b CDATA #FIXED "c"
-example AttributeListDeclaration ~11ad90 ATTLIST a b CDATA "c"
+example AttributeListDeclaration ~4f7997 ATTLIST a b CDATA "c"
+example AttributeListDeclaration ~73d62d '''
+ATTLIST a 
+b CDATA #REQUIRED
+c ID #IMPLIED
+'''
 
 
 /* Entity Declaration */
