@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import nez.util.ConsoleUtils;
+
 /**
  * used for user defined class loading. not thread safe.
  * 
@@ -142,18 +144,20 @@ public class ScriptClassLoader extends ClassLoader {
 	 * for debug purpose.
 	 */
 	private void dump(String binaryClassName, byte[] byteCode) {
-		if (!this.enableDump) {
-			return;
-		}
+		// if (ScriptContext.verbose) {
 		int index = binaryClassName.lastIndexOf('.');
 		String classFileName = binaryClassName.substring(index + 1) + ".class";
-		System.err.println("@@@@ Dump ByteCode: " + classFileName + " @@@@");
 		try (FileOutputStream stream = new FileOutputStream(classFileName)) {
+			ConsoleUtils.println("[generated] " + classFileName);
 			stream.write(byteCode);
 			stream.close();
+			ProcessBuilder pb = new ProcessBuilder("javap", "-c", classFileName);
+			pb.redirectOutput();
+			pb.start();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		// }
 	}
 
 	public void setDump(boolean enableByteCodeDump) {

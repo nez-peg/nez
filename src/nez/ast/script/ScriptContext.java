@@ -7,6 +7,7 @@ import nez.io.SourceContext;
 import nez.util.ConsoleUtils;
 
 public class ScriptContext {
+	public final static boolean verbose = true;
 	private Parser parser;
 	private TypeSystem typeSystem;
 	private TypeChecker typechecker;
@@ -33,11 +34,15 @@ public class ScriptContext {
 			println(source.getSyntaxErrorMessage());
 			return this; // nothing
 		}
-		ConsoleUtils.println("[typechcking]");
-		ConsoleUtils.println("|    ", node);
+		if (verbose) {
+			ConsoleUtils.println("[typechcking]");
+			ConsoleUtils.println("|    ", node);
+		}
 		typechecker.type(node);
-		ConsoleUtils.println("[evaluating]");
-		ConsoleUtils.println("|    ", node);
+		if (verbose) {
+			ConsoleUtils.println("[evaluating]");
+			ConsoleUtils.println("|    ", node);
+		}
 		return interpreter.eval(node);
 	}
 

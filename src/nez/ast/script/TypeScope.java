@@ -5,10 +5,9 @@ import java.util.HashMap;
 
 public class TypeScope {
 	TypeScope parent;
-	private HashMap<String, Type> variableTypes;
+	private HashMap<String, Type> variableTypes = null;
 
 	public TypeScope() {
-		this.variableTypes = new HashMap<String, Type>();
 	}
 
 	public TypeScope(TypeScope parent) {
@@ -17,14 +16,33 @@ public class TypeScope {
 	}
 
 	public void setVarType(String name, Type type) {
+		if (this.variableTypes == null) {
+			this.variableTypes = new HashMap<>();
+		}
 		this.variableTypes.put(name, type);
 	}
 
 	public Type getVarType(String name) {
-		return this.variableTypes.get(name);
+		TypeScope scope = this;
+		while (scope != null) {
+			if (scope.variableTypes != null && scope.variableTypes.containsKey(name)) {
+				return scope.variableTypes.get(name);
+			}
+			scope = scope.parent;
+		}
+		return null;
 	}
 
 	public boolean containsVariable(String name) {
-		return this.variableTypes.containsKey(name);
+		TypeScope scope = this;
+		while (scope != null) {
+			if (scope.variableTypes != null) {
+				if (scope.variableTypes.containsKey(name)) {
+					return true;
+				}
+			}
+			scope = scope.parent;
+		}
+		return false;
 	}
 }

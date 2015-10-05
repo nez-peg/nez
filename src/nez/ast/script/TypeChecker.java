@@ -136,7 +136,11 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 					typed(p, ptype);
 				}
 			}
-			type(bodyNode);
+			try {
+				type(bodyNode);
+			} catch (TypeCheckerException e) {
+				node.set(_body, e.errorTree);
+			}
 			this.exitFunction();
 			if (f.getReturnType() == null) {
 				f.setReturnType(void.class);

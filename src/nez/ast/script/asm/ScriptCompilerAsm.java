@@ -224,7 +224,7 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 		}
 		visit(node.get(_body));
 		this.mBuilder.exitScope();
-		// this.mBuilder.returnValue();
+		this.mBuilder.returnValue();
 		this.mBuilder.endMethod();
 	}
 
