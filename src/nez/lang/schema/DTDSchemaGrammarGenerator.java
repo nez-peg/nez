@@ -2,9 +2,9 @@ package nez.lang.schema;
 
 import nez.lang.GrammarFile;
 
-public class XMLSchemaGrammarGenerator extends SchemaGrammarGenerator {
+public class DTDSchemaGrammarGenerator extends SchemaGrammarGenerator {
 
-	public XMLSchemaGrammarGenerator(GrammarFile gfile) {
+	public DTDSchemaGrammarGenerator(GrammarFile gfile) {
 		super(gfile);
 	}
 
@@ -26,6 +26,10 @@ public class XMLSchemaGrammarGenerator extends SchemaGrammarGenerator {
 
 	}
 
+	public void newAttribute(String name, Type t) {
+
+	}
+
 	@Override
 	public void newStruct(String structName, Type t) {
 		// TODO Auto-generated method stub
@@ -35,6 +39,10 @@ public class XMLSchemaGrammarGenerator extends SchemaGrammarGenerator {
 	@Override
 	public void newMembers(String structName, Type... members) {
 		// TODO Auto-generated method stub
+
+	}
+
+	public void newEntity(int id, String name, String value) {
 
 	}
 
@@ -53,6 +61,16 @@ public class XMLSchemaGrammarGenerator extends SchemaGrammarGenerator {
 	@Override
 	public Type newOption(String elementName, Type t) {
 		// TODO Auto-generated method stub
+		return null;
+	}
+
+	// for DTD
+	public Type newMFixed(Type t) {
+		return null;
+	}
+
+	// for DTD
+	public Type newMDefault(Type t) {
 		return null;
 	}
 
@@ -104,6 +122,14 @@ public class XMLSchemaGrammarGenerator extends SchemaGrammarGenerator {
 		return null;
 	}
 
+	public Type newTEmpty() {
+		return null;
+	}
+
+	public Type newAttributeType(String type) {
+		return null;
+	}
+
 	@Override
 	public Type newSet(String structName) {
 		// TODO Auto-generated method stub
@@ -132,6 +158,36 @@ public class XMLSchemaGrammarGenerator extends SchemaGrammarGenerator {
 	public Type newOthers() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	public Type newRZeroMore(Type type) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public Type newROneMore(Type type) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public Type newROption(Type type) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public Type newRChoice(Type... l) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public Type newRSequence(Type... l) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void newEntityList(int entityCount) {
+		// TODO Auto-generated method stub
+
 	}
 
 }
