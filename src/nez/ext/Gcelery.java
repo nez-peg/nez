@@ -65,7 +65,7 @@ public class Gcelery extends GrammarFileLoader {
 		for (Tree<?> memberNode : node) {
 			this.visit("visit", memberNode);
 		}
-		schema.newUniqNames();
+		schema.newSymbols();
 		if (enableNezExtension) {
 			genStruct(currentStructName);
 		} else {

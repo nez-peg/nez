@@ -11,11 +11,7 @@ public abstract class AbstractSchemaGrammarGenerator {
 
 	abstract public void newMembers(String structName, Type... members);
 
-	abstract public void newUniqNames();
-
-	abstract public Type newRequired(String elementName, Type t);
-
-	abstract public Type newOption(String elementName, Type t);
+	abstract public void newSymbols();
 
 	abstract public Type newTObject();
 

@@ -70,11 +70,7 @@ public class Gdtd extends GrammarFileLoader {
 			this.visit("visit", subnode);
 		}
 		for (String name : elementNameList) {
-			if (hasAttribute(name)) {
-
-			} else {
-
-			}
+			schema.newStruct(name, hasAttribute(name));
 		}
 		schema.newRoot(rootStructName);
 		schema.newEntityList(entityCount);
@@ -92,7 +88,6 @@ public class Gdtd extends GrammarFileLoader {
 
 	public void visitAttlist(Tree<?> node) {
 		currentElementName = node.getText(_Name, "");
-		String attributeName = currentElementName + "_Attributes";
 		schema.initMemberList();
 		containsAttributes.put(currentElementName, true);
 		for (Tree<?> subnode : node) {
@@ -100,30 +95,47 @@ public class Gdtd extends GrammarFileLoader {
 		}
 		// generate Complete or Approximate Attribute list
 		if (enableNezExtension) {
-			schema.newAttribute(attributeName, schema.newSet(currentElementName));
+			genAttributeMembers();
+			schema.newAttributeList(currentElementName, schema.newSet(currentElementName));
+			schema.newSymbols();
 		} else {
-			schema.newAttribute(attributeName, schema.newPermutation());
+			schema.newAttributeList(currentElementName, schema.newPermutation());
 		}
 	}
 
+	private final void genAttributeMembers() {
+		int attListSize = schema.getMembers().size();
+		int index = 0;
+		Type[] alt = new Type[attListSize + 1];
+		for (String attributeName : schema.getMembers()) {
+			alt[index++] = schema.newAlt(getUniqueName(attributeName));
+		}
+		alt[index] = schema.newOthers();
+		schema.newMembers(currentElementName, alt);
+	}
+
 	public void visitREQUIRED(Tree<?> node) {
-		schema.addMember(node.getText(_Name, ""));
-		schema.newRequired(null, toType(node.get(_Type)));
+		String attName = node.getText(_Name, "");
+		schema.addRequired(attName);
+		schema.newElement(getUniqueName(attName), schema.newUniq(attName, toType(node.get(_Type))));
 	}
 
 	public void visitIMPLIED(Tree<?> node) {
-		schema.addMember(node.getText(_Name, ""));
-		schema.newOption(null, toType(node.get(_Type)));
+		String attName = node.getText(_Name, "");
+		schema.addMember(attName);
+		schema.newElement(getUniqueName(attName), schema.newUniq(attName, toType(node.get(_Type))));
 	}
 
 	public void visitFIXED(Tree<?> node) {
-		schema.addMember(node.getText(_Name, ""));
-		schema.newMFixed(toType(node.get(_Type)));
+		String attName = node.getText(_Name, "");
+		schema.addMember(attName);
+		schema.newElement(getUniqueName(attName), schema.newUniq(attName, toType(node.get(_Value))));
 	}
 
 	public void visitDefault(Tree<?> node) {
-		schema.addMember(node.getText(_Name, ""));
-		schema.newMDefault(toType(node.get(_Type)));
+		String attName = node.getText(_Name, "");
+		schema.addMember(attName);
+		schema.newElement(getUniqueName(attName), schema.newUniq(attName, toType(node.get(_Type))));
 	}
 
 	// FIXME
@@ -225,6 +237,10 @@ public class Gdtd extends GrammarFileLoader {
 
 	private final boolean hasAttribute(String elementName) {
 		return containsAttributes.get(elementName);
+	}
+
+	private final String getUniqueName(String localName) {
+		return currentElementName + "_" + localName;
 	}
 
 }
