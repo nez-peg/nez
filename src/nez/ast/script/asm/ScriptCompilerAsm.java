@@ -3,8 +3,6 @@ package nez.ast.script.asm;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
-import javax.lang.model.type.NullType;
-
 import nez.ast.TreeVisitor;
 import nez.ast.jcode.JCodeOperator;
 import nez.ast.script.CommonSymbols;
@@ -44,6 +42,7 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 			this.visitGetFieldHint(node);
 			return;
 		case MethodApply:
+			this.visitMehodApplyHint(node);
 			break;
 		case SetField:
 			this.visitSetFieldHint(node);
@@ -132,6 +131,17 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 		}
 	}
 
+	private void visitMehodApplyHint(TypedTree node) {
+		for (TypedTree sub : node.get(_param)) {
+			visit(sub);
+		}
+		Type owner = Type.getType(node.getMethod().getDeclaringClass());
+		Method methodDesc = Method.getMethod(node.getMethod());
+		VarEntry var = this.mBuilder.getVar(node.getText(_name, null));
+		this.mBuilder.loadFromVar(var);
+		this.mBuilder.invokeVirtual(owner, methodDesc);
+	}
+
 	private void visitSetFieldHint(TypedTree node) {
 		Field f = node.getField();
 		if (Modifier.isStatic(f.getModifiers())) {
@@ -161,7 +171,7 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 	}
 
 	public Class<?> closeClass() {
-		cLoader.setDump(true);
+		// cLoader.setDump(true);
 		Class<?> c = cLoader.definedAndLoadClass(this.cBuilder.getQualifiedClassName(), cBuilder.toByteArray());
 		this.cBuilder = null; //
 		return c;
@@ -207,6 +217,11 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 		return this.closeClass();
 	}
 
+	// private void createClosure() {
+	// ClassBuilder closure = new ClassBuilder(fullyQualifiedClassName,
+	// sourceName, superClass, interfaces)
+	// }
+
 	public void visitFuncDecl(TypedTree node) {
 		// this.mBuilderStack.push(this.mBuilder);
 		TypedTree nameNode = node.get(_name);
@@ -228,6 +243,11 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 		this.mBuilder.endMethod();
 	}
 
+	public void visitClassDecl(TypedTree node) {
+		String name = node.getText(_name, null);
+		// TODO
+	}
+
 	// FIXME Block scope
 	public void visitBlock(TypedTree node) {
 		this.mBuilder.enterScope();
@@ -247,16 +267,18 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 		}
 	}
 
-	public void visitApply(TypedTree node) {
-		String name = node.getText(_name, null);
-		TypedTree argsNode = node.get(_param);
-		Class<?>[] args = new Class<?>[argsNode.size()];
-		for (int i = 0; i < args.length; i++) {
-			args[i] = typeof(argsNode.get(i));
-		}
-		java.lang.reflect.Method function = node.getMethod(); // typeSystem.findCompiledMethod(name,
-		this.mBuilder.callStaticMethod(function.getDeclaringClass(), function.getReturnType(), function.getName(), args);
-	}
+	// public void visitApply(TypedTree node) {
+	// // String name = node.getText(_name, null);
+	// TypedTree argsNode = node.get(_param);
+	// Class<?>[] args = new Class<?>[argsNode.size()];
+	// for (int i = 0; i < args.length; i++) {
+	// args[i] = typeof(argsNode.get(i));
+	// }
+	// java.lang.reflect.Method function = node.getMethod(); //
+	// typeSystem.findCompiledMethod(name,
+	// this.mBuilder.callStaticMethod(function.getDeclaringClass(),
+	// function.getReturnType(), function.getName(), args);
+	// }
 
 	public void visitIf(TypedTree node) {
 		visit(node.get(_cond));
@@ -273,7 +295,9 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 
 		// else
 		this.mBuilder.mark(elseLabel);
-		visit(node.get(_else));
+		if (node.size() > 2) {
+			visit(node.get(_else));
+		}
 
 		// merge
 		this.mBuilder.mark(mergeLabel);
@@ -333,8 +357,8 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 	}
 
 	public void visitAssign(TypedTree node) {
-		String name = node.getText(_name, null);
-		TypedTree valueNode = node.get(_expr);
+		String name = node.getText(_left, null);
+		TypedTree valueNode = node.get(_right);
 		VarEntry var = this.mBuilder.getVar(name);
 		visit(valueNode);
 		if (var != null) {
@@ -372,46 +396,46 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 		this.mBuilder.loadFromVar(var);
 	}
 
-	private Class<?> typeInfferBinary(TypedTree binary, TypedTree left, TypedTree right) {
-		Class<?> leftType = typeof(left);
-		Class<?> rightType = typeof(right);
-		if (leftType == int.class) {
-			if (rightType == int.class) {
-				if (binary.getTag().getSymbol().equals("Div")) {
-					return double.class;
-				}
-				return int.class;
-			} else if (rightType == double.class) {
-				return double.class;
-			} else if (rightType == String.class) {
-				return String.class;
-			}
-		} else if (leftType == double.class) {
-			if (rightType == int.class) {
-				return double.class;
-			} else if (rightType == double.class) {
-				return double.class;
-			} else if (rightType == String.class) {
-				return String.class;
-			}
-		} else if (leftType == String.class) {
-			return String.class;
-		} else if (leftType == boolean.class) {
-			if (rightType == boolean.class) {
-				return boolean.class;
-			} else if (rightType == String.class) {
-				return String.class;
-			}
-		}
-		throw new RuntimeException("type error: " + left + ", " + right);
-	}
+	// private Class<?> typeInfferBinary(TypedTree binary, TypedTree left,
+	// TypedTree right) {
+	// Class<?> leftType = typeof(left);
+	// Class<?> rightType = typeof(right);
+	// if (leftType == int.class) {
+	// if (rightType == int.class) {
+	// if (binary.getTag().getSymbol().equals("Div")) {
+	// return double.class;
+	// }
+	// return int.class;
+	// } else if (rightType == double.class) {
+	// return double.class;
+	// } else if (rightType == String.class) {
+	// return String.class;
+	// }
+	// } else if (leftType == double.class) {
+	// if (rightType == int.class) {
+	// return double.class;
+	// } else if (rightType == double.class) {
+	// return double.class;
+	// } else if (rightType == String.class) {
+	// return String.class;
+	// }
+	// } else if (leftType == String.class) {
+	// return String.class;
+	// } else if (leftType == boolean.class) {
+	// if (rightType == boolean.class) {
+	// return boolean.class;
+	// } else if (rightType == String.class) {
+	// return String.class;
+	// }
+	// }
+	// throw new RuntimeException("type error: " + left + ", " + right);
+	// }
 
 	public void visitBinaryNode(TypedTree node) {
 		TypedTree left = node.get(_left);
 		TypedTree right = node.get(_right);
 		this.visit(left);
 		this.visit(right);
-		node.setType(typeInfferBinary(node, left, right));
 		this.mBuilder.callStaticMethod(JCodeOperator.class, typeof(node), node.getTag().getSymbol(), typeof(left), typeof(right));
 	}
 
@@ -420,7 +444,6 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 		TypedTree right = node.get(_right);
 		this.visit(left);
 		this.visit(right);
-		node.setType(boolean.class);
 		this.mBuilder.callStaticMethod(JCodeOperator.class, typeof(node), node.getTag().getSymbol(), typeof(left), typeof(right));
 	}
 
@@ -583,49 +606,45 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 	// this.visitUnaryNode(node);
 	// }
 	//
-	// private void evalPrefixInc(TypedTree node, int amount) {
-	// TypedTree nameNode = node.get(0);
-	// VarEntry var = this.scope.getLocalVar(nameNode.toText());
-	// if (var != null) {
-	// node.setType(int.class);
-	// this.mBuilder.callIinc(var, amount);
-	// if (!node.requiredPop) {
-	// this.mBuilder.loadFromVar(var);
-	// }
-	// } else {
-	// throw new RuntimeException("undefined variable " + nameNode.toText());
-	// }
-	// }
-	//
-	// private void evalSuffixInc(TypedTree node, int amount) {
-	// TypedTree nameNode = node.get(0);
-	// VarEntry var = this.scope.getLocalVar(nameNode.toText());
-	// if (var != null) {
-	// node.setType(int.class);
-	// if (!node.requiredPop) {
-	// this.mBuilder.loadFromVar(var);
-	// }
-	// this.mBuilder.callIinc(var, amount);
-	// } else {
-	// throw new RuntimeException("undefined variable " + nameNode.toText());
-	// }
-	// }
-	//
-	// public void visitSuffixInc(TypedTree node) {
-	// this.evalSuffixInc(node, 1);
-	// }
-	//
-	// public void visitSuffixDec(TypedTree node) {
-	// this.evalSuffixInc(node, -1);
-	// }
-	//
-	// public void visitPrefixInc(TypedTree node) {
-	// this.evalPrefixInc(node, 1);
-	// }
-	//
-	// public void visitPrefixDec(TypedTree node) {
-	// this.evalPrefixInc(node, -1);
-	// }
+	private void evalPrefixInc(TypedTree node, int amount) {
+		String name = node.getText(_name, null);
+		VarEntry var = this.mBuilder.getVar(name);
+		if (var != null) {
+			this.mBuilder.callIinc(var, amount);
+			this.mBuilder.loadFromVar(var);
+		} else {
+			throw new RuntimeException("undefined variable " + name);
+		}
+	}
+
+	private void evalSuffixInc(TypedTree node, int amount) {
+		String name = node.getText(_name, null);
+		VarEntry var = this.mBuilder.getVar(name);
+		if (var != null) {
+			node.setType(int.class);
+			this.mBuilder.loadFromVar(var);
+			this.mBuilder.callIinc(var, amount);
+		} else {
+			throw new RuntimeException("undefined variable " + name);
+		}
+	}
+
+	public void visitSuffixInc(TypedTree node) {
+		this.evalSuffixInc(node, 1);
+	}
+
+	public void visitSuffixDec(TypedTree node) {
+		this.evalSuffixInc(node, -1);
+	}
+
+	public void visitPrefixInc(TypedTree node) {
+		this.evalPrefixInc(node, 1);
+	}
+
+	public void visitPrefixDec(TypedTree node) {
+		this.evalPrefixInc(node, -1);
+	}
+
 	//
 	// private Class<?> typeInfferUnary(TypedTree node) {
 	// Class<?> nodeType = node.getTypedClass();
@@ -637,10 +656,9 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 	// throw new RuntimeException("type error: " + node);
 	// }
 
-	public void visitNull(TypedTree p) {
-		p.setType(NullType.class);
-		this.mBuilder.pushNull();
-	}
+	// public void visitNull(TypedTree p) {
+	// this.mBuilder.pushNull();
+	// }
 
 	// void visitArray(TypedTree p){
 	// this.mBuilder.newArray(Object.class);
@@ -652,55 +670,55 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 		}
 	}
 
-	public void visitTrue(TypedTree p) {
-		p.setType(boolean.class);
-		this.mBuilder.push(true);
-	}
+	// public void visitTrue(TypedTree p) {
+	// // p.setType(boolean.class);
+	// this.mBuilder.push(true);
+	// }
+	//
+	// public void visitFalse(TypedTree p) {
+	// // p.setType(boolean.class);
+	// this.mBuilder.push(false);
+	// }
 
-	public void visitFalse(TypedTree p) {
-		p.setType(boolean.class);
-		this.mBuilder.push(false);
-	}
+	// public void visitInt(TypedTree p) {
+	// // p.setType(int.class);
+	// this.mBuilder.push(Integer.parseInt(p.toText()));
+	// }
+	//
+	// public void visitInteger(TypedTree p) {
+	// this.visitInt(p);
+	// }
+	//
+	// public void visitOctalInteger(TypedTree p) {
+	// // p.setType(int.class);
+	// this.mBuilder.push(Integer.parseInt(p.toText(), 8));
+	// }
+	//
+	// public void visitHexInteger(TypedTree p) {
+	// // p.setType(int.class);
+	// this.mBuilder.push(Integer.parseInt(p.toText(), 16));
+	// }
+	//
+	// public void visitDouble(TypedTree p) {
+	// // p.setType(double.class);
+	// this.mBuilder.push(Double.parseDouble(p.toText()));
+	// }
+	//
+	// public void visitString(TypedTree p) {
+	// // p.setType(String.class);
+	// this.mBuilder.push(p.toText());
+	// }
+	//
+	// public void visitCharacter(TypedTree p) {
+	// // p.setType(String.class);
+	// this.mBuilder.push(p.toText());
+	// // p.setType(char.class);
+	// // this.mBuilder.push(p.toText().charAt(0));
+	// }
 
-	public void visitInt(TypedTree p) {
-		p.setType(int.class);
-		this.mBuilder.push(Integer.parseInt(p.toText()));
-	}
-
-	public void visitInteger(TypedTree p) {
-		this.visitInt(p);
-	}
-
-	public void visitOctalInteger(TypedTree p) {
-		p.setType(int.class);
-		this.mBuilder.push(Integer.parseInt(p.toText(), 8));
-	}
-
-	public void visitHexInteger(TypedTree p) {
-		p.setType(int.class);
-		this.mBuilder.push(Integer.parseInt(p.toText(), 16));
-	}
-
-	public void visitDouble(TypedTree p) {
-		p.setType(double.class);
-		this.mBuilder.push(Double.parseDouble(p.toText()));
-	}
-
-	public void visitString(TypedTree p) {
-		p.setType(String.class);
-		this.mBuilder.push(p.toText());
-	}
-
-	public void visitCharacter(TypedTree p) {
-		p.setType(String.class);
-		this.mBuilder.push(p.toText());
-		// p.setType(char.class);
-		// this.mBuilder.push(p.toText().charAt(0));
-	}
-
-	public void visitUndefined(TypedTree p) {
-		System.out.println("undefined: " + p.getTag().getSymbol());
-	}
+	// public void visitUndefined(TypedTree p) {
+	// System.out.println("undefined: " + p.getTag().getSymbol());
+	// }
 
 	/* code copied from libzen */
 
