@@ -21,6 +21,7 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 	private ScriptClassLoader cLoader;
 	private ClassBuilder cBuilder;
 	private MethodBuilder mBuilder;
+	private String classPath = "konoha/runtime";
 
 	public ScriptCompilerAsm(TypeSystem typeSystem, ScriptClassLoader cLoader) {
 		super(TypedTree.class);
@@ -164,8 +165,6 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 		}
 		Type owner = Type.getType(node.getMethod().getDeclaringClass());
 		Method methodDesc = Method.getMethod(node.getMethod());
-		VarEntry var = this.mBuilder.getVar(node.getText(_name, null));
-		this.mBuilder.loadFromVar(var);
 		this.mBuilder.invokeVirtual(owner, methodDesc);
 	}
 
@@ -208,15 +207,15 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 	/* class */
 
 	public void openClass(String name) {
-		this.cBuilder = new ClassBuilder(name, null, null, null);
+		this.cBuilder = new ClassBuilder(this.classPath + name, null, null, null);
 	}
 
 	public void openClass(String name, Class<?> superClass, Class<?>... interfaces) {
-		this.cBuilder = new ClassBuilder(name, null, superClass, interfaces);
+		this.cBuilder = new ClassBuilder(this.classPath + name, null, superClass, interfaces);
 	}
 
 	public void openClass(int acc, String name, Class<?> superClass, Class<?>... interfaces) {
-		this.cBuilder = new ClassBuilder(acc, name, null, superClass, interfaces);
+		this.cBuilder = new ClassBuilder(acc, this.classPath + name, null, superClass, interfaces);
 	}
 
 	public Class<?> closeClass() {
@@ -290,14 +289,9 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 		return this.closeClass();
 	}
 
-	// private void createClosure() {
-	// ClassBuilder closure = new ClassBuilder(fullyQualifiedClassName,
-	// sourceName, superClass, interfaces)
-	// }
-
-	public void visitClassDecl(TypedTree node) {
-		String name = node.getText(_name, null);
-		// TODO
+	private void createClosure() {
+		// ClassBuilder closure = new ClassBuilder(fullyQualifiedClassName,
+		// sourceName, superClass, interfaces);
 	}
 
 	public void visitFuncDecl(TypedTree node) {
@@ -321,7 +315,22 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 		this.mBuilder.endMethod();
 	}
 
-	// FIXME Block scope
+	public void visitClassDecl(TypedTree node) throws ClassNotFoundException {
+		String name = node.getText(_name, null);
+		TypedTree implNode = node.get(_impl);
+		TypedTree bodyNode = node.get(_body);
+		Class<?> superClass = Class.forName(this.classPath + node.getText(_super, null));
+		Class<?>[] implClasses = new Class<?>[implNode.size()];
+		for (int i = 0; i < implNode.size(); i++) {
+			implClasses[i] = Class.forName(this.classPath + implNode.getText(i, null));
+		}
+		this.openClass(name, superClass, implClasses);
+		for (TypedTree n : bodyNode) {
+			this.visit(n);
+		}
+		this.closeClass();
+	}
+
 	public void visitBlock(TypedTree node) {
 		this.mBuilder.enterScope();
 		for (TypedTree stmt : node) {
@@ -329,6 +338,18 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 			visit(stmt);
 		}
 		this.mBuilder.exitScope();
+	}
+
+	public void visitConstructor(TypedTree node) {
+		// TODO
+	}
+
+	public void visitFieldDecl(TypedTree node) {
+		// TODO
+	}
+
+	public void visitMethodDecl(TypedTree node) {
+		// TODO
 	}
 
 	public void visitVarDecl(TypedTree node) {
@@ -592,7 +613,7 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 	// if (var != null) {
 	// this.mBuilder.loadFromVar(var);
 	// } else {
-	// // TODO
+	//
 	// return;
 	// }
 	// } else {
