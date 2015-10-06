@@ -243,6 +243,11 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 		this.mBuilder.endMethod();
 	}
 
+	public void visitClassDecl(TypedTree node) {
+		String name = node.getText(_name, null);
+		// TODO
+	}
+
 	// FIXME Block scope
 	public void visitBlock(TypedTree node) {
 		this.mBuilder.enterScope();
