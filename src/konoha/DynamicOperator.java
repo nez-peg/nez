@@ -1,6 +1,8 @@
-package nez.ast.script;
+package konoha;
 
 import java.util.Comparator;
+
+import nez.ast.script.ScriptRuntimeException;
 
 public class DynamicOperator {
 

@@ -314,27 +314,29 @@ public class JCodeGenerator implements CommonSymbols {
 		// }
 	}
 
-	public void generateRunTimeLibrary(JCodeTree fieldNode, JCodeTree argsNode) {
-		String classPath = "";
-		String methodName = null;
-		for (int i = 0; i < fieldNode.size(); i++) {
-			if (i < fieldNode.size() - 2) {
-				classPath += fieldNode.get(i).toText();
-				classPath += ".";
-			} else if (i == fieldNode.size() - 2) {
-				classPath += fieldNode.get(i).toText();
-			} else {
-				methodName = fieldNode.get(i).toText();
-			}
-		}
-		Type[] argTypes = new Type[argsNode.size()];
-		for (int i = 0; i < argsNode.size(); i++) {
-			JCodeTree arg = argsNode.get(i);
-			this.visit(arg);
-			argTypes[i] = Type.getType(arg.getTypedClass());
-		}
-		this.mBuilder.callDynamicMethod("nez/ast/jcode/StandardLibrary", "bootstrap", methodName, classPath, argTypes);
-	}
+	// public void generateRunTimeLibrary(JCodeTree fieldNode, JCodeTree
+	// argsNode) {
+	// String classPath = "";
+	// String methodName = null;
+	// for (int i = 0; i < fieldNode.size(); i++) {
+	// if (i < fieldNode.size() - 2) {
+	// classPath += fieldNode.get(i).toText();
+	// classPath += ".";
+	// } else if (i == fieldNode.size() - 2) {
+	// classPath += fieldNode.get(i).toText();
+	// } else {
+	// methodName = fieldNode.get(i).toText();
+	// }
+	// }
+	// Type[] argTypes = new Type[argsNode.size()];
+	// for (int i = 0; i < argsNode.size(); i++) {
+	// JCodeTree arg = argsNode.get(i);
+	// this.visit(arg);
+	// argTypes[i] = Type.getType(arg.getTypedClass());
+	// }
+	// this.mBuilder.callDynamicMethod("nez/ast/jcode/StandardLibrary",
+	// "bootstrap", methodName, classPath, argTypes);
+	// }
 
 	public void visitField(JCodeTree node) {
 		JCodeTree top = node.get(0);

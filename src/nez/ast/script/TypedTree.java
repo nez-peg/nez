@@ -138,6 +138,11 @@ public class TypedTree extends Tree<TypedTree> {
 		this.labels = new Symbol[l.size()];
 	}
 
+	public void removeSubtree() {
+		this.subTree = null;
+		this.labels = EmptyLabels;
+	}
+
 	public void make(Symbol l1, TypedTree t1) {
 		this.subTree = new TypedTree[] { t1 };
 		this.labels = new Symbol[] { l1 };

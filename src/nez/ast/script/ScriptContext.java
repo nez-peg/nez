@@ -1,6 +1,7 @@
 package nez.ast.script;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 
 import nez.Parser;
 import nez.io.SourceContext;
@@ -47,11 +48,20 @@ public class ScriptContext {
 	}
 
 	public Object get(String name) {
+		GlobalVariable gv = this.typeSystem.getGlobalVariable(name);
+		if (gv != null) {
+			return Reflector.getStatic(gv.getField());
+		}
 		return null;
 	}
 
 	public void set(String name, Object value) {
-
+		GlobalVariable gv = this.typeSystem.getGlobalVariable(name);
+		if (gv == null) {
+			Type type = Reflector.infer(value);
+			gv = this.typeSystem.newGlobalVariable(type, name);
+		}
+		Reflector.setStatic(gv.getField(), value);
 	}
 
 	public final void println(Object o) {

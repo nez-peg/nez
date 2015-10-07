@@ -1,4 +1,4 @@
-package nez.ast.script;
+package konoha;
 
 public class StaticOperator {
 	/* double */
@@ -258,6 +258,16 @@ public class StaticOperator {
 
 	public final static int to_int(Byte a) {
 		return a.intValue() & 0xff;
+	}
+
+	/* assertion */
+
+	public final static void assert_(boolean cond) {
+		assert (cond);
+	}
+
+	public final static void assert_(boolean cond, String msg) {
+		assert (cond) : msg;
 	}
 
 }

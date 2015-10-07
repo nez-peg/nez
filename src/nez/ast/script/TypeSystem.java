@@ -1,7 +1,6 @@
 package nez.ast.script;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
@@ -10,9 +9,13 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import konoha.DynamicOperator;
 import konoha.Function;
+import konoha.StaticOperator;
+import konoha.StringOperator;
 import nez.ast.Tree;
 import nez.ast.script.asm.ScriptCompiler;
+import nez.ast.script.stub.G_g;
 import nez.util.UList;
 
 public class TypeSystem implements CommonSymbols {
@@ -31,6 +34,7 @@ public class TypeSystem implements CommonSymbols {
 		loadStaticFunctionClass(DynamicOperator.class, false);
 		loadStaticFunctionClass(StaticOperator.class, false);
 		loadStaticFunctionClass(StringOperator.class, false);
+		loadStaticFunctionClass(konoha.libc.class, false);
 		this.setType("void", void.class);
 		this.setType("boolean", boolean.class);
 		this.setType("byte", byte.class);
@@ -53,6 +57,7 @@ public class TypeSystem implements CommonSymbols {
 	void initDebug() {
 		this.setType("Math", Math.class);
 		this.setType("System", System.class);
+		this.addDebugGlobalVariable(Function.class, "g", G_g.class);
 	}
 
 	/* Types */
@@ -123,6 +128,12 @@ public class TypeSystem implements CommonSymbols {
 
 	public GlobalVariable newGlobalVariable(Type type, String name) {
 		Class<?> varClass = this.compl.compileGlobalVariable(TypeSystem.toClass(type), name);
+		GlobalVariable gv = new GlobalVariable(type, varClass);
+		this.GlobalVariables.put(name, gv);
+		return gv;
+	}
+
+	private GlobalVariable addDebugGlobalVariable(Type type, String name, Class<?> varClass) {
 		GlobalVariable gv = new GlobalVariable(type, varClass);
 		this.GlobalVariables.put(name, gv);
 		return gv;
@@ -463,19 +474,6 @@ public class TypeSystem implements CommonSymbols {
 		return node;
 	}
 
-	// boolean acceptArguments(boolean autoBoxing, Method m, Type... args) {
-	// Class<?>[] p = m.getParameterTypes();
-	// if (args.length != p.length) {
-	// return false;
-	// }
-	// for (int j = 0; j < args.length; j++) {
-	// if (!accept(autoBoxing, p[j], args[j])) {
-	// return false;
-	// }
-	// }
-	// return true;
-	// }
-
 	public Type PrimitiveType(Type t) {
 		if (t == Double.class || t == Float.class || t == float.class) {
 			return double.class;
@@ -618,8 +616,6 @@ public class TypeSystem implements CommonSymbols {
 	protected Method StaticErrorMethod = null;
 	protected Method InterpolationMethod = null;
 
-	protected Method[] invokeDynamicMethods = new Method[4];
-
 	void initMethod() {
 		try {
 			this.DynamicGetter = this.getClass().getMethod("getDynamicField", Object.class, String.class);
@@ -628,142 +624,26 @@ public class TypeSystem implements CommonSymbols {
 			this.ObjectSetIndexer = this.getClass().getMethod("setObjectIndexer", Object.class, Object.class, Object.class);
 			this.StaticErrorMethod = this.getClass().getMethod("throwStaticError", String.class);
 			this.InterpolationMethod = this.getClass().getMethod("joinString", Object[].class);
-			this.invokeDynamicMethods[0] = this.getClass().getMethod("invoke", Object.class, String.class);
-			this.invokeDynamicMethods[1] = this.getClass().getMethod("invoke", Object.class, String.class, Object.class);
-			this.invokeDynamicMethods[2] = this.getClass().getMethod("invoke", Object.class, String.class, Object.class, Object.class);
-			this.invokeDynamicMethods[3] = this.getClass().getMethod("invoke", Object.class, String.class, Object.class, Object.class, Object.class);
 		} catch (NoSuchMethodException | SecurityException e) {
 			e.printStackTrace();
 		}
 	}
 
-	public Method getInvokeDynamicFunction(int paramsize) {
-		if (paramsize < this.invokeDynamicMethods.length) {
-			return this.invokeDynamicMethods[paramsize];
-		}
-		return null;
-	}
-
-	private final static Class<?> prim(Object o) {
-		if (o instanceof Number) {
-			Class<?> t = o.getClass();
-			if (t == Integer.class) {
-				return int.class;
-			}
-			if (t == Double.class) {
-				return double.class;
-			}
-			if (t == Long.class) {
-				return long.class;
-			}
-			if (t == Byte.class) {
-				return byte.class;
-			}
-			if (t == Float.class) {
-				return float.class;
-			}
-			if (t == Character.class) {
-				return char.class;
-			}
-			if (t == Short.class) {
-				return short.class;
-			}
-			return t;
-		}
-		if (o instanceof Boolean) {
-			return boolean.class;
-		}
-		return o.getClass();
-	}
-
-	public final static Object invoke(Object self, String name) {
-		try {
-			Method m = self.getClass().getMethod(name);
-			return m.invoke(self);
-		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-			// e.printStackTrace();
-			throw new ScriptRuntimeException(e.getMessage());
-		}
-	}
-
-	public final static Object invoke(Object self, String name, Object a1) {
-		try {
-			Class<?>[] p = { prim(a1) };
-			Method m = self.getClass().getMethod(name, p);
-			return m.invoke(self, a1);
-		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-			// e.printStackTrace();
-			throw new ScriptRuntimeException(e.getMessage());
-		}
-	}
-
-	public final static Object invoke(Object self, String name, Object a1, Object a2) {
-		try {
-			Class<?>[] p = { prim(a1), prim(a2) };
-			Method m = self.getClass().getMethod(name, p);
-			return m.invoke(self, a1, a2);
-		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-			// e.printStackTrace();
-			throw new ScriptRuntimeException(e.getMessage());
-		}
-	}
-
-	public final static Object invoke(Object self, String name, Object a1, Object a2, Object a3) {
-		try {
-			Class<?>[] p = { prim(a1), prim(a2), prim(a3) };
-			Method m = self.getClass().getMethod(name, p);
-			return m.invoke(self, a1, a2, a3);
-		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-			// e.printStackTrace();
-			throw new ScriptRuntimeException(e.getMessage());
-		}
-	}
-
 	public final static Object getObjectIndexer(Object self, Object index) {
-		return invoke(self, "get", index);
+		return Reflector.invokeDynamic(self, "get", index);
 	}
 
 	public final static Object setObjectIndexer(Object self, Object index, Object value) {
-		return invoke(self, "set", index, value);
+		return Reflector.invokeDynamic(self, "set", index, value);
 	}
 
-	public final static Object getDynamicField(Object o, String name) {
-		try {
-			Field f = o.getClass().getField(name);
-			return f.get(o);
-		} catch (NoSuchFieldException e) {
-			// e.printStackTrace();
-		} catch (IllegalArgumentException e) {
-			// TODO Auto-generated catch block
-			// e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			// e.printStackTrace();
-		} catch (SecurityException e) {
-			// TODO Auto-generated catch block
-			// e.printStackTrace();
-		}
-		throw new ScriptRuntimeException("undefined field: %s of %s", name, o.getClass().getSimpleName());
+	public final static Object getDynamicField(Object self, String name) {
+		return Reflector.getField(self, name);
 	}
 
-	public final static void setDynamicField(Object o, String name, Object v) {
-		try {
-			Field f = o.getClass().getField(name);
-			f.set(o, v);
-			return;
-		} catch (NoSuchFieldException e) {
-			// e.printStackTrace();
-		} catch (IllegalArgumentException e) {
-			// TODO Auto-generated catch block
-			// e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			// e.printStackTrace();
-		} catch (SecurityException e) {
-			// TODO Auto-generated catch block
-			// e.printStackTrace();
-		}
-		throw new ScriptRuntimeException("undefined field: %s of %s", name, o.getClass().getSimpleName());
+	public final static Object setDynamicField(Object self, String name, Object val) {
+		Reflector.setField(self, name, val);
+		return val;
 	}
 
 	public final static void throwStaticError(String msg) {
@@ -819,6 +699,13 @@ public class TypeSystem implements CommonSymbols {
 
 	public Type dynamicType() {
 		return Object.class;
+	}
+
+	public boolean isFuncType(Type func_t) {
+		if (func_t == konoha.Function.class) {
+			return true;
+		}
+		return false;
 	}
 
 }

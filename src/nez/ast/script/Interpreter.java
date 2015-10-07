@@ -1,7 +1,6 @@
 package nez.ast.script;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
@@ -55,27 +54,27 @@ public class Interpreter extends TreeVisitor implements CommonSymbols {
 		return empty;
 	}
 
-	private Object invokeStaticMethod(Method m, Object... args) {
-		return this.invokeMethod(m, null, args);
-	}
-
-	private Object invokeMethod(Method m, Object self, Object... args) {
-		try {
-			return m.invoke(self, args);
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
-		} catch (IllegalArgumentException e) {
-			System.err.println(m.toString() + ": " + e.getMessage());
-			// e.printStackTrace();
-		} catch (InvocationTargetException e) {
-			Throwable w = e.getTargetException();
-			if (w instanceof RuntimeException) {
-				throw (RuntimeException) e.getTargetException();
-			}
-			throw new ScriptRuntimeException(w.getMessage());
-		}
-		throw new ScriptRuntimeException("failed invocation: " + m);
-	}
+	// private Object invokeStaticMethod(Method m, Object... args) {
+	// return this.invokeMethod(m, null, args);
+	// }
+	//
+	// private Object invokeMethod(Method m, Object self, Object... args) {
+	// try {
+	// return m.invoke(self, args);
+	// } catch (IllegalAccessException e) {
+	// e.printStackTrace();
+	// } catch (IllegalArgumentException e) {
+	// System.err.println(m.toString() + ": " + e.getMessage());
+	// // e.printStackTrace();
+	// } catch (InvocationTargetException e) {
+	// Throwable w = e.getTargetException();
+	// if (w instanceof RuntimeException) {
+	// throw (RuntimeException) e.getTargetException();
+	// }
+	// throw new ScriptRuntimeException(w.getMessage());
+	// }
+	// throw new ScriptRuntimeException("failed invocation: " + m);
+	// }
 
 	public Object evalSource(TypedTree node) {
 		Object result = empty;
@@ -137,7 +136,7 @@ public class Interpreter extends TreeVisitor implements CommonSymbols {
 		Object v = eval(node.get(_expr));
 		Method m = node.getMethod();
 		if (m != null) {
-			return this.invokeMethod(m, null, v);
+			return Reflector.invokeStaticMethod(m, v);
 		}
 		return v;
 	}
@@ -192,19 +191,19 @@ public class Interpreter extends TreeVisitor implements CommonSymbols {
 
 	private Object evalStaticInvocation(TypedTree node) {
 		Object[] args = this.evalApplyArgument(node);
-		return invokeStaticMethod(node.getMethod(), args);
+		return Reflector.invokeStaticMethod(node.getMethod(), args);
 	}
 
 	public Object evalMethodApply(TypedTree node) {
 		Object recv = eval(node.get(_recv));
 		Object[] args = evalApplyArgument(node.get(_param));
-		return this.invokeMethod(node.getMethod(), recv, args);
+		return Reflector.invokeMethod(recv, node.getMethod(), args);
 	}
 
 	public Object evalApply(TypedTree node) {
 		// String name = node.getText(_name, null);
 		Object[] args = evalApplyArgument(node.get(_param));
-		return this.invokeStaticMethod(node.getMethod(), args);
+		return Reflector.invokeStaticMethod(node.getMethod(), args);
 	}
 
 	private Object[] evalApplyArgument(TypedTree node) {

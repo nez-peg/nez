@@ -43,14 +43,6 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		return this.function != null;
 	}
 
-	// public void setReturnType(Type t) {
-	// this.returnType = t;
-	// }
-	//
-	// public Type getReturnType() {
-	// return this.returnType;
-	// }
-
 	public Type type(TypedTree node) {
 		Type c = (Type) visit("type", node);
 		if (c != null) {
@@ -65,10 +57,11 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 
 	public void enforceType(Type req, TypedTree node, Symbol label) {
 		TypedTree unode = node.get(label, null);
-		if (unode != null) {
-			type(unode);
-			node.set(label, this.typeSystem.enforceType(req, unode));
+		if (unode == null) {
+			throw this.error(node, "syntax error: %s is required", label);
 		}
+		type(unode);
+		node.set(label, this.typeSystem.enforceType(req, unode));
 	}
 
 	public void typed(TypedTree node, Type c) {
@@ -155,16 +148,19 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 			throw this.error(node, "return must be inside function");
 		}
 		Type t = this.function.getReturnType();
-		TypedTree exprNode = node.get(_expr, null);
-		if (t == null) {
-			if (exprNode == null) {
-				this.function.setReturnType(void.class);
+		if (t == null) { // type inference
+			if (node.has(_expr)) {
+				this.function.setReturnType(type(node.get(_expr)));
 			} else {
-				this.function.setReturnType(type(exprNode));
+				this.function.setReturnType(void.class);
 			}
 			return void.class;
 		}
-		if (t != void.class) {
+		if (t == void.class) {
+			if (node.size() > 0) {
+				node.removeSubtree();
+			}
+		} else {
 			this.enforceType(t, node, _expr);
 		}
 		return void.class;
@@ -176,6 +172,14 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		if (inFunction()) {
 			this.function.beginLocalVarScope();
 		}
+		typeStatementList(node);
+		if (inFunction()) {
+			this.function.endLocalVarScope();
+		}
+		return void.class;
+	}
+
+	public Type typeStatementList(TypedTree node) {
 		for (int i = 0; i < node.size(); i++) {
 			TypedTree sub = node.get(i);
 			try {
@@ -184,9 +188,6 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 				sub = e.errorTree;
 				node.set(i, sub);
 			}
-		}
-		if (inFunction()) {
-			this.function.endLocalVarScope();
 		}
 		return void.class;
 	}
@@ -214,6 +215,69 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		this.enforceType(boolean.class, node, _cond);
 		type(node.get(_body));
 		return void.class;
+	}
+
+	public Type typeContinue(TypedTree node) {
+		return void.class;
+	}
+
+	public Type typeBreak(TypedTree node) {
+		return void.class;
+	}
+
+	public Type typeFor(TypedTree node) {
+		if (inFunction()) {
+			this.function.beginLocalVarScope();
+		}
+		if (node.has(_init)) {
+			type(node.get(_init));
+		}
+		if (node.has(_cond)) {
+			this.enforceType(boolean.class, node, _cond);
+		}
+		if (node.has(_iter)) {
+			type(node.get(_iter));
+		}
+		type(node.get(_body));
+		if (inFunction()) {
+			this.function.endLocalVarScope();
+		}
+		return void.class;
+	}
+
+	public Type typeForEach(TypedTree node) {
+		Type req_t = null;
+		if (node.has(_type)) {
+			req_t = this.typeSystem.resolveType(node.get(_type), null);
+		}
+		String name = node.getText(_name, "");
+		req_t = typeIterator(req_t, node.get(_iter));
+		if (inFunction()) {
+			this.function.beginLocalVarScope();
+		}
+		this.function.setVarType(name, req_t);
+		type(node.get(_body));
+		if (inFunction()) {
+			this.function.endLocalVarScope();
+		}
+		return void.class;
+	}
+
+	protected Type[] EmptyArgument = new Type[0];
+
+	private Type typeIterator(Type req_t, TypedTree node) {
+		Type iter_t = type(node.get(_iter));
+		Method m = typeSystem.resolveObjectMethod(req_t, this.bufferMatcher, "iterator", EmptyArgument, null, null);
+		if (m != null) {
+			TypedTree iter = node.newInstance(_MethodApply, 0, null);
+			iter.make(_recv, node.get(_iter), _param, node.newInstance(_List, 0, null));
+			iter_t = iter.setMethod(Hint.MethodApply, m, this.bufferMatcher);
+			// TODO
+			// if(req_t != null) {
+			// }
+			// node.set(index, node)
+		}
+		throw error(node.get(_iter), "unsupported iterator for %s", name(iter_t));
 	}
 
 	public Type typeVarDecl(TypedTree node) {
@@ -408,7 +472,7 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 			node.makeFlattenedList(node.get(_recv), node.get(_param));
 			return node.setMethod(Hint.StaticInvocation, typeSystem.ObjectIndexer, null);
 		}
-		return this.errorMethod(node, start, "unsupported indexer [] for %s", name(recv_t));
+		return this.undefinedMethod(node, start, "unsupported indexer [] for %s", name(recv_t));
 	}
 
 	private Type typeSetIndexer(TypedTree node, TypedTree recv, TypedTree param, TypedTree expr) {
@@ -426,7 +490,7 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 			node.makeFlattenedList(node.get(_recv), node.get(_param));
 			return node.setMethod(Hint.StaticInvocation, typeSystem.ObjectSetIndexer, null);
 		}
-		return this.errorMethod(node, start, "unsupported set indexer [] for %s", name(recv_t));
+		return this.undefinedMethod(node, start, "unsupported set indexer [] for %s", name(recv_t));
 	}
 
 	TypeVarMatcher bufferMatcher = new TypeVarMatcher();
@@ -446,7 +510,7 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		return node.setMethod(hint, m, matcher);
 	}
 
-	private Type errorMethod(TypedTree node, int start, String fmt, Object... args) {
+	private Type undefinedMethod(TypedTree node, int start, String fmt, Object... args) {
 		String msg = String.format(fmt, args);
 		if (this.bufferMethods.size() > start) {
 			msg = "mismatched " + msg + methods(bufferMethods, start);
@@ -460,10 +524,17 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		String name = node.getText(_name, "");
 		TypedTree args = node.get(_param);
 		Type[] types = typeApplyArguments(args);
+		if (isRecursiveCall(name, types)) {
+			return typeRecursiveApply(node, name, types);
+		}
+		Type func_t = this.tryCheckNameType(node.get(_name), true);
+		if (this.typeSystem.isFuncType(func_t)) {
+			return typeFuncApply(node, func_t, types, args);
+		}
 		int start = this.bufferMethods.size();
 		Method m = this.typeSystem.resolveFunctionMethod(name, types, bufferMethods, args);
 		return m != null ? this.resolvedMethod(node, Hint.Apply, m, null) //
-				: this.errorMethod(node, start, "funciton: %s", name);
+				: this.undefinedMethod(node, start, "funciton: %s", name);
 	}
 
 	private Type[] typeApplyArguments(TypedTree args) {
@@ -472,6 +543,29 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 			types[i] = type(args.get(i));
 		}
 		return types;
+	}
+
+	private boolean isRecursiveCall(String name, Type[] params_t) {
+		if (inFunction()) {
+			return false; // this.function.match(name, params_t);
+		}
+		return false;
+	}
+
+	private Type typeRecursiveApply(TypedTree node, String name, Type[] params_t) {
+		throw error(node, "unsupported recursive call: %s", name);
+	}
+
+	private Type typeFuncApply(TypedTree node, Type func_t, Type[] params_t, TypedTree params) {
+		Method m = Reflector.getInvokeFunctionMethod(params.size());
+		if (m != null) {
+			for (int i = 0; i < params.size(); i++) {
+				params.set(i, this.typeSystem.enforceType(Object.class, params.get(i)));
+			}
+			node.makeFlattenedList(node.get(_name), params);
+			return node.setMethod(Hint.StaticInvocation, m, null);
+		}
+		throw error(node, "unsupported number of parameters: %d", params.size());
 	}
 
 	public Type typeMethodApply(TypedTree node) {
@@ -489,13 +583,13 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 			this.resolvedMethod(node, Hint.MethodApply, m, bufferMatcher);
 		}
 		if (typeSystem.isDynamic(recv)) {
-			m = this.typeSystem.getInvokeDynamicFunction(node.get(_param).size());
+			m = Reflector.getInvokeDynamicMethod(node.get(_param).size());
 			if (m != null) {
 				node.makeFlattenedList(node.get(_recv), node.newStringConst(name), node.get(_param));
 				return node.setMethod(Hint.StaticDynamicInvocation, m, null);
 			}
 		}
-		return this.errorMethod(node, start, "method %s of %s", name, name(recv));
+		return this.undefinedMethod(node, start, "method %s of %s", name, name(recv));
 	}
 
 	private boolean isStaticClassRecv(TypedTree node) {
@@ -514,7 +608,7 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		int start = this.bufferMethods.size();
 		Method m = this.typeSystem.resolveStaticMethod(c, name, types, bufferMethods, args);
 		return m != null ? this.resolvedMethod(node, Hint.Apply, m, null) //
-				: this.errorMethod(node, start, "static method %s of %s", name, name(c));
+				: this.undefinedMethod(node, start, "static method %s of %s", name, name(c));
 	}
 
 	private Type typeUnary(TypedTree node, String name) {
@@ -527,7 +621,7 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		int start = this.bufferMethods.size();
 		Method m = this.typeSystem.resolveFunctionMethod(name, types, bufferMethods, node);
 		return m != null ? this.resolvedMethod(node, Hint.StaticInvocation, m, null) //
-				: this.errorMethod(node, start, "operator %s for %s", OperatorNames.name(name), name(left));
+				: this.undefinedMethod(node, start, "operator %s for %s", OperatorNames.name(name), name(left));
 	}
 
 	private Type typeBinary(TypedTree node, String name, BinaryTypeUnifier unifier) {
@@ -545,7 +639,7 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		int start = this.bufferMethods.size();
 		Method m = this.typeSystem.resolveFunctionMethod(name, types, bufferMethods, node);
 		return m != null ? this.resolvedMethod(node, Hint.StaticInvocation, m, null) //
-				: this.errorMethod(node, start, "operator %s %s %s", name(left), OperatorNames.name(name), name(right));
+				: this.undefinedMethod(node, start, "operator %s %s %s", name(left), OperatorNames.name(name), name(right));
 	}
 
 	private Type tryPrecast(Type req, TypedTree node, Symbol label) {
@@ -621,6 +715,18 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 
 	public Type typeGreaterThanEquals(TypedTree node) {
 		return typeBinary(node, "opGreaterThanEquals", TypeSystem.UnifyComparator);
+	}
+
+	public Type typeLeftShift(TypedTree node) {
+		return typeBinary(node, "opLeftShift", TypeSystem.UnifyBitwise);
+	}
+
+	public Type typeRightShift(TypedTree node) {
+		return typeBinary(node, "opRightShift", TypeSystem.UnifyBitwise);
+	}
+
+	public Type typeLogicalRightShift(TypedTree node) {
+		return this.typeSelfAssign(node, _LogicalRightShift);
 	}
 
 	public Type typeBitwiseAnd(TypedTree node) {

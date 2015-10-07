@@ -1,15 +1,9 @@
 package nez.ast.script.asm;
 
-import java.lang.invoke.CallSite;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-import nez.ast.jcode.StaticField;
-
 import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.Handle;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -280,49 +274,41 @@ public class MethodBuilder extends GeneratorAdapter {
 		this.invokeInterface(Type.getType(ownerClass), methodDesc);
 	}
 
-	/**
-	 * only support invokestatic, invokevirtual
-	 * 
-	 * @param target
-	 */
-	public void callInvocationTarget(InvocationTarget target) {
-		switch (target.getInvocationType()) {
-		case INVOKE_STATIC:
-			this.invokeStatic(target.getOwnerTypeDesc(), target.getMethodDesc());
-			break;
-		case INVOKE_VIRTUAL:
-			this.invokeVirtual(target.getOwnerTypeDesc(), target.getMethodDesc());
-			break;
-		case INVOKE_INTERFACE:
-			this.invokeInterface(target.getOwnerTypeDesc(), target.getMethodDesc());
-		default:
-			break;
-		}
-	}
-
-	/**
-	 * generate invokedynamic instruction.
-	 *
-	 * @param bsmClassPath
-	 *            class path that has bootstrap method.
-	 * @param bsmName
-	 *            bootstrap method name
-	 * @param methodName
-	 *            invocation method name
-	 * @param invokeClassPath
-	 *            invocation class path
-	 * @param argTypes
-	 *            types of arguments
-	 */
-
-	public void callDynamicMethod(String bsmClassPath, String bsmName, String methodName, String invokeClassPath, Type... argTypes) {
-		MethodType mt = MethodType.methodType(CallSite.class, MethodHandles.Lookup.class, String.class, MethodType.class, String.class);
-		Handle bsm = new Handle(Opcodes.H_INVOKESTATIC, bsmClassPath, bsmName, mt.toMethodDescriptorString());
-		this.invokeDynamic(methodName, Type.getMethodDescriptor(Type.getType(Object.class), argTypes), bsm, invokeClassPath);
-	}
-
-	public void getStatic(StaticField field) {
-		this.getStatic(field.getOwnerType(), field.getFieldName(), field.getFieldType());
-	}
+	// /**
+	// * only support invokestatic, invokevirtual
+	// *
+	// * @param target
+	// */
+	// public void callInvocationTarget(InvocationTarget target) {
+	// switch (target.getInvocationType()) {
+	// case INVOKE_STATIC:
+	// this.invokeStatic(target.getOwnerTypeDesc(), target.getMethodDesc());
+	// break;
+	// case INVOKE_VIRTUAL:
+	// this.invokeVirtual(target.getOwnerTypeDesc(), target.getMethodDesc());
+	// break;
+	// case INVOKE_INTERFACE:
+	// this.invokeInterface(target.getOwnerTypeDesc(), target.getMethodDesc());
+	// default:
+	// break;
+	// }
+	// }
+	//
+	// public void callDynamicMethod(String bsmClassPath, String bsmName, String
+	// methodName, String invokeClassPath, Type... argTypes) {
+	// MethodType mt = MethodType.methodType(CallSite.class,
+	// MethodHandles.Lookup.class, String.class, MethodType.class,
+	// String.class);
+	// Handle bsm = new Handle(Opcodes.H_INVOKESTATIC, bsmClassPath, bsmName,
+	// mt.toMethodDescriptorString());
+	// this.invokeDynamic(methodName,
+	// Type.getMethodDescriptor(Type.getType(Object.class), argTypes), bsm,
+	// invokeClassPath);
+	// }
+	//
+	// public void getStatic(StaticField field) {
+	// this.getStatic(field.getOwnerType(), field.getFieldName(),
+	// field.getFieldType());
+	// }
 
 }

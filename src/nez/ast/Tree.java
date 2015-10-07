@@ -6,7 +6,7 @@ import nez.io.SourceContext;
 import nez.util.StringUtils;
 
 public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements SourcePosition {
-	private final static Symbol[] EmptyLabels = new Symbol[0];
+	protected final static Symbol[] EmptyLabels = new Symbol[0];
 
 	protected Symbol tag;
 	protected Source source;
@@ -161,6 +161,15 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements
 		return -1;
 	}
 
+	public final boolean has(Symbol label) {
+		for (int i = 0; i < labels.length; i++) {
+			if (labels[i] == label) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public final E get(Symbol label) {
 		for (int i = 0; i < labels.length; i++) {
 			if (labels[i] == label) {
@@ -270,6 +279,15 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements
 			return this.value.toString();
 		}
 		return "";
+	}
+
+	public final boolean is(Symbol label, Symbol tag) {
+		for (int i = 0; i < labels.length; i++) {
+			if (labels[i] == label) {
+				return this.subTree[i].is(tag);
+			}
+		}
+		return false;
 	}
 
 	public final String getText(int index, String defval) {

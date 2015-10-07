@@ -2,7 +2,7 @@ package nez.ast.script.stub;
 
 import konoha.Function;
 
-public class F_fibo implements Function {
+public class F_fibo extends Function {
 	public final int f(int n) {
 		if (n < 3) {
 			return 1;

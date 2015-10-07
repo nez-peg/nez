@@ -1,4 +1,4 @@
-package nez.ast.script;
+package konoha;
 
 public class StringOperator {
 	public static final boolean opEquals(String x, String y) {
