@@ -109,37 +109,52 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 	}
 
 	/* FuncDecl */
+	private static Type[] EmptyTypes = new Type[0];
 
 	public Type typeFuncDecl(TypedTree node) {
 		String name = node.getText(_name, null);
 		TypedTree bodyNode = node.get(_body, null);
-		if (bodyNode != null) {
-			FunctionBuilder f = this.enterFunction(name);
-			Type type = typeSystem.resolveType(node.get(_type, null), null);
-			if (type != null) {
-				f.setReturnType(type);
-				typed(node.get(_type), type);
+		Type returnType = typeSystem.resolveType(node.get(_type, null), null);
+		Type[] paramTypes = EmptyTypes;
+		TypedTree params = node.get(_param, null);
+		if (node.has(_param)) {
+			int c = 0;
+			paramTypes = new Type[params.size()];
+			for (TypedTree p : params) {
+				paramTypes[c] = typeSystem.resolveType(p.get(_type, null), Object.class);
+				c++;
 			}
-			TypedTree paramsNode = node.get(_param, null);
-			if (paramsNode != null) {
-				for (TypedTree p : paramsNode) {
-					String pname = p.getText(_name, null);
-					Type ptype = typeSystem.resolveType(p.get(_type, null), Object.class);
-					f.setVarType(pname, ptype);
-					typed(p, ptype);
-				}
-			}
-			try {
-				type(bodyNode);
-			} catch (TypeCheckerException e) {
-				node.set(_body, e.errorTree);
-			}
-			this.exitFunction();
-			if (f.getReturnType() == null) {
-				f.setReturnType(void.class);
-			}
-			typed(node.get(_name), f.getReturnType());
 		}
+		/* prototye declration */
+		if (bodyNode == null) {
+			Class<?> funcType = this.typeSystem.getFuncType(returnType, paramTypes);
+			typeSystem.newGlobalVariable(funcType, name);
+			node.done();
+			return void.class;
+		}
+		FunctionBuilder f = this.enterFunction(name);
+		if (returnType != null) {
+			f.setReturnType(returnType);
+			typed(node.get(_type), returnType);
+		}
+		if (node.has(_param)) {
+			int c = 0;
+			for (TypedTree sub : params) {
+				String pname = sub.getText(_name, null);
+				f.setVarType(pname, paramTypes[c]);
+				typed(sub, paramTypes[c]);
+			}
+		}
+		try {
+			type(bodyNode);
+		} catch (TypeCheckerException e) {
+			node.set(_body, e.errorTree);
+		}
+		this.exitFunction();
+		if (f.getReturnType() == null) {
+			f.setReturnType(void.class);
+		}
+		typed(node.get(_name), f.getReturnType());
 		return void.class;
 	}
 

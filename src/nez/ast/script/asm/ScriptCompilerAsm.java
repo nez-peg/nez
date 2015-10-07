@@ -163,11 +163,15 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 	/* class */
 
 	public void openClass(String name) {
-		this.cBuilder = new ClassBuilder("konoha/runtime" + name, null, null, null);
+		this.cBuilder = new ClassBuilder(name, null, null, null);
 	}
 
 	public void openClass(String name, Class<?> superClass, Class<?>... interfaces) {
-		this.cBuilder = new ClassBuilder("konoha/runtime" + name, null, superClass, interfaces);
+		this.cBuilder = new ClassBuilder(name, null, superClass, interfaces);
+	}
+
+	public void openClass(int acc, String name, Class<?> superClass, Class<?>... interfaces) {
+		this.cBuilder = new ClassBuilder(acc, name, null, superClass, interfaces);
 	}
 
 	public Class<?> closeClass() {
@@ -186,12 +190,21 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 	}
 
 	/* generate function class */
+	public Class<?> compileFuncType(String cname, Class<?> returnType, Class<?>... paramTypes) {
+		System.out.println("cname: " + cname);
+		this.openClass(Opcodes.ACC_PUBLIC | Opcodes.ACC_ABSTRACT, cname, konoha.Function.class);
+		this.mBuilder = this.cBuilder.newMethodBuilder(Opcodes.ACC_PUBLIC | Opcodes.ACC_ABSTRACT, returnType, "invoke", paramTypes);
+		this.mBuilder.endMethod();
+		return this.closeClass();
+	}
 
-	public Class<?> compileFunctionClass(java.lang.reflect.Method staticMethod) {
-		this.openClass("C" + staticMethod.getName(), null, null, konoha.Function.class);
+	/* generate function class */
+
+	public Class<?> compileFunctionClass(Class<?> superClass, java.lang.reflect.Method staticMethod) {
+		this.openClass("C" + staticMethod.getName(), superClass);
 		Class<?> returnType = staticMethod.getReturnType();
 		Class<?>[] paramTypes = staticMethod.getParameterTypes();
-		this.mBuilder = this.cBuilder.newMethodBuilder(Opcodes.ACC_PUBLIC, returnType, "f", paramTypes);
+		this.mBuilder = this.cBuilder.newMethodBuilder(Opcodes.ACC_PUBLIC, returnType, "invoke", paramTypes);
 		int index = 1;
 		for (int i = 0; i < paramTypes.length; i++) {
 			Type AsmType = Type.getType(paramTypes[i]);
@@ -204,6 +217,14 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 		this.mBuilder.invokeStatic(owner, methodDesc);
 		this.mBuilder.returnValue();
 		this.mBuilder.endMethod();
+
+		Method desc = Method.getMethod("void <init> ()");
+		this.mBuilder = this.cBuilder.newMethodBuilder(Opcodes.ACC_PUBLIC, desc);
+		this.mBuilder.loadThis(); // InitMethod.visitVarInsn(ALOAD, 0);
+		this.mBuilder.invokeConstructor(Type.getType(Object.class), desc);
+		this.mBuilder.returnValue();
+		this.mBuilder.endMethod();
+
 		return this.closeClass();
 	}
 
@@ -746,37 +767,6 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 	// ClassBuilder.AddField(ACC_PUBLIC | ACC_STATIC | ACC_FINAL, "function",
 	// FuncClass, null);
 	//
-	// // static init
-	// AsmMethodBuilder StaticInitMethod = ClassBuilder.NewMethod(ACC_PUBLIC |
-	// ACC_STATIC , "<clinit>", "()V");
-	// StaticInitMethod.visitTypeInsn(NEW, ClassName);
-	// StaticInitMethod.visitInsn(DUP);
-	// StaticInitMethod.visitMethodInsn(INVOKESPECIAL, ClassName, "<init>",
-	// "()V");
-	// StaticInitMethod.visitFieldInsn(PUTSTATIC, ClassName, "function",
-	// FuncClass);
-	// StaticInitMethod.visitInsn(RETURN);
-	// StaticInitMethod.Finish();
-	//
-	// AsmMethodBuilder InitMethod = ClassBuilder.NewMethod(ACC_PRIVATE,
-	// "<init>", "()V");
-	// InitMethod.visitVarInsn(ALOAD, 0);
-	// InitMethod.visitLdcInsn(FuncType.TypeId);
-	// InitMethod.visitLdcInsn(FuncName);
-	// InitMethod.visitMethodInsn(INVOKESPECIAL,
-	// Type.getInternalName(FuncClass), "<init>", "(ILjava/lang/String;)V");
-	// InitMethod.visitInsn(RETURN);
-	// InitMethod.Finish();
-	//
-	// AsmMethodBuilder StaticFuncMethod = ClassBuilder.NewMethod(ACC_PUBLIC |
-	// ACC_STATIC, "f", FuncType);
-	// for(int i = 0; i < Node.GetListSize(); i++) {
-	// ZParamNode ParamNode = Node.GetParamNode(i);
-	// Class<?> DeclClass = this.GetJavaClass(ParamNode.DeclType());
-	// StaticFuncMethod.AddLocal(DeclClass, ParamNode.GetName());
-	// }
-	// Node.BlockNode().Accept(this);
-	// StaticFuncMethod.Finish();
 	//
 	// FuncClass = this.AsmLoader.LoadGeneratedClass(ClassName);
 	// this.SetGeneratedClass(ClassName, FuncClass);

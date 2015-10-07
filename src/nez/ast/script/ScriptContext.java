@@ -19,6 +19,7 @@ public class ScriptContext {
 		this.typeSystem = new TypeSystem(this, null/* FIXME */);
 		this.typechecker = new TypeChecker(this, typeSystem);
 		this.interpreter = new Interpreter(this, typeSystem);
+		// new TypeChecker2();
 	}
 
 	public void load(String path) throws IOException {

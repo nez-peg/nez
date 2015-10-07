@@ -4,19 +4,19 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
-import konoha.Array;
 import konoha.IArray;
-import nez.ast.Tree;
-import nez.ast.TreeVisitor;
+import nez.ast.TreeVisitor2;
 import nez.ast.script.asm.ScriptCompiler;
+import nez.util.ConsoleUtils;
 
-public class Interpreter extends TreeVisitor implements CommonSymbols {
+public class Interpreter extends TreeVisitor2<nez.ast.script.Interpreter.Undefined> implements CommonSymbols {
 	ScriptContext context;
 	TypeSystem typeSystem;
 	private ScriptCompiler compiler;
 
 	public Interpreter(ScriptContext sc, TypeSystem base) {
-		super(TypedTree.class);
+		super();
+		init(new Undefined());
 		this.context = sc;
 		this.typeSystem = base;
 		this.compiler = new ScriptCompiler(this.typeSystem);
@@ -27,20 +27,20 @@ public class Interpreter extends TreeVisitor implements CommonSymbols {
 	public Object eval(TypedTree node) {
 		switch (node.hint) {
 		case Apply:
-			return evalApply(node);
+			return evalApplyHint(node);
 		case Constant:
 			return node.getValue();
 		case MethodApply:
-			return evalMethodApply(node);
+			return evalMethodApplyHint(node);
 		case StaticInvocation:
-			return evalStaticInvocation(node);
+			return evalStaticInvocationHint(node);
 		case GetField:
-			return evalField(node);
+			return evalFieldHint(node);
 		case SetField:
-			return evalSetField(node);
+			return evalSetFieldHint(node);
 		case Unique:
 		default:
-			return visit("eval", node);
+			return evalImpl(node);
 		}
 	}
 
@@ -48,97 +48,103 @@ public class Interpreter extends TreeVisitor implements CommonSymbols {
 		return (node == null) ? null : eval(node);
 	}
 
-	@Override
-	public Object visitUndefinedNode(Tree<?> node) {
-		System.out.println("TODO: Interpreter " + node);
-		return empty;
+	final Object evalImpl(TypedTree node) {
+		Object o = find(node).visit(node);
+		System.out.println("#" + node.getTag() + ": " + o);
+		return o;
 	}
 
-	// private Object invokeStaticMethod(Method m, Object... args) {
-	// return this.invokeMethod(m, null, args);
-	// }
-	//
-	// private Object invokeMethod(Method m, Object self, Object... args) {
-	// try {
-	// return m.invoke(self, args);
-	// } catch (IllegalAccessException e) {
-	// e.printStackTrace();
-	// } catch (IllegalArgumentException e) {
-	// System.err.println(m.toString() + ": " + e.getMessage());
-	// // e.printStackTrace();
-	// } catch (InvocationTargetException e) {
-	// Throwable w = e.getTargetException();
-	// if (w instanceof RuntimeException) {
-	// throw (RuntimeException) e.getTargetException();
-	// }
-	// throw new ScriptRuntimeException(w.getMessage());
-	// }
-	// throw new ScriptRuntimeException("failed invocation: " + m);
-	// }
-
-	public Object evalSource(TypedTree node) {
-		Object result = empty;
-		for (TypedTree sub : node) {
-			if (sub.is(_Error)) {
-				return empty;
-			}
-			result = eval(sub);
+	public class Undefined {
+		Object visit(TypedTree node) {
+			ConsoleUtils.println("TODO: Interpreter " + node);
+			return empty;
 		}
-		return result;
+	}
+
+	public class Source extends Undefined {
+		@Override
+		public Object visit(TypedTree node) {
+			Object result = empty;
+			for (TypedTree sub : node) {
+				if (sub.is(_Error)) {
+					return empty;
+				}
+				result = eval(sub);
+			}
+			return result;
+		}
 	}
 
 	/* TopLevel */
 
-	public Object evalFuncDecl(TypedTree node) {
-		this.compiler.compileFuncDecl(node);
-		return empty;
+	public class FuncDecl extends Undefined {
+
+		@Override
+		public Object visit(TypedTree node) {
+			compiler.compileFuncDecl(node);
+			return empty;
+		}
 	}
 
 	/* boolean */
 
-	public Object evalBlock(TypedTree node) {
-		Object retVal = null;
-		for (TypedTree child : node) {
-			retVal = eval(child);
+	public class Block extends Undefined {
+		@Override
+		public Object visit(TypedTree node) {
+			Object retVal = null;
+			for (TypedTree child : node) {
+				retVal = eval(child);
+			}
+			return retVal;
 		}
-		return retVal;
 	}
 
-	public Object evalIf(TypedTree node) {
-		boolean cond = (Boolean) eval(node.get(_cond));
-		if (cond) {
-			return eval(node.get(_then));
-		} else {
-			TypedTree elseNode = node.get(_else, null);
-			if (elseNode != null) {
-				return eval(elseNode);
+	public class If extends Undefined {
+		@Override
+		public Object visit(TypedTree node) {
+			boolean cond = (Boolean) eval(node.get(_cond));
+			if (cond) {
+				return eval(node.get(_then));
+			} else {
+				TypedTree elseNode = node.get(_else, null);
+				if (elseNode != null) {
+					return eval(elseNode);
+				}
 			}
+			return empty;
 		}
-		return empty;
 	}
 
 	/* Expression Statement */
-	public Object evalExpression(TypedTree node) {
-		if (node.getType() == void.class) {
-			eval(node.get(0));
-			return empty;
+	public class Expression extends Undefined {
+		@Override
+		public Object visit(TypedTree node) {
+			if (node.getType() == void.class) {
+				eval(node.get(0));
+				return empty;
+			}
+			return eval(node.get(0));
 		}
-		return eval(node.get(0));
 	}
 
-	public Object evalEmpty(TypedTree node) {
-		return empty;
+	public class Empty extends Undefined {
+		public Object evalEmpty(TypedTree node) {
+			return empty;
+		}
 	}
 
 	/* Expression */
 
-	public Object evalCast(TypedTree node) {
-		Object v = eval(node.get(_expr));
-		Method m = node.getMethod();
-		if (m != null) {
-			return Reflector.invokeStaticMethod(m, v);
+	public class Cast extends Undefined {
+		@Override
+		public Object visit(TypedTree node) {
+			Object v = eval(node.get(_expr));
+			Method m = node.getMethod();
+			if (m != null) {
+				return Reflector.invokeStaticMethod(m, v);
+			}
+			return v;
 		}
-		return v;
 	}
 
 	// public Object evalName(TypedTree node) {
@@ -155,7 +161,7 @@ public class Interpreter extends TreeVisitor implements CommonSymbols {
 	// return right;
 	// }
 
-	public Object evalField(TypedTree node) {
+	public Object evalFieldHint(TypedTree node) {
 		Field f = node.getField();
 		Object recv = null;
 		if (!Modifier.isStatic(f.getModifiers())) {
@@ -172,7 +178,7 @@ public class Interpreter extends TreeVisitor implements CommonSymbols {
 		}
 	}
 
-	private Object evalSetField(TypedTree node) {
+	private Object evalSetFieldHint(TypedTree node) {
 		Object recv = null;
 		Object value = eval(node.get(_expr));
 		Field f = node.getField();
@@ -189,18 +195,18 @@ public class Interpreter extends TreeVisitor implements CommonSymbols {
 		}
 	}
 
-	private Object evalStaticInvocation(TypedTree node) {
+	private Object evalStaticInvocationHint(TypedTree node) {
 		Object[] args = this.evalApplyArgument(node);
 		return Reflector.invokeStaticMethod(node.getMethod(), args);
 	}
 
-	public Object evalMethodApply(TypedTree node) {
+	public Object evalMethodApplyHint(TypedTree node) {
 		Object recv = eval(node.get(_recv));
 		Object[] args = evalApplyArgument(node.get(_param));
 		return Reflector.invokeMethod(recv, node.getMethod(), args);
 	}
 
-	public Object evalApply(TypedTree node) {
+	public Object evalApplyHint(TypedTree node) {
 		// String name = node.getText(_name, null);
 		Object[] args = evalApplyArgument(node.get(_param));
 		return Reflector.invokeStaticMethod(node.getMethod(), args);
@@ -214,15 +220,16 @@ public class Interpreter extends TreeVisitor implements CommonSymbols {
 		return args;
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public Object evalArray(TypedTree node) {
-		Object[] args = evalApplyArgument(node);
-		Class<?> atype = node.getClassType();
-		if (atype == IArray.class) {
-			return new IArray<Object>(args, args.length);
-			// System.out.println("AAA " + a + " " + a.getClass());
+	public class Array extends Undefined {
+		@SuppressWarnings({ "rawtypes", "unchecked" })
+		public Object evalArray(TypedTree node) {
+			Object[] args = evalApplyArgument(node);
+			Class<?> atype = node.getClassType();
+			if (atype == IArray.class) {
+				return new IArray<Object>(args, args.length);
+				// System.out.println("AAA " + a + " " + a.getClass());
+			}
+			return new konoha.Array(args, args.length);
 		}
-		return new Array(args, args.length);
 	}
-
 }

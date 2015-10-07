@@ -97,8 +97,17 @@ public class ClassBuilder extends ClassWriter implements Opcodes {
 	 * @return
 	 */
 
+	public MethodBuilder newMethodBuilder(int acc, Method method) {
+		return new MethodBuilder(acc, method, this);
+	}
+
 	public MethodBuilder newMethodBuilder(int accessFlag, Class<?> returnClass, String methodName, Class<?>... paramClasses) {
-		Method method = Methods.method(returnClass, methodName, paramClasses);
+		final int size = paramClasses.length;
+		Type[] paramTypeDescs = new Type[paramClasses.length];
+		for (int i = 0; i < size; i++) {
+			paramTypeDescs[i] = Type.getType(paramClasses[i]);
+		}
+		Method method = new Method(methodName, Type.getType(returnClass), paramTypeDescs);
 		return new MethodBuilder(accessFlag, method, this);
 	}
 

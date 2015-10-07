@@ -87,17 +87,26 @@ public class TypeSystem implements CommonSymbols {
 			if (base == null) {
 				return deftype;
 			}
-			int paramSize = base.getTypeParameters().length;
-			if (node.get(_param).size() != paramSize) {
-				throw this.error(node, "mismatched parameter number %s", base);
+			TypedTree params = node.get(_param);
+			if (base == Function.class) {
+				Class<?>[] p = new Class<?>[params.size() - 1];
+				for (int i = 0; i < p.length; i++) {
+					p[0] = resolveClass(params.get(i + 1), Object.class);
+				}
+				return this.getFuncType(resolveClass(params.get(0), void.class), p);
+			} else {
+				int paramSize = base.getTypeParameters().length;
+				if (node.get(_param).size() != paramSize) {
+					throw this.error(node, "mismatched parameter number %s", base);
+				}
+				Type[] p = new Type[paramSize];
+				int c = 0;
+				for (TypedTree sub : node.get(_param)) {
+					p[c] = resolveType(sub, Object.class);
+					c++;
+				}
+				return GenericType.newType(base, p);
 			}
-			Type[] p = new Type[paramSize];
-			int c = 0;
-			for (TypedTree sub : node.get(_param)) {
-				p[c] = resolveType(sub, Object.class);
-				c++;
-			}
-			return GenericType.newType(base, p);
 		}
 		return deftype;
 	}
@@ -112,6 +121,63 @@ public class TypeSystem implements CommonSymbols {
 
 	public Type newArrayType(Type elementType) {
 		return GenericType.newType(konoha.Array.class, elementType);
+	}
+
+	/* FuncType */
+
+	public Class<?> getFuncType(Class<?> returnType, Class<?>... paramTypes) {
+		String name = ScriptCompiler.nameFuncType(returnType, paramTypes);
+		Class<?> c = (Class<?>) this.TypeNames.get(name);
+		if (c == null) {
+			c = this.compl.compileFuncType(name, returnType, paramTypes);
+			this.TypeNames.put(name, c);
+		}
+		return c;
+	}
+
+	public Class<?> getFuncType(Type returnType, Type... paramTypes) {
+		String name = ScriptCompiler.nameFuncType(returnType, paramTypes);
+		Class<?> c = (Class<?>) this.TypeNames.get(name);
+		if (c == null) {
+			Class<?>[] p = new Class<?>[paramTypes.length];
+			for (int i = 0; i < p.length; i++) {
+				p[i] = TypeSystem.toClass(paramTypes[i]);
+			}
+			c = this.compl.compileFuncType(name, TypeSystem.toClass(returnType), p);
+			this.TypeNames.put(name, c);
+		}
+		return c;
+	}
+
+	public boolean isFuncType(Type f) {
+		return this.isStaticFuncType(f) || this.isDynamicFuncType(f);
+	}
+
+	public boolean isDynamicFuncType(Type f) {
+		if (f == konoha.Function.class) {
+			return true;
+		}
+		return false;
+	}
+
+	public boolean isStaticFuncType(Type f) {
+		if (f instanceof Class<?>) {
+			return ((Class<?>) f).getSuperclass() == konoha.Function.class;
+		}
+		return false;
+	}
+
+	public Class<?> getFuncReturnType(Type f) {
+		if (f == konoha.Function.class) {
+			return Object.class;
+		}
+		Method m = Reflector.findInvokeMethod((Class<?>) f);
+		return m.getReturnType();
+	}
+
+	public Class<?>[] getFuncParameterTypes(Type f) {
+		Method m = Reflector.findInvokeMethod((Class<?>) f);
+		return m.getParameterTypes();
 	}
 
 	/* GlobalVariables */
@@ -474,7 +540,7 @@ public class TypeSystem implements CommonSymbols {
 		return node;
 	}
 
-	public Type PrimitiveType(Type t) {
+	public final Type PrimitiveType(Type t) {
 		if (t == Double.class || t == Float.class || t == float.class) {
 			return double.class;
 		}
@@ -699,13 +765,6 @@ public class TypeSystem implements CommonSymbols {
 
 	public Type dynamicType() {
 		return Object.class;
-	}
-
-	public boolean isFuncType(Type func_t) {
-		if (func_t == konoha.Function.class) {
-			return true;
-		}
-		return false;
 	}
 
 }

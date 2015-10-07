@@ -5,8 +5,26 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import konoha.Function;
+import nez.util.ConsoleUtils;
 
 public class Reflector {
+
+	public static Object newInstance(Class<?> c) {
+		try {
+			return c.newInstance();
+		} catch (InstantiationException | IllegalAccessException e) {
+			throw new ScriptRuntimeException(e.getMessage());
+		}
+	}
+
+	public final static Method load(Class<?> c, String name, Class<?>... type) {
+		try {
+			return c.getMethod(name, type);
+		} catch (NoSuchMethodException | SecurityException e) {
+			ConsoleUtils.exit(1, e.getMessage());
+			return null;
+		}
+	}
 
 	public final static Method getMethod(Object self, String name, Class<?>... type) {
 		try {
@@ -168,10 +186,10 @@ public class Reflector {
 	public final static Method getInvokeDynamicMethod(int paramsize) {
 		if (invokeDynamicMethods == null) {
 			invokeDynamicMethods = new Method[4];
-			invokeDynamicMethods[0] = getMethod(Object.class, "invokeDynamic", String.class);
-			invokeDynamicMethods[1] = getMethod(Object.class, "invokeDynamic", String.class, Object.class);
-			invokeDynamicMethods[2] = getMethod(Object.class, "invokeDynamic", String.class, Object.class, Object.class);
-			invokeDynamicMethods[3] = getMethod(Object.class, "invokeDynamic", String.class, Object.class, Object.class, Object.class);
+			invokeDynamicMethods[0] = load(Reflector.class, "invokeDynamic", Object.class, String.class);
+			invokeDynamicMethods[1] = load(Reflector.class, "invokeDynamic", Object.class, String.class, Object.class);
+			invokeDynamicMethods[2] = load(Reflector.class, "invokeDynamic", Object.class, String.class, Object.class, Object.class);
+			invokeDynamicMethods[3] = load(Reflector.class, "invokeDynamic", Object.class, String.class, Object.class, Object.class, Object.class);
 		}
 		if (paramsize < invokeDynamicMethods.length) {
 			return invokeDynamicMethods[paramsize];
@@ -202,15 +220,19 @@ public class Reflector {
 	public final static Method getInvokeFunctionMethod(int paramsize) {
 		if (invokeFuncMethods == null) {
 			invokeFuncMethods = new Method[4];
-			invokeFuncMethods[0] = getMethod(Function.class, "invokeFunc");
-			invokeFuncMethods[1] = getMethod(Function.class, "invokeFunc", Object.class);
-			invokeFuncMethods[2] = getMethod(Function.class, "invokeFunc", Object.class, Object.class);
-			invokeFuncMethods[3] = getMethod(Function.class, "invokeFunc", Object.class, Object.class, Object.class);
+			invokeFuncMethods[0] = load(Reflector.class, "invokeFunc", Function.class);
+			invokeFuncMethods[1] = load(Reflector.class, "invokeFunc", Function.class, Object.class);
+			invokeFuncMethods[2] = load(Reflector.class, "invokeFunc", Function.class, Object.class, Object.class);
+			invokeFuncMethods[3] = load(Reflector.class, "invokeFunc", Function.class, Object.class, Object.class, Object.class);
 		}
 		if (paramsize < invokeFuncMethods.length) {
 			return invokeFuncMethods[paramsize];
 		}
 		return null;
+	}
+
+	public final static Method findInvokeMethod(Class<?> f) {
+		return f.getDeclaredMethods()[0];
 	}
 
 	public final static Method findInvokeMethod(Function self) {

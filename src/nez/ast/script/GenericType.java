@@ -18,6 +18,10 @@ public class GenericType implements Type {
 		this.name = shortName(base, params);
 	}
 
+	public Class<?> getRawType() {
+		return base;
+	}
+
 	public Type resolveType(String name, Type def) {
 		int c = 0;
 		TypeVariable<?>[] p = base.getTypeParameters();
