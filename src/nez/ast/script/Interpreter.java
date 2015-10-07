@@ -49,7 +49,7 @@ public class Interpreter extends TreeVisitor2<nez.ast.script.Interpreter.Unevalu
 
 	final Object evalImpl(TypedTree node) {
 		Object o = find(node).visit(node);
-		System.out.println("#" + node.getTag() + ": " + o);
+		// System.out.println("#" + node.getTag() + ": " + o);
 		return o;
 	}
 

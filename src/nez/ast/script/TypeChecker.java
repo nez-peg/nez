@@ -6,12 +6,13 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 
 import nez.ast.Symbol;
-import nez.ast.TreeVisitor;
+import nez.ast.TreeVisitor2;
 import nez.ast.script.TypeSystem.BinaryTypeUnifier;
+import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
 import nez.util.UList;
 
-public class TypeChecker extends TreeVisitor implements CommonSymbols {
+public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefined> implements CommonSymbols {
 	boolean isShellMode = true;
 	ScriptContext context;
 	TypeSystem typeSystem;
@@ -19,9 +20,17 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 	// TypeScope scope;
 
 	public TypeChecker(ScriptContext context, TypeSystem typeSystem) {
-		super(TypedTree.class);
+		// super(TypedTree.class);
 		this.context = context;
 		this.typeSystem = typeSystem;
+		init(new Undefined());
+	}
+
+	public class Undefined {
+		public Type type(TypedTree t) {
+			ConsoleUtils.println("FIXME: TypeChecker " + t);
+			return void.class;
+		}
 	}
 
 	FunctionBuilder function = null;
@@ -43,8 +52,8 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		return this.function != null;
 	}
 
-	public Type type(TypedTree node) {
-		Type c = (Type) visit("type", node);
+	public Type doType(TypedTree node) {
+		Type c = find(node).type(node);
 		if (c != null) {
 			node.setType(c);
 		}
@@ -60,7 +69,7 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		if (unode == null) {
 			throw this.error(node, "syntax error: %s is required", label);
 		}
-		type(unode);
+		doType(unode);
 		node.set(label, this.typeSystem.enforceType(req, unode));
 	}
 
@@ -69,20 +78,29 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 	}
 
 	/* TopLevel */
-
-	public Type typeSource(TypedTree node) {
-		Type t = null;
-		for (int i = 0; i < node.size(); i++) {
-			TypedTree sub = node.get(i);
-			try {
-				t = type(sub);
-			} catch (TypeCheckerException e) {
-				sub = e.errorTree;
-				node.set(i, sub);
-				t = sub.getType();
+	public class Source extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			Type t = null;
+			for (int i = 0; i < node.size(); i++) {
+				TypedTree sub = node.get(i);
+				try {
+					t = doType(sub);
+				} catch (TypeCheckerException e) {
+					sub = e.errorTree;
+					node.set(i, sub);
+					t = sub.getType();
+				}
 			}
+			return t;
 		}
-		return t;
+	}
+
+	public class Import extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			return typeImport(node);
+		}
 	}
 
 	public Type typeImport(TypedTree node) {
@@ -110,6 +128,13 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 
 	/* FuncDecl */
 	private static Type[] EmptyTypes = new Type[0];
+
+	public class FuncDecl extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			return typeFuncDecl(node);
+		}
+	}
 
 	public Type typeFuncDecl(TypedTree node) {
 		String name = node.getText(_name, null);
@@ -146,7 +171,7 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 			}
 		}
 		try {
-			type(bodyNode);
+			doType(bodyNode);
 		} catch (TypeCheckerException e) {
 			node.set(_body, e.errorTree);
 		}
@@ -158,6 +183,13 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		return void.class;
 	}
 
+	public class Return extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			return typeReturn(node);
+		}
+	}
+
 	public Type typeReturn(TypedTree node) {
 		if (!inFunction()) {
 			throw this.error(node, "return must be inside function");
@@ -165,7 +197,7 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		Type t = this.function.getReturnType();
 		if (t == null) { // type inference
 			if (node.has(_expr)) {
-				this.function.setReturnType(type(node.get(_expr)));
+				this.function.setReturnType(doType(node.get(_expr)));
 			} else {
 				this.function.setReturnType(void.class);
 			}
@@ -183,22 +215,32 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 
 	/* Statement */
 
-	public Type typeBlock(TypedTree node) {
-		if (inFunction()) {
-			this.function.beginLocalVarScope();
+	public class Block extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			if (inFunction()) {
+				function.beginLocalVarScope();
+			}
+			typeStatementList(node);
+			if (inFunction()) {
+				function.endLocalVarScope();
+			}
+			return void.class;
 		}
-		typeStatementList(node);
-		if (inFunction()) {
-			this.function.endLocalVarScope();
+	}
+
+	public class StatementList extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			return typeStatementList(node);
 		}
-		return void.class;
 	}
 
 	public Type typeStatementList(TypedTree node) {
 		for (int i = 0; i < node.size(); i++) {
 			TypedTree sub = node.get(i);
 			try {
-				type(sub);
+				doType(sub);
 			} catch (TypeCheckerException e) {
 				sub = e.errorTree;
 				node.set(i, sub);
@@ -207,57 +249,82 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		return void.class;
 	}
 
-	public Type typeIf(TypedTree node) {
-		this.enforceType(boolean.class, node, _cond);
-		type(node.get(_then));
-		if (node.get(_else, null) != null) {
-			type(node.get(_else));
+	public class If extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			enforceType(boolean.class, node, _cond);
+			doType(node.get(_then));
+			if (node.has(_else)) {
+				doType(node.get(_else));
+			}
+			return void.class;
 		}
-		return void.class;
 	}
 
-	public Type typeConditional(TypedTree node) {
-		this.enforceType(boolean.class, node, _cond);
-		Type then_t = type(node.get(_then));
-		Type else_t = type(node.get(_else));
-		if (then_t != else_t) {
-			this.enforceType(then_t, node, _else);
+	public class Conditional extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			enforceType(boolean.class, node, _cond);
+			Type then_t = doType(node.get(_then));
+			Type else_t = doType(node.get(_else));
+			if (then_t != else_t) {
+				enforceType(then_t, node, _else);
+			}
+			return then_t;
 		}
-		return then_t;
 	}
 
-	public Type typeWhile(TypedTree node) {
-		this.enforceType(boolean.class, node, _cond);
-		type(node.get(_body));
-		return void.class;
+	public class While extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			enforceType(boolean.class, node, _cond);
+			doType(node.get(_body));
+			return void.class;
+		}
 	}
 
-	public Type typeContinue(TypedTree node) {
-		return void.class;
+	public class Continue extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			return void.class;
+		}
 	}
 
-	public Type typeBreak(TypedTree node) {
-		return void.class;
+	public class Break extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			return void.class;
+		}
 	}
 
-	public Type typeFor(TypedTree node) {
-		if (inFunction()) {
-			this.function.beginLocalVarScope();
+	public class For extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			if (inFunction()) {
+				function.beginLocalVarScope();
+			}
+			if (node.has(_init)) {
+				doType(node.get(_init));
+			}
+			if (node.has(_cond)) {
+				enforceType(boolean.class, node, _cond);
+			}
+			if (node.has(_iter)) {
+				doType(node.get(_iter));
+			}
+			doType(node.get(_body));
+			if (inFunction()) {
+				function.endLocalVarScope();
+			}
+			return void.class;
 		}
-		if (node.has(_init)) {
-			type(node.get(_init));
+	}
+
+	public class ForEach extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			return typeForEach(node);
 		}
-		if (node.has(_cond)) {
-			this.enforceType(boolean.class, node, _cond);
-		}
-		if (node.has(_iter)) {
-			type(node.get(_iter));
-		}
-		type(node.get(_body));
-		if (inFunction()) {
-			this.function.endLocalVarScope();
-		}
-		return void.class;
 	}
 
 	public Type typeForEach(TypedTree node) {
@@ -271,7 +338,7 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 			this.function.beginLocalVarScope();
 		}
 		this.function.setVarType(name, req_t);
-		type(node.get(_body));
+		doType(node.get(_body));
 		if (inFunction()) {
 			this.function.endLocalVarScope();
 		}
@@ -281,7 +348,7 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 	protected Type[] EmptyArgument = new Type[0];
 
 	private Type typeIterator(Type req_t, TypedTree node) {
-		Type iter_t = type(node.get(_iter));
+		Type iter_t = doType(node.get(_iter));
 		Method m = typeSystem.resolveObjectMethod(req_t, this.bufferMatcher, "iterator", EmptyArgument, null, null);
 		if (m != null) {
 			TypedTree iter = node.newInstance(_MethodApply, 0, null);
@@ -295,6 +362,13 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		throw error(node.get(_iter), "unsupported iterator for %s", name(iter_t));
 	}
 
+	public class VarDecl extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			return typeVarDecl(node);
+		}
+	}
+
 	public Type typeVarDecl(TypedTree node) {
 		String name = node.getText(_name, null);
 		Type type = typeSystem.resolveType(node.get(_type, null), null);
@@ -304,7 +378,7 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 				this.typeSystem.reportWarning(node.get(_name), "ungiven type");
 				type = Object.class;
 			} else {
-				type = type(exprNode);
+				type = doType(exprNode);
 			}
 		} else {
 			if (exprNode != null) {
@@ -345,19 +419,26 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 	}
 
 	/* StatementExpression */
-	public Type typeExpression(TypedTree node) {
-		return type(node.get(0));
+
+	public class Expression extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			return doType(node.get(0));
+		}
 	}
 
 	/* Expression */
 
-	public Type typeName(TypedTree node) {
-		Type t = this.tryCheckNameType(node, true);
-		if (t == null) {
-			String name = node.toText();
-			throw error(node, "undefined name: %s", name);
+	public class Name extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			Type t = tryCheckNameType(node, true);
+			if (t == null) {
+				String name = node.toText();
+				throw error(node, "undefined name: %s", name);
+			}
+			return t;
 		}
-		return t;
 	}
 
 	private Type tryCheckNameType(TypedTree node, boolean rewrite) {
@@ -377,6 +458,13 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		return null;
 	}
 
+	public class Assign extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			return typeAssign(node);
+		}
+	}
+
 	public Type typeAssign(TypedTree node) {
 		TypedTree leftnode = node.get(_left);
 		if (isShellMode && !this.inFunction() && leftnode.is(_Name)) {
@@ -391,7 +479,7 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 					node.get(_left).get(_param), //
 					node.get(_right));
 		}
-		Type left = type(leftnode);
+		Type left = doType(leftnode);
 		this.enforceType(left, node, _right);
 
 		if (leftnode.hint == Hint.GetField) {
@@ -411,8 +499,15 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 
 	/* Expression */
 
+	public class Cast extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			return typeCast(node);
+		}
+	}
+
 	public Type typeCast(TypedTree node) {
-		Type inner = type(node.get(_expr));
+		Type inner = doType(node.get(_expr));
 		Type t = this.typeSystem.resolveType(node.get(_type), null);
 		if (t == null) {
 			throw error(node.get(_type), "undefined type: %s", node.getText(_type, ""));
@@ -446,13 +541,20 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 	// return args;
 	// }
 
+	public class _Field extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			return typeField(node);
+		}
+	}
+
 	public Type typeField(TypedTree node) {
 		if (isStaticClassRecv(node)) {
 			return typeStaticField(node);
 		}
-		Class<?> c = TypeSystem.toClass(type(node.get(_recv)));
+		Class<?> c = TypeSystem.toClass(doType(node.get(_recv)));
 		String name = node.getText(_name, "");
-		Field f = typeSystem.getField(c, name);
+		java.lang.reflect.Field f = typeSystem.getField(c, name);
 		if (f != null) {
 			return node.setField(Hint.GetField, f);
 		}
@@ -465,7 +567,7 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 	public Type typeStaticField(TypedTree node) {
 		Class<?> c = this.typeSystem.resolveClass(node.get(_recv), null);
 		String name = node.getText(_name, "");
-		Field f = typeSystem.getField(c, name);
+		java.lang.reflect.Field f = typeSystem.getField(c, name);
 		if (f != null) {
 			if (!Modifier.isStatic(f.getModifiers())) {
 				throw error(node, "not static field %s of %s", name, name(c));
@@ -476,7 +578,7 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 	}
 
 	public Type typeIndexer(TypedTree node) {
-		Type recv_t = type(node.get(_recv));
+		Type recv_t = doType(node.get(_recv));
 		Type[] param_t = this.typeApplyArguments(node.get(_param));
 		int start = this.bufferMethods.size();
 		Method m = this.typeSystem.resolveObjectMethod(recv_t, this.bufferMatcher, "get", param_t, null, null);
@@ -493,7 +595,7 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 	private Type typeSetIndexer(TypedTree node, TypedTree recv, TypedTree param, TypedTree expr) {
 		param.makeFlattenedList(param, expr);
 		node.make(_recv, recv, _param, param);
-		Type recv_t = type(node.get(_recv));
+		Type recv_t = doType(node.get(_recv));
 		Type[] param_t = this.typeApplyArguments(node.get(_param));
 		int start = this.bufferMethods.size();
 		this.bufferMatcher.init(recv_t);
@@ -535,6 +637,13 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		throw error(node, msg);
 	}
 
+	public class Apply extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			return typeApply(node);
+		}
+	}
+
 	public Type typeApply(TypedTree node) {
 		String name = node.getText(_name, "");
 		TypedTree args = node.get(_param);
@@ -555,7 +664,7 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 	private Type[] typeApplyArguments(TypedTree args) {
 		Type[] types = new Type[args.size()];
 		for (int i = 0; i < args.size(); i++) {
-			types[i] = type(args.get(i));
+			types[i] = doType(args.get(i));
 		}
 		return types;
 	}
@@ -583,11 +692,18 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		throw error(node, "unsupported number of parameters: %d", params.size());
 	}
 
+	public class MethodApply extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			return typeMethodApply(node);
+		}
+	}
+
 	public Type typeMethodApply(TypedTree node) {
 		if (isStaticClassRecv(node)) {
 			return this.typeStaticMethodApply(node);
 		}
-		Type recv = type(node.get(_recv));
+		Type recv = doType(node.get(_recv));
 		String name = node.getText(_name, "");
 		TypedTree args = node.get(_param);
 		Type[] types = this.typeApplyArguments(args);
@@ -627,7 +743,7 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 	}
 
 	private Type typeUnary(TypedTree node, String name) {
-		Type left = type(node.get(_expr));
+		Type left = doType(node.get(_expr));
 		Type common = typeSystem.PrimitiveType(left);
 		if (left != common) {
 			left = this.tryPrecast(common, node, _expr);
@@ -640,8 +756,8 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 	}
 
 	private Type typeBinary(TypedTree node, String name, BinaryTypeUnifier unifier) {
-		Type left = type(node.get(_left));
-		Type right = type(node.get(_right));
+		Type left = doType(node.get(_left));
+		Type right = doType(node.get(_right));
 		Type common = unifier.unify(typeSystem.PrimitiveType(left), typeSystem.PrimitiveType(right));
 		if (left != common) {
 			left = this.tryPrecast(common, node, _left);
@@ -667,210 +783,305 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		return req;
 	}
 
-	public Type typeAnd(TypedTree node) {
-		this.enforceType(boolean.class, node, _left);
-		this.enforceType(boolean.class, node, _right);
-		return boolean.class;
+	public class And extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			enforceType(boolean.class, node, _left);
+			enforceType(boolean.class, node, _right);
+			return boolean.class;
+		}
 	}
 
-	public Type typeOr(TypedTree node) {
-		this.enforceType(boolean.class, node, _left);
-		this.enforceType(boolean.class, node, _right);
-		return boolean.class;
+	public class Or extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			enforceType(boolean.class, node, _left);
+			enforceType(boolean.class, node, _right);
+			return boolean.class;
+		}
 	}
 
-	public Type typeNot(TypedTree node) {
-		this.enforceType(boolean.class, node, _expr);
-		return boolean.class;
+	public class Not extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			enforceType(boolean.class, node, _expr);
+			return boolean.class;
+		}
 	}
 
-	public Type typeAdd(TypedTree node) {
-		return typeBinary(node, "opAdd", TypeSystem.UnifyAdditive);
+	public class Add extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			return typeBinary(node, "opAdd", TypeSystem.UnifyAdditive);
+		}
 	}
 
-	public Type typeSub(TypedTree node) {
-		return typeBinary(node, "opSub", TypeSystem.UnifyAdditive);
+	public class Sub extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			return typeBinary(node, "opSub", TypeSystem.UnifyAdditive);
+		}
 	}
 
-	public Type typeMul(TypedTree node) {
-		return typeBinary(node, "opMul", TypeSystem.UnifyAdditive);
+	public class Mul extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			return typeBinary(node, "opMul", TypeSystem.UnifyAdditive);
+		}
 	}
 
-	public Type typeDiv(TypedTree node) {
-		return typeBinary(node, "opDiv", TypeSystem.UnifyAdditive);
+	public class Div extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			return typeBinary(node, "opDiv", TypeSystem.UnifyAdditive);
+		}
 	}
 
-	public Type typePlus(TypedTree node) {
-		return this.typeUnary(node, "opPlus");
+	public class Plus extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			return typeUnary(node, "opPlus");
+		}
 	}
 
-	public Type typeMinus(TypedTree node) {
-		return this.typeUnary(node, "opMinus");
+	public class Minus extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			return typeUnary(node, "opMinus");
+		}
 	}
 
-	public Type typeEquals(TypedTree node) {
-		return typeBinary(node, "opEquals", TypeSystem.UnifyEquator);
+	public class Equals extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			return typeBinary(node, "opEquals", TypeSystem.UnifyEquator);
+		}
 	}
 
-	public Type typeNotEquals(TypedTree node) {
-		return typeBinary(node, "opNotEquals", TypeSystem.UnifyEquator);
+	public class NotEquals extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			return typeBinary(node, "opNotEquals", TypeSystem.UnifyEquator);
+		}
 	}
 
-	public Type typeLessThan(TypedTree node) {
-		return typeBinary(node, "opLessThan", TypeSystem.UnifyComparator);
+	public class LessThan extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			return typeBinary(node, "opLessThan", TypeSystem.UnifyComparator);
+		}
 	}
 
-	public Type typeLessThanEquals(TypedTree node) {
-		return typeBinary(node, "opLessThanEquals", TypeSystem.UnifyComparator);
+	public class LessThanEquals extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			return typeBinary(node, "opLessThanEquals", TypeSystem.UnifyComparator);
+		}
 	}
 
-	public Type typeGreaterThan(TypedTree node) {
-		return typeBinary(node, "opGreaterThan", TypeSystem.UnifyComparator);
+	public class GreaterThan extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			return typeBinary(node, "opGreaterThan", TypeSystem.UnifyComparator);
+		}
 	}
 
-	public Type typeGreaterThanEquals(TypedTree node) {
-		return typeBinary(node, "opGreaterThanEquals", TypeSystem.UnifyComparator);
+	public class GreaterThanEquals extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			return typeBinary(node, "opGreaterThanEquals", TypeSystem.UnifyComparator);
+		}
 	}
 
-	public Type typeLeftShift(TypedTree node) {
-		return typeBinary(node, "opLeftShift", TypeSystem.UnifyBitwise);
+	public class LeftShift extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			return typeBinary(node, "opLeftShift", TypeSystem.UnifyBitwise);
+		}
 	}
 
-	public Type typeRightShift(TypedTree node) {
-		return typeBinary(node, "opRightShift", TypeSystem.UnifyBitwise);
+	public class RightShift extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			return typeBinary(node, "opRightShift", TypeSystem.UnifyBitwise);
+		}
 	}
 
-	public Type typeLogicalRightShift(TypedTree node) {
-		return this.typeSelfAssign(node, _LogicalRightShift);
+	public class LogicalRightShift extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			return typeBinary(node, "opLogicalRightShift", TypeSystem.UnifyBitwise);
+		}
 	}
 
-	public Type typeBitwiseAnd(TypedTree node) {
-		return typeBinary(node, "opBitwiseAnd", TypeSystem.UnifyBitwise);
+	public class BitwiseAnd extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			return typeBinary(node, "opBitwiseAnd", TypeSystem.UnifyBitwise);
+		}
 	}
 
-	public Type typeBitwiseOr(TypedTree node) {
-		return typeBinary(node, "opBitwiseOr", TypeSystem.UnifyBitwise);
+	public class BitwiseOr extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			return typeBinary(node, "opBitwiseOr", TypeSystem.UnifyBitwise);
+		}
 	}
 
-	public Type typeBitwiseXor(TypedTree node) {
-		return typeBinary(node, "opBitwiseXor", TypeSystem.UnifyBitwise);
+	public class BitwiseXor extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			return typeBinary(node, "opBitwiseXor", TypeSystem.UnifyBitwise);
+		}
 	}
 
-	public Type typeCompl(TypedTree node) {
-		return this.typeUnary(node, "opCompl");
+	public class Compl extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			return typeUnary(node, "opCompl");
+		}
 	}
 
-	public Type typeNull(TypedTree node) {
-		return Object.class;
+	public class Null extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			return Object.class;
+		}
 	}
 
-	public Type typeTrue(TypedTree node) {
-		node.setValue(true);
-		return boolean.class;
+	public class True extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			node.setValue(true);
+			return boolean.class;
+		}
 	}
 
-	public Type typeFalse(TypedTree node) {
-		node.setValue(false);
-		return boolean.class;
+	public class False extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			node.setValue(false);
+			return boolean.class;
+		}
 	}
 
-	public Type typeShort(TypedTree node) {
-		return typeInteger(node);
-	}
-
-	public Type typeInteger(TypedTree node) {
-		try {
-			String n = node.toText().replace("_", "");
-			if (n.startsWith("0b") || n.startsWith("0B")) {
-				return node.setConst(int.class, Integer.parseInt(n.substring(2), 2));
-			} else if (n.startsWith("0x") || n.startsWith("0X")) {
-				return node.setConst(int.class, Integer.parseInt(n.substring(2), 16));
+	public class _Integer extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			try {
+				String n = node.toText().replace("_", "");
+				if (n.startsWith("0b") || n.startsWith("0B")) {
+					return node.setConst(int.class, Integer.parseInt(n.substring(2), 2));
+				} else if (n.startsWith("0x") || n.startsWith("0X")) {
+					return node.setConst(int.class, Integer.parseInt(n.substring(2), 16));
+				}
+				return node.setConst(int.class, Integer.parseInt(n));
+			} catch (NumberFormatException e) {
+				typeSystem.reportWarning(node, e.getMessage());
 			}
-			return node.setConst(int.class, Integer.parseInt(n));
-		} catch (NumberFormatException e) {
-			this.typeSystem.reportWarning(node, e.getMessage());
+			return node.setConst(int.class, 0);
 		}
-		return node.setConst(int.class, 0);
 	}
 
-	public Type typeLong(TypedTree node) {
-		try {
-			String n = node.toText();
-			return node.setConst(long.class, Long.parseLong(n));
-		} catch (NumberFormatException e) {
-			this.typeSystem.reportWarning(node, e.getMessage());
+	public class _Long extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			try {
+				String n = node.toText();
+				return node.setConst(long.class, Long.parseLong(n));
+			} catch (NumberFormatException e) {
+				typeSystem.reportWarning(node, e.getMessage());
+			}
+			return node.setConst(long.class, 0L);
 		}
-		return node.setConst(long.class, 0L);
 	}
 
-	public Type typeFloat(TypedTree node) {
-		return typeDouble(node);
+	public class _Float extends _Double {
 	}
 
-	public Type typeDouble(TypedTree node) {
-		try {
-			String n = node.toText();
-			return node.setConst(double.class, Double.parseDouble(n));
-		} catch (NumberFormatException e) {
-			this.typeSystem.reportWarning(node, e.getMessage());
+	public class _Double extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			try {
+				String n = node.toText();
+				return node.setConst(double.class, Double.parseDouble(n));
+			} catch (NumberFormatException e) {
+				typeSystem.reportWarning(node, e.getMessage());
+			}
+			return node.setConst(double.class, 0.0);
 		}
-		return node.setConst(double.class, 0.0);
 	}
 
-	public Type typeText(TypedTree node) {
-		return node.setConst(String.class, node.toText());
-	}
-
-	public Type typeString(TypedTree node) {
-		String t = node.toText();
-		return node.setConst(String.class, StringUtils.unquoteString(t));
-	}
-
-	public Type typeCharacter(TypedTree node) {
-		String t = StringUtils.unquoteString(node.toText());
-		if (t.length() == 1) {
-			return node.setConst(char.class, t.charAt(0));
+	public class Text extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			return node.setConst(String.class, node.toText());
 		}
-		return node.setConst(String.class, t);
 	}
 
-	public Type typeInterpolation(TypedTree node) {
-		for (TypedTree sub : node) {
-			type(sub);
+	public class _String extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			String t = node.toText();
+			return node.setConst(String.class, StringUtils.unquoteString(t));
 		}
-		return node.setMethod(Hint.StaticInvocation, this.typeSystem.InterpolationMethod, null);
+	}
+
+	public class Character extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			String t = StringUtils.unquoteString(node.toText());
+			if (t.length() == 1) {
+				return node.setConst(char.class, t.charAt(0));
+			}
+			return node.setConst(String.class, t);
+		}
+	}
+
+	public class Interpolation extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			for (TypedTree sub : node) {
+				doType(sub);
+			}
+			return node.setMethod(Hint.StaticInvocation, typeSystem.InterpolationMethod, null);
+		}
 	}
 
 	/* array */
 
-	public Type typeArray(TypedTree node) {
-		Type elementType = Object.class;
-		if (node.size() > 0) {
-			boolean mixed = false;
-			elementType = null;
-			for (TypedTree sub : node) {
-				Type t = type(sub);
-				if (t == elementType) {
-					continue;
+	public class Array extends Undefined {
+
+		@Override
+		public Type type(TypedTree node) {
+			Type elementType = Object.class;
+			if (node.size() > 0) {
+				boolean mixed = false;
+				elementType = null;
+				for (TypedTree sub : node) {
+					Type t = doType(sub);
+					if (t == elementType) {
+						continue;
+					}
+					if (elementType == null) {
+						elementType = t;
+					} else {
+						mixed = true;
+						elementType = Object.class;
+					}
 				}
-				if (elementType == null) {
-					elementType = t;
-				} else {
-					mixed = true;
-					elementType = Object.class;
-				}
-			}
-			if (mixed) {
-				for (int i = 0; i < node.size(); i++) {
-					TypedTree sub = node.get(i);
-					if (sub.getType() != Object.class) {
-						node.set(i, this.typeSystem.enforceType(Object.class, sub));
+				if (mixed) {
+					for (int i = 0; i < node.size(); i++) {
+						TypedTree sub = node.get(i);
+						if (sub.getType() != Object.class) {
+							node.set(i, typeSystem.enforceType(Object.class, sub));
+						}
 					}
 				}
 			}
+			Type arrayType = typeSystem.newArrayType(elementType);
+			return arrayType;
 		}
-		Type arrayType = typeSystem.newArrayType(elementType);
-		return arrayType;
 	}
 
 	// Syntax Sugar
@@ -883,48 +1094,92 @@ public class TypeChecker extends TreeVisitor implements CommonSymbols {
 		return typeAssign(node);
 	}
 
-	public Type typeAssignAdd(TypedTree node) {
-		return this.typeSelfAssign(node, _Add);
+	public class AssignAdd extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			return typeSelfAssign(node, _Add);
+		}
+
 	}
 
-	public Type typeAssignSub(TypedTree node) {
-		return this.typeSelfAssign(node, _Sub);
+	public class AssignSub extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			return typeSelfAssign(node, _Sub);
+		}
+
 	}
 
-	public Type typeAssignMul(TypedTree node) {
-		return this.typeSelfAssign(node, _Mul);
+	public class AssignMul extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			return typeSelfAssign(node, _Mul);
+		}
+
 	}
 
-	public Type typeAssignDiv(TypedTree node) {
-		return this.typeSelfAssign(node, _Div);
+	public class AssignDiv extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			return typeSelfAssign(node, _Div);
+		}
+
 	}
 
-	public Type typeAssignMod(TypedTree node) {
-		return this.typeSelfAssign(node, _Mod);
+	public class AssignMod extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			return typeSelfAssign(node, _Mod);
+		}
+
 	}
 
-	public Type typeAssignLeftShift(TypedTree node) {
-		return this.typeSelfAssign(node, _LeftShift);
+	public class AssignLeftShift extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			return typeSelfAssign(node, _LeftShift);
+		}
+
 	}
 
-	public Type typeAssignRightShift(TypedTree node) {
-		return this.typeSelfAssign(node, _RightShift);
+	public class AssignRightShift extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			return typeSelfAssign(node, _RightShift);
+		}
+
 	}
 
-	public Type typeAssignLogicalRightShift(TypedTree node) {
-		return this.typeSelfAssign(node, _LogicalRightShift);
+	public class AssignLogicalRightShift extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			return typeSelfAssign(node, _LogicalRightShift);
+		}
+
 	}
 
-	public Type typeAssignBitwiseAnd(TypedTree node) {
-		return this.typeSelfAssign(node, _BitwiseAnd);
+	public class AssignBitwiseAnd extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			return typeSelfAssign(node, _BitwiseAnd);
+		}
+
 	}
 
-	public Type typeAssignBitwiseXOr(TypedTree node) {
-		return this.typeSelfAssign(node, _BitwiseXor);
+	public class AssignBitwiseXOr extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			return typeSelfAssign(node, _BitwiseXor);
+		}
+
 	}
 
-	public Type typeAssignBitwiseOr(TypedTree node) {
-		return this.typeSelfAssign(node, _BitwiseOr);
+	public class AssignBitwiseOr extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			return typeSelfAssign(node, _BitwiseOr);
+		}
+
 	}
 
 	private TypeCheckerException error(TypedTree node, String fmt, Object... args) {

@@ -40,7 +40,7 @@ public class ScriptContext {
 			ConsoleUtils.println("[typechcking]");
 			ConsoleUtils.println("|    ", node);
 		}
-		typechecker.type(node);
+		typechecker.doType(node);
 		if (verbose) {
 			ConsoleUtils.println("[evaluating]");
 			ConsoleUtils.println("|    ", node);

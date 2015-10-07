@@ -23,7 +23,11 @@ public class TreeVisitor2<V> {
 			Object v = cc.newInstance(this);
 			if (check(undefined.getClass(), v.getClass())) {
 				// System.out.println("c: " + c.getSimpleName());
-				visitors.put(c.getSimpleName(), (V) v);
+				String n = c.getSimpleName();
+				if (n.startsWith("_")) {
+					n = n.substring(1);
+				}
+				visitors.put(n, (V) v);
 			}
 		} catch (NoSuchMethodException | SecurityException | InvocationTargetException | IllegalAccessException | InstantiationException | IllegalArgumentException e) {
 			System.out.println(e.getMessage());
