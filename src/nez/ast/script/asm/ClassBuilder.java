@@ -112,6 +112,11 @@ public class ClassBuilder extends ClassWriter implements Opcodes {
 		return new MethodBuilder(accessFlag, method, this);
 	}
 
+	public MethodBuilder newConstructorBuilder(int accessFlag, Class<?>... paramClasses) {
+		Method method = Methods.constructor(paramClasses);
+		return new MethodBuilder(accessFlag, method, this);
+	}
+
 	@Override
 	public String toString() {
 		return this.getQualifiedClassName();

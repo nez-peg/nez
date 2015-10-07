@@ -221,7 +221,7 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 	public Class<?> closeClass() {
 		// cLoader.setDump(true);
 		Class<?> c = cLoader.definedAndLoadClass(this.cBuilder.getQualifiedClassName(), cBuilder.toByteArray());
-		this.cBuilder = null; //
+		this.cBuilder = null;
 		return c;
 	}
 
@@ -341,11 +341,30 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 	}
 
 	public void visitConstructor(TypedTree node) {
-		// TODO
+		TypedTree args = node.get(_param);
+		Class<?>[] paramClasses = new Class<?>[args.size()];
+		for (int i = 0; i < args.size(); i++) {
+			paramClasses[i] = typeof(args.get(i));
+		}
+		this.mBuilder = this.cBuilder.newConstructorBuilder(Opcodes.ACC_PUBLIC, paramClasses);
+		this.mBuilder.enterScope();
+		for (TypedTree arg : args) {
+			this.mBuilder.defineArgument(arg.getText(_name, null), typeof(arg));
+		}
+		visit(node.get(_body));
+		this.mBuilder.exitScope();
+		this.mBuilder.loadThis();
+		this.mBuilder.returnValue();
+		this.mBuilder.endMethod();
 	}
 
 	public void visitFieldDecl(TypedTree node) {
 		// TODO
+		TypedTree list = node.get(_list);
+		for (TypedTree field : list) {
+			// this.cBuilder.addField(Opcodes.ACC_PUBLIC, field.getText(_name,
+			// null), this.typeof(field), );
+		}
 	}
 
 	public void visitMethodDecl(TypedTree node) {
@@ -436,6 +455,43 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 		visit(node.get(_cond));
 		this.mBuilder.push(true);
 		this.mBuilder.ifCmp(Type.BOOLEAN_TYPE, MethodBuilder.EQ, beginLabel);
+	}
+
+	/* Try..Catch Statement */
+	public void visitTry(TypedTree node) {
+		// TODO
+		TypedTree finallyNode = node.get(_finally);
+		TryCatchLabel labels = this.mBuilder.createNewTryLabel(finallyNode != null);
+		this.mBuilder.getTryLabels().push(labels);
+		Label mergeLabel = this.mBuilder.newLabel();
+
+		// try balock
+		this.mBuilder.mark(labels.getStartLabel());
+		this.visitBlock(node.get(_try));
+		this.mBuilder.mark(labels.getEndLabel());
+
+		if (finallyNode != null) {
+			this.mBuilder.goTo(labels.getFinallyLabel());
+		}
+		this.mBuilder.goTo(mergeLabel);
+
+		// catch blocks
+		for (TypedTree catchNode : node.get(_catch)) {
+			this.visit(catchNode.get(_body));
+			this.mBuilder.goTo(mergeLabel);
+		}
+
+		// finally block
+		if (finallyNode != null) {
+			this.visit(finallyNode);
+		}
+		this.mBuilder.getTryLabels().pop();
+
+		this.mBuilder.mark(mergeLabel);
+	}
+
+	public void visitCatch(TypedTree node) {
+		// TODO
 	}
 
 	public void visitAssign(TypedTree node) {
