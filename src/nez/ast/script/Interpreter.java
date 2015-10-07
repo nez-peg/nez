@@ -7,16 +7,15 @@ import java.lang.reflect.Modifier;
 import konoha.IArray;
 import nez.ast.TreeVisitor2;
 import nez.ast.script.asm.ScriptCompiler;
-import nez.util.ConsoleUtils;
 
-public class Interpreter extends TreeVisitor2<nez.ast.script.Interpreter.Undefined> implements CommonSymbols {
+public class Interpreter extends TreeVisitor2<nez.ast.script.Interpreter.Unevaluated> implements CommonSymbols {
 	ScriptContext context;
 	TypeSystem typeSystem;
 	private ScriptCompiler compiler;
 
 	public Interpreter(ScriptContext sc, TypeSystem base) {
 		super();
-		init(new Undefined());
+		init(new Unevaluated());
 		this.context = sc;
 		this.typeSystem = base;
 		this.compiler = new ScriptCompiler(this.typeSystem);
@@ -54,14 +53,13 @@ public class Interpreter extends TreeVisitor2<nez.ast.script.Interpreter.Undefin
 		return o;
 	}
 
-	public class Undefined {
+	public class Unevaluated {
 		Object visit(TypedTree node) {
-			ConsoleUtils.println("TODO: Interpreter " + node);
-			return empty;
+			throw new ScriptRuntimeException("TODO: Interpreter " + node);
 		}
 	}
 
-	public class Source extends Undefined {
+	public class Source extends Unevaluated {
 		@Override
 		public Object visit(TypedTree node) {
 			Object result = empty;
@@ -77,7 +75,7 @@ public class Interpreter extends TreeVisitor2<nez.ast.script.Interpreter.Undefin
 
 	/* TopLevel */
 
-	public class FuncDecl extends Undefined {
+	public class FuncDecl extends Unevaluated {
 
 		@Override
 		public Object visit(TypedTree node) {
@@ -88,7 +86,7 @@ public class Interpreter extends TreeVisitor2<nez.ast.script.Interpreter.Undefin
 
 	/* boolean */
 
-	public class Block extends Undefined {
+	public class Block extends Unevaluated {
 		@Override
 		public Object visit(TypedTree node) {
 			Object retVal = null;
@@ -99,7 +97,7 @@ public class Interpreter extends TreeVisitor2<nez.ast.script.Interpreter.Undefin
 		}
 	}
 
-	public class If extends Undefined {
+	public class If extends Unevaluated {
 		@Override
 		public Object visit(TypedTree node) {
 			boolean cond = (Boolean) eval(node.get(_cond));
@@ -116,7 +114,7 @@ public class Interpreter extends TreeVisitor2<nez.ast.script.Interpreter.Undefin
 	}
 
 	/* Expression Statement */
-	public class Expression extends Undefined {
+	public class Expression extends Unevaluated {
 		@Override
 		public Object visit(TypedTree node) {
 			if (node.getType() == void.class) {
@@ -127,7 +125,7 @@ public class Interpreter extends TreeVisitor2<nez.ast.script.Interpreter.Undefin
 		}
 	}
 
-	public class Empty extends Undefined {
+	public class Empty extends Unevaluated {
 		public Object evalEmpty(TypedTree node) {
 			return empty;
 		}
@@ -135,7 +133,7 @@ public class Interpreter extends TreeVisitor2<nez.ast.script.Interpreter.Undefin
 
 	/* Expression */
 
-	public class Cast extends Undefined {
+	public class Cast extends Unevaluated {
 		@Override
 		public Object visit(TypedTree node) {
 			Object v = eval(node.get(_expr));
@@ -168,14 +166,7 @@ public class Interpreter extends TreeVisitor2<nez.ast.script.Interpreter.Undefin
 			recv = eval(node.get(_recv));
 		}
 		// System.out.println("eval field:" + recv + " . " + f);
-		try {
-			Object v = f.get(recv);
-			return v;
-		} catch (RuntimeException e) {
-			throw e;
-		} catch (Exception e) {
-			throw new ScriptRuntimeException(e.getMessage());
-		}
+		return Reflector.getField(recv, f);
 	}
 
 	private Object evalSetFieldHint(TypedTree node) {
@@ -185,14 +176,8 @@ public class Interpreter extends TreeVisitor2<nez.ast.script.Interpreter.Undefin
 		if (!Modifier.isStatic(f.getModifiers())) {
 			recv = nullEval(node.get(_recv, null));
 		}
-		try {
-			f.set(recv, value);
-			return value;
-		} catch (RuntimeException e) {
-			throw e;
-		} catch (Exception e) {
-			throw new ScriptRuntimeException(e.getMessage());
-		}
+		Reflector.setField(recv, f, value);
+		return value;
 	}
 
 	private Object evalStaticInvocationHint(TypedTree node) {
@@ -220,7 +205,7 @@ public class Interpreter extends TreeVisitor2<nez.ast.script.Interpreter.Undefin
 		return args;
 	}
 
-	public class Array extends Undefined {
+	public class Array extends Unevaluated {
 		@SuppressWarnings({ "rawtypes", "unchecked" })
 		public Object evalArray(TypedTree node) {
 			Object[] args = evalApplyArgument(node);
