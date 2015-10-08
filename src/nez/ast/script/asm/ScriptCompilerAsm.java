@@ -160,6 +160,7 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 	}
 
 	private void visitMehodApplyHint(TypedTree node) {
+		this.visit(node.get(_recv));
 		for (TypedTree sub : node.get(_param)) {
 			visit(sub);
 		}
@@ -458,14 +459,13 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 	}
 
 	/* Try..Catch Statement */
-	public void visitTry(TypedTree node) {
-		// TODO
+	public void visitTry(TypedTree node) throws ClassNotFoundException {
 		TypedTree finallyNode = node.get(_finally);
 		TryCatchLabel labels = this.mBuilder.createNewTryLabel(finallyNode != null);
 		this.mBuilder.getTryLabels().push(labels);
 		Label mergeLabel = this.mBuilder.newLabel();
 
-		// try balock
+		// try block
 		this.mBuilder.mark(labels.getStartLabel());
 		this.visitBlock(node.get(_try));
 		this.mBuilder.mark(labels.getEndLabel());
@@ -477,8 +477,21 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 
 		// catch blocks
 		for (TypedTree catchNode : node.get(_catch)) {
+			Label startLabel = new Label();
+			Label endLabel = new Label();
+			Class<?> exceptionType = java.lang.Exception.class;
+			if (catchNode.has(_type)) {
+				String exceptionName = catchNode.getText(_type, null);
+				exceptionType = Class.forName(exceptionName);
+				this.mBuilder.catchException(startLabel, endLabel, Type.getType(exceptionType));
+			}
+			this.mBuilder.mark(startLabel);
+			this.mBuilder.enterScope();
+			this.mBuilder.createNewVarAndStore(catchNode.getText(_name, null), exceptionType);
 			this.visit(catchNode.get(_body));
+			this.mBuilder.exitScope();
 			this.mBuilder.goTo(mergeLabel);
+			this.mBuilder.mark(endLabel);
 		}
 
 		// finally block
