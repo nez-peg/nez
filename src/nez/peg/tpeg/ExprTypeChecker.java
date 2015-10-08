@@ -46,7 +46,7 @@ public class ExprTypeChecker extends ExpressionVisitor<LType, Void> {
 		for (RuleExpr ruleExpr : rules) {
 			// if (Objects.nonNull(this.ruleMap.put(ruleExpr.getRuleName(),
 			// ruleExpr))) {
-			if (this.ruleMap.put(ruleExpr.getRuleName(), ruleExpr) == null) { // FIXME:nonNull
+			if (this.ruleMap.put(ruleExpr.getRuleName(), ruleExpr) != null) {
 				semanticError(ruleExpr.getRange(), "duplicated rule: " + ruleExpr.getRuleName());
 			}
 		}

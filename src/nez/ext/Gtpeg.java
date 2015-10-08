@@ -51,7 +51,7 @@ public class Gtpeg extends GrammarFileLoader {
 	@Override
 	public void parse(Tree<?> node) {
 		RootExpr rootExpr = (RootExpr) this.translate(node);
-		TypeEnv env = new TypeEnv();
+		TypeEnv env = TypeEnv.getInstance();
 		new ExprTypeChecker(env).visit(rootExpr);
 		new NezGrammarGenerator().visit(rootExpr, this.getGrammar());
 	}
