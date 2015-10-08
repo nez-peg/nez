@@ -21,7 +21,7 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 	private ScriptClassLoader cLoader;
 	private ClassBuilder cBuilder;
 	private MethodBuilder mBuilder;
-	private String classPath = "konoha/runtime";
+	private String classPath = "konoha/runtime/";
 
 	public ScriptCompilerAsm(TypeSystem typeSystem, ScriptClassLoader cLoader) {
 		super(TypedTree.class);
@@ -64,7 +64,7 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 			return;
 		case MethodApply:
 			this.visitMehodApplyHint(node);
-			break;
+			return;
 		case Unique:
 			break;
 		default:
@@ -297,11 +297,6 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 		unique++;
 		this.visitFuncDecl(node);
 		return this.closeClass();
-	}
-
-	private void createClosure() {
-		// ClassBuilder closure = new ClassBuilder(fullyQualifiedClassName,
-		// sourceName, superClass, interfaces);
 	}
 
 	public void visitFuncDecl(TypedTree node) {
