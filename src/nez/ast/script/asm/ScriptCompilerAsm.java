@@ -31,12 +31,13 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 	}
 
 	public class Undefined {
-		public void accept(TypedTree node) throws ClassNotFoundException {
-			ConsoleUtils.println("FIXME: ScriptCompilerAsm " + node.getTag().getSymbol());
+		public void accept(TypedTree node) {
+			ConsoleUtils.println(node.formatSourceMessage("error", "unsupproted in ScriptCompiler"));
+			visitDefaultValue(node);
 		}
 	}
 
-	private void visit(TypedTree node) throws ClassNotFoundException {
+	private void visit(TypedTree node) {
 		switch (node.hint) {
 		case Constant:
 			visitConstantHint(node);
@@ -82,6 +83,34 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 
 	/* typechecker hints */
 
+	private void visitDefaultValue(TypedTree node) {
+		Class<?> t = node.getClassType();
+		if (t != void.class) {
+			if (t == int.class || t == short.class || t == char.class || t == byte.class) {
+				this.mBuilder.push(0);
+				return;
+			}
+			if (t == boolean.class) {
+				this.mBuilder.push(false);
+				return;
+			}
+			if (t == double.class) {
+				this.mBuilder.push(0.0);
+				return;
+			}
+			if (t == long.class) {
+				this.mBuilder.push(0L);
+				return;
+			}
+			if (t == float.class) {
+				this.mBuilder.push(0.0f);
+				return;
+			}
+			this.mBuilder.pushNull();
+			return;
+		}
+	}
+
 	private void visitConstantHint(TypedTree node) {
 		assert (node.hint() == Hint.Constant);
 		Object v = node.getValue();
@@ -97,14 +126,15 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 			this.mBuilder.push(((Long) v).longValue());
 		} else if (v instanceof Class<?>) {
 			this.mBuilder.push(Type.getType((Class<?>) v));
-		} else if (v == null) {
-			this.mBuilder.pushNull();
 		} else {
-			TODO("FIXME: Constant %s", v.getClass().getName());
+			if (v != null) {
+				TODO("FIXME: Constant %s", v.getClass().getName());
+			}
+			this.mBuilder.pushNull();
 		}
 	}
 
-	private void visitStaticInvocationHint(TypedTree node) throws ClassNotFoundException {
+	private void visitStaticInvocationHint(TypedTree node) {
 		for (TypedTree sub : node) {
 			visit(sub);
 		}
@@ -113,16 +143,16 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 		this.mBuilder.invokeStatic(owner, methodDesc);
 	}
 
-	private void visitUpCastHint(TypedTree node) throws ClassNotFoundException {
+	private void visitUpCastHint(TypedTree node) {
 		visit(node.get(_expr));
 	}
 
-	private void visitDownCastHint(TypedTree node) throws ClassNotFoundException {
+	private void visitDownCastHint(TypedTree node) {
 		visit(node.get(_expr));
 		this.mBuilder.checkCast(Type.getType(node.getClassType()));
 	}
 
-	private void visitApplyHint(TypedTree node) throws ClassNotFoundException {
+	private void visitApplyHint(TypedTree node) {
 		for (TypedTree sub : node.get(_param)) {
 			visit(sub);
 		}
@@ -131,14 +161,14 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 		this.mBuilder.invokeStatic(owner, methodDesc);
 	}
 
-	private void visitRecursiveApplyHint(TypedTree node) throws ClassNotFoundException {
+	private void visitRecursiveApplyHint(TypedTree node) {
 		for (TypedTree sub : node.get(_param)) {
 			visit(sub);
 		}
 		this.mBuilder.invokeStatic(this.cBuilder.getTypeDesc(), this.mBuilder.getMethod());
 	}
 
-	private void visitGetFieldHint(TypedTree node) throws ClassNotFoundException {
+	private void visitGetFieldHint(TypedTree node) {
 		Field f = node.getField();
 		if (Modifier.isStatic(f.getModifiers())) {
 			Type owner = Type.getType(f.getDeclaringClass());
@@ -154,7 +184,7 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 		}
 	}
 
-	private void visitMehodApplyHint(TypedTree node) throws ClassNotFoundException {
+	private void visitMehodApplyHint(TypedTree node) {
 		visit(node.get(_recv));
 		for (TypedTree sub : node.get(_param)) {
 			visit(sub);
@@ -168,7 +198,7 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 		}
 	}
 
-	private void visitSetFieldHint(TypedTree node) throws ClassNotFoundException {
+	private void visitSetFieldHint(TypedTree node) {
 		Field f = node.getField();
 		if (Modifier.isStatic(f.getModifiers())) {
 			visit(node.get(_expr));
@@ -186,7 +216,7 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 		}
 	}
 
-	void visitArrayUtils(Class<?> elementType, TypedTree node) throws ClassNotFoundException {
+	void pushArray(Class<?> elementType, TypedTree node) {
 		this.mBuilder.push(node.size());
 		this.mBuilder.newArray(Type.getType(elementType));
 		int index = 0;
@@ -197,13 +227,6 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 			this.mBuilder.arrayStore(Type.getType(elementType));
 			index++;
 		}
-	}
-
-	public void visitInterpolation(TypedTree node) throws ClassNotFoundException {
-		visitArrayUtils(Object.class, node);
-		Type owner = Type.getType(node.getMethod().getDeclaringClass());
-		Method methodDesc = Method.getMethod(node.getMethod());
-		this.mBuilder.invokeStatic(owner, methodDesc);
 	}
 
 	// public class Interpolation extends Undefined {
@@ -296,18 +319,13 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 		this.openClass("F_" + className + "_" + unique);
 		this.cBuilder.visitSource(node.getSource().getResourceName(), null);
 		unique++;
-		try {
-			visit(node);
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		visit(node);
 		return this.closeClass();
 	}
 
 	public class FuncDecl extends Undefined {
 		@Override
-		public void accept(TypedTree node) throws ClassNotFoundException {
+		public void accept(TypedTree node) {
 			TypedTree nameNode = node.get(_name);
 			TypedTree args = node.get(_param);
 			String name = nameNode.toText();
@@ -330,26 +348,28 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 
 	public class ClassDecl extends Undefined {
 		@Override
-		public void accept(TypedTree node) throws ClassNotFoundException {
-			String name = node.getText(_name, null);
-			TypedTree implNode = node.get(_impl);
-			TypedTree bodyNode = node.get(_body);
-			Class<?> superClass = Class.forName(classPath + node.getText(_super, null));
-			Class<?>[] implClasses = new Class<?>[implNode.size()];
-			for (int i = 0; i < implNode.size(); i++) {
-				implClasses[i] = Class.forName(classPath + implNode.getText(i, null));
-			}
-			openClass(name, superClass, implClasses);
-			for (TypedTree n : bodyNode) {
-				visit(n);
-			}
-			closeClass();
+		public void accept(TypedTree node) {
+			// String name = node.getText(_name, null);
+			// TypedTree implNode = node.get(_impl);
+			// TypedTree bodyNode = node.get(_body);
+			// Class<?> superClass = Class.forName(classPath +
+			// node.getText(_super, null));
+			// Class<?>[] implClasses = new Class<?>[implNode.size()];
+			// for (int i = 0; i < implNode.size(); i++) {
+			// implClasses[i] = Class.forName(classPath + implNode.getText(i,
+			// null));
+			// }
+			// openClass(name, superClass, implClasses);
+			// for (TypedTree n : bodyNode) {
+			// visit(n);
+			// }
+			// closeClass();
 		}
 	}
 
 	public class Block extends Undefined {
 		@Override
-		public void accept(TypedTree node) throws ClassNotFoundException {
+		public void accept(TypedTree node) {
 			mBuilder.enterScope();
 			for (TypedTree stmt : node) {
 				mBuilder.setLineNum(node.getLineNum());
@@ -361,7 +381,7 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 
 	public class Constructor extends Undefined {
 		@Override
-		public void accept(TypedTree node) throws ClassNotFoundException {
+		public void accept(TypedTree node) {
 			TypedTree args = node.get(_param);
 			Class<?>[] paramClasses = new Class<?>[args.size()];
 			for (int i = 0; i < args.size(); i++) {
@@ -402,7 +422,7 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 
 	public class VarDecl extends Undefined {
 		@Override
-		public void accept(TypedTree node) throws ClassNotFoundException {
+		public void accept(TypedTree node) {
 			if (node.size() > 1) {
 				TypedTree varNode = node.get(_name);
 				TypedTree valueNode = node.get(_expr);
@@ -415,7 +435,7 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 
 	public class If extends Undefined {
 		@Override
-		public void accept(TypedTree node) throws ClassNotFoundException {
+		public void accept(TypedTree node) {
 			visit(node.get(_cond));
 			mBuilder.push(true);
 
@@ -441,7 +461,7 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 
 	public class While extends Undefined {
 		@Override
-		public void accept(TypedTree node) throws ClassNotFoundException {
+		public void accept(TypedTree node) {
 			Label beginLabel = mBuilder.newLabel();
 			Label condLabel = mBuilder.newLabel();
 
@@ -462,7 +482,7 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 
 	public class DoWhile extends Undefined {
 		@Override
-		public void accept(TypedTree node) throws ClassNotFoundException {
+		public void accept(TypedTree node) {
 			Label beginLabel = mBuilder.newLabel();
 
 			// Do
@@ -479,7 +499,7 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 
 	public class For extends Undefined {
 		@Override
-		public void accept(TypedTree node) throws ClassNotFoundException {
+		public void accept(TypedTree node) {
 			Label beginLabel = mBuilder.newLabel();
 			Label condLabel = mBuilder.newLabel();
 
@@ -503,7 +523,7 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 
 	public class Switch extends Undefined {
 		@Override
-		public void accept(TypedTree node) throws ClassNotFoundException {
+		public void accept(TypedTree node) {
 			TypedTree body = node.get(_body);
 
 			visit(node.get(_cond));
@@ -512,7 +532,7 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 
 	public class Try extends Undefined {
 		@Override
-		public void accept(TypedTree node) throws ClassNotFoundException {
+		public void accept(TypedTree node) {
 			TypedTree finallyNode = node.get(_finally);
 			TryCatchLabel labels = mBuilder.createNewTryLabel(finallyNode != null);
 			mBuilder.getTryLabels().push(labels);
@@ -532,8 +552,7 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 			for (TypedTree catchNode : node.get(_catch)) {
 				Class<?> exceptionType = null;
 				if (catchNode.has(_type)) {
-					String exceptionName = catchNode.getText(_type, null);
-					exceptionType = Class.forName(exceptionName);
+					exceptionType = typeSystem.resolveClass(catchNode.get(_type), null);
 				}
 				mBuilder.catchException(labels.getStartLabel(), labels.getEndLabel(), Type.getType(exceptionType));
 				mBuilder.enterScope();
@@ -556,7 +575,7 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 
 	public class Assign extends Undefined {
 		@Override
-		public void accept(TypedTree node) throws ClassNotFoundException {
+		public void accept(TypedTree node) {
 			String name = node.getText(_left, null);
 			TypedTree valueNode = node.get(_right);
 			VarEntry var = mBuilder.getVar(name);
@@ -572,7 +591,7 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 
 	public class Return extends Undefined {
 		@Override
-		public void accept(TypedTree node) throws ClassNotFoundException {
+		public void accept(TypedTree node) {
 			if (node.get(_expr, null) != null) {
 				visit(node.get(_expr));
 			}
@@ -582,11 +601,8 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 
 	public class Expression extends Undefined {
 		@Override
-		public void accept(TypedTree node) throws ClassNotFoundException {
+		public void accept(TypedTree node) {
 			visit(node.get(0));
-			if (typeof(node) != void.class) {
-				// mBuilder.pop(typeof(node));
-			}
 		}
 	}
 
@@ -597,17 +613,6 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 			mBuilder.loadFromVar(var);
 		}
 	}
-
-	//
-	// public class AssignAdd extends Undefined {
-	// @Override
-	// public void visit(TypedTree node) throws ClassNotFoundException {
-	// String name = node.getText(_left, null);
-	// VarEntry var = mBuilder.getVar(name);
-	// dispatch(node.get(_right));
-	// mBuilder.storeToVar(var);
-	// }
-	// }
 
 	private void evalPrefixInc(TypedTree node, int amount) {
 		String name = node.getText(_name, null);
@@ -662,10 +667,20 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 
 	public class List extends Undefined {
 		@Override
-		public void accept(TypedTree node) throws ClassNotFoundException {
+		public void accept(TypedTree node) {
 			for (TypedTree element : node) {
 				visit(element);
 			}
+		}
+	}
+
+	public class Interpolation extends Undefined {
+		@Override
+		public void accept(TypedTree node) {
+			pushArray(Object.class, node);
+			Type owner = Type.getType(node.getMethod().getDeclaringClass());
+			Method methodDesc = Method.getMethod(node.getMethod());
+			mBuilder.invokeStatic(owner, methodDesc);
 		}
 	}
 
