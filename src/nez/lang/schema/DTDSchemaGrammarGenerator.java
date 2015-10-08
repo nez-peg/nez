@@ -22,33 +22,33 @@ public class DTDSchemaGrammarGenerator extends SchemaGrammarGenerator {
 
 	@Override
 	public void newElement(String elementName, Type t) {
-		Expression[] l = { _String(elementName), _S(), _Char('='), _S(), _DQuat(), t.getTypeExpression(), _DQuat(), _S() };
+		Expression[] l = { t.getTypeExpression(), _S(), _Char('='), _S(), _DQuat(), t.next().getTypeExpression(), _DQuat(), _S() };
 		gfile.addProduction(null, elementName, _Sequence(l));
 	}
 
 	public void newAttributeList(String name, Type t) {
-		gfile.addProduction(null, name + "_Attribute", t.getTypeExpression());
+		gfile.addProduction(null, String.format("%s_AttributeList", name), t.getTypeExpression());
 	}
 
 	@Override
 	public void newStruct(String structName, Type t) {
 		Expression attOnly = _String("/>");
-		Expression[] content = { _Char('>'), _S(), _ZeroMore(_NonTerminal(structName + "_SMembers")) };
+		Expression[] content = { _Char('>'), _S(), _NonTerminal("%s_Contents", structName), _S(), _String("</%s>", structName) };
 		Expression endChoice = _Choice(_Sequence(attOnly), _Sequence(content));
-		Expression[] l = { _String("<" + structName), _S(), t.getTypeExpression(), _S(), endChoice };
+		Expression[] l = { _String("<%s", structName), _S(), t.getTypeExpression(), endChoice, _S() };
 		gfile.addProduction(null, structName, _Sequence(l));
 	}
 
 	public final void newStruct(String structName, boolean hasAttribute) {
 		Expression inner = _Empty();
 		if (hasAttribute) {
-			inner = _NonTerminal(structName + "_Attribute");
+			inner = _Sequence(_NonTerminal("%s_AttributeList", structName), _S());
 		}
 		newStruct(structName, new Type(inner));
 	}
 
 	public void newEntity(int id, String name, String value) {
-		String entity = "Entity_" + id;
+		String entity = String.format("Entity_%s", id);
 		gfile.addProduction(null, entity, _String(value));
 	}
 
@@ -95,7 +95,6 @@ public class DTDSchemaGrammarGenerator extends SchemaGrammarGenerator {
 	}
 
 	public Type newROneMore(Type type) {
-		// TODO Auto-generated method stub
 		return new Type(_OneMore(type.getTypeExpression()));
 	}
 
@@ -107,7 +106,7 @@ public class DTDSchemaGrammarGenerator extends SchemaGrammarGenerator {
 		Expression[] seq = new Expression[l.length];
 		int index = 0;
 		for (Type type : l) {
-			seq[index] = type.getTypeExpression();
+			seq[index++] = type.getTypeExpression();
 		}
 		return new Type(_Choice(seq));
 	}
@@ -116,7 +115,7 @@ public class DTDSchemaGrammarGenerator extends SchemaGrammarGenerator {
 		Expression[] seq = new Expression[l.length];
 		int index = 0;
 		for (Type type : l) {
-			seq[index] = type.getTypeExpression();
+			seq[index++] = type.getTypeExpression();
 		}
 		return new Type(_Sequence(seq));
 	}
@@ -127,11 +126,57 @@ public class DTDSchemaGrammarGenerator extends SchemaGrammarGenerator {
 		} else {
 			Expression[] l = new Expression[entityCount];
 			for (int i = 0; i < entityCount; i++) {
-				l[i] = _NonTerminal("Entity_" + entityCount);
+				l[i] = _NonTerminal("Entity_%s", entityCount);
 			}
 			gfile.addProduction(null, "Entity", _Choice(l));
 		}
-
 	}
 
+	@Override
+	protected Type newCompletePerm() {
+		int listLength = getRequiredList().size();
+		if (listLength == 1) {
+			return new Type(_Sequence(_NonTerminal(getRequiredList().get(0)), _NonTerminal("ENDTAG")));
+		} else {
+			PermutationGenerator permGen = new PermutationGenerator(listLength);
+			int[][] permedList = permGen.getPermList();
+			Expression[] choiceList = new Expression[permedList.length];
+			int choiceCount = 0;
+			for (int[] targetLine : permedList) {
+				Expression[] seqList = new Expression[listLength + 1];
+				for (int index = 0; index < targetLine.length; index++) {
+					seqList[index] = _NonTerminal(getRequiredList().get(targetLine[index]));
+				}
+				seqList[listLength] = _NonTerminal("ENDTAG");
+				choiceList[choiceCount++] = _Sequence(seqList);
+			}
+			return new Type(_Choice(choiceList));
+		}
+	}
+
+	@Override
+	protected Type newAproximatePerm() {
+		int listLength = getRequiredList().size();
+		if (listLength == 0) {
+			return new Type(_NonTerminal("%s_implied", getTableName()));
+		} else {
+			PermutationGenerator permGen = new PermutationGenerator(listLength);
+			int[][] permutedList = permGen.getPermList();
+			Expression[] choiceList = new Expression[permutedList.length];
+			Expression impliedChoiceRule = _NonTerminal("%s_implied", getTableName());
+			int choiceCount = 0;
+			for (int[] targetLine : permutedList) {
+				int seqCount = 0;
+				Expression[] seqList = new Expression[listLength * 2 + 1];
+				seqList[seqCount++] = _ZeroMore(impliedChoiceRule);
+				for (int index = 0; index < targetLine.length; index++) {
+					seqList[seqCount++] = _NonTerminal(getRequiredList().get(targetLine[index]));
+					seqList[seqCount++] = _ZeroMore(impliedChoiceRule);
+				}
+				seqList[seqCount] = _NonTerminal("ENDTAG");
+				choiceList[choiceCount++] = _Sequence(seqList);
+			}
+			return new Type(_Choice(choiceList));
+		}
+	}
 }

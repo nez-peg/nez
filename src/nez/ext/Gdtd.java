@@ -83,7 +83,7 @@ public class Gdtd extends GrammarFileLoader {
 		currentElementName = node.getText(_Name, "");
 		elementNameList.add(currentElementName);
 		containsAttributes.put(currentElementName, false);
-		schema.newMembers(currentElementName + "_Content", toType(node.get(_Member)));
+		schema.newMembers(currentElementName + "_Contents", toType(node.get(_Member)));
 	}
 
 	public void visitAttlist(Tree<?> node) {
@@ -96,7 +96,7 @@ public class Gdtd extends GrammarFileLoader {
 		// generate Complete or Approximate Attribute list
 		if (enableNezExtension) {
 			genAttributeMembers();
-			schema.newAttributeList(currentElementName, schema.newSet(currentElementName));
+			schema.newAttributeList(currentElementName, schema.newSet(currentElementName + "_Attribute"));
 			schema.newSymbols();
 		} else {
 			schema.newAttributeList(currentElementName, schema.newPermutation());
@@ -106,12 +106,11 @@ public class Gdtd extends GrammarFileLoader {
 	private final void genAttributeMembers() {
 		int attListSize = schema.getMembers().size();
 		int index = 0;
-		Type[] alt = new Type[attListSize + 1];
+		Type[] alt = new Type[attListSize];
 		for (String attributeName : schema.getMembers()) {
 			alt[index++] = schema.newAlt(getUniqueName(attributeName));
 		}
-		alt[index] = schema.newOthers();
-		schema.newMembers(currentElementName, alt);
+		schema.newMembers(currentElementName + "_Attribute", alt);
 	}
 
 	public void visitREQUIRED(Tree<?> node) {
@@ -233,6 +232,10 @@ public class Gdtd extends GrammarFileLoader {
 
 	public Type toData(Tree<?> node) {
 		return schema.newAlt("PCDATA");
+	}
+
+	public Type toSingleData(Tree<?> node) {
+		return schema.newAlt("SINGLE_PCDATA");
 	}
 
 	private final boolean hasAttribute(String elementName) {

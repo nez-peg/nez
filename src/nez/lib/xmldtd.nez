@@ -85,11 +85,11 @@ example ConditionalSection ~837bd6 '''
 /* Element Declaration */
 
 ElementDeclaration
-	= "ELEMENT" {$name(Name) $member(Content) {$ &'' _Qualifier}? #Element} _
+	= "ELEMENT" {$name(Name) $member(Content) #Element} _
 
 Content
 	= SpecialContent 
-	/ "(" (PCData / ElementName) ")"
+	/ "(" (SinglePCData / ElementName) ")" {$ &'' _Qualifier}?
 	/ Member 
 	
 SpecialContent
@@ -105,8 +105,11 @@ Member
 PCData 
 	= {"#PCDATA" #Data} _
 	
+SinglePCData
+	= {"#PCDATA" #SingleData} _
+	
 ElementName
-	= { NAME #ElName } {@ &'' _Qualifier}? _
+	= { NAME #ElName } {$ &'' _Qualifier}? _
 	
 
 Choice 
@@ -126,6 +129,7 @@ example ElementDeclaration ~3a22b9 ELEMENT a (b|c)
 example ElementDeclaration ~9eac9b ELEMENT a (b,c)
 example ElementDeclaration ~5a7c57 ELEMENT a (b|c)*
 example ElementDeclaration ~abe358 ELEMENT a ((b|c),(d|e))
+example ElementDeclaration ~88f1fa ELEMENT a (#PCDATA)*
 
 
 /* Attribute Declaration */

@@ -67,8 +67,16 @@ public abstract class SchemaGrammarGenerator extends AbstractSchemaGrammarGenera
 		return ExpressionCommons.newNonTerminal(null, gfile, nonterm);
 	}
 
+	protected final NonTerminal _NonTerminal(String format, Object... args) {
+		return _NonTerminal(String.format(format, args));
+	}
+
 	protected final Expression _String(String text) {
 		return ExpressionCommons.newString(null, text);
+	}
+
+	protected final Expression _String(String format, Object... args) {
+		return _String(String.format(format, args));
 	}
 
 	protected final Expression _Char(int ch) {
@@ -96,11 +104,19 @@ public abstract class SchemaGrammarGenerator extends AbstractSchemaGrammarGenera
 	}
 
 	protected final Expression _Sequence(Expression... l) {
-		return ExpressionCommons.newPsequence(null, new UList<Expression>(l));
+		UList<Expression> seq = new UList<Expression>(new Expression[8]);
+		for (Expression p : l) {
+			ExpressionCommons.addSequence(seq, p);
+		}
+		return ExpressionCommons.newPsequence(null, seq);
 	}
 
 	protected final Expression _Choice(Expression... l) {
-		return ExpressionCommons.newPchoice(null, new UList<Expression>(l));
+		UList<Expression> seq = new UList<Expression>(new Expression[8]);
+		for (Expression p : l) {
+			ExpressionCommons.addChoice(seq, p);
+		}
+		return ExpressionCommons.newPchoice(null, seq);
 	}
 
 	protected final Expression _DQuat() {
@@ -108,7 +124,7 @@ public abstract class SchemaGrammarGenerator extends AbstractSchemaGrammarGenera
 	}
 
 	protected final Expression _S() {
-		return ExpressionCommons.newNonTerminal(null, gfile, "SPACING");
+		return ExpressionCommons.newNonTerminal(null, gfile, "S");
 	}
 
 	protected final Expression _Empty() {
@@ -134,13 +150,13 @@ public abstract class SchemaGrammarGenerator extends AbstractSchemaGrammarGenera
 	/* common methods of schema grammar */
 
 	@Override
-	public void newMembers(String structName, Type... types) {
+	public void newMembers(String memberName, Type... types) {
 		Expression[] l = new Expression[types.length];
 		int index = 0;
 		for (Type type : types) {
 			l[index++] = type.getTypeExpression();
 		}
-		gfile.addProduction(null, structName + "_SMembers", _Choice(l));
+		gfile.addProduction(null, memberName, _Choice(l));
 	}
 
 	@Override
@@ -155,10 +171,10 @@ public abstract class SchemaGrammarGenerator extends AbstractSchemaGrammarGenera
 
 	// FIXME
 	@Override
-	public Type newSet(String structName) {
+	public Type newSet(String structMemberName) {
 		Expression[] l = new Expression[getRequiredList().size() + 1];
 		int index = 1;
-		l[0] = _ZeroMore(_NonTerminal(structName + "_SMembers"));
+		l[0] = _ZeroMore(_NonTerminal(structMemberName));
 		for (String required : getRequiredList()) {
 			l[index++] = _Exists(getTableName(), required);
 		}
@@ -189,7 +205,6 @@ public abstract class SchemaGrammarGenerator extends AbstractSchemaGrammarGenera
 	// FIXME
 	protected Type newCompletePerm() {
 		int listLength = getRequiredList().size();
-
 		if (listLength == 1) {
 			return new Type(_NonTerminal(getRequiredList().get(0)));
 		} else {
@@ -200,7 +215,7 @@ public abstract class SchemaGrammarGenerator extends AbstractSchemaGrammarGenera
 			for (int[] targetLine : permedList) {
 				Expression[] seqList = new Expression[listLength];
 				for (int index = 0; index < targetLine.length; index++) {
-					seqList[index] = ExpressionCommons.newNonTerminal(null, gfile, getRequiredList().get(targetLine[index]));
+					seqList[index] = _NonTerminal(getRequiredList().get(targetLine[index]));
 				}
 				choiceList[choiceCount++] = _Sequence(seqList);
 			}
@@ -224,14 +239,13 @@ public abstract class SchemaGrammarGenerator extends AbstractSchemaGrammarGenera
 				Expression[] seqList = new Expression[listLength * 2 + 1];
 				seqList[seqCount++] = _ZeroMore(impliedChoiceRule);
 				for (int index = 0; index < targetLine.length; index++) {
-					seqList[seqCount++] = ExpressionCommons.newNonTerminal(null, gfile, getRequiredList().get(targetLine[index]));
+					seqList[seqCount++] = _NonTerminal(getRequiredList().get(targetLine[index]));
 					seqList[seqCount++] = _ZeroMore(impliedChoiceRule);
 				}
 				choiceList[choiceCount++] = _Sequence(seqList);
 			}
 			return new Type(_Choice(choiceList));
 		}
-
 	}
 
 	protected void genImpliedChoice() {

@@ -143,7 +143,7 @@ public class Gcelery extends GrammarFileLoader {
 			alt[index++] = schema.newAlt(getUniqueName(elementName));
 		}
 		alt[index] = schema.newOthers();
-		schema.newMembers(currentStructName, alt);
+		schema.newMembers(currentStructName + "SMembers", alt);
 	}
 
 	private final void genStruct_Approximate(String structName) {

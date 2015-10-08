@@ -25,13 +25,13 @@ public class JSONSchemaGrammarGenerator extends SchemaGrammarGenerator {
 
 	@Override
 	public void newElement(String elementName, Type t) {
-		Expression[] l = { _DQuat(), t.getTypeExpression(), _DQuat(), _NonTerminal("NAMESEP"), t.next().getTypeExpression(), _Option(_NonTerminal("VALUESEP")) };
+		Expression[] l = { _DQuat(), t.getTypeExpression(), _DQuat(), _S(), _NonTerminal("NAMESEP"), t.next().getTypeExpression(), _Option(_NonTerminal("VALUESEP")), _S() };
 		gfile.addProduction(null, elementName, _Sequence(l));
 	}
 
 	@Override
 	public void newStruct(String structName, Type t) {
-		Expression[] l = { _OpenWave(), _S(), t.getTypeExpression(), _S(), _CloseWave() };
+		Expression[] l = { _OpenWave(), _S(), t.getTypeExpression(), _S(), _CloseWave(), _S() };
 		gfile.addProduction(null, structName, _Sequence(l));
 	}
 
