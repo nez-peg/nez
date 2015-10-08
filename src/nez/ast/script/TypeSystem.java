@@ -712,10 +712,12 @@ public class TypeSystem extends CommonContext implements CommonSymbols {
 		return val;
 	}
 
-	public final static String joinString(Object... args) {
+	public final static String joinString(Object[] args) {
 		StringBuilder sb = new StringBuilder();
 		for (Object a : args) {
-			sb.append(a);
+			if (!(a instanceof Object[])) {
+				sb.append(a);
+			}
 		}
 		return sb.toString();
 	}

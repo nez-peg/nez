@@ -122,13 +122,14 @@ public class Reflector {
 		try {
 			return m.invoke(self, args);
 		} catch (IllegalAccessException | IllegalArgumentException e) {
-			throw new ScriptRuntimeException(e.getMessage());
+			throw new ScriptRuntimeException("" + m + " caused by " + e.toString());
 		} catch (InvocationTargetException e) {
 			Throwable w = e.getTargetException();
 			if (w instanceof RuntimeException) {
 				throw (RuntimeException) e.getTargetException();
 			}
-			throw new ScriptRuntimeException(w.getMessage());
+			e.printStackTrace();
+			throw new ScriptRuntimeException("" + m + " caused by " + w.toString());
 		}
 	}
 

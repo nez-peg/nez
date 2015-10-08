@@ -60,7 +60,7 @@ public class ScriptContext {
 			try {
 				typechecker.doType(sub);
 				if (this.typeSystem.verboseMode) {
-					ConsoleUtils.println("[Yyped]");
+					ConsoleUtils.println("[Typed]");
 					ConsoleUtils.println("    ", sub);
 				}
 				if (!foundError) {

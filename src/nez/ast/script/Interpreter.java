@@ -221,9 +221,18 @@ public class Interpreter extends TreeVisitor2<nez.ast.script.Interpreter.Undefin
 		return args;
 	}
 
+	public class Interpolation extends Undefined {
+		@Override
+		public Object visit(TypedTree node) {
+			Object[] args = evalApplyArgument(node);
+			return Reflector.invokeStaticMethod(node.getMethod(), new Object[] { args });
+		}
+	}
+
 	public class _Array extends Undefined {
+		@Override
 		@SuppressWarnings({ "rawtypes", "unchecked" })
-		public Object evalArray(TypedTree node) {
+		public Object visit(TypedTree node) {
 			Object[] args = evalApplyArgument(node);
 			Class<?> atype = node.getClassType();
 			if (atype == IArray.class) {

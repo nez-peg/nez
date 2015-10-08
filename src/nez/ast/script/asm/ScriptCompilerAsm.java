@@ -200,7 +200,9 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 
 	public void visitInterpolation(TypedTree node) {
 		visitArrayUtils(Object.class, node);
-		this.mBuilder.invokeStatic(this.cBuilder.getTypeDesc(), this.mBuilder.getMethod());
+		Type owner = Type.getType(node.getMethod().getDeclaringClass());
+		Method methodDesc = Method.getMethod(node.getMethod());
+		this.mBuilder.invokeStatic(owner, methodDesc);
 	}
 
 	// public class Interpolation extends Undefined {
