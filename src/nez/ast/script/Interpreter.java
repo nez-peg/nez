@@ -4,18 +4,19 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
+import konoha.Array;
 import konoha.IArray;
 import nez.ast.TreeVisitor2;
 import nez.ast.script.asm.ScriptCompiler;
 
-public class Interpreter extends TreeVisitor2<nez.ast.script.Interpreter.Unevaluated> implements CommonSymbols {
+public class Interpreter extends TreeVisitor2<nez.ast.script.Interpreter.Undefined> implements CommonSymbols {
 	ScriptContext context;
 	TypeSystem typeSystem;
 	private ScriptCompiler compiler;
 
 	public Interpreter(ScriptContext sc, TypeSystem base) {
 		super();
-		init(new Unevaluated());
+		init(new Undefined());
 		this.context = sc;
 		this.typeSystem = base;
 		this.compiler = new ScriptCompiler(this.typeSystem);
@@ -53,13 +54,13 @@ public class Interpreter extends TreeVisitor2<nez.ast.script.Interpreter.Unevalu
 		return o;
 	}
 
-	public class Unevaluated {
+	public class Undefined {
 		Object visit(TypedTree node) {
 			throw new ScriptRuntimeException("TODO: Interpreter " + node);
 		}
 	}
 
-	public class Source extends Unevaluated {
+	public class Source extends Undefined {
 		@Override
 		public Object visit(TypedTree node) {
 			Object result = empty;
@@ -75,8 +76,7 @@ public class Interpreter extends TreeVisitor2<nez.ast.script.Interpreter.Unevalu
 
 	/* TopLevel */
 
-	public class FuncDecl extends Unevaluated {
-
+	public class FuncDecl extends Undefined {
 		@Override
 		public Object visit(TypedTree node) {
 			compiler.compileFuncDecl(node);
@@ -86,7 +86,7 @@ public class Interpreter extends TreeVisitor2<nez.ast.script.Interpreter.Unevalu
 
 	/* boolean */
 
-	public class Block extends Unevaluated {
+	public class Block extends Undefined {
 		@Override
 		public Object visit(TypedTree node) {
 			Object retVal = null;
@@ -97,7 +97,7 @@ public class Interpreter extends TreeVisitor2<nez.ast.script.Interpreter.Unevalu
 		}
 	}
 
-	public class If extends Unevaluated {
+	public class If extends Undefined {
 		@Override
 		public Object visit(TypedTree node) {
 			boolean cond = (Boolean) eval(node.get(_cond));
@@ -114,7 +114,7 @@ public class Interpreter extends TreeVisitor2<nez.ast.script.Interpreter.Unevalu
 	}
 
 	/* Expression Statement */
-	public class Expression extends Unevaluated {
+	public class Expression extends Undefined {
 		@Override
 		public Object visit(TypedTree node) {
 			if (node.getType() == void.class) {
@@ -125,15 +125,16 @@ public class Interpreter extends TreeVisitor2<nez.ast.script.Interpreter.Unevalu
 		}
 	}
 
-	public class Empty extends Unevaluated {
-		public Object evalEmpty(TypedTree node) {
+	public class Empty extends Undefined {
+		@Override
+		public Object visit(TypedTree node) {
 			return empty;
 		}
 	}
 
 	/* Expression */
 
-	public class Cast extends Unevaluated {
+	public class Cast extends Undefined {
 		@Override
 		public Object visit(TypedTree node) {
 			Object v = eval(node.get(_expr));
@@ -142,6 +143,17 @@ public class Interpreter extends TreeVisitor2<nez.ast.script.Interpreter.Unevalu
 				return Reflector.invokeStaticMethod(m, v);
 			}
 			return v;
+		}
+	}
+
+	public class InstanceOf extends Undefined {
+		@Override
+		public Object visit(TypedTree node) {
+			Object v = eval(node.get(_left));
+			if (v == null) {
+				return false;
+			}
+			return ((Class<?>) node.getValue()).isAssignableFrom(v.getClass());
 		}
 	}
 
@@ -205,7 +217,7 @@ public class Interpreter extends TreeVisitor2<nez.ast.script.Interpreter.Unevalu
 		return args;
 	}
 
-	public class Array extends Unevaluated {
+	public class _Array extends Undefined {
 		@SuppressWarnings({ "rawtypes", "unchecked" })
 		public Object evalArray(TypedTree node) {
 			Object[] args = evalApplyArgument(node);
@@ -214,7 +226,7 @@ public class Interpreter extends TreeVisitor2<nez.ast.script.Interpreter.Unevalu
 				return new IArray<Object>(args, args.length);
 				// System.out.println("AAA " + a + " " + a.getClass());
 			}
-			return new konoha.Array(args, args.length);
+			return new Array(args, args.length);
 		}
 	}
 }

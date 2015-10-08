@@ -7,6 +7,7 @@ public class FunctionBuilder {
 	String name;
 	TypeScope scope;
 	Type returnType = null;
+	private Type[] paramTypes;
 
 	FunctionBuilder(FunctionBuilder parent, String name) {
 		this.parent = parent;
@@ -46,4 +47,15 @@ public class FunctionBuilder {
 		return this.returnType;
 	}
 
+	public final String getName() {
+		return this.name;
+	}
+
+	public void setParameterTypes(Type[] paramTypes) {
+		this.paramTypes = paramTypes;
+	}
+
+	public Type[] getParameterTypes() {
+		return this.paramTypes;
+	}
 }

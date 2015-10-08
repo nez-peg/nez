@@ -121,6 +121,11 @@ public class TypedTree extends Tree<TypedTree> {
 		return this.hint;
 	}
 
+	public void setHint(Hint hint, Type type) {
+		this.hint = hint;
+		this.type = type;
+	}
+
 	/* Tree Manipulation */
 
 	public void makeFlattenedList(TypedTree... args) {

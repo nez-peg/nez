@@ -344,7 +344,7 @@ public class TypeSystem implements CommonSymbols {
 		return true;
 	}
 
-	private final boolean accept(TypeVarMatcher matcher, Type p, Type a) {
+	public final boolean accept(TypeVarMatcher matcher, Type p, Type a) {
 		if (a == null || p == a) {
 			return true;
 		}
@@ -367,7 +367,7 @@ public class TypeSystem implements CommonSymbols {
 				if (matcher != null && isGenericMethod(m)) {
 					p = m.getGenericParameterTypes();
 				}
-				if (this.checkArgumentTypeEnforcement(results, matcher, p, params)) {
+				if (this.matchParameters(results, matcher, p, params)) {
 					for (int i = 0; i < results.length; i++) {
 						params.set(i, results[i]);
 					}
@@ -379,10 +379,10 @@ public class TypeSystem implements CommonSymbols {
 		return null;
 	}
 
-	private boolean checkArgumentTypeEnforcement(TypedTree[] results, TypeVarMatcher matcher, Type[] p, TypedTree params) {
+	private boolean matchParameters(TypedTree[] results, TypeVarMatcher matcher, Type[] p, TypedTree params) {
 		for (int i = 0; i < p.length; i++) {
 			TypedTree sub = params.get(i);
-			results[i] = matcher != null ? this.checkTypeEnforce(matcher, p[i], sub) : this.checkTypeEnforce((Class<?>) p[i], sub);
+			results[i] = matcher != null ? this.checkType(matcher, p[i], sub) : this.checkType(p[i], sub);
 			if (results[i] == null) {
 				matcher.init();
 				return false;
@@ -391,33 +391,67 @@ public class TypeSystem implements CommonSymbols {
 		return true;
 	}
 
-	public TypedTree checkTypeEnforce(TypeVarMatcher matcher, Type p, TypedTree node) {
-		if (accept(matcher, p, node.getType())) {
+	public final TypedTree checkType(TypeVarMatcher matcher, Type reqt, TypedTree node) {
+		if (accept(matcher, reqt, node.getType())) {
 			return node;
 		}
-		Type resolved = matcher.resolve(p, null);
+		Type resolved = matcher.resolve(reqt, null);
 		if (resolved != null) {
-			Method m = this.getCastMethod(node.getType(), resolved);
-			if (m != null) {
-				TypedTree newnode = node.newInstance(_Cast, 1, null);
-				newnode.set(0, _expr, node);
-				newnode.setMethod(Hint.StaticInvocation, m, null);
-				return newnode;
-			}
+			return this.tryTypeCoersion(reqt, resolved, node);
 		}
 		return null;
 	}
 
-	public TypedTree checkTypeEnforce(Class<?> vt, TypedTree node) {
-		Class<?> et = node.getClassType();
-		if (accept(null, vt, et)) {
+	public final boolean matchParameters(Type[] p, TypedTree params) {
+		if (p.length != params.size()) {
+			return false;
+		}
+		TypedTree[] results = new TypedTree[p.length];
+		for (int i = 0; i < p.length; i++) {
+			TypedTree sub = params.get(i);
+			results[i] = this.checkType(p[i], sub);
+			if (results[i] == null) {
+				return false;
+			}
+		}
+		for (int i = 0; i < p.length; i++) {
+			params.set(i, results[i]);
+		}
+		return true;
+	}
+
+	public TypedTree checkType(Type reqt, TypedTree node) {
+		Type expt = node.getType();
+		if (accept(null, reqt, expt)) {
 			return node;
 		}
-		Method m = this.getCastMethod(et, vt);
+		return tryTypeCoersion(reqt, expt, node);
+	}
+
+	public TypedTree enforceType(Type reqt, TypedTree node) {
+		Type expt = node.getType();
+		if (accept(null, reqt, expt)) {
+			return node;
+		}
+		TypedTree n = this.tryTypeCoersion(reqt, expt, node);
+		if (n == null) {
+			throw error(node, "type mismatch: requested=%s given=%s", name(reqt), name(expt));
+		}
+		return n;
+	}
+
+	private TypedTree tryTypeCoersion(Type reqt, Type expt, TypedTree node) {
+		Method m = this.getCastMethod(expt, reqt);
 		if (m != null) {
 			TypedTree newnode = node.newInstance(_Cast, 1, null);
 			newnode.set(0, _expr, node);
 			newnode.setMethod(Hint.StaticInvocation, m, null);
+			return newnode;
+		}
+		if (expt == Object.class) { // auto upcast
+			TypedTree newnode = node.newInstance(_Cast, 1, null);
+			newnode.set(0, _expr, node);
+			newnode.setHint(Hint.DownCast, reqt);
 			return newnode;
 		}
 		return null;
@@ -468,16 +502,7 @@ public class TypeSystem implements CommonSymbols {
 	// type check
 
 	public TypeCheckerException error(TypedTree node, String fmt, Object... args) {
-		return new TypeCheckerException(this, 1, node, fmt, args);
-	}
-
-	public TypedTree newError(Type req, TypedTree node, String fmt, Object... args) {
-		TypedTree newnode = node.newInstance(_Error, 1, null);
-		String msg = node.formatSourceMessage("error", String.format(fmt, args));
-		newnode.set(0, _msg, node.newStringConst(msg));
-		context.log(msg);
-		newnode.setMethod(Hint.StaticInvocation, this.StaticErrorMethod, null);
-		return newnode;
+		return new TypeCheckerException(node, fmt, args);
 	}
 
 	public String name(Type t) {
@@ -502,30 +527,6 @@ public class TypeSystem implements CommonSymbols {
 
 	public String reportWarning(TypedTree node, String fmt, Object... args) {
 		return reportWarning(node, String.format(fmt, args));
-	}
-
-	public TypedTree enforceType(Type req, TypedTree node) {
-		Class<?> vt = toClass(req);
-		Class<?> et = node.getClassType();
-		if (accept(null, vt, et)) {
-			return node;
-		}
-		Method m = this.getCastMethod(et, vt);
-		if (m != null) {
-			TypedTree newnode = node.newInstance(_Cast, 1, null);
-			newnode.set(0, _expr, node);
-			newnode.setMethod(Hint.StaticInvocation, m, null);
-			return newnode;
-		}
-		if (et.isAssignableFrom(vt)) {
-			reportWarning(node, "unexpected downcast: %s => %s", name(et), name(vt));
-			TypedTree newnode = node.newInstance(_DownCast, 1, null);
-			newnode.set(0, _expr, node);
-			newnode.setClass(Hint.DownCast, vt);
-			newnode.setType(req);
-			return newnode;
-		}
-		return this.newError(req, node, "type mismatch: requested=%s given=%s", name(req), name(node.getType()));
 	}
 
 	public TypedTree makeCast(Type req, TypedTree node) {
@@ -679,7 +680,6 @@ public class TypeSystem implements CommonSymbols {
 	protected Method ObjectIndexer = null;
 	protected Method ObjectSetIndexer = null;
 
-	protected Method StaticErrorMethod = null;
 	protected Method InterpolationMethod = null;
 
 	void initMethod() {
@@ -688,7 +688,6 @@ public class TypeSystem implements CommonSymbols {
 			this.DynamicSetter = this.getClass().getMethod("setDynamicField", Object.class, String.class, Object.class);
 			this.ObjectIndexer = this.getClass().getMethod("getObjectIndexer", Object.class, Object.class);
 			this.ObjectSetIndexer = this.getClass().getMethod("setObjectIndexer", Object.class, Object.class, Object.class);
-			this.StaticErrorMethod = this.getClass().getMethod("throwStaticError", String.class);
 			this.InterpolationMethod = this.getClass().getMethod("joinString", Object[].class);
 		} catch (NoSuchMethodException | SecurityException e) {
 			e.printStackTrace();
@@ -710,10 +709,6 @@ public class TypeSystem implements CommonSymbols {
 	public final static Object setDynamicField(Object self, String name, Object val) {
 		Reflector.setField(self, name, val);
 		return val;
-	}
-
-	public final static void throwStaticError(String msg) {
-		throw new ScriptRuntimeException(msg);
 	}
 
 	public final static String joinString(Object... args) {

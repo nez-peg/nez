@@ -51,6 +51,7 @@ public class GlobalVariable {
 	}
 
 	public void setFunction(Function f) {
+		System.out.println("ff " + this.field.getType());
 		Reflector.setStatic(this.field, f);
 	}
 

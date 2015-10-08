@@ -42,6 +42,7 @@ public class ScriptCompiler {
 			sb.append('$');
 			sb.append(p.getSimpleName());
 		}
+		sb.append('_');
 		return sb.toString();
 	}
 
@@ -55,7 +56,7 @@ public class ScriptCompiler {
 			sb.append('$');
 			sb.append(name(p));
 		}
-		sb.append('$');
+		sb.append('_');
 		return sb.toString();
 	}
 
@@ -71,7 +72,7 @@ public class ScriptCompiler {
 
 	public Function compileStaticFunctionObject(Method m) {
 		Class<?> functype = this.typeSystem.getFuncType(m.getReturnType(), m.getParameterTypes());
-		Class<?> c = this.asm.compileFunctionClass(functype, m);
+		Class<?> c = this.asm.compileFunctionWrapperClass(functype, m);
 		return (Function) Reflector.newInstance(c);
 	}
 
@@ -87,12 +88,11 @@ public class ScriptCompiler {
 		String name = node.getText(CommonSymbols._name, null);
 		Class<?> function = this.asm.compileStaticFuncDecl(name, (TypedTree) node);
 		typeSystem.loadStaticFunctionClass(function, true);
+		/* global variable as prototype reference */
 		GlobalVariable gv = typeSystem.getGlobalVariable(name);
 		if (gv != null && typeSystem.isFuncType(gv.getType())) {
 			Method m = Reflector.findInvokeMethod(function);
-			System.out.println("function; " + m);
 			if (gv.matchFunction(this.typeSystem, m)) {
-				System.out.println("set global function; " + m);
 				gv.setFunction(this.compileStaticFunctionObject(m));
 			}
 		}

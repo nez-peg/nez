@@ -153,6 +153,9 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 		/* prototye declration */
 		if (bodyNode == null) {
 			Class<?> funcType = this.typeSystem.getFuncType(returnType, paramTypes);
+			if (typeSystem.hasGlobalVariable(name)) {
+				throw error(node.get(_name), "duplicated name: %s", name);
+			}
 			typeSystem.newGlobalVariable(funcType, name);
 			node.done();
 			return void.class;
@@ -170,6 +173,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 				typed(sub, paramTypes[c]);
 			}
 		}
+		f.setParameterTypes(paramTypes);
 		try {
 			doType(bodyNode);
 		} catch (TypeCheckerException e) {
@@ -648,7 +652,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 		String name = node.getText(_name, "");
 		TypedTree args = node.get(_param);
 		Type[] types = typeApplyArguments(args);
-		if (isRecursiveCall(name, types)) {
+		if (isRecursiveCall(name, args)) {
 			return typeRecursiveApply(node, name, types);
 		}
 		Type func_t = this.tryCheckNameType(node.get(_name), true);
@@ -669,27 +673,43 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 		return types;
 	}
 
-	private boolean isRecursiveCall(String name, Type[] params_t) {
-		if (inFunction()) {
-			return false; // this.function.match(name, params_t);
+	private boolean isRecursiveCall(String name, TypedTree params) {
+		if (inFunction() && name.equals(function.getName())) {
+			Type[] paramTypes = function.getParameterTypes();
+			if (typeSystem.matchParameters(paramTypes, params)) {
+				return true;
+			}
 		}
 		return false;
 	}
 
 	private Type typeRecursiveApply(TypedTree node, String name, Type[] params_t) {
-		throw error(node, "unsupported recursive call: %s", name);
+		Type returnType = function.getReturnType();
+		if (returnType == null) {
+			throw error(node, "ambigious return type in recursive call: %s", name);
+		}
+		return returnType;
 	}
 
 	private Type typeFuncApply(TypedTree node, Type func_t, Type[] params_t, TypedTree params) {
-		Method m = Reflector.getInvokeFunctionMethod(params.size());
-		if (m != null) {
-			for (int i = 0; i < params.size(); i++) {
-				params.set(i, this.typeSystem.enforceType(Object.class, params.get(i)));
+		if (typeSystem.isStaticFuncType(func_t)) {
+			Class<?>[] p = typeSystem.getFuncParameterTypes(func_t);
+			if (this.typeSystem.matchParameters(p, params)) {
+				node.rename(_name, _recv);
+				return node.setMethod(Hint.MethodApply, Reflector.findInvokeMethod((Class<?>) func_t), null);
 			}
-			node.makeFlattenedList(node.get(_name), params);
-			return node.setMethod(Hint.StaticInvocation, m, null);
+			throw error(node, "mismatched %s", Reflector.findInvokeMethod((Class<?>) func_t));
+		} else {
+			Method m = Reflector.getInvokeFunctionMethod(params.size());
+			if (m != null) {
+				for (int i = 0; i < params.size(); i++) {
+					params.set(i, this.typeSystem.enforceType(Object.class, params.get(i)));
+				}
+				node.makeFlattenedList(node.get(_name), params);
+				return node.setMethod(Hint.StaticInvocation, m, null);
+			}
+			throw error(node, "unsupported number of parameters: %d", params.size());
 		}
-		throw error(node, "unsupported number of parameters: %d", params.size());
 	}
 
 	public class MethodApply extends Undefined {
@@ -805,6 +825,20 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 		@Override
 		public Type type(TypedTree node) {
 			enforceType(boolean.class, node, _expr);
+			return boolean.class;
+		}
+	}
+
+	public class Instanceof extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			Class<?> c = TypeSystem.toClass(doType(node.get(_left)));
+			Class<?> t = typeSystem.resolveClass(node.get(_right), null);
+			if (!t.isAssignableFrom(c)) {
+				typeSystem.reportWarning(node, "incompatible instanceof operation: %s", name(t));
+				node.setConst(boolean.class, false);
+			}
+			node.setValue(t);
 			return boolean.class;
 		}
 	}
@@ -952,16 +986,14 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 	public class True extends Undefined {
 		@Override
 		public Type type(TypedTree node) {
-			node.setValue(true);
-			return boolean.class;
+			return node.setConst(boolean.class, true);
 		}
 	}
 
 	public class False extends Undefined {
 		@Override
 		public Type type(TypedTree node) {
-			node.setValue(false);
-			return boolean.class;
+			return node.setConst(boolean.class, false);
 		}
 	}
 

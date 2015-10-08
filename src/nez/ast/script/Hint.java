@@ -5,9 +5,11 @@ public enum Hint {
 	Constant, //
 	StaticInvocation, //
 	Apply, //
+	RecursiveApply, //
 	MethodApply, //
 	GetField, //
 	SetField, //
+	UpCast, //
 	DownCast, //
 	StaticDynamicInvocation, //
 }

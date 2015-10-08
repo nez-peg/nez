@@ -40,15 +40,22 @@ public class MethodBuilder extends GeneratorAdapter {
 	 */
 	protected int currentLineNum = -1;
 
+	Method method;
+
 	public MethodBuilder(int accessFlag, Method method, ClassVisitor cv) {
 		super(Opcodes.ASM4, toMethodVisitor(accessFlag, method, cv), accessFlag, method.getName(), method.getDescriptor());
 		this.loopLabels = new ArrayDeque<>();
 		this.tryLabels = new ArrayDeque<>();
 		int startIndex = 0;
-		if ((accessFlag & ClassBuilder.ACC_STATIC) != ClassBuilder.ACC_STATIC) {
+		if ((accessFlag & Opcodes.ACC_STATIC) != Opcodes.ACC_STATIC) {
 			startIndex = 1;
 		}
 		this.varScopes = new VarScopes(startIndex);
+		this.method = method;
+	}
+
+	Method getMethod() {
+		return this.method;
 	}
 
 	/**

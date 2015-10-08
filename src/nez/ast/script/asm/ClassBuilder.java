@@ -58,6 +58,7 @@ public class ClassBuilder extends ClassWriter implements Opcodes {
 	 * @param superClass
 	 * @param interfaces
 	 */
+
 	public ClassBuilder(String fullyQualifiedClassName, String sourceName, Class<?> superClass, Class<?>[] interfaces) {
 		this(ACC_PUBLIC | ACC_FINAL, fullyQualifiedClassName, sourceName, superClass, interfaces);
 	}
