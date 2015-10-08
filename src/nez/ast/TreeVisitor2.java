@@ -38,6 +38,10 @@ public class TreeVisitor2<V> {
 		return v.isAssignableFrom(e);
 	}
 
+	public final void add(String name, V visitor) {
+		visitors.put(name, visitor);
+	}
+
 	protected final V find(Tree<?> node) {
 		V v = visitors.get(node.getTag().toString());
 		return v == null ? undefined : v;

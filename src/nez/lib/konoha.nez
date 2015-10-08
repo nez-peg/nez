@@ -107,17 +107,14 @@ TODO                               = !''
 "interface"                        = 'interface' !W _
 "let"                              = 'let' !W _
 "long"                             = 'long' !W _
-"native"                           = 'native' !W _
 "new"                              = 'new' !W _
 "null"                             = 'null' !W _
-"package"                          = 'package' !W _
 "private"                          = 'private' !W _
 "protected"                        = 'protected' !W _
 "public"                           = 'public' !W _
 "return"                           = 'return' !W _
 "short"                            = 'short' !W _
 "static"                           = 'static' !W _
-"strictfp"                         = 'strictfp' !W _
 "super"                            = 'super' !W _
 "switch"                           = 'switch' !W _
 "synchronized"                     = 'synchronized' !W _
@@ -127,8 +124,8 @@ TODO                               = !''
 "transient"                        = 'transient' !W _
 "true"                             = 'true' !W _
 "try"                              = 'try' !W _
+"var"                              = 'var' !W_
 "void"                             = 'void' !W _
-"volatile"                         = 'volatile' !W _
 "while"                            = 'while' !W _
 
 KEYWORD                            = "abstract"
@@ -280,7 +277,8 @@ enum C {
 '''
 
 //local variable
-VariableDeclaration                = { $anno(Modifiers)? $type(Type) $name(VarName) !"," ( "=" $expr(Expression) )? !"," #VarDecl }
+VariableDeclaration                = { "var" $name(Identifier) (":" $type(Type))? "=" $expr(Expression) #VarDecl }
+                                   / { $anno(Modifiers)? $type(Type) $name(VarName) !"," ( "=" $expr(Expression) )? !"," #VarDecl }
                                    / { $anno(Modifiers)? $type(Type) $list(InitDeclList) #MultiVarDecl }
 InitDeclList                       = { $(InitDecl) ( "," $(InitDecl) )* #List }
 InitDecl                           = { $name(VarName) ( "=" $expr(Expression) )? #VarDecl }
@@ -431,6 +429,7 @@ Map<K,V>[]
 
 // Block, Statement
 //===================
+
 EOS                                = ";" / &'}' / [ \t]* EOL _
 Block                              = "{" { ( $(Statement) / $(LocalDeclaration) )* #Block } "}"
 LocalDeclaration                   = VariableDeclaration EOS
@@ -442,8 +441,8 @@ Statement                          = Block
                                    / SwitchStatement
                                    / { "while" "(" $cond(Expression) ")" $body(Statement) #While }
                                    / { "do" $body(Statement) "while" "(" $cond(Expression) ")"  #DoWhile } EOS
-                                   / { "for" "(" $init(Expressions)? ";" $cond(Expression)? ";" $iter(Expressions)? ")" $body(Statement) #For }
-                                   / { "for" "(" $init(VariableDeclaration) ";" $cond(Expression)? ";" $iter(Expressions)? ")" $body(Statement) #For }
+                                   / { "for" "(" $init(Expressions)? ";" $cond(Expression)? ";" $iter(Expression)? ")" $body(Statement) #For }
+                                   / { "for" "(" $init(VariableDeclaration) ";" $cond(Expression)? ";" $iter(Expression)? ")" $body(Statement) #For }
                                    / { "for" "(" $anno(Modifiers)? ($type(Type) !"in" $name(Identifier) / $name(Identifier) ) ( ":" / "in" ) $iter(Expression) ")" $body(Statement) #ForEach }
                                    / { "continue" $label(Identifier)? #Continue `` } EOS
                                    / { "break" $label(Identifier)? #Break `` } EOS
@@ -452,7 +451,7 @@ Statement                          = Block
                                    / { "throw" $expr(Expression) #Throw } EOS
                                    / "synchronized" { "(" $cond(Expression) ")" $body(Block) #Synchronized }
                                    / { $label(Identifier) ":" #Label }
-                                   / { $expr(Expression) #Expression } EOS
+                                   / Expression EOS
                                    / EOS+ { #Empty }
 
 example Block ~783b5 '''

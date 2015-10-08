@@ -23,9 +23,8 @@ public class TypeSystem extends CommonContext implements CommonSymbols {
 	ScriptContext context;
 	ScriptCompiler compl;
 
-	public TypeSystem(ScriptContext context, ScriptCompiler compl) {
+	public TypeSystem(ScriptContext context) {
 		this.context = context;
-		this.compl = compl;
 		init();
 		initMethod();
 		initDebug();

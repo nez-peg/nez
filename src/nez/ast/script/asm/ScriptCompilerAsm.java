@@ -3,7 +3,7 @@ package nez.ast.script.asm;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
-import nez.ast.TreeVisitor;
+import nez.ast.TreeVisitor2;
 import nez.ast.script.CommonSymbols;
 import nez.ast.script.Hint;
 import nez.ast.script.TypeSystem;
@@ -16,7 +16,7 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
 import org.objectweb.asm.commons.Method;
 
-public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
+public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined> implements CommonSymbols {
 	private TypeSystem typeSystem;
 	private ScriptClassLoader cLoader;
 	private ClassBuilder cBuilder;
@@ -24,18 +24,19 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 	private String classPath = "konoha/runtime/";
 
 	public ScriptCompilerAsm(TypeSystem typeSystem, ScriptClassLoader cLoader) {
-		super(TypedTree.class);
+		// super(TypedTree.class);
 		this.typeSystem = typeSystem;
 		this.cLoader = cLoader;
+		init(new Undefined());
 	}
 
 	public class Undefined {
-		public void visit(TypedTree node) {
+		public void accept(TypedTree node) throws ClassNotFoundException {
 			ConsoleUtils.println("FIXME: ScriptCompilerAsm " + node.getTag().getSymbol());
 		}
 	}
 
-	private void visit(TypedTree node) {
+	private void visit(TypedTree node) throws ClassNotFoundException {
 		switch (node.hint) {
 		case Constant:
 			visitConstantHint(node);
@@ -71,7 +72,7 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 			break;
 		}
 		TRACE("compiling (no hint): " + node.getTag());
-		this.visit("visit", node);
+		this.find(node).accept(node);
 	}
 
 	private Class<?> typeof(TypedTree node) {
@@ -103,7 +104,7 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 		}
 	}
 
-	private void visitStaticInvocationHint(TypedTree node) {
+	private void visitStaticInvocationHint(TypedTree node) throws ClassNotFoundException {
 		for (TypedTree sub : node) {
 			visit(sub);
 		}
@@ -112,16 +113,16 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 		this.mBuilder.invokeStatic(owner, methodDesc);
 	}
 
-	private void visitUpCastHint(TypedTree node) {
+	private void visitUpCastHint(TypedTree node) throws ClassNotFoundException {
 		visit(node.get(_expr));
 	}
 
-	private void visitDownCastHint(TypedTree node) {
+	private void visitDownCastHint(TypedTree node) throws ClassNotFoundException {
 		visit(node.get(_expr));
 		this.mBuilder.checkCast(Type.getType(node.getClassType()));
 	}
 
-	private void visitApplyHint(TypedTree node) {
+	private void visitApplyHint(TypedTree node) throws ClassNotFoundException {
 		for (TypedTree sub : node.get(_param)) {
 			visit(sub);
 		}
@@ -130,14 +131,14 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 		this.mBuilder.invokeStatic(owner, methodDesc);
 	}
 
-	private void visitRecursiveApplyHint(TypedTree node) {
+	private void visitRecursiveApplyHint(TypedTree node) throws ClassNotFoundException {
 		for (TypedTree sub : node.get(_param)) {
 			visit(sub);
 		}
 		this.mBuilder.invokeStatic(this.cBuilder.getTypeDesc(), this.mBuilder.getMethod());
 	}
 
-	private void visitGetFieldHint(TypedTree node) {
+	private void visitGetFieldHint(TypedTree node) throws ClassNotFoundException {
 		Field f = node.getField();
 		if (Modifier.isStatic(f.getModifiers())) {
 			Type owner = Type.getType(f.getDeclaringClass());
@@ -153,8 +154,8 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 		}
 	}
 
-	private void visitMehodApplyHint(TypedTree node) {
-		this.visit(node.get(_recv));
+	private void visitMehodApplyHint(TypedTree node) throws ClassNotFoundException {
+		visit(node.get(_recv));
 		for (TypedTree sub : node.get(_param)) {
 			visit(sub);
 		}
@@ -167,7 +168,7 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 		}
 	}
 
-	private void visitSetFieldHint(TypedTree node) {
+	private void visitSetFieldHint(TypedTree node) throws ClassNotFoundException {
 		Field f = node.getField();
 		if (Modifier.isStatic(f.getModifiers())) {
 			visit(node.get(_expr));
@@ -185,20 +186,20 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 		}
 	}
 
-	void visitArrayUtils(Class<?> elementType, TypedTree node) {
+	void visitArrayUtils(Class<?> elementType, TypedTree node) throws ClassNotFoundException {
 		this.mBuilder.push(node.size());
 		this.mBuilder.newArray(Type.getType(elementType));
 		int index = 0;
 		for (TypedTree sub : node) {
 			this.mBuilder.dup();
 			this.mBuilder.push(index);
-			this.visit(sub);
+			visit(sub);
 			this.mBuilder.arrayStore(Type.getType(elementType));
 			index++;
 		}
 	}
 
-	public void visitInterpolation(TypedTree node) {
+	public void visitInterpolation(TypedTree node) throws ClassNotFoundException {
 		visitArrayUtils(Object.class, node);
 		Type owner = Type.getType(node.getMethod().getDeclaringClass());
 		Method methodDesc = Method.getMethod(node.getMethod());
@@ -295,365 +296,379 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 		this.openClass("F_" + className + "_" + unique);
 		this.cBuilder.visitSource(node.getSource().getResourceName(), null);
 		unique++;
-		this.visitFuncDecl(node);
+		try {
+			visit(node);
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return this.closeClass();
 	}
 
-	public void visitFuncDecl(TypedTree node) {
-		// this.mBuilderStack.push(this.mBuilder);
-		TypedTree nameNode = node.get(_name);
-		TypedTree args = node.get(_param);
-		String name = nameNode.toText();
-		Class<?> funcType = typeof(nameNode);
-		Class<?>[] paramTypes = new Class<?>[args.size()];
-		for (int i = 0; i < paramTypes.length; i++) {
-			paramTypes[i] = typeof(args.get(i));
-		}
-		this.mBuilder = this.cBuilder.newMethodBuilder(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, funcType, name, paramTypes);
-		this.mBuilder.enterScope();
-		for (TypedTree arg : args) {
-			this.mBuilder.defineArgument(arg.getText(_name, null), typeof(arg));
-		}
-		visit(node.get(_body));
-		this.mBuilder.exitScope();
-		this.mBuilder.returnValue();
-		this.mBuilder.endMethod();
-	}
-
-	public void visitClassDecl(TypedTree node) throws ClassNotFoundException {
-		String name = node.getText(_name, null);
-		TypedTree implNode = node.get(_impl);
-		TypedTree bodyNode = node.get(_body);
-		Class<?> superClass = Class.forName(this.classPath + node.getText(_super, null));
-		Class<?>[] implClasses = new Class<?>[implNode.size()];
-		for (int i = 0; i < implNode.size(); i++) {
-			implClasses[i] = Class.forName(this.classPath + implNode.getText(i, null));
-		}
-		this.openClass(name, superClass, implClasses);
-		for (TypedTree n : bodyNode) {
-			this.visit(n);
-		}
-		this.closeClass();
-	}
-
-	public void visitBlock(TypedTree node) {
-		this.mBuilder.enterScope();
-		for (TypedTree stmt : node) {
-			this.mBuilder.setLineNum(node.getLineNum());
-			visit(stmt);
-		}
-		this.mBuilder.exitScope();
-	}
-
-	public void visitConstructor(TypedTree node) {
-		TypedTree args = node.get(_param);
-		Class<?>[] paramClasses = new Class<?>[args.size()];
-		for (int i = 0; i < args.size(); i++) {
-			paramClasses[i] = typeof(args.get(i));
-		}
-		this.mBuilder = this.cBuilder.newConstructorBuilder(Opcodes.ACC_PUBLIC, paramClasses);
-		this.mBuilder.enterScope();
-		for (TypedTree arg : args) {
-			this.mBuilder.defineArgument(arg.getText(_name, null), typeof(arg));
-		}
-		visit(node.get(_body));
-		this.mBuilder.exitScope();
-		this.mBuilder.loadThis();
-		this.mBuilder.returnValue();
-		this.mBuilder.endMethod();
-	}
-
-	public void visitFieldDecl(TypedTree node) {
-		// TODO
-		TypedTree list = node.get(_list);
-		for (TypedTree field : list) {
-			// this.cBuilder.addField(Opcodes.ACC_PUBLIC, field.getText(_name,
-			// null), this.typeof(field), );
-		}
-	}
-
-	public void visitMethodDecl(TypedTree node) {
-		// TODO
-	}
-
-	public void visitVarDecl(TypedTree node) {
-		if (node.size() > 1) {
-			TypedTree varNode = node.get(_name);
-			TypedTree valueNode = node.get(_expr);
-			visit(valueNode);
-			varNode.setType(typeof(valueNode));
-			this.mBuilder.createNewVarAndStore(varNode.toText(), typeof(valueNode));
-		}
-	}
-
-	public void visitIf(TypedTree node) {
-		visit(node.get(_cond));
-		this.mBuilder.push(true);
-
-		Label elseLabel = this.mBuilder.newLabel();
-		Label mergeLabel = this.mBuilder.newLabel();
-
-		this.mBuilder.ifCmp(Type.BOOLEAN_TYPE, GeneratorAdapter.NE, elseLabel);
-
-		// then
-		visit(node.get(_then));
-		this.mBuilder.goTo(mergeLabel);
-
-		// else
-		this.mBuilder.mark(elseLabel);
-		if (node.size() > 2) {
-			visit(node.get(_else));
-		}
-
-		// merge
-		this.mBuilder.mark(mergeLabel);
-	}
-
-	public void visitWhile(TypedTree node) {
-		Label beginLabel = this.mBuilder.newLabel();
-		Label condLabel = this.mBuilder.newLabel();
-
-		this.mBuilder.goTo(condLabel);
-
-		// Block
-		this.mBuilder.mark(beginLabel);
-		visit(node.get(_body));
-
-		// Condition
-		this.mBuilder.mark(condLabel);
-		visit(node.get(_cond));
-		this.mBuilder.push(true);
-
-		this.mBuilder.ifCmp(Type.BOOLEAN_TYPE, GeneratorAdapter.EQ, beginLabel);
-	}
-
-	public void visitDoWhile(TypedTree node) {
-		Label beginLabel = this.mBuilder.newLabel();
-
-		// Do
-		this.mBuilder.mark(beginLabel);
-		visit(node.get(_body));
-
-		// Condition
-		visit(node.get(_cond));
-		this.mBuilder.push(true);
-
-		this.mBuilder.ifCmp(Type.BOOLEAN_TYPE, GeneratorAdapter.EQ, beginLabel);
-	}
-
-	public void visitFor(TypedTree node) {
-		Label beginLabel = this.mBuilder.newLabel();
-		Label condLabel = this.mBuilder.newLabel();
-
-		// Initialize
-		visit(node.get(_init));
-
-		this.mBuilder.goTo(condLabel);
-
-		// Block
-		this.mBuilder.mark(beginLabel);
-		visit(node.get(_body));
-		visit(node.get(_iter));
-
-		// Condition
-		this.mBuilder.mark(condLabel);
-		visit(node.get(_cond));
-		this.mBuilder.push(true);
-		this.mBuilder.ifCmp(Type.BOOLEAN_TYPE, MethodBuilder.EQ, beginLabel);
-	}
-
-	/* Switch..Case Statement */
-	public void visitSwitch(TypedTree node) {
-		TypedTree body = node.get(_body);
-
-		this.visit(node.get(_cond));
-	}
-
-	/* Try..Catch Statement */
-	public void visitTry(TypedTree node) throws ClassNotFoundException {
-		TypedTree finallyNode = node.get(_finally);
-		TryCatchLabel labels = this.mBuilder.createNewTryLabel(finallyNode != null);
-		this.mBuilder.getTryLabels().push(labels);
-		Label mergeLabel = this.mBuilder.newLabel();
-
-		// try block
-		this.mBuilder.mark(labels.getStartLabel());
-		this.visitBlock(node.get(_try));
-		this.mBuilder.mark(labels.getEndLabel());
-
-		if (finallyNode != null) {
-			this.mBuilder.goTo(labels.getFinallyLabel());
-		}
-		this.mBuilder.goTo(mergeLabel);
-
-		// catch blocks
-		for (TypedTree catchNode : node.get(_catch)) {
-			Class<?> exceptionType = null;
-			if (catchNode.has(_type)) {
-				String exceptionName = catchNode.getText(_type, null);
-				exceptionType = Class.forName(exceptionName);
+	public class FuncDecl extends Undefined {
+		@Override
+		public void accept(TypedTree node) throws ClassNotFoundException {
+			TypedTree nameNode = node.get(_name);
+			TypedTree args = node.get(_param);
+			String name = nameNode.toText();
+			Class<?> funcType = typeof(nameNode);
+			Class<?>[] paramTypes = new Class<?>[args.size()];
+			for (int i = 0; i < paramTypes.length; i++) {
+				paramTypes[i] = typeof(args.get(i));
 			}
-			this.mBuilder.catchException(labels.getStartLabel(), labels.getEndLabel(), Type.getType(exceptionType));
-			this.mBuilder.enterScope();
-			this.mBuilder.createNewVarAndStore(catchNode.getText(_name, null), exceptionType);
-			this.visit(catchNode.get(_body));
-			this.mBuilder.exitScope();
-			this.mBuilder.goTo(mergeLabel);
+			mBuilder = cBuilder.newMethodBuilder(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, funcType, name, paramTypes);
+			mBuilder.enterScope();
+			for (TypedTree arg : args) {
+				mBuilder.defineArgument(arg.getText(_name, null), typeof(arg));
+			}
+			visit(node.get(_body));
+			mBuilder.exitScope();
+			mBuilder.returnValue();
+			mBuilder.endMethod();
 		}
-
-		// finally block
-		if (finallyNode != null) {
-			this.mBuilder.mark(labels.getFinallyLabel());
-			this.visit(finallyNode);
-		}
-		this.mBuilder.getTryLabels().pop();
-
-		this.mBuilder.mark(mergeLabel);
 	}
 
-	public void visitAssign(TypedTree node) {
-		String name = node.getText(_left, null);
-		TypedTree valueNode = node.get(_right);
+	public class ClassDecl extends Undefined {
+		@Override
+		public void accept(TypedTree node) throws ClassNotFoundException {
+			String name = node.getText(_name, null);
+			TypedTree implNode = node.get(_impl);
+			TypedTree bodyNode = node.get(_body);
+			Class<?> superClass = Class.forName(classPath + node.getText(_super, null));
+			Class<?>[] implClasses = new Class<?>[implNode.size()];
+			for (int i = 0; i < implNode.size(); i++) {
+				implClasses[i] = Class.forName(classPath + implNode.getText(i, null));
+			}
+			openClass(name, superClass, implClasses);
+			for (TypedTree n : bodyNode) {
+				visit(n);
+			}
+			closeClass();
+		}
+	}
+
+	public class Block extends Undefined {
+		@Override
+		public void accept(TypedTree node) throws ClassNotFoundException {
+			mBuilder.enterScope();
+			for (TypedTree stmt : node) {
+				mBuilder.setLineNum(node.getLineNum());
+				visit(stmt);
+			}
+			mBuilder.exitScope();
+		}
+	}
+
+	public class Constructor extends Undefined {
+		@Override
+		public void accept(TypedTree node) throws ClassNotFoundException {
+			TypedTree args = node.get(_param);
+			Class<?>[] paramClasses = new Class<?>[args.size()];
+			for (int i = 0; i < args.size(); i++) {
+				paramClasses[i] = typeof(args.get(i));
+			}
+			mBuilder = cBuilder.newConstructorBuilder(Opcodes.ACC_PUBLIC, paramClasses);
+			mBuilder.enterScope();
+			for (TypedTree arg : args) {
+				mBuilder.defineArgument(arg.getText(_name, null), typeof(arg));
+			}
+			visit(node.get(_body));
+			mBuilder.exitScope();
+			mBuilder.loadThis();
+			mBuilder.returnValue();
+			mBuilder.endMethod();
+		}
+	}
+
+	public class FieldDecl extends Undefined {
+		@Override
+		public void accept(TypedTree node) {
+			// TODO
+			TypedTree list = node.get(_list);
+			for (TypedTree field : list) {
+				// this.cBuilder.addField(Opcodes.ACC_PUBLIC,
+				// field.getText(_name,
+				// null), this.typeof(field), );
+			}
+		}
+	}
+
+	public class MethodDecl extends Undefined {
+		@Override
+		public void accept(TypedTree node) {
+			// TODO
+		}
+	}
+
+	public class VarDecl extends Undefined {
+		@Override
+		public void accept(TypedTree node) throws ClassNotFoundException {
+			if (node.size() > 1) {
+				TypedTree varNode = node.get(_name);
+				TypedTree valueNode = node.get(_expr);
+				visit(valueNode);
+				varNode.setType(typeof(valueNode));
+				mBuilder.createNewVarAndStore(varNode.toText(), typeof(valueNode));
+			}
+		}
+	}
+
+	public class If extends Undefined {
+		@Override
+		public void accept(TypedTree node) throws ClassNotFoundException {
+			visit(node.get(_cond));
+			mBuilder.push(true);
+
+			Label elseLabel = mBuilder.newLabel();
+			Label mergeLabel = mBuilder.newLabel();
+
+			mBuilder.ifCmp(Type.BOOLEAN_TYPE, GeneratorAdapter.NE, elseLabel);
+
+			// then
+			visit(node.get(_then));
+			mBuilder.goTo(mergeLabel);
+
+			// else
+			mBuilder.mark(elseLabel);
+			if (node.size() > 2) {
+				visit(node.get(_else));
+			}
+
+			// merge
+			mBuilder.mark(mergeLabel);
+		}
+	}
+
+	public class While extends Undefined {
+		@Override
+		public void accept(TypedTree node) throws ClassNotFoundException {
+			Label beginLabel = mBuilder.newLabel();
+			Label condLabel = mBuilder.newLabel();
+
+			mBuilder.goTo(condLabel);
+
+			// Block
+			mBuilder.mark(beginLabel);
+			visit(node.get(_body));
+
+			// Condition
+			mBuilder.mark(condLabel);
+			visit(node.get(_cond));
+			mBuilder.push(true);
+
+			mBuilder.ifCmp(Type.BOOLEAN_TYPE, GeneratorAdapter.EQ, beginLabel);
+		}
+	}
+
+	public class DoWhile extends Undefined {
+		@Override
+		public void accept(TypedTree node) throws ClassNotFoundException {
+			Label beginLabel = mBuilder.newLabel();
+
+			// Do
+			mBuilder.mark(beginLabel);
+			visit(node.get(_body));
+
+			// Condition
+			visit(node.get(_cond));
+			mBuilder.push(true);
+
+			mBuilder.ifCmp(Type.BOOLEAN_TYPE, GeneratorAdapter.EQ, beginLabel);
+		}
+	}
+
+	public class For extends Undefined {
+		@Override
+		public void accept(TypedTree node) throws ClassNotFoundException {
+			Label beginLabel = mBuilder.newLabel();
+			Label condLabel = mBuilder.newLabel();
+
+			// Initialize
+			visit(node.get(_init));
+
+			mBuilder.goTo(condLabel);
+
+			// Block
+			mBuilder.mark(beginLabel);
+			visit(node.get(_body));
+			visit(node.get(_iter));
+
+			// Condition
+			mBuilder.mark(condLabel);
+			visit(node.get(_cond));
+			mBuilder.push(true);
+			mBuilder.ifCmp(Type.BOOLEAN_TYPE, MethodBuilder.EQ, beginLabel);
+		}
+	}
+
+	public class Switch extends Undefined {
+		@Override
+		public void accept(TypedTree node) throws ClassNotFoundException {
+			TypedTree body = node.get(_body);
+
+			visit(node.get(_cond));
+		}
+	}
+
+	public class Try extends Undefined {
+		@Override
+		public void accept(TypedTree node) throws ClassNotFoundException {
+			TypedTree finallyNode = node.get(_finally);
+			TryCatchLabel labels = mBuilder.createNewTryLabel(finallyNode != null);
+			mBuilder.getTryLabels().push(labels);
+			Label mergeLabel = mBuilder.newLabel();
+
+			// try block
+			mBuilder.mark(labels.getStartLabel());
+			visit(node.get(_try));
+			mBuilder.mark(labels.getEndLabel());
+
+			if (finallyNode != null) {
+				mBuilder.goTo(labels.getFinallyLabel());
+			}
+			mBuilder.goTo(mergeLabel);
+
+			// catch blocks
+			for (TypedTree catchNode : node.get(_catch)) {
+				Class<?> exceptionType = null;
+				if (catchNode.has(_type)) {
+					String exceptionName = catchNode.getText(_type, null);
+					exceptionType = Class.forName(exceptionName);
+				}
+				mBuilder.catchException(labels.getStartLabel(), labels.getEndLabel(), Type.getType(exceptionType));
+				mBuilder.enterScope();
+				mBuilder.createNewVarAndStore(catchNode.getText(_name, null), exceptionType);
+				visit(catchNode.get(_body));
+				mBuilder.exitScope();
+				mBuilder.goTo(mergeLabel);
+			}
+
+			// finally block
+			if (finallyNode != null) {
+				mBuilder.mark(labels.getFinallyLabel());
+				visit(finallyNode);
+			}
+			mBuilder.getTryLabels().pop();
+
+			mBuilder.mark(mergeLabel);
+		}
+	}
+
+	public class Assign extends Undefined {
+		@Override
+		public void accept(TypedTree node) throws ClassNotFoundException {
+			String name = node.getText(_left, null);
+			TypedTree valueNode = node.get(_right);
+			VarEntry var = mBuilder.getVar(name);
+			visit(valueNode);
+			if (var != null) {
+				mBuilder.storeToVar(var);
+			} else {
+				var = mBuilder.createNewVarAndStore(name, typeof(valueNode));
+			}
+			// mBuilder.loadFromVar(var);
+		}
+	}
+
+	public class Return extends Undefined {
+		@Override
+		public void accept(TypedTree node) throws ClassNotFoundException {
+			if (node.get(_expr, null) != null) {
+				visit(node.get(_expr));
+			}
+			mBuilder.returnValue();
+		}
+	}
+
+	public class Expression extends Undefined {
+		@Override
+		public void accept(TypedTree node) throws ClassNotFoundException {
+			visit(node.get(0));
+			if (typeof(node) != void.class) {
+				// mBuilder.pop(typeof(node));
+			}
+		}
+	}
+
+	public class Name extends Undefined {
+		@Override
+		public void accept(TypedTree node) {
+			VarEntry var = mBuilder.getVar(node.toText());
+			mBuilder.loadFromVar(var);
+		}
+	}
+
+	//
+	// public class AssignAdd extends Undefined {
+	// @Override
+	// public void visit(TypedTree node) throws ClassNotFoundException {
+	// String name = node.getText(_left, null);
+	// VarEntry var = mBuilder.getVar(name);
+	// dispatch(node.get(_right));
+	// mBuilder.storeToVar(var);
+	// }
+	// }
+
+	private void evalPrefixInc(TypedTree node, int amount) {
+		String name = node.getText(_name, null);
 		VarEntry var = this.mBuilder.getVar(name);
-		visit(valueNode);
 		if (var != null) {
-			this.mBuilder.storeToVar(var);
+			this.mBuilder.callIinc(var, amount);
+			this.mBuilder.loadFromVar(var);
 		} else {
-			this.mBuilder.createNewVarAndStore(name, typeof(valueNode));
+			throw new RuntimeException("undefined variable " + name);
 		}
 	}
 
-	public void visitReturn(TypedTree node) {
-		if (node.get(_expr, null) != null) {
-			this.visit(node.get(_expr));
-		}
-		this.mBuilder.returnValue();
-	}
-
-	public void visitExpression(TypedTree node) {
-		this.visit(node.get(0));
-		if (node.getType() != void.class) {
-			this.mBuilder.pop(node.getClassType());
+	private void evalSuffixInc(TypedTree node, int amount) {
+		String name = node.getText(_name, null);
+		VarEntry var = mBuilder.getVar(name);
+		if (var != null) {
+			node.setType(int.class);
+			mBuilder.loadFromVar(var);
+			this.mBuilder.callIinc(var, amount);
+		} else {
+			throw new RuntimeException("undefined variable " + name);
 		}
 	}
 
-	public void visitName(TypedTree node) {
-		VarEntry var = this.mBuilder.getVar(node.toText());
-		// node.setType(var.getVarClass());
-		this.mBuilder.loadFromVar(var);
+	public class SuffixInc extends Undefined {
+		@Override
+		public void accept(TypedTree node) {
+			evalSuffixInc(node, 1);
+		}
 	}
 
-	// public void visitBinaryNode(TypedTree node) {
-	// TypedTree left = node.get(_left);
-	// TypedTree right = node.get(_right);
-	// this.visit(left);
-	// this.visit(right);
-	// this.mBuilder.callStaticMethod(JCodeOperator.class, typeof(node),
-	// node.getTag().getSymbol(), typeof(left), typeof(right));
-	// }
-	//
-	// public void visitCompNode(TypedTree node) {
-	// TypedTree left = node.get(_left);
-	// TypedTree right = node.get(_right);
-	// this.visit(left);
-	// this.visit(right);
-	// this.mBuilder.callStaticMethod(JCodeOperator.class, typeof(node),
-	// node.getTag().getSymbol(), typeof(left), typeof(right));
-	// }
-	//
-	// public void visitAdd(TypedTree node) {
-	// this.visitBinaryNode(node);
-	// }
-	//
-	// public void visitSub(TypedTree node) {
-	// this.visitBinaryNode(node);
-	// }
-	//
-	// public void visitMul(TypedTree node) {
-	// this.visitBinaryNode(node);
-	// }
-	//
-	// public void visitDiv(TypedTree node) {
-	// this.visitBinaryNode(node);
-	// }
-	//
-	// public void visitNotEquals(TypedTree node) {
-	// this.visitCompNode(node);
-	// }
-	//
-	// public void visitLessThan(TypedTree node) {
-	// this.visitCompNode(node);
-	// }
-	//
-	// public void visitLessThanEquals(TypedTree node) {
-	// this.visitCompNode(node);
-	// }
-	//
-	// public void visitGreaterThan(TypedTree node) {
-	// this.visitCompNode(node);
-	// }
-	//
-	// public void visitGreaterThanEquals(TypedTree node) {
-	// this.visitCompNode(node);
-	// }
-	//
-	// public void visitLogicalAnd(TypedTree node) {
-	// this.visitCompNode(node);
-	// }
-	//
-	// public void visitLogicalOr(TypedTree node) {
-	// this.visitCompNode(node);
-	// }
-	//
-	//
-	// public void visitContinue(TypedTree node) {
-	// }
-	//
-	// public void visitBreak(TypedTree node) {
-	// }
-	//
-	// public void visitReturn(TypedTree node) {
-	// this.mBuilder.returnValue();
-	// }
-	//
-	// public void visitThrow(TypedTree node) {
-	// }
-	//
-	// public void visitWith(TypedTree node) {
-	// }
-	//
-	// public void visitExpression(TypedTree node) {
-	// this.visit(node.get(0));
-	// }
-	//
+	public class SuffixDec extends Undefined {
+		@Override
+		public void accept(TypedTree node) {
+			evalSuffixInc(node, -1);
+		}
+	}
 
-	//
-	// public void visitApply(TypedTree node) {
-	// // TypedTree fieldNode = node.get(_recv"));
-	// TypedTree argsNode = node.get(_param);
-	// TypedTree name = node.get(_name);
-	// // VarEntry var = null;
-	//
-	// Class<?>[] argTypes = new Class<?>[argsNode.size()];
-	// for (int i = 0; i < argsNode.size(); i++) {
-	// TypedTree arg = argsNode.get(i);
-	// this.visit(arg);
-	// argTypes[i] = arg.getTypedClass();
-	// }
-	// org.objectweb.asm.commons.Method method =
-	// Methods.method(node.getTypedClass(), name.toText(), argTypes);
-	// this.mBuilder.invokeStatic(this.cBuilder.getTypeDesc(), method);
-	// // var = this.scope.getLocalVar(top.toText());
-	// // if (var != null) {
-	// // this.mBuilder.loadFromVar(var);
-	// //
-	// // } else {
-	// // this.generateRunTimeLibrary(top, argsNode);
-	// // this.popUnusedValue(node);
-	// // return;
-	// // }
-	// }
-	//
+	public class PrefixInc extends Undefined {
+		@Override
+		public void accept(TypedTree node) {
+			evalPrefixInc(node, 1);
+		}
+	}
+
+	public class PrefixDec extends Undefined {
+		@Override
+		public void accept(TypedTree node) {
+			evalPrefixInc(node, -1);
+		}
+	}
+
+	public class List extends Undefined {
+		@Override
+		public void accept(TypedTree node) throws ClassNotFoundException {
+			for (TypedTree element : node) {
+				visit(element);
+			}
+		}
+	}
+
 	// public void generateRunTimeLibrary(TypedTree fieldNode, TypedTree
 	// argsNode) {
 	// String classPath = "";
@@ -702,7 +717,6 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 	// }
 	// }
 	//
-	// //
 	// public void visitUnaryNode(TypedTree node) {
 	// TypedTree child = node.get(0);
 	// this.visit(child);
@@ -719,46 +733,6 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 	// public void visitMinus(TypedTree node) {
 	// this.visitUnaryNode(node);
 	// }
-	//
-	private void evalPrefixInc(TypedTree node, int amount) {
-		String name = node.getText(_name, null);
-		VarEntry var = this.mBuilder.getVar(name);
-		if (var != null) {
-			this.mBuilder.callIinc(var, amount);
-			this.mBuilder.loadFromVar(var);
-		} else {
-			throw new RuntimeException("undefined variable " + name);
-		}
-	}
-
-	private void evalSuffixInc(TypedTree node, int amount) {
-		String name = node.getText(_name, null);
-		VarEntry var = this.mBuilder.getVar(name);
-		if (var != null) {
-			node.setType(int.class);
-			this.mBuilder.loadFromVar(var);
-			this.mBuilder.callIinc(var, amount);
-		} else {
-			throw new RuntimeException("undefined variable " + name);
-		}
-	}
-
-	public void visitSuffixInc(TypedTree node) {
-		this.evalSuffixInc(node, 1);
-	}
-
-	public void visitSuffixDec(TypedTree node) {
-		this.evalSuffixInc(node, -1);
-	}
-
-	public void visitPrefixInc(TypedTree node) {
-		this.evalPrefixInc(node, 1);
-	}
-
-	public void visitPrefixDec(TypedTree node) {
-		this.evalPrefixInc(node, -1);
-	}
-
 	//
 	// private Class<?> typeInfferUnary(TypedTree node) {
 	// Class<?> nodeType = node.getTypedClass();
@@ -778,11 +752,11 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 	// this.mBuilder.newArray(Object.class);
 	// }
 
-	public void visitList(TypedTree node) {
-		for (TypedTree element : node) {
-			visit(element);
-		}
-	}
+	// public void visitList(TypedTree node) {
+	// for (TypedTree element : node) {
+	// visit(element);
+	// }
+	// }
 
 	// public void visitTrue(TypedTree p) {
 	// // p.setType(boolean.class);

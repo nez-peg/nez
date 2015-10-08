@@ -15,7 +15,7 @@ public class ScriptContext {
 
 	public ScriptContext(Parser parser) {
 		this.parser = parser;
-		this.typeSystem = new TypeSystem(this, null/* FIXME */);
+		this.typeSystem = new TypeSystem(this);
 		this.typechecker = new TypeChecker(this, typeSystem);
 		this.interpreter = new Interpreter(this, typeSystem);
 		// new TypeChecker2();

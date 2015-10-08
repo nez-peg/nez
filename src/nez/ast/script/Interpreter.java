@@ -9,7 +9,7 @@ import konoha.IArray;
 import nez.ast.TreeVisitor2;
 import nez.ast.script.asm.ScriptCompiler;
 
-public class Interpreter extends TreeVisitor2<nez.ast.script.Interpreter.Undefined> implements CommonSymbols {
+public class Interpreter extends TreeVisitor2<SyntaxTreeInterpreter> implements CommonSymbols {
 	ScriptContext context;
 	TypeSystem typeSystem;
 	private ScriptCompiler compiler;
@@ -49,20 +49,21 @@ public class Interpreter extends TreeVisitor2<nez.ast.script.Interpreter.Undefin
 	}
 
 	final Object evalImpl(TypedTree node) {
-		Object o = find(node).visit(node);
+		Object o = find(node).accept(node);
 		// System.out.println("#" + node.getTag() + ": " + o);
 		return o;
 	}
 
-	public class Undefined {
-		Object visit(TypedTree node) {
+	public class Undefined implements SyntaxTreeInterpreter {
+		@Override
+		public Object accept(TypedTree node) {
 			throw new ScriptRuntimeException("TODO: Interpreter " + node);
 		}
 	}
 
 	public class Source extends Undefined {
 		@Override
-		public Object visit(TypedTree node) {
+		public Object accept(TypedTree node) {
 			boolean foundError = false;
 			Object result = empty;
 			for (TypedTree sub : node) {
@@ -82,7 +83,7 @@ public class Interpreter extends TreeVisitor2<nez.ast.script.Interpreter.Undefin
 
 	public class FuncDecl extends Undefined {
 		@Override
-		public Object visit(TypedTree node) {
+		public Object accept(TypedTree node) {
 			compiler.compileFuncDecl(node);
 			return empty;
 		}
@@ -92,7 +93,7 @@ public class Interpreter extends TreeVisitor2<nez.ast.script.Interpreter.Undefin
 
 	public class Block extends Undefined {
 		@Override
-		public Object visit(TypedTree node) {
+		public Object accept(TypedTree node) {
 			Object retVal = null;
 			for (TypedTree child : node) {
 				retVal = eval(child);
@@ -103,7 +104,7 @@ public class Interpreter extends TreeVisitor2<nez.ast.script.Interpreter.Undefin
 
 	public class If extends Undefined {
 		@Override
-		public Object visit(TypedTree node) {
+		public Object accept(TypedTree node) {
 			boolean cond = (Boolean) eval(node.get(_cond));
 			if (cond) {
 				return eval(node.get(_then));
@@ -120,7 +121,7 @@ public class Interpreter extends TreeVisitor2<nez.ast.script.Interpreter.Undefin
 	/* Expression Statement */
 	public class Expression extends Undefined {
 		@Override
-		public Object visit(TypedTree node) {
+		public Object accept(TypedTree node) {
 			if (node.getType() == void.class) {
 				eval(node.get(0));
 				return empty;
@@ -131,7 +132,7 @@ public class Interpreter extends TreeVisitor2<nez.ast.script.Interpreter.Undefin
 
 	public class Empty extends Undefined {
 		@Override
-		public Object visit(TypedTree node) {
+		public Object accept(TypedTree node) {
 			return empty;
 		}
 	}
@@ -140,7 +141,7 @@ public class Interpreter extends TreeVisitor2<nez.ast.script.Interpreter.Undefin
 
 	public class Cast extends Undefined {
 		@Override
-		public Object visit(TypedTree node) {
+		public Object accept(TypedTree node) {
 			Object v = eval(node.get(_expr));
 			Method m = node.getMethod();
 			if (m != null) {
@@ -152,7 +153,7 @@ public class Interpreter extends TreeVisitor2<nez.ast.script.Interpreter.Undefin
 
 	public class InstanceOf extends Undefined {
 		@Override
-		public Object visit(TypedTree node) {
+		public Object accept(TypedTree node) {
 			Object v = eval(node.get(_left));
 			if (v == null) {
 				return false;
@@ -223,7 +224,7 @@ public class Interpreter extends TreeVisitor2<nez.ast.script.Interpreter.Undefin
 
 	public class Interpolation extends Undefined {
 		@Override
-		public Object visit(TypedTree node) {
+		public Object accept(TypedTree node) {
 			Object[] args = evalApplyArgument(node);
 			return Reflector.invokeStaticMethod(node.getMethod(), new Object[] { args });
 		}
@@ -232,7 +233,7 @@ public class Interpreter extends TreeVisitor2<nez.ast.script.Interpreter.Undefin
 	public class _Array extends Undefined {
 		@Override
 		@SuppressWarnings({ "rawtypes", "unchecked" })
-		public Object visit(TypedTree node) {
+		public Object accept(TypedTree node) {
 			Object[] args = evalApplyArgument(node);
 			Class<?> atype = node.getClassType();
 			if (atype == IArray.class) {
