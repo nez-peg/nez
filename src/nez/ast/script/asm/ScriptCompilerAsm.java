@@ -458,6 +458,13 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 		this.mBuilder.ifCmp(Type.BOOLEAN_TYPE, MethodBuilder.EQ, beginLabel);
 	}
 
+	/* Switch..Case Statement */
+	public void visitSwitch(TypedTree node) {
+		TypedTree body = node.get(_body);
+
+		this.visit(node.get(_cond));
+	}
+
 	/* Try..Catch Statement */
 	public void visitTry(TypedTree node) throws ClassNotFoundException {
 		TypedTree finallyNode = node.get(_finally);
@@ -492,15 +499,12 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 
 		// finally block
 		if (finallyNode != null) {
+			this.mBuilder.mark(labels.getFinallyLabel());
 			this.visit(finallyNode);
 		}
 		this.mBuilder.getTryLabels().pop();
 
 		this.mBuilder.mark(mergeLabel);
-	}
-
-	public void visitCatch(TypedTree node) {
-		// TODO
 	}
 
 	public void visitAssign(TypedTree node) {
