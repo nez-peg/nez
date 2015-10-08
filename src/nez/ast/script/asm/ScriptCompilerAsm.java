@@ -9,6 +9,7 @@ import nez.ast.script.Hint;
 import nez.ast.script.ScriptContext;
 import nez.ast.script.TypeSystem;
 import nez.ast.script.TypedTree;
+import nez.util.ConsoleUtils;
 
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
@@ -27,6 +28,12 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 		super(TypedTree.class);
 		this.typeSystem = typeSystem;
 		this.cLoader = cLoader;
+	}
+
+	public class Undefined {
+		public void visit(TypedTree node) {
+			ConsoleUtils.println("FIXME: ScriptCompilerAsm " + node.getTag().getSymbol());
+		}
 	}
 
 	private void visit(TypedTree node) {
@@ -164,9 +171,13 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 		for (TypedTree sub : node.get(_param)) {
 			visit(sub);
 		}
-		Type owner = Type.getType(node.getMethod().getDeclaringClass());
+		Class<?> owner = node.getMethod().getDeclaringClass();
 		Method methodDesc = Method.getMethod(node.getMethod());
-		this.mBuilder.invokeVirtual(owner, methodDesc);
+		if (owner.isInterface()) {
+			this.mBuilder.invokeInterface(Type.getType(owner), methodDesc);
+		} else {
+			this.mBuilder.invokeVirtual(Type.getType(owner), methodDesc);
+		}
 	}
 
 	private void visitSetFieldHint(TypedTree node) {
