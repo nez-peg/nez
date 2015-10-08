@@ -152,7 +152,7 @@ public class ScriptClassLoader extends ClassLoader {
 				stream.write(byteCode);
 				stream.close();
 				ProcessBuilder pb = new ProcessBuilder("javap", "-c", classFileName);
-				pb.redirectOutput();
+				pb.redirectOutput();// FIXME
 				pb.start();
 			} catch (IOException e) {
 				Verbose.traceException(e);
