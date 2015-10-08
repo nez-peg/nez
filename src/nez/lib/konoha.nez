@@ -1,509 +1,1029 @@
 /**
- * Konoha Grammar of Sample Version
+ * Konoha Grammar
+ *  Static script language designed by K. Kuramitsu
  *
- * Konoha is a statically typed scripting language
- * 
- * [1] https://docs.oracle.com/javase/specs/jls/se8/html/jls-2.html#jls-2.4
+ * [1]
  *
  * Authors:
  *   Kimio Kuramitsu (https://github.com/kkuramitsu/)
  */
 
-File
-	= _  { (@Statement)* #Source } _ EOT
+File                               = _ { $(TopLevel)* #Source } _ EOF
 
 /* Code Layout (Whitespace) */
+_                                  = ( S / BLOCKCOMMENT / LINECOMMENT )*
+//__                                 = !S
+S                                  = [ \n\r\t\u000B\u000C]
+BLOCKCOMMENT                       = '/*' ( !'*/' . )* '*/'
+LINECOMMENT                        = '//' ( !'\n' . )*
+EOL                                = '\r'? '\n'
+                                   / EOF
+EOF                                = !.
+TODO                               = !''
 
-_
-	= (S / BLOCKCOMMENT / LINECOMMENT )*
-
-S
-	= [ \n\r\t]
-
-BLOCKCOMMENT
-	= '/*' (!'*/' .)* '*/'
-
-LINECOMMENT
-	= '//' (!'\n' .)*
-
-EOL
-	= ('\r'? '\n' / !.)
-
-EOT = !.
-
-/* Tokens */
-
-"++"   = '++' _
-"--"   = '--' _
-"&"    = '&' ![&=] _
-"*"    = '*' !'=' _
-"+"    = '+' ![+=] _
-"-"    = '-' !('-' / [=>]) _
-"~"    = '~' _
-"!"    = '!' !'=' _
-
-"{"    = '{' _
-"["    = '[' _
-"]"    = ']' _
-","    = ',' _
-"..."  = '...' _
-":"    = ':' ![>:] _
-"/"    = '/' !'=' _
-"%"    = '%' ![=>] _
-"<<"   = '<<' !'=' _
-">>"   = '>>' ![=>] _
-">>>"  = '>>>' !'=' _
-"<="   = '<=' _
-">="   = '>=' _
-"<"    = '<' ![=] _
-">"    = '>' ![=] _
-"=="   = '==' _
-"!="   = '!=' _
-"|"    = '|' ![|=] _
-";"    = ';' _
-"}"    = '}' _
-
-"="    = '=' !'=' _
-"->"   = '->' _
-"<:"   = '<:' _
-"."    = '.' !'.' _
-
-"("    = '(' _
-")"    = ')' _
+/* Operators */
+"++"                               = '++' _
+"--"                               = '--' _
+"&"                                = '&' ![&=] _
+"*"                                = '*' !'=' _
+"+"                                = '+' ![+=] _
+"-"                                = '-' !( '-' / [=>] ) _
+"~"                                = '~' _
+"!"                                = '!' !'=' _
+"{"                                = '{' _
+"["                                = '[' _
+"]"                                = ']' _
+","                                = ',' _
+"..."                              = '...' _
+":"                                = ':' ![>:] _
+"::"                               = '::' _
+"/"                                = '/' !'=' _
+"%"                                = '%' ![=>] _
+"<<"                               = '<<' !'=' _
+">>"                               = '>>' ![=>] _
+">>>"                              = '>>>' !'=' _
+"<="                               = '<=' _
+">="                               = '>=' _
+"<"                                = '<' ![=] _
+">"                                = '>' ![=] _
+"=="                               = '==' _
+"!="                               = '!=' _
+"^"                                = '^' ![=] _
+"|"                                = '|' ![|=] _
+"&&"                               = '&&' _
+"||"                               = '||' _
+"?"                                = '?' _
+";"                                = ';' _
+"}"                                = '}' _
+"*="                               = '*=' _
+"/="                               = '/=' _
+"%="                               = '%=' _
+"+="                               = '+=' _
+"-="                               = '-=' _
+"<<="                              = '<<=' _
+">>="                              = '>>=' _
+">>>="                             = '>>>=' _
+"&="                               = '&=' _
+"^="                               = '^=' _
+"|="                               = '|=' _
+"="                                = '=' !'=' _
+"."                                = '.' !'.' _
+"("                                = '(' _
+")"                                = ')' _
+"@"                                = '@' _
+"->"                               = '->' _
 
 // reserved keyword
-"and"          = 'and'          !W _
-"as"           = 'as'           !W _
-"assert"       = 'assert'       !W _
-"bool"         = 'bool'         !W _
-"break"        = 'break'        !W _
-"continue"     = 'continue'     !W _
-"do"           = 'do'           !W _
-"else"         = 'else'         !W _
-"enum"         = 'enum'         !W _
-"false"        = 'false'        !W _
-"float"        = 'float'        !W _
-"for"          = 'for'          !W _
-"func"         = 'func'         !W _
-"if"           = 'if'           !W _
-"import"       = 'import'       !W _
-"in"           = 'in'           !W _
-"int"          = 'int'          !W _
-"let"          = 'let'          !W _
-"meta"         = 'meta'         !W _
-"mod"          = 'mod'          !W _
-"next"         = 'next'         !W _
-"new"          = 'new'          !W _
-"not"          = 'not'          !W _
-"null"         = 'null'         !W _
-"of"           = 'of'           !W _
-"on"           = 'on'           !W _
-"or"           = 'or'           !W _
-"return"       = 'return'       !W _
-"string"       = 'string'       !W _
-"then"         = 'then'         !W _
-"this"         = 'this'         !W _
-"throw"        = 'throw'        !W _
-"true"         = 'true'         !W _
-"type"         = 'type'         !W _
-"var"          = 'var'          !W _
-"void"         = 'void'         !W _
-"while"        = 'while'        !W _
+"abstract"                         = 'abstract' !W _
+"assert"                           = 'assert' !W _
+"boolean"                          = 'boolean' !W _
+"break"                            = 'break' !W _
+"byte"                             = 'byte' !W _
+"case"                             = 'case' !W _
+"catch"                            = 'catch' !W _
+"char"                             = 'char' !W _
+"class"                            = 'class' !W _
+"const"                            = 'const' !W _
+"continue"                         = 'continue' !W _
+"default"                          = 'default' !W _
+"do"                               = 'do' !W _
+"double"                           = 'double' !W _
+"else"                             = 'else' !W _
+"enum"                             = 'enum' !W _
+"extends"                          = 'extends' !W _
+"false"                            = 'false' !W _
+"final"                            = 'final' !W _
+"finally"                          = 'finally' !W _
+"float"                            = 'float' !W _
+"for"                              = 'for' !W _
+"function"                         = 'function' !W _
+"goto"                             = 'goto' !W _
+"if"                               = 'if' !W _
+"implements"                       = 'implements' !W _
+"import"                           = 'import' !W _
+"in"                               = 'in' !W _
+"instanceof"                       = 'instanceof' !W _
+"int"                              = 'int' !W _
+"interface"                        = 'interface' !W _
+"let"                              = 'let' !W _
+"long"                             = 'long' !W _
+"native"                           = 'native' !W _
+"new"                              = 'new' !W _
+"null"                             = 'null' !W _
+"package"                          = 'package' !W _
+"private"                          = 'private' !W _
+"protected"                        = 'protected' !W _
+"public"                           = 'public' !W _
+"return"                           = 'return' !W _
+"short"                            = 'short' !W _
+"static"                           = 'static' !W _
+"strictfp"                         = 'strictfp' !W _
+"super"                            = 'super' !W _
+"switch"                           = 'switch' !W _
+"synchronized"                     = 'synchronized' !W _
+"this"                             = 'this' !W _
+"throw"                            = 'throw' !W _
+"throws"                           = 'throws' !W _
+"transient"                        = 'transient' !W _
+"true"                             = 'true' !W _
+"try"                              = 'try' !W _
+"void"                             = 'void' !W _
+"volatile"                         = 'volatile' !W _
+"while"                            = 'while' !W _
 
-KEYWORD
-	= "true" / "false" / "null" / "return" / "var" / "func"
-	
+KEYWORD                            = "abstract"
+                                   / "assert"
+                                   / "boolean"
+                                   / "break"
+                                   / "byte"
+                                   / "case"
+                                   / "catch"
+                                   / "char"
+                                   / "class"
+                                   / "const"
+                                   / "continue"
+                                   / "default"
+                                   / "double"
+                                   / "do"
+                                   / "else"
+                                   / "enum"
+                                   / "extends"
+                                   / "false"
+                                   / "final"
+                                   / "finally"
+                                   / "float"
+                                   / "for"
+                                   / "goto"
+                                   / "if"
+                                   / "implements"
+                                   / "import"
+                                   / "instanceof"
+                                   / "interface"
+                                   / "int"
+                                   / "long"
+                                   / "native"
+                                   / "new"
+                                   / "null"
+                                   / "package"
+                                   / "private"
+                                   / "protected"
+                                   / "public"
+                                   / "return"
+                                   / "short"
+                                   / "static"
+                                   / "strictfp"
+                                   / "super"
+                                   / "switch"
+                                   / "synchronized"
+                                   / "this"
+                                   / "throws"
+                                   / "throw"
+                                   / "transient"
+                                   / "true"
+                                   / "try"
+                                   / "void"
+                                   / "volatile"
+                                   / "while"
+
+/* Annotation */
+Modifiers                          = { $(Annotation)+ #Modifiers }
+Annotation                         = "@" { $(QualifiedName) "(" $(ElementValuePairList)? ")" #Annotation }
+                                   / "@" { $(QualifiedName) "(" $(ElementValue) ")" #Annotation }
+                                   / "@" { $(QualifiedName) #Annotation }
+ElementValuePairList               = { $(ElementValuePair) ( "," $(ElementValuePair) )* #CommaList }
+ElementValuePair                   = { $(Identifier) "=" $(ElementValue) #KeyValue }
+ElementValue                       = ElementValueArrayInitializer
+                                   / ConditionalExpression
+                                   / Annotation
+ElementValueArrayInitializer       = "{" { _ElementValueList? ","? "}" #List }
+_ElementValueList                   = $(ElementValue) ( "," $(ElementValue) )*
+
+example Modifiers ~e738bca1 @A @A(1) @A(key=value)
+
+/* TopLevel */
+TopLevel                           = Declaration
+                                   / Statement
+
+Declaration                        = ImportDeclaration
+                                   / ClassDeclaration
+                                   / EnumDeclaration
+                                   / FunctionDeclaration
+                                   / VariableDeclaration EOS
+
+// import
+ImportDeclaration                  = { "import" $(PackageName) #Import } EOS
+PackageName                        = QualifiedName {$ "." "*" #WildCardName }?
+
+// class
+ClassDeclaration                   = { $anno(Modifiers)? "class" $name(Identifier) $_(TypeParameters)? $super(SuperClass)? $impl(SuperInterfaces)? $body(ClassBody) #ClassDecl }
+SuperClass                         = "extends" ClassType
+SuperInterfaces                    = "implements" ClassTypes
+ClassBody                          = "{" { $(ClassBodyDeclaration)* #Block } "}"
+ClassBodyDeclaration               = ClassMemberDeclaration
+                                   / TODO { $(Block) #InstanceInisializer }
+                                   / TODO "static" { $(Block) #StaticInitializer }
+                                   / ConstructorDeclaration
+
+ClassMemberDeclaration             = FieldDeclaration
+                                   / MethodDeclaration
+                                   / ClassDeclaration
+                                   / InterfaceDeclaration
+                                   / EOS+ { #Empty }
+
+//interface, annotation type
+InterfaceDeclaration               = { $anno(Modifiers)? "interface" $name(Identifier) $_(TypeParameters)? $super(SuperClass)? $body(InterfaceBody) #InterfaceDecl }
+ExtendsInterfaces                  = "extends" ClassTypes
+InterfaceBody                      = "{" { $(InterfaceMemberDeclaration)* #Block } "}"
+InterfaceMemberDeclaration         = InterfaceMethodDeclaration
+                                   / EOS { #Empty }
+
+example ClassDeclaration ~90f038b '''
+class C {
+}
+'''
+
+example ClassDeclaration ~43b80c8 '''
+class C extends D {
+}
+'''
+
+example ClassDeclaration ~e59260 '''
+class C extends D implements E, F {
+}
+'''
+
+example ClassDeclaration ~058e8d '''
+class C {
+	C() {
+	}
+	C f;
+	void f() {
+	}
+}
+'''
+
+example InterfaceDeclaration ~e1dd4b '''
+interface C {
+	void f();
+}
+'''
+
+// enum
+EnumDeclaration                    = { $anno(Modifiers)? "enum" $name(Identifier) $impl(SuperInterfaces)* $body(EnumBody) #EnumDecl }
+EnumBody                           = "{" { ($(Enumerator) ( "," $(Enumerator) )* )? ","? ";"? #List } "}"
+Enumerator                         = { $anno(Modifiers)? $name(Identifier) #Enum }
+
+example EnumDeclaration ~2c8300 '''
+enum C {
+	A,B,C,
+}
+'''
+
+//local variable
+VariableDeclaration                = { $anno(Modifiers)? $type(Type) $name(VarName) !"," ( "=" $expr(Expression) )? !"," #VarDecl }
+                                   / { $anno(Modifiers)? $type(Type) $list(InitDeclList) #MultiVarDecl }
+InitDeclList                       = { $(InitDecl) ( "," $(InitDecl) )* #List }
+InitDecl                           = { $name(VarName) ( "=" $expr(Expression) )? #VarDecl }
+VarName                            = Identifier {$name "[" $param(ConstantExpression)? "]" #ArrayName }*
+
+/* Variable Declraration */
+
+example VariableDeclaration ~2c32bbd '''
+int a = 1
+'''
+
+example VariableDeclaration ~ed4370b '''
+int a = 1, b
+'''
+
+example VariableDeclaration ~b34575 '''
+int[] anArray = {
+    1, 2,
+    3, 4
+}
+'''
+
+example VariableDeclaration ~aaa2f9 '''
+String[][] names = {
+  {"Mr. ", "Mrs. ", "Ms. "},
+  {"Smith", "Jones"}
+}
+'''
+
+//field, constant
+FieldDeclaration                   = { $anno(Modifiers)? $type(Type) $list(InitDeclList) #FieldDecl } EOS
+
+//method
+MethodDeclaration                  = { $anno(Modifiers)? ( $(TypeParameters) $anno(Modifiers)? )? $type(TypeOrVoid) $name(Identifier) "(" $param(ParamList) ")" $throws(Throws)? ($body(Block) / EOS) #MethodDecl }
+InterfaceMethodDeclaration         = { $anno(Modifiers)? ( $(TypeParameters) $anno(Modifiers)? )? $type(TypeOrVoid) $name(Identifier) "(" $param(ParamList) ")" $throws(Throws)? ($body(Block) / EOS) #MethodDecl }
+ParamList                          = { ( $(MethodParam) "," )* $(VarParam) #List }
+                                   / { ( $(MethodParam) ( "," $(MethodParam) )* )? #List }
+MethodParam                        = { $anno(Modifiers)? $type(Type) $name(VarName) #Param }
+                                   / { $name(Identifier) (":" $type(Type) )? #Param }
+VarParam                           = { $anno(Modifiers)? $(Type) "..." $(VarName) #VarParam }
+Throws                             = "throws" { $(ClassTypes) #Throws }
+
+//constructor
+ConstructorDeclaration             = { $anno(Modifiers)? $type(ReferenceType) "(" $param(ParamList) ")" $throws(Throws)? $body(ConstructorBody) #Constructor }
+ConstructorBody                    = "{" { $(ExplicitConstructorInvocation)? ( $(Statement) / $(Declaration) )* #Block } "}"
+ExplicitConstructorInvocation      = { $(TypeArguments)? $({ $(This) "(" _ArgumentExpressionList? ")" #List }) #ExplicitConstructorInvocation } EOS
+                                   / { $(TypeArguments)? $({ $(Super) "(" _ArgumentExpressionList? ")" #List }) #ExplicitConstructorInvocation } EOS
+                                   / { $(PostfixExpression) "." $(TypeArguments)? $(Super) $({ "(" _ArgumentExpressionList? ")" #List }) #ExplicitConstructorInvocation } EOS
+
+//
+FunctionDeclaration                = { $anno(Modifiers)? "function" $name(Identifier) "(" $param(ParamList) ")" $type(":" TypeOrVoid)? $body(Block) #FuncDecl }
+                                   / { "let" $name(Identifier) $param(ParamList) "=" $body(LambdaBody) #FuncDecl}
+                                   / { $anno(Modifiers)? ( $(TypeParameters) $anno(Modifiers)? )? $type(TypeOrVoid) $name(Identifier) "(" $param(ParamList) ")" $throws(Throws)? ($body(Block) / EOS) #FuncDecl }
+
+// Lambda
+LambdaExpression                   = { "function" $name(Identifier)? "(" $param(ParamList) ")" $type(":" TypeOrVoid)? $body(Block) #Lambda }
+                                   / { $param(LambdaParameters) "->" $body(LambdaBody) #Lambda }
+LambdaParameters                   = Identifier / "(" ParamList ")"
+LambdaBody                         = !'{' { $(LambdaReturn) #Block}
+                                   / Block
+LambdaReturn                       = { $expr(Expression) #Return }
+
+example FunctionDeclaration ~ae75e55 '''
+int fibo(int n) {
+	if(n < 3) return 1;
+	return fibo(n-1)+fibo(n-2);
+}
+'''
+
+example FunctionDeclaration ~bd26e9 '''
+function fibo(n :int) :int {
+	if(n < 3) return 1;
+	return fibo(n-1)+fibo(n-2);
+}
+'''
+
+example FunctionDeclaration ~f59b67 '''
+function fibo(n) {
+	if(n < 3) return 1;
+	return fibo(n-1)+fibo(n-2);
+}
+'''
+
+/* Types, Values, Variables */
+Type                               = ReferenceType
+                                   / PrimitiveType
+PrimitiveType                      = { $anno(Modifiers) $(UnannoPrimitiveType) #Annotated }
+                                   / UnannoPrimitiveType
+UnannoPrimitiveType                = NumericType
+                                   / BooleanType
+NumericType                        = IntegralType
+                                   / FloatingPointType
+IntegralType                       = { 'byte' !W #Name } _
+                                   / { 'char' !W #Name } _
+                                   / { 'short' !W #Name } _
+                                   / { 'int' !W #Name } _
+                                   / { 'long' !W #Name } _
+FloatingPointType                  = { 'float' !W #Name } _
+                                   / { 'double' !W #Name } _
+BooleanType                        = { 'boolean' !W #Name } _
+ReferenceType                      = ArrayType
+                                   / ClassType
+                                   / TypeVariable
+ArrayType                          = (PrimitiveType / ClassType / TypeVariable) {$base "[" "]" #ArrayType }+
+
+ClassType                          = QualifiedName {$base $param(TypeArguments) #GenericType }?
+
+TypeVariable                       = { $anno(Modifiers) $(Identifier) #Annotated }
+                                   / Identifier
+TypeParameter                      = { $anno(Modifiers) $(UnannoTypeParameter) #Annotated }
+                                   / UnannoTypeParameter
+UnannoTypeParameter                = Identifier {$base "extends" $extends(ClassType) ( "&" $(ClassType) )* #TypeBound }?
+TypeParameters                     = { "<" $(TypeParameter) ( "," $(TypeParameter) )* ">" #TypeLists }
+TypeArguments                      = { "<" ( $(TypeArgument) ( "," $(TypeArgument) )* )? ">" #TypeArguments }
+TypeArgument                       = TypeOrVoid
+                                   / { $anno(Modifiers)? "?" #TWildCard } {$ ("extends" #UpperBound / "super" #LowerBound) $(ReferenceType) }?
+Void                               = { 'void' !W #VoidType } _
+TypeOrVoid                         = Type
+                                   / Void
+NonArrayType                       = ClassType
+                                   / PrimitiveType
+ClassTypes                         = { $(ClassType) ( "," $(ClassType) )* #List }
+
+example Type ~92625b '''
+boolean
+'''
+
+example Type ~846903 '''
+int
+'''
+
+example Type ~17a6db7 '''
+int[]
+'''
+
+example Type ~113fe8 '''
+int[][]
+'''
+
+example Type ~f0bbfb0 '''
+Map<K,V>
+'''
+
+example Type ~cf7b83d '''
+Map<K,V>[]
+'''
+
+
+// Block, Statement
+//===================
+EOS                                = ";" / &'}' / [ \t]* EOL _
+Block                              = "{" { ( $(Statement) / $(LocalDeclaration) )* #Block } "}"
+LocalDeclaration                   = VariableDeclaration EOS
+                                   / ClassDeclaration
+
+Statement                          = Block
+                                   / { "assert" $cond(Expression) ( ":" $msg(Expression) )?  #Assert } EOS
+                                   / { "if" "(" $cond(Expression) ")" $then(Statement) ( "else" $else(Statement) )? #If }
+                                   / SwitchStatement
+                                   / { "while" "(" $cond(Expression) ")" $body(Statement) #While }
+                                   / { "do" $body(Statement) "while" "(" $cond(Expression) ")"  #DoWhile } EOS
+                                   / { "for" "(" $init(Expressions)? ";" $cond(Expression)? ";" $iter(Expressions)? ")" $body(Statement) #For }
+                                   / { "for" "(" $init(VariableDeclaration) ";" $cond(Expression)? ";" $iter(Expressions)? ")" $body(Statement) #For }
+                                   / { "for" "(" $anno(Modifiers)? ($type(Type) !"in" $name(Identifier) / $name(Identifier) ) ( ":" / "in" ) $iter(Expression) ")" $body(Statement) #ForEach }
+                                   / { "continue" $label(Identifier)? #Continue `` } EOS
+                                   / { "break" $label(Identifier)? #Break `` } EOS
+                                   / { "return" $expr(Expression)? #Return } EOS
+                                   / TryStatement
+                                   / { "throw" $expr(Expression) #Throw } EOS
+                                   / "synchronized" { "(" $cond(Expression) ")" $body(Block) #Synchronized }
+                                   / { $label(Identifier) ":" #Label }
+                                   / { $expr(Expression) #Expression } EOS
+                                   / EOS+ { #Empty }
+
+example Block ~783b5 '''
+{
+}
+'''
+
+example Block ~ff5ad2 '''
+{
+	a;
+}
+'''
+
+example Block ~ff5ad2 '''
+{
+	a // semicolon
+}
+'''
+
+example Block ~fd6abb '''
+{
+	a;
+	a;
+}
+'''
+
+example Block ~8dd2bc '''
+{
+  var n = 1;
+}
+'''
+
+example Statement ~ba89507 '''
+if(c) {
+}
+'''
+
+example Statement ~647bfb '''
+if(c) {
+}
+else {
+}
+'''
+
+example Statement ~0486fa5 '''
+while(c) {
+}
+'''
+
+example Statement ~4183a44 '''
+do {
+}
+while(c)
+'''
+
+example Statement ~cad6ebf '''
+for(;;) {
+}
+'''
+
+example Statement ~02dac67 '''
+for(String s: list) {
+}
+'''
+
+example Statement ~16c87b '''
+for(s in list) {
+}
+'''
+
+example Statement ~8367e4 '''
+return;
+'''
+
+example Statement ~7a436b '''
+break;
+'''
+
+example Statement ~375526 '''
+continue;
+'''
+
+example Statement ~e353c1c '''
+throw e;
+'''
+
+example Statement ~f284dc08 '''
+assert (c);
+'''
+
+example Statement ~0e8ce1f '''
+try {
+}
+catch(e) {
+}
+'''
+
+example Statement ~9434bd '''
+try {
+}
+finally {
+}
+'''
+
+example Statement ~0d9029 '''
+try {
+}
+catch(e) {
+}
+finally {
+}
+'''
+
+// try/catch
+TryStatement                       = { "try" $try(Block) $catch(CatchBlock) ( "finally" $finally(Block) )? #Try }
+CatchBlock                         = { $(Catch)* #List }
+Catch                              = { "catch" "(" $anno(Modifiers)? _CatchParameter ")" $body(Block) #Catch }
+_CatchParameter                    = $type(ClassType) $name(Identifier) / $name(Identifier)
+
+
+// switch
+SwitchStatement                    = { "switch" "(" $cond(Expression) ")" $body(SwitchBlock) #Switch }
+SwitchBlock                        = "{" { ($(SwitchCondition) / $(Statement) / $(LocalDeclaration) )+ #Block } "}"
+SwitchCondition                    = { "case" $cond(ConstantExpression) ":" $body(CaseBlock) #SwitchCase }
+                                   / { "default" ":" $body(CaseBlock) #SwitchDefault }
+CaseBlock                          = { ( !"case" !"default" ($(Statement) / $(LocalDeclaration)) )* #Block }
+
+example SwitchStatement ~41dd47e '''
+switch(c) {
+case 0:
+	return false;
+case 1:
+	return true;
+}
+'''
+
+example SwitchStatement ~306db9 '''
+switch(c) {
+case 0:
+case 1:
+	return true;
+default:
+	return false;
+}
+'''
+
+/* Expression */
+Expressions                        = { $(Expression) ( "," $(Expression) )* #List }
+Expression                         = LambdaExpression
+                                   / AssignmentExpression
+AssignmentExpression               = { $left(UnaryExpression) _AssignmentOperator $right(Expression) }
+                                   / ConditionalExpression
+_AssignmentOperator                = "=" #Assign
+                                   / "*=" #AssignMul
+                                   / "/=" #AssignDiv
+                                   / "%=" #AssignMod
+                                   / "+=" #AssignAdd
+                                   / "-=" #AssignSub
+                                   / "<<=" #AssignLeftShift
+                                   / ">>=" #AssignRightShift
+                                   / ">>>=" #AssignLogicalRightShift
+                                   / "&=" #AssignBitwiseAnd
+                                   / "^=" #AssignBitwiseXOr
+                                   / "|=" #AssignBitwiseOr
+ConstantExpression                 = ConditionalExpression
+ConditionalExpression              = LogicalOrExpression {$cond "?" $then(Expression) ":" $else(LogicalOrExpression) #Conditional }*
+LogicalOrExpression                = LogicalAndExpression {$left "||" $right(LogicalAndExpression) #Or }*
+LogicalAndExpression               = InclusiveOrExpression {$left "&&" $right(InclusiveOrExpression) #And }*
+InclusiveOrExpression              = ExclusiveOrExpression {$left "|" $right(ExclusiveOrExpression) #BitwiseOr }*
+ExclusiveOrExpression              = AndExpression {$left "^" $right(AndExpression) #BitwiseXor }*
+AndExpression                      = EqualityExpression {$left "&" $right(EqualityExpression) #BitwiseAnd }*
+
+EqualityExpression                 = RelationalExpression {$left _EqualityOperator $right(RelationalExpression) }*
+_EqualityOperator                  = "==" #Equals
+                                   / "!=" #NotEquals
+
+RelationalExpression               = ShiftExpression {$left _RelationalOperator $right(ShiftExpression) }*
+_RelationalOperator                 = "<=" #LessThanEquals
+                                   / ">=" #GreaterThanEquals
+                                   / "<" #LessThan
+                                   / ">" #GreaterThan
+                                   / "instanceof" #InstanceOf
+
+ShiftExpression                    = AdditiveExpression {$left ("<<" #LeftShift / ">>" #RightShift / ">>>" #LogicalRightShift) $right(AdditiveExpression) }*
+AdditiveExpression                 = MultiplicativeExpression {$left ("+" #Add / "-" #Sub) $right(MultiplicativeExpression) }*
+MultiplicativeExpression           = CastNewExpression {$left ("*" #Mul / "/" #Div / "%" #Mod) $right(CastNewExpression) }*
+CastNewExpression                  = { "(" $type(Type) ")" $expr(CastNewExpression) #Cast }
+                                   / UnaryExpression
+
+UnaryExpression                    = PostfixExpression
+                                   / { "++" $expr(UnaryExpression) #PreInc }
+                                   / { "--" $expr(UnaryExpression) #PreDec }
+                                   / { "+" $expr(CastNewExpression) #Plus }
+                                   / { "-" $expr(CastNewExpression) #Minus }
+                                   / { "~" $expr(CastNewExpression) #Compl }
+                                   / { "!" $expr(CastNewExpression) #Not }
+
+PostfixExpression                  = PrimaryExpression {$recv _MethodCall / _Index / _Field / _Inc / _Dec }*
+_MethodCall                        = "." $(TypeArguments)? $name(Identifier) $param(ArgumentExpressionList) #MethodApply
+ArgumentExpressionList             = { "(" _ArgumentExpressionList? ")" #List }
+_ArgumentExpressionList           = $(Expression) ( "," $(Expression) )*
+_Index                             = "[" $param({ $(Expression) #List}) "]" #Indexer
+_Field                             = "." $name(Identifier) !'(' #Field
+_Inc                               = "++" #Inc
+_Dec                               = "--" #Dec
+
+PrimaryExpression                  = Constant
+                                   / ScriptLiteral
+                                   / "(" Expression ")"
+                                   / This
+                                   / Super
+                                   / MethodInvocationExpression
+                                   / InstanceCreationExpression
+                                   / ArrayCreationExpression
+                                   / Identifier
+This                               = { "this" #This `` }
+Super                              = { "super" #Super `` }
+MethodInvocationExpression         = { $name(Identifier) $param(ArgumentExpressionList) #Apply }
+InstanceCreationExpression         = { "new" $type(ClassType) $param(ArgumentExpressionList) $body(ClassBody)? #New }
+ArrayCreationExpression            = { "new" $type(NonArrayType {$base "[" $size(Expression) "]" #ArrayType }+ {$ "[" "]" #ArrayType }*) #NewArray }
+                                   / { "new" $type(NonArrayType {$base "[" "]" #ArrayType }+) $(ArrayLiteral) #NewArray }
+
+example Expression ~46f038 x=y
+example Expression ~8e03b0 x+=y
+
+example Expression ~2e22a4 c?x:y
+example Expression ~7ac13c x<<y
+example Expression ~5c9153 x>>y
+example Expression ~dea67f x|y
+example Expression ~7f3ecc x&y
+example Expression ~78b953 x^y
+example Expression ~f21916 ~x
+example Expression ~006e0a x&&y
+example Expression ~b60455 x||y
+example Expression ~51b2b2 !x
+
+example Expression ~b0be29 x==y
+example Expression ~f89dae x!=y
+example Expression ~ad9f44 x<y
+example Expression ~37ebeb x<=y
+example Expression ~221a3f x>y
+example Expression ~deab07 x>=y
+
+example Expression ~ae662a x+y
+example Expression ~c44c31 x-y
+example Expression ~fa8a6a x*y
+example Expression ~fef7c3 x/y
+example Expression ~9d52c0 x%y
+
+example Expression ~19b8c5 ++x
+example Expression ~e5ac7b --x
+
+example Expression ~5f409e x++
+example Expression ~5ea82d x--
+example Expression ~818a5e x.f
+example Expression ~d2ef25 x.f()
+example Expression ~761b3a x.f(y)
+example Expression ~86da20 x[y]
+example Expression ~857fc8 x.f.z
+example Expression ~1b4244 x.f().z
+example Expression ~f5f3c9 x.f(y).z
+
+example Expression ~089e532 this
+example Expression ~f88ac2a super
+
+/* ScriptLiteral */
+
+ScriptLiteral                      = ArrayLiteral
+                                   / ObjectLiteral
+                                   / RegularExpression
+
+
+ArrayLiteral                       = { "[" ("," / $(Expression))* "]" #Array }
+
+ObjectLiteral                      = { "{" (($(PropertyAssignment) ("," $(PropertyAssignment))*) / ":")  "}" #Object }
+                                   / { "{" ("," / $(Expression))* "}" #Set }
+PropertyAssignment                 = { $key(PropertyName) ":" $value(Expression) #$ }
+PropertyName                       = StringLiteral
+                                   / CharacterLiteral
+                                   / Identifier
+
+TripleLiteral                      = '\'\'\'' { $(TripleContent)* #Interpolation } '\'\'\''
+TripleContent                      = '${' Expression '}'
+                                   / '$[' Expression ']'
+                                   / { (!'\'\'\'' !'${' !'$[' .)* #Text }
+
+example TripleLiteral&Expression ~6828079 ```
+'''Apple ${Computer} Inc.'''
+```
+
+/* Regular Expression */
+
+RegularExpression               = { '/' REGEX_BODY '/' REGEX_FLAGS #RegExp }
+REGEX_BODY                      = REGEX_FIRST_CHAR REGEX_CHAR*
+REGEX_FIRST_CHAR                = REGEX_BACKSLASH_SEQUENCE
+                                / ![*\\/\x5b] REGEX_NON_TERMINATOR
+                                / REGEX_CLASS
+REGEX_CHAR                      = '*'
+                                / REGEX_FIRST_CHAR
+REGEX_BACKSLASH_SEQUENCE        = '\\' REGEX_NON_TERMINATOR
+REGEX_NON_TERMINATOR            = !'\n' .
+REGEX_CLASS                     = '[' REGEX_CLASS_CHAR* ']'
+REGEX_CLASS_CHAR                = ![\x5d\\] REGEX_NON_TERMINATOR
+                                / REGEX_BACKSLASH_SEQUENCE
+REGEX_FLAGS                     = [gimsy]*
+
+
 /* Identifier */
+//Name
+//	= { NAME #Name } _
+Identifier                         = { NAME #Name } _
+QualifiedName                      = Identifier {$prefix "." $name(Identifier) #QualifiedName }*
+W                                  = [a-zA-Z0-9_$]
+NAME                               = !DIGIT !( KEYWORD !W ) W+
 
-format #Name[0] `${text}`
-format #QualifiedName[2] `$[0].$[1]`
-
-example Identifier name$java
-example QualifiedName java.io.Lang
-
-public Identifier
-	= { NAME #Name } _
-
-public QualifiedName
-	= Identifier {@ "." @Identifier #QualifiedName }*
-
-public Name
-	= StringLiteral
-	/ Identifier
-
-W
-	= [A-Za-z0-9_$]
-
-LETTER
-	= [A-Za-z_]
-
-NAME
-	= !KEYWORD LETTER W*
-
-/* Import */
-
-ImportDecl
-	= { "import" @Name #Import }
-
-/* Meta */
-
-example CodeDecl&Statement '''
-meta "+" int int -> int =
-	`$[1] + $[2]` on "main"
+example Identifier ~fdb0513 '''
+Apple
 '''
 
-MetaDecl
-	= { "meta" @Name @FuncType "=" @Formatter (@Requirements)? #MetaDecl }
-
-Formatter
-   = '`' { #List (!('`') @('${' Identifier '}' 
-       / '$[' _ Index _ ({@  @Formatter _ @Index _ #Format })? ']' 
-       / { ( '$$' `$` / '\\`' `\`` 
-       / (!('$$' / '${' / '$[' / '\\`' / '`') .)+ ) }))* } '`'
-
-Index
-   = { ('-')? DIGIT+ #Integer }
-
-Requirements
-	= { "on" (@QualifiedName ("," @QualifiedName)*)? #List }
-
-/* TypeDecl */
-
-example TypeDecl '''
-type name = 
-	naruto: string
-	age: int
+example Identifier ~a47e9fd '''
+x
 '''
 
-example TypeDecl '''
-type name = int int -> int
+example Identifier ~a47e9fdb '''
+x.Apple
 '''
 
-format #TypeDecl[2] `type $[0] = $[1]`
-format #StructType[*] `${inc}${NL}$[0 `${NL}` -1]${dec}`
-format #TypedName[2] `$[0]: $[1]`
-format #FuncType[2] `$[0] -> $[1]`
-format #FuncType[3] `$[0],$[1] -> $[2]`
-format #FuncType[4] `$[0],$[1],$[2] -> $[3]`
-format #FuncType[5] `$[0],$[1],$[2],$[3] -> $[4]`
+example QualifiedName ~9f81b2b '''
+x.Apple.x
+'''
 
-TypeDecl
-	= {"type" @Identifier "=" @TypeBlock #TypeDecl}
 
-TypeBlock
-	= StructType
-	/ FuncType
+/* Literal, Constant */
+Literal                            = FloatingPointLiteral
+                                   / IntegerLiteral
+                                   / BooleanLiteral
+                                   / TripleLiteral
+                                   / CharacterLiteral
+                                   / StringLiteral
+                                   / NullLiteral
+Constant                           = Literal
+NullLiteral                        = { #Null } "null"
+BooleanLiteral                     = { #True } "true"
+                                   / { #False } "false"
+IntegerLiteral                     = { (DECIMAL / HEXADECIMAL / BINARY / OCTAL) (INT_SUFFIX #Long / FLOAT_SUFFIX #Float / #Integer) } _
+DECIMAL                            = '0' ![bBxX0-9_]
+                                   / [1-9] ( '_'* DIGIT )*
+HEXADECIMAL                        = '0' [xX] HEX ( '_'* HEX )*
+BINARY                             = '0' [bB] [01] ( '_'* [01] )*
+OCTAL                              = '0' ( '_'* [0-7] )*
+DIGIT                              = [0-9]
+HEX                                = [a-fA-F0-9]
+INT_SUFFIX                         = [lL]
+FloatingPointLiteral               = { FLOAT #Double (FLOAT_SUFFIX #Float)? }  _
+                                   / { DECIMAL #Double } FLOAT_SUFFIX _
+FLOAT                              = FRACTION EXPONENT?
+                                   / DIGIT+ EXPONENT
+FLOAT_SUFFIX                       = [fFdD]
+FRACTION                           = !'_' ( '_'* DIGIT )* '.' DIGIT ( '_'* DIGIT )*
+                                   / DIGIT ( '_'* DIGIT )* '.'
+EXPONENT                           = [eE] [+\-]? DIGIT ( '_'* DIGIT )*
+StringLiteral                      = '"' { STRING_CONTENT* #String } '"' _
+CharacterLiteral                   = '\'' { CHAR_CONTENT* #Character } '\'' _
+STRING_CONTENT                     = ESCAPE
+                                   / ![\"\n\\] .
+CHAR_CONTENT                       = ESCAPE
+                                   / !['\n\\] .
+ESCAPE                             = SIMPLE_ESCAPE
+                                   / OCTAL_ESCAPE
+                                   / HEX_ESCAPE
+SIMPLE_ESCAPE                      = '\\' ['\"\\bfnrt]
+OCTAL_ESCAPE                       = '\\' [0-3] [0-7] [0-7]
+                                   / '\\' [0-7] [0-7]
+                                   / '\\' [0-7]
+HEX_ESCAPE                         = '\\' 'u'+ HEX4
+HEX4                               = HEX HEX HEX HEX
 
-StructType
-	= { @TypedName (@TypedName)* #StructType }
+/* Example */
 
-TypedName
-	= { @Identifier ":" @Type #TypedName }
+// The traditional "Hello, world!" program can be written in Java
+example File ~5163c3f '''
+System.out.println("Hello World!"); // Prints the string to the console.
+'''
 
-FuncType
-	= { @Type (","? @Type)* "->" @Type #FuncType }
-
-/* Type */
-
-format #Tarray[1]     `$[0][]`
-
-example ArrayType&Type int[]
-
-public Type
-	= ArrayType
-
-ArrayType
-	= (ObjectType ) {@ "[" "]" #Tarray }?
-	
-ObjectType
-	= Identifier /* QualifiedName */
 
 /* Statement */
 
-format #LetDecl[2] `let $[0] = $[1]`
-format #VarDecl[2] `var $[0] = $[1]`
-format #Assign[2]  `$[0] = $[1]`
-format #If[2]  `if $[0] then $[1]`
-format #If[3]  `if $[0] then $[1] ${NL}else $[2]`
-format #While[2]  `while $[0] do $[1]`
-
-Statement
-	= ImportDecl
-	/ MetaDecl
-	/ FuncDecl
-	/ VarDecl
-	/ TypeDecl
-	/ IfStatement
-	/ WhileStatement
-	/ Expression
-
-VarDecl
-	= { "var" @Identifier "=" @Expression #VarDecl }
-
-IfStatement
-	= { "if" @Expression "then"? @ThenBlock ("else" @Block)? #If }
-
-ThenBlock
-	= { (!"else" @Statement)* (!"else" @EndBlock)? #Block}
-
-WhileStatement
-	= { "while" @Expression "do"? @Block #While }
-
-StatementExpression
-	= PrimaryExpression {@ addMethodCall}+
-	/ ApplyExpression
-	/ AssignmentExpression
-
-/* FuncDecl */
-
-format #FuncDecl[3] `func $[0] $[1] = $[2]`
-format #FuncParam[*] `{$[0 ` ` -1]}`
-format #Block[*] `${inc}$[0 `${NL}` -1]${dec}`
-
-example FuncDecl&Statement '''
-func f =
-	return 1
+example Statement ~fdb78a '''
+if(c);
 '''
 
-example FuncDecl&Statement '''
-func f a b =
-	return a + b
+example Statement ~ba8950 '''
+if(c) {
+}
 '''
 
-example FuncDecl&Statement '''
-func f a b =
-	var n = 1
-	return a + b + n
+/* Expression (standard) */
+
+example Expression ~dd2c50 1+2*3
+example Expression  ~1da9fb 1*2+3
+example Expression ~954e69 (1+2)*3
+example Expression  ~4e2150 1+2-3*4%5
+
+
+/* Expression (local) */
+
+example Expression ~9b901ac '''
+() -> {
+  System.out.println("example");
+}
 '''
 
-FuncDecl
-	= { "func" @Identifier @FuncParam "=" (@Block / @Expression) #FuncDecl }
+/* Identifier (standard) */
 
-FuncParam 
-	= { (@Identifier)* #FuncParam }
+example Expression ~a47e9fd '''
+x
+'''
 
-Block
-	= { (@Statement)* @EndBlock #Block}
+example Expression  ~fdb051 '''
+Apple
+'''
 
-EndBlock
-	= { "next" #Next }
-	/ { "return" (@Expression)? #Return }
-	/ { "break" #Break }
-	/ { "continue" #Continue }
+/* Literal (standard) */
 
-/* Expression */
+example Literal ~bb9623 '''
+null
+'''
 
-format #Comma[2] `$[0], $[1]`
-format #Assign[2] `$[0] = $[1]`
-format #Conditional[3] `$[0] ? $[1] : $[2]`
-format #LogicalAnd[2] `$[0] and $[1]`
-format #LogicalOr[2] `$[0] or $[1]`
-format #Equals[2] `$[0] == $[1]`
-format #NotEquals[2] `$[0] != $[1]`
-format #LessThanEquals[2] `$[0] <= $[1]`
-format #LessThan[2] `$[0] < $[1]`
-format #GreaterThanEquals[2] `$[0] >= $[1]`
-format #GreaterThan[2] `$[0] > $[1]`
-format #InstanceOf[2] `$[0] <: $[1]`
-format #HashIn[2] `$[0] in $[1]`
+example Literal ~03365ce '''
+true
+'''
 
-format #Add[2] `($[0] + $[1])`
-format #Sub[2] `($[0] - $[1])`
-format #Mul[2] `($[0] * $[1])`
-format #Div[2] `($[0] / $[1])`
-format #Mod[2] `($[0] mod $[1])`
+example Literal ~4fe5ea '''
+false
+'''
 
-/* Unary Operator */
-format #Plus[1] `+$[0]`
-format #Minus[1] `-$[0]`
-format #LogicalNot[1] `not $[0]`
+example Literal ~ec2775 '''
+'C'
+'''
 
-/* Primary */
+example Literal ~1951c6 '''
+0
+'''
 
-format #This[0] `this`
+example Literal ~aef181 '''
+26
+'''
+
+example Literal ~c3b9d6 '''
+0x1a
+'''
+
+example Literal ~146f59 '''
+0b11010
+'''
+
+example Literal ~f74a78 '''
+123.4
+'''
+
+example Literal ~94b99c '''
+1.234e2
+'''
+
+example Literal ~c83c217 '''
+123.4f
+'''
+
+example Literal ~02bf7f6 '''
+"hello,world\n"
+'''
+
+/* Literal (standard) */
+
+example Literal ~db9f5e3 '''
+"S\u00ED Se\u00F1or"
+'''
+
+
+
+
+
+
+format #PackageDeclaration[*] `package $[0];`
+format #PackageDeclaration[*] `package $[0];`
+format #ImportDeclaration[*] `import $[0];`
+format #StaticImportDeclaration[*] `import static $[0];`
+format #WildCardName[*] `$[0].*`
+format #Modifiers[*] `$[0 ` ` -1] `
+format #Annotation[*] `@$[0]($[1])`
+format #Annotation[*] `@$[0]`
+format #CommaList[*] `$[0 `, ` -1]`
+format #KeyValue[*] `$[0] = $[1]`
+format #Final[*] `final`
+format #VarDecl[*] `$[0]`
+format #VarDecl[*] `$[0] = $[1]`
+format #VarName[*] `$[0][]`
+format #VarName[*] `$[0][$[1]]`
+format #Array[*] `{$[0 `, ` -1]}`
+format #Annotated[*] `$[0] $[1]`
+format #Tvoid[*] `void`
+format #Tbyte[*] `byte`
+format #Tshort[*] `short`
+format #Tint[*] `int`
+format #Tlong[*] `long`
+format #Tfloat[*] `float`
+format #Tdouble[*] `double`
+format #Tarray[*] `$[0][]`
+format #Tarray[*] `$[0] $[1] []`
+format #TypeBound[*] `$[0] extends $[1] $[2 ` & ` -1]`
+format #TypeArguments[*] `<$[0 `,` -1]>`
+format #Comma[*] `$[0], $[1]`
+format #Assign[*] `$[0] = $[1]`
+format #AssignMul[*] `$[0] *= $[1]`
+format #AssignDiv[*] `$[0] /= $[1]`
+format #AssignMod[*] `$[0] %= $[1]`
+format #AssignAdd[*] `$[0] += $[1]`
+format #AssignSub[*] `$[0] -= $[1]`
+format #AssignLeftShift[*] `$[0] <<= $[1]`
+format #AssignRightShift[*] `$[0] >>= $[1]`
+format #AssignLogicalRightShift[*] `$[0] >>>= $[1]`
+format #AssignBitwiseAnd[*] `$[0] &= $[1]`
+format #AssignBitwiseXOr[*] `$[0] ^= $[1]`
+format #AssignBitwiseOr[*] `$[0] != $[1]`
+format #Conditional[*] `$[0] ? $[1] : $[2]`
+format #LogicalAnd[*] `$[0] && $[1]`
+format #LogicalOr[*] `$[0] || $[1]`
+format #BitwiseOr[*] `($[0] | $[1])`
+format #BitwiseXor[*] `($[0] ^ $[1])`
+format #BitwiseAnd[*] `($[0] & $[1])`
+format #Equals[*] `$[0] == $[1]`
+format #NotEquals[*] `$[0] != $[1]`
+format #LessThanEquals[*] `$[0] <= $[1]`
+format #LessThan[*] `$[0] < $[1]`
+format #GreaterThanEquals[*] `$[0] >= $[1]`
+format #GreaterThan[*] `$[0] > $[1]`
+format #InstanceOf[*] `$[0] instanceof $[1]`
+format #HashIn[*] `$[0] in $[1]`
+format #LeftShift[*] `($[0] << $[1])`
+format #RightShift[*] `($[0] >> $[1])`
+format #LogicalRightShift[*] `($[0] >>> $[1])`
+format #Add[*] `($[0] + $[1])`
+format #Sub[*] `($[0] - $[1])`
+format #Mul[*] `($[0] * $[1])`
+format #Div[*] `($[0] / $[1])`
+format #Mod[*] `($[0] % $[1])`
+format #PrefixInc[*] `++$[0]`
+format #PrefixDec[*] `--$[0]`
+format #Plus[*] `+$[0]`
+format #Minus[*] `-$[0]`
+format #BitwiseNot[*] `~$[0]`
+format #LogicalNot[*] `!$[0]`
+format #SuffixInc[*] `$[0]++`
+format #SuffixDec[*] `$[0]--`
+format #This[*] `this`
 format #Array[*] `[$[0 `,` -1]]`
 format #Object[*] `{$[0 `,` -1]}`
-format #Property[2] `$[0]: $[1]`
-format #Field[2] `$[0].$[1]`
-format #Index[2] `$[0][$[1]]`
+format #Property[*] `$[0]: $[1]`
+format #Field[*] `$[0].$[1]`
+format #Index[*] `$[0][$[1]]`
 format #List[*] `($[0 `, ` -1])`
+format #Name[*] `${text}`
+format #QualifiedName[*] `$[0].$[1]`
+format #Null[*] `null`
+format #True[*] `true`
+format #False[*] `false`
+format #Integer[*] `${text}`
+format #Long[*] `${text}`
+format #Float[*] `${text}`
+format #Double[*] `${text}`
+format #String[*] `"${text}"`
+format #Character[*] `'${text}'`
 
-
-public Expression
-	= AssignmentExpression
-	/ LogicalOrExpression
-	
-AssignmentExpression
-	= { @UnaryExpression "=" @Expression #Assign }
-
-LogicalOrExpression
-	= LogicalAndExpression {@ "or" @LogicalAndExpression #Or }*
-
-LogicalAndExpression
-	= EqualityExpression {@ "and" @EqualityExpression #And }*
-
-EqualityExpression
-	= RelationalExpression {@ ( "==" #Equals / "!=" #NotEquals ) @RelationalExpression }*
-
-RelationalExpression
-	= AdditiveExpression {@ ( relationalOperator @AdditiveExpression / "<:" @Type #InstanceOf ) }*
-
-relationalOperator
-	= "<=" #LessThanEquals
-	/ ">=" #GreaterThanEquals
-	/ "<"  #LessThan
-	/ ">"  #GreaterThan
-	/ "in" #HashIn
-
-AdditiveExpression
-	= MultiplicativeExpression {@ ( "+" #Add / "-" #Sub ) @MultiplicativeExpression }*
-
-MultiplicativeExpression
-	= CastExpression {@ ( "*" #Mul / "/" #Div / "mod" #Mod ) @CastExpression }*
-
-CastExpression
-	= UnaryExpression {@ "as" @Type #Cast }?
-
-UnaryExpression
-	= PostfixExpression
-	/ { "+"  @CastExpression #Plus }
-	/ { "-"  @CastExpression #Minus }
-	/ { "not"  @CastExpression #Not }
-
-PostfixExpression
-	= PrimaryExpression {@ (addMethodCall / addIndex / addField ) }*
-
-addMethodCall
-	= "." @Identifier @Arguments #Method
-
-Arguments
-	= { "(" (@Expression ("," @Expression)*)? ")" #List }
-
-addIndex
-	= "[" @Expression "]" #Index
-
-addField
-	= "." @Identifier !'(' #Field
-
-public PrimaryExpression
-	= Constant
-	/ "(" Expression ")"
-	/ ApplyExpression
-	/ NewExpression
-	/ Identifier
-
-
-ApplyExpression
-	= { @Identifier @Arguments #Apply }
-
-NewExpression
-	= { "new" @Identifier @Arguments #New }
-
-/* Literal, Constant */
-
-format #Null[0]   `null`
-format #True[0]   `true`
-format #False[0]  `false`
-
-format #Integer[0] `${text}`
-format #Long[0]    `${text}`
-format #Float[0]   `${text}`
-format #Double[0]  `${text}`
-
-format #String[0]    `"${text}"`
-format #Character[0] `'${text}'`
-
-Literal
-	= FloatingPointLiteral 
-	/ IntegerLiteral 
-	/ BooleanLiteral 
-	/ CharacterLiteral 
-	/ StringLiteral 
-	/ NullLiteral
-
-Constant
-	= Literal
-
-NullLiteral
-	= { "null" #Null }
-
-BooleanLiteral
-	= { "true"  #True }
-	/ { "false" #False }
-
-IntegerLiteral
-	= { ( DECIMAL / HEXADECIMAL / BINARY / OCTAL ) (INT_SUFFIX #Long / FLOAT_SUFFIX #Float / #Integer) } _
-
-DECIMAL
-	= '0' ![bBxX0-9_]
-	/ [1-9] ('_'* DIGIT)*
-
-HEXADECIMAL
-	= '0' [xX] HEX ('_'* HEX)*
-
-BINARY
-	= '0' [bB] [01] ('_'* [01])*
-
-OCTAL
-	= '0' ('_'* [0-7])*
-
-DIGIT
-	= [0-9]
-
-HEX
-	= [a-fA-F0-9]
-
-INT_SUFFIX
-	= [lL]
-
-FloatingPointLiteral
-	= { FLOAT #Float } FLOAT_SUFFIX? _
-	/ { DECIMAL #Float } FLOAT_SUFFIX _
-
-FLOAT
-	= FRACTION EXPONENT?
-	/ DIGIT+ EXPONENT
-
-FLOAT_SUFFIX
-	= [fFdD]
-
-FRACTION
-	= !'_' ('_'* DIGIT)* '.' DIGIT ('_'* DIGIT)*
-	/ DIGIT ('_'* DIGIT)* '.'
-
-EXPONENT
-	= [eE] [+\-]? DIGIT ('_'* DIGIT)*
-
-StringLiteral
-	= '"' { STRING_CONTENT* #String } '"' _
-
-CharacterLiteral
-	= '\'' { CHAR_CONTENT* #Character } '\'' _
-
-STRING_CONTENT
-	= ESCAPE
-	/ ![\"\n\\] .
-
-CHAR_CONTENT
-	= ESCAPE
-	/ !['\n\\] .
-
-ESCAPE
-	= SIMPLE_ESCAPE
-	/ OCTAL_ESCAPE
-	/ HEX_ESCAPE
-
-SIMPLE_ESCAPE
-	= '\\' ['\"\\bfnrt]
-
-OCTAL_ESCAPE
-	= '\\' [0-3] [0-7] [0-7]
-	/ '\\' [0-7] [0-7]
-	/ '\\' [0-7]
-
-HEX_ESCAPE
-	= '\\' 'u'+ HEX4
-
-HEX4
-	= HEX HEX HEX HEX
-
+// formatted by $ nez format
