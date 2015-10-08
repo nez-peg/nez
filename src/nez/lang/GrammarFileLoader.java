@@ -11,8 +11,6 @@ import nez.ast.Tree;
 import nez.ast.TreeVisitor;
 import nez.io.SourceContext;
 import nez.main.Verbose;
-import nez.peg.celery.Celery;
-import nez.peg.dtd.DTDConverter;
 import nez.util.ConsoleUtils;
 import nez.util.ExtensionLoader;
 import nez.util.StringUtils;
@@ -118,12 +116,6 @@ public abstract class GrammarFileLoader extends TreeVisitor {
 	}
 
 	public final static Grammar loadGrammarFile(String urn, Strategy strategy) throws IOException {
-		if (urn.endsWith(".dtd")) {
-			return DTDConverter.loadGrammar(urn, strategy);
-		}
-		if (urn.endsWith(".celery")) {
-			return Celery.loadGrammar(urn, strategy);
-		}
 		return loadGrammar(urn, strategy);
 	}
 
