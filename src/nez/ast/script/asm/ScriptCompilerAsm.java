@@ -477,21 +477,17 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 
 		// catch blocks
 		for (TypedTree catchNode : node.get(_catch)) {
-			Label startLabel = new Label();
-			Label endLabel = new Label();
-			Class<?> exceptionType = java.lang.Exception.class;
+			Class<?> exceptionType = null;
 			if (catchNode.has(_type)) {
 				String exceptionName = catchNode.getText(_type, null);
 				exceptionType = Class.forName(exceptionName);
-				this.mBuilder.catchException(startLabel, endLabel, Type.getType(exceptionType));
 			}
-			this.mBuilder.mark(startLabel);
+			this.mBuilder.catchException(labels.getStartLabel(), labels.getEndLabel(), Type.getType(exceptionType));
 			this.mBuilder.enterScope();
 			this.mBuilder.createNewVarAndStore(catchNode.getText(_name, null), exceptionType);
 			this.visit(catchNode.get(_body));
 			this.mBuilder.exitScope();
 			this.mBuilder.goTo(mergeLabel);
-			this.mBuilder.mark(endLabel);
 		}
 
 		// finally block
