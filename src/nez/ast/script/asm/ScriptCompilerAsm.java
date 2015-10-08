@@ -4,7 +4,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
 import nez.ast.TreeVisitor;
-import nez.ast.jcode.JCodeOperator;
 import nez.ast.script.CommonSymbols;
 import nez.ast.script.Hint;
 import nez.ast.script.ScriptContext;
@@ -450,66 +449,68 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 		this.mBuilder.loadFromVar(var);
 	}
 
-	public void visitBinaryNode(TypedTree node) {
-		TypedTree left = node.get(_left);
-		TypedTree right = node.get(_right);
-		this.visit(left);
-		this.visit(right);
-		this.mBuilder.callStaticMethod(JCodeOperator.class, typeof(node), node.getTag().getSymbol(), typeof(left), typeof(right));
-	}
-
-	public void visitCompNode(TypedTree node) {
-		TypedTree left = node.get(_left);
-		TypedTree right = node.get(_right);
-		this.visit(left);
-		this.visit(right);
-		this.mBuilder.callStaticMethod(JCodeOperator.class, typeof(node), node.getTag().getSymbol(), typeof(left), typeof(right));
-	}
-
-	public void visitAdd(TypedTree node) {
-		this.visitBinaryNode(node);
-	}
-
-	public void visitSub(TypedTree node) {
-		this.visitBinaryNode(node);
-	}
-
-	public void visitMul(TypedTree node) {
-		this.visitBinaryNode(node);
-	}
-
-	public void visitDiv(TypedTree node) {
-		this.visitBinaryNode(node);
-	}
-
-	public void visitNotEquals(TypedTree node) {
-		this.visitCompNode(node);
-	}
-
-	public void visitLessThan(TypedTree node) {
-		this.visitCompNode(node);
-	}
-
-	public void visitLessThanEquals(TypedTree node) {
-		this.visitCompNode(node);
-	}
-
-	public void visitGreaterThan(TypedTree node) {
-		this.visitCompNode(node);
-	}
-
-	public void visitGreaterThanEquals(TypedTree node) {
-		this.visitCompNode(node);
-	}
-
-	public void visitLogicalAnd(TypedTree node) {
-		this.visitCompNode(node);
-	}
-
-	public void visitLogicalOr(TypedTree node) {
-		this.visitCompNode(node);
-	}
-
+	// public void visitBinaryNode(TypedTree node) {
+	// TypedTree left = node.get(_left);
+	// TypedTree right = node.get(_right);
+	// this.visit(left);
+	// this.visit(right);
+	// this.mBuilder.callStaticMethod(JCodeOperator.class, typeof(node),
+	// node.getTag().getSymbol(), typeof(left), typeof(right));
+	// }
+	//
+	// public void visitCompNode(TypedTree node) {
+	// TypedTree left = node.get(_left);
+	// TypedTree right = node.get(_right);
+	// this.visit(left);
+	// this.visit(right);
+	// this.mBuilder.callStaticMethod(JCodeOperator.class, typeof(node),
+	// node.getTag().getSymbol(), typeof(left), typeof(right));
+	// }
+	//
+	// public void visitAdd(TypedTree node) {
+	// this.visitBinaryNode(node);
+	// }
+	//
+	// public void visitSub(TypedTree node) {
+	// this.visitBinaryNode(node);
+	// }
+	//
+	// public void visitMul(TypedTree node) {
+	// this.visitBinaryNode(node);
+	// }
+	//
+	// public void visitDiv(TypedTree node) {
+	// this.visitBinaryNode(node);
+	// }
+	//
+	// public void visitNotEquals(TypedTree node) {
+	// this.visitCompNode(node);
+	// }
+	//
+	// public void visitLessThan(TypedTree node) {
+	// this.visitCompNode(node);
+	// }
+	//
+	// public void visitLessThanEquals(TypedTree node) {
+	// this.visitCompNode(node);
+	// }
+	//
+	// public void visitGreaterThan(TypedTree node) {
+	// this.visitCompNode(node);
+	// }
+	//
+	// public void visitGreaterThanEquals(TypedTree node) {
+	// this.visitCompNode(node);
+	// }
+	//
+	// public void visitLogicalAnd(TypedTree node) {
+	// this.visitCompNode(node);
+	// }
+	//
+	// public void visitLogicalOr(TypedTree node) {
+	// this.visitCompNode(node);
+	// }
+	//
 	//
 	// public void visitContinue(TypedTree node) {
 	// }

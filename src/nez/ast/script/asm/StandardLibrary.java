@@ -1,4 +1,4 @@
-package nez.ast.jcode;
+package nez.ast.script.asm;
 
 import java.lang.invoke.CallSite;
 import java.lang.invoke.ConstantCallSite;
