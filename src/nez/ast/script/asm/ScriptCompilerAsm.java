@@ -9,6 +9,7 @@ import nez.ast.script.Hint;
 import nez.ast.script.ScriptContext;
 import nez.ast.script.TypeSystem;
 import nez.ast.script.TypedTree;
+import nez.util.ConsoleUtils;
 
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
@@ -21,11 +22,18 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 	private ScriptClassLoader cLoader;
 	private ClassBuilder cBuilder;
 	private MethodBuilder mBuilder;
+	private String classPath = "konoha/runtime";
 
 	public ScriptCompilerAsm(TypeSystem typeSystem, ScriptClassLoader cLoader) {
 		super(TypedTree.class);
 		this.typeSystem = typeSystem;
 		this.cLoader = cLoader;
+	}
+
+	public class Undefined {
+		public void visit(TypedTree node) {
+			ConsoleUtils.println("FIXME: ScriptCompilerAsm " + node.getTag().getSymbol());
+		}
 	}
 
 	private void visit(TypedTree node) {
@@ -159,14 +167,17 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 	}
 
 	private void visitMehodApplyHint(TypedTree node) {
+		this.visit(node.get(_recv));
 		for (TypedTree sub : node.get(_param)) {
 			visit(sub);
 		}
-		Type owner = Type.getType(node.getMethod().getDeclaringClass());
+		Class<?> owner = node.getMethod().getDeclaringClass();
 		Method methodDesc = Method.getMethod(node.getMethod());
-		VarEntry var = this.mBuilder.getVar(node.getText(_name, null));
-		this.mBuilder.loadFromVar(var);
-		this.mBuilder.invokeVirtual(owner, methodDesc);
+		if (owner.isInterface()) {
+			this.mBuilder.invokeInterface(Type.getType(owner), methodDesc);
+		} else {
+			this.mBuilder.invokeVirtual(Type.getType(owner), methodDesc);
+		}
 	}
 
 	private void visitSetFieldHint(TypedTree node) {
@@ -208,21 +219,21 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 	/* class */
 
 	public void openClass(String name) {
-		this.cBuilder = new ClassBuilder(name, null, null, null);
+		this.cBuilder = new ClassBuilder(this.classPath + name, null, null, null);
 	}
 
 	public void openClass(String name, Class<?> superClass, Class<?>... interfaces) {
-		this.cBuilder = new ClassBuilder(name, null, superClass, interfaces);
+		this.cBuilder = new ClassBuilder(this.classPath + name, null, superClass, interfaces);
 	}
 
 	public void openClass(int acc, String name, Class<?> superClass, Class<?>... interfaces) {
-		this.cBuilder = new ClassBuilder(acc, name, null, superClass, interfaces);
+		this.cBuilder = new ClassBuilder(acc, this.classPath + name, null, superClass, interfaces);
 	}
 
 	public Class<?> closeClass() {
 		// cLoader.setDump(true);
 		Class<?> c = cLoader.definedAndLoadClass(this.cBuilder.getQualifiedClassName(), cBuilder.toByteArray());
-		this.cBuilder = null; //
+		this.cBuilder = null;
 		return c;
 	}
 
@@ -290,14 +301,9 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 		return this.closeClass();
 	}
 
-	// private void createClosure() {
-	// ClassBuilder closure = new ClassBuilder(fullyQualifiedClassName,
-	// sourceName, superClass, interfaces)
-	// }
-
-	public void visitClassDecl(TypedTree node) {
-		String name = node.getText(_name, null);
-		// TODO
+	private void createClosure() {
+		// ClassBuilder closure = new ClassBuilder(fullyQualifiedClassName,
+		// sourceName, superClass, interfaces);
 	}
 
 	public void visitFuncDecl(TypedTree node) {
@@ -321,7 +327,22 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 		this.mBuilder.endMethod();
 	}
 
-	// FIXME Block scope
+	public void visitClassDecl(TypedTree node) throws ClassNotFoundException {
+		String name = node.getText(_name, null);
+		TypedTree implNode = node.get(_impl);
+		TypedTree bodyNode = node.get(_body);
+		Class<?> superClass = Class.forName(this.classPath + node.getText(_super, null));
+		Class<?>[] implClasses = new Class<?>[implNode.size()];
+		for (int i = 0; i < implNode.size(); i++) {
+			implClasses[i] = Class.forName(this.classPath + implNode.getText(i, null));
+		}
+		this.openClass(name, superClass, implClasses);
+		for (TypedTree n : bodyNode) {
+			this.visit(n);
+		}
+		this.closeClass();
+	}
+
 	public void visitBlock(TypedTree node) {
 		this.mBuilder.enterScope();
 		for (TypedTree stmt : node) {
@@ -329,6 +350,37 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 			visit(stmt);
 		}
 		this.mBuilder.exitScope();
+	}
+
+	public void visitConstructor(TypedTree node) {
+		TypedTree args = node.get(_param);
+		Class<?>[] paramClasses = new Class<?>[args.size()];
+		for (int i = 0; i < args.size(); i++) {
+			paramClasses[i] = typeof(args.get(i));
+		}
+		this.mBuilder = this.cBuilder.newConstructorBuilder(Opcodes.ACC_PUBLIC, paramClasses);
+		this.mBuilder.enterScope();
+		for (TypedTree arg : args) {
+			this.mBuilder.defineArgument(arg.getText(_name, null), typeof(arg));
+		}
+		visit(node.get(_body));
+		this.mBuilder.exitScope();
+		this.mBuilder.loadThis();
+		this.mBuilder.returnValue();
+		this.mBuilder.endMethod();
+	}
+
+	public void visitFieldDecl(TypedTree node) {
+		// TODO
+		TypedTree list = node.get(_list);
+		for (TypedTree field : list) {
+			// this.cBuilder.addField(Opcodes.ACC_PUBLIC, field.getText(_name,
+			// null), this.typeof(field), );
+		}
+	}
+
+	public void visitMethodDecl(TypedTree node) {
+		// TODO
 	}
 
 	public void visitVarDecl(TypedTree node) {
@@ -415,6 +467,55 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 		visit(node.get(_cond));
 		this.mBuilder.push(true);
 		this.mBuilder.ifCmp(Type.BOOLEAN_TYPE, MethodBuilder.EQ, beginLabel);
+	}
+
+	/* Switch..Case Statement */
+	public void visitSwitch(TypedTree node) {
+		TypedTree body = node.get(_body);
+
+		this.visit(node.get(_cond));
+	}
+
+	/* Try..Catch Statement */
+	public void visitTry(TypedTree node) throws ClassNotFoundException {
+		TypedTree finallyNode = node.get(_finally);
+		TryCatchLabel labels = this.mBuilder.createNewTryLabel(finallyNode != null);
+		this.mBuilder.getTryLabels().push(labels);
+		Label mergeLabel = this.mBuilder.newLabel();
+
+		// try block
+		this.mBuilder.mark(labels.getStartLabel());
+		this.visitBlock(node.get(_try));
+		this.mBuilder.mark(labels.getEndLabel());
+
+		if (finallyNode != null) {
+			this.mBuilder.goTo(labels.getFinallyLabel());
+		}
+		this.mBuilder.goTo(mergeLabel);
+
+		// catch blocks
+		for (TypedTree catchNode : node.get(_catch)) {
+			Class<?> exceptionType = null;
+			if (catchNode.has(_type)) {
+				String exceptionName = catchNode.getText(_type, null);
+				exceptionType = Class.forName(exceptionName);
+			}
+			this.mBuilder.catchException(labels.getStartLabel(), labels.getEndLabel(), Type.getType(exceptionType));
+			this.mBuilder.enterScope();
+			this.mBuilder.createNewVarAndStore(catchNode.getText(_name, null), exceptionType);
+			this.visit(catchNode.get(_body));
+			this.mBuilder.exitScope();
+			this.mBuilder.goTo(mergeLabel);
+		}
+
+		// finally block
+		if (finallyNode != null) {
+			this.mBuilder.mark(labels.getFinallyLabel());
+			this.visit(finallyNode);
+		}
+		this.mBuilder.getTryLabels().pop();
+
+		this.mBuilder.mark(mergeLabel);
 	}
 
 	public void visitAssign(TypedTree node) {
@@ -592,7 +693,7 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 	// if (var != null) {
 	// this.mBuilder.loadFromVar(var);
 	// } else {
-	// // TODO
+	//
 	// return;
 	// }
 	// } else {
