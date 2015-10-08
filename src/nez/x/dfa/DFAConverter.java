@@ -51,7 +51,7 @@ public class DFAConverter extends TreeVisitor {
 	private HashMap<String, Integer> acceptingStateOfNonTerminal;
 	private int V; // the number of vertices
 	static int MAX = 10000; // maximum number of vertices
-	private ArrayList<Edge>[] BFA;
+	private ArrayListEdge[] BFA;
 	private Graph BFA_graph;
 	private boolean showBooleanExpression;
 
@@ -63,9 +63,9 @@ public class DFAConverter extends TreeVisitor {
 		this.V = 0;
 		this.BFA_graph = null;
 		this.showBooleanExpression = false;
-		BFA = new ArrayList[MAX];
+		BFA = new ArrayListEdge[MAX];
 		for (int i = 0; i < MAX; i++) {
-			BFA[i] = new ArrayList<Edge>();
+			BFA[i] = new ArrayListEdge();
 		}
 		convertToBFA();
 	}
