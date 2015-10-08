@@ -116,12 +116,6 @@ public abstract class GrammarFileLoader extends TreeVisitor {
 	}
 
 	public final static Grammar loadGrammarFile(String urn, Strategy strategy) throws IOException {
-		if (urn.endsWith(".dtd")) {
-			// return DTDConverter.loadGrammar(urn, strategy);
-		}
-		if (urn.endsWith(".celery")) {
-			// return Celery.loadGrammar(urn, strategy);
-		}
 		return loadGrammar(urn, strategy);
 	}
 
