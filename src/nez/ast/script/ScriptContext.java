@@ -8,7 +8,6 @@ import nez.io.SourceContext;
 import nez.util.ConsoleUtils;
 
 public class ScriptContext {
-	public final static boolean verbose = true;
 	private Parser parser;
 	private TypeSystem typeSystem;
 	private TypeChecker typechecker;
@@ -22,30 +21,75 @@ public class ScriptContext {
 		// new TypeChecker2();
 	}
 
-	public void load(String path) throws IOException {
+	public void setShellMode(boolean b) {
+		this.typeSystem.setShellMode(b);
+	}
+
+	public void setVerboseMode(boolean b) {
+		this.typeSystem.setVerboseMode(b);
+	}
+
+	public final void load(String path) throws IOException {
 		eval(SourceContext.newFileContext(path));
 	}
 
-	public Object eval2(String uri, int linenum, String script) {
+	public final Object eval2(String uri, int linenum, String script) {
 		return eval(SourceContext.newStringContext(uri, linenum, script));
 	}
 
-	private Object eval(SourceContext source) {
+	public final Object eval(SourceContext source) {
 		TypedTree node = (TypedTree) this.parser.parse(source, new TypedTree());
 		if (node == null) {
 			println(source.getSyntaxErrorMessage());
 			return this; // nothing
 		}
-		if (verbose) {
-			ConsoleUtils.println("[typechcking]");
-			ConsoleUtils.println("|    ", node);
+		if (node.is(CommonSymbols._Source)) {
+			return evalSource(node);
 		}
-		typechecker.doType(node);
-		if (verbose) {
-			ConsoleUtils.println("[evaluating]");
-			ConsoleUtils.println("|    ", node);
+		return evalTopLevel(node);
+	}
+
+	Object evalSource(TypedTree node) {
+		Object result = Interpreter.empty;
+		boolean foundError = false;
+		for (TypedTree sub : node) {
+			if (this.typeSystem.verboseMode) {
+				ConsoleUtils.println("[Parsed]");
+				ConsoleUtils.println("    ", sub);
+			}
+			try {
+				typechecker.doType(sub);
+				if (this.typeSystem.verboseMode) {
+					ConsoleUtils.println("[Yyped]");
+					ConsoleUtils.println("    ", sub);
+				}
+				if (!foundError) {
+					result = interpreter.eval(sub);
+				}
+			} catch (TypeCheckerException e) {
+				foundError = true;
+				log(e.getMessage());
+			}
 		}
-		return interpreter.eval(node);
+		return foundError ? Interpreter.empty : result;
+	}
+
+	Object evalTopLevel(TypedTree sub) {
+		if (this.typeSystem.verboseMode) {
+			ConsoleUtils.println("[Parsed]");
+			ConsoleUtils.println("    ", sub);
+		}
+		try {
+			typechecker.doType(sub);
+			if (this.typeSystem.verboseMode) {
+				ConsoleUtils.println("[Typed]");
+				ConsoleUtils.println("    ", sub);
+			}
+			return interpreter.eval(sub);
+		} catch (TypeCheckerException e) {
+			log(e.getMessage());
+		}
+		return Interpreter.empty;
 	}
 
 	public Object get(String name) {

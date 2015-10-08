@@ -234,7 +234,7 @@ public class CommandContext extends ParserFactory {
 			return;
 		}
 		if (gFileName != null) {
-			this.setGrammarFileName(gFileName);
+			this.setGrammarFilePath(gFileName);
 		}
 	}
 

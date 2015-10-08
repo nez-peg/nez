@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import nez.main.Verbose;
 import nez.util.ConsoleUtils;
 
 /**
@@ -17,7 +18,7 @@ public class ScriptClassLoader extends ClassLoader {
 	/**
 	 * if true, dump byte code.
 	 */
-	private boolean enableDump = false;
+	private boolean verboseMode = false;
 
 	/**
 	 * must be fully qualified binary name(contains . ).
@@ -35,11 +36,11 @@ public class ScriptClassLoader extends ClassLoader {
 	 * @param packageName
 	 *            not null
 	 */
-	public ScriptClassLoader(String packageName) {
-		super();
-		this.allowedPackageName = toBinaryName(packageName);
-		this.byteCodeMap = new HashMap<>();
-	}
+	// public ScriptClassLoader(String packageName) {
+	// super();
+	// this.allowedPackageName = toBinaryName(packageName);
+	// this.byteCodeMap = new HashMap<>();
+	// }
 
 	public ScriptClassLoader() {
 		super();
@@ -136,7 +137,6 @@ public class ScriptClassLoader extends ClassLoader {
 	 */
 	public ScriptClassLoader createChild() {
 		ScriptClassLoader loader = new ScriptClassLoader(this);
-		loader.setDump(this.enableDump);
 		return loader;
 	}
 
@@ -144,24 +144,24 @@ public class ScriptClassLoader extends ClassLoader {
 	 * for debug purpose.
 	 */
 	private void dump(String binaryClassName, byte[] byteCode) {
-		// if (ScriptContext.verbose) {
-		int index = binaryClassName.lastIndexOf('.');
-		String classFileName = binaryClassName.substring(index + 1) + ".class";
-		try (FileOutputStream stream = new FileOutputStream(classFileName)) {
-			ConsoleUtils.println("[generated] " + classFileName);
-			stream.write(byteCode);
-			stream.close();
-			ProcessBuilder pb = new ProcessBuilder("javap", "-c", classFileName);
-			pb.redirectOutput();
-			pb.start();
-		} catch (IOException e) {
-			e.printStackTrace();
+		if (verboseMode) {
+			int index = binaryClassName.lastIndexOf('.');
+			String classFileName = binaryClassName.substring(index + 1) + ".class";
+			try (FileOutputStream stream = new FileOutputStream(classFileName)) {
+				ConsoleUtils.println("[generated] " + classFileName);
+				stream.write(byteCode);
+				stream.close();
+				ProcessBuilder pb = new ProcessBuilder("javap", "-c", classFileName);
+				pb.redirectOutput();
+				pb.start();
+			} catch (IOException e) {
+				Verbose.traceException(e);
+			}
 		}
-		// }
 	}
 
-	public void setDump(boolean enableByteCodeDump) {
-		enableDump = enableByteCodeDump;
+	public void setVerboseMode(boolean b) {
+		verboseMode = b;
 	}
 
 	private final static String toBinaryName(String className) {

@@ -34,4 +34,20 @@ public class libc {
 		System.out.println(s);
 	}
 
+	public final static void println(String fmt, Object s) {
+		System.out.println(String.format(fmt, s));
+	}
+
+	public final static void println(String fmt, Object s, Object s2) {
+		System.out.println(String.format(fmt, s, s2));
+	}
+
+	public final static void println(String fmt, Object s, Object s2, Object s3) {
+		System.out.println(String.format(fmt, s, s2, s3));
+	}
+
+	public final static void println(String fmt, Object s, Object s2, Object s3, Object s4) {
+		System.out.println(String.format(fmt, s, s2, s3, s4));
+	}
+
 }

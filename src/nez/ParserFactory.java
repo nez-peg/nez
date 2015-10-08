@@ -28,7 +28,7 @@ public class ParserFactory {
 	protected Grammar grammar = null;
 
 	// -p konoha.nez
-	private String gFileName = null; // default
+	private String grammarFilePath = null; // default
 
 	// -e "peg rule"
 	protected String grammarExpression = null;
@@ -43,14 +43,14 @@ public class ParserFactory {
 		return grammar;
 	}
 
-	protected final void setGrammarFileName(String path) throws IOException {
-		this.gFileName = path;
+	public final void setGrammarFilePath(String path) throws IOException {
+		this.grammarFilePath = path;
 		this.grammar = newGrammarImpl(path);
 	}
 
 	public final String getGrammarName() {
-		if (gFileName != null) {
-			String path = gFileName;
+		if (grammarFilePath != null) {
+			String path = grammarFilePath;
 			int loc = path.lastIndexOf('/');
 			if (loc > 0) {
 				path = path.substring(loc + 1);
@@ -65,10 +65,14 @@ public class ParserFactory {
 	}
 
 	public final String getGrammarPath() {
-		if (gFileName != null) {
-			return gFileName;
+		if (grammarFilePath != null) {
+			return grammarFilePath;
 		}
 		return null;
+	}
+
+	public final boolean isUnspecifiedGrammarFilePath() {
+		return (grammarFilePath == null);
 	}
 
 	private Grammar newGrammarImpl(String path) throws IOException {

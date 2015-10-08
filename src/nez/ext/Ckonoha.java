@@ -13,8 +13,24 @@ public class Ckonoha extends Command {
 
 	@Override
 	public void exec(CommandContext config) throws IOException {
+		if (config.isUnspecifiedGrammarFilePath()) {
+			config.setGrammarFilePath("konoha.nez");
+		}
 		ScriptContext sc = new ScriptContext(config.newParser());
-		show();
+		if (config.hasInput()) {
+			while (config.hasInput()) {
+				sc.eval(config.nextInput());
+			}
+		} else {
+			shell(config, sc);
+		}
+	}
+
+	public void shell(CommandContext config, ScriptContext sc) {
+		show(config.newGrammar().getDesc());
+		sc.setShellMode(true);
+		sc.setVerboseMode(true);
+		config.getStrategy();
 		int linenum = 1;
 		String command = null;
 		while ((command = readLine()) != null) {
@@ -39,9 +55,10 @@ public class Ckonoha extends Command {
 
 	public final static String KonohaVersion = "4.0";
 
-	private static void show() {
-		ConsoleUtils.println("Konoha 4E (" + "Zen" + ") on Nez " + Version);
+	private static void show(String name) {
+		ConsoleUtils.println("Konoha 4E (" + name + ") on Nez " + Version);
 		ConsoleUtils.println(Copyright);
+		ConsoleUtils.println("Copyright (c) 2015, Kimio Kuramitsu, Yokohama National University");
 	}
 
 	private static String readLine() {
@@ -61,22 +78,5 @@ public class Ckonoha extends Command {
 			sb.append("\n");
 		}
 	}
-
-	// @Override
-	// public void exec(CommandContext config) throws IOException {
-	// Class<?> c = null;
-	// try {
-	// c = Class.forName("nez.konoha.Konoha");
-	// } catch (ClassNotFoundException e) {
-	// ConsoleUtils.exit(1, "unsupported konoha");
-	// }
-	// try {
-	// Object konoha = c.newInstance();
-	// Method shell = c.getMethod("shell");
-	// shell.invoke(konoha);
-	// } catch (Exception e) {
-	// e.printStackTrace();
-	// }
-	// }
 
 }

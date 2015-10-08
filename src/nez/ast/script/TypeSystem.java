@@ -16,9 +16,10 @@ import konoha.StringOperator;
 import nez.ast.Tree;
 import nez.ast.script.asm.ScriptCompiler;
 import nez.ast.script.stub.G_g;
+import nez.util.ConsoleUtils;
 import nez.util.UList;
 
-public class TypeSystem implements CommonSymbols {
+public class TypeSystem extends CommonContext implements CommonSymbols {
 	ScriptContext context;
 	ScriptCompiler compl;
 
@@ -505,7 +506,7 @@ public class TypeSystem implements CommonSymbols {
 		return new TypeCheckerException(node, fmt, args);
 	}
 
-	public String name(Type t) {
+	public static final String name(Type t) {
 		if (t == null) {
 			return "untyped";
 		}
@@ -680,10 +681,12 @@ public class TypeSystem implements CommonSymbols {
 	protected Method ObjectIndexer = null;
 	protected Method ObjectSetIndexer = null;
 
+	protected Method AssertionMethod = null;
 	protected Method InterpolationMethod = null;
 
 	void initMethod() {
 		try {
+			this.AssertionMethod = Reflector.load(konoha.StaticOperator.class, "assert_", boolean.class, String.class);
 			this.DynamicGetter = this.getClass().getMethod("getDynamicField", Object.class, String.class);
 			this.DynamicSetter = this.getClass().getMethod("setDynamicField", Object.class, String.class, Object.class);
 			this.ObjectIndexer = this.getClass().getMethod("getObjectIndexer", Object.class, Object.class);
@@ -760,6 +763,30 @@ public class TypeSystem implements CommonSymbols {
 
 	public Type dynamicType() {
 		return Object.class;
+	}
+
+	// debug
+
+	public final boolean isVerboseMode() {
+		return this.verboseMode;
+	}
+
+	public void TRACE(String fmt, Object... args) {
+		if (this.verboseMode) {
+			System.err.println("TRACE: " + String.format(fmt, args));
+		}
+	}
+
+	public void TODO(String fmt, Object... args) {
+		if (this.verboseMode) {
+			ConsoleUtils.println("TODO: " + String.format(fmt, args));
+		}
+	}
+
+	public void DEBUG(String fmt, Object... args) {
+		if (this.debugMode) {
+			System.err.println("DEBUG: " + String.format(fmt, args));
+		}
 	}
 
 }

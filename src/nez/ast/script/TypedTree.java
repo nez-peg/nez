@@ -109,7 +109,7 @@ public class TypedTree extends Tree<TypedTree> {
 		super.stringfy(indent, label, sb);
 		if (type != null) {
 			sb.append(" :");
-			sb.append(type.toString());
+			sb.append(TypeSystem.name(type));
 		}
 	}
 

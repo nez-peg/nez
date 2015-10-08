@@ -6,7 +6,6 @@ import java.lang.reflect.Modifier;
 import nez.ast.TreeVisitor;
 import nez.ast.script.CommonSymbols;
 import nez.ast.script.Hint;
-import nez.ast.script.ScriptContext;
 import nez.ast.script.TypeSystem;
 import nez.ast.script.TypedTree;
 
@@ -70,18 +69,6 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 	private Class<?> typeof(TypedTree node) {
 		// node.getTypedClass();
 		return typeSystem.typeof(node);
-	}
-
-	private void TRACE(String fmt, Object... args) {
-		if (ScriptContext.verbose) {
-			System.err.println("TRACE: " + String.format(fmt, args));
-		}
-	}
-
-	private void TODO(String fmt, Object... args) {
-		if (ScriptContext.verbose) {
-			System.err.println("TODO: " + String.format(fmt, args));
-		}
 	}
 
 	/* typechecker hints */
@@ -1049,5 +1036,17 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 	//
 	// this.mBuilder.visitLabel(mergeLabel);
 	// }
+
+	void TRACE(String fmt, Object... args) {
+		typeSystem.TRACE(fmt, args);
+	}
+
+	void TODO(String fmt, Object... args) {
+		typeSystem.TODO(fmt, args);
+	}
+
+	void DEBUG(String fmt, Object... args) {
+		typeSystem.DEBUG(fmt, args);
+	}
 
 }

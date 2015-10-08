@@ -22,7 +22,7 @@ public class Interpreter extends TreeVisitor2<nez.ast.script.Interpreter.Undefin
 		this.compiler = new ScriptCompiler(this.typeSystem);
 	}
 
-	private static EmptyResult empty = new EmptyResult();
+	static EmptyResult empty = new EmptyResult();
 
 	public Object eval(TypedTree node) {
 		switch (node.hint) {
@@ -63,14 +63,18 @@ public class Interpreter extends TreeVisitor2<nez.ast.script.Interpreter.Undefin
 	public class Source extends Undefined {
 		@Override
 		public Object visit(TypedTree node) {
+			boolean foundError = false;
 			Object result = empty;
 			for (TypedTree sub : node) {
 				if (sub.is(_Error)) {
-					return empty;
+					context.log(sub.getText(_msg, ""));
+					foundError = true;
 				}
-				result = eval(sub);
+				if (!foundError) {
+					result = eval(sub);
+				}
 			}
-			return result;
+			return foundError ? empty : result;
 		}
 	}
 

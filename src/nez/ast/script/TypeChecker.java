@@ -13,7 +13,6 @@ import nez.util.StringUtils;
 import nez.util.UList;
 
 public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefined> implements CommonSymbols {
-	boolean isShellMode = true;
 	ScriptContext context;
 	TypeSystem typeSystem;
 
@@ -29,6 +28,13 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 	public class Undefined {
 		public Type type(TypedTree t) {
 			ConsoleUtils.println("FIXME: TypeChecker " + t);
+			return void.class;
+		}
+	}
+
+	public class Error {
+		public Type type(TypedTree t) {
+			context.log(t.getText(_msg, ""));
 			return void.class;
 		}
 	}
@@ -61,7 +67,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 	}
 
 	private String name(Type t) {
-		return this.typeSystem.name(t);
+		return TypeSystem.name(t);
 	}
 
 	public void enforceType(Type req, TypedTree node, Symbol label) {
@@ -251,6 +257,21 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 			}
 		}
 		return void.class;
+	}
+
+	public class Assert extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			enforceType(boolean.class, node, _cond);
+			if (node.has(_msg)) {
+				enforceType(String.class, node, _msg);
+			} else {
+				String msg = node.get(_cond).formatSourceMessage("assert", "failed");
+				node.make(_cond, node.get(_cond), _msg, node.newStringConst(msg));
+			}
+			node.setMethod(Hint.StaticInvocation, typeSystem.AssertionMethod, null);
+			return void.class;
+		}
 	}
 
 	public class If extends Undefined {
@@ -471,7 +492,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 
 	public Type typeAssign(TypedTree node) {
 		TypedTree leftnode = node.get(_left);
-		if (isShellMode && !this.inFunction() && leftnode.is(_Name)) {
+		if (typeSystem.shellMode && !this.inFunction() && leftnode.is(_Name)) {
 			String name = node.getText(_left, null);
 			if (!this.typeSystem.hasGlobalVariable(name)) {
 				this.typeSystem.newGlobalVariable(Object.class, name);
@@ -871,6 +892,13 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 		}
 	}
 
+	public class Mod extends Undefined {
+		@Override
+		public Type type(TypedTree node) {
+			return typeBinary(node, "opMod", TypeSystem.UnifyAdditive);
+		}
+	}
+
 	public class Plus extends Undefined {
 		@Override
 		public Type type(TypedTree node) {
@@ -1118,7 +1146,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 
 	// Syntax Sugar
 
-	private Type typeSelfAssign(TypedTree node, Symbol optag) {
+	private Type typeSelfAssignment(TypedTree node, Symbol optag) {
 		TypedTree op = node.newInstance(optag, 0, null);
 		op.make(_left, node.get(_left).dup(), _right, node.get(_right));
 		node.set(_right, op);
@@ -1129,93 +1157,94 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 	public class AssignAdd extends Undefined {
 		@Override
 		public Type type(TypedTree node) {
-			return typeSelfAssign(node, _Add);
+			return typeSelfAssignment(node, _Add);
 		}
-
 	}
 
 	public class AssignSub extends Undefined {
 		@Override
 		public Type type(TypedTree node) {
-			return typeSelfAssign(node, _Sub);
+			return typeSelfAssignment(node, _Sub);
 		}
-
 	}
 
 	public class AssignMul extends Undefined {
 		@Override
 		public Type type(TypedTree node) {
-			return typeSelfAssign(node, _Mul);
+			return typeSelfAssignment(node, _Mul);
 		}
-
 	}
 
 	public class AssignDiv extends Undefined {
 		@Override
 		public Type type(TypedTree node) {
-			return typeSelfAssign(node, _Div);
+			return typeSelfAssignment(node, _Div);
 		}
-
 	}
 
 	public class AssignMod extends Undefined {
 		@Override
 		public Type type(TypedTree node) {
-			return typeSelfAssign(node, _Mod);
+			return typeSelfAssignment(node, _Mod);
 		}
-
 	}
 
 	public class AssignLeftShift extends Undefined {
 		@Override
 		public Type type(TypedTree node) {
-			return typeSelfAssign(node, _LeftShift);
+			return typeSelfAssignment(node, _LeftShift);
 		}
-
 	}
 
 	public class AssignRightShift extends Undefined {
 		@Override
 		public Type type(TypedTree node) {
-			return typeSelfAssign(node, _RightShift);
+			return typeSelfAssignment(node, _RightShift);
 		}
-
 	}
 
 	public class AssignLogicalRightShift extends Undefined {
 		@Override
 		public Type type(TypedTree node) {
-			return typeSelfAssign(node, _LogicalRightShift);
+			return typeSelfAssignment(node, _LogicalRightShift);
 		}
-
 	}
 
 	public class AssignBitwiseAnd extends Undefined {
 		@Override
 		public Type type(TypedTree node) {
-			return typeSelfAssign(node, _BitwiseAnd);
+			return typeSelfAssignment(node, _BitwiseAnd);
 		}
-
 	}
 
 	public class AssignBitwiseXOr extends Undefined {
 		@Override
 		public Type type(TypedTree node) {
-			return typeSelfAssign(node, _BitwiseXor);
+			return typeSelfAssignment(node, _BitwiseXor);
 		}
-
 	}
 
 	public class AssignBitwiseOr extends Undefined {
 		@Override
 		public Type type(TypedTree node) {
-			return typeSelfAssign(node, _BitwiseOr);
+			return typeSelfAssignment(node, _BitwiseOr);
 		}
-
 	}
 
 	private TypeCheckerException error(TypedTree node, String fmt, Object... args) {
 		return this.typeSystem.error(node, fmt, args);
+	}
+
+	void TRACE(String fmt, Object... args) {
+		typeSystem.TRACE(fmt, args);
+	}
+
+	void TODO(String fmt, Object... args) {
+		typeSystem.TODO(fmt, args);
+	}
+
+	void DEBUG(String fmt, Object... args) {
+		typeSystem.DEBUG(fmt, args);
 	}
 
 }
