@@ -41,10 +41,6 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 
 	FunctionBuilder function = null;
 
-	//
-	// boolean inFunction = false;
-	// Type returnType = null;
-
 	public final FunctionBuilder enterFunction(String name) {
 		this.function = new FunctionBuilder(this.function, name);
 		return this.function;
@@ -1101,10 +1097,14 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 	public class Interpolation extends Undefined {
 		@Override
 		public Type type(TypedTree node) {
-			for (TypedTree sub : node) {
+			for (int i = 0; i < node.size(); i++) {
+				TypedTree sub = node.get(i);
 				doType(sub);
+				if (sub.getType() != Object.class) {
+					node.set(i, typeSystem.enforceType(Object.class, sub));
+				}
 			}
-			return node.setMethod(Hint.StaticInvocation, typeSystem.InterpolationMethod, null);
+			return node.setMethod(Hint.Unique, typeSystem.InterpolationMethod, null);
 		}
 	}
 

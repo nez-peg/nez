@@ -187,6 +187,14 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 		}
 	}
 
+	public void visitInterpolation(TypedTree node) {
+		visitArrayUtils(Object.class, node);
+		this.mBuilder.invokeStatic(this.cBuilder.getTypeDesc(), this.mBuilder.getMethod());
+	}
+
+	// public class Interpolation extends Undefined {
+	// }
+
 	// methodAdapter.newInstance(NPE_TYPE);
 	// methodAdapter.dup();
 	// methodAdapter.push("The dispatcher must never be null!");
@@ -272,6 +280,7 @@ public class ScriptCompilerAsm extends TreeVisitor implements CommonSymbols {
 
 	public Class<?> compileStaticFuncDecl(String className, TypedTree node) {
 		this.openClass("F_" + className + "_" + unique);
+		this.cBuilder.visitSource(node.getSource().getResourceName(), null);
 		unique++;
 		this.visitFuncDecl(node);
 		return this.closeClass();

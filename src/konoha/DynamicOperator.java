@@ -275,6 +275,10 @@ public class DynamicOperator {
 
 	/** converter */
 
+	public final static Object to_Object(boolean a) {
+		return a;
+	}
+
 	public final static Object to_Object(byte a) {
 		return a;
 	}
@@ -300,6 +304,10 @@ public class DynamicOperator {
 	}
 
 	/** downcast */
+
+	public final static boolean to_boolean(Object a) {
+		return (Boolean) a;
+	}
 
 	public final static byte to_byte(Object a) {
 		return ((Number) a).byteValue();

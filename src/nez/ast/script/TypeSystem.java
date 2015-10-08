@@ -385,7 +385,9 @@ public class TypeSystem extends CommonContext implements CommonSymbols {
 			TypedTree sub = params.get(i);
 			results[i] = matcher != null ? this.checkType(matcher, p[i], sub) : this.checkType(p[i], sub);
 			if (results[i] == null) {
-				matcher.init();
+				if (matcher != null) {
+					matcher.init();
+				}
 				return false;
 			}
 		}
@@ -685,16 +687,12 @@ public class TypeSystem extends CommonContext implements CommonSymbols {
 	protected Method InterpolationMethod = null;
 
 	void initMethod() {
-		try {
-			this.AssertionMethod = Reflector.load(konoha.StaticOperator.class, "assert_", boolean.class, String.class);
-			this.DynamicGetter = this.getClass().getMethod("getDynamicField", Object.class, String.class);
-			this.DynamicSetter = this.getClass().getMethod("setDynamicField", Object.class, String.class, Object.class);
-			this.ObjectIndexer = this.getClass().getMethod("getObjectIndexer", Object.class, Object.class);
-			this.ObjectSetIndexer = this.getClass().getMethod("setObjectIndexer", Object.class, Object.class, Object.class);
-			this.InterpolationMethod = this.getClass().getMethod("joinString", Object[].class);
-		} catch (NoSuchMethodException | SecurityException e) {
-			e.printStackTrace();
-		}
+		this.AssertionMethod = Reflector.load(konoha.StaticOperator.class, "assert_", boolean.class, String.class);
+		this.DynamicGetter = Reflector.load(TypeSystem.class, "getDynamicField", Object.class, String.class);
+		this.DynamicSetter = Reflector.load(TypeSystem.class, "setDynamicField", Object.class, String.class, Object.class);
+		this.ObjectIndexer = Reflector.load(TypeSystem.class, "getObjectIndexer", Object.class, Object.class);
+		this.ObjectSetIndexer = Reflector.load(TypeSystem.class, "setObjectIndexer", Object.class, Object.class, Object.class);
+		this.InterpolationMethod = Reflector.load(TypeSystem.class, "joinString", Object[].class);
 	}
 
 	public final static Object getObjectIndexer(Object self, Object index) {
@@ -784,9 +782,9 @@ public class TypeSystem extends CommonContext implements CommonSymbols {
 	}
 
 	public void DEBUG(String fmt, Object... args) {
-		if (this.debugMode) {
-			System.err.println("DEBUG: " + String.format(fmt, args));
-		}
+		// if (this.debugMode) {
+		System.err.println("DEBUG: " + String.format(fmt, args));
+		// }
 	}
 
 }

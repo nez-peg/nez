@@ -2,7 +2,7 @@ package nez.ast.script;
 
 import java.lang.reflect.Method;
 
-class TypeCheckerException extends RuntimeException {
+public class TypeCheckerException extends RuntimeException {
 
 	private static final long serialVersionUID = 1L;
 	TypedTree errorTree;
