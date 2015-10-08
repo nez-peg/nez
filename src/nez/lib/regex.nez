@@ -4,7 +4,8 @@
 
   Author:
     Shun Honda (https://github.com/shun-honda)
-    
+		Masanori Sato (https://github.com/masanori-10)
+
 */
 
 File
@@ -20,7 +21,7 @@ Expr
 	= Concatenation {@ ('|' @Concatenation) #Or }*
 
 Concatenation
-	= IndependentExpr {@ (@IndependentExpr) #Concatenation }*
+	= IndependentExpr {@ (@IndependentExpr) #Concatenation }* {@ '$' #EndOfString }?
 
 IndependentExpr
 	= { '(?>' @Concatenation ')' #IndependentExpr }
@@ -28,6 +29,10 @@ IndependentExpr
 
 Predicate
 	= { '(' ('?=' #And / '?!' #Not) @Concatenation ')' }
+	/ PositionAnchor
+
+PositionAnchor
+	= { '^' @Concatenation #StartOfString }
 	/ SuffixTerminal
 
 SuffixTerminal
@@ -39,6 +44,12 @@ addQuantifiers
 	/ '*' #Repetition
 	/ '+' #OneMoreRepetition
 	/ '?' #Option
+	/ '{' @{ INT #Min } '}' #NTimesRepetition
+	/ '{' @{ INT #Min } ',}' #NMoreRepetition
+	/ '{' @{ INT #Min } ',' @{ INT #Max } '}' #NtoMTimesRepetition
+
+INT
+	= [1-9] [0-9]* / '0'
 
 Terminal
 	= CharacterSet
@@ -48,7 +59,7 @@ Terminal
 
 CharacterSet
 	= '[^' { @CharacterRange (@CharacterRange)* #NegativeCharacterSet} ']'
-	/'[' !'^' CharacterRange {@ (@CharacterRange)+ #CharacterSet}? ']' 
+	/'[' !'^' CharacterRange {@ (@CharacterRange)+ #CharacterSet}? ']'
 
 CharacterRange
 	= CharacterSetItem {@ '-' @CharacterSetItem #CharacterRange }?
@@ -87,5 +98,3 @@ CHARACTER
 METACHARACTER
 	= '+' / '*' / '?' / '.' / '^' / '$' / '|' / '/'
 	/ '(' / ')' / '[' / ']' / '{' / '}' / '-'
-
-

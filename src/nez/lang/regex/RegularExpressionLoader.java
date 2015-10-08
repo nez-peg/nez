@@ -33,7 +33,7 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 			} catch (IOException e) {
 				ConsoleUtils.exit(1, "unload: " + e.getMessage());
 			}
-			assert (lParser != null);
+			assert(lParser != null);
 		}
 		return lParser;
 	}
@@ -48,8 +48,23 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 		return (Expression) visit("pi", Expression.class, expr, k);
 	}
 
+	// boolean isSOS = false;
+
 	public Expression piPattern(Tree<?> e, Expression k) {
-		return this.pi(e.get(0), k);
+		String ruleName = "Pattern";
+		Expression ne = ExpressionCommons.newNonTerminal(e, this.getGrammar(), ruleName);
+		getGrammar().newProduction(ruleName, pi(e.get(0), k));
+		Expression zeroMore = ExpressionCommons.newPzero(null, toSeq(null, ExpressionCommons.newPnot(null, ne), toAny(null)));
+		Expression main = toSeq(null, zeroMore, ExpressionCommons.newPone(null, toSeq(null, ne, zeroMore)));
+		// ruleName = "SOSPattern";
+		// isSOS = true;
+		// Expression sose = ExpressionCommons.newNonTerminal(e,
+		// this.getGrammar(), ruleName);
+		// getGrammar().newProduction(ruleName, pi(e.get(0), k));
+		// Expression sos = toSeq(null, sose, ExpressionCommons.newPzero(null,
+		// toSeq(null, zeroMore, ne)));
+		// return toChoice(null, sos, main);
+		return main;
 	}
 
 	// pi(e, k) e: regular expression, k: continuation
@@ -113,8 +128,42 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 		return pi(e.get(0), piRepetition(e, k));
 	}
 
+	// pi(e{3}, k) = pi(e, pi(e, pi(e, k)))
+	public Expression piNTimesRepetition(Tree<?> e, Expression k) {
+		final int N = e.getInt(1, 0);
+		Expression ne = k;
+		for (int i = 0; i < N; i++) {
+			ne = pi(e.get(0), ne);
+		}
+		return ne;
+	}
+
+	// pi(e{N,}, k) = pi(e{N}, A), A <- pi(e, A) / k
+	public Expression piNMoreRepetition(Tree<?> e, Expression k) {
+		return piNTimesRepetition(e, piRepetition(e, k));
+	}
+
+	// pi(e{N,M}, k) = pi(e{N}, A0), A0 <- pi(e, A1) / k, ... A(M-N) <- k
+	public Expression piNtoMTimesRepetition(Tree<?> e, Expression k) {
+		final int DIF = e.getInt(2, 0) - e.getInt(1, 0);
+		String ruleName = "Repetition" + NonTerminalCount++;
+		Expression ne = ExpressionCommons.newNonTerminal(e, this.getGrammar(), ruleName);
+		getGrammar().newProduction(ruleName, k);
+		for (int i = 0; i < DIF; i++) {
+			ruleName = "Repetition" + NonTerminalCount++;
+			Expression nne = ne;
+			ne = ExpressionCommons.newNonTerminal(e, this.getGrammar(), ruleName);
+			getGrammar().newProduction(ruleName, toChoice(e, pi(e.get(0), nne), k));
+		}
+		return piNTimesRepetition(e, ne);
+	}
+
 	public Expression piAny(Tree<?> e, Expression k) {
 		return toSeq(e, k);
+	}
+
+	public Expression piCapture(Tree<?> e, Expression k) {
+		return pi(e.get(0), k); // TODO Capture
 	}
 
 	public Expression piNegativeCharacterSet(Tree<?> e, Expression k) {
@@ -138,6 +187,18 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 	// c: single character
 	public Expression piCharacter(Tree<?> c, Expression k) {
 		return toSeq(c, k);
+	}
+
+	// TODO modify implementation
+	// public Expression piStartOfString(Tree<?> e, Expression k) {
+	// if (isSOS) {
+	// return pi(e.get(0), k);
+	// }
+	// return ExpressionCommons.newFailure(null);
+	// }
+
+	public Expression piEndOfString(Tree<?> e, Expression k) {
+		return pi(e.get(0), toSeq(null, ExpressionCommons.newPnot(null, toAny(null)), k));
 	}
 
 	private Expression toExpression(Tree<?> e) {
@@ -169,7 +230,9 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 	public Expression toCharacterRange(Tree<?> e) {
 		byte[] begin = StringUtils.toUtf8(e.get(0).toText());
 		byte[] end = StringUtils.toUtf8(e.get(1).toText());
-		byteMap = new boolean[257];
+		if (byteMap == null) {
+			byteMap = new boolean[257];
+		}
 		for (byte i = begin[0]; i <= end[0]; i++) {
 			byteMap[i] = true;
 		}
@@ -227,4 +290,8 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 		return ExpressionCommons.newPsequence(null, l);
 	}
 
+	private final Expression _LineTerminator() {
+		Expression l[] = { ExpressionCommons.newCbyte(null, false, '\n'), ExpressionCommons.newCbyte(null, false, '\r'), ExpressionCommons.newString(null, "\r\n"), };
+		return ExpressionCommons.newPchoice(null, new UList<>(l));
+	}
 }
