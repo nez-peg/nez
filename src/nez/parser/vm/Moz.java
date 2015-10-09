@@ -1556,7 +1556,10 @@ class SMatch extends MozInstruction {
 	@Override
 	public Instruction exec(RuntimeContext sc) throws TerminationException {
 		byte[] t = sc.getSymbolTable().getSymbol(table);
-		if (t != null && sc.match(sc.getPosition(), t)) {
+		if (t == null) {
+			return this.next;
+		}
+		if (sc.match(sc.getPosition(), t)) {
 			sc.consume(t.length);
 			return this.next;
 		}
