@@ -394,50 +394,41 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 	public Type typeVarDecl(TypedTree node) {
 		String name = node.getText(_name, null);
 		Type type = typeSystem.resolveType(node.get(_type, null), null);
-		TypedTree exprNode = node.get(_expr, null);
-		if (type == null) {
-			if (exprNode == null) {
-				this.typeSystem.reportWarning(node.get(_name), "ungiven type");
-				type = Object.class;
-			} else {
-				type = visit(exprNode);
-			}
-		} else {
-			if (exprNode != null) {
+		if (type != null) {
+			if (node.has(_expr)) {
 				enforceType(type, node, _expr);
 			}
-		}
-		typed(node.get(_name), type);
-		if (this.inFunction()) {
-			// System.out.println("local variable");
-			this.function.setVarType(name, type);
-			if (exprNode == null) {
-				node.done();
-				return void.class;
-			}
-			// Assign
-			node.rename(_VarDecl, _Assign);
-			node.rename(_name, _left);
-			node.rename(_expr, _right);
-		} else {
-			// System.out.println("global variable");
-			GlobalVariable gv = typeSystem.getGlobalVariable(name);
-			if (gv != null) {
-				if (gv.getType() != type) {
-					throw error(node.get(_name), "already defined name: %s as %s", name, name(gv.getType()));
-				}
+		} else { /* type inference from the expression */
+			if (!node.has(_expr)) { // untyped
+				this.typeSystem.reportWarning(node.get(_name), "type is ungiven");
+				type = Object.class;
 			} else {
-				gv = typeSystem.newGlobalVariable(type, name);
+				type = visit(node.get(_expr, null));
 			}
-			if (exprNode == null) {
-				node.done();
-				return void.class;
-			}
-			// Assign
-			node.rename(_VarDecl, _Assign);
-			return node.setField(Hint.SetField, gv.field);
 		}
-		return void.class;
+		typed(node.get(_name), type); // name is typed
+
+		if (this.inFunction()) {
+			// TRACE("local variable");
+			this.function.setVarType(name, type);
+			return void.class;
+		}
+		// TRACE("global variable");
+		GlobalVariable gv = typeSystem.getGlobalVariable(name);
+		if (gv != null) {
+			if (gv.getType() != type) {
+				throw error(node.get(_name), "already defined name: %s as %s", name, name(gv.getType()));
+			}
+		} else {
+			gv = typeSystem.newGlobalVariable(type, name);
+		}
+		if (node.has(_expr)) {
+			node.done();
+			return void.class;
+		}
+		// Assign
+		node.rename(_VarDecl, _Assign);
+		return node.setField(Hint.SetField, gv.field);
 	}
 
 	/* StatementExpression */

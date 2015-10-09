@@ -144,8 +144,20 @@ public class MethodBuilder extends GeneratorAdapter {
 		}
 	}
 
-	public void pop(Class<?> clazz) {
-		this.pop(Type.getType(clazz));
+	public final void pop(Class<?> clazz) {
+		if (clazz == long.class || clazz == double.class) {
+			pop2();
+		} else if (clazz != void.class) {
+			pop();
+		}
+	}
+
+	public final void dup(Class<?> clazz) {
+		if (clazz == long.class || clazz == double.class) {
+			dup2();
+		} else if (clazz != void.class) {
+			dup();
+		}
 	}
 
 	/**

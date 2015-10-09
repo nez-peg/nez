@@ -426,19 +426,6 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 		}
 	}
 
-	public class VarDecl extends Undefined {
-		@Override
-		public void accept(TypedTree node) {
-			if (node.size() > 1) {
-				TypedTree varNode = node.get(_name);
-				TypedTree valueNode = node.get(_expr);
-				visit(valueNode);
-				varNode.setType(typeof(valueNode));
-				mBuilder.createNewVarAndStore(varNode.toText(), typeof(valueNode));
-			}
-		}
-	}
-
 	public class Block extends Undefined {
 		@Override
 		public void accept(TypedTree node) {
@@ -594,6 +581,18 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 		}
 	}
 
+	public class VarDecl extends Undefined {
+		@Override
+		public void accept(TypedTree node) {
+			TypedTree varNode = node.get(_name);
+			VarEntry var = mBuilder.createNewVar(varNode.toText(), varNode.getClassType());
+			if (node.has(_expr)) {
+				visit(node.get(_expr));
+				mBuilder.storeToVar(var);
+			}
+		}
+	}
+
 	public class Assign extends Undefined {
 		@Override
 		public void accept(TypedTree node) {
@@ -601,12 +600,9 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 			TypedTree valueNode = node.get(_right);
 			VarEntry var = mBuilder.getVar(name);
 			visit(valueNode);
-			if (var != null) {
-				mBuilder.storeToVar(var);
-			} else {
-				var = mBuilder.createNewVarAndStore(name, typeof(valueNode));
-			}
-			// mBuilder.loadFromVar(var);
+			mBuilder.dup(valueNode.getClassType()); // to return value form
+													// assignment
+			mBuilder.storeToVar(var);
 		}
 	}
 
@@ -632,6 +628,52 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 		public void accept(TypedTree node) {
 			VarEntry var = mBuilder.getVar(node.toText());
 			mBuilder.loadFromVar(var);
+		}
+	}
+
+	public class And extends Undefined {
+		@Override
+		public void accept(TypedTree node) {
+
+			// Label elseLabel = new Label();
+			// Label mergeLabel = new Label();
+			// this.mBuilder.PushNode(boolean.class, Node.LeftNode());
+			// this.mBuilder.visitJumpInsn(IFEQ, elseLabel);
+			//
+			// this.mBuilder.PushNode(boolean.class, Node.RightNode());
+			// this.mBuilder.visitJumpInsn(IFEQ, elseLabel);
+			//
+			// this.mBuilder.visitLdcInsn(true);
+			// this.mBuilder.visitJumpInsn(GOTO, mergeLabel);
+			//
+			// this.mBuilder.visitLabel(elseLabel);
+			// this.mBuilder.visitLdcInsn(false);
+			// this.mBuilder.visitJumpInsn(GOTO, mergeLabel);
+			//
+			// this.mBuilder.visitLabel(mergeLabel);
+
+		}
+	}
+
+	public class Or extends Undefined {
+		@Override
+		public void accept(TypedTree node) {
+			// Label thenLabel = new Label();
+			// Label mergeLabel = new Label();
+			// this.mBuilder.PushNode(boolean.class, Node.LeftNode());
+			// this.mBuilder.visitJumpInsn(IFNE, thenLabel);
+			//
+			// this.mBuilder.PushNode(boolean.class, Node.RightNode());
+			// this.mBuilder.visitJumpInsn(IFNE, thenLabel);
+			//
+			// this.mBuilder.visitLdcInsn(false);
+			// this.mBuilder.visitJumpInsn(GOTO, mergeLabel);
+			//
+			// this.mBuilder.visitLabel(thenLabel);
+			// this.mBuilder.visitLdcInsn(true);
+			// this.mBuilder.visitJumpInsn(GOTO, mergeLabel);
+			//
+			// this.mBuilder.visitLabel(mergeLabel);
 		}
 	}
 
@@ -1112,46 +1154,6 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 	// this.mBuilder.visitMethodInsn(INVOKESTATIC, owner, Method.getName(),
 	// Type.getMethodDescriptor(Method));
 	// }
-	// }
-	//
-	// @Override
-	// public void VisitAndNode(ZAndNode Node) {
-	// Label elseLabel = new Label();
-	// Label mergeLabel = new Label();
-	// this.mBuilder.PushNode(boolean.class, Node.LeftNode());
-	// this.mBuilder.visitJumpInsn(IFEQ, elseLabel);
-	//
-	// this.mBuilder.PushNode(boolean.class, Node.RightNode());
-	// this.mBuilder.visitJumpInsn(IFEQ, elseLabel);
-	//
-	// this.mBuilder.visitLdcInsn(true);
-	// this.mBuilder.visitJumpInsn(GOTO, mergeLabel);
-	//
-	// this.mBuilder.visitLabel(elseLabel);
-	// this.mBuilder.visitLdcInsn(false);
-	// this.mBuilder.visitJumpInsn(GOTO, mergeLabel);
-	//
-	// this.mBuilder.visitLabel(mergeLabel);
-	// }
-	//
-	// @Override
-	// public void VisitOrNode(ZOrNode Node) {
-	// Label thenLabel = new Label();
-	// Label mergeLabel = new Label();
-	// this.mBuilder.PushNode(boolean.class, Node.LeftNode());
-	// this.mBuilder.visitJumpInsn(IFNE, thenLabel);
-	//
-	// this.mBuilder.PushNode(boolean.class, Node.RightNode());
-	// this.mBuilder.visitJumpInsn(IFNE, thenLabel);
-	//
-	// this.mBuilder.visitLdcInsn(false);
-	// this.mBuilder.visitJumpInsn(GOTO, mergeLabel);
-	//
-	// this.mBuilder.visitLabel(thenLabel);
-	// this.mBuilder.visitLdcInsn(true);
-	// this.mBuilder.visitJumpInsn(GOTO, mergeLabel);
-	//
-	// this.mBuilder.visitLabel(mergeLabel);
 	// }
 
 	void TRACE(String fmt, Object... args) {
