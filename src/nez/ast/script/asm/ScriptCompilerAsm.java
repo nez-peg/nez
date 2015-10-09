@@ -270,7 +270,7 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 	}
 
 	public Class<?> closeClass() {
-		// cLoader.setDump(true);
+		cLoader.setVerboseMode(true);
 		Class<?> c = cLoader.definedAndLoadClass(this.cBuilder.getQualifiedClassName(), cBuilder.toByteArray());
 		this.cBuilder = null;
 		return c;
@@ -613,6 +613,13 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 				visit(node.get(_expr));
 			}
 			mBuilder.returnValue();
+		}
+	}
+
+	public class Break extends Undefined {
+		@Override
+		public void accept(TypedTree node) {
+
 		}
 	}
 

@@ -2,6 +2,7 @@ package nez.ast.script.asm;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.ProcessBuilder.Redirect;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -152,10 +153,15 @@ public class ScriptClassLoader extends ClassLoader {
 				stream.write(byteCode);
 				stream.close();
 				ProcessBuilder pb = new ProcessBuilder("javap", "-c", classFileName);
-				pb.redirectOutput();// FIXME
-				pb.start();
+				pb.redirectOutput(Redirect.INHERIT);
+				Process p = pb.start();
+				p.waitFor();
+				p.destroy();
 			} catch (IOException e) {
 				Verbose.traceException(e);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		}
 	}
