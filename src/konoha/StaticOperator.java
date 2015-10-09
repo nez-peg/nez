@@ -15,60 +15,7 @@ public class StaticOperator {
 		return a != b;
 	}
 
-	/* double */
-	public final static double opPlus(double a) {
-		return +a;
-	}
-
-	public final static double opMinus(double a) {
-		return -a;
-	}
-
-	public final static double opAdd(double a, double b) {
-		return a + b;
-	}
-
-	public final static double opSub(double a, double b) {
-		return a - b;
-	}
-
-	public final static double opMul(double a, double b) {
-		return a * b;
-	}
-
-	public final static double opDiv(double a, double b) {
-		return a / b;
-	}
-
-	public final static double opMod(double a, double b) {
-		return a % b;
-	}
-
-	public final static boolean opEquals(double a, double b) {
-		return a == b;
-	}
-
-	public final static boolean opNotEquals(double a, double b) {
-		return a != b;
-	}
-
-	public final static boolean opLessThan(double a, double b) {
-		return a < b;
-	}
-
-	public final static boolean opGreaterThan(double a, double b) {
-		return a > b;
-	}
-
-	public final static boolean opLessThanEquals(double a, double b) {
-		return a <= b;
-	}
-
-	public final static boolean opGreaterThanEquals(double a, double b) {
-		return a >= b;
-	}
-
-	/* long */
+	/* int */
 
 	/* int */
 
@@ -149,6 +96,141 @@ public class StaticOperator {
 	}
 
 	public final static int opCompl(int a) {
+		return ~a;
+	}
+
+	/* double */
+	public final static double opPlus(double a) {
+		return +a;
+	}
+
+	public final static double opMinus(double a) {
+		return -a;
+	}
+
+	public final static double opAdd(double a, double b) {
+		return a + b;
+	}
+
+	public final static double opSub(double a, double b) {
+		return a - b;
+	}
+
+	public final static double opMul(double a, double b) {
+		return a * b;
+	}
+
+	public final static double opDiv(double a, double b) {
+		return a / b;
+	}
+
+	public final static double opMod(double a, double b) {
+		return a % b;
+	}
+
+	public final static boolean opEquals(double a, double b) {
+		return a == b;
+	}
+
+	public final static boolean opNotEquals(double a, double b) {
+		return a != b;
+	}
+
+	public final static boolean opLessThan(double a, double b) {
+		return a < b;
+	}
+
+	public final static boolean opGreaterThan(double a, double b) {
+		return a > b;
+	}
+
+	public final static boolean opLessThanEquals(double a, double b) {
+		return a <= b;
+	}
+
+	public final static boolean opGreaterThanEquals(double a, double b) {
+		return a >= b;
+	}
+
+	/* long */
+
+	public final static long opPlus(long a) {
+		return +a;
+	}
+
+	public final static long opMinus(long a) {
+		return -a;
+	}
+
+	public final static long opAdd(long a, long b) {
+		return a + b;
+	}
+
+	public final static long opSub(long a, long b) {
+		return a - b;
+	}
+
+	public final static long opMul(long a, long b) {
+		return a * b;
+	}
+
+	public final static long opDiv(long a, long b) {
+		return a / b;
+	}
+
+	public final static long opMod(long a, long b) {
+		return a % b;
+	}
+
+	public final static boolean opEquals(long a, long b) {
+		return a == b;
+	}
+
+	public final static boolean opNotEquals(long a, long b) {
+		return a != b;
+	}
+
+	public final static boolean opLessThan(long a, long b) {
+		return a < b;
+	}
+
+	public final static boolean opGreaterThan(long a, long b) {
+		return a > b;
+	}
+
+	public final static boolean opLessThanEquals(long a, long b) {
+		return a <= b;
+	}
+
+	public final static boolean opGreaterThanEquals(long a, long b) {
+		return a >= b;
+	}
+
+	public final static long opLeftShift(long a, long b) {
+		return a << b;
+	}
+
+	public final static long opRightShift(long a, long b) {
+		return a >> b;
+	}
+
+	public final static long opLogicalRightShift(long a, long b) {
+		return a >>> b;
+	}
+
+	public final static long opBitwiseAnd(long a, long b) {
+		return a & b;
+	}
+
+	public final static long opBitwiseOr(long a, long b) {
+		return a | b;
+	}
+
+	public final static long opBitwiseXor(long a, long b) {
+		return a ^ b;
+	}
+
+	public final static long opCompl(long a) {
 		return ~a;
 	}
 

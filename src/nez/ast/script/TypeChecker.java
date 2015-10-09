@@ -770,7 +770,6 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 		if (right != common) {
 			right = this.tryPrecast(common, node, _right);
 		}
-		TRACE("left %s right %s common %s", left, right, common);
 		Type[] types = new Type[] { left, right };
 		int start = this.bufferMethods.size();
 		Method m = this.typeSystem.resolveFunctionMethod(name, types, bufferMethods, node);
