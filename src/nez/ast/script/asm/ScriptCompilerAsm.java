@@ -634,23 +634,22 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 	public class And extends Undefined {
 		@Override
 		public void accept(TypedTree node) {
+			Label elseLabel = new Label();
+			Label mergeLabel = new Label();
+			visit(node.get(_left));
+			mBuilder.visitJumpInsn(Opcodes.IFEQ, elseLabel);
 
-			// Label elseLabel = new Label();
-			// Label mergeLabel = new Label();
-			// this.mBuilder.PushNode(boolean.class, Node.LeftNode());
-			// this.mBuilder.visitJumpInsn(IFEQ, elseLabel);
-			//
-			// this.mBuilder.PushNode(boolean.class, Node.RightNode());
-			// this.mBuilder.visitJumpInsn(IFEQ, elseLabel);
-			//
-			// this.mBuilder.visitLdcInsn(true);
-			// this.mBuilder.visitJumpInsn(GOTO, mergeLabel);
-			//
-			// this.mBuilder.visitLabel(elseLabel);
-			// this.mBuilder.visitLdcInsn(false);
-			// this.mBuilder.visitJumpInsn(GOTO, mergeLabel);
-			//
-			// this.mBuilder.visitLabel(mergeLabel);
+			visit(node.get(_right));
+			mBuilder.visitJumpInsn(Opcodes.IFEQ, elseLabel);
+
+			mBuilder.visitLdcInsn(true);
+			mBuilder.visitJumpInsn(Opcodes.GOTO, mergeLabel);
+
+			mBuilder.visitLabel(elseLabel);
+			mBuilder.visitLdcInsn(false);
+			mBuilder.visitJumpInsn(Opcodes.GOTO, mergeLabel);
+
+			mBuilder.visitLabel(mergeLabel);
 
 		}
 	}
@@ -658,22 +657,22 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 	public class Or extends Undefined {
 		@Override
 		public void accept(TypedTree node) {
-			// Label thenLabel = new Label();
-			// Label mergeLabel = new Label();
-			// this.mBuilder.PushNode(boolean.class, Node.LeftNode());
-			// this.mBuilder.visitJumpInsn(IFNE, thenLabel);
-			//
-			// this.mBuilder.PushNode(boolean.class, Node.RightNode());
-			// this.mBuilder.visitJumpInsn(IFNE, thenLabel);
-			//
-			// this.mBuilder.visitLdcInsn(false);
-			// this.mBuilder.visitJumpInsn(GOTO, mergeLabel);
-			//
-			// this.mBuilder.visitLabel(thenLabel);
-			// this.mBuilder.visitLdcInsn(true);
-			// this.mBuilder.visitJumpInsn(GOTO, mergeLabel);
-			//
-			// this.mBuilder.visitLabel(mergeLabel);
+			Label thenLabel = new Label();
+			Label mergeLabel = new Label();
+			visit(node.get(_left));
+			mBuilder.visitJumpInsn(Opcodes.IFNE, thenLabel);
+
+			visit(node.get(_right));
+			mBuilder.visitJumpInsn(Opcodes.IFNE, thenLabel);
+
+			mBuilder.visitLdcInsn(false);
+			mBuilder.visitJumpInsn(Opcodes.GOTO, mergeLabel);
+
+			mBuilder.visitLabel(thenLabel);
+			mBuilder.visitLdcInsn(true);
+			mBuilder.visitJumpInsn(Opcodes.GOTO, mergeLabel);
+
+			mBuilder.visitLabel(mergeLabel);
 		}
 	}
 
