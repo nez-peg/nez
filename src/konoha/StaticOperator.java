@@ -1,6 +1,20 @@
 package konoha;
 
 public class StaticOperator {
+
+	/* boolean */
+	public final static boolean opNot(boolean a) {
+		return !a;
+	}
+
+	public final static boolean opEquals(boolean a, boolean b) {
+		return a == b;
+	}
+
+	public final static boolean opNotEquals(boolean a, boolean b) {
+		return a != b;
+	}
+
 	/* double */
 	public final static double opPlus(double a) {
 		return +a;

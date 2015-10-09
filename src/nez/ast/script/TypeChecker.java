@@ -422,7 +422,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 		} else {
 			gv = typeSystem.newGlobalVariable(type, name);
 		}
-		if (node.has(_expr)) {
+		if (!node.has(_expr)) {
 			node.done();
 			return void.class;
 		}
@@ -565,7 +565,8 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 		if (isStaticClassRecv(node)) {
 			return typeStaticField(node);
 		}
-		Class<?> c = TypeSystem.toClass(visit(node.get(_recv)));
+		visit(node.get(_recv));
+		Class<?> c = node.get(_recv).getClassType();
 		String name = node.getText(_name, "");
 		java.lang.reflect.Field f = typeSystem.getField(c, name);
 		if (f != null) {
@@ -727,7 +728,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 
 	private boolean isStaticClassRecv(TypedTree node) {
 		if (node.get(_recv).is(_Name)) {
-			Type t = this.typeSystem.resolveType(node.get(_recv), null);
+			Type t = this.typeSystem.getType(node.get(_recv).toText());
 			return t != null;
 		}
 		return false;
@@ -807,7 +808,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 		@Override
 		public Type accept(TypedTree node) {
 			enforceType(boolean.class, node, _expr);
-			return boolean.class;
+			return typeUnary(node, "opNot");
 		}
 	}
 

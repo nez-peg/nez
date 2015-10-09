@@ -70,6 +70,10 @@ public class TypeSystem extends CommonContext implements CommonSymbols {
 		this.TypeNames.put(name, type);
 	}
 
+	public final Type getType(String name) {
+		return this.TypeNames.get(name);
+	}
+
 	public final Type resolveType(TypedTree node, Type deftype) {
 		if (node == null) {
 			return deftype;

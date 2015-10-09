@@ -93,7 +93,7 @@ public class TypedTree extends Tree<TypedTree> {
 		this.hint = hint;
 		this.setValue(inf);
 		this.type = matcher.resolve(inf.getReturnType(), Object.class);
-		return null;
+		return this.type;
 	}
 
 	public final Method getMethod() {
@@ -168,6 +168,10 @@ public class TypedTree extends Tree<TypedTree> {
 	public void make(Symbol l1, TypedTree t1, Symbol l2, TypedTree t2, Symbol l3, TypedTree t3) {
 		this.subTree = new TypedTree[] { t1, t2, t3 };
 		this.labels = new Symbol[] { l1, l2, l3 };
+	}
+
+	public Interface getInterface() {
+		return (Interface) this.value;
 	}
 
 }

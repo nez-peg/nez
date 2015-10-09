@@ -9,6 +9,8 @@ public abstract class Interface {
 
 	public abstract Type[] getParameterTypes();
 
+	public abstract Object eval(Object... args);
+
 	public boolean match(TypeSystem ts, TypeVarMatcher matcher, TypedTree params, TypedTree[] results) {
 		Type[] p = this.getParameterTypes();
 		if (results == null && p.length > 0) {

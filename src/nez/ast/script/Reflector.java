@@ -1,5 +1,6 @@
 package nez.ast.script;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -14,6 +15,14 @@ public class Reflector {
 			return c.newInstance();
 		} catch (InstantiationException | IllegalAccessException e) {
 			throw new ScriptRuntimeException(e.getMessage());
+		}
+	}
+
+	public static Object newInstance(Constructor<?> c, Object[] args) {
+		try {
+			return c.newInstance(args);
+		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+			throw new ScriptRuntimeException(e.toString());
 		}
 	}
 
@@ -128,7 +137,7 @@ public class Reflector {
 			if (w instanceof RuntimeException) {
 				throw (RuntimeException) e.getTargetException();
 			}
-			e.printStackTrace();
+			// e.printStackTrace();
 			throw new ScriptRuntimeException("" + m + " caused by " + w.toString());
 		}
 	}

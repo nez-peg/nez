@@ -1,7 +1,6 @@
 package nez.ast.script.asm;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
 import nez.ast.script.Interface;
@@ -42,6 +41,11 @@ class IConstructor extends AsmInterface {
 	}
 
 	@Override
+	public Object eval(Object... args) {
+		return Reflector.newInstance(c, args);
+	}
+
+	@Override
 	public org.objectweb.asm.Type getOwner() {
 		return getAsmType(c.getDeclaringClass());
 	}
@@ -58,105 +62,105 @@ class IConstructor extends AsmInterface {
 
 }
 
-class IPrototype extends Interface {
-	String className;
-	Type clazz;
-	Type returnType;
-	Type[] paramTypes;
-
-	IPrototype(Type returnType, Type[] paramTypes) {
-		this.returnType = returnType;
-		this.paramTypes = paramTypes;
-	}
-
-	@Override
-	public Type getDeclaringClass() {
-		return this.clazz;
-	}
-
-	@Override
-	public Type getReturnType() {
-		return this.returnType;
-	}
-
-	@Override
-	public Type[] getParameterTypes() {
-		return this.paramTypes;
-	}
-
-}
-
-class IFunction extends Interface {
-	Class<?> funcType;
-
-	@Override
-	public Type getDeclaringClass() {
-		return null;
-	}
-
-	@Override
-	public Type getReturnType() {
-		Method m = Reflector.findInvokeMethod(funcType);
-		return m.getReturnType();
-	}
-
-	@Override
-	public Type[] getParameterTypes() {
-		Method m = Reflector.findInvokeMethod(funcType);
-		return m.getParameterTypes();
-	}
-
-}
-
-abstract class IMethod extends Interface {
-	protected Method method;
-
-	public IMethod(Method m) {
-		this.method = m;
-	}
-
-}
-
-class ISimpleMethod extends IMethod {
-
-	public ISimpleMethod(Method m) {
-		super(m);
-	}
-
-	@Override
-	public Type getDeclaringClass() {
-		return method.getDeclaringClass();
-	}
-
-	@Override
-	public Type getReturnType() {
-		return method.getReturnType();
-	}
-
-	@Override
-	public Type[] getParameterTypes() {
-		return method.getParameterTypes();
-	}
-}
-
-class IGenericMethod extends IMethod {
-
-	public IGenericMethod(Method m) {
-		super(m);
-	}
-
-	@Override
-	public Type getDeclaringClass() {
-		return method.getDeclaringClass();
-	}
-
-	@Override
-	public Type getReturnType() {
-		return method.getGenericReturnType();
-	}
-
-	@Override
-	public Type[] getParameterTypes() {
-		return method.getGenericParameterTypes();
-	}
-}
+// class IPrototype extends Interface {
+// String className;
+// Type clazz;
+// Type returnType;
+// Type[] paramTypes;
+//
+// IPrototype(Type returnType, Type[] paramTypes) {
+// this.returnType = returnType;
+// this.paramTypes = paramTypes;
+// }
+//
+// @Override
+// public Type getDeclaringClass() {
+// return this.clazz;
+// }
+//
+// @Override
+// public Type getReturnType() {
+// return this.returnType;
+// }
+//
+// @Override
+// public Type[] getParameterTypes() {
+// return this.paramTypes;
+// }
+//
+// }
+//
+// class IFunction extends Interface {
+// Class<?> funcType;
+//
+// @Override
+// public Type getDeclaringClass() {
+// return null;
+// }
+//
+// @Override
+// public Type getReturnType() {
+// Method m = Reflector.findInvokeMethod(funcType);
+// return m.getReturnType();
+// }
+//
+// @Override
+// public Type[] getParameterTypes() {
+// Method m = Reflector.findInvokeMethod(funcType);
+// return m.getParameterTypes();
+// }
+//
+// }
+//
+// abstract class IMethod extends Interface {
+// protected Method method;
+//
+// public IMethod(Method m) {
+// this.method = m;
+// }
+//
+// }
+//
+// class ISimpleMethod extends IMethod {
+//
+// public ISimpleMethod(Method m) {
+// super(m);
+// }
+//
+// @Override
+// public Type getDeclaringClass() {
+// return method.getDeclaringClass();
+// }
+//
+// @Override
+// public Type getReturnType() {
+// return method.getReturnType();
+// }
+//
+// @Override
+// public Type[] getParameterTypes() {
+// return method.getParameterTypes();
+// }
+// }
+//
+// class IGenericMethod extends IMethod {
+//
+// public IGenericMethod(Method m) {
+// super(m);
+// }
+//
+// @Override
+// public Type getDeclaringClass() {
+// return method.getDeclaringClass();
+// }
+//
+// @Override
+// public Type getReturnType() {
+// return method.getGenericReturnType();
+// }
+//
+// @Override
+// public Type[] getParameterTypes() {
+// return method.getGenericParameterTypes();
+// }
+// }

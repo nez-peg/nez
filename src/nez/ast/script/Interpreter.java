@@ -30,6 +30,8 @@ public class Interpreter extends TreeVisitor2<SyntaxTreeInterpreter> implements 
 			return evalApplyHint(node);
 		case Constant:
 			return node.getValue();
+		case Constructor:
+			return evalConstructorHint(node);
 		case MethodApply:
 			return evalMethodApplyHint(node);
 		case StaticInvocation:
@@ -200,6 +202,12 @@ public class Interpreter extends TreeVisitor2<SyntaxTreeInterpreter> implements 
 	private Object evalStaticInvocationHint(TypedTree node) {
 		Object[] args = this.evalApplyArgument(node);
 		return Reflector.invokeStaticMethod(node.getMethod(), args);
+	}
+
+	public Object evalConstructorHint(TypedTree node) {
+		Object[] args = evalApplyArgument(node.get(_param));
+		Interface inf = node.getInterface();
+		return inf.eval(args);
 	}
 
 	public Object evalMethodApplyHint(TypedTree node) {

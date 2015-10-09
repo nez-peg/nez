@@ -8,6 +8,11 @@ import org.objectweb.asm.commons.Method;
 
 public abstract class AsmInterface extends Interface {
 
+	@Override
+	public Object eval(Object... args) {
+		return null;
+	}
+
 	public final Type getAsmType(Class<?> c) {
 		return Type.getType(c);
 	}
@@ -23,4 +28,5 @@ public abstract class AsmInterface extends Interface {
 	public abstract Type getOwner();
 
 	public abstract void pushInstruction(GeneratorAdapter a);
+
 }
