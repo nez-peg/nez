@@ -636,6 +636,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 		TypedTree args = node.get(_param);
 		Type[] types = typeApplyArguments(args);
 		if (isRecursiveCall(name, args)) {
+			TRACE("recrusive call");
 			return typeRecursiveApply(node, name, types);
 		}
 		Type func_t = this.tryCheckNameType(node.get(_name), true);
@@ -671,6 +672,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 		if (returnType == null) {
 			throw error(node, "ambigious return type in recursive call: %s", name);
 		}
+		node.setHint(Hint.RecursiveApply, returnType);
 		return returnType;
 	}
 
@@ -768,7 +770,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 		if (right != common) {
 			right = this.tryPrecast(common, node, _right);
 		}
-
+		TRACE("left %s right %s common %s", left, right, common);
 		Type[] types = new Type[] { left, right };
 		int start = this.bufferMethods.size();
 		Method m = this.typeSystem.resolveFunctionMethod(name, types, bufferMethods, node);

@@ -32,7 +32,7 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 
 	public class Undefined {
 		public void accept(TypedTree node) {
-			ConsoleUtils.println(node.formatSourceMessage("error", "unsupproted in ScriptCompiler"));
+			ConsoleUtils.println(node.formatSourceMessage("error", "unsupproted in ScriptCompiler #" + node));
 			visitDefaultValue(node);
 		}
 	}
