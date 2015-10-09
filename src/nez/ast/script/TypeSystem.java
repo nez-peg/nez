@@ -1,5 +1,6 @@
 package nez.ast.script;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -14,6 +15,7 @@ import konoha.Function;
 import konoha.StaticOperator;
 import konoha.StringOperator;
 import nez.ast.Tree;
+import nez.ast.script.asm.InterfaceFactory;
 import nez.ast.script.asm.ScriptCompiler;
 import nez.ast.script.stub.G_g;
 import nez.util.ConsoleUtils;
@@ -314,7 +316,7 @@ public class TypeSystem extends CommonContext implements CommonSymbols {
 			if (this.acceptParameters(matcher, gp, types)) {
 				return true;
 			}
-			matcher.init();
+			matcher.reset();
 		}
 		if (buf != null) {
 			buf.add(m);
@@ -385,7 +387,7 @@ public class TypeSystem extends CommonContext implements CommonSymbols {
 			results[i] = matcher != null ? this.checkType(matcher, p[i], sub) : this.checkType(p[i], sub);
 			if (results[i] == null) {
 				if (matcher != null) {
-					matcher.init();
+					matcher.reset();
 				}
 				return false;
 			}
@@ -442,7 +444,7 @@ public class TypeSystem extends CommonContext implements CommonSymbols {
 		return n;
 	}
 
-	private TypedTree tryTypeCoersion(Type reqt, Type expt, TypedTree node) {
+	TypedTree tryTypeCoersion(Type reqt, Type expt, TypedTree node) {
 		Method m = this.getCastMethod(expt, reqt);
 		if (m != null) {
 			TypedTree newnode = node.newInstance(_Cast, 1, null);
@@ -499,6 +501,24 @@ public class TypeSystem extends CommonContext implements CommonSymbols {
 			c = c.getSuperclass();
 		}
 		return this.checkMethodTypeEnforcement(start, buf, matcher, params);
+	}
+
+	public final Interface resolveConstructor(InterfaceFactory factory, TypeVarMatcher matcher, Type newType, Type[] paramTypes) {
+		Class<?> newClass = TypeSystem.toClass(newType);
+		Constructor<?>[] cList = newClass.getConstructors();
+		for (Constructor<?> c : cList) {
+			Type[] p = c.getGenericParameterTypes();
+			if (Interface.accept(matcher, p, paramTypes)) {
+				return factory.newConstructor(newType, c);
+			}
+		}
+		for (Constructor<?> c : cList) {
+			Type[] p = c.getGenericParameterTypes();
+			if (p.length == paramTypes.length) {
+				matcher.addCandidate(factory.newConstructor(newType, c));
+			}
+		}
+		return null;
 	}
 
 	// type check

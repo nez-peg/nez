@@ -8,7 +8,7 @@ import java.lang.reflect.Type;
 import nez.ast.Symbol;
 import nez.ast.TreeVisitor2;
 import nez.ast.script.TypeSystem.BinaryTypeUnifier;
-import nez.util.ConsoleUtils;
+import nez.ast.script.asm.InterfaceFactory;
 import nez.util.StringUtils;
 import nez.util.UList;
 
@@ -26,8 +26,9 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 	}
 
 	public class Undefined {
-		public Type type(TypedTree t) {
-			ConsoleUtils.println("FIXME: TypeChecker " + t);
+		public Type accept(TypedTree node) {
+			node.formatSourceMessage("error", "unsupproted type rule #" + node.getTag());
+			typeSystem.TODO("TypeChecker for %s", node);
 			return void.class;
 		}
 	}
@@ -54,8 +55,8 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 		return this.function != null;
 	}
 
-	public Type doType(TypedTree node) {
-		Type c = find(node).type(node);
+	public Type visit(TypedTree node) {
+		Type c = find(node).accept(node);
 		if (c != null) {
 			node.setType(c);
 		}
@@ -71,7 +72,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 		if (unode == null) {
 			throw this.error(node, "syntax error: %s is required", label);
 		}
-		doType(unode);
+		visit(unode);
 		node.set(label, this.typeSystem.enforceType(req, unode));
 	}
 
@@ -82,12 +83,12 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 	/* TopLevel */
 	public class Source extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			Type t = null;
 			for (int i = 0; i < node.size(); i++) {
 				TypedTree sub = node.get(i);
 				try {
-					t = doType(sub);
+					t = visit(sub);
 				} catch (TypeCheckerException e) {
 					sub = e.errorTree;
 					node.set(i, sub);
@@ -100,7 +101,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 
 	public class Import extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			return typeImport(node);
 		}
 	}
@@ -133,7 +134,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 
 	public class FuncDecl extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			return typeFuncDecl(node);
 		}
 	}
@@ -177,7 +178,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 		}
 		f.setParameterTypes(paramTypes);
 		try {
-			doType(bodyNode);
+			visit(bodyNode);
 		} catch (TypeCheckerException e) {
 			node.set(_body, e.errorTree);
 		}
@@ -191,7 +192,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 
 	public class Return extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			return typeReturn(node);
 		}
 	}
@@ -203,7 +204,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 		Type t = this.function.getReturnType();
 		if (t == null) { // type inference
 			if (node.has(_expr)) {
-				this.function.setReturnType(doType(node.get(_expr)));
+				this.function.setReturnType(visit(node.get(_expr)));
 			} else {
 				this.function.setReturnType(void.class);
 			}
@@ -223,7 +224,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 
 	public class Block extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			if (inFunction()) {
 				function.beginLocalVarScope();
 			}
@@ -237,7 +238,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 
 	public class StatementList extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			return typeStatementList(node);
 		}
 	}
@@ -246,7 +247,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 		for (int i = 0; i < node.size(); i++) {
 			TypedTree sub = node.get(i);
 			try {
-				doType(sub);
+				visit(sub);
 			} catch (TypeCheckerException e) {
 				sub = e.errorTree;
 				node.set(i, sub);
@@ -257,7 +258,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 
 	public class Assert extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			enforceType(boolean.class, node, _cond);
 			if (node.has(_msg)) {
 				enforceType(String.class, node, _msg);
@@ -272,11 +273,11 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 
 	public class If extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			enforceType(boolean.class, node, _cond);
-			doType(node.get(_then));
+			visit(node.get(_then));
 			if (node.has(_else)) {
-				doType(node.get(_else));
+				visit(node.get(_else));
 			}
 			return void.class;
 		}
@@ -284,10 +285,10 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 
 	public class Conditional extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			enforceType(boolean.class, node, _cond);
-			Type then_t = doType(node.get(_then));
-			Type else_t = doType(node.get(_else));
+			Type then_t = visit(node.get(_then));
+			Type else_t = visit(node.get(_else));
 			if (then_t != else_t) {
 				enforceType(then_t, node, _else);
 			}
@@ -297,43 +298,43 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 
 	public class While extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			enforceType(boolean.class, node, _cond);
-			doType(node.get(_body));
+			visit(node.get(_body));
 			return void.class;
 		}
 	}
 
 	public class Continue extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			return void.class;
 		}
 	}
 
 	public class Break extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			return void.class;
 		}
 	}
 
 	public class For extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			if (inFunction()) {
 				function.beginLocalVarScope();
 			}
 			if (node.has(_init)) {
-				doType(node.get(_init));
+				visit(node.get(_init));
 			}
 			if (node.has(_cond)) {
 				enforceType(boolean.class, node, _cond);
 			}
 			if (node.has(_iter)) {
-				doType(node.get(_iter));
+				visit(node.get(_iter));
 			}
-			doType(node.get(_body));
+			visit(node.get(_body));
 			if (inFunction()) {
 				function.endLocalVarScope();
 			}
@@ -343,7 +344,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 
 	public class ForEach extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			return typeForEach(node);
 		}
 	}
@@ -359,7 +360,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 			this.function.beginLocalVarScope();
 		}
 		this.function.setVarType(name, req_t);
-		doType(node.get(_body));
+		visit(node.get(_body));
 		if (inFunction()) {
 			this.function.endLocalVarScope();
 		}
@@ -369,7 +370,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 	protected Type[] EmptyArgument = new Type[0];
 
 	private Type typeIterator(Type req_t, TypedTree node) {
-		Type iter_t = doType(node.get(_iter));
+		Type iter_t = visit(node.get(_iter));
 		Method m = typeSystem.resolveObjectMethod(req_t, this.bufferMatcher, "iterator", EmptyArgument, null, null);
 		if (m != null) {
 			TypedTree iter = node.newInstance(_MethodApply, 0, null);
@@ -385,7 +386,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 
 	public class VarDecl extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			return typeVarDecl(node);
 		}
 	}
@@ -399,7 +400,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 				this.typeSystem.reportWarning(node.get(_name), "ungiven type");
 				type = Object.class;
 			} else {
-				type = doType(exprNode);
+				type = visit(exprNode);
 			}
 		} else {
 			if (exprNode != null) {
@@ -443,8 +444,8 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 
 	public class Expression extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
-			return doType(node.get(0));
+		public Type accept(TypedTree node) {
+			return visit(node.get(0));
 		}
 	}
 
@@ -452,7 +453,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 
 	public class Name extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			Type t = tryCheckNameType(node, true);
 			if (t == null) {
 				String name = node.toText();
@@ -481,7 +482,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 
 	public class Assign extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			return typeAssign(node);
 		}
 	}
@@ -500,7 +501,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 					node.get(_left).get(_param), //
 					node.get(_right));
 		}
-		Type left = doType(leftnode);
+		Type left = visit(leftnode);
 		this.enforceType(left, node, _right);
 
 		if (leftnode.hint == Hint.GetField) {
@@ -522,13 +523,13 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 
 	public class Cast extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			return typeCast(node);
 		}
 	}
 
 	public Type typeCast(TypedTree node) {
-		Type inner = doType(node.get(_expr));
+		Type inner = visit(node.get(_expr));
 		Type t = this.typeSystem.resolveType(node.get(_type), null);
 		if (t == null) {
 			throw error(node.get(_type), "undefined type: %s", node.getText(_type, ""));
@@ -564,7 +565,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 
 	public class _Field extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			return typeField(node);
 		}
 	}
@@ -573,7 +574,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 		if (isStaticClassRecv(node)) {
 			return typeStaticField(node);
 		}
-		Class<?> c = TypeSystem.toClass(doType(node.get(_recv)));
+		Class<?> c = TypeSystem.toClass(visit(node.get(_recv)));
 		String name = node.getText(_name, "");
 		java.lang.reflect.Field f = typeSystem.getField(c, name);
 		if (f != null) {
@@ -599,7 +600,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 	}
 
 	public Type typeIndexer(TypedTree node) {
-		Type recv_t = doType(node.get(_recv));
+		Type recv_t = visit(node.get(_recv));
 		Type[] param_t = this.typeApplyArguments(node.get(_param));
 		int start = this.bufferMethods.size();
 		Method m = this.typeSystem.resolveObjectMethod(recv_t, this.bufferMatcher, "get", param_t, null, null);
@@ -616,7 +617,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 	private Type typeSetIndexer(TypedTree node, TypedTree recv, TypedTree param, TypedTree expr) {
 		param.makeFlattenedList(param, expr);
 		node.make(_recv, recv, _param, param);
-		Type recv_t = doType(node.get(_recv));
+		Type recv_t = visit(node.get(_recv));
 		Type[] param_t = this.typeApplyArguments(node.get(_param));
 		int start = this.bufferMethods.size();
 		this.bufferMatcher.init(recv_t);
@@ -631,36 +632,9 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 		return this.undefinedMethod(node, start, "unsupported set indexer [] for %s", name(recv_t));
 	}
 
-	TypeVarMatcher bufferMatcher = new TypeVarMatcher();
-	UList<Method> bufferMethods = new UList<Method>(new Method[128]);
-
-	private String methods(UList<Method> bufferMethods, int start) {
-		StringBuilder sb = new StringBuilder();
-		for (int i = start; i < bufferMethods.size(); i++) {
-			sb.append(" ");
-			sb.append(bufferMethods.ArrayValues[i]);
-		}
-		bufferMethods.clear(start);
-		return sb.toString();
-	}
-
-	private Type resolvedMethod(TypedTree node, Hint hint, Method m, TypeVarMatcher matcher) {
-		return node.setMethod(hint, m, matcher);
-	}
-
-	private Type undefinedMethod(TypedTree node, int start, String fmt, Object... args) {
-		String msg = String.format(fmt, args);
-		if (this.bufferMethods.size() > start) {
-			msg = "mismatched " + msg + methods(bufferMethods, start);
-		} else {
-			msg = "undefined " + msg;
-		}
-		throw error(node, msg);
-	}
-
 	public class Apply extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			return typeApply(node);
 		}
 	}
@@ -685,7 +659,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 	private Type[] typeApplyArguments(TypedTree args) {
 		Type[] types = new Type[args.size()];
 		for (int i = 0; i < args.size(); i++) {
-			types[i] = doType(args.get(i));
+			types[i] = visit(args.get(i));
 		}
 		return types;
 	}
@@ -731,7 +705,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 
 	public class MethodApply extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			return typeMethodApply(node);
 		}
 	}
@@ -740,7 +714,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 		if (isStaticClassRecv(node)) {
 			return this.typeStaticMethodApply(node);
 		}
-		Type recv = doType(node.get(_recv));
+		Type recv = visit(node.get(_recv));
 		String name = node.getText(_name, "");
 		TypedTree args = node.get(_param);
 		Type[] types = this.typeApplyArguments(args);
@@ -780,7 +754,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 	}
 
 	private Type typeUnary(TypedTree node, String name) {
-		Type left = doType(node.get(_expr));
+		Type left = visit(node.get(_expr));
 		Type common = typeSystem.PrimitiveType(left);
 		if (left != common) {
 			left = this.tryPrecast(common, node, _expr);
@@ -793,8 +767,8 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 	}
 
 	private Type typeBinary(TypedTree node, String name, BinaryTypeUnifier unifier) {
-		Type left = doType(node.get(_left));
-		Type right = doType(node.get(_right));
+		Type left = visit(node.get(_left));
+		Type right = visit(node.get(_right));
 		Type common = unifier.unify(typeSystem.PrimitiveType(left), typeSystem.PrimitiveType(right));
 		if (left != common) {
 			left = this.tryPrecast(common, node, _left);
@@ -822,7 +796,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 
 	public class And extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			enforceType(boolean.class, node, _left);
 			enforceType(boolean.class, node, _right);
 			return boolean.class;
@@ -831,7 +805,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 
 	public class Or extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			enforceType(boolean.class, node, _left);
 			enforceType(boolean.class, node, _right);
 			return boolean.class;
@@ -840,7 +814,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 
 	public class Not extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			enforceType(boolean.class, node, _expr);
 			return boolean.class;
 		}
@@ -848,8 +822,8 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 
 	public class Instanceof extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
-			Class<?> c = TypeSystem.toClass(doType(node.get(_left)));
+		public Type accept(TypedTree node) {
+			Class<?> c = TypeSystem.toClass(visit(node.get(_left)));
 			Class<?> t = typeSystem.resolveClass(node.get(_right), null);
 			if (!t.isAssignableFrom(c)) {
 				typeSystem.reportWarning(node, "incompatible instanceof operation: %s", name(t));
@@ -862,168 +836,168 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 
 	public class Add extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			return typeBinary(node, "opAdd", TypeSystem.UnifyAdditive);
 		}
 	}
 
 	public class Sub extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			return typeBinary(node, "opSub", TypeSystem.UnifyAdditive);
 		}
 	}
 
 	public class Mul extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			return typeBinary(node, "opMul", TypeSystem.UnifyAdditive);
 		}
 	}
 
 	public class Div extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			return typeBinary(node, "opDiv", TypeSystem.UnifyAdditive);
 		}
 	}
 
 	public class Mod extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			return typeBinary(node, "opMod", TypeSystem.UnifyAdditive);
 		}
 	}
 
 	public class Plus extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			return typeUnary(node, "opPlus");
 		}
 	}
 
 	public class Minus extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			return typeUnary(node, "opMinus");
 		}
 	}
 
 	public class Equals extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			return typeBinary(node, "opEquals", TypeSystem.UnifyEquator);
 		}
 	}
 
 	public class NotEquals extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			return typeBinary(node, "opNotEquals", TypeSystem.UnifyEquator);
 		}
 	}
 
 	public class LessThan extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			return typeBinary(node, "opLessThan", TypeSystem.UnifyComparator);
 		}
 	}
 
 	public class LessThanEquals extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			return typeBinary(node, "opLessThanEquals", TypeSystem.UnifyComparator);
 		}
 	}
 
 	public class GreaterThan extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			return typeBinary(node, "opGreaterThan", TypeSystem.UnifyComparator);
 		}
 	}
 
 	public class GreaterThanEquals extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			return typeBinary(node, "opGreaterThanEquals", TypeSystem.UnifyComparator);
 		}
 	}
 
 	public class LeftShift extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			return typeBinary(node, "opLeftShift", TypeSystem.UnifyBitwise);
 		}
 	}
 
 	public class RightShift extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			return typeBinary(node, "opRightShift", TypeSystem.UnifyBitwise);
 		}
 	}
 
 	public class LogicalRightShift extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			return typeBinary(node, "opLogicalRightShift", TypeSystem.UnifyBitwise);
 		}
 	}
 
 	public class BitwiseAnd extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			return typeBinary(node, "opBitwiseAnd", TypeSystem.UnifyBitwise);
 		}
 	}
 
 	public class BitwiseOr extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			return typeBinary(node, "opBitwiseOr", TypeSystem.UnifyBitwise);
 		}
 	}
 
 	public class BitwiseXor extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			return typeBinary(node, "opBitwiseXor", TypeSystem.UnifyBitwise);
 		}
 	}
 
 	public class Compl extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			return typeUnary(node, "opCompl");
 		}
 	}
 
 	public class Null extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			return Object.class;
 		}
 	}
 
 	public class True extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			return node.setConst(boolean.class, true);
 		}
 	}
 
 	public class False extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			return node.setConst(boolean.class, false);
 		}
 	}
 
 	public class _Integer extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			try {
 				String n = node.toText().replace("_", "");
 				if (n.startsWith("0b") || n.startsWith("0B")) {
@@ -1041,7 +1015,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 
 	public class _Long extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			try {
 				String n = node.toText();
 				return node.setConst(long.class, Long.parseLong(n));
@@ -1057,7 +1031,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 
 	public class _Double extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			try {
 				String n = node.toText();
 				return node.setConst(double.class, Double.parseDouble(n));
@@ -1070,14 +1044,14 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 
 	public class Text extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			return node.setConst(String.class, node.toText());
 		}
 	}
 
 	public class _String extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			String t = node.toText();
 			return node.setConst(String.class, StringUtils.unquoteString(t));
 		}
@@ -1085,7 +1059,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 
 	public class Character extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			String t = StringUtils.unquoteString(node.toText());
 			if (t.length() == 1) {
 				return node.setConst(char.class, t.charAt(0));
@@ -1096,10 +1070,10 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 
 	public class Interpolation extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			for (int i = 0; i < node.size(); i++) {
 				TypedTree sub = node.get(i);
-				doType(sub);
+				visit(sub);
 				if (sub.getType() != Object.class) {
 					node.set(i, typeSystem.enforceType(Object.class, sub));
 				}
@@ -1108,37 +1082,124 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 		}
 	}
 
+	UList<Method> bufferMethods = new UList<Method>(new Method[128]);
+
+	private String methods(UList<Method> bufferMethods, int start) {
+		StringBuilder sb = new StringBuilder();
+		for (int i = start; i < bufferMethods.size(); i++) {
+			sb.append(" ");
+			sb.append(bufferMethods.ArrayValues[i]);
+		}
+		bufferMethods.clear(start);
+		return sb.toString();
+	}
+
+	private Type resolvedMethod(TypedTree node, Hint hint, Method m, TypeVarMatcher matcher) {
+		return node.setMethod(hint, m, matcher);
+	}
+
+	private Type undefinedMethod(TypedTree node, int start, String fmt, Object... args) {
+		String msg = String.format(fmt, args);
+		if (this.bufferMethods.size() > start) {
+			msg = "mismatched " + msg + methods(bufferMethods, start);
+		} else {
+			msg = "undefined " + msg;
+		}
+		throw error(node, msg);
+	}
+
+	// new interface
+	private InterfaceFactory factory = new InterfaceFactory();
+	private TypeVarMatcher bufferMatcher = new TypeVarMatcher(this.typeSystem);
+
+	private TypeVarMatcher initTypeMatcher(Type recvType) {
+		bufferMatcher.init(recvType);
+		return bufferMatcher;
+	}
+
+	private Type undefinedMethod(TypedTree node, TypeVarMatcher matcher, String fmt, Object... args) {
+		String methods = matcher.getErrorMessage();
+		String msg = String.format(fmt, args);
+		if (methods == null) {
+			msg = "undefined " + msg;
+		} else {
+			msg = "mismatched " + msg + methods;
+		}
+		throw error(node, msg);
+	}
+
+	public class New extends Undefined {
+		@Override
+		public Type accept(TypedTree node) {
+			Type newType = typeSystem.resolveType(node.get(_type), null);
+			Type[] paramTypes = typeApplyArguments(node.get(_param));
+			TypeVarMatcher matcher = initTypeMatcher(newType);
+			Interface inf = typeSystem.resolveConstructor(factory, matcher, newType, paramTypes);
+			if (inf == null) {
+				inf = matcher.matchCandidate(node.get(_param));
+			}
+			if (inf != null) {
+				return node.setInterface(Hint.Constructor, inf, matcher);
+			}
+			return undefinedMethod(node, matcher, "constructor %s", name(newType));
+		}
+	}
+
 	/* array */
 
-	public class Array extends Undefined {
-
-		@Override
-		public Type type(TypedTree node) {
-			Type elementType = Object.class;
-			if (node.size() > 0) {
-				boolean mixed = false;
-				elementType = null;
-				for (TypedTree sub : node) {
-					Type t = doType(sub);
-					if (t == elementType) {
-						continue;
-					}
-					if (elementType == null) {
-						elementType = t;
-					} else {
-						mixed = true;
-						elementType = Object.class;
-					}
-				}
-				if (mixed) {
-					for (int i = 0; i < node.size(); i++) {
-						TypedTree sub = node.get(i);
-						if (sub.getType() != Object.class) {
-							node.set(i, typeSystem.enforceType(Object.class, sub));
-						}
-					}
+	private Type typeCollectionElement(TypedTree node, int step) {
+		if (node.size() == 0) {
+			return Object.class;
+		}
+		boolean mixed = false;
+		Type elementType = Object.class;
+		int shift = step == 2 ? 1 : 0;
+		for (int i = 0; i < node.size(); i += step) {
+			TypedTree sub = node.get(i + shift);
+			Type t = visit(sub);
+			if (t == elementType) {
+				continue;
+			}
+			if (elementType == null) {
+				elementType = t;
+			} else {
+				mixed = true;
+				elementType = Object.class;
+			}
+		}
+		if (mixed) {
+			for (int i = 0; i < node.size(); i += step) {
+				TypedTree sub = node.get(i + shift);
+				if (sub.getType() != Object.class) {
+					node.set(i, typeSystem.enforceType(Object.class, sub));
 				}
 			}
+		}
+		return elementType;
+	}
+
+	public class Array extends Undefined {
+		@Override
+		public Type accept(TypedTree node) {
+			Type elementType = typeCollectionElement(node, 1);
+			Type arrayType = typeSystem.newArrayType(elementType);
+			return arrayType;
+		}
+	}
+
+	public class Set extends Undefined {
+		@Override
+		public Type accept(TypedTree node) {
+			Type elementType = typeCollectionElement(node, 1);
+			Type arrayType = typeSystem.newArrayType(elementType);
+			return arrayType;
+		}
+	}
+
+	public class Dict extends Undefined {
+		@Override
+		public Type accept(TypedTree node) {
+			Type elementType = typeCollectionElement(node, 1);
 			Type arrayType = typeSystem.newArrayType(elementType);
 			return arrayType;
 		}
@@ -1156,77 +1217,77 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 
 	public class AssignAdd extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			return typeSelfAssignment(node, _Add);
 		}
 	}
 
 	public class AssignSub extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			return typeSelfAssignment(node, _Sub);
 		}
 	}
 
 	public class AssignMul extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			return typeSelfAssignment(node, _Mul);
 		}
 	}
 
 	public class AssignDiv extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			return typeSelfAssignment(node, _Div);
 		}
 	}
 
 	public class AssignMod extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			return typeSelfAssignment(node, _Mod);
 		}
 	}
 
 	public class AssignLeftShift extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			return typeSelfAssignment(node, _LeftShift);
 		}
 	}
 
 	public class AssignRightShift extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			return typeSelfAssignment(node, _RightShift);
 		}
 	}
 
 	public class AssignLogicalRightShift extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			return typeSelfAssignment(node, _LogicalRightShift);
 		}
 	}
 
 	public class AssignBitwiseAnd extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			return typeSelfAssignment(node, _BitwiseAnd);
 		}
 	}
 
 	public class AssignBitwiseXOr extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			return typeSelfAssignment(node, _BitwiseXor);
 		}
 	}
 
 	public class AssignBitwiseOr extends Undefined {
 		@Override
-		public Type type(TypedTree node) {
+		public Type accept(TypedTree node) {
 			return typeSelfAssignment(node, _BitwiseOr);
 		}
 	}

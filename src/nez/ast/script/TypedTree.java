@@ -89,6 +89,13 @@ public class TypedTree extends Tree<TypedTree> {
 		return this.type;
 	}
 
+	public Type setInterface(Hint hint, Interface inf, TypeVarMatcher matcher) {
+		this.hint = hint;
+		this.setValue(inf);
+		this.type = matcher.resolve(inf.getReturnType(), Object.class);
+		return null;
+	}
+
 	public final Method getMethod() {
 		return (Method) this.getValue();
 	}

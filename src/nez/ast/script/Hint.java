@@ -12,4 +12,5 @@ public enum Hint {
 	UpCast, //
 	DownCast, //
 	StaticDynamicInvocation, //
+	Constructor, //
 }

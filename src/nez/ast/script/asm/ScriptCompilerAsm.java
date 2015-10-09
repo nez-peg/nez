@@ -67,6 +67,9 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 		case MethodApply:
 			this.visitMehodApplyHint(node);
 			return;
+		case Constructor:
+			this.visitConstructorHint(node);
+			return;
 		case Unique:
 			break;
 		default:
@@ -196,6 +199,21 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 		} else {
 			this.mBuilder.invokeVirtual(Type.getType(owner), methodDesc);
 		}
+	}
+
+	private AsmInterface getInterface(TypedTree node) {
+		return (AsmInterface) node.getValue();
+	}
+
+	private void visitConstructorHint(TypedTree node) {
+		AsmInterface inf = getInterface(node);
+		this.mBuilder.newInstance(inf.getOwner());
+		this.mBuilder.dup();
+		for (TypedTree sub : node.get(_param)) {
+			visit(sub);
+		}
+		inf.pushInstruction(this.mBuilder);
+		// checkUnbox(node.getType(), )
 	}
 
 	private void visitSetFieldHint(TypedTree node) {
@@ -367,18 +385,6 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 		}
 	}
 
-	public class Block extends Undefined {
-		@Override
-		public void accept(TypedTree node) {
-			mBuilder.enterScope();
-			for (TypedTree stmt : node) {
-				mBuilder.setLineNum(node.getLineNum());
-				visit(stmt);
-			}
-			mBuilder.exitScope();
-		}
-	}
-
 	public class Constructor extends Undefined {
 		@Override
 		public void accept(TypedTree node) {
@@ -430,6 +436,21 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 				varNode.setType(typeof(valueNode));
 				mBuilder.createNewVarAndStore(varNode.toText(), typeof(valueNode));
 			}
+		}
+	}
+
+	public class Block extends Undefined {
+		@Override
+		public void accept(TypedTree node) {
+			mBuilder.enterScope();
+			for (TypedTree stmt : node) {
+				mBuilder.setLineNum(node.getLineNum()); // FIXME
+				visit(stmt);
+				if (stmt.getType() != void.class) {
+					mBuilder.pop(stmt.getClassType());
+				}
+			}
+			mBuilder.exitScope();
 		}
 	}
 

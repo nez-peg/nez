@@ -7,20 +7,64 @@ import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
 import java.util.HashMap;
 
+import nez.util.UList;
+
 public class TypeVarMatcher {
-
+	TypeSystem typeSystem;
+	UList<Interface> candiateList = new UList<Interface>(new Interface[32]);
+	String mismatched;
 	HashMap<String, Type> vars = new HashMap<>();
-	GenericType recv;
+	GenericType recvType;
 
-	public void init() {
+	TypeVarMatcher(TypeSystem typeSystem) {
+		this.typeSystem = typeSystem;
+	}
+
+	public final void init(Type recvType) {
+		if (recvType instanceof GenericType) {
+			this.recvType = (GenericType) recvType;
+		} else {
+			this.recvType = null;
+		}
+		vars.clear();
+		this.candiateList.clear(0);
+	}
+
+	public final void reset() {
 		vars.clear();
 	}
 
-	public void init(Type recv2) {
-		vars.clear();
-		if (recv2 instanceof GenericType) {
-			this.recv = (GenericType) recv2;
+	public final void addCandidate(Interface inf) {
+		if (inf != null) {
+			this.candiateList.add(inf);
 		}
+	}
+
+	public final Interface matchCandidate(TypedTree params) {
+		TypedTree[] buf = null;
+		for (Interface inf : this.candiateList) {
+			if (buf == null) {
+				buf = new TypedTree[params.size()];
+			}
+			if (inf.match(typeSystem, this, params, buf)) {
+				return inf;
+			}
+		}
+		buf = null;
+		mismatched = null;
+		if (this.candiateList.size() > 0) {
+			StringBuilder sb = new StringBuilder();
+			for (Interface inf : this.candiateList) {
+				sb.append(" ");
+				sb.append(inf.toString());
+			}
+			mismatched = sb.toString();
+		}
+		return null;
+	}
+
+	public final String getErrorMessage() {
+		return mismatched;
 	}
 
 	public boolean match(Type p, boolean isParam, Type a) {
@@ -35,8 +79,8 @@ public class TypeVarMatcher {
 			if (vars.containsKey(name)) {
 				return match(vars.get(name), isParam, a);
 			}
-			if (recv != null) {
-				Type t = recv.resolveType(name, null);
+			if (recvType != null) {
+				Type t = recvType.resolveType(name, null);
 				if (t != null) {
 					vars.put(name, t);
 					return match(t, isParam, a);
@@ -63,18 +107,18 @@ public class TypeVarMatcher {
 				}
 				return true;
 			}
-			System.out.printf("TODO: ParameterizedType %s\n", a.getClass().getName());
+			typeSystem.TODO("ParameterizedType %s\n", a.getClass().getName());
 			return false;
 		}
 		if (p instanceof WildcardType) {
-			System.out.printf("TODO: WildcardType %s\n", p.getClass().getName());
+			typeSystem.TODO("WildcardType %s\n", p.getClass().getName());
 			return false;
 		}
 		if (p instanceof GenericArrayType) {
-			System.out.printf("TODO: GenericArrayType %s\n", p.getClass().getName());
+			typeSystem.TODO("GenericArrayType %s\n", p.getClass().getName());
 			return false;
 		}
-		System.out.printf("TODO: unknown %s\n", p.getClass().getName());
+		typeSystem.TODO("unknown %s\n", p.getClass().getName());
 		return false;
 	}
 
@@ -91,8 +135,8 @@ public class TypeVarMatcher {
 			if (vars.containsKey(name)) {
 				return vars.get(name);
 			}
-			if (recv != null) {
-				Type t = recv.resolveType(name, null);
+			if (recvType != null) {
+				Type t = recvType.resolveType(name, null);
 				if (t != null) {
 					vars.put(name, t);
 					return t;
@@ -109,12 +153,12 @@ public class TypeVarMatcher {
 			return GenericType.newType((Class<?>) rawtype, params);
 		}
 		if (p instanceof WildcardType) {
-			System.out.printf("TODO: WildcardType %s\n", p.getClass().getName());
+			typeSystem.TODO("WildcardType %s\n", p.getClass().getName());
 		}
 		if (p instanceof GenericArrayType) {
-			System.out.printf("TODO: GenericArrayType %s\n", p.getClass().getName());
+			typeSystem.TODO("GenericArrayType %s\n", p.getClass().getName());
 		}
-		System.out.printf("TODO: unknown %s\n", p.getClass().getName());
+		typeSystem.TODO("unknown %s\n", p.getClass().getName());
 		return unresolved;
 	}
 

@@ -58,7 +58,7 @@ public class ScriptContext {
 				ConsoleUtils.println("    ", sub);
 			}
 			try {
-				typechecker.doType(sub);
+				typechecker.visit(sub);
 				if (this.typeSystem.verboseMode) {
 					ConsoleUtils.println("[Typed]");
 					ConsoleUtils.println("    ", sub);
@@ -80,7 +80,7 @@ public class ScriptContext {
 			ConsoleUtils.println("    ", sub);
 		}
 		try {
-			typechecker.doType(sub);
+			typechecker.visit(sub);
 			if (this.typeSystem.verboseMode) {
 				ConsoleUtils.println("[Typed]");
 				ConsoleUtils.println("    ", sub);
