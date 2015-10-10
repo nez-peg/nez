@@ -154,6 +154,19 @@ public class Interpreter extends TreeVisitor2<SyntaxTreeInterpreter> implements 
 		}
 	}
 
+	public class Conditional extends Undefined {
+		@Override
+		public Object accept(TypedTree node) {
+			Boolean v = (Boolean) eval(node.get(_cond));
+			if (v) {
+				return eval(node.get(_then));
+			} else {
+				return eval(node.get(_else));
+			}
+
+		}
+	}
+
 	public class InstanceOf extends Undefined {
 		@Override
 		public Object accept(TypedTree node) {

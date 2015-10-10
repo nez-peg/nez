@@ -33,10 +33,6 @@ public class TypeMatcher {
 		this.candiateList.clear(0);
 	}
 
-	// public final void reset() {
-	// vars.clear();
-	// }
-
 	public final void addCandidate(Interface inf) {
 		if (inf != null) {
 			this.candiateList.add(inf);

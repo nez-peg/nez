@@ -1395,7 +1395,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 	}
 
 	private final Interface resolveObjectMethod(TypeMatcher matcher, Type recvType, String name, TypedTree params) {
-		return this.resolveMethod(matcher, recvType, true, name, params);
+		return this.resolveMethod(matcher, recvType, false, name, params);
 	}
 
 	private final Interface resolveMethod(TypeMatcher matcher, Type recvType, boolean isStaticOnly, String name, TypedTree params) {
@@ -1413,8 +1413,8 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 		return matchCandidate(matcher, params);
 	}
 
-	private Interface matchClassMethod(TypeMatcher matcher, boolean isStaticOnly, Class<?> recvType, String name, TypedTree params) {
-		Method[] mList = recvType.getDeclaredMethods();
+	private Interface matchClassMethod(TypeMatcher matcher, boolean isStaticOnly, Class<?> recvClass, String name, TypedTree params) {
+		Method[] mList = recvClass.getDeclaredMethods();
 		for (Method m : mList) {
 			if (matchMethod(m, isStaticOnly, name)) {
 				Type[] p = m.getGenericParameterTypes();

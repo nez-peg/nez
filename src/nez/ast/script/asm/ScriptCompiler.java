@@ -19,8 +19,7 @@ public class ScriptCompiler {
 
 	public ScriptCompiler(TypeSystem typeSystem) {
 		this.typeSystem = typeSystem;
-		this.cLoader = new ScriptClassLoader();
-		this.cLoader.setVerboseMode(typeSystem.isVerboseMode());
+		this.cLoader = new ScriptClassLoader(typeSystem);
 		this.asm = new ScriptCompilerAsm(this.typeSystem, this.cLoader);
 		this.typeSystem.init(this);
 	}

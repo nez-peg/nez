@@ -1,11 +1,13 @@
 package nez.ast.script.asm;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.ProcessBuilder.Redirect;
 import java.util.HashMap;
 import java.util.Map;
 
+import nez.ast.script.TypeSystem;
 import nez.main.Verbose;
 import nez.util.ConsoleUtils;
 
@@ -19,7 +21,7 @@ public class ScriptClassLoader extends ClassLoader {
 	/**
 	 * if true, dump byte code.
 	 */
-	private boolean verboseMode = false;
+	private TypeSystem typeSystem;
 
 	/**
 	 * must be fully qualified binary name(contains . ).
@@ -43,12 +45,6 @@ public class ScriptClassLoader extends ClassLoader {
 	// this.byteCodeMap = new HashMap<>();
 	// }
 
-	public ScriptClassLoader() {
-		super();
-		this.allowedPackageName = null;
-		this.byteCodeMap = new HashMap<>();
-	}
-
 	/**
 	 * used for child class loader creation.
 	 * 
@@ -58,13 +54,23 @@ public class ScriptClassLoader extends ClassLoader {
 		super(classLoader);
 		this.allowedPackageName = classLoader.allowedPackageName;
 		this.byteCodeMap = new HashMap<>();
+		this.typeSystem = classLoader.typeSystem;
+		this.dumpDirectory = classLoader.dumpDirectory;
+	}
+
+	public ScriptClassLoader(TypeSystem typeSystem) {
+		super();
+		this.allowedPackageName = null;
+		this.byteCodeMap = new HashMap<>();
+		this.typeSystem = typeSystem;
+		this.dumpDirectory = System.getenv("DUMPDIR");
 	}
 
 	@Override
 	protected Class<?> findClass(String name) throws ClassNotFoundException {
 		byte[] byteCode = this.byteCodeMap.remove(name);
 		if (byteCode == null) {
-			throw new ClassNotFoundException("not found class: " + name);
+			throw new ClassNotFoundException("class is not found: " + name);
 		}
 		return this.defineClass(name, byteCode, 0, byteCode.length);
 	}
@@ -102,6 +108,7 @@ public class ScriptClassLoader extends ClassLoader {
 	 * @param byteCode
 	 *            require java class specification.
 	 */
+
 	public void addByteCode(String className, byte[] byteCode) {
 		String binaryName = toBinaryName(className);
 		if (this.byteCodeMap.put(binaryName, byteCode) != null) {
@@ -141,33 +148,33 @@ public class ScriptClassLoader extends ClassLoader {
 		return loader;
 	}
 
-	/**
-	 * for debug purpose.
-	 */
+	private String dumpDirectory = null;
+
 	private void dump(String binaryClassName, byte[] byteCode) {
-		if (verboseMode) {
+		if (this.typeSystem.isVerboseMode() || dumpDirectory != null) {
 			int index = binaryClassName.lastIndexOf('.');
 			String classFileName = binaryClassName.substring(index + 1) + ".class";
+			if (dumpDirectory != null) {
+				classFileName = dumpDirectory + "/" + classFileName;
+			}
 			try (FileOutputStream stream = new FileOutputStream(classFileName)) {
-				ConsoleUtils.println("[generated] " + classFileName);
 				stream.write(byteCode);
 				stream.close();
+				ConsoleUtils.println("[Generated] " + classFileName);
+				if (dumpDirectory == null) {
+					new File(classFileName).deleteOnExit();
+				}
 				ProcessBuilder pb = new ProcessBuilder("javap", "-c", classFileName);
 				pb.redirectOutput(Redirect.INHERIT);
 				Process p = pb.start();
 				p.waitFor();
 				p.destroy();
 			} catch (IOException e) {
-				Verbose.traceException(e);
+				ConsoleUtils.println("cannot dump " + classFileName + " caused by " + e);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				Verbose.traceException(e);
 			}
 		}
-	}
-
-	public void setVerboseMode(boolean b) {
-		verboseMode = b;
 	}
 
 	private final static String toBinaryName(String className) {

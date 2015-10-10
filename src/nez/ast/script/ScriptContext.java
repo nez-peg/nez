@@ -65,6 +65,9 @@ public class ScriptContext {
 				}
 				if (!foundError) {
 					result = interpreter.eval(sub);
+					if (sub.getType() == void.class) {
+						result = Interpreter.empty;
+					}
 				}
 			} catch (TypeCheckerException e) {
 				foundError = true;
