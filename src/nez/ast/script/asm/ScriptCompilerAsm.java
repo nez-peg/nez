@@ -42,8 +42,9 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 		case Constant:
 			visitConstantHint(node);
 			return;
-		case StaticDynamicInvocation:
-		case StaticInvocation:
+		case StaticUnaryInterface:
+		case StaticBinaryInterface:
+		case StaticInvocation2:
 			visitStaticInvocationHint(node);
 			return;
 		case UpCast:
@@ -52,7 +53,7 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 		case DownCast:
 			visitDownCastHint(node);
 			return;
-		case Apply:
+		case StaticApplyInterface:
 			visitApplyHint(node);
 			return;
 		case RecursiveApply:
@@ -64,10 +65,10 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 		case SetField:
 			this.visitSetFieldHint(node);
 			return;
-		case MethodApply:
+		case MethodApply2:
 			this.visitMehodApplyHint(node);
 			return;
-		case Constructor:
+		case ConstructorInterface:
 			this.visitConstructorHint(node);
 			return;
 		case Unique:
@@ -141,9 +142,9 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 		for (TypedTree sub : node) {
 			visit(sub);
 		}
-		Type owner = Type.getType(node.getMethod().getDeclaringClass());
-		Method methodDesc = Method.getMethod(node.getMethod());
-		this.mBuilder.invokeStatic(owner, methodDesc);
+		AsmInterface inf = getInterface(node);
+		inf.pushInstruction(this.mBuilder);
+		this.unbox(node.getType(), inf.getReturnClass());
 	}
 
 	private void visitUpCastHint(TypedTree node) {
@@ -159,9 +160,9 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 		for (TypedTree sub : node.get(_param)) {
 			visit(sub);
 		}
-		Type owner = Type.getType(node.getMethod().getDeclaringClass());
-		Method methodDesc = Method.getMethod(node.getMethod());
-		this.mBuilder.invokeStatic(owner, methodDesc);
+		AsmInterface inf = getInterface(node);
+		inf.pushInstruction(this.mBuilder);
+		this.unbox(node.getType(), inf.getReturnClass());
 	}
 
 	private void visitRecursiveApplyHint(TypedTree node) {
@@ -187,20 +188,6 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 		}
 	}
 
-	private void visitMehodApplyHint(TypedTree node) {
-		visit(node.get(_recv));
-		for (TypedTree sub : node.get(_param)) {
-			visit(sub);
-		}
-		Class<?> owner = node.getMethod().getDeclaringClass();
-		Method methodDesc = Method.getMethod(node.getMethod());
-		if (owner.isInterface()) {
-			this.mBuilder.invokeInterface(Type.getType(owner), methodDesc);
-		} else {
-			this.mBuilder.invokeVirtual(Type.getType(owner), methodDesc);
-		}
-	}
-
 	private AsmInterface getInterface(TypedTree node) {
 		return (AsmInterface) node.getValue();
 	}
@@ -213,7 +200,20 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 			visit(sub);
 		}
 		inf.pushInstruction(this.mBuilder);
-		// checkUnbox(node.getType(), )
+	}
+
+	private void visitMehodApplyHint(TypedTree node) {
+		visit(node.get(_recv));
+		for (TypedTree sub : node.get(_param)) {
+			visit(sub);
+		}
+		AsmInterface inf = this.getInterface(node);
+		inf.pushInstruction(this.mBuilder);
+		this.unbox(node.getType(), inf.getReturnClass());
+	}
+
+	private void unbox(java.lang.reflect.Type type, Class<?> clazz) {
+		// TODO
 	}
 
 	private void visitSetFieldHint(TypedTree node) {
@@ -560,7 +560,8 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 			for (TypedTree catchNode : node.get(_catch)) {
 				Class<?> exceptionType = null;
 				if (catchNode.has(_type)) {
-					exceptionType = typeSystem.resolveClass(catchNode.get(_type), null);
+					TODO("THIS MUST BE RESOLVED IN TYPECHECKER");
+					// exceptionType = resolveClass(catchNode.get(_type), null);
 				}
 				mBuilder.catchException(labels.getStartLabel(), labels.getEndLabel(), Type.getType(exceptionType));
 				mBuilder.enterScope();
@@ -747,9 +748,8 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 		@Override
 		public void accept(TypedTree node) {
 			pushArray(Object.class, node);
-			Type owner = Type.getType(node.getMethod().getDeclaringClass());
-			Method methodDesc = Method.getMethod(node.getMethod());
-			mBuilder.invokeStatic(owner, methodDesc);
+			AsmInterface inf = getInterface(node);
+			inf.pushInstruction(mBuilder);
 		}
 	}
 

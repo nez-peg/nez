@@ -356,14 +356,4 @@ public class StaticOperator {
 		return a.intValue() & 0xff;
 	}
 
-	/* assertion */
-
-	public final static void assert_(boolean cond) {
-		assert (cond);
-	}
-
-	public final static void assert_(boolean cond, String msg) {
-		assert (cond) : msg;
-	}
-
 }

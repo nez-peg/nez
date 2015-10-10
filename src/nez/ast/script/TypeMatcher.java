@@ -9,15 +9,18 @@ import java.util.HashMap;
 
 import nez.util.UList;
 
-public class TypeVarMatcher {
+public class TypeMatcher {
 	TypeSystem typeSystem;
+	TypeChecker typeChecker;
 	UList<Interface> candiateList = new UList<Interface>(new Interface[32]);
 	String mismatched;
+
 	HashMap<String, Type> vars = new HashMap<>();
 	GenericType recvType;
 
-	TypeVarMatcher(TypeSystem typeSystem) {
+	TypeMatcher(TypeSystem typeSystem, TypeChecker typeChecker) {
 		this.typeSystem = typeSystem;
+		this.typeChecker = typeChecker;
 	}
 
 	public final void init(Type recvType) {
@@ -30,9 +33,9 @@ public class TypeVarMatcher {
 		this.candiateList.clear(0);
 	}
 
-	public final void reset() {
-		vars.clear();
-	}
+	// public final void reset() {
+	// vars.clear();
+	// }
 
 	public final void addCandidate(Interface inf) {
 		if (inf != null) {
@@ -40,17 +43,7 @@ public class TypeVarMatcher {
 		}
 	}
 
-	public final Interface matchCandidate(TypedTree params) {
-		TypedTree[] buf = null;
-		for (Interface inf : this.candiateList) {
-			if (buf == null) {
-				buf = new TypedTree[params.size()];
-			}
-			if (inf.match(typeSystem, this, params, buf)) {
-				return inf;
-			}
-		}
-		buf = null;
+	public final String getErrorMessage() {
 		mismatched = null;
 		if (this.candiateList.size() > 0) {
 			StringBuilder sb = new StringBuilder();
@@ -60,16 +53,16 @@ public class TypeVarMatcher {
 			}
 			mismatched = sb.toString();
 		}
-		return null;
-	}
-
-	public final String getErrorMessage() {
 		return mismatched;
 	}
 
-	public boolean match(Type p, boolean isParam, Type a) {
+	public final boolean match(Type p, Type a) {
+		return this.match(false, p, a);
+	}
+
+	public final boolean match(boolean isTypeParameter, Type p, Type a) {
 		if (p instanceof Class<?>) {
-			if (!isParam && a instanceof Class<?>) {
+			if (!isTypeParameter && a instanceof Class<?>) {
 				return ((Class<?>) p).isAssignableFrom((Class<?>) a);
 			}
 			return p == a;
@@ -77,13 +70,13 @@ public class TypeVarMatcher {
 		if (p instanceof TypeVariable) {
 			String name = ((TypeVariable<?>) p).getName();
 			if (vars.containsKey(name)) {
-				return match(vars.get(name), isParam, a);
+				return match(isTypeParameter, vars.get(name), a);
 			}
 			if (recvType != null) {
 				Type t = recvType.resolveType(name, null);
 				if (t != null) {
 					vars.put(name, t);
-					return match(t, isParam, a);
+					return match(isTypeParameter, t, a);
 				}
 			}
 			vars.put(name, a);
@@ -92,7 +85,7 @@ public class TypeVarMatcher {
 		if (p instanceof ParameterizedType) {
 			if (a instanceof GenericType) {
 				Type rawtype = ((ParameterizedType) p).getRawType();
-				if (!match(rawtype, true, ((GenericType) a).base)) {
+				if (!match(true, rawtype, ((GenericType) a).base)) {
 					return false;
 				}
 				Type[] pp = ((ParameterizedType) p).getActualTypeArguments();
@@ -101,7 +94,7 @@ public class TypeVarMatcher {
 					return false;
 				}
 				for (int i = 0; i < pp.length; i++) {
-					if (!match(pp[i], true, pa[i])) {
+					if (!match(true, pp[i], pa[i])) {
 						return false;
 					}
 				}
@@ -122,11 +115,7 @@ public class TypeVarMatcher {
 		return false;
 	}
 
-	public boolean match(Type p, Type a) {
-		return this.match(p, false, a);
-	}
-
-	public Type resolve(Type p, Class<?> unresolved) {
+	public final Type resolve(Type p, Class<?> unresolved) {
 		if (p instanceof Class<?>) {
 			return p;
 		}

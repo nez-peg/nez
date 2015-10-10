@@ -3,14 +3,16 @@ package nez.ast.script;
 public enum Hint {
 	Unique, //
 	Constant, //
-	StaticInvocation, //
-	Apply, //
+	StaticInvocation2, //
+	StaticUnaryInterface, //
+	StaticBinaryInterface, //
+	StaticApplyInterface, //
 	RecursiveApply, //
-	MethodApply, //
+	MethodApply2, //
 	GetField, //
 	SetField, //
 	UpCast, //
 	DownCast, //
-	StaticDynamicInvocation, //
-	Constructor, //
+	// StaticDynamicInvocation, //
+	ConstructorInterface,
 }

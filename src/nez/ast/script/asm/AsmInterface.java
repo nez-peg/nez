@@ -9,12 +9,16 @@ import org.objectweb.asm.commons.Method;
 public abstract class AsmInterface extends Interface {
 
 	@Override
-	public Object eval(Object... args) {
+	public Object eval(Object recv, Object... args) {
 		return null;
 	}
 
 	public final Type getAsmType(Class<?> c) {
 		return Type.getType(c);
+	}
+
+	public Type getOwner() {
+		return getAsmType(this.getDeclaringClass());
 	}
 
 	public final Method getDesc(java.lang.reflect.Method m) {
@@ -24,8 +28,6 @@ public abstract class AsmInterface extends Interface {
 	public final Method getDesc(java.lang.reflect.Constructor<?> c) {
 		return Method.getMethod(c);
 	}
-
-	public abstract Type getOwner();
 
 	public abstract void pushInstruction(GeneratorAdapter a);
 

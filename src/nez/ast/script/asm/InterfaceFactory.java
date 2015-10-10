@@ -1,6 +1,8 @@
 package nez.ast.script.asm;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 
 import nez.ast.script.Interface;
@@ -10,8 +12,18 @@ import org.objectweb.asm.commons.GeneratorAdapter;
 
 public class InterfaceFactory {
 
-	public Interface newConstructor(Type newType, Constructor<?> c) {
+	public final Interface newConstructor(Type newType, Constructor<?> c) {
 		return new IConstructor(newType, c);
+	}
+
+	public final Interface newMethod(Method m) {
+		if (Modifier.isStatic(m.getModifiers())) {
+			return new IStaticMethod(m);
+		}
+		if (Modifier.isInterface(m.getModifiers())) {
+			return new IInterfaceMethod(m);
+		}
+		return new IMethod(m);
 	}
 
 }
@@ -26,7 +38,12 @@ class IConstructor extends AsmInterface {
 	}
 
 	@Override
-	public Type getDeclaringClass() {
+	public Class<?> getDeclaringClass() {
+		return c.getDeclaringClass();
+	}
+
+	@Override
+	public Class<?> getReturnClass() {
 		return c.getDeclaringClass();
 	}
 
@@ -41,7 +58,7 @@ class IConstructor extends AsmInterface {
 	}
 
 	@Override
-	public Object eval(Object... args) {
+	public Object eval(Object recv, Object... args) {
 		return Reflector.newInstance(c, args);
 	}
 
@@ -59,7 +76,76 @@ class IConstructor extends AsmInterface {
 	public String toString() {
 		return c.toGenericString();
 	}
+}
 
+class IMethod extends AsmInterface {
+	protected Method method;
+
+	public IMethod(Method method) {
+		this.method = method;
+	}
+
+	@Override
+	public Class<?> getDeclaringClass() {
+		return this.method.getDeclaringClass();
+	}
+
+	@Override
+	public Class<?> getReturnClass() {
+		return this.method.getReturnType();
+	}
+
+	@Override
+	public Type getReturnType() {
+		return this.method.getGenericReturnType();
+	}
+
+	@Override
+	public Type[] getParameterTypes() {
+		return method.getGenericParameterTypes();
+	}
+
+	@Override
+	public Object eval(Object recv, Object... args) {
+		return Reflector.invokeMethod(recv, method, args);
+	}
+
+	@Override
+	public void pushInstruction(GeneratorAdapter a) {
+		a.invokeVirtual(this.getOwner(), this.getDesc(method));
+	}
+
+	@Override
+	public String toString() {
+		return method.toGenericString();
+	}
+}
+
+class IStaticMethod extends IMethod {
+	public IStaticMethod(Method method) {
+		super(method);
+	}
+
+	@Override
+	public Object eval(Object recv, Object... args) {
+		return Reflector.invokeMethod(null, method, args);
+	}
+
+	@Override
+	public void pushInstruction(GeneratorAdapter a) {
+		a.invokeStatic(this.getOwner(), this.getDesc(method));
+	}
+}
+
+class IInterfaceMethod extends IMethod {
+	public IInterfaceMethod(Method method) {
+		super(method);
+	}
+
+	@Override
+	public void pushInstruction(GeneratorAdapter a) {
+		a.invokeInterface(this.getOwner(), this.getDesc(method));
+	}
 }
 
 // class IPrototype extends Interface {

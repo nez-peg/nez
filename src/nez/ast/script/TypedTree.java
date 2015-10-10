@@ -1,7 +1,6 @@
 package nez.ast.script;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
 import nez.ast.Source;
@@ -82,23 +81,13 @@ public class TypedTree extends Tree<TypedTree> {
 		this.setValue(c);
 	}
 
-	public Type setMethod(Hint hint, Method m, TypeVarMatcher matcher) {
-		this.hint = hint;
-		this.setValue(m);
-		this.type = matcher == null ? m.getReturnType() : matcher.resolve(m.getGenericReturnType(), Object.class);
-		return this.type;
-	}
-
-	public Type setInterface(Hint hint, Interface inf, TypeVarMatcher matcher) {
-		this.hint = hint;
-		this.setValue(inf);
-		this.type = matcher.resolve(inf.getReturnType(), Object.class);
-		return this.type;
-	}
-
-	public final Method getMethod() {
-		return (Method) this.getValue();
-	}
+	// public Type setMethod(Hint hint, Method m, TypeVarMatcher matcher) {
+	// this.hint = hint;
+	// this.setValue(m);
+	// this.type = matcher == null ? m.getReturnType() :
+	// matcher.resolve(m.getGenericReturnType(), Object.class);
+	// return this.type;
+	// }
 
 	public final Field getField() {
 		return (Field) this.getValue();
@@ -110,6 +99,25 @@ public class TypedTree extends Tree<TypedTree> {
 		this.type = f.getType();
 		return this.type;
 	}
+
+	public Type setInterface(Hint hint, Interface inf) {
+		this.hint = hint;
+		this.setValue(inf);
+		this.type = inf.getReturnType();
+		return this.type;
+	}
+
+	public Type setInterface(Hint hint, Interface inf, TypeMatcher matcher) {
+		this.hint = hint;
+		this.setValue(inf);
+		this.type = matcher != null ? matcher.resolve(inf.getReturnType(), Object.class) : inf.getReturnType();
+		return this.type;
+	}
+
+	//
+	// public final Method getMethod() {
+	// return (Method) this.getValue();
+	// }
 
 	@Override
 	protected void stringfy(String indent, Symbol label, StringBuilder sb) {

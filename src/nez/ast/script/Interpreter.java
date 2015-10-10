@@ -1,7 +1,6 @@
 package nez.ast.script;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
 import konoha.Array;
@@ -26,15 +25,17 @@ public class Interpreter extends TreeVisitor2<SyntaxTreeInterpreter> implements 
 
 	public Object eval(TypedTree node) {
 		switch (node.hint) {
-		case Apply:
+		case StaticApplyInterface:
 			return evalApplyHint(node);
 		case Constant:
 			return node.getValue();
-		case Constructor:
+		case ConstructorInterface:
 			return evalConstructorHint(node);
-		case MethodApply:
+		case MethodApply2:
 			return evalMethodApplyHint(node);
-		case StaticInvocation:
+		case StaticUnaryInterface:
+		case StaticBinaryInterface:
+		case StaticInvocation2:
 			return evalStaticInvocationHint(node);
 		case GetField:
 			return evalFieldHint(node);
@@ -145,9 +146,9 @@ public class Interpreter extends TreeVisitor2<SyntaxTreeInterpreter> implements 
 		@Override
 		public Object accept(TypedTree node) {
 			Object v = eval(node.get(_expr));
-			Method m = node.getMethod();
-			if (m != null) {
-				return Reflector.invokeStaticMethod(m, v);
+			Interface inf = node.getInterface();
+			if (inf != null) {
+				return inf.eval(null, v);
 			}
 			return v;
 		}
@@ -201,25 +202,27 @@ public class Interpreter extends TreeVisitor2<SyntaxTreeInterpreter> implements 
 
 	private Object evalStaticInvocationHint(TypedTree node) {
 		Object[] args = this.evalApplyArgument(node);
-		return Reflector.invokeStaticMethod(node.getMethod(), args);
+		Interface inf = node.getInterface();
+		return inf.eval(null, args);
 	}
 
 	public Object evalConstructorHint(TypedTree node) {
 		Object[] args = evalApplyArgument(node.get(_param));
 		Interface inf = node.getInterface();
-		return inf.eval(args);
+		return inf.eval(null, args);
 	}
 
 	public Object evalMethodApplyHint(TypedTree node) {
 		Object recv = eval(node.get(_recv));
 		Object[] args = evalApplyArgument(node.get(_param));
-		return Reflector.invokeMethod(recv, node.getMethod(), args);
+		Interface inf = node.getInterface();
+		return inf.eval(recv, args);
 	}
 
 	public Object evalApplyHint(TypedTree node) {
-		// String name = node.getText(_name, null);
 		Object[] args = evalApplyArgument(node.get(_param));
-		return Reflector.invokeStaticMethod(node.getMethod(), args);
+		Interface inf = node.getInterface();
+		return inf.eval(null, args);
 	}
 
 	private Object[] evalApplyArgument(TypedTree node) {
@@ -234,7 +237,8 @@ public class Interpreter extends TreeVisitor2<SyntaxTreeInterpreter> implements 
 		@Override
 		public Object accept(TypedTree node) {
 			Object[] args = evalApplyArgument(node);
-			return Reflector.invokeStaticMethod(node.getMethod(), new Object[] { args });
+			Interface inf = node.getInterface();
+			return inf.eval(null, new Object[] { args });
 		}
 	}
 
