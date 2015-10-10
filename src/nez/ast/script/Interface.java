@@ -40,7 +40,7 @@ public abstract class Interface {
 			return false;
 		}
 		for (int j = 0; j < p.length; j++) {
-			if (!match(matcher, p[j], params.getType())) {
+			if (!match(matcher, p[j], params.get(j).getType())) {
 				return false;
 			}
 		}
