@@ -593,6 +593,20 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 		}
 	}
 
+	public class MultiVarDecl extends Undefined {
+		@Override
+		public void accept(TypedTree node) {
+			for (TypedTree sub : node) {
+				TypedTree varNode = sub.get(_name);
+				VarEntry var = mBuilder.createNewVar(varNode.toText(), varNode.getClassType());
+				if (sub.has(_expr)) {
+					visit(sub.get(_expr));
+					mBuilder.storeToVar(var);
+				}
+			}
+		}
+	}
+
 	public class Assign extends Undefined {
 		@Override
 		public void accept(TypedTree node) {

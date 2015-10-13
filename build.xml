@@ -54,11 +54,29 @@
 	</target>
 
 	<!-- ================================== -->
+	<!-- GENERATE JAR -->
+	<!-- ================================== -->
+	<target name="konoha" depends="build">
+		<jar jarfile="konoha.jar">
+			<fileset dir="${build_dir}" includes="**/*.class" />
+			<fileset dir="${source_dir}" includes="**/*.nez" />
+			<fileset dir="." includes="lib/**" />
+			<exclude name="**/*Test.class" />
+			<manifest>
+				<attribute name="Main-Class" value="nez.ext.Ckonoha" />
+			</manifest>
+			<zipfileset src="${jline_jar}" />
+			<zipfileset src="${asm_jar}" />
+		</jar>
+	</target>
+
+	<!-- ================================== -->
 	<!-- CLEAN -->
 	<!-- ================================== -->
 	<target name="clean">
 		<delete dir="${build_dir}" />
 		<delete file="${BinaryName}.jar" />
+		<delete file="konoha.jar" />
 		<delete dir="${build_test_dir}" />
 	</target>
 

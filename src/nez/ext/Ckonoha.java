@@ -10,6 +10,20 @@ import nez.main.CommandContext;
 import nez.util.ConsoleUtils;
 
 public class Ckonoha extends Command {
+	public static boolean release = false;
+
+	public final static void main(String[] args) {
+		try {
+			CommandContext c = new CommandContext();
+			c.parseCommandOption(args);
+			release = true;
+			Command com = new Ckonoha();
+			com.exec(c);
+		} catch (IOException e) {
+			ConsoleUtils.println(e);
+			System.exit(1);
+		}
+	}
 
 	@Override
 	public void exec(CommandContext config) throws IOException {
@@ -17,6 +31,7 @@ public class Ckonoha extends Command {
 			config.setGrammarFilePath("konoha.nez");
 		}
 		ScriptContext sc = new ScriptContext(config.newParser());
+		sc.setVerboseMode(!release);
 		if (config.hasInput()) {
 			while (config.hasInput()) {
 				sc.eval(config.nextInput());
@@ -29,7 +44,6 @@ public class Ckonoha extends Command {
 	public void shell(CommandContext config, ScriptContext sc) {
 		show(config.newGrammar().getDesc());
 		sc.setShellMode(true);
-		sc.setVerboseMode(true);
 		config.getStrategy();
 		int linenum = 1;
 		String command = null;

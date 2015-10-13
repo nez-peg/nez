@@ -15,7 +15,7 @@ public abstract class Command {
 	public final static String Copyright = "Copyright (c) 2014-2015, Nez project authors";
 	public final static String License = "BSD-License Open Source";
 
-	public final static void main(String[] args) {
+	public static void main(String[] args) {
 		try {
 			CommandContext c = new CommandContext();
 			c.parseCommandOption(args);

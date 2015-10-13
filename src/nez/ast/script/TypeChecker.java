@@ -390,9 +390,17 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 	}
 
 	public Type typeVarDecl(TypedTree node) {
+		boolean isArrayName = false;
 		String name = node.getText(_name, null);
+		if (node.get(_name).is(_ArrayName)) {
+			name = node.get(_name).getText(_name, null);
+			isArrayName = true;
+		}
 		Type type = resolveType(node.get(_type, null), null);
 		if (type != null) {
+			if (isArrayName) {
+				type = typeSystem.newArrayType(type);
+			}
 			if (node.has(_expr)) {
 				enforceType(type, node, _expr);
 			}
@@ -404,12 +412,64 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 				type = visit(node.get(_expr, null));
 			}
 		}
-		typed(node.get(_name), type); // name is typed
+		defineVariable(node, type, name);
+		return void.class;
+		// typed(node.get(_name), type); // name is typed
+		//
+		// if (this.inFunction()) {
+		// // TRACE("local variable");
+		// this.function.setVarType(name, type);
+		// return void.class;
+		// }
+		// // TRACE("global variable");
+		// GlobalVariable gv = typeSystem.getGlobalVariable(name);
+		// if (gv != null) {
+		// if (gv.getType() != type) {
+		// throw error(node.get(_name), "already defined name: %s as %s", name,
+		// name(gv.getType()));
+		// }
+		// } else {
+		// gv = typeSystem.newGlobalVariable(type, name);
+		// }
+		// if (!node.has(_expr)) {
+		// node.done();
+		// return void.class;
+		// }
+		// // Assign
+		// node.rename(_VarDecl, _Assign);
+		// return node.setField(Hint.SetField, gv.field);
+	}
 
+	public class MultiVarDecl extends Undefined {
+		@Override
+		public Type accept(TypedTree node) {
+			Type type = resolveType(node.get(_type), null);
+			for (TypedTree sub : node.get(_list)) {
+				typeVarDecl(type, sub);
+			}
+			return void.class;
+		}
+	}
+
+	public void typeVarDecl(Type type, TypedTree node) {
+		String name = node.getText(_name, null);
+		if (node.get(_name).is(_ArrayName)) {
+			name = node.get(_name).getText(_name, null);
+			type = typeSystem.newArrayType(type);
+		}
+		if (node.has(_expr)) {
+			enforceType(type, node, _expr);
+		}
+		defineVariable(node, type, name);
+	}
+
+	private void defineVariable(TypedTree node, Type type, String name) {
+		typed(node.get(_name), type); // name is typed
 		if (this.inFunction()) {
 			// TRACE("local variable");
 			this.function.setVarType(name, type);
-			return void.class;
+			typed(node, void.class);
+			return;
 		}
 		// TRACE("global variable");
 		GlobalVariable gv = typeSystem.getGlobalVariable(name);
@@ -420,13 +480,8 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 		} else {
 			gv = typeSystem.newGlobalVariable(type, name);
 		}
-		if (!node.has(_expr)) {
-			node.done();
-			return void.class;
-		}
-		// Assign
-		node.rename(_VarDecl, _Assign);
-		return node.setField(Hint.SetField, gv.field);
+		node.setField(Hint.SetField, gv.field);
+		typed(node, void.class);
 	}
 
 	/* StatementExpression */
@@ -454,6 +509,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 
 	private Type tryCheckNameType(TypedTree node, boolean rewrite) {
 		String name = node.toText();
+		System.out.println("@@@ infunction: " + this.inFunction());
 		if (this.inFunction()) {
 			if (this.function.containsVariable(name)) {
 				return this.function.getVarType(name);

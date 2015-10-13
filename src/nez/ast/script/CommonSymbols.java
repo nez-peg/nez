@@ -33,6 +33,7 @@ public interface CommonSymbols {
 	public final static Symbol _prefix = Symbol.tag("prefix");
 
 	public final static Symbol _Name = Symbol.tag("Name");
+	public final static Symbol _ArrayName = Symbol.tag("ArrayName");
 	public final static Symbol _ArrayType = Symbol.tag("ArrayType");
 	public final static Symbol _GenericType = Symbol.tag("GenericType");
 

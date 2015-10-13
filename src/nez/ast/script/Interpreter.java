@@ -92,6 +92,28 @@ public class Interpreter extends TreeVisitor2<SyntaxTreeInterpreter> implements 
 		}
 	}
 
+	public class VarDecl extends Undefined {
+		@Override
+		public Object accept(TypedTree node) {
+			if (node.has(_expr)) {
+				evalSetFieldHint(node);
+			}
+			return empty;
+		}
+	}
+
+	public class MultiFuncDecl extends Undefined {
+		@Override
+		public Object accept(TypedTree node) {
+			for (TypedTree sub : node.get(_list)) {
+				if (sub.has(_expr)) {
+					evalSetFieldHint(sub);
+				}
+			}
+			return empty;
+		}
+	}
+
 	/* boolean */
 
 	public class Block extends Undefined {
@@ -203,12 +225,12 @@ public class Interpreter extends TreeVisitor2<SyntaxTreeInterpreter> implements 
 	}
 
 	private Object evalSetFieldHint(TypedTree node) {
-		Object recv = null;
-		Object value = eval(node.get(_expr));
 		Field f = node.getField();
+		Object recv = null;
 		if (!Modifier.isStatic(f.getModifiers())) {
 			recv = nullEval(node.get(_recv, null));
 		}
+		Object value = eval(node.get(_expr));
 		Reflector.setField(recv, f, value);
 		return value;
 	}
