@@ -86,6 +86,7 @@ TODO                               = !''
 "const"                            = 'const' !W _
 "continue"                         = 'continue' !W _
 "default"                          = 'default' !W _
+"defined"                          = 'defined' !W _
 "do"                               = 'do' !W _
 "double"                           = 'double' !W _
 "else"                             = 'else' !W _
@@ -124,6 +125,7 @@ TODO                               = !''
 "transient"                        = 'transient' !W _
 "true"                             = 'true' !W _
 "try"                              = 'try' !W _
+"typeof"                           = 'typeof' !W _
 "var"                              = 'var' !W _
 "void"                             = 'void' !W _
 "while"                            = 'while' !W _
@@ -203,7 +205,7 @@ Declaration                        = ImportDeclaration
                                    / VariableDeclaration EOS
 
 // import
-ImportDeclaration                  = { "import" $(PackageName) #Import } EOS
+ImportDeclaration                  = { "import" $name(PackageName) #Import } EOS
 PackageName                        = QualifiedName {$ "." "*" #WildCardName }?
 
 // class
@@ -358,7 +360,8 @@ function fibo(n) {
 '''
 
 /* Types, Values, Variables */
-Type                               = ReferenceType
+Type                               = "typeof" "(" { $expr(Expression) #TypeOf } ")"
+                                   / ReferenceType
                                    / PrimitiveType
 PrimitiveType                      = { $anno(Modifiers) $(UnannoPrimitiveType) #Annotated }
                                    / UnannoPrimitiveType
@@ -596,6 +599,7 @@ default:
 /* Expression */
 Expressions                        = { $(Expression) ( "," $(Expression) )* #List }
 Expression                         = LambdaExpression
+                                   / "typeof" "(" { $expr(Expression) #TypeOf } ")"
                                    / AssignmentExpression
 AssignmentExpression               = { $left(UnaryExpression) _AssignmentOperator $right(Expression) }
                                    / ConditionalExpression

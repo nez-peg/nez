@@ -41,7 +41,7 @@ public class ScriptContext {
 		TypedTree node = (TypedTree) this.parser.parse(source, new TypedTree());
 		if (node == null) {
 			println(source.getSyntaxErrorMessage());
-			return this; // nothing
+			return Interpreter.empty; // nothing
 		}
 		if (node.is(CommonSymbols._Source)) {
 			return evalSource(node);

@@ -60,9 +60,12 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 	}
 
 	public Type visit(TypedTree node) {
-		Type c = find(node).accept(node);
-		if (c != null) {
-			node.setType(c);
+		Type c = node.getType();
+		if (c == null) {
+			c = find(node).accept(node);
+			if (c != null) {
+				node.setType(c);
+			}
 		}
 		return c;
 	}
@@ -102,16 +105,23 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 	}
 
 	public Type typeImport(TypedTree node) {
-		StringBuilder sb = new StringBuilder();
-		join(sb, node.get(0)); // FIXME: konoha.nez
-		String path = sb.toString();
+		String path = join(node.get(_name));
 		try {
 			typeSystem.importStaticClass(path);
 		} catch (ClassNotFoundException e) {
-			throw error(node, "undefined class name: %s", path);
+			throw error(node.get(_name), "undefined class name: %s", path);
 		}
 		node.done();
 		return void.class;
+	}
+
+	private String join(TypedTree node) {
+		if (node.size() == 0) {
+			return node.toText();
+		}
+		StringBuilder sb = new StringBuilder();
+		join(sb, node.get(0));
+		return sb.toString();
 	}
 
 	private void join(StringBuilder sb, TypedTree node) {
@@ -509,17 +519,18 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 
 	private Type tryCheckNameType(TypedTree node, boolean rewrite) {
 		String name = node.toText();
-		System.out.println("@@@ infunction: " + this.inFunction());
 		if (this.inFunction()) {
 			if (this.function.containsVariable(name)) {
 				return this.function.getVarType(name);
 			}
 		}
+		System.out.printf("@@@ infunction: %s '%s'", this.typeSystem.hasGlobalVariable(name), name);
 		if (this.typeSystem.hasGlobalVariable(name)) {
 			GlobalVariable gv = this.typeSystem.getGlobalVariable(name);
 			if (rewrite) {
 				node.setField(Hint.GetField, gv.field);
 			}
+			System.out.println(" gv=" + gv + ", " + gv.getType());
 			return gv.getType();
 		}
 		return null;

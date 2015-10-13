@@ -268,6 +268,28 @@ public class Interpreter extends TreeVisitor2<SyntaxTreeInterpreter> implements 
 		return args;
 	}
 
+	public class And extends Undefined {
+		@Override
+		public Object accept(TypedTree node) {
+			Boolean b = (Boolean) eval(node.get(_left));
+			if (b) {
+				return eval(node.get(_right));
+			}
+			return false;
+		}
+	}
+
+	public class Or extends Undefined {
+		@Override
+		public Object accept(TypedTree node) {
+			Boolean b = (Boolean) eval(node.get(_left));
+			if (!b) {
+				return eval(node.get(_right));
+			}
+			return true;
+		}
+	}
+
 	public class Interpolation extends Undefined {
 		@Override
 		public Object accept(TypedTree node) {
