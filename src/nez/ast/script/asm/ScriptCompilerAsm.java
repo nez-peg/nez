@@ -472,6 +472,8 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 		public void accept(TypedTree node) {
 			Label beginLabel = mBuilder.newLabel();
 			Label condLabel = mBuilder.newLabel();
+			Label breakLabel = mBuilder.newLabel();
+			mBuilder.getLoopLabels().push(new Pair<Label, Label>(breakLabel, condLabel));
 
 			mBuilder.goTo(condLabel);
 
@@ -485,6 +487,8 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 			mBuilder.push(true);
 
 			mBuilder.ifCmp(Type.BOOLEAN_TYPE, GeneratorAdapter.EQ, beginLabel);
+			mBuilder.mark(breakLabel);
+			mBuilder.getLoopLabels().pop();
 		}
 	}
 
@@ -492,16 +496,22 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 		@Override
 		public void accept(TypedTree node) {
 			Label beginLabel = mBuilder.newLabel();
+			Label continueLabel = mBuilder.newLabel();
+			Label breakLabel = mBuilder.newLabel();
+			mBuilder.getLoopLabels().push(new Pair<Label, Label>(breakLabel, continueLabel));
 
 			// Do
 			mBuilder.mark(beginLabel);
 			visit(node.get(_body));
 
 			// Condition
+			mBuilder.mark(continueLabel);
 			visit(node.get(_cond));
 			mBuilder.push(true);
 
 			mBuilder.ifCmp(Type.BOOLEAN_TYPE, GeneratorAdapter.EQ, beginLabel);
+			mBuilder.mark(breakLabel);
+			mBuilder.getLoopLabels().pop();
 		}
 	}
 
@@ -510,6 +520,9 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 		public void accept(TypedTree node) {
 			Label beginLabel = mBuilder.newLabel();
 			Label condLabel = mBuilder.newLabel();
+			Label breakLabel = mBuilder.newLabel();
+			Label continueLabel = mBuilder.newLabel();
+			mBuilder.getLoopLabels().push(new Pair<Label, Label>(breakLabel, continueLabel));
 
 			// Initialize
 			visit(node.get(_init));
@@ -519,13 +532,19 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 			// Block
 			mBuilder.mark(beginLabel);
 			visit(node.get(_body));
+			mBuilder.mark(continueLabel);
 			visit(node.get(_iter));
+			if (node.get(_iter).getType() != Type.VOID_TYPE) {
+				mBuilder.pop();
+			}
 
 			// Condition
 			mBuilder.mark(condLabel);
 			visit(node.get(_cond));
 			mBuilder.push(true);
 			mBuilder.ifCmp(Type.BOOLEAN_TYPE, MethodBuilder.EQ, beginLabel);
+			mBuilder.mark(breakLabel);
+			mBuilder.getLoopLabels().pop();
 		}
 	}
 
@@ -585,10 +604,12 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 		@Override
 		public void accept(TypedTree node) {
 			TypedTree varNode = node.get(_name);
-			VarEntry var = mBuilder.createNewVar(varNode.toText(), varNode.getClassType());
-			if (node.has(_expr)) {
-				visit(node.get(_expr));
-				mBuilder.storeToVar(var);
+			if (mBuilder.getVar(node.getText(_name, null)) == null) {
+				VarEntry var = mBuilder.createNewVar(varNode.toText(), varNode.getClassType());
+				if (node.has(_expr)) {
+					visit(node.get(_expr));
+					mBuilder.storeToVar(var);
+				}
 			}
 		}
 	}
@@ -606,6 +627,18 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 		}
 	}
 
+	public class Assert extends Undefined {
+		@Override
+		public void accept(TypedTree node) {
+			Label label = mBuilder.newLabel();
+			visit(node.get(_cond));
+			mBuilder.ifCmp(Type.BOOLEAN_TYPE, GeneratorAdapter.EQ, label);
+			// TODO: Error handling
+			mBuilder.throwException(Type.getType(java.lang.AssertionError.class), node.getText(_msg, null));
+			mBuilder.mark(label);
+		}
+	}
+
 	public class Return extends Undefined {
 		@Override
 		public void accept(TypedTree node) {
@@ -619,7 +652,18 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 	public class Break extends Undefined {
 		@Override
 		public void accept(TypedTree node) {
+			Label breakLabel = mBuilder.getLoopLabels().peek().getLeft();
+			mBuilder.jumpToMultipleFinally();
+			mBuilder.goTo(breakLabel);
+		}
+	}
 
+	public class Continue extends Undefined {
+		@Override
+		public void accept(TypedTree node) {
+			Label continueLabel = mBuilder.getLoopLabels().peek().getRight();
+			mBuilder.jumpToMultipleFinally();
+			mBuilder.goTo(continueLabel);
 		}
 	}
 
