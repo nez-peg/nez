@@ -488,6 +488,7 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 
 			mBuilder.ifCmp(Type.BOOLEAN_TYPE, GeneratorAdapter.EQ, beginLabel);
 			mBuilder.mark(breakLabel);
+			mBuilder.getLoopLabels().pop();
 		}
 	}
 
@@ -510,6 +511,7 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 
 			mBuilder.ifCmp(Type.BOOLEAN_TYPE, GeneratorAdapter.EQ, beginLabel);
 			mBuilder.mark(breakLabel);
+			mBuilder.getLoopLabels().pop();
 		}
 	}
 
@@ -532,6 +534,9 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 			visit(node.get(_body));
 			mBuilder.mark(continueLabel);
 			visit(node.get(_iter));
+			if (node.get(_iter).getType() != Type.VOID_TYPE) {
+				mBuilder.pop();
+			}
 
 			// Condition
 			mBuilder.mark(condLabel);
@@ -539,6 +544,7 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 			mBuilder.push(true);
 			mBuilder.ifCmp(Type.BOOLEAN_TYPE, MethodBuilder.EQ, beginLabel);
 			mBuilder.mark(breakLabel);
+			mBuilder.getLoopLabels().pop();
 		}
 	}
 
@@ -598,10 +604,12 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 		@Override
 		public void accept(TypedTree node) {
 			TypedTree varNode = node.get(_name);
-			VarEntry var = mBuilder.createNewVar(varNode.toText(), varNode.getClassType());
-			if (node.has(_expr)) {
-				visit(node.get(_expr));
-				mBuilder.storeToVar(var);
+			if (mBuilder.getVar(node.getText(_name, null)) == null) {
+				VarEntry var = mBuilder.createNewVar(varNode.toText(), varNode.getClassType());
+				if (node.has(_expr)) {
+					visit(node.get(_expr));
+					mBuilder.storeToVar(var);
+				}
 			}
 		}
 	}
@@ -622,7 +630,12 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 	public class Assert extends Undefined {
 		@Override
 		public void accept(TypedTree node) {
-
+			Label label = mBuilder.newLabel();
+			visit(node.get(_cond));
+			mBuilder.ifCmp(Type.BOOLEAN_TYPE, GeneratorAdapter.EQ, label);
+			// TODO: Error handling
+			mBuilder.throwException(Type.getType(java.lang.AssertionError.class), node.getText(_msg, null));
+			mBuilder.mark(label);
 		}
 	}
 
