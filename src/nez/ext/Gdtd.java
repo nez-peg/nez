@@ -12,6 +12,7 @@ import nez.Strategy;
 import nez.ast.Symbol;
 import nez.ast.Tree;
 import nez.lang.GrammarFileLoader;
+import nez.lang.schema.DTDSchemaGrammarGenerator;
 import nez.lang.schema.Type;
 import nez.util.ConsoleUtils;
 
