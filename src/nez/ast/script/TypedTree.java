@@ -51,6 +51,11 @@ public class TypedTree extends Tree<TypedTree> {
 		return t;
 	}
 
+	@Override
+	protected RuntimeException newNoSuchLabel(Symbol label) {
+		return new TypeCheckerException(this, "syntax : " + label);
+	}
+
 	// public void changed(Symbol tag, int n, Object v) {
 	// this.tag = tag;
 	// this.subTree = new TypedTree[n];
@@ -100,14 +105,14 @@ public class TypedTree extends Tree<TypedTree> {
 		return this.type;
 	}
 
-	public Type setInterface(Hint hint, Interface inf) {
+	public Type setInterface(Hint hint, Functor inf) {
 		this.hint = hint;
 		this.setValue(inf);
 		this.type = inf.getReturnType();
 		return this.type;
 	}
 
-	public Type setInterface(Hint hint, Interface inf, TypeMatcher matcher) {
+	public Type setInterface(Hint hint, Functor inf, TypeMatcher matcher) {
 		this.hint = hint;
 		this.setValue(inf);
 		this.type = matcher != null ? matcher.resolve(inf.getReturnType(), Object.class) : inf.getReturnType();
@@ -178,8 +183,8 @@ public class TypedTree extends Tree<TypedTree> {
 		this.labels = new Symbol[] { l1, l2, l3 };
 	}
 
-	public Interface getInterface() {
-		return (Interface) this.value;
+	public Functor getInterface() {
+		return (Functor) this.value;
 	}
 
 }

@@ -10,14 +10,13 @@ import konoha.Function;
 import nez.ast.Symbol;
 import nez.ast.TreeVisitor2;
 import nez.ast.script.TypeSystem.BinaryTypeUnifier;
-import nez.ast.script.asm.InterfaceFactory;
+import nez.ast.script.asm.FunctorFactory;
 import nez.util.StringUtils;
 import nez.util.UList;
 
 public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefined> implements CommonSymbols {
 	ScriptContext context;
 	TypeSystem typeSystem;
-	KonohaRuntime lib;
 
 	// TypeScope scope;
 
@@ -26,7 +25,6 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 		this.context = context;
 		this.typeSystem = typeSystem;
 		init(new Undefined());
-		lib = new KonohaRuntime();
 	}
 
 	public class Undefined {
@@ -271,7 +269,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 				String msg = node.get(_cond).formatSourceMessage("assert", "failed");
 				node.make(_cond, node.get(_cond), _msg, node.newStringConst(msg));
 			}
-			node.setInterface(Hint.StaticInvocation2, lib.System_assert(factory), null);
+			node.setInterface(Hint.StaticInvocation2, KonohaRuntime.System_assert(), null);
 			return void.class;
 		}
 	}
@@ -596,7 +594,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 		}
 		if (m != null) {
 			node.makeFlattenedList(node.get(_expr));
-			return node.setInterface(Hint.StaticInvocation2, factory.newMethod(m));
+			return node.setInterface(Hint.StaticInvocation2, FunctorFactory.newMethod(m));
 		}
 		if (req.isAssignableFrom(exp)) { // upcast
 			node.setTag(_UpCast);
@@ -636,7 +634,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 			return node.setField(Hint.GetField, f);
 		}
 		if (typeSystem.isDynamic(recvClass)) {
-			return node.setInterface(Hint.StaticInvocation2, lib.Object_getField(factory), null);
+			return node.setInterface(Hint.StaticInvocation2, KonohaRuntime.Object_getField(), null);
 		}
 		throw error(node.get(_name), "undefined field %s of %s", name, name(recvClass));
 	}
@@ -672,7 +670,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 		// return typeFuncApply(node, func_t, node.get(_param));
 		// }
 		TypeMatcher matcher = this.initTypeMatcher(null);
-		Interface inf = this.resolveFunction(matcher, name, node.get(_param));
+		Functor inf = this.resolveFunction(matcher, name, node.get(_param));
 		if (inf == null) {
 			return undefinedMethod(node, matcher, "funciton: %s", name);
 		}
@@ -713,7 +711,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 			Class<?>[] p = typeSystem.getFuncParameterTypes(func_t);
 			if (accept(p, params)) {
 				node.rename(_name, _recv);
-				return node.setInterface(Hint.MethodApply2, factory.newMethod(Reflector.findInvokeMethod((Class<?>) func_t)));
+				return node.setInterface(Hint.MethodApply2, FunctorFactory.newMethod(Reflector.findInvokeMethod((Class<?>) func_t)));
 			}
 			throw error(node, "mismatched %s", Reflector.findInvokeMethod((Class<?>) func_t));
 		} else {
@@ -721,7 +719,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 				params.set(i, enforceType(Object.class, params.get(i)));
 			}
 			// node.makeFlattenedList(node.get(_name), params);
-			return node.setInterface(Hint.StaticInvocation2, lib.Object_invokeFunction(factory));
+			return node.setInterface(Hint.StaticInvocation2, KonohaRuntime.Object_invokeFunction());
 		}
 	}
 
@@ -732,7 +730,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 			left = this.tryCastBeforeMatching(common, node, _expr);
 		}
 		TypeMatcher matcher = initTypeMatcher(null);
-		Interface inf = this.resolveFunction(matcher, name, node);
+		Functor inf = this.resolveFunction(matcher, name, node);
 		if (inf == null) {
 			return this.undefinedMethod(node, matcher, "unary %s %s", OperatorNames.name(name), name(left));
 		}
@@ -750,7 +748,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 			right = this.tryCastBeforeMatching(common, node, _right);
 		}
 		TypeMatcher matcher = initTypeMatcher(null);
-		Interface inf = this.resolveFunction(matcher, name, node);
+		Functor inf = this.resolveFunction(matcher, name, node);
 		if (inf == null) {
 			return this.undefinedMethod(node, matcher, "operator %s %s %s", name(left), OperatorNames.name(name), name(right));
 		}
@@ -763,7 +761,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 		if (m != null) {
 			TypedTree newnode = node.newInstance(_Cast, 1, null);
 			newnode.set(0, _expr, child);
-			newnode.setInterface(Hint.StaticInvocation2, factory.newMethod(m));
+			newnode.setInterface(Hint.StaticInvocation2, FunctorFactory.newMethod(m));
 			newnode.setType(req);
 			node.set(label, newnode);
 			return req;
@@ -1055,37 +1053,9 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 					node.set(i, enforceType(Object.class, sub));
 				}
 			}
-			return node.setInterface(Hint.Unique, lib.String_join(factory));
+			return node.setInterface(Hint.Unique, KonohaRuntime.String_join());
 		}
 	}
-
-	// UList<Method> bufferMethods = new UList<Method>(new Method[128]);
-	//
-	// private String methods(UList<Method> bufferMethods, int start) {
-	// StringBuilder sb = new StringBuilder();
-	// for (int i = start; i < bufferMethods.size(); i++) {
-	// sb.append(" ");
-	// sb.append(bufferMethods.ArrayValues[i]);
-	// }
-	// bufferMethods.clear(start);
-	// return sb.toString();
-	// }
-	//
-	// private Type resolvedMethod(TypedTree node, Hint hint, Method m,
-	// TypeVarMatcher matcher) {
-	// return node.setMethod(hint, m, matcher);
-	// }
-	//
-	// private Type undefinedMethod(TypedTree node, int start, String fmt,
-	// Object... args) {
-	// String msg = String.format(fmt, args);
-	// if (this.bufferMethods.size() > start) {
-	// msg = "mismatched " + msg + methods(bufferMethods, start);
-	// } else {
-	// msg = "undefined " + msg;
-	// }
-	// throw error(node, msg);
-	// }
 
 	public class New extends Undefined {
 		@Override
@@ -1093,7 +1063,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 			Type newType = resolveType(node.get(_type), null);
 			typeArguments(node.get(_param));
 			TypeMatcher matcher = initTypeMatcher(newType);
-			Interface inf = resolveConstructor(matcher, newType, node.get(_param));
+			Functor inf = resolveConstructor(matcher, newType, node.get(_param));
 			if (inf != null) {
 				return node.setInterface(Hint.ConstructorInterface, inf, matcher);
 			}
@@ -1111,7 +1081,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 			typeArguments(node.get(_param));
 			String name = node.getText(_name, "");
 			TypeMatcher matcher = initTypeMatcher(recvType);
-			Interface inf = resolveObjectMethod(matcher, recvType, name, node.get(_param));
+			Functor inf = resolveObjectMethod(matcher, recvType, name, node.get(_param));
 			if (inf != null) {
 				return node.setInterface(Hint.MethodApply2, inf, matcher);
 			}
@@ -1140,7 +1110,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 		String name = node.getText(_name, "");
 		this.typeArguments(node.get(_param));
 		TypeMatcher matcher = initTypeMatcher(null);
-		Interface inf = resolveStaticMethod(matcher, staticClass, name, node.get(_param));
+		Functor inf = resolveStaticMethod(matcher, staticClass, name, node.get(_param));
 		if (inf == null) {
 			return this.undefinedMethod(node, matcher, "static method %s of %s", name, name(staticClass));
 		}
@@ -1151,7 +1121,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 		Type recvType = visit(node.get(_recv));
 		typeArguments(node.get(_param));
 		TypeMatcher matcher = initTypeMatcher(recvType);
-		Interface inf = resolveObjectMethod(matcher, recvType, "get", node.get(_param));
+		Functor inf = resolveObjectMethod(matcher, recvType, "get", node.get(_param));
 		if (inf != null) {
 			return node.setInterface(Hint.MethodApply2, inf, matcher);
 		}
@@ -1171,7 +1141,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 		Type recvType = visit(node.get(_recv));
 		typeArguments(node.get(_param));
 		TypeMatcher matcher = initTypeMatcher(recvType);
-		Interface inf = resolveObjectMethod(matcher, recvType, "get", node.get(_param));
+		Functor inf = resolveObjectMethod(matcher, recvType, "get", node.get(_param));
 		if (inf != null) {
 			return node.setInterface(Hint.MethodApply2, inf, matcher);
 		}
@@ -1332,7 +1302,6 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 	}
 
 	// new interface
-	private InterfaceFactory factory = new InterfaceFactory();
 	private TypeMatcher defaultMatcher = new TypeMatcher(this.typeSystem, this);
 
 	private TypeMatcher initTypeMatcher(Type recvType) {
@@ -1404,7 +1373,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 		return TypeSystem.toClass(t);
 	}
 
-	public final Interface resolveFunction(TypeMatcher matcher, String name, TypedTree params) {
+	public final Functor resolveFunction(TypeMatcher matcher, String name, TypedTree params) {
 		UList<Object> symbolList = typeSystem.getSymbolList();
 		for (int i = symbolList.size() - 1; i >= 0; i--) {
 			Object symbol = symbolList.ArrayValues[i];
@@ -1412,13 +1381,13 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 				Method m = (Method) symbol;
 				if (name.equals(m.getName())) {
 					Type[] p = m.getGenericParameterTypes();
-					if (Interface.match(matcher, p, params)) {
-						return factory.newMethod(m);
+					if (Functor.match(matcher, p, params)) {
+						return FunctorFactory.newMethod(m);
 					}
 				}
 				continue;
 			}
-			Interface inf = (Interface) symbol;
+			Functor inf = (Functor) symbol;
 			// TODO
 		}
 		for (int i = symbolList.size() - 1; i >= 0; i--) {
@@ -1428,7 +1397,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 				if (name.equals(m.getName())) {
 					Type[] p = m.getGenericParameterTypes();
 					if (p.length == params.size()) {
-						matcher.addCandidate(factory.newMethod(m));
+						matcher.addCandidate(FunctorFactory.newMethod(m));
 					}
 				}
 				continue;
@@ -1437,36 +1406,36 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 		return matchCandidate(matcher, params);
 	}
 
-	private final Interface resolveConstructor(TypeMatcher matcher, Type newType, TypedTree params) {
+	private final Functor resolveConstructor(TypeMatcher matcher, Type newType, TypedTree params) {
 		Class<?> newClass = TypeSystem.toClass(newType);
 		Constructor<?>[] cList = newClass.getConstructors();
 		for (Constructor<?> c : cList) {
 			Type[] p = c.getGenericParameterTypes();
-			if (Interface.match(matcher, p, params)) {
-				return factory.newConstructor(newType, c);
+			if (Functor.match(matcher, p, params)) {
+				return FunctorFactory.newConstructor(newType, c);
 			}
 		}
 		for (Constructor<?> c : cList) {
 			Type[] p = c.getGenericParameterTypes();
 			if (p.length == params.size()) {
-				matcher.addCandidate(factory.newConstructor(newType, c));
+				matcher.addCandidate(FunctorFactory.newConstructor(newType, c));
 			}
 		}
 		return matchCandidate(matcher, params);
 	}
 
-	private final Interface resolveStaticMethod(TypeMatcher matcher, Type recvType, String name, TypedTree params) {
+	private final Functor resolveStaticMethod(TypeMatcher matcher, Type recvType, String name, TypedTree params) {
 		return this.resolveMethod(matcher, recvType, true, name, params);
 	}
 
-	private final Interface resolveObjectMethod(TypeMatcher matcher, Type recvType, String name, TypedTree params) {
+	private final Functor resolveObjectMethod(TypeMatcher matcher, Type recvType, String name, TypedTree params) {
 		return this.resolveMethod(matcher, recvType, false, name, params);
 	}
 
-	private final Interface resolveMethod(TypeMatcher matcher, Type recvType, boolean isStaticOnly, String name, TypedTree params) {
+	private final Functor resolveMethod(TypeMatcher matcher, Type recvType, boolean isStaticOnly, String name, TypedTree params) {
 		Class<?> recvClass = TypeSystem.toClass(recvType);
 		while (recvClass != null) {
-			Interface inf = this.matchClassMethod(matcher, isStaticOnly, recvClass, name, params);
+			Functor inf = this.matchClassMethod(matcher, isStaticOnly, recvClass, name, params);
 			if (inf != null) {
 				return inf;
 			}
@@ -1478,13 +1447,13 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 		return matchCandidate(matcher, params);
 	}
 
-	private Interface matchClassMethod(TypeMatcher matcher, boolean isStaticOnly, Class<?> recvClass, String name, TypedTree params) {
+	private Functor matchClassMethod(TypeMatcher matcher, boolean isStaticOnly, Class<?> recvClass, String name, TypedTree params) {
 		Method[] mList = recvClass.getDeclaredMethods();
 		for (Method m : mList) {
 			if (matchMethod(m, isStaticOnly, name)) {
 				Type[] p = m.getGenericParameterTypes();
-				if (Interface.match(matcher, p, params)) {
-					return factory.newMethod(m);
+				if (Functor.match(matcher, p, params)) {
+					return FunctorFactory.newMethod(m);
 				}
 			}
 		}
@@ -1492,7 +1461,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 			if (matchMethod(m, isStaticOnly, name)) {
 				Type[] p = m.getGenericParameterTypes();
 				if (p.length == params.size()) {
-					matcher.addCandidate(factory.newMethod(m));
+					matcher.addCandidate(FunctorFactory.newMethod(m));
 				}
 			}
 		}
@@ -1536,9 +1505,9 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 		return n;
 	}
 
-	private final Interface matchCandidate(TypeMatcher matcher, TypedTree params) {
+	private final Functor matchCandidate(TypeMatcher matcher, TypedTree params) {
 		TypedTree[] buf = null;
-		for (Interface inf : matcher.candiateList) {
+		for (Functor inf : matcher.candiateList) {
 			if (buf == null) {
 				buf = new TypedTree[params.size()];
 			}
@@ -1590,7 +1559,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 	}
 
 	private final TypedTree accept(TypeMatcher matcher, Type reqt, TypedTree node) {
-		if (Interface.match(matcher, reqt, node.getType())) {
+		if (Functor.match(matcher, reqt, node.getType())) {
 			return node;
 		}
 		Type resolved = matcher.resolve(reqt, null);
@@ -1601,7 +1570,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 	}
 
 	private final TypedTree accept(Type reqt, TypedTree node) {
-		if (Interface.match(null, reqt, node.getType())) {
+		if (Functor.match(null, reqt, node.getType())) {
 			return node;
 		}
 		return tryCoersion(reqt, node);
@@ -1613,7 +1582,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 		if (m != null) {
 			TypedTree newnode = node.newInstance(_Cast, 1, null);
 			newnode.set(0, _expr, node);
-			newnode.setInterface(Hint.StaticInvocation2, factory.newMethod(m), null);
+			newnode.setInterface(Hint.StaticInvocation2, FunctorFactory.newMethod(m), null);
 			return newnode;
 		}
 		if (expt == Object.class) { // auto upcast
@@ -1626,16 +1595,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 	}
 
 	private TypeCheckerException error(TypedTree node, String fmt, Object... args) {
-		return new TypeCheckerException(node, newErrorTree(node, fmt, args));
-	}
-
-	private TypedTree newErrorTree(TypedTree node, String fmt, Object... args) {
-		TypedTree newnode = node.newInstance(CommonSymbols._Error, 1, null);
-		String msg = node.formatSourceMessage("error", String.format(fmt, args));
-		newnode.set(0, CommonSymbols._msg, node.newStringConst(msg));
-		// context.log(msg);
-		newnode.setInterface(Hint.StaticInvocation2, lib.error(factory));
-		return newnode;
+		return new TypeCheckerException(node, fmt, args);
 	}
 
 	// debug message

@@ -5,18 +5,18 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 
-import nez.ast.script.Interface;
+import nez.ast.script.Functor;
 import nez.ast.script.Reflector;
 
 import org.objectweb.asm.commons.GeneratorAdapter;
 
-public class InterfaceFactory {
+public abstract class FunctorFactory {
 
-	public final Interface newConstructor(Type newType, Constructor<?> c) {
+	public final static Functor newConstructor(Type newType, Constructor<?> c) {
 		return new IConstructor(newType, c);
 	}
 
-	public final Interface newMethod(Method m) {
+	public final static Functor newMethod(Method m) {
 		if (Modifier.isStatic(m.getModifiers())) {
 			return new IStaticMethod(m);
 		}
@@ -28,7 +28,7 @@ public class InterfaceFactory {
 
 }
 
-class IConstructor extends AsmInterface {
+class IConstructor extends AsmFunctor {
 	protected Type newType;
 	protected Constructor<?> c;
 
@@ -78,7 +78,7 @@ class IConstructor extends AsmInterface {
 	}
 }
 
-class IMethod extends AsmInterface {
+class IMethod extends AsmFunctor {
 	protected Method method;
 
 	public IMethod(Method method) {

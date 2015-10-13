@@ -1,12 +1,12 @@
 package nez.ast.script.asm;
 
-import nez.ast.script.Interface;
+import nez.ast.script.Functor;
 
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
 import org.objectweb.asm.commons.Method;
 
-public abstract class AsmInterface extends Interface {
+public abstract class AsmFunctor extends Functor {
 
 	@Override
 	public Object eval(Object recv, Object... args) {

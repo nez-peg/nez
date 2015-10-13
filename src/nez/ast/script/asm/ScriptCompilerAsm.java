@@ -142,7 +142,7 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 		for (TypedTree sub : node) {
 			visit(sub);
 		}
-		AsmInterface inf = getInterface(node);
+		AsmFunctor inf = getInterface(node);
 		inf.pushInstruction(this.mBuilder);
 		this.unbox(node.getType(), inf.getReturnClass());
 	}
@@ -160,7 +160,7 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 		for (TypedTree sub : node.get(_param)) {
 			visit(sub);
 		}
-		AsmInterface inf = getInterface(node);
+		AsmFunctor inf = getInterface(node);
 		inf.pushInstruction(this.mBuilder);
 		this.unbox(node.getType(), inf.getReturnClass());
 	}
@@ -188,12 +188,12 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 		}
 	}
 
-	private AsmInterface getInterface(TypedTree node) {
-		return (AsmInterface) node.getValue();
+	private AsmFunctor getInterface(TypedTree node) {
+		return (AsmFunctor) node.getValue();
 	}
 
 	private void visitConstructorHint(TypedTree node) {
-		AsmInterface inf = getInterface(node);
+		AsmFunctor inf = getInterface(node);
 		this.mBuilder.newInstance(inf.getOwner());
 		this.mBuilder.dup();
 		for (TypedTree sub : node.get(_param)) {
@@ -207,7 +207,7 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 		for (TypedTree sub : node.get(_param)) {
 			visit(sub);
 		}
-		AsmInterface inf = this.getInterface(node);
+		AsmFunctor inf = this.getInterface(node);
 		inf.pushInstruction(this.mBuilder);
 		this.unbox(node.getType(), inf.getReturnClass());
 	}
@@ -805,7 +805,7 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 		@Override
 		public void accept(TypedTree node) {
 			pushArray(Object.class, node);
-			AsmInterface inf = getInterface(node);
+			AsmFunctor inf = getInterface(node);
 			inf.pushInstruction(mBuilder);
 		}
 	}

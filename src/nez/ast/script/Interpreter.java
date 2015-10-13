@@ -33,6 +33,8 @@ public class Interpreter extends TreeVisitor2<SyntaxTreeInterpreter> implements 
 			return evalConstructorHint(node);
 		case MethodApply2:
 			return evalMethodApplyHint(node);
+		case Error:
+			node.setInterface(Hint.StaticInvocation2, null/* FIXME */);
 		case StaticUnaryInterface:
 		case StaticBinaryInterface:
 		case StaticInvocation2:
@@ -168,7 +170,7 @@ public class Interpreter extends TreeVisitor2<SyntaxTreeInterpreter> implements 
 		@Override
 		public Object accept(TypedTree node) {
 			Object v = eval(node.get(_expr));
-			Interface inf = node.getInterface();
+			Functor inf = node.getInterface();
 			if (inf != null) {
 				return inf.eval(null, v);
 			}
@@ -237,26 +239,26 @@ public class Interpreter extends TreeVisitor2<SyntaxTreeInterpreter> implements 
 
 	private Object evalStaticInvocationHint(TypedTree node) {
 		Object[] args = this.evalApplyArgument(node);
-		Interface inf = node.getInterface();
+		Functor inf = node.getInterface();
 		return inf.eval(null, args);
 	}
 
 	public Object evalConstructorHint(TypedTree node) {
 		Object[] args = evalApplyArgument(node.get(_param));
-		Interface inf = node.getInterface();
+		Functor inf = node.getInterface();
 		return inf.eval(null, args);
 	}
 
 	public Object evalMethodApplyHint(TypedTree node) {
 		Object recv = eval(node.get(_recv));
 		Object[] args = evalApplyArgument(node.get(_param));
-		Interface inf = node.getInterface();
+		Functor inf = node.getInterface();
 		return inf.eval(recv, args);
 	}
 
 	public Object evalApplyHint(TypedTree node) {
 		Object[] args = evalApplyArgument(node.get(_param));
-		Interface inf = node.getInterface();
+		Functor inf = node.getInterface();
 		return inf.eval(null, args);
 	}
 
@@ -294,7 +296,7 @@ public class Interpreter extends TreeVisitor2<SyntaxTreeInterpreter> implements 
 		@Override
 		public Object accept(TypedTree node) {
 			Object[] args = evalApplyArgument(node);
-			Interface inf = node.getInterface();
+			Functor inf = node.getInterface();
 			return inf.eval(null, new Object[] { args });
 		}
 	}

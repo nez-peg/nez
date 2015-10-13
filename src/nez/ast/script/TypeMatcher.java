@@ -12,7 +12,7 @@ import nez.util.UList;
 public class TypeMatcher {
 	TypeSystem typeSystem;
 	TypeChecker typeChecker;
-	UList<Interface> candiateList = new UList<Interface>(new Interface[32]);
+	UList<Functor> candiateList = new UList<Functor>(new Functor[32]);
 	String mismatched;
 
 	HashMap<String, Type> vars = new HashMap<>();
@@ -33,7 +33,7 @@ public class TypeMatcher {
 		this.candiateList.clear(0);
 	}
 
-	public final void addCandidate(Interface inf) {
+	public final void addCandidate(Functor inf) {
 		if (inf != null) {
 			this.candiateList.add(inf);
 		}
@@ -43,7 +43,7 @@ public class TypeMatcher {
 		mismatched = null;
 		if (this.candiateList.size() > 0) {
 			StringBuilder sb = new StringBuilder();
-			for (Interface inf : this.candiateList) {
+			for (Functor inf : this.candiateList) {
 				sb.append(" ");
 				sb.append(inf.toString());
 			}

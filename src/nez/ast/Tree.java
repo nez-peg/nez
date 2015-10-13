@@ -176,7 +176,11 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements
 				return this.subTree[i];
 			}
 		}
-		throw new RuntimeException("undefined label: " + label);
+		throw newNoSuchLabel(label);
+	}
+
+	protected RuntimeException newNoSuchLabel(Symbol label) {
+		return new RuntimeException("undefined label: " + label);
 	}
 
 	public final E get(Symbol label, E defval) {

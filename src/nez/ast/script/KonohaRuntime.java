@@ -3,14 +3,14 @@ package nez.ast.script;
 import java.lang.reflect.Method;
 
 import konoha.Function;
-import nez.ast.script.asm.InterfaceFactory;
+import nez.ast.script.asm.FunctorFactory;
 
-public class KonohaRuntime {
-	private Interface assert_ = null;
+public abstract class KonohaRuntime {
+	static private Functor assert_ = null;
 
-	Interface System_assert(InterfaceFactory factory) {
+	static Functor System_assert() {
 		if (assert_ == null) {
-			assert_ = factory.newMethod(Reflector.load(this.getClass(), "assert_", boolean.class, String.class));
+			assert_ = FunctorFactory.newMethod(Reflector.load(KonohaRuntime.class, "assert_", boolean.class, String.class));
 		}
 		return assert_;
 	}
@@ -19,11 +19,11 @@ public class KonohaRuntime {
 		assert (cond) : msg;
 	}
 
-	private static Interface StaticErrorMethod = null;
+	private static Functor StaticErrorMethod = null;
 
-	Interface error(InterfaceFactory factory) {
+	static Functor error() {
 		if (StaticErrorMethod == null) {
-			StaticErrorMethod = factory.newMethod(Reflector.load(this.getClass(), "error", String.class));
+			StaticErrorMethod = FunctorFactory.newMethod(Reflector.load(KonohaRuntime.class, "error", String.class));
 		}
 		return StaticErrorMethod;
 	}
@@ -32,11 +32,11 @@ public class KonohaRuntime {
 		throw new ScriptRuntimeException(msg);
 	}
 
-	private Interface String_join = null;
+	private static Functor String_join = null;
 
-	Interface String_join(InterfaceFactory factory) {
+	static Functor String_join() {
 		if (String_join == null) {
-			String_join = factory.newMethod(Reflector.load(this.getClass(), "String_join", Object[].class));
+			String_join = FunctorFactory.newMethod(Reflector.load(KonohaRuntime.class, "String_join", Object[].class));
 		}
 		return String_join;
 	}
@@ -51,11 +51,11 @@ public class KonohaRuntime {
 		return sb.toString();
 	}
 
-	private Interface Object_invokeDynamic = null;
+	private static Functor Object_invokeDynamic = null;
 
-	Interface Object_invokeDynamic(InterfaceFactory factory) {
+	static Functor Object_invokeDynamic() {
 		if (Object_invokeDynamic == null) {
-			Object_invokeDynamic = factory.newMethod(Reflector.load(this.getClass(), "Object_invokeDynamic", Object.class, String.class, Object[].class));
+			Object_invokeDynamic = FunctorFactory.newMethod(Reflector.load(KonohaRuntime.class, "Object_invokeDynamic", Object.class, String.class, Object[].class));
 		}
 		return Object_invokeDynamic;
 	}
@@ -69,11 +69,11 @@ public class KonohaRuntime {
 		return Reflector.invokeMethod(self, m, args);
 	}
 
-	private Interface Object_getField = null;
+	private static Functor Object_getField = null;
 
-	Interface Object_getField(InterfaceFactory factory) {
+	static Functor Object_getField() {
 		if (Object_getField == null) {
-			Object_getField = factory.newMethod(Reflector.load(this.getClass(), "Object_getField", Object.class, String.class));
+			Object_getField = FunctorFactory.newMethod(Reflector.load(KonohaRuntime.class, "Object_getField", Object.class, String.class));
 		}
 		return Object_getField;
 	}
@@ -82,11 +82,11 @@ public class KonohaRuntime {
 		return Reflector.getField(self, name);
 	}
 
-	private Interface Object_setField = null;
+	private static Functor Object_setField = null;
 
-	Interface Object_setField(InterfaceFactory factory) {
+	static Functor Object_setField() {
 		if (Object_setField == null) {
-			Object_setField = factory.newMethod(Reflector.load(this.getClass(), "Object_setField", Object.class, String.class, Object.class));
+			Object_setField = FunctorFactory.newMethod(Reflector.load(KonohaRuntime.class, "Object_setField", Object.class, String.class, Object.class));
 		}
 		return Object_setField;
 	}
@@ -96,11 +96,11 @@ public class KonohaRuntime {
 		return val;
 	}
 
-	private Interface Object_invokeFunction = null;
+	private static Functor Object_invokeFunction = null;
 
-	Interface Object_invokeFunction(InterfaceFactory factory) {
+	static Functor Object_invokeFunction() {
 		if (Object_invokeFunction == null) {
-			Object_invokeFunction = factory.newMethod(Reflector.load(this.getClass(), "Object_invokeFunction", Function.class, Object[].class));
+			Object_invokeFunction = FunctorFactory.newMethod(Reflector.load(KonohaRuntime.class, "Object_invokeFunction", Function.class, Object[].class));
 		}
 		return Object_invokeFunction;
 	}
