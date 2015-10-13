@@ -28,7 +28,7 @@ function WhileWhateverTest() {
 function NestedWhileTest() {
 	int n = 0;
 	while(n < 10) {
-		int n = 0;
+		int m = 0;
 		while(m < 10) {
 			assert(m < 10);
 			if(m == 5) {
