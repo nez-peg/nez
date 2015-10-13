@@ -14,13 +14,13 @@ function WhileTest() {
 
 function WhileWhateverTest() {
         int n = 0;
-        for(int n = 0; n < 10 ; n = n + 1) {
+        for(; n < 10 ; n = n + 1) {
                 assert(n < 10);
                 if(n == 5) {
                         break;
                 }
         }
-        println("#while/whatever/break: %s",  n);
+        println("#for/break: %s",  n);
         assert(n == 5);
 }
 

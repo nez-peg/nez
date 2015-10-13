@@ -439,7 +439,7 @@ Statement                          = Block
                                    / SwitchStatement
                                    / { "while" "(" $cond(Expression) ")" $body(Statement) #While }
                                    / { "do" $body(Statement) "while" "(" $cond(Expression) ")"  #DoWhile } EOS
-                                   / { "for" "(" $init(Expressions)? ";" $cond(Expression)? ";" $iter(Expression)? ")" $body(Statement) #For }
+                                   / { "for" "(" $init(Expression)? ";" $cond(Expression)? ";" $iter(Expression)? ")" $body(Statement) #For }
                                    / { "for" "(" $init(VariableDeclaration) ";" $cond(Expression)? ";" $iter(Expression)? ")" $body(Statement) #For }
                                    / { "for" "(" $anno(Modifiers)? ($type(Type) !"in" $name(Identifier) / $name(Identifier) ) ( ":" / "in" ) $iter(Expression) ")" $body(Statement) #ForEach }
                                    / { "continue" $label(Identifier)? #Continue `` } EOS

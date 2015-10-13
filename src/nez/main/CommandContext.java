@@ -142,14 +142,16 @@ public class CommandContext extends ParserFactory {
 		ConsoleUtils.exit(0, Message);
 	}
 
-	public void parseCommandOption(String[] args) throws IOException {
+	public void parseCommandOption(String[] args, boolean nezCommand) throws IOException {
 		String gFileName = null;
 		String regex = null;
 		int index = 0;
-		if (args.length > 0) {
-			if (!args[0].startsWith("-")) {
-				this.setCommand(args[0]);
-				index = 1;
+		if (nezCommand) {
+			if (args.length > 0) {
+				if (!args[0].startsWith("-")) {
+					this.setCommand(args[0]);
+					index = 1;
+				}
 			}
 		}
 		while (index < args.length) {

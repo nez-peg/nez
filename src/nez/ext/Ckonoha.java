@@ -15,7 +15,7 @@ public class Ckonoha extends Command {
 	public final static void main(String[] args) {
 		try {
 			CommandContext c = new CommandContext();
-			c.parseCommandOption(args);
+			c.parseCommandOption(args, false/* nezCommand */);
 			release = true;
 			Command com = new Ckonoha();
 			com.exec(c);

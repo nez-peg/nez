@@ -18,7 +18,7 @@ public abstract class Command {
 	public static void main(String[] args) {
 		try {
 			CommandContext c = new CommandContext();
-			c.parseCommandOption(args);
+			c.parseCommandOption(args, true/* nezCommand */);
 			Command com = c.newCommand();
 			com.exec(c);
 		} catch (IOException e) {

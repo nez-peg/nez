@@ -524,13 +524,11 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 				return this.function.getVarType(name);
 			}
 		}
-		System.out.printf("@@@ infunction: %s '%s'", this.typeSystem.hasGlobalVariable(name), name);
 		if (this.typeSystem.hasGlobalVariable(name)) {
 			GlobalVariable gv = this.typeSystem.getGlobalVariable(name);
 			if (rewrite) {
 				node.setField(Hint.GetField, gv.field);
 			}
-			System.out.println(" gv=" + gv + ", " + gv.getType());
 			return gv.getType();
 		}
 		return null;
