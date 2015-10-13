@@ -472,6 +472,8 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 		public void accept(TypedTree node) {
 			Label beginLabel = mBuilder.newLabel();
 			Label condLabel = mBuilder.newLabel();
+			Label breakLabel = mBuilder.newLabel();
+			mBuilder.getLoopLabels().push(new Pair<Label, Label>(breakLabel, condLabel));
 
 			mBuilder.goTo(condLabel);
 
@@ -485,6 +487,7 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 			mBuilder.push(true);
 
 			mBuilder.ifCmp(Type.BOOLEAN_TYPE, GeneratorAdapter.EQ, beginLabel);
+			mBuilder.mark(breakLabel);
 		}
 	}
 
@@ -492,16 +495,21 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 		@Override
 		public void accept(TypedTree node) {
 			Label beginLabel = mBuilder.newLabel();
+			Label continueLabel = mBuilder.newLabel();
+			Label breakLabel = mBuilder.newLabel();
+			mBuilder.getLoopLabels().push(new Pair<Label, Label>(breakLabel, continueLabel));
 
 			// Do
 			mBuilder.mark(beginLabel);
 			visit(node.get(_body));
 
 			// Condition
+			mBuilder.mark(continueLabel);
 			visit(node.get(_cond));
 			mBuilder.push(true);
 
 			mBuilder.ifCmp(Type.BOOLEAN_TYPE, GeneratorAdapter.EQ, beginLabel);
+			mBuilder.mark(breakLabel);
 		}
 	}
 
@@ -510,6 +518,9 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 		public void accept(TypedTree node) {
 			Label beginLabel = mBuilder.newLabel();
 			Label condLabel = mBuilder.newLabel();
+			Label breakLabel = mBuilder.newLabel();
+			Label continueLabel = mBuilder.newLabel();
+			mBuilder.getLoopLabels().push(new Pair<Label, Label>(breakLabel, continueLabel));
 
 			// Initialize
 			visit(node.get(_init));
@@ -519,6 +530,7 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 			// Block
 			mBuilder.mark(beginLabel);
 			visit(node.get(_body));
+			mBuilder.mark(continueLabel);
 			visit(node.get(_iter));
 
 			// Condition
@@ -526,6 +538,7 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 			visit(node.get(_cond));
 			mBuilder.push(true);
 			mBuilder.ifCmp(Type.BOOLEAN_TYPE, MethodBuilder.EQ, beginLabel);
+			mBuilder.mark(breakLabel);
 		}
 	}
 
@@ -606,6 +619,13 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 		}
 	}
 
+	public class Assert extends Undefined {
+		@Override
+		public void accept(TypedTree node) {
+
+		}
+	}
+
 	public class Return extends Undefined {
 		@Override
 		public void accept(TypedTree node) {
@@ -619,7 +639,18 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 	public class Break extends Undefined {
 		@Override
 		public void accept(TypedTree node) {
+			Label breakLabel = mBuilder.getLoopLabels().peek().getLeft();
+			mBuilder.jumpToMultipleFinally();
+			mBuilder.goTo(breakLabel);
+		}
+	}
 
+	public class Continue extends Undefined {
+		@Override
+		public void accept(TypedTree node) {
+			Label continueLabel = mBuilder.getLoopLabels().peek().getRight();
+			mBuilder.jumpToMultipleFinally();
+			mBuilder.goTo(continueLabel);
 		}
 	}
 
