@@ -1,7 +1,9 @@
 package nez.ext;
 
 import java.io.IOException;
+import java.util.HashMap;
 
+import konoha.message.Message;
 import nez.ast.script.EmptyResult;
 import nez.ast.script.ScriptContext;
 import nez.ast.script.ScriptRuntimeException;
@@ -51,13 +53,21 @@ public class Ckonoha extends Command {
 			if (command.trim().equals("")) {
 				continue;
 			}
+			if (hasUTF8(command)) {
+				ConsoleUtils.begin(36);
+				ConsoleUtils.println(Message.DetectedUTF8);
+				command = filterUTF8(command);
+				ConsoleUtils.end();
+			}
 			try {
 				ConsoleUtils.begin(32);
 				Object result = sc.eval2("<stdio>", linenum, command);
 				ConsoleUtils.end();
 				if (!(result instanceof EmptyResult)) {
 					ConsoleUtils.println("<<<");
+					ConsoleUtils.bold();
 					ConsoleUtils.println(result);
+					ConsoleUtils.end();
 				}
 			} catch (ScriptRuntimeException e) {
 				ConsoleUtils.begin(31);
@@ -77,10 +87,13 @@ public class Ckonoha extends Command {
 	public final static String KonohaVersion = "4.0";
 
 	private static void show(String name) {
-		ConsoleUtils.println("Konoha Universal (" + name + ") on Nez " + Version);
-		ConsoleUtils.begin(37);
+		ConsoleUtils.bold();
+		ConsoleUtils.println("Konoha U (" + name + ") on Nez " + Version);
+		ConsoleUtils.end();
 		ConsoleUtils.println(Copyright);
 		ConsoleUtils.println("Copyright (c) 2015, Kimio Kuramitsu, Yokohama National University");
+		ConsoleUtils.begin(37);
+		ConsoleUtils.println(Message.Hint);
 		ConsoleUtils.end();
 	}
 
@@ -100,6 +113,92 @@ public class Ckonoha extends Command {
 			sb.append(line);
 			sb.append("\n");
 		}
+	}
+
+	private boolean hasUTF8(String command) {
+		boolean skip = false;
+		for (int i = 0; i < command.length(); i++) {
+			char c = command.charAt(i);
+			if (c == '"') {
+				skip = !skip;
+				continue;
+			}
+			if (c < 128 || skip) {
+				continue;
+			}
+			return true;
+		}
+		return false;
+	}
+
+	HashMap<Character, Character> charMap = null;
+
+	void initCharMap() {
+		if (charMap == null) {
+			charMap = new HashMap<>();
+			charMap.put('　', ' ');
+			charMap.put('（', '(');
+			charMap.put('）', ')');
+			charMap.put('［', '[');
+			charMap.put('］', ']');
+			charMap.put('｛', '{');
+			charMap.put('｝', '}');
+			charMap.put('”', '"');
+			charMap.put('’', '\'');
+			charMap.put('＜', '<');
+			charMap.put('＞', '>');
+			charMap.put('＋', '+');
+			charMap.put('ー', '-');
+			charMap.put('＊', '*');
+			charMap.put('／', '/');
+			charMap.put('✕', '*');
+			charMap.put('÷', '/');
+			charMap.put('＝', '=');
+			charMap.put('％', '%');
+			charMap.put('？', '?');
+			charMap.put(':', ':');
+			charMap.put('＆', '&');
+			charMap.put('｜', '|');
+			charMap.put('！', '!');
+			charMap.put('、', ',');
+			charMap.put('；', ';');
+			charMap.put('。', '.');
+			for (char c = 'A'; c <= 'Z'; c++) {
+				charMap.put((char) ('Ａ' + (c - 'A')), c);
+			}
+			for (char c = 'a'; c <= 'z'; c++) {
+				charMap.put((char) ('ａ' + (c - 'a')), c);
+			}
+			for (char c = '0'; c <= '9'; c++) {
+				charMap.put((char) ('０' + (c - '0')), c);
+			}
+			for (char c = '1'; c <= '9'; c++) {
+				charMap.put((char) ('一' + (c - '0')), c);
+			}
+		}
+	}
+
+	private String filterUTF8(String command) {
+		initCharMap();
+		StringBuilder sb = new StringBuilder(command.length());
+		boolean skip = false;
+		for (int i = 0; i < command.length(); i++) {
+			char c = command.charAt(i);
+			if (c < 128 || skip) {
+				if (c == '"') {
+					skip = !skip;
+				}
+				sb.append(c);
+				continue;
+			}
+			Character mapped = charMap.get(c);
+			if (mapped != null) {
+				sb.append(mapped);
+			} else {
+				sb.append(c);
+			}
+		}
+		return sb.toString();
 	}
 
 }

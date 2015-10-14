@@ -36,6 +36,10 @@ public abstract class RuntimeContext implements Source {
 		this.pos = pos;
 	}
 
+	public final String getErrorMessage(String errorType, String message) {
+		return this.formatPositionLine(errorType, this.head_pos, message);
+	}
+
 	public final String getSyntaxErrorMessage() {
 		return this.formatPositionLine("error", this.head_pos, "syntax error");
 	}

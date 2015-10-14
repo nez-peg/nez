@@ -7,6 +7,7 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 
 import konoha.Function;
+import konoha.message.Message;
 import nez.ast.Symbol;
 import nez.ast.TreeVisitor2;
 import nez.ast.script.TypeSystem.BinaryTypeUnifier;
@@ -509,7 +510,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 			Type t = tryCheckNameType(node, true);
 			if (t == null) {
 				String name = node.toText();
-				throw error(node, "undefined name: %s", name);
+				throw error(node, Message.UndefinedName_, name);
 			}
 			return t;
 		}
@@ -539,8 +540,16 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 		}
 	}
 
+	public void checkAssignable(TypedTree node) {
+		if (node.is(_Name) || node.is(_Field) || node.is(_Indexer)) {
+			return;
+		}
+		throw error(node, Message.LeftHandAssignment);
+	}
+
 	public Type typeAssign(TypedTree node) {
 		TypedTree leftnode = node.get(_left);
+		checkAssignable(leftnode);
 		if (typeSystem.shellMode && !this.inFunction() && leftnode.is(_Name)) {
 			String name = node.getText(_left, null);
 			if (!this.typeSystem.hasGlobalVariable(name)) {
@@ -555,11 +564,10 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 		}
 		Type left = visit(leftnode);
 		this.enforceType(left, node, _right);
-
 		if (leftnode.hint == Hint.GetField) {
 			Field f = leftnode.getField();
 			if (Modifier.isFinal(f.getModifiers())) {
-				throw error(node.get(_left), "readonly");
+				throw error(node.get(_left), Message.ReadOnly);
 			}
 			if (!Modifier.isStatic(f.getModifiers())) {
 				node.set(_left, leftnode.get(_recv));
@@ -584,7 +592,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 		Type inner = visit(node.get(_expr));
 		Type t = this.resolveType(node.get(_type), null);
 		if (t == null) {
-			throw error(node.get(_type), "undefined type: %s", node.getText(_type, ""));
+			throw error(node.get(_type), Message.UndefinedType_, node.getText(_type, ""));
 		}
 		Class<?> req = TypeSystem.toClass(t);
 		Class<?> exp = TypeSystem.toClass(inner);
@@ -604,7 +612,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 			node.setTag(_DownCast);
 			return t;
 		}
-		throw error(node.get(_type), "undefined cast: %s => %s", name(inner), name(t));
+		throw error(node.get(_type), Message.UndefinedCast__, name(inner), name(t));
 	}
 
 	// public Type[] typeList(TypedTree node) {
@@ -636,7 +644,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 		if (typeSystem.isDynamic(recvClass)) {
 			return node.setInterface(Hint.StaticInvocation2, KonohaRuntime.Object_getField(), null);
 		}
-		throw error(node.get(_name), "undefined field %s of %s", name, name(recvClass));
+		throw error(node.get(_name), Message.UndefinedField__, name(recvClass), name);
 	}
 
 	private Type typeStaticField(TypedTree node) {
@@ -645,11 +653,11 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 		java.lang.reflect.Field f = typeSystem.getField(recvClass, name);
 		if (f != null) {
 			if (!Modifier.isStatic(f.getModifiers())) {
-				throw error(node, "not static field %s of %s", name, name(recvClass));
+				throw error(node, Message.UndefinedField__, name(recvClass), name);
 			}
 			return node.setField(Hint.GetField, f);
 		}
-		throw error(node.get(_name), "undefined field %s of %s", name, name(recvClass));
+		throw error(node.get(_name), Message.UndefinedField__, name(recvClass), name);
 	}
 
 	public class Apply extends Undefined {
@@ -672,7 +680,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 		TypeMatcher matcher = this.initTypeMatcher(null);
 		Functor inf = this.resolveFunction(matcher, name, node.get(_param));
 		if (inf == null) {
-			return undefinedMethod(node, matcher, "funciton: %s", name);
+			return undefinedMethod(node, matcher, Message.Function_, name);
 		}
 		return node.setInterface(Hint.StaticApplyInterface, inf, matcher);
 	}
@@ -697,7 +705,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 			if (accept(paramTypes, node.get(_param))) {
 				Type returnType = function.getReturnType();
 				if (returnType == null) {
-					throw error(node, "ambigious return type in recursive call: %s", name);
+					throw error(node, Message.UndefinedReturnType_, name);
 				}
 				node.setHint(Hint.RecursiveApply, returnType);
 				return true;
@@ -732,7 +740,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 		TypeMatcher matcher = initTypeMatcher(null);
 		Functor inf = this.resolveFunction(matcher, name, node);
 		if (inf == null) {
-			return this.undefinedMethod(node, matcher, "unary %s %s", OperatorNames.name(name), name(left));
+			return this.undefinedMethod(node, matcher, Message.Unary__, OperatorNames.name(name), name(left));
 		}
 		return node.setInterface(Hint.StaticUnaryInterface, inf, matcher);
 	}
@@ -750,7 +758,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 		TypeMatcher matcher = initTypeMatcher(null);
 		Functor inf = this.resolveFunction(matcher, name, node);
 		if (inf == null) {
-			return this.undefinedMethod(node, matcher, "operator %s %s %s", name(left), OperatorNames.name(name), name(right));
+			return this.undefinedMethod(node, matcher, Message.Binary___, name(left), OperatorNames.name(name), name(right));
 		}
 		return node.setInterface(Hint.StaticBinaryInterface, inf, matcher);
 	}
@@ -1081,7 +1089,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 			if (inf != null) {
 				return node.setInterface(Hint.ConstructorInterface, inf, matcher);
 			}
-			return undefinedMethod(node, matcher, "constructor %s", name(newType));
+			return undefinedMethod(node, matcher, Message.Constructor_, name(newType));
 		}
 	}
 
@@ -1107,7 +1115,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 			// return node.setMethod(Hint.StaticDynamicInvocation, m, null);
 			// }
 			// }
-			return undefinedMethod(node, matcher, "method %s::%s", name(recvType), name);
+			return undefinedMethod(node, matcher, Message.Method__, name(recvType), name);
 		}
 	}
 
@@ -1126,7 +1134,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 		TypeMatcher matcher = initTypeMatcher(null);
 		Functor inf = resolveStaticMethod(matcher, staticClass, name, node.get(_param));
 		if (inf == null) {
-			return this.undefinedMethod(node, matcher, "static method %s of %s", name, name(staticClass));
+			return this.undefinedMethod(node, matcher, Message.Method__, name, name(staticClass));
 		}
 		return node.setInterface(Hint.StaticApplyInterface, inf, matcher);
 	}
@@ -1145,7 +1153,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 			// return node.setMethod(Hint.StaticInvocation,
 			// typeSystem.ObjectIndexer, null);
 		}
-		return this.undefinedMethod(node, matcher, "indexer [] for %s", name(recvType));
+		return this.undefinedMethod(node, matcher, Message.Indexer_, name(recvType));
 	}
 
 	private Type typeSetIndexer(TypedTree node, TypedTree recv, TypedTree param, TypedTree expr) {
@@ -1165,7 +1173,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 			// return node.setMethod(Hint.StaticInvocation,
 			// typeSystem.ObjectSetIndexer, null);
 		}
-		return this.undefinedMethod(node, matcher, "set indexer [] for %s", name(recvType));
+		return this.undefinedMethod(node, matcher, Message.Indexer_, name(recvType));
 	}
 
 	/* array */
@@ -1315,6 +1323,60 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 		}
 	}
 
+	private TypedTree desugarInc(TypedTree expr, Symbol optag) {
+		TypedTree op = expr.newInstance(optag, 0, null);
+		op.make(_left, expr.dup(), _right, expr.newIntConst(1));
+		return op;
+	}
+
+	private TypedTree desugarAssign(TypedTree node, TypedTree expr, Symbol optag) {
+		TypedTree op = expr.newInstance(optag, 0, null);
+		op.make(_left, expr.dup(), _right, expr.newIntConst(1));
+		node.make(_left, expr, _right, desugarInc(expr, _Add));
+		node.setTag(_Assign);
+		return node;
+	}
+
+	public class PreInc extends Undefined {
+		@Override
+		public Type accept(TypedTree node) {
+			TypedTree expr = node.get(_expr);
+			return visit(desugarAssign(node, expr, _Add));
+		}
+	}
+
+	public class PreDec extends Undefined {
+		@Override
+		public Type accept(TypedTree node) {
+			TypedTree expr = node.get(_expr);
+			return visit(desugarAssign(node, expr, _Sub));
+		}
+	}
+
+	public class Inc extends Undefined {
+		@Override
+		public Type accept(TypedTree node) {
+			TypedTree expr = node.get(_recv);
+			TypedTree assign = desugarAssign(node.newInstance(_Assign, 2, null), expr.dup(), _Add);
+			node.make(_expr, expr, _body, assign);
+			Type t = visit(expr);
+			visit(assign);
+			return t;
+		}
+	}
+
+	public class Dec extends Undefined {
+		@Override
+		public Type accept(TypedTree node) {
+			TypedTree expr = node.get(_recv);
+			TypedTree assign = desugarAssign(node.newInstance(_Assign, 2, null), expr.dup(), _Sub);
+			node.make(_expr, expr, _body, assign);
+			Type t = visit(expr);
+			visit(assign);
+			return t;
+		}
+	}
+
 	// new interface
 	private TypeMatcher defaultMatcher = new TypeMatcher(this.typeSystem, this);
 
@@ -1323,13 +1385,13 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 		return defaultMatcher;
 	}
 
-	private Type undefinedMethod(TypedTree node, TypeMatcher matcher, String fmt, Object... args) {
+	private Type undefinedMethod(TypedTree node, TypeMatcher matcher, Message fmt, Object... args) {
 		String methods = matcher.getErrorMessage();
-		String msg = String.format(fmt, args);
+		String msg = String.format(fmt.toString(), args);
 		if (methods == null) {
-			msg = "undefined " + msg;
+			msg = String.format(Message.UndefinedFunctor_.toString(), msg);
 		} else {
-			msg = "mismatched " + msg + methods;
+			msg = String.format(Message.MismatchedFunctor__.toString(), msg, methods);
 		}
 		throw error(node, msg);
 	}
@@ -1343,7 +1405,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 		if (node.size() == 0) {
 			Type t = this.typeSystem.getType(node.toText());
 			if (t == null) {
-				throw this.error(node, "undefined type %s", node.toText());
+				throw this.error(node, Message.UndefinedType_, node.toText());
 			}
 			return t == null ? deftype : t;
 		}
@@ -1505,7 +1567,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 	private void enforceType(Type req, TypedTree node, Symbol label) {
 		TypedTree unode = node.get(label, null);
 		if (unode == null) {
-			throw this.error(node, "syntax error: %s is required", label);
+			throw this.error(node, Message.SyntaxError, label);
 		}
 		visit(unode);
 		node.set(label, this.enforceType(req, unode));
@@ -1514,7 +1576,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 	private final TypedTree enforceType(Type reqt, TypedTree node) {
 		TypedTree n = accept(reqt, node);
 		if (n == null) {
-			throw error(node, "type mismatch: requested=%s given=%s", name(reqt), name(node.getType()));
+			throw error(node, Message.TypeError__, name(reqt), name(node.getType()));
 		}
 		return n;
 	}
@@ -1522,7 +1584,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 	private final TypedTree enforceType(TypeMatcher matcher, Type reqt, TypedTree node) {
 		TypedTree n = accept(matcher, reqt, node);
 		if (n == null) {
-			throw error(node, "type mismatch: requested=%s given=%s", name(reqt), name(node.getType()));
+			throw error(node, Message.TypeError__, name(reqt), name(node.getType()));
 		}
 		return n;
 	}
@@ -1614,6 +1676,10 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 			return newnode;
 		}
 		return null;
+	}
+
+	private TypeCheckerException error(TypedTree node, Message fmt, Object... args) {
+		return new TypeCheckerException(node, fmt.toString(), args);
 	}
 
 	private TypeCheckerException error(TypedTree node, String fmt, Object... args) {

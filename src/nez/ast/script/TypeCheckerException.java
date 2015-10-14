@@ -1,9 +1,15 @@
 package nez.ast.script;
 
+import konoha.message.Message;
+
 public class TypeCheckerException extends RuntimeException {
 
 	private static final long serialVersionUID = 1L;
 	TypedTree errorTree;
+
+	TypeCheckerException(TypedTree node, Message fmt, Object... args) {
+		this.errorTree = newErrorTree(node, fmt.toString(), args);
+	}
 
 	TypeCheckerException(TypedTree node, String fmt, Object... args) {
 		this.errorTree = newErrorTree(node, fmt, args);

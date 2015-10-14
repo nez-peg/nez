@@ -3,6 +3,7 @@ package nez.ast.script;
 import java.io.IOException;
 import java.lang.reflect.Type;
 
+import konoha.message.Message;
 import nez.Parser;
 import nez.io.SourceContext;
 import nez.util.ConsoleUtils;
@@ -40,7 +41,7 @@ public class ScriptContext {
 	public final Object eval(SourceContext source) {
 		TypedTree node = (TypedTree) this.parser.parse(source, new TypedTree());
 		if (node == null) {
-			log(source.getSyntaxErrorMessage());
+			log(source.getErrorMessage("error", Message.SyntaxError.toString()));
 			return Interpreter.empty; // nothing
 		}
 		if (node.is(CommonSymbols._Source)) {
@@ -64,7 +65,7 @@ public class ScriptContext {
 					ConsoleUtils.println("    ", sub);
 				}
 				if (!foundError) {
-					result = interpreter.eval(sub);
+					result = interpreter.visit(sub);
 					if (sub.getType() == void.class) {
 						result = Interpreter.empty;
 					}
@@ -88,7 +89,7 @@ public class ScriptContext {
 				ConsoleUtils.println("[Typed]");
 				ConsoleUtils.println("    ", sub);
 			}
-			return interpreter.eval(sub);
+			return interpreter.visit(sub);
 		} catch (TypeCheckerException e) {
 			log(e.getMessage());
 		}

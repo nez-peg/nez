@@ -43,6 +43,7 @@
 		<jar jarfile="${BinaryName}.jar">
 			<fileset dir="${build_dir}" includes="**/*.class" />
 			<fileset dir="${source_dir}" includes="**/*.nez" />
+                        <fileset dir="${source_dir}" includes="**/*.properties" />
 			<fileset dir="." includes="lib/**" />
 			<exclude name="**/*Test.class" />
 			<manifest>
@@ -60,6 +61,7 @@
 		<jar jarfile="konoha.jar">
 			<fileset dir="${build_dir}" includes="**/*.class" />
 			<fileset dir="${source_dir}" includes="**/*.nez" />
+			<fileset dir="${source_dir}" includes="**/*.properties" />
 			<fileset dir="." includes="lib/**" />
 			<exclude name="**/*Test.class" />
 			<manifest>

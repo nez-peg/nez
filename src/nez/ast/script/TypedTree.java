@@ -3,6 +3,7 @@ package nez.ast.script;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 
+import konoha.message.Message;
 import nez.ast.Source;
 import nez.ast.Symbol;
 import nez.ast.Tree;
@@ -43,6 +44,12 @@ public class TypedTree extends Tree<TypedTree> {
 		return t;
 	}
 
+	public TypedTree newIntConst(int n) {
+		TypedTree t = new TypedTree(CommonSymbols._Integer, this.getSource(), this.getSourcePosition(), 0, 0, n);
+		t.setConst(int.class, n);
+		return t;
+	}
+
 	@Override
 	protected TypedTree dupImpl() {
 		TypedTree t = new TypedTree(this.getTag(), this.getSource(), this.getSourcePosition(), this.getLength(), this.size(), getValue());
@@ -53,7 +60,7 @@ public class TypedTree extends Tree<TypedTree> {
 
 	@Override
 	protected RuntimeException newNoSuchLabel(Symbol label) {
-		return new TypeCheckerException(this, "syntax : " + label);
+		return new TypeCheckerException(this, Message.SyntaxError_Expected, label);
 	}
 
 	// public void changed(Symbol tag, int n, Object v) {

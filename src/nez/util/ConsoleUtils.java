@@ -28,6 +28,12 @@ public class ConsoleUtils {
 		}
 	}
 
+	public final static void bold() {
+		if (isColored) {
+			System.out.print("\u001b[1m");
+		}
+	}
+
 	public final static void end() {
 		if (isColored) {
 			System.out.print("\u001b[00m");
