@@ -36,6 +36,7 @@ public interface CommonSymbols {
 	public final static Symbol _ArrayName = Symbol.tag("ArrayName");
 	public final static Symbol _ArrayType = Symbol.tag("ArrayType");
 	public final static Symbol _GenericType = Symbol.tag("GenericType");
+	public final static Symbol _TypeOf = Symbol.tag("TypeOf");
 
 	public final static Symbol _Cast = Symbol.tag("Cast");
 	public final static Symbol _UpCast = Symbol.tag("UpCast");

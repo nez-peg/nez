@@ -9,10 +9,29 @@ import java.util.Scanner;
 import jline.ConsoleReader;
 
 public class ConsoleUtils {
+	static boolean isColored = false;
+	static {
+		if (System.getenv("CLICOLOR") != null) {
+			isColored = true;
+		}
+	}
 
 	public final static void exit(int status, String message) {
 		ConsoleUtils.println("EXIT " + message);
 		System.exit(status);
+	}
+
+	// 31 :red 32 green, 34 blue, 37 gray
+	public final static void begin(int c) {
+		if (isColored) {
+			System.out.print("\u001b[00;" + c + "m");
+		}
+	}
+
+	public final static void end() {
+		if (isColored) {
+			System.out.print("\u001b[00m");
+		}
 	}
 
 	public final static void println(Object s) {

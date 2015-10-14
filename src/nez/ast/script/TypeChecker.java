@@ -795,6 +795,20 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 		}
 	}
 
+	public class TypeOf extends Undefined {
+		@Override
+		public Type accept(TypedTree node) {
+			try {
+				Type t = visit(node.get(_expr));
+				node.setConst(String.class, name(t));
+			} catch (TypeCheckerException e) {
+				context.log(e.getMessage());
+				node.setConst(String.class, null);
+			}
+			return String.class;
+		}
+	}
+
 	public class Instanceof extends Undefined {
 		@Override
 		public Type accept(TypedTree node) {
@@ -1332,6 +1346,14 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 				throw this.error(node, "undefined type %s", node.toText());
 			}
 			return t == null ? deftype : t;
+		}
+		if (node.is(_TypeOf)) {
+			try {
+				return visit(node.get(_expr));
+			} catch (TypeCheckerException e) {
+				context.log(e.getMessage());
+			}
+			return Object.class;
 		}
 		if (node.is(_ArrayType)) {
 			return GenericType.newType(konoha.Array.class, resolveType(node.get(_base), Object.class));

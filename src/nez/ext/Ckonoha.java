@@ -70,9 +70,11 @@ public class Ckonoha extends Command {
 	public final static String KonohaVersion = "4.0";
 
 	private static void show(String name) {
-		ConsoleUtils.println("Konoha 4E (" + name + ") on Nez " + Version);
+		ConsoleUtils.println("Konoha Universal (" + name + ") on Nez " + Version);
+		ConsoleUtils.begin(37);
 		ConsoleUtils.println(Copyright);
 		ConsoleUtils.println("Copyright (c) 2015, Kimio Kuramitsu, Yokohama National University");
+		ConsoleUtils.end();
 	}
 
 	private static String readLine() {
