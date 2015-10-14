@@ -425,6 +425,18 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 		}
 	}
 
+	private void visitBlockStmt(TypedTree node) {
+		if (node.getTag() != _Block) {
+			visit(node);
+			if (node.getType() != void.class) {
+				mBuilder.pop(node.getClassType());
+			}
+		} else {
+			Block block = new Block();
+			block.accept(node);
+		}
+	}
+
 	public class Block extends Undefined {
 		@Override
 		public void accept(TypedTree node) {
@@ -441,6 +453,32 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 	}
 
 	public class If extends Undefined {
+		@Override
+		public void accept(TypedTree node) {
+			visit(node.get(_cond));
+			mBuilder.push(true);
+
+			Label elseLabel = mBuilder.newLabel();
+			Label mergeLabel = mBuilder.newLabel();
+
+			mBuilder.ifCmp(Type.BOOLEAN_TYPE, GeneratorAdapter.NE, elseLabel);
+
+			// then
+			visitBlockStmt(node.get(_then));
+			mBuilder.goTo(mergeLabel);
+
+			// else
+			mBuilder.mark(elseLabel);
+			if (node.size() > 2) {
+				visitBlockStmt(node.get(_else));
+			}
+
+			// merge
+			mBuilder.mark(mergeLabel);
+		}
+	}
+
+	public class Conditional extends Undefined {
 		@Override
 		public void accept(TypedTree node) {
 			visit(node.get(_cond));
@@ -478,7 +516,7 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 
 			// Block
 			mBuilder.mark(beginLabel);
-			visit(node.get(_body));
+			visitBlockStmt(node.get(_body));
 
 			// Condition
 			mBuilder.mark(condLabel);
@@ -501,7 +539,7 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 
 			// Do
 			mBuilder.mark(beginLabel);
-			visit(node.get(_body));
+			visitBlockStmt(node.get(_body));
 
 			// Condition
 			mBuilder.mark(continueLabel);
@@ -524,13 +562,15 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 			mBuilder.getLoopLabels().push(new Pair<Label, Label>(breakLabel, continueLabel));
 
 			// Initialize
-			visit(node.get(_init));
+			if (node.has(_init)) {
+				visit(node.get(_init));
+			}
 
 			mBuilder.goTo(condLabel);
 
 			// Block
 			mBuilder.mark(beginLabel);
-			visit(node.get(_body));
+			visitBlockStmt(node.get(_body));
 			mBuilder.mark(continueLabel);
 			visit(node.get(_iter));
 			if (node.get(_iter).getType() != Type.VOID_TYPE) {

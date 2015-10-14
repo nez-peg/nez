@@ -148,7 +148,7 @@ public class ScriptClassLoader extends ClassLoader {
 		return loader;
 	}
 
-	private String dumpDirectory = null;
+	private String dumpDirectory = "dump";
 
 	private void dump(String binaryClassName, byte[] byteCode) {
 		if (this.typeSystem.isVerboseMode() || dumpDirectory != null) {
