@@ -3,7 +3,8 @@ package nez.ast.script;
 import java.lang.reflect.Type;
 
 public abstract class Functor {
-	public abstract Class<?> getDeclaringClass();
+
+	public abstract String getName();
 
 	public abstract Class<?> getReturnClass();
 

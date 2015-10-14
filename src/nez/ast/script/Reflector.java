@@ -209,6 +209,10 @@ public class Reflector {
 
 	/* function */
 
+	public final static Object invokeFunc(Function self, Object... args) {
+		return Reflector.invokeMethod(self, self.f, args);
+	}
+
 	public final static Object invokeFunc(Function self) {
 		return Reflector.invokeMethod(self, self.f);
 	}

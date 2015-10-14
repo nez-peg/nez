@@ -14,7 +14,6 @@ import konoha.StaticOperator;
 import konoha.StringOperator;
 import nez.ast.Tree;
 import nez.ast.script.asm.ScriptCompiler;
-import nez.ast.script.stub.G_g;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
 
@@ -55,7 +54,6 @@ public class TypeSystem extends CommonContext implements CommonSymbols {
 	void initDebug() {
 		this.setType("Math", Math.class);
 		this.setType("System", System.class);
-		this.addDebugGlobalVariable(Function.class, "g", G_g.class);
 	}
 
 	/* Types */
@@ -118,7 +116,7 @@ public class TypeSystem extends CommonContext implements CommonSymbols {
 		return false;
 	}
 
-	public Class<?> getFuncReturnType(Type f) {
+	public final static Class<?> getFuncReturnType(Type f) {
 		if (f == konoha.Function.class) {
 			return Object.class;
 		}
@@ -126,7 +124,7 @@ public class TypeSystem extends CommonContext implements CommonSymbols {
 		return m.getReturnType();
 	}
 
-	public Class<?>[] getFuncParameterTypes(Type f) {
+	public final static Class<?>[] getFuncParameterTypes(Type f) {
 		Method m = Reflector.findInvokeMethod((Class<?>) f);
 		return m.getParameterTypes();
 	}

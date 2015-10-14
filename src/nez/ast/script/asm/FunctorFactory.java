@@ -5,41 +5,43 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 
+import konoha.Function;
 import nez.ast.script.Functor;
 import nez.ast.script.Reflector;
+import nez.ast.script.TypeSystem;
 
 import org.objectweb.asm.commons.GeneratorAdapter;
 
 public abstract class FunctorFactory {
 
 	public final static Functor newConstructor(Type newType, Constructor<?> c) {
-		return new IConstructor(newType, c);
+		return new ConstructorFunctor(newType, c);
 	}
 
 	public final static Functor newMethod(Method m) {
 		if (Modifier.isStatic(m.getModifiers())) {
-			return new IStaticMethod(m);
+			return new StaticMethodFunctor(m);
 		}
 		if (Modifier.isInterface(m.getModifiers())) {
-			return new IInterfaceMethod(m);
+			return new InterfaceFunctor(m);
 		}
-		return new IMethod(m);
+		return new MethodFunctor(m);
 	}
 
 }
 
-class IConstructor extends AsmFunctor {
+class ConstructorFunctor extends AsmFunctor {
 	protected Type newType;
 	protected Constructor<?> c;
 
-	public IConstructor(Type newType, Constructor<?> c) {
+	public ConstructorFunctor(Type newType, Constructor<?> c) {
 		this.newType = newType;
 		this.c = c;
 	}
 
 	@Override
-	public Class<?> getDeclaringClass() {
-		return c.getDeclaringClass();
+	public String getName() {
+		return "<init>";
 	}
 
 	@Override
@@ -64,7 +66,7 @@ class IConstructor extends AsmFunctor {
 
 	@Override
 	public org.objectweb.asm.Type getOwner() {
-		return getAsmType(c.getDeclaringClass());
+		return getOwner(c.getDeclaringClass());
 	}
 
 	@Override
@@ -76,18 +78,19 @@ class IConstructor extends AsmFunctor {
 	public String toString() {
 		return c.toGenericString();
 	}
+
 }
 
-class IMethod extends AsmFunctor {
+class MethodFunctor extends AsmFunctor {
 	protected Method method;
 
-	public IMethod(Method method) {
+	public MethodFunctor(Method method) {
 		this.method = method;
 	}
 
 	@Override
-	public Class<?> getDeclaringClass() {
-		return this.method.getDeclaringClass();
+	public String getName() {
+		return "";
 	}
 
 	@Override
@@ -111,6 +114,11 @@ class IMethod extends AsmFunctor {
 	}
 
 	@Override
+	public org.objectweb.asm.Type getOwner() {
+		return getOwner(this.method.getDeclaringClass());
+	}
+
+	@Override
 	public void pushInstruction(GeneratorAdapter a) {
 		a.invokeVirtual(this.getOwner(), this.getDesc(method));
 	}
@@ -121,8 +129,8 @@ class IMethod extends AsmFunctor {
 	}
 }
 
-class IStaticMethod extends IMethod {
-	public IStaticMethod(Method method) {
+class StaticMethodFunctor extends MethodFunctor {
+	public StaticMethodFunctor(Method method) {
 		super(method);
 	}
 
@@ -133,19 +141,110 @@ class IStaticMethod extends IMethod {
 
 	@Override
 	public void pushInstruction(GeneratorAdapter a) {
-		a.invokeStatic(this.getOwner(), this.getDesc(method));
+		a.invokeStatic(this.getOwner(method.getDeclaringClass()), this.getDesc(method));
 	}
 }
 
-class IInterfaceMethod extends IMethod {
-	public IInterfaceMethod(Method method) {
+class InterfaceFunctor extends MethodFunctor {
+	public InterfaceFunctor(Method method) {
 		super(method);
 	}
 
 	@Override
 	public void pushInstruction(GeneratorAdapter a) {
-		a.invokeInterface(this.getOwner(), this.getDesc(method));
+		a.invokeInterface(this.getOwner(method.getDeclaringClass()), this.getDesc(method));
 	}
+}
+
+class SymbolFunctor extends AsmSymbolFunctor {
+
+	Type returnType;
+	String name;
+	Type[] paramTypes;
+
+	protected SymbolFunctor(String cname, Type returnType, String name, Type[] paramTypes) {
+		super(cname);
+		this.returnType = returnType;
+		this.name = name;
+		this.paramTypes = paramTypes;
+	}
+
+	@Override
+	public String getName() {
+		return name;
+	}
+
+	@Override
+	public Class<?> getReturnClass() {
+		return TypeSystem.toClass(this.returnType);
+	}
+
+	@Override
+	public Type getReturnType() {
+		return this.returnType;
+	}
+
+	@Override
+	public Type[] getParameterTypes() {
+		return this.paramTypes;
+	}
+
+	@Override
+	public Object eval(Object recv, Object... args) {
+		return null;
+	}
+
+	@Override
+	public void pushInstruction(GeneratorAdapter a) {
+		a.invokeStatic(this.getOwner(null), this.getDesc(this.name));
+	}
+
+}
+
+class FunctionFunctor extends AsmFunctor {
+	String name;
+	Type funcType;
+
+	FunctionFunctor(String name, Type funcType) {
+		this.name = name;
+		this.funcType = funcType;
+	}
+
+	@Override
+	public String getName() {
+		return this.name;
+	}
+
+	@Override
+	public Class<?> getReturnClass() {
+		return TypeSystem.getFuncReturnType(funcType);
+	}
+
+	@Override
+	public Type getReturnType() {
+		return TypeSystem.getFuncReturnType(funcType);
+	}
+
+	@Override
+	public Type[] getParameterTypes() {
+		return TypeSystem.getFuncParameterTypes(funcType);
+	}
+
+	@Override
+	public org.objectweb.asm.Type getOwner() {
+		return newAsmType(funcType);
+	}
+
+	@Override
+	public Object eval(Object recv, Object... args) {
+		return Reflector.invokeFunc((Function) recv, args);
+	}
+
+	@Override
+	public void pushInstruction(GeneratorAdapter a) {
+		a.invokeVirtual(newAsmType(funcType), getDesc("invoke"));
+	}
+
 }
 
 // class IPrototype extends Interface {

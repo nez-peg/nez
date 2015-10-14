@@ -66,9 +66,14 @@ public class UList<T> extends AbstractList<T> {
 		this.currentSize = this.currentSize + 1;
 	}
 
-	public final void clear(int index) {
+	public void clear(int index) {
 		assert (index <= this.currentSize);
 		this.currentSize = index;
+	}
+
+	@Override
+	public void clear() {
+		this.clear(0);
 	}
 
 	public final T pop() {
