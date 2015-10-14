@@ -425,6 +425,18 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 		}
 	}
 
+	private void visitBlockStmt(TypedTree node) {
+		if (node.getTag() != _Block) {
+			visit(node);
+			if (node.getType() != void.class) {
+				mBuilder.pop(node.getClassType());
+			}
+		} else {
+			Block block = new Block();
+			block.accept(node);
+		}
+	}
+
 	public class Block extends Undefined {
 		@Override
 		public void accept(TypedTree node) {
@@ -441,6 +453,32 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 	}
 
 	public class If extends Undefined {
+		@Override
+		public void accept(TypedTree node) {
+			visit(node.get(_cond));
+			mBuilder.push(true);
+
+			Label elseLabel = mBuilder.newLabel();
+			Label mergeLabel = mBuilder.newLabel();
+
+			mBuilder.ifCmp(Type.BOOLEAN_TYPE, GeneratorAdapter.NE, elseLabel);
+
+			// then
+			visitBlockStmt(node.get(_then));
+			mBuilder.goTo(mergeLabel);
+
+			// else
+			mBuilder.mark(elseLabel);
+			if (node.size() > 2) {
+				visitBlockStmt(node.get(_else));
+			}
+
+			// merge
+			mBuilder.mark(mergeLabel);
+		}
+	}
+
+	public class Conditional extends Undefined {
 		@Override
 		public void accept(TypedTree node) {
 			visit(node.get(_cond));
@@ -478,7 +516,7 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 
 			// Block
 			mBuilder.mark(beginLabel);
-			visit(node.get(_body));
+			visitBlockStmt(node.get(_body));
 
 			// Condition
 			mBuilder.mark(condLabel);
@@ -501,7 +539,7 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 
 			// Do
 			mBuilder.mark(beginLabel);
-			visit(node.get(_body));
+			visitBlockStmt(node.get(_body));
 
 			// Condition
 			mBuilder.mark(continueLabel);
@@ -524,13 +562,15 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 			mBuilder.getLoopLabels().push(new Pair<Label, Label>(breakLabel, continueLabel));
 
 			// Initialize
-			visit(node.get(_init));
+			if (node.has(_init)) {
+				visit(node.get(_init));
+			}
 
 			mBuilder.goTo(condLabel);
 
 			// Block
 			mBuilder.mark(beginLabel);
-			visit(node.get(_body));
+			visitBlockStmt(node.get(_body));
 			mBuilder.mark(continueLabel);
 			visit(node.get(_iter));
 			if (node.get(_iter).getType() != Type.VOID_TYPE) {
@@ -547,12 +587,58 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 		}
 	}
 
+	private int switchUnique = 0;
+
 	public class Switch extends Undefined {
 		@Override
 		public void accept(TypedTree node) {
-			TypedTree body = node.get(_body);
+			Label condLabel = mBuilder.newLabel();
+			Label breakLabel = mBuilder.newLabel();
+			mBuilder.getLoopLabels().push(new Pair<Label, Label>(breakLabel, null));
 
+			Class<?> condType = node.get(_cond).getClassType();
+			TypedTree body = node.get(_body);
+			int size = body.size();
+			Label labels[] = new Label[size];
+			int dfIndex = -1;
+
+			mBuilder.goTo(condLabel);
+
+			// Block
+			for (int i = 0; i < size; i++) {
+				labels[i] = mBuilder.newLabel();
+				mBuilder.mark(labels[i]);
+				visit(body.get(i));
+			}
+			mBuilder.goTo(breakLabel);
+
+			// Condition
+			mBuilder.mark(condLabel);
 			visit(node.get(_cond));
+			String condValName = "#SwitchCondValue" + switchUnique;
+			VarEntry condVar = mBuilder.createNewVarAndStore(condValName, condType);
+			switchUnique++;
+
+			for (int i = 0; i < size; i++) {
+				TypedTree condNode = body.get(i).get(_cond);
+				if (condLabel != null) {
+					// SwitchCase
+					mBuilder.loadFromVar(condVar);
+					visit(condNode);
+				} else {
+					// SwitchDefault
+					dfIndex = i;
+				}
+				mBuilder.ifCmp(Type.getType(condType), Opcodes.IFEQ, labels[i]);
+			}
+
+			// HasDefault
+			if (dfIndex != -1) {
+				mBuilder.goTo(labels[dfIndex]);
+			}
+
+			mBuilder.mark(breakLabel);
+			mBuilder.getLoopLabels().pop();
 		}
 	}
 
