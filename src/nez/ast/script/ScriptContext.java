@@ -40,7 +40,7 @@ public class ScriptContext {
 	public final Object eval(SourceContext source) {
 		TypedTree node = (TypedTree) this.parser.parse(source, new TypedTree());
 		if (node == null) {
-			println(source.getSyntaxErrorMessage());
+			log(source.getSyntaxErrorMessage());
 			return Interpreter.empty; // nothing
 		}
 		if (node.is(CommonSymbols._Source)) {

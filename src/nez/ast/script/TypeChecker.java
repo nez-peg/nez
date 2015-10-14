@@ -118,7 +118,7 @@ public class TypeChecker extends TreeVisitor2<nez.ast.script.TypeChecker.Undefin
 			return node.toText();
 		}
 		StringBuilder sb = new StringBuilder();
-		join(sb, node.get(0));
+		join(sb, node);
 		return sb.toString();
 	}
 

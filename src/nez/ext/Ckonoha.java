@@ -52,16 +52,23 @@ public class Ckonoha extends Command {
 				continue;
 			}
 			try {
+				ConsoleUtils.begin(32);
 				Object result = sc.eval2("<stdio>", linenum, command);
+				ConsoleUtils.end();
 				if (!(result instanceof EmptyResult)) {
 					ConsoleUtils.println("<<<");
 					ConsoleUtils.println(result);
 				}
 			} catch (ScriptRuntimeException e) {
-				ConsoleUtils.println(e.getMessage());
-			} catch (RuntimeException e) {
+				ConsoleUtils.begin(31);
 				ConsoleUtils.println(e);
 				e.printStackTrace();
+				ConsoleUtils.end();
+			} catch (RuntimeException e) {
+				ConsoleUtils.begin(31);
+				ConsoleUtils.println(e);
+				e.printStackTrace();
+				ConsoleUtils.end();
 			}
 			linenum += (command.split("\n").length);
 		}

@@ -148,11 +148,12 @@ public class TypeSystem extends CommonContext implements CommonSymbols {
 		return gv;
 	}
 
-	private GlobalVariable addDebugGlobalVariable(Type type, String name, Class<?> varClass) {
-		GlobalVariable gv = new GlobalVariable(type, varClass);
-		this.GlobalVariables.put(name, gv);
-		return gv;
-	}
+	// private GlobalVariable addDebugGlobalVariable(Type type, String name,
+	// Class<?> varClass) {
+	// GlobalVariable gv = new GlobalVariable(type, varClass);
+	// this.GlobalVariables.put(name, gv);
+	// return gv;
+	// }
 
 	/* SymbolList */
 	private UList<Object> symbolList = new UList<Object>(new Object[256]);
@@ -206,6 +207,10 @@ public class TypeSystem extends CommonContext implements CommonSymbols {
 	public void loadStaticFunctionClass(Class<?> c, boolean isGenerated) {
 		// StaticFunctionMethodList.add(c);
 		for (Method m : c.getMethods()) {
+			// Annotation[] a = m.getAnnotations();
+			// for (Annotation aa : a) {
+			// System.out.println("aa=" + aa);
+			// }
 			if (isStatic(m)) {
 				String name = m.getName();
 				if (name.startsWith("to")) {

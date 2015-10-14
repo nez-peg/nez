@@ -3,6 +3,7 @@ package konoha;
 import java.util.Comparator;
 
 import nez.ast.script.ScriptRuntimeException;
+import nez.ast.script.TypeSystem;
 
 public class DynamicOperator {
 
@@ -33,8 +34,13 @@ public class DynamicOperator {
 	}
 
 	private static String c(Object o) {
-		return o.getClass().getName();
+		return TypeSystem.name(o.getClass());
 	}
+
+	// @Deprecated
+	// public final static Object opAdd(String a, Object b) {
+	// return a + b;
+	// }
 
 	public final static Object opAdd(Object a, Object b) {
 		if (a instanceof Number && b instanceof Number) {
