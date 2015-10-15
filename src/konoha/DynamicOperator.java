@@ -2,8 +2,8 @@ package konoha;
 
 import java.util.Comparator;
 
-import nez.ast.script.ScriptRuntimeException;
-import nez.ast.script.TypeSystem;
+import konoha.script.ScriptRuntimeException;
+import konoha.script.TypeSystem;
 
 public class DynamicOperator {
 

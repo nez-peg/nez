@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import konoha.message.Message;
-import nez.ast.script.EmptyResult;
-import nez.ast.script.ScriptContext;
-import nez.ast.script.ScriptRuntimeException;
+import konoha.script.EmptyResult;
+import konoha.script.ScriptContext;
+import konoha.script.ScriptRuntimeException;
 import nez.main.Command;
 import nez.main.CommandContext;
 import nez.util.ConsoleUtils;

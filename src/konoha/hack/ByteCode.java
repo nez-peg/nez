@@ -2,6 +2,6 @@ package konoha.hack;
 
 public class ByteCode {
 	static {
-		nez.ast.script.asm.ScriptClassLoader.enabledDump = true;
+		konoha.asm.ScriptClassLoader.enabledDump = true;
 	}
 }

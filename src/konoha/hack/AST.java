@@ -1,7 +1,7 @@
 package konoha.hack;
 
-import nez.ast.script.ScriptContext;
-import nez.ast.script.TypeSystem;
+import konoha.script.ScriptContext;
+import konoha.script.TypeSystem;
 import nez.util.ConsoleUtils;
 
 public class AST extends Hacker {
