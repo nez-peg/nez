@@ -841,22 +841,21 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 		}
 	}
 
-	private void evalPrefixInc(TypedTree node, int amount) {
-		String name = node.getText(_name, null);
-		VarEntry var = this.mBuilder.getVar(name);
-		if (var != null) {
-			this.mBuilder.callIinc(var, amount);
-			this.mBuilder.loadFromVar(var);
-		} else {
-			throw new RuntimeException("undefined variable " + name);
-		}
-	}
+	// private void evalPrefixInc(TypedTree node, int amount) {
+	// String name = node.getText(_name, null);
+	// VarEntry var = this.mBuilder.getVar(name);
+	// if (var != null) {
+	// this.mBuilder.callIinc(var, amount);
+	// this.mBuilder.loadFromVar(var);
+	// } else {
+	// throw new RuntimeException("undefined variable " + name);
+	// }
+	// }
 
 	private void evalSuffixInc(TypedTree node, int amount) {
-		String name = node.getText(_name, null);
+		String name = node.getText(_expr, null);
 		VarEntry var = mBuilder.getVar(name);
 		if (var != null) {
-			node.setType(int.class);
 			mBuilder.loadFromVar(var);
 			this.mBuilder.callIinc(var, amount);
 		} else {
@@ -864,33 +863,33 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 		}
 	}
 
-	public class SuffixInc extends Undefined {
+	public class Inc extends Undefined {
 		@Override
 		public void accept(TypedTree node) {
 			evalSuffixInc(node, 1);
 		}
 	}
 
-	public class SuffixDec extends Undefined {
+	public class Dec extends Undefined {
 		@Override
 		public void accept(TypedTree node) {
 			evalSuffixInc(node, -1);
 		}
 	}
 
-	public class PrefixInc extends Undefined {
-		@Override
-		public void accept(TypedTree node) {
-			evalPrefixInc(node, 1);
-		}
-	}
-
-	public class PrefixDec extends Undefined {
-		@Override
-		public void accept(TypedTree node) {
-			evalPrefixInc(node, -1);
-		}
-	}
+	// public class PrefixInc extends Undefined {
+	// @Override
+	// public void accept(TypedTree node) {
+	// evalPrefixInc(node, 1);
+	// }
+	// }
+	//
+	// public class PrefixDec extends Undefined {
+	// @Override
+	// public void accept(TypedTree node) {
+	// evalPrefixInc(node, -1);
+	// }
+	// }
 
 	public class Array extends Undefined {
 		@Override
@@ -913,6 +912,13 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 			pushArray(Object.class, node);
 			AsmFunctor inf = getInterface(node);
 			inf.pushInstruction(mBuilder);
+		}
+	}
+
+	public class Empty extends Undefined {
+		@Override
+		public void accept(TypedTree node) {
+			// empty
 		}
 	}
 
