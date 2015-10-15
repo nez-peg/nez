@@ -54,17 +54,19 @@ public class Ckonoha extends Command {
 				continue;
 			}
 			if (hasUTF8(command)) {
-				ConsoleUtils.begin(36);
-				ConsoleUtils.println(Message.DetectedUTF8);
-				command = filterUTF8(command);
+				ConsoleUtils.begin(31);
+				ConsoleUtils.println("(<stdio>:" + linenum + ") " + Message.DetectedUTF8);
 				ConsoleUtils.end();
+				command = filterUTF8(command);
 			}
 			try {
 				ConsoleUtils.begin(32);
 				Object result = sc.eval2("<stdio>", linenum, command);
 				ConsoleUtils.end();
 				if (!(result instanceof EmptyResult)) {
+					ConsoleUtils.begin(37);
 					ConsoleUtils.println("<<<");
+					ConsoleUtils.end();
 					ConsoleUtils.bold();
 					ConsoleUtils.println(result);
 					ConsoleUtils.end();

@@ -1,4 +1,4 @@
-package konoha.debug;
+package konoha.hack;
 
 public class Person {
 	public String name;

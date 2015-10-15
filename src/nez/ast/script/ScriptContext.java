@@ -50,17 +50,19 @@ public class ScriptContext {
 		return evalTopLevel(node);
 	}
 
+	public boolean enableASTDump = false;
+
 	Object evalSource(TypedTree node) {
 		Object result = Interpreter.empty;
 		boolean foundError = false;
 		for (TypedTree sub : node) {
-			if (this.typeSystem.verboseMode) {
+			if (enableASTDump || this.typeSystem.verboseMode) {
 				ConsoleUtils.println("[Parsed]");
 				ConsoleUtils.println("    ", sub);
 			}
 			try {
 				typechecker.visit(sub);
-				if (this.typeSystem.verboseMode) {
+				if (enableASTDump || this.typeSystem.verboseMode) {
 					ConsoleUtils.println("[Typed]");
 					ConsoleUtils.println("    ", sub);
 				}
@@ -79,13 +81,13 @@ public class ScriptContext {
 	}
 
 	Object evalTopLevel(TypedTree sub) {
-		if (this.typeSystem.verboseMode) {
+		if (enableASTDump || this.typeSystem.verboseMode) {
 			ConsoleUtils.println("[Parsed]");
 			ConsoleUtils.println("    ", sub);
 		}
 		try {
 			typechecker.visit(sub);
-			if (this.typeSystem.verboseMode) {
+			if (enableASTDump || this.typeSystem.verboseMode) {
 				ConsoleUtils.println("[Typed]");
 				ConsoleUtils.println("    ", sub);
 			}
@@ -118,7 +120,7 @@ public class ScriptContext {
 	}
 
 	public void log(String msg) {
-		int c = msg.indexOf("[error]") > 0 ? 31 : 32;
+		int c = msg.indexOf("[error]") > 0 ? 31 : 34;
 		ConsoleUtils.begin(c);
 		ConsoleUtils.println(msg);
 		ConsoleUtils.end();

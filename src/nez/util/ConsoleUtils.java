@@ -21,7 +21,7 @@ public class ConsoleUtils {
 		System.exit(status);
 	}
 
-	// 31 :red 32 green, 34 blue, 37 gray
+	// 31 :red 　　　32 green, 34 blue, 37 gray
 	public final static void begin(int c) {
 		if (isColored) {
 			System.out.print("\u001b[00;" + c + "m");

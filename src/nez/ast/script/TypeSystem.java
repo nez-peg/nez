@@ -12,6 +12,7 @@ import konoha.DynamicOperator;
 import konoha.Function;
 import konoha.StaticOperator;
 import konoha.StringOperator;
+import konoha.hack.Hacker;
 import nez.ast.Tree;
 import nez.ast.script.asm.ScriptCompiler;
 import nez.util.ConsoleUtils;
@@ -235,8 +236,13 @@ public class TypeSystem extends CommonContext implements CommonSymbols {
 
 	public void importStaticClass(String path) throws ClassNotFoundException {
 		Class<?> c = Class.forName(path);
-		loadStaticFunctionClass(c, false);
-		this.setType(c.getSimpleName(), c);
+		if (Hacker.class.isAssignableFrom(c)) {
+			Hacker hack = (Hacker) Reflector.newInstance(c);
+			hack.perform(context, this);
+		} else {
+			loadStaticFunctionClass(c, false);
+			this.setType(c.getSimpleName(), c);
+		}
 	}
 
 	/**

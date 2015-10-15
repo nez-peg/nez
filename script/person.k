@@ -1,4 +1,4 @@
-import konoha.debug.Person;
+import konoha.hack.Person;
 
 var p = new Person("naruto", 17);
 printf("name: %s\n", p.name);

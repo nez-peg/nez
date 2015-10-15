@@ -148,10 +148,11 @@ public class ScriptClassLoader extends ClassLoader {
 		return loader;
 	}
 
+	public static boolean enabledDump = false;
 	private String dumpDirectory = null;
 
 	private void dump(String binaryClassName, byte[] byteCode) {
-		if (this.typeSystem.isVerboseMode() || dumpDirectory != null) {
+		if (enabledDump || this.typeSystem.isVerboseMode() || dumpDirectory != null) {
 			int index = binaryClassName.lastIndexOf('.');
 			String classFileName = binaryClassName.substring(index + 1) + ".class";
 			if (dumpDirectory != null) {
