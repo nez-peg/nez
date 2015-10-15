@@ -563,19 +563,23 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 
 			// Initialize
 			if (node.has(_init)) {
-				visit(node.get(_init));
+				visitBlockStmt(node.get(_init));
 			}
 
 			mBuilder.goTo(condLabel);
 
 			// Block
 			mBuilder.mark(beginLabel);
-			visitBlockStmt(node.get(_body));
-			mBuilder.mark(continueLabel);
-			visit(node.get(_iter));
-			if (node.get(_iter).getType() != Type.VOID_TYPE) {
-				mBuilder.pop();
+			if (node.has(_body)) {
+				visitBlockStmt(node.get(_body));
 			}
+			mBuilder.mark(continueLabel);
+			if (node.has(_iter)) {
+				visitBlockStmt(node.get(_iter));
+			}
+			// if (node.get(_iter).getType() != Type.VOID_TYPE) {
+			// mBuilder.pop();
+			// }
 
 			// Condition
 			mBuilder.mark(condLabel);
@@ -608,7 +612,7 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 			for (int i = 0; i < size; i++) {
 				labels[i] = mBuilder.newLabel();
 				mBuilder.mark(labels[i]);
-				visit(body.get(i));
+				visitBlockStmt(body.get(i));
 			}
 			mBuilder.goTo(breakLabel);
 
@@ -742,7 +746,7 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 	public class Return extends Undefined {
 		@Override
 		public void accept(TypedTree node) {
-			if (node.get(_expr, null) != null) {
+			if (node.has(_expr)) {
 				visit(node.get(_expr));
 			}
 			mBuilder.returnValue();
@@ -764,6 +768,16 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 			Label continueLabel = mBuilder.getLoopLabels().peek().getRight();
 			mBuilder.jumpToMultipleFinally();
 			mBuilder.goTo(continueLabel);
+		}
+	}
+
+	public class Throw extends Undefined {
+		@Override
+		public void accept(TypedTree node) {
+			if (node.has(_expr)) {
+				visit(node.get(_expr));
+			}
+			mBuilder.returnValue();
 		}
 	}
 
@@ -875,6 +889,12 @@ public class ScriptCompilerAsm extends TreeVisitor2<ScriptCompilerAsm.Undefined>
 		@Override
 		public void accept(TypedTree node) {
 			evalPrefixInc(node, -1);
+		}
+	}
+
+	public class Array extends Undefined {
+		@Override
+		public void accept(TypedTree node) {
 		}
 	}
 
