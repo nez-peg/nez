@@ -1,11 +1,11 @@
 <project name="nez" default="jar">
 	<!-- directory / file definition -->
 	<property name="BinaryName" value="nez" />
+	<property name="LibName" value="libnez" />
 	<property name="source_dir" value="src" />
 	<property name="build_dir" value="build" />
 	<property name="root_dir" value="." />
 	<property name="jline_jar" value="ext/jline-1.0.jar" />
-	<property name="asm_jar" value="ext/asm-all-4.0.jar" />
 	<property name="test_dir" value="unit_test" />
 	<property name="junit_jar" value="ext/junit-4.10.jar" />
 	<property name="build_test_dir" value="build_test" />
@@ -28,7 +28,6 @@
 			destdir="${build_dir}" target="1.8" source="1.8" debug="yes"
 			debuglevel="lines,vars,source" includeantruntime="false">
 			<classpath path="${jline_jar}" />
-			<classpath path="${asm_jar}" />
 			<include name="**/*.java" />
 			<exclude name="**/*Test.java" />
 			<compilerarg value="-Xlint:deprecation" />
@@ -43,32 +42,26 @@
 		<jar jarfile="${BinaryName}.jar">
 			<fileset dir="${build_dir}" includes="**/*.class" />
 			<fileset dir="${source_dir}" includes="**/*.nez" />
-                        <fileset dir="${source_dir}" includes="**/*.properties" />
+            <fileset dir="${source_dir}" includes="**/*.properties" />
 			<fileset dir="." includes="lib/**" />
 			<exclude name="**/*Test.class" />
 			<manifest>
 				<attribute name="Main-Class" value="nez.main.Command" />
 			</manifest>
 			<zipfileset src="${jline_jar}" />
-			<zipfileset src="${asm_jar}" />
 		</jar>
 	</target>
 
-	<!-- ================================== -->
-	<!-- GENERATE JAR -->
-	<!-- ================================== -->
-	<target name="konoha" depends="build">
-		<jar jarfile="konoha.jar">
+	<target name="lib" depends="build">
+		<jar jarfile="${LibName}.jar">
 			<fileset dir="${build_dir}" includes="**/*.class" />
 			<fileset dir="${source_dir}" includes="**/*.nez" />
-			<fileset dir="${source_dir}" includes="**/*.properties" />
 			<fileset dir="." includes="lib/**" />
 			<exclude name="**/*Test.class" />
-			<manifest>
-				<attribute name="Main-Class" value="nez.ext.Ckonoha" />
-			</manifest>
-			<zipfileset src="${jline_jar}" />
-			<zipfileset src="${asm_jar}" />
+			<exclude name="nez/main/*.class" />
+			<exclude name="nez/main/ext/*.class" />
+			<exclude name="nez/main/debugger/*.class" />
+			<exclude name="**/x/**"/>
 		</jar>
 	</target>
 
@@ -78,7 +71,7 @@
 	<target name="clean">
 		<delete dir="${build_dir}" />
 		<delete file="${BinaryName}.jar" />
-		<delete file="konoha.jar" />
+		<delete file="${LibName}.jar" />
 		<delete dir="${build_test_dir}" />
 	</target>
 

@@ -1,12 +1,8 @@
 package nez.util;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.util.Collection;
 import java.util.List;
 import java.util.Scanner;
-
-import jline.ConsoleReader;
 
 public class ConsoleUtils {
 	static boolean isColored = false;
@@ -123,28 +119,29 @@ public class ConsoleUtils {
 	}
 
 	public final static void addCompleter(List<String> list) {
-		Object con = getConsoleReader();
-		if (con != null) {
-			try {
-				Class<?> c = Class.forName("jline.console.completer.StringsCompleter");
-				Constructor<?> nc = c.getConstructor(Collection.class);
-				Method m = con.getClass().getMethod("addCompletor");
-				m.invoke(con, nc.newInstance(list));
-				return;
-			} catch (Exception e) {
-			}
-			try {
-				// Class<?> c = Class.forName("jline.SimpleCompletor");
-				// Constructor<?> nc = c.getConstructor(String[].class);
-				// Method m = console.getClass().getMethod("addCompletor",
-				// jline.Completor.class);
-				String[] s = list.toArray(new String[list.size()]);
-				((ConsoleReader) con).addCompletor(new jline.SimpleCompletor(s));
-				// m.invoke(console, nc.newInstance((Object[])s));
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
+		// Object con = getConsoleReader();
+		// if (con != null) {
+		// try {
+		// Class<?> c =
+		// Class.forName("jline.console.completer.StringsCompleter");
+		// Constructor<?> nc = c.getConstructor(Collection.class);
+		// Method m = con.getClass().getMethod("addCompletor");
+		// m.invoke(con, nc.newInstance(list));
+		// return;
+		// } catch (Exception e) {
+		// }
+		// try {
+		// // Class<?> c = Class.forName("jline.SimpleCompletor");
+		// // Constructor<?> nc = c.getConstructor(String[].class);
+		// // Method m = console.getClass().getMethod("addCompletor",
+		// // jline.Completor.class);
+		// String[] s = list.toArray(new String[list.size()]);
+		// ((ConsoleReader) con).addCompletor(new jline.SimpleCompletor(s));
+		// // m.invoke(console, nc.newInstance((Object[])s));
+		// } catch (Exception e) {
+		// e.printStackTrace();
+		// }
+		// }
 	}
 
 	public final static String readMultiLine(String prompt, String prompt2) {
