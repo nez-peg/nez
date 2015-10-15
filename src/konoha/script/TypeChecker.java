@@ -178,6 +178,7 @@ public class TypeChecker extends TreeVisitor2<konoha.script.TypeChecker.Undefine
 				String pname = sub.getText(_name, null);
 				f.setVarType(pname, paramTypes[c]);
 				typed(sub, paramTypes[c]);
+				c++;
 			}
 		}
 		f.setParameterTypes(paramTypes);
