@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.HashSet;
 
 public class DOTGenerator {
 	public DOTGenerator() {
@@ -14,6 +15,8 @@ public class DOTGenerator {
 	private static final String fColor = "#4169E1"; // royalblue
 	private static final String FColor = "#7fffd4"; // aquamarine
 	private static final String LColor = "#ff6347"; // tomato
+	private static final String FLColor = "#9400d3"; // darkviolet,
+														// 先読み内で再帰すると１つの状態が通常の受理状態と先読みの受理状態の両方を持つことがある
 
 	public static void generate(AFA afa) {
 		if (afa == null) {
@@ -23,10 +26,25 @@ public class DOTGenerator {
 
 		System.out.println("\ndigraph g {");
 		System.out.println("\"" + afa.getf().getID() + "\"[style=filled,fillcolor=\"" + fColor + "\"];");
+
+		HashSet<State> FandL = new HashSet<State>();
+		for (State state : afa.getS()) {
+			if (afa.getF().contains(state) && afa.getL().contains(state)) {
+				FandL.add(new State(state.getID()));
+				System.out.println("\"" + state.getID() + "\"[style=filled,fillcolor=\"" + FLColor + "\"];");
+			}
+		}
+
 		for (State state : afa.getF()) {
+			if (FandL.contains(state)) {
+				continue;
+			}
 			System.out.println("\"" + state.getID() + "\"[style=filled,fillcolor=\"" + FColor + "\"];");
 		}
 		for (State state : afa.getL()) {
+			if (FandL.contains(state)) {
+				continue;
+			}
 			System.out.println("\"" + state.getID() + "\"[style=filled,fillcolor=\"" + LColor + "\"];");
 		}
 		for (Transition transition : afa.getTransitions()) {
@@ -74,10 +92,25 @@ public class DOTGenerator {
 
 			pw.println("\ndigraph g {");
 			pw.println("\"" + afa.getf().getID() + "\"[style=filled,fillcolor=\"" + fColor + "\"];");
+
+			HashSet<State> FandL = new HashSet<State>();
+			for (State state : afa.getS()) {
+				if (afa.getF().contains(state) && afa.getL().contains(state)) {
+					FandL.add(new State(state.getID()));
+					pw.println("\"" + state.getID() + "\"[style=filled,fillcolor=\"" + FLColor + "\"];");
+				}
+			}
+
 			for (State state : afa.getF()) {
+				if (FandL.contains(state)) {
+					continue;
+				}
 				pw.println("\"" + state.getID() + "\"[style=filled,fillcolor=\"" + FColor + "\"];");
 			}
 			for (State state : afa.getL()) {
+				if (FandL.contains(state)) {
+					continue;
+				}
 				pw.println("\"" + state.getID() + "\"[style=filled,fillcolor=\"" + LColor + "\"];");
 			}
 			for (Transition transition : afa.getTransitions()) {
@@ -111,5 +144,4 @@ public class DOTGenerator {
 		// execCommandLine("rm " + dotFileName + ".png");
 
 	}
-
 }
