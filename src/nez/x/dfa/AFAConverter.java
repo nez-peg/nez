@@ -52,6 +52,16 @@ public class AFAConverter extends TreeVisitor {
 			return;
 		}
 		this.afa = visitProduction(p);
+
+		this.afa = eliminateEpsilonCycle(this.afa);
+	}
+
+	/*
+	 * A = 'a' A / !('a' A) '' のように空文字が含まれる場合はε遷移の閉路が現れる可能性がある
+	 */
+	public AFA eliminateEpsilonCycle(AFA argAfa) {
+		StronglyConnectedComponent scc = new StronglyConnectedComponent(theNumberOfStates, argAfa);
+		return scc.removeEpsilonCycle();
 	}
 
 	public AFA getAFA() {
