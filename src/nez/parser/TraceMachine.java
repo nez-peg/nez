@@ -19,6 +19,17 @@ public class TraceMachine extends ParsingMachine {
 					stack.add(u);
 					u = ((ICall) code).getNonTerminalName();
 				}
+
+				// add for left recursion supporter
+				if (code instanceof ILRCall) {
+					stack.add(u);
+					u = ((ILRCall) code).getNonTerminalName();
+				}
+				if (code instanceof ILRGrow) {
+					stack.add(u);
+					u = ((ILRGrow) code).getNonTerminalName();
+				}
+
 				if (code instanceof IRet) {
 					u = stack.ArrayValues[stack.size() - 1];
 					stack.clear(stack.size() - 1);

@@ -32,6 +32,13 @@ public class PackratCompiler extends OptimizedCompiler {
 				return memoize(n, f, next);
 			}
 		}
+
+		// add for left recursion supporter
+		if (strategy.isEnabled("SLR", Strategy.SLR)) {
+			ILRGrow grow = new ILRGrow(f, n.getLocalName(), next);
+			return new ILRCall(f, n.getLocalName(), grow);
+		}
+
 		return new ICall(f, n.getLocalName(), next);
 	}
 

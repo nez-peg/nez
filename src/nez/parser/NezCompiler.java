@@ -29,6 +29,15 @@ public abstract class NezCompiler extends AbstractGenerator {
 			if (inst instanceof ICall) {
 				((ICall) inst).sync();
 			}
+
+			// add for left recursion supporter
+			if (inst instanceof ILRCall) {
+				((ILRCall) inst).sync();
+			}
+			if (inst instanceof ILRGrow) {
+				((ILRGrow) inst).sync();
+			}
+
 			// Verbose.debug("\t" + inst.id + "\t" + inst);
 		}
 		long t2 = System.nanoTime();

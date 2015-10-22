@@ -129,6 +129,13 @@ public class PlainCompiler extends NezCompiler {
 	public Instruction encodeNonTerminal(NonTerminal n, Instruction next, Instruction failjump) {
 		Production p = n.getProduction();
 		ParseFunc f = this.getParseFunc(p);
+
+		// add for left recursion supporter
+		if (strategy.isEnabled("SLR", Strategy.SLR)) {
+			ILRGrow grow = new ILRGrow(f, p.getLocalName(), next);
+			return new ILRCall(f, p.getLocalName(), grow);
+		}
+
 		return new ICall(f, p.getLocalName(), next);
 	}
 
