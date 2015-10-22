@@ -113,6 +113,21 @@ public class ASTMachine {
 		}
 	}
 
+	// add for left recursion supporter
+	public final Object[] getNextLogData(Object point) {
+		ASTLog save = (ASTLog) point;
+		if (save.next != null) {
+			Object astLogData[] = new Object[5];
+			astLogData[0] = save.next.type;
+			astLogData[1] = save.next.label;
+			astLogData[2] = save.next.ref;
+			astLogData[3] = save.next.value;
+			astLogData[4] = save.next;
+			return astLogData;
+		}
+		return null;
+	}
+
 	private void dump(ASTLog start, ASTLog end) {
 		for (ASTLog cur = start; cur != null; cur = cur.next) {
 			Verbose.debug(cur.toString());
