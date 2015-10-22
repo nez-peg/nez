@@ -301,10 +301,6 @@ public class DFAConverter {
 			// for (char c = 'a'; c <= 'd'; c++) {
 			for (int i = 0; i < 256; i++) {
 				char c = (char) i;
-				if (c == AFA.epsilon) {
-					continue;
-				}
-				// for (char c = 'a'; c <= 'd'; c++) {
 				// System.out.println("---");
 				// System.out.println("be = " + be + "," + c);
 				BooleanExpression transitBe = transit(be, c);
