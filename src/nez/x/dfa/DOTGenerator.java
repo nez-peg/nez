@@ -186,13 +186,22 @@ public class DOTGenerator {
 			return;
 		}
 		try {
+
 			File file = new File(dotFileName + ".dot");
 			PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(file)));
 
 			pw.println("\ndigraph g {");
-			pw.println("\"" + dfa.getf().getID() + "\"[style=filled,fillcolor=\"" + fColor + "\"];");
+			if (dfa.getF().contains(new State(dfa.getf().getID()))) {
+				// 初期状態と受理状態が一緒の場合
+				pw.println("\"" + dfa.getf().getID() + "\"[style=filled,fillcolor=\"" + FLColor + "\"];");
+			} else {
+				pw.println("\"" + dfa.getf().getID() + "\"[style=filled,fillcolor=\"" + fColor + "\"];");
+			}
 
 			for (State state : dfa.getF()) {
+				if (state.getID() == dfa.getf().getID()) {
+					continue;
+				}
 				pw.println("\"" + state.getID() + "\"[style=filled,fillcolor=\"" + FColor + "\"];");
 			}
 

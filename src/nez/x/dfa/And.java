@@ -1,5 +1,7 @@
 package nez.x.dfa;
 
+import java.util.HashSet;
+
 public class And extends BooleanExpression {
 	public BooleanExpression left, right;
 
@@ -72,6 +74,11 @@ public class And extends BooleanExpression {
 		} else {
 			return new And(tmp_left, tmp_right);
 		}
+	}
+
+	@Override
+	public boolean eval(HashSet<State> F, HashSet<State> L) {
+		return left.eval(F, L) && right.eval(F, L);
 	}
 
 	@Override

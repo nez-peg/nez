@@ -1,5 +1,6 @@
 package nez.x.dfa;
 
+import java.util.HashSet;
 
 public class LogicVariable extends BooleanExpression {
 	int ID;
@@ -54,6 +55,14 @@ public class LogicVariable extends BooleanExpression {
 		return this.value == 1;
 	}
 
+	public boolean isFalse() {
+		return this.hasValue() && !getValue();
+	}
+
+	public boolean isTrue() {
+		return this.hasValue() && getValue();
+	}
+
 	public void setValue(boolean value) {
 		this.value = (byte) (value ? 1 : 0);
 	}
@@ -66,6 +75,21 @@ public class LogicVariable extends BooleanExpression {
 
 	public int getID() {
 		return this.ID;
+	}
+
+	@Override
+	public boolean eval(HashSet<State> F, HashSet<State> L) {
+		if (ID == -1) {
+			if (value == -1) {
+				System.out.println("What is this Logic Variable");
+			}
+			if (value == 1) {
+				return true;
+			} else {
+				return false;
+			}
+		}
+		return F.contains(new State(ID)) || L.contains(new State(ID));
 	}
 
 	@Override

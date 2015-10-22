@@ -1,5 +1,7 @@
 package nez.x.dfa;
 
+import java.util.HashSet;
+
 public class Not extends BooleanExpression {
 	public BooleanExpression inner;
 
@@ -49,6 +51,11 @@ public class Not extends BooleanExpression {
 			}
 		}
 		return new Not(tmp);
+	}
+
+	@Override
+	public boolean eval(HashSet<State> F, HashSet<State> L) {
+		return !inner.eval(F, L);
 	}
 
 	@Override

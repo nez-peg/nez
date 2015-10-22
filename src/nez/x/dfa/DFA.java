@@ -4,10 +4,10 @@ import java.util.HashSet;
 import java.util.TreeSet;
 
 public class DFA {
-	private HashSet<State> S;
-	private TreeSet<Transition> tau;
-	private State f;
-	private HashSet<State> F;
+	private HashSet<State> S = null;
+	private TreeSet<Transition> tau = null;
+	private State f = null;
+	private HashSet<State> F = null;
 
 	public DFA() {
 		S = new HashSet<State>();
@@ -17,7 +17,7 @@ public class DFA {
 	}
 
 	public DFA(HashSet<State> S, TreeSet<Transition> tau, State f, HashSet<State> F) {
-		super();
+		this();
 		for (State state : S) {
 			this.S.add(new State(state.getID()));
 		}

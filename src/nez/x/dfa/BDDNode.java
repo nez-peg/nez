@@ -18,6 +18,10 @@ public class BDDNode implements Comparable<BDDNode> {
 		return new BDDNode(this.variableID, this.zeroID, this.oneID);
 	}
 
+	public boolean equals(BDDNode o) {
+		return variableID == o.variableID && zeroID == o.zeroID && oneID == o.oneID;
+	}
+
 	@Override
 	public int compareTo(BDDNode o) {
 		int result = new Integer(this.variableID).compareTo(o.variableID);

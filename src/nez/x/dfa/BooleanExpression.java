@@ -1,5 +1,7 @@
 package nez.x.dfa;
 
+import java.util.HashSet;
+
 public class BooleanExpression {
 	public BooleanExpression deepCopy() {
 		System.out.println("WARNING");
@@ -16,5 +18,10 @@ public class BooleanExpression {
 	public int traverse() {
 		System.out.println("WARNING");
 		return -1;
+	}
+
+	public boolean eval(HashSet<State> F, HashSet<State> L) {
+		System.out.println("WARNING");
+		return false;
 	}
 }

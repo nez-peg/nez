@@ -3,6 +3,10 @@ package nez.x.dfa;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.TreeSet;
 
 // AFA を DFA に変換する
 public class DFAConverter {
@@ -51,6 +55,11 @@ public class DFAConverter {
 	}
 
 	public BooleanExpression epsilonExpansionLogicVariable(LogicVariable be) {
+
+		if (be.hasValue()) {
+			return new LogicVariable(be.getID(), be.getValue());
+		}
+
 		ArrayList<LogicVariable> predicate = new ArrayList<LogicVariable>();
 		ArrayList<Integer> predicateType = new ArrayList<Integer>();
 		ArrayList<LogicVariable> epsilon = new ArrayList<LogicVariable>();
@@ -120,22 +129,188 @@ public class DFAConverter {
 		}
 	}
 
+	public BooleanExpression transit(BooleanExpression be, char sigma) {
+		if (be instanceof And) {
+			return transitAnd(((And) be), sigma);
+		} else if (be instanceof Or) {
+			return transitOr(((Or) be), sigma);
+		} else if (be instanceof Not) {
+			return transitNot(((Not) be), sigma);
+		} else {
+			if (!(be instanceof LogicVariable)) {
+				System.out.println("WHAT IS THIS");
+			}
+			return transitLogicVariable(((LogicVariable) be), sigma);
+		}
+	}
+
+	private BooleanExpression transitAnd(And be, char sigma) {
+		BooleanExpression tmpLeft = transit(be.left, sigma);
+		BooleanExpression tmpRight = transit(be.right, sigma);
+
+		// どちらか一方にでも false が存在する場合
+		if (((tmpLeft instanceof LogicVariable) && ((LogicVariable) tmpLeft).isFalse()) || ((tmpRight instanceof LogicVariable) && ((LogicVariable) tmpRight).isFalse())) {
+			return new LogicVariable(-1, false);
+		}
+
+		// どちらか一方にでも true が存在する場合
+		if ((tmpLeft instanceof LogicVariable) && (tmpRight instanceof LogicVariable)) {
+			if (((LogicVariable) tmpLeft).isTrue() && ((LogicVariable) tmpRight).isTrue()) {
+				return new LogicVariable(-1, true);
+			} else if (((LogicVariable) tmpLeft).isTrue()) {
+				return tmpRight;
+			} else if (((LogicVariable) tmpRight).isTrue()) {
+				return tmpLeft;
+			}
+		} else if (tmpLeft instanceof LogicVariable) {
+			if (((LogicVariable) tmpLeft).isTrue()) {
+				return tmpRight;
+			}
+		} else if (tmpRight instanceof LogicVariable) {
+			if (((LogicVariable) tmpRight).isTrue()) {
+				return tmpLeft;
+			}
+		}
+
+		return new And(tmpLeft, tmpRight);
+	}
+
+	private BooleanExpression transitOr(Or be, char sigma) {
+		BooleanExpression tmpLeft = transit(be.left, sigma);
+		BooleanExpression tmpRight = transit(be.right, sigma);
+
+		// どちらか一方にでも false が存在する場合
+		if ((tmpLeft instanceof LogicVariable) && (tmpRight instanceof LogicVariable)) {
+			if (((LogicVariable) tmpLeft).isFalse() && ((LogicVariable) tmpRight).isFalse()) {
+				return new LogicVariable(-1, false);
+			} else if (((LogicVariable) tmpLeft).isFalse()) {
+				return tmpRight;
+			} else if (((LogicVariable) tmpRight).isFalse()) {
+				return tmpLeft;
+			}
+		} else if (tmpLeft instanceof LogicVariable) {
+			if (((LogicVariable) tmpLeft).isFalse()) {
+				return tmpRight;
+			}
+		} else if (tmpRight instanceof LogicVariable) {
+			if (((LogicVariable) tmpRight).isFalse()) {
+				return tmpLeft;
+			}
+		}
+
+		// どちらか一方にでも true が存在する場合
+		if (((tmpLeft instanceof LogicVariable) && ((LogicVariable) tmpLeft).isTrue()) || ((tmpRight instanceof LogicVariable) && ((LogicVariable) tmpRight).isTrue())) {
+			return new LogicVariable(-1, true);
+		}
+
+		return new Or(tmpLeft, tmpRight);
+	}
+
+	private BooleanExpression transitNot(Not be, char sigma) {
+		BooleanExpression tmp = transit(be.inner, sigma);
+		if (tmp instanceof LogicVariable && ((LogicVariable) tmp).hasValue()) {
+			((LogicVariable) tmp).reverseValue();
+			return tmp;
+		}
+		return new Not(tmp);
+	}
+
+	private BooleanExpression transitLogicVariable(LogicVariable be, char sigma) {
+		ArrayList<LogicVariable> next = new ArrayList<LogicVariable>();
+		for (Transition transition : adjacencyList.get(be.getID())) {
+			if (transition.getPredicate() == -1 && (transition.getLabel() == sigma || transition.getLabel() == '.')) {
+				next.add(new LogicVariable(transition.getDst()));
+			}
+		}
+		if (next.isEmpty()) {
+			return new LogicVariable(-1, false);
+		}
+		if (next.size() == 1) {
+			return next.get(0);
+		}
+		BooleanExpression tmp = new Or(next.get(0), null);
+		BooleanExpression top = tmp;
+		for (int i = 1; i < next.size(); i++) {
+			if (i == (next.size() - 1)) {
+				((Or) tmp).right = next.get(i);
+			} else {
+				((Or) tmp).right = new Or(next.get(i), null);
+				tmp = ((Or) tmp).right;
+			}
+		}
+		return top;
+	}
+
 	public DFA convert() {
 
+		HashSet<State> S = new HashSet<State>();
+		TreeSet<Transition> tau = new TreeSet<Transition>();
+		State f = null;
+		HashSet<State> F = new HashSet<State>();
+
+		BDD bdd = new BDD();
+		Map<Integer, Integer> BDDIDtoVertexID = new HashMap<Integer, Integer>();
 		int vertexID = 0;
 		Deque<BooleanExpression> deq = new ArrayDeque<BooleanExpression>();
 		{
-			BooleanExpression f = new LogicVariable(afa.getf().getID());
-			System.out.println("f = " + f);
-			System.out.println("epsilon expansion f = " + epsilonExpansion(f));
+			BooleanExpression lf = new LogicVariable(afa.getf().getID());
+			BooleanExpression ef = epsilonExpansion(lf);
+			// System.out.println("lf = " + lf);
+			// System.out.println("epsilon expansion lf = " + ef);
+			deq.addFirst(ef);
+			int bddID = bdd.build(ef);
+			// System.out.println(bddID + " => " + vertexID);
+			f = new State(vertexID);
+			S.add(new State(vertexID));
+
+			if (ef.eval(afa.getF(), afa.getL())) {
+				F.add(new State(vertexID));
+			}
+			BDDIDtoVertexID.put(bddID, vertexID++);
 		}
 
 		while (!deq.isEmpty()) {
 			BooleanExpression be = deq.poll();
 
+			if (be instanceof LogicVariable && (((LogicVariable) be).isFalse() || ((LogicVariable) be).isTrue())) {
+				continue;
+			}
+
+			// for (char c = '!'; c <= '~'; c++) {
+			for (char c = 'a'; c <= 'c'; c++) {
+				// System.out.println("---");
+				// System.out.println("be = " + be + "," + c);
+				BooleanExpression transitBe = transit(be, c);
+				// System.out.println("transitBe = " + transitBe);
+
+				if (be instanceof LogicVariable && (((LogicVariable) be).isFalse() || ((LogicVariable) be).isTrue())) {
+					continue;
+				}
+
+				BooleanExpression epsilonExpansionTransitBe = epsilonExpansion(transitBe);
+				// System.out.println("eetb = " + epsilonExpansionTransitBe);
+				int bddID = bdd.build(epsilonExpansionTransitBe);
+				// System.out.println("bddID = " + bddID +
+				// " already exists?? -> " + BDDIDtoVertexID.containsKey(new
+				// Integer(bddID)));
+
+				int src = BDDIDtoVertexID.get(bdd.build(be));
+				int dst = -1;
+				if (!BDDIDtoVertexID.containsKey(new Integer(bddID))) { // 初めて現れた状態ならば追加する
+					S.add(new State(vertexID));
+					if (epsilonExpansionTransitBe.eval(afa.getF(), afa.getL())) {
+						F.add(new State(vertexID));
+					}
+					dst = vertexID;
+					BDDIDtoVertexID.put(bddID, vertexID++);
+					deq.addLast(epsilonExpansionTransitBe);
+				} else {
+					dst = BDDIDtoVertexID.get(bddID);
+				}
+				tau.add(new Transition(src, dst, c, -1));
+			}
 		}
 
-		return null;
+		return new DFA(S, tau, f, F);
 	}
-
 }
