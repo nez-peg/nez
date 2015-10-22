@@ -57,7 +57,7 @@ public class AFAConverter extends TreeVisitor {
 	}
 
 	/*
-	 * A = 'a' A / !('a' A) '' のように空文字が含まれる場合はε遷移の閉路が現れる可能性がある
+	 * Start = ('a'*)* のように繰り返しを繰り返すとε遷移の閉路ができる
 	 */
 	public AFA eliminateEpsilonCycle(AFA argAfa) {
 		StronglyConnectedComponent scc = new StronglyConnectedComponent(theNumberOfStates, argAfa);
@@ -72,7 +72,7 @@ public class AFAConverter extends TreeVisitor {
 		return theNumberOfStates++;
 	}
 
-	public DFA toDFA() {
+	public DFA computeDFA() {
 		DFAConverter dfaConverter = new DFAConverter(this.afa);
 		return dfaConverter.convert();
 	}

@@ -88,4 +88,8 @@ public class AFA {
 		return this.transitions;
 	}
 
+	public DFA toDFA() {
+		DFAConverter dfaConverter = new DFAConverter(new AFA(S, transitions, f, F, L));
+		return dfaConverter.convert();
+	}
 }

@@ -93,12 +93,33 @@ public class DFAConverter {
 				BooleanExpression tmp = epsilonExpansion(predicate.get(0));
 				return new And(((predicateType.get(0) == 1) ? new Not(tmp) : tmp), new LogicVariable(be.getID()));
 			} else {
-				if (epsilon.size() != 1) {
-					System.out.println("FATAL ERROR : epsilonExpansionLogicVariable : predicate and epsilon.size() = " + epsilon.size() + " : epsilon.size() must be 1 or My understanding is a little bit wrong");
+				// if (epsilon.size() != 1) {
+				// System.out.println("FATAL ERROR : epsilonExpansionLogicVariable : predicate and epsilon.size() = "
+				// + epsilon.size() +
+				// " : epsilon.size() must be 1 or My understanding is a little bit wrong");
+				// }
+				if (epsilon.size() == 1) {
+					BooleanExpression left = epsilonExpansion(predicate.get(0));
+					BooleanExpression right = epsilonExpansion(epsilon.get(0));
+					return new And(((predicateType.get(0) == 1) ? new Not(left) : left), right);
+				} else {
+					BooleanExpression left = epsilonExpansion(predicate.get(0));
+					ArrayList<BooleanExpression> arrRight = new ArrayList<BooleanExpression>();
+					for (LogicVariable lv : epsilon) {
+						arrRight.add(epsilonExpansion(lv));
+					}
+					BooleanExpression right = new Or(arrRight.get(0), null);
+					BooleanExpression top = right;
+					for (int i = 1; i < arrRight.size(); i++) {
+						if (i == (arrRight.size() - 1)) {
+							((Or) right).right = arrRight.get(i);
+						} else {
+							((Or) right).right = new Or(arrRight.get(i), null);
+							right = ((Or) right).right;
+						}
+					}
+					return new And(((predicateType.get(0) == 1) ? new Not(left) : left), top);
 				}
-				BooleanExpression left = epsilonExpansion(predicate.get(0));
-				BooleanExpression right = epsilonExpansion(epsilon.get(0));
-				return new And(((predicateType.get(0) == 1) ? new Not(left) : left), right);
 			}
 		} else { // Or
 			ArrayList<BooleanExpression> arr = new ArrayList<BooleanExpression>();
@@ -277,7 +298,13 @@ public class DFAConverter {
 			}
 
 			// for (char c = '!'; c <= '~'; c++) {
-			for (char c = 'a'; c <= 'c'; c++) {
+			// for (char c = 'a'; c <= 'd'; c++) {
+			for (int i = 0; i < 256; i++) {
+				char c = (char) i;
+				if (c == AFA.epsilon) {
+					continue;
+				}
+				// for (char c = 'a'; c <= 'd'; c++) {
 				// System.out.println("---");
 				// System.out.println("be = " + be + "," + c);
 				BooleanExpression transitBe = transit(be, c);

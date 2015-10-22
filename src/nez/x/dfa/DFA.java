@@ -1,5 +1,6 @@
 package nez.x.dfa;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.TreeSet;
 
@@ -44,6 +45,19 @@ public class DFA {
 
 	public HashSet<State> getF() {
 		return this.F;
+	}
+
+	public ArrayList<ArrayList<Transition>> toAdjacencyList() {
+		ArrayList<ArrayList<Transition>> adjacencyList = new ArrayList<ArrayList<Transition>>();
+		for (int i = 0; i < S.size(); i++) {
+			adjacencyList.add(new ArrayList<Transition>());
+		}
+		for (Transition transition : this.tau) {
+			int src = transition.getSrc();
+			int dst = transition.getDst();
+			adjacencyList.get(src).add(new Transition(src, dst, transition.getLabel(), -1));
+		}
+		return adjacencyList;
 	}
 
 }
