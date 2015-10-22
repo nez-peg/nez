@@ -1,10 +1,46 @@
 package nez.parser;
 
+import java.util.HashMap;
+import java.util.Stack;
+
+import nez.ast.ASTMachine;
+import nez.ast.Symbol;
 import nez.lang.Expression;
 
 abstract class AbstractSLRInstraction extends Instruction {
+	protected static HashMap<String, HashMap<Long, MapEntry>> growing = new HashMap<String, HashMap<Long, MapEntry>>();
+
 	public AbstractSLRInstraction(byte opcode, Expression e, Instruction next) {
 		super(opcode, e, next);
+	}
+
+	protected final void log(int type, long pos, Symbol label, Object value, ASTMachine astMachine) {
+		switch (type) {
+		case 1:
+			astMachine.logCapture(pos);
+			break;
+		case 2:
+			astMachine.logTag((Symbol) value);
+			break;
+		case 3:
+			astMachine.logReplace(value);
+			break;
+		case 4:
+			astMachine.logLeftFold(pos, label);
+			break;
+		case 5:
+			astMachine.logPop(label);
+			break;
+		case 6:
+			astMachine.logPush();
+			break;
+		case 7:
+			astMachine.logLink(label, value);
+			break;
+		case 8:
+			astMachine.logNew(pos, value);
+			break;
+		}
 	}
 }
 
@@ -13,10 +49,17 @@ class ILRCall extends AbstractSLRInstraction {
 	String name;
 	public Instruction jump = null;
 
+	private long pos;
+	private Object astlog;
+
 	ILRCall(ParseFunc f, String name, Instruction next) {
 		super(InstructionSet.LRCall, null, next);
 		this.f = f;
 		this.name = name;
+
+		if (!growing.containsKey(this.name)) {
+			growing.put(this.name, new HashMap<Long, MapEntry>());
+		}
 	}
 
 	void sync() {
@@ -43,7 +86,30 @@ class ILRCall extends AbstractSLRInstraction {
 
 	@Override
 	public Instruction exec(RuntimeContext sc) throws TerminationException {
-		return null; // TODO implement
+		ASTMachine astMachine = sc.getAstMachine();
+		this.pos = sc.getPosition();
+		this.astlog = astMachine.saveTransactionPoint();
+		if (growing.get(this.name).containsKey(this.pos)) {
+			sc.setPosition(growing.get(this.name).get(this.pos).getPos());
+			if (growing.get(this.name).get(this.pos).getAnsType()) {
+				growing.get(this.name).get(this.pos).setLRDetected(true);
+				return sc.fail();
+			}
+			while (true) {
+				Object logData[] = growing.get(this.name).get(this.pos).pollLogData();
+				if (logData == null) {
+					break;
+				}
+				super.log((int) logData[0], (long) logData[3], (Symbol) logData[1], logData[2], astMachine);
+			}
+			return ((ILRGrow) this.jump).jump;
+		}
+		growing.get(this.name).put(this.pos, new MapEntry(false, this.pos));
+		((ILRGrow) this.jump).pushPos(this.pos);
+		((ILRGrow) this.jump).pushAstlog(this.astlog);
+		StackData s = sc.newUnusedStack();
+		s.ref = this.jump;
+		return this.next;
 	}
 }
 
@@ -51,6 +117,10 @@ class ILRGrow extends AbstractSLRInstraction {
 	ParseFunc f;
 	String name;
 	public Instruction jump = null;
+
+	private Stack<Long> pos = new Stack<Long>();
+	private Stack<Object> astlog = new Stack<Object>();
+	private boolean isGrow = false;
 
 	ILRGrow(ParseFunc f, String name, Instruction next) {
 		super(InstructionSet.LRGrow, null, next);
@@ -80,8 +150,143 @@ class ILRGrow extends AbstractSLRInstraction {
 		// TODO encode argument
 	}
 
+	public void pushPos(long pos) {
+		this.pos.push(pos);
+	}
+
+	public void pushAstlog(Object astlog) {
+		this.astlog.push(astlog);
+	}
+
 	@Override
 	public Instruction exec(RuntimeContext sc) throws TerminationException {
-		return null; // TODO implementation
+		ASTMachine astMachine = sc.getAstMachine();
+		if (this.isGrow) {
+			if (sc.getPosition() <= growing.get(this.name).get(this.pos.peek()).getPos()) {
+				sc.setPosition(growing.get(this.name).get(this.pos.peek()).getPos());
+				astMachine.rollTransactionPoint(this.astlog.peek());
+				growing.get(this.name).get(this.pos.peek()).revertLogData();
+				while (true) {
+					Object logData[] = growing.get(this.name).get(this.pos.peek()).pollLogData();
+					if (logData == null) {
+						break;
+					}
+					super.log((int) logData[0], (long) logData[3], (Symbol) logData[1], logData[2], astMachine);
+				}
+				this.isGrow = false;
+				this.pos.pop();
+				this.astlog.pop();
+				return this.jump;
+			}
+			growing.get(this.name).get(this.pos.peek()).setPos(sc.getPosition());
+			growing.get(this.name).get(this.pos.peek()).clearLogData();
+			Object next[] = astMachine.getNextLogData(this.astlog.peek());
+			while (next != null) {
+				growing.get(this.name).get(this.pos.peek()).addLogData(next);
+				next = astMachine.getNextLogData(next[4]);
+			}
+			sc.setPosition(this.pos.peek());
+			astMachine.rollTransactionPoint(this.astlog.peek());
+			StackData s = sc.newUnusedStack();
+			s.ref = this;
+			return this.next;
+		}
+		growing.get(this.name).get(this.pos.peek()).setPos(sc.getPosition());
+		growing.get(this.name).get(this.pos.peek()).clearLogData();
+		Object next[] = astMachine.getNextLogData(this.astlog.peek());
+		while (next != null) {
+			growing.get(this.name).get(this.pos.peek()).addLogData(next);
+			next = astMachine.getNextLogData(next[4]);
+		}
+		if (growing.get(this.name).get(this.pos.peek()).getLRDetected() && this.pos.peek() < sc.getPosition()) {
+			sc.setPosition(this.pos.peek());
+			astMachine.rollTransactionPoint(this.astlog.peek());
+			StackData s = sc.newUnusedStack();
+			s.ref = this;
+			this.isGrow = true;
+			return this.next;
+		}
+		this.pos.pop();
+		this.astlog.pop();
+		return this.jump;
+	}
+}
+
+class MapEntry {
+	private boolean ansType; // true -> LR, false -> ASTLogData
+	private boolean lrDetected;
+	private ASTLogData firstData;
+	private ASTLogData currentData;
+	private ASTLogData lastData;
+	private long pos;
+
+	public MapEntry(boolean lrDetected, long pos) {
+		this.ansType = true;
+		this.lrDetected = lrDetected;
+		this.firstData = new ASTLogData();
+		this.currentData = this.firstData;
+		this.lastData = this.firstData;
+		this.pos = pos;
+	}
+
+	public boolean getAnsType() {
+		return this.ansType;
+	}
+
+	public boolean getLRDetected() {
+		return this.lrDetected;
+	}
+
+	public void setLRDetected(boolean lrDetected) {
+		this.ansType = true;
+		this.lrDetected = lrDetected;
+	}
+
+	public void clearLogData() {
+		this.ansType = false;
+		this.currentData = this.firstData;
+		this.lastData = this.firstData;
+	}
+
+	public void revertLogData() {
+		this.currentData = this.firstData;
+	}
+
+	public Object[] pollLogData() {
+		if (this.currentData != this.lastData) {
+			Object astLogData[] = new Object[4];
+			astLogData[0] = this.currentData.type;
+			astLogData[1] = this.currentData.label;
+			astLogData[2] = this.currentData.ref;
+			astLogData[3] = this.currentData.value;
+			this.currentData = this.currentData.next;
+			return astLogData;
+		}
+		return null;
+	}
+
+	public void addLogData(Object[] logData) {
+		this.lastData.type = (int) logData[0];
+		this.lastData.label = (Symbol) logData[1];
+		this.lastData.ref = logData[2];
+		this.lastData.value = (long) logData[3];
+		this.lastData.next = new ASTLogData();
+		this.lastData = this.lastData.next;
+	}
+
+	public long getPos() {
+		return this.pos;
+	}
+
+	public void setPos(long pos) {
+		this.pos = pos;
+	}
+
+	class ASTLogData {
+		int type;
+		Symbol label;
+		Object ref;
+		long value;
+		public ASTLogData next;
 	}
 }
