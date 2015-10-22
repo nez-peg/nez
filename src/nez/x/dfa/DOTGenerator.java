@@ -69,6 +69,41 @@ public class DOTGenerator {
 		System.out.println("}");
 	}
 
+	public static void generate(DFA dfa) {
+		if (dfa == null) {
+			System.out.println("WARNING : dfa is null");
+			return;
+		}
+
+		System.out.println("\ndigraph g {");
+		System.out.println("\"" + dfa.getf().getID() + "\"[style=filled,fillcolor=\"" + fColor + "\"];");
+
+		for (State state : dfa.getF()) {
+			System.out.println("\"" + state.getID() + "\"[style=filled,fillcolor=\"" + FColor + "\"];");
+		}
+
+		for (Transition transition : dfa.getTau()) {
+			int label = transition.getLabel();
+			int predicate = transition.getPredicate();
+			System.out.print("	\"" + transition.getSrc() + "\"->\"" + transition.getDst() + "\"[label=\"");
+			if (predicate == 0) {
+				System.out.print("&predicate");
+			} else if (predicate == 1) {
+				System.out.print("!predicate");
+			} else if (label != AFA.epsilon) {
+				if (Character.isLetterOrDigit((char) label) || (char) label == '.') {
+					System.out.print((char) label);
+				} else {
+					System.out.print(label);
+				}
+			} else {
+				System.out.print("ε");
+			}
+			System.out.println("\"];");
+		}
+		System.out.println("}");
+	}
+
 	private static void execCommandLine(String command) {
 		try {
 			Runtime rt = Runtime.getRuntime();
@@ -144,4 +179,53 @@ public class DOTGenerator {
 		// execCommandLine("rm " + dotFileName + ".png");
 
 	}
+
+	public static void writeDFA(DFA dfa) {
+		if (dfa == null) {
+			System.out.println("WARNING : dfa is null");
+			return;
+		}
+		try {
+			File file = new File(dotFileName + ".dot");
+			PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(file)));
+
+			pw.println("\ndigraph g {");
+			pw.println("\"" + dfa.getf().getID() + "\"[style=filled,fillcolor=\"" + fColor + "\"];");
+
+			for (State state : dfa.getF()) {
+				pw.println("\"" + state.getID() + "\"[style=filled,fillcolor=\"" + FColor + "\"];");
+			}
+
+			for (Transition transition : dfa.getTau()) {
+				int label = transition.getLabel();
+				int predicate = transition.getPredicate();
+				pw.print("	\"" + transition.getSrc() + "\"->\"" + transition.getDst() + "\"[label=\"");
+				if (predicate == 0) {
+					pw.print("&predicate");
+				} else if (predicate == 1) {
+					pw.print("!predicate");
+				} else if (label != AFA.epsilon) {
+					if (Character.isLetterOrDigit((char) label) || (char) label == '.') {
+						pw.print((char) label);
+					} else {
+						pw.print(label);
+					}
+				} else {
+					pw.print("ε");
+				}
+				pw.println("\"];");
+			}
+			pw.println("}");
+			pw.close();
+		} catch (IOException e) {
+			System.out.println(e);
+		}
+
+		execCommandLine("dot -Kdot -Tpng " + dotFileName + ".dot -o " + dotFileName + ".png");
+		// execCommandLine("open " + dotFileName + ".png &");
+		// execCommandLine("rm " + dotFileName + ".dot");
+		// execCommandLine("rm " + dotFileName + ".png");
+
+	}
+
 }

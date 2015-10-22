@@ -1,8 +1,7 @@
 package nez.x.dfa;
 
-
 public class Not extends BooleanExpression {
-	BooleanExpression inner;
+	public BooleanExpression inner;
 
 	public Not() {
 

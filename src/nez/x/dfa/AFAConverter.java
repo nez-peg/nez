@@ -72,6 +72,11 @@ public class AFAConverter extends TreeVisitor {
 		return theNumberOfStates++;
 	}
 
+	public DFA toDFA() {
+		DFAConverter dfaConverter = new DFAConverter(this.afa);
+		return dfaConverter.convert();
+	}
+
 	// <----- Visitor ----->
 
 	private AFA visitProduction(Production rule) {

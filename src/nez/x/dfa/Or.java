@@ -1,7 +1,7 @@
 package nez.x.dfa;
 
 public class Or extends BooleanExpression {
-	BooleanExpression left, right;
+	public BooleanExpression left, right;
 
 	public Or() {
 
