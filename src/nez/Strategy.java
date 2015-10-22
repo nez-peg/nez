@@ -48,6 +48,8 @@ public class Strategy {
 
 	public static final boolean Odfa = false; // experimental
 
+	public static final boolean SLR = false; // for supporting left recursion
+
 	public Strategy() {
 		init();
 	}
