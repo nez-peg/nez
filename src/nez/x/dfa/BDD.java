@@ -4,7 +4,7 @@ import java.util.TreeMap;
 
 //Reference : http://www-erato.ist.hokudai.ac.jp/html/php/seminar5_docs/minato_alg2010-5.pdf
 //変数の展開は論理変数のIDを昇順に行う
-//!,&,| のみ対応
+//!,&,| のみ対応 ( 論理記号の追加は容易だがAFAにおいてこれ以上必要ない )
 public class BDD {
 	public static int MAX_TABLE_SIZE = 10000000;
 	private static int topOfNodeTable;

@@ -18,94 +18,7 @@ public class DOTGenerator {
 	private static final String fColor = "#4169E1"; // royalblue
 	private static final String FColor = "#7fffd4"; // aquamarine
 	private static final String LColor = "#ff6347"; // tomato
-	private static final String FLColor = "#9400d3"; // darkviolet,
-														// 先読み内で再帰すると１つの状態が通常の受理状態と先読みの受理状態の両方を持つことがある
-
-	public static void generate(AFA afa) {
-		if (afa == null) {
-			System.out.println("WARNING : afa is null");
-			return;
-		}
-
-		System.out.println("\ndigraph g {");
-		System.out.println("\"" + afa.getf().getID() + "\"[style=filled,fillcolor=\"" + fColor + "\"];");
-
-		HashSet<State> FandL = new HashSet<State>();
-		for (State state : afa.getS()) {
-			if (afa.getF().contains(state) && afa.getL().contains(state)) {
-				FandL.add(new State(state.getID()));
-				System.out.println("\"" + state.getID() + "\"[style=filled,fillcolor=\"" + FLColor + "\"];");
-			}
-		}
-
-		for (State state : afa.getF()) {
-			if (FandL.contains(state)) {
-				continue;
-			}
-			System.out.println("\"" + state.getID() + "\"[style=filled,fillcolor=\"" + FColor + "\"];");
-		}
-		for (State state : afa.getL()) {
-			if (FandL.contains(state)) {
-				continue;
-			}
-			System.out.println("\"" + state.getID() + "\"[style=filled,fillcolor=\"" + LColor + "\"];");
-		}
-		for (Transition transition : afa.getTransitions()) {
-			int label = transition.getLabel();
-			int predicate = transition.getPredicate();
-			System.out.print("	\"" + transition.getSrc() + "\"->\"" + transition.getDst() + "\"[label=\"");
-			if (predicate == 0) {
-				System.out.print("&predicate");
-			} else if (predicate == 1) {
-				System.out.print("!predicate");
-			} else if (label != AFA.epsilon) {
-				if (Character.isLetterOrDigit((char) label) || (char) label == '.') {
-					System.out.print((char) label);
-				} else {
-					System.out.print(label);
-				}
-			} else {
-				System.out.print("ε");
-			}
-			System.out.println("\"];");
-		}
-		System.out.println("}");
-	}
-
-	public static void generate(DFA dfa) {
-		if (dfa == null) {
-			System.out.println("WARNING : dfa is null");
-			return;
-		}
-
-		System.out.println("\ndigraph g {");
-		System.out.println("\"" + dfa.getf().getID() + "\"[style=filled,fillcolor=\"" + fColor + "\"];");
-
-		for (State state : dfa.getF()) {
-			System.out.println("\"" + state.getID() + "\"[style=filled,fillcolor=\"" + FColor + "\"];");
-		}
-
-		for (Transition transition : dfa.getTau()) {
-			int label = transition.getLabel();
-			int predicate = transition.getPredicate();
-			System.out.print("	\"" + transition.getSrc() + "\"->\"" + transition.getDst() + "\"[label=\"");
-			if (predicate == 0) {
-				System.out.print("&predicate");
-			} else if (predicate == 1) {
-				System.out.print("!predicate");
-			} else if (label != AFA.epsilon) {
-				if (Character.isLetterOrDigit((char) label) || (char) label == '.') {
-					System.out.print((char) label);
-				} else {
-					System.out.print(label);
-				}
-			} else {
-				System.out.print("ε");
-			}
-			System.out.println("\"];");
-		}
-		System.out.println("}");
-	}
+	private static final String FLColor = "#9400d3"; // darkviolet,　ひとつのノードが通常の受理状態と先読みの受理状態の両方を持つ場合
 
 	private static void execCommandLine(String command) {
 		try {
@@ -149,7 +62,7 @@ public class DOTGenerator {
 				}
 				pw.println("\"" + state.getID() + "\"[style=filled,fillcolor=\"" + LColor + "\"];");
 			}
-			for (Transition transition : afa.getTransitions()) {
+			for (Transition transition : afa.getTau()) {
 				int label = transition.getLabel();
 				int predicate = transition.getPredicate();
 				pw.print("	\"" + transition.getSrc() + "\"->\"" + transition.getDst() + "\"[label=\"");

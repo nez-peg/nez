@@ -89,8 +89,8 @@ public class StronglyConnectedComponent {
 		HashSet<State> S = afa.getS();
 		HashSet<State> F = afa.getF();
 		HashSet<State> L = afa.getL();
-		TreeSet<Transition> transitions = afa.getTransitions();
-		for (Transition e : transitions) {
+		TreeSet<Transition> tau = afa.getTau();
+		for (Transition e : tau) {
 			if (e.getLabel() == AFA.epsilon && e.getPredicate() == -1) {
 				add_edge(e.getSrc(), e.getDst());
 			}
@@ -121,7 +121,7 @@ public class StronglyConnectedComponent {
 			}
 		}
 		TreeSet<Transition> newEdges = new TreeSet<Transition>();
-		for (Transition e : transitions) {
+		for (Transition e : tau) {
 			int src = e.getSrc();
 			int dst = e.getDst();
 			if (cmp.get(src) != cmp.get(dst)) {
@@ -178,7 +178,5 @@ public class StronglyConnectedComponent {
 			}
 		}
 		return new AFA(S, newEdges, new State(afa.getf().getID()), afa.getF(), afa.getL());
-		// return new EpsilonBFA(S, afa.getInitialState(),
-		// afa.getAcceptingState(), afa.getAcceptingStateLA(), newEdges);
 	}
 }

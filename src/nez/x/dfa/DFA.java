@@ -60,4 +60,34 @@ public class DFA {
 		return adjacencyList;
 	}
 
+	// DFA から逆向きのオートマトン(NFA)を生成する
+	public NFA rev(DFA dfa) {
+		HashSet<State> allStates = new HashSet<State>();
+		TreeSet<Transition> stateTransitionFunction = new TreeSet<Transition>();
+		HashSet<State> initialStates = new HashSet<State>();
+		HashSet<State> acceptingStates = new HashSet<State>();
+
+		for (State state : dfa.getS()) {
+			allStates.add(new State(state.getID()));
+		}
+
+		for (Transition transition : dfa.getTau()) {
+			stateTransitionFunction.add(new Transition(transition.getDst(), transition.getSrc(), transition.getLabel(), transition.getPredicate()));
+		}
+
+		for (State state : dfa.getF()) {
+			initialStates.add(new State(state.getID()));
+		}
+
+		acceptingStates.add(new State(dfa.getf().getID()));
+
+		return new NFA(allStates, stateTransitionFunction, initialStates, acceptingStates);
+	}
+
+	// Brzozowski's algorithm
+	// min(A) = det(rev(det(rev(A))))
+	public DFA minimize() {
+		return rev(rev(new DFA(S, tau, f, F)).det()).det();
+	}
+
 }

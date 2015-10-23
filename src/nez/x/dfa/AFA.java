@@ -6,12 +6,10 @@ import java.util.TreeSet;
 public class AFA {
 	final public static char epsilon = ' ';
 	private HashSet<State> S;
-	// private TreeMap<TauKey, BooleanExpressionのようなもの> tau;
+	private TreeSet<Transition> tau;
 	private State f;
 	private HashSet<State> F;
 	private HashSet<State> L;
-
-	private TreeSet<Transition> transitions; // tau構築用 visitor内ではこちらを利用
 
 	public AFA() {
 		S = new HashSet<State>();
@@ -20,33 +18,20 @@ public class AFA {
 		F = new HashSet<State>();
 		L = new HashSet<State>();
 
-		transitions = new TreeSet<Transition>();
+		tau = new TreeSet<Transition>();
 	}
 
-	public AFA(HashSet<State> S, TreeSet<Transition> transitions, State f, HashSet<State> F, HashSet<State> L) {
+	public AFA(HashSet<State> S, TreeSet<Transition> tau, State f, HashSet<State> F, HashSet<State> L) {
 		this.S = S;
-		this.transitions = transitions;
+		this.tau = tau;
 		this.f = f;
 		this.F = F;
 		this.L = L;
 	}
 
-	// public AFA(HashSet<State> S, TreeMap<TauKey, > tau, State f,
-	// HashSet<State> F, HashSet<State> L) {
-	// this.S = S;
-	// this.tau = tau;
-	// this.f = f;
-	// this.F = F;
-	// this.L = L;
-	// }
-
 	public void setS(HashSet<State> S) {
 		this.S = S;
 	}
-
-	// public void setTau(TreeMap<TauKey, > tau) {
-	// this.tau = tau;
-	// }
 
 	public void setf(State f) {
 		this.f = f;
@@ -60,17 +45,13 @@ public class AFA {
 		this.L = L;
 	}
 
-	public void setTransitions(TreeSet<Transition> transitions) {
-		this.transitions = transitions;
+	public void setTau(TreeSet<Transition> tau) {
+		this.tau = tau;
 	}
 
 	public HashSet<State> getS() {
 		return this.S;
 	}
-
-	// public TreeMap<TauKey, > getTau() {
-	// return this.tau;
-	// }
 
 	public State getf() {
 		return this.f;
@@ -84,12 +65,12 @@ public class AFA {
 		return this.L;
 	}
 
-	public TreeSet<Transition> getTransitions() {
-		return this.transitions;
+	public TreeSet<Transition> getTau() {
+		return this.tau;
 	}
 
 	public DFA toDFA() {
-		DFAConverter dfaConverter = new DFAConverter(new AFA(S, transitions, f, F, L));
+		DFAConverter dfaConverter = new DFAConverter(new AFA(S, tau, f, F, L));
 		return dfaConverter.convert();
 	}
 }

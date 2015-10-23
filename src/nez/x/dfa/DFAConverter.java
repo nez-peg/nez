@@ -22,7 +22,7 @@ public class DFAConverter {
 		for (int i = 0; i < this.theNumberOfStates; i++) {
 			adjacencyList.add(new ArrayList<Transition>());
 		}
-		for (Transition transition : afa.getTransitions()) {
+		for (Transition transition : afa.getTau()) {
 			adjacencyList.get(transition.getSrc()).add(transition);
 		}
 	}

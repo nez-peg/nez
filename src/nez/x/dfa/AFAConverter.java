@@ -254,7 +254,7 @@ public class AFAConverter extends TreeVisitor {
 		for (State state : tmpAfa.getF()) {
 			transitions.add(new Transition(state.getID(), t, AFA.epsilon, -1));
 		}
-		for (Transition transition : tmpAfa.getTransitions()) {
+		for (Transition transition : tmpAfa.getTau()) {
 			transitions.add(new Transition(transition.getSrc(), transition.getDst(), transition.getLabel(), transition.getPredicate()));
 		}
 
@@ -299,7 +299,7 @@ public class AFAConverter extends TreeVisitor {
 			transitions.add(new Transition(state.getID(), tmpAfa.getf().getID(), AFA.epsilon, -1));
 			transitions.add(new Transition(state.getID(), t, AFA.epsilon, -1));
 		}
-		for (Transition transition : tmpAfa.getTransitions()) {
+		for (Transition transition : tmpAfa.getTau()) {
 			transitions.add(new Transition(transition.getSrc(), transition.getDst(), transition.getLabel(), transition.getPredicate()));
 		}
 
@@ -342,7 +342,7 @@ public class AFAConverter extends TreeVisitor {
 			transitions.add(new Transition(state.getID(), tmpAfa.getf().getID(), AFA.epsilon, -1));
 			transitions.add(new Transition(state.getID(), t, AFA.epsilon, -1));
 		}
-		for (Transition transition : tmpAfa.getTransitions()) {
+		for (Transition transition : tmpAfa.getTau()) {
 			transitions.add(new Transition(transition.getSrc(), transition.getDst(), transition.getLabel(), transition.getPredicate()));
 		}
 
@@ -373,7 +373,7 @@ public class AFAConverter extends TreeVisitor {
 		}
 
 		transitions.add(new Transition(s, tmpAfa.getf().getID(), AFA.epsilon, 0));
-		for (Transition transition : tmpAfa.getTransitions()) {
+		for (Transition transition : tmpAfa.getTau()) {
 			transitions.add(new Transition(transition.getSrc(), transition.getDst(), transition.getLabel(), transition.getPredicate()));
 		}
 
@@ -408,7 +408,7 @@ public class AFAConverter extends TreeVisitor {
 		}
 
 		transitions.add(new Transition(s, tmpAfa.getf().getID(), AFA.epsilon, 1));
-		for (Transition transition : tmpAfa.getTransitions()) {
+		for (Transition transition : tmpAfa.getTau()) {
 			transitions.add(new Transition(transition.getSrc(), transition.getDst(), transition.getLabel(), transition.getPredicate()));
 		}
 
@@ -444,13 +444,13 @@ public class AFAConverter extends TreeVisitor {
 			S.add(new State(state.getID()));
 		}
 
-		for (Transition transition : tmpAfa1.getTransitions()) {
+		for (Transition transition : tmpAfa1.getTau()) {
 			if (tmpAfa1.getF().contains(new State(transition.getDst()))) {
 				transitions.add(new Transition(transition.getDst(), tmpAfa2.getf().getID(), AFA.epsilon, -1));
 			}
 			transitions.add(new Transition(transition.getSrc(), transition.getDst(), transition.getLabel(), transition.getPredicate()));
 		}
-		for (Transition transition : tmpAfa2.getTransitions()) {
+		for (Transition transition : tmpAfa2.getTau()) {
 			transitions.add(new Transition(transition.getSrc(), transition.getDst(), transition.getLabel(), transition.getPredicate()));
 		}
 
@@ -501,7 +501,7 @@ public class AFAConverter extends TreeVisitor {
 			for (State state : tmpAfa.getF()) {
 				transitions.add(new Transition(state.getID(), t, AFA.epsilon, -1));
 			}
-			for (Transition transition : tmpAfa.getTransitions()) {
+			for (Transition transition : tmpAfa.getTau()) {
 				transitions.add(new Transition(transition.getSrc(), transition.getDst(), transition.getLabel(), transition.getPredicate()));
 			}
 
@@ -572,7 +572,7 @@ public class AFAConverter extends TreeVisitor {
 			for (State state : tmpAfa.getF()) {
 				transitions.add(new Transition(state.getID(), t, AFA.epsilon, -1));
 			}
-			for (Transition transition : tmpAfa.getTransitions()) {
+			for (Transition transition : tmpAfa.getTau()) {
 				transitions.add(new Transition(transition.getSrc(), transition.getDst(), transition.getLabel(), transition.getPredicate()));
 			}
 
