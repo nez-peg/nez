@@ -5,13 +5,16 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Set;
 
 public class DOTGenerator {
 	public DOTGenerator() {
 
 	}
 
+	private static final String dotFileName = "__graph";
 	private static final String fColor = "#4169E1"; // royalblue
 	private static final String FColor = "#7fffd4"; // aquamarine
 	private static final String LColor = "#ff6347"; // tomato
@@ -114,8 +117,6 @@ public class DOTGenerator {
 		}
 	}
 
-	private static final String dotFileName = "__bfa";
-
 	public static void writeAFA(AFA afa) {
 		if (afa == null) {
 			System.out.println("WARNING : afa is null");
@@ -180,12 +181,32 @@ public class DOTGenerator {
 
 	}
 
+	public static boolean isVisible(int v) {
+		return (32 <= v && v <= 126);
+	}
+
 	public static void writeDFA(DFA dfa) {
 		if (dfa == null) {
 			System.out.println("WARNING : dfa is null");
 			return;
 		}
 		try {
+
+			ArrayList<ArrayList<ArrayList<Integer>>> tau = new ArrayList<ArrayList<ArrayList<Integer>>>();
+			for (int i = 0; i < dfa.getS().size(); i++) {
+				tau.add(new ArrayList<ArrayList<Integer>>());
+			}
+			for (int i = 0; i < dfa.getS().size(); i++) {
+				for (int j = 0; j < dfa.getS().size(); j++) {
+					tau.get(i).add(new ArrayList<Integer>());
+				}
+			}
+			for (Transition transition : dfa.getTau()) {
+				int src = transition.getSrc();
+				int dst = transition.getDst();
+				int label = transition.getLabel();
+				tau.get(src).get(dst).add(new Integer(label));
+			}
 
 			File file = new File(dotFileName + ".dot");
 			PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(file)));
@@ -205,25 +226,78 @@ public class DOTGenerator {
 				pw.println("\"" + state.getID() + "\"[style=filled,fillcolor=\"" + FColor + "\"];");
 			}
 
-			for (Transition transition : dfa.getTau()) {
-				int label = transition.getLabel();
-				int predicate = transition.getPredicate();
-				pw.print("	\"" + transition.getSrc() + "\"->\"" + transition.getDst() + "\"[label=\"");
-				if (predicate == 0) {
-					pw.print("&predicate");
-				} else if (predicate == 1) {
-					pw.print("!predicate");
-				} else if (label != AFA.epsilon) {
-					if (Character.isLetterOrDigit((char) label) || (char) label == '.') {
-						pw.print((char) label);
-					} else {
-						pw.print(label);
+			for (int src = 0; src < dfa.getS().size(); src++) {
+				for (int dst = 0; dst < dfa.getS().size(); dst++) {
+
+					int size = tau.get(src).get(dst).size();
+					if (size == 0) {
+						continue;
 					}
-				} else {
-					pw.print("ε");
+					StringBuilder labels = new StringBuilder();
+					Set<Integer> exists = new HashSet<Integer>();
+					for (int i = 0; i < tau.get(src).get(dst).size(); i++) {
+						if (i > 0) {
+
+						}
+						int v = tau.get(src).get(dst).get(i);
+						exists.add(v);
+						if (isVisible(v)) {
+							if ((char) v == '"') {
+								labels.append("\\" + new StringBuilder(String.valueOf((char) v)));
+							} else {
+								labels.append(new StringBuilder(String.valueOf((char) v)));
+							}
+						} else {
+							labels.append("(" + new StringBuilder(String.valueOf(v)) + ")");
+						}
+					}
+
+					if (size > 128) {
+						StringBuilder tmp = new StringBuilder("");
+						for (int j = 0; j < 256; j++) {
+							if (exists.contains(new Integer(j))) {
+								continue;
+							}
+							if (isVisible(j)) {
+								if ((char) j == '"') {
+									tmp.append("\\" + new StringBuilder(String.valueOf((char) j)));
+								} else {
+									tmp.append(new StringBuilder(String.valueOf((char) j)));
+								}
+							} else {
+								tmp.append("(" + new StringBuilder(String.valueOf(j)) + ")");
+							}
+						}
+						labels = tmp;
+					}
+
+					pw.print("	\"" + src + "\"->\"" + dst + "\"[label=\"");
+					pw.print("[" + ((size < 128) ? labels : ("^" + labels)) + "]");
+					pw.println("\"];");
+
 				}
-				pw.println("\"];");
 			}
+			// for (Transition transition : dfa.getTau()) {
+			// int label = transition.getLabel();
+			// int predicate = transition.getPredicate();
+			// pw.print("	\"" + transition.getSrc() + "\"->\"" +
+			// transition.getDst() + "\"[label=\"");
+			// if (predicate == 0) {
+			// pw.print("&predicate");
+			// } else if (predicate == 1) {
+			// pw.print("!predicate");
+			// } else if (label != AFA.epsilon) {
+			// if (Character.isLetterOrDigit((char) label) || (char) label ==
+			// '.') {
+			// pw.print((char) label);
+			// } else {
+			// pw.print(label);
+			// }
+			// } else {
+			// pw.print("ε");
+			// }
+			// pw.println("\"];");
+			// }
 			pw.println("}");
 			pw.close();
 		} catch (IOException e) {
@@ -236,5 +310,4 @@ public class DOTGenerator {
 		// execCommandLine("rm " + dotFileName + ".png");
 
 	}
-
 }

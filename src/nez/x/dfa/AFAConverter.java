@@ -520,6 +520,11 @@ public class AFAConverter extends TreeVisitor {
 		String nonTerminalName = ((NonTerminal) e).getLocalName();
 
 		if (initialStateOfNonTerminal.containsKey(nonTerminalName)) { // 既にこの非終端記号を訪れた場合
+			/*
+			 * t は消しても良いと思うので要検討 tから戻ってきてもその先は空文字と等価なはずなのでも戻ってくる辺を追加する必要はない
+			 * 戻る辺があると通常の遷移からこっちへ遷移してこれることになる（結局行き先は空文字と等価な状態なのだが） 正しくは t
+			 * は存在しないはず
+			 */
 			int s = getNewStateID();
 			int t = getNewStateID();
 			State nonTerminal_s = initialStateOfNonTerminal.get(nonTerminalName);
