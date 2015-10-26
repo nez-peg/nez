@@ -1,4 +1,4 @@
-package nez.x.dfa;
+package nez.dfa;
 
 public class State {
 	private int ID;
