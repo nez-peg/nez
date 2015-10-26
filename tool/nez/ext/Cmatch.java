@@ -3,10 +3,10 @@ package nez.ext;
 import java.io.IOException;
 
 import nez.Parser;
+import nez.Verbose;
 import nez.io.SourceContext;
 import nez.main.Command;
 import nez.main.CommandContext;
-import nez.main.Verbose;
 import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
 import nez.util.UList;

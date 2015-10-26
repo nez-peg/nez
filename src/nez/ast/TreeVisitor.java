@@ -4,7 +4,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 
-import nez.main.Verbose;
+import nez.Verbose;
 import nez.util.ConsoleUtils;
 
 public class TreeVisitor {

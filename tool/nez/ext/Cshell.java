@@ -16,6 +16,7 @@ import nez.lang.GrammarFile;
 import nez.lang.Production;
 import nez.main.Command;
 import nez.main.CommandContext;
+import nez.main.ReadLine;
 import nez.util.ConsoleUtils;
 import nez.x.generator.GeneratorLoader;
 
@@ -28,7 +29,7 @@ public class Cshell extends Command {
 	public void exec(CommandContext config) throws IOException {
 		Command.displayVersion();
 		Grammar g = config.newGrammar();
-		ConsoleUtils.addCompleter(getNonterminalList(g));
+		ReadLine.addCompleter(getNonterminalList(g));
 		Strategy option = config.getStrategy();
 
 		while (readLine(">>> ")) {
@@ -109,8 +110,8 @@ public class Cshell extends Command {
 	}
 
 	private boolean readLine(String prompt) {
-		Object console = ConsoleUtils.getConsoleReader();
-		String line = ConsoleUtils.readSingleLine(console, prompt);
+		Object console = ReadLine.getConsoleReader();
+		String line = ReadLine.readSingleLine(console, prompt);
 		if (line == null) {
 			return false;
 		}
@@ -118,19 +119,19 @@ public class Cshell extends Command {
 		if (loc != -1) {
 			command = line.substring(0, loc).trim();
 			text = line.substring(loc).trim();
-			ConsoleUtils.addHistory(console, line);
+			ReadLine.addHistory(console, line);
 		} else {
 			command = line.trim();
 			text = null;
-			ConsoleUtils.addHistory(console, line);
+			ReadLine.addHistory(console, line);
 			return true;
 		}
 		linenum++;
 		if (text.startsWith("<")) {
-			ConsoleUtils.addHistory(console, line);
+			ReadLine.addHistory(console, line);
 			String delim = text.substring(1);
 			StringBuilder sb = new StringBuilder();
-			while ((line = ConsoleUtils.readSingleLine(console, "")) != null) {
+			while ((line = ReadLine.readSingleLine(console, "")) != null) {
 				if (line.startsWith(delim)) {
 					break;
 				}
@@ -144,7 +145,7 @@ public class Cshell extends Command {
 			StringBuilder sb = new StringBuilder();
 			sb.append(line);
 			sb.append("\n");
-			while ((line = ConsoleUtils.readSingleLine(console, "... ")) != null) {
+			while ((line = ReadLine.readSingleLine(console, "... ")) != null) {
 				if (line.equals("")) {
 					break;
 				}
@@ -155,7 +156,7 @@ public class Cshell extends Command {
 			text = sb.toString();
 			return true;
 		}
-		ConsoleUtils.addHistory(console, line);
+		ReadLine.addHistory(console, line);
 		return true;
 	}
 
@@ -172,7 +173,7 @@ public class Cshell extends Command {
 		// ConsoleUtils.println("--\n"+text+"--");
 		Gnez loader = new Gnez();
 		loader.eval(g, "<stdio>", linenum, text, null);
-		ConsoleUtils.addCompleter(getNonterminalList(g));
+		ReadLine.addCompleter(getNonterminalList(g));
 	}
 
 	static HashMap<String, ShellCommand> cmdMap = new HashMap<String, ShellCommand>();

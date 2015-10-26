@@ -1,8 +1,9 @@
-package nez.main;
+package nez;
 
 import java.lang.reflect.InvocationTargetException;
 
 import nez.lang.Expression;
+import nez.main.Command;
 import nez.util.ConsoleUtils;
 
 public class Verbose {

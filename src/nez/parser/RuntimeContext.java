@@ -1,10 +1,10 @@
 package nez.parser;
 
+import nez.NezProfier;
+import nez.Verbose;
 import nez.ast.ASTMachine;
 import nez.ast.Source;
 import nez.ast.Tree;
-import nez.main.NezProfier;
-import nez.main.Verbose;
 import nez.util.ConsoleUtils;
 
 public abstract class RuntimeContext implements Source {

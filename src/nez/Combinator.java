@@ -8,7 +8,6 @@ import nez.ast.Symbol;
 import nez.lang.Expression;
 import nez.lang.expr.Cset;
 import nez.lang.expr.ExpressionCommons;
-import nez.main.Verbose;
 import nez.util.UList;
 
 public class Combinator extends Grammar {

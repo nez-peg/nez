@@ -3,6 +3,7 @@ package nez.parser;
 import java.util.HashMap;
 
 import nez.Strategy;
+import nez.Verbose;
 import nez.lang.Expression;
 import nez.lang.Production;
 import nez.lang.expr.Cany;
@@ -34,7 +35,6 @@ import nez.lang.expr.Xis;
 import nez.lang.expr.Xlocal;
 import nez.lang.expr.Xmatch;
 import nez.lang.expr.Xon;
-import nez.main.Verbose;
 
 public abstract class AbstractGenerator {
 	protected Strategy strategy;

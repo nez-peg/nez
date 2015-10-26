@@ -7,8 +7,8 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import nez.Verbose;
 import nez.ast.Symbol;
-import nez.main.Verbose;
 import nez.util.StringUtils;
 
 public class ByteCoder {

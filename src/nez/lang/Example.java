@@ -5,10 +5,10 @@ import java.util.List;
 
 import nez.Parser;
 import nez.Strategy;
+import nez.Verbose;
 import nez.ast.Tree;
 import nez.ast.TreeUtils;
 import nez.io.SourceContext;
-import nez.main.Verbose;
 import nez.parser.Coverage;
 import nez.parser.NezCode;
 import nez.util.ConsoleUtils;

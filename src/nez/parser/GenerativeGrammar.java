@@ -7,10 +7,10 @@ import java.util.TreeMap;
 
 import nez.Grammar;
 import nez.Strategy;
+import nez.Verbose;
 import nez.lang.GrammarChecker;
 import nez.lang.Production;
 import nez.lang.Typestate;
-import nez.main.Verbose;
 import nez.util.UList;
 
 public class GenerativeGrammar extends Grammar {

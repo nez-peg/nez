@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.TreeMap;
 
 import nez.Strategy;
+import nez.Verbose;
 import nez.lang.expr.ExpressionCommons;
 import nez.lang.expr.NonTerminal;
 import nez.lang.expr.Pand;
@@ -23,7 +24,6 @@ import nez.lang.expr.Ttag;
 import nez.lang.expr.Unary;
 import nez.lang.expr.Xif;
 import nez.lang.expr.Xon;
-import nez.main.Verbose;
 import nez.parser.GenerativeGrammar;
 import nez.parser.ParseFunc;
 import nez.util.ConsoleUtils;

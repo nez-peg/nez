@@ -2,13 +2,13 @@ package nez.ext;
 
 import java.io.IOException;
 
+import nez.NezProfier;
 import nez.Parser;
 import nez.ast.Tree;
 import nez.ast.TreeWriter;
 import nez.io.SourceContext;
 import nez.main.Command;
 import nez.main.CommandContext;
-import nez.main.NezProfier;
 import nez.util.ConsoleUtils;
 
 public class Cparse extends Command {

@@ -1,7 +1,7 @@
 package nez.parser;
 
+import nez.Verbose;
 import nez.io.SourceContext;
-import nez.main.Verbose;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
 

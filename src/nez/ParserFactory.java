@@ -7,7 +7,6 @@ import nez.lang.GrammarFileLoader;
 import nez.lang.NezGrammar1;
 import nez.lang.util.NezConstructor;
 import nez.main.Command;
-import nez.main.NezProfier;
 import nez.util.UList;
 
 public class ParserFactory {

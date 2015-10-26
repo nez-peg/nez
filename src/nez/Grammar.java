@@ -5,7 +5,6 @@ import java.util.List;
 
 import nez.lang.GrammarBase;
 import nez.lang.Production;
-import nez.main.Verbose;
 import nez.parser.GenerativeGrammar;
 import nez.util.ConsoleUtils;
 import nez.util.UList;

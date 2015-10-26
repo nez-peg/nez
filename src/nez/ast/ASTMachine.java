@@ -1,6 +1,6 @@
 package nez.ast;
 
-import nez.main.Verbose;
+import nez.Verbose;
 
 public class ASTMachine {
 	final static boolean debugMode = false;

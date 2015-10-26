@@ -20,6 +20,7 @@ import nez.lang.Expression;
 import nez.lang.Production;
 import nez.lang.expr.NonTerminal;
 import nez.lang.expr.Pchoice;
+import nez.main.ReadLine;
 import nez.parser.GenerativeGrammar;
 import nez.util.ConsoleUtils;
 
@@ -49,7 +50,7 @@ public class NezDebugger {
 			this.ruleMap.put(p.getLocalName(), p);
 			this.nameList.add(p.getLocalName());
 		}
-		ConsoleUtils.addCompleter(this.nameList);
+		ReadLine.addCompleter(this.nameList);
 		try {
 			this.cr = new ConsoleReader();
 			Completor[] br = { new SimpleCompletor(new String[] { "b", "break", "goto", "reach" }), new SimpleCompletor(this.nameList.toArray(new String[this.nameList.size()])) };

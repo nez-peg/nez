@@ -2,8 +2,8 @@ package nez.util;
 
 import java.io.UnsupportedEncodingException;
 
+import nez.Verbose;
 import nez.lang.expr.Cset;
-import nez.main.Verbose;
 
 public abstract class StringUtils {
 

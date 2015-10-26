@@ -4,8 +4,6 @@ import nez.ast.CommonTree;
 import nez.ast.Tree;
 import nez.ast.TreeTransducer;
 import nez.io.SourceContext;
-import nez.main.NezProfier;
-import nez.main.Verbose;
 import nez.parser.GenerativeGrammar;
 import nez.parser.Instruction;
 import nez.parser.MemoTable;

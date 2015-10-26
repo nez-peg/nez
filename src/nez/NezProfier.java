@@ -1,4 +1,4 @@
-package nez.main;
+package nez;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;

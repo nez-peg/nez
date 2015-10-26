@@ -6,7 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import nez.main.Verbose;
+import nez.Verbose;
 
 public class FileBuilder {
 

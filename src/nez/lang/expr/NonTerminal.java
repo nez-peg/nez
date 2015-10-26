@@ -1,6 +1,7 @@
 package nez.lang.expr;
 
 import nez.Grammar;
+import nez.Verbose;
 import nez.ast.SourcePosition;
 import nez.lang.Expression;
 import nez.lang.GrammarTransducer;
@@ -8,7 +9,6 @@ import nez.lang.PossibleAcceptance;
 import nez.lang.Production;
 import nez.lang.Typestate;
 import nez.lang.Visa;
-import nez.main.Verbose;
 import nez.parser.AbstractGenerator;
 import nez.parser.Instruction;
 

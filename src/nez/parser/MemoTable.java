@@ -2,8 +2,8 @@ package nez.parser;
 
 import java.util.HashMap;
 
+import nez.NezProfier;
 import nez.Strategy;
-import nez.main.NezProfier;
 
 public abstract class MemoTable {
 	public abstract MemoTable newMemoTable(long len, int w, int n);

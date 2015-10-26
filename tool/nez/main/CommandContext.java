@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 
 import nez.ParserFactory;
+import nez.Verbose;
 import nez.io.SourceContext;
 import nez.lang.regex.RegularExpression;
 import nez.parser.ParserGenerator;

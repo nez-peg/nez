@@ -1,8 +1,8 @@
 package nez.parser;
 
 import nez.Strategy;
+import nez.Verbose;
 import nez.lang.Production;
-import nez.main.Verbose;
 import nez.util.UList;
 
 public abstract class NezCompiler extends AbstractGenerator {

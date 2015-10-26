@@ -6,7 +6,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import nez.main.Verbose;
+import nez.Verbose;
 import nez.util.StringUtils;
 
 public class FileContext extends SourceContext {

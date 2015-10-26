@@ -1,6 +1,6 @@
 package nez.util;
 
-import nez.main.Verbose;
+import nez.Verbose;
 
 public class ExtensionLoader {
 	public final static Object newInstance(String loadPoint, String ext) {

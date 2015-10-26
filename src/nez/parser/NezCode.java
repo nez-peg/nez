@@ -3,7 +3,7 @@ package nez.parser;
 import java.util.List;
 
 import nez.Parser;
-import nez.main.Verbose;
+import nez.Verbose;
 import nez.util.UList;
 
 public class NezCode {
