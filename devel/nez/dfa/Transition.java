@@ -1,4 +1,4 @@
-package nez.x.dfa;
+package nez.dfa;
 
 public class Transition implements Comparable<Transition> {
 	private State src;

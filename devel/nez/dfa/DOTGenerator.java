@@ -1,4 +1,4 @@
-package nez.x.dfa;
+package nez.dfa;
 
 import java.io.BufferedWriter;
 import java.io.File;

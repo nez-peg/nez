@@ -1,4 +1,4 @@
-package nez.x.dfa;
+package nez.dfa;
 
 import java.util.HashMap;
 import java.util.HashSet;

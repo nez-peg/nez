@@ -1,4 +1,4 @@
-package nez.x.dfa;
+package nez.dfa;
 
 public class TauKey implements Comparable<TauKey> {
 	final private State state;
