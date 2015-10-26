@@ -32,6 +32,7 @@
 			<classpath path="${jline_jar}" />
 			<include name="**/*.java" />
 			<exclude name="**/*Test.java" />
+			<compilerarg value="-Xlint:unchecked" />
 		</javac>
 	</target>
 
@@ -43,7 +44,6 @@
 			<include name="**/*.java" />
 			<exclude name="**/*Test.java" />
 			<compilerarg value="-Xlint:deprecation" />
-			<compilerarg value="-Xlint:unchecked" />
 		</javac>
 	</target>
 

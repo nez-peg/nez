@@ -10,7 +10,7 @@ public abstract class Command {
 	public final static String CodeName = "yokohama";
 	public final static int MajorVersion = 0;
 	public final static int MinerVersion = 9;
-	public final static int PatchLevel = Revision.REV;
+	public final static int PatchLevel = nez.Version.REV;
 	public final static String Version = "" + MajorVersion + "." + MinerVersion + "_" + PatchLevel;
 	public final static String Copyright = "Copyright (c) 2014-2015, Nez project authors";
 	public final static String License = "BSD-License Open Source";
