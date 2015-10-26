@@ -3,7 +3,6 @@ package nez;
 import java.lang.reflect.InvocationTargetException;
 
 import nez.lang.Expression;
-import nez.main.Command;
 import nez.util.ConsoleUtils;
 
 public class Verbose {
@@ -76,13 +75,13 @@ public class Verbose {
 	}
 
 	public final static void debug(Object s) {
-		if (Command.ReleasePreview) {
+		if (Version.ReleasePreview) {
 			ConsoleUtils.println("debug: " + s);
 		}
 	}
 
 	public final static void FIXME(Object s) {
-		if (Command.ReleasePreview) {
+		if (Version.ReleasePreview) {
 			ConsoleUtils.println("FIXME: " + s);
 		}
 	}

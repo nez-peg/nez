@@ -6,7 +6,6 @@ import java.io.IOException;
 import nez.lang.GrammarFileLoader;
 import nez.lang.NezGrammar1;
 import nez.lang.util.NezConstructor;
-import nez.main.Command;
 import nez.util.UList;
 
 public class ParserFactory {
@@ -115,7 +114,7 @@ public class ParserFactory {
 		this.strategy.report();
 		if (p != null && strategy.isEnabled("prof", Strategy.PROF)) {
 			NezProfier rec = new NezProfier("nezprof.csv");
-			rec.setText("nez", Command.Version);
+			rec.setText("nez", Version.Version);
 			rec.setText("config", strategy.toString());
 			p.setProfiler(rec);
 		}
