@@ -1,7 +1,6 @@
 package nez.parser;
 
 import java.util.HashMap;
-import java.util.Stack;
 
 import nez.ast.ASTMachine;
 import nez.ast.Symbol;
@@ -95,6 +94,7 @@ class ILRCall extends AbstractSLRInstraction {
 				growing.get(this.name).get(this.pos).setLRDetected(true);
 				return sc.fail();
 			}
+			growing.get(this.name).get(this.pos).revertLogData();
 			while (true) {
 				Object logData[] = growing.get(this.name).get(this.pos).pollLogData();
 				if (logData == null) {
@@ -105,10 +105,11 @@ class ILRCall extends AbstractSLRInstraction {
 			return ((ILRGrow) this.jump).jump;
 		}
 		growing.get(this.name).put(this.pos, new MapEntry(false, this.pos));
-		((ILRGrow) this.jump).pushPos(this.pos);
-		((ILRGrow) this.jump).pushAstlog(this.astlog);
-		StackData s = sc.newUnusedStack();
-		s.ref = this.jump;
+		StackData s0 = sc.newUnusedStack();
+		s0.value = this.pos;
+		s0.ref = this.astlog;
+		StackData s1 = sc.newUnusedStack();
+		s1.ref = this.jump;
 		return this.next;
 	}
 }
@@ -118,8 +119,8 @@ class ILRGrow extends AbstractSLRInstraction {
 	String name;
 	public Instruction jump = null;
 
-	private Stack<Long> pos = new Stack<Long>();
-	private Stack<Object> astlog = new Stack<Object>();
+	private Long pos;
+	private Object astlog;
 	private boolean isGrow = false;
 
 	ILRGrow(ParseFunc f, String name, Instruction next) {
@@ -150,64 +151,61 @@ class ILRGrow extends AbstractSLRInstraction {
 		// TODO encode argument
 	}
 
-	public void pushPos(long pos) {
-		this.pos.push(pos);
-	}
-
-	public void pushAstlog(Object astlog) {
-		this.astlog.push(astlog);
-	}
-
 	@Override
 	public Instruction exec(RuntimeContext sc) throws TerminationException {
 		ASTMachine astMachine = sc.getAstMachine();
+		StackData s = sc.popStack();
+		this.pos = s.value;
+		this.astlog = s.ref;
 		if (this.isGrow) {
-			if (sc.getPosition() <= growing.get(this.name).get(this.pos.peek()).getPos()) {
-				sc.setPosition(growing.get(this.name).get(this.pos.peek()).getPos());
-				astMachine.rollTransactionPoint(this.astlog.peek());
-				growing.get(this.name).get(this.pos.peek()).revertLogData();
+			if (sc.getPosition() <= growing.get(this.name).get(this.pos).getPos()) {
+				sc.setPosition(growing.get(this.name).get(this.pos).getPos());
+				astMachine.rollTransactionPoint(this.astlog);
+				growing.get(this.name).get(this.pos).revertLogData();
 				while (true) {
-					Object logData[] = growing.get(this.name).get(this.pos.peek()).pollLogData();
+					Object logData[] = growing.get(this.name).get(this.pos).pollLogData();
 					if (logData == null) {
 						break;
 					}
 					super.log((int) logData[0], (long) logData[3], (Symbol) logData[1], logData[2], astMachine);
 				}
 				this.isGrow = false;
-				this.pos.pop();
-				this.astlog.pop();
 				return this.jump;
 			}
-			growing.get(this.name).get(this.pos.peek()).setPos(sc.getPosition());
-			growing.get(this.name).get(this.pos.peek()).clearLogData();
-			Object next[] = astMachine.getNextLogData(this.astlog.peek());
+			growing.get(this.name).get(this.pos).setPos(sc.getPosition());
+			growing.get(this.name).get(this.pos).clearLogData();
+			Object next[] = astMachine.getNextLogData(this.astlog);
 			while (next != null) {
-				growing.get(this.name).get(this.pos.peek()).addLogData(next);
+				growing.get(this.name).get(this.pos).addLogData(next);
 				next = astMachine.getNextLogData(next[4]);
 			}
-			sc.setPosition(this.pos.peek());
-			astMachine.rollTransactionPoint(this.astlog.peek());
-			StackData s = sc.newUnusedStack();
-			s.ref = this;
+			sc.setPosition(this.pos);
+			astMachine.rollTransactionPoint(this.astlog);
+			StackData s0 = sc.newUnusedStack();
+			s0.value = this.pos;
+			s0.ref = this.astlog;
+			StackData s1 = sc.newUnusedStack();
+			s1.ref = this;
 			return this.next;
 		}
-		growing.get(this.name).get(this.pos.peek()).setPos(sc.getPosition());
-		growing.get(this.name).get(this.pos.peek()).clearLogData();
-		Object next[] = astMachine.getNextLogData(this.astlog.peek());
+		growing.get(this.name).get(this.pos).setPos(sc.getPosition());
+		growing.get(this.name).get(this.pos).clearLogData();
+		Object next[] = astMachine.getNextLogData(this.astlog);
 		while (next != null) {
-			growing.get(this.name).get(this.pos.peek()).addLogData(next);
+			growing.get(this.name).get(this.pos).addLogData(next);
 			next = astMachine.getNextLogData(next[4]);
 		}
-		if (growing.get(this.name).get(this.pos.peek()).getLRDetected() && this.pos.peek() < sc.getPosition()) {
-			sc.setPosition(this.pos.peek());
-			astMachine.rollTransactionPoint(this.astlog.peek());
-			StackData s = sc.newUnusedStack();
-			s.ref = this;
+		if (growing.get(this.name).get(this.pos).getLRDetected() && this.pos < sc.getPosition()) {
+			sc.setPosition(this.pos);
+			astMachine.rollTransactionPoint(this.astlog);
+			StackData s0 = sc.newUnusedStack();
+			s0.value = this.pos;
+			s0.ref = this.astlog;
+			StackData s1 = sc.newUnusedStack();
+			s1.ref = this;
 			this.isGrow = true;
 			return this.next;
 		}
-		this.pos.pop();
-		this.astlog.pop();
 		return this.jump;
 	}
 }
