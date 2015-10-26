@@ -4,8 +4,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 
-import nez.ast.Tree;
-
 public class VisitorMap<V> {
 	protected V defaultAcceptor;
 	protected HashMap<String, V> visitors;
@@ -44,8 +42,8 @@ public class VisitorMap<V> {
 		visitors.put(name, visitor);
 	}
 
-	protected final V find(Tree<?> node) {
-		V v = visitors.get(node.getTag().toString());
+	protected final V find(String name) {
+		V v = visitors.get(name);
 		return v == null ? defaultAcceptor : v;
 	}
 }
