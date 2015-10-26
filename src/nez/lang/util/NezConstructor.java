@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import nez.Grammar;
 import nez.Parser;
 import nez.Strategy;
-import nez.ast.Constructor;
 import nez.ast.Symbol;
 import nez.ast.Tree;
 import nez.io.SourceContext;
@@ -23,10 +22,11 @@ import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
 import nez.util.UList;
 
-public class NezConstructor extends GrammarFileLoader implements Constructor {
+public class NezConstructor extends GrammarFileLoader {
 
 	public NezConstructor(Grammar g) {
 		this.file = g;
+		init(NezConstructor.class, new DefaultVisitor());
 	}
 
 	static Parser nezParser;
@@ -42,6 +42,18 @@ public class NezConstructor extends GrammarFileLoader implements Constructor {
 
 	private long debugPosition = -1; // to detected infinite loop
 
+	public void visit(Tree<?> node) {
+		find(node.getTag().toString()).accept(node);
+	}
+
+	public boolean parseNode(Tree<?> node) {
+		return find(node.getTag().toString()).parse(node);
+	}
+
+	public Expression newExpression(Tree<?> node) {
+		return find(node.getTag().toString()).toExpression(node);
+	}
+
 	@Override
 	public void parse(Tree<?> node) {
 		if (node.getSourcePosition() == debugPosition) {
@@ -49,16 +61,27 @@ public class NezConstructor extends GrammarFileLoader implements Constructor {
 			ConsoleUtils.println("node: " + node);
 			throw new RuntimeException("");
 		}
-		visit("parse", node);
+		// visit("parse", node);
+		parseNode(node);
 		debugPosition = node.getSourcePosition();
 	}
 
-	public boolean parseSource(Tree<?> node) {
-		for (Tree<?> subnode : node) {
-			parse(subnode);
+	public class Source extends DefaultVisitor {
+		@Override
+		public boolean parse(Tree<?> node) {
+			for (Tree<?> subnode : node) {
+				parseNode(subnode);
+			}
+			return true;
 		}
-		return true;
 	}
+
+	// public boolean parseSource(Tree<?> node) {
+	// for (Tree<?> subnode : node) {
+	// parse(subnode);
+	// }
+	// return true;
+	// }
 
 	private boolean binary = false;
 	public final static Symbol _String = Symbol.tag("String");
@@ -70,150 +93,311 @@ public class NezConstructor extends GrammarFileLoader implements Constructor {
 
 	public final static Symbol _anno = Symbol.tag("anno");
 
-	public Production parseProduction(Tree<?> node) {
-		Tree<?> nameNode = node.get(_name);
-		String localName = nameNode.toText();
-		int productionFlag = 0;
-		if (nameNode.is(_String)) {
-			localName = GrammarFile.nameTerminalProduction(localName);
-			productionFlag |= Production.TerminalProduction;
+	public class _Production extends DefaultVisitor {
+		@Override
+		public boolean parse(Tree<?> node) {
+			Tree<?> nameNode = node.get(_name);
+			String localName = nameNode.toText();
+			int productionFlag = 0;
+			if (nameNode.is(_String)) {
+				localName = GrammarFile.nameTerminalProduction(localName);
+				productionFlag |= Production.TerminalProduction;
+			}
+
+			Production rule = getGrammar().getProduction(localName);
+			if (rule != null) {
+				reportWarning(node, "duplicated rule name: " + localName);
+				rule = null;
+			}
+			Expression e = newExpression(node.get(_expr));
+			rule = getGrammar().newProduction(node.get(0), productionFlag, localName, e);
+			return true;
 		}
-		// this.binary = false;
-		// AbstractTree<?> annoNode = node.get(_anno, null);
-		// if (annoNode != null) {
-		// if (annoNode.containsToken("binary")) {
-		// this.binary = true;
-		// }
-		// if (annoNode.containsToken("public")) {
-		// productionFlag |= Production.PublicProduction;
-		// }
-		// if (annoNode.containsToken("inline")) {
-		// productionFlag |= Production.InlineProduction;
-		// }
-		// }
-		Production rule = this.getGrammar().getProduction(localName);
-		if (rule != null) {
-			this.reportWarning(node, "duplicated rule name: " + localName);
-			rule = null;
+	}
+
+	// public Production parseProduction(Tree<?> node) {
+	// Tree<?> nameNode = node.get(_name);
+	// String localName = nameNode.toText();
+	// int productionFlag = 0;
+	// if (nameNode.is(_String)) {
+	// localName = GrammarFile.nameTerminalProduction(localName);
+	// productionFlag |= Production.TerminalProduction;
+	// }
+	// // this.binary = false;
+	// // AbstractTree<?> annoNode = node.get(_anno, null);
+	// // if (annoNode != null) {
+	// // if (annoNode.containsToken("binary")) {
+	// // this.binary = true;
+	// // }
+	// // if (annoNode.containsToken("public")) {
+	// // productionFlag |= Production.PublicProduction;
+	// // }
+	// // if (annoNode.containsToken("inline")) {
+	// // productionFlag |= Production.InlineProduction;
+	// // }
+	// // }
+	// Production rule = this.getGrammar().getProduction(localName);
+	// if (rule != null) {
+	// this.reportWarning(node, "duplicated rule name: " + localName);
+	// rule = null;
+	// }
+	// Expression e = newExpression(node.get(_expr));
+	// rule = this.getGrammar().newProduction(node.get(0), productionFlag,
+	// localName, e);
+	// return rule;
+	// }
+
+	public class Instance extends DefaultVisitor {
+		@Override
+		public Expression toExpression(Tree<?> node) {
+			return newExpression(node);
 		}
-		Expression e = newExpression(node.get(_expr));
-		rule = this.getGrammar().newProduction(node.get(0), productionFlag, localName, e);
-		return rule;
 	}
 
-	@Override
-	public final Object newInstance(Tree<?> node) {
-		return visit("new", node);
+	public class _NonTerminal extends DefaultVisitor {
+		@Override
+		public Expression toExpression(Tree<?> node) {
+			String symbol = node.toText();
+			return ExpressionCommons.newNonTerminal(node, getGrammar(), symbol);
+		}
 	}
 
-	public Expression newExpression(Tree<?> node) {
-		return (Expression) visit("new", node);
+	public class _String extends DefaultVisitor {
+		@Override
+		public Expression toExpression(Tree<?> node) {
+			String name = GrammarFile.nameTerminalProduction(node.toText());
+			return ExpressionCommons.newNonTerminal(node, getGrammar(), name);
+		}
 	}
 
-	public Expression newNonTerminal(Tree<?> node) {
-		String symbol = node.toText();
-		return ExpressionCommons.newNonTerminal(node, this.getGrammar(), symbol);
+	public class _Character extends DefaultVisitor {
+		@Override
+		public Expression toExpression(Tree<?> node) {
+			return ExpressionCommons.newString(node, StringUtils.unquoteString(node.toText()));
+		}
 	}
 
-	public Expression newString(Tree<?> node) {
-		String name = GrammarFile.nameTerminalProduction(node.toText());
-		return ExpressionCommons.newNonTerminal(node, this.getGrammar(), name);
+	// public Expression newCharacter(Tree<?> node) {
+	// return ExpressionCommons.newString(node,
+	// StringUtils.unquoteString(node.toText()));
+	// }
+
+	public class _Class extends DefaultVisitor {
+		@Override
+		public Expression toExpression(Tree<?> node) {
+			UList<Expression> l = new UList<Expression>(new Expression[2]);
+			if (node.size() > 0) {
+				for (int i = 0; i < node.size(); i++) {
+					Tree<?> o = node.get(i);
+					if (o.is(_List)) { // range
+						l.add(ExpressionCommons.newCharSet(node, o.getText(0, ""), o.getText(1, "")));
+					}
+					if (o.is(_Class)) { // single
+						l.add(ExpressionCommons.newCharSet(node, o.toText(), o.toText()));
+					}
+				}
+			}
+			return ExpressionCommons.newPchoice(node, l);
+		}
 	}
 
-	public Expression newCharacter(Tree<?> node) {
-		return ExpressionCommons.newString(node, StringUtils.unquoteString(node.toText()));
+	// public Expression newClass(Tree<?> node) {
+	// UList<Expression> l = new UList<Expression>(new Expression[2]);
+	// if (node.size() > 0) {
+	// for (int i = 0; i < node.size(); i++) {
+	// Tree<?> o = node.get(i);
+	// if (o.is(_List)) { // range
+	// l.add(ExpressionCommons.newCharSet(node, o.getText(0, ""), o.getText(1,
+	// "")));
+	// }
+	// if (o.is(_Class)) { // single
+	// l.add(ExpressionCommons.newCharSet(node, o.toText(), o.toText()));
+	// }
+	// }
+	// }
+	// return ExpressionCommons.newPchoice(node, l);
+	// }
+
+	public class _ByteChar extends DefaultVisitor {
+		@Override
+		public Expression toExpression(Tree<?> node) {
+			String t = node.toText();
+			if (t.startsWith("U+")) {
+				int c = StringUtils.hex(t.charAt(2));
+				c = (c * 16) + StringUtils.hex(t.charAt(3));
+				c = (c * 16) + StringUtils.hex(t.charAt(4));
+				c = (c * 16) + StringUtils.hex(t.charAt(5));
+				if (c < 128) {
+					return ExpressionCommons.newCbyte(node, binary, c);
+				}
+				String t2 = String.valueOf((char) c);
+				return ExpressionCommons.newString(node, t2);
+			}
+			int c = StringUtils.hex(t.charAt(t.length() - 2)) * 16 + StringUtils.hex(t.charAt(t.length() - 1));
+			return ExpressionCommons.newCbyte(node, binary, c);
+		}
 	}
 
-	public Expression newClass(Tree<?> node) {
-		UList<Expression> l = new UList<Expression>(new Expression[2]);
-		if (node.size() > 0) {
+	// public Expression newByteChar(Tree<?> node) {
+	// String t = node.toText();
+	// if (t.startsWith("U+")) {
+	// int c = StringUtils.hex(t.charAt(2));
+	// c = (c * 16) + StringUtils.hex(t.charAt(3));
+	// c = (c * 16) + StringUtils.hex(t.charAt(4));
+	// c = (c * 16) + StringUtils.hex(t.charAt(5));
+	// if (c < 128) {
+	// return ExpressionCommons.newCbyte(node, this.binary, c);
+	// }
+	// String t2 = String.valueOf((char) c);
+	// return ExpressionCommons.newString(node, t2);
+	// }
+	// int c = StringUtils.hex(t.charAt(t.length() - 2)) * 16 +
+	// StringUtils.hex(t.charAt(t.length() - 1));
+	// return ExpressionCommons.newCbyte(node, this.binary, c);
+	// }
+
+	public class _AnyChar extends DefaultVisitor {
+		@Override
+		public Expression toExpression(Tree<?> node) {
+			return ExpressionCommons.newCany(node, binary);
+		}
+	}
+
+	// public Expression newAnyChar(Tree<?> node) {
+	// return ExpressionCommons.newCany(node, this.binary);
+	// }
+
+	public class _Choice extends DefaultVisitor {
+		@Override
+		public Expression toExpression(Tree<?> node) {
+			UList<Expression> l = new UList<Expression>(new Expression[node.size()]);
 			for (int i = 0; i < node.size(); i++) {
-				Tree<?> o = node.get(i);
-				if (o.is(_List)) { // range
-					l.add(ExpressionCommons.newCharSet(node, o.getText(0, ""), o.getText(1, "")));
-				}
-				if (o.is(_Class)) { // single
-					l.add(ExpressionCommons.newCharSet(node, o.toText(), o.toText()));
+				ExpressionCommons.addChoice(l, newExpression(node.get(i)));
+			}
+			return ExpressionCommons.newPchoice(node, l);
+		}
+	}
+
+	// public Expression newChoice(Tree<?> node) {
+	// UList<Expression> l = new UList<Expression>(new Expression[node.size()]);
+	// for (int i = 0; i < node.size(); i++) {
+	// ExpressionCommons.addChoice(l, newExpression(node.get(i)));
+	// }
+	// return ExpressionCommons.newPchoice(node, l);
+	// }
+
+	public class _Sequence extends DefaultVisitor {
+		@Override
+		public Expression toExpression(Tree<?> node) {
+			UList<Expression> l = new UList<Expression>(new Expression[node.size()]);
+			for (int i = 0; i < node.size(); i++) {
+				ExpressionCommons.addSequence(l, newExpression(node.get(i)));
+			}
+			return ExpressionCommons.newPsequence(node, l);
+		}
+	}
+
+	// public Expression newSequence(Tree<?> node) {
+	// UList<Expression> l = new UList<Expression>(new Expression[node.size()]);
+	// for (int i = 0; i < node.size(); i++) {
+	// ExpressionCommons.addSequence(l, newExpression(node.get(i)));
+	// }
+	// return ExpressionCommons.newPsequence(node, l);
+	// }
+
+	public class _Not extends DefaultVisitor {
+		@Override
+		public Expression toExpression(Tree<?> node) {
+			return ExpressionCommons.newPnot(node, newExpression(node.get(_expr)));
+		}
+	}
+
+	// public Expression newNot(Tree<?> node) {
+	// return ExpressionCommons.newPnot(node, newExpression(node.get(_expr)));
+	// }
+
+	public class _And extends DefaultVisitor {
+		@Override
+		public Expression toExpression(Tree<?> node) {
+			return ExpressionCommons.newPand(node, newExpression(node.get(_expr)));
+		}
+	}
+
+	// public Expression newAnd(Tree<?> node) {
+	// return ExpressionCommons.newPand(node, newExpression(node.get(_expr)));
+	// }
+
+	public class _Option extends DefaultVisitor {
+		@Override
+		public Expression toExpression(Tree<?> node) {
+			return ExpressionCommons.newPoption(node, newExpression(node.get(_expr)));
+		}
+	}
+
+	// public Expression newOption(Tree<?> node) {
+	// return ExpressionCommons.newPoption(node,
+	// newExpression(node.get(_expr)));
+	// }
+
+	public class _Repetition1 extends DefaultVisitor {
+		@Override
+		public Expression toExpression(Tree<?> node) {
+			return ExpressionCommons.newPone(node, newExpression(node.get(_expr)));
+		}
+	}
+
+	// public Expression newRepetition1(Tree<?> node) {
+	// return ExpressionCommons.newPone(node, newExpression(node.get(_expr)));
+	// }
+
+	public class _Repetition extends DefaultVisitor {
+		@Override
+		public Expression toExpression(Tree<?> node) {
+			if (node.size() == 2) {
+				int ntimes = StringUtils.parseInt(node.getText(1, ""), -1);
+				if (ntimes != 1) {
+					UList<Expression> l = new UList<Expression>(new Expression[ntimes]);
+					for (int i = 0; i < ntimes; i++) {
+						ExpressionCommons.addSequence(l, newExpression(node.get(0)));
+					}
+					return ExpressionCommons.newPsequence(node, l);
 				}
 			}
+			return ExpressionCommons.newPzero(node, newExpression(node.get(_expr)));
 		}
-		return ExpressionCommons.newPchoice(node, l);
 	}
 
-	public Expression newByteChar(Tree<?> node) {
-		String t = node.toText();
-		if (t.startsWith("U+")) {
-			int c = StringUtils.hex(t.charAt(2));
-			c = (c * 16) + StringUtils.hex(t.charAt(3));
-			c = (c * 16) + StringUtils.hex(t.charAt(4));
-			c = (c * 16) + StringUtils.hex(t.charAt(5));
-			if (c < 128) {
-				return ExpressionCommons.newCbyte(node, this.binary, c);
-			}
-			String t2 = java.lang.String.valueOf((char) c);
-			return ExpressionCommons.newString(node, t2);
-		}
-		int c = StringUtils.hex(t.charAt(t.length() - 2)) * 16 + StringUtils.hex(t.charAt(t.length() - 1));
-		return ExpressionCommons.newCbyte(node, this.binary, c);
-	}
-
-	public Expression newAnyChar(Tree<?> node) {
-		return ExpressionCommons.newCany(node, this.binary);
-	}
-
-	public Expression newChoice(Tree<?> node) {
-		UList<Expression> l = new UList<Expression>(new Expression[node.size()]);
-		for (int i = 0; i < node.size(); i++) {
-			ExpressionCommons.addChoice(l, newExpression(node.get(i)));
-		}
-		return ExpressionCommons.newPchoice(node, l);
-	}
-
-	public Expression newSequence(Tree<?> node) {
-		UList<Expression> l = new UList<Expression>(new Expression[node.size()]);
-		for (int i = 0; i < node.size(); i++) {
-			ExpressionCommons.addSequence(l, newExpression(node.get(i)));
-		}
-		return ExpressionCommons.newPsequence(node, l);
-	}
-
-	public Expression newNot(Tree<?> node) {
-		return ExpressionCommons.newPnot(node, newExpression(node.get(_expr)));
-	}
-
-	public Expression newAnd(Tree<?> node) {
-		return ExpressionCommons.newPand(node, newExpression(node.get(_expr)));
-	}
-
-	public Expression newOption(Tree<?> node) {
-		return ExpressionCommons.newPoption(node, newExpression(node.get(_expr)));
-	}
-
-	public Expression newRepetition1(Tree<?> node) {
-		return ExpressionCommons.newPone(node, newExpression(node.get(_expr)));
-	}
-
-	public Expression newRepetition(Tree<?> node) {
-		if (node.size() == 2) {
-			int ntimes = StringUtils.parseInt(node.getText(1, ""), -1);
-			if (ntimes != 1) {
-				UList<Expression> l = new UList<Expression>(new Expression[ntimes]);
-				for (int i = 0; i < ntimes; i++) {
-					ExpressionCommons.addSequence(l, newExpression(node.get(0)));
-				}
-				return ExpressionCommons.newPsequence(node, l);
-			}
-		}
-		return ExpressionCommons.newPzero(node, newExpression(node.get(_expr)));
-	}
+	// public Expression newRepetition(Tree<?> node) {
+	// if (node.size() == 2) {
+	// int ntimes = StringUtils.parseInt(node.getText(1, ""), -1);
+	// if (ntimes != 1) {
+	// UList<Expression> l = new UList<Expression>(new Expression[ntimes]);
+	// for (int i = 0; i < ntimes; i++) {
+	// ExpressionCommons.addSequence(l, newExpression(node.get(0)));
+	// }
+	// return ExpressionCommons.newPsequence(node, l);
+	// }
+	// }
+	// return ExpressionCommons.newPzero(node, newExpression(node.get(_expr)));
+	// }
 
 	// PEG4d TransCapturing
 
-	public Expression newNew(Tree<?> node) {
-		Tree<?> exprNode = node.get(_expr, null);
-		Expression p = (exprNode == null) ? ExpressionCommons.newEmpty(node) : newExpression(exprNode);
-		return ExpressionCommons.newNewCapture(node, false, null, p);
+	public class _New extends DefaultVisitor {
+		@Override
+		public Expression toExpression(Tree<?> node) {
+			Tree<?> exprNode = node.get(_expr, null);
+			Expression p = (exprNode == null) ? ExpressionCommons.newEmpty(node) : newExpression(exprNode);
+			return ExpressionCommons.newNewCapture(node, false, null, p);
+		}
 	}
+
+	// public Expression newNew(Tree<?> node) {
+	// Tree<?> exprNode = node.get(_expr, null);
+	// Expression p = (exprNode == null) ? ExpressionCommons.newEmpty(node) :
+	// newExpression(exprNode);
+	// return ExpressionCommons.newNewCapture(node, false, null, p);
+	// }
 
 	public final static Symbol _name = Symbol.tag("name");
 	public final static Symbol _expr = Symbol.tag("expr");
@@ -231,117 +415,294 @@ public class NezConstructor extends GrammarFileLoader implements Constructor {
 		return label;
 	}
 
-	public Expression newLeftFold(Tree<?> node) {
-		Tree<?> exprNode = node.get(_expr, null);
-		Expression p = (exprNode == null) ? ExpressionCommons.newEmpty(node) : newExpression(exprNode);
-		return ExpressionCommons.newNewCapture(node, true, parseLabelNode(node), p);
-	}
-
-	public Expression newLink(Tree<?> node) {
-		return ExpressionCommons.newTlink(node, parseLabelNode(node), newExpression(node.get(_expr)));
-	}
-
-	public Expression newTagging(Tree<?> node) {
-		return ExpressionCommons.newTtag(node, Symbol.tag(node.toText()));
-	}
-
-	public Expression newReplace(Tree<?> node) {
-		return ExpressionCommons.newTreplace(node, node.toText());
-	}
-
-	public Expression newMatch(Tree<?> node) {
-		Tree<?> exprNode = node.get(_expr, null);
-		if (exprNode != null) {
-			return ExpressionCommons.newTdetree(node, newExpression(exprNode));
+	public class _LeftFold extends DefaultVisitor {
+		@Override
+		public Expression toExpression(Tree<?> node) {
+			Tree<?> exprNode = node.get(_expr, null);
+			Expression p = (exprNode == null) ? ExpressionCommons.newEmpty(node) : newExpression(exprNode);
+			return ExpressionCommons.newNewCapture(node, true, parseLabelNode(node), p);
 		}
-		return ExpressionCommons.newXmatch(node, parseLabelNode(node));
 	}
 
-	public Expression newIf(Tree<?> node) {
-		return ExpressionCommons.newXif(node, node.getText(_name, ""));
-	}
+	// public Expression newLeftFold(Tree<?> node) {
+	// Tree<?> exprNode = node.get(_expr, null);
+	// Expression p = (exprNode == null) ? ExpressionCommons.newEmpty(node) :
+	// newExpression(exprNode);
+	// return ExpressionCommons.newNewCapture(node, true, parseLabelNode(node),
+	// p);
+	// }
 
-	public Expression newOn(Tree<?> node) {
-		return ExpressionCommons.newXon(node, true, node.getText(_name, ""), newExpression(node.get(_expr)));
-	}
-
-	public Expression newBlock(Tree<?> node) {
-		return ExpressionCommons.newXblock(node, newExpression(node.get(_expr)));
-	}
-
-	public Expression newDef(Tree<?> node) {
-		Grammar g = this.getGrammar();
-		Tree<?> nameNode = node.get(_name);
-		NonTerminal pat = g.newNonTerminal(node, nameNode.toText());
-		Expression e = newExpression(node.get(_expr));
-		Production p = g.newProduction(pat.getLocalName(), e);
-		this.reportWarning(nameNode, "new production generated: " + p);
-		return ExpressionCommons.newXsymbol(node, pat);
-	}
-
-	public Expression newSymbol(Tree<?> node) {
-		Grammar g = this.getGrammar();
-		NonTerminal pat = g.newNonTerminal(node, node.getText(_name, ""));
-		return ExpressionCommons.newXsymbol(node, pat);
-	}
-
-	public Expression newIs(Tree<?> node) {
-		Grammar g = this.getGrammar();
-		NonTerminal pat = g.newNonTerminal(node, node.getText(_name, ""));
-		return ExpressionCommons.newXis(node, pat);
-	}
-
-	public Expression newIsa(Tree<?> node) {
-		Grammar g = this.getGrammar();
-		NonTerminal pat = g.newNonTerminal(node, node.getText(_name, ""));
-		return ExpressionCommons.newXisa(node, pat);
-	}
-
-	public Expression newExists(Tree<?> node) {
-		return ExpressionCommons.newXexists(node, Symbol.tag(node.getText(_name, "")), node.getText(_symbol, null));
-	}
-
-	public Expression newLocal(Tree<?> node) {
-		return ExpressionCommons.newXlocal(node, Symbol.tag(node.getText(_name, "")), newExpression(node.get(_expr)));
-	}
-
-	public Expression newDefIndent(Tree<?> node) {
-		return ExpressionCommons.newDefIndent(node);
-	}
-
-	public Expression newIndent(Tree<?> node) {
-		return ExpressionCommons.newIndent(node);
-	}
-
-	public Expression newUndefined(Tree<?> node) {
-		this.reportError(node, "undefined or deprecated notation");
-		return ExpressionCommons.newEmpty(node);
-	}
-
-	public boolean parseExample(Tree<?> node) {
-
-		String hash = node.getText(_hash, null);
-		Tree<?> textNode = node.get(_text);
-		Tree<?> nameNode = node.get(_name2, null);
-		if (nameNode != null) {
-			this.getGrammarFile().addExample(new Example(true, nameNode, hash, textNode));
-			nameNode = node.get(_name);
-			this.getGrammarFile().addExample(new Example(false, nameNode, hash, textNode));
-		} else {
-			nameNode = node.get(_name);
-			this.getGrammarFile().addExample(new Example(true, nameNode, hash, textNode));
+	public class _Link extends DefaultVisitor {
+		@Override
+		public Expression toExpression(Tree<?> node) {
+			return ExpressionCommons.newTlink(node, parseLabelNode(node), newExpression(node.get(_expr)));
 		}
-		return true;
 	}
 
-	public boolean parseFormat(Tree<?> node) {
-		// System.out.println("node: " + node);
-		String tag = node.getText(0, "token");
-		int index = StringUtils.parseInt(node.getText(1, "*"), -1);
-		Formatter fmt = toFormatter(node.get(2));
-		this.getGrammarFile().addFormatter(tag, index, fmt);
-		return true;
+	// public Expression newLink(Tree<?> node) {
+	// return ExpressionCommons.newTlink(node, parseLabelNode(node),
+	// newExpression(node.get(_expr)));
+	// }
+
+	public class _Tagging extends DefaultVisitor {
+		@Override
+		public Expression toExpression(Tree<?> node) {
+			return ExpressionCommons.newTtag(node, Symbol.tag(node.toText()));
+		}
 	}
+
+	// public Expression newTagging(Tree<?> node) {
+	// return ExpressionCommons.newTtag(node, Symbol.tag(node.toText()));
+	// }
+
+	public class _Replace extends DefaultVisitor {
+		@Override
+		public Expression toExpression(Tree<?> node) {
+			return ExpressionCommons.newTreplace(node, node.toText());
+		}
+	}
+
+	// public Expression newReplace(Tree<?> node) {
+	// return ExpressionCommons.newTreplace(node, node.toText());
+	// }
+
+	public class _Match extends DefaultVisitor {
+		@Override
+		public Expression toExpression(Tree<?> node) {
+			Tree<?> exprNode = node.get(_expr, null);
+			if (exprNode != null) {
+				return ExpressionCommons.newTdetree(node, newExpression(exprNode));
+			}
+			return ExpressionCommons.newXmatch(node, parseLabelNode(node));
+		}
+	}
+
+	// public Expression newMatch(Tree<?> node) {
+	// Tree<?> exprNode = node.get(_expr, null);
+	// if (exprNode != null) {
+	// return ExpressionCommons.newTdetree(node, newExpression(exprNode));
+	// }
+	// return ExpressionCommons.newXmatch(node, parseLabelNode(node));
+	// }
+
+	public class _If extends DefaultVisitor {
+		@Override
+		public Expression toExpression(Tree<?> node) {
+			return ExpressionCommons.newXif(node, node.getText(_name, ""));
+		}
+	}
+
+	// public Expression newIf(Tree<?> node) {
+	// return ExpressionCommons.newXif(node, node.getText(_name, ""));
+	// }
+
+	public class _On extends DefaultVisitor {
+		@Override
+		public Expression toExpression(Tree<?> node) {
+			return ExpressionCommons.newXon(node, true, node.getText(_name, ""), newExpression(node.get(_expr)));
+		}
+	}
+
+	// public Expression newOn(Tree<?> node) {
+	// return ExpressionCommons.newXon(node, true, node.getText(_name, ""),
+	// newExpression(node.get(_expr)));
+	// }
+
+	public class _Block extends DefaultVisitor {
+		@Override
+		public Expression toExpression(Tree<?> node) {
+			return ExpressionCommons.newXblock(node, newExpression(node.get(_expr)));
+		}
+	}
+
+	// public Expression newBlock(Tree<?> node) {
+	// return ExpressionCommons.newXblock(node, newExpression(node.get(_expr)));
+	// }
+
+	public class _Def extends DefaultVisitor {
+		@Override
+		public Expression toExpression(Tree<?> node) {
+			Grammar g = getGrammar();
+			Tree<?> nameNode = node.get(_name);
+			NonTerminal pat = g.newNonTerminal(node, nameNode.toText());
+			Expression e = newExpression(node.get(_expr));
+			Production p = g.newProduction(pat.getLocalName(), e);
+			reportWarning(nameNode, "new production generated: " + p);
+			return ExpressionCommons.newXsymbol(node, pat);
+		}
+	}
+
+	// public Expression newDef(Tree<?> node) {
+	// Grammar g = this.getGrammar();
+	// Tree<?> nameNode = node.get(_name);
+	// NonTerminal pat = g.newNonTerminal(node, nameNode.toText());
+	// Expression e = newExpression(node.get(_expr));
+	// Production p = g.newProduction(pat.getLocalName(), e);
+	// this.reportWarning(nameNode, "new production generated: " + p);
+	// return ExpressionCommons.newXsymbol(node, pat);
+	// }
+
+	public class _Symbol extends DefaultVisitor {
+		@Override
+		public Expression toExpression(Tree<?> node) {
+			Grammar g = getGrammar();
+			NonTerminal pat = g.newNonTerminal(node, node.getText(_name, ""));
+			return ExpressionCommons.newXsymbol(node, pat);
+		}
+	}
+
+	// public Expression newSymbol(Tree<?> node) {
+	// Grammar g = this.getGrammar();
+	// NonTerminal pat = g.newNonTerminal(node, node.getText(_name, ""));
+	// return ExpressionCommons.newXsymbol(node, pat);
+	// }
+
+	public class _Is extends DefaultVisitor {
+		@Override
+		public Expression toExpression(Tree<?> node) {
+			Grammar g = getGrammar();
+			NonTerminal pat = g.newNonTerminal(node, node.getText(_name, ""));
+			return ExpressionCommons.newXis(node, pat);
+		}
+	}
+
+	// public Expression newIs(Tree<?> node) {
+	// Grammar g = this.getGrammar();
+	// NonTerminal pat = g.newNonTerminal(node, node.getText(_name, ""));
+	// return ExpressionCommons.newXis(node, pat);
+	// }
+
+	public class _Isa extends DefaultVisitor {
+		@Override
+		public Expression toExpression(Tree<?> node) {
+			Grammar g = getGrammar();
+			NonTerminal pat = g.newNonTerminal(node, node.getText(_name, ""));
+			return ExpressionCommons.newXisa(node, pat);
+		}
+	}
+
+	// public Expression newIsa(Tree<?> node) {
+	// Grammar g = this.getGrammar();
+	// NonTerminal pat = g.newNonTerminal(node, node.getText(_name, ""));
+	// return ExpressionCommons.newXisa(node, pat);
+	// }
+
+	public class _Exists extends DefaultVisitor {
+		@Override
+		public Expression toExpression(Tree<?> node) {
+			return ExpressionCommons.newXexists(node, Symbol.tag(node.getText(_name, "")), node.getText(_symbol, null));
+		}
+	}
+
+	// public Expression newExists(Tree<?> node) {
+	// return ExpressionCommons.newXexists(node,
+	// Symbol.tag(node.getText(_name, "")), node.getText(_symbol,
+	// null));
+	// }
+
+	public class _Local extends DefaultVisitor {
+		@Override
+		public Expression toExpression(Tree<?> node) {
+			return ExpressionCommons.newXlocal(node, Symbol.tag(node.getText(_name, "")), newExpression(node.get(_expr)));
+		}
+	}
+
+	// public Expression newLocal(Tree<?> node) {
+	// return ExpressionCommons.newXlocal(node,
+	// Symbol.tag(node.getText(_name, "")),
+	// newExpression(node.get(_expr)));
+	// }
+
+	public class _DefIndent extends DefaultVisitor {
+		@Override
+		public Expression toExpression(Tree<?> node) {
+			return ExpressionCommons.newDefIndent(node);
+		}
+	}
+
+	// public Expression newDefIndent(Tree<?> node) {
+	// return ExpressionCommons.newDefIndent(node);
+	// }
+
+	public class _Indent extends DefaultVisitor {
+		@Override
+		public Expression toExpression(Tree<?> node) {
+			return ExpressionCommons.newIndent(node);
+		}
+	}
+
+	// public Expression newIndent(Tree<?> node) {
+	// return ExpressionCommons.newIndent(node);
+	// }
+
+	public class Undefined extends DefaultVisitor {
+		@Override
+		public Expression toExpression(Tree<?> node) {
+			reportError(node, "undefined or deprecated notation");
+			return ExpressionCommons.newEmpty(node);
+		}
+	}
+
+	// public Expression newUndefined(Tree<?> node) {
+	// this.reportError(node, "undefined or deprecated notation");
+	// return ExpressionCommons.newEmpty(node);
+	// }
+
+	public class _Example extends DefaultVisitor {
+		@Override
+		public boolean parse(Tree<?> node) {
+			String hash = node.getText(_hash, null);
+			Tree<?> textNode = node.get(_text);
+			Tree<?> nameNode = node.get(_name2, null);
+			if (nameNode != null) {
+				getGrammarFile().addExample(new Example(true, nameNode, hash, textNode));
+				nameNode = node.get(_name);
+				getGrammarFile().addExample(new Example(false, nameNode, hash, textNode));
+			} else {
+				nameNode = node.get(_name);
+				getGrammarFile().addExample(new Example(true, nameNode, hash, textNode));
+			}
+			return true;
+		}
+	}
+
+	// public boolean parseExample(Tree<?> node) {
+	// String hash = node.getText(_hash, null);
+	// Tree<?> textNode = node.get(_text);
+	// Tree<?> nameNode = node.get(_name2, null);
+	// if (nameNode != null) {
+	// this.getGrammarFile().addExample(new Example(true, nameNode,
+	// hash, textNode));
+	// nameNode = node.get(_name);
+	// this.getGrammarFile().addExample(new Example(false, nameNode,
+	// hash, textNode));
+	// } else {
+	// nameNode = node.get(_name);
+	// this.getGrammarFile().addExample(new Example(true, nameNode,
+	// hash, textNode));
+	// }
+	// return true;
+	// }
+
+	public class Format extends DefaultVisitor {
+		@Override
+		public boolean parse(Tree<?> node) {
+			String tag = node.getText(0, "token");
+			int index = StringUtils.parseInt(node.getText(1, "*"), -1);
+			Formatter fmt = toFormatter(node.get(2));
+			getGrammarFile().addFormatter(tag, index, fmt);
+			return true;
+		}
+	}
+
+	// public boolean parseFormat(Tree<?> node) {
+	// // System.out.println("node: " + node);
+	// String tag = node.getText(0, "token");
+	// int index = StringUtils.parseInt(node.getText(1, "*"), -1);
+	// Formatter fmt = toFormatter(node.get(2));
+	// this.getGrammarFile().addFormatter(tag, index, fmt);
+	// return true;
+	// }
 
 	Formatter toFormatter(Tree<?> node) {
 		if (node.is(_List)) {
@@ -371,51 +732,101 @@ public class NezConstructor extends GrammarFileLoader implements Constructor {
 		return Formatter.newFormatter(node.toText());
 	}
 
-	/* import */
-	public boolean parseImport(Tree<?> node) {
-		// System.out.println("DEBUG? parsed: " + node);
-		String ns = null;
-		String name = node.getText(0, "*");
-		int loc = name.indexOf('.');
-		if (loc >= 0) {
-			ns = name.substring(0, loc);
-			name = name.substring(loc + 1);
-		}
-		String urn = path(node.getSource().getResourceName(), node.getText(1, ""));
-		try {
-			GrammarFile source = (GrammarFile) GrammarFileLoader.loadGrammar(urn, this.strategy);
-			if (name.equals("*")) {
-				int c = 0;
-				for (Production p : source) {
-					if (p.isPublic()) {
-						checkDuplicatedName(node.get(0));
-						this.getGrammarFile().importProduction(ns, p);
-						c++;
-					}
-				}
-				if (c == 0) {
-					this.reportError(node.get(0), "nothing imported (no public production exisits)");
-				}
-			} else {
-				Production p = source.getProduction(name);
-				if (p == null) {
-					this.reportError(node.get(0), "undefined production: " + name);
-					return false;
-				}
-				this.getGrammarFile().importProduction(ns, p);
+	public class Import extends DefaultVisitor {
+		@Override
+		public boolean parse(Tree<?> node) {
+			String ns = null;
+			String name = node.getText(0, "*");
+			int loc = name.indexOf('.');
+			if (loc >= 0) {
+				ns = name.substring(0, loc);
+				name = name.substring(loc + 1);
 			}
-			return true;
-		} catch (IOException e) {
-			this.reportError(node.get(1), "unfound: " + urn);
-		} catch (NullPointerException e) {
-			/*
-			 * This is for a bug unhandling IOException at
-			 * java.io.Reader.<init>(Reader.java:78)
-			 */
-			this.reportError(node.get(1), "unfound: " + urn);
+			String urn = path(node.getSource().getResourceName(), node.getText(1, ""));
+			try {
+				GrammarFile source = (GrammarFile) GrammarFileLoader.loadGrammar(urn, strategy);
+				if (name.equals("*")) {
+					int c = 0;
+					for (Production p : source) {
+						if (p.isPublic()) {
+							checkDuplicatedName(node.get(0));
+							getGrammarFile().importProduction(ns, p);
+							c++;
+						}
+					}
+					if (c == 0) {
+						reportError(node.get(0), "nothing imported (no public production exisits)");
+					}
+				} else {
+					Production p = source.getProduction(name);
+					if (p == null) {
+						reportError(node.get(0), "undefined production: " + name);
+						return false;
+					}
+					getGrammarFile().importProduction(ns, p);
+				}
+				return true;
+			} catch (IOException e) {
+				reportError(node.get(1), "unfound: " + urn);
+			} catch (NullPointerException e) {
+				/*
+				 * This is for a bug unhandling IOException at
+				 * java.io.Reader.<init>(Reader.java:78)
+				 */
+				reportError(node.get(1), "unfound: " + urn);
+			}
+			return false;
 		}
-		return false;
 	}
+
+	// /* import */
+	// public boolean parseImport(Tree<?> node) {
+	// // System.out.println("DEBUG? parsed: " + node);
+	// String ns = null;
+	// String name = node.getText(0, "*");
+	// int loc = name.indexOf('.');
+	// if (loc >= 0) {
+	// ns = name.substring(0, loc);
+	// name = name.substring(loc + 1);
+	// }
+	// String urn = path(node.getSource().getResourceName(),
+	// node.getText(1, ""));
+	// try {
+	// GrammarFile source = (GrammarFile) GrammarFileLoader.loadGrammar(urn,
+	// this.strategy);
+	// if (name.equals("*")) {
+	// int c = 0;
+	// for (Production p : source) {
+	// if (p.isPublic()) {
+	// checkDuplicatedName(node.get(0));
+	// this.getGrammarFile().importProduction(ns, p);
+	// c++;
+	// }
+	// }
+	// if (c == 0) {
+	// this.reportError(node.get(0),
+	// "nothing imported (no public production exisits)");
+	// }
+	// } else {
+	// Production p = source.getProduction(name);
+	// if (p == null) {
+	// this.reportError(node.get(0), "undefined production: " + name);
+	// return false;
+	// }
+	// this.getGrammarFile().importProduction(ns, p);
+	// }
+	// return true;
+	// } catch (IOException e) {
+	// this.reportError(node.get(1), "unfound: " + urn);
+	// } catch (NullPointerException e) {
+	// /*
+	// * This is for a bug unhandling IOException at
+	// * java.io.Reader.<init>(Reader.java:78)
+	// */
+	// this.reportError(node.get(1), "unfound: " + urn);
+	// }
+	// return false;
+	// }
 
 	private void checkDuplicatedName(Tree<?> errorNode) {
 		String name = errorNode.toText();
