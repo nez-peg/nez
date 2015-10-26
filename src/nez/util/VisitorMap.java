@@ -8,10 +8,10 @@ public class VisitorMap<V> {
 	protected V defaultAcceptor;
 	protected HashMap<String, V> visitors;
 
-	protected void init(V defualtAccepter) {
+	protected void init(Class<?> baseClass, V defualtAccepter) {
 		this.defaultAcceptor = defualtAccepter;
 		this.visitors = new HashMap<>();
-		for (Class<?> c : this.getClass().getClasses()) {
+		for (Class<?> c : baseClass.getClasses()) {
 			load(c);
 		}
 	}
