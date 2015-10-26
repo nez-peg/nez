@@ -1,6 +1,5 @@
 package nez.dfa;
 
-import java.util.Comparator;
 
 public class BDDNode implements Comparable<BDDNode> {
 	public int variableID, zeroID, oneID;
@@ -38,20 +37,4 @@ public class BDDNode implements Comparable<BDDNode> {
 	public String toString() {
 		return "(" + variableID + "," + zeroID + "," + oneID + ")";
 	}
-}
-
-class BDDNodeComparator implements Comparator {
-	@Override
-	public int compare(Object o1, Object o2) {
-		BDDNode n1 = (BDDNode) o1;
-		BDDNode n2 = (BDDNode) o2;
-		if (n1.variableID != n2.variableID) {
-			return Integer.compare(n1.variableID, n2.variableID);
-		}
-		if (n1.zeroID != n2.zeroID) {
-			return Integer.compare(n1.zeroID, n2.zeroID);
-		}
-		return Integer.compare(n1.oneID, n2.oneID);
-	}
-
 }
