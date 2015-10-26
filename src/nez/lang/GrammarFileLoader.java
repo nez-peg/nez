@@ -24,11 +24,7 @@ public abstract class GrammarFileLoader extends VisitorMap<DefaultVisitor> {
 	public GrammarFileLoader() {
 	}
 
-	public GrammarFileLoader(Class<?> baseClass) {
-		init(baseClass, new DefaultVisitor());
-	}
-
-	public class DefaultVisitor {
+	protected class DefaultVisitor {
 		public void accept(Tree<?> node) {
 		}
 
