@@ -14,7 +14,6 @@ import nez.lang.expr.Cset;
 import nez.lang.expr.NonTerminal;
 import nez.lang.expr.Pand;
 import nez.lang.expr.Pchoice;
-import nez.lang.expr.Pempty;
 import nez.lang.expr.Pfail;
 import nez.lang.expr.Pnot;
 import nez.lang.expr.Pone;
@@ -133,21 +132,30 @@ public class AFAConverter extends TreeVisitor {
 		return null;
 	}
 
-	private AFA visitPempty(Expression e) {
-		// System.out.println("here is Pempty : " + e);
+	class Default {
+		public AFA accept(Expresion e) {
 
-		int s = getNewStateID();
-		HashSet<State> S = new HashSet<State>();
-		TreeSet<Transition> transitions = new TreeSet<Transition>();
-		State f = new State(s);
-		HashSet<State> F = new HashSet<State>();
-		HashSet<State> L = new HashSet<State>();
+		}
+	}
 
-		S.add(new State(s));
+	class Pempty extends Default {
 
-		F.add(new State(s));
+		public AFA accept(Expression e) {
+			// System.out.println("here is Pempty : " + e);
 
-		return new AFA(S, transitions, f, F, L);
+			int s = getNewStateID();
+			HashSet<State> S = new HashSet<State>();
+			TreeSet<Transition> transitions = new TreeSet<Transition>();
+			State f = new State(s);
+			HashSet<State> F = new HashSet<State>();
+			HashSet<State> L = new HashSet<State>();
+
+			S.add(new State(s));
+
+			F.add(new State(s));
+
+			return new AFA(S, transitions, f, F, L);
+		}
 	}
 
 	private AFA visitPfail(Expression e) {
