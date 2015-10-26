@@ -1,8 +1,10 @@
-<project name="nez" default="jar">
+<project name="nez" default="tool">
 	<!-- directory / file definition -->
 	<property name="BinaryName" value="nez" />
 	<property name="LibName" value="libnez" />
 	<property name="source_dir" value="src" />
+	<property name="tool_dir" value="tool" />
+	<property name="devel_dir" value="devel" />
 	<property name="build_dir" value="build" />
 	<property name="root_dir" value="." />
 	<property name="jline_jar" value="ext/jline-1.0.jar" />
@@ -24,10 +26,20 @@
 	<!-- ================================== -->
 	<target name="build">
 		<mkdir dir="${build_dir}" />
-		<javac fork="true" encoding="UTF-8" srcdir="${source_dir}"
+		<javac fork="true" encoding="UTF-8" srcdir="${source_dir};${tool_dir};${devel_dir}"
 			destdir="${build_dir}" target="1.8" source="1.8" debug="yes"
 			debuglevel="lines,vars,source" includeantruntime="false">
 			<classpath path="${jline_jar}" />
+			<include name="**/*.java" />
+			<exclude name="**/*Test.java" />
+		</javac>
+	</target>
+
+	<target name="build_devel">
+		<mkdir dir="${build_dir}" />
+		<javac fork="true" encoding="UTF-8" srcdir="${source_dir};${tool_dir};${devel_dir}"
+			destdir="${build_dir}" target="1.8" source="1.8" debug="yes"
+			debuglevel="lines,vars,source" includeantruntime="false">
 			<include name="**/*.java" />
 			<exclude name="**/*Test.java" />
 			<compilerarg value="-Xlint:deprecation" />
@@ -38,9 +50,19 @@
 	<!-- ================================== -->
 	<!-- GENERATE JAR -->
 	<!-- ================================== -->
-	<target name="jar" depends="build">
+
+	<target name="lib" depends="build">
+		<jar jarfile="${LibName}.jar">
+			<fileset dir="${build_dir}" includes="**/*.class" />
+			<fileset dir="${source_dir}" includes="**/*.nez" />
+			<exclude name="**/*Test.class" />
+		</jar>
+	</target>
+	
+	<target name="tool" depends="build">
 		<jar jarfile="${BinaryName}.jar">
 			<fileset dir="${build_dir}" includes="**/*.class" />
+			<fileset dir="${tool_dir}"  includes="**/*.class" />
 			<fileset dir="${source_dir}" includes="**/*.nez" />
             <fileset dir="${source_dir}" includes="**/*.properties" />
 			<fileset dir="." includes="lib/**" />
@@ -52,18 +74,22 @@
 		</jar>
 	</target>
 
-	<target name="lib" depends="build">
-		<jar jarfile="${LibName}.jar">
+	<target name="all" depends="build_devel">
+		<jar jarfile="${BinaryName}-devel.jar">
 			<fileset dir="${build_dir}" includes="**/*.class" />
+			<fileset dir="${tool_dir}"  includes="**/*.class" />
+			<fileset dir="${devel_dir}"  includes="**/*.class" />
 			<fileset dir="${source_dir}" includes="**/*.nez" />
+            <fileset dir="${source_dir}" includes="**/*.properties" />
 			<fileset dir="." includes="lib/**" />
 			<exclude name="**/*Test.class" />
-			<exclude name="nez/main/*.class" />
-			<exclude name="nez/main/ext/*.class" />
-			<exclude name="nez/main/debugger/*.class" />
-			<exclude name="**/x/**"/>
+			<manifest>
+				<attribute name="Main-Class" value="nez.main.Command" />
+			</manifest>
+			<zipfileset src="${jline_jar}" />
 		</jar>
 	</target>
+
 
 	<!-- ================================== -->
 	<!-- CLEAN -->
@@ -71,6 +97,7 @@
 	<target name="clean">
 		<delete dir="${build_dir}" />
 		<delete file="${BinaryName}.jar" />
+		<delete file="${BinaryName}-devel.jar" />
 		<delete file="${LibName}.jar" />
 		<delete dir="${build_test_dir}" />
 	</target>
@@ -78,7 +105,7 @@
 	<!-- ================================== -->
 	<!-- TEST PREPARE -->
 	<!-- ================================== -->
-	<target name="test_prepare" depends="jar">
+	<target name="test_prepare" depends="tool">
 		<mkdir dir="${build_test_dir}" />
 		<mkdir dir="${test_result}" />
 		<javac srcdir="${test_dir}/java" destdir="${build_test_dir}"
