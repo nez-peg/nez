@@ -26,7 +26,7 @@
 	<!-- ================================== -->
 	<target name="build">
 		<mkdir dir="${build_dir}" />
-		<javac fork="true" encoding="UTF-8" srcdir="${source_dir};${tool_dir};${devel_dir}"
+		<javac fork="true" encoding="UTF-8" srcdir="${source_dir};"
 			destdir="${build_dir}" target="1.8" source="1.8" debug="yes"
 			debuglevel="lines,vars,source" includeantruntime="false">
 			<classpath path="${jline_jar}" />
@@ -59,7 +59,7 @@
 		</jar>
 	</target>
 	
-	<target name="tool" depends="build">
+	<target name="tool" depends="build_devel">
 		<jar jarfile="${BinaryName}.jar">
 			<fileset dir="${build_dir}" includes="**/*.class" />
 			<fileset dir="${tool_dir}"  includes="**/*.class" />
