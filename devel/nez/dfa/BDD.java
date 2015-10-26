@@ -20,8 +20,8 @@ public class BDD {
 			nodeTable[0] = new BDDNode(-1, -1, -1);
 			nodeTable[1] = new BDDNode(-1, -1, -1);
 			topOfNodeTable = 2;
-			nodeTableCache = new TreeMap<BDDNode, Integer>(new BDDNodeComparator());
-			binaryOperatorCache = new TreeMap<BinaryOperatorMemoState, Integer>(new BinaryOperatorMemoStateComparator());
+			nodeTableCache = new TreeMap<BDDNode, Integer>();
+			binaryOperatorCache = new TreeMap<BinaryOperatorMemoState, Integer>();
 		}
 	}
 

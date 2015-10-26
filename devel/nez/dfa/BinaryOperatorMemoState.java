@@ -1,6 +1,5 @@
 package nez.dfa;
 
-import java.util.Comparator;
 
 public class BinaryOperatorMemoState implements Comparable<BinaryOperatorMemoState> {
 	public char op;
@@ -26,20 +25,5 @@ public class BinaryOperatorMemoState implements Comparable<BinaryOperatorMemoSta
 			}
 		}
 		return result;
-	}
-}
-
-class BinaryOperatorMemoStateComparator implements Comparator {
-	@Override
-	public int compare(Object o1, Object o2) {
-		BinaryOperatorMemoState boms1 = (BinaryOperatorMemoState) o1;
-		BinaryOperatorMemoState boms2 = (BinaryOperatorMemoState) o2;
-		if (boms1.op != boms2.op) {
-			return Character.compare(boms1.op, boms2.op);
-		}
-		if (boms1.F != boms2.F) {
-			return Integer.compare(boms1.F, boms2.F);
-		}
-		return Integer.compare(boms1.G, boms2.G);
 	}
 }
