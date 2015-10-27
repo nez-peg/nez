@@ -29,13 +29,13 @@ import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
 import nez.lang.expr.Xblock;
-import nez.lang.expr.Xsymbol;
 import nez.lang.expr.Xdefindent;
 import nez.lang.expr.Xexists;
 import nez.lang.expr.Xindent;
 import nez.lang.expr.Xis;
 import nez.lang.expr.Xlocal;
 import nez.lang.expr.Xmatch;
+import nez.lang.expr.Xsymbol;
 import nez.parser.AbstractGenerator;
 import nez.parser.GenerativeGrammar;
 import nez.parser.Instruction;
@@ -322,7 +322,7 @@ public class DebugVMCompiler extends AbstractGenerator {
 
 	@Override
 	public Instruction encodeTlfold(Tlfold p, Instruction next) {
-		this.leftedStack.push(false);
+		this.leftedStack.push(true);
 		if (this.enabledASTConstruction) {
 			BasicBlock fbb = new BasicBlock();
 			this.builder.pushFailureJumpPoint(fbb);
