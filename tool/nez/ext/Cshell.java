@@ -5,6 +5,7 @@ import java.io.IOException;
 import nez.Grammar;
 import nez.Parser;
 import nez.ast.CommonTree;
+import nez.debugger.DebugManager;
 import nez.io.SourceContext;
 import nez.lang.Formatter;
 import nez.lang.GrammarFile;
@@ -31,9 +32,11 @@ public class Cshell extends Command {
 			CommonTree node = p.parseCommonTree(sc);
 			if (node == null) {
 				ConsoleUtils.println(sc.getSyntaxErrorMessage());
+				activateNezDebugger(config);
 				continue;
 			}
 			if (sc.hasUnconsumed()) {
+				activateNezDebugger(config);
 				ConsoleUtils.println(sc.getUnconsumedMessage());
 			}
 			sc = null;
@@ -68,6 +71,32 @@ public class Cshell extends Command {
 			sb.append(line);
 			ReadLine.addHistory(console, line);
 			sb.append("\n");
+		}
+	}
+
+	private boolean readActivateDebugger() {
+		Object console = ReadLine.getConsoleReader();
+		while (true) {
+			String line = ReadLine.readSingleLine(console, "Do you want to start the Nez debugger? (yes/no)");
+			if (line == null) {
+				ConsoleUtils.println("Please push the key of yes or no. You input the key: " + line);
+				continue;
+			}
+			if (line.equals("yes") || line.equals("y")) {
+				return true;
+			}
+			if (line.equals("no") || line.equals("n")) {
+				return false;
+			}
+			ConsoleUtils.println("Please push the key of yes or no. You input the key: " + line);
+		}
+	}
+
+	private void activateNezDebugger(CommandContext config) {
+		if (readActivateDebugger()) {
+			Parser parser = config.newParser();
+			DebugManager manager = new DebugManager(text);
+			manager.exec(parser, config.getStrategy());
 		}
 	}
 }
