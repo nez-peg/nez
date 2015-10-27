@@ -16,6 +16,20 @@ import nez.util.ConsoleUtils;
 public class Gcelery extends GrammarFileLoader {
 
 	public Gcelery() {
+		init(Gcelery.class, new Undefined());
+	}
+
+	public class Undefined extends DefaultVisitor {
+		@Override
+		public void accept(Tree<?> node) {
+			ConsoleUtils.println(node.formatSourceMessage("error", "unsupproted in Celery #" + node));
+		}
+
+		@Override
+		public Type toSchema(Tree<?> node) {
+			ConsoleUtils.println(node.formatSourceMessage("error", "unsupproted in Celery #" + node));
+			return null;
+		}
 	}
 
 	static Parser celeryParser;
@@ -41,109 +55,183 @@ public class Gcelery extends GrammarFileLoader {
 		return celeryParser;
 	}
 
+	private final void visit(Tree<?> node) {
+		find(node.getTag().toString()).accept(node);
+	}
+
+	private final Type toType(Tree<?> node) {
+		return find(node.getTag().toString()).toSchema(node);
+	}
+
 	@Override
 	public void parse(Tree<?> node) {
 		schema.loadPredefinedRules();
-		visit("visit", node);
+		visit(node);
 		getGrammarFile().dump();
 	}
 
 	public final static Symbol _Name = Symbol.tag("Name");
 	public final static Symbol _Type = Symbol.tag("Type");
+	public final static Symbol _Range = Symbol.tag("Range");
+	public final static Symbol _Length = Symbol.tag("Length");
+	public final static Symbol _Size = Symbol.tag("Size");
+	public final static Symbol _Max = Symbol.tag("Max");
+	public final static Symbol _Min = Symbol.tag("Min");
 
-	public final void visitRoot(Tree<?> node) {
-		String rootStructName = node.get(0).getText(_Name, "");
-		for (Tree<?> classNode : node) {
-			this.visit("visit", classNode);
-		}
-		schema.newRoot(rootStructName);
-	}
-
-	public final void visitStruct(Tree<?> node) {
-		currentStructName = node.getText(0, null);
-		schema.initMemberList();
-		for (Tree<?> memberNode : node) {
-			this.visit("visit", memberNode);
-		}
-		schema.newSymbols();
-		if (enableNezExtension) {
-			genStruct(currentStructName);
-		} else {
-			genStruct_Approximate(currentStructName);
+	public final class Root extends Undefined {
+		@Override
+		public void accept(Tree<?> node) {
+			String rootStructName = node.get(0).getText(_Name, "");
+			for (Tree<?> structNode : node) {
+				visit(structNode);
+			}
+			schema.newRoot(rootStructName);
 		}
 	}
 
-	public final void visitName(Tree<?> node) {
-
-	}
-
-	public final void visitRequired(Tree<?> node) {
-		String elementName = node.getText(_Name, "");
-		schema.addRequired(elementName);
-		schema.newElement(getUniqueName(elementName), schema.newUniq(elementName, toType(node.get(_Type))));
-	}
-
-	public final void visitOption(Tree<?> node) {
-		String elementName = node.getText(_Name, "");
-		schema.addMember(elementName);
-		schema.newElement(getUniqueName(elementName), schema.newUniq(elementName, toType(node.get(_Type))));
-	}
-
-	public final Type toType(Tree<?> node) {
-		return (Type) this.visit("to", node);
-	}
-
-	public final Type toTObject(Tree<?> node) {
-		return schema.newTObject();
-	}
-
-	public final Type toTStruct(Tree<?> node) {
-		return schema.newTStruct(node.toText());
-	}
-
-	public final Type toTAny(Tree<?> node) {
-		return schema.newTAny();
-	}
-
-	public final Type toTArray(Tree<?> node) {
-		return schema.newTArray(toType(node.get(0)));
-	}
-
-	public final Type toTEnum(Tree<?> node) {
-		String[] candidates = new String[node.size()];
-		int index = 0;
-		for (Tree<?> subnode : node) {
-			candidates[index++] = subnode.toText();
+	public final class Struct extends Undefined {
+		@Override
+		public void accept(Tree<?> node) {
+			currentStructName = node.getText(0, null);
+			schema.initMemberList();
+			for (Tree<?> memberNode : node) {
+				visit(memberNode);
+			}
+			schema.newSymbols();
+			if (enableNezExtension) {
+				genStruct(currentStructName);
+			} else {
+				genStruct_Approximate(currentStructName);
+			}
 		}
-		return schema.newTEnum(candidates);
 	}
 
-	public final Type toTInteger(Tree<?> node) {
-		return schema.newTInteger();
+	public final class Name extends Undefined {
+		@Override
+		public void accept(Tree<?> node) {
+		}
 	}
 
-	public final Type toTFloat(Tree<?> node) {
-		return schema.newTFloat();
+	public final class Required extends Undefined {
+		@Override
+		public void accept(Tree<?> node) {
+			String elementName = node.getText(_Name, "");
+			schema.addRequired(elementName);
+			schema.newElement(getUniqueName(elementName), schema.newUniq(elementName, toType(node.get(_Type))));
+		}
 	}
 
-	public final Type toTString(Tree<?> node) {
-		return schema.newTString();
+	public final class Option extends Undefined {
+		@Override
+		public void accept(Tree<?> node) {
+			String elementName = node.getText(_Name, "");
+			schema.addMember(elementName);
+			schema.newElement(getUniqueName(elementName), schema.newUniq(elementName, toType(node.get(_Type))));
+		}
+	}
+
+	public class _Type extends Undefined {
+		@Override
+		public Type toSchema(Tree<?> node) {
+			ConsoleUtils.println(node.formatSourceMessage("error", "unsupproted type #" + node));
+			return null;
+		}
+	}
+
+	public final class TObject extends _Type {
+		@Override
+		public Type toSchema(Tree<?> node) {
+			if (node.has(_Range)) {
+				int min = Integer.parseInt(node.getText(_Min, ""));
+				int max = Integer.parseInt(node.getText(_Max, ""));
+				// return schema.newTObject(min, max);
+			}
+			return schema.newTObject();
+		}
+	}
+
+	public final class TStruct extends _Type {
+		@Override
+		public Type toSchema(Tree<?> node) {
+			return schema.newTStruct(node.toText());
+		}
+	}
+
+	public final class TAny extends _Type {
+		@Override
+		public Type toSchema(Tree<?> node) {
+			return schema.newTAny();
+		}
+	}
+
+	public final class TArray extends _Type {
+		@Override
+		public Type toSchema(Tree<?> node) {
+			if (node.has(_Range)) {
+				int min = Integer.parseInt(node.getText(_Min, ""));
+				int max = Integer.parseInt(node.getText(_Max, ""));
+				// return schema.newTArray(toType(node), min, max);
+			}
+			return schema.newTArray(toType(node.get(0)));
+		}
+	}
+
+	public final class TEnum extends _Type {
+		@Override
+		public Type toSchema(Tree<?> node) {
+			String[] candidates = new String[node.size()];
+			int index = 0;
+			for (Tree<?> subnode : node) {
+				candidates[index++] = subnode.toText();
+			}
+			return schema.newTEnum(candidates);
+		}
+	}
+
+	public final class TInteger extends _Type {
+		@Override
+		public Type toSchema(Tree<?> node) {
+			if (node.has(_Range)) {
+				int min = Integer.parseInt(node.getText(_Min, ""));
+				int max = Integer.parseInt(node.getText(_Max, ""));
+				// return schema.newTInteger(min, max);
+			}
+			return schema.newTInteger();
+		}
+	}
+
+	public final class TFloat extends _Type {
+		@Override
+		public Type toSchema(Tree<?> node) {
+			if (node.has(_Range)) {
+				float min = Float.parseFloat(node.getText(_Min, ""));
+				float max = Float.parseFloat(node.getText(_Max, ""));
+				// return schema.newTFloat(min, max);
+			}
+			return schema.newTFloat();
+		}
+	}
+
+	public final class TString extends _Type {
+		@Override
+		public Type toSchema(Tree<?> node) {
+			if (node.has(_Length)) {
+				int min = Integer.parseInt(node.getText(_Min, ""));
+				int max = Integer.parseInt(node.getText(_Max, ""));
+				// return schema.newTString(min, max);
+			}
+			return schema.newTString();
+		}
 	}
 
 	private final void genStruct(String structName) {
-		genMembers(structName);
-		schema.newStruct(structName, schema.newSet(structName));
+		String memberListName = String.format("%s_SMembers", structName);
+		genMembers(memberListName);
+		schema.newStruct(structName, schema.newSet(memberListName));
 	}
 
-	private final void genMembers(String structName) {
-		int membersListSize = schema.getMembers().size();
-		int index = 0;
-		Type[] alt = new Type[membersListSize + 1];
-		for (String elementName : schema.getMembers()) {
-			alt[index++] = schema.newAlt(getUniqueName(elementName));
-		}
-		alt[index] = schema.newOthers();
-		schema.newMembers(currentStructName + "SMembers", alt);
+	private final void genMembers(String structMemberListName) {
+		schema.newMembers(structMemberListName);
 	}
 
 	private final void genStruct_Approximate(String structName) {
