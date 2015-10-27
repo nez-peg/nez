@@ -1,5 +1,6 @@
 package nez.parser.vm;
 
+import java.util.Arrays;
 import java.util.HashMap;
 
 import nez.Strategy;
@@ -7,11 +8,14 @@ import nez.Verbose;
 import nez.lang.Expression;
 import nez.lang.Production;
 import nez.lang.expr.ExpressionCommons;
+import nez.parser.Coverage;
 import nez.parser.GenerativeGrammar;
 import nez.parser.Instruction;
+import nez.parser.NezCode;
 import nez.parser.ParseFunc;
 import nez.parser.vm.MozCompiler.DefaultVisitor;
 import nez.util.StringUtils;
+import nez.util.UList;
 import nez.util.VisitorMap;
 
 public class MozCompiler extends VisitorMap<DefaultVisitor> {
@@ -19,6 +23,7 @@ public class MozCompiler extends VisitorMap<DefaultVisitor> {
 	private boolean enabledASTConstruction;
 	private GenerativeGrammar gg = null;
 	private HashMap<String, ParseFunc> funcMap = null;
+	private HashMap<Call, ParseFunc> syncMap = new HashMap<Call, ParseFunc>();
 	private Production encodingproduction;
 
 	public MozCompiler(Strategy strategy) {
@@ -26,6 +31,66 @@ public class MozCompiler extends VisitorMap<DefaultVisitor> {
 		this.strategy = strategy;
 		if (this.strategy != null) {
 			this.enabledASTConstruction = strategy.isEnabled("ast", Strategy.AST);
+		}
+	}
+
+	public NezCode compile(GenerativeGrammar gg) {
+		this.setGenerativeGrammar(gg);
+		long t = System.nanoTime();
+		UList<Instruction> codeList = new UList<Instruction>(new Instruction[64]);
+		for (Production p : gg) {
+			if (!p.isSymbolTable()) {
+				this.encodeProduction(codeList, p, new Ret(p.getExpression(), null));
+			}
+		}
+		for (Instruction inst : codeList) {
+			if (inst instanceof Call) {
+				if (((Call) inst).jump == null) {
+					((Call) inst).jump = labeling(inst.next);
+					inst.next = labeling(syncMap.get(inst).getCompiled());
+				}
+			}
+		}
+		long t2 = System.nanoTime();
+		Verbose.printElapsedTime("CompilingTime", t, t2);
+		return new NezCode(gg, codeList, gg.memoPointList);
+	}
+
+	private void encodeProduction(UList<Instruction> codeList, Production p, Instruction next) {
+		ParseFunc f = this.getParseFunc(p);
+		encodingproduction = p;
+		if (!f.getInlining()) {
+			next = Coverage.encodeEnterCoverage(p, next);
+		}
+		f.setCompiled(generate(f.getExpression(), next));
+		if (!f.getInlining()) {
+			f.setCompiled(Coverage.encodeEnterCoverage(p, f.getCompiled()));
+		}
+		Instruction block = new Label(p.getExpression(), f.getCompiled(), p.getLocalName());
+		this.layoutCode(codeList, block);
+	}
+
+	private final void layoutCode(UList<Instruction> codeList, Instruction inst) {
+		if (inst == null) {
+			return;
+		}
+		if (inst.id == -1) {
+			inst.id = codeList.size();
+			codeList.add(inst);
+			layoutCode(codeList, inst.next);
+			if (inst.next != null && inst.id + 1 != inst.next.id) {
+				this.labeling(inst.next);
+			}
+			if (inst instanceof Alt) {
+				layoutCode(codeList, ((Alt) inst).jump);
+			}
+			if (inst instanceof First) {
+				First match = (First) inst;
+				for (int ch = 0; ch < match.jumpTable.length; ch++) {
+					layoutCode(codeList, match.jumpTable[ch]);
+				}
+			}
+
 		}
 	}
 
@@ -110,12 +175,15 @@ public class MozCompiler extends VisitorMap<DefaultVisitor> {
 						Verbose.println("memoize: " + n.getLocalName() + " at " + getEncodingProduction().getLocalName());
 					}
 					Instruction inside = new Memo(n, next, f.getState(), f.getMemoPoint().id);
-					inside = new Call(null, labeling(f.getCompiled()), labeling(inside), n.getLocalName());
+					inside = new Call(null, inside, null, n.getLocalName());
+					syncMap.put((Call) inside, f);
 					inside = new Alt(n, inside, new MemoFail(n, null, f.getState(), f.getMemoPoint().id));
 					return new Lookup(n, inside, f.getState(), f.getMemoPoint().id, next);
 				}
 			}
-			return new Call(null, labeling(f.getCompiled()), labeling(next), n.getLocalName());
+			Call call = new Call(null, next, null, n.getLocalName());
+			syncMap.put(call, f);
+			return call;
 		}
 	}
 
@@ -189,6 +257,7 @@ public class MozCompiler extends VisitorMap<DefaultVisitor> {
 		private Instruction encodeFirstChoice(nez.lang.expr.Pchoice choice, Instruction next) {
 			Instruction[] compiled = new Instruction[choice.firstInners.length];
 			Instruction[] jumpTable = new Instruction[257];
+			Arrays.fill(jumpTable, next);
 			for (int ch = 0; ch < choice.predictedCase.length; ch++) {
 				Expression predicted = choice.predictedCase[ch];
 				if (predicted == null) {
@@ -213,6 +282,7 @@ public class MozCompiler extends VisitorMap<DefaultVisitor> {
 		private Instruction encodeDFirstChoice(nez.lang.expr.Pchoice choice, Instruction next) {
 			Instruction[] compiled = new Instruction[choice.firstInners.length];
 			Instruction[] jumpTable = new Instruction[257];
+			Arrays.fill(jumpTable, next);
 			for (int ch = 0; ch < choice.predictedCase.length; ch++) {
 				Expression predicted = choice.predictedCase[ch];
 				if (predicted == null) {
@@ -379,7 +449,8 @@ public class MozCompiler extends VisitorMap<DefaultVisitor> {
 					}
 					Instruction inside = new TMemo(p, next, f.getState(), f.getMemoPoint().id);
 					inside = new TCommit(p, inside, p.getLabel());
-					inside = new Call(null, labeling(f.getCompiled()), labeling(inside), n.getLocalName());
+					inside = new Call(null, inside, null, n.getLocalName());
+					syncMap.put((Call) inside, f);
 					inside = new TStart(p, inside);
 					inside = new Alt(p, inside, new MemoFail(p, null, f.getState(), f.getMemoPoint().id));
 					return new TLookup(p, inside, f.getState(), f.getMemoPoint().id, next, p.getLabel());
