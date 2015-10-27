@@ -22,7 +22,7 @@ public class BasicBlock {
 
 	public DebugVMInstruction getStartInstruction() {
 		BasicBlock bb = this;
-		while(bb.size() == 0) {
+		while (bb.size() == 0) {
 			bb = bb.getSingleSuccessor();
 		}
 		return bb.get(0);
@@ -51,7 +51,7 @@ public class BasicBlock {
 	}
 
 	public void stringfy(StringBuilder sb) {
-		for(int i = 0; i < this.size(); i++) {
+		for (int i = 0; i < this.size(); i++) {
 			sb.append("  ");
 			this.get(i).stringfy(sb);
 			sb.append("\n");
@@ -88,5 +88,15 @@ public class BasicBlock {
 
 	public void setFailSuccessor(BasicBlock bb) {
 		this.succs.add(1, bb);
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		for (DebugVMInstruction inst : insts) {
+			builder.append(inst.toString());
+			builder.append("\n");
+		}
+		return builder.toString();
 	}
 }
