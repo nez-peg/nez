@@ -35,6 +35,16 @@ public abstract class GrammarFileLoader extends VisitorMap<DefaultVisitor> {
 			return null;
 		}
 
+		public Expression toExpression(Tree<?> node, Expression expr) {
+			ConsoleUtils.println(node.formatSourceMessage("error", "unsupproted in GrammarFileLoader #" + node));
+			return null;
+		}
+
+		public Expression toExpression(Tree<?> node, Expression expr1, Expression expr2) {
+			ConsoleUtils.println(node.formatSourceMessage("error", "unsupproted in GrammarFileLoader #" + node));
+			return null;
+		}
+
 		public boolean parse(Tree<?> node) {
 			ConsoleUtils.println(node.formatSourceMessage("error", "unsupproted in GrammarFileLoader #" + node));
 			return false;
