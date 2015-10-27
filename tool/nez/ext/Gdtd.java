@@ -19,6 +19,20 @@ import nez.util.ConsoleUtils;
 public class Gdtd extends GrammarFileLoader {
 
 	public Gdtd() {
+		init(Gdtd.class, new Undefined());
+	}
+
+	public class Undefined extends DefaultVisitor {
+		@Override
+		public void accept(Tree<?> node) {
+			ConsoleUtils.println(node.formatSourceMessage("error", "unsupproted in DTDConverter #" + node));
+		}
+
+		@Override
+		public Type toSchema(Tree<?> node) {
+			ConsoleUtils.println(node.formatSourceMessage("error", "unsupproted in DTDConverter #" + node));
+			return null;
+		}
 	}
 
 	static Parser dtdParser;
@@ -53,10 +67,18 @@ public class Gdtd extends GrammarFileLoader {
 	List<Boolean> containsAttributeList = new ArrayList<Boolean>();
 	Map<String, Type> attributeTypeMap = new HashMap<String, Type>();
 
+	private final void visit(Tree<?> node) {
+		find(node.getTag().toString()).accept(node);
+	}
+
+	private final Type toType(Tree<?> node) {
+		return find(node.getTag().toString()).toSchema(node);
+	}
+
 	@Override
 	public void parse(Tree<?> node) {
 		schema.loadPredefinedRules();
-		visit("visit", node);
+		visit(node);
 		getGrammarFile().dump();
 	}
 
@@ -65,42 +87,54 @@ public class Gdtd extends GrammarFileLoader {
 	public final static Symbol _Member = Symbol.tag("member");
 	public final static Symbol _Value = Symbol.tag("value");
 
-	public void visitRoot(Tree<?> node) {
-		String rootStructName = node.get(0).getText(_Name, "");
-		for (Tree<?> subnode : node) {
-			this.visit("visit", subnode);
+	public final class Root extends Undefined {
+		@Override
+		public void accept(Tree<?> node) {
+			String rootStructName = node.get(0).getText(_Name, "");
+			for (Tree<?> subnode : node) {
+				visit(subnode);
+			}
+			for (String name : elementNameList) {
+				schema.newStruct(name, hasAttribute(name));
+			}
+			schema.newRoot(rootStructName);
+			schema.newEntityList(entityCount);
 		}
-		for (String name : elementNameList) {
-			schema.newStruct(name, hasAttribute(name));
-		}
-		schema.newRoot(rootStructName);
-		schema.newEntityList(entityCount);
 	}
 
-	public void visitName(Tree<?> node) {
-	}
-
-	public void visitElement(Tree<?> node) {
-		currentElementName = node.getText(_Name, "");
-		elementNameList.add(currentElementName);
-		containsAttributes.put(currentElementName, false);
-		schema.newMembers(currentElementName + "_Contents", toType(node.get(_Member)));
-	}
-
-	public void visitAttlist(Tree<?> node) {
-		currentElementName = node.getText(_Name, "");
-		schema.initMemberList();
-		containsAttributes.put(currentElementName, true);
-		for (Tree<?> subnode : node) {
-			this.visit("visit", subnode);
+	public final class Name extends Undefined {
+		@Override
+		public void accept(Tree<?> node) {
 		}
-		// generate Complete or Approximate Attribute list
-		if (enableNezExtension) {
-			genAttributeMembers();
-			schema.newAttributeList(currentElementName, schema.newSet(currentElementName + "_Attribute"));
-			schema.newSymbols();
-		} else {
-			schema.newAttributeList(currentElementName, schema.newPermutation());
+	}
+
+	public final class _Element extends Undefined {
+		@Override
+		public void accept(Tree<?> node) {
+			currentElementName = node.getText(_Name, "");
+			elementNameList.add(currentElementName);
+			containsAttributes.put(currentElementName, false);
+			schema.newMembers(currentElementName + "_Contents", toType(node.get(_Member)));
+		}
+	}
+
+	public final class Attlist extends Undefined {
+		@Override
+		public void accept(Tree<?> node) {
+			currentElementName = node.getText(_Name, "");
+			schema.initMemberList();
+			containsAttributes.put(currentElementName, true);
+			for (Tree<?> subnode : node) {
+				visit(subnode);
+			}
+			// generate Complete or Approximate Attribute list
+			if (enableNezExtension) {
+				genAttributeMembers();
+				schema.newAttributeList(currentElementName, schema.newSet(currentElementName + "_Attribute"));
+				schema.newSymbols();
+			} else {
+				schema.newAttributeList(currentElementName, schema.newPermutation());
+			}
 		}
 	}
 
@@ -114,129 +148,196 @@ public class Gdtd extends GrammarFileLoader {
 		schema.newMembers(currentElementName + "_Attribute", alt);
 	}
 
-	public void visitREQUIRED(Tree<?> node) {
-		String attName = node.getText(_Name, "");
-		schema.addRequired(attName);
-		schema.newElement(getUniqueName(attName), schema.newUniq(attName, toType(node.get(_Type))));
-	}
-
-	public void visitIMPLIED(Tree<?> node) {
-		String attName = node.getText(_Name, "");
-		schema.addMember(attName);
-		schema.newElement(getUniqueName(attName), schema.newUniq(attName, toType(node.get(_Type))));
-	}
-
-	public void visitFIXED(Tree<?> node) {
-		String attName = node.getText(_Name, "");
-		schema.addMember(attName);
-		schema.newElement(getUniqueName(attName), schema.newUniq(attName, toType(node.get(_Value))));
-	}
-
-	public void visitDefault(Tree<?> node) {
-		String attName = node.getText(_Name, "");
-		schema.addMember(attName);
-		schema.newElement(getUniqueName(attName), schema.newUniq(attName, toType(node.get(_Type))));
-	}
-
-	// FIXME
-	public void visitEntity(Tree<?> node) {
-		schema.newEntity(entityCount++, node.getText(_Name, ""), node.getText(_Value, ""));
-	}
-
-	private Type toType(Tree<?> node) {
-		return (Type) this.visit("to", node);
-	}
-
-	public Type toEmpty(Tree<?> node) {
-		return schema.newTEmpty();
-	}
-
-	public Type toAny(Tree<?> node) {
-		return schema.newTAny();
-	}
-
-	public Type toZeroMore(Tree<?> node) {
-		return schema.newRZeroMore(toType(node.get(0)));
-	}
-
-	public Type toOneMore(Tree<?> node) {
-		return schema.newROneMore(toType(node.get(0)));
-	}
-
-	public Type toOption(Tree<?> node) {
-		return schema.newROption(toType(node.get(0)));
-	}
-
-	public Type toChoice(Tree<?> node) {
-		Type[] l = new Type[node.size()];
-		int count = 0;
-		for (Tree<?> subnode : node) {
-			l[count++] = toType(subnode);
+	public final class REQUIRED extends Undefined {
+		@Override
+		public void accept(Tree<?> node) {
+			String attName = node.getText(_Name, "");
+			schema.addRequired(attName);
+			schema.newElement(getUniqueName(attName), schema.newUniq(attName, toType(node.get(_Type))));
 		}
-		return schema.newRChoice(l);
 	}
 
-	public Type toSequence(Tree<?> node) {
-		Type[] l = new Type[node.size()];
-		int count = 0;
-		for (Tree<?> subnode : node) {
-			l[count++] = toType(subnode);
+	public final class IMPLIED extends Undefined {
+		@Override
+		public void accept(Tree<?> node) {
+			String attName = node.getText(_Name, "");
+			schema.addMember(attName);
+			schema.newElement(getUniqueName(attName), schema.newUniq(attName, toType(node.get(_Type))));
 		}
-		return schema.newRSequence(l);
 	}
 
-	public Type toCDATA(Tree<?> node) {
-		return schema.newAttributeType("CDATA");
-	}
-
-	public Type toID(Tree<?> node) {
-		return schema.newAttributeType("IDTOKEN");
-	}
-
-	public Type toIDREF(Tree<?> node) {
-		return schema.newAttributeType("IDTOKEN");
-	}
-
-	public Type toIDREFS(Tree<?> node) {
-		return schema.newAttributeType("IDTOKENS");
-	}
-
-	public Type toENTITY(Tree<?> node) {
-		return schema.newAttributeType("entity");
-	}
-
-	public Type toENTITIES(Tree<?> node) {
-		return schema.newAttributeType("entities");
-	}
-
-	public Type toNMTOKEN(Tree<?> node) {
-		return schema.newAttributeType("NMTOKEN");
-	}
-
-	public Type toNMTOKENS(Tree<?> node) {
-		return schema.newAttributeType("NMTOKENS");
-	}
-
-	public Type toEnum(Tree<?> node) {
-		String[] candidates = new String[node.size()];
-		int index = 0;
-		for (Tree<?> subnode : node) {
-			candidates[index++] = subnode.toText();
+	public final class FIXED extends Undefined {
+		@Override
+		public void accept(Tree<?> node) {
+			String attName = node.getText(_Name, "");
+			schema.addMember(attName);
+			schema.newElement(getUniqueName(attName), schema.newUniq(attName, toType(node.get(_Value))));
 		}
-		return schema.newTEnum(candidates);
 	}
 
-	public Type toElName(Tree<?> node) {
-		String elementName = node.toText();
-		return schema.newAlt(elementName);
+	public final class Default extends Undefined {
+		@Override
+		public void accept(Tree<?> node) {
+			String attName = node.getText(_Name, "");
+			schema.addMember(attName);
+			schema.newElement(getUniqueName(attName), schema.newUniq(attName, toType(node.get(_Type))));
+		}
 	}
 
-	public Type toData(Tree<?> node) {
-		return schema.newAlt("PCDATA");
+	public final class _Entity extends Undefined {
+		@Override
+		public void accept(Tree<?> node) {
+			schema.newEntity(entityCount++, node.getText(_Name, ""), node.getText(_Value, ""));
+		}
 	}
 
-	public Type toSingleData(Tree<?> node) {
-		return schema.newAlt("SINGLE_PCDATA");
+	public final class Empty extends Undefined {
+		@Override
+		public Type toSchema(Tree<?> node) {
+			return schema.newTEmpty();
+		}
+	}
+
+	public final class Any extends Undefined {
+		@Override
+		public Type toSchema(Tree<?> node) {
+			return schema.newTAny();
+		}
+	}
+
+	public final class ZeroMore extends Undefined {
+		@Override
+		public Type toSchema(Tree<?> node) {
+			return schema.newRZeroMore(toType(node.get(0)));
+		}
+	}
+
+	public final class OneMore extends Undefined {
+		@Override
+		public Type toSchema(Tree<?> node) {
+			return schema.newROneMore(toType(node.get(0)));
+		}
+	}
+
+	public final class Option extends Undefined {
+		@Override
+		public Type toSchema(Tree<?> node) {
+			return schema.newROption(toType(node.get(0)));
+		}
+	}
+
+	public final class _Choice extends Undefined {
+		@Override
+		public Type toSchema(Tree<?> node) {
+			Type[] l = new Type[node.size()];
+			int count = 0;
+			for (Tree<?> subnode : node) {
+				l[count++] = toType(subnode);
+			}
+			return schema.newRChoice(l);
+		}
+	}
+
+	public final class _Sequence extends Undefined {
+		@Override
+		public Type toSchema(Tree<?> node) {
+			Type[] l = new Type[node.size()];
+			int count = 0;
+			for (Tree<?> subnode : node) {
+				l[count++] = toType(subnode);
+			}
+			return schema.newRSequence(l);
+		}
+	}
+
+	public final class CDATA extends Undefined {
+		@Override
+		public Type toSchema(Tree<?> node) {
+			return schema.newAttributeType("CDATA");
+		}
+	}
+
+	public final class ID extends Undefined {
+		@Override
+		public Type toSchema(Tree<?> node) {
+			return schema.newAttributeType("IDTOKEN");
+		}
+	}
+
+	public final class IDREF extends Undefined {
+		@Override
+		public Type toSchema(Tree<?> node) {
+			return schema.newAttributeType("IDTOKEN");
+		}
+	}
+
+	public final class IDREFS extends Undefined {
+		@Override
+		public Type toSchema(Tree<?> node) {
+			return schema.newAttributeType("IDTOKENS");
+		}
+	}
+
+	public final class ENTITY extends Undefined {
+		@Override
+		public Type toSchema(Tree<?> node) {
+			return schema.newAttributeType("entity");
+		}
+	}
+
+	public final class ENTITIES extends Undefined {
+		@Override
+		public Type toSchema(Tree<?> node) {
+			return schema.newAttributeType("entities");
+		}
+	}
+
+	public final class NMTOKEN extends Undefined {
+		@Override
+		public Type toSchema(Tree<?> node) {
+			return schema.newAttributeType("NMTOKEN");
+		}
+	}
+
+	public final class NMTOKENS extends Undefined {
+		@Override
+		public Type toSchema(Tree<?> node) {
+			return schema.newAttributeType("NMTOKENS");
+		}
+	}
+
+	public final class _Enum extends Undefined {
+		@Override
+		public Type toSchema(Tree<?> node) {
+			String[] candidates = new String[node.size()];
+			int index = 0;
+			for (Tree<?> subnode : node) {
+				candidates[index++] = subnode.toText();
+			}
+			return schema.newTEnum(candidates);
+		}
+	}
+
+	public final class ElName extends Undefined {
+		@Override
+		public Type toSchema(Tree<?> node) {
+			String elementName = node.toText();
+			return schema.newAlt(elementName);
+		}
+	}
+
+	public final class Data extends Undefined {
+		@Override
+		public Type toSchema(Tree<?> node) {
+			return schema.newAlt("PCDATA");
+		}
+	}
+
+	public final class SingleData extends Undefined {
+		@Override
+		public Type toSchema(Tree<?> node) {
+			return schema.newAttributeType("SINGLE_PCDATA");
+		}
 	}
 
 	private final boolean hasAttribute(String elementName) {
@@ -244,7 +345,6 @@ public class Gdtd extends GrammarFileLoader {
 	}
 
 	private final String getUniqueName(String localName) {
-		return currentElementName + "_" + localName;
+		return String.format("%s_%s", currentElementName, localName);
 	}
-
 }

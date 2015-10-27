@@ -11,15 +11,16 @@ public class VisitorMap<V> {
 	protected void init(Class<?> baseClass, V defualtAccepter) {
 		this.defaultAcceptor = defualtAccepter;
 		this.visitors = new HashMap<>();
+		visitors.put(defualtAccepter.getClass().getSimpleName(), defaultAcceptor);
 		for (Class<?> c : baseClass.getClasses()) {
-			load(c);
+			load(baseClass, c);
 		}
 	}
 
 	@SuppressWarnings("unchecked")
-	private void load(Class<?> c) {
+	private void load(Class<?> baseClass, Class<?> c) {
 		try {
-			Constructor<?> cc = c.getConstructor(this.getClass());
+			Constructor<?> cc = c.getConstructor(baseClass);
 			Object v = cc.newInstance(this);
 			if (check(defaultAcceptor.getClass(), v.getClass())) {
 				// System.out.println("c: " + c.getSimpleName());

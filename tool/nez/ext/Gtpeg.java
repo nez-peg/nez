@@ -32,6 +32,21 @@ public class Gtpeg extends GrammarFileLoader {
 
 	private TypedPEG generated = null;
 
+	public Gtpeg() {
+		init(Gtpeg.class, new Undefined());
+	}
+
+	public class Undefined extends DefaultVisitor {
+		@Override
+		public void accept(Tree<?> node) {
+			ConsoleUtils.println(node.formatSourceMessage("error", "unsupproted in Typed PEG #" + node));
+		}
+	}
+
+	private final void visit(Tree<?> node) {
+		find(node.getTag().toString()).accept(node);
+	}
+
 	@Override
 	public Parser getLoaderParser(String start) {
 		if (parser == null) {
@@ -61,75 +76,118 @@ public class Gtpeg extends GrammarFileLoader {
 	}
 
 	private TypedPEG translate(Tree<?> tree) {
-		this.visit("visit", tree);
+		visit(tree);
 		TypedPEG g = this.generated;
 		this.generated = null;
 		return g;
 	}
 
-	public void visitRootExpr(Tree<?> tree) {
-		RuleExpr[] ruleExprs = new RuleExpr[tree.size()];
-		int index = 0;
-		for (Tree<?> t : tree) {
-			ruleExprs[index++] = (RuleExpr) this.translate(t);
-		}
-		this.generated = new RootExpr(range(tree), ruleExprs);
-	}
-
-	public void visitRuleExpr(Tree<?> t) {
-		String typeName = t.get(1).toText();
-		if (typeName.equals("")) { // untyped
-			this.generated = new RuleExpr(range(t), t.get(0).toText(), this.translate(t.get(2)));
-		} else {
-			this.generated = new TypedRuleExpr(range(t), t.get(0).toText(), typeName, this.translate(t.get(2)));
+	public final class _RootExpr extends Undefined {
+		@Override
+		public void accept(Tree<?> node) {
+			RuleExpr[] ruleExprs = new RuleExpr[node.size()];
+			int index = 0;
+			for (Tree<?> t : node) {
+				ruleExprs[index++] = (RuleExpr) translate(t);
+			}
+			generated = new RootExpr(range(node), ruleExprs);
 		}
 	}
 
-	public void visitChoiceExpr(Tree<?> t) {
-		this.generated = new ChoiceExpr(this.translate(t.get(0)), this.translate(t.get(1)));
+	public final class _RuleExpr extends Undefined {
+		@Override
+		public void accept(Tree<?> node) {
+			String typeName = node.get(1).toText();
+			if (typeName.equals("")) { // untyped
+				generated = new RuleExpr(range(node), node.get(0).toText(), translate(node.get(2)));
+			} else {
+				generated = new TypedRuleExpr(range(node), node.get(0).toText(), typeName, translate(node.get(2)));
+			}
+		}
 	}
 
-	public void visitSequenceExpr(Tree<?> t) {
-		this.generated = new SequenceExpr(this.translate(t.get(0)), this.translate(t.get(1)));
+	public final class _ChoiceExpr extends Undefined {
+		@Override
+		public void accept(Tree<?> node) {
+			generated = new ChoiceExpr(translate(node.get(0)), translate(node.get(1)));
+		}
 	}
 
-	public void visitLabeledExpr(Tree<?> t) {
-		this.generated = new LabeledExpr(range(t), t.get(0).toText(), this.translate(t.get(1)));
+	public final class _SequenceExpr extends Undefined {
+		@Override
+		public void accept(Tree<?> node) {
+			generated = new SequenceExpr(translate(node.get(0)), translate(node.get(1)));
+		}
 	}
 
-	public void visitAndExpr(Tree<?> t) {
-		this.generated = PredicateExpr.andPredicate(range(t), this.translate(t.get(0)));
+	public final class _LabeledExpr extends Undefined {
+		@Override
+		public void accept(Tree<?> node) {
+			generated = new LabeledExpr(range(node), node.get(0).toText(), translate(node.get(1)));
+		}
 	}
 
-	public void visitNotExpr(Tree<?> t) {
-		this.generated = PredicateExpr.notPredicate(range(t), this.translate(t.get(0)));
+	public final class _AndExpr extends Undefined {
+		@Override
+		public void accept(Tree<?> node) {
+			generated = PredicateExpr.andPredicate(range(node), translate(node.get(0)));
+		}
 	}
 
-	public void visitZeroMoreExpr(Tree<?> t) {
-		this.generated = RepeatExpr.zeroMore(range(t), this.translate(t.get(0)));
+	public final class _NotExpr extends Undefined {
+		@Override
+		public void accept(Tree<?> node) {
+			generated = PredicateExpr.notPredicate(range(node), translate(node.get(0)));
+		}
 	}
 
-	public void visitOneMoreExpr(Tree<?> t) {
-		this.generated = RepeatExpr.oneMore(range(t), this.translate(t.get(0)));
+	public final class _ZeroMoreExpr extends Undefined {
+		@Override
+		public void accept(Tree<?> node) {
+			generated = RepeatExpr.zeroMore(range(node), translate(node.get(0)));
+		}
 	}
 
-	public void visitOptionalExpr(Tree<?> t) {
-		this.generated = new OptionalExpr(range(t), this.translate(t.get(0)));
+	public final class _OneMoreExpr extends Undefined {
+		@Override
+		public void accept(Tree<?> node) {
+			generated = RepeatExpr.oneMore(range(node), translate(node.get(0)));
+		}
 	}
 
-	public void visitNonTerminalExpr(Tree<?> t) {
-		this.generated = new NonTerminalExpr(range(t), t.toText());
+	public final class _OptionalExpr extends Undefined {
+		@Override
+		public void accept(Tree<?> node) {
+			generated = new OptionalExpr(range(node), translate(node.get(0)));
+		}
 	}
 
-	public void visitAnyExpr(Tree<?> t) {
-		this.generated = new AnyExpr(range(t));
+	public final class _NonTerminal extends Undefined {
+		@Override
+		public void accept(Tree<?> node) {
+			generated = new NonTerminalExpr(range(node), node.toText());
+		}
 	}
 
-	public void visitStringExpr(Tree<?> t) {
-		this.generated = new StringExpr(range(t), t.toText());
+	public final class _AnyExpr extends Undefined {
+		@Override
+		public void accept(Tree<?> node) {
+			generated = new AnyExpr(range(node));
+		}
 	}
 
-	public void visitCharClassExpr(Tree<?> t) {
-		this.generated = new CharClassExpr(range(t), t.toText());
+	public final class _StringExpr extends Undefined {
+		@Override
+		public void accept(Tree<?> node) {
+			generated = new StringExpr(range(node), node.toText());
+		}
 	}
+
+	public final class _CharClassExpr extends Undefined {
+		@Override
+		public void accept(Tree<?> node) {
+			generated = new CharClassExpr(range(node), node.toText());
+		}
+	}
+
 }
