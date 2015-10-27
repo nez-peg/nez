@@ -69,6 +69,10 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 		return find(expr.getTag().toString()).toExpression(expr, k);
 	}
 
+	private final Expression getExpression(Tree<?> node) {
+		return find(node.getTag().toString()).toExpression(node);
+	}
+
 	// boolean isSOS = false;
 
 	public class _Pattern extends Undefined {
@@ -256,7 +260,7 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 			UList<Expression> l = new UList<Expression>(new Expression[e.size()]);
 			byteMap = new boolean[257];
 			for (Tree<?> subnode : e) {
-				ExpressionCommons.addChoice(l, toExpression(subnode));
+				ExpressionCommons.addChoice(l, getExpression(subnode));
 			}
 			return ExpressionCommons.newCset(null, false, byteMap);
 		}
@@ -365,7 +369,7 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 		@Override
 		public Expression toExpression(Tree<?> e, Expression k) {
 			UList<Expression> l = new UList<Expression>(new Expression[2]);
-			ExpressionCommons.addSequence(l, toExpression(e));
+			ExpressionCommons.addSequence(l, getExpression(e));
 			if (k != null) {
 				ExpressionCommons.addSequence(l, k);
 			}
