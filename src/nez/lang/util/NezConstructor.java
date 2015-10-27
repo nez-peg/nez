@@ -32,15 +32,18 @@ public class NezConstructor extends GrammarFileLoader {
 	public class NezConstructorDefault extends DefaultVisitor {
 		@Override
 		public void accept(Tree<?> node) {
+			ConsoleUtils.println(node.formatSourceMessage("error", "unsupproted in NezConstructor #" + node));
 		}
 
 		@Override
 		public Expression toExpression(Tree<?> node) {
+			ConsoleUtils.println(node.formatSourceMessage("error", "unsupproted in NezConstructor #" + node));
 			return null;
 		}
 
 		@Override
 		public boolean parse(Tree<?> node) {
+			ConsoleUtils.println(node.formatSourceMessage("error", "unsupproted in NezConstructor #" + node));
 			return false;
 		}
 	}

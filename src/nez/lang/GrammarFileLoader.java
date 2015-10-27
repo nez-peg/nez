@@ -11,6 +11,7 @@ import nez.ast.SourcePosition;
 import nez.ast.Tree;
 import nez.io.SourceContext;
 import nez.lang.GrammarFileLoader.DefaultVisitor;
+import nez.lang.schema.Type;
 import nez.util.ConsoleUtils;
 import nez.util.ExtensionLoader;
 import nez.util.StringUtils;
@@ -26,14 +27,22 @@ public abstract class GrammarFileLoader extends VisitorMap<DefaultVisitor> {
 
 	protected class DefaultVisitor {
 		public void accept(Tree<?> node) {
+			ConsoleUtils.println(node.formatSourceMessage("error", "unsupproted in GrammarFileLoader #" + node));
 		}
 
 		public Expression toExpression(Tree<?> node) {
+			ConsoleUtils.println(node.formatSourceMessage("error", "unsupproted in GrammarFileLoader #" + node));
 			return null;
 		}
 
 		public boolean parse(Tree<?> node) {
+			ConsoleUtils.println(node.formatSourceMessage("error", "unsupproted in GrammarFileLoader #" + node));
 			return false;
+		}
+
+		public Type toSchema(Tree<?> node) {
+			ConsoleUtils.println(node.formatSourceMessage("error", "unsupproted in GrammarFileLoader #" + node));
+			return null;
 		}
 	}
 
