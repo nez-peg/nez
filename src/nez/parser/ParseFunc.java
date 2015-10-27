@@ -56,4 +56,8 @@ public class ParseFunc {
 	public final Instruction getCompiled() {
 		return this.compiled;
 	}
+
+	public final void setCompiled(Instruction compiled) {
+		this.compiled = compiled;
+	}
 }
