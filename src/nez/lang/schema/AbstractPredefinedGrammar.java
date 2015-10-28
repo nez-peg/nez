@@ -1,11 +1,11 @@
 package nez.lang.schema;
 
-import nez.lang.GrammarBase;
+import nez.lang.GrammarHacks;
 import nez.lang.GrammarFile;
 import nez.lang.expr.ExpressionCommons;
 import nez.lang.expr.NonTerminal;
 
-public abstract class AbstractPredefinedGrammar extends GrammarBase {
+public abstract class AbstractPredefinedGrammar extends GrammarHacks {
 	GrammarFile grammar;
 
 	public AbstractPredefinedGrammar(GrammarFile grammar) {

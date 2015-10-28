@@ -9,7 +9,7 @@ import nez.lang.expr.ExpressionCommons;
 import nez.lang.expr.NonTerminal;
 import nez.util.UList;
 
-public abstract class GrammarBase extends AbstractList<Production> {
+public abstract class GrammarHacks extends AbstractList<Production> {
 	protected SourcePosition getSourcePosition() {
 		return null;
 	}
@@ -93,13 +93,6 @@ public abstract class GrammarBase extends AbstractList<Production> {
 	public final Expression newNot(Expression... seq) {
 		return ExpressionCommons.newPnot(getSourcePosition(), newSequence(seq));
 	}
-
-	// public final Expression newByteRange(int c, int c2) {
-	// if(c == c2) {
-	// return newByteChar(s, c);
-	// }
-	// return internImpl(s, new ByteMap(s, c, c2));
-	// }
 
 	// PEG4d
 	public final Expression newMatch(Expression... seq) {

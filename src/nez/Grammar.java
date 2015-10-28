@@ -3,13 +3,13 @@ package nez;
 import java.util.HashMap;
 import java.util.List;
 
-import nez.lang.GrammarBase;
+import nez.lang.GrammarHacks;
 import nez.lang.Production;
 import nez.parser.GenerativeGrammar;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
 
-public class Grammar extends GrammarBase {
+public class Grammar extends GrammarHacks {
 	private static int serialNumbering = 0;
 
 	private int id;
@@ -128,19 +128,6 @@ public class Grammar extends GrammarBase {
 		}
 	}
 
-	// public final void setSymbolExpresion(String tableName, Expression e) {
-	// this.newProduction(null, Production.PublicProduction |
-	// Production.SymbolTableProduction, ":^" + tableName, e);
-	// }
-	//
-	// public final Expression getSymbolExpresion(String tableName) {
-	// Production p = this.getProduction(":^" + tableName);
-	// if (p != null) {
-	// return p.getExpression();
-	// }
-	// return null;
-	// }
-
 	// ----------------------------------------------------------------------
 
 	public String getDesc() {
@@ -155,12 +142,14 @@ public class Grammar extends GrammarBase {
 	}
 
 	// ----------------------------------------------------------------------
+
 	/**
 	 * Create a new parser
 	 * 
 	 * @param strategy
 	 * @return
 	 */
+
 	public final Parser newParser(Strategy strategy) {
 		GenerativeGrammar gg = (this instanceof GenerativeGrammar) ? (GenerativeGrammar) this : new GenerativeGrammar(this.getStartProduction(), strategy, null);
 		return new Parser(gg, strategy);
