@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 
 import nez.lang.GrammarFileLoader;
-import nez.lang.NezGrammar1;
 import nez.lang.util.NezConstructor;
 import nez.util.UList;
 
@@ -74,9 +73,9 @@ public class ParserFactory {
 	}
 
 	private Grammar newGrammarImpl(String path) throws IOException {
-		if (path.equals("nez")) {
-			return aux(new NezGrammar1());
-		}
+		// if (path.equals("nez")) {
+		// return aux(new NezGrammar1());
+		// }
 		return aux(GrammarFileLoader.loadGrammar(path, strategy));
 	}
 
