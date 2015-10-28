@@ -10,6 +10,7 @@ import nez.parser.MemoTable;
 import nez.parser.NezCode;
 import nez.parser.NezCompiler;
 import nez.parser.ParsingMachine;
+import nez.parser.vm.MozCompiler;
 
 public class Parser {
 	private GenerativeGrammar gg;
@@ -59,6 +60,13 @@ public class Parser {
 	/* -------------------------------------------------------------------- */
 
 	public Instruction compile() {
+		// add for MozCompiler
+		if (strategy.isEnabled("Moz", Strategy.Moz)) {
+			MozCompiler mozCompiler = new MozCompiler(strategy);
+			compiledCode = mozCompiler.compile(gg);
+			return compiledCode.getStartPoint();
+		}
+
 		if (compiledCode == null) {
 			NezCompiler bc = NezCompiler.newCompiler(this.strategy);
 			compiledCode = bc.compile(gg);

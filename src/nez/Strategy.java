@@ -41,6 +41,8 @@ public class Strategy {
 	public final static boolean Wnotice = true;
 	public final static boolean Winfo = false;
 
+	public final static boolean Moz = false; // for MozCompiler
+
 	public static boolean Doption = false; // for verbose option
 	public static boolean Dgrammar = false; // for debugging grammar
 
