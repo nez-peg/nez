@@ -25,6 +25,7 @@ public class MozCompiler extends VisitorMap<DefaultVisitor> {
 	private HashMap<String, ParseFunc> funcMap = null;
 	private HashMap<Call, ParseFunc> syncMap = new HashMap<Call, ParseFunc>();
 	private Production encodingproduction;
+	private Instruction commonFailure = new Fail(null, null);
 
 	public MozCompiler(Strategy strategy) {
 		this.init(MozCompiler.class, new DefaultVisitor());
@@ -197,7 +198,7 @@ public class MozCompiler extends VisitorMap<DefaultVisitor> {
 	public class Pfail extends DefaultVisitor {
 		@Override
 		public Instruction accept(Expression e, Instruction next) {
-			return new Fail(null, next);
+			return commonFailure;
 		}
 	}
 
@@ -257,7 +258,7 @@ public class MozCompiler extends VisitorMap<DefaultVisitor> {
 		private Instruction encodeFirstChoice(nez.lang.expr.Pchoice choice, Instruction next) {
 			Instruction[] compiled = new Instruction[choice.firstInners.length];
 			Instruction[] jumpTable = new Instruction[257];
-			Arrays.fill(jumpTable, next);
+			Arrays.fill(jumpTable, commonFailure);
 			for (int ch = 0; ch < choice.predictedCase.length; ch++) {
 				Expression predicted = choice.predictedCase[ch];
 				if (predicted == null) {
@@ -276,13 +277,13 @@ public class MozCompiler extends VisitorMap<DefaultVisitor> {
 				}
 				jumpTable[ch] = labeling(inst);
 			}
-			return new First(choice, new Fail(null, next), jumpTable);
+			return new First(choice, commonFailure, jumpTable);
 		}
 
 		private Instruction encodeDFirstChoice(nez.lang.expr.Pchoice choice, Instruction next) {
 			Instruction[] compiled = new Instruction[choice.firstInners.length];
 			Instruction[] jumpTable = new Instruction[257];
-			Arrays.fill(jumpTable, next);
+			Arrays.fill(jumpTable, commonFailure);
 			for (int ch = 0; ch < choice.predictedCase.length; ch++) {
 				Expression predicted = choice.predictedCase[ch];
 				if (predicted == null) {
@@ -301,7 +302,7 @@ public class MozCompiler extends VisitorMap<DefaultVisitor> {
 				}
 				jumpTable[ch] = labeling(inst);
 			}
-			return new DFirst(choice, new Fail(null, next), jumpTable);
+			return new DFirst(choice, commonFailure, jumpTable);
 		}
 
 		private int findIndex(nez.lang.expr.Pchoice choice, Expression e) {
@@ -420,7 +421,7 @@ public class MozCompiler extends VisitorMap<DefaultVisitor> {
 					return new NStr(inner, next, ((nez.lang.expr.Cmulti) inner).byteSeq);
 				}
 			}
-			Instruction fail = new Succ(e, new Fail(null, next));
+			Instruction fail = new Succ(e, new Fail(e, null));
 			return new Alt(e, generate(e.get(0), fail), next);
 		}
 	}
