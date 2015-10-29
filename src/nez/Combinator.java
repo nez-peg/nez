@@ -10,38 +10,29 @@ import nez.lang.expr.Cset;
 import nez.lang.expr.ExpressionCommons;
 import nez.util.UList;
 
-public class Combinator extends Grammar {
+public class Combinator {
 
-	public Combinator(String ns, String start) {
-		super(ns);
-		load(start);
+	public Combinator() {
 	}
 
-	//
-	// public final GrammarFile load() {
-	// if (this.file == null) {
-	// Class<?> c = this.getClass();
-	// file = GrammarFile.newGrammarFile(c.getName(),
-	// NezOption.newDefaultOption());
-	// if (file.isEmpty()) {
-	// load(file);
-	// }
-	// }
-	// return file;
-	// }
+	protected Grammar g;
 
-	public final void load(String start) {
+	public final Grammar load(Grammar g, String start) {
+		this.g = g;
 		Class<?> c = this.getClass();
 		Method startMethod = null;
-		try {
-			startMethod = c.getMethod("p" + start);
-			addProduction(start, startMethod);
-		} catch (NoSuchMethodException e2) {
-			Verbose.println(e2.toString());
-		} catch (SecurityException e2) {
-			Verbose.traceException(e2);
+		if (start != null) {
+			try {
+				startMethod = c.getMethod("p" + start);
+				addProduction(start, startMethod);
+			} catch (NoSuchMethodException | SecurityException e2) {
+				Verbose.println(e2.toString());
+			}
 		}
 		for (Method m : c.getDeclaredMethods()) {
+			if (m == startMethod) {
+				continue;
+			}
 			if (m.getReturnType() == Expression.class && m.getParameterTypes().length == 0) {
 				String name = m.getName();
 				if (name.startsWith("p")) {
@@ -50,44 +41,17 @@ public class Combinator extends Grammar {
 				addProduction(name, m);
 			}
 		}
+		return g;
 	}
 
 	private void addProduction(String name, Method m) {
 		try {
 			Expression e = (Expression) m.invoke(this);
-			this.newProduction(e.getSourcePosition(), 0, name, e);
-		} catch (IllegalAccessException e1) {
-			Verbose.traceException(e1);
-		} catch (IllegalArgumentException e1) {
-			Verbose.traceException(e1);
-		} catch (InvocationTargetException e1) {
+			g.newProduction(e.getSourcePosition(), 0, name, e);
+		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e1) {
 			Verbose.traceException(e1);
 		}
 	}
-
-	// public final GrammarFile load(GrammarFile file) {
-	// Class<?> c = this.getClass();
-	// for (Method m : c.getDeclaredMethods()) {
-	// if (m.getReturnType() == Expression.class && m.getParameterTypes().length
-	// == 0) {
-	// String name = m.getName();
-	// if (name.startsWith("p")) {
-	// name = name.substring(1);
-	// }
-	// try {
-	// Expression e = (Expression) m.invoke(this);
-	// file.addProduction(e.getSourcePosition(), name, e);
-	// } catch (IllegalAccessException e1) {
-	// Verbose.traceException(e1);
-	// } catch (IllegalArgumentException e1) {
-	// Verbose.traceException(e1);
-	// } catch (InvocationTargetException e1) {
-	// Verbose.traceException(e1);
-	// }
-	// }
-	// }
-	// return file;
-	// }
 
 	private SourcePosition src() {
 		Exception e = new Exception();
@@ -116,7 +80,7 @@ public class Combinator extends Grammar {
 	}
 
 	protected final Expression P(String name) {
-		return ExpressionCommons.newNonTerminal(src(), this, name);
+		return ExpressionCommons.newNonTerminal(src(), g, name);
 	}
 
 	protected final Expression t(char c) {

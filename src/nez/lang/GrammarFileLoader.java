@@ -9,16 +9,52 @@ import nez.Strategy;
 import nez.Verbose;
 import nez.ast.SourcePosition;
 import nez.ast.Tree;
-import nez.ast.TreeVisitor;
 import nez.io.SourceContext;
+import nez.lang.GrammarFileLoader.DefaultVisitor;
+import nez.lang.schema.Type;
 import nez.util.ConsoleUtils;
 import nez.util.ExtensionLoader;
 import nez.util.StringUtils;
+import nez.util.VisitorMap;
 
-public abstract class GrammarFileLoader extends TreeVisitor {
+public abstract class GrammarFileLoader extends VisitorMap<DefaultVisitor> {
 
 	protected Grammar file;
 	protected Strategy strategy;
+
+	public GrammarFileLoader() {
+	}
+
+	protected class DefaultVisitor {
+		public void accept(Tree<?> node) {
+			ConsoleUtils.println(node.formatSourceMessage("error", "unsupproted in GrammarFileLoader #" + node));
+		}
+
+		public Expression toExpression(Tree<?> node) {
+			ConsoleUtils.println(node.formatSourceMessage("error", "unsupproted in GrammarFileLoader #" + node));
+			return null;
+		}
+
+		public Expression toExpression(Tree<?> node, Expression expr) {
+			ConsoleUtils.println(node.formatSourceMessage("error", "unsupproted in GrammarFileLoader #" + node));
+			return null;
+		}
+
+		public Expression toExpression(Tree<?> node, Expression expr1, Expression expr2) {
+			ConsoleUtils.println(node.formatSourceMessage("error", "unsupproted in GrammarFileLoader #" + node));
+			return null;
+		}
+
+		public boolean parse(Tree<?> node) {
+			ConsoleUtils.println(node.formatSourceMessage("error", "unsupproted in GrammarFileLoader #" + node));
+			return false;
+		}
+
+		public Type toSchema(Tree<?> node) {
+			ConsoleUtils.println(node.formatSourceMessage("error", "unsupproted in GrammarFileLoader #" + node));
+			return null;
+		}
+	}
 
 	public Grammar newGrammar(String ns, String urn) {
 		return new GrammarFile(ns, urn, null);

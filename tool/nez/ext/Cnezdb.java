@@ -5,7 +5,7 @@ import nez.debugger.DebugManager;
 import nez.main.Command;
 import nez.main.CommandContext;
 
-public class Cndb extends Command {
+public class Cnezdb extends Command {
 	@Override
 	public void exec(CommandContext config) {
 		Command.displayVersion();

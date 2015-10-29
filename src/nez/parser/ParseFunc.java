@@ -41,4 +41,23 @@ public class ParseFunc {
 		return this.refcount;
 	}
 
+	public final MemoPoint getMemoPoint() {
+		return this.memoPoint;
+	}
+
+	public final boolean getState() {
+		return this.state;
+	}
+
+	public final boolean getInlining() {
+		return this.inlining;
+	}
+
+	public final Instruction getCompiled() {
+		return this.compiled;
+	}
+
+	public final void setCompiled(Instruction compiled) {
+		this.compiled = compiled;
+	}
 }

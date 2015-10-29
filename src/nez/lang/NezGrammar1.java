@@ -4,10 +4,6 @@ import nez.Combinator;
 
 public class NezGrammar1 extends Combinator {
 
-	public NezGrammar1() {
-		super("nez", "File");
-	}
-
 	public Expression pEOT() {
 		return Not(AnyChar());
 	}

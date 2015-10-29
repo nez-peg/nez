@@ -6,7 +6,6 @@ import nez.ast.Symbol;
 import nez.lang.Expression;
 import nez.util.StringUtils;
 import nez.util.UList;
-import nez.util.UMap;
 
 public abstract class ExpressionCommons extends Expression {
 
@@ -39,58 +38,6 @@ public abstract class ExpressionCommons extends Expression {
 		}
 		sb.append(">");
 	}
-
-	// ---------------------
-
-	public final static UMap<Expression> uniqueMap = new UMap<Expression>();
-
-	public static Expression intern(Expression e) {
-		// if (e.internId == 0) {
-		// StringBuilder sb = new StringBuilder();
-		// sb.append(e.key());
-		// for (int i = 0; i < e.size(); i++) {
-		// Expression sube = e.get(i);
-		// if (!sube.isInterned()) {
-		// sube = sube.intern();
-		// e.set(i, sube);
-		// }
-		// sb.append("#" + sube.internId);
-		// }
-		// String key = sb.toString();
-		// Expression u = uniqueMap.get(key);
-		// if (u == null) {
-		// u = e;
-		// e.s = null;
-		// e.internId = uniqueMap.size() + 1;
-		// uniqueMap.put(key, e);
-		// }
-		// if (Command.ReleasePreview) {
-		// if (!u.equalsExpression(e)) {
-		// Verbose.debug("Mismatched Interning: " + e.getClass() + "\n\te=" + e
-		// + "\n\tinterned=" + u);
-		// }
-		// assert (u.equalsExpression(e));
-		// }
-		// return u;
-		// }
-		return e;
-	}
-
-	private static int id = 1;
-
-	static void setId(Expression e) {
-		// if (e.internId == 0) {
-		// e.internId = id++;
-		// for (int i = 0; i < e.size(); i++) {
-		// Expression sube = e.get(i);
-		// setId(sube);
-		// }
-		// }
-	}
-
-	// static Expression internImpl(SourcePosition s, Expression e) {
-	// return (s == null) ? intern(e) : e;
-	// }
 
 	// -----------------------------------------------------------------------
 	// Utils

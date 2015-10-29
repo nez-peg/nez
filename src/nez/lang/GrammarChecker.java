@@ -53,7 +53,7 @@ public class GrammarChecker extends GrammarTransducer {
 			if (ConsoleUtils.isDebug()) {
 				Verbose.println("optimizing ..");
 			}
-			new GrammarOptimizer2(g, strategy);
+			new GrammarOptimizer(g, strategy);
 		}
 
 	}

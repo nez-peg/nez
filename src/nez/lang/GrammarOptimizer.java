@@ -27,7 +27,7 @@ import nez.parser.ParseFunc;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
 
-public class GrammarOptimizer2 extends GrammarRewriter {
+public class GrammarOptimizer extends GrammarRewriter {
 	/* local optimizer option */
 	boolean enabledLexicalOptimization = false;
 	boolean enabledInlining = false;
@@ -52,7 +52,7 @@ public class GrammarOptimizer2 extends GrammarRewriter {
 	HashMap<String, Production> bodyMap = null;
 	HashMap<String, String> aliasMap = null;
 
-	public GrammarOptimizer2(GenerativeGrammar gg, Strategy strategy) {
+	public GrammarOptimizer(GenerativeGrammar gg, Strategy strategy) {
 		this.gg = gg;
 		this.strategy = strategy;
 		initOption();

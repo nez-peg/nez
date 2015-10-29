@@ -1747,6 +1747,11 @@ class Label extends MozInstruction {
 	protected void formatImpl(StringBuilder sb) {
 		this.formatNonTerminal(sb, this.nonTerminal);
 	}
+
+	@Override
+	public Instruction exec(RuntimeContext sc) throws TerminationException {
+		return next;
+	}
 }
 
 class Ref extends Instruction {
