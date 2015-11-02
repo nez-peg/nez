@@ -184,88 +184,22 @@ public class Strategy {
 		}
 	}
 
-	// public boolean classicMode = false; // used "+classic"
-	// // public boolean enabledSafeMode = true;
-	// // public boolean enabledExperimental = false;
-	//
-	// /* grammar */
-	// public boolean strategyASTConstruction = true; // "-ast"
-	// // public boolean enabledSymbolTable = true; // symbol
-	// public boolean isEnabled("peg-only", PEG_ONLY") = false; // -peg
-	//
-	// /* optimization */
-	// public boolean enabledAsIsGrammar = false; // asis
-	// public boolean isEnabled("Oinline", Strategy.Oinline) = true; // inline
-	//
-	// public boolean isEnabled("Olex", Strategy.Olex) = true; // "lex"
-	// public boolean isEnabled("Ostr", Strategy.Ostr) = true; // "str"
-	// // public boolean enabledCommonFactored = true; // common
-	//
-	// public boolean isEnabled("Ofirst", Strategy.Ofirst) = true; // "predict"
-	// public boolean enabledDFAConversion = false; // dfa
-	//
-	// /* runtime strategy */
-	// public boolean isEnabled("memo", Strategy.MEMO) = true; // "memo"
-	// public boolean enabledPackratParsing = false; // "packrat"
-	//
-	// /* misc */
-	// public boolean enabledInterning = true;
-	// public boolean enabledExampleVerification = false;
-	// public boolean isEnabled("prof", Strategy.PROF) = false;
-	//
-	// public boolean isEnabled("notice", Strategy.NOTICE) = true; // notice
-	//
-	// public final void setOption(String key, boolean value) {
-	// switch (key) {
-	// case "asis":
-	// this.enabledAsIsGrammar = value;
-	// break;
-	// case "ast":
-	// this.strategyASTConstruction = value;
-	// break;
-	// case "classic":
-	// this.classicMode = value;
-	// break;
-	// case "dfa":
-	// this.enabledDFAConversion = value;
-	// break;
-	// case "example":
-	// this.enabledExampleVerification = value;
-	// break;
-	// case "inline":
-	// this.isEnabled("Oinline", Strategy.Oinline) = value;
-	// break;
-	// case "intern":
-	// this.enabledInterning = value;
-	// break;
-	// case "lex":
-	// case "lexer":
-	// this.isEnabled("Olex", Strategy.Olex) = value;
-	// break;
-	// case "memo":
-	// this.isEnabled("memo", Strategy.MEMO) = value;
-	// break;
-	// case "notice":
-	// this.isEnabled("notice", Strategy.NOTICE) = value;
-	// break;
-	// case "packrat":
-	// this.enabledPackratParsing = value;
-	// break;
-	// case "peg":
-	// this.isEnabled("peg-only", PEG_ONLY") = value;
-	// break;
-	// case "predict":
-	// this.isEnabled("Ofirst", Strategy.Ofirst) = value;
-	// break;
-	// case "prof":
-	// this.isEnabled("prof", Strategy.PROF) = value;
-	// break;
-	// case "str":
-	// this.isEnabled("Ostr", Strategy.Ostr) = value;
-	// break;
-	// default:
-	// Verbose.debug("undefined strategy:" + key + " " + value);
-	// }
-	// }
+	public final void reportError(SourcePosition s, String fmt, Object... args) {
+		if (s != null) {
+			log(s.formatSourceMessage("error", String.format(fmt, args)));
+		}
+	}
+
+	public final void reportWarning(SourcePosition s, String fmt, Object... args) {
+		if (s != null) {
+			log(s.formatSourceMessage("warning", String.format(fmt, args)));
+		}
+	}
+
+	public final void reportNotice(SourcePosition s, String fmt, Object... args) {
+		if (s != null) {
+			log(s.formatSourceMessage("notice", String.format(fmt, args)));
+		}
+	}
 
 }
