@@ -4,7 +4,9 @@ import java.util.HashSet;
 import java.util.TreeSet;
 
 public class AFA {
-	final public static char epsilon = ' ';
+	// final public static char epsilon = ' ';
+	final public static int anyCharacter = -2;
+	final public static int epsilon = -1;
 	private HashSet<State> S;
 	private TreeSet<Transition> tau;
 	private State f;

@@ -71,8 +71,10 @@ public class DOTGenerator {
 				} else if (predicate == 1) {
 					pw.print("!predicate");
 				} else if (label != AFA.epsilon) {
-					if (Character.isLetterOrDigit((char) label) || (char) label == '.') {
+					if (Character.isLetterOrDigit((char) label)) {
 						pw.print((char) label);
+					} else if (label == AFA.anyCharacter) {
+						pw.print("any");
 					} else {
 						pw.print(label);
 					}

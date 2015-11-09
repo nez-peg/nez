@@ -239,7 +239,7 @@ public class DFAConverter {
 	private BooleanExpression transitLogicVariable(LogicVariable be, char sigma) {
 		ArrayList<LogicVariable> next = new ArrayList<LogicVariable>();
 		for (Transition transition : adjacencyList.get(be.getID())) {
-			if (transition.getPredicate() == -1 && (transition.getLabel() == sigma || transition.getLabel() == '.')) {
+			if (transition.getPredicate() == -1 && (transition.getLabel() == sigma || transition.getLabel() == AFA.anyCharacter)) {
 				next.add(new LogicVariable(transition.getDst()));
 			}
 		}

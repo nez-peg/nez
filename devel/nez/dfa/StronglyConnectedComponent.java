@@ -124,7 +124,8 @@ public class StronglyConnectedComponent {
 		for (Transition e : tau) {
 			int src = e.getSrc();
 			int dst = e.getDst();
-			if (cmp.get(src) != cmp.get(dst)) {
+			// if (cmp.get(src) != cmp.get(dst)) {
+			if (cmp.get(src) != cmp.get(dst) || (src == dst && e.getLabel() != AFA.epsilon)) {
 				int srcGroupID = cmp.get(src);
 				int dstGroupID = cmp.get(dst);
 				int srcVertexID = src;
