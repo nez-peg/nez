@@ -38,13 +38,13 @@ public class GrammarChecker extends GrammarTransducer {
 	UList<Expression> stacked;
 	private final Strategy strategy;
 
-	public GrammarChecker(GenerativeGrammar g, boolean offAST, TreeMap<String, Boolean> ctx, Production start, Strategy strategy) {
-		this.gg = g;
-		this.boolMap = (ctx == null) ? new TreeMap<String, Boolean>() : ctx;
+	public GrammarChecker(GenerativeGrammar gg, TreeMap<String, Boolean> boolMap, Production start, Strategy strategy) {
+		this.gg = gg;
+		this.boolMap = (boolMap == null) ? new TreeMap<String, Boolean>() : boolMap;
 		this.strategy = strategy;
 
 		this.stacked = new UList<Expression>(new Expression[128]);
-		if (offAST) {
+		if (!strategy.isEnabled("ast", Strategy.AST)) {
 			this.enterNonASTContext();
 		}
 		String uname = uniqueName(start.getUniqueName(), start);
@@ -53,9 +53,8 @@ public class GrammarChecker extends GrammarTransducer {
 			if (ConsoleUtils.isDebug()) {
 				Verbose.println("optimizing ..");
 			}
-			new GrammarOptimizer(g, strategy);
+			new GrammarOptimizer(gg, strategy);
 		}
-
 	}
 
 	@Override

@@ -17,9 +17,9 @@ public class GenerativeGrammar extends Grammar {
 	HashMap<String, ParseFunc> funcMap;
 	public List<MemoPoint> memoPointList = null;
 
-	public GenerativeGrammar(Production start, Strategy strategy, TreeMap<String, Boolean> flagMap) {
+	public GenerativeGrammar(Production start, Strategy strategy, TreeMap<String, Boolean> boolMap) {
 		this.funcMap = new HashMap<String, ParseFunc>();
-		new GrammarChecker(this, !strategy.isEnabled("ast", Strategy.AST), flagMap, start, strategy);
+		new GrammarChecker(this, boolMap, start, strategy);
 		memo(strategy);
 	}
 
