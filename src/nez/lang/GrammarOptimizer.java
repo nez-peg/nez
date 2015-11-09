@@ -485,9 +485,6 @@ public class GrammarOptimizer extends GrammarRewriter {
 		boolean binary = false;
 		for (Expression e : choiceList) {
 			e = ExpressionCommons.resolveNonTerminal(e);
-			if (e instanceof Pfail) {
-				continue;
-			}
 			if (e instanceof Cbyte) {
 				byteMap[((Cbyte) e).byteChar] = true;
 				if (((Cbyte) e).isBinary()) {
@@ -504,9 +501,6 @@ public class GrammarOptimizer extends GrammarRewriter {
 			}
 			if (e instanceof Cany) {
 				return e;
-			}
-			if (e instanceof Pempty) {
-				break;
 			}
 			return null;
 		}
