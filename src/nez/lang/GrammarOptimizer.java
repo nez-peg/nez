@@ -29,26 +29,11 @@ import nez.util.UList;
 
 public class GrammarOptimizer extends GrammarRewriter {
 	/* local optimizer option */
-	/**
-	 * boolean enabledLexicalOptimization = false; boolean enabledInlining =
-	 * false; boolean enabledAliasAnalysis = false; boolean
-	 * enabledOutOfOrderConstruction = false;
-	 * 
-	 * boolean enabledTrieTreeChoice = false; boolean enabledCommonLeftFactoring
-	 * = false; // true;
-	 * 
-	 * boolean enabledFirstChoice = false; boolean enabledSecondChoice = false;
-	 * boolean enabledfirstChoiceInlining = false; boolean enabledEmptyChoice =
-	 * false;
-	 * 
-	 * boolean verboseOption = false; boolean verboseGrammar = false; boolean
-	 * verboseDebug = false;
-	 **/
 
 	boolean enabledLexicalOptimization = false;
 	boolean enabledInlining = false;
 	boolean enabledAliasAnalysis = false;
-	boolean enabledOutOfOrderConstruction = false;
+	boolean enabledOutOfOrderConstruction = true;
 
 	boolean enabledTrieTreeChoice = false;
 	boolean enabledCommonLeftFactoring = false; // true;
@@ -85,22 +70,29 @@ public class GrammarOptimizer extends GrammarRewriter {
 		if (strategy.isEnabled("Dgrammar", Strategy.Dgrammar)) {
 			this.verboseGrammar = true;
 		}
-		/**
-		 * if (strategy.isEnabled("Oinline", Strategy.Oinline)) {
-		 * this.enabledInlining = true; } if (strategy.isEnabled("Oalias",
-		 * Strategy.Oalias)) { this.enabledInlining = true;
-		 * this.enabledAliasAnalysis = true; this.bodyMap = new HashMap<String,
-		 * Production>(); this.aliasMap = new HashMap<String, String>(); } if
-		 * (strategy.isEnabled("Olex", Strategy.Olex)) {
-		 * this.enabledLexicalOptimization = true; } if
-		 * (strategy.isEnabled("Otrie", Strategy.Otrie)) {
-		 * this.enabledTrieTreeChoice = true; }
-		 * 
-		 * if (strategy.isEnabled("Ofirst", Strategy.Ofirst)) { // seems slow
-		 * when the prediction option is enabled this.enabledFirstChoice = true;
-		 * this.enabledCommonLeftFactoring = true; this.toOptimizeChoiceList =
-		 * new UList<Pchoice>(new Pchoice[8]); }
-		 */
+
+		if (strategy.isEnabled("Oinline", Strategy.Oinline)) {
+			this.enabledInlining = true;
+		}
+		if (strategy.isEnabled("Oalias", Strategy.Oalias)) {
+			this.enabledInlining = true;
+			this.enabledAliasAnalysis = true;
+			this.bodyMap = new HashMap<String, Production>();
+			this.aliasMap = new HashMap<String, String>();
+		}
+		if (strategy.isEnabled("Olex", Strategy.Olex)) {
+			this.enabledLexicalOptimization = true;
+		}
+		if (strategy.isEnabled("Otrie", Strategy.Otrie)) {
+			this.enabledTrieTreeChoice = true;
+		}
+
+		if (strategy.isEnabled("Ofirst", Strategy.Ofirst)) {
+			// seems slow when the prediction option is enabled
+			this.enabledFirstChoice = true;
+			this.enabledCommonLeftFactoring = true;
+			this.toOptimizeChoiceList = new UList<Pchoice>(new Pchoice[8]);
+		}
 
 		this.verboseOption("Olex", enabledLexicalOptimization);
 		this.verboseOption("Oinline", enabledInlining);
@@ -494,9 +486,6 @@ public class GrammarOptimizer extends GrammarRewriter {
 		boolean binary = false;
 		for (Expression e : choiceList) {
 			e = ExpressionCommons.resolveNonTerminal(e);
-			if (e instanceof Pfail) {
-				continue;
-			}
 			if (e instanceof Cbyte) {
 				byteMap[((Cbyte) e).byteChar] = true;
 				if (((Cbyte) e).isBinary()) {
@@ -514,9 +503,6 @@ public class GrammarOptimizer extends GrammarRewriter {
 			if (e instanceof Cany) {
 				return e;
 			}
-			// if (e instanceof Pempty) {
-			// break;
-			// }
 			return null;
 		}
 		return choice.newCset(binary, byteMap);
