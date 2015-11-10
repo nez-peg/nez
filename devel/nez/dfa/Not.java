@@ -42,6 +42,11 @@ public class Not extends BooleanExpression {
 	}
 
 	@Override
+	public Not recoverPredicate() {
+		return new Not(inner.recoverPredicate());
+	}
+
+	@Override
 	public BooleanExpression assignBooleanValueToLogicVariable(boolean booleanValue, LogicVariable logicVariable) {
 		BooleanExpression tmp = inner.assignBooleanValueToLogicVariable(booleanValue, logicVariable);
 		if (tmp instanceof LogicVariable) {

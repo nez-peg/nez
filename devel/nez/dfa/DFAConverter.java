@@ -275,7 +275,9 @@ public class DFAConverter {
 		Deque<BooleanExpression> deq = new ArrayDeque<BooleanExpression>();
 		{
 			BooleanExpression lf = new LogicVariable(afa.getf().getID());
+			// BooleanExpression ef = epsilonExpansionWithEpsilonCycle(lf);
 			BooleanExpression ef = epsilonExpansion(lf);
+
 			// System.out.println("lf = " + lf);
 			// System.out.println("epsilon expansion lf = " + ef);
 			deq.addFirst(ef);
@@ -283,7 +285,6 @@ public class DFAConverter {
 			// System.out.println(bddID + " => " + vertexID);
 			f = new State(vertexID);
 			S.add(new State(vertexID));
-
 			if (ef.eval(afa.getF(), afa.getL())) {
 				F.add(new State(vertexID));
 			}
@@ -311,6 +312,9 @@ public class DFAConverter {
 				}
 
 				BooleanExpression epsilonExpansionTransitBe = epsilonExpansion(transitBe);
+				// BooleanExpression epsilonExpansionTransitBe =
+				// epsilonExpansionWithEpsilonCycle(transitBe);
+
 				// System.out.println("eetb = " + epsilonExpansionTransitBe);
 				int bddID = bdd.build(epsilonExpansionTransitBe);
 				// System.out.println("bddID = " + bddID +
@@ -333,7 +337,171 @@ public class DFAConverter {
 				tau.add(new Transition(src, dst, c, -1));
 			}
 		}
-
 		return new DFA(S, tau, f, F);
 	}
+
+	// <--- new epsilon expansion : it accepts epsilon cycle
+
+	public BooleanExpression epsilonExpansionWithEpsilonCycle(BooleanExpression arg) {
+		BooleanExpression be = arg.deepCopy();
+		BDD bdd = new BDD();
+		HashSet<Integer> isAlreadyGenerated = new HashSet<Integer>();
+		int bddID = bdd.build(be.recoverPredicate());
+		isAlreadyGenerated.add(new Integer(bddID));
+
+		while (true) {
+			be = epsilonExpansionOnce(be);
+			bddID = bdd.build(be.recoverPredicate());
+			// System.out.println("once : bddID = " + bddID + " : " + be);
+
+			if (isAlreadyGenerated.contains(new Integer(bddID))) {
+				return be.recoverPredicate();
+			}
+			isAlreadyGenerated.add(new Integer(bddID));
+		}
+	}
+
+	public BooleanExpression epsilonExpansionOnce(BooleanExpression be) {
+		if (be instanceof And) {
+			return epsilonExpansionAndOnce((And) be);
+		} else if (be instanceof Or) {
+			return epsilonExpansionOrOnce((Or) be);
+		} else if (be instanceof Not) {
+			return epsilonExpansionNotOnce((Not) be);
+		} else {
+			if (!(be instanceof LogicVariable)) {
+				System.out.println("ERROR : epsilonExpansion : " + be + " is not instance of LogicVariable");
+			}
+			return epsilonExpansionLogicVariableOnce((LogicVariable) be);
+		}
+	}
+
+	public BooleanExpression epsilonExpansionAndOnce(And be) {
+		return new And(epsilonExpansionOnce(be.left), epsilonExpansionOnce(be.right));
+	}
+
+	public BooleanExpression epsilonExpansionOrOnce(Or be) {
+		return new Or(epsilonExpansionOnce(be.left), epsilonExpansionOnce(be.right));
+	}
+
+	public BooleanExpression epsilonExpansionNotOnce(Not be) {
+		return new Not(epsilonExpansionOnce(be.inner));
+	}
+
+	public BooleanExpression epsilonExpansionLogicVariableOnce(LogicVariable be) {
+
+		if (be.hasValue()) {
+			return new LogicVariable(be.getID(), be.getValue());
+		}
+
+		if (be.getID() < 0) { // predicate用
+			return new LogicVariable(be.getID(), be.getValue());
+		}
+
+		ArrayList<LogicVariable> predicate = new ArrayList<LogicVariable>();
+		ArrayList<Integer> predicateType = new ArrayList<Integer>();
+		ArrayList<LogicVariable> epsilon = new ArrayList<LogicVariable>();
+		boolean hasOtherwise = false;
+		for (Transition transition : adjacencyList.get(be.getID())) {
+			if (transition.getPredicate() != -1) {
+				predicate.add(new LogicVariable(transition.getDst()));
+				predicateType.add(transition.getPredicate());
+				continue;
+			}
+			if (transition.getLabel() == AFA.epsilon) {
+				epsilon.add(new LogicVariable(transition.getDst()));
+				continue;
+			}
+			hasOtherwise = true;
+		}
+
+		if (predicate.isEmpty() && epsilon.isEmpty()) {
+			return new LogicVariable(be.getID());
+		}
+
+		if (!predicate.isEmpty() && predicate.size() != 1) {
+			System.out.println("FATAL ERROR : epsilonExpansionLogicVariable : predicate.size() = " + predicate.size() + " : predicate.size() must be 1 or My understanding is a little bit wrong");
+		}
+
+		if (!predicate.isEmpty()) { // And
+			if (hasOtherwise) {
+				// System.out.println(be + " -> FATAL SUPPORT : " +
+				// predicate.get(0));
+				// System.out.println("FATAL ERROR : epsilonExpansionLogicVariable : predicate.size() == 1 && hasOtherwise");
+				// System.out.println("WARNING : epsilonExpansionLogicVariable : predicate.size() == 1 && hasOtherwise");
+			}
+			if (epsilon.isEmpty()) {
+				// BooleanExpression tmp =
+				// epsilonExpansionOnce(predicate.get(0));
+				BooleanExpression tmp = predicate.get(0);
+				// -be.getID()とすることで自分を再度展開しないようにする
+				return new And(((predicateType.get(0) == 1) ? new Not(tmp) : tmp), new LogicVariable(-be.getID()));
+			} else {
+				// if (epsilon.size() != 1) {
+				// System.out.println("FATAL ERROR : epsilonExpansionLogicVariable : predicate and epsilon.size() = "
+				// + epsilon.size() +
+				// " : epsilon.size() must be 1 or My understanding is a little bit wrong");
+				// }
+				if (epsilon.size() == 1) {
+					// BooleanExpression left =
+					// epsilonExpansion(predicate.get(0));
+					// BooleanExpression right =
+					// epsilonExpansion(epsilon.get(0));
+					BooleanExpression left = predicate.get(0);
+					BooleanExpression right = epsilon.get(0);
+					return new And(((predicateType.get(0) == 1) ? new Not(left) : left), right);
+				} else {
+					// BooleanExpression left =
+					// epsilonExpansion(predicate.get(0));
+					BooleanExpression left = predicate.get(0);
+					ArrayList<BooleanExpression> arrRight = new ArrayList<BooleanExpression>();
+					for (LogicVariable lv : epsilon) {
+						// arrRight.add(epsilonExpansion(lv));
+						arrRight.add(lv);
+					}
+					BooleanExpression right = new Or(arrRight.get(0), null);
+					BooleanExpression top = right;
+					for (int i = 1; i < arrRight.size(); i++) {
+						if (i == (arrRight.size() - 1)) {
+							((Or) right).right = arrRight.get(i);
+						} else {
+							((Or) right).right = new Or(arrRight.get(i), null);
+							right = ((Or) right).right;
+						}
+					}
+					return new And(((predicateType.get(0) == 1) ? new Not(left) : left), top);
+				}
+			}
+		} else { // Or
+			ArrayList<BooleanExpression> arr = new ArrayList<BooleanExpression>();
+			if (hasOtherwise) {
+				arr.add(new LogicVariable(be.getID()));
+			}
+			for (LogicVariable lv : epsilon) {
+				// arr.add(epsilonExpansion(lv));
+				arr.add(lv);
+			}
+
+			if (arr.isEmpty()) {
+				System.out.println("ERROR : epsilonExpansionLogicVariable : arr.isEmpty() : WHAT IS THIS");
+			}
+			if (arr.size() == 1) {
+				return arr.get(0);
+			}
+			BooleanExpression tmp = new Or(arr.get(0), null);
+			BooleanExpression top = tmp;
+			for (int i = 1; i < arr.size(); i++) {
+				if (i == (arr.size() - 1)) {
+					((Or) tmp).right = arr.get(i);
+				} else {
+					((Or) tmp).right = new Or(arr.get(i), null);
+					tmp = ((Or) tmp).right;
+				}
+			}
+			return top;
+		}
+	}
+
+	// --->
+
 }
