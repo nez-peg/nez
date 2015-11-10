@@ -127,7 +127,8 @@ public class StronglyConnectedComponent {
 			int src = e.getSrc();
 			int dst = e.getDst();
 			// if (cmp.get(src) != cmp.get(dst)) {
-			if (cmp.get(src) != cmp.get(dst) || (src == dst && e.getLabel() != AFA.epsilon)) {
+			if ((cmp.get(src).compareTo(cmp.get(dst)) != 0) || (src == dst && e.getLabel() != AFA.epsilon)) {
+
 				int srcGroupID = cmp.get(src);
 				int dstGroupID = cmp.get(dst);
 				int srcVertexID = src;
@@ -143,14 +144,11 @@ public class StronglyConnectedComponent {
 				int groupID = cmp.get(src);
 				int vertexID = (fromGroupIDtoVertexID.containsKey(groupID)) ? fromGroupIDtoVertexID.get(groupID) : groupID;
 
-				System.out.println("epsilon cycle = " + src + "," + dst);
-
 				if (src == afa.getf().getID() || dst == afa.getf().getID()) {
 					if (initialStateBelongsToThisGroup != -1 && initialStateBelongsToThisGroup != groupID) {
 						System.out.println("FATAL ERROR : StronglyConnectedComponent : initial state belongs to a lot of groups");
 					}
 					initialStateBelongsToThisGroup = vertexID;
-					System.out.println("groupfewojpofaj = " + vertexID);
 				}
 
 				if (F.contains(new State(src))) {

@@ -42,8 +42,8 @@ public class AFAConverter extends VisitorMap<DefaultVisitor> {
 			return;
 		}
 		this.afa = visitProduction(p);
-
 		this.afa = eliminateEpsilonCycle(this.afa);
+		DOTGenerator.writeAFA(this.afa);
 	}
 
 	/*
@@ -463,7 +463,6 @@ public class AFAConverter extends VisitorMap<DefaultVisitor> {
 			for (State state : tmpAFA2.getL()) {
 				L.add(new State(state.getID()));
 			}
-			DOTGenerator.writeAFA(new AFA(S, transitions, f, F, L));
 			return new AFA(S, transitions, f, F, L);
 
 			// return REzero(e);

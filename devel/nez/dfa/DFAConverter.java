@@ -324,6 +324,7 @@ public class DFAConverter {
 				int src = BDDIDtoVertexID.get(bdd.build(be));
 				int dst = -1;
 				if (!BDDIDtoVertexID.containsKey(new Integer(bddID))) { // 初めて現れた状態ならば追加する
+					System.out.println("vertexID = " + vertexID);
 					S.add(new State(vertexID));
 					if (epsilonExpansionTransitBe.eval(afa.getF(), afa.getL())) {
 						F.add(new State(vertexID));
