@@ -12,8 +12,6 @@ import nez.util.VisitorMap;
 
 /*
  * 
- * 謎現象 ... + が * と解釈される
- * 
  * 非終端記号ー制約：
  * 	非終端記号の初期状態と受理状態は１つ
  * 	複数存在する場合は新たな状態を作成し、それを初期（受理）状態とし、それにε遷移をはるようにする
@@ -44,8 +42,8 @@ public class AFAConverter extends VisitorMap<DefaultVisitor> {
 			return;
 		}
 		this.afa = visitProduction(p);
-
 		this.afa = eliminateEpsilonCycle(this.afa);
+		DOTGenerator.writeAFA(this.afa);
 	}
 
 	/*
@@ -80,52 +78,6 @@ public class AFAConverter extends VisitorMap<DefaultVisitor> {
 	public AFA visit(Expression e) {
 		return find(e.getClass().getSimpleName()).accept(e);
 	}
-
-	// private AFA visitExpression(Expression e) {
-	// if (e instanceof Pempty) {
-	// return visitPempty(e);
-	// } else if (e instanceof Pfail) {
-	// return visitPfail(e);
-	// } else if (e instanceof Cany) {
-	// return visitCany(e);
-	// } else if (e instanceof Cbyte) {
-	// return visitCbyte(e);
-	// } else if (e instanceof Cset) {
-	// return visitCset(e);
-	// } else if (e instanceof Poption) {
-	// return visitPoption(e);
-	// } else if (e instanceof Pzero) {
-	// return visitPzero(e);
-	// } else if (e instanceof Pone) {
-	// return visitPone(e);
-	// } else if (e instanceof Pand) {
-	// return visitPand(e);
-	// } else if (e instanceof Pnot) {
-	// return visitPnot(e);
-	// } else if (e instanceof Psequence) {
-	// return visitPsequence(e);
-	// } else if (e instanceof Pchoice) {
-	// return visitPchoice(e);
-	// } else if (e instanceof nez.lang.expr.NonTerminal) {
-	// return visitNonTerminal(e);
-	// }
-	// // else if (e instanceof Cmulti) {
-	// // return visitCmulti(e);
-	// // } else if (e instanceof Tlink) {
-	// // return visitTlink(e);
-	// // } else if (e instanceof Tnew) {
-	// // return visitTnew(e);
-	// // } else if (e instanceof Tcapture) {
-	// // return visitTcapture(e);
-	// // } else if (e instanceof Treplace) {
-	// // return visitTreplace(e);
-	// // } else if (e instanceof Xblock) {
-	// // return visitXblock(e);
-	// // }
-	// System.out.println("visitExpression :: INVALID INSTANCE : WHAT IS " + e);
-	// assert false : "invalid instance";
-	// return null;
-	// }
 
 	public class DefaultVisitor {
 		public AFA accept(Expression e) {
@@ -180,7 +132,8 @@ public class AFAConverter extends VisitorMap<DefaultVisitor> {
 			S.add(new State(s));
 			S.add(new State(t));
 
-			transitions.add(new Transition(s, t, '.', -1));
+			// transitions.add(new Transition(s, t, '.', -1));
+			transitions.add(new Transition(s, t, AFA.anyCharacter, -1));
 
 			F.add(new State(t));
 
@@ -240,22 +193,15 @@ public class AFAConverter extends VisitorMap<DefaultVisitor> {
 		}
 	}
 
-	/*
-	 * 正しく入力のファイルが変換されているのであればこの関数が呼び出されることはない 解析表現文法における e? は e / ε と変換され、 e /
-	 * ε は e | !e ε と変換される
-	 */
+	// e? ... e / !e ''
 	public class Poption extends DefaultVisitor {
 		@Override
 		public AFA accept(Expression e) {
-			// System.out.println("here is Poption : " + e);
-			System.out.println("WARNING : option FOUND ... e? should be converted into ( e | !e ε )");
 
-			// e? について、 e の AFA を tmpAfa として構築
-			// AFA tmpAfa = visitExpression(e.get(0));
-			AFA tmpAfa = visit(e.get(0));
+			AFA tmpAFA1 = visit(e.get(0)); // e
+			AFA tmpAFA2 = computePnotAFA(copyAFA(tmpAFA1)); // !e
 
 			int s = getNewStateID();
-			int t = getNewStateID();
 
 			HashSet<State> S = new HashSet<State>();
 			TreeSet<Transition> transitions = new TreeSet<Transition>();
@@ -264,46 +210,224 @@ public class AFAConverter extends VisitorMap<DefaultVisitor> {
 			HashSet<State> L = new HashSet<State>();
 
 			S.add(new State(s));
-			S.add(new State(t));
-			for (State state : tmpAfa.getS()) {
+			for (State state : tmpAFA1.getS()) {
+				S.add(new State(state.getID()));
+			}
+			for (State state : tmpAFA2.getS()) {
 				S.add(new State(state.getID()));
 			}
 
-			transitions.add(new Transition(s, t, AFA.epsilon, -1));
-			transitions.add(new Transition(s, tmpAfa.getf().getID(), AFA.epsilon, -1));
-			for (State state : tmpAfa.getF()) {
-				transitions.add(new Transition(state.getID(), t, AFA.epsilon, -1));
+			transitions.add(new Transition(s, tmpAFA1.getf().getID(), AFA.epsilon, -1));
+			transitions.add(new Transition(s, tmpAFA2.getf().getID(), AFA.epsilon, -1));
+			for (Transition transition : tmpAFA1.getTau()) {
+				transitions.add(new Transition(transition.getSrc(), transition.getDst(), transition.getLabel(), transition.getPredicate()));
 			}
-			for (Transition transition : tmpAfa.getTau()) {
+			for (Transition transition : tmpAFA2.getTau()) {
 				transitions.add(new Transition(transition.getSrc(), transition.getDst(), transition.getLabel(), transition.getPredicate()));
 			}
 
-			F.add(new State(t));
+			for (State state : tmpAFA1.getF()) {
+				F.add(new State(state.getID()));
+			}
+			for (State state : tmpAFA2.getF()) {
+				F.add(new State(state.getID()));
+			}
+			if (tmpAFA2.getF().size() != 1) {
+				System.out.println("FATAL ERROR : AFAConverter : Poption : tmpAFA2.getF().size() should be 1");
+			}
 
-			for (State state : tmpAfa.getL()) {
+			for (State state : tmpAFA1.getL()) {
+				L.add(new State(state.getID()));
+			}
+			for (State state : tmpAFA2.getL()) {
 				L.add(new State(state.getID()));
 			}
 
 			return new AFA(S, transitions, f, F, L);
+
+			// // System.out.println("here is Poption : " + e);
+			// System.out.println("WARNING : option FOUND ... e? should be converted into ( e | !e ε )");
+			//
+			// // e? について、 e の AFA を tmpAfa として構築
+			// // AFA tmpAfa = visitExpression(e.get(0));
+			// AFA tmpAfa = visit(e.get(0));
+			//
+			// int s = getNewStateID();
+			// int t = getNewStateID();
+			//
+			// HashSet<State> S = new HashSet<State>();
+			// TreeSet<Transition> transitions = new TreeSet<Transition>();
+			// State f = new State(s);
+			// HashSet<State> F = new HashSet<State>();
+			// HashSet<State> L = new HashSet<State>();
+			//
+			// S.add(new State(s));
+			// S.add(new State(t));
+			// for (State state : tmpAfa.getS()) {
+			// S.add(new State(state.getID()));
+			// }
+			//
+			// transitions.add(new Transition(s, t, AFA.epsilon, -1));
+			// transitions.add(new Transition(s, tmpAfa.getf().getID(),
+			// AFA.epsilon, -1));
+			// for (State state : tmpAfa.getF()) {
+			// transitions.add(new Transition(state.getID(), t, AFA.epsilon,
+			// -1));
+			// }
+			// for (Transition transition : tmpAfa.getTau()) {
+			// transitions.add(new Transition(transition.getSrc(),
+			// transition.getDst(), transition.getLabel(),
+			// transition.getPredicate()));
+			// }
+			//
+			// F.add(new State(t));
+			//
+			// for (State state : tmpAfa.getL()) {
+			// L.add(new State(state.getID()));
+			// }
+			//
+			// return new AFA(S, transitions, f, F, L);
 		}
 	}
 
-	/*
-	 * 正しく入力のファイルが変換されているのであればこの関数が呼び出されることはない 解析表現文法における e* は新たに非終端記号を追加し、 A <-
-	 * eA / ε と変換され、 A <- eA | !(eA) ε となる
-	 */
+	// Regex's zero or more
+	private AFA REzero(Expression e) {
+		// System.out.println("here is Pzero : " + e);
+		System.out.println("WARNING : zero or more FOUND ... e* should be converted into A <- ( eA | !(eA) ε )");
+		// e* について、 e の AFA を tmpAfa として構築
+		// AFA tmpAfa = visitExpression(e.get(0));
+		AFA tmpAfa = visit(e.get(0));
+
+		int s = getNewStateID();
+		int t = getNewStateID();
+
+		HashSet<State> S = new HashSet<State>();
+		TreeSet<Transition> transitions = new TreeSet<Transition>();
+		State f = new State(s);
+		HashSet<State> F = new HashSet<State>();
+		HashSet<State> L = new HashSet<State>();
+
+		S.add(new State(s));
+		S.add(new State(t));
+		for (State state : tmpAfa.getS()) {
+			S.add(new State(state.getID()));
+		}
+
+		transitions.add(new Transition(s, tmpAfa.getf().getID(), AFA.epsilon, -1));
+		transitions.add(new Transition(s, t, AFA.epsilon, -1));
+		for (State state : tmpAfa.getF()) {
+			transitions.add(new Transition(state.getID(), tmpAfa.getf().getID(), AFA.epsilon, -1));
+			transitions.add(new Transition(state.getID(), t, AFA.epsilon, -1));
+		}
+		for (Transition transition : tmpAfa.getTau()) {
+			transitions.add(new Transition(transition.getSrc(), transition.getDst(), transition.getLabel(), transition.getPredicate()));
+		}
+
+		F.add(new State(t));
+
+		for (State state : tmpAfa.getL()) {
+			L.add(new State(state.getID()));
+		}
+
+		return new AFA(S, transitions, f, F, L);
+	}
+
+	// theNumberOfStatesを利用し、新たに状態に番号を割り振るためAFA内ではなくここに書いてある
+	private AFA copyAFA(AFA base) {
+		HashSet<State> S = new HashSet<State>();
+		TreeSet<Transition> tau = new TreeSet<Transition>();
+		State f = new State();
+		HashSet<State> F = new HashSet<State>();
+		HashSet<State> L = new HashSet<State>();
+
+		HashMap<Integer, Integer> newStateIDTable = new HashMap<Integer, Integer>();
+
+		for (State state : base.getS()) {
+			int newStateID = getNewStateID();
+			newStateIDTable.put(state.getID(), newStateID);
+			S.add(new State(newStateID));
+		}
+
+		for (Transition transition : base.getTau()) {
+			int src = transition.getSrc();
+			int dst = transition.getDst();
+			int label = transition.getLabel();
+			int predicate = transition.getPredicate();
+			tau.add(new Transition(newStateIDTable.get(src), newStateIDTable.get(dst), label, predicate));
+		}
+
+		f = new State(newStateIDTable.get(base.getf().getID()));
+
+		for (State state : base.getF()) {
+			F.add(new State(newStateIDTable.get(state.getID())));
+		}
+
+		for (State state : base.getL()) {
+			L.add(new State(newStateIDTable.get(state.getID())));
+		}
+
+		return new AFA(S, tau, f, F, L);
+	}
+
+	private AFA computePzeroAFA(AFA tmpAFA1) {
+
+		// Pnot pnot = new Pnot();
+		// AFA tmpAFA2 = pnot.accept(e.get(0));
+		AFA tmpAFA2 = computePnotAFA(copyAFA(tmpAFA1));
+
+		int s = getNewStateID();
+
+		HashSet<State> S = new HashSet<State>();
+		TreeSet<Transition> transitions = new TreeSet<Transition>();
+		State f = new State(s);
+		HashSet<State> F = new HashSet<State>();
+		HashSet<State> L = new HashSet<State>();
+
+		S.add(new State(s));
+		for (State state : tmpAFA1.getS()) {
+			S.add(new State(state.getID()));
+		}
+		for (State state : tmpAFA2.getS()) {
+			S.add(new State(state.getID()));
+		}
+
+		transitions.add(new Transition(s, tmpAFA1.getf().getID(), AFA.epsilon, -1));
+		transitions.add(new Transition(s, tmpAFA2.getf().getID(), AFA.epsilon, -1));
+		for (State state : tmpAFA1.getF()) {
+			transitions.add(new Transition(state.getID(), s, AFA.epsilon, -1));
+		}
+		for (Transition transition : tmpAFA1.getTau()) {
+			transitions.add(new Transition(transition.getSrc(), transition.getDst(), transition.getLabel(), transition.getPredicate()));
+		}
+		for (Transition transition : tmpAFA2.getTau()) {
+			transitions.add(new Transition(transition.getSrc(), transition.getDst(), transition.getLabel(), transition.getPredicate()));
+		}
+
+		F = tmpAFA2.getF();
+
+		for (State state : tmpAFA1.getL()) {
+			L.add(new State(state.getID()));
+		}
+		for (State state : tmpAFA2.getL()) {
+			L.add(new State(state.getID()));
+		}
+
+		return new AFA(S, transitions, f, F, L);
+
+	}
+
+	// e* ... A <- e A / !e ''
 	public class Pzero extends DefaultVisitor {
 		@Override
 		public AFA accept(Expression e) {
-			// System.out.println("here is Pzero : " + e);
-			System.out.println("WARNING : zero or more FOUND ... e* should be converted into A <- ( eA | !(eA) ε )");
 
-			// e* について、 e の AFA を tmpAfa として構築
-			// AFA tmpAfa = visitExpression(e.get(0));
-			AFA tmpAfa = visit(e.get(0));
+			AFA tmpAFA1 = visit(e.get(0));
+
+			// Pnot pnot = new Pnot();
+			// AFA tmpAFA2 = pnot.accept(e.get(0));
+			AFA tmpAFA2 = computePnotAFA(copyAFA(tmpAFA1));
 
 			int s = getNewStateID();
-			int t = getNewStateID();
 
 			HashSet<State> S = new HashSet<State>();
 			TreeSet<Transition> transitions = new TreeSet<Transition>();
@@ -312,75 +436,126 @@ public class AFAConverter extends VisitorMap<DefaultVisitor> {
 			HashSet<State> L = new HashSet<State>();
 
 			S.add(new State(s));
-			S.add(new State(t));
-			for (State state : tmpAfa.getS()) {
+			for (State state : tmpAFA1.getS()) {
+				S.add(new State(state.getID()));
+			}
+			for (State state : tmpAFA2.getS()) {
 				S.add(new State(state.getID()));
 			}
 
-			transitions.add(new Transition(s, tmpAfa.getf().getID(), AFA.epsilon, -1));
-			transitions.add(new Transition(s, t, AFA.epsilon, -1));
-			for (State state : tmpAfa.getF()) {
-				transitions.add(new Transition(state.getID(), tmpAfa.getf().getID(), AFA.epsilon, -1));
-				transitions.add(new Transition(state.getID(), t, AFA.epsilon, -1));
+			transitions.add(new Transition(s, tmpAFA1.getf().getID(), AFA.epsilon, -1));
+			transitions.add(new Transition(s, tmpAFA2.getf().getID(), AFA.epsilon, -1));
+			for (State state : tmpAFA1.getF()) {
+				transitions.add(new Transition(state.getID(), s, AFA.epsilon, -1));
 			}
-			for (Transition transition : tmpAfa.getTau()) {
+			for (Transition transition : tmpAFA1.getTau()) {
+				transitions.add(new Transition(transition.getSrc(), transition.getDst(), transition.getLabel(), transition.getPredicate()));
+			}
+			for (Transition transition : tmpAFA2.getTau()) {
 				transitions.add(new Transition(transition.getSrc(), transition.getDst(), transition.getLabel(), transition.getPredicate()));
 			}
 
-			F.add(new State(t));
+			F = tmpAFA2.getF();
 
-			for (State state : tmpAfa.getL()) {
+			for (State state : tmpAFA1.getL()) {
 				L.add(new State(state.getID()));
 			}
-
+			for (State state : tmpAFA2.getL()) {
+				L.add(new State(state.getID()));
+			}
 			return new AFA(S, transitions, f, F, L);
+
+			// return REzero(e);
 		}
 	}
 
-	/*
-	 * 正しく入力のファイルが変換されているのであればこの関数が呼び出されることはない 解析表現文法における e+ は ee* と変換され、eA
-	 * (Aは先ほどのe*から得られたもの) となる
-	 */
+	// e+ ... e e*
 	public class Pone extends DefaultVisitor {
 		@Override
 		public AFA accept(Expression e) {
-			// System.out.println("here is Pone : " + e);
-			System.out.println("WARNING : zero or more FOUND ... e+ should be converted into eA where A <- eA | !(eA) ε ");
-			// e+ について、 e の AFA を tmpAfa として構築
-			// AFA tmpAfa = visitExpression(e.get(0));
-			AFA tmpAfa = visit(e.get(0));
 
-			int s = getNewStateID();
-			int t = getNewStateID();
+			AFA tmpAFA1 = visit(e.get(0)); // e
+
+			AFA tmpAFA2 = computePzeroAFA(copyAFA(tmpAFA1)); // e*
 
 			HashSet<State> S = new HashSet<State>();
 			TreeSet<Transition> transitions = new TreeSet<Transition>();
-			State f = new State(s);
+			State f = tmpAFA1.getf();
 			HashSet<State> F = new HashSet<State>();
 			HashSet<State> L = new HashSet<State>();
 
-			S.add(new State(s));
-			S.add(new State(t));
-			for (State state : tmpAfa.getS()) {
+			for (State state : tmpAFA1.getS()) {
+				S.add(new State(state.getID()));
+			}
+			for (State state : tmpAFA2.getS()) {
 				S.add(new State(state.getID()));
 			}
 
-			transitions.add(new Transition(s, tmpAfa.getf().getID(), AFA.epsilon, -1));
-			for (State state : tmpAfa.getF()) {
-				transitions.add(new Transition(state.getID(), tmpAfa.getf().getID(), AFA.epsilon, -1));
-				transitions.add(new Transition(state.getID(), t, AFA.epsilon, -1));
+			for (State state : tmpAFA1.getF()) {
+				transitions.add(new Transition(state.getID(), tmpAFA2.getf().getID(), AFA.epsilon, -1));
 			}
-			for (Transition transition : tmpAfa.getTau()) {
+			for (Transition transition : tmpAFA1.getTau()) {
+				transitions.add(new Transition(transition.getSrc(), transition.getDst(), transition.getLabel(), transition.getPredicate()));
+			}
+			for (Transition transition : tmpAFA2.getTau()) {
 				transitions.add(new Transition(transition.getSrc(), transition.getDst(), transition.getLabel(), transition.getPredicate()));
 			}
 
-			F.add(new State(t));
+			for (State state : tmpAFA2.getF()) {
+				F.add(new State(state.getID()));
+			}
 
-			for (State state : tmpAfa.getL()) {
+			for (State state : tmpAFA1.getL()) {
+				L.add(new State(state.getID()));
+			}
+			for (State state : tmpAFA2.getL()) {
 				L.add(new State(state.getID()));
 			}
 
 			return new AFA(S, transitions, f, F, L);
+
+			// // System.out.println("here is Pone : " + e);
+			// System.out.println("WARNING : zero or more FOUND ... e+ should be converted into eA where A <- eA | !(eA) ε ");
+			// // e+ について、 e の AFA を tmpAfa として構築
+			// // AFA tmpAfa = visitExpression(e.get(0));
+			// AFA tmpAfa = visit(e.get(0));
+			//
+			// int s = getNewStateID();
+			// int t = getNewStateID();
+			//
+			// HashSet<State> S = new HashSet<State>();
+			// TreeSet<Transition> transitions = new TreeSet<Transition>();
+			// State f = new State(s);
+			// HashSet<State> F = new HashSet<State>();
+			// HashSet<State> L = new HashSet<State>();
+			//
+			// S.add(new State(s));
+			// S.add(new State(t));
+			// for (State state : tmpAfa.getS()) {
+			// S.add(new State(state.getID()));
+			// }
+			//
+			// transitions.add(new Transition(s, tmpAfa.getf().getID(),
+			// AFA.epsilon, -1));
+			// for (State state : tmpAfa.getF()) {
+			// transitions.add(new Transition(state.getID(),
+			// tmpAfa.getf().getID(), AFA.epsilon, -1));
+			// transitions.add(new Transition(state.getID(), t, AFA.epsilon,
+			// -1));
+			// }
+			// for (Transition transition : tmpAfa.getTau()) {
+			// transitions.add(new Transition(transition.getSrc(),
+			// transition.getDst(), transition.getLabel(),
+			// transition.getPredicate()));
+			// }
+			//
+			// F.add(new State(t));
+			//
+			// for (State state : tmpAfa.getL()) {
+			// L.add(new State(state.getID()));
+			// }
+			//
+			// return new AFA(S, transitions, f, F, L);
 		}
 	}
 
@@ -419,8 +594,52 @@ public class AFAConverter extends VisitorMap<DefaultVisitor> {
 				L.add(new State(state.getID()));
 			}
 
+			// <--
+			for (State state : L) {
+				transitions.add(new Transition(state.getID(), state.getID(), AFA.anyCharacter, -1));
+			}
+			// -->
+
 			return new AFA(S, transitions, f, F, L);
 		}
+	}
+
+	private AFA computePnotAFA(AFA tmpAfa) {
+		int s = getNewStateID();
+
+		HashSet<State> S = new HashSet<State>();
+		TreeSet<Transition> transitions = new TreeSet<Transition>();
+		State f = new State(s);
+		HashSet<State> F = new HashSet<State>();
+		HashSet<State> L = new HashSet<State>();
+
+		S.add(new State(s));
+		for (State state : tmpAfa.getS()) {
+			S.add(new State(state.getID()));
+		}
+
+		transitions.add(new Transition(s, tmpAfa.getf().getID(), AFA.epsilon, 1));
+		for (Transition transition : tmpAfa.getTau()) {
+			transitions.add(new Transition(transition.getSrc(), transition.getDst(), transition.getLabel(), transition.getPredicate()));
+		}
+
+		F.add(new State(s));
+
+		for (State state : tmpAfa.getF()) {
+			L.add(new State(state.getID()));
+		}
+
+		for (State state : tmpAfa.getL()) {
+			L.add(new State(state.getID()));
+		}
+
+		// <--
+		for (State state : L) {
+			transitions.add(new Transition(state.getID(), state.getID(), AFA.anyCharacter, -1));
+		}
+		// -->
+
+		return new AFA(S, transitions, f, F, L);
 	}
 
 	public class Pnot extends DefaultVisitor {
@@ -457,6 +676,12 @@ public class AFAConverter extends VisitorMap<DefaultVisitor> {
 			for (State state : tmpAfa.getL()) {
 				L.add(new State(state.getID()));
 			}
+
+			// <--
+			for (State state : L) {
+				transitions.add(new Transition(state.getID(), state.getID(), AFA.anyCharacter, -1));
+			}
+			// -->
 
 			return new AFA(S, transitions, f, F, L);
 		}

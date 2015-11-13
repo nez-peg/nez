@@ -28,6 +28,11 @@ public class And extends BooleanExpression {
 	}
 
 	@Override
+	public And recoverPredicate() {
+		return new And(left.recoverPredicate(), right.recoverPredicate());
+	}
+
+	@Override
 	public BooleanExpression assignBooleanValueToLogicVariable(boolean booleanValue, LogicVariable logicVariable) {
 		BooleanExpression tmp_left = left.assignBooleanValueToLogicVariable(booleanValue, logicVariable);
 		BooleanExpression tmp_right = right.assignBooleanValueToLogicVariable(booleanValue, logicVariable);

@@ -40,6 +40,11 @@ public class LogicVariable extends BooleanExpression {
 	}
 
 	@Override
+	public LogicVariable recoverPredicate() {
+		return new LogicVariable(((ID < 0) ? -ID : ID), value);
+	}
+
+	@Override
 	public BooleanExpression assignBooleanValueToLogicVariable(boolean booleanValue, LogicVariable logicVariable) {
 		if (ID == logicVariable.getID()) {
 			return new LogicVariable(-1, booleanValue);

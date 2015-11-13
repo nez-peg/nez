@@ -24,4 +24,10 @@ public class BooleanExpression {
 		System.out.println("WARNING");
 		return false;
 	}
+
+	public BooleanExpression recoverPredicate() {
+		System.out.println("WARNING");
+		return this.recoverPredicate();
+	}
+
 }

@@ -3,7 +3,8 @@ package nez.dfa;
 public class Transition implements Comparable<Transition> {
 	private State src;
 	private State dst;
-	private int label; // empty -> ε, otherwise -> alphabet
+	private int label; // any character -> -2 empty -> ε(-1), otherwise ->
+						// alphabet
 	private int predicate; // and predicate : 0, not predicate : 1
 
 	public Transition() {
@@ -65,7 +66,14 @@ public class Transition implements Comparable<Transition> {
 				return "((" + src + ",ε)," + dst + ")";
 			}
 		} else {
-			return "((" + src + "," + (char) this.label + ")," + dst + ")";
+			StringBuilder sb = new StringBuilder("((" + src + ",");
+			if (this.label == AFA.anyCharacter) {
+				sb.append(new StringBuilder("any"));
+			} else {
+				sb.append(new StringBuilder((char) this.label));
+			}
+			sb.append(new StringBuilder(")," + dst + ")"));
+			return sb.toString();
 		}
 	}
 

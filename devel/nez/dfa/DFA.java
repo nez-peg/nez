@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.TreeSet;
 
+import nez.io.StringContext;
+
 public class DFA {
 	private HashSet<State> S = null;
 	private TreeSet<Transition> tau = null;
@@ -88,6 +90,26 @@ public class DFA {
 	// min(A) = det(rev(det(rev(A))))
 	public DFA minimize() {
 		return rev(rev(new DFA(S, tau, f, F)).det()).det();
+	}
+
+	public boolean exec(StringContext context) {
+		ArrayList<ArrayList<Transition>> adjacencyList = toAdjacencyList();
+		int stateID = getf().getID();
+		for (int i = 0; i < context.length(); i++) {
+			boolean found = false;
+			for (Transition transition : adjacencyList.get(stateID)) {
+				if (transition.getLabel() == context.charAt(i)) {
+					stateID = transition.getDst();
+					found = true;
+					break;
+				}
+			}
+			if (!found) {
+				return false;
+			}
+		}
+
+		return getF().contains(new State(stateID));
 	}
 
 }

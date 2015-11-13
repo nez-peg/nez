@@ -111,6 +111,8 @@ public class StronglyConnectedComponent {
 		ArrayList<Set<State>> additionalAcceptingStateLA = new ArrayList<Set<State>>(V);
 		Map<Integer, Integer> fromGroupIDtoVertexID = new HashMap<Integer, Integer>();
 
+		int initialStateBelongsToThisGroup = -1;
+
 		int tmpV = V;
 		for (int i = 0; i < V; i++) {
 			additionalAcceptingState.add(new HashSet<State>());
@@ -124,7 +126,9 @@ public class StronglyConnectedComponent {
 		for (Transition e : tau) {
 			int src = e.getSrc();
 			int dst = e.getDst();
-			if (cmp.get(src) != cmp.get(dst)) {
+			// if (cmp.get(src) != cmp.get(dst)) {
+			if ((cmp.get(src).compareTo(cmp.get(dst)) != 0) || (src == dst && e.getLabel() != AFA.epsilon)) {
+
 				int srcGroupID = cmp.get(src);
 				int dstGroupID = cmp.get(dst);
 				int srcVertexID = src;
@@ -140,6 +144,13 @@ public class StronglyConnectedComponent {
 				int groupID = cmp.get(src);
 				int vertexID = (fromGroupIDtoVertexID.containsKey(groupID)) ? fromGroupIDtoVertexID.get(groupID) : groupID;
 
+				if (src == afa.getf().getID() || dst == afa.getf().getID()) {
+					if (initialStateBelongsToThisGroup != -1 && initialStateBelongsToThisGroup != groupID) {
+						System.out.println("FATAL ERROR : StronglyConnectedComponent : initial state belongs to a lot of groups");
+					}
+					initialStateBelongsToThisGroup = vertexID;
+				}
+
 				if (F.contains(new State(src))) {
 					additionalAcceptingState.get(groupID).add(new State(src));
 				}
@@ -152,8 +163,9 @@ public class StronglyConnectedComponent {
 				if (L.contains(new State(dst))) {
 					additionalAcceptingStateLA.get(groupID).add(new State(dst));
 				}
-				if (e.getLabel() == AFA.epsilon && e.getPredicate() == -1)
+				if (e.getLabel() == AFA.epsilon && e.getPredicate() == -1) {
 					continue;
+				}
 				newEdges.add(new Transition(vertexID, vertexID, e.getLabel(), e.getPredicate()));
 			}
 		}
@@ -177,6 +189,11 @@ public class StronglyConnectedComponent {
 				}
 			}
 		}
+
+		if (initialStateBelongsToThisGroup != -1) {
+			newEdges.add(new Transition(afa.getf().getID(), initialStateBelongsToThisGroup, AFA.epsilon, -1));
+		}
+
 		return new AFA(S, newEdges, new State(afa.getf().getID()), afa.getF(), afa.getL());
 	}
 }
