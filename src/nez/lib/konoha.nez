@@ -274,7 +274,7 @@ enum C {
 '''
 
 //local variable
-VariableDeclaration                = { "var" $name(Identifier) (":" $type(Type))? "=" $expr(Expression) #VarDecl }
+VariableDeclaration                = { "var" $name(Identifier) (":" $type(Type))? ( "=" $expr(Expression) )? #VarDecl }
                                    / { $anno(Modifiers)? $type(Type) $name(VarName) !"," ( "=" $expr(Expression) )? !"," #VarDecl }
                                    / { $anno(Modifiers)? $type(Type) $list(InitDeclList) #MultiVarDecl }
 InitDeclList                       = { $(InitDecl) ( "," $(InitDecl) )* #List }
