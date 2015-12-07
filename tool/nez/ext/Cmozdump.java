@@ -6,7 +6,7 @@ import java.io.IOException;
 
 import nez.main.Command;
 import nez.main.CommandContext;
-import nez.parser.vm.Moz;
+import nez.parser.hachi6.Moz;
 
 public class Cmozdump extends Command {
 	@Override

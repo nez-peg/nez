@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-import nez.parser.RuntimeContext;
+import nez.parser.moz.RuntimeContext;
 import nez.util.StringUtils;
 
 public abstract class SourceContext extends RuntimeContext {

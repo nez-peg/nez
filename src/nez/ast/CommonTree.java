@@ -11,12 +11,12 @@ public class CommonTree extends Tree<CommonTree> {
 	}
 
 	@Override
-	protected CommonTree newInstance(Symbol tag, Source source, long pos, int len, int size, Object value) {
+	public CommonTree newInstance(Symbol tag, Source source, long pos, int len, int size, Object value) {
 		return new CommonTree(tag, source, pos, len, size, value);
 	}
 
 	@Override
-	protected void link(int n, Symbol label, Object child) {
+	public void link(int n, Symbol label, Object child) {
 		this.set(n, label, (CommonTree) child);
 	}
 

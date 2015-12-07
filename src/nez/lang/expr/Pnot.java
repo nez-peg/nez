@@ -7,7 +7,7 @@ import nez.lang.PossibleAcceptance;
 import nez.lang.Typestate;
 import nez.lang.Visa;
 import nez.parser.AbstractGenerator;
-import nez.parser.Instruction;
+import nez.parser.moz.MozInst;
 
 public class Pnot extends Unary {
 	Pnot(SourcePosition s, Expression e) {
@@ -48,7 +48,7 @@ public class Pnot extends Unary {
 	}
 
 	@Override
-	public Instruction encode(AbstractGenerator bc, Instruction next, Instruction failjump) {
+	public MozInst encode(AbstractGenerator bc, MozInst next, MozInst failjump) {
 		return bc.encodePnot(this, next, failjump);
 	}
 

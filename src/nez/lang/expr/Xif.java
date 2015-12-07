@@ -8,7 +8,7 @@ import nez.lang.PossibleAcceptance;
 import nez.lang.Typestate;
 import nez.lang.Visa;
 import nez.parser.AbstractGenerator;
-import nez.parser.Instruction;
+import nez.parser.moz.MozInst;
 
 public class Xif extends Term implements Conditional {
 	boolean predicate;
@@ -62,7 +62,7 @@ public class Xif extends Term implements Conditional {
 	}
 
 	@Override
-	public Instruction encode(AbstractGenerator bc, Instruction next, Instruction failjump) {
+	public MozInst encode(AbstractGenerator bc, MozInst next, MozInst failjump) {
 		return bc.encodeXif(this, next, failjump);
 	}
 

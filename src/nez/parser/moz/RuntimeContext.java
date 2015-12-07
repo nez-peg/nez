@@ -1,10 +1,14 @@
-package nez.parser;
+package nez.parser.moz;
 
 import nez.NezProfier;
 import nez.Verbose;
 import nez.ast.ASTMachine;
 import nez.ast.Source;
 import nez.ast.Tree;
+import nez.parser.MemoEntry;
+import nez.parser.MemoTable;
+import nez.parser.StackData;
+import nez.parser.SymbolTable;
 import nez.util.ConsoleUtils;
 
 public abstract class RuntimeContext implements Source {
@@ -90,11 +94,11 @@ public abstract class RuntimeContext implements Source {
 		}
 		this.stacks[0].ref = null;
 		this.stacks[0].value = 0;
-		this.stacks[1].ref = new IExit(false);
+		this.stacks[1].ref = new Moz.Exit(false);
 		this.stacks[1].value = this.getPosition();
 		this.stacks[2].ref = astMachine.saveTransactionPoint();
 		this.stacks[2].value = symbolTable.savePoint();
-		this.stacks[3].ref = new IExit(true);
+		this.stacks[3].ref = new Moz.Exit(true);
 		this.stacks[3].value = 0;
 		this.catchStackTop = 0;
 		this.usedStackTop = 3;
@@ -128,7 +132,7 @@ public abstract class RuntimeContext implements Source {
 		return s;
 	}
 
-	public final void pushAlt(Instruction failjump/* op.failjump */) {
+	public final void pushAlt(MozInst failjump/* op.failjump */) {
 		StackData s0 = newUnusedStack();
 		StackData s1 = newUnusedStack();
 		StackData s2 = newUnusedStack();
@@ -149,7 +153,7 @@ public abstract class RuntimeContext implements Source {
 		return pos;
 	}
 
-	public final Instruction fail() {
+	public final MozInst fail() {
 		StackData s0 = stacks[catchStackTop];
 		StackData s1 = stacks[catchStackTop + 1];
 		StackData s2 = stacks[catchStackTop + 2];
@@ -164,10 +168,10 @@ public abstract class RuntimeContext implements Source {
 		this.astMachine.rollTransactionPoint(s2.ref);
 		this.symbolTable.rollBack((int) s2.value);
 		assert (s1.ref != null);
-		return (Instruction) s1.ref;
+		return (MozInst) s1.ref;
 	}
 
-	public final Instruction skip(Instruction next) {
+	public final MozInst skip(MozInst next) {
 		StackData s1 = stacks[catchStackTop + 1];
 		if (s1.value == this.pos) {
 			return fail();
@@ -178,218 +182,6 @@ public abstract class RuntimeContext implements Source {
 		s2.value = symbolTable.savePoint();
 		return next;
 	}
-
-	// // ----------------------------------------------------------------------
-	// // Instruction
-	//
-	// private ContextStack[] contextStacks = null;
-	//
-	// public final void initJumpStack(MemoTable memoTable) {
-	// this.lastAppendedLog = new ASTLog();
-	// this.contextStacks = new ContextStack[StackSize];
-	// for(int i = 0; i < StackSize; i++) {
-	// this.contextStacks[i] = new ContextStack();
-	// }
-	// this.contextStacks[0].jump = new IExit(false);
-	// //this.contextStacks[0].debugFailStackFlag = true;
-	// this.contextStacks[0].pos = this.getPosition();
-	// this.contextStacks[0].topASTLog = this.lastAppendedLog;
-	// this.contextStacks[1].jump = new IExit(true); // for a point of the first
-	// called nonterminal
-	// this.contextStacks[1].pos = this.getPosition();
-	// this.catchStackTop = 0;
-	// this.usedStackTop = 1;
-	// if(this.treeTransducer == null) {
-	// treeTransducer = new NoTreeTransducer();
-	// }
-	// this.memoTable = memoTable;
-	// if(Verbose.PackratParsing) {
-	// Verbose.println("MemoTable: " +
-	// this.memoTable.getClass().getSimpleName());
-	// }
-	// }
-	//
-	// public final ContextStack getUsedStackTop0() {
-	// return contextStacks[usedStackTop];
-	// }
-	//
-	// private ContextStack newUnusedStack0() {
-	// usedStackTop++;
-	// if(contextStacks.length == usedStackTop) {
-	// ContextStack[] newstack = new ContextStack[contextStacks.length*2];
-	// System.arraycopy(contextStacks, 0, newstack, 0, contextStacks.length);
-	// for(int i = this.contextStacks.length; i < newstack.length; i++) {
-	// newstack[i] = new ContextStack();
-	// }
-	// contextStacks = newstack;
-	// }
-	// return contextStacks[usedStackTop];
-	// }
-	//
-	// public final void dumpStack0(String op) {
-	// System.out.println(op + " F="+this.catchStackTop +", T=" +usedStackTop);
-	// }
-	//
-	// public final Instruction opIAlt(IAlt op) {
-	// ContextStack stackTop = newUnusedStack0();
-	// stackTop.prevFailCatch = catchStackTop;
-	// catchStackTop = usedStackTop;
-	// stackTop.jump = op.failjump;
-	// stackTop.pos = this.pos;
-	// stackTop.topASTLog = this.lastAppendedLog;
-	// assert(stackTop.topASTLog != null);
-	// //stackTop.debugFailStackFlag = true;
-	// return op.next;
-	// }
-	//
-	// public final Instruction opISucc(Instruction op) {
-	// ContextStack stackTop = contextStacks[catchStackTop];
-	// //assert(stackTop.debugFailStackFlag);
-	// usedStackTop = catchStackTop - 1;
-	// catchStackTop = stackTop.prevFailCatch;
-	// return op.next;
-	// }
-	//
-	// public final Instruction opIFail() {
-	// ContextStack stackTop = contextStacks[catchStackTop];
-	// //assert(stackTop.debugFailStackFlag);
-	// usedStackTop = catchStackTop - 1;
-	// catchStackTop = stackTop.prevFailCatch;
-	// if(this.lprof != null) {
-	// this.lprof.statBacktrack(stackTop.pos, this.pos);
-	// }
-	// rollback(stackTop.pos);
-	// if(stackTop.topASTLog != this.lastAppendedLog) {
-	// this.logAbort(stackTop.topASTLog, true);
-	// }
-	// return stackTop.jump;
-	// }
-	//
-	//
-	// public final Instruction opISkip(ISkip op) {
-	// ContextStack stackTop = contextStacks[catchStackTop];
-	// //assert(stackTop.debugFailStackFlag);
-	// if(this.pos == stackTop.pos) {
-	// return opIFail();
-	// }
-	// stackTop.pos = this.pos;
-	// stackTop.topASTLog = this.lastAppendedLog;
-	// assert(stackTop.topASTLog != null);
-	// return op.next;
-	// }
-	//
-	// final ContextStack newUnusedLocalStack0() {
-	// ContextStack stackTop = newUnusedStack0();
-	// assert(this.catchStackTop < this.usedStackTop);
-	// //stackTop.debugFailStackFlag = false;
-	// return stackTop;
-	// }
-	//
-	// final ContextStack popLocalStack0() {
-	// ContextStack stackTop = contextStacks[this.usedStackTop];
-	// usedStackTop--;
-	// //assert(!stackTop.debugFailStackFlag);
-	// assert(this.catchStackTop <= this.usedStackTop);
-	// return stackTop;
-	// }
-	//
-	// public final Instruction opICall(ICall op) {
-	// ContextStack top = newUnusedLocalStack0();
-	// top.jump = op.jump;
-	// return op.next;
-	// }
-	//
-	// public final Instruction opIRet() {
-	// Instruction jump = popLocalStack0().jump;
-	// return jump;
-	// }
-	//
-	// public final Instruction opIPos(IPos op) {
-	// ContextStack top = newUnusedLocalStack0();
-	// top.pos = pos;
-	// return op.next;
-	// }
-	//
-	// public final Instruction opIBack(IBack op) {
-	// ContextStack top = popLocalStack0();
-	// rollback(top.pos);
-	// return op.next;
-	// }
-
-	// public final Instruction opNodePush(Instruction op) {
-	// ContextStack top = newUnusedLocalStack0();
-	// top.topASTLog = this.lastAppendedLog;
-	// this.left = null;
-	// return op.next;
-	// }
-	//
-	// public final Instruction opNodeStore(INodeStore op) {
-	// ContextStack top = popLocalStack0();
-	// if(top.topASTLog.next != null) {
-	// Object child = this.createNode(top.topASTLog.next);
-	// logAbort(top.topASTLog, false);
-	// if(child != null) {
-	// pushDataLog(ASTLog.Link, op.index, child);
-	// }
-	// this.left = child;
-	// //System.out.println("LINK " + this.lastAppendedLog);
-	// }
-	// return op.next;
-	// }
-	//
-	// public final Instruction opICommit(Instruction op) {
-	// ContextStack top = popLocalStack0();
-	// if(top.topASTLog.next != null) {
-	// Object child = this.createNode(top.topASTLog.next);
-	// logAbort(top.topASTLog, false);
-	// this.left = child;
-	// //System.out.println("LINK " + this.lastAppendedLog);
-	// }
-	// return op.next;
-	// }
-	//
-	// public final Instruction opAbort(Instruction op) {
-	// ContextStack top = popLocalStack0();
-	// if(top.topASTLog.next != null) {
-	// //Object child = this.logCommit(top.lastLog.next);
-	// logAbort(top.topASTLog, false);
-	// this.left = null;
-	// }
-	// return op.next;
-	// }
-	//
-	// public final Instruction opILink(ILink op) {
-	// if(this.left != null) {
-	// log(ASTLog.Link, op.index, this.left);
-	// }
-	// return op.next;
-	// }
-	//
-	// public final Instruction opINew(INew op) {
-	// pushDataLog(ASTLog.New, this.pos + op.shift, null); //op.e);
-	// return op.next;
-	// }
-	//
-	// public final Instruction opILeftNew(ILeftNew op) {
-	// pushDataLog(ASTLog.Swap, this.pos + op.shift, null); // op.e);
-	// return op.next;
-	// }
-	//
-	//
-	// public final Instruction opITag(ITag op) {
-	// pushDataLog(ASTLog.Tag, 0, op.tag);
-	// return op.next;
-	// }
-	//
-	// public final Instruction opIReplace(IReplace op) {
-	// pushDataLog(ASTLog.Replace, 0, op.value);
-	// return op.next;
-	// }
-	//
-	// public final Instruction opICapture(ICapture op) {
-	// pushDataLog(ASTLog.Capture, this.pos, null);
-	// return op.next;
-	// }
 
 	// Memoization
 	MemoTable memoTable;

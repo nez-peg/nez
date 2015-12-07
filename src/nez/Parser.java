@@ -5,17 +5,17 @@ import nez.ast.Tree;
 import nez.ast.TreeTransducer;
 import nez.io.SourceContext;
 import nez.parser.GenerativeGrammar;
-import nez.parser.Instruction;
 import nez.parser.MemoTable;
-import nez.parser.NezCode;
-import nez.parser.NezCompiler;
-import nez.parser.ParsingMachine;
-import nez.parser.vm.MozCompiler;
+import nez.parser.hachi6.MozCompiler;
+import nez.parser.moz.MozInst;
+import nez.parser.moz.MozCode;
+import nez.parser.moz.NezCompiler;
+import nez.parser.moz.ParsingMachine;
 
 public class Parser {
 	private GenerativeGrammar gg;
 	protected Strategy strategy;
-	protected NezCode compiledCode = null;
+	protected MozCode compiledCode = null;
 
 	public Parser(GenerativeGrammar gg, Strategy option) {
 		this.gg = gg;
@@ -30,7 +30,7 @@ public class Parser {
 		return this.strategy;
 	}
 
-	public final NezCode getCompiledCode() {
+	public final MozCode getCompiledCode() {
 		return compiledCode;
 	}
 
@@ -59,7 +59,7 @@ public class Parser {
 
 	/* -------------------------------------------------------------------- */
 
-	public Instruction compile() {
+	public MozInst compile() {
 		// add for MozCompiler
 		if (strategy.isEnabled("Moz", Strategy.Moz)) {
 			MozCompiler mozCompiler = new MozCompiler(strategy);
@@ -75,7 +75,7 @@ public class Parser {
 	}
 
 	public final boolean perform(ParsingMachine machine, SourceContext s, Tree<?> prototype) {
-		Instruction pc = this.compile();
+		MozInst pc = this.compile();
 		s.init(newMemoTable(s), prototype);
 		if (prof != null) {
 			s.startProfiling(prof);

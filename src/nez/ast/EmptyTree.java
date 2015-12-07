@@ -7,12 +7,12 @@ class EmptyTree extends Tree<EmptyTree> {
 	}
 
 	@Override
-	protected EmptyTree newInstance(Symbol tag, Source source, long pos, int len, int size, Object value) {
+	public EmptyTree newInstance(Symbol tag, Source source, long pos, int len, int size, Object value) {
 		return null;
 	}
 
 	@Override
-	protected void link(int n, Symbol label, Object child) {
+	public void link(int n, Symbol label, Object child) {
 	}
 
 	@Override

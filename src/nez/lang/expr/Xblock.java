@@ -5,7 +5,7 @@ import nez.lang.Expression;
 import nez.lang.GrammarTransducer;
 import nez.lang.Visa;
 import nez.parser.AbstractGenerator;
-import nez.parser.Instruction;
+import nez.parser.moz.MozInst;
 
 public class Xblock extends Unary {
 	Xblock(SourcePosition s, Expression e) {
@@ -41,7 +41,7 @@ public class Xblock extends Unary {
 	}
 
 	@Override
-	public Instruction encode(AbstractGenerator bc, Instruction next, Instruction failjump) {
+	public MozInst encode(AbstractGenerator bc, MozInst next, MozInst failjump) {
 		return bc.encodeXblock(this, next, failjump);
 	}
 

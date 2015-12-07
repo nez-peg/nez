@@ -35,6 +35,7 @@ import nez.lang.expr.Xis;
 import nez.lang.expr.Xlocal;
 import nez.lang.expr.Xmatch;
 import nez.lang.expr.Xon;
+import nez.parser.moz.MozInst;
 import nez.util.FileBuilder;
 import nez.util.StringUtils;
 
@@ -318,84 +319,84 @@ public abstract class ParserGenerator extends AbstractGenerator {
 	public abstract void visitXindent(Xindent p);
 
 	@Override
-	public final Instruction encode(Expression e, Instruction next, Instruction failjump) {
+	public final MozInst encode(Expression e, MozInst next, MozInst failjump) {
 		return e.encode(this, next, failjump);
 	}
 
 	@Override
-	public final Instruction encodeCany(Cany p, Instruction next, Instruction failjump) {
+	public final MozInst encodeCany(Cany p, MozInst next, MozInst failjump) {
 		this.visitCany(p);
 		return null;
 	}
 
 	@Override
-	public final Instruction encodeCbyte(Cbyte p, Instruction next, Instruction failjump) {
+	public final MozInst encodeCbyte(Cbyte p, MozInst next, MozInst failjump) {
 		this.visitCbyte(p);
 		return null;
 	}
 
 	@Override
-	public final Instruction encodeCset(Cset p, Instruction next, Instruction failjump) {
+	public final MozInst encodeCset(Cset p, MozInst next, MozInst failjump) {
 		this.visitCset(p);
 		return null;
 	}
 
 	@Override
-	public final Instruction encodeCmulti(Cmulti p, Instruction next, Instruction failjump) {
+	public final MozInst encodeCmulti(Cmulti p, MozInst next, MozInst failjump) {
 		this.visitCmulti(p);
 		return null;
 	}
 
 	@Override
-	public final Instruction encodePfail(Expression p) {
+	public final MozInst encodePfail(Expression p) {
 		this.visitPfail(p);
 		return null;
 	}
 
 	@Override
-	public final Instruction encodePoption(Poption p, Instruction next) {
+	public final MozInst encodePoption(Poption p, MozInst next) {
 		this.visitPoption(p);
 		return null;
 	}
 
 	@Override
-	public final Instruction encodePzero(Pzero p, Instruction next) {
+	public final MozInst encodePzero(Pzero p, MozInst next) {
 		this.visitPzero(p);
 		return null;
 	}
 
 	@Override
-	public final Instruction encodePone(Pone p, Instruction next, Instruction failjump) {
+	public final MozInst encodePone(Pone p, MozInst next, MozInst failjump) {
 		this.visitPone(p);
 		return null;
 	}
 
 	@Override
-	public final Instruction encodePand(Pand p, Instruction next, Instruction failjump) {
+	public final MozInst encodePand(Pand p, MozInst next, MozInst failjump) {
 		this.visitPand(p);
 		return null;
 	}
 
 	@Override
-	public final Instruction encodePnot(Pnot p, Instruction next, Instruction failjump) {
+	public final MozInst encodePnot(Pnot p, MozInst next, MozInst failjump) {
 		this.visitPnot(p);
 		return null;
 	}
 
 	@Override
-	public final Instruction encodePsequence(Psequence p, Instruction next, Instruction failjump) {
+	public final MozInst encodePsequence(Psequence p, MozInst next, MozInst failjump) {
 		this.visitPsequence(p);
 		return null;
 	}
 
 	@Override
-	public final Instruction encodePchoice(Pchoice p, Instruction next, Instruction failjump) {
+	public final MozInst encodePchoice(Pchoice p, MozInst next, MozInst failjump) {
 		this.visitPchoice(p);
 		return null;
 	}
 
 	@Override
-	public final Instruction encodeNonTerminal(NonTerminal p, Instruction next, Instruction failjump) {
+	public final MozInst encodeNonTerminal(NonTerminal p, MozInst next, MozInst failjump) {
 		this.visitNonTerminal(p);
 		return null;
 	}
@@ -403,7 +404,7 @@ public abstract class ParserGenerator extends AbstractGenerator {
 	// AST Construction
 
 	@Override
-	public final Instruction encodeTdetree(Tdetree p, Instruction next, Instruction failjump) {
+	public final MozInst encodeTdetree(Tdetree p, MozInst next, MozInst failjump) {
 		if (enabledASTConstruction) {
 			this.visitTdetree(p);
 		} else {
@@ -413,7 +414,7 @@ public abstract class ParserGenerator extends AbstractGenerator {
 	}
 
 	@Override
-	public final Instruction encodeTlink(Tlink p, Instruction next, Instruction failjump) {
+	public final MozInst encodeTlink(Tlink p, MozInst next, MozInst failjump) {
 		if (enabledASTConstruction) {
 			this.visitTlink(p);
 		} else {
@@ -423,7 +424,7 @@ public abstract class ParserGenerator extends AbstractGenerator {
 	}
 
 	@Override
-	public final Instruction encodeTnew(Tnew p, Instruction next) {
+	public final MozInst encodeTnew(Tnew p, MozInst next) {
 		if (enabledASTConstruction) {
 			this.visitTnew(p);
 		}
@@ -431,7 +432,7 @@ public abstract class ParserGenerator extends AbstractGenerator {
 	}
 
 	@Override
-	public final Instruction encodeTlfold(Tlfold p, Instruction next) {
+	public final MozInst encodeTlfold(Tlfold p, MozInst next) {
 		if (enabledASTConstruction) {
 			this.visitTlfold(p);
 		}
@@ -439,7 +440,7 @@ public abstract class ParserGenerator extends AbstractGenerator {
 	}
 
 	@Override
-	public final Instruction encodeTcapture(Tcapture p, Instruction next) {
+	public final MozInst encodeTcapture(Tcapture p, MozInst next) {
 		if (enabledASTConstruction) {
 			this.visitTcapture(p);
 		}
@@ -447,7 +448,7 @@ public abstract class ParserGenerator extends AbstractGenerator {
 	}
 
 	@Override
-	public final Instruction encodeTtag(Ttag p, Instruction next) {
+	public final MozInst encodeTtag(Ttag p, MozInst next) {
 		if (enabledASTConstruction) {
 			this.visitTtag(p);
 		}
@@ -455,7 +456,7 @@ public abstract class ParserGenerator extends AbstractGenerator {
 	}
 
 	@Override
-	public final Instruction encodeTreplace(Treplace p, Instruction next) {
+	public final MozInst encodeTreplace(Treplace p, MozInst next) {
 		if (enabledASTConstruction) {
 			this.visitTreplace(p);
 		}
@@ -463,73 +464,73 @@ public abstract class ParserGenerator extends AbstractGenerator {
 	}
 
 	@Override
-	public final Instruction encodeXblock(Xblock p, Instruction next, Instruction failjump) {
+	public final MozInst encodeXblock(Xblock p, MozInst next, MozInst failjump) {
 		this.visitXblock(p);
 		return null;
 	}
 
 	@Override
-	public final Instruction encodeXlocal(Xlocal p, Instruction next, Instruction failjump) {
+	public final MozInst encodeXlocal(Xlocal p, MozInst next, MozInst failjump) {
 		this.visitXlocal(p);
 		return null;
 	}
 
 	@Override
-	public final Instruction encodeXsymbol(Xsymbol p, Instruction next, Instruction failjump) {
+	public final MozInst encodeXsymbol(Xsymbol p, MozInst next, MozInst failjump) {
 		this.visitXdef(p);
 		return null;
 	}
 
 	@Override
-	public final Instruction encodeXexists(Xexists p, Instruction next, Instruction failjump) {
+	public final MozInst encodeXexists(Xexists p, MozInst next, MozInst failjump) {
 		this.visitXexists(p);
 		return null;
 	}
 
 	@Override
-	public final Instruction encodeXmatch(Xmatch p, Instruction next, Instruction failjump) {
+	public final MozInst encodeXmatch(Xmatch p, MozInst next, MozInst failjump) {
 		this.visitXmatch(p);
 		return null;
 	}
 
 	@Override
-	public final Instruction encodeXis(Xis p, Instruction next, Instruction failjump) {
+	public final MozInst encodeXis(Xis p, MozInst next, MozInst failjump) {
 		this.visitXis(p);
 		return null;
 	}
 
 	@Override
-	public final Instruction encodeXdefindent(Xdefindent p, Instruction next, Instruction failjump) {
+	public final MozInst encodeXdefindent(Xdefindent p, MozInst next, MozInst failjump) {
 		this.visitXdefindent(p);
 		return null;
 	}
 
 	@Override
-	public final Instruction encodeXindent(Xindent p, Instruction next, Instruction failjump) {
+	public final MozInst encodeXindent(Xindent p, MozInst next, MozInst failjump) {
 		this.visitXindent(p);
 		return null;
 	}
 
 	@Override
-	public final Instruction encodePempty(Expression p, Instruction next) {
+	public final MozInst encodePempty(Expression p, MozInst next) {
 		this.visitPempty(p);
 		return null;
 	}
 
 	@Override
-	public final Instruction encodeXon(Xon p, Instruction next, Instruction failjump) {
+	public final MozInst encodeXon(Xon p, MozInst next, MozInst failjump) {
 		this.visitXon(p);
 		return null;
 	}
 
 	@Override
-	public final Instruction encodeXif(Xif p, Instruction next, Instruction failjump) {
+	public final MozInst encodeXif(Xif p, MozInst next, MozInst failjump) {
 		this.visitXif(p);
 		return null;
 	}
 
 	@Override
-	public final Instruction encodeExtension(Expression p, Instruction next, Instruction failjump) {
+	public final MozInst encodeExtension(Expression p, MozInst next, MozInst failjump) {
 		this.visitUndefined(p);
 		return null;
 	}

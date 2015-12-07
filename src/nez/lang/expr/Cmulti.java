@@ -5,7 +5,7 @@ import nez.lang.Expression;
 import nez.lang.GrammarTransducer;
 import nez.lang.PossibleAcceptance;
 import nez.parser.AbstractGenerator;
-import nez.parser.Instruction;
+import nez.parser.moz.MozInst;
 import nez.util.StringUtils;
 
 public class Cmulti extends Char {
@@ -57,7 +57,7 @@ public class Cmulti extends Char {
 	}
 
 	@Override
-	public Instruction encode(AbstractGenerator bc, Instruction next, Instruction failjump) {
+	public MozInst encode(AbstractGenerator bc, MozInst next, MozInst failjump) {
 		return bc.encodeCmulti(this, next, failjump);
 	}
 }

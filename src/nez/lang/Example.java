@@ -9,8 +9,8 @@ import nez.Verbose;
 import nez.ast.Tree;
 import nez.ast.TreeUtils;
 import nez.io.SourceContext;
-import nez.parser.Coverage;
-import nez.parser.NezCode;
+import nez.parser.moz.Coverage;
+import nez.parser.moz.MozCode;
 import nez.util.ConsoleUtils;
 import nez.util.FileBuilder;
 
@@ -164,7 +164,7 @@ public class Example {
 				parserMap.put(name, p);
 			}
 			String path = baseName + "_" + ex.getName() + ".moz";
-			NezCode.writeMozCode(p, path);
+			MozCode.writeMozCode(p, path);
 			String path2 = String.format("%s_%s%03d.test_moz", baseName, ex.getName(), id);
 			id++;
 			ex.writeMozTest(path2);

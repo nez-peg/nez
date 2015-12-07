@@ -7,7 +7,7 @@ import nez.lang.Expression;
 import nez.lang.GrammarTransducer;
 import nez.lang.Visa;
 import nez.parser.AbstractGenerator;
-import nez.parser.Instruction;
+import nez.parser.moz.MozInst;
 
 public class Xis extends Unary implements Contextual {
 	// final Grammar g;
@@ -75,7 +75,7 @@ public class Xis extends Unary implements Contextual {
 	}
 
 	@Override
-	public Instruction encode(AbstractGenerator bc, Instruction next, Instruction failjump) {
+	public MozInst encode(AbstractGenerator bc, MozInst next, MozInst failjump) {
 		return bc.encodeXis(this, next, failjump);
 	}
 }

@@ -36,9 +36,9 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements
 		this.labels = (this.subTree != null) ? new Symbol[this.subTree.length] : EmptyLabels;
 	}
 
-	protected abstract E newInstance(Symbol tag, Source source, long pos, int len, int objectsize, Object value);
+	public abstract E newInstance(Symbol tag, Source source, long pos, int len, int objectsize, Object value);
 
-	protected abstract void link(int n, Symbol label, Object child);
+	public abstract void link(int n, Symbol label, Object child);
 
 	public abstract E newInstance(Symbol tag, int objectsize, Object value);
 
@@ -65,6 +65,11 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements
 
 	public final long getSourcePosition() {
 		return this.pos;
+	}
+
+	public final void setPosition(int pos, int len) {
+		this.pos = pos;
+		this.length = len;
 	}
 
 	public final int getLineNum() {
@@ -147,9 +152,10 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements
 		return oldValue;
 	}
 
-	public final void set(int index, Symbol label, E node) {
+	@SuppressWarnings("unchecked")
+	public final void set(int index, Symbol label, Tree<?> node) {
 		this.labels[index] = label;
-		this.subTree[index] = node;
+		this.subTree[index] = (E) node;
 	}
 
 	public final int indexOf(Symbol label) {

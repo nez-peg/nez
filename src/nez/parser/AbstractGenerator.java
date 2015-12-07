@@ -35,6 +35,7 @@ import nez.lang.expr.Xis;
 import nez.lang.expr.Xlocal;
 import nez.lang.expr.Xmatch;
 import nez.lang.expr.Xon;
+import nez.parser.moz.MozInst;
 
 public abstract class AbstractGenerator {
 	protected Strategy strategy;
@@ -96,78 +97,78 @@ public abstract class AbstractGenerator {
 
 	// encoding
 
-	public abstract Instruction encode(Expression e, Instruction next, Instruction failjump);
+	public abstract MozInst encode(Expression e, MozInst next, MozInst failjump);
 
-	public abstract Instruction encodePfail(Expression p);
+	public abstract MozInst encodePfail(Expression p);
 
-	public abstract Instruction encodeCany(Cany p, Instruction next, Instruction failjump);
+	public abstract MozInst encodeCany(Cany p, MozInst next, MozInst failjump);
 
-	public abstract Instruction encodeCbyte(Cbyte p, Instruction next, Instruction failjump);
+	public abstract MozInst encodeCbyte(Cbyte p, MozInst next, MozInst failjump);
 
-	public abstract Instruction encodeCset(Cset p, Instruction next, Instruction failjump);
+	public abstract MozInst encodeCset(Cset p, MozInst next, MozInst failjump);
 
-	public abstract Instruction encodeCmulti(Cmulti p, Instruction next, Instruction failjump);
+	public abstract MozInst encodeCmulti(Cmulti p, MozInst next, MozInst failjump);
 
-	public abstract Instruction encodePoption(Poption p, Instruction next);
+	public abstract MozInst encodePoption(Poption p, MozInst next);
 
-	public abstract Instruction encodePzero(Pzero p, Instruction next);
+	public abstract MozInst encodePzero(Pzero p, MozInst next);
 
-	public abstract Instruction encodePone(Pone p, Instruction next, Instruction failjump);
+	public abstract MozInst encodePone(Pone p, MozInst next, MozInst failjump);
 
-	public abstract Instruction encodePand(Pand p, Instruction next, Instruction failjump);
+	public abstract MozInst encodePand(Pand p, MozInst next, MozInst failjump);
 
-	public abstract Instruction encodePnot(Pnot p, Instruction next, Instruction failjump);
+	public abstract MozInst encodePnot(Pnot p, MozInst next, MozInst failjump);
 
-	public abstract Instruction encodePsequence(Psequence p, Instruction next, Instruction failjump);
+	public abstract MozInst encodePsequence(Psequence p, MozInst next, MozInst failjump);
 
-	public abstract Instruction encodePchoice(Pchoice p, Instruction next, Instruction failjump);
+	public abstract MozInst encodePchoice(Pchoice p, MozInst next, MozInst failjump);
 
-	public abstract Instruction encodeNonTerminal(NonTerminal p, Instruction next, Instruction failjump);
+	public abstract MozInst encodeNonTerminal(NonTerminal p, MozInst next, MozInst failjump);
 
 	// AST Construction
-	public abstract Instruction encodeTnew(Tnew p, Instruction next);
+	public abstract MozInst encodeTnew(Tnew p, MozInst next);
 
-	public abstract Instruction encodeTlfold(Tlfold p, Instruction next);
+	public abstract MozInst encodeTlfold(Tlfold p, MozInst next);
 
-	public abstract Instruction encodeTlink(Tlink p, Instruction next, Instruction failjump);
+	public abstract MozInst encodeTlink(Tlink p, MozInst next, MozInst failjump);
 
-	public abstract Instruction encodeTcapture(Tcapture p, Instruction next);
+	public abstract MozInst encodeTcapture(Tcapture p, MozInst next);
 
-	public abstract Instruction encodeTtag(Ttag p, Instruction next);
+	public abstract MozInst encodeTtag(Ttag p, MozInst next);
 
-	public abstract Instruction encodeTreplace(Treplace p, Instruction next);
+	public abstract MozInst encodeTreplace(Treplace p, MozInst next);
 
-	public abstract Instruction encodeTdetree(Tdetree p, Instruction next, Instruction failjump);
+	public abstract MozInst encodeTdetree(Tdetree p, MozInst next, MozInst failjump);
 
 	// Symbol Tables
-	public abstract Instruction encodeXblock(Xblock p, Instruction next, Instruction failjump);
+	public abstract MozInst encodeXblock(Xblock p, MozInst next, MozInst failjump);
 
-	public abstract Instruction encodeXsymbol(Xsymbol p, Instruction next, Instruction failjump);
+	public abstract MozInst encodeXsymbol(Xsymbol p, MozInst next, MozInst failjump);
 
-	public abstract Instruction encodeXmatch(Xmatch p, Instruction next, Instruction failjump);
+	public abstract MozInst encodeXmatch(Xmatch p, MozInst next, MozInst failjump);
 
-	public abstract Instruction encodeXis(Xis p, Instruction next, Instruction failjump);
+	public abstract MozInst encodeXis(Xis p, MozInst next, MozInst failjump);
 
-	public abstract Instruction encodeXdefindent(Xdefindent p, Instruction next, Instruction failjump);
+	public abstract MozInst encodeXdefindent(Xdefindent p, MozInst next, MozInst failjump);
 
-	public abstract Instruction encodeXindent(Xindent p, Instruction next, Instruction failjump);
+	public abstract MozInst encodeXindent(Xindent p, MozInst next, MozInst failjump);
 
-	public abstract Instruction encodeXexists(Xexists existsSymbol, Instruction next, Instruction failjump);
+	public abstract MozInst encodeXexists(Xexists existsSymbol, MozInst next, MozInst failjump);
 
-	public abstract Instruction encodeXlocal(Xlocal localTable, Instruction next, Instruction failjump);
+	public abstract MozInst encodeXlocal(Xlocal localTable, MozInst next, MozInst failjump);
 
 	// Extension
-	public abstract Instruction encodeExtension(Expression p, Instruction next, Instruction failjump);
+	public abstract MozInst encodeExtension(Expression p, MozInst next, MozInst failjump);
 
-	public Instruction encodePempty(Expression empty, Instruction next) {
+	public MozInst encodePempty(Expression empty, MozInst next) {
 		return next;
 	}
 
-	public Instruction encodeXon(Xon p, Instruction next, Instruction failjump) {
+	public MozInst encodeXon(Xon p, MozInst next, MozInst failjump) {
 		return p.get(0).encode(this, next, failjump);
 	}
 
-	public Instruction encodeXif(Xif ifFlag, Instruction next, Instruction failjump) {
+	public MozInst encodeXif(Xif ifFlag, MozInst next, MozInst failjump) {
 		return next;
 	}
 

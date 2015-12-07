@@ -38,7 +38,7 @@ import nez.lang.expr.Xmatch;
 import nez.lang.expr.Xsymbol;
 import nez.parser.AbstractGenerator;
 import nez.parser.GenerativeGrammar;
-import nez.parser.Instruction;
+import nez.parser.moz.MozInst;
 
 public class DebugVMCompiler extends AbstractGenerator {
 	GenerativeGrammar peg;
@@ -67,7 +67,7 @@ public class DebugVMCompiler extends AbstractGenerator {
 		return this.builder.getModule();
 	}
 
-	public Instruction encodeProduction(Production p) {
+	public MozInst encodeProduction(Production p) {
 		this.builder.setFunction(new Function(p));
 		this.builder.setInsertPoint(new BasicBlock());
 		BasicBlock fbb = new BasicBlock();
@@ -78,7 +78,7 @@ public class DebugVMCompiler extends AbstractGenerator {
 		return null;
 	}
 
-	public Instruction encodeExpression(Expression e, Instruction next, Instruction failjump) {
+	public MozInst encodeExpression(Expression e, MozInst next, MozInst failjump) {
 		return e.encode(this, next, failjump);
 	}
 
@@ -124,7 +124,7 @@ public class DebugVMCompiler extends AbstractGenerator {
 	}
 
 	@Override
-	public Instruction encodeNonTerminal(NonTerminal p, Instruction next, Instruction failjump) {
+	public MozInst encodeNonTerminal(NonTerminal p, MozInst next, MozInst failjump) {
 		BasicBlock rbb = new BasicBlock();
 		this.builder.createIcall(p, rbb, this.builder.jumpFailureJump());
 		this.builder.setInsertPoint(rbb);
@@ -132,51 +132,51 @@ public class DebugVMCompiler extends AbstractGenerator {
 	}
 
 	@Override
-	public Instruction encodeExtension(Expression p, Instruction next, Instruction failjump) {
+	public MozInst encodeExtension(Expression p, MozInst next, MozInst failjump) {
 		throw new RuntimeException("undifined encode method " + p.getClass());
 	}
 
 	@Override
-	public Instruction encode(Expression e, Instruction next, Instruction failjump) {
+	public MozInst encode(Expression e, MozInst next, MozInst failjump) {
 		throw new RuntimeException("undifined encode method " + e.getClass());
 	}
 
 	@Override
-	public Instruction encodePfail(Expression p) {
+	public MozInst encodePfail(Expression p) {
 		this.builder.createIfail(p);
 		return null;
 	}
 
 	@Override
-	public Instruction encodeCany(Cany p, Instruction next, Instruction failjump) {
+	public MozInst encodeCany(Cany p, MozInst next, MozInst failjump) {
 		this.builder.createIany(p, this.builder.jumpFailureJump());
 		this.builder.setInsertPoint(new BasicBlock());
 		return null;
 	}
 
 	@Override
-	public Instruction encodeCbyte(Cbyte p, Instruction next, Instruction failjump) {
+	public MozInst encodeCbyte(Cbyte p, MozInst next, MozInst failjump) {
 		this.builder.createIchar(p, this.builder.jumpFailureJump());
 		this.builder.setInsertPoint(new BasicBlock());
 		return null;
 	}
 
 	@Override
-	public Instruction encodeCset(Cset p, Instruction next, Instruction failjump) {
+	public MozInst encodeCset(Cset p, MozInst next, MozInst failjump) {
 		this.builder.createIcharclass(p, this.builder.jumpFailureJump());
 		this.builder.setInsertPoint(new BasicBlock());
 		return null;
 	}
 
 	@Override
-	public Instruction encodeCmulti(Cmulti p, Instruction next, Instruction failjump) {
+	public MozInst encodeCmulti(Cmulti p, MozInst next, MozInst failjump) {
 		this.builder.createIstr(p, this.builder.jumpFailureJump(), p.byteSeq);
 		this.builder.setInsertPoint(new BasicBlock());
 		return null;
 	}
 
 	@Override
-	public Instruction encodePoption(Poption p, Instruction next) {
+	public MozInst encodePoption(Poption p, MozInst next) {
 		BasicBlock fbb = new BasicBlock();
 		BasicBlock mergebb = new BasicBlock();
 		this.builder.pushFailureJumpPoint(fbb);
@@ -193,7 +193,7 @@ public class DebugVMCompiler extends AbstractGenerator {
 	}
 
 	@Override
-	public Instruction encodePzero(Pzero p, Instruction next) {
+	public MozInst encodePzero(Pzero p, MozInst next) {
 		BasicBlock topBB = new BasicBlock();
 		this.builder.setInsertPoint(topBB);
 		BasicBlock fbb = new BasicBlock();
@@ -210,7 +210,7 @@ public class DebugVMCompiler extends AbstractGenerator {
 	}
 
 	@Override
-	public Instruction encodePone(Pone p, Instruction next, Instruction failjump) {
+	public MozInst encodePone(Pone p, MozInst next, MozInst failjump) {
 		p.get(0).encode(this, next, failjump);
 		BasicBlock topBB = new BasicBlock();
 		this.builder.setInsertPoint(topBB);
@@ -228,7 +228,7 @@ public class DebugVMCompiler extends AbstractGenerator {
 	}
 
 	@Override
-	public Instruction encodePand(Pand p, Instruction next, Instruction failjump) {
+	public MozInst encodePand(Pand p, MozInst next, MozInst failjump) {
 		BasicBlock fbb = new BasicBlock();
 		this.builder.pushFailureJumpPoint(fbb);
 		this.builder.createIpush(p);
@@ -242,7 +242,7 @@ public class DebugVMCompiler extends AbstractGenerator {
 	}
 
 	@Override
-	public Instruction encodePnot(Pnot p, Instruction next, Instruction failjump) {
+	public MozInst encodePnot(Pnot p, MozInst next, MozInst failjump) {
 		BasicBlock fbb = new BasicBlock();
 		this.builder.pushFailureJumpPoint(fbb);
 		this.builder.createIpush(p);
@@ -259,7 +259,7 @@ public class DebugVMCompiler extends AbstractGenerator {
 	}
 
 	@Override
-	public Instruction encodePsequence(Psequence p, Instruction next, Instruction failjump) {
+	public MozInst encodePsequence(Psequence p, MozInst next, MozInst failjump) {
 		this.charList.clear();
 		boolean opt = this.optimizeString(p);
 		if (opt) {
@@ -277,7 +277,7 @@ public class DebugVMCompiler extends AbstractGenerator {
 	}
 
 	@Override
-	public Instruction encodePchoice(Pchoice p, Instruction next, Instruction failjump) {
+	public MozInst encodePchoice(Pchoice p, MozInst next, MozInst failjump) {
 		if (!optimizeCharSet(p)) {
 			BasicBlock fbb = null;
 			BasicBlock mergebb = new BasicBlock();
@@ -312,7 +312,7 @@ public class DebugVMCompiler extends AbstractGenerator {
 	}
 
 	@Override
-	public Instruction encodeTnew(Tnew p, Instruction next) {
+	public MozInst encodeTnew(Tnew p, MozInst next) {
 		this.leftedStack.push(false);
 		if (this.enabledASTConstruction) {
 			this.builder.createInew(p);
@@ -321,7 +321,7 @@ public class DebugVMCompiler extends AbstractGenerator {
 	}
 
 	@Override
-	public Instruction encodeTlfold(Tlfold p, Instruction next) {
+	public MozInst encodeTlfold(Tlfold p, MozInst next) {
 		this.leftedStack.push(true);
 		if (this.enabledASTConstruction) {
 			BasicBlock fbb = new BasicBlock();
@@ -336,7 +336,7 @@ public class DebugVMCompiler extends AbstractGenerator {
 	Stack<Boolean> leftedStack = new Stack<Boolean>();
 
 	@Override
-	public Instruction encodeTlink(Tlink p, Instruction next, Instruction failjump) {
+	public MozInst encodeTlink(Tlink p, MozInst next, MozInst failjump) {
 		if (this.enabledASTConstruction) {
 			BasicBlock fbb = new BasicBlock();
 			BasicBlock endbb = new BasicBlock();
@@ -356,7 +356,7 @@ public class DebugVMCompiler extends AbstractGenerator {
 	}
 
 	@Override
-	public Instruction encodeTcapture(Tcapture p, Instruction next) {
+	public MozInst encodeTcapture(Tcapture p, MozInst next) {
 		/* newNode is used in the debugger for rich view */
 		CommonTree node = (CommonTree) p.getSourcePosition();
 		int len = node.toText().length();
@@ -380,7 +380,7 @@ public class DebugVMCompiler extends AbstractGenerator {
 	}
 
 	@Override
-	public Instruction encodeTtag(Ttag p, Instruction next) {
+	public MozInst encodeTtag(Ttag p, MozInst next) {
 		if (this.enabledASTConstruction) {
 			this.builder.createItag(p);
 		}
@@ -388,7 +388,7 @@ public class DebugVMCompiler extends AbstractGenerator {
 	}
 
 	@Override
-	public Instruction encodeTreplace(Treplace p, Instruction next) {
+	public MozInst encodeTreplace(Treplace p, MozInst next) {
 		if (this.enabledASTConstruction) {
 			this.builder.createIreplace(p);
 		}
@@ -396,12 +396,12 @@ public class DebugVMCompiler extends AbstractGenerator {
 	}
 
 	@Override
-	public Instruction encodeTdetree(Tdetree p, Instruction next, Instruction failjump) {
+	public MozInst encodeTdetree(Tdetree p, MozInst next, MozInst failjump) {
 		throw new RuntimeException("undifined encode method " + p.getClass());
 	}
 
 	@Override
-	public Instruction encodeXblock(Xblock p, Instruction next, Instruction failjump) {
+	public MozInst encodeXblock(Xblock p, MozInst next, MozInst failjump) {
 		BasicBlock fbb = new BasicBlock();
 		BasicBlock endbb = new BasicBlock();
 		this.builder.pushFailureJumpPoint(fbb);
@@ -417,7 +417,7 @@ public class DebugVMCompiler extends AbstractGenerator {
 	}
 
 	@Override
-	public Instruction encodeXsymbol(Xsymbol p, Instruction next, Instruction failjump) {
+	public MozInst encodeXsymbol(Xsymbol p, MozInst next, MozInst failjump) {
 		BasicBlock fbb = new BasicBlock();
 		BasicBlock endbb = new BasicBlock();
 		this.builder.pushFailureJumpPoint(fbb);
@@ -433,12 +433,12 @@ public class DebugVMCompiler extends AbstractGenerator {
 	}
 
 	@Override
-	public Instruction encodeXmatch(Xmatch p, Instruction next, Instruction failjump) {
+	public MozInst encodeXmatch(Xmatch p, MozInst next, MozInst failjump) {
 		throw new RuntimeException("undifined encode method " + p.getClass());
 	}
 
 	@Override
-	public Instruction encodeXis(Xis p, Instruction next, Instruction failjump) {
+	public MozInst encodeXis(Xis p, MozInst next, MozInst failjump) {
 		if (p.is) {
 			this.builder.createIis(p, this.builder.jumpFailureJump());
 			this.builder.setInsertPoint(new BasicBlock());
@@ -454,24 +454,24 @@ public class DebugVMCompiler extends AbstractGenerator {
 	}
 
 	@Override
-	public Instruction encodeXdefindent(Xdefindent p, Instruction next, Instruction failjump) {
+	public MozInst encodeXdefindent(Xdefindent p, MozInst next, MozInst failjump) {
 		throw new RuntimeException("undifined encode method " + p.getClass());
 	}
 
 	@Override
-	public Instruction encodeXindent(Xindent p, Instruction next, Instruction failjump) {
+	public MozInst encodeXindent(Xindent p, MozInst next, MozInst failjump) {
 		throw new RuntimeException("undifined encode method " + p.getClass());
 	}
 
 	@Override
-	public Instruction encodeXexists(Xexists existsSymbol, Instruction next, Instruction failjump) {
+	public MozInst encodeXexists(Xexists existsSymbol, MozInst next, MozInst failjump) {
 		this.builder.createIexists(existsSymbol, this.builder.jumpFailureJump());
 		this.builder.setInsertPoint(new BasicBlock());
 		return null;
 	}
 
 	@Override
-	public Instruction encodeXlocal(Xlocal localTable, Instruction next, Instruction failjump) {
+	public MozInst encodeXlocal(Xlocal localTable, MozInst next, MozInst failjump) {
 		BasicBlock fbb = new BasicBlock();
 		BasicBlock endbb = new BasicBlock();
 		this.builder.pushFailureJumpPoint(fbb);

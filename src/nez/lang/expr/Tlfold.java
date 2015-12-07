@@ -8,7 +8,7 @@ import nez.lang.PossibleAcceptance;
 import nez.lang.Typestate;
 import nez.lang.Visa;
 import nez.parser.AbstractGenerator;
-import nez.parser.Instruction;
+import nez.parser.moz.MozInst;
 
 public class Tlfold extends Term {
 	Symbol label;
@@ -72,7 +72,7 @@ public class Tlfold extends Term {
 	}
 
 	@Override
-	public Instruction encode(AbstractGenerator bc, Instruction next, Instruction failjump) {
+	public MozInst encode(AbstractGenerator bc, MozInst next, MozInst failjump) {
 		return bc.encodeTlfold(this, next);
 	}
 }

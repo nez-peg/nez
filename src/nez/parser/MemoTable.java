@@ -8,11 +8,11 @@ import nez.Strategy;
 public abstract class MemoTable {
 	public abstract MemoTable newMemoTable(long len, int w, int n);
 
-	abstract void setMemo(long pos, int memoPoint, boolean failed, Object result, int consumed, int stateValue);
+	public abstract void setMemo(long pos, int memoPoint, boolean failed, Object result, int consumed, int stateValue);
 
-	abstract MemoEntry getMemo(long pos, int memoPoint);
+	public abstract MemoEntry getMemo(long pos, int memoPoint);
 
-	abstract MemoEntry getMemo2(long pos, int memoPoint, int stateValue);
+	public abstract MemoEntry getMemo2(long pos, int memoPoint, int stateValue);
 
 	int CountStored;
 	int CountUsed;
@@ -54,17 +54,17 @@ class NullTable extends MemoTable {
 	}
 
 	@Override
-	void setMemo(long pos, int memoPoint, boolean failed, Object result, int consumed, int stateValue) {
+	public void setMemo(long pos, int memoPoint, boolean failed, Object result, int consumed, int stateValue) {
 		this.CountStored += 1;
 	}
 
 	@Override
-	MemoEntry getMemo(long pos, int id) {
+	public MemoEntry getMemo(long pos, int id) {
 		return null;
 	}
 
 	@Override
-	MemoEntry getMemo2(long pos, int id, int stateValue) {
+	public MemoEntry getMemo2(long pos, int id, int stateValue) {
 		return null;
 	}
 }
@@ -93,7 +93,7 @@ class ElasticTable extends MemoTable {
 	}
 
 	@Override
-	void setMemo(long pos, int memoPoint, boolean failed, Object result, int consumed, int stateValue) {
+	public void setMemo(long pos, int memoPoint, boolean failed, Object result, int consumed, int stateValue) {
 		long key = longkey(pos, memoPoint, shift);
 		int hash = (int) (key % memoArray.length);
 		MemoEntryKey m = this.memoArray[hash];
@@ -106,7 +106,7 @@ class ElasticTable extends MemoTable {
 	}
 
 	@Override
-	final MemoEntry getMemo(long pos, int memoPoint) {
+	public final MemoEntry getMemo(long pos, int memoPoint) {
 		long key = longkey(pos, memoPoint, shift);
 		int hash = (int) (key % memoArray.length);
 		MemoEntryKey m = this.memoArray[hash];
@@ -118,7 +118,7 @@ class ElasticTable extends MemoTable {
 	}
 
 	@Override
-	final MemoEntry getMemo2(long pos, int memoPoint, int stateValue) {
+	public final MemoEntry getMemo2(long pos, int memoPoint, int stateValue) {
 		long key = longkey(pos, memoPoint, shift);
 		int hash = (int) (key % memoArray.length);
 		MemoEntryKey m = this.memoArray[hash];
@@ -167,7 +167,7 @@ class PackratHashTable extends MemoTable {
 	}
 
 	@Override
-	protected MemoEntry getMemo(long pos, int memoPoint) {
+	public MemoEntry getMemo(long pos, int memoPoint) {
 		MemoEntryList m = this.memoMap.get(pos);
 		while (m != null) {
 			if (m.memoPoint == memoPoint) {
@@ -180,7 +180,7 @@ class PackratHashTable extends MemoTable {
 	}
 
 	@Override
-	protected MemoEntry getMemo2(long pos, int memoPoint, int stateValue) {
+	public MemoEntry getMemo2(long pos, int memoPoint, int stateValue) {
 		MemoEntryList m = this.memoMap.get(pos);
 		while (m != null) {
 			if (m.memoPoint == memoPoint) {
@@ -196,7 +196,7 @@ class PackratHashTable extends MemoTable {
 	}
 
 	@Override
-	void setMemo(long pos, int memoPoint, boolean failed, Object result, int consumed, int stateValue) {
+	public void setMemo(long pos, int memoPoint, boolean failed, Object result, int consumed, int stateValue) {
 		MemoEntryList m = newMemo();
 		m.failed = failed;
 		m.memoPoint = memoPoint;

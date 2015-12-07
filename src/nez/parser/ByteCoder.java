@@ -9,6 +9,8 @@ import java.util.HashMap;
 
 import nez.Verbose;
 import nez.ast.Symbol;
+import nez.parser.moz.MozInst;
+import nez.parser.moz.MozSet;
 import nez.util.StringUtils;
 
 public class ByteCoder {
@@ -87,14 +89,14 @@ public class ByteCoder {
 		TablePools = new ArrayList<>();
 	}
 
-	public void setInstructions(Instruction[] insts, int len) {
+	public void setInstructions(MozInst[] insts, int len) {
 		stream = new ByteArrayOutputStream();
 		for (int i = 0; i < len; i++) {
 			if (insts[i] != null) {
 				assert (insts[i].id == i);
 				insts[i].encode(this);
 			} else {
-				encodeOpcode(InstructionSet.Nop);
+				encodeOpcode(MozSet.Nop);
 			}
 		}
 	}
@@ -165,13 +167,13 @@ public class ByteCoder {
 		this.jumpTableSize += 1;
 	}
 
-	public final void encodeJump(Instruction jump) {
+	public final void encodeJump(MozInst jump) {
 		write_u24(jump.id);
 	}
 
-	public final void encodeJumpTable(Instruction[] table) {
+	public final void encodeJumpTable(MozInst[] table) {
 		this.jumpTableSize += 1;
-		for (Instruction j : table) {
+		for (MozInst j : table) {
 			encodeJump(j);
 		}
 	}

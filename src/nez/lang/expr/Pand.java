@@ -7,7 +7,7 @@ import nez.lang.PossibleAcceptance;
 import nez.lang.Typestate;
 import nez.lang.Visa;
 import nez.parser.AbstractGenerator;
-import nez.parser.Instruction;
+import nez.parser.moz.MozInst;
 
 public class Pand extends Unary {
 	Pand(SourcePosition s, Expression e) {
@@ -52,7 +52,7 @@ public class Pand extends Unary {
 	}
 
 	@Override
-	public Instruction encode(AbstractGenerator bc, Instruction next, Instruction failjump) {
+	public MozInst encode(AbstractGenerator bc, MozInst next, MozInst failjump) {
 		return bc.encodePand(this, next, failjump);
 	}
 

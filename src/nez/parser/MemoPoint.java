@@ -21,7 +21,7 @@ public final class MemoPoint {
 		this.contextSensitive = contextSensitive;
 	}
 
-	void memoHit(int consumed) {
+	public void memoHit(int consumed) {
 		this.memoHit += 1;
 		this.hitLength += consumed;
 		if (this.maxLength < consumed) {
@@ -29,11 +29,11 @@ public final class MemoPoint {
 		}
 	}
 
-	void failHit() {
+	public void failHit() {
 		this.memoFailHit += 1;
 	}
 
-	void miss() {
+	public void miss() {
 		this.memoMiss++;
 	}
 

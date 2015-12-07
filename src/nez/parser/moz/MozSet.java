@@ -1,6 +1,6 @@
-package nez.parser;
+package nez.parser.moz;
 
-public class InstructionSet {
+public class MozSet {
 	public final static byte Nop = 0; // Do nothing
 	public final static byte Fail = 1; // Fail
 	public final static byte Alt = 2; // Alt

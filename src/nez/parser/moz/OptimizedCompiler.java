@@ -1,4 +1,4 @@
-package nez.parser;
+package nez.parser.moz;
 
 import java.util.HashMap;
 
@@ -41,71 +41,71 @@ public class OptimizedCompiler extends PlainCompiler {
 	}
 
 	@Override
-	public final Instruction encodePoption(Poption p, Instruction next) {
+	public final MozInst encodePoption(Poption p, MozInst next) {
 		if (strategy.isEnabled("Olex", Strategy.Olex)) {
 			Expression inner = getInnerExpression(p);
 			if (inner instanceof Cbyte) {
 				this.optimizedUnary(p);
-				return new IOByte((Cbyte) inner, next);
+				return new Moz.OByte((Cbyte) inner, next);
 			}
 			if (inner instanceof Cset) {
 				this.optimizedUnary(p);
-				return new IOSet((Cset) inner, next);
+				return new Moz.OSet((Cset) inner, next);
 			}
 			if (inner instanceof Cmulti) {
 				this.optimizedUnary(p);
-				return new IOStr((Cmulti) inner, next);
+				return new Moz.OStr((Cmulti) inner, next);
 			}
 		}
 		return super.encodePoption(p, next);
 	}
 
 	@Override
-	public final Instruction encodePzero(Pzero p, Instruction next) {
+	public final MozInst encodePzero(Pzero p, MozInst next) {
 		if (strategy.isEnabled("Olex", Strategy.Olex)) {
 			Expression inner = getInnerExpression(p);
 			if (inner instanceof Cbyte) {
 				this.optimizedUnary(p);
-				return new IRByte((Cbyte) inner, next);
+				return new Moz.RByte((Cbyte) inner, next);
 			}
 			if (inner instanceof Cset) {
 				this.optimizedUnary(p);
-				return new IRSet((Cset) inner, next);
+				return new Moz.RSet((Cset) inner, next);
 			}
 			if (inner instanceof Cmulti) {
 				this.optimizedUnary(p);
-				return new IRStr((Cmulti) inner, next);
+				return new Moz.RStr((Cmulti) inner, next);
 			}
 		}
 		return super.encodePzero(p, next);
 	}
 
 	@Override
-	public final Instruction encodePnot(Pnot p, Instruction next, Instruction failjump) {
+	public final MozInst encodePnot(Pnot p, MozInst next, MozInst failjump) {
 		if (strategy.isEnabled("Olex", Strategy.Olex)) {
 			Expression inner = getInnerExpression(p);
 			if (inner instanceof Cset) {
 				this.optimizedUnary(p);
-				return new INSet((Cset) inner, next);
+				return new Moz.NSet((Cset) inner, next);
 			}
 			if (inner instanceof Cbyte) {
 				this.optimizedUnary(p);
-				return new INByte((Cbyte) inner, next);
+				return new Moz.NByte((Cbyte) inner, next);
 			}
 			if (inner instanceof Cany) {
 				this.optimizedUnary(p);
-				return new INAny(inner, ((Cany) inner).isBinary(), next);
+				return new Moz.NAny(inner, ((Cany) inner).isBinary(), next);
 			}
 			if (inner instanceof Cmulti) {
 				this.optimizedUnary(p);
-				return new INStr((Cmulti) inner, next);
+				return new Moz.NStr((Cmulti) inner, next);
 			}
 		}
 		return super.encodePnot(p, next, failjump);
 	}
 
 	@Override
-	public final Instruction encodePchoice(Pchoice p, Instruction next, Instruction failjump) {
+	public final MozInst encodePchoice(Pchoice p, MozInst next, MozInst failjump) {
 		if (/* strategy.isEnabled("Ofirst", Strategy.Ofirst) && */p.predictedCase != null) {
 			if (p.isTrieTree && strategy.isEnabled("Odfa", Strategy.Odfa)) {
 				return encodeDFirstChoice(p, next, failjump);
@@ -115,17 +115,17 @@ public class OptimizedCompiler extends PlainCompiler {
 		return super.encodePchoice(p, next, failjump);
 	}
 
-	private final Instruction encodeFirstChoice(Pchoice choice, Instruction next, Instruction failjump) {
-		Instruction[] compiled = new Instruction[choice.firstInners.length];
+	private final MozInst encodeFirstChoice(Pchoice choice, MozInst next, MozInst failjump) {
+		MozInst[] compiled = new MozInst[choice.firstInners.length];
 		// Verbose.debug("TrieTree: " + choice.isTrieTree + " " + choice);
-		IFirst dispatch = new IFirst(choice, commonFailure);
+		Moz.First dispatch = new Moz.First(choice, commonFailure);
 		for (int ch = 0; ch < choice.predictedCase.length; ch++) {
 			Expression predicted = choice.predictedCase[ch];
 			if (predicted == null) {
 				continue;
 			}
 			int index = findIndex(choice, predicted);
-			Instruction inst = compiled[index];
+			MozInst inst = compiled[index];
 			if (inst == null) {
 				// System.out.println("creating '" + (char)ch + "'("+ch+"): " +
 				// e);
@@ -142,16 +142,16 @@ public class OptimizedCompiler extends PlainCompiler {
 		return dispatch;
 	}
 
-	private final Instruction encodeDFirstChoice(Pchoice choice, Instruction next, Instruction failjump) {
-		Instruction[] compiled = new Instruction[choice.firstInners.length];
-		IDFirst dispatch = new IDFirst(choice, commonFailure);
+	private final MozInst encodeDFirstChoice(Pchoice choice, MozInst next, MozInst failjump) {
+		MozInst[] compiled = new MozInst[choice.firstInners.length];
+		Moz.DFirst dispatch = new Moz.DFirst(choice, commonFailure);
 		for (int ch = 0; ch < choice.predictedCase.length; ch++) {
 			Expression predicted = choice.predictedCase[ch];
 			if (predicted == null) {
 				continue;
 			}
 			int index = findIndex(choice, predicted);
-			Instruction inst = compiled[index];
+			MozInst inst = compiled[index];
 			if (inst == null) {
 				Expression next2 = predicted.getNext();
 				if (next2 != null) {
@@ -175,16 +175,16 @@ public class OptimizedCompiler extends PlainCompiler {
 		return -1;
 	}
 
-	private final Instruction encodePredicatedChoice0(Pchoice choice, Instruction next, Instruction failjump) {
-		HashMap<Integer, Instruction> m = new HashMap<Integer, Instruction>();
-		IFirst dispatch = new IFirst(choice, commonFailure);
+	private final MozInst encodePredicatedChoice0(Pchoice choice, MozInst next, MozInst failjump) {
+		HashMap<Integer, MozInst> m = new HashMap<Integer, MozInst>();
+		Moz.First dispatch = new Moz.First(choice, commonFailure);
 		for (int ch = 0; ch < choice.predictedCase.length; ch++) {
 			Expression predicted = choice.predictedCase[ch];
 			if (predicted == null) {
 				continue;
 			}
 			int id = predictId(choice.predictedCase, ch, predicted);
-			Instruction inst = m.get(id);
+			MozInst inst = m.get(id);
 			if (inst == null) {
 				// System.out.println("creating '" + (char)ch + "'("+ch+"): " +
 				// e);
@@ -213,7 +213,7 @@ public class OptimizedCompiler extends PlainCompiler {
 		return max;
 	}
 
-	public final Instruction encodeUnoptimizedChoice(Pchoice p, Instruction next, Instruction failjump) {
+	public final MozInst encodeUnoptimizedChoice(Pchoice p, MozInst next, MozInst failjump) {
 		return super.encodePchoice(p, next, failjump);
 	}
 

@@ -1,4 +1,4 @@
-package nez.parser;
+package nez.parser.moz;
 
 import java.util.HashMap;
 import java.util.List;
@@ -7,6 +7,8 @@ import nez.lang.Expression;
 import nez.lang.Production;
 import nez.lang.expr.Pchoice;
 import nez.lang.expr.Unary;
+import nez.parser.ByteCoder;
+import nez.parser.TerminationException;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
 
@@ -29,7 +31,7 @@ public class Coverage {
 		return cov;
 	}
 
-	public final static Instruction encodeEnterCoverage(Production p, Instruction next) {
+	public final static MozInst encodeEnterCoverage(Production p, MozInst next) {
 		if (covList != null) {
 			Coverage cov = getCoverage(p);
 			return new Icov(cov, next);
@@ -37,7 +39,7 @@ public class Coverage {
 		return next;
 	}
 
-	public final static Instruction encodeExitCoverage(Production p, Instruction next) {
+	public final static MozInst encodeExitCoverage(Production p, MozInst next) {
 		if (covList != null) {
 			Coverage cov = getCoverage(p);
 			return new Icovx(cov, next);
@@ -64,7 +66,7 @@ public class Coverage {
 		return cov;
 	}
 
-	public final static Instruction encodeEnterCoverage(Pchoice e, int index, Instruction next) {
+	public final static MozInst encodeEnterCoverage(Pchoice e, int index, MozInst next) {
 		if (covList != null) {
 			Coverage cov = getCoverage("c", e.get(index));
 			return new Icov(cov, next);
@@ -72,7 +74,7 @@ public class Coverage {
 		return next;
 	}
 
-	public final static Instruction encodeExitCoverage(Pchoice e, int index, Instruction next) {
+	public final static MozInst encodeExitCoverage(Pchoice e, int index, MozInst next) {
 		if (covList != null) {
 			Coverage cov = getCoverage("c", e.get(index));
 			return new Icovx(cov, next);
@@ -80,7 +82,7 @@ public class Coverage {
 		return next;
 	}
 
-	public final static Instruction encodeEnterCoverage(Unary e, int index, Instruction next) {
+	public final static MozInst encodeEnterCoverage(Unary e, int index, MozInst next) {
 		if (covList != null) {
 			Coverage cov = getCoverage("u", e.get(0));
 			return new Icov(cov, next);
@@ -88,7 +90,7 @@ public class Coverage {
 		return next;
 	}
 
-	public final static Instruction encodeExitCoverage(Unary e, int index, Instruction next) {
+	public final static MozInst encodeExitCoverage(Unary e, int index, MozInst next) {
 		if (covList != null) {
 			Coverage cov = getCoverage("u", e.get(0));
 			return new Icovx(cov, next);
@@ -181,11 +183,11 @@ public class Coverage {
 
 }
 
-class Icov extends Instruction {
+class Icov extends MozInst {
 	final int covPoint;
 
-	public Icov(Coverage cov, Instruction next) {
-		super(InstructionSet.Cov, null, next);
+	public Icov(Coverage cov, MozInst next) {
+		super(MozSet.Cov, null, next);
 		this.covPoint = cov.covPoint;
 	}
 
@@ -198,18 +200,18 @@ class Icov extends Instruction {
 
 	@Override
 	public
-	Instruction exec(RuntimeContext sc) throws TerminationException {
+	MozInst exec(RuntimeContext sc) throws TerminationException {
 		Coverage.enter(this.covPoint);
 		return this.next;
 	}
 
 }
 
-class Icovx extends Instruction {
+class Icovx extends MozInst {
 	final int covPoint;
 
-	public Icovx(Coverage cov, Instruction next) {
-		super(InstructionSet.Cov, null, next);
+	public Icovx(Coverage cov, MozInst next) {
+		super(MozSet.Cov, null, next);
 		this.covPoint = cov.covPoint;
 	}
 
@@ -222,7 +224,7 @@ class Icovx extends Instruction {
 
 	@Override
 	public
-	Instruction exec(RuntimeContext sc) throws TerminationException {
+	MozInst exec(RuntimeContext sc) throws TerminationException {
 		Coverage.exit(this.covPoint);
 		return this.next;
 	}

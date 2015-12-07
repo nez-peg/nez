@@ -13,9 +13,7 @@ public class ParseFunc {
 	boolean state;
 	MemoPoint memoPoint = null;
 
-	Instruction compiled;
-	Instruction compiled_memo;
-	Instruction compiled_memoAST;
+	NezInst compiled;
 
 	public ParseFunc(String uname, Production p, Production pp, int init) {
 		this.name = uname;
@@ -45,19 +43,19 @@ public class ParseFunc {
 		return this.memoPoint;
 	}
 
-	public final boolean getState() {
+	public final boolean isStateful() {
 		return this.state;
 	}
 
-	public final boolean getInlining() {
+	public final boolean isInlined() {
 		return this.inlining;
 	}
 
-	public final Instruction getCompiled() {
+	public final NezInst getCompiled() {
 		return this.compiled;
 	}
 
-	public final void setCompiled(Instruction compiled) {
+	public final void setCompiled(NezInst compiled) {
 		this.compiled = compiled;
 	}
 }

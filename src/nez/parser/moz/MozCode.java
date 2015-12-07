@@ -1,25 +1,28 @@
-package nez.parser;
+package nez.parser.moz;
 
 import java.util.List;
 
 import nez.Parser;
 import nez.Verbose;
+import nez.parser.ByteCoder;
+import nez.parser.GenerativeGrammar;
+import nez.parser.MemoPoint;
 import nez.util.UList;
 
-public class NezCode {
+public class MozCode {
 	// final Instruction startPoint;
 	// final int instructionSize;
 	final GenerativeGrammar gg;
-	final UList<Instruction> codeList;
+	final UList<MozInst> codeList;
 	final List<MemoPoint> memoPointList;
 
-	public NezCode(GenerativeGrammar gg, UList<Instruction> codeList, List<MemoPoint> memoPointList) {
+	public MozCode(GenerativeGrammar gg, UList<MozInst> codeList, List<MemoPoint> memoPointList) {
 		this.gg = gg;
 		this.codeList = codeList;
 		this.memoPointList = memoPointList;
 	}
 
-	public final Instruction getStartPoint() {
+	public final MozInst getStartPoint() {
 		return codeList.get(0);
 	}
 
@@ -51,7 +54,7 @@ public class NezCode {
 
 	public final static void writeMozCode(Parser parser, String path) {
 		NezCompiler compile = new PackratCompiler(parser.getStrategy());
-		NezCode code = compile.compile(parser.getGrammar());
+		MozCode code = compile.compile(parser.getGrammar());
 		ByteCoder c = new ByteCoder();
 		code.encode(c);
 		Verbose.println("generating " + path);

@@ -8,7 +8,7 @@ import nez.lang.PossibleAcceptance;
 import nez.lang.Typestate;
 import nez.lang.Visa;
 import nez.parser.AbstractGenerator;
-import nez.parser.Instruction;
+import nez.parser.moz.MozInst;
 import nez.util.StringUtils;
 import nez.util.UList;
 
@@ -162,7 +162,7 @@ public class Psequence extends ExpressionCommons {
 	}
 
 	@Override
-	public Instruction encode(AbstractGenerator bc, Instruction next, Instruction failjump) {
+	public MozInst encode(AbstractGenerator bc, MozInst next, MozInst failjump) {
 		Strategy option = bc.getStrategy();
 		if (option.isEnabled("Ostr", Strategy.Ostr)) {
 			Expression e = this.toMultiCharSequence();

@@ -2,7 +2,7 @@ package nez.parser;
 
 @SuppressWarnings("serial")
 public class TerminationException extends Exception {
-	boolean status;
+	public boolean status;
 
 	public TerminationException(boolean status) {
 		super();
