@@ -3,12 +3,12 @@ package nez.ext;
 import java.io.IOException;
 
 import nez.NezProfier;
-import nez.Parser;
 import nez.ast.Tree;
 import nez.ast.TreeWriter;
 import nez.io.SourceStream;
 import nez.main.Command;
 import nez.main.CommandContext;
+import nez.parser.Parser;
 
 public class Cparse extends Command {
 	@Override

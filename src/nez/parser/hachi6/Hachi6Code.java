@@ -2,9 +2,9 @@ package nez.parser.hachi6;
 
 import java.util.List;
 
-import nez.Parser;
 import nez.Verbose;
 import nez.parser.ByteCoder;
+import nez.parser.Parser;
 import nez.parser.ParserGrammar;
 import nez.parser.MemoPoint;
 import nez.parser.moz.MozInst;

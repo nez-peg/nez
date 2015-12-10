@@ -1,7 +1,7 @@
 package nez.schema;
 
-import nez.Grammar;
 import nez.GrammarBuilder;
+import nez.lang.Grammar;
 
 public abstract class SchemaBuilder extends GrammarBuilder {
 

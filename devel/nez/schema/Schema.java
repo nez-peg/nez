@@ -2,8 +2,8 @@ package nez.schema;
 
 import java.util.HashMap;
 
-import nez.Grammar;
 import nez.lang.Expression;
+import nez.lang.Grammar;
 
 public class Schema {
 	HashMap<String, Class<?>> typeMap;

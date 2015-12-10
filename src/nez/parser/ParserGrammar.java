@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
-import nez.Grammar;
 import nez.Verbose;
+import nez.lang.Grammar;
 import nez.lang.GrammarChecker;
 import nez.lang.Production;
 import nez.lang.Typestate;

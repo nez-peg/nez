@@ -4,9 +4,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.TreeSet;
 
-import nez.Grammar;
 import nez.dfa.AFAConverter.DefaultVisitor;
 import nez.lang.Expression;
+import nez.lang.Grammar;
 import nez.lang.Production;
 import nez.util.VisitorMap;
 

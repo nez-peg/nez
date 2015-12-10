@@ -1,10 +1,10 @@
-package nez;
+package nez.lang;
 
 import java.util.HashMap;
 import java.util.List;
 
-import nez.lang.GrammarHacks;
-import nez.lang.Production;
+import nez.Verbose;
+import nez.parser.Parser;
 import nez.parser.ParserGrammar;
 import nez.parser.ParserStrategy;
 import nez.util.ConsoleUtils;
@@ -130,16 +130,36 @@ public class Grammar extends GrammarHacks {
 	}
 
 	// ----------------------------------------------------------------------
+	/* MetaData */
 
-	public String getDesc() {
+	protected HashMap<String, Object> metaMap = null;
+
+	public Object getMetaData(String key) {
+		if (this.metaMap != null) {
+			Object v = this.metaMap.get(key);
+			if (v != null) {
+				return v;
+			}
+		}
 		if (this.parent != null) {
-			return parent.getDesc();
+			return parent.getMetaData(key);
 		}
 		return null;
 	}
 
+	public void setMetaData(String key, Object value) {
+		if (this.metaMap == null) {
+			this.metaMap = new HashMap<>();
+		}
+		this.metaMap.put(key, value);
+	}
+
+	public String getDesc() {
+		return (String) this.getMetaData("desc");
+	}
+
 	public void setDesc(String desc) {
-		/* Description is supported in GrammarFile */
+		this.setMetaData("desc", desc);
 	}
 
 	// ----------------------------------------------------------------------

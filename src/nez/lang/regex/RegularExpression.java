@@ -1,7 +1,7 @@
 package nez.lang.regex;
 
-import nez.Grammar;
-import nez.Parser;
+import nez.lang.Grammar;
+import nez.parser.Parser;
 import nez.parser.ParserStrategy;
 
 public class RegularExpression {

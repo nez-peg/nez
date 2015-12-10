@@ -2,8 +2,8 @@ package nez.ext;
 
 import java.io.IOException;
 
-import nez.Grammar;
 import nez.lang.Example;
+import nez.lang.Grammar;
 import nez.lang.GrammarFile;
 import nez.main.Command;
 import nez.main.CommandContext;

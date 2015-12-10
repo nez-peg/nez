@@ -3,13 +3,13 @@ package nez.ast.transducer;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import nez.Grammar;
 import nez.ast.Source;
 import nez.ast.Symbol;
 import nez.ast.Tree;
 import nez.lang.Example;
 import nez.lang.Expression;
 import nez.lang.Formatter;
+import nez.lang.Grammar;
 import nez.lang.GrammarFile;
 import nez.lang.GrammarFileLoader;
 import nez.lang.Production;

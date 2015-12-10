@@ -3,12 +3,12 @@ package nez.lang;
 import java.util.HashMap;
 import java.util.List;
 
-import nez.Parser;
 import nez.Verbose;
 import nez.ast.Tree;
 import nez.ast.TreeUtils;
 import nez.io.SourceStream;
 import nez.parser.Coverage;
+import nez.parser.Parser;
 import nez.parser.ParserStrategy;
 import nez.parser.moz.MozCode;
 import nez.util.ConsoleUtils;

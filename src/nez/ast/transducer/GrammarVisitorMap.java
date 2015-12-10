@@ -1,8 +1,8 @@
 package nez.ast.transducer;
 
-import nez.Grammar;
 import nez.ast.SourcePosition;
 import nez.ast.Tree;
+import nez.lang.Grammar;
 import nez.parser.ParserStrategy;
 import nez.util.VisitorMap;
 

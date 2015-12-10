@@ -2,11 +2,11 @@ package nez.ext;
 
 import java.io.IOException;
 
-import nez.Parser;
 import nez.Verbose;
 import nez.io.SourceStream;
 import nez.main.Command;
 import nez.main.CommandContext;
+import nez.parser.Parser;
 import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
 import nez.util.UList;

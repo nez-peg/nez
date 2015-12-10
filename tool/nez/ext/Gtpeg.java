@@ -2,10 +2,10 @@ package nez.ext;
 
 import java.io.IOException;
 
-import nez.Grammar;
-import nez.Parser;
 import nez.ast.Tree;
+import nez.lang.Grammar;
 import nez.lang.GrammarFileLoader;
+import nez.parser.Parser;
 import nez.parser.ParserStrategy;
 import nez.peg.tpeg.ExprTypeChecker;
 import nez.peg.tpeg.LongRange;

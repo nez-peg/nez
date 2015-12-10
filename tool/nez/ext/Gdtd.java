@@ -6,13 +6,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import nez.Grammar;
-import nez.Parser;
 import nez.ast.Symbol;
 import nez.ast.Tree;
+import nez.lang.Grammar;
 import nez.lang.GrammarFileLoader;
 import nez.lang.schema.DTDSchemaGrammarGenerator;
 import nez.lang.schema.Type;
+import nez.parser.Parser;
 import nez.parser.ParserStrategy;
 import nez.util.ConsoleUtils;
 

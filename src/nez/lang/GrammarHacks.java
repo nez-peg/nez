@@ -2,7 +2,6 @@ package nez.lang;
 
 import java.util.AbstractList;
 
-import nez.Grammar;
 import nez.ast.SourcePosition;
 import nez.ast.Symbol;
 import nez.lang.expr.ExpressionCommons;

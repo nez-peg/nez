@@ -1,6 +1,5 @@
 package nez.x.generator;
 
-import nez.Parser;
 import nez.lang.Expression;
 import nez.lang.Production;
 import nez.lang.expr.Cany;
@@ -34,6 +33,7 @@ import nez.lang.expr.Xis;
 import nez.lang.expr.Xlocal;
 import nez.lang.expr.Xmatch;
 import nez.lang.expr.Xon;
+import nez.parser.Parser;
 import nez.parser.ParserGrammar;
 import nez.parser.ParserGenerator;
 import nez.util.StringUtils;

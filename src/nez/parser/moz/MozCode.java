@@ -2,10 +2,10 @@ package nez.parser.moz;
 
 import java.util.List;
 
-import nez.Parser;
 import nez.Verbose;
 import nez.parser.ByteCoder;
 import nez.parser.MemoPoint;
+import nez.parser.Parser;
 import nez.parser.ParserCode;
 import nez.parser.ParserContext;
 import nez.parser.ParserGrammar;

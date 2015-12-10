@@ -2,16 +2,16 @@ package nez.ext;
 
 import java.io.IOException;
 
-import nez.Grammar;
-import nez.Parser;
 import nez.ast.CommonTree;
 import nez.debugger.DebugManager;
 import nez.io.SourceStream;
 import nez.lang.Formatter;
+import nez.lang.Grammar;
 import nez.lang.GrammarFile;
 import nez.main.Command;
 import nez.main.CommandContext;
 import nez.main.ReadLine;
+import nez.parser.Parser;
 import nez.util.ConsoleUtils;
 
 public class Cshell extends Command {

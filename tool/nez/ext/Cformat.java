@@ -2,14 +2,14 @@ package nez.ext;
 
 import java.io.IOException;
 
-import nez.Grammar;
-import nez.Parser;
 import nez.ast.Tree;
 import nez.io.SourceStream;
+import nez.lang.Grammar;
 import nez.lang.NezGrammar1;
 import nez.lang.util.NezFileFormatter;
 import nez.main.Command;
 import nez.main.CommandContext;
+import nez.parser.Parser;
 
 public class Cformat extends Command {
 	@Override

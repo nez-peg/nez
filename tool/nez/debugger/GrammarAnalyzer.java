@@ -1,7 +1,7 @@
 package nez.debugger;
 
-import nez.Grammar;
 import nez.lang.Expression;
+import nez.lang.Grammar;
 import nez.lang.Production;
 import nez.lang.expr.Cany;
 import nez.lang.expr.NonTerminal;

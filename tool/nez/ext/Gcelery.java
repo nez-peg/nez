@@ -2,14 +2,14 @@ package nez.ext;
 
 import java.io.IOException;
 
-import nez.Grammar;
-import nez.Parser;
 import nez.ast.Symbol;
 import nez.ast.Tree;
+import nez.lang.Grammar;
 import nez.lang.GrammarFileLoader;
 import nez.lang.schema.JSONSchemaGrammarGenerator;
 import nez.lang.schema.SchemaGrammarGenerator;
 import nez.lang.schema.Type;
+import nez.parser.Parser;
 import nez.parser.ParserStrategy;
 import nez.util.ConsoleUtils;
 

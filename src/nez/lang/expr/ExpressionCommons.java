@@ -1,9 +1,9 @@
 package nez.lang.expr;
 
-import nez.Grammar;
 import nez.ast.SourcePosition;
 import nez.ast.Symbol;
 import nez.lang.Expression;
+import nez.lang.Grammar;
 import nez.util.StringUtils;
 import nez.util.UList;
 

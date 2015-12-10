@@ -1,9 +1,9 @@
 package nez.lang.expr;
 
-import nez.Grammar;
 import nez.Verbose;
 import nez.ast.SourcePosition;
 import nez.lang.Expression;
+import nez.lang.Grammar;
 import nez.lang.GrammarTransducer;
 import nez.lang.PossibleAcceptance;
 import nez.lang.Production;

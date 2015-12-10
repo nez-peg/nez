@@ -1,9 +1,9 @@
 package nez.ext;
 
-import nez.Parser;
 import nez.debugger.DebugManager;
 import nez.main.Command;
 import nez.main.CommandContext;
+import nez.parser.Parser;
 
 public class Cnezdb extends Command {
 	@Override

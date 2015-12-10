@@ -2,7 +2,6 @@ package nez.lang;
 
 import java.util.List;
 
-import nez.Grammar;
 import nez.ast.SourcePosition;
 import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;

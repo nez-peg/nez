@@ -2,7 +2,6 @@ package nez.lang;
 
 import java.util.List;
 
-import nez.Grammar;
 import nez.ast.CommonTree;
 import nez.ast.SourcePosition;
 import nez.parser.ParserStrategy;

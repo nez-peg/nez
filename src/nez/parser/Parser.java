@@ -1,18 +1,14 @@
-package nez;
+package nez.parser;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import nez.NezProfier;
 import nez.ast.CommonTree;
 import nez.ast.SourceError;
 import nez.ast.Tree;
 import nez.io.SourceStream;
-import nez.parser.ParserCode;
-import nez.parser.ParserContext;
-import nez.parser.ParserException;
-import nez.parser.ParserGrammar;
-import nez.parser.ParserStrategy;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
 

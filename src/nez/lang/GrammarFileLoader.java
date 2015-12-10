@@ -3,14 +3,13 @@ package nez.lang;
 import java.io.IOException;
 import java.util.HashMap;
 
-import nez.Grammar;
-import nez.Parser;
 import nez.ast.Source;
 import nez.ast.SourcePosition;
 import nez.ast.Tree;
 import nez.io.SourceStream;
 import nez.lang.GrammarFileLoader.DefaultVisitor;
 import nez.lang.schema.Type;
+import nez.parser.Parser;
 import nez.parser.ParserStrategy;
 import nez.util.ConsoleUtils;
 import nez.util.ExtensionLoader;

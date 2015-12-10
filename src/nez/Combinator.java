@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 import nez.ast.SourcePosition;
 import nez.ast.Symbol;
 import nez.lang.Expression;
+import nez.lang.Grammar;
 import nez.lang.expr.Cset;
 import nez.lang.expr.ExpressionCommons;
 import nez.util.UList;

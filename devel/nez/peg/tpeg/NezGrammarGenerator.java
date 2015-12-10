@@ -1,7 +1,7 @@
 package nez.peg.tpeg;
 
-import nez.Grammar;
 import nez.lang.Expression;
+import nez.lang.Grammar;
 import nez.peg.tpeg.TypedPEG.AnyExpr;
 import nez.peg.tpeg.TypedPEG.CharClassExpr;
 import nez.peg.tpeg.TypedPEG.ChoiceExpr;
