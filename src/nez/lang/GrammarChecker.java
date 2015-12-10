@@ -3,7 +3,6 @@ package nez.lang;
 import java.util.HashMap;
 import java.util.TreeMap;
 
-import nez.ParserStrategy;
 import nez.Verbose;
 import nez.lang.expr.ExpressionCommons;
 import nez.lang.expr.NonTerminal;
@@ -24,8 +23,9 @@ import nez.lang.expr.Ttag;
 import nez.lang.expr.Unary;
 import nez.lang.expr.Xif;
 import nez.lang.expr.Xon;
-import nez.parser.ParserGrammar;
 import nez.parser.ParseFunc;
+import nez.parser.ParserGrammar;
+import nez.parser.ParserStrategy;
 import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
 import nez.util.UFlag;
@@ -44,12 +44,12 @@ public class GrammarChecker extends GrammarTransducer {
 		this.strategy = strategy;
 
 		this.stacked = new UList<Expression>(new Expression[128]);
-		if (!strategy.isEnabled("ast", ParserStrategy.AST)) {
+		if (!strategy.TreeConstruction) {
 			this.enterNonASTContext();
 		}
 		String uname = uniqueName(start.getUniqueName(), start);
 		this.checkFirstVisitedProduction(uname, start, 1); // start
-		if (!strategy.isEnabled("Onone", ParserStrategy.Onone)) {
+		if (!strategy.Optimization) {
 			if (ConsoleUtils.isDebug()) {
 				Verbose.println("optimizing ..");
 			}

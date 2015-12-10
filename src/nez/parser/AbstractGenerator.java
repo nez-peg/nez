@@ -2,7 +2,6 @@ package nez.parser;
 
 import java.util.HashMap;
 
-import nez.ParserStrategy;
 import nez.Verbose;
 import nez.lang.Expression;
 import nez.lang.Production;
@@ -26,7 +25,6 @@ import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
 import nez.lang.expr.Xblock;
-import nez.lang.expr.Xsymbol;
 import nez.lang.expr.Xdefindent;
 import nez.lang.expr.Xexists;
 import nez.lang.expr.Xif;
@@ -35,24 +33,19 @@ import nez.lang.expr.Xis;
 import nez.lang.expr.Xlocal;
 import nez.lang.expr.Xmatch;
 import nez.lang.expr.Xon;
+import nez.lang.expr.Xsymbol;
 import nez.parser.moz.MozInst;
 
 public abstract class AbstractGenerator {
 	protected ParserStrategy strategy;
-	protected boolean enabledASTConstruction;
-	protected boolean enabledPackratParsing;
 
 	public AbstractGenerator(ParserStrategy strategy) {
 		this.gg = null;
-		this.initLocalOption(strategy);
+		this.setStrategy(strategy);
 	}
 
-	protected void initLocalOption(ParserStrategy strategy) {
+	protected void setStrategy(ParserStrategy strategy) {
 		this.strategy = strategy;
-		if (this.strategy != null) {
-			this.enabledASTConstruction = strategy.isEnabled("ast", ParserStrategy.AST);
-			this.enabledPackratParsing = strategy.isEnabled("memo", ParserStrategy.MEMO);
-		}
 	}
 
 	public final ParserStrategy getStrategy() {

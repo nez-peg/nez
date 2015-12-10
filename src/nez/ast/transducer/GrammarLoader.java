@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import nez.Grammar;
-import nez.ParserStrategy;
 import nez.ast.Source;
 import nez.ast.Symbol;
 import nez.ast.Tree;
@@ -14,6 +13,7 @@ import nez.lang.Formatter;
 import nez.lang.GrammarFile;
 import nez.lang.GrammarFileLoader;
 import nez.lang.Production;
+import nez.parser.ParserStrategy;
 import nez.util.StringUtils;
 
 public final class GrammarLoader extends GrammarVisitorMap<GrammarLoaderVisitor> {

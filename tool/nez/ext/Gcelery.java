@@ -4,13 +4,13 @@ import java.io.IOException;
 
 import nez.Grammar;
 import nez.Parser;
-import nez.ParserStrategy;
 import nez.ast.Symbol;
 import nez.ast.Tree;
 import nez.lang.GrammarFileLoader;
 import nez.lang.schema.JSONSchemaGrammarGenerator;
 import nez.lang.schema.SchemaGrammarGenerator;
 import nez.lang.schema.Type;
+import nez.parser.ParserStrategy;
 import nez.util.ConsoleUtils;
 
 public class Gcelery extends GrammarFileLoader {
@@ -51,7 +51,7 @@ public class Gcelery extends GrammarFileLoader {
 			assert (celeryParser != null);
 		}
 		this.schema = new JSONSchemaGrammarGenerator(getGrammarFile());
-		this.enableNezExtension = !strategy.isEnabled("peg", ParserStrategy.PEG);
+		this.enableNezExtension = !strategy.PEGCompatible;
 		return celeryParser;
 	}
 

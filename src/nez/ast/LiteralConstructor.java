@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import nez.ParserStrategy;
+import nez.parser.ParserStrategy;
 import nez.util.StringUtils;
 
 public class LiteralConstructor extends TreeVisitor implements Transducer {

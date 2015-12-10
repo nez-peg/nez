@@ -3,9 +3,9 @@ package nez.lang;
 import java.util.List;
 
 import nez.Grammar;
-import nez.ParserStrategy;
 import nez.ast.CommonTree;
 import nez.ast.SourcePosition;
+import nez.parser.ParserStrategy;
 import nez.util.UList;
 
 public class GrammarFile extends Grammar {

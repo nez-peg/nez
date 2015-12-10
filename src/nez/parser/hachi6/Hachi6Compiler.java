@@ -3,13 +3,13 @@ package nez.parser.hachi6;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import nez.ParserStrategy;
 import nez.Verbose;
 import nez.lang.Expression;
 import nez.lang.Production;
 import nez.lang.expr.ExpressionCommons;
-import nez.parser.ParserGrammar;
 import nez.parser.ParseFunc;
+import nez.parser.ParserGrammar;
+import nez.parser.ParserStrategy;
 import nez.parser.hachi6.Hachi6Compiler.DefaultVisitor;
 import nez.parser.moz.MozCode;
 import nez.util.StringUtils;
@@ -18,7 +18,6 @@ import nez.util.VisitorMap;
 
 public class Hachi6Compiler extends VisitorMap<DefaultVisitor> {
 	private ParserStrategy strategy;
-	private boolean enabledASTConstruction;
 	private ParserGrammar gg = null;
 	private HashMap<String, ParseFunc> funcMap = null;
 	private HashMap<Hachi6.Call, ParseFunc> syncMap = new HashMap<>();
@@ -28,9 +27,6 @@ public class Hachi6Compiler extends VisitorMap<DefaultVisitor> {
 	public Hachi6Compiler(ParserStrategy strategy) {
 		this.init(Hachi6Compiler.class, new DefaultVisitor());
 		this.strategy = strategy;
-		if (this.strategy != null) {
-			this.enabledASTConstruction = strategy.isEnabled("ast", ParserStrategy.AST);
-		}
 	}
 
 	public MozCode compile(ParserGrammar gg) {
@@ -122,7 +118,7 @@ public class Hachi6Compiler extends VisitorMap<DefaultVisitor> {
 
 	private Expression getInnerExpression(Expression p) {
 		Expression inner = ExpressionCommons.resolveNonTerminal(p.get(0));
-		if (strategy.isEnabled("Ostr", ParserStrategy.Ostr) && inner instanceof nez.lang.expr.Psequence) {
+		if (strategy.Ostring && inner instanceof nez.lang.expr.Psequence) {
 			inner = ((nez.lang.expr.Psequence) inner).toMultiCharSequence();
 		}
 		return inner;
@@ -161,7 +157,7 @@ public class Hachi6Compiler extends VisitorMap<DefaultVisitor> {
 				return generate(f.getExpression(), next);
 			}
 			if (f.getMemoPoint() != null) {
-				if (!enabledASTConstruction || p.isNoNTreeConstruction()) {
+				if (!strategy.TreeConstruction || p.isNoNTreeConstruction()) {
 					if (Verbose.PackratParsing) {
 						Verbose.println("memoize: " + n.getLocalName() + " at " + getEncodingProduction().getLocalName());
 					}
@@ -232,7 +228,7 @@ public class Hachi6Compiler extends VisitorMap<DefaultVisitor> {
 		public Hachi6Inst accept(Expression e, Hachi6Inst next) {
 			nez.lang.expr.Pchoice p = (nez.lang.expr.Pchoice) e;
 			if (p.predictedCase != null) {
-				if (p.isTrieTree && strategy.isEnabled("Odfa", ParserStrategy.Odfa)) {
+				if (p.isTrieTree && strategy.Odfa) {
 					return encodeDFirstChoice(p, next);
 				}
 				return encodeFirstChoice(p, next);
@@ -313,7 +309,7 @@ public class Hachi6Compiler extends VisitorMap<DefaultVisitor> {
 		@Override
 		public Hachi6Inst accept(Expression e, Hachi6Inst next) {
 			nez.lang.expr.Psequence p = (nez.lang.expr.Psequence) e;
-			if (strategy.isEnabled("Ostr", ParserStrategy.Ostr)) {
+			if (strategy.Ostring) {
 				Expression inner = p.toMultiCharSequence();
 				if (inner instanceof nez.lang.expr.Cmulti) {
 					Cmulti cmulti = new Cmulti();
@@ -332,7 +328,7 @@ public class Hachi6Compiler extends VisitorMap<DefaultVisitor> {
 	public class Poption extends DefaultVisitor {
 		@Override
 		public Hachi6Inst accept(Expression e, Hachi6Inst next) {
-			if (strategy.isEnabled("Olex", ParserStrategy.Olex)) {
+			if (strategy.Olex) {
 				Expression inner = getInnerExpression(e);
 				if (inner instanceof nez.lang.expr.Cbyte) {
 					optimizedUnary(e);
@@ -355,7 +351,7 @@ public class Hachi6Compiler extends VisitorMap<DefaultVisitor> {
 	public class Pzero extends DefaultVisitor {
 		@Override
 		public Hachi6Inst accept(Expression e, Hachi6Inst next) {
-			if (strategy.isEnabled("Olex", ParserStrategy.Olex)) {
+			if (strategy.Olex) {
 				Expression inner = getInnerExpression(e);
 				if (inner instanceof nez.lang.expr.Cbyte) {
 					optimizedUnary(e);
@@ -396,7 +392,7 @@ public class Hachi6Compiler extends VisitorMap<DefaultVisitor> {
 	public class Pnot extends DefaultVisitor {
 		@Override
 		public Hachi6Inst accept(Expression e, Hachi6Inst next) {
-			if (strategy.isEnabled("Olex", ParserStrategy.Olex)) {
+			if (strategy.Olex) {
 				Expression inner = getInnerExpression(e);
 				if (inner instanceof nez.lang.expr.Cset) {
 					optimizedUnary(e);
@@ -423,7 +419,7 @@ public class Hachi6Compiler extends VisitorMap<DefaultVisitor> {
 	public class Tnew extends DefaultVisitor {
 		@Override
 		public Hachi6Inst accept(Expression e, Hachi6Inst next) {
-			if (enabledASTConstruction) {
+			if (strategy.TreeConstruction) {
 				nez.lang.expr.Tnew p = (nez.lang.expr.Tnew) e;
 				return new Hachi6.Init(p.shift, next);
 			}
@@ -435,7 +431,7 @@ public class Hachi6Compiler extends VisitorMap<DefaultVisitor> {
 		@Override
 		public Hachi6Inst accept(Expression e, Hachi6Inst next) {
 			nez.lang.expr.Tlink p = (nez.lang.expr.Tlink) e;
-			if (enabledASTConstruction) {
+			if (strategy.TreeConstruction) {
 				next = new Hachi6.Link(p.getLabel(), next);
 			}
 			return generate(e.get(0), next);
@@ -445,7 +441,7 @@ public class Hachi6Compiler extends VisitorMap<DefaultVisitor> {
 	public class Tlfold extends DefaultVisitor {
 		@Override
 		public Hachi6Inst accept(Expression e, Hachi6Inst next) {
-			if (enabledASTConstruction) {
+			if (strategy.TreeConstruction) {
 				nez.lang.expr.Tlfold p = (nez.lang.expr.Tlfold) e;
 				return new Hachi6.LeftFold(p.shift, p.getLabel(), next);
 			}
@@ -456,7 +452,7 @@ public class Hachi6Compiler extends VisitorMap<DefaultVisitor> {
 	public class Ttag extends DefaultVisitor {
 		@Override
 		public Hachi6Inst accept(Expression e, Hachi6Inst next) {
-			if (enabledASTConstruction) {
+			if (strategy.TreeConstruction) {
 				return new Hachi6.Tag(((nez.lang.expr.Ttag) e).tag, next);
 			}
 			return next;
@@ -466,7 +462,7 @@ public class Hachi6Compiler extends VisitorMap<DefaultVisitor> {
 	public class Treplace extends DefaultVisitor {
 		@Override
 		public Hachi6Inst accept(Expression e, Hachi6Inst next) {
-			if (enabledASTConstruction) {
+			if (strategy.TreeConstruction) {
 				return new Hachi6.Value(((nez.lang.expr.Treplace) e).value, next);
 			}
 			return next;
@@ -476,7 +472,7 @@ public class Hachi6Compiler extends VisitorMap<DefaultVisitor> {
 	public class Tcapture extends DefaultVisitor {
 		@Override
 		public Hachi6Inst accept(Expression e, Hachi6Inst next) {
-			if (enabledASTConstruction) {
+			if (strategy.TreeConstruction) {
 				nez.lang.expr.Tcapture p = (nez.lang.expr.Tcapture) e;
 				return new Hachi6.New(p.shift, next);
 			}

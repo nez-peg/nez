@@ -4,9 +4,9 @@ import java.io.IOException;
 
 import nez.Grammar;
 import nez.Parser;
-import nez.ParserStrategy;
 import nez.ast.Tree;
 import nez.lang.GrammarFileLoader;
+import nez.parser.ParserStrategy;
 import nez.peg.tpeg.ExprTypeChecker;
 import nez.peg.tpeg.LongRange;
 import nez.peg.tpeg.NezGrammarGenerator;

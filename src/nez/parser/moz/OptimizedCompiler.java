@@ -2,7 +2,6 @@ package nez.parser.moz;
 
 import java.util.HashMap;
 
-import nez.ParserStrategy;
 import nez.Verbose;
 import nez.lang.Expression;
 import nez.lang.Production;
@@ -16,6 +15,7 @@ import nez.lang.expr.Pnot;
 import nez.lang.expr.Poption;
 import nez.lang.expr.Psequence;
 import nez.lang.expr.Pzero;
+import nez.parser.ParserStrategy;
 
 public class OptimizedCompiler extends PlainCompiler {
 
@@ -33,7 +33,7 @@ public class OptimizedCompiler extends PlainCompiler {
 
 	public final Expression getInnerExpression(Expression p) {
 		Expression inner = ExpressionCommons.resolveNonTerminal(p.get(0));
-		if (strategy.isEnabled("Ostr", ParserStrategy.Ostr) && inner instanceof Psequence) {
+		if (strategy.Ostring && inner instanceof Psequence) {
 			inner = ((Psequence) inner).toMultiCharSequence();
 			// System.out.println("Stringfy:" + inner);
 		}
@@ -42,7 +42,7 @@ public class OptimizedCompiler extends PlainCompiler {
 
 	@Override
 	public final MozInst encodePoption(Poption p, MozInst next) {
-		if (strategy.isEnabled("Olex", ParserStrategy.Olex)) {
+		if (strategy.Olex) {
 			Expression inner = getInnerExpression(p);
 			if (inner instanceof Cbyte) {
 				this.optimizedUnary(p);
@@ -62,7 +62,7 @@ public class OptimizedCompiler extends PlainCompiler {
 
 	@Override
 	public final MozInst encodePzero(Pzero p, MozInst next) {
-		if (strategy.isEnabled("Olex", ParserStrategy.Olex)) {
+		if (strategy.Olex) {
 			Expression inner = getInnerExpression(p);
 			if (inner instanceof Cbyte) {
 				this.optimizedUnary(p);
@@ -82,7 +82,7 @@ public class OptimizedCompiler extends PlainCompiler {
 
 	@Override
 	public final MozInst encodePnot(Pnot p, MozInst next, MozInst failjump) {
-		if (strategy.isEnabled("Olex", ParserStrategy.Olex)) {
+		if (strategy.Olex) {
 			Expression inner = getInnerExpression(p);
 			if (inner instanceof Cset) {
 				this.optimizedUnary(p);
@@ -107,7 +107,7 @@ public class OptimizedCompiler extends PlainCompiler {
 	@Override
 	public final MozInst encodePchoice(Pchoice p, MozInst next, MozInst failjump) {
 		if (/* strategy.isEnabled("Ofirst", Strategy.Ofirst) && */p.predictedCase != null) {
-			if (p.isTrieTree && strategy.isEnabled("Odfa", ParserStrategy.Odfa)) {
+			if (p.isTrieTree && strategy.Odfa) {
 				return encodeDFirstChoice(p, next, failjump);
 			}
 			return encodeFirstChoice(p, next, failjump);

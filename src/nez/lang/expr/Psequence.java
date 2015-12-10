@@ -1,6 +1,5 @@
 package nez.lang.expr;
 
-import nez.ParserStrategy;
 import nez.ast.SourcePosition;
 import nez.lang.Expression;
 import nez.lang.GrammarTransducer;
@@ -8,6 +7,7 @@ import nez.lang.PossibleAcceptance;
 import nez.lang.Typestate;
 import nez.lang.Visa;
 import nez.parser.AbstractGenerator;
+import nez.parser.ParserStrategy;
 import nez.parser.moz.MozInst;
 import nez.util.StringUtils;
 import nez.util.UList;
@@ -164,7 +164,7 @@ public class Psequence extends ExpressionCommons {
 	@Override
 	public MozInst encode(AbstractGenerator bc, MozInst next, MozInst failjump) {
 		ParserStrategy option = bc.getStrategy();
-		if (option.isEnabled("Ostr", ParserStrategy.Ostr)) {
+		if (option.Ostring) {
 			Expression e = this.toMultiCharSequence();
 			if (e instanceof Cmulti) {
 				// System.out.println("stringfy .. " + e);

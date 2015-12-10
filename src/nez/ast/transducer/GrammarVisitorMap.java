@@ -1,9 +1,9 @@
 package nez.ast.transducer;
 
 import nez.Grammar;
-import nez.ParserStrategy;
 import nez.ast.SourcePosition;
 import nez.ast.Tree;
+import nez.parser.ParserStrategy;
 import nez.util.VisitorMap;
 
 public class GrammarVisitorMap<T> extends VisitorMap<T> {

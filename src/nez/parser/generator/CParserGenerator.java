@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Stack;
 
-import nez.ParserStrategy;
 import nez.ast.Symbol;
 import nez.lang.Expression;
 import nez.lang.Production;
@@ -30,7 +29,6 @@ import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
 import nez.lang.expr.Xblock;
-import nez.lang.expr.Xsymbol;
 import nez.lang.expr.Xdefindent;
 import nez.lang.expr.Xexists;
 import nez.lang.expr.Xif;
@@ -39,8 +37,10 @@ import nez.lang.expr.Xis;
 import nez.lang.expr.Xlocal;
 import nez.lang.expr.Xmatch;
 import nez.lang.expr.Xon;
-import nez.parser.ParserGrammar;
+import nez.lang.expr.Xsymbol;
 import nez.parser.ParserGenerator;
+import nez.parser.ParserGrammar;
+import nez.parser.ParserStrategy;
 import nez.util.StringUtils;
 
 public class CParserGenerator extends ParserGenerator {
@@ -84,7 +84,7 @@ public class CParserGenerator extends ParserGenerator {
 		L("#define CNEZ_MEMO_SIZE       " + this.memoId);
 		// L("#define CNEZ_GRAMMAR_URN \"" + urn + "\"");
 		L("#define CNEZ_PRODUCTION_SIZE " + prodSize);
-		if (this.enabledASTConstruction) {
+		if (this.strategy.TreeConstruction) {
 			L("#define CNEZ_ENABLE_AST_CONSTRUCTION 1");
 		}
 		L("#include \"cnez_main.c\"");
@@ -176,7 +176,7 @@ public class CParserGenerator extends ParserGenerator {
 			L("else ");
 			Begin("{");
 			{
-				if (this.enabledASTConstruction) {
+				if (this.strategy.TreeConstruction) {
 					String tag = rule.getLocalName();
 					tag = StringUtils.quoteString('"', tag, '"');
 					L("ast_log_link(ctx->ast, " + tag + ", entry->result);");
@@ -528,25 +528,25 @@ public class CParserGenerator extends ParserGenerator {
 		L("int p" + name(rule.getLocalName()) + "(ParsingContext ctx)");
 		Begin("{");
 		this.pushFailureJumpPoint();
-		if (this.enabledPackratParsing) {
+		if (this.strategy.PackratParsing) {
 			lookup(rule, this.memoId);
 		}
 		String pos = "c" + this.fid;
 		this.let("char *", pos, "ctx->cur");
 		Expression e = rule.getExpression();
 		visitExpression(e);
-		if (this.enabledPackratParsing) {
+		if (this.strategy.PackratParsing) {
 			memoize(rule, this.memoId, pos);
 		}
 		L("return 0;");
 		this.popFailureJumpPoint(rule);
-		if (this.enabledPackratParsing) {
+		if (this.strategy.PackratParsing) {
 			memoizeFail(rule, this.memoId, pos);
 		}
 		L("return 1;");
 		End("}");
 		N();
-		if (this.enabledPackratParsing) {
+		if (this.strategy.PackratParsing) {
 			this.memoId++;
 		}
 	}
@@ -802,7 +802,7 @@ public class CParserGenerator extends ParserGenerator {
 	@Override
 	public void visitPchoice(Pchoice e) {
 		// showChoiceInfo(e);
-		if ((e.predictedCase != null && this.isPrediction && this.strategy.isEnabled("Ofirst", ParserStrategy.Ofirst))) {
+		if ((e.predictedCase != null && this.isPrediction && this.strategy.Odchoice)) {
 			this.predictionCount++;
 			this.justPredictionCount++;
 			int fid = this.fid++;
@@ -866,7 +866,7 @@ public class CParserGenerator extends ParserGenerator {
 
 	@Override
 	public void visitTnew(Tnew e) {
-		if (this.enabledASTConstruction) {
+		if (this.strategy.TreeConstruction) {
 			// this.pushFailureJumpPoint();
 			String mark = "mark" + this.fid++;
 			// this.markStack.push(mark);
@@ -877,7 +877,7 @@ public class CParserGenerator extends ParserGenerator {
 
 	@Override
 	public void visitTcapture(Tcapture e) {
-		if (this.enabledASTConstruction) {
+		if (this.strategy.TreeConstruction) {
 			String label = "EXIT_CAPTURE" + this.fid++;
 			L("ast_log_capture(ctx->ast, ctx->cur);");
 			this.gotoLabel(label);
@@ -890,14 +890,14 @@ public class CParserGenerator extends ParserGenerator {
 
 	@Override
 	public void visitTtag(Ttag e) {
-		if (this.enabledASTConstruction) {
+		if (this.strategy.TreeConstruction) {
 			L("ast_log_tag(ctx->ast, \"" + e.tag.getSymbol() + "\");");
 		}
 	}
 
 	@Override
 	public void visitTreplace(Treplace e) {
-		if (this.enabledASTConstruction) {
+		if (this.strategy.TreeConstruction) {
 			L("ast_log_replace(ctx->ast, \"" + e.value + "\");");
 		}
 	}
@@ -907,11 +907,11 @@ public class CParserGenerator extends ParserGenerator {
 		this.pushFailureJumpPoint();
 		String mark = "mark" + this.fid;
 
-		if (this.enabledASTConstruction) {
+		if (this.strategy.TreeConstruction) {
 			L("int " + mark + " = ast_save_tx(ctx->ast);");
 		}
 		visitExpression(e.get(0));
-		if (this.enabledASTConstruction) {
+		if (this.strategy.TreeConstruction) {
 			String po = "ctx->left";
 			String label = "EXIT_LINK" + this.fid;
 			Symbol sym = e.getLabel();

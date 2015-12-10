@@ -3,7 +3,6 @@ package nez.lang;
 import java.util.HashMap;
 import java.util.HashSet;
 
-import nez.ParserStrategy;
 import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cset;
@@ -22,97 +21,64 @@ import nez.lang.expr.Tlink;
 import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
-import nez.parser.ParserGrammar;
 import nez.parser.ParseFunc;
+import nez.parser.ParserGrammar;
+import nez.parser.ParserStrategy;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
 
 public class GrammarOptimizer extends GrammarRewriter {
 	/* local optimizer option */
 
-	boolean enabledLexicalOptimization = false;
-	boolean enabledInlining = false;
-	boolean enabledAliasAnalysis = false;
-	boolean enabledOutOfOrderConstruction = true;
-
-	boolean enabledTrieTreeChoice = false;
-	boolean enabledCommonLeftFactoring = false; // true;
-
-	boolean enabledFirstChoice = false;
-	boolean enabledSecondChoice = false;
-	boolean enabledfirstChoiceInlining = false;
-	boolean enabledEmptyChoice = false;
-
-	boolean verboseOption = false;
+	// boolean enabledLexicalOptimization = false;
+	// boolean enabledInlining = false;
+	// boolean enabledAliasAnalysis = false;
+	// boolean enabledOutOfOrderConstruction = true;
+	//
+	// boolean enabledTrieTreeChoice = false;
+	// boolean enabledCommonLeftFactoring = false; // true;
+	//
+	// boolean enabledFirstChoice = false;
+	// boolean enabledfirstChoiceInlining = false;
+	// boolean enabledEmptyChoice = false;
+	//
+	// boolean verboseOption = false;
 	boolean verboseGrammar = false;
-	boolean verboseDebug = false;
+	boolean enabledSecondChoice = false;
+	// boolean verboseDebug = false;
 
-	final ParserGrammar gg;
+	final ParserGrammar grammar;
 	final ParserStrategy strategy;
 	final HashSet<String> optimizedMap = new HashSet<String>();
 	HashMap<String, Production> bodyMap = null;
 	HashMap<String, String> aliasMap = null;
 
 	public GrammarOptimizer(ParserGrammar gg, ParserStrategy strategy) {
-		this.gg = gg;
+		this.grammar = gg;
 		this.strategy = strategy;
 		initOption();
 		optimize();
 	}
 
 	private void initOption() {
-		if (ConsoleUtils.isDebug()) {
-			this.verboseDebug = true;
-		}
-		if (strategy.isEnabled("Doption", ParserStrategy.Doption) || ConsoleUtils.isDebug()) {
-			this.verboseOption = true;
-		}
-		if (strategy.isEnabled("Dgrammar", ParserStrategy.Dgrammar)) {
-			this.verboseGrammar = true;
-		}
-
-		if (strategy.isEnabled("Oinline", ParserStrategy.Oinline)) {
-			this.enabledInlining = true;
-		}
-		if (strategy.isEnabled("Oalias", ParserStrategy.Oalias)) {
-			this.enabledInlining = true;
-			this.enabledAliasAnalysis = true;
+		// if (ConsoleUtils.isDebug()) {
+		// this.verboseDebug = true;
+		// }
+		// if (strategy.isEnabled("Doption", ParserStrategy.Doption) ||
+		// ConsoleUtils.isDebug()) {
+		// this.verboseOption = true;
+		// }
+		// if (strategy.isEnabled("Dgrammar", ParserStrategy.Dgrammar)) {
+		// this.verboseGrammar = true;
+		// }
+		if (strategy.Oalias) {
 			this.bodyMap = new HashMap<String, Production>();
 			this.aliasMap = new HashMap<String, String>();
 		}
-		if (strategy.isEnabled("Olex", ParserStrategy.Olex)) {
-			this.enabledLexicalOptimization = true;
-		}
-		if (strategy.isEnabled("Otrie", ParserStrategy.Otrie)) {
-			this.enabledTrieTreeChoice = true;
-		}
-
-		if (strategy.isEnabled("Ofirst", ParserStrategy.Ofirst)) {
-			// seems slow when the prediction option is enabled
-			this.enabledFirstChoice = true;
-			this.enabledCommonLeftFactoring = true;
+		if (strategy.Odchoice) {
 			this.toOptimizeChoiceList = new UList<Pchoice>(new Pchoice[8]);
 		}
 
-		this.verboseOption("Olex", enabledLexicalOptimization);
-		this.verboseOption("Oinline", enabledInlining);
-		this.verboseOption("Oalias", enabledAliasAnalysis);
-		this.verboseOption("Oood", enabledOutOfOrderConstruction);
-
-		this.verboseOption("Otrie", enabledTrieTreeChoice);
-		this.verboseOption("Ofactored", enabledCommonLeftFactoring);
-
-		this.verboseOption("Ofirst", enabledFirstChoice);
-		this.verboseOption("Osecond", enabledSecondChoice);
-		this.verboseOption("Ofirst-inline", enabledfirstChoiceInlining);
-		this.verboseOption("Ofirst-empty", enabledEmptyChoice);
-
-	}
-
-	private void verboseOption(String name, Object value) {
-		if (this.verboseOption || this.verboseGrammar) {
-			ConsoleUtils.println(name + ": " + value);
-		}
 	}
 
 	private void verboseReference(String name, int ref) {
@@ -156,34 +122,34 @@ public class GrammarOptimizer extends GrammarRewriter {
 	}
 
 	private void optimize() {
-		Production start = gg.getStartProduction();
+		Production start = grammar.getStartProduction();
 		optimizeProduction(start);
 
 		this.optimizeFirstChoice();
 		this.optimizedMap.clear();
 		this.resetReferenceCount();
 
-		gg.getParseFunc(start.getLocalName()).incCount();
+		grammar.getParseFunc(start.getLocalName()).incCount();
 		this.recheckReference(start);
 
-		UList<Production> prodList = new UList<Production>(new Production[gg.size()]);
-		for (Production p : gg) {
+		UList<Production> prodList = new UList<Production>(new Production[grammar.size()]);
+		for (Production p : grammar) {
 			String key = p.getLocalName();
-			ParseFunc f = gg.getParseFunc(key);
+			ParseFunc f = grammar.getParseFunc(key);
 			verboseReference(key, f.getCount());
 			if (f.getCount() > 0 || p.isSymbolTable()) {
 				prodList.add(p);
 			} else {
-				gg.removeParseFunc(key);
+				grammar.removeParseFunc(key);
 			}
 		}
-		gg.updateProductionList(prodList);
+		grammar.updateProductionList(prodList);
 	}
 
 	private void resetReferenceCount() {
-		for (Production p : gg) {
+		for (Production p : grammar) {
 			String key = p.getLocalName();
-			ParseFunc f = gg.getParseFunc(key);
+			ParseFunc f = grammar.getParseFunc(key);
 			f.resetCount();
 		}
 	}
@@ -198,7 +164,7 @@ public class GrammarOptimizer extends GrammarRewriter {
 
 	private void recheckReference(Expression e) {
 		if (e instanceof NonTerminal) {
-			ParseFunc f = gg.getParseFunc(((NonTerminal) e).getLocalName());
+			ParseFunc f = grammar.getParseFunc(((NonTerminal) e).getLocalName());
 			f.incCount();
 			recheckReference(((NonTerminal) e).getProduction());
 			return;
@@ -216,13 +182,13 @@ public class GrammarOptimizer extends GrammarRewriter {
 	}
 
 	private Expression optimizeProduction(Production p) {
-		assert (p.getGrammar() == this.gg);
+		assert (p.getGrammar() == this.grammar);
 		String uname = p.getLocalName();
 		if (!optimizedMap.contains(uname)) {
 			optimizedMap.add(uname);
 			Expression optimized = this.reshapeInner(p.getExpression());
 			p.setExpression(optimized);
-			if (this.enabledAliasAnalysis) {
+			if (strategy.Oalias) {
 				performAliasAnalysis(p);
 			}
 			return optimized;
@@ -255,8 +221,8 @@ public class GrammarOptimizer extends GrammarRewriter {
 	public Expression reshapeNonTerminal(NonTerminal n) {
 		Production p = n.getProduction();
 		Expression deref = optimizeProduction(p);
-		if (this.enabledInlining) {
-			ParseFunc f = gg.getParseFunc(n.getLocalName());
+		if (strategy.Oinline) {
+			ParseFunc f = grammar.getParseFunc(n.getLocalName());
 			if (f.getCount() == 1) {
 				assert (!p.isRecursive());
 				verboseInline("inline(ref=1)", n, deref);
@@ -278,7 +244,7 @@ public class GrammarOptimizer extends GrammarRewriter {
 				verboseInline("inline(char,char)", n, deref);
 				return deref;
 			}
-			if (this.enabledLexicalOptimization && isSingleInstruction(deref)) {
+			if (strategy.Olex && isSingleInstruction(deref)) {
 				verboseInline("inline(instruction)", n, deref);
 				return deref;
 			}
@@ -325,7 +291,7 @@ public class GrammarOptimizer extends GrammarRewriter {
 			inner = inner.reshape(this);
 			l2.add(inner);
 		}
-		if (this.enabledOutOfOrderConstruction) {
+		if (strategy.Oorder) {
 			while (this.performOutOfOrder(l2))
 				;
 		}
@@ -643,12 +609,12 @@ public class GrammarOptimizer extends GrammarRewriter {
 	}
 
 	private Expression firstChoiceInlining(Expression e) {
-		if (this.enabledfirstChoiceInlining) {
-			while (e instanceof NonTerminal) {
-				NonTerminal n = (NonTerminal) e;
-				e = n.getProduction().getExpression();
-			}
+		// if (this.enabledfirstChoiceInlining) {
+		while (e instanceof NonTerminal) {
+			NonTerminal n = (NonTerminal) e;
+			e = n.getProduction().getExpression();
 		}
+		// }
 		return e;
 	}
 

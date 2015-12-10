@@ -5,7 +5,6 @@ import java.util.ArrayList;
 
 import nez.Grammar;
 import nez.Parser;
-import nez.ParserStrategy;
 import nez.ast.Source;
 import nez.ast.Symbol;
 import nez.ast.Tree;
@@ -18,6 +17,7 @@ import nez.lang.NezGrammar1;
 import nez.lang.Production;
 import nez.lang.expr.ExpressionCommons;
 import nez.lang.expr.NonTerminal;
+import nez.parser.ParserStrategy;
 import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
 import nez.util.UList;

@@ -2,7 +2,7 @@ package nez.lang.regex;
 
 import nez.Grammar;
 import nez.Parser;
-import nez.ParserStrategy;
+import nez.parser.ParserStrategy;
 
 public class RegularExpression {
 	public final static Grammar newGrammar(String regex) {

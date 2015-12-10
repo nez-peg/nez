@@ -14,7 +14,7 @@ import nez.util.UList;
 public class Cmatch extends Command {
 	@Override
 	public void exec(CommandContext config) throws IOException {
-		config.getStrategy().setEnabled("ast", false);
+		config.getStrategy().TreeConstruction = false;
 		Parser parser = config.newParser();
 
 		UList<String> failedInputs = new UList<String>(new String[4]);

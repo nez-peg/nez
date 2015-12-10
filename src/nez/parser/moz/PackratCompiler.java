@@ -1,11 +1,11 @@
 package nez.parser.moz;
 
-import nez.ParserStrategy;
 import nez.Verbose;
 import nez.lang.Production;
 import nez.lang.expr.NonTerminal;
 import nez.lang.expr.Tlink;
 import nez.parser.ParseFunc;
+import nez.parser.ParserStrategy;
 
 public class PackratCompiler extends OptimizedCompiler {
 
@@ -26,7 +26,7 @@ public class PackratCompiler extends OptimizedCompiler {
 			return encode(f.getExpression(), next, failjump);
 		}
 		if (f.getMemoPoint() != null) {
-			if (!enabledASTConstruction || p.isNoNTreeConstruction()) {
+			if (!strategy.TreeConstruction || p.isNoNTreeConstruction()) {
 				if (Verbose.PackratParsing) {
 					Verbose.println("memoize: " + n.getLocalName() + " at " + this.getEncodingProduction().getLocalName());
 				}
@@ -56,7 +56,7 @@ public class PackratCompiler extends OptimizedCompiler {
 
 	@Override
 	public final MozInst encodeTlink(Tlink p, MozInst next, MozInst failjump) {
-		if (enabledASTConstruction && p.get(0) instanceof NonTerminal) {
+		if (strategy.TreeConstruction && p.get(0) instanceof NonTerminal) {
 			NonTerminal n = (NonTerminal) p.get(0);
 			ParseFunc f = this.getParseFunc(n.getProduction());
 			if (f.getMemoPoint() != null) {

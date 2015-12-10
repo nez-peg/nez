@@ -6,7 +6,6 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import nez.Grammar;
-import nez.ParserStrategy;
 import nez.Verbose;
 import nez.lang.GrammarChecker;
 import nez.lang.Production;
@@ -54,12 +53,12 @@ public class ParserGrammar extends Grammar {
 		}
 	}
 
-	void memo(ParserStrategy option) {
+	void memo(ParserStrategy strategy) {
 		memoPointList = null;
-		if (option.isEnabled("memo", ParserStrategy.MEMO)) {
+		if (strategy.PackratParsing) {
 			memoPointList = new UList<MemoPoint>(new MemoPoint[4]);
 		}
-		if (option.isEnabled("Oinline", ParserStrategy.Oinline)) {
+		if (strategy.Oinline) {
 			for (Entry<String, ParseFunc> e : funcMap.entrySet()) {
 				this.checkInlining(e.getValue());
 			}

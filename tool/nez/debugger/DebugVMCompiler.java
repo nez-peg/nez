@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Stack;
 
-import nez.ParserStrategy;
 import nez.ast.CommonTree;
 import nez.lang.Expression;
 import nez.lang.Production;
@@ -38,6 +37,7 @@ import nez.lang.expr.Xmatch;
 import nez.lang.expr.Xsymbol;
 import nez.parser.AbstractGenerator;
 import nez.parser.ParserGrammar;
+import nez.parser.ParserStrategy;
 import nez.parser.moz.MozInst;
 
 public class DebugVMCompiler extends AbstractGenerator {
@@ -314,7 +314,7 @@ public class DebugVMCompiler extends AbstractGenerator {
 	@Override
 	public MozInst encodeTnew(Tnew p, MozInst next) {
 		this.leftedStack.push(false);
-		if (this.enabledASTConstruction) {
+		if (this.strategy.TreeConstruction) {
 			this.builder.createInew(p);
 		}
 		return null;
@@ -323,7 +323,7 @@ public class DebugVMCompiler extends AbstractGenerator {
 	@Override
 	public MozInst encodeTlfold(Tlfold p, MozInst next) {
 		this.leftedStack.push(true);
-		if (this.enabledASTConstruction) {
+		if (this.strategy.TreeConstruction) {
 			BasicBlock fbb = new BasicBlock();
 			this.builder.pushFailureJumpPoint(fbb);
 			this.builder.createImark(p);
@@ -337,7 +337,7 @@ public class DebugVMCompiler extends AbstractGenerator {
 
 	@Override
 	public MozInst encodeTlink(Tlink p, MozInst next, MozInst failjump) {
-		if (this.enabledASTConstruction) {
+		if (this.strategy.TreeConstruction) {
 			BasicBlock fbb = new BasicBlock();
 			BasicBlock endbb = new BasicBlock();
 			this.builder.pushFailureJumpPoint(fbb);
@@ -362,7 +362,7 @@ public class DebugVMCompiler extends AbstractGenerator {
 		int len = node.toText().length();
 		CommonTree newNode = new CommonTree(node.getTag(), node.getSource(), node.getSourcePosition() + len - 1, (int) (node.getSourcePosition() + len), 0, null);
 		p = (Tcapture) ExpressionCommons.newTcapture(newNode, p.shift);
-		if (this.enabledASTConstruction) {
+		if (this.strategy.TreeConstruction) {
 			if (this.leftedStack.pop()) {
 				BasicBlock endbb = new BasicBlock();
 				this.builder.createIcapture(p);
@@ -381,7 +381,7 @@ public class DebugVMCompiler extends AbstractGenerator {
 
 	@Override
 	public MozInst encodeTtag(Ttag p, MozInst next) {
-		if (this.enabledASTConstruction) {
+		if (this.strategy.TreeConstruction) {
 			this.builder.createItag(p);
 		}
 		return null;
@@ -389,7 +389,7 @@ public class DebugVMCompiler extends AbstractGenerator {
 
 	@Override
 	public MozInst encodeTreplace(Treplace p, MozInst next) {
-		if (this.enabledASTConstruction) {
+		if (this.strategy.TreeConstruction) {
 			this.builder.createIreplace(p);
 		}
 		return null;

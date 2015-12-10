@@ -44,7 +44,7 @@ public class MozCode extends ParserCode {
 		} catch (TerminationException e) {
 			result = e.status;
 		}
-		return machine.getParseResult(startPosition, context.getPosition());
+		return result ? machine.getParseResult(startPosition, context.getPosition()) : null;
 	}
 
 	public boolean run(MozInst code, MozMachine sc) {

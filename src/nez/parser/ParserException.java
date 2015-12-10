@@ -1,4 +1,4 @@
-package nez;
+package nez.parser;
 
 import java.io.IOException;
 

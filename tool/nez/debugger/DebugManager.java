@@ -3,10 +3,10 @@ package nez.debugger;
 import java.io.IOException;
 
 import nez.Parser;
-import nez.ParserStrategy;
 import nez.ast.CommonTree;
 import nez.ast.CommonTreeTransducer;
 import nez.ast.TreeWriter;
+import nez.parser.ParserStrategy;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
 

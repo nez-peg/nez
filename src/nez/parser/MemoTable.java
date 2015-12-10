@@ -3,10 +3,8 @@ package nez.parser;
 import java.util.HashMap;
 
 import nez.NezProfier;
-import nez.ParserStrategy;
 
 public abstract class MemoTable {
-	public abstract MemoTable newMemoTable(long len, int w, int n);
 
 	public abstract void setMemo(long pos, int memoPoint, boolean failed, Object result, int consumed, int stateValue);
 
@@ -24,14 +22,14 @@ public abstract class MemoTable {
 		this.CountInvalidated = 0;
 	}
 
-	public static MemoTable newTable(ParserStrategy option, long length, int windowSize, int memoPointSize) {
-		if (memoPointSize == 0) {
-			return new NullTable(length, windowSize, memoPointSize);
+	public static MemoTable newTable(int windowSize, int memoPointSize) {
+		if (memoPointSize == 0 || windowSize == 0) {
+			return new NullTable(windowSize, memoPointSize);
 		}
-		if (option.isEnabled("Mpackrat", ParserStrategy.Mpackrat)) {
-			return new PackratHashTable(length, windowSize, memoPointSize);
+		if (windowSize < -1) {
+			return new PackratHashTable(windowSize, memoPointSize);
 		}
-		return new ElasticTable(length, windowSize, memoPointSize);
+		return new ElasticTable(windowSize, memoPointSize);
 	}
 
 	public void record(NezProfier rec) {
@@ -44,12 +42,8 @@ public abstract class MemoTable {
 }
 
 class NullTable extends MemoTable {
-	@Override
-	public MemoTable newMemoTable(long len, int w, int n) {
-		return this;
-	}
 
-	NullTable(long len, int w, int n) {
+	NullTable(int w, int n) {
 		this.initStat();
 	}
 
@@ -73,7 +67,7 @@ class ElasticTable extends MemoTable {
 	private MemoEntryKey[] memoArray;
 	private final int shift;
 
-	ElasticTable(long len, int w, int n) {
+	ElasticTable(int w, int n) {
 		this.memoArray = new MemoEntryKey[w * n + 1];
 		for (int i = 0; i < this.memoArray.length; i++) {
 			this.memoArray[i] = new MemoEntryKey();
@@ -81,11 +75,6 @@ class ElasticTable extends MemoTable {
 		}
 		this.shift = (int) (Math.log(n) / Math.log(2.0)) + 1;
 		this.initStat();
-	}
-
-	@Override
-	public MemoTable newMemoTable(long len, int w, int n) {
-		return new ElasticTable(len, w, n);
 	}
 
 	final long longkey(long pos, int memoPoint, int shift) {
@@ -138,13 +127,8 @@ class PackratHashTable extends MemoTable {
 	HashMap<Long, MemoEntryList> memoMap;
 	private MemoEntryList UnusedMemo = null;
 
-	PackratHashTable(long len, int w, int n) {
+	PackratHashTable(int w, int n) {
 		this.memoMap = new HashMap<Long, MemoEntryList>(w * n);
-	}
-
-	@Override
-	public MemoTable newMemoTable(long len, int w, int n) {
-		return new PackratHashTable(len, w, n);
 	}
 
 	private final MemoEntryList newMemo() {

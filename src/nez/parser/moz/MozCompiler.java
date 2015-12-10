@@ -3,14 +3,14 @@ package nez.parser.moz;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import nez.ParserStrategy;
 import nez.Verbose;
 import nez.lang.Expression;
 import nez.lang.Production;
 import nez.lang.expr.ExpressionCommons;
 import nez.parser.Coverage;
-import nez.parser.ParserGrammar;
 import nez.parser.ParseFunc;
+import nez.parser.ParserGrammar;
+import nez.parser.ParserStrategy;
 import nez.parser.moz.MozCompiler.DefaultVisitor;
 import nez.util.StringUtils;
 import nez.util.UList;
@@ -18,7 +18,6 @@ import nez.util.VisitorMap;
 
 public class MozCompiler extends VisitorMap<DefaultVisitor> {
 	private ParserStrategy strategy;
-	private boolean enabledASTConstruction;
 	private ParserGrammar gg = null;
 	private HashMap<String, ParseFunc> funcMap = null;
 	private HashMap<Call, ParseFunc> syncMap = new HashMap<Call, ParseFunc>();
@@ -28,9 +27,6 @@ public class MozCompiler extends VisitorMap<DefaultVisitor> {
 	public MozCompiler(ParserStrategy strategy) {
 		this.init(MozCompiler.class, new DefaultVisitor());
 		this.strategy = strategy;
-		if (this.strategy != null) {
-			this.enabledASTConstruction = strategy.isEnabled("ast", ParserStrategy.AST);
-		}
 	}
 
 	public MozCode compile(ParserGrammar gg) {
@@ -127,7 +123,7 @@ public class MozCompiler extends VisitorMap<DefaultVisitor> {
 
 	private Expression getInnerExpression(Expression p) {
 		Expression inner = ExpressionCommons.resolveNonTerminal(p.get(0));
-		if (strategy.isEnabled("Ostr", ParserStrategy.Ostr) && inner instanceof nez.lang.expr.Psequence) {
+		if (strategy.Ostring && inner instanceof nez.lang.expr.Psequence) {
 			inner = ((nez.lang.expr.Psequence) inner).toMultiCharSequence();
 		}
 		return inner;
@@ -169,7 +165,7 @@ public class MozCompiler extends VisitorMap<DefaultVisitor> {
 				return generate(f.getExpression(), next);
 			}
 			if (f.getMemoPoint() != null) {
-				if (!enabledASTConstruction || p.isNoNTreeConstruction()) {
+				if (!strategy.TreeConstruction || p.isNoNTreeConstruction()) {
 					if (Verbose.PackratParsing) {
 						Verbose.println("memoize: " + n.getLocalName() + " at " + getEncodingProduction().getLocalName());
 					}
@@ -236,7 +232,7 @@ public class MozCompiler extends VisitorMap<DefaultVisitor> {
 		public MozInst accept(Expression e, MozInst next) {
 			nez.lang.expr.Pchoice p = (nez.lang.expr.Pchoice) e;
 			if (p.predictedCase != null) {
-				if (p.isTrieTree && strategy.isEnabled("Odfa", ParserStrategy.Odfa)) {
+				if (p.isTrieTree && strategy.Odfa) {
 					return encodeDFirstChoice(p, next);
 				}
 				return encodeFirstChoice(p, next);
@@ -317,7 +313,7 @@ public class MozCompiler extends VisitorMap<DefaultVisitor> {
 		@Override
 		public MozInst accept(Expression e, MozInst next) {
 			nez.lang.expr.Psequence p = (nez.lang.expr.Psequence) e;
-			if (strategy.isEnabled("Ostr", ParserStrategy.Ostr)) {
+			if (strategy.Ostring) {
 				Expression inner = p.toMultiCharSequence();
 				if (inner instanceof nez.lang.expr.Cmulti) {
 					Cmulti cmulti = new Cmulti();
@@ -336,7 +332,7 @@ public class MozCompiler extends VisitorMap<DefaultVisitor> {
 	public class Poption extends DefaultVisitor {
 		@Override
 		public MozInst accept(Expression e, MozInst next) {
-			if (strategy.isEnabled("Olex", ParserStrategy.Olex)) {
+			if (strategy.Olex) {
 				Expression inner = getInnerExpression(e);
 				if (inner instanceof nez.lang.expr.Cbyte) {
 					optimizedUnary(e);
@@ -359,7 +355,7 @@ public class MozCompiler extends VisitorMap<DefaultVisitor> {
 	public class Pzero extends DefaultVisitor {
 		@Override
 		public MozInst accept(Expression e, MozInst next) {
-			if (strategy.isEnabled("Olex", ParserStrategy.Olex)) {
+			if (strategy.Olex) {
 				Expression inner = getInnerExpression(e);
 				if (inner instanceof nez.lang.expr.Cbyte) {
 					optimizedUnary(e);
@@ -400,7 +396,7 @@ public class MozCompiler extends VisitorMap<DefaultVisitor> {
 	public class Pnot extends DefaultVisitor {
 		@Override
 		public MozInst accept(Expression e, MozInst next) {
-			if (strategy.isEnabled("Olex", ParserStrategy.Olex)) {
+			if (strategy.Olex) {
 				Expression inner = getInnerExpression(e);
 				if (inner instanceof nez.lang.expr.Cset) {
 					optimizedUnary(e);
@@ -427,7 +423,7 @@ public class MozCompiler extends VisitorMap<DefaultVisitor> {
 	public class Tnew extends DefaultVisitor {
 		@Override
 		public MozInst accept(Expression e, MozInst next) {
-			if (enabledASTConstruction) {
+			if (strategy.TreeConstruction) {
 				nez.lang.expr.Tnew p = (nez.lang.expr.Tnew) e;
 				return new TNew(p, next, p.shift);
 			}
@@ -439,7 +435,7 @@ public class MozCompiler extends VisitorMap<DefaultVisitor> {
 		@Override
 		public MozInst accept(Expression e, MozInst next) {
 			nez.lang.expr.Tlink p = (nez.lang.expr.Tlink) e;
-			if (enabledASTConstruction && p.get(0) instanceof nez.lang.expr.NonTerminal) {
+			if (strategy.TreeConstruction && p.get(0) instanceof nez.lang.expr.NonTerminal) {
 				nez.lang.expr.NonTerminal n = (nez.lang.expr.NonTerminal) p.get(0);
 				ParseFunc f = getParseFunc(n.getProduction());
 				if (f.getMemoPoint() != null) {
@@ -455,7 +451,7 @@ public class MozCompiler extends VisitorMap<DefaultVisitor> {
 					return new TLookup(p, inside, f.isStateful(), f.getMemoPoint().id, next, p.getLabel());
 				}
 			}
-			if (enabledASTConstruction) {
+			if (strategy.TreeConstruction) {
 				next = new TPop(p, next, p.getLabel());
 				next = generate(p.get(0), next);
 				return new TPush(p, next);
@@ -467,7 +463,7 @@ public class MozCompiler extends VisitorMap<DefaultVisitor> {
 	public class Tlfold extends DefaultVisitor {
 		@Override
 		public MozInst accept(Expression e, MozInst next) {
-			if (enabledASTConstruction) {
+			if (strategy.TreeConstruction) {
 				nez.lang.expr.Tlfold p = (nez.lang.expr.Tlfold) e;
 				return new TLeftFold(p, next, p.shift, p.getLabel());
 			}
@@ -478,7 +474,7 @@ public class MozCompiler extends VisitorMap<DefaultVisitor> {
 	public class Ttag extends DefaultVisitor {
 		@Override
 		public MozInst accept(Expression e, MozInst next) {
-			if (enabledASTConstruction) {
+			if (strategy.TreeConstruction) {
 				nez.lang.expr.Ttag p = (nez.lang.expr.Ttag) e;
 				return new TTag(p, next, p.tag);
 			}
@@ -489,7 +485,7 @@ public class MozCompiler extends VisitorMap<DefaultVisitor> {
 	public class Treplace extends DefaultVisitor {
 		@Override
 		public MozInst accept(Expression e, MozInst next) {
-			if (enabledASTConstruction) {
+			if (strategy.TreeConstruction) {
 				nez.lang.expr.Treplace p = (nez.lang.expr.Treplace) e;
 				byte[] utf8 = p.value.getBytes();
 				return new TReplace(p, next, utf8);
@@ -501,7 +497,7 @@ public class MozCompiler extends VisitorMap<DefaultVisitor> {
 	public class Tcapture extends DefaultVisitor {
 		@Override
 		public MozInst accept(Expression e, MozInst next) {
-			if (enabledASTConstruction) {
+			if (strategy.TreeConstruction) {
 				nez.lang.expr.Tcapture p = (nez.lang.expr.Tcapture) e;
 				return new TCapture(p, next, p.shift);
 			}

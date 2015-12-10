@@ -9,7 +9,7 @@ public class Cnezdb extends Command {
 	@Override
 	public void exec(CommandContext config) {
 		Command.displayVersion();
-		config.getStrategy().setEnabled("Onone", true);
+		config.getStrategy().Optimization = false;
 		Parser parser = config.newParser();
 		DebugManager manager = new DebugManager(config.inputFileLists);
 		manager.exec(parser, config.getStrategy());

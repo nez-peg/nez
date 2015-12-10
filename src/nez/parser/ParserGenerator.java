@@ -2,7 +2,6 @@ package nez.parser;
 
 import java.util.HashMap;
 
-import nez.ParserStrategy;
 import nez.Verbose;
 import nez.lang.Expression;
 import nez.lang.Production;
@@ -26,7 +25,6 @@ import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
 import nez.lang.expr.Xblock;
-import nez.lang.expr.Xsymbol;
 import nez.lang.expr.Xdefindent;
 import nez.lang.expr.Xexists;
 import nez.lang.expr.Xif;
@@ -35,6 +33,7 @@ import nez.lang.expr.Xis;
 import nez.lang.expr.Xlocal;
 import nez.lang.expr.Xmatch;
 import nez.lang.expr.Xon;
+import nez.lang.expr.Xsymbol;
 import nez.parser.moz.MozInst;
 import nez.util.FileBuilder;
 import nez.util.StringUtils;
@@ -57,7 +56,7 @@ public abstract class ParserGenerator extends AbstractGenerator {
 	}
 
 	public final void init(ParserStrategy strategy, String dir, String grammarName) {
-		this.initLocalOption(strategy);
+		this.setStrategy(strategy);
 		this.dir = dir;
 		this.grammarName = grammarName;
 	}
@@ -405,7 +404,7 @@ public abstract class ParserGenerator extends AbstractGenerator {
 
 	@Override
 	public final MozInst encodeTdetree(Tdetree p, MozInst next, MozInst failjump) {
-		if (enabledASTConstruction) {
+		if (strategy.TreeConstruction) {
 			this.visitTdetree(p);
 		} else {
 			this.visitExpression(p.get(0));
@@ -415,7 +414,7 @@ public abstract class ParserGenerator extends AbstractGenerator {
 
 	@Override
 	public final MozInst encodeTlink(Tlink p, MozInst next, MozInst failjump) {
-		if (enabledASTConstruction) {
+		if (strategy.TreeConstruction) {
 			this.visitTlink(p);
 		} else {
 			this.visitExpression(p.get(0));
@@ -425,7 +424,7 @@ public abstract class ParserGenerator extends AbstractGenerator {
 
 	@Override
 	public final MozInst encodeTnew(Tnew p, MozInst next) {
-		if (enabledASTConstruction) {
+		if (strategy.TreeConstruction) {
 			this.visitTnew(p);
 		}
 		return null;
@@ -433,7 +432,7 @@ public abstract class ParserGenerator extends AbstractGenerator {
 
 	@Override
 	public final MozInst encodeTlfold(Tlfold p, MozInst next) {
-		if (enabledASTConstruction) {
+		if (strategy.TreeConstruction) {
 			this.visitTlfold(p);
 		}
 		return null;
@@ -441,7 +440,7 @@ public abstract class ParserGenerator extends AbstractGenerator {
 
 	@Override
 	public final MozInst encodeTcapture(Tcapture p, MozInst next) {
-		if (enabledASTConstruction) {
+		if (strategy.TreeConstruction) {
 			this.visitTcapture(p);
 		}
 		return null;
@@ -449,7 +448,7 @@ public abstract class ParserGenerator extends AbstractGenerator {
 
 	@Override
 	public final MozInst encodeTtag(Ttag p, MozInst next) {
-		if (enabledASTConstruction) {
+		if (strategy.TreeConstruction) {
 			this.visitTtag(p);
 		}
 		return null;
@@ -457,7 +456,7 @@ public abstract class ParserGenerator extends AbstractGenerator {
 
 	@Override
 	public final MozInst encodeTreplace(Treplace p, MozInst next) {
-		if (enabledASTConstruction) {
+		if (strategy.TreeConstruction) {
 			this.visitTreplace(p);
 		}
 		return null;

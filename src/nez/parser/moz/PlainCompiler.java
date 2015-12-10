@@ -1,6 +1,5 @@
 package nez.parser.moz;
 
-import nez.ParserStrategy;
 import nez.lang.Expression;
 import nez.lang.Production;
 import nez.lang.expr.Cany;
@@ -31,6 +30,7 @@ import nez.lang.expr.Xlocal;
 import nez.lang.expr.Xmatch;
 import nez.lang.expr.Xsymbol;
 import nez.parser.ParseFunc;
+import nez.parser.ParserStrategy;
 
 public class PlainCompiler extends NezCompiler {
 
@@ -137,7 +137,7 @@ public class PlainCompiler extends NezCompiler {
 
 	@Override
 	public MozInst encodeTlink(Tlink p, MozInst next, MozInst failjump) {
-		if (this.enabledASTConstruction) {
+		if (this.strategy.TreeConstruction) {
 			next = new Moz.TPop(p, next);
 			next = encode(p.get(0), next, failjump);
 			return new Moz.TPush(p, next);
@@ -147,7 +147,7 @@ public class PlainCompiler extends NezCompiler {
 
 	@Override
 	public MozInst encodeTnew(Tnew p, MozInst next) {
-		if (this.enabledASTConstruction) {
+		if (this.strategy.TreeConstruction) {
 			return new Moz.New(p, next);
 		}
 		return next;
@@ -155,7 +155,7 @@ public class PlainCompiler extends NezCompiler {
 
 	@Override
 	public MozInst encodeTlfold(Tlfold p, MozInst next) {
-		if (this.enabledASTConstruction) {
+		if (this.strategy.TreeConstruction) {
 			return new Moz.TLeftFold(p, next);
 		}
 		return next;
@@ -163,7 +163,7 @@ public class PlainCompiler extends NezCompiler {
 
 	@Override
 	public MozInst encodeTcapture(Tcapture p, MozInst next) {
-		if (this.enabledASTConstruction) {
+		if (this.strategy.TreeConstruction) {
 			return new Moz.Capture(p, next);
 		}
 		return next;
@@ -171,7 +171,7 @@ public class PlainCompiler extends NezCompiler {
 
 	@Override
 	public MozInst encodeTtag(Ttag p, MozInst next) {
-		if (this.enabledASTConstruction) {
+		if (this.strategy.TreeConstruction) {
 			return new Moz.Tag(p, next);
 		}
 		return next;
@@ -179,7 +179,7 @@ public class PlainCompiler extends NezCompiler {
 
 	@Override
 	public MozInst encodeTreplace(Treplace p, MozInst next) {
-		if (this.enabledASTConstruction) {
+		if (this.strategy.TreeConstruction) {
 			return new Moz.Replace(p, next);
 		}
 		return next;

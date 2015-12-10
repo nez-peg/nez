@@ -5,7 +5,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import nez.Parser;
-import nez.ParserStrategy;
 import nez.Verbose;
 import nez.ast.CommonTree;
 import nez.ast.Symbol;
@@ -15,6 +14,7 @@ import nez.lang.Expression;
 import nez.lang.GrammarFile;
 import nez.lang.GrammarFileLoader;
 import nez.lang.expr.ExpressionCommons;
+import nez.parser.ParserStrategy;
 import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
 import nez.util.UList;

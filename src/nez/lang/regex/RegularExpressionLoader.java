@@ -4,12 +4,12 @@ import java.io.IOException;
 
 import nez.Grammar;
 import nez.Parser;
-import nez.ParserStrategy;
 import nez.ast.Tree;
 import nez.lang.Expression;
 import nez.lang.GrammarFileLoader;
 import nez.lang.Production;
 import nez.lang.expr.ExpressionCommons;
+import nez.parser.ParserStrategy;
 import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
 import nez.util.UList;

@@ -2,7 +2,7 @@ package nez.ast;
 
 import java.util.TreeMap;
 
-import nez.ParserStrategy;
+import nez.parser.ParserStrategy;
 import nez.util.FileBuilder;
 import nez.util.StringUtils;
 
