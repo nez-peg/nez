@@ -8,7 +8,7 @@ import java.util.Map;
 
 import nez.Grammar;
 import nez.Parser;
-import nez.Strategy;
+import nez.ParserStrategy;
 import nez.ast.Symbol;
 import nez.ast.Tree;
 import nez.lang.GrammarFileLoader;
@@ -44,7 +44,7 @@ public class Gdtd extends GrammarFileLoader {
 	public Parser getLoaderParser(String start) {
 		if (dtdParser == null) {
 			try {
-				Strategy option = Strategy.newSafeStrategy();
+				ParserStrategy option = ParserStrategy.newSafeStrategy();
 				Grammar g = GrammarFileLoader.loadGrammar("xmldtd.nez", option);
 				dtdParser = g.newParser(option);
 				strategy.report();
@@ -54,7 +54,7 @@ public class Gdtd extends GrammarFileLoader {
 			assert (dtdParser != null);
 		}
 		this.schema = new DTDSchemaGrammarGenerator(getGrammarFile());
-		this.enableNezExtension = !strategy.isEnabled("peg", Strategy.PEG);
+		this.enableNezExtension = !strategy.isEnabled("peg", ParserStrategy.PEG);
 		return dtdParser;
 	}
 

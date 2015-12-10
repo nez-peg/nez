@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import nez.Parser;
 import nez.Verbose;
-import nez.io.SourceContext;
+import nez.io.SourceStream;
 import nez.main.Command;
 import nez.main.CommandContext;
 import nez.util.ConsoleUtils;
@@ -15,7 +15,7 @@ public class Cmatch extends Command {
 	@Override
 	public void exec(CommandContext config) throws IOException {
 		config.getStrategy().setEnabled("ast", false);
-		Parser g = config.newParser();
+		Parser parser = config.newParser();
 
 		UList<String> failedInputs = new UList<String>(new String[4]);
 		UList<String> unconsumedInputs = new UList<String>(new String[4]);
@@ -25,25 +25,20 @@ public class Cmatch extends Command {
 		long time = 0;
 
 		while (config.hasInput()) {
-			SourceContext file = config.nextInput();
+			SourceStream file = config.nextInput();
 			totalCount++;
+
 			long t = System.nanoTime();
-			boolean result = g.match(file);
+			boolean result = parser.match(file);
 			long t2 = System.nanoTime();
-			if (!result) {
-				ConsoleUtils.println(file.getSyntaxErrorMessage());
+			if (parser.hasErrors()) {
+				parser.showErrors();
 				failedInputs.add(file.getResourceName());
 				failureCount++;
-				continue;
 			}
-			if (file.hasUnconsumed()) {
-				ConsoleUtils.println(file.getUnconsumedMessage());
-				unconsumedInputs.add(file.getResourceName());
-				unconsumedCount++;
-			}
-			consumed += file.getPosition();
+			consumed += file.length();
 			time += (t2 - t);
-			g.logProfiler();
+			parser.logProfiler();
 		}
 		if (totalCount > 1) {
 			Verbose.println(totalCount + " files, " + StringUtils.formatMPS(consumed, time) + " MiB/s, " + failureCount + " failed, " + unconsumedCount + " uncosumed, "

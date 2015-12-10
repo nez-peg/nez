@@ -8,7 +8,7 @@ import java.util.Map;
 
 import nez.util.StringUtils;
 
-public class StreamContext extends SourceContext {
+public class StreamContext extends SourceStream {
 	public final static int PageSize = 4096;
 
 	private RandomAccessFile file;

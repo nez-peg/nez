@@ -2,7 +2,7 @@ package nez.ast;
 
 import java.util.AbstractList;
 
-import nez.io.SourceContext;
+import nez.io.SourceStream;
 import nez.util.StringUtils;
 
 public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements SourcePosition {
@@ -364,8 +364,8 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements
 	 * @return SourceContext
 	 */
 
-	public final SourceContext newSourceContext() {
-		return SourceContext.newStringContext(this.getSource().getResourceName(), this.getSource().linenum(this.getSourcePosition()), this.toText());
+	public final SourceStream newSourceContext() {
+		return SourceStream.newStringContext(this.getSource().getResourceName(), this.getSource().linenum(this.getSourcePosition()), this.toText());
 	}
 
 	public final boolean containsToken(String token) {

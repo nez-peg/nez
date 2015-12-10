@@ -3,7 +3,7 @@ package nez.lang;
 import java.util.HashMap;
 import java.util.HashSet;
 
-import nez.Strategy;
+import nez.ParserStrategy;
 import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cset;
@@ -22,7 +22,7 @@ import nez.lang.expr.Tlink;
 import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
-import nez.parser.GenerativeGrammar;
+import nez.parser.ParserGrammar;
 import nez.parser.ParseFunc;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
@@ -47,13 +47,13 @@ public class GrammarOptimizer extends GrammarRewriter {
 	boolean verboseGrammar = false;
 	boolean verboseDebug = false;
 
-	final GenerativeGrammar gg;
-	final Strategy strategy;
+	final ParserGrammar gg;
+	final ParserStrategy strategy;
 	final HashSet<String> optimizedMap = new HashSet<String>();
 	HashMap<String, Production> bodyMap = null;
 	HashMap<String, String> aliasMap = null;
 
-	public GrammarOptimizer(GenerativeGrammar gg, Strategy strategy) {
+	public GrammarOptimizer(ParserGrammar gg, ParserStrategy strategy) {
 		this.gg = gg;
 		this.strategy = strategy;
 		initOption();
@@ -64,30 +64,30 @@ public class GrammarOptimizer extends GrammarRewriter {
 		if (ConsoleUtils.isDebug()) {
 			this.verboseDebug = true;
 		}
-		if (strategy.isEnabled("Doption", Strategy.Doption) || ConsoleUtils.isDebug()) {
+		if (strategy.isEnabled("Doption", ParserStrategy.Doption) || ConsoleUtils.isDebug()) {
 			this.verboseOption = true;
 		}
-		if (strategy.isEnabled("Dgrammar", Strategy.Dgrammar)) {
+		if (strategy.isEnabled("Dgrammar", ParserStrategy.Dgrammar)) {
 			this.verboseGrammar = true;
 		}
 
-		if (strategy.isEnabled("Oinline", Strategy.Oinline)) {
+		if (strategy.isEnabled("Oinline", ParserStrategy.Oinline)) {
 			this.enabledInlining = true;
 		}
-		if (strategy.isEnabled("Oalias", Strategy.Oalias)) {
+		if (strategy.isEnabled("Oalias", ParserStrategy.Oalias)) {
 			this.enabledInlining = true;
 			this.enabledAliasAnalysis = true;
 			this.bodyMap = new HashMap<String, Production>();
 			this.aliasMap = new HashMap<String, String>();
 		}
-		if (strategy.isEnabled("Olex", Strategy.Olex)) {
+		if (strategy.isEnabled("Olex", ParserStrategy.Olex)) {
 			this.enabledLexicalOptimization = true;
 		}
-		if (strategy.isEnabled("Otrie", Strategy.Otrie)) {
+		if (strategy.isEnabled("Otrie", ParserStrategy.Otrie)) {
 			this.enabledTrieTreeChoice = true;
 		}
 
-		if (strategy.isEnabled("Ofirst", Strategy.Ofirst)) {
+		if (strategy.isEnabled("Ofirst", ParserStrategy.Ofirst)) {
 			// seems slow when the prediction option is enabled
 			this.enabledFirstChoice = true;
 			this.enabledCommonLeftFactoring = true;

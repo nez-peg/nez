@@ -5,13 +5,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import nez.Parser;
-import nez.ParserException;
-import nez.Strategy;
+import nez.ParserStrategy;
 import nez.Verbose;
 import nez.ast.CommonTree;
 import nez.ast.Symbol;
 import nez.ast.TreeVisitor;
-import nez.io.SourceContext;
+import nez.io.SourceStream;
 import nez.lang.Expression;
 import nez.lang.GrammarFile;
 import nez.lang.GrammarFileLoader;
@@ -24,7 +23,7 @@ public class RegexGrammar extends TreeVisitor {
 
 	static GrammarFile regexGrammar = null;
 
-	public final static GrammarFile loadGrammar(SourceContext regex, Strategy option) throws IOException {
+	public final static GrammarFile loadGrammar(SourceStream regex, ParserStrategy option) throws IOException {
 		if (regexGrammar == null) {
 			try {
 				regexGrammar = (GrammarFile) GrammarFileLoader.loadGrammar("regex.nez", null);
@@ -33,13 +32,9 @@ public class RegexGrammar extends TreeVisitor {
 			}
 		}
 		Parser p = regexGrammar.newParser("File");
+		p.setDisabledUnconsumed(true);
 		CommonTree node = p.parseCommonTree(regex);
-		if (node == null) {
-			throw new ParserException(regex.getSyntaxErrorMessage());
-		}
-		if (regex.hasUnconsumed()) {
-			throw new ParserException(regex.getUnconsumedMessage());
-		}
+		p.ensureNoErrors();
 		GrammarFile gfile = GrammarFile.newGrammarFile("re", option);
 		RegexGrammar conv = new RegexGrammar();
 		conv.convert(node, gfile);
@@ -48,7 +43,7 @@ public class RegexGrammar extends TreeVisitor {
 
 	public final static Parser newPrarser(String pattern) {
 		try {
-			GrammarFile grammar = loadGrammar(SourceContext.newStringContext(pattern), Strategy.newDefaultStrategy() /* FIXME */);
+			GrammarFile grammar = loadGrammar(SourceStream.newStringContext(pattern), ParserStrategy.newDefaultStrategy() /* FIXME */);
 			return grammar.newParser("File");
 		} catch (IOException e) {
 			Verbose.traceException(e);

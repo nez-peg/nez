@@ -22,7 +22,7 @@ public class Cparser extends Command {
 	public void exec(CommandContext config) throws IOException {
 		ParserGenerator pgen = newParserGenerator(config);
 		Parser p = config.newParser();
-		pgen.generate(p.getGrammar());
+		pgen.generate(p.getParserGrammar());
 	}
 
 	protected ParserGenerator newParserGenerator(CommandContext config) {

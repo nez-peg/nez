@@ -1,16 +1,16 @@
 package nez.ast.transducer;
 
 import nez.Grammar;
-import nez.Strategy;
+import nez.ParserStrategy;
 import nez.ast.SourcePosition;
 import nez.ast.Tree;
 import nez.util.VisitorMap;
 
 public class GrammarVisitorMap<T> extends VisitorMap<T> {
 	protected final Grammar grammar;
-	protected final Strategy strategy;
+	protected final ParserStrategy strategy;
 
-	public GrammarVisitorMap(Grammar grammar, Strategy strategy) {
+	public GrammarVisitorMap(Grammar grammar, ParserStrategy strategy) {
 		this.grammar = grammar;
 		this.strategy = strategy;
 	}
@@ -19,7 +19,7 @@ public class GrammarVisitorMap<T> extends VisitorMap<T> {
 		return grammar;
 	}
 
-	public Strategy getStrategy() {
+	public ParserStrategy getStrategy() {
 		return strategy;
 	}
 

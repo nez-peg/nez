@@ -4,12 +4,12 @@ import java.util.HashMap;
 import java.util.List;
 
 import nez.Parser;
-import nez.Strategy;
+import nez.ParserStrategy;
 import nez.Verbose;
 import nez.ast.Tree;
 import nez.ast.TreeUtils;
-import nez.io.SourceContext;
-import nez.parser.moz.Coverage;
+import nez.io.SourceStream;
+import nez.parser.Coverage;
 import nez.parser.moz.MozCode;
 import nez.util.ConsoleUtils;
 import nez.util.FileBuilder;
@@ -48,12 +48,12 @@ public class Example {
 	}
 
 	public boolean test(Parser p, TestResult result, boolean verbose) {
-		SourceContext source = textNode.newSourceContext();
+		SourceStream source = textNode.newSourceContext();
 		String name = nameNode.toText() + " (" + textNode.getSource().getResourceName() + ":" + textNode.getLineNum() + ")";
 		Tree<?> node = p.parseCommonTree(source);
 		if (node == null) {
 			ConsoleUtils.println("[ERR*] " + name);
-			ConsoleUtils.println(source.getSyntaxErrorMessage());
+			p.showErrors();
 			result.failSyntax += 1;
 			return false;
 		}
@@ -89,7 +89,7 @@ public class Example {
 		}
 	}
 
-	public static boolean testAll(GrammarFile g, Strategy strategy, boolean ExampleCommand) {
+	public static boolean testAll(GrammarFile g, ParserStrategy strategy, boolean ExampleCommand) {
 		List<Example> exampleList = g.getExampleList();
 		if (exampleList != null) {
 			Coverage.init();
@@ -142,7 +142,7 @@ public class Example {
 		return false;
 	}
 
-	public static void testMoz(String baseName, GrammarFile g, Strategy strategy) {
+	public static void testMoz(String baseName, GrammarFile g, ParserStrategy strategy) {
 		List<Example> exampleList = g.getExampleList();
 		if (exampleList == null) {
 			ConsoleUtils.println("no example exists in " + baseName);

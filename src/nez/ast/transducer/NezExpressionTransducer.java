@@ -1,7 +1,7 @@
 package nez.ast.transducer;
 
 import nez.Grammar;
-import nez.Strategy;
+import nez.ParserStrategy;
 import nez.ast.Symbol;
 import nez.ast.Tree;
 import nez.lang.Expression;
@@ -23,7 +23,7 @@ public class NezExpressionTransducer extends GrammarVisitorMap<ExpressionTransdu
 
 	public final static Symbol _anno = Symbol.tag("anno");
 
-	public NezExpressionTransducer(Grammar grammar, Strategy strategy) {
+	public NezExpressionTransducer(Grammar grammar, ParserStrategy strategy) {
 		super(grammar, strategy);
 		init(NezExpressionTransducer.class, new Undefined());
 	}

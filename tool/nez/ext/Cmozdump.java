@@ -6,7 +6,7 @@ import java.io.IOException;
 
 import nez.main.Command;
 import nez.main.CommandContext;
-import nez.parser.hachi6.Moz;
+import nez.parser.moz.Moz2;
 
 public class Cmozdump extends Command {
 	@Override
@@ -18,7 +18,7 @@ public class Cmozdump extends Command {
 		fis.close();
 
 		System.out.println("Moz dump");
-		Moz.dump(buf);
+		Moz2.dump(buf);
 	}
 
 }

@@ -2,14 +2,14 @@ package nez.lang.regex;
 
 import nez.Grammar;
 import nez.Parser;
-import nez.Strategy;
+import nez.ParserStrategy;
 
 public class RegularExpression {
 	public final static Grammar newGrammar(String regex) {
 		return newGrammar(regex, null);
 	}
 
-	public final static Grammar newGrammar(String regex, Strategy option) {
+	public final static Grammar newGrammar(String regex, ParserStrategy option) {
 		RegularExpressionLoader l = new RegularExpressionLoader();
 		Grammar g = new Grammar("re");
 		l.eval(g, regex, 1, regex, option);
@@ -17,7 +17,7 @@ public class RegularExpression {
 	}
 
 	public final static Parser newParser(String regex) {
-		Strategy strategy = Strategy.newDefaultStrategy();
+		ParserStrategy strategy = ParserStrategy.newDefaultStrategy();
 		Grammar g = newGrammar(regex, strategy);
 		return g.newParser(strategy);
 	}

@@ -6,19 +6,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import nez.Strategy;
+import nez.ParserStrategy;
 import nez.util.StringUtils;
 
 public class LiteralConstructor extends TreeVisitor implements Transducer {
 
-	protected Strategy strategy;
+	protected ParserStrategy strategy;
 
 	public LiteralConstructor() {
 		this(null);
 	}
 
-	public LiteralConstructor(Strategy strategy) {
-		this.strategy = Strategy.nullCheck(strategy);
+	public LiteralConstructor(ParserStrategy strategy) {
+		this.strategy = ParserStrategy.nullCheck(strategy);
 	}
 
 	@Override

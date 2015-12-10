@@ -5,44 +5,74 @@ import java.util.List;
 import nez.Parser;
 import nez.Verbose;
 import nez.parser.ByteCoder;
-import nez.parser.GenerativeGrammar;
 import nez.parser.MemoPoint;
+import nez.parser.ParserCode;
+import nez.parser.ParserContext;
+import nez.parser.ParserGrammar;
+import nez.parser.TerminationException;
+import nez.util.ConsoleUtils;
 import nez.util.UList;
 
-public class MozCode {
-	// final Instruction startPoint;
-	// final int instructionSize;
-	final GenerativeGrammar gg;
-	final UList<MozInst> codeList;
-	final List<MemoPoint> memoPointList;
+public class MozCode extends ParserCode {
 
-	public MozCode(GenerativeGrammar gg, UList<MozInst> codeList, List<MemoPoint> memoPointList) {
-		this.gg = gg;
+	final UList<MozInst> codeList;
+
+	public MozCode(ParserGrammar gg, UList<MozInst> codeList, List<MemoPoint> memoPointList) {
+		super(gg, memoPointList);
 		this.codeList = codeList;
-		this.memoPointList = memoPointList;
 	}
 
 	public final MozInst getStartPoint() {
 		return codeList.get(0);
 	}
 
-	public final int getInstructionSize() {
+	@Override
+	public final int getInstSize() {
 		return codeList.size();
 	}
 
-	public final int getMemoPointSize() {
-		return this.memoPointList != null ? this.memoPointList.size() : 0;
+	@Override
+	public Object exec(ParserContext context) {
+		long startPosition = context.getPosition();
+		MozMachine machine = (MozMachine) context.getRuntime();
+		MozInst code = this.getStartPoint();
+		boolean result = false;
+		try {
+			while (true) {
+				code = code.exec(machine);
+			}
+		} catch (TerminationException e) {
+			result = e.status;
+		}
+		return machine.getParseResult(startPosition, context.getPosition());
 	}
 
-	public final void dumpMemoPoints() {
-		if (this.memoPointList != null) {
-			Verbose.println("ID\tPEG\tCount\tHit\tFail\tMean");
-			for (MemoPoint p : this.memoPointList) {
-				String s = String.format("%d\t%s\t%d\t%f\t%f\t%f", p.id, p.label, p.count(), p.hitRatio(), p.failHitRatio(), p.meanLength());
-				Verbose.println(s);
+	public boolean run(MozInst code, MozMachine sc) {
+		boolean result = false;
+		String u = "Start";
+		UList<String> stack = new UList<String>(new String[128]);
+		stack.add("Start");
+		try {
+			while (true) {
+				if (code instanceof Moz.Call) {
+					stack.add(u);
+					u = ((Moz.Call) code).getNonTerminalName();
+				}
+				if (code instanceof Moz.Ret) {
+					u = stack.ArrayValues[stack.size() - 1];
+					stack.clear(stack.size() - 1);
+				}
+				ConsoleUtils.println(u + "(" + sc.getPosition() + ")  " + code.id + " " + code);
+				MozInst code2 = code.exec(sc);
+				if (code2 == null) {
+					Verbose.debug("@@ returning null at " + code);
+				}
+				code = code2;
 			}
-			Verbose.println("");
+		} catch (TerminationException e) {
+			result = e.status;
 		}
+		return result;
 	}
 
 	public final void encode(ByteCoder coder) {
@@ -53,8 +83,8 @@ public class MozCode {
 	}
 
 	public final static void writeMozCode(Parser parser, String path) {
-		NezCompiler compile = new PackratCompiler(parser.getStrategy());
-		MozCode code = compile.compile(parser.getGrammar());
+		NezCompiler compile = new PackratCompiler(parser.getParserStrategy());
+		MozCode code = compile.compile(parser.getParserGrammar());
 		ByteCoder c = new ByteCoder();
 		code.encode(c);
 		Verbose.println("generating " + path);

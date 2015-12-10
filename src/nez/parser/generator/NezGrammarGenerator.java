@@ -30,7 +30,7 @@ import nez.lang.expr.Xindent;
 import nez.lang.expr.Xis;
 import nez.lang.expr.Xlocal;
 import nez.lang.expr.Xmatch;
-import nez.parser.GenerativeGrammar;
+import nez.parser.ParserGrammar;
 import nez.util.StringUtils;
 
 public class NezGrammarGenerator extends PEGGenerator {
@@ -41,13 +41,13 @@ public class NezGrammarGenerator extends PEGGenerator {
 	}
 
 	@Override
-	public void makeHeader(GenerativeGrammar gg) {
+	public void makeHeader(ParserGrammar gg) {
 		L("// Parsing Expression Grammars for Nez");
 		L("// ");
 	}
 
 	@Override
-	public void visitProduction(GenerativeGrammar gg, Production rule) {
+	public void visitProduction(ParserGrammar gg, Production rule) {
 		Expression e = rule.getExpression();
 		if (rule.isPublic()) {
 			L("public ");

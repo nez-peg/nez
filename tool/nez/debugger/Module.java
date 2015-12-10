@@ -4,18 +4,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 import nez.lang.Production;
-import nez.parser.GenerativeGrammar;
+import nez.parser.ParserGrammar;
 import nez.util.ConsoleUtils;
 
 public class Module {
 	List<Function> funcList;
-	GenerativeGrammar g;
+	ParserGrammar g;
 
 	public Module() {
 		this.funcList = new ArrayList<Function>();
 	}
 
-	public void setGrammar(GenerativeGrammar g) {
+	public void setGrammar(ParserGrammar g) {
 		this.g = g;
 	}
 

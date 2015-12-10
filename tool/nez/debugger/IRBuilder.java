@@ -14,7 +14,7 @@ import nez.lang.expr.Xsymbol;
 import nez.lang.expr.Xexists;
 import nez.lang.expr.Xis;
 import nez.lang.expr.Xlocal;
-import nez.parser.GenerativeGrammar;
+import nez.parser.ParserGrammar;
 
 public class IRBuilder {
 	private BasicBlock curBB;
@@ -84,7 +84,7 @@ public class IRBuilder {
 		return this.module;
 	}
 
-	public void setGrammar(GenerativeGrammar g) {
+	public void setGrammar(ParserGrammar g) {
 		this.module.setGrammar(g);
 	}
 

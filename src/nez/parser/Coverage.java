@@ -1,4 +1,4 @@
-package nez.parser.moz;
+package nez.parser;
 
 import java.util.HashMap;
 import java.util.List;
@@ -7,8 +7,9 @@ import nez.lang.Expression;
 import nez.lang.Production;
 import nez.lang.expr.Pchoice;
 import nez.lang.expr.Unary;
-import nez.parser.ByteCoder;
-import nez.parser.TerminationException;
+import nez.parser.moz.MozInst;
+import nez.parser.moz.MozMachine;
+import nez.parser.moz.MozSet;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
 
@@ -200,7 +201,7 @@ class Icov extends MozInst {
 
 	@Override
 	public
-	MozInst exec(RuntimeContext sc) throws TerminationException {
+	MozInst exec(MozMachine sc) throws TerminationException {
 		Coverage.enter(this.covPoint);
 		return this.next;
 	}
@@ -224,7 +225,7 @@ class Icovx extends MozInst {
 
 	@Override
 	public
-	MozInst exec(RuntimeContext sc) throws TerminationException {
+	MozInst exec(MozMachine sc) throws TerminationException {
 		Coverage.exit(this.covPoint);
 		return this.next;
 	}

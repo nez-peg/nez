@@ -6,24 +6,29 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-import nez.parser.moz.RuntimeContext;
+import nez.ast.Source;
 import nez.util.StringUtils;
 
-public abstract class SourceContext extends RuntimeContext {
+public abstract class SourceStream implements Source {
 
-	private String fileName;
+	private String resourceName;
 	protected long startLineNum = 1;
 
-	protected SourceContext(String fileName, long linenum) {
-		this.fileName = fileName;
+	protected SourceStream(String resourceName, long linenum) {
+		this.resourceName = resourceName;
 		this.startLineNum = linenum;
 	}
 
 	@Override
-	public abstract int byteAt(long pos);
+	public final String getResourceName() {
+		return resourceName;
+	}
 
 	@Override
 	public abstract long length();
+
+	@Override
+	public abstract int byteAt(long pos);
 
 	@Override
 	public abstract boolean match(long pos, byte[] text);
@@ -34,6 +39,7 @@ public abstract class SourceContext extends RuntimeContext {
 	@Override
 	public abstract long linenum(long pos);
 
+	@Override
 	public final int column(long pos) {
 		int count = 0;
 		for (long p = pos - 1; p >= 0; p--) {
@@ -45,11 +51,6 @@ public abstract class SourceContext extends RuntimeContext {
 	}
 
 	/* handling input stream */
-
-	@Override
-	public final String getResourceName() {
-		return fileName;
-	}
 
 	// final String getFilePath(String fileName) {
 	// int loc = this.getResourceName().lastIndexOf("/");
@@ -205,15 +206,15 @@ public abstract class SourceContext extends RuntimeContext {
 		return delim + source.toString() + delim + marker.toString();
 	}
 
-	public final static SourceContext newStringContext(String str) {
+	public final static SourceStream newStringContext(String str) {
 		return new StringContext(str);
 	}
 
-	public final static SourceContext newStringContext(String resource, long linenum, String str) {
+	public final static SourceStream newStringContext(String resource, long linenum, String str) {
 		return new StringContext(resource, linenum, str);
 	}
 
-	public final static SourceContext newFileContext(String fileName) throws IOException {
+	public final static SourceStream newFileContext(String fileName) throws IOException {
 		File f = new File(fileName);
 		// System.out.println("file: " + fileName + " " + f.isFile());
 		if (!f.isFile()) {
@@ -221,7 +222,7 @@ public abstract class SourceContext extends RuntimeContext {
 			// fileName);
 			// System.out.println("url: " + url);
 			// Stream = url.openStream();
-			InputStream Stream = SourceContext.class.getResourceAsStream("/nez/lib/" + fileName);
+			InputStream Stream = SourceStream.class.getResourceAsStream("/nez/lib/" + fileName);
 			if (Stream != null) {
 				BufferedReader reader = new BufferedReader(new InputStreamReader(Stream));
 				StringBuilder builder = new StringBuilder();

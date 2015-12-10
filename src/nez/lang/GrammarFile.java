@@ -3,14 +3,14 @@ package nez.lang;
 import java.util.List;
 
 import nez.Grammar;
-import nez.Strategy;
+import nez.ParserStrategy;
 import nez.ast.CommonTree;
 import nez.ast.SourcePosition;
 import nez.util.UList;
 
 public class GrammarFile extends Grammar {
 
-	public final static GrammarFile newGrammarFile(String urn, Strategy option) {
+	public final static GrammarFile newGrammarFile(String urn, ParserStrategy option) {
 		return new GrammarFile(null, urn, option);
 	}
 
@@ -28,17 +28,17 @@ public class GrammarFile extends Grammar {
 
 	// fields
 	final String urn;
-	final Strategy strategy;
+	final ParserStrategy strategy;
 	String desc;
 
-	GrammarFile(String ns, String urn, Strategy strategy) {
+	GrammarFile(String ns, String urn, ParserStrategy strategy) {
 		super(ns);
 		this.urn = urn;
 		this.strategy = strategy;
 		this.desc = "";
 	}
 
-	public final Strategy getStrategy() {
+	public final ParserStrategy getStrategy() {
 		return this.strategy;
 	}
 

@@ -6,28 +6,23 @@ import nez.NezProfier;
 import nez.Parser;
 import nez.ast.Tree;
 import nez.ast.TreeWriter;
-import nez.io.SourceContext;
+import nez.io.SourceStream;
 import nez.main.Command;
 import nez.main.CommandContext;
-import nez.util.ConsoleUtils;
 
 public class Cparse extends Command {
 	@Override
 	public void exec(CommandContext config) throws IOException {
-		Parser g = config.newParser();
+		Parser parser = config.newParser();
+		parser.setDisabledUnconsumed(true);
 		while (config.hasInput()) {
-			SourceContext input = config.nextInput();
-			Tree<?> node = g.parseCommonTree(input);
-			if (node == null) {
-				ConsoleUtils.println(input.getSyntaxErrorMessage());
-				continue;
+			SourceStream input = config.nextInput();
+			Tree<?> node = parser.parseCommonTree(input);
+			if (node != null) {
+				record(parser.getProfiler(), node);
+				parser.logProfiler();
+				makeOutputFile(config, input, node);
 			}
-			if (input.hasUnconsumed()) {
-				ConsoleUtils.println(input.getUnconsumedMessage());
-			}
-			record(g.getProfiler(), node);
-			g.logProfiler();
-			makeOutputFile(config, input, node);
 		}
 	}
 
@@ -42,7 +37,7 @@ public class Cparse extends Command {
 		}
 	}
 
-	protected void makeOutputFile(CommandContext config, SourceContext source, Tree<?> node) {
+	protected void makeOutputFile(CommandContext config, SourceStream source, Tree<?> node) {
 		TreeWriter w = new TreeWriter(config.getStrategy(), config.getOutputFileName(source, "ast"));
 		w.writeTree(node);
 		w.writeNewLine();

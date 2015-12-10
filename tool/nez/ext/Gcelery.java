@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import nez.Grammar;
 import nez.Parser;
-import nez.Strategy;
+import nez.ParserStrategy;
 import nez.ast.Symbol;
 import nez.ast.Tree;
 import nez.lang.GrammarFileLoader;
@@ -41,7 +41,7 @@ public class Gcelery extends GrammarFileLoader {
 	public Parser getLoaderParser(String start) {
 		if (celeryParser == null) {
 			try {
-				Strategy option = Strategy.newSafeStrategy();
+				ParserStrategy option = ParserStrategy.newSafeStrategy();
 				Grammar g = GrammarFileLoader.loadGrammar("celery.nez", option);
 				celeryParser = g.newParser(option);
 				strategy.report();
@@ -51,7 +51,7 @@ public class Gcelery extends GrammarFileLoader {
 			assert (celeryParser != null);
 		}
 		this.schema = new JSONSchemaGrammarGenerator(getGrammarFile());
-		this.enableNezExtension = !strategy.isEnabled("peg", Strategy.PEG);
+		this.enableNezExtension = !strategy.isEnabled("peg", ParserStrategy.PEG);
 		return celeryParser;
 	}
 

@@ -6,7 +6,7 @@ import nez.Grammar;
 import nez.Parser;
 import nez.ast.CommonTree;
 import nez.debugger.DebugManager;
-import nez.io.SourceContext;
+import nez.io.SourceStream;
 import nez.lang.Formatter;
 import nez.lang.GrammarFile;
 import nez.main.Command;
@@ -27,17 +27,15 @@ public class Cshell extends Command {
 			return;
 		}
 		Parser p = config.newParser();
+		p.setDisabledUnconsumed(true);
 		while (readLine(">>> ")) {
-			SourceContext sc = SourceContext.newStringContext("<stdio>", linenum, text);
+			SourceStream sc = SourceStream.newStringContext("<stdio>", linenum, text);
 			CommonTree node = p.parseCommonTree(sc);
-			if (node == null) {
-				ConsoleUtils.println(sc.getSyntaxErrorMessage());
+			if (node == null || p.hasErrors()) {
+				p.showErrors();
 				activateNezDebugger(config);
+				p.clearErrors();
 				continue;
-			}
-			if (sc.hasUnconsumed()) {
-				activateNezDebugger(config);
-				ConsoleUtils.println(sc.getUnconsumedMessage());
 			}
 			sc = null;
 			ConsoleUtils.println(node.toString());

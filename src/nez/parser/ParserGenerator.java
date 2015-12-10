@@ -2,7 +2,7 @@ package nez.parser;
 
 import java.util.HashMap;
 
-import nez.Strategy;
+import nez.ParserStrategy;
 import nez.Verbose;
 import nez.lang.Expression;
 import nez.lang.Production;
@@ -56,7 +56,7 @@ public abstract class ParserGenerator extends AbstractGenerator {
 		this.file = null;
 	}
 
-	public final void init(Strategy strategy, String dir, String grammarName) {
+	public final void init(ParserStrategy strategy, String dir, String grammarName) {
 		this.initLocalOption(strategy);
 		this.dir = dir;
 		this.grammarName = grammarName;
@@ -64,7 +64,7 @@ public abstract class ParserGenerator extends AbstractGenerator {
 
 	protected abstract String getFileExtension();
 
-	public void generate(GenerativeGrammar gg) {
+	public void generate(ParserGrammar gg) {
 		this.openOutputFile(getFileExtension());
 		makeHeader(gg);
 		makeBody(gg);
@@ -73,19 +73,19 @@ public abstract class ParserGenerator extends AbstractGenerator {
 		file.flush();
 	}
 
-	public void makeHeader(GenerativeGrammar gg) {
+	public void makeHeader(ParserGrammar gg) {
 	}
 
-	public void makeBody(GenerativeGrammar gg) {
+	public void makeBody(ParserGrammar gg) {
 		for (Production p : gg) {
 			visitProduction(gg, p);
 		}
 	}
 
-	public void makeFooter(GenerativeGrammar gg) {
+	public void makeFooter(ParserGrammar gg) {
 	}
 
-	public abstract void visitProduction(GenerativeGrammar gg, Production p);
+	public abstract void visitProduction(ParserGrammar gg, Production p);
 
 	/* inc */
 

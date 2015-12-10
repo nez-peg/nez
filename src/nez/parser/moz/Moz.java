@@ -17,9 +17,7 @@ import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
 import nez.lang.expr.Xblock;
-import nez.lang.expr.Xdefindent;
 import nez.lang.expr.Xexists;
-import nez.lang.expr.Xindent;
 import nez.lang.expr.Xis;
 import nez.lang.expr.Xlocal;
 import nez.lang.expr.Xmatch;
@@ -45,7 +43,7 @@ public class Moz {
 		}
 
 		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
+		public MozInst exec(MozMachine sc) throws TerminationException {
 			return sc.fail();
 		}
 	}
@@ -74,7 +72,7 @@ public class Moz {
 		}
 
 		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
+		public MozInst exec(MozMachine sc) throws TerminationException {
 			sc.pushAlt(this.failjump);
 			return this.next;
 		}
@@ -91,7 +89,7 @@ public class Moz {
 		}
 
 		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
+		public MozInst exec(MozMachine sc) throws TerminationException {
 			sc.popAlt();
 			return this.next;
 		}
@@ -108,7 +106,7 @@ public class Moz {
 		}
 
 		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
+		public MozInst exec(MozMachine sc) throws TerminationException {
 			return sc.skip(this.next);
 		}
 	}
@@ -132,7 +130,7 @@ public class Moz {
 		}
 
 		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
+		public MozInst exec(MozMachine sc) throws TerminationException {
 			return this.next;
 		}
 	}
@@ -179,7 +177,7 @@ public class Moz {
 		}
 
 		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
+		public MozInst exec(MozMachine sc) throws TerminationException {
 			StackData s = sc.newUnusedStack();
 			s.ref = this.jump;
 			return this.next;
@@ -201,7 +199,7 @@ public class Moz {
 		}
 
 		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
+		public MozInst exec(MozMachine sc) throws TerminationException {
 			StackData s = sc.popStack();
 			return (MozInst) s.ref;
 		}
@@ -218,7 +216,7 @@ public class Moz {
 		}
 
 		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
+		public MozInst exec(MozMachine sc) throws TerminationException {
 			StackData s = sc.newUnusedStack();
 			s.value = sc.getPosition();
 			return this.next;
@@ -236,7 +234,7 @@ public class Moz {
 		}
 
 		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
+		public MozInst exec(MozMachine sc) throws TerminationException {
 			StackData s = sc.popStack();
 			sc.setPosition(s.value);
 			return this.next;
@@ -257,7 +255,7 @@ public class Moz {
 		}
 
 		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
+		public MozInst exec(MozMachine sc) throws TerminationException {
 			throw new TerminationException(status);
 		}
 	}
@@ -287,8 +285,8 @@ public class Moz {
 		}
 
 		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
-			if (sc.byteAt(sc.getPosition()) == this.byteChar) {
+		public MozInst exec(MozMachine sc) throws TerminationException {
+			if (sc.prefetch() == this.byteChar) {
 				sc.consume(1);
 				return this.next;
 			}
@@ -302,8 +300,8 @@ public class Moz {
 		}
 
 		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
-			if (sc.byteAt(sc.getPosition()) != this.byteChar) {
+		public MozInst exec(MozMachine sc) throws TerminationException {
+			if (sc.prefetch() != this.byteChar) {
 				return this.next;
 			}
 			return sc.fail();
@@ -316,8 +314,8 @@ public class Moz {
 		}
 
 		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
-			if (sc.byteAt(sc.getPosition()) == this.byteChar) {
+		public MozInst exec(MozMachine sc) throws TerminationException {
+			if (sc.prefetch() == this.byteChar) {
 				sc.consume(1);
 			}
 			return this.next;
@@ -330,8 +328,8 @@ public class Moz {
 		}
 
 		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
-			while (sc.byteAt(sc.getPosition()) == this.byteChar) {
+		public MozInst exec(MozMachine sc) throws TerminationException {
+			while (sc.prefetch() == this.byteChar) {
 				sc.consume(1);
 			}
 			return this.next;
@@ -355,7 +353,7 @@ public class Moz {
 		}
 
 		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
+		public MozInst exec(MozMachine sc) throws TerminationException {
 			if (sc.hasUnconsumed()) {
 				sc.consume(1);
 				return this.next;
@@ -370,7 +368,7 @@ public class Moz {
 		}
 
 		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
+		public MozInst exec(MozMachine sc) throws TerminationException {
 			if (sc.hasUnconsumed()) {
 				return sc.fail();
 			}
@@ -406,8 +404,8 @@ public class Moz {
 		}
 
 		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
-			int byteChar = sc.byteAt(sc.getPosition());
+		public MozInst exec(MozMachine sc) throws TerminationException {
+			int byteChar = sc.prefetch();
 			if (byteMap[byteChar]) {
 				sc.consume(1);
 				return this.next;
@@ -422,8 +420,8 @@ public class Moz {
 		}
 
 		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
-			int byteChar = sc.byteAt(sc.getPosition());
+		public MozInst exec(MozMachine sc) throws TerminationException {
+			int byteChar = sc.prefetch();
 			if (byteMap[byteChar]) {
 				sc.consume(1);
 			}
@@ -437,8 +435,8 @@ public class Moz {
 		}
 
 		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
-			int byteChar = sc.byteAt(sc.getPosition());
+		public MozInst exec(MozMachine sc) throws TerminationException {
+			int byteChar = sc.prefetch();
 			if (!byteMap[byteChar]) {
 				return this.next;
 			}
@@ -452,11 +450,11 @@ public class Moz {
 		}
 
 		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
-			int byteChar = sc.byteAt(sc.getPosition());
+		public MozInst exec(MozMachine sc) throws TerminationException {
+			int byteChar = sc.prefetch();
 			while (byteMap[byteChar]) {
 				sc.consume(1);
-				byteChar = sc.byteAt(sc.getPosition());
+				byteChar = sc.prefetch();
 			}
 			return this.next;
 		}
@@ -494,8 +492,8 @@ public class Moz {
 		}
 
 		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
-			if (sc.match(sc.getPosition(), this.utf8)) {
+		public MozInst exec(MozMachine sc) throws TerminationException {
+			if (sc.match(this.utf8)) {
 				sc.consume(utf8.length);
 				return this.next;
 			}
@@ -509,8 +507,8 @@ public class Moz {
 		}
 
 		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
-			if (!sc.match(sc.getPosition(), this.utf8)) {
+		public MozInst exec(MozMachine sc) throws TerminationException {
+			if (!sc.match(this.utf8)) {
 				return this.next;
 			}
 			return sc.fail();
@@ -523,8 +521,8 @@ public class Moz {
 		}
 
 		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
-			if (sc.match(sc.getPosition(), this.utf8)) {
+		public MozInst exec(MozMachine sc) throws TerminationException {
+			if (sc.match(this.utf8)) {
 				sc.consume(utf8.length);
 			}
 			return this.next;
@@ -537,8 +535,8 @@ public class Moz {
 		}
 
 		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
-			while (sc.match(sc.getPosition(), this.utf8)) {
+		public MozInst exec(MozMachine sc) throws TerminationException {
+			while (sc.match(this.utf8)) {
 				sc.consume(utf8.length);
 			}
 			return this.next;
@@ -559,7 +557,7 @@ public class Moz {
 		}
 
 		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
+		public MozInst exec(MozMachine sc) throws TerminationException {
 			sc.consume(this.shift);
 			return this.next;
 		}
@@ -604,8 +602,8 @@ public class Moz {
 		}
 
 		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
-			int ch = sc.byteAt(sc.getPosition());
+		public MozInst exec(MozMachine sc) throws TerminationException {
+			int ch = sc.prefetch();
 			return jumpTable[ch].exec(sc);
 		}
 	}
@@ -616,8 +614,8 @@ public class Moz {
 		}
 
 		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
-			int ch = sc.byteAt(sc.getPosition());
+		public MozInst exec(MozMachine sc) throws TerminationException {
+			int ch = sc.prefetch();
 			sc.consume(1);
 			return jumpTable[ch].exec(sc);
 		}
@@ -666,7 +664,7 @@ public class Moz {
 		}
 
 		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
+		public MozInst exec(MozMachine sc) throws TerminationException {
 			MemoEntry entry = sc.getMemo(memoId, state);
 			if (entry != null) {
 				if (entry.failed) {
@@ -688,7 +686,7 @@ public class Moz {
 		}
 
 		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
+		public MozInst exec(MozMachine sc) throws TerminationException {
 			long ppos = sc.popAlt();
 			int length = (int) (sc.getPosition() - ppos);
 			sc.setMemo(ppos, memoId, false, null, length, this.state);
@@ -702,7 +700,7 @@ public class Moz {
 		}
 
 		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
+		public MozInst exec(MozMachine sc) throws TerminationException {
 			sc.setMemo(sc.getPosition(), memoId, true, null, 0, state);
 			return sc.fail();
 		}
@@ -724,7 +722,7 @@ public class Moz {
 		}
 
 		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
+		public MozInst exec(MozMachine sc) throws TerminationException {
 			ASTMachine astMachine = sc.getAstMachine();
 			astMachine.logNew(sc.getPosition() + shift, this.id);
 			return this.next;
@@ -748,7 +746,7 @@ public class Moz {
 		}
 
 		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
+		public MozInst exec(MozMachine sc) throws TerminationException {
 			ASTMachine astMachine = sc.getAstMachine();
 			astMachine.logLeftFold(sc.getPosition() + shift, this.label);
 			return this.next;
@@ -769,7 +767,7 @@ public class Moz {
 		}
 
 		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
+		public MozInst exec(MozMachine sc) throws TerminationException {
 			ASTMachine astMachine = sc.getAstMachine();
 			astMachine.logCapture(sc.getPosition() + shift);
 			return this.next;
@@ -795,7 +793,7 @@ public class Moz {
 		}
 
 		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
+		public MozInst exec(MozMachine sc) throws TerminationException {
 			ASTMachine astMachine = sc.getAstMachine();
 			astMachine.logReplace(this.value);
 			return this.next;
@@ -821,7 +819,7 @@ public class Moz {
 		}
 
 		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
+		public MozInst exec(MozMachine sc) throws TerminationException {
 			ASTMachine astMachine = sc.getAstMachine();
 			astMachine.logTag(tag);
 			return this.next;
@@ -839,7 +837,7 @@ public class Moz {
 		}
 
 		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
+		public MozInst exec(MozMachine sc) throws TerminationException {
 			ASTMachine astMachine = sc.getAstMachine();
 			astMachine.logPush();
 			return this.next;
@@ -865,7 +863,7 @@ public class Moz {
 		}
 
 		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
+		public MozInst exec(MozMachine sc) throws TerminationException {
 			ASTMachine astMachine = sc.getAstMachine();
 			astMachine.logPop(label);
 			return this.next;
@@ -883,7 +881,7 @@ public class Moz {
 		}
 
 		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
+		public MozInst exec(MozMachine sc) throws TerminationException {
 			StackData s = sc.newUnusedStack();
 			ASTMachine astMachine = sc.getAstMachine();
 			s.ref = astMachine.saveTransactionPoint();
@@ -905,7 +903,7 @@ public class Moz {
 		}
 
 		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
+		public MozInst exec(MozMachine sc) throws TerminationException {
 			StackData s = sc.popStack();
 			ASTMachine astMachine = sc.getAstMachine();
 			astMachine.commitTransactionPoint(label, s.ref);
@@ -928,7 +926,7 @@ public class Moz {
 		}
 
 		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
+		public MozInst exec(MozMachine sc) throws TerminationException {
 			MemoEntry entry = sc.getMemo(memoId, state);
 			if (entry != null) {
 				if (entry.failed) {
@@ -952,7 +950,7 @@ public class Moz {
 		}
 
 		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
+		public MozInst exec(MozMachine sc) throws TerminationException {
 			ASTMachine astMachine = sc.getAstMachine();
 			long ppos = sc.popAlt();
 			int length = (int) (sc.getPosition() - ppos);
@@ -993,7 +991,7 @@ public class Moz {
 		}
 
 		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
+		public MozInst exec(MozMachine sc) throws TerminationException {
 			StackData s = sc.newUnusedStack();
 			s.value = sc.getSymbolTable().savePoint();
 			return this.next;
@@ -1006,7 +1004,7 @@ public class Moz {
 		}
 
 		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
+		public MozInst exec(MozMachine sc) throws TerminationException {
 			StackData s = sc.newUnusedStack();
 			SymbolTable st = sc.getSymbolTable();
 			s.value = st.savePoint();
@@ -1025,7 +1023,7 @@ public class Moz {
 		}
 
 		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
+		public MozInst exec(MozMachine sc) throws TerminationException {
 			StackData s = sc.popStack();
 			sc.getSymbolTable().rollBack((int) s.value);
 			return this.next;
@@ -1038,7 +1036,7 @@ public class Moz {
 		}
 
 		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
+		public MozInst exec(MozMachine sc) throws TerminationException {
 			StackData top = sc.popStack();
 			byte[] captured = sc.subbyte(top.value, sc.getPosition());
 			// System.out.println("symbol captured: " + new String(captured) +
@@ -1055,7 +1053,7 @@ public class Moz {
 		}
 
 		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
+		public MozInst exec(MozMachine sc) throws TerminationException {
 			byte[] t = sc.getSymbolTable().getSymbol(tableName);
 			return t != null ? this.next : sc.fail();
 		}
@@ -1076,7 +1074,7 @@ public class Moz {
 		}
 
 		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
+		public MozInst exec(MozMachine sc) throws TerminationException {
 			if (sc.getSymbolTable().contains(this.tableName, symbol)) {
 				return this.next;
 			}
@@ -1090,12 +1088,12 @@ public class Moz {
 		}
 
 		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
+		public MozInst exec(MozMachine sc) throws TerminationException {
 			byte[] t = sc.getSymbolTable().getSymbol(tableName);
 			if (t == null) {
 				return this.next;
 			}
-			if (sc.match(sc.getPosition(), t)) {
+			if (sc.match(t)) {
 				sc.consume(t.length);
 				return this.next;
 			}
@@ -1109,7 +1107,7 @@ public class Moz {
 		}
 
 		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
+		public MozInst exec(MozMachine sc) throws TerminationException {
 			byte[] symbol = sc.getSymbolTable().getSymbol(tableName);
 			if (symbol != null) {
 				StackData s = sc.popStack();
@@ -1130,7 +1128,7 @@ public class Moz {
 		}
 
 		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
+		public MozInst exec(MozMachine sc) throws TerminationException {
 			StackData s = sc.popStack();
 			byte[] captured = sc.subbyte(s.value, sc.getPosition());
 			if (sc.getSymbolTable().contains(this.tableName, captured)) {
@@ -1142,82 +1140,82 @@ public class Moz {
 		}
 	}
 
-	public static class DefIndent extends MozInst {
-		public final static Symbol _Indent = Symbol.tag("Indent");
-
-		public DefIndent(Xdefindent e, MozInst next) {
-			super(MozSet.Nop, e, next);
-		}
-
-		final long getLineStartPosition(RuntimeContext sc, long fromPostion) {
-			long startIndex = fromPostion;
-			if (!(startIndex < sc.length())) {
-				startIndex = sc.length() - 1;
-			}
-			if (startIndex < 0) {
-				startIndex = 0;
-			}
-			while (startIndex > 0) {
-				int ch = sc.byteAt(startIndex);
-				if (ch == '\n') {
-					startIndex = startIndex + 1;
-					break;
-				}
-				startIndex = startIndex - 1;
-			}
-			return startIndex;
-		}
-
-		@Override
-		protected void encodeImpl(ByteCoder c) {
-			// No argument
-		}
-
-		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
-			long pos = sc.getPosition();
-			long spos = getLineStartPosition(sc, pos);
-			byte[] b = sc.subbyte(spos, pos);
-			for (int i = 0; i < b.length; i++) {
-				if (b[i] != '\t') {
-					b[i] = ' ';
-				}
-			}
-			sc.getSymbolTable().addSymbol(_Indent, b);
-			return this.next;
-		}
-	}
-
-	public static class IsIndent extends MozInst {
-		public final static Symbol _Indent = Symbol.tag("Indent");
-
-		public IsIndent(Xindent e, MozInst next) {
-			super(MozSet.Nop, e, next);
-		}
-
-		@Override
-		protected void encodeImpl(ByteCoder c) {
-			// No argument
-		}
-
-		@Override
-		public MozInst exec(RuntimeContext sc) throws TerminationException {
-			long pos = sc.getPosition();
-			if (pos > 0) {
-				if (sc.byteAt(pos - 1) != '\n') {
-					return sc.fail();
-				}
-			}
-			byte[] b = sc.getSymbolTable().getSymbol(_Indent);
-			if (b != null) {
-				if (sc.match(pos, b)) {
-					sc.consume(b.length);
-					return this.next;
-				}
-				return sc.fail();
-			}
-			return this.next; // empty entry is allowable
-		}
-	}
+	// public static class DefIndent extends MozInst {
+	// public final static Symbol _Indent = Symbol.tag("Indent");
+	//
+	// public DefIndent(Xdefindent e, MozInst next) {
+	// super(MozSet.Nop, e, next);
+	// }
+	//
+	// final long getLineStartPosition(MozMachine sc, long fromPostion) {
+	// long startIndex = fromPostion;
+	// if (!(startIndex < sc.length())) {
+	// startIndex = sc.length() - 1;
+	// }
+	// if (startIndex < 0) {
+	// startIndex = 0;
+	// }
+	// while (startIndex > 0) {
+	// int ch = sc.byteAt(startIndex);
+	// if (ch == '\n') {
+	// startIndex = startIndex + 1;
+	// break;
+	// }
+	// startIndex = startIndex - 1;
+	// }
+	// return startIndex;
+	// }
+	//
+	// @Override
+	// protected void encodeImpl(ByteCoder c) {
+	// // No argument
+	// }
+	//
+	// @Override
+	// public MozInst exec(MozMachine sc) throws TerminationException {
+	// long pos = sc.getPosition();
+	// long spos = getLineStartPosition(sc, pos);
+	// byte[] b = sc.subbyte(spos, pos);
+	// for (int i = 0; i < b.length; i++) {
+	// if (b[i] != '\t') {
+	// b[i] = ' ';
+	// }
+	// }
+	// sc.getSymbolTable().addSymbol(_Indent, b);
+	// return this.next;
+	// }
+	// }
+	//
+	// public static class IsIndent extends MozInst {
+	// public final static Symbol _Indent = Symbol.tag("Indent");
+	//
+	// public IsIndent(Xindent e, MozInst next) {
+	// super(MozSet.Nop, e, next);
+	// }
+	//
+	// @Override
+	// protected void encodeImpl(ByteCoder c) {
+	// // No argument
+	// }
+	//
+	// @Override
+	// public MozInst exec(MozMachine sc) throws TerminationException {
+	// long pos = sc.getPosition();
+	// if (pos > 0) {
+	// if (sc.byteAt(pos - 1) != '\n') {
+	// return sc.fail();
+	// }
+	// }
+	// byte[] b = sc.getSymbolTable().getSymbol(_Indent);
+	// if (b != null) {
+	// if (sc.match(b)) {
+	// sc.consume(b.length);
+	// return this.next;
+	// }
+	// return sc.fail();
+	// }
+	// return this.next; // empty entry is allowable
+	// }
+	// }
 
 }

@@ -43,7 +43,7 @@ public abstract class MozInst implements NezInst {
 
 	protected abstract void encodeImpl(ByteCoder c);
 
-	public abstract MozInst exec(RuntimeContext sc) throws TerminationException;
+	public abstract MozInst exec(MozMachine sc) throws TerminationException;
 
 	protected static MozInst labeling(MozInst inst) {
 		if (inst != null) {

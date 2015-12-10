@@ -5,7 +5,7 @@ import java.util.List;
 
 import nez.lang.GrammarHacks;
 import nez.lang.Production;
-import nez.parser.GenerativeGrammar;
+import nez.parser.ParserGrammar;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
 
@@ -150,20 +150,20 @@ public class Grammar extends GrammarHacks {
 	 * @return
 	 */
 
-	public final Parser newParser(Strategy strategy) {
-		GenerativeGrammar gg = (this instanceof GenerativeGrammar) ? (GenerativeGrammar) this : new GenerativeGrammar(this.getStartProduction(), strategy, null);
+	public final Parser newParser(ParserStrategy strategy) {
+		ParserGrammar gg = (this instanceof ParserGrammar) ? (ParserGrammar) this : new ParserGrammar(this.getStartProduction(), strategy, null);
 		return new Parser(gg, strategy);
 	}
 
 	public final Parser newParser(String name) {
-		return newParser(name, Strategy.newDefaultStrategy());
+		return newParser(name, ParserStrategy.newDefaultStrategy());
 	}
 
-	public final Parser newParser(String name, Strategy strategy) {
+	public final Parser newParser(String name, ParserStrategy strategy) {
 		if (name != null) {
 			Production p = this.getProduction(name);
 			if (p != null) {
-				GenerativeGrammar gg = new GenerativeGrammar(p, strategy, null);
+				ParserGrammar gg = new ParserGrammar(p, strategy, null);
 				return new Parser(gg, strategy);
 			}
 			Verbose.println("undefined production: " + name);

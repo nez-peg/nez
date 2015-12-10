@@ -4,10 +4,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import nez.Grammar;
-import nez.Strategy;
+import nez.ParserStrategy;
+import nez.ast.Source;
 import nez.ast.Symbol;
 import nez.ast.Tree;
-import nez.io.SourceContext;
 import nez.lang.Example;
 import nez.lang.Expression;
 import nez.lang.Formatter;
@@ -18,7 +18,7 @@ import nez.util.StringUtils;
 
 public final class GrammarLoader extends GrammarVisitorMap<GrammarLoaderVisitor> {
 
-	public GrammarLoader(Grammar grammar, Strategy strategy) {
+	public GrammarLoader(Grammar grammar, ParserStrategy strategy) {
 		super(grammar, strategy);
 		this.init(GrammarLoader.class, new Undefined());
 	}
@@ -46,7 +46,7 @@ public final class GrammarLoader extends GrammarVisitorMap<GrammarLoaderVisitor>
 		}
 	}
 
-	public class Source implements GrammarLoaderVisitor {
+	public class _Source implements GrammarLoaderVisitor {
 		@Override
 		public void accept(Tree<?> node) {
 			for (Tree<?> sub : node) {
@@ -204,7 +204,7 @@ public final class GrammarLoader extends GrammarVisitorMap<GrammarLoaderVisitor>
 		return path2;
 	}
 
-	public String parseGrammarDescription(SourceContext sc) {
+	public String parseGrammarDescription(Source sc) {
 		StringBuilder sb = new StringBuilder();
 		long pos = 0;
 		boolean found = false;

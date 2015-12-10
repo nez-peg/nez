@@ -5,7 +5,7 @@ import java.io.IOException;
 
 import nez.ParserFactory;
 import nez.Verbose;
-import nez.io.SourceContext;
+import nez.io.SourceStream;
 import nez.lang.regex.RegularExpression;
 import nez.parser.ParserGenerator;
 import nez.util.ConsoleUtils;
@@ -68,24 +68,24 @@ public class CommandContext extends ParserFactory {
 		return this.inputText != null || this.inputFileIndex < this.inputFileLists.size();
 	}
 
-	public final SourceContext nextInput() throws IOException {
+	public final SourceStream nextInput() throws IOException {
 		if (this.inputText != null) {
 			String text = this.inputText;
 			this.inputText = null;
-			return SourceContext.newStringContext(text);
+			return SourceStream.newStringContext(text);
 		}
 		if (this.inputFileIndex < this.inputFileLists.size()) {
 			String f = this.inputFileLists.ArrayValues[this.inputFileIndex];
 			this.inputFileIndex++;
-			return SourceContext.newFileContext(f);
+			return SourceStream.newFileContext(f);
 		}
-		return SourceContext.newStringContext(""); // empty input
+		return SourceStream.newStringContext(""); // empty input
 	}
 
 	// -d, --dir
 	public String outputDirName = null;
 
-	public final String getOutputFileName(SourceContext input, String ext) {
+	public final String getOutputFileName(SourceStream input, String ext) {
 		if (outputDirName != null) {
 			return StringUtils.toFileName(input.getResourceName(), outputDirName, ext);
 		} else {

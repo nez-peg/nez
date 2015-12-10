@@ -10,13 +10,13 @@ import nez.util.UList;
 public class ParserFactory {
 
 	// --option
-	protected Strategy strategy = new Strategy(); // default
+	protected ParserStrategy strategy = new ParserStrategy(); // default
 
-	public final void setStrategy(Strategy option) {
+	public final void setStrategy(ParserStrategy option) {
 		this.strategy = option;
 	}
 
-	public final Strategy getStrategy() {
+	public final ParserStrategy getStrategy() {
 		return this.strategy;
 	}
 
@@ -111,7 +111,7 @@ public class ParserFactory {
 	public final Parser newParser() {
 		Parser p = newGrammar().newParser(this.startProduction, this.strategy);
 		this.strategy.report();
-		if (p != null && strategy.isEnabled("prof", Strategy.PROF)) {
+		if (p != null && strategy.isEnabled("prof", ParserStrategy.PROF)) {
 			NezProfier rec = new NezProfier("nezprof.csv");
 			rec.setText("nez", Version.Version);
 			rec.setText("config", strategy.toString());

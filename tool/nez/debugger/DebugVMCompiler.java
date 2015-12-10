@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Stack;
 
-import nez.Strategy;
+import nez.ParserStrategy;
 import nez.ast.CommonTree;
 import nez.lang.Expression;
 import nez.lang.Production;
@@ -37,21 +37,21 @@ import nez.lang.expr.Xlocal;
 import nez.lang.expr.Xmatch;
 import nez.lang.expr.Xsymbol;
 import nez.parser.AbstractGenerator;
-import nez.parser.GenerativeGrammar;
+import nez.parser.ParserGrammar;
 import nez.parser.moz.MozInst;
 
 public class DebugVMCompiler extends AbstractGenerator {
-	GenerativeGrammar peg;
+	ParserGrammar peg;
 	IRBuilder builder;
 	GrammarAnalyzer analyzer;
 	HashMap<Expression, DebugVMInstruction> altInstructionMap = new HashMap<Expression, DebugVMInstruction>();
 
-	public DebugVMCompiler(Strategy option) {
+	public DebugVMCompiler(ParserStrategy option) {
 		super(option);
 		this.builder = new IRBuilder(new Module());
 	}
 
-	public Module compile(GenerativeGrammar grammar) {
+	public Module compile(ParserGrammar grammar) {
 		this.builder.setGrammar(grammar);
 		this.analyzer = new GrammarAnalyzer(grammar);
 		this.analyzer.analyze();

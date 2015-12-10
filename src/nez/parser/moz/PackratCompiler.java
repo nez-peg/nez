@@ -1,6 +1,6 @@
 package nez.parser.moz;
 
-import nez.Strategy;
+import nez.ParserStrategy;
 import nez.Verbose;
 import nez.lang.Production;
 import nez.lang.expr.NonTerminal;
@@ -9,7 +9,7 @@ import nez.parser.ParseFunc;
 
 public class PackratCompiler extends OptimizedCompiler {
 
-	public PackratCompiler(Strategy option) {
+	public PackratCompiler(ParserStrategy option) {
 		super(option);
 	}
 

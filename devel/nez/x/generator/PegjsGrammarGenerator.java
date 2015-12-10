@@ -32,7 +32,7 @@ import nez.lang.expr.Xis;
 import nez.lang.expr.Xlocal;
 import nez.lang.expr.Xmatch;
 import nez.lang.expr.Xon;
-import nez.parser.GenerativeGrammar;
+import nez.parser.ParserGrammar;
 import nez.parser.ParserGenerator;
 
 public class PegjsGrammarGenerator extends ParserGenerator {
@@ -81,7 +81,7 @@ public class PegjsGrammarGenerator extends ParserGenerator {
 	}
 
 	@Override
-	public void visitProduction(GenerativeGrammar gg, Production p) {
+	public void visitProduction(ParserGrammar gg, Production p) {
 		Expression e = p.getExpression();
 		L(name(p));
 		Begin("");

@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import nez.Grammar;
 import nez.Parser;
-import nez.Strategy;
+import nez.ParserStrategy;
 import nez.ast.Tree;
 import nez.lang.GrammarFileLoader;
 import nez.peg.tpeg.ExprTypeChecker;
@@ -50,7 +50,7 @@ public class Gtpeg extends GrammarFileLoader {
 	@Override
 	public Parser getLoaderParser(String start) {
 		if (parser == null) {
-			Strategy option = Strategy.newSafeStrategy();
+			ParserStrategy option = ParserStrategy.newSafeStrategy();
 			try {
 				Grammar g = GrammarFileLoader.loadGrammar("tpeg.nez", option);
 				parser = g.newParser(option);

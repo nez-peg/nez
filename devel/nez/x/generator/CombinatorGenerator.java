@@ -34,7 +34,7 @@ import nez.lang.expr.Xis;
 import nez.lang.expr.Xlocal;
 import nez.lang.expr.Xmatch;
 import nez.lang.expr.Xon;
-import nez.parser.GenerativeGrammar;
+import nez.parser.ParserGrammar;
 import nez.parser.ParserGenerator;
 import nez.util.StringUtils;
 
@@ -50,7 +50,7 @@ public class CombinatorGenerator extends ParserGenerator {
 	}
 
 	@Override
-	public void makeHeader(GenerativeGrammar gg) {
+	public void makeHeader(ParserGrammar gg) {
 		L("/* Parsing Expression Grammars for Nez */");
 		L("import nez.ParserCombinator;");
 		L("import nez.lang.Expression;");
@@ -64,7 +64,7 @@ public class CombinatorGenerator extends ParserGenerator {
 	}
 
 	@Override
-	public void visitProduction(GenerativeGrammar gg, Production p) {
+	public void visitProduction(ParserGrammar gg, Production p) {
 		Expression e = p.getExpression();
 		L("public Expression p");
 		W(name(p));

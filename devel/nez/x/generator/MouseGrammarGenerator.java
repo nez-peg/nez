@@ -20,13 +20,13 @@ import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
 import nez.lang.expr.Unary;
-import nez.parser.GenerativeGrammar;
+import nez.parser.ParserGrammar;
 import nez.parser.generator.NezGrammarGenerator;
 
 public class MouseGrammarGenerator extends NezGrammarGenerator {
 
 	@Override
-	public void makeHeader(GenerativeGrammar gg) {
+	public void makeHeader(ParserGrammar gg) {
 		file.write("// Parsing Expression Grammars for Mouse");
 		file.writeIndent("// Translated from Nez");
 	}
@@ -40,7 +40,7 @@ public class MouseGrammarGenerator extends NezGrammarGenerator {
 	}
 
 	@Override
-	public void visitProduction(GenerativeGrammar gg, Production rule) {
+	public void visitProduction(ParserGrammar gg, Production rule) {
 		Expression e = rule.getExpression();
 		file.writeIndent(name(rule.getLocalName().replaceAll("_", "under")));
 		file.incIndent();

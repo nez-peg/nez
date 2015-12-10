@@ -1,41 +1,39 @@
-package nez.parser.hachi6;
+package nez.parser.moz;
 
 import java.util.Arrays;
 import java.util.HashMap;
 
-import nez.Strategy;
+import nez.ParserStrategy;
 import nez.Verbose;
 import nez.lang.Expression;
 import nez.lang.Production;
 import nez.lang.expr.ExpressionCommons;
-import nez.parser.GenerativeGrammar;
+import nez.parser.Coverage;
+import nez.parser.ParserGrammar;
 import nez.parser.ParseFunc;
-import nez.parser.hachi6.MozCompiler.DefaultVisitor;
-import nez.parser.moz.Coverage;
-import nez.parser.moz.MozCode;
-import nez.parser.moz.MozInst;
+import nez.parser.moz.MozCompiler.DefaultVisitor;
 import nez.util.StringUtils;
 import nez.util.UList;
 import nez.util.VisitorMap;
 
 public class MozCompiler extends VisitorMap<DefaultVisitor> {
-	private Strategy strategy;
+	private ParserStrategy strategy;
 	private boolean enabledASTConstruction;
-	private GenerativeGrammar gg = null;
+	private ParserGrammar gg = null;
 	private HashMap<String, ParseFunc> funcMap = null;
 	private HashMap<Call, ParseFunc> syncMap = new HashMap<Call, ParseFunc>();
 	private Production encodingproduction;
 	private MozInst commonFailure = new Fail(null, null);
 
-	public MozCompiler(Strategy strategy) {
+	public MozCompiler(ParserStrategy strategy) {
 		this.init(MozCompiler.class, new DefaultVisitor());
 		this.strategy = strategy;
 		if (this.strategy != null) {
-			this.enabledASTConstruction = strategy.isEnabled("ast", Strategy.AST);
+			this.enabledASTConstruction = strategy.isEnabled("ast", ParserStrategy.AST);
 		}
 	}
 
-	public MozCode compile(GenerativeGrammar gg) {
+	public MozCode compile(ParserGrammar gg) {
 		this.setGenerativeGrammar(gg);
 		long t = System.nanoTime();
 		UList<MozInst> codeList = new UList<MozInst>(new MozInst[64]);
@@ -99,7 +97,7 @@ public class MozCompiler extends VisitorMap<DefaultVisitor> {
 		return find(e.getClass().getSimpleName()).accept(e, next);
 	}
 
-	public void setGenerativeGrammar(GenerativeGrammar gg) {
+	public void setGenerativeGrammar(ParserGrammar gg) {
 		this.gg = gg;
 	}
 
@@ -129,7 +127,7 @@ public class MozCompiler extends VisitorMap<DefaultVisitor> {
 
 	private Expression getInnerExpression(Expression p) {
 		Expression inner = ExpressionCommons.resolveNonTerminal(p.get(0));
-		if (strategy.isEnabled("Ostr", Strategy.Ostr) && inner instanceof nez.lang.expr.Psequence) {
+		if (strategy.isEnabled("Ostr", ParserStrategy.Ostr) && inner instanceof nez.lang.expr.Psequence) {
 			inner = ((nez.lang.expr.Psequence) inner).toMultiCharSequence();
 		}
 		return inner;
@@ -238,7 +236,7 @@ public class MozCompiler extends VisitorMap<DefaultVisitor> {
 		public MozInst accept(Expression e, MozInst next) {
 			nez.lang.expr.Pchoice p = (nez.lang.expr.Pchoice) e;
 			if (p.predictedCase != null) {
-				if (p.isTrieTree && strategy.isEnabled("Odfa", Strategy.Odfa)) {
+				if (p.isTrieTree && strategy.isEnabled("Odfa", ParserStrategy.Odfa)) {
 					return encodeDFirstChoice(p, next);
 				}
 				return encodeFirstChoice(p, next);
@@ -319,7 +317,7 @@ public class MozCompiler extends VisitorMap<DefaultVisitor> {
 		@Override
 		public MozInst accept(Expression e, MozInst next) {
 			nez.lang.expr.Psequence p = (nez.lang.expr.Psequence) e;
-			if (strategy.isEnabled("Ostr", Strategy.Ostr)) {
+			if (strategy.isEnabled("Ostr", ParserStrategy.Ostr)) {
 				Expression inner = p.toMultiCharSequence();
 				if (inner instanceof nez.lang.expr.Cmulti) {
 					Cmulti cmulti = new Cmulti();
@@ -338,7 +336,7 @@ public class MozCompiler extends VisitorMap<DefaultVisitor> {
 	public class Poption extends DefaultVisitor {
 		@Override
 		public MozInst accept(Expression e, MozInst next) {
-			if (strategy.isEnabled("Olex", Strategy.Olex)) {
+			if (strategy.isEnabled("Olex", ParserStrategy.Olex)) {
 				Expression inner = getInnerExpression(e);
 				if (inner instanceof nez.lang.expr.Cbyte) {
 					optimizedUnary(e);
@@ -361,7 +359,7 @@ public class MozCompiler extends VisitorMap<DefaultVisitor> {
 	public class Pzero extends DefaultVisitor {
 		@Override
 		public MozInst accept(Expression e, MozInst next) {
-			if (strategy.isEnabled("Olex", Strategy.Olex)) {
+			if (strategy.isEnabled("Olex", ParserStrategy.Olex)) {
 				Expression inner = getInnerExpression(e);
 				if (inner instanceof nez.lang.expr.Cbyte) {
 					optimizedUnary(e);
@@ -402,7 +400,7 @@ public class MozCompiler extends VisitorMap<DefaultVisitor> {
 	public class Pnot extends DefaultVisitor {
 		@Override
 		public MozInst accept(Expression e, MozInst next) {
-			if (strategy.isEnabled("Olex", Strategy.Olex)) {
+			if (strategy.isEnabled("Olex", ParserStrategy.Olex)) {
 				Expression inner = getInnerExpression(e);
 				if (inner instanceof nez.lang.expr.Cset) {
 					optimizedUnary(e);

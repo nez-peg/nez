@@ -3,7 +3,7 @@ package nez.lang;
 import java.util.HashMap;
 import java.util.TreeMap;
 
-import nez.Strategy;
+import nez.ParserStrategy;
 import nez.Verbose;
 import nez.lang.expr.ExpressionCommons;
 import nez.lang.expr.NonTerminal;
@@ -24,7 +24,7 @@ import nez.lang.expr.Ttag;
 import nez.lang.expr.Unary;
 import nez.lang.expr.Xif;
 import nez.lang.expr.Xon;
-import nez.parser.GenerativeGrammar;
+import nez.parser.ParserGrammar;
 import nez.parser.ParseFunc;
 import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
@@ -32,24 +32,24 @@ import nez.util.UFlag;
 import nez.util.UList;
 
 public class GrammarChecker extends GrammarTransducer {
-	GenerativeGrammar gg;
+	ParserGrammar gg;
 	private int requiredTypestate;
 	final TreeMap<String, Boolean> boolMap;
 	UList<Expression> stacked;
-	private final Strategy strategy;
+	private final ParserStrategy strategy;
 
-	public GrammarChecker(GenerativeGrammar gg, TreeMap<String, Boolean> boolMap, Production start, Strategy strategy) {
+	public GrammarChecker(ParserGrammar gg, TreeMap<String, Boolean> boolMap, Production start, ParserStrategy strategy) {
 		this.gg = gg;
 		this.boolMap = (boolMap == null) ? new TreeMap<String, Boolean>() : boolMap;
 		this.strategy = strategy;
 
 		this.stacked = new UList<Expression>(new Expression[128]);
-		if (!strategy.isEnabled("ast", Strategy.AST)) {
+		if (!strategy.isEnabled("ast", ParserStrategy.AST)) {
 			this.enterNonASTContext();
 		}
 		String uname = uniqueName(start.getUniqueName(), start);
 		this.checkFirstVisitedProduction(uname, start, 1); // start
-		if (!strategy.isEnabled("Onone", Strategy.Onone)) {
+		if (!strategy.isEnabled("Onone", ParserStrategy.Onone)) {
 			if (ConsoleUtils.isDebug()) {
 				Verbose.println("optimizing ..");
 			}

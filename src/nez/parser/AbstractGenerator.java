@@ -2,7 +2,7 @@ package nez.parser;
 
 import java.util.HashMap;
 
-import nez.Strategy;
+import nez.ParserStrategy;
 import nez.Verbose;
 import nez.lang.Expression;
 import nez.lang.Production;
@@ -38,31 +38,31 @@ import nez.lang.expr.Xon;
 import nez.parser.moz.MozInst;
 
 public abstract class AbstractGenerator {
-	protected Strategy strategy;
+	protected ParserStrategy strategy;
 	protected boolean enabledASTConstruction;
 	protected boolean enabledPackratParsing;
 
-	public AbstractGenerator(Strategy strategy) {
+	public AbstractGenerator(ParserStrategy strategy) {
 		this.gg = null;
 		this.initLocalOption(strategy);
 	}
 
-	protected void initLocalOption(Strategy strategy) {
+	protected void initLocalOption(ParserStrategy strategy) {
 		this.strategy = strategy;
 		if (this.strategy != null) {
-			this.enabledASTConstruction = strategy.isEnabled("ast", Strategy.AST);
-			this.enabledPackratParsing = strategy.isEnabled("memo", Strategy.MEMO);
+			this.enabledASTConstruction = strategy.isEnabled("ast", ParserStrategy.AST);
+			this.enabledPackratParsing = strategy.isEnabled("memo", ParserStrategy.MEMO);
 		}
 	}
 
-	public final Strategy getStrategy() {
+	public final ParserStrategy getStrategy() {
 		return this.strategy;
 	}
 
 	/* CodeMap */
-	private GenerativeGrammar gg = null;
+	private ParserGrammar gg = null;
 
-	protected void setGenerativeGrammar(GenerativeGrammar gg) {
+	protected void setGenerativeGrammar(ParserGrammar gg) {
 		this.gg = gg;
 	}
 

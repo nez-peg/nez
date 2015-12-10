@@ -1,10 +1,17 @@
 package nez.io;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 
 import nez.util.StringUtils;
 
-public class StringContext extends SourceContext {
+public class StringContext extends SourceStream {
 	private byte[] utf8;
 	long textLength;
 
@@ -84,6 +91,39 @@ public class StringContext extends SourceContext {
 			}
 		}
 		return true;
+	}
+
+	/* utils */
+
+	public final static SourceStream loadClassPath(String fileName, String[] classPath) throws IOException {
+		File f = new File(fileName);
+		if (f.isFile()) {
+			return loadStream(f.getAbsolutePath(), new FileInputStream(f));
+		}
+		for (String path : classPath) {
+			path = "/" + path + "/" + fileName;
+			InputStream stream = SourceStream.class.getResourceAsStream(path);
+			if (stream != null) {
+				return loadStream(path, stream);
+			}
+		}
+		throw new FileNotFoundException(fileName);
+	}
+
+	private final static SourceStream loadStream(String urn, InputStream stream) throws IOException {
+		BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+		StringBuilder builder = new StringBuilder();
+		String line = reader.readLine();
+		while (true) {
+			builder.append(line);
+			line = reader.readLine();
+			if (line == null) {
+				break;
+			}
+			builder.append("\n");
+		}
+		reader.close();
+		return new StringContext(urn, 1, builder.toString());
 	}
 
 }

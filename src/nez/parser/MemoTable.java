@@ -3,7 +3,7 @@ package nez.parser;
 import java.util.HashMap;
 
 import nez.NezProfier;
-import nez.Strategy;
+import nez.ParserStrategy;
 
 public abstract class MemoTable {
 	public abstract MemoTable newMemoTable(long len, int w, int n);
@@ -24,11 +24,11 @@ public abstract class MemoTable {
 		this.CountInvalidated = 0;
 	}
 
-	public static MemoTable newTable(Strategy option, long length, int windowSize, int memoPointSize) {
+	public static MemoTable newTable(ParserStrategy option, long length, int windowSize, int memoPointSize) {
 		if (memoPointSize == 0) {
 			return new NullTable(length, windowSize, memoPointSize);
 		}
-		if (option.isEnabled("Mpackrat", Strategy.Mpackrat)) {
+		if (option.isEnabled("Mpackrat", ParserStrategy.Mpackrat)) {
 			return new PackratHashTable(length, windowSize, memoPointSize);
 		}
 		return new ElasticTable(length, windowSize, memoPointSize);

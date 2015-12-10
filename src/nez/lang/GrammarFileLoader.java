@@ -5,11 +5,11 @@ import java.util.HashMap;
 
 import nez.Grammar;
 import nez.Parser;
-import nez.Strategy;
-import nez.Verbose;
+import nez.ParserStrategy;
+import nez.ast.Source;
 import nez.ast.SourcePosition;
 import nez.ast.Tree;
-import nez.io.SourceContext;
+import nez.io.SourceStream;
 import nez.lang.GrammarFileLoader.DefaultVisitor;
 import nez.lang.schema.Type;
 import nez.util.ConsoleUtils;
@@ -20,7 +20,7 @@ import nez.util.VisitorMap;
 public abstract class GrammarFileLoader extends VisitorMap<DefaultVisitor> {
 
 	protected Grammar file;
-	protected Strategy strategy;
+	protected ParserStrategy strategy;
 
 	public GrammarFileLoader() {
 	}
@@ -72,47 +72,43 @@ public abstract class GrammarFileLoader extends VisitorMap<DefaultVisitor> {
 		return null;
 	}
 
-	public final Strategy getStrategy() {
+	public final ParserStrategy getStrategy() {
 		return this.strategy;
 	}
 
-	public final void load(Grammar g, String urn, Strategy strategy) throws IOException {
+	public final void load(Grammar g, String urn, ParserStrategy strategy) throws IOException {
 		this.file = g;
-		this.strategy = Strategy.nullCheck(strategy);
+		this.strategy = ParserStrategy.nullCheck(strategy);
 
-		SourceContext sc = SourceContext.newFileContext(urn);
+		SourceStream sc = SourceStream.newFileContext(urn);
 		String desc = this.parseGrammarDescription(sc);
 		if (desc != null) {
 			g.setDesc(desc);
 		}
-		// while (sc.hasUnconsumed()) {
-		Tree<?> node = getLoaderParser(null).parseCommonTree(sc);
-		if (node == null) {
-			ConsoleUtils.exit(1, sc.getSyntaxErrorMessage());
-		}
+		Parser p = getLoaderParser(null);
+		Tree<?> node = p.parseCommonTree(sc);
+		p.ensureNoErrors();
 		parse(node);
-		// }
 	}
 
-	public void eval(Grammar g, String urn, int linenum, String text, Strategy strategy) {
+	public void eval(Grammar g, String urn, int linenum, String text, ParserStrategy strategy) {
 		this.file = g;
-		this.strategy = Strategy.nullCheck(strategy);
+		this.strategy = ParserStrategy.nullCheck(strategy);
 
-		SourceContext sc = SourceContext.newStringContext(urn, linenum, text);
-		// while (sc.hasUnconsumed()) {
-		Tree<?> node = getLoaderParser(null).parseCommonTree(sc);
+		SourceStream sc = SourceStream.newStringContext(urn, linenum, text);
+		Parser p = getLoaderParser(null);
+		Tree<?> node = p.parseCommonTree(sc);
 		if (node == null) {
-			Verbose.println(sc.getSyntaxErrorMessage());
+			p.showErrors();
 		}
 		parse(node);
-		// }
 	}
 
 	public abstract Parser getLoaderParser(String start);
 
 	public abstract void parse(Tree<?> node);
 
-	public String parseGrammarDescription(SourceContext sc) {
+	public String parseGrammarDescription(Source sc) {
 		return null;
 	}
 
@@ -140,7 +136,7 @@ public abstract class GrammarFileLoader extends VisitorMap<DefaultVisitor> {
 
 	static HashMap<String, GrammarFileLoader> loaderMap = new HashMap<>();
 
-	public static Grammar loadGrammar(String path, Strategy strategy) throws IOException {
+	public static Grammar loadGrammar(String path, ParserStrategy strategy) throws IOException {
 		String ext = StringUtils.parseFileExtension(path);
 		GrammarFileLoader fl = (GrammarFileLoader) ExtensionLoader.newInstance("nez.ext.G", ext);
 		if (fl != null) {
@@ -151,7 +147,7 @@ public abstract class GrammarFileLoader extends VisitorMap<DefaultVisitor> {
 		return null;
 	}
 
-	public final static Grammar loadGrammarFile(String urn, Strategy strategy) throws IOException {
+	public final static Grammar loadGrammarFile(String urn, ParserStrategy strategy) throws IOException {
 		return loadGrammar(urn, strategy);
 	}
 

@@ -32,7 +32,7 @@ import nez.lang.expr.Xis;
 import nez.lang.expr.Xlocal;
 import nez.lang.expr.Xmatch;
 import nez.lang.expr.Xon;
-import nez.parser.GenerativeGrammar;
+import nez.parser.ParserGrammar;
 import nez.parser.ParserGenerator;
 import nez.util.StringUtils;
 
@@ -44,7 +44,7 @@ public class LPegGrammarGenerator extends ParserGenerator {
 	}
 
 	@Override
-	public void makeBody(GenerativeGrammar gg) {
+	public void makeBody(ParserGrammar gg) {
 		file.writeIndent("local lpeg = require \"lpeg\"");
 		for (Production r : gg) {
 			if (!r.getLocalName().startsWith("\"")) {
@@ -65,11 +65,11 @@ public class LPegGrammarGenerator extends ParserGenerator {
 	}
 
 	@Override
-	public void makeHeader(GenerativeGrammar gg) {
+	public void makeHeader(ParserGrammar gg) {
 	}
 
 	@Override
-	public void visitProduction(GenerativeGrammar gg, Production rule) {
+	public void visitProduction(ParserGrammar gg, Production rule) {
 		Expression e = rule.getExpression();
 		file.incIndent();
 		file.writeIndent(rule.getLocalName() + " = ");
@@ -88,7 +88,7 @@ public class LPegGrammarGenerator extends ParserGenerator {
 	}
 
 	@Override
-	public void makeFooter(GenerativeGrammar gg) {
+	public void makeFooter(ParserGrammar gg) {
 		file.writeIndent("function evalExp (s)");
 		file.incIndent();
 		file.writeIndent("for i = 0, 5 do");

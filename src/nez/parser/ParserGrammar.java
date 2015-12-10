@@ -6,18 +6,18 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import nez.Grammar;
-import nez.Strategy;
+import nez.ParserStrategy;
 import nez.Verbose;
 import nez.lang.GrammarChecker;
 import nez.lang.Production;
 import nez.lang.Typestate;
 import nez.util.UList;
 
-public class GenerativeGrammar extends Grammar {
+public class ParserGrammar extends Grammar {
 	HashMap<String, ParseFunc> funcMap;
 	public List<MemoPoint> memoPointList = null;
 
-	public GenerativeGrammar(Production start, Strategy strategy, TreeMap<String, Boolean> boolMap) {
+	public ParserGrammar(Production start, ParserStrategy strategy, TreeMap<String, Boolean> boolMap) {
 		this.funcMap = new HashMap<String, ParseFunc>();
 		new GrammarChecker(this, boolMap, start, strategy);
 		memo(strategy);
@@ -54,12 +54,12 @@ public class GenerativeGrammar extends Grammar {
 		}
 	}
 
-	void memo(Strategy option) {
+	void memo(ParserStrategy option) {
 		memoPointList = null;
-		if (option.isEnabled("memo", Strategy.MEMO)) {
+		if (option.isEnabled("memo", ParserStrategy.MEMO)) {
 			memoPointList = new UList<MemoPoint>(new MemoPoint[4]);
 		}
-		if (option.isEnabled("Oinline", Strategy.Oinline)) {
+		if (option.isEnabled("Oinline", ParserStrategy.Oinline)) {
 			for (Entry<String, ParseFunc> e : funcMap.entrySet()) {
 				this.checkInlining(e.getValue());
 			}

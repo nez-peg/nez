@@ -1,37 +1,74 @@
 package nez;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import nez.ast.CommonTree;
+import nez.ast.SourceError;
 import nez.ast.Tree;
-import nez.ast.TreeTransducer;
-import nez.io.SourceContext;
-import nez.parser.GenerativeGrammar;
-import nez.parser.MemoTable;
-import nez.parser.hachi6.MozCompiler;
-import nez.parser.moz.MozInst;
-import nez.parser.moz.MozCode;
-import nez.parser.moz.NezCompiler;
-import nez.parser.moz.ParsingMachine;
+import nez.io.SourceStream;
+import nez.parser.ParserCode;
+import nez.parser.ParserContext;
+import nez.parser.ParserGrammar;
+import nez.util.ConsoleUtils;
+import nez.util.UList;
 
-public class Parser {
-	private GenerativeGrammar gg;
-	protected Strategy strategy;
-	protected MozCode compiledCode = null;
+public final class Parser {
+	private ParserGrammar grammar;
+	private ParserStrategy strategy;
+	private ParserCode pcode = null;
 
-	public Parser(GenerativeGrammar gg, Strategy option) {
-		this.gg = gg;
-		this.strategy = option;
+	public Parser(ParserGrammar pgrammar, ParserStrategy strategy) {
+		this.grammar = pgrammar;
+		this.strategy = strategy;
 	}
 
-	public final GenerativeGrammar getGrammar() {
-		return gg;
+	public final ParserGrammar getParserGrammar() {
+		return grammar;
 	}
 
-	public final Strategy getStrategy() {
+	public final ParserStrategy getParserStrategy() {
 		return this.strategy;
 	}
 
-	public final MozCode getCompiledCode() {
-		return compiledCode;
+	public final ParserCode compile() {
+		pcode = this.strategy.newParserCode(grammar);
+		return pcode;
+	}
+
+	public final ParserCode getParserCode() {
+		if (pcode == null) {
+			pcode = this.strategy.newParserCode(grammar);
+		}
+		return pcode;
+	}
+
+	public final ParserContext newParserContext(SourceStream source, Tree<?> prototype) {
+		ParserCode pcode = this.getParserCode();
+		return this.strategy.newParserContext(source, pcode.getMemoPointSize(), prototype);
+	}
+
+	/* -------------------------------------------------------------------- */
+
+	public final Object perform(ParserContext context) {
+		ParserCode code = this.getParserCode();
+		// context.init(newMemoTable(context), prototype);
+		if (prof != null) {
+			context.startProfiling(prof);
+		}
+		Object matched = code.exec(context);
+		if (prof != null) {
+			context.doneProfiling(prof);
+		}
+		if (matched == null) {
+			perror(context.getSource(), context.getMaximumPosition(), "syntax error");
+			return null;
+		}
+		if (this.disabledUncosumed && context.hasUnconsumed()) {
+			perror(context.getSource(), context.getPosition(), "unconsumed");
+		}
+		return matched;
 	}
 
 	protected NezProfier prof = null;
@@ -41,9 +78,9 @@ public class Parser {
 		if (prof != null) {
 			this.compile();
 			// prof.setFile("G.File", this.start.getGrammarFile().getURN());
-			prof.setCount("G.Production", this.gg.size());
-			prof.setCount("G.Instruction", this.compiledCode.getInstructionSize());
-			prof.setCount("G.MemoPoint", this.compiledCode.getMemoPointSize());
+			prof.setCount("G.Production", this.grammar.size());
+			prof.setCount("G.Instruction", this.pcode.getInstSize());
+			prof.setCount("G.MemoPoint", this.pcode.getMemoPointSize());
 		}
 	}
 
@@ -57,82 +94,74 @@ public class Parser {
 		}
 	}
 
-	/* -------------------------------------------------------------------- */
-
-	public MozInst compile() {
-		// add for MozCompiler
-		if (strategy.isEnabled("Moz", Strategy.Moz)) {
-			MozCompiler mozCompiler = new MozCompiler(strategy);
-			compiledCode = mozCompiler.compile(gg);
-			return compiledCode.getStartPoint();
-		}
-
-		if (compiledCode == null) {
-			NezCompiler bc = NezCompiler.newCompiler(this.strategy);
-			compiledCode = bc.compile(gg);
-		}
-		return compiledCode.getStartPoint();
-	}
-
-	public final boolean perform(ParsingMachine machine, SourceContext s, Tree<?> prototype) {
-		MozInst pc = this.compile();
-		s.init(newMemoTable(s), prototype);
-		if (prof != null) {
-			s.startProfiling(prof);
-			boolean matched = machine.run(pc, s);
-			s.doneProfiling(prof);
-			if (Verbose.PackratParsing) {
-				this.compiledCode.dumpMemoPoints();
-			}
-			return matched;
-		}
-		return machine.run(pc, s);
-	}
-
-	protected ParsingMachine newParsingMachine() {
-		// return new TraceMachine(); // debug
-		return new ParsingMachine();
-	}
-
-	protected final MemoTable newMemoTable(SourceContext sc) {
-		return MemoTable.newTable(strategy, sc.length(), 32, this.compiledCode.getMemoPointSize());
-	}
-
 	/* --------------------------------------------------------------------- */
 
-	public final boolean match(SourceContext s) {
-		return perform(newParsingMachine(), s, null);
+	public final boolean match(SourceStream s) {
+		return perform(this.newParserContext(s, null)) != null;
 	}
 
 	public final boolean match(String str) {
-		SourceContext sc = SourceContext.newStringContext(str);
-		if (perform(newParsingMachine(), sc, null)) {
-			return (!sc.hasUnconsumed());
-		}
-		return false;
+		return match(SourceStream.newStringContext(str));
 	}
 
-	public Tree<?> parse(SourceContext sc, Tree<?> prototype) {
-		long startPosition = sc.getPosition();
-		if (!this.perform(newParsingMachine(), sc, prototype)) {
-			return null;
-		}
-		return sc.getParseResult(startPosition, sc.getPosition());
+	public Tree<?> parse(SourceStream source, Tree<?> prototype) {
+		ParserContext context = this.newParserContext(source, prototype);
+		Tree<?> t = (Tree<?>) this.perform(context);
+		return t;
 	}
 
-	@Deprecated
-	public Tree<?> parse(SourceContext sc, TreeTransducer t) {
-		throw new RuntimeException("FIXME");
-		// return parseCommonTree(sc);
-	}
-
-	public final CommonTree parseCommonTree(SourceContext sc) {
+	public final CommonTree parseCommonTree(SourceStream sc) {
 		return (CommonTree) this.parse(sc, new CommonTree());
 	}
 
 	public final CommonTree parseCommonTree(String str) {
-		SourceContext sc = SourceContext.newStringContext(str);
+		SourceStream sc = SourceStream.newStringContext(str);
 		return (CommonTree) this.parse(sc, new CommonTree());
+	}
+
+	/* Errors */
+
+	private boolean disabledUncosumed = false;
+	private UList<SourceError> errors = null;
+
+	public final void setDisabledUnconsumed(boolean disabled) {
+		this.disabledUncosumed = disabled;
+	}
+
+	private void perror(SourceStream source, long pos, String message) {
+		if (this.errors == null) {
+			this.errors = new UList<SourceError>(new SourceError[4]);
+		}
+		errors.add(new SourceError(source, pos, message));
+	}
+
+	public final boolean hasErrors() {
+		return errors == null;
+	}
+
+	public final void clearErrors() {
+		errors = null;
+	}
+
+	public final List<SourceError> getErrors() {
+		return errors == null ? new ArrayList<SourceError>() : this.errors;
+	}
+
+	public final boolean showErrors() {
+		if (errors != null) {
+			for (SourceError e : errors) {
+				ConsoleUtils.println(e.toString());
+			}
+			this.clearErrors();
+			return true;
+		}
+		return false;
+	}
+
+	public final void ensureNoErrors() throws IOException {
+		if (errors != null) {
+			throw new ParserException(errors.ArrayValues[0].toString());
+		}
 	}
 
 }

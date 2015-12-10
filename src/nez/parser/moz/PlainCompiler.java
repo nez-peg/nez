@@ -1,6 +1,6 @@
 package nez.parser.moz;
 
-import nez.Strategy;
+import nez.ParserStrategy;
 import nez.lang.Expression;
 import nez.lang.Production;
 import nez.lang.expr.Cany;
@@ -36,7 +36,7 @@ public class PlainCompiler extends NezCompiler {
 
 	protected final MozInst commonFailure = new Moz.Fail(null);
 
-	public PlainCompiler(Strategy option) {
+	public PlainCompiler(ParserStrategy option) {
 		super(option);
 	}
 
@@ -230,12 +230,12 @@ public class PlainCompiler extends NezCompiler {
 
 	@Override
 	public MozInst encodeXdefindent(Xdefindent p, MozInst next, MozInst failjump) {
-		return new Moz.DefIndent(p, next);
+		return next;
 	}
 
 	@Override
 	public MozInst encodeXindent(Xindent p, MozInst next, MozInst failjump) {
-		return new Moz.IsIndent(p, next);
+		return next;
 	}
 
 	@Override

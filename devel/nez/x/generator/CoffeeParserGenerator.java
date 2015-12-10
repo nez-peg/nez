@@ -31,7 +31,7 @@ import nez.lang.expr.Xis;
 import nez.lang.expr.Xlocal;
 import nez.lang.expr.Xmatch;
 import nez.lang.expr.Xon;
-import nez.parser.GenerativeGrammar;
+import nez.parser.ParserGrammar;
 import nez.parser.ParserGenerator;
 import nez.util.StringUtils;
 
@@ -43,7 +43,7 @@ public class CoffeeParserGenerator extends ParserGenerator {
 	}
 
 	@Override
-	public void generate(GenerativeGrammar grammar) {
+	public void generate(ParserGrammar grammar) {
 		this.openOutputFile(this.getFileExtension());
 		makeHeader(grammar);
 		for (Production p : grammar.getProductionList()) {
@@ -56,13 +56,13 @@ public class CoffeeParserGenerator extends ParserGenerator {
 	};
 
 	@Override
-	public void makeHeader(GenerativeGrammar g) {
+	public void makeHeader(ParserGrammar g) {
 		// Let("input", "\'\'");
 
 	}
 
 	@Override
-	public void makeFooter(GenerativeGrammar g) {
+	public void makeFooter(ParserGrammar g) {
 		L("module.exports = new Parser()");
 		// L("p = new Parser()");
 		// L("o = p.parse(input)");
@@ -358,7 +358,7 @@ public class CoffeeParserGenerator extends ParserGenerator {
 	}
 
 	@Override
-	public void visitProduction(GenerativeGrammar gg, Production r) {
+	public void visitProduction(ParserGrammar gg, Production r) {
 		FuncDecl(r).Open();
 		Let(_obj(), "null");
 		Let(_outobj(), "[]");

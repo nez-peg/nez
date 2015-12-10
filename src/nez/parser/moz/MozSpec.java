@@ -1,4 +1,4 @@
-package nez.parser.hachi6;
+package nez.parser.moz;
 
 import java.util.HashMap;
 

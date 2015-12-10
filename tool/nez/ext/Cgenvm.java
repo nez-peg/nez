@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import nez.main.Command;
 import nez.main.CommandContext;
-import nez.parser.hachi6.MozSpec;
+import nez.parser.moz.MozSpec;
 
 public class Cgenvm extends Command {
 	@Override

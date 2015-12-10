@@ -5,10 +5,10 @@ import java.util.ArrayList;
 
 import nez.Grammar;
 import nez.Parser;
-import nez.Strategy;
+import nez.ParserStrategy;
+import nez.ast.Source;
 import nez.ast.Symbol;
 import nez.ast.Tree;
-import nez.io.SourceContext;
 import nez.lang.Example;
 import nez.lang.Expression;
 import nez.lang.Formatter;
@@ -54,7 +54,7 @@ public class NezConstructor extends GrammarFileLoader {
 	public Parser getLoaderParser(String start) {
 		if (nezParser == null) {
 			Grammar g = new Grammar("nez");
-			nezParser = new NezGrammar1().load(g, "File").newParser(start, Strategy.newSafeStrategy());
+			nezParser = new NezGrammar1().load(g, "File").newParser(start, ParserStrategy.newSafeStrategy());
 			assert (nezParser != null);
 		}
 		return nezParser;
@@ -86,7 +86,7 @@ public class NezConstructor extends GrammarFileLoader {
 		debugPosition = node.getSourcePosition();
 	}
 
-	public class Source extends NezConstructorDefault {
+	public class _Source extends NezConstructorDefault {
 		@Override
 		public boolean parse(Tree<?> node) {
 			for (Tree<?> subnode : node) {
@@ -562,7 +562,7 @@ public class NezConstructor extends GrammarFileLoader {
 	}
 
 	@Override
-	public String parseGrammarDescription(SourceContext sc) {
+	public String parseGrammarDescription(Source sc) {
 		StringBuilder sb = new StringBuilder();
 		long pos = 0;
 		boolean found = false;

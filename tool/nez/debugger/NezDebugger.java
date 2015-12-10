@@ -21,7 +21,7 @@ import nez.lang.Production;
 import nez.lang.expr.NonTerminal;
 import nez.lang.expr.Pchoice;
 import nez.main.ReadLine;
-import nez.parser.GenerativeGrammar;
+import nez.parser.ParserGrammar;
 import nez.util.ConsoleUtils;
 
 public class NezDebugger {
@@ -30,7 +30,7 @@ public class NezDebugger {
 	HashMap<String, Production> ruleMap = new HashMap<String, Production>();
 	List<String> nameList = new ArrayList<String>();
 	DebugOperator command = null;
-	GenerativeGrammar peg;
+	ParserGrammar peg;
 	DebugVMCompiler compiler;
 	Module module;
 	DebugVMInstruction code;
@@ -40,7 +40,7 @@ public class NezDebugger {
 	boolean running = false;
 	ConsoleReader cr;
 
-	public NezDebugger(GenerativeGrammar peg, DebugVMInstruction code, DebugSourceContext sc, DebugVMCompiler c) {
+	public NezDebugger(ParserGrammar peg, DebugVMInstruction code, DebugSourceContext sc, DebugVMCompiler c) {
 		this.peg = peg;
 		this.code = code;
 		this.sc = sc;

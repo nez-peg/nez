@@ -5,17 +5,42 @@ import nez.Verbose;
 import nez.ast.ASTMachine;
 import nez.ast.Source;
 import nez.ast.Tree;
+import nez.io.SourceStream;
 import nez.parser.MemoEntry;
 import nez.parser.MemoTable;
+import nez.parser.ParserRuntime;
 import nez.parser.StackData;
 import nez.parser.SymbolTable;
 import nez.util.ConsoleUtils;
 
-public abstract class RuntimeContext implements Source {
+public final class MozMachine extends ParserRuntime {
 	/* parsing position */
+	Source s;
 	long pos;
 	long head_pos;
 
+	public MozMachine(Source source) {
+		this.s = source;
+	}
+
+	public final int prefetch() {
+		return this.s.byteAt(pos);
+	}
+
+	public final boolean match(byte[] utf8) {
+		return s.match(pos, utf8);
+	}
+
+	public final byte[] subbyte(long start, long end) {
+		return s.subbyte(start, end);
+	}
+
+	@Override
+	public long getMaximumPosition() {
+		return head_pos;
+	}
+
+	@Override
 	public final long getPosition() {
 		return this.pos;
 	}
@@ -24,8 +49,9 @@ public abstract class RuntimeContext implements Source {
 		this.pos = pos;
 	}
 
+	@Override
 	public boolean hasUnconsumed() {
-		return this.pos != length();
+		return this.pos != s.length();
 	}
 
 	public final boolean consume(int length) {
@@ -38,18 +64,6 @@ public abstract class RuntimeContext implements Source {
 			this.head_pos = this.pos;
 		}
 		this.pos = pos;
-	}
-
-	public final String getErrorMessage(String errorType, String message) {
-		return this.formatPositionLine(errorType, this.head_pos, message);
-	}
-
-	public final String getSyntaxErrorMessage() {
-		return this.formatPositionLine("error", this.head_pos, "syntax error");
-	}
-
-	public final String getUnconsumedMessage() {
-		return this.formatPositionLine("unconsumed", this.pos, "");
 	}
 
 	// NOTE: Added by Honda
@@ -87,7 +101,7 @@ public abstract class RuntimeContext implements Source {
 	private int catchStackTop;
 
 	public final void init(MemoTable memoTable, Tree<?> prototype) {
-		this.astMachine = new ASTMachine(this, prototype);
+		this.astMachine = new ASTMachine(s, prototype);
 		this.stacks = new StackData[StackSize];
 		for (int i = 0; i < StackSize; i++) {
 			this.stacks[i] = new StackData();
@@ -200,8 +214,8 @@ public abstract class RuntimeContext implements Source {
 
 	public final void startProfiling(NezProfier prof) {
 		if (prof != null) {
-			prof.setFile("I.File", this.getResourceName());
-			prof.setCount("I.Size", this.length());
+			prof.setFile("I.File", s.getResourceName());
+			prof.setCount("I.Size", s.length());
 			this.lprof = new LocalProfiler();
 			this.lprof.init(this.getPosition());
 		}
@@ -284,4 +298,5 @@ public abstract class RuntimeContext implements Source {
 			BacktrackHistgrams[n] += 1;
 		}
 	}
+
 }

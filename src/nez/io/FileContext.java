@@ -9,7 +9,7 @@ import java.util.Map;
 import nez.Verbose;
 import nez.util.StringUtils;
 
-public class FileContext extends SourceContext {
+public class FileContext extends SourceStream {
 	public final static int PageSize = 4096;
 
 	private RandomAccessFile file;

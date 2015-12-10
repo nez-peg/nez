@@ -5,20 +5,29 @@ import java.util.HashSet;
 import java.util.TreeMap;
 
 import nez.ast.SourcePosition;
+import nez.ast.Tree;
+import nez.io.SourceStream;
+import nez.parser.MemoTable;
+import nez.parser.ParserCode;
+import nez.parser.ParserContext;
+import nez.parser.ParserGrammar;
+import nez.parser.moz.MozCompiler;
+import nez.parser.moz.MozMachine;
+import nez.parser.moz.NezCompiler;
 import nez.util.ConsoleUtils;
 
-public class Strategy {
+public class ParserStrategy {
 
-	public final static Strategy nullCheck(Strategy strategy) {
+	public final static ParserStrategy nullCheck(ParserStrategy strategy) {
 		return strategy == null ? newDefaultStrategy() : strategy;
 	}
 
-	public final static Strategy newDefaultStrategy() {
-		return new Strategy();
+	public final static ParserStrategy newDefaultStrategy() {
+		return new ParserStrategy();
 	}
 
-	public final static Strategy newSafeStrategy() {
-		return new Strategy("-memo:-Ofirst");
+	public final static ParserStrategy newSafeStrategy() {
+		return new ParserStrategy("-memo:-Ofirst");
 	}
 
 	// grammar
@@ -50,11 +59,11 @@ public class Strategy {
 
 	public static final boolean Odfa = false; // experimental
 
-	public Strategy() {
+	public ParserStrategy() {
 		init();
 	}
 
-	public Strategy(String arguments) {
+	public ParserStrategy(String arguments) {
 		this.setOption(arguments);
 		init();
 	}
@@ -132,13 +141,14 @@ public class Strategy {
 		return sb.toString();
 	}
 
+	// ----------------------------------------------------------------------
 	// reporter
 
 	ArrayList<String> logs;
 	HashSet<String> checks;
 
 	void init() {
-		if (isEnabled("Wnone", Strategy.Wnone)) {
+		if (isEnabled("Wnone", ParserStrategy.Wnone)) {
 			this.logs = new ArrayList<String>();
 			this.checks = new HashSet<String>();
 		} else {
@@ -156,7 +166,7 @@ public class Strategy {
 
 	public void report() {
 		for (String s : this.logs) {
-			if (!this.isEnabled("Wnotice", Strategy.Wnotice)) {
+			if (!this.isEnabled("Wnotice", ParserStrategy.Wnotice)) {
 				if (s.indexOf("notice") != -1) {
 					continue; // skip notice
 				}
@@ -200,6 +210,24 @@ public class Strategy {
 		if (s != null) {
 			log(s.formatSourceMessage("notice", String.format(fmt, args)));
 		}
+	}
+
+	/* -------------------------------------------------------------------- */
+
+	public ParserCode newParserCode(ParserGrammar pgrammar) {
+		if (this.isEnabled("Moz", ParserStrategy.Moz)) {
+			MozCompiler mozCompiler = new MozCompiler(this);
+			return mozCompiler.compile(pgrammar);
+		}
+		NezCompiler bc = NezCompiler.newCompiler(this);
+		return bc.compile(pgrammar);
+	}
+
+	public ParserContext newParserContext(SourceStream source, int memoPointSize, Tree<?> prototype) {
+		MemoTable table = MemoTable.newTable(this, source.length(), 32, memoPointSize);
+		MozMachine machine = new MozMachine(source);
+		machine.init(table, prototype);
+		return new ParserContext(source, machine);
 	}
 
 }
