@@ -123,6 +123,10 @@ public class Grammar extends GrammarHacks {
 		}
 	}
 
+	public void addProduction(Object object, String name, Expression e) {
+		this.newProduction(name, e);
+	}
+
 	public void dump() {
 		for (Production p : this) {
 			ConsoleUtils.println(p.getLocalName() + " = " + p.getExpression());
@@ -160,6 +164,14 @@ public class Grammar extends GrammarHacks {
 
 	public void setDesc(String desc) {
 		this.setMetaData("desc", desc);
+	}
+
+	public String getURN() {
+		return (String) this.getMetaData("urn");
+	}
+
+	public void setURN(String string, String urn) {
+		this.setMetaData("urn", urn);
 	}
 
 	// ----------------------------------------------------------------------

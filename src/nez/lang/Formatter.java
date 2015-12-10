@@ -45,13 +45,15 @@ public abstract class Formatter {
 		return (index < 0) ? size + index + 1 : index;
 	}
 
-	public static boolean isSupported(GrammarFile ns, CommonTree node) {
-		Formatter fmt = ns.getFormatter(node.getTag().getSymbol(), node.size());
-		return fmt != null;
+	public static boolean isSupported(Grammar grammar, CommonTree node) {
+		// Formatter fmt = grammar.getFormatter(node.getTag().getSymbol(),
+		// node.size());
+		// return fmt != null;
+		return false;
 	}
 
-	public static String format(GrammarFile gfile, CommonTree node) {
-		FormatStringBuilder fsb = new FormatStringBuilder(gfile);
+	public static String format(Grammar grammar, CommonTree node) {
+		FormatStringBuilder fsb = new FormatStringBuilder(grammar);
 		format(fsb, node);
 		return fsb.toString();
 	}
@@ -140,25 +142,28 @@ interface FormatterStream {
 }
 
 class FormatStringBuilder implements FormatterStream {
-	final GrammarFile ns;
+	final Grammar grammar;
 	StringBuilder sb = new StringBuilder();
 	int indent = 0;
 
-	FormatStringBuilder(GrammarFile ns) {
-		this.ns = ns;
+	FormatStringBuilder(Grammar ns) {
+		this.grammar = ns;
 	}
 
+	@Override
 	public String toString() {
 		return sb.toString();
 	}
 
 	@Override
 	public Formatter lookupFormatter(CommonTree sub) {
-		Formatter fmt = ns.getFormatter(sub.getTag().getSymbol(), sub.size());
-		if (fmt == null) {
-			return Formatter.Default;
-		}
-		return fmt;
+		// Formatter fmt = grammar.getFormatter(sub.getTag().getSymbol(),
+		// sub.size());
+		// if (fmt == null) {
+		// return Formatter.Default;
+		// }
+		// return fmt;
+		return Formatter.Default;
 	}
 
 	@Override

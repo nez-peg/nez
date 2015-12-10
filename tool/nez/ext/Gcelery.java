@@ -50,7 +50,7 @@ public class Gcelery extends GrammarFileLoader {
 			}
 			assert (celeryParser != null);
 		}
-		this.schema = new JSONSchemaGrammarGenerator(getGrammarFile());
+		this.schema = new JSONSchemaGrammarGenerator(getGrammar());
 		this.enableNezExtension = !strategy.PEGCompatible;
 		return celeryParser;
 	}
@@ -67,7 +67,7 @@ public class Gcelery extends GrammarFileLoader {
 	public void parse(Tree<?> node) {
 		schema.loadPredefinedRules();
 		visit(node);
-		getGrammarFile().dump();
+		getGrammar().dump();
 	}
 
 	public final static Symbol _Name = Symbol.tag("Name");

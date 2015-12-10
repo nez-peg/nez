@@ -20,7 +20,7 @@
 //	public void exec(CommandContext conf) throws IOException {
 //		conf.getOption().setOption("example", true);
 //
-//		GrammarFile gfile = (GrammarFile/* FIXME */) conf.newParser(true);
+//		GrammarFile grammar = (GrammarFile/* FIXME */) conf.newParser(true);
 //		Parser g = conf.newParser();
 //
 //		UList<String> unparsedInputs = new UList<String>(new String[4]);
@@ -47,7 +47,7 @@
 //			g.logProfiler();
 //
 //			parsedCount++;
-//			String formatted = gfile.formatCommonTree(node);
+//			String formatted = grammar.formatCommonTree(node);
 //			source = SourceContext.newStringSourceContext("(formatted)", 1, formatted);
 //			CommonTree node2 = g.parseCommonTree(source);
 //			if (node2 == null) {
@@ -61,7 +61,7 @@
 //				continue;
 //			}
 //			formatCount++;
-//			String formatted2 = gfile.formatCommonTree(node2);
+//			String formatted2 = grammar.formatCommonTree(node2);
 //			if (!formatted.equals(formatted2)) {
 //				ConsoleUtils.println("[FAILED] mismatched " + urn);
 //				mismatchedInputs.add(urn);

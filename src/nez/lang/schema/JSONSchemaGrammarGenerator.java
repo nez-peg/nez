@@ -1,17 +1,17 @@
 package nez.lang.schema;
 
 import nez.lang.Expression;
-import nez.lang.GrammarFile;
+import nez.lang.Grammar;
 
 public class JSONSchemaGrammarGenerator extends SchemaGrammarGenerator {
 
-	public JSONSchemaGrammarGenerator(GrammarFile gfile) {
-		super(gfile);
+	public JSONSchemaGrammarGenerator(Grammar grammar) {
+		super(grammar);
 	}
 
 	@Override
 	public void loadPredefinedRules() {
-		JSONPredefinedGrammar pre = new JSONPredefinedGrammar(gfile);
+		JSONPredefinedGrammar pre = new JSONPredefinedGrammar(grammar);
 		pre.define();
 	}
 
@@ -20,19 +20,19 @@ public class JSONSchemaGrammarGenerator extends SchemaGrammarGenerator {
 		Expression root = _NonTerminal(structName);
 		Expression[] seq = { _NonTerminal("VALUESEP"), root };
 		Expression[] array = { _OpenSquare(), _S(), root, _S(), _OneMore(seq), _S(), _CloseSquare() };
-		gfile.addProduction(null, "Root", _Choice(_Sequence(root), _Sequence(array)));
+		grammar.addProduction(null, "Root", _Choice(_Sequence(root), _Sequence(array)));
 	}
 
 	@Override
 	public void newElement(String elementName, Type t) {
 		Expression[] l = { _DQuat(), t.getTypeExpression(), _DQuat(), _S(), _NonTerminal("NAMESEP"), t.next().getTypeExpression(), _Option(_NonTerminal("VALUESEP")), _S() };
-		gfile.addProduction(null, elementName, _Sequence(l));
+		grammar.addProduction(null, elementName, _Sequence(l));
 	}
 
 	@Override
 	public void newStruct(String structName, Type t) {
 		Expression[] l = { _OpenWave(), _S(), t.getTypeExpression(), _S(), _CloseWave(), _S() };
-		gfile.addProduction(null, structName, _Sequence(l));
+		grammar.addProduction(null, structName, _Sequence(l));
 	}
 
 	@Override

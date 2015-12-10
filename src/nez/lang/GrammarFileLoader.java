@@ -56,20 +56,22 @@ public abstract class GrammarFileLoader extends VisitorMap<DefaultVisitor> {
 	}
 
 	public Grammar newGrammar(String ns, String urn) {
-		return new GrammarFile(ns, urn, null);
+		Grammar g = new Grammar(ns, null);
+		g.setURN("urn", urn);
+		return g;
 	}
 
 	public final Grammar getGrammar() {
 		return this.file;
 	}
 
-	public final GrammarFile getGrammarFile() {
-		/* file is instantiated at newGrammar */
-		if (this.file instanceof GrammarFile) {
-			return (GrammarFile) this.file;
-		}
-		return null;
-	}
+	// public final GrammarFile getGrammarFile() {
+	// /* file is instantiated at newGrammar */
+	// if (this.file instanceof GrammarFile) {
+	// return (GrammarFile) this.file;
+	// }
+	// return null;
+	// }
 
 	public final ParserStrategy getStrategy() {
 		return this.strategy;

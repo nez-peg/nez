@@ -7,7 +7,6 @@ import nez.debugger.DebugManager;
 import nez.io.SourceStream;
 import nez.lang.Formatter;
 import nez.lang.Grammar;
-import nez.lang.GrammarFile;
 import nez.main.Command;
 import nez.main.CommandContext;
 import nez.main.ReadLine;
@@ -39,11 +38,8 @@ public class Cshell extends Command {
 			}
 			sc = null;
 			ConsoleUtils.println(node.toString());
-			if (g instanceof GrammarFile) {
-				GrammarFile gfile2 = (GrammarFile) g;
-				if (Formatter.isSupported(gfile2, node)) {
-					ConsoleUtils.println("Formatted: " + Formatter.format(gfile2, node));
-				}
+			if (Formatter.isSupported(g, node)) {
+				ConsoleUtils.println("Formatted: " + Formatter.format(g, node));
 			}
 		}
 	}

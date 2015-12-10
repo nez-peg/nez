@@ -1,14 +1,14 @@
 package nez.lang.schema;
 
 import nez.lang.Expression;
-import nez.lang.GrammarFile;
+import nez.lang.Grammar;
 import nez.lang.Production;
 
 public class JSONPredefinedGrammar extends AbstractPredefinedGrammar {
-	GrammarFile grammar;
+	Grammar grammar;
 	String rootClassName;
 
-	public JSONPredefinedGrammar(GrammarFile grammar) {
+	public JSONPredefinedGrammar(Grammar grammar) {
 		super(grammar);
 	}
 

@@ -53,7 +53,7 @@ public class Gdtd extends GrammarFileLoader {
 			}
 			assert (dtdParser != null);
 		}
-		this.schema = new DTDSchemaGrammarGenerator(getGrammarFile());
+		this.schema = new DTDSchemaGrammarGenerator(getGrammar());
 		this.enableNezExtension = !strategy.PEGCompatible;
 		return dtdParser;
 	}
@@ -79,7 +79,7 @@ public class Gdtd extends GrammarFileLoader {
 	public void parse(Tree<?> node) {
 		schema.loadPredefinedRules();
 		visit(node);
-		getGrammarFile().dump();
+		getGrammar().dump();
 	}
 
 	public final static Symbol _Name = Symbol.tag("name");

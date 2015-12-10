@@ -10,7 +10,7 @@ import nez.ast.Symbol;
 import nez.ast.TreeVisitor;
 import nez.io.SourceStream;
 import nez.lang.Expression;
-import nez.lang.GrammarFile;
+import nez.lang.Grammar;
 import nez.lang.GrammarFileLoader;
 import nez.lang.expr.ExpressionCommons;
 import nez.parser.Parser;
@@ -21,12 +21,12 @@ import nez.util.UList;
 
 public class RegexGrammar extends TreeVisitor {
 
-	static GrammarFile regexGrammar = null;
+	static Grammar regexGrammar = null;
 
-	public final static GrammarFile loadGrammar(SourceStream regex, ParserStrategy option) throws IOException {
+	public final static Grammar loadGrammar(SourceStream regex, ParserStrategy option) throws IOException {
 		if (regexGrammar == null) {
 			try {
-				regexGrammar = (GrammarFile) GrammarFileLoader.loadGrammar("regex.nez", null);
+				regexGrammar = GrammarFileLoader.loadGrammar("regex.nez", null);
 			} catch (IOException e) {
 				ConsoleUtils.exit(1, "can't load regex.nez");
 			}
@@ -35,15 +35,15 @@ public class RegexGrammar extends TreeVisitor {
 		p.setDisabledUnconsumed(true);
 		CommonTree node = p.parseCommonTree(regex);
 		p.ensureNoErrors();
-		GrammarFile gfile = GrammarFile.newGrammarFile("re", option);
+		Grammar grammar = new Grammar("re", null);
 		RegexGrammar conv = new RegexGrammar();
-		conv.convert(node, gfile);
-		return gfile;
+		conv.convert(node, grammar);
+		return grammar;
 	}
 
 	public final static Parser newPrarser(String pattern) {
 		try {
-			GrammarFile grammar = loadGrammar(SourceStream.newStringContext(pattern), ParserStrategy.newDefaultStrategy() /* FIXME */);
+			Grammar grammar = loadGrammar(SourceStream.newStringContext(pattern), ParserStrategy.newDefaultStrategy() /* FIXME */);
 			return grammar.newParser("File");
 		} catch (IOException e) {
 			Verbose.traceException(e);
@@ -54,9 +54,9 @@ public class RegexGrammar extends TreeVisitor {
 	RegexGrammar() {
 	}
 
-	private GrammarFile grammar;
+	private Grammar grammar;
 
-	void convert(CommonTree e, GrammarFile grammar) {
+	void convert(CommonTree e, Grammar grammar) {
 		this.grammar = grammar;
 		grammar.addProduction(e, "File", pi(e, null));
 		grammar.addProduction(e, "Chunk", grammar.newNonTerminal(e, "File"));

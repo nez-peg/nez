@@ -1,33 +1,33 @@
 package nez.lang.schema;
 
 import nez.lang.Expression;
-import nez.lang.GrammarFile;
+import nez.lang.Grammar;
 
 public class DTDSchemaGrammarGenerator extends SchemaGrammarGenerator {
 
-	public DTDSchemaGrammarGenerator(GrammarFile gfile) {
-		super(gfile);
+	public DTDSchemaGrammarGenerator(Grammar grammar) {
+		super(grammar);
 	}
 
 	@Override
 	public void loadPredefinedRules() {
-		XMLPredefinedGrammar pre = new XMLPredefinedGrammar(gfile);
+		XMLPredefinedGrammar pre = new XMLPredefinedGrammar(grammar);
 		pre.define();
 	}
 
 	@Override
 	public void newRoot(String structName) {
-		gfile.addProduction(null, "Root", _NonTerminal(structName));
+		grammar.addProduction(null, "Root", _NonTerminal(structName));
 	}
 
 	@Override
 	public void newElement(String elementName, Type t) {
 		Expression[] l = { t.getTypeExpression(), _S(), _Char('='), _S(), _DQuat(), t.next().getTypeExpression(), _DQuat(), _S() };
-		gfile.addProduction(null, elementName, _Sequence(l));
+		grammar.addProduction(null, elementName, _Sequence(l));
 	}
 
 	public void newAttributeList(String name, Type t) {
-		gfile.addProduction(null, String.format("%s_AttributeList", name), t.getTypeExpression());
+		grammar.addProduction(null, String.format("%s_AttributeList", name), t.getTypeExpression());
 	}
 
 	@Override
@@ -36,7 +36,7 @@ public class DTDSchemaGrammarGenerator extends SchemaGrammarGenerator {
 		Expression[] content = { _Char('>'), _S(), _NonTerminal("%s_Contents", structName), _S(), _String("</%s>", structName) };
 		Expression endChoice = _Choice(_Sequence(attOnly), _Sequence(content));
 		Expression[] l = { _String("<%s", structName), _S(), t.getTypeExpression(), endChoice, _S() };
-		gfile.addProduction(null, structName, _Sequence(l));
+		grammar.addProduction(null, structName, _Sequence(l));
 	}
 
 	public final void newStruct(String structName, boolean hasAttribute) {
@@ -49,7 +49,7 @@ public class DTDSchemaGrammarGenerator extends SchemaGrammarGenerator {
 
 	public void newEntity(int id, String name, String value) {
 		String entity = String.format("Entity_%s", id);
-		gfile.addProduction(null, entity, _String(value));
+		grammar.addProduction(null, entity, _String(value));
 	}
 
 	@Override
@@ -122,13 +122,13 @@ public class DTDSchemaGrammarGenerator extends SchemaGrammarGenerator {
 
 	public void newEntityList(int entityCount) {
 		if (entityCount == 0) {
-			gfile.addProduction(null, "Entity", _Failure());
+			grammar.addProduction(null, "Entity", _Failure());
 		} else {
 			Expression[] l = new Expression[entityCount];
 			for (int i = 0; i < entityCount; i++) {
 				l[i] = _NonTerminal("Entity_%s", entityCount);
 			}
-			gfile.addProduction(null, "Entity", _Choice(l));
+			grammar.addProduction(null, "Entity", _Choice(l));
 		}
 	}
 

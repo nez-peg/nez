@@ -1,12 +1,12 @@
 package nez.lang.schema;
 
 import nez.lang.Expression;
-import nez.lang.GrammarFile;
+import nez.lang.Grammar;
 import nez.lang.Production;
 
 public class XMLPredefinedGrammar extends AbstractPredefinedGrammar {
 
-	public XMLPredefinedGrammar(GrammarFile grammar) {
+	public XMLPredefinedGrammar(Grammar grammar) {
 		super(grammar);
 	}
 

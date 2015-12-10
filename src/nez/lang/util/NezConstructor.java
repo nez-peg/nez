@@ -1,15 +1,14 @@
 package nez.lang.util;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 import nez.ast.Source;
 import nez.ast.Symbol;
 import nez.ast.Tree;
-import nez.lang.Example;
 import nez.lang.Expression;
 import nez.lang.Formatter;
 import nez.lang.Grammar;
+import nez.lang.GrammarExample;
 import nez.lang.GrammarFile;
 import nez.lang.GrammarFileLoader;
 import nez.lang.NezGrammar1;
@@ -447,12 +446,12 @@ public class NezConstructor extends GrammarFileLoader {
 			Tree<?> textNode = node.get(_text);
 			Tree<?> nameNode = node.get(_name2, null);
 			if (nameNode != null) {
-				getGrammarFile().addExample(new Example(true, nameNode, hash, textNode));
+				GrammarExample.add(getGrammar(), true, nameNode, hash, textNode);
 				nameNode = node.get(_name);
-				getGrammarFile().addExample(new Example(false, nameNode, hash, textNode));
+				GrammarExample.add(getGrammar(), false, nameNode, hash, textNode);
 			} else {
 				nameNode = node.get(_name);
-				getGrammarFile().addExample(new Example(true, nameNode, hash, textNode));
+				GrammarExample.add(getGrammar(), true, nameNode, hash, textNode);
 			}
 			return true;
 		}
@@ -464,7 +463,7 @@ public class NezConstructor extends GrammarFileLoader {
 			String tag = node.getText(0, "token");
 			int index = StringUtils.parseInt(node.getText(1, "*"), -1);
 			Formatter fmt = toFormatter(node.get(2));
-			getGrammarFile().addFormatter(tag, index, fmt);
+			// getGrammarFile().addFormatter(tag, index, fmt);
 			return true;
 		}
 	}
@@ -497,52 +496,29 @@ public class NezConstructor extends GrammarFileLoader {
 		return Formatter.newFormatter(node.toText());
 	}
 
-	public class Import extends NezConstructorDefault {
-		@Override
-		public boolean parse(Tree<?> node) {
-			String ns = null;
-			String name = node.getText(0, "*");
-			int loc = name.indexOf('.');
-			if (loc >= 0) {
-				ns = name.substring(0, loc);
-				name = name.substring(loc + 1);
-			}
-			String urn = path(node.getSource().getResourceName(), node.getText(1, ""));
-			try {
-				GrammarFile source = (GrammarFile) GrammarFileLoader.loadGrammar(urn, strategy);
-				if (name.equals("*")) {
-					int c = 0;
-					for (Production p : source) {
-						if (p.isPublic()) {
-							checkDuplicatedName(node.get(0));
-							getGrammarFile().importProduction(ns, p);
-							c++;
-						}
-					}
-					if (c == 0) {
-						reportError(node.get(0), "nothing imported (no public production exisits)");
-					}
-				} else {
-					Production p = source.getProduction(name);
-					if (p == null) {
-						reportError(node.get(0), "undefined production: " + name);
-						return false;
-					}
-					getGrammarFile().importProduction(ns, p);
-				}
-				return true;
-			} catch (IOException e) {
-				reportError(node.get(1), "unfound: " + urn);
-			} catch (NullPointerException e) {
-				/*
-				 * This is for a bug unhandling IOException at
-				 * java.io.Reader.<init>(Reader.java:78)
-				 */
-				reportError(node.get(1), "unfound: " + urn);
-			}
-			return false;
-		}
-	}
+	/**
+	 * public class Import extends NezConstructorDefault {
+	 * 
+	 * @Override public boolean parse(Tree<?> node) { String ns = null; String
+	 *           name = node.getText(0, "*"); int loc = name.indexOf('.'); if
+	 *           (loc >= 0) { ns = name.substring(0, loc); name =
+	 *           name.substring(loc + 1); } String urn =
+	 *           path(node.getSource().getResourceName(), node.getText(1, ""));
+	 *           try { GrammarFile source = (GrammarFile)
+	 *           GrammarFileLoader.loadGrammar(urn, strategy); if
+	 *           (name.equals("*")) { int c = 0; for (Production p : source) {
+	 *           if (p.isPublic()) { checkDuplicatedName(node.get(0));
+	 *           getGrammarFile().importProduction(ns, p); c++; } } if (c == 0)
+	 *           { reportError(node.get(0),
+	 *           "nothing imported (no public production exisits)"); } } else {
+	 *           Production p = source.getProduction(name); if (p == null) {
+	 *           reportError(node.get(0), "undefined production: " + name);
+	 *           return false; } getGrammarFile().importProduction(ns, p); }
+	 *           return true; } catch (IOException e) { reportError(node.get(1),
+	 *           "unfound: " + urn); } catch (NullPointerException e) {
+	 *           reportError(node.get(1), "unfound: " + urn); } return false; }
+	 *           }
+	 **/
 
 	private void checkDuplicatedName(Tree<?> errorNode) {
 		String name = errorNode.toText();
