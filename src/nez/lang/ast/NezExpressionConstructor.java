@@ -1,6 +1,7 @@
 package nez.lang.ast;
 
 import nez.ast.Symbol;
+import nez.ast.TransducerException;
 import nez.ast.Tree;
 import nez.lang.Expression;
 import nez.lang.Grammar;
@@ -12,20 +13,12 @@ import nez.parser.ParserStrategy;
 import nez.util.StringUtils;
 import nez.util.UList;
 
-public class NezExpressionTransducer extends GrammarVisitorMap<ExpressionTransducerVisitor> implements ExpressionTransducer {
+public class NezExpressionConstructor extends GrammarVisitorMap<ExpressionTransducer> implements ExpressionConstructor, NezSymbols {
 	private boolean binary = false;
-	public final static Symbol _String = Symbol.tag("String");
-	public final static Symbol _Integer = Symbol.tag("Integer");
-	public final static Symbol _List = Symbol.tag("List");
-	public final static Symbol _Name = Symbol.tag("Name");
-	public final static Symbol _Format = Symbol.tag("Format");
-	public final static Symbol _Class = Symbol.tag("Class");
 
-	public final static Symbol _anno = Symbol.tag("anno");
-
-	public NezExpressionTransducer(Grammar grammar, ParserStrategy strategy) {
+	public NezExpressionConstructor(Grammar grammar, ParserStrategy strategy) {
 		super(grammar, strategy);
-		init(NezExpressionTransducer.class, new Undefined());
+		init(NezExpressionConstructor.class, new Undefined());
 	}
 
 	@Override
@@ -38,7 +31,7 @@ public class NezExpressionTransducer extends GrammarVisitorMap<ExpressionTransdu
 		return null;
 	}
 
-	public class Undefined implements ExpressionTransducerVisitor {
+	public class Undefined implements ExpressionTransducer {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
 			throw new TransducerException(node, "NezExpressionTransducer: undefined " + node);

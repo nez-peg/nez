@@ -17,7 +17,7 @@ public class Cparse extends Command {
 		parser.setDisabledUnconsumed(true);
 		while (config.hasInput()) {
 			SourceStream input = config.nextInput();
-			Tree<?> node = parser.parseCommonTree(input);
+			Tree<?> node = parser.parse(input);
 			if (node != null) {
 				record(parser.getProfiler(), node);
 				parser.logProfiler();

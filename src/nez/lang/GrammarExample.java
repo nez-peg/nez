@@ -170,7 +170,7 @@ public class GrammarExample {
 		public boolean test(Parser p, TestResult result, boolean verbose) {
 			SourceStream source = textNode.newSourceContext();
 			String name = nameNode.toText() + " (" + textNode.getSource().getResourceName() + ":" + textNode.getLineNum() + ")";
-			Tree<?> node = p.parseCommonTree(source);
+			Tree<?> node = p.parse(source);
 			if (node == null) {
 				ConsoleUtils.println("[ERR*] " + name);
 				p.showErrors();

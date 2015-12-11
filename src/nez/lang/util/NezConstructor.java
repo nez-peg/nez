@@ -11,8 +11,8 @@ import nez.lang.Grammar;
 import nez.lang.GrammarExample;
 import nez.lang.GrammarFile;
 import nez.lang.GrammarFileLoader;
-import nez.lang.NezGrammar1;
 import nez.lang.Production;
+import nez.lang.ast.NezGrammarCombinator;
 import nez.lang.expr.ExpressionCommons;
 import nez.lang.expr.NonTerminal;
 import nez.parser.Parser;
@@ -53,7 +53,7 @@ public class NezConstructor extends GrammarFileLoader {
 	public Parser getLoaderParser(String start) {
 		if (nezParser == null) {
 			Grammar g = new Grammar("nez");
-			nezParser = new NezGrammar1().load(g, "File").newParser(start, ParserStrategy.newSafeStrategy());
+			nezParser = new NezGrammarCombinator().load(g, "File").newParser(start, ParserStrategy.newSafeStrategy());
 			assert (nezParser != null);
 		}
 		return nezParser;

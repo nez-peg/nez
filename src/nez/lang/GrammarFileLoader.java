@@ -57,7 +57,7 @@ public abstract class GrammarFileLoader extends VisitorMap<DefaultVisitor> {
 
 	public Grammar newGrammar(String ns, String urn) {
 		Grammar g = new Grammar(ns, null);
-		g.setURN("urn", urn);
+		g.setURN(urn);
 		return g;
 	}
 
@@ -87,7 +87,7 @@ public abstract class GrammarFileLoader extends VisitorMap<DefaultVisitor> {
 			g.setDesc(desc);
 		}
 		Parser p = getLoaderParser(null);
-		Tree<?> node = p.parseCommonTree(sc);
+		Tree<?> node = p.parse(sc);
 		p.ensureNoErrors();
 		parse(node);
 	}
@@ -98,7 +98,7 @@ public abstract class GrammarFileLoader extends VisitorMap<DefaultVisitor> {
 
 		SourceStream sc = SourceStream.newStringContext(urn, linenum, text);
 		Parser p = getLoaderParser(null);
-		Tree<?> node = p.parseCommonTree(sc);
+		Tree<?> node = p.parse(sc);
 		if (node == null) {
 			p.showErrors();
 		}

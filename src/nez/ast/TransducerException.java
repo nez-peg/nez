@@ -1,6 +1,5 @@
-package nez.lang.ast;
+package nez.ast;
 
-import nez.ast.Tree;
 
 @SuppressWarnings("serial")
 public class TransducerException extends RuntimeException {

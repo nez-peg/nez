@@ -1,8 +1,9 @@
-package nez.lang;
+package nez.lang.ast;
 
 import nez.Combinator;
+import nez.lang.Expression;
 
-public class NezGrammar1 extends Combinator {
+public class NezGrammarCombinator extends Combinator {
 
 	public Expression pEOT() {
 		return Not(AnyChar());

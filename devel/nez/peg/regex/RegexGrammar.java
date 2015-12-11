@@ -33,7 +33,7 @@ public class RegexGrammar extends TreeVisitor {
 		}
 		Parser p = regexGrammar.newParser("File");
 		p.setDisabledUnconsumed(true);
-		CommonTree node = p.parseCommonTree(regex);
+		CommonTree node = p.parse(regex);
 		p.ensureNoErrors();
 		Grammar grammar = new Grammar("re", null);
 		RegexGrammar conv = new RegexGrammar();

@@ -101,17 +101,16 @@ public final class Parser {
 		return match(SourceStream.newStringContext(str));
 	}
 
-	public Tree<?> parse(SourceStream source, Tree<?> prototype) {
-		ParserContext context = this.newParserContext(source, prototype);
-		Tree<?> t = (Tree<?>) this.perform(context);
-		return t;
+	public Tree<?> parse(SourceStream source, Tree<?> proto) {
+		ParserContext context = this.newParserContext(source, proto);
+		return (Tree<?>) this.perform(context);
 	}
 
-	public final CommonTree parseCommonTree(SourceStream sc) {
+	public final CommonTree parse(SourceStream sc) {
 		return (CommonTree) this.parse(sc, new CommonTree());
 	}
 
-	public final CommonTree parseCommonTree(String str) {
+	public final CommonTree parse(String str) {
 		SourceStream sc = SourceStream.newStringContext(str);
 		return (CommonTree) this.parse(sc, new CommonTree());
 	}

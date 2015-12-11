@@ -29,7 +29,7 @@ public class Cshell extends Command {
 		p.setDisabledUnconsumed(true);
 		while (readLine(">>> ")) {
 			SourceStream sc = SourceStream.newStringContext("<stdio>", linenum, text);
-			CommonTree node = p.parseCommonTree(sc);
+			CommonTree node = p.parse(sc);
 			if (node == null || p.hasErrors()) {
 				p.showErrors();
 				activateNezDebugger(config);

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import nez.ast.Source;
 import nez.ast.Symbol;
+import nez.ast.TransducerException;
 import nez.ast.Tree;
 import nez.lang.Expression;
 import nez.lang.Formatter;
@@ -46,7 +47,7 @@ public final class GrammarLoader extends GrammarVisitorMap<GrammarLoaderVisitor>
 	}
 
 	public class _Production implements GrammarLoaderVisitor, NezSymbols {
-		ExpressionTransducer transducer = new NezExpressionTransducer(getGrammar(), getStrategy());
+		ExpressionConstructor transducer = new NezExpressionConstructor(getGrammar(), getStrategy());
 
 		@Override
 		public void accept(Tree<?> node) {
@@ -154,24 +155,17 @@ public final class GrammarLoader extends GrammarVisitorMap<GrammarLoaderVisitor>
 	 *           { reportError(node.get(1), "unfound: " + urn); } catch
 	 *           (NullPointerException e) { reportError(node.get(1), "unfound: "
 	 *           + urn); } } }
+	 * 
+	 *           private void checkDuplicatedName(Tree<?> errorNode) { String
+	 *           name = errorNode.toText(); if
+	 *           (this.getGrammar().hasProduction(name)) {
+	 *           this.reportWarning(errorNode, "duplicated production: " +
+	 *           name); } }
+	 * 
+	 *           private String path(String path, String path2) { if (path !=
+	 *           null) { int loc = path.lastIndexOf('/'); if (loc > 0) { return
+	 *           path.substring(0, loc + 1) + path2; } } return path2; }
 	 **/
-
-	private void checkDuplicatedName(Tree<?> errorNode) {
-		String name = errorNode.toText();
-		if (this.getGrammar().hasProduction(name)) {
-			this.reportWarning(errorNode, "duplicated production: " + name);
-		}
-	}
-
-	private String path(String path, String path2) {
-		if (path != null) {
-			int loc = path.lastIndexOf('/');
-			if (loc > 0) {
-				return path.substring(0, loc + 1) + path2;
-			}
-		}
-		return path2;
-	}
 
 	public String parseGrammarDescription(Source sc) {
 		StringBuilder sb = new StringBuilder();

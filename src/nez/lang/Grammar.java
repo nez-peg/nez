@@ -170,7 +170,7 @@ public class Grammar extends GrammarHacks {
 		return (String) this.getMetaData("urn");
 	}
 
-	public void setURN(String string, String urn) {
+	public void setURN(String urn) {
 		this.setMetaData("urn", urn);
 	}
 
