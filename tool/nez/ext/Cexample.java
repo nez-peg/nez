@@ -15,4 +15,11 @@ public class Cexample extends Command {
 		example.testAll(grammar, config.getStrategy(), true/* verbose */);
 	}
 
+	@Override
+	public void exec() throws IOException {
+		Grammar grammar = newGrammar();
+		GrammarExample example = (GrammarExample) grammar.getMetaData("example");
+		example.testAll(grammar, strategy, true/* verbose */);
+	}
+
 }

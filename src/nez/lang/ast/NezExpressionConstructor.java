@@ -1,7 +1,6 @@
 package nez.lang.ast;
 
 import nez.ast.Symbol;
-import nez.ast.TransducerException;
 import nez.ast.Tree;
 import nez.lang.Expression;
 import nez.lang.Grammar;
@@ -23,18 +22,18 @@ public class NezExpressionConstructor extends GrammarVisitorMap<ExpressionTransd
 
 	@Override
 	public Expression newInstance(Tree<?> node) {
-		return newInstance(node, null);
+		return this.find(key(node)).accept(node, null);
 	}
 
 	public Expression newInstance(Tree<?> node, Expression next) {
-		this.find(key(node)).accept(node, next);
-		return null;
+		return this.find(key(node)).accept(node, next);
 	}
 
 	public class Undefined implements ExpressionTransducer {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
-			throw new TransducerException(node, "NezExpressionTransducer: undefined " + node);
+			undefined(node);
+			return null;
 		}
 	}
 
@@ -191,13 +190,6 @@ public class NezExpressionConstructor extends GrammarVisitorMap<ExpressionTransd
 			return ExpressionCommons.newNewCapture(node, false, null, p);
 		}
 	}
-
-	public final static Symbol _name = Symbol.tag("name");
-	public final static Symbol _expr = Symbol.tag("expr");
-	public final static Symbol _symbol = Symbol.tag("symbol");
-	public final static Symbol _hash = Symbol.tag("hash"); // example
-	public final static Symbol _name2 = Symbol.tag("name2"); // example
-	public final static Symbol _text = Symbol.tag("text"); // example
 
 	private Symbol parseLabelNode(Tree<?> node) {
 		Symbol label = null;

@@ -4,7 +4,12 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 
+import nez.ast.UndefinedVisitorMapException;
+import nez.ast.Tree;
+
 public class VisitorMap<V> {
+	private static boolean OnWhenDebugging = false;
+
 	protected V defaultAcceptor;
 	protected HashMap<String, V> visitors;
 
@@ -12,6 +17,9 @@ public class VisitorMap<V> {
 		this.defaultAcceptor = defualtAccepter;
 		this.visitors = new HashMap<>();
 		visitors.put(defualtAccepter.getClass().getSimpleName(), defaultAcceptor);
+		if (OnWhenDebugging) {
+			System.out.println("base: " + baseClass);
+		}
 		for (Class<?> c : baseClass.getClasses()) {
 			load(baseClass, c);
 		}
@@ -23,10 +31,12 @@ public class VisitorMap<V> {
 			Constructor<?> cc = c.getConstructor(baseClass);
 			Object v = cc.newInstance(this);
 			if (check(defaultAcceptor.getClass(), v.getClass())) {
-				// System.out.println("c: " + c.getSimpleName());
 				String n = c.getSimpleName();
 				if (n.startsWith("_")) {
 					n = n.substring(1);
+				}
+				if (OnWhenDebugging) {
+					System.out.println(" #" + n);
 				}
 				visitors.put(n, (V) v);
 			}
@@ -47,4 +57,12 @@ public class VisitorMap<V> {
 		V v = visitors.get(name);
 		return v == null ? defaultAcceptor : v;
 	}
+
+	protected final void undefined(Tree<?> node) {
+		if (OnWhenDebugging) {
+			System.out.println("undefined: " + node);
+		}
+		throw new UndefinedVisitorMapException(node, this.getClass().getName() + ": undefined " + node);
+	}
+
 }

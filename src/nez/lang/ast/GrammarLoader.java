@@ -3,8 +3,7 @@ package nez.lang.ast;
 import java.util.ArrayList;
 
 import nez.ast.Source;
-import nez.ast.Symbol;
-import nez.ast.TransducerException;
+import nez.ast.UndefinedVisitorMapException;
 import nez.ast.Tree;
 import nez.lang.Expression;
 import nez.lang.Formatter;
@@ -25,7 +24,7 @@ public final class GrammarLoader extends GrammarVisitorMap<GrammarLoaderVisitor>
 	public void load(Tree<?> node) {
 		try {
 			find(node.getTag().getSymbol()).accept(node);
-		} catch (TransducerException e) {
+		} catch (UndefinedVisitorMapException e) {
 			e.getMessage();
 		}
 	}
@@ -33,11 +32,11 @@ public final class GrammarLoader extends GrammarVisitorMap<GrammarLoaderVisitor>
 	public class Undefined implements GrammarLoaderVisitor {
 		@Override
 		public void accept(Tree<?> node) {
-			throw new TransducerException(node, "undefined " + node);
+			undefined(node);
 		}
 	}
 
-	public class _Source implements GrammarLoaderVisitor {
+	public class _Source extends Undefined {
 		@Override
 		public void accept(Tree<?> node) {
 			for (Tree<?> sub : node) {
@@ -46,7 +45,7 @@ public final class GrammarLoader extends GrammarVisitorMap<GrammarLoaderVisitor>
 		}
 	}
 
-	public class _Production implements GrammarLoaderVisitor, NezSymbols {
+	public class _Production extends Undefined implements NezSymbols {
 		ExpressionConstructor transducer = new NezExpressionConstructor(getGrammar(), getStrategy());
 
 		@Override
@@ -69,17 +68,17 @@ public final class GrammarLoader extends GrammarVisitorMap<GrammarLoaderVisitor>
 		}
 	}
 
-	public final static Symbol _Integer = Symbol.tag("Integer");
-	public final static Symbol _List = Symbol.tag("List");
-	public final static Symbol _Name = Symbol.tag("Name");
-	public final static Symbol _Format = Symbol.tag("Format");
+	// public final static Symbol _Integer = Symbol.tag("Integer");
+	// public final static Symbol _List = Symbol.tag("List");
+	// public final static Symbol _Name = Symbol.tag("Name");
+	// public final static Symbol _Format = Symbol.tag("Format");
+	//
+	// public final static Symbol _name = Symbol.tag("name");
+	// public final static Symbol _hash = Symbol.tag("hash"); // example
+	// public final static Symbol _name2 = Symbol.tag("name2"); // example
+	// public final static Symbol _text = Symbol.tag("text"); // example
 
-	public final static Symbol _name = Symbol.tag("name");
-	public final static Symbol _hash = Symbol.tag("hash"); // example
-	public final static Symbol _name2 = Symbol.tag("name2"); // example
-	public final static Symbol _text = Symbol.tag("text"); // example
-
-	public class _Example extends Undefined {
+	public class _Example extends Undefined implements NezSymbols {
 		@Override
 		public void accept(Tree<?> node) {
 			String hash = node.getText(_hash, null);
@@ -96,7 +95,7 @@ public final class GrammarLoader extends GrammarVisitorMap<GrammarLoaderVisitor>
 		}
 	}
 
-	public class Format extends Undefined {
+	public class Format extends Undefined implements NezSymbols {
 		@Override
 		public void accept(Tree<?> node) {
 			String tag = node.getText(0, "token");
@@ -104,34 +103,34 @@ public final class GrammarLoader extends GrammarVisitorMap<GrammarLoaderVisitor>
 			Formatter fmt = toFormatter(node.get(2));
 			// getGrammarFile().addFormatter(tag, index, fmt);
 		}
-	}
 
-	Formatter toFormatter(Tree<?> node) {
-		if (node.is(_List)) {
-			ArrayList<Formatter> l = new ArrayList<Formatter>(node.size());
-			for (Tree<?> t : node) {
-				l.add(toFormatter(t));
+		Formatter toFormatter(Tree<?> node) {
+			if (node.is(_List)) {
+				ArrayList<Formatter> l = new ArrayList<Formatter>(node.size());
+				for (Tree<?> t : node) {
+					l.add(toFormatter(t));
+				}
+				return Formatter.newFormatter(l);
 			}
-			return Formatter.newFormatter(l);
-		}
-		if (node.is(_Integer)) {
-			return Formatter.newFormatter(StringUtils.parseInt(node.toText(), 0));
-		}
-		if (node.is(_Format)) {
-			int s = StringUtils.parseInt(node.getText(0, "*"), -1);
-			int e = StringUtils.parseInt(node.getText(2, "*"), -1);
-			Formatter fmt = toFormatter(node.get(1));
-			return Formatter.newFormatter(s, fmt, e);
-		}
-		if (node.is(_Name)) {
-			Formatter fmt = Formatter.newAction(node.toText());
-			if (fmt == null) {
-				this.reportWarning(node, "undefined formatter action");
-				fmt = Formatter.newFormatter("${" + node.toText() + "}");
+			if (node.is(_Integer)) {
+				return Formatter.newFormatter(StringUtils.parseInt(node.toText(), 0));
 			}
-			return fmt;
+			if (node.is(_Format)) {
+				int s = StringUtils.parseInt(node.getText(0, "*"), -1);
+				int e = StringUtils.parseInt(node.getText(2, "*"), -1);
+				Formatter fmt = toFormatter(node.get(1));
+				return Formatter.newFormatter(s, fmt, e);
+			}
+			if (node.is(_Name)) {
+				Formatter fmt = Formatter.newAction(node.toText());
+				if (fmt == null) {
+					reportWarning(node, "undefined formatter action");
+					fmt = Formatter.newFormatter("${" + node.toText() + "}");
+				}
+				return fmt;
+			}
+			return Formatter.newFormatter(node.toText());
 		}
-		return Formatter.newFormatter(node.toText());
 	}
 
 	/**

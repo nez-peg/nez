@@ -56,6 +56,12 @@ public class ParserGenerator {
 		return grammar;
 	}
 
+	public final void updateGrammar(Grammar grammar, String fileName) throws IOException {
+		SourceStream source = StringContext.loadClassPath(fileName, classPath);
+		String ext = StringUtils.parseFileExtension(fileName);
+		updateGrammar(grammar, source, ext);
+	}
+
 	public final void updateGrammar(Grammar grammar, SourceStream source, String ext) throws IOException {
 		GrammarExtension boot = extensionMap.get(ext);
 		if (boot == null) {
