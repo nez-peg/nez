@@ -3,7 +3,6 @@ package nez.lang;
 import java.util.HashMap;
 import java.util.TreeMap;
 
-import nez.Verbose;
 import nez.lang.expr.ExpressionCommons;
 import nez.lang.expr.NonTerminal;
 import nez.lang.expr.Pand;
@@ -26,10 +25,10 @@ import nez.lang.expr.Xon;
 import nez.parser.ParseFunc;
 import nez.parser.ParserGrammar;
 import nez.parser.ParserStrategy;
-import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
 import nez.util.UFlag;
 import nez.util.UList;
+import nez.util.Verbose;
 
 public class GrammarChecker extends GrammarTransducer {
 	ParserGrammar gg;
@@ -49,10 +48,8 @@ public class GrammarChecker extends GrammarTransducer {
 		}
 		String uname = uniqueName(start.getUniqueName(), start);
 		this.checkFirstVisitedProduction(uname, start, 1); // start
-		if (!strategy.Optimization) {
-			if (ConsoleUtils.isDebug()) {
-				Verbose.println("optimizing ..");
-			}
+		if (strategy.Optimization) {
+			Verbose.println("optimizing %s ..", strategy);
 			new GrammarOptimizer(gg, strategy);
 		}
 	}

@@ -3,12 +3,12 @@ package nez.lang;
 import java.util.HashMap;
 import java.util.List;
 
-import nez.Verbose;
 import nez.parser.Parser;
 import nez.parser.ParserGrammar;
 import nez.parser.ParserStrategy;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
+import nez.util.Verbose;
 
 public class Grammar extends GrammarHacks {
 	private static int serialNumbering = 0;

@@ -5,7 +5,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 
 import nez.main.Command;
-import nez.main.CommandContext;
 import nez.parser.moz.Moz2;
 
 public class Cmozdump extends Command {

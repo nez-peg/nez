@@ -1,12 +1,12 @@
-package nez.main;
+package nez.ext;
 
 import java.io.File;
 import java.io.IOException;
 
 import nez.ParserFactory;
-import nez.Verbose;
 import nez.io.SourceStream;
 import nez.lang.regex.RegularExpression;
+import nez.main.Command;
 import nez.parser.ParserGenerator;
 import nez.util.ConsoleUtils;
 import nez.util.ExtensionLoader;
@@ -203,26 +203,26 @@ public class CommandContext extends ParserFactory {
 				String s = argument.substring(9);
 				this.strategy.setOption(s);
 			} else if (argument.startsWith("--verbose")) {
-				if (argument.equals("--verbose:example")) {
-					Verbose.Example = true;
-				} else if (argument.equals("--verbose:time")) {
-					Verbose.Time = true;
-				} else if (argument.equals("--verbose:memo")) {
-					Verbose.PackratParsing = true;
-				} else if (argument.equals("--verbose:peg")) {
-					Verbose.Grammar = true;
-				} else if (argument.equals("--verbose:vm")) {
-					Verbose.VirtualMachine = true;
-				} else if (argument.equals("--verbose:debug")) {
-					Verbose.Debug = true;
-				} else if (argument.equals("--verbose:backtrack")) {
-					Verbose.BacktrackActivity = true;
-				} else if (argument.equals("--verbose:none")) {
-					Verbose.General = false;
-				} else {
-					Verbose.setAll();
-					Verbose.println("unknown verbose option: " + argument);
-				}
+				// if (argument.equals("--verbose:example")) {
+				// Verbose.Example = true;
+				// } else if (argument.equals("--verbose:time")) {
+				// Verbose.Time = true;
+				// } else if (argument.equals("--verbose:memo")) {
+				// Verbose.PackratParsing = true;
+				// } else if (argument.equals("--verbose:peg")) {
+				// Verbose.Grammar = true;
+				// } else if (argument.equals("--verbose:vm")) {
+				// Verbose.VirtualMachine = true;
+				// } else if (argument.equals("--verbose:debug")) {
+				// Verbose.Debug = true;
+				// } else if (argument.equals("--verbose:backtrack")) {
+				// Verbose.BacktrackActivity = true;
+				// } else if (argument.equals("--verbose:none")) {
+				// Verbose.General = false;
+				// } else {
+				// Verbose.setAll();
+				// Verbose.println("unknown verbose option: " + argument);
+				// }
 			} else {
 				this.showUsage("unknown option: " + argument);
 			}

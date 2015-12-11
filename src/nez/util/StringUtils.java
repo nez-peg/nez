@@ -2,7 +2,6 @@ package nez.util;
 
 import java.io.UnsupportedEncodingException;
 
-import nez.Verbose;
 import nez.lang.expr.Cset;
 
 public abstract class StringUtils {
@@ -391,7 +390,10 @@ public abstract class StringUtils {
 		}
 		int loc = urn.lastIndexOf('.');
 		if (loc > 0) {
-			urn = urn.substring(0, loc) + "." + ext;
+			urn = urn.substring(0, loc);
+			if (ext != null) {
+				urn = urn + "." + ext;
+			}
 		}
 		if (dir != null) {
 			dir = dir + "/";

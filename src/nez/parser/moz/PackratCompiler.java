@@ -1,11 +1,11 @@
 package nez.parser.moz;
 
-import nez.Verbose;
 import nez.lang.Production;
 import nez.lang.expr.NonTerminal;
 import nez.lang.expr.Tlink;
 import nez.parser.ParseFunc;
 import nez.parser.ParserStrategy;
+import nez.util.Verbose;
 
 public class PackratCompiler extends OptimizedCompiler {
 

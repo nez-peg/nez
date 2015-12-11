@@ -1,6 +1,5 @@
 package nez.lang;
 
-import nez.Verbose;
 import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cmulti;
@@ -33,6 +32,7 @@ import nez.lang.expr.Xmatch;
 import nez.lang.expr.Xon;
 import nez.lang.expr.Xsymbol;
 import nez.util.UList;
+import nez.util.Verbose;
 
 public class GrammarTransducer {
 

@@ -1,15 +1,12 @@
-package nez.ext;
+package nez.main;
 
 import java.io.IOException;
 
 import nez.ast.CommonTree;
 import nez.debugger.DebugManager;
+import nez.ext.CommandContext;
 import nez.io.SourceStream;
-import nez.lang.Formatter;
 import nez.lang.Grammar;
-import nez.main.Command;
-import nez.main.CommandContext;
-import nez.main.ReadLine;
 import nez.parser.Parser;
 import nez.util.ConsoleUtils;
 
@@ -18,29 +15,26 @@ public class Cshell extends Command {
 	int linenum = 0;
 
 	@Override
-	public void exec(CommandContext config) throws IOException {
+	public void exec() throws IOException {
 		Command.displayVersion();
-		Grammar g = config.newGrammar();
-		if (g.isEmpty()) {
-			ConsoleUtils.println("Grammar file name is not found: " + config.getGrammarPath());
-			return;
-		}
-		Parser p = config.newParser();
+		Grammar grammar = newGrammar();
+		String start = grammar.getStartProduction().getLocalName();
+		Parser p = strategy.newParser(grammar);
 		p.setDisabledUnconsumed(true);
-		while (readLine(">>> ")) {
+		while (readLine(start + ">>> ")) {
 			SourceStream sc = SourceStream.newStringContext("<stdio>", linenum, text);
 			CommonTree node = p.parse(sc);
 			if (node == null || p.hasErrors()) {
 				p.showErrors();
-				activateNezDebugger(config);
+				// FIXME activateNezDebugger(config);
 				p.clearErrors();
 				continue;
 			}
 			sc = null;
-			ConsoleUtils.println(node.toString());
-			if (Formatter.isSupported(g, node)) {
-				ConsoleUtils.println("Formatted: " + Formatter.format(g, node));
-			}
+			ConsoleUtils.printlnIndent("   ", node.toString());
+			// if (Formatter.isSupported(g, node)) {
+			// ConsoleUtils.println("Formatted: " + Formatter.format(g, node));
+			// }
 		}
 	}
 

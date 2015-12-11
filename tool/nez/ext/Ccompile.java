@@ -3,7 +3,6 @@ package nez.ext;
 import java.io.IOException;
 
 import nez.main.Command;
-import nez.main.CommandContext;
 import nez.parser.Parser;
 import nez.parser.moz.MozCode;
 

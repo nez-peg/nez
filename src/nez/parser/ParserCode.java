@@ -2,7 +2,7 @@ package nez.parser;
 
 import java.util.List;
 
-import nez.Verbose;
+import nez.util.Verbose;
 
 public abstract class ParserCode {
 	final protected ParserGrammar gg;

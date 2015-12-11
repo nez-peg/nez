@@ -4,8 +4,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 
-import nez.Verbose;
 import nez.util.ConsoleUtils;
+import nez.util.Verbose;
 
 public class TreeVisitor {
 	private final Class<?> treeType;
@@ -88,7 +88,7 @@ public class TreeVisitor {
 			try {
 				m = getClassMethod(method, tag, c1);
 			} catch (NoSuchMethodException e) {
-				Verbose.printNoSuchMethodException(e);
+				Verbose.traceException(e);
 				return null;
 			} catch (SecurityException e) {
 				Verbose.traceException(e);

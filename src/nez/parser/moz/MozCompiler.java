@@ -3,7 +3,6 @@ package nez.parser.moz;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import nez.Verbose;
 import nez.lang.Expression;
 import nez.lang.Production;
 import nez.lang.expr.ExpressionCommons;
@@ -14,6 +13,7 @@ import nez.parser.ParserStrategy;
 import nez.parser.moz.MozCompiler.DefaultVisitor;
 import nez.util.StringUtils;
 import nez.util.UList;
+import nez.util.Verbose;
 import nez.util.VisitorMap;
 
 public class MozCompiler extends VisitorMap<DefaultVisitor> {

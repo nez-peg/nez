@@ -2,7 +2,6 @@ package nez.parser.moz;
 
 import java.util.HashMap;
 
-import nez.Verbose;
 import nez.lang.Expression;
 import nez.lang.Production;
 import nez.lang.expr.Cany;
@@ -16,6 +15,7 @@ import nez.lang.expr.Poption;
 import nez.lang.expr.Psequence;
 import nez.lang.expr.Pzero;
 import nez.parser.ParserStrategy;
+import nez.util.Verbose;
 
 public class OptimizedCompiler extends PlainCompiler {
 

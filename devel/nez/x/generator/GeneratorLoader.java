@@ -2,8 +2,8 @@ package nez.x.generator;
 
 import java.util.TreeMap;
 
-import nez.Verbose;
 import nez.parser.ParserGenerator;
+import nez.util.Verbose;
 
 public class GeneratorLoader {
 	public final static String GeneratorLoaderPoint = "nez.main.ext.L";

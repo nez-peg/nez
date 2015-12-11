@@ -40,7 +40,15 @@ public class ConsoleUtils {
 		System.out.print(s);
 	}
 
-	public final static void print(String tab, Object o) {
+	public final static void println(String format, Object... args) {
+		System.out.println(String.format(format, args));
+	}
+
+	public final static void print(String format, Object... args) {
+		System.out.print(String.format(format, args));
+	}
+
+	public final static void printIndent(String tab, Object o) {
 		System.out.print(tab);
 		String s = o.toString();
 		for (int i = 0; i < s.length(); i++) {
@@ -54,8 +62,8 @@ public class ConsoleUtils {
 		}
 	}
 
-	public final static void println(String tab, Object o) {
-		print(tab, o);
+	public final static void printlnIndent(String tab, Object o) {
+		printIndent(tab, o);
 		System.out.println();
 	}
 

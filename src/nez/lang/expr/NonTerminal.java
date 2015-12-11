@@ -1,6 +1,5 @@
 package nez.lang.expr;
 
-import nez.Verbose;
 import nez.ast.SourcePosition;
 import nez.lang.Expression;
 import nez.lang.Grammar;
@@ -11,6 +10,7 @@ import nez.lang.Typestate;
 import nez.lang.Visa;
 import nez.parser.AbstractGenerator;
 import nez.parser.moz.MozInst;
+import nez.util.Verbose;
 
 public class NonTerminal extends ExpressionCommons {
 	private Grammar g;

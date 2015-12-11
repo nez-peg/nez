@@ -30,12 +30,12 @@ public final class Parser {
 	}
 
 	public final ParserCode compile() {
-		pcode = this.strategy.newParserCode(grammar);
+		this.pcode = this.strategy.newParserCode(grammar);
 		return pcode;
 	}
 
 	public final ParserCode getParserCode() {
-		if (pcode == null) {
+		if (this.pcode == null) {
 			pcode = this.strategy.newParserCode(grammar);
 		}
 		return pcode;

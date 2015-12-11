@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import nez.ParserGenerator;
 import nez.Version;
+import nez.ext.CommandContext;
 import nez.io.SourceStream;
 import nez.lang.Grammar;
 import nez.parser.Parser;
@@ -11,6 +12,7 @@ import nez.parser.ParserStrategy;
 import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
 import nez.util.UList;
+import nez.util.Verbose;
 
 public abstract class Command {
 
@@ -35,9 +37,14 @@ public abstract class Command {
 	public static void main(String[] args) {
 		try {
 			Command com = newCommand(args);
+			if (Verbose.enabled) {
+				Verbose.println("nez-%d.%d.%d %s", MajorVersion, MinerVersion, PatchLevel, com.getClass().getName());
+				Verbose.println("strategy: %s", com.strategy);
+			}
 			com.exec();
 		} catch (IOException e) {
 			ConsoleUtils.println(e);
+			Verbose.traceException(e);
 			System.exit(1);
 		}
 	}
@@ -46,7 +53,7 @@ public abstract class Command {
 		try {
 			String className = args[0];
 			if (className.indexOf('.') == -1) {
-				className = "nez.ext.C" + className;
+				className = "nez.main.C" + className;
 			}
 			Command cmd = (Command) Class.forName(className).newInstance();
 			cmd.parseCommandOption(args);
@@ -58,7 +65,9 @@ public abstract class Command {
 		return null;
 	}
 
-	public abstract void exec(CommandContext config) throws IOException;
+	public void exec(CommandContext config) throws IOException {
+		System.out.println(strategy);
+	}
 
 	public void exec() throws IOException {
 		System.out.println(strategy);
@@ -72,60 +81,68 @@ public abstract class Command {
 	protected UList<String> grammarFiles = new UList<String>(new String[4]);
 	protected String startProduction = null;
 	protected UList<String> inputFiles = new UList<String>(new String[4]);
-	protected String format = null;
-	protected String directory = null;
+	protected String outputFormat = null;
+	protected String outputDirectory = null;
 
 	private void parseCommandOption(String[] args) {
 		for (int index = 1; index < args.length; index++) {
-			String argument = args[index];
-			if (!argument.startsWith("-")) {
-				break;
-			}
+			String as = args[index];
 			if (index + 1 < args.length) {
-				if (argument.equals("-g") || argument.equals("-p")) {
+				if (as.equals("-g") || as.equals("-p")) {
 					grammarFile = args[index + 1];
 					grammarSource = null;
 					index++;
 					continue;
 				}
-				if (argument.equals("-e")) {
+				if (as.equals("-e")) {
 					grammarFile = null;
 					grammarSource = args[index + 1];
 					grammarType = "nez";
 					index++;
 					continue;
 				}
-				if (argument.equals("-a")) {
+				if (as.equals("-a")) {
 					grammarFiles.add(args[index + 1]);
 					index++;
 					continue;
 				}
-				if (argument.equals("-s")) {
+				if (as.equals("-s") || as.equals("--start")) {
 					startProduction = args[index + 1];
 					index++;
 					continue;
 				}
-				if (argument.equals("-t")) {
-					format = args[index + 1];
+				if (as.equals("-f") || as.equals("--format")) {
+					outputFormat = args[index + 1];
 					index++;
 					continue;
 				}
-				if (argument.equals("-d")) {
-					directory = args[index + 1];
+				if (as.equals("-d") || as.equals("--dir")) {
+					outputDirectory = args[index + 1];
 					index++;
 					continue;
 				}
 			}
-			if (!strategy.setOption(argument)) {
-				if (argument.equals("-") && argument.length() > 1) {
-					showUsage("undefined option: " + argument);
+			if (as.equals("--verbose")) {
+				Verbose.enabled = true;
+				continue;
+			}
+			if (!strategy.setOption(as)) {
+				if (as.equals("-") && as.length() > 1) {
+					showUsage("undefined option: " + as);
 				}
-				this.inputFiles.add(argument);
+				this.inputFiles.add(as);
 			}
 		}
 	}
 
+	public final static void displayVersion() {
+		ConsoleUtils.println(ProgName + "-" + nez.Version.Version + " (" + CodeName + ") on Java JVM-" + System.getProperty("java.version"));
+		ConsoleUtils.println(Version.Copyright);
+	}
+
 	protected static void showUsage(String msg) {
+		displayVersion();
+		ConsoleUtils.println("");
 		ConsoleUtils.println("nez <command> options files");
 		ConsoleUtils.println("  -g <file>      Specify a grammar file");
 		ConsoleUtils.println("  -e <text>      Specify a Nez parsing expression");
@@ -158,6 +175,12 @@ public abstract class Command {
 
 	private int fileIndex = 0;
 
+	public final void checkInputSource() {
+		if (inputFiles.size() == 0) {
+			ConsoleUtils.exit(1, "no input specified");
+		}
+	}
+
 	public final boolean hasInputSource() {
 		return fileIndex < inputFiles.size();
 	}
@@ -172,33 +195,26 @@ public abstract class Command {
 	}
 
 	public final String getOutputFileName(SourceStream input, String ext) {
-		if (directory != null) {
-			return StringUtils.toFileName(input.getResourceName(), directory, ext);
+		if (outputDirectory != null) {
+			return StringUtils.toFileName(input.getResourceName(), outputDirectory, ext);
 		} else {
 			return null; // stdout
 		}
 	}
 
-	// public final ParserGenerator newParserGenerator(Class<?> c) {
-	// if (c != null) {
-	// try {
-	// ParserGenerator gen;
-	// gen = (ParserGenerator) c.newInstance();
-	// gen.init(this.getStrategy(), outputDirName, this.getGrammarName());
-	// return gen;
-	// } catch (InstantiationException e) {
-	// e.printStackTrace();
-	// } catch (IllegalAccessException e) {
-	// e.printStackTrace();
-	// }
-	// ConsoleUtils.exit(1, "error: new parser generator");
-	// }
-	// return null;
-	// }
-
-	public final static void displayVersion() {
-		ConsoleUtils.println(ProgName + "-" + nez.Version.Version + " (" + CodeName + ") on Java JVM-" + System.getProperty("java.version"));
-		ConsoleUtils.println(Version.Copyright);
+	public final Object newExtendedOutputHandler(String classPath) {
+		if (outputFormat.indexOf('.') > 0) {
+			classPath = outputFormat;
+		} else {
+			classPath += outputFormat;
+		}
+		try {
+			return Class.forName(classPath).newInstance();
+		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+			Verbose.traceException(e);
+			ConsoleUtils.exit(1, "undefined format: " + outputFormat);
+		}
+		return null;
 	}
 
 }

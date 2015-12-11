@@ -2,7 +2,6 @@ package nez.parser.moz;
 
 import java.util.List;
 
-import nez.Verbose;
 import nez.parser.ByteCoder;
 import nez.parser.MemoPoint;
 import nez.parser.Parser;
@@ -12,6 +11,7 @@ import nez.parser.ParserGrammar;
 import nez.parser.TerminationException;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
+import nez.util.Verbose;
 
 public class MozCode extends ParserCode {
 

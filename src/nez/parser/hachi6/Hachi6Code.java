@@ -2,7 +2,6 @@ package nez.parser.hachi6;
 
 import java.util.List;
 
-import nez.Verbose;
 import nez.parser.ByteCoder;
 import nez.parser.Parser;
 import nez.parser.ParserGrammar;
@@ -12,6 +11,7 @@ import nez.parser.moz.MozCode;
 import nez.parser.moz.NezCompiler;
 import nez.parser.moz.PackratCompiler;
 import nez.util.UList;
+import nez.util.Verbose;
 
 public class Hachi6Code {
 	final ParserGrammar gg;

@@ -1,6 +1,5 @@
 package nez.parser.moz;
 
-import nez.Verbose;
 import nez.ast.ASTMachine;
 import nez.ast.Source;
 import nez.ast.Tree;
@@ -12,6 +11,7 @@ import nez.parser.ParserRuntime;
 import nez.parser.StackData;
 import nez.parser.SymbolTable;
 import nez.util.ConsoleUtils;
+import nez.util.Verbose;
 
 public final class MozMachine extends ParserRuntime {
 	/* parsing position */

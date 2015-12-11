@@ -1,6 +1,5 @@
 package nez.parser.moz;
 
-import nez.Verbose;
 import nez.lang.Production;
 import nez.parser.AbstractGenerator;
 import nez.parser.Coverage;
@@ -8,6 +7,7 @@ import nez.parser.ParserGrammar;
 import nez.parser.ParseFunc;
 import nez.parser.ParserStrategy;
 import nez.util.UList;
+import nez.util.Verbose;
 
 public abstract class NezCompiler extends AbstractGenerator {
 

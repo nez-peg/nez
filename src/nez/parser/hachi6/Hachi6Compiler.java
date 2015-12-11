@@ -3,7 +3,6 @@ package nez.parser.hachi6;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import nez.Verbose;
 import nez.lang.Expression;
 import nez.lang.Production;
 import nez.lang.expr.ExpressionCommons;
@@ -14,6 +13,7 @@ import nez.parser.hachi6.Hachi6Compiler.DefaultVisitor;
 import nez.parser.moz.MozCode;
 import nez.util.StringUtils;
 import nez.util.UList;
+import nez.util.Verbose;
 import nez.util.VisitorMap;
 
 public class Hachi6Compiler extends VisitorMap<DefaultVisitor> {

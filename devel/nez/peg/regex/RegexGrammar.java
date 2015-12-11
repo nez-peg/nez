@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import nez.Verbose;
 import nez.ast.CommonTree;
 import nez.ast.Symbol;
 import nez.ast.TreeVisitor;
@@ -18,6 +17,7 @@ import nez.parser.ParserStrategy;
 import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
 import nez.util.UList;
+import nez.util.Verbose;
 
 public class RegexGrammar extends TreeVisitor {
 

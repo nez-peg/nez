@@ -1,3 +1,4 @@
+package nez.ext;
 //package nez.main;
 //
 //import java.io.IOException;

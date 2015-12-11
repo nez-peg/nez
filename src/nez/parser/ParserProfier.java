@@ -7,10 +7,10 @@ import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import nez.Verbose;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
 import nez.util.UMap;
+import nez.util.Verbose;
 
 public class ParserProfier {
 	final String logFile;

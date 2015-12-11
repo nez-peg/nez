@@ -6,8 +6,8 @@ import java.io.UnsupportedEncodingException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import nez.Verbose;
 import nez.util.StringUtils;
+import nez.util.Verbose;
 
 public class FileContext extends SourceStream {
 	public final static int PageSize = 4096;

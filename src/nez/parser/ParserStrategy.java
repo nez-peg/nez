@@ -5,7 +5,6 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashSet;
 
-import nez.Verbose;
 import nez.ast.SourcePosition;
 import nez.ast.Tree;
 import nez.io.SourceStream;
@@ -13,6 +12,7 @@ import nez.lang.Grammar;
 import nez.parser.moz.MozMachine;
 import nez.parser.moz.NezCompiler;
 import nez.util.ConsoleUtils;
+import nez.util.Verbose;
 
 public class ParserStrategy {
 

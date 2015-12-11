@@ -1,6 +1,8 @@
-package nez.main;
+package nez.ext;
 
 import java.io.IOException;
+
+import nez.main.Command;
 
 public class LCfind extends Command {
 

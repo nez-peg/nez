@@ -3,7 +3,6 @@ package nez.ext;
 import java.io.IOException;
 
 import nez.main.Command;
-import nez.main.CommandContext;
 import nez.util.ConsoleUtils;
 
 public class Ckonoha extends Command {

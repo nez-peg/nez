@@ -6,8 +6,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import nez.Verbose;
-
 public class FileBuilder {
 
 	protected String fileName = null;

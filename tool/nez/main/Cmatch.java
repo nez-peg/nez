@@ -1,31 +1,28 @@
-package nez.ext;
+package nez.main;
 
 import java.io.IOException;
 
-import nez.Verbose;
 import nez.io.SourceStream;
-import nez.main.Command;
-import nez.main.CommandContext;
 import nez.parser.Parser;
 import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
 import nez.util.UList;
+import nez.util.Verbose;
 
 public class Cmatch extends Command {
 	@Override
-	public void exec(CommandContext config) throws IOException {
-		config.getStrategy().TreeConstruction = false;
-		Parser parser = config.newParser();
+	public void exec() throws IOException {
+		strategy.TreeConstruction = false;
+		Parser parser = newParser();
 
 		UList<String> failedInputs = new UList<String>(new String[4]);
-		UList<String> unconsumedInputs = new UList<String>(new String[4]);
 
 		int totalCount = 0, failureCount = 0, unconsumedCount = 0;
 		long consumed = 0;
 		long time = 0;
 
-		while (config.hasInput()) {
-			SourceStream file = config.nextInput();
+		while (hasInputSource()) {
+			SourceStream file = nextInputSource();
 			totalCount++;
 
 			long t = System.nanoTime();
@@ -43,9 +40,6 @@ public class Cmatch extends Command {
 		if (totalCount > 1) {
 			Verbose.println(totalCount + " files, " + StringUtils.formatMPS(consumed, time) + " MiB/s, " + failureCount + " failed, " + unconsumedCount + " uncosumed, "
 					+ StringUtils.formatParcentage(totalCount - (unconsumedCount + failureCount), totalCount) + "% passed.");
-		}
-		if (unconsumedInputs.size() > 0) {
-			Verbose.println("unconsumed: " + unconsumedInputs);
 		}
 		if (failedInputs.size() > 0) {
 			ConsoleUtils.exit(1, "failed: " + failedInputs);

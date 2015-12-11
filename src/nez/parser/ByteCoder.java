@@ -7,11 +7,11 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import nez.Verbose;
 import nez.ast.Symbol;
 import nez.parser.moz.MozInst;
 import nez.parser.moz.MozSet;
 import nez.util.StringUtils;
+import nez.util.Verbose;
 
 public class ByteCoder {
 

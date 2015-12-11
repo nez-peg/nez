@@ -3,7 +3,6 @@ package nez.lang;
 import java.util.HashMap;
 import java.util.List;
 
-import nez.Verbose;
 import nez.ast.Tree;
 import nez.ast.TreeUtils;
 import nez.io.SourceStream;
@@ -12,6 +11,7 @@ import nez.parser.Parser;
 import nez.parser.ParserStrategy;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
+import nez.util.Verbose;
 
 public class GrammarExample {
 	private Grammar grammar;
@@ -202,9 +202,9 @@ public class GrammarExample {
 				ConsoleUtils.println(msg + " " + name);
 			}
 			if (node != null) {
-				ConsoleUtils.println("   ", this.getText());
+				ConsoleUtils.printlnIndent("   ", this.getText());
 				ConsoleUtils.println("---");
-				ConsoleUtils.println("   ", node);
+				ConsoleUtils.printlnIndent("   ", node);
 				ConsoleUtils.println("---");
 			}
 		}

@@ -5,12 +5,12 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
-import nez.Verbose;
 import nez.lang.Grammar;
 import nez.lang.GrammarChecker;
 import nez.lang.Production;
 import nez.lang.Typestate;
 import nez.util.UList;
+import nez.util.Verbose;
 
 public class ParserGrammar extends Grammar {
 	HashMap<String, ParseFunc> funcMap;
