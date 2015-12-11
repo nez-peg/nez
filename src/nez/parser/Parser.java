@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import nez.NezProfier;
 import nez.ast.CommonTree;
 import nez.ast.SourceError;
 import nez.ast.Tree;
@@ -69,9 +68,9 @@ public final class Parser {
 		return matched;
 	}
 
-	protected NezProfier prof = null;
+	protected ParserProfier prof = null;
 
-	public void setProfiler(NezProfier prof) {
+	public void setProfiler(ParserProfier prof) {
 		this.prof = prof;
 		if (prof != null) {
 			this.compile();
@@ -82,7 +81,7 @@ public final class Parser {
 		}
 	}
 
-	public NezProfier getProfiler() {
+	public ParserProfier getProfiler() {
 		return this.prof;
 	}
 

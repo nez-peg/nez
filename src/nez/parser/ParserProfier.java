@@ -1,4 +1,4 @@
-package nez;
+package nez.parser;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -7,14 +7,15 @@ import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import nez.Verbose;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
 import nez.util.UMap;
 
-public class NezProfier {
+public class ParserProfier {
 	final String logFile;
 
-	public NezProfier(String logFile) {
+	public ParserProfier(String logFile) {
 		this.logFile = logFile;
 	}
 
@@ -104,21 +105,21 @@ public class NezProfier {
 		}
 	}
 
-	public final static void recordLatencyMS(NezProfier rec, String key, long nanoT1, long nanoT2) {
+	public final static void recordLatencyMS(ParserProfier rec, String key, long nanoT1, long nanoT2) {
 		if (rec != null) {
 			long t = (nanoT2 - nanoT1) / 1000; // [micro second]
 			rec.setDouble(key + "[ms]", t / 1000.0);
 		}
 	}
 
-	public final static void recordLatencyS(NezProfier rec, String key, long nanoT1, long nanoT2) {
+	public final static void recordLatencyS(ParserProfier rec, String key, long nanoT1, long nanoT2) {
 		if (rec != null) {
 			long t = (nanoT2 - nanoT1) / 1000; // [micro second]
 			rec.setDouble(key + "[s]", t / 10000000.0);
 		}
 	}
 
-	public final static void recordThroughputKPS(NezProfier rec, String key, long length, long nanoT1, long nanoT2) {
+	public final static void recordThroughputKPS(ParserProfier rec, String key, long length, long nanoT1, long nanoT2) {
 		if (rec != null) {
 			long micro = (nanoT2 - nanoT1) / 1000; // [micro second]
 			double sec = micro / 1000000.0;

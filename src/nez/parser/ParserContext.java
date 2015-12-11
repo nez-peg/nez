@@ -1,6 +1,5 @@
 package nez.parser;
 
-import nez.NezProfier;
 import nez.io.SourceStream;
 
 public final class ParserContext {
@@ -48,12 +47,12 @@ public final class ParserContext {
 		return source.getResourceName();
 	}
 
-	public void startProfiling(NezProfier prof) {
+	public void startProfiling(ParserProfier prof) {
 		// TODO Auto-generated method stub
 
 	}
 
-	public void doneProfiling(NezProfier prof) {
+	public void doneProfiling(ParserProfier prof) {
 		// TODO Auto-generated method stub
 
 	}

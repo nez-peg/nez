@@ -1,4 +1,4 @@
-package nez.ast.transducer;
+package nez.lang.ast;
 
 import nez.ast.Tree;
 

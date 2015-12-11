@@ -2,13 +2,13 @@ package nez.ext;
 
 import java.io.IOException;
 
-import nez.NezProfier;
 import nez.ast.Tree;
 import nez.ast.TreeWriter;
 import nez.io.SourceStream;
 import nez.main.Command;
 import nez.main.CommandContext;
 import nez.parser.Parser;
+import nez.parser.ParserProfier;
 
 public class Cparse extends Command {
 	@Override
@@ -26,14 +26,14 @@ public class Cparse extends Command {
 		}
 	}
 
-	private void record(NezProfier prof, Tree<?> node) {
+	private void record(ParserProfier prof, Tree<?> node) {
 		if (prof != null) {
 			System.gc();
 			prof.setCount("O.Size", node.countSubNodes());
 			long t1 = System.nanoTime();
 			Tree<?> t = node.dup();
 			long t2 = System.nanoTime();
-			NezProfier.recordLatencyMS(prof, "O.Overhead", t1, t2);
+			ParserProfier.recordLatencyMS(prof, "O.Overhead", t1, t2);
 		}
 	}
 

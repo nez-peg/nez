@@ -9,6 +9,7 @@ import nez.Verbose;
 import nez.ast.SourcePosition;
 import nez.ast.Tree;
 import nez.io.SourceStream;
+import nez.lang.Grammar;
 import nez.parser.moz.MozMachine;
 import nez.parser.moz.NezCompiler;
 import nez.util.ConsoleUtils;
@@ -216,6 +217,10 @@ public class ParserStrategy {
 	}
 
 	/* -------------------------------------------------------------------- */
+
+	public final Parser newParser(Grammar grammar) {
+		return grammar.newParser(this);
+	}
 
 	public ParserCode newParserCode(ParserGrammar pgrammar) {
 		// if (this.isEnabled("Moz", ParserStrategy.Moz)) {

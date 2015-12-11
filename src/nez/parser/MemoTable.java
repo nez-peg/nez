@@ -2,8 +2,6 @@ package nez.parser;
 
 import java.util.HashMap;
 
-import nez.NezProfier;
-
 public abstract class MemoTable {
 
 	public abstract void setMemo(long pos, int memoPoint, boolean failed, Object result, int consumed, int stateValue);
@@ -32,7 +30,7 @@ public abstract class MemoTable {
 		return new ElasticTable(windowSize, memoPointSize);
 	}
 
-	public void record(NezProfier rec) {
+	public void record(ParserProfier rec) {
 		rec.setText("M.TableType", this.getClass().getSimpleName());
 		rec.setCount("M.MemoStored", this.CountStored);
 		rec.setRatio("M.MemoHit", this.CountUsed, this.CountStored);

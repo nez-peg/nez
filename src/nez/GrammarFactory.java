@@ -17,7 +17,7 @@ public class GrammarFactory {
 	}
 
 	String[] classPath = null;
-	HashMap<String, GrammarFactory.GrammarExtension> extensionMap = new HashMap<>();
+	HashMap<String, GrammarExtension> extensionMap = new HashMap<>();
 
 	public GrammarFactory(String path) {
 		this.classPath = path.split(":");

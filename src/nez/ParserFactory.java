@@ -7,6 +7,7 @@ import nez.lang.Grammar;
 import nez.lang.GrammarFileLoader;
 import nez.lang.util.NezConstructor;
 import nez.parser.Parser;
+import nez.parser.ParserProfier;
 import nez.parser.ParserStrategy;
 import nez.util.UList;
 
@@ -115,7 +116,7 @@ public class ParserFactory {
 		Parser p = newGrammar().newParser(this.startProduction, this.strategy);
 		this.strategy.report();
 		if (p != null && strategy.Profiling) {
-			NezProfier rec = new NezProfier("nezprof.csv");
+			ParserProfier rec = new ParserProfier("nezprof.csv");
 			rec.setText("nez", Version.Version);
 			rec.setText("config", strategy.toString());
 			p.setProfiler(rec);
