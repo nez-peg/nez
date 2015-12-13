@@ -1,3 +1,4 @@
+package nez.junks;
 //package nez.x;
 //
 //import java.util.AbstractList;

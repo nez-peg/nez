@@ -1,6 +1,7 @@
-package nez.lang;
+package nez.junks;
 
-import nez.lang.ExpressionEmptyVisitor.DefaultVisitor;
+import nez.junks.ExpressionEmptyVisitor.DefaultVisitor;
+import nez.lang.Expression;
 import nez.util.VisitorMap;
 
 public class ExpressionEmptyVisitor extends VisitorMap<DefaultVisitor> {

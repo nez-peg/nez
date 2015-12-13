@@ -1,5 +1,7 @@
 package nez.lang;
 
+import java.util.HashMap;
+
 import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cmulti;
@@ -32,6 +34,39 @@ import nez.lang.expr.Xon;
 import nez.lang.expr.Xsymbol;
 
 public abstract class ExpressionVisitor {
+
+	protected HashMap<String, Object> visited = null;
+
+	public final Object lookup(String uname) {
+		if (visited != null) {
+			return visited.get(uname);
+		}
+		return null;
+	}
+
+	public final void memo(String uname, Object o) {
+		if (visited == null) {
+			visited = new HashMap<>();
+		}
+		visited.put(uname, o);
+	}
+
+	public final boolean isVisited(String uname) {
+		if (visited != null) {
+			visited.containsKey(uname);
+		}
+		return false;
+	}
+
+	public final void visited(String uname) {
+		memo(uname, uname);
+	}
+
+	public final void clear() {
+		if (visited != null) {
+			visited.clear();
+		}
+	}
 
 	public abstract Object visitNonTerminal(NonTerminal e, Object a);
 

@@ -1,4 +1,4 @@
-package nez.lang;
+package nez.junks;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -7,7 +7,9 @@ import nez.ast.Source;
 import nez.ast.SourcePosition;
 import nez.ast.Tree;
 import nez.io.SourceStream;
-import nez.lang.GrammarFileLoader.DefaultVisitor;
+import nez.junks.GrammarFileLoader.DefaultVisitor;
+import nez.lang.Expression;
+import nez.lang.Grammar;
 import nez.lang.schema.Type;
 import nez.parser.Parser;
 import nez.parser.ParserStrategy;

@@ -1,9 +1,10 @@
-package nez.lang;
+package nez.junks;
 
 import java.util.HashMap;
 import java.util.List;
 
 import nez.ast.CommonTree;
+import nez.lang.Grammar;
 import nez.util.StringUtils;
 
 public abstract class Formatter {

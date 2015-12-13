@@ -8,8 +8,8 @@ import java.util.Map;
 
 import nez.ast.Symbol;
 import nez.ast.Tree;
+import nez.junks.GrammarFileLoader;
 import nez.lang.Grammar;
-import nez.lang.GrammarFileLoader;
 import nez.lang.schema.DTDSchemaGrammarGenerator;
 import nez.lang.schema.Type;
 import nez.parser.Parser;

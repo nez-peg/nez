@@ -2,9 +2,9 @@ package nez.lang.ast;
 
 import nez.ast.Symbol;
 import nez.ast.Tree;
+import nez.junks.GrammarFile;
 import nez.lang.Expression;
 import nez.lang.Grammar;
-import nez.lang.GrammarFile;
 import nez.lang.Production;
 import nez.lang.expr.ExpressionCommons;
 import nez.lang.expr.NonTerminal;

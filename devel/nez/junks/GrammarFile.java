@@ -1,4 +1,6 @@
-package nez.lang;
+package nez.junks;
+
+import nez.lang.Grammar;
 
 
 public class GrammarFile extends Grammar {

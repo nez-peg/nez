@@ -1,3 +1,4 @@
+package nez.junks;
 //package nez.lang;
 //
 //import nez.Combinator;
