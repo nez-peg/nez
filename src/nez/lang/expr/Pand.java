@@ -6,8 +6,6 @@ import nez.lang.ExpressionVisitor;
 import nez.lang.PossibleAcceptance;
 import nez.lang.Typestate;
 import nez.lang.Visa;
-import nez.parser.AbstractGenerator;
-import nez.parser.moz.MozInst;
 
 public class Pand extends Unary {
 	Pand(SourcePosition s, Expression e) {
@@ -49,11 +47,6 @@ public class Pand extends Unary {
 	@Override
 	public short acceptByte(int ch) {
 		return PossibleAcceptance.acceptAnd(this, ch);
-	}
-
-	@Override
-	public MozInst encode(AbstractGenerator bc, MozInst next, MozInst failjump) {
-		return bc.encodePand(this, next, failjump);
 	}
 
 }

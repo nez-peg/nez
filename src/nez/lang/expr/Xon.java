@@ -1,14 +1,11 @@
 package nez.lang.expr;
 
 import nez.ast.SourcePosition;
-import nez.lang.Conditional;
 import nez.lang.Expression;
 import nez.lang.ExpressionVisitor;
 import nez.lang.Visa;
-import nez.parser.AbstractGenerator;
-import nez.parser.moz.MozInst;
 
-public class Xon extends Unary implements Conditional {
+public class Xon extends Unary implements Expression.Conditional {
 	boolean predicate;
 
 	public final boolean isPositive() {
@@ -63,8 +60,4 @@ public class Xon extends Unary implements Conditional {
 		return this.inner.acceptByte(ch);
 	}
 
-	@Override
-	public MozInst encode(AbstractGenerator bc, MozInst next, MozInst failjump) {
-		return bc.encodeXon(this, next, failjump);
-	}
 }

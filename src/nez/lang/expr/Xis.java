@@ -2,14 +2,11 @@ package nez.lang.expr;
 
 import nez.ast.SourcePosition;
 import nez.ast.Symbol;
-import nez.lang.Contextual;
 import nez.lang.Expression;
 import nez.lang.ExpressionVisitor;
 import nez.lang.Visa;
-import nez.parser.AbstractGenerator;
-import nez.parser.moz.MozInst;
 
-public class Xis extends Unary implements Contextual {
+public class Xis extends Unary implements Expression.Contextual {
 	// final Grammar g;
 	public final Symbol tableName;
 	public final boolean is;
@@ -74,8 +71,4 @@ public class Xis extends Unary implements Contextual {
 		return this.inner.acceptByte(ch);
 	}
 
-	@Override
-	public MozInst encode(AbstractGenerator bc, MozInst next, MozInst failjump) {
-		return bc.encodeXis(this, next, failjump);
-	}
 }

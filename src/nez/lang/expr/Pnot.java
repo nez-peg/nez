@@ -6,8 +6,6 @@ import nez.lang.ExpressionVisitor;
 import nez.lang.PossibleAcceptance;
 import nez.lang.Typestate;
 import nez.lang.Visa;
-import nez.parser.AbstractGenerator;
-import nez.parser.moz.MozInst;
 
 public class Pnot extends Unary {
 	Pnot(SourcePosition s, Expression e) {
@@ -45,11 +43,6 @@ public class Pnot extends Unary {
 	@Override
 	public short acceptByte(int ch) {
 		return PossibleAcceptance.acceptNot(this, ch);
-	}
-
-	@Override
-	public MozInst encode(AbstractGenerator bc, MozInst next, MozInst failjump) {
-		return bc.encodePnot(this, next, failjump);
 	}
 
 }

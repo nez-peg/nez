@@ -9,8 +9,6 @@ import nez.lang.expr.Cset;
 import nez.lang.expr.ExpressionCommons;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
-import nez.parser.AbstractGenerator;
-import nez.parser.moz.MozInst;
 import nez.util.UList;
 
 public abstract class Expression extends AbstractList<Expression> {
@@ -61,8 +59,6 @@ public abstract class Expression extends AbstractList<Expression> {
 
 	public abstract short acceptByte(int ch);
 
-	public abstract MozInst encode(AbstractGenerator bc, MozInst next, MozInst failjump);
-
 	// test
 
 	public static final boolean isByteConsumed(Expression e) {
@@ -101,6 +97,14 @@ public abstract class Expression extends AbstractList<Expression> {
 
 	public final Expression newChoice(UList<Expression> l) {
 		return ExpressionCommons.newPchoice(this.getSourcePosition(), l);
+	}
+
+	public static interface Conditional {
+
+	}
+
+	public static interface Contextual {
+
 	}
 
 }

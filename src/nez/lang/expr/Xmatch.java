@@ -2,16 +2,13 @@ package nez.lang.expr;
 
 import nez.ast.SourcePosition;
 import nez.ast.Symbol;
-import nez.lang.Contextual;
 import nez.lang.Expression;
 import nez.lang.ExpressionVisitor;
 import nez.lang.PossibleAcceptance;
 import nez.lang.Typestate;
 import nez.lang.Visa;
-import nez.parser.AbstractGenerator;
-import nez.parser.moz.MozInst;
 
-public class Xmatch extends Term implements Contextual {
+public class Xmatch extends Term implements Expression.Contextual {
 	public final Symbol tableName;
 
 	Xmatch(SourcePosition s, Symbol tableName) {
@@ -56,8 +53,4 @@ public class Xmatch extends Term implements Contextual {
 		return PossibleAcceptance.Accept;
 	}
 
-	@Override
-	public MozInst encode(AbstractGenerator bc, MozInst next, MozInst failjump) {
-		return bc.encodeXmatch(this, next, failjump);
-	}
 }

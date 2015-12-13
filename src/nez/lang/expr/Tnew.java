@@ -6,8 +6,6 @@ import nez.lang.ExpressionVisitor;
 import nez.lang.PossibleAcceptance;
 import nez.lang.Typestate;
 import nez.lang.Visa;
-import nez.parser.AbstractGenerator;
-import nez.parser.moz.MozInst;
 
 public class Tnew extends Term {
 	// public boolean leftFold;
@@ -54,8 +52,4 @@ public class Tnew extends Term {
 		return Typestate.ObjectType;
 	}
 
-	@Override
-	public MozInst encode(AbstractGenerator bc, MozInst next, MozInst failjump) {
-		return bc.encodeTnew(this, next);
-	}
 }

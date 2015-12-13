@@ -2,16 +2,13 @@ package nez.lang.expr;
 
 import nez.ast.SourcePosition;
 import nez.ast.Symbol;
-import nez.lang.Contextual;
 import nez.lang.Expression;
 import nez.lang.ExpressionVisitor;
 import nez.lang.PossibleAcceptance;
 import nez.lang.Typestate;
 import nez.lang.Visa;
-import nez.parser.AbstractGenerator;
-import nez.parser.moz.MozInst;
 
-public class Xexists extends Term implements Contextual {
+public class Xexists extends Term implements Expression.Contextual {
 	public final Symbol tableName;
 	String symbol;
 
@@ -67,10 +64,5 @@ public class Xexists extends Term implements Contextual {
 	@Override
 	public short acceptByte(int ch) {
 		return PossibleAcceptance.Unconsumed;
-	}
-
-	@Override
-	public MozInst encode(AbstractGenerator bc, MozInst next, MozInst failjump) {
-		return bc.encodeXexists(this, next, failjump);
 	}
 }

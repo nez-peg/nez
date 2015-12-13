@@ -4,8 +4,6 @@ import nez.ast.SourcePosition;
 import nez.lang.Expression;
 import nez.lang.ExpressionVisitor;
 import nez.lang.PossibleAcceptance;
-import nez.parser.AbstractGenerator;
-import nez.parser.moz.MozInst;
 import nez.util.StringUtils;
 
 public class Cset extends Char {
@@ -54,11 +52,6 @@ public class Cset extends Char {
 	@Override
 	public short acceptByte(int ch) {
 		return PossibleAcceptance.acceptByteMap(byteMap, ch);
-	}
-
-	@Override
-	public MozInst encode(AbstractGenerator bc, MozInst next, MozInst failjump) {
-		return bc.encodeCset(this, next, failjump);
 	}
 
 	// Utils

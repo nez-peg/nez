@@ -4,18 +4,18 @@ import java.io.IOException;
 
 import nez.main.Command;
 import nez.parser.Parser;
-import nez.parser.ParserGenerator;
+import nez.parser.GrammarWriter;
 
 public class Cpeg extends Command {
 
 	@Override
 	public void exec(CommandContext config) throws IOException {
-		ParserGenerator pgen = newParserGenerator(config);
+		GrammarWriter pgen = newParserGenerator(config);
 		Parser p = config.newParser();
 		pgen.generate(p.getParserGrammar());
 	}
 
-	protected ParserGenerator newParserGenerator(CommandContext config) {
+	protected GrammarWriter newParserGenerator(CommandContext config) {
 		return config.newParserGenerator(nez.parser.generator.PEGGenerator.class);
 	}
 }

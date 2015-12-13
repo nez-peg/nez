@@ -3,6 +3,8 @@ package nez.lang;
 import java.util.List;
 
 import nez.ast.SourcePosition;
+import nez.lang.Expression.Conditional;
+import nez.lang.Expression.Contextual;
 import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cset;
@@ -15,8 +17,6 @@ import nez.lang.expr.Pone;
 import nez.lang.expr.Poption;
 import nez.lang.expr.Psequence;
 import nez.lang.expr.Pzero;
-import nez.parser.AbstractGenerator;
-import nez.parser.moz.MozInst;
 import nez.util.ConsoleUtils;
 import nez.util.UFlag;
 import nez.util.UList;
@@ -163,10 +163,10 @@ public class Production /* extends Expression */{
 			}
 			return;
 		}
-		if (e instanceof Conditional) {
+		if (e instanceof Expression.Conditional) {
 			p.flag = p.flag | ConditionalChecked | ConditionalProduction;
 		}
-		if (e instanceof Contextual) {
+		if (e instanceof Expression.Contextual) {
 			p.flag = p.flag | ContextualChecked | ContextualProduction;
 		}
 		for (Expression sub : e) {
@@ -491,10 +491,11 @@ public class Production /* extends Expression */{
 		return this.getExpression().acceptByte(ch);
 	}
 
-	// @Override
-	public MozInst encode(AbstractGenerator bc, MozInst next, MozInst failjump) {
-		return this.getExpression().encode(bc, next, failjump);
-	}
+	// // @Override
+	// public MozInst encode(AbstractGenerator bc, MozInst next, MozInst
+	// failjump) {
+	// return this.getExpression().encode(bc, next, failjump);
+	// }
 
 	public final void dump() {
 		UList<String> l = new UList<String>(new String[4]);

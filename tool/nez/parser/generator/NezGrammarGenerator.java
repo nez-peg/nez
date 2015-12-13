@@ -23,13 +23,12 @@ import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
 import nez.lang.expr.Xblock;
-import nez.lang.expr.Xsymbol;
-import nez.lang.expr.Xdefindent;
 import nez.lang.expr.Xexists;
 import nez.lang.expr.Xindent;
 import nez.lang.expr.Xis;
 import nez.lang.expr.Xlocal;
 import nez.lang.expr.Xmatch;
+import nez.lang.expr.Xsymbol;
 import nez.parser.ParserGrammar;
 import nez.util.StringUtils;
 
@@ -254,11 +253,6 @@ public class NezGrammarGenerator extends PEGGenerator {
 		W(" ");
 		visitExpression(e.get(0));
 		W(">");
-	}
-
-	@Override
-	public void visitXdefindent(Xdefindent p) {
-		this.visitUndefined(p);
 	}
 
 	@Override

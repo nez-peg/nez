@@ -1,16 +1,13 @@
 package nez.lang.expr;
 
 import nez.ast.SourcePosition;
-import nez.lang.Conditional;
 import nez.lang.Expression;
 import nez.lang.ExpressionVisitor;
 import nez.lang.PossibleAcceptance;
 import nez.lang.Typestate;
 import nez.lang.Visa;
-import nez.parser.AbstractGenerator;
-import nez.parser.moz.MozInst;
 
-public class Xif extends Term implements Conditional {
+public class Xif extends Term implements Expression.Conditional {
 	boolean predicate;
 	String flagName;
 
@@ -59,11 +56,6 @@ public class Xif extends Term implements Conditional {
 	@Override
 	public short acceptByte(int ch) {
 		return PossibleAcceptance.Unconsumed;
-	}
-
-	@Override
-	public MozInst encode(AbstractGenerator bc, MozInst next, MozInst failjump) {
-		return bc.encodeXif(this, next, failjump);
 	}
 
 }

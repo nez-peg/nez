@@ -6,8 +6,6 @@ import nez.lang.ExpressionVisitor;
 import nez.lang.PossibleAcceptance;
 import nez.lang.Typestate;
 import nez.lang.Visa;
-import nez.parser.AbstractGenerator;
-import nez.parser.moz.MozInst;
 
 public class Tcapture extends Term {
 	public int shift;
@@ -47,8 +45,4 @@ public class Tcapture extends Term {
 		return PossibleAcceptance.Unconsumed;
 	}
 
-	@Override
-	public MozInst encode(AbstractGenerator bc, MozInst next, MozInst failjump) {
-		return bc.encodeTcapture(this, next);
-	}
 }

@@ -6,8 +6,6 @@ import nez.lang.ExpressionVisitor;
 import nez.lang.PossibleAcceptance;
 import nez.lang.Typestate;
 import nez.lang.Visa;
-import nez.parser.AbstractGenerator;
-import nez.parser.moz.MozInst;
 import nez.util.UList;
 
 public class Pchoice extends ExpressionCommons {
@@ -103,11 +101,6 @@ public class Pchoice extends ExpressionCommons {
 			}
 		}
 		return hasUnconsumed ? PossibleAcceptance.Unconsumed : PossibleAcceptance.Reject;
-	}
-
-	@Override
-	public MozInst encode(AbstractGenerator bc, MozInst next, MozInst failjump) {
-		return bc.encodePchoice(this, next, failjump);
 	}
 
 	/* optimized */

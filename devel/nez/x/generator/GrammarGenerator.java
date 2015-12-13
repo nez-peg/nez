@@ -1,8 +1,8 @@
 package nez.x.generator;
 
-import nez.parser.ParserGenerator;
+import nez.parser.GrammarWriter;
 
-public abstract class GrammarGenerator extends ParserGenerator {
+public abstract class GrammarGenerator extends GrammarWriter {
 
 	//
 	// protected char Quoatation() {

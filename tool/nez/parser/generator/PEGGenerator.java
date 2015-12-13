@@ -25,8 +25,6 @@ import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
 import nez.lang.expr.Unary;
 import nez.lang.expr.Xblock;
-import nez.lang.expr.Xsymbol;
-import nez.lang.expr.Xdefindent;
 import nez.lang.expr.Xexists;
 import nez.lang.expr.Xif;
 import nez.lang.expr.Xindent;
@@ -34,11 +32,12 @@ import nez.lang.expr.Xis;
 import nez.lang.expr.Xlocal;
 import nez.lang.expr.Xmatch;
 import nez.lang.expr.Xon;
+import nez.lang.expr.Xsymbol;
+import nez.parser.GrammarWriter;
 import nez.parser.ParserGrammar;
-import nez.parser.ParserGenerator;
 import nez.util.StringUtils;
 
-public class PEGGenerator extends ParserGenerator {
+public class PEGGenerator extends GrammarWriter {
 
 	@Override
 	protected String getFileExtension() {
@@ -264,12 +263,6 @@ public class PEGGenerator extends ParserGenerator {
 
 	@Override
 	public void visitXon(Xon p) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void visitXdefindent(Xdefindent p) {
 		// TODO Auto-generated method stub
 
 	}

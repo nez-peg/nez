@@ -6,8 +6,6 @@ import nez.lang.ExpressionVisitor;
 import nez.lang.PossibleAcceptance;
 import nez.lang.Typestate;
 import nez.lang.Visa;
-import nez.parser.AbstractGenerator;
-import nez.parser.moz.MozInst;
 
 public class Pfail extends Term {
 	Pfail(SourcePosition s) {
@@ -42,11 +40,6 @@ public class Pfail extends Term {
 	@Override
 	public short acceptByte(int ch) {
 		return PossibleAcceptance.Reject;
-	}
-
-	@Override
-	public MozInst encode(AbstractGenerator bc, MozInst next, MozInst failjump) {
-		return bc.encodePfail(this);
 	}
 
 }

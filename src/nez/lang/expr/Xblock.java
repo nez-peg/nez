@@ -4,8 +4,6 @@ import nez.ast.SourcePosition;
 import nez.lang.Expression;
 import nez.lang.ExpressionVisitor;
 import nez.lang.Visa;
-import nez.parser.AbstractGenerator;
-import nez.parser.moz.MozInst;
 
 public class Xblock extends Unary {
 	Xblock(SourcePosition s, Expression e) {
@@ -38,11 +36,6 @@ public class Xblock extends Unary {
 	@Override
 	public short acceptByte(int ch) {
 		return this.inner.acceptByte(ch);
-	}
-
-	@Override
-	public MozInst encode(AbstractGenerator bc, MozInst next, MozInst failjump) {
-		return bc.encodeXblock(this, next, failjump);
 	}
 
 }

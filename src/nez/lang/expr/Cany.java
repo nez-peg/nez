@@ -6,8 +6,6 @@ import nez.lang.ExpressionVisitor;
 import nez.lang.PossibleAcceptance;
 import nez.lang.Typestate;
 import nez.lang.Visa;
-import nez.parser.AbstractGenerator;
-import nez.parser.moz.MozInst;
 
 public class Cany extends Char {
 	Cany(SourcePosition s, boolean binary) {
@@ -47,8 +45,4 @@ public class Cany extends Char {
 		return PossibleAcceptance.acceptAny(binary, ch);
 	}
 
-	@Override
-	public MozInst encode(AbstractGenerator bc, MozInst next, MozInst failjump) {
-		return bc.encodeCany(this, next, failjump);
-	}
 }

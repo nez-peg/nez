@@ -3,6 +3,7 @@ package nez.parser;
 import java.util.HashMap;
 
 import nez.lang.Expression;
+import nez.lang.ExpressionVisitor;
 import nez.lang.Production;
 import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
@@ -11,6 +12,8 @@ import nez.lang.expr.Cset;
 import nez.lang.expr.NonTerminal;
 import nez.lang.expr.Pand;
 import nez.lang.expr.Pchoice;
+import nez.lang.expr.Pempty;
+import nez.lang.expr.Pfail;
 import nez.lang.expr.Pnot;
 import nez.lang.expr.Pone;
 import nez.lang.expr.Poption;
@@ -24,7 +27,6 @@ import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
 import nez.lang.expr.Xblock;
-import nez.lang.expr.Xdefindent;
 import nez.lang.expr.Xexists;
 import nez.lang.expr.Xif;
 import nez.lang.expr.Xindent;
@@ -33,13 +35,13 @@ import nez.lang.expr.Xlocal;
 import nez.lang.expr.Xmatch;
 import nez.lang.expr.Xon;
 import nez.lang.expr.Xsymbol;
-import nez.parser.moz.MozInst;
 import nez.util.FileBuilder;
 import nez.util.StringUtils;
 import nez.util.Verbose;
 
-public abstract class ParserGenerator extends AbstractGenerator {
+public abstract class GrammarWriter extends ExpressionVisitor {
 	// public abstract String getDesc();
+	protected ParserStrategy strategy;
 	protected String dir;
 	protected String grammarName;
 	protected FileBuilder file;
@@ -50,13 +52,12 @@ public abstract class ParserGenerator extends AbstractGenerator {
 	protected String BeginIndent = "{"; // Begin()
 	protected String EndIndent = "}"; // End()
 
-	public ParserGenerator() {
-		super(null);
+	public GrammarWriter() {
 		this.file = null;
 	}
 
 	public final void init(ParserStrategy strategy, String dir, String grammarName) {
-		this.setStrategy(strategy);
+		this.strategy = strategy;
 		this.dir = dir;
 		this.grammarName = grammarName;
 	}
@@ -135,39 +136,39 @@ public abstract class ParserGenerator extends AbstractGenerator {
 	// Generator Macro
 
 	@Deprecated
-	protected ParserGenerator inc() {
+	protected GrammarWriter inc() {
 		file.incIndent();
 		return this;
 	}
 
 	@Deprecated
-	protected ParserGenerator dec() {
+	protected GrammarWriter dec() {
 		file.decIndent();
 		return this;
 	}
 
-	protected ParserGenerator L(String line) {
+	protected GrammarWriter L(String line) {
 		file.writeIndent(line);
 		return this;
 	}
 
-	protected ParserGenerator L() {
+	protected GrammarWriter L() {
 		file.writeIndent();
 		return this;
 	}
 
-	protected ParserGenerator W(String word) {
+	protected GrammarWriter W(String word) {
 		file.write(word);
 		return this;
 	}
 
-	protected ParserGenerator Begin(String t) {
+	protected GrammarWriter Begin(String t) {
 		W(t);
 		file.incIndent();
 		return this;
 	}
 
-	protected ParserGenerator End(String t) {
+	protected GrammarWriter End(String t) {
 		file.decIndent();
 		if (t != null) {
 			L(t);
@@ -175,7 +176,7 @@ public abstract class ParserGenerator extends AbstractGenerator {
 		return this;
 	}
 
-	protected ParserGenerator C(String name, Expression e) {
+	protected GrammarWriter C(String name, Expression e) {
 		int c = 0;
 		W(name).W(OpenClosure);
 		for (Expression sub : e) {
@@ -189,7 +190,7 @@ public abstract class ParserGenerator extends AbstractGenerator {
 		return this;
 	}
 
-	protected ParserGenerator C(String name, String first, Expression e) {
+	protected GrammarWriter C(String name, String first, Expression e) {
 		W(name);
 		W(OpenClosure);
 		W(first);
@@ -201,14 +202,14 @@ public abstract class ParserGenerator extends AbstractGenerator {
 		return this;
 	}
 
-	protected ParserGenerator C(String name) {
+	protected GrammarWriter C(String name) {
 		W(name);
 		W(OpenClosure);
 		W(CloseClosure);
 		return this;
 	}
 
-	protected ParserGenerator C(String name, String arg) {
+	protected GrammarWriter C(String name, String arg) {
 		if (arg.length() > 1 && arg.startsWith("\"") && arg.endsWith("\"")) {
 		} else {
 			arg = StringUtils.quoteString('"', arg, '"');
@@ -220,7 +221,7 @@ public abstract class ParserGenerator extends AbstractGenerator {
 		return this;
 	}
 
-	protected ParserGenerator C(String name, int arg) {
+	protected GrammarWriter C(String name, int arg) {
 		W(name);
 		W(OpenClosure);
 		W(String.valueOf(arg));
@@ -228,7 +229,7 @@ public abstract class ParserGenerator extends AbstractGenerator {
 		return this;
 	}
 
-	protected ParserGenerator C(String name, boolean[] arg) {
+	protected GrammarWriter C(String name, boolean[] arg) {
 		int cnt = 0;
 		W(name);
 		W(OpenClosure);
@@ -245,13 +246,11 @@ public abstract class ParserGenerator extends AbstractGenerator {
 		return this;
 	}
 
-	public final void visitExpression(Expression e) {
-		e.encode(this, null, null);
+	protected final void visitExpression(Expression e) {
+		e.visit(this, null);
 	}
 
-	public void visitUndefined(Expression p) {
-
-	}
+	public abstract void visitNonTerminal(NonTerminal p);
 
 	public abstract void visitPempty(Expression p);
 
@@ -278,8 +277,6 @@ public abstract class ParserGenerator extends AbstractGenerator {
 	public abstract void visitPsequence(Psequence p);
 
 	public abstract void visitPchoice(Pchoice p);
-
-	public abstract void visitNonTerminal(NonTerminal p);
 
 	// AST Construction
 	public abstract void visitTlink(Tlink p);
@@ -313,89 +310,91 @@ public abstract class ParserGenerator extends AbstractGenerator {
 
 	public abstract void visitXon(Xon p);
 
-	public abstract void visitXdefindent(Xdefindent p);
-
 	public abstract void visitXindent(Xindent p);
 
-	@Override
-	public final MozInst encode(Expression e, MozInst next, MozInst failjump) {
-		return e.encode(this, next, failjump);
+	public final Object visit(Expression e) {
+		return e.visit(this, null);
+	}
+
+	public void visitUndefined(Expression e) {
+		// TODO Auto-generated method stub
+
 	}
 
 	@Override
-	public final MozInst encodeCany(Cany p, MozInst next, MozInst failjump) {
+	public final Object visitCany(Cany p, Object a) {
 		this.visitCany(p);
 		return null;
 	}
 
 	@Override
-	public final MozInst encodeCbyte(Cbyte p, MozInst next, MozInst failjump) {
+	public final Object visitCbyte(Cbyte p, Object a) {
 		this.visitCbyte(p);
 		return null;
 	}
 
 	@Override
-	public final MozInst encodeCset(Cset p, MozInst next, MozInst failjump) {
+	public final Object visitCset(Cset p, Object a) {
 		this.visitCset(p);
 		return null;
 	}
 
 	@Override
-	public final MozInst encodeCmulti(Cmulti p, MozInst next, MozInst failjump) {
+	public final Object visitCmulti(Cmulti p, Object a) {
 		this.visitCmulti(p);
 		return null;
 	}
 
 	@Override
-	public final MozInst encodePfail(Expression p) {
+	public final Object visitPfail(Pfail p, Object a) {
 		this.visitPfail(p);
 		return null;
 	}
 
 	@Override
-	public final MozInst encodePoption(Poption p, MozInst next) {
+	public final Object visitPoption(Poption p, Object next) {
 		this.visitPoption(p);
 		return null;
 	}
 
 	@Override
-	public final MozInst encodePzero(Pzero p, MozInst next) {
+	public final Object visitPzero(Pzero p, Object next) {
 		this.visitPzero(p);
 		return null;
 	}
 
 	@Override
-	public final MozInst encodePone(Pone p, MozInst next, MozInst failjump) {
+	public final Object visitPone(Pone p, Object a) {
 		this.visitPone(p);
 		return null;
 	}
 
 	@Override
-	public final MozInst encodePand(Pand p, MozInst next, MozInst failjump) {
+	public final Object visitPand(Pand p, Object a) {
 		this.visitPand(p);
 		return null;
 	}
 
 	@Override
-	public final MozInst encodePnot(Pnot p, MozInst next, MozInst failjump) {
+	public final Object visitPnot(Pnot p, Object a) {
 		this.visitPnot(p);
 		return null;
 	}
 
 	@Override
-	public final MozInst encodePsequence(Psequence p, MozInst next, MozInst failjump) {
+	public final Object visitPsequence(Psequence p, Object a) {
 		this.visitPsequence(p);
 		return null;
 	}
 
 	@Override
-	public final MozInst encodePchoice(Pchoice p, MozInst next, MozInst failjump) {
+	public final Object visitPchoice(Pchoice p, Object a) {
 		this.visitPchoice(p);
 		return null;
 	}
 
 	@Override
-	public final MozInst encodeNonTerminal(NonTerminal p, MozInst next, MozInst failjump) {
+	public final Object visitNonTerminal(NonTerminal p, Object a) {
 		this.visitNonTerminal(p);
 		return null;
 	}
@@ -403,7 +402,7 @@ public abstract class ParserGenerator extends AbstractGenerator {
 	// AST Construction
 
 	@Override
-	public final MozInst encodeTdetree(Tdetree p, MozInst next, MozInst failjump) {
+	public final Object visitTdetree(Tdetree p, Object a) {
 		if (strategy.TreeConstruction) {
 			this.visitTdetree(p);
 		} else {
@@ -413,7 +412,7 @@ public abstract class ParserGenerator extends AbstractGenerator {
 	}
 
 	@Override
-	public final MozInst encodeTlink(Tlink p, MozInst next, MozInst failjump) {
+	public final Object visitTlink(Tlink p, Object a) {
 		if (strategy.TreeConstruction) {
 			this.visitTlink(p);
 		} else {
@@ -423,7 +422,7 @@ public abstract class ParserGenerator extends AbstractGenerator {
 	}
 
 	@Override
-	public final MozInst encodeTnew(Tnew p, MozInst next) {
+	public final Object visitTnew(Tnew p, Object next) {
 		if (strategy.TreeConstruction) {
 			this.visitTnew(p);
 		}
@@ -431,7 +430,7 @@ public abstract class ParserGenerator extends AbstractGenerator {
 	}
 
 	@Override
-	public final MozInst encodeTlfold(Tlfold p, MozInst next) {
+	public final Object visitTlfold(Tlfold p, Object next) {
 		if (strategy.TreeConstruction) {
 			this.visitTlfold(p);
 		}
@@ -439,7 +438,7 @@ public abstract class ParserGenerator extends AbstractGenerator {
 	}
 
 	@Override
-	public final MozInst encodeTcapture(Tcapture p, MozInst next) {
+	public final Object visitTcapture(Tcapture p, Object next) {
 		if (strategy.TreeConstruction) {
 			this.visitTcapture(p);
 		}
@@ -447,7 +446,7 @@ public abstract class ParserGenerator extends AbstractGenerator {
 	}
 
 	@Override
-	public final MozInst encodeTtag(Ttag p, MozInst next) {
+	public final Object visitTtag(Ttag p, Object next) {
 		if (strategy.TreeConstruction) {
 			this.visitTtag(p);
 		}
@@ -455,7 +454,7 @@ public abstract class ParserGenerator extends AbstractGenerator {
 	}
 
 	@Override
-	public final MozInst encodeTreplace(Treplace p, MozInst next) {
+	public final Object visitTreplace(Treplace p, Object next) {
 		if (strategy.TreeConstruction) {
 			this.visitTreplace(p);
 		}
@@ -463,74 +462,62 @@ public abstract class ParserGenerator extends AbstractGenerator {
 	}
 
 	@Override
-	public final MozInst encodeXblock(Xblock p, MozInst next, MozInst failjump) {
+	public final Object visitXblock(Xblock p, Object a) {
 		this.visitXblock(p);
 		return null;
 	}
 
 	@Override
-	public final MozInst encodeXlocal(Xlocal p, MozInst next, MozInst failjump) {
+	public final Object visitXlocal(Xlocal p, Object a) {
 		this.visitXlocal(p);
 		return null;
 	}
 
 	@Override
-	public final MozInst encodeXsymbol(Xsymbol p, MozInst next, MozInst failjump) {
+	public final Object visitXdef(Xsymbol p, Object a) {
 		this.visitXdef(p);
 		return null;
 	}
 
 	@Override
-	public final MozInst encodeXexists(Xexists p, MozInst next, MozInst failjump) {
+	public final Object visitXexists(Xexists p, Object a) {
 		this.visitXexists(p);
 		return null;
 	}
 
 	@Override
-	public final MozInst encodeXmatch(Xmatch p, MozInst next, MozInst failjump) {
+	public final Object visitXmatch(Xmatch p, Object a) {
 		this.visitXmatch(p);
 		return null;
 	}
 
 	@Override
-	public final MozInst encodeXis(Xis p, MozInst next, MozInst failjump) {
+	public final Object visitXis(Xis p, Object a) {
 		this.visitXis(p);
 		return null;
 	}
 
 	@Override
-	public final MozInst encodeXdefindent(Xdefindent p, MozInst next, MozInst failjump) {
-		this.visitXdefindent(p);
-		return null;
-	}
-
-	@Override
-	public final MozInst encodeXindent(Xindent p, MozInst next, MozInst failjump) {
+	public final Object visitXindent(Xindent p, Object a) {
 		this.visitXindent(p);
 		return null;
 	}
 
 	@Override
-	public final MozInst encodePempty(Expression p, MozInst next) {
+	public final Object visitPempty(Pempty p, Object a) {
 		this.visitPempty(p);
 		return null;
 	}
 
 	@Override
-	public final MozInst encodeXon(Xon p, MozInst next, MozInst failjump) {
+	public final Object visitXon(Xon p, Object a) {
 		this.visitXon(p);
 		return null;
 	}
 
 	@Override
-	public final MozInst encodeXif(Xif p, MozInst next, MozInst failjump) {
+	public final Object visitXif(Xif p, Object a) {
 		this.visitXif(p);
-		return null;
-	}
-
-	@Override
-	public final MozInst encodeExtension(Expression p, MozInst next, MozInst failjump) {
-		this.visitUndefined(p);
 		return null;
 	}
 

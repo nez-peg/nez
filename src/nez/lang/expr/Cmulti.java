@@ -4,8 +4,6 @@ import nez.ast.SourcePosition;
 import nez.lang.Expression;
 import nez.lang.ExpressionVisitor;
 import nez.lang.PossibleAcceptance;
-import nez.parser.AbstractGenerator;
-import nez.parser.moz.MozInst;
 import nez.util.StringUtils;
 
 public class Cmulti extends Char {
@@ -56,8 +54,4 @@ public class Cmulti extends Char {
 		return PossibleAcceptance.acceptByteChar(byteSeq[0] & 0xff, ch);
 	}
 
-	@Override
-	public MozInst encode(AbstractGenerator bc, MozInst next, MozInst failjump) {
-		return bc.encodeCmulti(this, next, failjump);
-	}
 }

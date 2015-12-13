@@ -5,8 +5,6 @@ import nez.ast.Symbol;
 import nez.lang.Expression;
 import nez.lang.ExpressionVisitor;
 import nez.lang.Visa;
-import nez.parser.AbstractGenerator;
-import nez.parser.moz.MozInst;
 
 public class Xsymbol extends Unary {
 	public final Symbol tableName;
@@ -65,11 +63,6 @@ public class Xsymbol extends Unary {
 	@Override
 	public short acceptByte(int ch) {
 		return this.inner.acceptByte(ch);
-	}
-
-	@Override
-	public MozInst encode(AbstractGenerator bc, MozInst next, MozInst failjump) {
-		return bc.encodeXsymbol(this, next, failjump);
 	}
 
 }

@@ -6,8 +6,6 @@ import nez.lang.ExpressionVisitor;
 import nez.lang.PossibleAcceptance;
 import nez.lang.Typestate;
 import nez.lang.Visa;
-import nez.parser.AbstractGenerator;
-import nez.parser.moz.MozInst;
 import nez.util.StringUtils;
 
 public class Treplace extends Term {
@@ -51,8 +49,4 @@ public class Treplace extends Term {
 		return v.visitTreplace(this, a);
 	}
 
-	@Override
-	public MozInst encode(AbstractGenerator bc, MozInst next, MozInst failjump) {
-		return bc.encodeTreplace(this, next);
-	}
 }

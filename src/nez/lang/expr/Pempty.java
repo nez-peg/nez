@@ -6,8 +6,6 @@ import nez.lang.ExpressionVisitor;
 import nez.lang.PossibleAcceptance;
 import nez.lang.Typestate;
 import nez.lang.Visa;
-import nez.parser.AbstractGenerator;
-import nez.parser.moz.MozInst;
 
 public class Pempty extends Term {
 	Pempty(SourcePosition s) {
@@ -44,8 +42,4 @@ public class Pempty extends Term {
 		return PossibleAcceptance.Unconsumed;
 	}
 
-	@Override
-	public MozInst encode(AbstractGenerator bc, MozInst next, MozInst failjump) {
-		return bc.encodePempty(this, next);
-	}
 }

@@ -1,9 +1,9 @@
 package nez.ext;
 
-import nez.parser.ParserGenerator;
+import nez.parser.GrammarWriter;
 
 public class Ccnez extends Cpeg {
-	protected ParserGenerator newParserGenerator(CommandContext config) {
+	protected GrammarWriter newParserGenerator(CommandContext config) {
 		return config.newParserGenerator(nez.parser.generator.NezGrammarGenerator.class);
 	}
 }

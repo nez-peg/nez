@@ -8,8 +8,6 @@ import nez.lang.PossibleAcceptance;
 import nez.lang.Production;
 import nez.lang.Typestate;
 import nez.lang.Visa;
-import nez.parser.AbstractGenerator;
-import nez.parser.moz.MozInst;
 import nez.util.Verbose;
 
 public class NonTerminal extends ExpressionCommons {
@@ -106,11 +104,6 @@ public class NonTerminal extends ExpressionCommons {
 			Verbose.debug(e + " at " + this.getLocalName());
 			return PossibleAcceptance.Accept;
 		}
-	}
-
-	@Override
-	public MozInst encode(AbstractGenerator bc, MozInst next, MozInst failjump) {
-		return bc.encodeNonTerminal(this, next, failjump);
 	}
 
 	public final NonTerminal newNonTerminal(String localName) {

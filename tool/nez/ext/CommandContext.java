@@ -7,7 +7,7 @@ import nez.io.SourceStream;
 import nez.lang.regex.RegularExpression;
 import nez.main.Command;
 import nez.main.ParserFactory;
-import nez.parser.ParserGenerator;
+import nez.parser.GrammarWriter;
 import nez.util.ConsoleUtils;
 import nez.util.ExtensionLoader;
 import nez.util.StringUtils;
@@ -93,11 +93,11 @@ public class CommandContext extends ParserFactory {
 		}
 	}
 
-	public final ParserGenerator newParserGenerator(Class<?> c) {
+	public final GrammarWriter newParserGenerator(Class<?> c) {
 		if (c != null) {
 			try {
-				ParserGenerator gen;
-				gen = (ParserGenerator) c.newInstance();
+				GrammarWriter gen;
+				gen = (GrammarWriter) c.newInstance();
 				gen.init(this.getStrategy(), outputDirName, this.getGrammarName());
 				return gen;
 			} catch (InstantiationException e) {

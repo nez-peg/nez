@@ -7,8 +7,6 @@ import nez.lang.ExpressionVisitor;
 import nez.lang.PossibleAcceptance;
 import nez.lang.Typestate;
 import nez.lang.Visa;
-import nez.parser.AbstractGenerator;
-import nez.parser.moz.MozInst;
 
 public class Tlfold extends Term {
 	Symbol label;
@@ -71,8 +69,4 @@ public class Tlfold extends Term {
 		return Typestate.OperationType;
 	}
 
-	@Override
-	public MozInst encode(AbstractGenerator bc, MozInst next, MozInst failjump) {
-		return bc.encodeTlfold(this, next);
-	}
 }

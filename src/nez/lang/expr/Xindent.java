@@ -1,16 +1,13 @@
 package nez.lang.expr;
 
 import nez.ast.SourcePosition;
-import nez.lang.Contextual;
 import nez.lang.Expression;
 import nez.lang.ExpressionVisitor;
 import nez.lang.PossibleAcceptance;
 import nez.lang.Typestate;
 import nez.lang.Visa;
-import nez.parser.AbstractGenerator;
-import nez.parser.moz.MozInst;
 
-public class Xindent extends Term implements Contextual {
+public class Xindent extends Term implements Expression.Contextual {
 	Xindent(SourcePosition s) {
 		super(s);
 	}
@@ -43,8 +40,4 @@ public class Xindent extends Term implements Contextual {
 		return PossibleAcceptance.Unconsumed;
 	}
 
-	@Override
-	public MozInst encode(AbstractGenerator bc, MozInst next, MozInst failjump) {
-		return bc.encodeXindent(this, next, failjump);
-	}
 }

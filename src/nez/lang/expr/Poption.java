@@ -6,8 +6,6 @@ import nez.lang.ExpressionVisitor;
 import nez.lang.PossibleAcceptance;
 import nez.lang.Typestate;
 import nez.lang.Visa;
-import nez.parser.AbstractGenerator;
-import nez.parser.moz.MozInst;
 
 public class Poption extends Unary {
 	Poption(SourcePosition s, Expression e) {
@@ -50,11 +48,6 @@ public class Poption extends Unary {
 	@Override
 	public short acceptByte(int ch) {
 		return PossibleAcceptance.acceptOption(this, ch);
-	}
-
-	@Override
-	public MozInst encode(AbstractGenerator bc, MozInst next, MozInst failjump) {
-		return bc.encodePoption(this, next);
 	}
 
 }

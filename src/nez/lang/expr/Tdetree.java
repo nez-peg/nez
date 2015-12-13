@@ -5,8 +5,6 @@ import nez.lang.Expression;
 import nez.lang.ExpressionVisitor;
 import nez.lang.Typestate;
 import nez.lang.Visa;
-import nez.parser.AbstractGenerator;
-import nez.parser.moz.MozInst;
 
 public class Tdetree extends Unary {
 	Tdetree(SourcePosition s, Expression inner) {
@@ -44,11 +42,6 @@ public class Tdetree extends Unary {
 	@Override
 	public short acceptByte(int ch) {
 		return this.inner.acceptByte(ch);
-	}
-
-	@Override
-	public MozInst encode(AbstractGenerator bc, MozInst next, MozInst failjump) {
-		return bc.encodeTdetree(this, next, failjump);
 	}
 
 }
