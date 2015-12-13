@@ -1,8 +1,9 @@
-package nez;
+package nez.main;
 
 import java.io.File;
 import java.io.IOException;
 
+import nez.Version;
 import nez.lang.Grammar;
 import nez.lang.GrammarFileLoader;
 import nez.lang.util.NezConstructor;

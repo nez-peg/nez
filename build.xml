@@ -54,7 +54,6 @@
 	<target name="lib" depends="build">
 		<jar jarfile="${LibName}.jar">
 			<fileset dir="${build_dir}" includes="**/*.class" />
-			<fileset dir="${source_dir}" includes="**/*.nez" />
 			<exclude name="**/*Test.class" />
 		</jar>
 	</target>
@@ -63,9 +62,8 @@
 		<jar jarfile="${BinaryName}.jar">
 			<fileset dir="${build_dir}" includes="**/*.class" />
 			<fileset dir="${tool_dir}"  includes="**/*.class" />
-			<fileset dir="${source_dir}" includes="**/*.nez" />
-            <fileset dir="${source_dir}" includes="**/*.properties" />
-			<fileset dir="." includes="lib/**" />
+			<fileset dir="${tool_dir}" includes="**/*.nez" />
+            <fileset dir="${tool_dir}" includes="**/*.properties" />
 			<exclude name="**/*Test.class" />
 			<manifest>
 				<attribute name="Main-Class" value="nez.main.Command" />
@@ -79,9 +77,8 @@
 			<fileset dir="${build_dir}" includes="**/*.class" />
 			<fileset dir="${tool_dir}"  includes="**/*.class" />
 			<fileset dir="${devel_dir}"  includes="**/*.class" />
-			<fileset dir="${source_dir}" includes="**/*.nez" />
-            <fileset dir="${source_dir}" includes="**/*.properties" />
-			<fileset dir="." includes="lib/**" />
+			<fileset dir="${tool_dir}" includes="**/*.nez" />
+            <fileset dir="${tool_dir}" includes="**/*.properties" />
 			<exclude name="**/*Test.class" />
 			<manifest>
 				<attribute name="Main-Class" value="nez.main.Command" />

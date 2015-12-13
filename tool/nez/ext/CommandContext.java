@@ -3,10 +3,10 @@ package nez.ext;
 import java.io.File;
 import java.io.IOException;
 
-import nez.ParserFactory;
 import nez.io.SourceStream;
 import nez.lang.regex.RegularExpression;
 import nez.main.Command;
+import nez.main.ParserFactory;
 import nez.parser.ParserGenerator;
 import nez.util.ConsoleUtils;
 import nez.util.ExtensionLoader;

@@ -1,6 +1,7 @@
 package nez.parser.moz;
 
 import java.io.IOException;
+import java.util.HashMap;
 
 import nez.ast.ASTMachine;
 import nez.ast.Symbol;
@@ -124,11 +125,6 @@ abstract class MozInstruction extends MozInst {
 		sb.append("L" + a.id);
 	}
 
-	protected void formatJumpTable(StringBuilder sb, MozInst[] a) {
-		sb.append(' ');
-		sb.append("...");
-	}
-
 	protected void formatByte(StringBuilder sb, int a) {
 		sb.append(' ');
 		sb.append(StringUtils.stringfyCharacter(a));
@@ -174,6 +170,69 @@ abstract class MozInstruction extends MozInst {
 	protected void formatTable(StringBuilder sb, Symbol a) {
 		sb.append(' ');
 		sb.append(a.getSymbol());
+	}
+
+	protected void formatJumpTable(StringBuilder sb, MozInst[] a) {
+		class ByteSets {
+			int size = 0;
+			int lastch = -1;
+			boolean allowEOT = false;
+			boolean[] set = new boolean[256];
+
+			void add(int ch) {
+				if (ch == 256) {
+					this.allowEOT = true;
+				} else {
+					this.size++;
+					this.lastch = ch;
+					this.set[ch] = true;
+				}
+			}
+		}
+
+		HashMap<Integer, ByteSets> sourcemap = new HashMap<Integer, ByteSets>();
+		for (int i = 0; i < a.length; i++) {
+			Integer id = new Integer(a[i].id);
+			if (sourcemap.containsKey(id)) {
+				sourcemap.get(id).add(i);
+			} else {
+				ByteSets source = new ByteSets();
+				source.add(i);
+				sourcemap.put(id, source);
+			}
+		}
+		Integer maxdest = null;
+		int maxfreq = 0;
+		for (Integer key : sourcemap.keySet()) {
+			int freq = sourcemap.get(key).size;
+			if (maxfreq <= freq) {
+				maxdest = key;
+				maxfreq = freq;
+			}
+		}
+		sourcemap.remove(maxdest);
+		sb.append(" :\n");
+		for (Integer key : sourcemap.keySet()) {
+			sb.append(" \t\t");
+			ByteSets sources = sourcemap.get(key);
+			if (sources.size > 1) {
+				sb.append(StringUtils.stringfyCharacterClass(sources.set));
+				if (sources.allowEOT) {
+					sb.append(", EOT");
+				}
+			} else if (sources.size == 1) {
+				sb.append(StringUtils.stringfyCharacter(sources.lastch));
+				if (sources.allowEOT) {
+					sb.append(", EOT");
+				}
+			} else if (sources.allowEOT) {
+				sb.append("EOT");
+			}
+			sb.append(" -> L" + key.intValue());
+			sb.append('\n');
+		}
+		sb.append(" \t\t");
+		sb.append("(default) -> L" + maxdest.intValue());
 	}
 
 }
