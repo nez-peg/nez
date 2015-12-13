@@ -9,7 +9,7 @@ import java.util.Map;
 import nez.parser.ParserStrategy;
 import nez.util.StringUtils;
 
-public class LiteralConstructor extends TreeVisitor implements Transducer {
+public class LiteralConstructor extends TreeVisitor implements Constructor {
 
 	protected ParserStrategy strategy;
 
