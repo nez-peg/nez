@@ -1,4 +1,4 @@
-package nez.parser.moz;
+package nez.junks;
 
 import java.util.HashMap;
 

@@ -32,7 +32,7 @@ public class Coverage {
 		return cov;
 	}
 
-	public final static MozInst encodeEnterCoverage(Production p, MozInst next) {
+	public final static MozInst visitEnterCoverage(Production p, MozInst next) {
 		if (covList != null) {
 			Coverage cov = getCoverage(p);
 			return new Icov(cov, next);
@@ -40,7 +40,7 @@ public class Coverage {
 		return next;
 	}
 
-	public final static MozInst encodeExitCoverage(Production p, MozInst next) {
+	public final static MozInst visitExitCoverage(Production p, MozInst next) {
 		if (covList != null) {
 			Coverage cov = getCoverage(p);
 			return new Icovx(cov, next);
@@ -193,15 +193,13 @@ class Icov extends MozInst {
 	}
 
 	@Override
-	protected
-	void encodeImpl(ByteCoder c) {
+	protected void encodeImpl(ByteCoder c) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public
-	MozInst exec(MozMachine sc) throws TerminationException {
+	public MozInst exec(MozMachine sc) throws TerminationException {
 		Coverage.enter(this.covPoint);
 		return this.next;
 	}
@@ -217,15 +215,13 @@ class Icovx extends MozInst {
 	}
 
 	@Override
-	protected
-	void encodeImpl(ByteCoder c) {
+	protected void encodeImpl(ByteCoder c) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public
-	MozInst exec(MozMachine sc) throws TerminationException {
+	public MozInst exec(MozMachine sc) throws TerminationException {
 		Coverage.exit(this.covPoint);
 		return this.next;
 	}

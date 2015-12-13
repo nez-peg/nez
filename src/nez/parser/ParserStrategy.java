@@ -10,7 +10,7 @@ import nez.ast.Tree;
 import nez.io.SourceStream;
 import nez.lang.Grammar;
 import nez.parser.moz.MozMachine;
-import nez.parser.moz.NezCompiler;
+import nez.parser.moz.MozCompiler;
 import nez.util.ConsoleUtils;
 import nez.util.Verbose;
 
@@ -227,7 +227,7 @@ public class ParserStrategy {
 		// MozCompiler mozCompiler = new MozCompiler(this);
 		// return mozCompiler.compile(pgrammar);
 		// }
-		NezCompiler bc = NezCompiler.newCompiler(this);
+		MozCompiler bc = MozCompiler.newCompiler(this);
 		return bc.compile(pgrammar);
 	}
 

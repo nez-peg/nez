@@ -1,103 +1,81 @@
 package nez.parser.moz;
 
-import java.util.Arrays;
 import java.util.HashMap;
 
 import nez.lang.Expression;
+import nez.lang.ExpressionVisitor;
 import nez.lang.Production;
+import nez.lang.expr.Cany;
+import nez.lang.expr.Cbyte;
+import nez.lang.expr.Cmulti;
+import nez.lang.expr.Cset;
 import nez.lang.expr.ExpressionCommons;
+import nez.lang.expr.NonTerminal;
+import nez.lang.expr.Pand;
+import nez.lang.expr.Pchoice;
+import nez.lang.expr.Pempty;
+import nez.lang.expr.Pfail;
+import nez.lang.expr.Pnot;
+import nez.lang.expr.Pone;
+import nez.lang.expr.Poption;
+import nez.lang.expr.Psequence;
+import nez.lang.expr.Pzero;
+import nez.lang.expr.Tcapture;
+import nez.lang.expr.Tdetree;
+import nez.lang.expr.Tlfold;
+import nez.lang.expr.Tlink;
+import nez.lang.expr.Tnew;
+import nez.lang.expr.Treplace;
+import nez.lang.expr.Ttag;
+import nez.lang.expr.Xblock;
+import nez.lang.expr.Xexists;
+import nez.lang.expr.Xif;
+import nez.lang.expr.Xindent;
+import nez.lang.expr.Xis;
+import nez.lang.expr.Xlocal;
+import nez.lang.expr.Xmatch;
+import nez.lang.expr.Xon;
+import nez.lang.expr.Xsymbol;
 import nez.parser.Coverage;
 import nez.parser.ParseFunc;
 import nez.parser.ParserGrammar;
 import nez.parser.ParserStrategy;
-import nez.parser.moz.MozCompiler.DefaultVisitor;
-import nez.util.StringUtils;
 import nez.util.UList;
 import nez.util.Verbose;
-import nez.util.VisitorMap;
 
-public class MozCompiler extends VisitorMap<DefaultVisitor> {
-	private ParserStrategy strategy;
-	private ParserGrammar gg = null;
-	private HashMap<String, ParseFunc> funcMap = null;
-	private HashMap<Call, ParseFunc> syncMap = new HashMap<Call, ParseFunc>();
-	private Production encodingproduction;
-	private MozInst commonFailure = new Fail(null, null);
+public class MozCompiler extends ExpressionVisitor {
 
-	public MozCompiler(ParserStrategy strategy) {
-		this.init(MozCompiler.class, new DefaultVisitor());
+	public final static MozCompiler newCompiler(ParserStrategy strategy) {
+		return new MozCompiler(strategy);
+	}
+
+	protected ParserStrategy strategy;
+	protected ParserGrammar gg = null;
+
+	MozCompiler(ParserStrategy strategy) {
+		this.gg = null;
 		this.strategy = strategy;
 	}
 
-	public MozCode compile(ParserGrammar gg) {
-		this.setGenerativeGrammar(gg);
-		long t = System.nanoTime();
-		UList<MozInst> codeList = new UList<MozInst>(new MozInst[64]);
-		for (Production p : gg) {
-			if (!p.isSymbolTable()) {
-				this.encodeProduction(codeList, p, new Ret(p.getExpression(), null));
-			}
-		}
-		for (MozInst inst : codeList) {
-			if (inst instanceof Call) {
-				if (((Call) inst).jump == null) {
-					((Call) inst).jump = labeling(inst.next);
-					inst.next = labeling((MozInst) syncMap.get(inst).getCompiled());
-				}
-			}
-		}
-		long t2 = System.nanoTime();
-		Verbose.printElapsedTime("CompilingTime", t, t2);
-		return new MozCode(gg, codeList, gg.memoPointList);
-	}
+	/* CodeMap */
 
-	private void encodeProduction(UList<MozInst> codeList, Production p, MozInst next) {
-		ParseFunc f = this.getParseFunc(p);
-		encodingproduction = p;
-		if (!f.isInlined()) {
-			next = Coverage.encodeEnterCoverage(p, next);
-		}
-		f.setCompiled(generate(f.getExpression(), next));
-		if (!f.isInlined()) {
-			f.setCompiled(Coverage.encodeEnterCoverage(p, (MozInst) f.getCompiled()));
-		}
-		MozInst block = new Label(p.getExpression(), (MozInst) f.getCompiled(), p.getLocalName());
-		this.layoutCode(codeList, block);
-	}
-
-	private final void layoutCode(UList<MozInst> codeList, MozInst inst) {
-		if (inst == null) {
-			return;
-		}
-		if (inst.id == -1) {
-			inst.id = codeList.size();
-			codeList.add(inst);
-			layoutCode(codeList, inst.next);
-			if (inst.next != null && inst.id + 1 != inst.next.id) {
-				this.labeling(inst.next);
-			}
-			if (inst instanceof Alt) {
-				layoutCode(codeList, ((Alt) inst).jump);
-			}
-			if (inst instanceof First) {
-				First match = (First) inst;
-				for (int ch = 0; ch < match.jumpTable.length; ch++) {
-					layoutCode(codeList, match.jumpTable[ch]);
-				}
-			}
-
-		}
-	}
-
-	public MozInst generate(Expression e, MozInst next) {
-		return find(e.getClass().getSimpleName()).accept(e, next);
-	}
-
-	public void setGenerativeGrammar(ParserGrammar gg) {
+	protected void setGenerativeGrammar(ParserGrammar gg) {
 		this.gg = gg;
 	}
 
-	private ParseFunc getParseFunc(Production p) {
+	private HashMap<String, ParseFunc> funcMap = null;
+
+	protected int getParseFuncSize() {
+		if (gg != null) {
+			return gg.size();
+		}
+		if (this.funcMap != null) {
+			return funcMap.size();
+		}
+		return 0;
+	}
+
+	protected ParseFunc getParseFunc(Production p) {
 		if (gg != null) {
 			ParseFunc f = gg.getParseFunc(p.getLocalName());
 			if (f == null) {
@@ -114,475 +92,580 @@ public class MozCompiler extends VisitorMap<DefaultVisitor> {
 		return null;
 	}
 
-	private MozInst labeling(MozInst inst) {
-		if (inst != null) {
-			inst.label = true;
+	public MozCode compile(ParserGrammar gg) {
+		this.setGenerativeGrammar(gg);
+		long t = System.nanoTime();
+		UList<MozInst> codeList = new UList<MozInst>(new MozInst[64]);
+		for (Production p : gg) {
+			if (!p.isSymbolTable()) {
+				this.visitProduction(codeList, p, new Moz.Ret(p));
+			}
 		}
-		return inst;
+		this.layoutCachedInstruction(codeList);
+		for (MozInst inst : codeList) {
+			if (inst instanceof Moz.Call) {
+				((Moz.Call) inst).sync();
+			}
+			// Verbose.debug("\t" + inst.id + "\t" + inst);
+		}
+		long t2 = System.nanoTime();
+		Verbose.printElapsedTime("CompilingTime", t, t2);
+		return new MozCode(gg, codeList, gg.memoPointList);
 	}
 
-	private Expression getInnerExpression(Expression p) {
+	private Production encodingProduction;
+
+	protected final Production getEncodingProduction() {
+		return this.encodingProduction;
+	}
+
+	private UList<MozInst> cachedInstruction;
+
+	protected void addCachedInstruction(MozInst inst) {
+		if (this.cachedInstruction == null) {
+			this.cachedInstruction = new UList<MozInst>(new MozInst[32]);
+		}
+		this.cachedInstruction.add(inst);
+	}
+
+	private void layoutCachedInstruction(UList<MozInst> codeList) {
+		if (this.cachedInstruction != null) {
+			for (MozInst inst : this.cachedInstruction) {
+				layoutCode(codeList, inst);
+			}
+		}
+	}
+
+	protected void visitProduction(UList<MozInst> codeList, Production p, Object next) {
+		ParseFunc f = this.getParseFunc(p);
+		// System.out.println("inline: " + f.inlining + " name: " +
+		// p.getLocalName());
+		encodingProduction = p;
+		if (!f.isInlined()) {
+			next = Coverage.visitExitCoverage(p, (MozInst) next);
+		}
+		f.setCompiled(visit(f.getExpression(), (MozInst) next, null/* failjump */));
+		if (!f.isInlined()) {
+			f.setCompiled(Coverage.visitEnterCoverage(p, (MozInst) f.getCompiled()));
+		}
+		MozInst block = new Moz.Label(p, (MozInst) f.getCompiled());
+		this.layoutCode(codeList, block);
+	}
+
+	public final void layoutCode(UList<MozInst> codeList, MozInst inst) {
+		if (inst == null) {
+			return;
+		}
+		if (inst.id == -1) {
+			inst.id = codeList.size();
+			codeList.add(inst);
+			layoutCode(codeList, inst.next);
+			if (inst.next != null && inst.id + 1 != inst.next.id) {
+				MozInst.labeling(inst.next);
+			}
+			layoutCode(codeList, inst.branch());
+			if (inst instanceof Moz.First) {
+				Moz.First match = (Moz.First) inst;
+				for (int ch = 0; ch < match.jumpTable.length; ch++) {
+					layoutCode(codeList, match.jumpTable[ch]);
+				}
+			}
+			// visit(inst.branch2());
+		}
+	}
+
+	protected final MozInst commonFailure = new Moz.Fail(null);
+
+	// encoding
+
+	public MozInst visit(Expression e, Object next) {
+		return (MozInst) e.visit(this, next);
+	}
+
+	public MozInst visit(Expression e, MozInst next) {
+		return (MozInst) e.visit(this, next);
+	}
+
+	public MozInst visit(Expression e, MozInst next, Object failjump) {
+		return (MozInst) e.visit(this, next);
+	}
+
+	@Override
+	public MozInst visitPempty(Pempty p, Object next) {
+		return (MozInst) next;
+	}
+
+	public MozInst fail(Expression e) {
+		return this.commonFailure;
+	}
+
+	@Override
+	public MozInst visitPfail(Pfail p, Object next) {
+		return this.commonFailure;
+	}
+
+	@Override
+	public MozInst visitCany(Cany p, Object next) {
+		return new Moz.Any(p, (MozInst) next);
+	}
+
+	@Override
+	public MozInst visitCbyte(Cbyte p, Object next) {
+		return new Moz.Byte(p, (MozInst) next);
+	}
+
+	@Override
+	public MozInst visitCset(Cset p, Object next) {
+		return new Moz.Set(p, (MozInst) next);
+	}
+
+	@Override
+	public MozInst visitCmulti(Cmulti p, Object next) {
+		return new Moz.Str(p, (MozInst) next);
+	}
+
+	public MozInst visitUnnPoption(Poption p, Object next) {
+		MozInst pop = new Moz.Succ(p, (MozInst) next);
+		return new Moz.Alt(p, (MozInst) next, visit(p.get(0), pop, next));
+	}
+
+	public MozInst visitUnnPzero(Pzero p, Object next) {
+		// Expression skip = p.possibleInfiniteLoop ? new Moz.Skip(p) : new
+		// ISkip(p);
+		MozInst skip = new Moz.Skip(p);
+		MozInst start = visit(p.get(0), skip, next/* FIXME */);
+		skip.next = start;
+		return new Moz.Alt(p, (MozInst) next, start);
+	}
+
+	@Override
+	public MozInst visitPone(Pone p, Object next) {
+		return visit(p.get(0), this.visitPzero(p, next));
+	}
+
+	@Override
+	public MozInst visitPand(Pand p, Object next) {
+		MozInst inner = visit(p.get(0), new Moz.Back(p, (MozInst) next));
+		return new Moz.Pos(p, inner);
+	}
+
+	public MozInst visitUnnPnot(Pnot p, Object next) {
+		MozInst fail = new Moz.Succ(p, new Moz.Fail(p));
+		return new Moz.Alt(p, (MozInst) next, visit(p.get(0), fail));
+	}
+
+	@Override
+	public MozInst visitPsequence(Psequence p, Object next) {
+		// return visit(p.get(0), visit(p.get(1), (MozInst)next));
+		Object nextStart = next;
+		for (int i = p.size() - 1; i >= 0; i--) {
+			Expression e = p.get(i);
+			nextStart = visit(e, nextStart);
+		}
+		return (MozInst) nextStart;
+	}
+
+	public MozInst visitUnnPchoice(Pchoice p, Object next) {
+		Object nextChoice = visit(p.get(p.size() - 1), next);
+		for (int i = p.size() - 2; i >= 0; i--) {
+			Expression e = p.get(i);
+			nextChoice = new Moz.Alt(e, (MozInst) nextChoice, visit(e, new Moz.Succ(e, (MozInst) next), nextChoice));
+		}
+		return (MozInst) nextChoice;
+	}
+
+	public MozInst visitUnnNonTerminal(NonTerminal n, Object next) {
+		Production p = n.getProduction();
+		ParseFunc f = this.getParseFunc(p);
+		return new Moz.Call(f, p.getLocalName(), (MozInst) next);
+	}
+
+	// AST Construction
+
+	public MozInst visitUnnTlink(Tlink p, Object next) {
+		if (this.strategy.TreeConstruction) {
+			next = new Moz.TPop(p, (MozInst) next);
+			next = visit(p.get(0), next);
+			return new Moz.TPush(p, (MozInst) next);
+		}
+		return visit(p.get(0), next);
+	}
+
+	@Override
+	public MozInst visitTnew(Tnew p, Object next) {
+		if (this.strategy.TreeConstruction) {
+			return new Moz.New(p, (MozInst) next);
+		}
+		return (MozInst) next;
+	}
+
+	@Override
+	public MozInst visitTlfold(Tlfold p, Object next) {
+		if (this.strategy.TreeConstruction) {
+			return new Moz.TLeftFold(p, (MozInst) next);
+		}
+		return (MozInst) next;
+	}
+
+	@Override
+	public MozInst visitTcapture(Tcapture p, Object next) {
+		if (this.strategy.TreeConstruction) {
+			return new Moz.Capture(p, (MozInst) next);
+		}
+		return (MozInst) next;
+	}
+
+	@Override
+	public MozInst visitTtag(Ttag p, Object next) {
+		if (this.strategy.TreeConstruction) {
+			return new Moz.Tag(p, (MozInst) next);
+		}
+		return (MozInst) next;
+	}
+
+	@Override
+	public MozInst visitTreplace(Treplace p, Object next) {
+		if (this.strategy.TreeConstruction) {
+			return new Moz.Replace(p, (MozInst) next);
+		}
+		return (MozInst) next;
+	}
+
+	@Override
+	public MozInst visitXblock(Xblock p, Object next) {
+		next = new Moz.EndSymbolScope(p, (MozInst) next);
+		next = visit(p.get(0), next);
+		return new Moz.BeginSymbolScope(p, (MozInst) next);
+	}
+
+	@Override
+	public MozInst visitXlocal(Xlocal p, Object next) {
+		next = new Moz.EndSymbolScope(p, (MozInst) next);
+		next = visit(p.get(0), next);
+		return new Moz.BeginLocalScope(p, (MozInst) next);
+	}
+
+	@Override
+	public MozInst visitXdef(Xsymbol p, Object next) {
+		return new Moz.Pos(p, visit(p.get(0), new Moz.DefSymbol(p, (MozInst) next)));
+	}
+
+	@Override
+	public MozInst visitXexists(Xexists p, Object next) {
+		String symbol = p.getSymbol();
+		if (symbol == null) {
+			return new Moz.Exists(p, (MozInst) next);
+		} else {
+			return new Moz.ExistsSymbol(p, (MozInst) next);
+		}
+	}
+
+	@Override
+	public MozInst visitXmatch(Xmatch p, Object next) {
+		return new Moz.Match(p, (MozInst) next);
+	}
+
+	@Override
+	public MozInst visitXis(Xis p, Object next) {
+		if (p.is) {
+			return new Moz.Pos(p, visit(p.get(0), new Moz.IsSymbol(p, (MozInst) next)));
+		} else {
+			return new Moz.Pos(p, visit(p.get(0), new Moz.IsaSymbol(p, (MozInst) next)));
+		}
+	}
+
+	@Override
+	public MozInst visitTdetree(Tdetree p, Object next) {
+		return (MozInst) next;
+	}
+
+	/* Optimization */
+
+	protected void optimizedUnary(Expression p) {
+		Verbose.noticeOptimize("specialization", p);
+	}
+
+	protected void optimizedInline(Production p) {
+		Verbose.noticeOptimize("inlining", p.getExpression());
+	}
+
+	public final Expression getInnerExpression(Expression p) {
 		Expression inner = ExpressionCommons.resolveNonTerminal(p.get(0));
-		if (strategy.Ostring && inner instanceof nez.lang.expr.Psequence) {
-			inner = ((nez.lang.expr.Psequence) inner).toMultiCharSequence();
+		if (strategy.Ostring && inner instanceof Psequence) {
+			inner = ((Psequence) inner).toMultiCharSequence();
+			// System.out.println("Stringfy:" + inner);
 		}
 		return inner;
 	}
 
-	private void optimizedUnary(Expression p) {
-		Verbose.noticeOptimize("specialization", p);
-	}
-
-	private void optimizedInline(Production p) {
-		Verbose.noticeOptimize("inlining", p.getExpression());
-	}
-
-	private final Production getEncodingProduction() {
-		return this.encodingproduction;
-	}
-
-	public class DefaultVisitor {
-		public MozInst accept(Expression e, MozInst next) {
-			return next;
+	@Override
+	public final MozInst visitPoption(Poption p, Object next) {
+		if (strategy.Olex) {
+			Expression inner = getInnerExpression(p);
+			if (inner instanceof Cbyte) {
+				this.optimizedUnary(p);
+				return new Moz.OByte((Cbyte) inner, (MozInst) next);
+			}
+			if (inner instanceof Cset) {
+				this.optimizedUnary(p);
+				return new Moz.OSet((Cset) inner, (MozInst) next);
+			}
+			if (inner instanceof Cmulti) {
+				this.optimizedUnary(p);
+				return new Moz.OStr((Cmulti) inner, (MozInst) next);
+			}
 		}
-		/**
-		 * public boolean accept(Expression e, String a) { return false; }
-		 **/
+		return visitUnnPoption(p, next);
 	}
 
-	public class NonTerminal extends DefaultVisitor {
-		@Override
-		public MozInst accept(Expression e, MozInst next) {
-			nez.lang.expr.NonTerminal n = (nez.lang.expr.NonTerminal) e;
-			Production p = n.getProduction();
-			if (p == null) {
-				Verbose.debug("[PANIC] unresolved: " + n.getLocalName() + " ***** ");
-				return next;
+	@Override
+	public final MozInst visitPzero(Pzero p, Object next) {
+		if (strategy.Olex) {
+			Expression inner = getInnerExpression(p);
+			if (inner instanceof Cbyte) {
+				this.optimizedUnary(p);
+				return new Moz.RByte((Cbyte) inner, (MozInst) next);
 			}
-			ParseFunc f = getParseFunc(p);
-			if (f.isInlined()) {
-				optimizedInline(p);
-				return generate(f.getExpression(), next);
+			if (inner instanceof Cset) {
+				this.optimizedUnary(p);
+				return new Moz.RSet((Cset) inner, (MozInst) next);
 			}
+			if (inner instanceof Cmulti) {
+				this.optimizedUnary(p);
+				return new Moz.RStr((Cmulti) inner, (MozInst) next);
+			}
+		}
+		return visitUnnPzero(p, next);
+	}
+
+	@Override
+	public final MozInst visitPnot(Pnot p, Object next) {
+		if (strategy.Olex) {
+			Expression inner = getInnerExpression(p);
+			if (inner instanceof Cset) {
+				this.optimizedUnary(p);
+				return new Moz.NSet((Cset) inner, (MozInst) next);
+			}
+			if (inner instanceof Cbyte) {
+				this.optimizedUnary(p);
+				return new Moz.NByte((Cbyte) inner, (MozInst) next);
+			}
+			if (inner instanceof Cany) {
+				this.optimizedUnary(p);
+				return new Moz.NAny(inner, ((Cany) inner).isBinary(), (MozInst) next);
+			}
+			if (inner instanceof Cmulti) {
+				this.optimizedUnary(p);
+				return new Moz.NStr((Cmulti) inner, (MozInst) next);
+			}
+		}
+		return visitUnnPnot(p, next);
+	}
+
+	@Override
+	public final MozInst visitPchoice(Pchoice p, Object next) {
+		if (/* strategy.isEnabled("Ofirst", Strategy.Ofirst) && */p.predictedCase != null) {
+			if (p.isTrieTree && strategy.Odfa) {
+				return visitDFirstChoice(p, next);
+			}
+			return visitFirstChoice(p, next);
+		}
+		return visitUnnPchoice(p, next);
+	}
+
+	private final MozInst visitFirstChoice(Pchoice choice, Object next) {
+		MozInst[] compiled = new MozInst[choice.firstInners.length];
+		// Verbose.debug("TrieTree: " + choice.isTrieTree + " " + choice);
+		Moz.First dispatch = new Moz.First(choice, commonFailure);
+		for (int ch = 0; ch < choice.predictedCase.length; ch++) {
+			Expression predicted = choice.predictedCase[ch];
+			if (predicted == null) {
+				continue;
+			}
+			int index = findIndex(choice, predicted);
+			MozInst inst = compiled[index];
+			if (inst == null) {
+				// System.out.println("creating '" + (char)ch + "'("+ch+"): " +
+				// e);
+				if (predicted instanceof Pchoice) {
+					assert (((Pchoice) predicted).predictedCase == null);
+					inst = visitUnnPchoice(choice, next);
+				} else {
+					inst = visit(predicted, next);
+				}
+				compiled[index] = inst;
+			}
+			dispatch.setJumpTable(ch, inst);
+		}
+		return dispatch;
+	}
+
+	private final MozInst visitDFirstChoice(Pchoice choice, Object next) {
+		MozInst[] compiled = new MozInst[choice.firstInners.length];
+		Moz.DFirst dispatch = new Moz.DFirst(choice, commonFailure);
+		for (int ch = 0; ch < choice.predictedCase.length; ch++) {
+			Expression predicted = choice.predictedCase[ch];
+			if (predicted == null) {
+				continue;
+			}
+			int index = findIndex(choice, predicted);
+			MozInst inst = compiled[index];
+			if (inst == null) {
+				Expression next2 = predicted.getNext();
+				if (next2 != null) {
+					inst = visit(next2, next);
+				} else {
+					inst = (MozInst) next;
+				}
+				compiled[index] = inst;
+			}
+			dispatch.setJumpTable(ch, inst);
+		}
+		return dispatch;
+	}
+
+	private int findIndex(Pchoice choice, Expression e) {
+		for (int i = 0; i < choice.firstInners.length; i++) {
+			if (choice.firstInners[i] == e) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	private final MozInst visitPredicatedChoice0(Pchoice choice, Object next) {
+		HashMap<Integer, MozInst> m = new HashMap<Integer, MozInst>();
+		Moz.First dispatch = new Moz.First(choice, commonFailure);
+		for (int ch = 0; ch < choice.predictedCase.length; ch++) {
+			Expression predicted = choice.predictedCase[ch];
+			if (predicted == null) {
+				continue;
+			}
+			int id = predictId(choice.predictedCase, ch, predicted);
+			MozInst inst = m.get(id);
+			if (inst == null) {
+				// System.out.println("creating '" + (char)ch + "'("+ch+"): " +
+				// e);
+				if (predicted instanceof Pchoice) {
+					assert (((Pchoice) predicted).predictedCase == null);
+					inst = visitUnnPchoice(choice, next);
+				} else {
+					inst = visit(predicted, next);
+				}
+				m.put(id, inst);
+			}
+			dispatch.setJumpTable(ch, inst);
+		}
+		return dispatch;
+	}
+
+	private int predictId(Expression[] predictedCase, int max, Expression predicted) {
+		// if (predicted.isInterned()) {
+		// return predicted.getId();
+		// }
+		for (int i = 0; i < max; i++) {
+			if (predictedCase[i] != null && predicted.equalsExpression(predictedCase[i])) {
+				return i;
+			}
+		}
+		return max;
+	}
+
+	// public final MozInst visitUnoptimizedChoice(Pchoice p, Object next) {
+	// return super.visitPchoice(p, next);
+	// }
+
+	@Override
+	public final MozInst visitNonTerminal(NonTerminal n, Object next) {
+		Production p = n.getProduction();
+		if (p == null) {
+			Verbose.debug("[PANIC] unresolved: " + n.getLocalName() + " ***** ");
+			return (MozInst) next;
+		}
+		ParseFunc f = this.getParseFunc(p);
+		if (f.isInlined()) {
+			this.optimizedInline(p);
+			return visit(f.getExpression(), next);
+		}
+		if (f.getMemoPoint() != null) {
+			if (!strategy.TreeConstruction || p.isNoNTreeConstruction()) {
+				if (Verbose.PackratParsing) {
+					Verbose.println("memoize: " + n.getLocalName() + " at " + this.getEncodingProduction().getLocalName());
+				}
+				return memoize(n, f, next);
+			}
+		}
+		return new Moz.Call(f, n.getLocalName(), (MozInst) next);
+	}
+
+	private MozInst memoize(NonTerminal n, ParseFunc f, Object next) {
+		MozInst inside = new Moz.Memo(n, f.getMemoPoint(), f.isStateful(), (MozInst) next);
+		inside = new Moz.Call(f, n.getLocalName(), inside);
+		inside = new Moz.Alt(n, new Moz.MemoFail(n, f.isStateful(), f.getMemoPoint()), inside);
+		return new Moz.Lookup(n, f.getMemoPoint(), f.isStateful(), inside, (MozInst) next);
+	}
+
+	// private Instruction memoize2(NonTerminal n, ParseFunc f, Instruction
+	// next) {
+	// if (f.compiled_memo == null) {
+	// f.compiled_memo = memoize(n, f, new Moz.Ret(n));
+	// this.addCachedInstruction(f.compiled_memo);
+	// }
+	// return new Moz.Call(f, n.getLocalName(), f.compiled_memo, (MozInst)next);
+	// }
+
+	// AST Construction
+
+	@Override
+	public final MozInst visitTlink(Tlink p, Object next) {
+		if (strategy.TreeConstruction && p.get(0) instanceof NonTerminal) {
+			NonTerminal n = (NonTerminal) p.get(0);
+			ParseFunc f = this.getParseFunc(n.getProduction());
 			if (f.getMemoPoint() != null) {
-				if (!strategy.TreeConstruction || p.isNoNTreeConstruction()) {
-					if (Verbose.PackratParsing) {
-						Verbose.println("memoize: " + n.getLocalName() + " at " + getEncodingProduction().getLocalName());
-					}
-					MozInst inside = new Memo(n, next, f.isStateful(), f.getMemoPoint().id);
-					inside = new Call(null, inside, null, n.getLocalName());
-					syncMap.put((Call) inside, f);
-					inside = new Alt(n, inside, new MemoFail(n, null, f.isStateful(), f.getMemoPoint().id));
-					return new Lookup(n, inside, f.isStateful(), f.getMemoPoint().id, next);
+				if (Verbose.PackratParsing) {
+					Verbose.println("memoize: @" + n.getLocalName() + " at " + this.getEncodingProduction().getLocalName());
 				}
-			}
-			Call call = new Call(null, next, null, n.getLocalName());
-			syncMap.put(call, f);
-			return call;
-		}
-	}
-
-	public class Pempty extends DefaultVisitor {
-		@Override
-		public MozInst accept(Expression e, MozInst next) {
-			return next;
-		}
-	}
-
-	public class Pfail extends DefaultVisitor {
-		@Override
-		public MozInst accept(Expression e, MozInst next) {
-			return commonFailure;
-		}
-	}
-
-	public class Cbyte extends DefaultVisitor {
-		@Override
-		public MozInst accept(Expression e, MozInst next) {
-			nez.lang.expr.Cbyte p = (nez.lang.expr.Cbyte) e;
-			return new Byte(p, next, p.byteChar);
-		}
-	}
-
-	public class Cany extends DefaultVisitor {
-		@Override
-		public MozInst accept(Expression e, MozInst next) {
-			return new Any(e, next);
-		}
-	}
-
-	public class Cset extends DefaultVisitor {
-		@Override
-		public MozInst accept(Expression e, MozInst next) {
-			nez.lang.expr.Cset p = (nez.lang.expr.Cset) e;
-			return new Set(p, next, p.byteMap);
-		}
-	}
-
-	public class Cmulti extends DefaultVisitor {
-		@Override
-		public MozInst accept(Expression e, MozInst next) {
-			nez.lang.expr.Cmulti p = (nez.lang.expr.Cmulti) e;
-			return new Str(p, next, p.byteSeq);
-		}
-	}
-
-	public class Pchoice extends DefaultVisitor {
-		@Override
-		public MozInst accept(Expression e, MozInst next) {
-			nez.lang.expr.Pchoice p = (nez.lang.expr.Pchoice) e;
-			if (p.predictedCase != null) {
-				if (p.isTrieTree && strategy.Odfa) {
-					return encodeDFirstChoice(p, next);
-				}
-				return encodeFirstChoice(p, next);
-			}
-			return encodePchoice(p, next);
-		}
-
-		private MozInst encodePchoice(nez.lang.expr.Pchoice p, MozInst next) {
-			MozInst nextChoice = generate(p.get(p.size() - 1), next);
-			for (int i = p.size() - 2; i >= 0; i--) {
-				Expression e = p.get(i);
-				nextChoice = new Alt(e, generate(e, new Succ(e, next)), nextChoice);
-			}
-			return nextChoice;
-		}
-
-		private MozInst encodeFirstChoice(nez.lang.expr.Pchoice choice, MozInst next) {
-			MozInst[] compiled = new MozInst[choice.firstInners.length];
-			MozInst[] jumpTable = new MozInst[257];
-			Arrays.fill(jumpTable, commonFailure);
-			for (int ch = 0; ch < choice.predictedCase.length; ch++) {
-				Expression predicted = choice.predictedCase[ch];
-				if (predicted == null) {
-					continue;
-				}
-				int index = findIndex(choice, predicted);
-				MozInst inst = compiled[index];
-				if (inst == null) {
-					if (predicted instanceof nez.lang.expr.Pchoice) {
-						assert (((nez.lang.expr.Pchoice) predicted).predictedCase == null);
-						inst = encodePchoice(choice, next);
-					} else {
-						inst = generate(predicted, next);
-					}
-					compiled[index] = inst;
-				}
-				jumpTable[ch] = labeling(inst);
-			}
-			return new First(choice, commonFailure, jumpTable);
-		}
-
-		private MozInst encodeDFirstChoice(nez.lang.expr.Pchoice choice, MozInst next) {
-			MozInst[] compiled = new MozInst[choice.firstInners.length];
-			MozInst[] jumpTable = new MozInst[257];
-			Arrays.fill(jumpTable, commonFailure);
-			for (int ch = 0; ch < choice.predictedCase.length; ch++) {
-				Expression predicted = choice.predictedCase[ch];
-				if (predicted == null) {
-					continue;
-				}
-				int index = findIndex(choice, predicted);
-				MozInst inst = compiled[index];
-				if (inst == null) {
-					Expression next2 = predicted.getNext();
-					if (next2 != null) {
-						inst = generate(next2, next);
-					} else {
-						inst = next;
-					}
-					compiled[index] = inst;
-				}
-				jumpTable[ch] = labeling(inst);
-			}
-			return new DFirst(choice, commonFailure, jumpTable);
-		}
-
-		private int findIndex(nez.lang.expr.Pchoice choice, Expression e) {
-			for (int i = 0; i < choice.firstInners.length; i++) {
-				if (choice.firstInners[i] == e) {
-					return i;
-				}
-			}
-			return -1;
-		}
-	}
-
-	public class Psequence extends DefaultVisitor {
-		@Override
-		public MozInst accept(Expression e, MozInst next) {
-			nez.lang.expr.Psequence p = (nez.lang.expr.Psequence) e;
-			if (strategy.Ostring) {
-				Expression inner = p.toMultiCharSequence();
-				if (inner instanceof nez.lang.expr.Cmulti) {
-					Cmulti cmulti = new Cmulti();
-					return cmulti.accept(inner, next);
-				}
-			}
-			MozInst nextStart = next;
-			for (int i = p.size() - 1; i >= 0; i--) {
-				Expression inner = p.get(i);
-				nextStart = generate(inner, nextStart);
-			}
-			return nextStart;
-		}
-	}
-
-	public class Poption extends DefaultVisitor {
-		@Override
-		public MozInst accept(Expression e, MozInst next) {
-			if (strategy.Olex) {
-				Expression inner = getInnerExpression(e);
-				if (inner instanceof nez.lang.expr.Cbyte) {
-					optimizedUnary(e);
-					return new OByte(inner, next, ((nez.lang.expr.Cbyte) inner).byteChar);
-				}
-				if (inner instanceof nez.lang.expr.Cset) {
-					optimizedUnary(e);
-					return new OSet(inner, next, ((nez.lang.expr.Cset) inner).byteMap);
-				}
-				if (inner instanceof nez.lang.expr.Cmulti) {
-					optimizedUnary(e);
-					return new OStr(inner, next, ((nez.lang.expr.Cmulti) inner).byteSeq);
-				}
-			}
-			MozInst pop = new Succ(e, next);
-			return new Alt(e, generate(e.get(0), pop), next);
-		}
-	}
-
-	public class Pzero extends DefaultVisitor {
-		@Override
-		public MozInst accept(Expression e, MozInst next) {
-			if (strategy.Olex) {
-				Expression inner = getInnerExpression(e);
-				if (inner instanceof nez.lang.expr.Cbyte) {
-					optimizedUnary(e);
-					return new RByte(inner, next, ((nez.lang.expr.Cbyte) inner).byteChar);
-				}
-				if (inner instanceof nez.lang.expr.Cset) {
-					optimizedUnary(e);
-					return new RSet(inner, next, ((nez.lang.expr.Cset) inner).byteMap);
-				}
-				if (inner instanceof nez.lang.expr.Cmulti) {
-					optimizedUnary(e);
-					return new RStr(inner, next, ((nez.lang.expr.Cmulti) inner).byteSeq);
-				}
-			}
-			MozInst skip = new Skip(e, null);
-			MozInst start = generate(e.get(0), skip);
-			skip.next = start;
-			return new Alt(e, start, next);
-		}
-	}
-
-	public class Pone extends DefaultVisitor {
-		@Override
-		public MozInst accept(Expression e, MozInst next) {
-			Pzero pzero = new Pzero();
-			return generate(e.get(0), pzero.accept(e, next));
-		}
-	}
-
-	public class Pand extends DefaultVisitor {
-		@Override
-		public MozInst accept(Expression e, MozInst next) {
-			MozInst inner = generate(e.get(0), new Back(e, next));
-			return new Pos(e, inner);
-		}
-	}
-
-	public class Pnot extends DefaultVisitor {
-		@Override
-		public MozInst accept(Expression e, MozInst next) {
-			if (strategy.Olex) {
-				Expression inner = getInnerExpression(e);
-				if (inner instanceof nez.lang.expr.Cset) {
-					optimizedUnary(e);
-					return new NSet(inner, next, ((nez.lang.expr.Cset) inner).byteMap);
-				}
-				if (inner instanceof nez.lang.expr.Cbyte) {
-					optimizedUnary(e);
-					return new NByte(inner, next, ((nez.lang.expr.Cbyte) inner).byteChar);
-				}
-				if (inner instanceof nez.lang.expr.Cany) {
-					optimizedUnary(e);
-					return new NAny(inner, next);
-				}
-				if (inner instanceof nez.lang.expr.Cmulti) {
-					optimizedUnary(e);
-					return new NStr(inner, next, ((nez.lang.expr.Cmulti) inner).byteSeq);
-				}
-			}
-			MozInst fail = new Succ(e, new Fail(e, null));
-			return new Alt(e, generate(e.get(0), fail), next);
-		}
-	}
-
-	public class Tnew extends DefaultVisitor {
-		@Override
-		public MozInst accept(Expression e, MozInst next) {
-			if (strategy.TreeConstruction) {
-				nez.lang.expr.Tnew p = (nez.lang.expr.Tnew) e;
-				return new TNew(p, next, p.shift);
-			}
-			return next;
-		}
-	}
-
-	public class Tlink extends DefaultVisitor {
-		@Override
-		public MozInst accept(Expression e, MozInst next) {
-			nez.lang.expr.Tlink p = (nez.lang.expr.Tlink) e;
-			if (strategy.TreeConstruction && p.get(0) instanceof nez.lang.expr.NonTerminal) {
-				nez.lang.expr.NonTerminal n = (nez.lang.expr.NonTerminal) p.get(0);
-				ParseFunc f = getParseFunc(n.getProduction());
-				if (f.getMemoPoint() != null) {
-					if (Verbose.PackratParsing) {
-						Verbose.println("memoize: @" + n.getLocalName() + "at" + getEncodingProduction().getLocalName());
-					}
-					MozInst inside = new TMemo(p, next, f.isStateful(), f.getMemoPoint().id);
-					inside = new TCommit(p, inside, p.getLabel());
-					inside = new Call(null, inside, null, n.getLocalName());
-					syncMap.put((Call) inside, f);
-					inside = new TStart(p, inside);
-					inside = new Alt(p, inside, new MemoFail(p, null, f.isStateful(), f.getMemoPoint().id));
-					return new TLookup(p, inside, f.isStateful(), f.getMemoPoint().id, next, p.getLabel());
-				}
-			}
-			if (strategy.TreeConstruction) {
-				next = new TPop(p, next, p.getLabel());
-				next = generate(p.get(0), next);
-				return new TPush(p, next);
-			}
-			return generate(e.get(0), next);
-		}
-	}
-
-	public class Tlfold extends DefaultVisitor {
-		@Override
-		public MozInst accept(Expression e, MozInst next) {
-			if (strategy.TreeConstruction) {
-				nez.lang.expr.Tlfold p = (nez.lang.expr.Tlfold) e;
-				return new TLeftFold(p, next, p.shift, p.getLabel());
-			}
-			return next;
-		}
-	}
-
-	public class Ttag extends DefaultVisitor {
-		@Override
-		public MozInst accept(Expression e, MozInst next) {
-			if (strategy.TreeConstruction) {
-				nez.lang.expr.Ttag p = (nez.lang.expr.Ttag) e;
-				return new TTag(p, next, p.tag);
-			}
-			return next;
-		}
-	}
-
-	public class Treplace extends DefaultVisitor {
-		@Override
-		public MozInst accept(Expression e, MozInst next) {
-			if (strategy.TreeConstruction) {
-				nez.lang.expr.Treplace p = (nez.lang.expr.Treplace) e;
-				byte[] utf8 = p.value.getBytes();
-				return new TReplace(p, next, utf8);
-			}
-			return next;
-		}
-	}
-
-	public class Tcapture extends DefaultVisitor {
-		@Override
-		public MozInst accept(Expression e, MozInst next) {
-			if (strategy.TreeConstruction) {
-				nez.lang.expr.Tcapture p = (nez.lang.expr.Tcapture) e;
-				return new TCapture(p, next, p.shift);
-			}
-			return next;
-		}
-	}
-
-	public class Tdetree extends DefaultVisitor {
-		@Override
-		public MozInst accept(Expression e, MozInst next) {
-			return next;
-		}
-	}
-
-	public class Xblock extends DefaultVisitor {
-		@Override
-		public MozInst accept(Expression e, MozInst next) {
-			next = new SClose(e, next);
-			next = generate(e.get(0), next);
-			return new SOpen(e, next);
-		}
-	}
-
-	public class Xlocal extends DefaultVisitor {
-		@Override
-		public MozInst accept(Expression e, MozInst next) {
-			next = new SClose(e, next);
-			next = generate(e.get(0), next);
-			return new SOpen(e, next);
-		}
-	}
-
-	public class Xif extends DefaultVisitor {
-		@Override
-		public MozInst accept(Expression e, MozInst next) {
-			return next;
-		}
-	}
-
-	public class Xon extends DefaultVisitor {
-		@Override
-		public MozInst accept(Expression e, MozInst next) {
-			return generate(e.get(0), next);
-		}
-	}
-
-	public class Xsymbol extends DefaultVisitor {
-		@Override
-		public MozInst accept(Expression e, MozInst next) {
-			nez.lang.expr.Xsymbol p = (nez.lang.expr.Xsymbol) e;
-			return new Pos(p, generate(p.get(0), new SDef(p, next, p.getTable())));
-		}
-	}
-
-	public class Xexists extends DefaultVisitor {
-		@Override
-		public MozInst accept(Expression e, MozInst next) {
-			nez.lang.expr.Xexists p = (nez.lang.expr.Xexists) e;
-			String symbol = p.getSymbol();
-			if (symbol == null) {
-				return new SExists(p, next, p.getTable());
-			} else {
-				return new SIsDef(p, next, p.getTable(), StringUtils.toUtf8(symbol));
+				return memoize(p, n, f, next);
 			}
 		}
+		return visitUnnTlink(p, next);
 	}
 
-	public class Xmatch extends DefaultVisitor {
-		@Override
-		public MozInst accept(Expression e, MozInst next) {
-			nez.lang.expr.Xmatch p = (nez.lang.expr.Xmatch) e;
-			return new SMatch(p, next, p.getTable());
-		}
+	private MozInst memoize(Tlink p, NonTerminal n, ParseFunc f, Object next) {
+		MozInst inside = new Moz.TMemo(p, f.getMemoPoint(), f.isStateful(), (MozInst) next);
+		inside = new Moz.Commit(p, inside);
+		inside = visitUnnNonTerminal(n, inside);
+		inside = new Moz.TStart(p, inside);
+		inside = new Moz.Alt(p, new Moz.MemoFail(p, f.isStateful(), f.getMemoPoint()), inside);
+		return new Moz.TLookup(p, f.getMemoPoint(), f.isStateful(), inside, (MozInst) next);
 	}
 
-	public class Xis extends DefaultVisitor {
-		@Override
-		public MozInst accept(Expression e, MozInst next) {
-			nez.lang.expr.Xis p = (nez.lang.expr.Xis) e;
-			if (p.is) {
-				return new Pos(p, generate(p.get(0), new SIs(p, next, p.getTable())));
-			} else {
-				return new Pos(p, generate(p.get(0), new SIsa(p, next, p.getTable())));
-			}
-		}
+	@Override
+	public Object visitXindent(Xindent e, Object a) {
+		// TODO Auto-generated method stub
+		return a;
 	}
+
+	@Override
+	public Object visitXif(Xif e, Object a) {
+		// TODO Auto-generated method stub
+		return a;
+	}
+
+	@Override
+	public Object visitXon(Xon e, Object a) {
+		// TODO Auto-generated method stub
+		return a;
+	}
+
+	// private Instruction memoize2(Tlink p, NonTerminal n, ParseFunc f,
+	// Instruction next) {
+	// if (f.compiled_memoAST == null) {
+	// f.compiled_memoAST = memoize(p, n, f, new Moz.Ret(p));
+	// this.addCachedInstruction(f.compiled_memoAST);
+	// }
+	// return new Moz.Call(f, n.getLocalName(), f.compiled_memoAST,
+	// (MozInst)next);
+	// }
 
 }

@@ -4,8 +4,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
+import nez.junks.Moz2;
 import nez.main.Command;
-import nez.parser.moz.Moz2;
 
 public class Cmozdump extends Command {
 	@Override

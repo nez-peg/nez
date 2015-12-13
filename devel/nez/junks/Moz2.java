@@ -1,4 +1,4 @@
-package nez.parser.moz;
+package nez.junks;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -11,6 +11,8 @@ import nez.parser.MemoEntry;
 import nez.parser.StackData;
 import nez.parser.SymbolTable;
 import nez.parser.TerminationException;
+import nez.parser.moz.MozInst;
+import nez.parser.moz.MozMachine;
 import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
 import nez.util.UList;

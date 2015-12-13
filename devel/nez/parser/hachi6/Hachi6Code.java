@@ -3,13 +3,9 @@ package nez.parser.hachi6;
 import java.util.List;
 
 import nez.parser.ByteCoder;
-import nez.parser.Parser;
-import nez.parser.ParserGrammar;
 import nez.parser.MemoPoint;
+import nez.parser.ParserGrammar;
 import nez.parser.moz.MozInst;
-import nez.parser.moz.MozCode;
-import nez.parser.moz.NezCompiler;
-import nez.parser.moz.PackratCompiler;
 import nez.util.UList;
 import nez.util.Verbose;
 
@@ -54,13 +50,11 @@ public class Hachi6Code {
 		}
 	}
 
-	public final static void writeMozCode(Parser parser, String path) {
-		NezCompiler compile = new PackratCompiler(parser.getParserStrategy());
-		MozCode code = compile.compile(parser.getParserGrammar());
-		ByteCoder c = new ByteCoder();
-		code.encode(c);
-		Verbose.println("generating " + path);
-		c.writeTo(path);
-	}
-
+	/**
+	 * public final static void writeMozCode(Parser parser, String path) {
+	 * MozCompiler compile = new PackratCompiler(parser.getParserStrategy());
+	 * MozCode code = compile.compile(parser.getParserGrammar()); ByteCoder c =
+	 * new ByteCoder(); code.encode(c); Verbose.println("generating " + path);
+	 * c.writeTo(path); }
+	 **/
 }
