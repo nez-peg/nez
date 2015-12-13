@@ -286,24 +286,4 @@ public class ASTMachine {
 		}
 	}
 
-	class NoTreeTransducer extends TreeTransducer {
-		@Override
-		public Object newNode(Symbol tag, Source s, long spos, long epos, int size, Object value) {
-			return null;
-		}
-
-		@Override
-		public void link(Object node, int index, Symbol label, Object child) {
-		}
-
-		@Override
-		public Object commit(Object node) {
-			return null;
-		}
-
-		@Override
-		public void abort(Object node) {
-		}
-	}
-
 }

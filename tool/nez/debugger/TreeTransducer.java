@@ -1,4 +1,7 @@
-package nez.ast;
+package nez.debugger;
+
+import nez.ast.Source;
+import nez.ast.Symbol;
 
 public abstract class TreeTransducer {
 	public abstract Object newNode(Symbol tag, Source s, long spos, long epos, int size, Object value);

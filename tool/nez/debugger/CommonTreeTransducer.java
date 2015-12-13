@@ -1,4 +1,8 @@
-package nez.ast;
+package nez.debugger;
+
+import nez.ast.CommonTree;
+import nez.ast.Source;
+import nez.ast.Symbol;
 
 public class CommonTreeTransducer extends TreeTransducer {
 	private static final Symbol Token = Symbol.tag("token");

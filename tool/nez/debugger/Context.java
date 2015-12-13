@@ -4,10 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Stack;
 
-import nez.ast.CommonTreeTransducer;
 import nez.ast.Source;
 import nez.ast.Symbol;
-import nez.ast.TreeTransducer;
 import nez.lang.Expression;
 import nez.lang.expr.Cset;
 import nez.parser.SymbolTable;
