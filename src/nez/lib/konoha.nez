@@ -202,6 +202,7 @@ Declaration                        = ImportDeclaration
                                    / ClassDeclaration
                                    / EnumDeclaration
                                    / FunctionDeclaration
+                                   / InterfaceDeclaration
                                    / VariableDeclaration EOS
 
 // import
@@ -274,7 +275,7 @@ enum C {
 '''
 
 //local variable
-VariableDeclaration                = { "var" $name(Identifier) (":" $type(Type))? "=" $expr(Expression) #VarDecl }
+VariableDeclaration                = { "var" $name(Identifier) (":" $type(Type))? ( "=" $expr(Expression) )? #VarDecl }
                                    / { $anno(Modifiers)? $type(Type) $name(VarName) !"," ( "=" $expr(Expression) )? !"," #VarDecl }
                                    / { $anno(Modifiers)? $type(Type) $list(InitDeclList) #MultiVarDecl }
 InitDeclList                       = { $(InitDecl) ( "," $(InitDecl) )* #List }
@@ -310,7 +311,7 @@ FieldDeclaration                   = { $anno(Modifiers)? $type(Type) $list(InitD
 
 //method
 MethodDeclaration                  = { $anno(Modifiers)? ( $(TypeParameters) $anno(Modifiers)? )? $type(TypeOrVoid) $name(Identifier) "(" $param(ParamList) ")" $throws(Throws)? ($body(Block) / EOS) #MethodDecl }
-InterfaceMethodDeclaration         = { $anno(Modifiers)? ( $(TypeParameters) $anno(Modifiers)? )? $type(TypeOrVoid) $name(Identifier) "(" $param(ParamList) ")" $throws(Throws)? ($body(Block) / EOS) #MethodDecl }
+InterfaceMethodDeclaration         = { $anno(Modifiers)? ( $(TypeParameters) $anno(Modifiers)? )? $type(TypeOrVoid) $name(Identifier) "(" $param(ParamList) ")" $throws(Throws)? ($body(Block) / EOS) #InterfaceMethodDecl }
 ParamList                          = { ( $(MethodParam) "," )* $(VarParam) #List }
                                    / { ( $(MethodParam) ( "," $(MethodParam) )* )? #List }
 MethodParam                        = { $anno(Modifiers)? $type(Type) $name(VarName) #Param }
