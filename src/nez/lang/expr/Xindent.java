@@ -3,7 +3,7 @@ package nez.lang.expr;
 import nez.ast.SourcePosition;
 import nez.lang.Contextual;
 import nez.lang.Expression;
-import nez.lang.GrammarTransducer;
+import nez.lang.ExpressionVisitor;
 import nez.lang.PossibleAcceptance;
 import nez.lang.Typestate;
 import nez.lang.Visa;
@@ -21,8 +21,8 @@ public class Xindent extends Term implements Contextual {
 	}
 
 	@Override
-	public Expression reshape(GrammarTransducer m) {
-		return m.reshapeXindent(this);
+	public Object visit(ExpressionVisitor v, Object a) {
+		return v.visitXindent(this, a);
 	}
 
 	@Override

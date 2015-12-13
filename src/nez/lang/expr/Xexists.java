@@ -4,7 +4,7 @@ import nez.ast.SourcePosition;
 import nez.ast.Symbol;
 import nez.lang.Contextual;
 import nez.lang.Expression;
-import nez.lang.GrammarTransducer;
+import nez.lang.ExpressionVisitor;
 import nez.lang.PossibleAcceptance;
 import nez.lang.Typestate;
 import nez.lang.Visa;
@@ -50,8 +50,8 @@ public class Xexists extends Term implements Contextual {
 	}
 
 	@Override
-	public Expression reshape(GrammarTransducer m) {
-		return m.reshapeXexists(this);
+	public Object visit(ExpressionVisitor v, Object a) {
+		return v.visitXexists(this, a);
 	}
 
 	@Override

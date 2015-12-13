@@ -34,11 +34,11 @@ import nez.lang.expr.Xsymbol;
 import nez.util.UList;
 import nez.util.Verbose;
 
-public class GrammarTransducer {
+public class GrammarTransducer extends ExpressionVisitor {
 
-	public Expression reshapeInner(Expression inner) {
+	public Expression visitInner(Expression inner) {
 		push(inner);
-		Expression inner2 = inner.reshape(this);
+		Expression inner2 = (Expression) inner.visit(this, null);
 		pop(inner);
 		return inner2;
 	}
@@ -49,55 +49,55 @@ public class GrammarTransducer {
 	protected void pop(Expression inner) {
 	}
 
-	public Production reshapeProduction(Production p) {
-		p.setExpression(this.reshapeInner(p.getExpression()));
+	public Production visitProduction(Production p) {
+		p.setExpression(this.visitInner(p.getExpression()));
 		return p;
 	}
 
-	// protected final Expression empty(Expression e) {
-	// return ExpressionCommons.newEmpty(null);
-	// }
-	//
-	// protected final Expression fail(Expression e) {
-	// return ExpressionCommons.newFailure(null);
-	// }
-
-	public Expression reshapePempty(Pempty e) {
+	@Override
+	public Expression visitPempty(Pempty e, Object a) {
 		return e; // immutable
 	}
 
-	public Expression reshapePfail(Pfail e) {
+	@Override
+	public Expression visitPfail(Pfail e, Object a) {
 		return e; // immutable
 	}
 
-	public Expression reshapeCbyte(Cbyte e) {
+	@Override
+	public Expression visitCbyte(Cbyte e, Object a) {
 		return e; // immutable
 	}
 
-	public Expression reshapeCset(Cset e) {
+	@Override
+	public Expression visitCset(Cset e, Object a) {
 		return e; // immutable
 	}
 
-	public Expression reshapeCany(Cany e) {
+	@Override
+	public Expression visitCany(Cany e, Object a) {
 		return e; // immutable
 	}
 
-	public Expression reshapeCmulti(Cmulti e) {
+	@Override
+	public Expression visitCmulti(Cmulti e, Object a) {
 		return e; // immutable
 	}
 
-	public Expression reshapeNonTerminal(NonTerminal e) {
+	@Override
+	public Expression visitNonTerminal(NonTerminal e, Object a) {
 		e.newNonTerminal(e.getLocalName());
 		return e;
 	}
 
-	public Expression reshapePsequence(Psequence e) {
+	@Override
+	public Expression visitPsequence(Psequence e, Object a) {
 		Expression first = e.getFirst();
 		push(first);
-		first = first.reshape(this);
+		first = (Expression) first.visit(this, null);
 		Expression next = e.getNext();
 		push(next);
-		next = next.reshape(this);
+		next = (Expression) next.visit(this, null);
 		pop(e.getNext());
 		pop(e.getFirst());
 		if (first instanceof Pempty) {
@@ -109,100 +109,123 @@ public class GrammarTransducer {
 		return e.newSequence(first, next);
 	}
 
-	public Expression reshapePchoice(Pchoice e) {
+	@Override
+	public Expression visitPchoice(Pchoice e, Object a) {
 		UList<Expression> l = ExpressionCommons.newList(e.size());
 		for (Expression sub : e) {
-			ExpressionCommons.addChoice(l, this.reshapeInner(sub));
+			ExpressionCommons.addChoice(l, this.visitInner(sub));
 		}
 		return e.newChoice(l);
 	}
 
-	public Expression reshapePoption(Poption e) {
-		return ExpressionCommons.newPoption(e.getSourcePosition(), reshapeInner(e.get(0)));
+	@Override
+	public Expression visitPoption(Poption e, Object a) {
+		return ExpressionCommons.newPoption(e.getSourcePosition(), visitInner(e.get(0)));
 	}
 
-	public Expression reshapePzero(Pzero e) {
-		return ExpressionCommons.newPzero(e.getSourcePosition(), reshapeInner(e.get(0)));
+	@Override
+	public Expression visitPzero(Pzero e, Object a) {
+		return ExpressionCommons.newPzero(e.getSourcePosition(), visitInner(e.get(0)));
 	}
 
-	public Expression reshapePone(Pone e) {
-		return ExpressionCommons.newPone(e.getSourcePosition(), reshapeInner(e.get(0)));
+	@Override
+	public Expression visitPone(Pone e, Object a) {
+		return ExpressionCommons.newPone(e.getSourcePosition(), visitInner(e.get(0)));
 	}
 
-	public Expression reshapePand(Pand e) {
-		return ExpressionCommons.newPand(e.getSourcePosition(), reshapeInner(e.get(0)));
+	@Override
+	public Expression visitPand(Pand e, Object a) {
+		return ExpressionCommons.newPand(e.getSourcePosition(), visitInner(e.get(0)));
 	}
 
-	public Expression reshapePnot(Pnot e) {
-		return ExpressionCommons.newPnot(e.getSourcePosition(), reshapeInner(e.get(0)));
+	@Override
+	public Expression visitPnot(Pnot e, Object a) {
+		return ExpressionCommons.newPnot(e.getSourcePosition(), visitInner(e.get(0)));
 	}
 
-	public Expression reshapeTnew(Tnew e) {
+	@Override
+	public Expression visitTnew(Tnew e, Object a) {
 		return ExpressionCommons.newTnew(e.getSourcePosition(), e.shift);
 	}
 
-	public Expression reshapeTlfold(Tlfold e) {
+	@Override
+	public Expression visitTlfold(Tlfold e, Object a) {
 		return ExpressionCommons.newTlfold(e.getSourcePosition(), e.getLabel(), e.shift);
 	}
 
-	public Expression reshapeTlink(Tlink e) {
-		return ExpressionCommons.newTlink(e.getSourcePosition(), e.getLabel(), reshapeInner(e.get(0)));
+	@Override
+	public Expression visitTlink(Tlink e, Object a) {
+		return ExpressionCommons.newTlink(e.getSourcePosition(), e.getLabel(), visitInner(e.get(0)));
 	}
 
-	public Expression reshapeTtag(Ttag e) {
+	@Override
+	public Expression visitTtag(Ttag e, Object a) {
 		return e; // immutable
 	}
 
-	public Expression reshapeTreplace(Treplace e) {
+	@Override
+	public Expression visitTreplace(Treplace e, Object a) {
 		return e; // immutable
 	}
 
-	public Expression reshapeTcapture(Tcapture e) {
+	@Override
+	public Expression visitTcapture(Tcapture e, Object a) {
 		return ExpressionCommons.newTcapture(e.getSourcePosition(), e.shift);
 	}
 
-	public Expression reshapeTdetree(Tdetree e) {
-		return ExpressionCommons.newTdetree(e.getSourcePosition(), reshapeInner(e.get(0)));
+	@Override
+	public Expression visitTdetree(Tdetree e, Object a) {
+		return ExpressionCommons.newTdetree(e.getSourcePosition(), visitInner(e.get(0)));
 	}
 
-	public Expression reshapeXblock(Xblock e) {
-		return ExpressionCommons.newXblock(e.getSourcePosition(), reshapeInner(e.get(0)));
+	@Override
+	public Expression visitXblock(Xblock e, Object a) {
+		return ExpressionCommons.newXblock(e.getSourcePosition(), visitInner(e.get(0)));
 	}
 
-	public Expression reshapeXlocal(Xlocal e) {
-		return ExpressionCommons.newXlocal(e.getSourcePosition(), e.getTable(), reshapeInner(e.get(0)));
+	@Override
+	public Expression visitXlocal(Xlocal e, Object a) {
+		return ExpressionCommons.newXlocal(e.getSourcePosition(), e.getTable(), visitInner(e.get(0)));
 	}
 
-	public Expression reshapeXdef(Xsymbol e) {
-		return ExpressionCommons.newXsymbol(e.getSourcePosition(), e.getTable(), reshapeInner(e.get(0)));
+	@Override
+	public Expression visitXdef(Xsymbol e, Object a) {
+		return ExpressionCommons.newXsymbol(e.getSourcePosition(), e.getTable(), visitInner(e.get(0)));
 	}
 
-	public Expression reshapeXmatch(Xmatch e) {
+	@Override
+	public Expression visitXmatch(Xmatch e, Object a) {
 		return e; // immutable
 	}
 
-	public Expression reshapeXis(Xis e) {
-		return ExpressionCommons.newXis(e.getSourcePosition(), e.getTable(), reshapeInner(e.get(0)), e.is);
+	@Override
+	public Expression visitXis(Xis e, Object a) {
+		return ExpressionCommons.newXis(e.getSourcePosition(), e.getTable(), visitInner(e.get(0)), e.is);
 	}
 
-	public Expression reshapeXexists(Xexists e) {
+	@Override
+	public Expression visitXexists(Xexists e, Object a) {
 		return ExpressionCommons.newXexists(e.getSourcePosition(), e.getTable(), e.getSymbol());
 	}
 
-	public Expression reshapeXindent(Xindent e) {
+	@Override
+	public Expression visitXindent(Xindent e, Object a) {
 		return e; // immutable
 	}
 
-	public Expression reshapeXif(Xif e) {
+	@Override
+	public Expression visitXif(Xif e, Object a) {
 		return e; // immutable
 	}
 
-	public Expression reshapeXon(Xon e) {
-		return ExpressionCommons.newXon(e.getSourcePosition(), e.isPositive(), e.getFlagName(), reshapeInner(e.get(0)));
+	@Override
+	public Expression visitXon(Xon e, Object a) {
+		return ExpressionCommons.newXon(e.getSourcePosition(), e.isPositive(), e.getFlagName(), visitInner(e.get(0)));
 	}
 
-	public Expression reshapeUndefined(Expression e) {
-		Verbose.println("TODO: implement reshape in " + this.getClass());
+	@Override
+	public Expression visitUndefined(Expression e, Object a) {
+		Verbose.println("TODO: implement visit in " + this.getClass());
 		return e;
 	}
 

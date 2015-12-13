@@ -3,7 +3,7 @@ package nez.lang.expr;
 import nez.ast.SourcePosition;
 import nez.ast.Symbol;
 import nez.lang.Expression;
-import nez.lang.GrammarTransducer;
+import nez.lang.ExpressionVisitor;
 import nez.lang.PossibleAcceptance;
 import nez.lang.Typestate;
 import nez.lang.Visa;
@@ -43,8 +43,8 @@ public class Tlfold extends Term {
 	}
 
 	@Override
-	public Expression reshape(GrammarTransducer m) {
-		return m.reshapeTlfold(this);
+	public Object visit(ExpressionVisitor v, Object a) {
+		return v.visitTlfold(this, a);
 	}
 
 	@Override

@@ -2,8 +2,8 @@ package nez.lang.expr;
 
 import nez.ast.SourcePosition;
 import nez.lang.Expression;
+import nez.lang.ExpressionVisitor;
 import nez.lang.Grammar;
-import nez.lang.GrammarTransducer;
 import nez.lang.PossibleAcceptance;
 import nez.lang.Production;
 import nez.lang.Typestate;
@@ -77,8 +77,8 @@ public class NonTerminal extends ExpressionCommons {
 	}
 
 	@Override
-	public Expression reshape(GrammarTransducer m) {
-		return m.reshapeNonTerminal(this);
+	public Object visit(ExpressionVisitor v, Object a) {
+		return v.visitNonTerminal(this, a);
 	}
 
 	@Override

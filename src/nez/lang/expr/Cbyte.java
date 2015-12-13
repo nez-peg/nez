@@ -2,7 +2,7 @@ package nez.lang.expr;
 
 import nez.ast.SourcePosition;
 import nez.lang.Expression;
-import nez.lang.GrammarTransducer;
+import nez.lang.ExpressionVisitor;
 import nez.lang.PossibleAcceptance;
 import nez.parser.AbstractGenerator;
 import nez.parser.moz.MozInst;
@@ -30,8 +30,8 @@ public class Cbyte extends Char {
 	}
 
 	@Override
-	public Expression reshape(GrammarTransducer m) {
-		return m.reshapeCbyte(this);
+	public Object visit(ExpressionVisitor v, Object a) {
+		return v.visitCbyte(this, a);
 	}
 
 	@Override

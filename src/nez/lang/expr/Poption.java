@@ -2,7 +2,7 @@ package nez.lang.expr;
 
 import nez.ast.SourcePosition;
 import nez.lang.Expression;
-import nez.lang.GrammarTransducer;
+import nez.lang.ExpressionVisitor;
 import nez.lang.PossibleAcceptance;
 import nez.lang.Typestate;
 import nez.lang.Visa;
@@ -29,8 +29,8 @@ public class Poption extends Unary {
 	}
 
 	@Override
-	public Expression reshape(GrammarTransducer m) {
-		return m.reshapePoption(this);
+	public Object visit(ExpressionVisitor v, Object a) {
+		return v.visitPoption(this, a);
 	}
 
 	@Override

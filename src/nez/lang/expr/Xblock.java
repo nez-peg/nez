@@ -2,7 +2,7 @@ package nez.lang.expr;
 
 import nez.ast.SourcePosition;
 import nez.lang.Expression;
-import nez.lang.GrammarTransducer;
+import nez.lang.ExpressionVisitor;
 import nez.lang.Visa;
 import nez.parser.AbstractGenerator;
 import nez.parser.moz.MozInst;
@@ -21,8 +21,8 @@ public class Xblock extends Unary {
 	}
 
 	@Override
-	public Expression reshape(GrammarTransducer m) {
-		return m.reshapeXblock(this);
+	public Object visit(ExpressionVisitor v, Object a) {
+		return v.visitXblock(this, a);
 	}
 
 	@Override

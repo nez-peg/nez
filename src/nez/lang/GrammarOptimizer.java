@@ -186,7 +186,7 @@ public class GrammarOptimizer extends GrammarRewriter {
 		String uname = p.getLocalName();
 		if (!optimizedMap.contains(uname)) {
 			optimizedMap.add(uname);
-			Expression optimized = this.reshapeInner(p.getExpression());
+			Expression optimized = this.visitInner(p.getExpression());
 			p.setExpression(optimized);
 			if (strategy.Oalias) {
 				performAliasAnalysis(p);
@@ -218,7 +218,7 @@ public class GrammarOptimizer extends GrammarRewriter {
 	}
 
 	@Override
-	public Expression reshapeNonTerminal(NonTerminal n) {
+	public Expression visitNonTerminal(NonTerminal n, Object a) {
 		Production p = n.getProduction();
 		Expression deref = optimizeProduction(p);
 		if (strategy.Oinline) {
@@ -230,7 +230,7 @@ public class GrammarOptimizer extends GrammarRewriter {
 			}
 			if (deref instanceof NonTerminal) {
 				verboseInline("inline(deref)", n, deref);
-				return this.reshapeNonTerminal((NonTerminal) deref);
+				return this.visitNonTerminal((NonTerminal) deref, a);
 			}
 			if (deref instanceof Pempty || deref instanceof Pfail) {
 				verboseInline("inline(deref)", n, deref);
@@ -283,12 +283,12 @@ public class GrammarOptimizer extends GrammarRewriter {
 	}
 
 	@Override
-	public Expression reshapePsequence(Psequence p) {
+	public Expression visitPsequence(Psequence p, Object a) {
 		UList<Expression> l = p.toList();
 		UList<Expression> l2 = ExpressionCommons.newList(l.size());
 		for (int i = 0; i < l.size(); i++) {
 			Expression inner = l.ArrayValues[i];
-			inner = inner.reshape(this);
+			inner = (Expression) inner.visit(this, a);
 			l2.add(inner);
 		}
 		if (strategy.Oorder) {
@@ -402,33 +402,33 @@ public class GrammarOptimizer extends GrammarRewriter {
 	}
 
 	@Override
-	public Expression reshapeTlink(Tlink p) {
+	public Expression visitTlink(Tlink p, Object a) {
 		if (p.get(0) instanceof Pchoice) {
 			Expression choice = p.get(0);
 			UList<Expression> l = ExpressionCommons.newList(choice.size());
 			for (Expression inner : choice) {
-				inner = this.reshapeInner(inner);
+				inner = this.visitInner(inner);
 				l.add(ExpressionCommons.newTlink(p.getSourcePosition(), p.getLabel(), inner));
 			}
 			return choice.newChoice(l);
 		}
-		return super.reshapeTlink(p);
+		return super.visitTlink(p, a);
 	}
 
 	@Override
-	public Expression reshapePchoice(Pchoice p) {
+	public Expression visitPchoice(Pchoice p, Object a) {
 		if (!p.isOptimized()) {
 			p.setOptimized();
 			UList<Expression> l = ExpressionCommons.newList(p.size());
 			for (Expression sub : p) {
-				ExpressionCommons.addChoice(l, this.reshapeInner(sub));
+				ExpressionCommons.addChoice(l, this.visitInner(sub));
 			}
-			return this.reshapePchoice(p, l);
+			return this.visitPchoice(p, l);
 		}
 		return p;
 	}
 
-	public Expression reshapePchoice(Pchoice p, UList<Expression> l) {
+	public Expression visitPchoice(Pchoice p, UList<Expression> l) {
 		Expression optimized = canConvertToCset(p, l);
 		if (optimized != null) {
 			this.verboseOptimized("choice-to-set", p, optimized);
@@ -537,7 +537,7 @@ public class GrammarOptimizer extends GrammarRewriter {
 
 	private Expression trySecondChoice(Expression e, UList<Expression> el) {
 		if (this.enabledSecondChoice && e instanceof Pchoice) {
-			return this.reshapePchoice((Pchoice) e, el);
+			return this.visitPchoice((Pchoice) e, el);
 		}
 		return e;
 	}

@@ -2,7 +2,7 @@ package nez.lang.expr;
 
 import nez.ast.SourcePosition;
 import nez.lang.Expression;
-import nez.lang.GrammarTransducer;
+import nez.lang.ExpressionVisitor;
 import nez.lang.PossibleAcceptance;
 import nez.lang.Typestate;
 import nez.lang.Visa;
@@ -31,8 +31,8 @@ public class Pzero extends Unary {
 	}
 
 	@Override
-	public Expression reshape(GrammarTransducer m) {
-		return m.reshapePzero(this);
+	public Object visit(ExpressionVisitor v, Object a) {
+		return v.visitPzero(this, a);
 	}
 
 	@Override

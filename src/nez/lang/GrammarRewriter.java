@@ -21,7 +21,6 @@ import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
 import nez.lang.expr.Xblock;
-import nez.lang.expr.Xsymbol;
 import nez.lang.expr.Xexists;
 import nez.lang.expr.Xif;
 import nez.lang.expr.Xindent;
@@ -29,57 +28,58 @@ import nez.lang.expr.Xis;
 import nez.lang.expr.Xlocal;
 import nez.lang.expr.Xmatch;
 import nez.lang.expr.Xon;
+import nez.lang.expr.Xsymbol;
 
 public class GrammarRewriter extends GrammarTransducer {
 
 	@Override
-	public Production reshapeProduction(Production p) {
+	public Production visitProduction(Production p) {
 		return p;
 	}
 
 	@Override
-	public Expression reshapePempty(Pempty e) {
+	public Expression visitPempty(Pempty e, Object a) {
 		return e;
 	}
 
 	@Override
-	public Expression reshapePfail(Pfail e) {
+	public Expression visitPfail(Pfail e, Object a) {
 		return e;
 	}
 
 	@Override
-	public Expression reshapeCbyte(Cbyte e) {
+	public Expression visitCbyte(Cbyte e, Object a) {
 		return e;
 	}
 
 	@Override
-	public Expression reshapeCset(Cset e) {
+	public Expression visitCset(Cset e, Object a) {
 		return e;
 	}
 
 	@Override
-	public Expression reshapeCany(Cany e) {
+	public Expression visitCany(Cany e, Object a) {
 		return e;
 	}
 
 	@Override
-	public Expression reshapeCmulti(Cmulti e) {
+	public Expression visitCmulti(Cmulti e, Object a) {
 		return e;
 	}
 
 	@Override
-	public Expression reshapeNonTerminal(NonTerminal e) {
+	public Expression visitNonTerminal(NonTerminal e, Object a) {
 		return e;
 	}
 
 	@Override
-	public Expression reshapePsequence(Psequence e) {
+	public Expression visitPsequence(Psequence e, Object a) {
 		Expression first = e.getFirst();
 		push(first);
-		first = first.reshape(this);
+		first = (Expression) first.visit(this, a);
 		Expression next = e.getNext();
 		push(next);
-		next = next.reshape(this);
+		next = (Expression) next.visit(this, a);
 		pop(e.getNext());
 		pop(e.getFirst());
 		if (first instanceof Pempty) {
@@ -94,123 +94,123 @@ public class GrammarRewriter extends GrammarTransducer {
 	}
 
 	@Override
-	public Expression reshapePchoice(Pchoice e) {
+	public Expression visitPchoice(Pchoice e, Object a) {
 		int i = 0;
 		for (i = 0; i < e.size(); i++) {
-			e.set(i, reshapeInner(e.get(i)));
+			e.set(i, visitInner(e.get(i)));
 		}
 		return e;
 	}
 
 	@Override
-	public Expression reshapePoption(Poption e) {
-		e.set(0, this.reshapeInner(e.get(0)));
+	public Expression visitPoption(Poption e, Object a) {
+		e.set(0, this.visitInner(e.get(0)));
 		return e;
 	}
 
 	@Override
-	public Expression reshapePzero(Pzero e) {
-		e.set(0, this.reshapeInner(e.get(0)));
+	public Expression visitPzero(Pzero e, Object a) {
+		e.set(0, this.visitInner(e.get(0)));
 		return e;
 	}
 
 	@Override
-	public Expression reshapePone(Pone e) {
-		e.set(0, this.reshapeInner(e.get(0)));
+	public Expression visitPone(Pone e, Object a) {
+		e.set(0, this.visitInner(e.get(0)));
 		return e;
 	}
 
 	@Override
-	public Expression reshapePand(Pand e) {
-		e.set(0, this.reshapeInner(e.get(0)));
+	public Expression visitPand(Pand e, Object a) {
+		e.set(0, this.visitInner(e.get(0)));
 		return e;
 	}
 
 	@Override
-	public Expression reshapePnot(Pnot e) {
-		e.set(0, this.reshapeInner(e.get(0)));
+	public Expression visitPnot(Pnot e, Object a) {
+		e.set(0, this.visitInner(e.get(0)));
 		return e;
 	}
 
 	@Override
-	public Expression reshapeTdetree(Tdetree e) {
-		e.set(0, this.reshapeInner(e.get(0)));
+	public Expression visitTdetree(Tdetree e, Object a) {
+		e.set(0, this.visitInner(e.get(0)));
 		return e;
 	}
 
 	@Override
-	public Expression reshapeTnew(Tnew e) {
+	public Expression visitTnew(Tnew e, Object a) {
 		return e;
 	}
 
 	@Override
-	public Expression reshapeTlink(Tlink e) {
-		e.set(0, this.reshapeInner(e.get(0)));
+	public Expression visitTlink(Tlink e, Object a) {
+		e.set(0, this.visitInner(e.get(0)));
 		return e;
 	}
 
 	@Override
-	public Expression reshapeTtag(Ttag e) {
+	public Expression visitTtag(Ttag e, Object a) {
 		return e;
 	}
 
 	@Override
-	public Expression reshapeTreplace(Treplace e) {
+	public Expression visitTreplace(Treplace e, Object a) {
 		return e;
 	}
 
 	@Override
-	public Expression reshapeTcapture(Tcapture e) {
+	public Expression visitTcapture(Tcapture e, Object a) {
 		return e;
 	}
 
 	@Override
-	public Expression reshapeXblock(Xblock e) {
-		e.set(0, this.reshapeInner(e.get(0)));
+	public Expression visitXblock(Xblock e, Object a) {
+		e.set(0, this.visitInner(e.get(0)));
 		return e;
 	}
 
 	@Override
-	public Expression reshapeXlocal(Xlocal e) {
-		e.set(0, this.reshapeInner(e.get(0)));
+	public Expression visitXlocal(Xlocal e, Object a) {
+		e.set(0, this.visitInner(e.get(0)));
 		return e;
 	}
 
 	@Override
-	public Expression reshapeXdef(Xsymbol e) {
-		e.set(0, this.reshapeInner(e.get(0)));
+	public Expression visitXdef(Xsymbol e, Object a) {
+		e.set(0, this.visitInner(e.get(0)));
 		return e;
 	}
 
 	@Override
-	public Expression reshapeXmatch(Xmatch e) {
+	public Expression visitXmatch(Xmatch e, Object a) {
 		return e;
 	}
 
 	@Override
-	public Expression reshapeXis(Xis e) {
-		e.set(0, this.reshapeInner(e.get(0)));
+	public Expression visitXis(Xis e, Object a) {
+		e.set(0, this.visitInner(e.get(0)));
 		return e;
 	}
 
 	@Override
-	public Expression reshapeXexists(Xexists e) {
+	public Expression visitXexists(Xexists e, Object a) {
 		return e;
 	}
 
 	@Override
-	public Expression reshapeXindent(Xindent e) {
+	public Expression visitXindent(Xindent e, Object a) {
 		return e;
 	}
 
 	@Override
-	public Expression reshapeXif(Xif e) {
+	public Expression visitXif(Xif e, Object a) {
 		return e;
 	}
 
 	@Override
-	public Expression reshapeXon(Xon e) {
-		e.set(0, this.reshapeInner(e.get(0)));
+	public Expression visitXon(Xon e, Object a) {
+		e.set(0, this.visitInner(e.get(0)));
 		return e;
 	}
 
