@@ -2,7 +2,7 @@ package nez.lang.expr;
 
 import nez.ast.SourcePosition;
 import nez.lang.Expression;
-import nez.lang.ExpressionVisitor;
+
 import nez.lang.PossibleAcceptance;
 import nez.lang.Typestate;
 import nez.lang.Visa;
@@ -116,7 +116,7 @@ public class Psequence extends ExpressionCommons {
 	}
 
 	@Override
-	public Object visit(ExpressionVisitor v, Object a) {
+	public Object visit(Expression.Visitor v, Object a) {
 		return v.visitPsequence(this, a);
 	}
 
@@ -142,11 +142,11 @@ public class Psequence extends ExpressionCommons {
 	public int inferTypestate(Visa v) {
 		for (Expression e : this) {
 			int t = e.inferTypestate(v);
-			if (t == Typestate.ObjectType || t == Typestate.OperationType) {
+			if (t == Typestate.Tree || t == Typestate.TreeMutation) {
 				return t;
 			}
 		}
-		return Typestate.BooleanType;
+		return Typestate.Unit;
 	}
 
 	@Override

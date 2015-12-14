@@ -167,14 +167,14 @@ public class JavaParserGenerator extends GrammarWriter {
 
 	protected JavaParserGenerator Save(Expression e) {
 		VarInt(_pos(), _cpos());
-		if (e.inferTypestate() != Typestate.BooleanType) {
+		if (e.inferTypestate() != Typestate.Unit) {
 			VarInt(_log(), _clog());
 		}
 		return this;
 	}
 
 	protected JavaParserGenerator Rollback(Expression e) {
-		if (e.inferTypestate() != Typestate.BooleanType) {
+		if (e.inferTypestate() != Typestate.Unit) {
 			Statement(_ccall("abort", _log()));
 		}
 		Statement(_ccall("setpos", _pos()));

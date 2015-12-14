@@ -2,7 +2,7 @@ package nez.lang.expr;
 
 import nez.ast.SourcePosition;
 import nez.lang.Expression;
-import nez.lang.ExpressionVisitor;
+
 import nez.lang.PossibleAcceptance;
 import nez.util.StringUtils;
 
@@ -28,7 +28,7 @@ public class Cbyte extends Char {
 	}
 
 	@Override
-	public Object visit(ExpressionVisitor v, Object a) {
+	public Object visit(Expression.Visitor v, Object a) {
 		return v.visitCbyte(this, a);
 	}
 

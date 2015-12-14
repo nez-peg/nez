@@ -2,7 +2,7 @@ package nez.lang.expr;
 
 import nez.ast.SourcePosition;
 import nez.lang.Expression;
-import nez.lang.ExpressionVisitor;
+
 import nez.lang.PossibleAcceptance;
 import nez.lang.Typestate;
 import nez.lang.Visa;
@@ -26,7 +26,7 @@ public class Pand extends Unary {
 	}
 
 	@Override
-	public Object visit(ExpressionVisitor v, Object a) {
+	public Object visit(Expression.Visitor v, Object a) {
 		return v.visitPand(this, a);
 	}
 
@@ -38,8 +38,8 @@ public class Pand extends Unary {
 	@Override
 	public int inferTypestate(Visa v) {
 		int t = this.inner.inferTypestate(v);
-		if (t == Typestate.ObjectType) { // typeCheck needs to report error
-			return Typestate.BooleanType;
+		if (t == Typestate.Tree) { // typeCheck needs to report error
+			return Typestate.Unit;
 		}
 		return t;
 	}

@@ -3,7 +3,7 @@ package nez.lang.expr;
 import nez.ast.SourcePosition;
 import nez.ast.Symbol;
 import nez.lang.Expression;
-import nez.lang.ExpressionVisitor;
+
 import nez.lang.PossibleAcceptance;
 import nez.lang.Typestate;
 import nez.lang.Visa;
@@ -41,7 +41,7 @@ public class Tlfold extends Term {
 	}
 
 	@Override
-	public Object visit(ExpressionVisitor v, Object a) {
+	public Object visit(Expression.Visitor v, Object a) {
 		return v.visitTlfold(this, a);
 	}
 
@@ -66,7 +66,7 @@ public class Tlfold extends Term {
 
 	@Override
 	public int inferTypestate(Visa v) {
-		return Typestate.OperationType;
+		return Typestate.TreeMutation;
 	}
 
 }

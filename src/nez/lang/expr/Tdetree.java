@@ -2,7 +2,7 @@ package nez.lang.expr;
 
 import nez.ast.SourcePosition;
 import nez.lang.Expression;
-import nez.lang.ExpressionVisitor;
+
 import nez.lang.Typestate;
 import nez.lang.Visa;
 
@@ -25,7 +25,7 @@ public class Tdetree extends Unary {
 	}
 
 	@Override
-	public Object visit(ExpressionVisitor v, Object a) {
+	public Object visit(Expression.Visitor v, Object a) {
 		return v.visitTdetree(this, a);
 	}
 
@@ -36,7 +36,7 @@ public class Tdetree extends Unary {
 
 	@Override
 	public int inferTypestate(Visa v) {
-		return Typestate.BooleanType;
+		return Typestate.Unit;
 	}
 
 	@Override

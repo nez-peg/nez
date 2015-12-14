@@ -84,7 +84,7 @@ public class ParserGrammar extends Grammar {
 			return;
 		}
 		Production p = f.parserProduction;
-		if (f.refcount > 1 && p.inferTypestate(null) != Typestate.OperationType) {
+		if (f.refcount > 1 && p.inferTypestate(null) != Typestate.TreeMutation) {
 			int memoId = memoPointList.size();
 			f.memoPoint = new MemoPoint(memoId, p.getLocalName(), f.getExpression(), p.isContextual());
 			memoPointList.add(f.memoPoint);

@@ -2,7 +2,7 @@ package nez.lang.expr;
 
 import nez.ast.SourcePosition;
 import nez.lang.Expression;
-import nez.lang.ExpressionVisitor;
+
 import nez.lang.Visa;
 
 public class Xon extends Unary implements Expression.Conditional {
@@ -41,7 +41,7 @@ public class Xon extends Unary implements Expression.Conditional {
 	}
 
 	@Override
-	public Object visit(ExpressionVisitor v, Object a) {
+	public Object visit(Expression.Visitor v, Object a) {
 		return v.visitXon(this, a);
 	}
 

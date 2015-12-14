@@ -6,7 +6,7 @@ import java.util.Stack;
 
 import nez.ast.CommonTree;
 import nez.lang.Expression;
-import nez.lang.ExpressionVisitor;
+
 import nez.lang.Production;
 import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
@@ -43,7 +43,7 @@ import nez.parser.ParserGrammar;
 import nez.parser.ParserStrategy;
 import nez.parser.moz.MozInst;
 
-public class DebugVMCompiler extends ExpressionVisitor {
+public class DebugVMCompiler extends Expression.Visitor {
 	ParserGrammar peg;
 	IRBuilder builder;
 	GrammarAnalyzer analyzer;

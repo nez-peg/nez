@@ -52,25 +52,25 @@ public abstract class Type {
 			inf.tag(((Ttag) e).tag);
 			return inf;
 		}
-		if (e instanceof Pchoice && e.inferTypestate() != Typestate.BooleanType) {
+		if (e instanceof Pchoice && e.inferTypestate() != Typestate.Unit) {
 			UList<AtomType> u = new UList<AtomType>(new AtomType[e.size()]);
 			for (int i = 0; i < e.size(); i++) {
 				addUnionType(u, inferType(name, e.get(i), inf.dup()));
 			}
 			return new UnionType(u);
 		}
-		if (e instanceof Poption && e.get(0).inferTypestate() != Typestate.BooleanType) {
+		if (e instanceof Poption && e.get(0).inferTypestate() != Typestate.Unit) {
 			UList<AtomType> u = new UList<AtomType>(new AtomType[e.size()]);
 			addUnionType(u, inferType(name, e.get(0), inf.dup()));
 			addUnionType(u, inf);
 			return new UnionType(u);
 		}
 		if (e instanceof NonTerminal) {
-			if (e.inferTypestate() == Typestate.ObjectType) {
+			if (e.inferTypestate() == Typestate.Tree) {
 				inf.ref(((NonTerminal) e).getProduction());
 				return inf;
 			}
-			if (e.inferTypestate() == Typestate.OperationType) {
+			if (e.inferTypestate() == Typestate.TreeMutation) {
 				inf = inferType(name, ((NonTerminal) e).getProduction().getExpression(), inf);
 				return inf;
 			}

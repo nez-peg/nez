@@ -2,7 +2,7 @@ package nez.lang.expr;
 
 import nez.ast.SourcePosition;
 import nez.lang.Expression;
-import nez.lang.ExpressionVisitor;
+
 import nez.lang.PossibleAcceptance;
 import nez.lang.Typestate;
 import nez.lang.Visa;
@@ -29,7 +29,7 @@ public class Pzero extends Unary {
 	}
 
 	@Override
-	public Object visit(ExpressionVisitor v, Object a) {
+	public Object visit(Expression.Visitor v, Object a) {
 		return v.visitPzero(this, a);
 	}
 
@@ -41,8 +41,8 @@ public class Pzero extends Unary {
 	@Override
 	public int inferTypestate(Visa v) {
 		int t = this.inner.inferTypestate(v);
-		if (t == Typestate.ObjectType) {
-			return Typestate.BooleanType;
+		if (t == Typestate.Tree) {
+			return Typestate.Unit;
 		}
 		return t;
 	}

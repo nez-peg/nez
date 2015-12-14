@@ -3,7 +3,7 @@ package nez.lang.expr;
 import nez.ast.SourcePosition;
 import nez.ast.Symbol;
 import nez.lang.Expression;
-import nez.lang.ExpressionVisitor;
+
 import nez.lang.Visa;
 
 public class Xis extends Unary implements Expression.Contextual {
@@ -41,7 +41,7 @@ public class Xis extends Unary implements Expression.Contextual {
 	}
 
 	@Override
-	public Object visit(ExpressionVisitor v, Object a) {
+	public Object visit(Expression.Visitor v, Object a) {
 		return v.visitXis(this, a);
 	}
 

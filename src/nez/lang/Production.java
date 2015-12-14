@@ -455,10 +455,10 @@ public class Production /* extends Expression */{
 
 	private void checkTypestate() {
 		int t = inferTypestate(null);
-		if (t == Typestate.ObjectType) {
+		if (t == Typestate.Tree) {
 			this.flag |= ObjectProduction;
 		}
-		if (t == Typestate.OperationType) {
+		if (t == Typestate.TreeMutation) {
 			this.flag |= OperationalProduction;
 		}
 		this.flag |= ASTChecked;
@@ -468,15 +468,15 @@ public class Production /* extends Expression */{
 	public int inferTypestate(Visa v) {
 		if (UFlag.is(this.flag, ASTChecked)) {
 			if (UFlag.is(this.flag, ObjectProduction)) {
-				return Typestate.ObjectType;
+				return Typestate.Tree;
 			}
 			if (UFlag.is(this.flag, OperationalProduction)) {
-				return Typestate.OperationType;
+				return Typestate.TreeMutation;
 			}
-			return Typestate.BooleanType;
+			return Typestate.Unit;
 		}
 		if (Visa.isVisited(v, this)) {
-			return Typestate.Undefined;
+			return Typestate.Undecided;
 		}
 		v = Visa.visited(v, this);
 		return this.getExpression().inferTypestate(v);

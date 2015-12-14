@@ -2,7 +2,7 @@ package nez.lang.expr;
 
 import nez.ast.SourcePosition;
 import nez.lang.Expression;
-import nez.lang.ExpressionVisitor;
+
 import nez.lang.Grammar;
 import nez.lang.PossibleAcceptance;
 import nez.lang.Production;
@@ -75,7 +75,7 @@ public class NonTerminal extends ExpressionCommons {
 	}
 
 	@Override
-	public Object visit(ExpressionVisitor v, Object a) {
+	public Object visit(Expression.Visitor v, Object a) {
 		return v.visitNonTerminal(this, a);
 	}
 
@@ -91,7 +91,7 @@ public class NonTerminal extends ExpressionCommons {
 			if (!this.isTerminal()) {
 				Verbose.debug("** unresolved name: " + this.getLocalName());
 			}
-			return Typestate.BooleanType;
+			return Typestate.Unit;
 		}
 		return p.inferTypestate(v);
 	}

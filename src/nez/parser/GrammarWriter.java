@@ -3,7 +3,7 @@ package nez.parser;
 import java.util.HashMap;
 
 import nez.lang.Expression;
-import nez.lang.ExpressionVisitor;
+
 import nez.lang.Production;
 import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
@@ -39,7 +39,7 @@ import nez.util.FileBuilder;
 import nez.util.StringUtils;
 import nez.util.Verbose;
 
-public abstract class GrammarWriter extends ExpressionVisitor {
+public abstract class GrammarWriter extends Expression.Visitor {
 	// public abstract String getDesc();
 	protected ParserStrategy strategy;
 	protected String dir;

@@ -34,7 +34,7 @@ import nez.lang.expr.Xsymbol;
 import nez.util.UList;
 import nez.util.Verbose;
 
-public class GrammarTransducer extends ExpressionVisitor {
+public class GrammarTransducer extends Expression.Visitor {
 
 	public Expression visitInner(Expression inner) {
 		push(inner);

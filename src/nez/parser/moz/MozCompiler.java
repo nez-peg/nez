@@ -3,7 +3,7 @@ package nez.parser.moz;
 import java.util.HashMap;
 
 import nez.lang.Expression;
-import nez.lang.ExpressionVisitor;
+
 import nez.lang.Production;
 import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
@@ -43,7 +43,7 @@ import nez.parser.ParserStrategy;
 import nez.util.UList;
 import nez.util.Verbose;
 
-public class MozCompiler extends ExpressionVisitor {
+public class MozCompiler extends Expression.Visitor {
 
 	public final static MozCompiler newCompiler(ParserStrategy strategy) {
 		return new MozCompiler(strategy);

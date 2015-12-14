@@ -18,6 +18,6 @@ public abstract class Char extends Term {
 
 	@Override
 	public int inferTypestate(Visa v) {
-		return Typestate.BooleanType;
+		return Typestate.Unit;
 	}
 }
