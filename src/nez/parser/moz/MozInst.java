@@ -83,4 +83,6 @@ public abstract class MozInst implements NezInst {
 		stringfy(sb);
 		return sb.toString();
 	}
+
+	public abstract void visit(MozVisitor v);
 }

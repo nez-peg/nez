@@ -294,7 +294,7 @@ public class MozCompiler extends ExpressionVisitor {
 	@Override
 	public MozInst visitTnew(Tnew p, Object next) {
 		if (this.strategy.TreeConstruction) {
-			return new Moz.New(p, (MozInst) next);
+			return new Moz.TNew(p, (MozInst) next);
 		}
 		return (MozInst) next;
 	}
@@ -310,7 +310,7 @@ public class MozCompiler extends ExpressionVisitor {
 	@Override
 	public MozInst visitTcapture(Tcapture p, Object next) {
 		if (this.strategy.TreeConstruction) {
-			return new Moz.Capture(p, (MozInst) next);
+			return new Moz.TCapture(p, (MozInst) next);
 		}
 		return (MozInst) next;
 	}
@@ -318,7 +318,7 @@ public class MozCompiler extends ExpressionVisitor {
 	@Override
 	public MozInst visitTtag(Ttag p, Object next) {
 		if (this.strategy.TreeConstruction) {
-			return new Moz.Tag(p, (MozInst) next);
+			return new Moz.TTag(p, (MozInst) next);
 		}
 		return (MozInst) next;
 	}
@@ -326,51 +326,51 @@ public class MozCompiler extends ExpressionVisitor {
 	@Override
 	public MozInst visitTreplace(Treplace p, Object next) {
 		if (this.strategy.TreeConstruction) {
-			return new Moz.Replace(p, (MozInst) next);
+			return new Moz.TReplace(p, (MozInst) next);
 		}
 		return (MozInst) next;
 	}
 
 	@Override
 	public MozInst visitXblock(Xblock p, Object next) {
-		next = new Moz.EndSymbolScope(p, (MozInst) next);
+		next = new Moz.SClose(p, (MozInst) next);
 		next = visit(p.get(0), next);
-		return new Moz.BeginSymbolScope(p, (MozInst) next);
+		return new Moz.SOpen(p, (MozInst) next);
 	}
 
 	@Override
 	public MozInst visitXlocal(Xlocal p, Object next) {
-		next = new Moz.EndSymbolScope(p, (MozInst) next);
+		next = new Moz.SClose(p, (MozInst) next);
 		next = visit(p.get(0), next);
-		return new Moz.BeginLocalScope(p, (MozInst) next);
+		return new Moz.SMask(p, (MozInst) next);
 	}
 
 	@Override
 	public MozInst visitXdef(Xsymbol p, Object next) {
-		return new Moz.Pos(p, visit(p.get(0), new Moz.DefSymbol(p, (MozInst) next)));
+		return new Moz.Pos(p, visit(p.get(0), new Moz.SDef(p, (MozInst) next)));
 	}
 
 	@Override
 	public MozInst visitXexists(Xexists p, Object next) {
 		String symbol = p.getSymbol();
 		if (symbol == null) {
-			return new Moz.Exists(p, (MozInst) next);
+			return new Moz.SExists(p, (MozInst) next);
 		} else {
-			return new Moz.ExistsSymbol(p, (MozInst) next);
+			return new Moz.SIsDef(p, (MozInst) next);
 		}
 	}
 
 	@Override
 	public MozInst visitXmatch(Xmatch p, Object next) {
-		return new Moz.Match(p, (MozInst) next);
+		return new Moz.SMatch(p, (MozInst) next);
 	}
 
 	@Override
 	public MozInst visitXis(Xis p, Object next) {
 		if (p.is) {
-			return new Moz.Pos(p, visit(p.get(0), new Moz.IsSymbol(p, (MozInst) next)));
+			return new Moz.Pos(p, visit(p.get(0), new Moz.SIs(p, (MozInst) next)));
 		} else {
-			return new Moz.Pos(p, visit(p.get(0), new Moz.IsaSymbol(p, (MozInst) next)));
+			return new Moz.Pos(p, visit(p.get(0), new Moz.SIsa(p, (MozInst) next)));
 		}
 	}
 
@@ -633,7 +633,7 @@ public class MozCompiler extends ExpressionVisitor {
 
 	private MozInst memoize(Tlink p, NonTerminal n, ParseFunc f, Object next) {
 		MozInst inside = new Moz.TMemo(p, f.getMemoPoint(), f.isStateful(), (MozInst) next);
-		inside = new Moz.Commit(p, inside);
+		inside = new Moz.TCommit(p, inside);
 		inside = visitUnnNonTerminal(n, inside);
 		inside = new Moz.TStart(p, inside);
 		inside = new Moz.Alt(p, new Moz.MemoFail(p, f.isStateful(), f.getMemoPoint()), inside);

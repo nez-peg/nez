@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-import nez.junks.Moz2;
 import nez.main.Command;
 
 public class Cmozdump extends Command {
@@ -17,7 +16,7 @@ public class Cmozdump extends Command {
 		fis.close();
 
 		System.out.println("Moz dump");
-		Moz2.dump(buf);
+		// Moz2.dump(buf);
 	}
 
 }

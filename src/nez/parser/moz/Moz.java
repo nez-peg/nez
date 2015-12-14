@@ -23,6 +23,7 @@ import nez.lang.expr.Xlocal;
 import nez.lang.expr.Xmatch;
 import nez.lang.expr.Xsymbol;
 import nez.parser.ByteCoder;
+import nez.parser.Coverage;
 import nez.parser.MemoEntry;
 import nez.parser.MemoPoint;
 import nez.parser.ParseFunc;
@@ -32,6 +33,7 @@ import nez.parser.TerminationException;
 import nez.util.StringUtils;
 
 public class Moz {
+
 	public static class Fail extends MozInst {
 		public Fail(Expression e) {
 			super(MozSet.Fail, e, null);
@@ -46,6 +48,11 @@ public class Moz {
 		public MozInst exec(MozMachine sc) throws TerminationException {
 			return sc.fail();
 		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitFail(this);
+		}
 	}
 
 	public static class Alt extends MozInst {
@@ -54,6 +61,11 @@ public class Moz {
 		public Alt(Expression e, MozInst failjump, MozInst next) {
 			super(MozSet.Alt, e, next);
 			this.failjump = labeling(failjump);
+		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitAlt(this);
 		}
 
 		@Override
@@ -84,6 +96,11 @@ public class Moz {
 		}
 
 		@Override
+		public void visit(MozVisitor v) {
+			v.visitSucc(this);
+		}
+
+		@Override
 		protected void encodeImpl(ByteCoder c) {
 			// No argument
 		}
@@ -98,6 +115,11 @@ public class Moz {
 	public static class Skip extends MozInst {
 		public Skip(Expression e) {
 			super(MozSet.Skip, e, null);
+		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitSkip(this);
 		}
 
 		@Override
@@ -133,6 +155,12 @@ public class Moz {
 		public MozInst exec(MozMachine sc) throws TerminationException {
 			return this.next;
 		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitLabel(this);
+		}
+
 	}
 
 	public static class Call extends MozInst {
@@ -182,6 +210,12 @@ public class Moz {
 			s.ref = this.jump;
 			return this.next;
 		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitCall(this);
+		}
+
 	}
 
 	public static class Ret extends MozInst {
@@ -203,6 +237,12 @@ public class Moz {
 			StackData s = sc.popStack();
 			return (MozInst) s.ref;
 		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitRet(this);
+		}
+
 	}
 
 	public static class Pos extends MozInst {
@@ -221,6 +261,12 @@ public class Moz {
 			s.value = sc.getPosition();
 			return this.next;
 		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitPos(this);
+		}
+
 	}
 
 	public static class Back extends MozInst {
@@ -239,6 +285,12 @@ public class Moz {
 			sc.setPosition(s.value);
 			return this.next;
 		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitBack(this);
+		}
+
 	}
 
 	public static class Exit extends MozInst {
@@ -258,6 +310,12 @@ public class Moz {
 		public MozInst exec(MozMachine sc) throws TerminationException {
 			throw new TerminationException(status);
 		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitExit(this);
+		}
+
 	}
 
 	static abstract class AbstractByteInstruction extends MozInst {
@@ -277,6 +335,7 @@ public class Moz {
 		protected void encodeImpl(ByteCoder c) {
 			c.encodeByte(byteChar);
 		}
+
 	}
 
 	public static class Byte extends AbstractByteInstruction {
@@ -292,6 +351,12 @@ public class Moz {
 			}
 			return sc.fail();
 		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitByte(this);
+		}
+
 	}
 
 	public static class NByte extends AbstractByteInstruction {
@@ -306,6 +371,12 @@ public class Moz {
 			}
 			return sc.fail();
 		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitNByte(this);
+		}
+
 	}
 
 	public static class OByte extends AbstractByteInstruction {
@@ -320,6 +391,12 @@ public class Moz {
 			}
 			return this.next;
 		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitOByte(this);
+		}
+
 	}
 
 	public static class RByte extends AbstractByteInstruction {
@@ -334,6 +411,12 @@ public class Moz {
 			}
 			return this.next;
 		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitRByte(this);
+		}
+
 	}
 
 	static abstract class AbstractAnyInstruction extends MozInst {
@@ -360,6 +443,12 @@ public class Moz {
 			}
 			return sc.fail();
 		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitAny(this);
+		}
+
 	}
 
 	public static class NAny extends AbstractAnyInstruction {
@@ -374,6 +463,12 @@ public class Moz {
 			}
 			return next;
 		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitNAny(this);
+		}
+
 	}
 
 	static abstract class AbstractSetInstruction extends MozInst {
@@ -412,6 +507,12 @@ public class Moz {
 			}
 			return sc.fail();
 		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitSet(this);
+		}
+
 	}
 
 	public static class OSet extends AbstractSetInstruction {
@@ -427,6 +528,12 @@ public class Moz {
 			}
 			return this.next;
 		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitOSet(this);
+		}
+
 	}
 
 	public static class NSet extends AbstractSetInstruction {
@@ -442,6 +549,12 @@ public class Moz {
 			}
 			return sc.fail();
 		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitNSet(this);
+		}
+
 	}
 
 	public static class RSet extends AbstractSetInstruction {
@@ -458,6 +571,12 @@ public class Moz {
 			}
 			return this.next;
 		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitRSet(this);
+		}
+
 	}
 
 	static abstract class AbstractStrInstruction extends MozInst {
@@ -499,6 +618,12 @@ public class Moz {
 			}
 			return sc.fail();
 		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitStr(this);
+		}
+
 	}
 
 	public static class NStr extends AbstractStrInstruction {
@@ -513,6 +638,12 @@ public class Moz {
 			}
 			return sc.fail();
 		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitNStr(this);
+		}
+
 	}
 
 	public static class OStr extends AbstractStrInstruction {
@@ -527,6 +658,12 @@ public class Moz {
 			}
 			return this.next;
 		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitOStr(this);
+		}
+
 	}
 
 	public static class RStr extends AbstractStrInstruction {
@@ -541,6 +678,12 @@ public class Moz {
 			}
 			return this.next;
 		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitRStr(this);
+		}
+
 	}
 
 	public static class Consume extends MozInst {
@@ -561,6 +704,12 @@ public class Moz {
 			sc.consume(this.shift);
 			return this.next;
 		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitConsume(this);
+		}
+
 	}
 
 	// public static class Backtrack extends Instruction {
@@ -606,6 +755,12 @@ public class Moz {
 			int ch = sc.prefetch();
 			return jumpTable[ch].exec(sc);
 		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitFirst(this);
+		}
+
 	}
 
 	public static class DFirst extends First {
@@ -619,6 +774,12 @@ public class Moz {
 			sc.consume(1);
 			return jumpTable[ch].exec(sc);
 		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitDFirst(this);
+		}
+
 	}
 
 	static abstract class AbstractMemoizationInstruction extends MozInst {
@@ -678,6 +839,12 @@ public class Moz {
 			memoPoint.miss();
 			return this.next;
 		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitLookup(this);
+		}
+
 	}
 
 	public static class Memo extends AbstractMemoizationInstruction {
@@ -692,6 +859,12 @@ public class Moz {
 			sc.setMemo(ppos, memoId, false, null, length, this.state);
 			return this.next;
 		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitMemo(this);
+		}
+
 	}
 
 	public static class MemoFail extends AbstractMemoizationInstruction {
@@ -704,14 +877,20 @@ public class Moz {
 			sc.setMemo(sc.getPosition(), memoId, true, null, 0, state);
 			return sc.fail();
 		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitMemoFail(this);
+		}
+
 	}
 
 	// AST Construction
 
-	public static class New extends MozInst {
+	public static class TNew extends MozInst {
 		int shift;
 
-		public New(Tnew e, MozInst next) {
+		public TNew(Tnew e, MozInst next) {
 			super(MozSet.TNew, e, next);
 			this.shift = e.shift;
 		}
@@ -727,6 +906,12 @@ public class Moz {
 			astMachine.logNew(sc.getPosition() + shift, this.id);
 			return this.next;
 		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitTNew(this);
+		}
+
 	}
 
 	public static class TLeftFold extends MozInst {
@@ -751,12 +936,18 @@ public class Moz {
 			astMachine.logLeftFold(sc.getPosition() + shift, this.label);
 			return this.next;
 		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitTLeftFold(this);
+		}
+
 	}
 
-	public static class Capture extends MozInst {
+	public static class TCapture extends MozInst {
 		int shift;
 
-		public Capture(Tcapture e, MozInst next) {
+		public TCapture(Tcapture e, MozInst next) {
 			super(MozSet.TCapture, e, next);
 			this.shift = e.shift;
 		}
@@ -772,12 +963,18 @@ public class Moz {
 			astMachine.logCapture(sc.getPosition() + shift);
 			return this.next;
 		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitTCapture(this);
+		}
+
 	}
 
-	public static class Replace extends MozInst {
+	public static class TReplace extends MozInst {
 		public final String value;
 
-		public Replace(Treplace e, MozInst next) {
+		public TReplace(Treplace e, MozInst next) {
 			super(MozSet.TReplace, e, next);
 			this.value = e.value;
 		}
@@ -798,12 +995,18 @@ public class Moz {
 			astMachine.logReplace(this.value);
 			return this.next;
 		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitTReplace(this);
+		}
+
 	}
 
-	public static class Tag extends MozInst {
+	public static class TTag extends MozInst {
 		public final Symbol tag;
 
-		public Tag(Ttag e, MozInst next) {
+		public TTag(Ttag e, MozInst next) {
 			super(MozSet.TTag, e, next);
 			this.tag = e.tag;
 		}
@@ -824,6 +1027,12 @@ public class Moz {
 			astMachine.logTag(tag);
 			return this.next;
 		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitTTag(this);
+		}
+
 	}
 
 	public static class TPush extends MozInst {
@@ -842,6 +1051,12 @@ public class Moz {
 			astMachine.logPush();
 			return this.next;
 		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitTPush(this);
+		}
+
 	}
 
 	public static class TPop extends MozInst {
@@ -868,6 +1083,12 @@ public class Moz {
 			astMachine.logPop(label);
 			return this.next;
 		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitTPop(this);
+		}
+
 	}
 
 	public static class TStart extends MozInst {
@@ -887,12 +1108,18 @@ public class Moz {
 			s.ref = astMachine.saveTransactionPoint();
 			return this.next;
 		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitTStart(this);
+		}
+
 	}
 
-	public static class Commit extends MozInst {
+	public static class TCommit extends MozInst {
 		public final Symbol label;
 
-		public Commit(Tlink e, MozInst next) {
+		public TCommit(Tlink e, MozInst next) {
 			super(MozSet.TCommit, e, next);
 			this.label = e.getLabel();
 		}
@@ -909,6 +1136,12 @@ public class Moz {
 			astMachine.commitTransactionPoint(label, s.ref);
 			return this.next;
 		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitTCommit(this);
+		}
+
 	}
 
 	public static class TLookup extends AbstractMemoizationInstruction {
@@ -942,6 +1175,12 @@ public class Moz {
 			memoPoint.miss();
 			return this.next;
 		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitTLookup(this);
+		}
+
 	}
 
 	public static class TMemo extends AbstractMemoizationInstruction {
@@ -957,6 +1196,12 @@ public class Moz {
 			sc.setMemo(ppos, memoId, false, astMachine.getLatestLinkedNode(), length, this.state);
 			return this.next;
 		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitTMemo(this);
+		}
+
 	}
 
 	/* Symbol */
@@ -980,8 +1225,8 @@ public class Moz {
 		}
 	}
 
-	public static class BeginSymbolScope extends MozInst {
-		public BeginSymbolScope(Xblock e, MozInst next) {
+	public static class SOpen extends MozInst {
+		public SOpen(Xblock e, MozInst next) {
 			super(MozSet.SOpen, e, next);
 		}
 
@@ -996,10 +1241,16 @@ public class Moz {
 			s.value = sc.getSymbolTable().savePoint();
 			return this.next;
 		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitSOpen(this);
+		}
+
 	}
 
-	public static class BeginLocalScope extends AbstractTableInstruction {
-		public BeginLocalScope(Xlocal e, MozInst next) {
+	public static class SMask extends AbstractTableInstruction {
+		public SMask(Xlocal e, MozInst next) {
 			super(MozSet.SMask, e, e.getTable(), next);
 		}
 
@@ -1011,10 +1262,16 @@ public class Moz {
 			st.addSymbolMask(tableName);
 			return this.next;
 		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitSMask(this);
+		}
+
 	}
 
-	public static class EndSymbolScope extends MozInst {
-		public EndSymbolScope(Expression e, MozInst next) {
+	public static class SClose extends MozInst {
+		public SClose(Expression e, MozInst next) {
 			super(MozSet.SClose, e, next);
 		}
 
@@ -1028,10 +1285,16 @@ public class Moz {
 			sc.getSymbolTable().rollBack((int) s.value);
 			return this.next;
 		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitSClose(this);
+		}
+
 	}
 
-	public static class DefSymbol extends AbstractTableInstruction {
-		public DefSymbol(Xsymbol e, MozInst next) {
+	public static class SDef extends AbstractTableInstruction {
+		public SDef(Xsymbol e, MozInst next) {
 			super(MozSet.SDef, e, e.tableName, next);
 		}
 
@@ -1045,10 +1308,16 @@ public class Moz {
 			sc.getSymbolTable().addSymbol(this.tableName, captured);
 			return this.next;
 		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitSDef(this);
+		}
+
 	}
 
-	public static class Exists extends AbstractTableInstruction {
-		public Exists(Xexists e, MozInst next) {
+	public static class SExists extends AbstractTableInstruction {
+		public SExists(Xexists e, MozInst next) {
 			super(MozSet.SExists, e, e.tableName, next);
 		}
 
@@ -1057,12 +1326,18 @@ public class Moz {
 			byte[] t = sc.getSymbolTable().getSymbol(tableName);
 			return t != null ? this.next : sc.fail();
 		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitSExists(this);
+		}
+
 	}
 
-	public static class ExistsSymbol extends AbstractTableInstruction {
+	public static class SIsDef extends AbstractTableInstruction {
 		byte[] symbol;
 
-		public ExistsSymbol(Xexists e, MozInst next) {
+		public SIsDef(Xexists e, MozInst next) {
 			super(MozSet.SIsDef, e, e.tableName, next);
 			symbol = StringUtils.toUtf8(e.getSymbol());
 		}
@@ -1080,10 +1355,16 @@ public class Moz {
 			}
 			return sc.fail();
 		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitSIsDef(this);
+		}
+
 	}
 
-	public static class Match extends AbstractTableInstruction {
-		public Match(Xmatch e, MozInst next) {
+	public static class SMatch extends AbstractTableInstruction {
+		public SMatch(Xmatch e, MozInst next) {
 			super(MozSet.SMatch, e, e.getTable(), next);
 		}
 
@@ -1099,10 +1380,16 @@ public class Moz {
 			}
 			return sc.fail();
 		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitSMatch(this);
+		}
+
 	}
 
-	public static class IsSymbol extends AbstractTableInstruction {
-		public IsSymbol(Xis e, MozInst next) {
+	public static class SIs extends AbstractTableInstruction {
+		public SIs(Xis e, MozInst next) {
 			super(MozSet.SIs, e, e.tableName, next);
 		}
 
@@ -1120,10 +1407,16 @@ public class Moz {
 			}
 			return sc.fail();
 		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitSIs(this);
+		}
+
 	}
 
-	public static class IsaSymbol extends AbstractTableInstruction {
-		public IsaSymbol(Xis e, MozInst next) {
+	public static class SIsa extends AbstractTableInstruction {
+		public SIsa(Xis e, MozInst next) {
 			super(MozSet.SIsa, e, e.tableName, next);
 		}
 
@@ -1138,84 +1431,66 @@ public class Moz {
 			}
 			return sc.fail();
 		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitSIsa(this);
+		}
+
 	}
 
-	// public static class DefIndent extends MozInst {
-	// public final static Symbol _Indent = Symbol.tag("Indent");
-	//
-	// public DefIndent(Xdefindent e, MozInst next) {
-	// super(MozSet.Nop, e, next);
-	// }
-	//
-	// final long getLineStartPosition(MozMachine sc, long fromPostion) {
-	// long startIndex = fromPostion;
-	// if (!(startIndex < sc.length())) {
-	// startIndex = sc.length() - 1;
-	// }
-	// if (startIndex < 0) {
-	// startIndex = 0;
-	// }
-	// while (startIndex > 0) {
-	// int ch = sc.byteAt(startIndex);
-	// if (ch == '\n') {
-	// startIndex = startIndex + 1;
-	// break;
-	// }
-	// startIndex = startIndex - 1;
-	// }
-	// return startIndex;
-	// }
-	//
-	// @Override
-	// protected void encodeImpl(ByteCoder c) {
-	// // No argument
-	// }
-	//
-	// @Override
-	// public MozInst exec(MozMachine sc) throws TerminationException {
-	// long pos = sc.getPosition();
-	// long spos = getLineStartPosition(sc, pos);
-	// byte[] b = sc.subbyte(spos, pos);
-	// for (int i = 0; i < b.length; i++) {
-	// if (b[i] != '\t') {
-	// b[i] = ' ';
-	// }
-	// }
-	// sc.getSymbolTable().addSymbol(_Indent, b);
-	// return this.next;
-	// }
-	// }
-	//
-	// public static class IsIndent extends MozInst {
-	// public final static Symbol _Indent = Symbol.tag("Indent");
-	//
-	// public IsIndent(Xindent e, MozInst next) {
-	// super(MozSet.Nop, e, next);
-	// }
-	//
-	// @Override
-	// protected void encodeImpl(ByteCoder c) {
-	// // No argument
-	// }
-	//
-	// @Override
-	// public MozInst exec(MozMachine sc) throws TerminationException {
-	// long pos = sc.getPosition();
-	// if (pos > 0) {
-	// if (sc.byteAt(pos - 1) != '\n') {
-	// return sc.fail();
-	// }
-	// }
-	// byte[] b = sc.getSymbolTable().getSymbol(_Indent);
-	// if (b != null) {
-	// if (sc.match(b)) {
-	// sc.consume(b.length);
-	// return this.next;
-	// }
-	// return sc.fail();
-	// }
-	// return this.next; // empty entry is allowable
-	// }
-	// }
+	public static class Cov extends MozInst {
+		final int covPoint;
+
+		public Cov(Coverage cov, MozInst next) {
+			super(MozSet.Cov, null, next);
+			this.covPoint = cov.covPoint;
+		}
+
+		@Override
+		protected void encodeImpl(ByteCoder c) {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override
+		public MozInst exec(MozMachine sc) throws TerminationException {
+			Coverage.enter(this.covPoint);
+			return this.next;
+		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitCov(this);
+		}
+
+	}
+
+	public static class Covx extends MozInst {
+		final int covPoint;
+
+		public Covx(Coverage cov, MozInst next) {
+			super(MozSet.Covx, null, next);
+			this.covPoint = cov.covPoint;
+		}
+
+		@Override
+		protected void encodeImpl(ByteCoder c) {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override
+		public MozInst exec(MozMachine sc) throws TerminationException {
+			Coverage.exit(this.covPoint);
+			return this.next;
+		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitCovx(this);
+		}
+
+	}
 
 }

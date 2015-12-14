@@ -7,9 +7,8 @@ import nez.lang.Expression;
 import nez.lang.Production;
 import nez.lang.expr.Pchoice;
 import nez.lang.expr.Unary;
+import nez.parser.moz.Moz;
 import nez.parser.moz.MozInst;
-import nez.parser.moz.MozMachine;
-import nez.parser.moz.MozSet;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
 
@@ -35,7 +34,7 @@ public class Coverage {
 	public final static MozInst visitEnterCoverage(Production p, MozInst next) {
 		if (covList != null) {
 			Coverage cov = getCoverage(p);
-			return new Icov(cov, next);
+			return new Moz.Cov(cov, next);
 		}
 		return next;
 	}
@@ -43,7 +42,7 @@ public class Coverage {
 	public final static MozInst visitExitCoverage(Production p, MozInst next) {
 		if (covList != null) {
 			Coverage cov = getCoverage(p);
-			return new Icovx(cov, next);
+			return new Moz.Covx(cov, next);
 		}
 		return next;
 	}
@@ -70,7 +69,7 @@ public class Coverage {
 	public final static MozInst encodeEnterCoverage(Pchoice e, int index, MozInst next) {
 		if (covList != null) {
 			Coverage cov = getCoverage("c", e.get(index));
-			return new Icov(cov, next);
+			return new Moz.Cov(cov, next);
 		}
 		return next;
 	}
@@ -78,7 +77,7 @@ public class Coverage {
 	public final static MozInst encodeExitCoverage(Pchoice e, int index, MozInst next) {
 		if (covList != null) {
 			Coverage cov = getCoverage("c", e.get(index));
-			return new Icovx(cov, next);
+			return new Moz.Covx(cov, next);
 		}
 		return next;
 	}
@@ -86,7 +85,7 @@ public class Coverage {
 	public final static MozInst encodeEnterCoverage(Unary e, int index, MozInst next) {
 		if (covList != null) {
 			Coverage cov = getCoverage("u", e.get(0));
-			return new Icov(cov, next);
+			return new Moz.Cov(cov, next);
 		}
 		return next;
 	}
@@ -94,7 +93,7 @@ public class Coverage {
 	public final static MozInst encodeExitCoverage(Unary e, int index, MozInst next) {
 		if (covList != null) {
 			Coverage cov = getCoverage("u", e.get(0));
-			return new Icovx(cov, next);
+			return new Moz.Covx(cov, next);
 		}
 		return next;
 	}
@@ -159,7 +158,7 @@ public class Coverage {
 	// Fields
 	Production p;
 	Expression e;
-	int covPoint;
+	public int covPoint;
 	int enterCount;
 	int exitCount;
 
@@ -180,50 +179,6 @@ public class Coverage {
 
 	private void countExit() {
 		this.exitCount++;
-	}
-
-}
-
-class Icov extends MozInst {
-	final int covPoint;
-
-	public Icov(Coverage cov, MozInst next) {
-		super(MozSet.Cov, null, next);
-		this.covPoint = cov.covPoint;
-	}
-
-	@Override
-	protected void encodeImpl(ByteCoder c) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public MozInst exec(MozMachine sc) throws TerminationException {
-		Coverage.enter(this.covPoint);
-		return this.next;
-	}
-
-}
-
-class Icovx extends MozInst {
-	final int covPoint;
-
-	public Icovx(Coverage cov, MozInst next) {
-		super(MozSet.Cov, null, next);
-		this.covPoint = cov.covPoint;
-	}
-
-	@Override
-	protected void encodeImpl(ByteCoder c) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public MozInst exec(MozMachine sc) throws TerminationException {
-		Coverage.exit(this.covPoint);
-		return this.next;
 	}
 
 }
