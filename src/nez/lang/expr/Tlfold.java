@@ -3,10 +3,7 @@ package nez.lang.expr;
 import nez.ast.SourcePosition;
 import nez.ast.Symbol;
 import nez.lang.Expression;
-
 import nez.lang.PossibleAcceptance;
-import nez.lang.Typestate;
-import nez.lang.Visa;
 
 public class Tlfold extends Term {
 	Symbol label;
@@ -63,10 +60,5 @@ public class Tlfold extends Term {
 	// }
 	// return false;
 	// }
-
-	@Override
-	public int inferTypestate(Visa v) {
-		return Typestate.TreeMutation;
-	}
 
 }

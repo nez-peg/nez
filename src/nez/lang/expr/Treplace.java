@@ -2,10 +2,7 @@ package nez.lang.expr;
 
 import nez.ast.SourcePosition;
 import nez.lang.Expression;
-
 import nez.lang.PossibleAcceptance;
-import nez.lang.Typestate;
-import nez.lang.Visa;
 import nez.util.StringUtils;
 
 public class Treplace extends Term {
@@ -32,11 +29,6 @@ public class Treplace extends Term {
 	@Override
 	public boolean isConsumed() {
 		return false;
-	}
-
-	@Override
-	public int inferTypestate(Visa v) {
-		return Typestate.TreeMutation;
 	}
 
 	@Override

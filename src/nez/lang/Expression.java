@@ -77,12 +77,6 @@ public abstract class Expression extends AbstractList<Expression> {
 	// return false;
 	// }
 
-	public final int inferTypestate() {
-		return this.inferTypestate(null);
-	}
-
-	public abstract int inferTypestate(Visa v);
-
 	public abstract short acceptByte(int ch);
 
 	// test

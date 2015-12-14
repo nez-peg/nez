@@ -32,16 +32,31 @@ import nez.lang.expr.Xon;
 import nez.lang.expr.Xsymbol;
 import nez.util.Verbose;
 
-public class Typestate {
-	public final static Integer Undecided = -1;
-	public final static Integer Unit = 0;
-	public final static Integer Tree = 1;
-	public final static Integer TreeMutation = 2;
+public enum Typestate {
+	Unit, Tree, TreeMutation, Undecided;
+	// // public final static Integer Undecided = -1;
+	// public final static Integer Unit = 0;
+	// public final static Integer Tree = 1;
+	// public final static Integer TreeMutation = 2;
 
-	public static class Analyzer extends Expression.Visitor {
+	public final static class Analyzer extends Expression.Visitor {
 
-		public Integer inferTypestate(Expression e) {
-			return (Integer) e.visit(this, null);
+		public Typestate inferTypestate(Expression e) {
+			return (Typestate) e.visit(this, null);
+		}
+
+		public Typestate inferTypestate(Production p) {
+			String uname = p.getUniqueName();
+			Object v = this.lookup(uname);
+			if (v == null) {
+				this.visited(uname);
+				v = this.inferTypestate(p.getExpression());
+				if (Typestate.Undecided != v) {
+					this.memo(uname, v);
+				}
+				return (Typestate) v;
+			}
+			return (v instanceof Typestate) ? (Typestate) v : Typestate.Undecided;
 		}
 
 		@Override
@@ -53,20 +68,7 @@ public class Typestate {
 				}
 				return Typestate.Unit;
 			}
-			String uname = e.getUniqueName();
-			Object v = this.lookup(uname);
-			if (v == null) {
-				this.visited(uname);
-				v = this.inferTypestate(p.getExpression());
-				if (Typestate.Undecided != v) {
-					this.memo(uname, v);
-				}
-				return v;
-			}
-			if (v instanceof Integer) {
-				return v;
-			}
-			return Typestate.Undecided;
+			return this.inferTypestate(p);
 		}
 
 		@Override
@@ -102,7 +104,7 @@ public class Typestate {
 		@Override
 		public Object visitPsequence(Psequence e, Object a) {
 			for (Expression s : e) {
-				Integer ts = inferTypestate(s);
+				Typestate ts = inferTypestate(s);
 				if (ts == Typestate.Tree || ts == Typestate.TreeMutation) {
 					return ts;
 				}
@@ -124,7 +126,7 @@ public class Typestate {
 
 		@Override
 		public Object visitPoption(Poption e, Object a) {
-			Integer ts = this.inferTypestate(e.get(0));
+			Typestate ts = this.inferTypestate(e.get(0));
 			if (ts == Typestate.Tree) {
 				return Typestate.TreeMutation;
 			}
@@ -133,7 +135,7 @@ public class Typestate {
 
 		@Override
 		public Object visitPzero(Pzero e, Object a) {
-			Integer ts = this.inferTypestate(e.get(0));
+			Typestate ts = this.inferTypestate(e.get(0));
 			if (ts == Typestate.Tree) {
 				return Typestate.TreeMutation;
 			}
@@ -142,7 +144,7 @@ public class Typestate {
 
 		@Override
 		public Object visitPone(Pone e, Object a) {
-			Integer ts = this.inferTypestate(e.get(0));
+			Typestate ts = this.inferTypestate(e.get(0));
 			if (ts == Typestate.Tree) {
 				return Typestate.TreeMutation;
 			}
@@ -151,7 +153,7 @@ public class Typestate {
 
 		@Override
 		public Object visitPand(Pand e, Object a) {
-			Integer ts = this.inferTypestate(e.get(0));
+			Typestate ts = this.inferTypestate(e.get(0));
 			if (ts == Typestate.Tree) { // typeCheck needs to report error
 				return Typestate.Unit;
 			}

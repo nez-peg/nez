@@ -157,7 +157,10 @@ public class Hachi6Compiler extends VisitorMap<DefaultVisitor> {
 				return generate(f.getExpression(), next);
 			}
 			if (f.getMemoPoint() != null) {
-				if (!strategy.TreeConstruction || p.isNoNTreeConstruction()) {
+				if (!strategy.TreeConstruction /*
+												 * FIXME || this.gg.typeState(p)
+												 * == Typestate.Unit
+												 */) {
 					if (Verbose.PackratParsing) {
 						Verbose.println("memoize: " + n.getLocalName() + " at " + getEncodingProduction().getLocalName());
 					}

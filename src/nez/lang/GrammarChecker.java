@@ -32,7 +32,7 @@ import nez.util.Verbose;
 
 public class GrammarChecker extends GrammarTransducer {
 	ParserGrammar parserGrammar;
-	private int requiredTypestate;
+	private Typestate requiredTypestate;
 	final TreeMap<String, Boolean> boolMap;
 	UList<Expression> stacked;
 	private final ParserStrategy strategy;
@@ -52,16 +52,6 @@ public class GrammarChecker extends GrammarTransducer {
 			Verbose.println("optimizing %s ..", strategy);
 			new GrammarOptimizer(gg, strategy);
 		}
-	}
-
-	/* Typestate */
-	private final Typestate.Analyzer typestate = new Typestate.Analyzer();
-
-	private int typeState(Expression e) {
-		int ts = typestate.inferTypestate(e);
-		int ts2 = e.inferTypestate(null);
-		assert (ts == ts2);
-		return ts2;
 	}
 
 	@Override
@@ -98,10 +88,10 @@ public class GrammarChecker extends GrammarTransducer {
 			if (p.isRecursive()) {
 				checkLeftRecursion(p.getExpression(), new ProductionStacker(p, null));
 			}
-			p.isNoNTreeConstruction();
+			// p.isNoNTreeConstruction();
 		}
-		int stackedTypestate = this.requiredTypestate;
-		this.requiredTypestate = this.isNonASTContext() ? Typestate.Unit : typeState(p.getExpression());
+		Typestate stackedTypestate = this.requiredTypestate;
+		this.requiredTypestate = this.isNonASTContext() ? Typestate.Unit : parserGrammar.typeState(p);
 		Expression e = this.visitInner(p.getExpression());
 		parserProduction.setExpression(e);
 		this.requiredTypestate = stackedTypestate;
@@ -167,7 +157,7 @@ public class GrammarChecker extends GrammarTransducer {
 		// System.out.print("NonTerminal: " + n.getLocalName() + " -> ");
 		// this.dumpStack();
 
-		int innerTypestate = this.isNonASTContext() ? Typestate.Unit : typeState(p.getExpression());
+		Typestate innerTypestate = this.isNonASTContext() ? Typestate.Unit : parserGrammar.typeState(p);
 		String uname = this.uniqueName(n.getUniqueName(), p);
 		ParseFunc f = parserGrammar.getParseFunc(uname);
 		if (f == null) {
@@ -179,7 +169,7 @@ public class GrammarChecker extends GrammarTransducer {
 		if (innerTypestate == Typestate.Unit) {
 			return pn;
 		}
-		int required = this.requiredTypestate;
+		Typestate required = this.requiredTypestate;
 		if (required == Typestate.Tree) {
 			if (innerTypestate == Typestate.TreeMutation) {
 				reportInserted(n, "{");
@@ -316,7 +306,7 @@ public class GrammarChecker extends GrammarTransducer {
 			reportRemoved(p, "$");
 			return this.visitInner(inner);
 		}
-		int innerTypestate = this.isNonASTContext() ? Typestate.Unit : typeState(inner);
+		Typestate innerTypestate = this.isNonASTContext() ? Typestate.Unit : parserGrammar.typeState(inner);
 		if (innerTypestate != Typestate.Tree) {
 			reportInserted(p, "{");
 			inner = ExpressionCommons.newNewCapture(inner.getSourcePosition(), this.visitInner(inner));
@@ -330,8 +320,8 @@ public class GrammarChecker extends GrammarTransducer {
 
 	@Override
 	public Expression visitPchoice(Pchoice p, Object a) {
-		int required = this.requiredTypestate;
-		int next = this.requiredTypestate;
+		Typestate required = this.requiredTypestate;
+		Typestate next = this.requiredTypestate;
 		UList<Expression> l = ExpressionCommons.newList(p.size());
 		for (Expression inner : p) {
 			this.requiredTypestate = required;
@@ -360,7 +350,7 @@ public class GrammarChecker extends GrammarTransducer {
 	}
 
 	private Expression visitOptionalInner(Unary p) {
-		int innerTypestate = this.isNonASTContext() ? Typestate.Unit : typeState(p.get(0));
+		Typestate innerTypestate = this.isNonASTContext() ? Typestate.Unit : parserGrammar.typeState(p.get(0));
 		if (innerTypestate == Typestate.Tree) {
 			if (this.requiredTypestate == Typestate.TreeMutation) {
 				this.reportInserted(p.get(0), "$");
@@ -388,7 +378,7 @@ public class GrammarChecker extends GrammarTransducer {
 	@Override
 	public Expression visitPnot(Pnot p, Object a) {
 		Expression inner = p.get(0);
-		int innerTypestate = this.isNonASTContext() ? Typestate.Unit : typeState(inner);
+		Typestate innerTypestate = this.isNonASTContext() ? Typestate.Unit : parserGrammar.typeState(inner);
 		if (innerTypestate != Typestate.Unit) {
 			// reportWarning(p, "disallowed tree construction in !e");
 			boolean stacked = this.enterNonASTContext();
@@ -435,7 +425,7 @@ public class GrammarChecker extends GrammarTransducer {
 	/* uniquename */
 
 	String uniqueName(String uname, Production p) {
-		boolean isNonTree = p.isNoNTreeConstruction();
+		boolean isNonTree = parserGrammar.typeState(p) == Typestate.Unit;
 		StringBuilder sb = new StringBuilder();
 		sb.append(uname);
 		for (String flagName : this.boolMap.keySet()) {

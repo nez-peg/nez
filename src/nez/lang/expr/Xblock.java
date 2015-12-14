@@ -3,8 +3,6 @@ package nez.lang.expr;
 import nez.ast.SourcePosition;
 import nez.lang.Expression;
 
-import nez.lang.Visa;
-
 public class Xblock extends Unary {
 	Xblock(SourcePosition s, Expression e) {
 		super(s, e);
@@ -26,11 +24,6 @@ public class Xblock extends Unary {
 	@Override
 	public boolean isConsumed() {
 		return this.inner.isConsumed();
-	}
-
-	@Override
-	public int inferTypestate(Visa v) {
-		return this.inner.inferTypestate(v);
 	}
 
 	@Override

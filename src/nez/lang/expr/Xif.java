@@ -2,10 +2,7 @@ package nez.lang.expr;
 
 import nez.ast.SourcePosition;
 import nez.lang.Expression;
-
 import nez.lang.PossibleAcceptance;
-import nez.lang.Typestate;
-import nez.lang.Visa;
 
 public class Xif extends Term implements Expression.Conditional {
 	boolean predicate;
@@ -46,11 +43,6 @@ public class Xif extends Term implements Expression.Conditional {
 	@Override
 	public boolean isConsumed() {
 		return false;
-	}
-
-	@Override
-	public int inferTypestate(Visa v) {
-		return Typestate.Unit;
 	}
 
 	@Override

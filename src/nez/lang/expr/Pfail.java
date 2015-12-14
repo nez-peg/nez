@@ -2,10 +2,7 @@ package nez.lang.expr;
 
 import nez.ast.SourcePosition;
 import nez.lang.Expression;
-
 import nez.lang.PossibleAcceptance;
-import nez.lang.Typestate;
-import nez.lang.Visa;
 
 public class Pfail extends Term {
 	Pfail(SourcePosition s) {
@@ -30,11 +27,6 @@ public class Pfail extends Term {
 	@Override
 	public boolean isConsumed() {
 		return true;
-	}
-
-	@Override
-	public int inferTypestate(Visa v) {
-		return Typestate.Unit;
 	}
 
 	@Override

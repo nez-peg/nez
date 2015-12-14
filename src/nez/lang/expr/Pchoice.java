@@ -2,10 +2,7 @@ package nez.lang.expr;
 
 import nez.ast.SourcePosition;
 import nez.lang.Expression;
-
 import nez.lang.PossibleAcceptance;
-import nez.lang.Typestate;
-import nez.lang.Visa;
 import nez.util.UList;
 
 public class Pchoice extends ExpressionCommons {
@@ -74,18 +71,6 @@ public class Pchoice extends ExpressionCommons {
 			}
 		}
 		return afterAll;
-	}
-
-	@Override
-	public int inferTypestate(Visa v) {
-		int t = Typestate.Unit;
-		for (Expression s : this) {
-			t = s.inferTypestate(v);
-			if (t == Typestate.Tree || t == Typestate.TreeMutation) {
-				return t;
-			}
-		}
-		return t;
 	}
 
 	@Override

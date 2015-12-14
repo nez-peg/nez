@@ -2,10 +2,7 @@ package nez.lang.expr;
 
 import nez.ast.SourcePosition;
 import nez.lang.Expression;
-
 import nez.lang.PossibleAcceptance;
-import nez.lang.Typestate;
-import nez.lang.Visa;
 
 public class Poption extends Unary {
 	Poption(SourcePosition s, Expression e) {
@@ -34,15 +31,6 @@ public class Poption extends Unary {
 	@Override
 	public boolean isConsumed() {
 		return false;
-	}
-
-	@Override
-	public int inferTypestate(Visa v) {
-		int t = this.inner.inferTypestate(v);
-		if (t == Typestate.Tree) {
-			return Typestate.Unit;
-		}
-		return t;
 	}
 
 	@Override

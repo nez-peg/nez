@@ -3,8 +3,6 @@ package nez.lang.expr;
 import nez.ast.SourcePosition;
 import nez.lang.Expression;
 
-import nez.lang.Visa;
-
 public class Xon extends Unary implements Expression.Conditional {
 	boolean predicate;
 
@@ -48,11 +46,6 @@ public class Xon extends Unary implements Expression.Conditional {
 	@Override
 	public boolean isConsumed() {
 		return this.inner.isConsumed();
-	}
-
-	@Override
-	public int inferTypestate(Visa v) {
-		return this.inner.inferTypestate(v);
 	}
 
 	@Override

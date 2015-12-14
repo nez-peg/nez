@@ -3,8 +3,8 @@ package nez.parser.moz;
 import java.util.HashMap;
 
 import nez.lang.Expression;
-
 import nez.lang.Production;
+import nez.lang.Typestate;
 import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cmulti;
@@ -588,7 +588,7 @@ public class MozCompiler extends Expression.Visitor {
 			return visit(f.getExpression(), next);
 		}
 		if (f.getMemoPoint() != null) {
-			if (!strategy.TreeConstruction || p.isNoNTreeConstruction()) {
+			if (!strategy.TreeConstruction || this.gg.typeState(p) == Typestate.Unit) {
 				if (Verbose.PackratParsing) {
 					Verbose.println("memoize: " + n.getLocalName() + " at " + this.getEncodingProduction().getLocalName());
 				}

@@ -446,41 +446,42 @@ public class Production /* extends Expression */{
 		return e.isConsumed();
 	}
 
-	public final boolean isNoNTreeConstruction() {
-		if (!UFlag.is(this.flag, ASTChecked)) {
-			checkTypestate();
-		}
-		return !UFlag.is(this.flag, ObjectProduction) && !UFlag.is(this.flag, OperationalProduction);
-	}
+	// public final boolean isNoNTreeConstruction() {
+	// if (!UFlag.is(this.flag, ASTChecked)) {
+	// checkTypestate();
+	// }
+	// return !UFlag.is(this.flag, ObjectProduction) && !UFlag.is(this.flag,
+	// OperationalProduction);
+	// }
+	//
+	// private void checkTypestate() {
+	// int t = inferTypestate(null);
+	// if (t == Typestate.Tree) {
+	// this.flag |= ObjectProduction;
+	// }
+	// if (t == Typestate.TreeMutation) {
+	// this.flag |= OperationalProduction;
+	// }
+	// this.flag |= ASTChecked;
+	// }
 
-	private void checkTypestate() {
-		int t = inferTypestate(null);
-		if (t == Typestate.Tree) {
-			this.flag |= ObjectProduction;
-		}
-		if (t == Typestate.TreeMutation) {
-			this.flag |= OperationalProduction;
-		}
-		this.flag |= ASTChecked;
-	}
-
-	// @Override
-	public int inferTypestate(Visa v) {
-		if (UFlag.is(this.flag, ASTChecked)) {
-			if (UFlag.is(this.flag, ObjectProduction)) {
-				return Typestate.Tree;
-			}
-			if (UFlag.is(this.flag, OperationalProduction)) {
-				return Typestate.TreeMutation;
-			}
-			return Typestate.Unit;
-		}
-		if (Visa.isVisited(v, this)) {
-			return Typestate.Undecided;
-		}
-		v = Visa.visited(v, this);
-		return this.getExpression().inferTypestate(v);
-	}
+	// // @Override
+	// public int inferTypestate(Visa v) {
+	// if (UFlag.is(this.flag, ASTChecked)) {
+	// if (UFlag.is(this.flag, ObjectProduction)) {
+	// return Typestate.Tree;
+	// }
+	// if (UFlag.is(this.flag, OperationalProduction)) {
+	// return Typestate.TreeMutation;
+	// }
+	// return Typestate.Unit;
+	// }
+	// if (Visa.isVisited(v, this)) {
+	// return Typestate.Undecided;
+	// }
+	// v = Visa.visited(v, this);
+	// return this.getExpression().inferTypestate(v);
+	// }
 
 	public final void internRule() {
 		// this.body = this.body.intern();

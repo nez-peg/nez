@@ -2,10 +2,7 @@ package nez.lang.expr;
 
 import nez.ast.SourcePosition;
 import nez.lang.Expression;
-
 import nez.lang.PossibleAcceptance;
-import nez.lang.Typestate;
-import nez.lang.Visa;
 import nez.util.StringUtils;
 import nez.util.UList;
 
@@ -137,17 +134,6 @@ public class Psequence extends ExpressionCommons {
 	// }
 	// return false;
 	// }
-
-	@Override
-	public int inferTypestate(Visa v) {
-		for (Expression e : this) {
-			int t = e.inferTypestate(v);
-			if (t == Typestate.Tree || t == Typestate.TreeMutation) {
-				return t;
-			}
-		}
-		return Typestate.Unit;
-	}
 
 	@Override
 	public short acceptByte(int ch) {

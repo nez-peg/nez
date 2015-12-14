@@ -4,8 +4,6 @@ import nez.ast.SourcePosition;
 import nez.ast.Symbol;
 import nez.lang.Expression;
 
-import nez.lang.Visa;
-
 public class Xis extends Unary implements Expression.Contextual {
 	// final Grammar g;
 	public final Symbol tableName;
@@ -59,11 +57,6 @@ public class Xis extends Unary implements Expression.Contextual {
 	@Override
 	public boolean isConsumed() {
 		return this.inner.isConsumed();
-	}
-
-	@Override
-	public int inferTypestate(Visa v) {
-		return this.inner.inferTypestate(v);
 	}
 
 	@Override

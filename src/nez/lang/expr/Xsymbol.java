@@ -4,8 +4,6 @@ import nez.ast.SourcePosition;
 import nez.ast.Symbol;
 import nez.lang.Expression;
 
-import nez.lang.Visa;
-
 public class Xsymbol extends Unary {
 	public final Symbol tableName;
 
@@ -53,11 +51,6 @@ public class Xsymbol extends Unary {
 	@Override
 	public boolean isConsumed() {
 		return this.inner.isConsumed();
-	}
-
-	@Override
-	public int inferTypestate(Visa v) {
-		return this.inner.inferTypestate(v);
 	}
 
 	@Override

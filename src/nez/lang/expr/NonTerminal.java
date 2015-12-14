@@ -2,12 +2,9 @@ package nez.lang.expr;
 
 import nez.ast.SourcePosition;
 import nez.lang.Expression;
-
 import nez.lang.Grammar;
 import nez.lang.PossibleAcceptance;
 import nez.lang.Production;
-import nez.lang.Typestate;
-import nez.lang.Visa;
 import nez.util.Verbose;
 
 public class NonTerminal extends ExpressionCommons {
@@ -82,18 +79,6 @@ public class NonTerminal extends ExpressionCommons {
 	@Override
 	public boolean isConsumed() {
 		return this.getProduction().isConsumed();
-	}
-
-	@Override
-	public int inferTypestate(Visa v) {
-		Production p = this.getProduction();
-		if (p == null) {
-			if (!this.isTerminal()) {
-				Verbose.debug("** unresolved name: " + this.getLocalName());
-			}
-			return Typestate.Unit;
-		}
-		return p.inferTypestate(v);
 	}
 
 	@Override

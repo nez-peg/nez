@@ -1,8 +1,6 @@
 package nez.lang.expr;
 
 import nez.ast.SourcePosition;
-import nez.lang.Typestate;
-import nez.lang.Visa;
 
 public abstract class Char extends Term {
 	boolean binary;
@@ -16,8 +14,4 @@ public abstract class Char extends Term {
 		this.binary = binary;
 	}
 
-	@Override
-	public int inferTypestate(Visa v) {
-		return Typestate.Unit;
-	}
 }

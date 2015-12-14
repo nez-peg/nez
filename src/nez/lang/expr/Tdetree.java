@@ -3,9 +3,6 @@ package nez.lang.expr;
 import nez.ast.SourcePosition;
 import nez.lang.Expression;
 
-import nez.lang.Typestate;
-import nez.lang.Visa;
-
 public class Tdetree extends Unary {
 	Tdetree(SourcePosition s, Expression inner) {
 		super(s, inner);
@@ -32,11 +29,6 @@ public class Tdetree extends Unary {
 	@Override
 	public boolean isConsumed() {
 		return this.inner.isConsumed();
-	}
-
-	@Override
-	public int inferTypestate(Visa v) {
-		return Typestate.Unit;
 	}
 
 	@Override

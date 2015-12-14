@@ -560,23 +560,24 @@ public class PythonParserGenerator extends GrammarWriter {
 	@Override
 	public void visitNonTerminal(NonTerminal p) {
 		Production rule = p.getProduction();
-		if (rule.isNoNTreeConstruction()) {
-			int memoPoint = 0;
-			if (!memoMap.containsKey(unique(p))) {
-				memoPoint = this.memoPoint++;
-				this.memoMap.put(unique(p), memoPoint);
-			} else {
-				memoPoint = memoMap.get(unique(p));
-			}
-			Lookup(memoPoint);
-			Else().Begin();
-			Let("pos" + unique(p), "self.pos");
-			Let("result", _func("self.p" + p.getLocalName(), "result"));
-			Memoize(memoPoint, "pos" + unique(p));
-			End();
-		} else {
-			Let("result", _func("self.p" + p.getLocalName(), "result"));
-		}
+		/* FIXME */
+		// if (rule.isNoNTreeConstruction()) {
+		// int memoPoint = 0;
+		// if (!memoMap.containsKey(unique(p))) {
+		// memoPoint = this.memoPoint++;
+		// this.memoMap.put(unique(p), memoPoint);
+		// } else {
+		// memoPoint = memoMap.get(unique(p));
+		// }
+		// Lookup(memoPoint);
+		// Else().Begin();
+		// Let("pos" + unique(p), "self.pos");
+		// Let("result", _func("self.p" + p.getLocalName(), "result"));
+		// Memoize(memoPoint, "pos" + unique(p));
+		// End();
+		// } else {
+		// Let("result", _func("self.p" + p.getLocalName(), "result"));
+		// }
 	}
 
 	@Override

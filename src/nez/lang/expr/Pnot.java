@@ -2,10 +2,7 @@ package nez.lang.expr;
 
 import nez.ast.SourcePosition;
 import nez.lang.Expression;
-
 import nez.lang.PossibleAcceptance;
-import nez.lang.Typestate;
-import nez.lang.Visa;
 
 public class Pnot extends Unary {
 	Pnot(SourcePosition s, Expression e) {
@@ -33,11 +30,6 @@ public class Pnot extends Unary {
 	@Override
 	public boolean isConsumed() {
 		return false;
-	}
-
-	@Override
-	public int inferTypestate(Visa v) {
-		return Typestate.Unit;
 	}
 
 	@Override

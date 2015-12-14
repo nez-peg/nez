@@ -2,10 +2,7 @@ package nez.lang.expr;
 
 import nez.ast.SourcePosition;
 import nez.lang.Expression;
-
 import nez.lang.PossibleAcceptance;
-import nez.lang.Typestate;
-import nez.lang.Visa;
 
 public class Cany extends Char {
 	Cany(SourcePosition s, boolean binary) {
@@ -33,11 +30,6 @@ public class Cany extends Char {
 	@Override
 	public boolean isConsumed() {
 		return true;
-	}
-
-	@Override
-	public int inferTypestate(Visa v) {
-		return Typestate.Unit;
 	}
 
 	@Override

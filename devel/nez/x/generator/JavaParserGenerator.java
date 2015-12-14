@@ -6,7 +6,6 @@ import java.util.HashMap;
 import nez.ast.Symbol;
 import nez.lang.Expression;
 import nez.lang.Production;
-import nez.lang.Typestate;
 import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cmulti;
@@ -167,16 +166,16 @@ public class JavaParserGenerator extends GrammarWriter {
 
 	protected JavaParserGenerator Save(Expression e) {
 		VarInt(_pos(), _cpos());
-		if (e.inferTypestate() != Typestate.Unit) {
-			VarInt(_log(), _clog());
-		}
+		// if (e.inferTypestate() != Typestate.Unit) {
+		// VarInt(_log(), _clog());
+		// }
 		return this;
 	}
 
 	protected JavaParserGenerator Rollback(Expression e) {
-		if (e.inferTypestate() != Typestate.Unit) {
-			Statement(_ccall("abort", _log()));
-		}
+		// if (e.inferTypestate() != Typestate.Unit) {
+		// Statement(_ccall("abort", _log()));
+		// }
 		Statement(_ccall("setpos", _pos()));
 		return this;
 	}

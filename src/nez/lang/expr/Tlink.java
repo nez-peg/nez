@@ -4,9 +4,6 @@ import nez.ast.SourcePosition;
 import nez.ast.Symbol;
 import nez.lang.Expression;
 
-import nez.lang.Typestate;
-import nez.lang.Visa;
-
 public class Tlink extends Unary {
 	@Deprecated
 	public int index = -1;
@@ -42,11 +39,6 @@ public class Tlink extends Unary {
 	@Override
 	public boolean isConsumed() {
 		return this.inner.isConsumed();
-	}
-
-	@Override
-	public int inferTypestate(Visa v) {
-		return Typestate.TreeMutation;
 	}
 
 	@Override
