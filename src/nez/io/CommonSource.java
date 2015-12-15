@@ -7,14 +7,13 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import nez.ast.Source;
-import nez.util.StringUtils;
 
-public abstract class SourceStream implements Source {
+public abstract class CommonSource implements Source {
 
 	private String resourceName;
 	protected long startLineNum = 1;
 
-	protected SourceStream(String resourceName, long linenum) {
+	protected CommonSource(String resourceName, long linenum) {
 		this.resourceName = resourceName;
 		this.startLineNum = linenum;
 	}
@@ -31,10 +30,18 @@ public abstract class SourceStream implements Source {
 	public abstract int byteAt(long pos);
 
 	@Override
+	public abstract boolean eof(long pos);
+
+	@Override
 	public abstract boolean match(long pos, byte[] text);
 
 	@Override
-	public abstract String substring(long startIndex, long endIndex);
+	public abstract String subString(long startIndex, long endIndex);
+
+	@Override
+	public Source subSource(long startIndex, long endIndex) {
+		return new StringSource(this.getResourceName(), this.linenum(startIndex), subByte(startIndex, endIndex), false);
+	}
 
 	@Override
 	public abstract long linenum(long pos);
@@ -59,35 +66,6 @@ public abstract class SourceStream implements Source {
 	// }
 	// return fileName;
 	// }
-
-	public final int charAt(long pos) {
-		int c = byteAt(pos), c2, c3, c4;
-		int len = StringUtils.lengthOfUtf8(c);
-		switch (len) {
-		case 1:
-			return c;
-		case 2:
-			// 0b11111 = 31
-			// 0b111111 = 63
-			c2 = byteAt(pos + 1) & 63;
-			return ((c & 31) << 6) | c2;
-		case 3:
-			c2 = byteAt(pos + 1) & 63;
-			c3 = byteAt(pos + 2) & 63;
-			return ((c & 15) << 12) | c2 << 6 | c3;
-		case 4:
-			c2 = byteAt(pos + 1) & 63;
-			c3 = byteAt(pos + 2) & 63;
-			c4 = byteAt(pos + 3) & 63;
-			return ((c & 7) << 18) | c2 << 12 | c3 << 6 | c4;
-		}
-		return -1;
-	}
-
-	public final int charLength(long pos) {
-		int c = byteAt(pos);
-		return StringUtils.lengthOfUtf8(c);
-	}
 
 	private final long getLineStartPosition(long fromPostion) {
 		long startIndex = fromPostion;
@@ -123,7 +101,7 @@ public abstract class SourceStream implements Source {
 				break;
 			}
 		}
-		indent = this.substring(startPosition, i) + indent;
+		indent = this.subString(startPosition, i) + indent;
 		return indent;
 	}
 
@@ -136,21 +114,24 @@ public abstract class SourceStream implements Source {
 		return this.formatPositionMessage(messageType, pos, message) + this.getTextAround(pos, "\n ");
 	}
 
-	@Override
-	public final String formatDebugPositionMessage(long pos, String message) {
-		return "(" + this.getResourceName() + ":" + this.linenum(pos) + ")" + message;
-	}
-
-	public final String formatDebugPositionLine(long pos, String message) {
-		return this.formatDebugPositionMessage(pos, message) + this.getTextAround(pos, "\n ");
-	}
+	// @Override
+	// public final String formatDebugPositionMessage(long pos, String message)
+	// {
+	// return "(" + this.getResourceName() + ":" + this.linenum(pos) + ")" +
+	// message;
+	// }
+	//
+	// public final String formatDebugPositionLine(long pos, String message) {
+	// return this.formatDebugPositionMessage(pos, message) +
+	// this.getTextAround(pos, "\n ");
+	// }
 
 	private final String getTextAround(long pos, String delim) {
 		int ch = 0;
 		if (pos < 0) {
 			pos = 0;
 		}
-		while (this.byteAt(pos) == this.EOF() && pos > 0) {
+		while (this.byteAt(pos) == 0 /* this.EOF() */&& pos > 0) {
 			pos -= 1;
 		}
 		long startIndex = pos;
@@ -167,7 +148,7 @@ public abstract class SourceStream implements Source {
 		}
 		long endIndex = pos + 1;
 		if (endIndex < this.length()) {
-			while ((ch = byteAt(endIndex)) != this.EOF()) {
+			while ((ch = byteAt(endIndex)) != 0 /* this.EOF() */) {
 				if (ch == '\n' || endIndex - startIndex > 78 && ch < 128) {
 					break;
 				}
@@ -206,15 +187,44 @@ public abstract class SourceStream implements Source {
 		return delim + source.toString() + delim + marker.toString();
 	}
 
-	public final static SourceStream newStringContext(String str) {
-		return new StringContext(str);
+	// public final int charAt(long pos) {
+	// int c = byteAt(pos), c2, c3, c4;
+	// int len = StringUtils.lengthOfUtf8(c);
+	// switch (len) {
+	// case 1:
+	// return c;
+	// case 2:
+	// // 0b11111 = 31
+	// // 0b111111 = 63
+	// c2 = byteAt(pos + 1) & 63;
+	// return ((c & 31) << 6) | c2;
+	// case 3:
+	// c2 = byteAt(pos + 1) & 63;
+	// c3 = byteAt(pos + 2) & 63;
+	// return ((c & 15) << 12) | c2 << 6 | c3;
+	// case 4:
+	// c2 = byteAt(pos + 1) & 63;
+	// c3 = byteAt(pos + 2) & 63;
+	// c4 = byteAt(pos + 3) & 63;
+	// return ((c & 7) << 18) | c2 << 12 | c3 << 6 | c4;
+	// }
+	// return -1;
+	// }
+	//
+	// public final int charLength(long pos) {
+	// int c = byteAt(pos);
+	// return StringUtils.lengthOfUtf8(c);
+	// }
+
+	public final static Source newStringSource(String str) {
+		return new StringSource(str);
 	}
 
-	public final static SourceStream newStringContext(String resource, long linenum, String str) {
-		return new StringContext(resource, linenum, str);
+	public final static Source newStringSource(String resource, long linenum, String str) {
+		return new StringSource(resource, linenum, str);
 	}
 
-	public final static SourceStream newFileContext(String fileName) throws IOException {
+	public final static Source newFileSource(String fileName) throws IOException {
 		File f = new File(fileName);
 		// System.out.println("file: " + fileName + " " + f.isFile());
 		if (!f.isFile()) {
@@ -222,7 +232,7 @@ public abstract class SourceStream implements Source {
 			// fileName);
 			// System.out.println("url: " + url);
 			// Stream = url.openStream();
-			InputStream Stream = SourceStream.class.getResourceAsStream("/nez/lib/" + fileName);
+			InputStream Stream = CommonSource.class.getResourceAsStream("/nez/lib/" + fileName);
 			if (Stream != null) {
 				BufferedReader reader = new BufferedReader(new InputStreamReader(Stream));
 				StringBuilder builder = new StringBuilder();
@@ -236,9 +246,9 @@ public abstract class SourceStream implements Source {
 					builder.append("\n");
 				}
 				reader.close();
-				return new StringContext(fileName, 1, builder.toString());
+				return new StringSource(fileName, 1, builder.toString());
 			}
 		}
-		return new FileContext(fileName);
+		return new FileSource(fileName);
 	}
 }

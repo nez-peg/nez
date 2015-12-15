@@ -75,8 +75,8 @@ public class DebugFileContext extends DebugSourceContext {
 	}
 
 	@Override
-	public final int EOF() {
-		return 0; //
+	public final boolean eof(long pos) {
+		return pos >= this.fileLength; //
 	}
 
 	@Override
@@ -124,7 +124,7 @@ public class DebugFileContext extends DebugSourceContext {
 	}
 
 	@Override
-	public final String substring(long startIndex, long endIndex) {
+	public final String subString(long startIndex, long endIndex) {
 		if (endIndex > startIndex) {
 			try {
 				long off_s = buffer_alignment(startIndex);
@@ -148,7 +148,7 @@ public class DebugFileContext extends DebugSourceContext {
 	}
 
 	@Override
-	public final byte[] subbyte(long startIndex, long endIndex) {
+	public final byte[] subByte(long startIndex, long endIndex) {
 		byte[] b = new byte[(int) (endIndex - startIndex)];
 		if (endIndex > startIndex) {
 			long off_s = buffer_alignment(startIndex);
@@ -246,7 +246,7 @@ public class DebugFileContext extends DebugSourceContext {
 					int len = end_off - start_off;
 					System.arraycopy(this.buffer, start_off, buf, copied, len);
 					copied += len;
-					assert(copied == buf.length);
+					assert (copied == buf.length);
 					return;
 				} else {
 					int len = PageSize - start_off;

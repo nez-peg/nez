@@ -3,6 +3,8 @@ package nez.debugger;
 import java.io.File;
 import java.io.IOException;
 
+import nez.ast.Source;
+import nez.io.StringSource;
 import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
 
@@ -26,7 +28,7 @@ public abstract class DebugSourceContext extends Context {
 	public abstract boolean match(long pos, byte[] text);
 
 	@Override
-	public abstract String substring(long startIndex, long endIndex);
+	public abstract String subString(long startIndex, long endIndex);
 
 	@Override
 	public abstract long linenum(long pos);
@@ -36,6 +38,11 @@ public abstract class DebugSourceContext extends Context {
 	@Override
 	public final String getResourceName() {
 		return fileName;
+	}
+
+	@Override
+	public Source subSource(long startIndex, long endIndex) {
+		return new StringSource(this.getResourceName(), this.linenum(startIndex), subByte(startIndex, endIndex), false);
 	}
 
 	// final String getFilePath(String fileName) {
@@ -109,7 +116,7 @@ public abstract class DebugSourceContext extends Context {
 				break;
 			}
 		}
-		indent = this.substring(startPosition, i) + indent;
+		indent = this.subString(startPosition, i) + indent;
 		return indent;
 	}
 
@@ -122,7 +129,6 @@ public abstract class DebugSourceContext extends Context {
 		return this.formatPositionMessage(messageType, pos, message) + this.getTextAround(pos, "\n ");
 	}
 
-	@Override
 	public final String formatDebugPositionMessage(long pos, String message) {
 		return "(" + this.getResourceName() + ":" + this.linenum(pos) + ")" + message;
 	}
@@ -143,7 +149,7 @@ public abstract class DebugSourceContext extends Context {
 		if (pos < 0) {
 			pos = 0;
 		}
-		while (this.byteAt(pos) == this.EOF() && pos > 0) {
+		while (this.byteAt(pos) == 0 && pos > 0) {
 			pos -= 1;
 		}
 		long startIndex = pos;
@@ -160,7 +166,7 @@ public abstract class DebugSourceContext extends Context {
 		}
 		long endIndex = pos + 1;
 		if (endIndex < this.length()) {
-			while ((ch = byteAt(endIndex)) != this.EOF()) {
+			while ((ch = byteAt(endIndex)) != 0) {
 				if (ch == '\n' || endIndex - startIndex > 78 && ch < 128) {
 					break;
 				}
@@ -186,7 +192,7 @@ public abstract class DebugSourceContext extends Context {
 		if (pos < 0) {
 			pos = 0;
 		}
-		while (this.byteAt(pos) == this.EOF() && pos > 0) {
+		while (this.byteAt(pos) == 0 && pos > 0) {
 			pos -= 1;
 		}
 		long startIndex = pos;
@@ -203,7 +209,7 @@ public abstract class DebugSourceContext extends Context {
 		}
 		long endIndex = pos + 1;
 		if (endIndex < this.length()) {
-			while ((ch = byteAt(endIndex)) != this.EOF()) {
+			while ((ch = byteAt(endIndex)) != 0) {
 				if (ch == '\n' || endIndex - startIndex > 78 && ch < 128) {
 					break;
 				}

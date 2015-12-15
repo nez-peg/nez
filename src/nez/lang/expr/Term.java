@@ -1,11 +1,11 @@
 package nez.lang.expr;
 
-import nez.ast.SourcePosition;
+import nez.ast.SourceLocation;
 import nez.lang.Expression;
 
 abstract class Term extends ExpressionCommons {
 
-	protected Term(SourcePosition s) {
+	protected Term(SourceLocation s) {
 		super(s);
 	}
 

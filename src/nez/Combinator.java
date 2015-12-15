@@ -3,7 +3,8 @@ package nez;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import nez.ast.SourcePosition;
+import nez.ast.Source;
+import nez.ast.SourceLocation;
 import nez.ast.Symbol;
 import nez.lang.Expression;
 import nez.lang.Grammar;
@@ -55,13 +56,13 @@ public class Combinator {
 		}
 	}
 
-	private SourcePosition src() {
+	private SourceLocation src() {
 		Exception e = new Exception();
 		StackTraceElement[] stacks = e.getStackTrace();
 		// System.out.println("^0 " + stacks[0]);
 		// System.out.println("^1 " + stacks[1]);
 		// System.out.println("^2 " + stacks[2]);
-		class JavaSourcePosition implements SourcePosition {
+		class JavaSourcePosition implements SourceLocation {
 			StackTraceElement e;
 
 			JavaSourcePosition(StackTraceElement e) {
@@ -74,8 +75,23 @@ public class Combinator {
 			}
 
 			@Override
-			public String formatDebugSourceMessage(String msg) {
-				return e + " " + msg;
+			public Source getSource() {
+				return null;
+			}
+
+			@Override
+			public long getSourcePosition() {
+				return 0;
+			}
+
+			@Override
+			public int getLineNum() {
+				return 0;
+			}
+
+			@Override
+			public int getColumn() {
+				return 0;
 			}
 		}
 		return new JavaSourcePosition(stacks[2]);

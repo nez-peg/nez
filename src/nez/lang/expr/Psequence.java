@@ -1,6 +1,6 @@
 package nez.lang.expr;
 
-import nez.ast.SourcePosition;
+import nez.ast.SourceLocation;
 import nez.lang.Expression;
 import nez.lang.PossibleAcceptance;
 import nez.util.StringUtils;
@@ -10,7 +10,7 @@ public class Psequence extends ExpressionCommons {
 	public Expression first;
 	public Expression next;
 
-	Psequence(SourcePosition s, Expression first, Expression next) {
+	Psequence(SourceLocation s, Expression first, Expression next) {
 		super(s);
 		this.first = first;
 		this.next = next;

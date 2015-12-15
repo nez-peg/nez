@@ -1,6 +1,6 @@
 package nez.lang.expr;
 
-import nez.ast.SourcePosition;
+import nez.ast.SourceLocation;
 import nez.lang.Expression;
 
 public class Xon extends Unary implements Expression.Conditional {
@@ -16,7 +16,7 @@ public class Xon extends Unary implements Expression.Conditional {
 		return this.flagName;
 	}
 
-	Xon(SourcePosition s, boolean predicate, String flagName, Expression inner) {
+	Xon(SourceLocation s, boolean predicate, String flagName, Expression inner) {
 		super(s, inner);
 		if (flagName.startsWith("!")) {
 			predicate = false;

@@ -429,7 +429,26 @@ public class NezDebugger {
 			Production rule = ruleMap.get(this.command.code);
 			if (rule != null) {
 				this.breakPointMap.put(rule.getLocalName(), new BreakPoint(rule, this.breakPointMap.size() + 1));
-				ConsoleUtils.println("breakpoint " + (this.breakPointMap.size()) + ": where = " + rule.getLocalName() + " " + rule.getExpression().getSourcePosition().formatDebugSourceMessage(""));
+				ConsoleUtils.println("breakpoint " + (this.breakPointMap.size()) + ": where = " + rule.getLocalName() + " " /*
+																															 * FIXME
+																															 * +
+																															 * (
+																															 * rule
+																															 * .
+																															 * getExpression
+																															 * (
+																															 * )
+																															 * .
+																															 * getSourcePosition
+																															 * (
+																															 * )
+																															 * )
+																															 * .
+																															 * formatDebugSourceMessage
+																															 * (
+																															 * ""
+																															 * )
+																															 */);
 			} else {
 				ConsoleUtils.println("production not found");
 			}
@@ -453,7 +472,24 @@ public class NezDebugger {
 			for (Entry<String, BreakPoint> s : mapValuesList) {
 				BreakPoint br = s.getValue();
 				Production rule = (br.pr);
-				ConsoleUtils.println(br.id + ": " + rule.getLocalName() + " " + rule.getExpression().getSourcePosition().formatDebugSourceMessage(""));
+				ConsoleUtils.println(br.id + ": " + rule.getLocalName() + " " /*
+																			 * +
+																			 * FIXME
+																			 * rule
+																			 * .
+																			 * getExpression
+																			 * (
+																			 * )
+																			 * .
+																			 * getSourcePosition
+																			 * (
+																			 * )
+																			 * .
+																			 * formatDebugSourceMessage
+																			 * (
+																			 * ""
+																			 * )
+																			 */);
 			}
 		}
 	}

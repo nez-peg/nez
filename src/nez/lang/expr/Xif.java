@@ -1,6 +1,6 @@
 package nez.lang.expr;
 
-import nez.ast.SourcePosition;
+import nez.ast.SourceLocation;
 import nez.lang.Expression;
 import nez.lang.PossibleAcceptance;
 
@@ -8,7 +8,7 @@ public class Xif extends Term implements Expression.Conditional {
 	boolean predicate;
 	String flagName;
 
-	Xif(SourcePosition s, boolean predicate, String flagName) {
+	Xif(SourceLocation s, boolean predicate, String flagName) {
 		super(s);
 		if (flagName.startsWith("!")) {
 			predicate = false;

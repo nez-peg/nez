@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import nez.ast.Tree;
-import nez.io.SourceStream;
-import nez.io.StringContext;
+import nez.io.CommonSource;
+import nez.io.StringSource;
 import nez.lang.Grammar;
 import nez.lang.ast.GrammarLoader;
 import nez.lang.ast.NezGrammarCombinator;
@@ -50,19 +50,19 @@ public class ParserGenerator {
 	public final Grammar loadGrammar(String fileName) throws IOException {
 		Grammar grammar = new Grammar(StringUtils.parseFileExtension(fileName));
 		grammar.setURN(fileName);
-		SourceStream source = StringContext.loadClassPath(fileName, classPath);
+		CommonSource source = StringSource.loadClassPath(fileName, classPath);
 		String ext = StringUtils.parseFileExtension(fileName);
 		updateGrammar(grammar, source, ext);
 		return grammar;
 	}
 
 	public final void updateGrammar(Grammar grammar, String fileName) throws IOException {
-		SourceStream source = StringContext.loadClassPath(fileName, classPath);
+		CommonSource source = StringSource.loadClassPath(fileName, classPath);
 		String ext = StringUtils.parseFileExtension(fileName);
 		updateGrammar(grammar, source, ext);
 	}
 
-	public final void updateGrammar(Grammar grammar, SourceStream source, String ext) throws IOException {
+	public final void updateGrammar(Grammar grammar, CommonSource source, String ext) throws IOException {
 		GrammarExtension boot = extensionMap.get(ext);
 		if (boot == null) {
 			if (!ext.equals("nez")) {

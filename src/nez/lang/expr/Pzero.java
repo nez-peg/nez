@@ -1,13 +1,13 @@
 package nez.lang.expr;
 
-import nez.ast.SourcePosition;
+import nez.ast.SourceLocation;
 import nez.lang.Expression;
 import nez.lang.PossibleAcceptance;
 
 public class Pzero extends Unary {
 	public boolean possibleInfiniteLoop = false;
 
-	Pzero(SourcePosition s, Expression e) {
+	Pzero(SourceLocation s, Expression e) {
 		super(s, e);
 		// e.setOuterLefted(this);
 	}

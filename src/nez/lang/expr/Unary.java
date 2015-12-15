@@ -1,12 +1,12 @@
 package nez.lang.expr;
 
-import nez.ast.SourcePosition;
+import nez.ast.SourceLocation;
 import nez.lang.Expression;
 
 public abstract class Unary extends ExpressionCommons {
 	public Expression inner;
 
-	Unary(SourcePosition s, Expression inner) {
+	Unary(SourceLocation s, Expression inner) {
 		super(s);
 		this.inner = inner;
 	}

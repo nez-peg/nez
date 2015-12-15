@@ -5,12 +5,12 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashSet;
 
-import nez.ast.SourcePosition;
+import nez.ast.Source;
+import nez.ast.SourceLocation;
 import nez.ast.Tree;
-import nez.io.SourceStream;
 import nez.lang.Grammar;
-import nez.parser.moz.MozMachine;
 import nez.parser.moz.MozCompiler;
+import nez.parser.moz.MozMachine;
 import nez.util.ConsoleUtils;
 import nez.util.Verbose;
 
@@ -180,37 +180,37 @@ public class ParserStrategy {
 		this.init();
 	}
 
-	public final void reportError(SourcePosition s, String message) {
+	public final void reportError(SourceLocation s, String message) {
 		if (s != null) {
 			log(s.formatSourceMessage("error", message));
 		}
 	}
 
-	public final void reportWarning(SourcePosition s, String message) {
+	public final void reportWarning(SourceLocation s, String message) {
 		if (s != null) {
 			log(s.formatSourceMessage("warning", message));
 		}
 	}
 
-	public final void reportNotice(SourcePosition s, String message) {
+	public final void reportNotice(SourceLocation s, String message) {
 		if (s != null) {
 			log(s.formatSourceMessage("notice", message));
 		}
 	}
 
-	public final void reportError(SourcePosition s, String fmt, Object... args) {
+	public final void reportError(SourceLocation s, String fmt, Object... args) {
 		if (s != null) {
 			log(s.formatSourceMessage("error", String.format(fmt, args)));
 		}
 	}
 
-	public final void reportWarning(SourcePosition s, String fmt, Object... args) {
+	public final void reportWarning(SourceLocation s, String fmt, Object... args) {
 		if (s != null) {
 			log(s.formatSourceMessage("warning", String.format(fmt, args)));
 		}
 	}
 
-	public final void reportNotice(SourcePosition s, String fmt, Object... args) {
+	public final void reportNotice(SourceLocation s, String fmt, Object... args) {
 		if (s != null) {
 			log(s.formatSourceMessage("notice", String.format(fmt, args)));
 		}
@@ -231,7 +231,7 @@ public class ParserStrategy {
 		return bc.compile(pgrammar);
 	}
 
-	public ParserContext newParserContext(SourceStream source, int memoPointSize, Tree<?> prototype) {
+	public ParserContext newParserContext(Source source, int memoPointSize, Tree<?> prototype) {
 		MemoTable table = MemoTable.newTable(this.SlidingWindow, memoPointSize);
 		MozMachine machine = new MozMachine(source);
 		machine.init(table, prototype);

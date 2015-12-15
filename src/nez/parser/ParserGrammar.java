@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
+import nez.lang.Consumer;
 import nez.lang.Expression;
 import nez.lang.Grammar;
 import nez.lang.GrammarChecker;
@@ -23,6 +24,18 @@ public class ParserGrammar extends Grammar {
 		memo(strategy);
 	}
 
+	/* Consumed */
+
+	private final Consumer.Analyzer consumed = new Consumer.Analyzer();
+
+	public final boolean isConsumed(Production p) {
+		return consumed.isConsumed(p);
+	}
+
+	public final boolean isConsumed(Expression e) {
+		return consumed.isConsumed(e);
+	}
+
 	/* Typestate */
 
 	private final Typestate.Analyzer typestate = new Typestate.Analyzer();
@@ -34,6 +47,8 @@ public class ParserGrammar extends Grammar {
 	public final Typestate typeState(Expression e) {
 		return typestate.inferTypestate(e);
 	}
+
+	/* Acceptance */
 
 	public ParseFunc getParseFunc(String name) {
 		return this.funcMap.get(name);

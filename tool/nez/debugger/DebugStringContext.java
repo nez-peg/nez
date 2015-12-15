@@ -38,19 +38,19 @@ public class DebugStringContext extends DebugSourceContext {
 	}
 
 	@Override
-	public final int EOF() {
-		return 0;
+	public final boolean eof(long pos) {
+		return pos >= this.textLength;
 	}
 
 	@Override
-	public final byte[] subbyte(long startIndex, long endIndex) {
+	public final byte[] subByte(long startIndex, long endIndex) {
 		byte[] b = new byte[(int) (endIndex - startIndex)];
 		System.arraycopy(this.utf8, (int) (startIndex), b, 0, b.length);
 		return b;
 	}
 
 	@Override
-	public final String substring(long startIndex, long endIndex) {
+	public final String subString(long startIndex, long endIndex) {
 		try {
 			return new String(this.utf8, (int) (startIndex), (int) (endIndex - startIndex), StringUtils.DefaultEncoding);
 		} catch (UnsupportedEncodingException e) {

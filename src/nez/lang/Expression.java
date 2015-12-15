@@ -3,7 +3,7 @@ package nez.lang;
 import java.util.AbstractList;
 import java.util.HashMap;
 
-import nez.ast.SourcePosition;
+import nez.ast.SourceLocation;
 import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cmulti;
@@ -38,13 +38,13 @@ import nez.lang.expr.Xsymbol;
 import nez.util.UList;
 
 public abstract class Expression extends AbstractList<Expression> {
-	SourcePosition s = null;
+	SourceLocation s = null;
 
-	protected Expression(SourcePosition s) {
+	protected Expression(SourceLocation s) {
 		this.s = s;
 	}
 
-	public final SourcePosition getSourcePosition() {
+	public final SourceLocation getSourcePosition() {
 		return this.s;
 	}
 

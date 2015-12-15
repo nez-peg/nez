@@ -5,9 +5,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import nez.ast.CommonTree;
+import nez.ast.Source;
 import nez.ast.SourceError;
 import nez.ast.Tree;
-import nez.io.SourceStream;
+import nez.io.CommonSource;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
 
@@ -41,7 +42,7 @@ public final class Parser {
 		return pcode;
 	}
 
-	public final ParserContext newParserContext(SourceStream source, Tree<?> prototype) {
+	public final ParserContext newParserContext(Source source, Tree<?> prototype) {
 		ParserCode pcode = this.getParserCode();
 		return this.strategy.newParserContext(source, pcode.getMemoPointSize(), prototype);
 	}
@@ -93,25 +94,25 @@ public final class Parser {
 
 	/* --------------------------------------------------------------------- */
 
-	public final boolean match(SourceStream s) {
+	public final boolean match(Source s) {
 		return perform(this.newParserContext(s, null)) != null;
 	}
 
 	public final boolean match(String str) {
-		return match(SourceStream.newStringContext(str));
+		return match(CommonSource.newStringSource(str));
 	}
 
-	public Tree<?> parse(SourceStream source, Tree<?> proto) {
+	public Tree<?> parse(Source source, Tree<?> proto) {
 		ParserContext context = this.newParserContext(source, proto);
 		return (Tree<?>) this.perform(context);
 	}
 
-	public final CommonTree parse(SourceStream sc) {
+	public final CommonTree parse(Source sc) {
 		return (CommonTree) this.parse(sc, new CommonTree());
 	}
 
 	public final CommonTree parse(String str) {
-		SourceStream sc = SourceStream.newStringContext(str);
+		Source sc = CommonSource.newStringSource(str);
 		return (CommonTree) this.parse(sc, new CommonTree());
 	}
 
@@ -124,7 +125,7 @@ public final class Parser {
 		this.disabledUncosumed = disabled;
 	}
 
-	private void perror(SourceStream source, long pos, String message) {
+	private void perror(Source source, long pos, String message) {
 		if (this.errors == null) {
 			this.errors = new UList<SourceError>(new SourceError[4]);
 		}

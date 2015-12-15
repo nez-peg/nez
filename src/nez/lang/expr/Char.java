@@ -1,6 +1,6 @@
 package nez.lang.expr;
 
-import nez.ast.SourcePosition;
+import nez.ast.SourceLocation;
 
 public abstract class Char extends Term {
 	boolean binary;
@@ -9,7 +9,7 @@ public abstract class Char extends Term {
 		return this.binary;
 	}
 
-	Char(SourcePosition s, boolean binary) {
+	Char(SourceLocation s, boolean binary) {
 		super(s);
 		this.binary = binary;
 	}

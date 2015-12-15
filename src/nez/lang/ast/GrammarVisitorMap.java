@@ -1,6 +1,6 @@
 package nez.lang.ast;
 
-import nez.ast.SourcePosition;
+import nez.ast.SourceLocation;
 import nez.ast.Tree;
 import nez.lang.Grammar;
 import nez.parser.ParserStrategy;
@@ -27,19 +27,19 @@ public class GrammarVisitorMap<T> extends VisitorMap<T> {
 		return node.getTag().getSymbol();
 	}
 
-	public final void reportError(SourcePosition s, String fmt, Object... args) {
+	public final void reportError(SourceLocation s, String fmt, Object... args) {
 		if (this.strategy != null) {
 			this.strategy.reportError(s, fmt, args);
 		}
 	}
 
-	public final void reportWarning(SourcePosition s, String fmt, Object... args) {
+	public final void reportWarning(SourceLocation s, String fmt, Object... args) {
 		if (this.strategy != null) {
 			this.strategy.reportWarning(s, fmt, args);
 		}
 	}
 
-	public final void reportNotice(SourcePosition s, String fmt, Object... args) {
+	public final void reportNotice(SourceLocation s, String fmt, Object... args) {
 		if (this.strategy != null) {
 			this.strategy.reportNotice(s, fmt, args);
 		}

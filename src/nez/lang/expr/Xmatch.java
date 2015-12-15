@@ -1,6 +1,6 @@
 package nez.lang.expr;
 
-import nez.ast.SourcePosition;
+import nez.ast.SourceLocation;
 import nez.ast.Symbol;
 import nez.lang.Expression;
 import nez.lang.PossibleAcceptance;
@@ -8,7 +8,7 @@ import nez.lang.PossibleAcceptance;
 public class Xmatch extends Term implements Expression.Contextual {
 	public final Symbol tableName;
 
-	Xmatch(SourcePosition s, Symbol tableName) {
+	Xmatch(SourceLocation s, Symbol tableName) {
 		super(s);
 		this.tableName = tableName;
 	}

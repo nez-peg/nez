@@ -2,20 +2,20 @@ package nez.lang;
 
 import java.util.AbstractList;
 
-import nez.ast.SourcePosition;
+import nez.ast.SourceLocation;
 import nez.ast.Symbol;
 import nez.lang.expr.ExpressionCommons;
 import nez.lang.expr.NonTerminal;
 import nez.util.UList;
 
 public abstract class GrammarHacks extends AbstractList<Production> {
-	protected SourcePosition getSourcePosition() {
+	protected SourceLocation getSourcePosition() {
 		return null;
 	}
 
 	public abstract void addProduction(Production p);
 
-	public final Production newProduction(SourcePosition s, int flag, String name, Expression e) {
+	public final Production newProduction(SourceLocation s, int flag, String name, Expression e) {
 		Production p = new Production(s, flag, (Grammar) this, name, e);
 		addProduction(p);
 		return p;
@@ -25,7 +25,7 @@ public abstract class GrammarHacks extends AbstractList<Production> {
 		return newProduction(getSourcePosition(), 0, name, e);
 	}
 
-	public final NonTerminal newNonTerminal(SourcePosition s, String name) {
+	public final NonTerminal newNonTerminal(SourceLocation s, String name) {
 		return ExpressionCommons.newNonTerminal(s, (Grammar) this, name);
 	}
 

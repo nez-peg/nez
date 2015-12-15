@@ -1,6 +1,6 @@
 package nez.lang.expr;
 
-import nez.ast.SourcePosition;
+import nez.ast.SourceLocation;
 import nez.lang.Expression;
 import nez.lang.PossibleAcceptance;
 import nez.util.UList;
@@ -8,7 +8,7 @@ import nez.util.UList;
 public class Pchoice extends ExpressionCommons {
 	Expression[] inners;
 
-	Pchoice(SourcePosition s, UList<Expression> l, int size) {
+	Pchoice(SourceLocation s, UList<Expression> l, int size) {
 		super(s);
 		this.inners = new Expression[size];
 		for (int i = 0; i < size; i++) {

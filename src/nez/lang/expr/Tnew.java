@@ -1,6 +1,6 @@
 package nez.lang.expr;
 
-import nez.ast.SourcePosition;
+import nez.ast.SourceLocation;
 import nez.lang.Expression;
 import nez.lang.PossibleAcceptance;
 
@@ -10,7 +10,7 @@ public class Tnew extends Term {
 	// public Expression outer = null;
 	public int shift = 0;
 
-	Tnew(SourcePosition s, int shift) {
+	Tnew(SourceLocation s, int shift) {
 		super(s);
 		this.shift = shift;
 	}

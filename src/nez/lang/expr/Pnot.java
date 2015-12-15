@@ -1,11 +1,11 @@
 package nez.lang.expr;
 
-import nez.ast.SourcePosition;
+import nez.ast.SourceLocation;
 import nez.lang.Expression;
 import nez.lang.PossibleAcceptance;
 
 public class Pnot extends Unary {
-	Pnot(SourcePosition s, Expression e) {
+	Pnot(SourceLocation s, Expression e) {
 		super(s, e);
 	}
 

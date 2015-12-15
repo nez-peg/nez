@@ -1,10 +1,9 @@
 package nez.lang;
 
-import nez.ast.Source;
-import nez.lang.expr.Pand;
 import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cset;
+import nez.lang.expr.Pand;
 import nez.lang.expr.Pnot;
 import nez.lang.expr.Unary;
 
@@ -25,9 +24,9 @@ public class PossibleAcceptance {
 
 	public static short acceptAny(boolean binary, int ch) {
 		if (binary) {
-			return (ch == Source.BinaryEOF) ? PossibleAcceptance.Reject : PossibleAcceptance.Accept;
+			return PossibleAcceptance.Accept;
 		} else {
-			return (ch == Source.BinaryEOF || ch == 0) ? PossibleAcceptance.Reject : PossibleAcceptance.Accept;
+			return (ch == 0) ? PossibleAcceptance.Reject : PossibleAcceptance.Accept;
 		}
 	}
 

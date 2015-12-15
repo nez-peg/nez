@@ -3,9 +3,9 @@ package nez.lang;
 import java.util.HashMap;
 import java.util.List;
 
+import nez.ast.Source;
 import nez.ast.Tree;
 import nez.ast.TreeUtils;
-import nez.io.SourceStream;
 import nez.parser.Coverage;
 import nez.parser.Parser;
 import nez.parser.ParserStrategy;
@@ -168,7 +168,7 @@ public class GrammarExample {
 		}
 
 		public boolean test(Parser p, TestResult result, boolean verbose) {
-			SourceStream source = textNode.newSourceContext();
+			Source source = textNode.toSource();
 			String name = nameNode.toText() + " (" + textNode.getSource().getResourceName() + ":" + textNode.getLineNum() + ")";
 			Tree<?> node = p.parse(source);
 			if (node == null) {

@@ -1,6 +1,6 @@
 package nez.lang.expr;
 
-import nez.ast.SourcePosition;
+import nez.ast.SourceLocation;
 import nez.ast.Symbol;
 import nez.lang.Expression;
 import nez.lang.PossibleAcceptance;
@@ -8,12 +8,12 @@ import nez.lang.PossibleAcceptance;
 public class Ttag extends Term {
 	public Symbol tag;
 
-	Ttag(SourcePosition s, Symbol tag) {
+	Ttag(SourceLocation s, Symbol tag) {
 		super(s);
 		this.tag = tag;
 	}
 
-	Ttag(SourcePosition s, String name) {
+	Ttag(SourceLocation s, String name) {
 		this(s, Symbol.tag(name));
 	}
 

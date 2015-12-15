@@ -2,10 +2,10 @@ package nez.main;
 
 import java.io.IOException;
 
+import nez.ast.Source;
 import nez.ast.Tree;
 import nez.ast.TreeUtils;
 import nez.ast.TreeWriter;
-import nez.io.SourceStream;
 import nez.parser.Parser;
 import nez.util.ConsoleUtils;
 
@@ -16,7 +16,7 @@ public class Cparse extends Command {
 		Parser parser = newParser();
 		makeOutputFile(null, null); // check format
 		while (hasInputSource()) {
-			SourceStream input = nextInputSource();
+			Source input = nextInputSource();
 			Tree<?> node = parser.parse(input);
 			if (node == null) {
 				parser.showErrors();
@@ -41,7 +41,7 @@ public class Cparse extends Command {
 	// }
 	// }
 
-	protected void makeOutputFile(SourceStream source, Tree<?> node) {
+	protected void makeOutputFile(Source source, Tree<?> node) {
 		if (outputFormat == null) {
 			outputFormat = "ast";
 		}

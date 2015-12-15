@@ -2,7 +2,7 @@ package nez.main;
 
 import java.io.IOException;
 
-import nez.io.SourceStream;
+import nez.ast.Source;
 import nez.parser.Parser;
 import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
@@ -22,7 +22,7 @@ public class Cmatch extends Command {
 		long time = 0;
 
 		while (hasInputSource()) {
-			SourceStream file = nextInputSource();
+			Source file = nextInputSource();
 			totalCount++;
 
 			long t = System.nanoTime();

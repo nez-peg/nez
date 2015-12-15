@@ -1,11 +1,11 @@
 package nez.lang.expr;
 
-import nez.ast.SourcePosition;
+import nez.ast.SourceLocation;
 import nez.lang.Expression;
 import nez.lang.PossibleAcceptance;
 
 public class Pone extends Pzero {
-	Pone(SourcePosition s, Expression e) {
+	Pone(SourceLocation s, Expression e) {
 		super(s, e);
 	}
 

@@ -1,6 +1,6 @@
 package nez.lang.expr;
 
-import nez.ast.SourcePosition;
+import nez.ast.SourceLocation;
 import nez.lang.Expression;
 import nez.lang.Grammar;
 import nez.lang.PossibleAcceptance;
@@ -13,7 +13,7 @@ public class NonTerminal extends ExpressionCommons {
 	private String uniqueName;
 	private Production deref = null;
 
-	public NonTerminal(SourcePosition s, Grammar g, String ruleName) {
+	public NonTerminal(SourceLocation s, Grammar g, String ruleName) {
 		super(s);
 		this.g = g;
 		this.localName = ruleName;

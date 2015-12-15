@@ -3,7 +3,7 @@ package nez.parser.moz;
 import nez.ast.ASTMachine;
 import nez.ast.Source;
 import nez.ast.Tree;
-import nez.io.SourceStream;
+import nez.io.CommonSource;
 import nez.parser.MemoEntry;
 import nez.parser.MemoTable;
 import nez.parser.ParserProfier;
@@ -32,7 +32,7 @@ public final class MozMachine extends ParserRuntime {
 	}
 
 	public final byte[] subbyte(long start, long end) {
-		return s.subbyte(start, end);
+		return s.subByte(start, end);
 	}
 
 	@Override

@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.TreeSet;
 
-import nez.io.StringContext;
+import nez.io.StringSource;
 
 public class DFA {
 	private HashSet<State> S = null;
@@ -92,13 +92,13 @@ public class DFA {
 		return rev(rev(new DFA(S, tau, f, F)).det()).det();
 	}
 
-	public boolean exec(StringContext context) {
+	public boolean exec(StringSource context) {
 		ArrayList<ArrayList<Transition>> adjacencyList = toAdjacencyList();
 		int stateID = getf().getID();
 		for (int i = 0; i < context.length(); i++) {
 			boolean found = false;
 			for (Transition transition : adjacencyList.get(stateID)) {
-				if (transition.getLabel() == context.charAt(i)) {
+				if (transition.getLabel() == context.byteAt(i)) { // FIXME
 					stateID = transition.getDst();
 					found = true;
 					break;

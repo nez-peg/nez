@@ -1,11 +1,11 @@
 package nez.lang.expr;
 
-import nez.ast.SourcePosition;
+import nez.ast.SourceLocation;
 import nez.lang.Expression;
 import nez.lang.PossibleAcceptance;
 
 public class Poption extends Unary {
-	Poption(SourcePosition s, Expression e) {
+	Poption(SourceLocation s, Expression e) {
 		super(s, e);
 		// e.setOuterLefted(this);
 	}

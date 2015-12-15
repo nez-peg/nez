@@ -131,7 +131,7 @@ public class NezFileFormatter extends TreeVisitor {
 	private long checkComment(long prev, Tree<?> node) {
 		long start = node.getSourcePosition();
 		if (prev < start) {
-			String sub = node.getSource().substring(prev, start);
+			String sub = node.getSource().subString(prev, start);
 			writeMultiLine(prev, sub);
 		}
 		return start + node.getLength();

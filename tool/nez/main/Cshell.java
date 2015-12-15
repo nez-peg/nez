@@ -3,9 +3,10 @@ package nez.main;
 import java.io.IOException;
 
 import nez.ast.CommonTree;
+import nez.ast.Source;
 import nez.debugger.DebugManager;
 import nez.ext.CommandContext;
-import nez.io.SourceStream;
+import nez.io.CommonSource;
 import nez.lang.Grammar;
 import nez.parser.Parser;
 import nez.util.ConsoleUtils;
@@ -22,7 +23,7 @@ public class Cshell extends Command {
 		Parser p = strategy.newParser(grammar);
 		p.setDisabledUnconsumed(true);
 		while (readLine(start + ">>> ")) {
-			SourceStream sc = SourceStream.newStringContext("<stdio>", linenum, text);
+			Source sc = CommonSource.newStringSource("<stdio>", linenum, text);
 			CommonTree node = p.parse(sc);
 			if (node == null || p.hasErrors()) {
 				p.showErrors();

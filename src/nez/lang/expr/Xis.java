@@ -1,6 +1,6 @@
 package nez.lang.expr;
 
-import nez.ast.SourcePosition;
+import nez.ast.SourceLocation;
 import nez.ast.Symbol;
 import nez.lang.Expression;
 
@@ -9,13 +9,13 @@ public class Xis extends Unary implements Expression.Contextual {
 	public final Symbol tableName;
 	public final boolean is;
 
-	Xis(SourcePosition s, NonTerminal pat, boolean is) {
+	Xis(SourceLocation s, NonTerminal pat, boolean is) {
 		super(s, pat);
 		this.tableName = Symbol.tag(pat.getLocalName());
 		this.is = is;
 	}
 
-	Xis(SourcePosition s, Symbol tableName, Expression e, boolean is) {
+	Xis(SourceLocation s, Symbol tableName, Expression e, boolean is) {
 		super(s, e);
 		this.tableName = tableName;
 		this.is = is;

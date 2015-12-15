@@ -4,8 +4,9 @@ import java.io.IOException;
 
 import nez.ParserGenerator;
 import nez.Version;
+import nez.ast.Source;
 import nez.ext.CommandContext;
-import nez.io.SourceStream;
+import nez.io.CommonSource;
 import nez.lang.Grammar;
 import nez.parser.Parser;
 import nez.parser.ParserStrategy;
@@ -185,16 +186,16 @@ public abstract class Command {
 		return fileIndex < inputFiles.size();
 	}
 
-	public final SourceStream nextInputSource() throws IOException {
+	public final Source nextInputSource() throws IOException {
 		if (hasInputSource()) {
 			String path = this.inputFiles.ArrayValues[fileIndex];
 			fileIndex++;
-			return SourceStream.newFileContext(path);
+			return CommonSource.newFileSource(path);
 		}
-		return SourceStream.newStringContext(""); // empty input
+		return CommonSource.newStringSource(""); // empty input
 	}
 
-	public final String getOutputFileName(SourceStream input, String ext) {
+	public final String getOutputFileName(Source input, String ext) {
 		if (outputDirectory != null) {
 			return StringUtils.toFileName(input.getResourceName(), outputDirectory, ext);
 		} else {

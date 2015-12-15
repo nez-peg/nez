@@ -1,17 +1,17 @@
 package nez.parser;
 
-import nez.io.SourceStream;
+import nez.ast.Source;
 
 public final class ParserContext {
-	SourceStream source;
+	Source source;
 	ParserRuntime runtime;
 
-	public ParserContext(SourceStream source, ParserRuntime runtime) {
+	public ParserContext(Source source, ParserRuntime runtime) {
 		this.runtime = runtime;
 		this.source = source;
 	}
 
-	public final SourceStream getSource() {
+	public final Source getSource() {
 		return this.source;
 	}
 

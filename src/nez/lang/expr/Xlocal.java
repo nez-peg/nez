@@ -1,13 +1,13 @@
 package nez.lang.expr;
 
-import nez.ast.SourcePosition;
+import nez.ast.SourceLocation;
 import nez.ast.Symbol;
 import nez.lang.Expression;
 
 public class Xlocal extends Unary {
 	public final Symbol tableName;
 
-	Xlocal(SourcePosition s, Symbol table, Expression inner) {
+	Xlocal(SourceLocation s, Symbol table, Expression inner) {
 		super(s, inner);
 		this.tableName = table;
 	}

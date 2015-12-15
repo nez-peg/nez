@@ -2,8 +2,8 @@ package nez.main;
 
 import java.io.IOException;
 
+import nez.ast.Source;
 import nez.ast.Tree;
-import nez.io.SourceStream;
 import nez.parser.Parser;
 import nez.util.ConsoleUtils;
 
@@ -17,7 +17,7 @@ public class Cbench extends Command {
 		long len = 0;
 		double total = 0.0;
 		while (hasInputSource()) {
-			SourceStream input = nextInputSource();
+			Source input = nextInputSource();
 			ConsoleUtils.print(input.getResourceName() + ": ");
 			double dsum = 0.0;
 			for (int c = 0; c < 5; c++) {

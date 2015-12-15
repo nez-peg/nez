@@ -1,10 +1,10 @@
 package nez.lang.expr;
 
-import nez.ast.SourcePosition;
+import nez.ast.SourceLocation;
 import nez.lang.Expression;
 
 public class Tdetree extends Unary {
-	Tdetree(SourcePosition s, Expression inner) {
+	Tdetree(SourceLocation s, Expression inner) {
 		super(s, inner);
 	}
 

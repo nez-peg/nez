@@ -1,6 +1,6 @@
 package nez.lang.expr;
 
-import nez.ast.SourcePosition;
+import nez.ast.SourceLocation;
 import nez.lang.Expression;
 import nez.lang.PossibleAcceptance;
 import nez.util.StringUtils;
@@ -8,7 +8,7 @@ import nez.util.StringUtils;
 public class Treplace extends Term {
 	public String value;
 
-	Treplace(SourcePosition s, String value) {
+	Treplace(SourceLocation s, String value) {
 		super(s);
 		this.value = value;
 	}

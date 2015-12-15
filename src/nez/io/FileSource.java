@@ -9,7 +9,7 @@ import java.util.Map;
 import nez.util.StringUtils;
 import nez.util.Verbose;
 
-public class FileContext extends SourceStream {
+public class FileSource extends CommonSource {
 	public final static int PageSize = 4096;
 
 	private RandomAccessFile file;
@@ -21,7 +21,7 @@ public class FileContext extends SourceStream {
 	private final int FifoSize = 8;
 	private LinkedHashMap<Long, byte[]> fifoMap = null;
 
-	public FileContext(String fileName) throws IOException {
+	public FileSource(String fileName) throws IOException {
 		super(fileName, 1);
 		try {
 			this.file = new RandomAccessFile(fileName, "r");
@@ -75,8 +75,8 @@ public class FileContext extends SourceStream {
 	}
 
 	@Override
-	public final int EOF() {
-		return 0; //
+	public final boolean eof(long pos) {
+		return pos >= this.length(); //
 	}
 
 	@Override
@@ -124,7 +124,7 @@ public class FileContext extends SourceStream {
 	}
 
 	@Override
-	public final String substring(long startIndex, long endIndex) {
+	public final String subString(long startIndex, long endIndex) {
 		if (endIndex > startIndex) {
 			try {
 				long off_s = buffer_alignment(startIndex);
@@ -148,7 +148,7 @@ public class FileContext extends SourceStream {
 	}
 
 	@Override
-	public final byte[] subbyte(long startIndex, long endIndex) {
+	public final byte[] subByte(long startIndex, long endIndex) {
 		byte[] b = null;
 		if (endIndex > startIndex) {
 			long off_s = buffer_alignment(startIndex);

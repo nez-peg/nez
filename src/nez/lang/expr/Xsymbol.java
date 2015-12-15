@@ -1,18 +1,18 @@
 package nez.lang.expr;
 
-import nez.ast.SourcePosition;
+import nez.ast.SourceLocation;
 import nez.ast.Symbol;
 import nez.lang.Expression;
 
 public class Xsymbol extends Unary {
 	public final Symbol tableName;
 
-	Xsymbol(SourcePosition s, NonTerminal pat) {
+	Xsymbol(SourceLocation s, NonTerminal pat) {
 		super(s, pat);
 		this.tableName = Symbol.tag(pat.getLocalName());
 	}
 
-	Xsymbol(SourcePosition s, Symbol tableName, Expression pat) {
+	Xsymbol(SourceLocation s, Symbol tableName, Expression pat) {
 		super(s, pat);
 		this.tableName = tableName;
 	}

@@ -1,13 +1,13 @@
 package nez.lang.expr;
 
-import nez.ast.SourcePosition;
+import nez.ast.SourceLocation;
 import nez.lang.Expression;
 import nez.lang.PossibleAcceptance;
 
 public class Tcapture extends Term {
 	public int shift;
 
-	Tcapture(SourcePosition s, int shift) {
+	Tcapture(SourceLocation s, int shift) {
 		super(s);
 		this.shift = shift;
 	}

@@ -1,11 +1,11 @@
 package nez.lang.expr;
 
-import nez.ast.SourcePosition;
+import nez.ast.SourceLocation;
 import nez.lang.Expression;
 import nez.lang.PossibleAcceptance;
 
 public class Cany extends Char {
-	Cany(SourcePosition s, boolean binary) {
+	Cany(SourceLocation s, boolean binary) {
 		super(s, binary);
 	}
 

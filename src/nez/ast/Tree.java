@@ -2,10 +2,10 @@ package nez.ast;
 
 import java.util.AbstractList;
 
-import nez.io.SourceStream;
+import nez.io.CommonSource;
 import nez.util.StringUtils;
 
-public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements SourcePosition {
+public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements SourceLocation {
 	protected final static Symbol[] EmptyLabels = new Symbol[0];
 
 	protected Symbol tag;
@@ -59,10 +59,12 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements
 
 	/* Source */
 
+	@Override
 	public final Source getSource() {
 		return this.source;
 	}
 
+	@Override
 	public final long getSourcePosition() {
 		return this.pos;
 	}
@@ -72,10 +74,12 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements
 		this.length = len;
 	}
 
+	@Override
 	public final int getLineNum() {
 		return (int) this.source.linenum(this.pos);
 	}
 
+	@Override
 	public final int getColumn() {
 		return this.source.column(this.pos);
 	}
@@ -277,7 +281,7 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements
 		if (this.source != null) {
 			long pos = this.getSourcePosition();
 			long epos = pos + this.length;
-			this.value = this.source.substring(pos, epos);
+			this.value = this.source.subString(pos, epos);
 			// try {
 			// this.value = this.source.substring(pos, epos);
 			// } catch (Exception e) {
@@ -353,10 +357,11 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements
 		return this.getSource().formatPositionLine(type, this.getSourcePosition(), msg);
 	}
 
-	@Override
-	public final String formatDebugSourceMessage(String msg) {
-		return this.source.formatDebugPositionMessage(this.getSourcePosition(), msg);
-	}
+	// @Override
+	// public final String formatDebugSourceMessage(String msg) {
+	// return this.source.formatDebugPositionMessage(this.getSourcePosition(),
+	// msg);
+	// }
 
 	/**
 	 * Create new input stream
@@ -364,8 +369,8 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements
 	 * @return SourceContext
 	 */
 
-	public final SourceStream newSourceContext() {
-		return SourceStream.newStringContext(this.getSource().getResourceName(), this.getSource().linenum(this.getSourcePosition()), this.toText());
+	public final Source toSource() {
+		return CommonSource.newStringSource(this.getSource().getResourceName(), this.getSource().linenum(this.getSourcePosition()), this.toText());
 	}
 
 	public final boolean containsToken(String token) {

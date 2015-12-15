@@ -1,6 +1,6 @@
 package nez.lang.expr;
 
-import nez.ast.SourcePosition;
+import nez.ast.SourceLocation;
 import nez.lang.Expression;
 
 import nez.lang.PossibleAcceptance;
@@ -9,7 +9,7 @@ import nez.util.StringUtils;
 public class Cmulti extends Char {
 	public byte[] byteSeq;
 
-	Cmulti(SourcePosition s, boolean binary, byte[] byteSeq) {
+	Cmulti(SourceLocation s, boolean binary, byte[] byteSeq) {
 		super(s, binary);
 		this.byteSeq = byteSeq;
 	}

@@ -1,6 +1,6 @@
 package nez.lang.expr;
 
-import nez.ast.SourcePosition;
+import nez.ast.SourceLocation;
 import nez.ast.Symbol;
 import nez.lang.Expression;
 import nez.lang.PossibleAcceptance;
@@ -10,7 +10,7 @@ public class Tlfold extends Term {
 	public Expression outer = null;
 	public int shift = 0;
 
-	Tlfold(SourcePosition s, Symbol label, int shift) {
+	Tlfold(SourceLocation s, Symbol label, int shift) {
 		super(s);
 		this.label = label;
 		this.shift = shift;

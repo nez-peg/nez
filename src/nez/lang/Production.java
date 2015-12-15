@@ -2,7 +2,7 @@ package nez.lang;
 
 import java.util.List;
 
-import nez.ast.SourcePosition;
+import nez.ast.SourceLocation;
 import nez.lang.Expression.Conditional;
 import nez.lang.Expression.Contextual;
 import nez.lang.expr.Cany;
@@ -54,7 +54,7 @@ public class Production /* extends Expression */{
 	String uname;
 	Expression body;
 
-	Production(SourcePosition s, int flag, Grammar g, String name, Expression body) {
+	Production(SourceLocation s, int flag, Grammar g, String name, Expression body) {
 		// super(s);
 		this.flag = flag;
 		this.g = g;

@@ -1,10 +1,10 @@
 package nez.lang.expr;
 
-import nez.ast.SourcePosition;
+import nez.ast.SourceLocation;
 import nez.lang.Expression;
 
 public class Xblock extends Unary {
-	Xblock(SourcePosition s, Expression e) {
+	Xblock(SourceLocation s, Expression e) {
 		super(s, e);
 	}
 

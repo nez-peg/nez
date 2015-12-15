@@ -1,11 +1,11 @@
 package nez.lang.expr;
 
-import nez.ast.SourcePosition;
+import nez.ast.SourceLocation;
 import nez.lang.Expression;
 import nez.lang.PossibleAcceptance;
 
 public class Pfail extends Term {
-	Pfail(SourcePosition s) {
+	Pfail(SourceLocation s) {
 		super(s);
 	}
 

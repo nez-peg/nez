@@ -1,6 +1,6 @@
 package nez.lang.expr;
 
-import nez.ast.SourcePosition;
+import nez.ast.SourceLocation;
 import nez.ast.Symbol;
 import nez.lang.Expression;
 
@@ -9,7 +9,7 @@ public class Tlink extends Unary {
 	public int index = -1;
 	Symbol label;
 
-	Tlink(SourcePosition s, Symbol label, Expression e) {
+	Tlink(SourceLocation s, Symbol label, Expression e) {
 		super(s, e);
 		this.label = label;
 	}

@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import nez.ast.Source;
-import nez.ast.SourcePosition;
+import nez.ast.SourceLocation;
 import nez.ast.Tree;
-import nez.io.SourceStream;
+import nez.io.CommonSource;
 import nez.junks.GrammarFileLoader.DefaultVisitor;
 import nez.lang.Expression;
 import nez.lang.Grammar;
@@ -83,7 +83,7 @@ public abstract class GrammarFileLoader extends VisitorMap<DefaultVisitor> {
 		this.file = g;
 		this.strategy = ParserStrategy.nullCheck(strategy);
 
-		SourceStream sc = SourceStream.newFileContext(urn);
+		Source sc = CommonSource.newFileSource(urn);
 		String desc = this.parseGrammarDescription(sc);
 		if (desc != null) {
 			g.setDesc(desc);
@@ -98,7 +98,7 @@ public abstract class GrammarFileLoader extends VisitorMap<DefaultVisitor> {
 		this.file = g;
 		this.strategy = ParserStrategy.nullCheck(strategy);
 
-		SourceStream sc = SourceStream.newStringContext(urn, linenum, text);
+		Source sc = CommonSource.newStringSource(urn, linenum, text);
 		Parser p = getLoaderParser(null);
 		Tree<?> node = p.parse(sc);
 		if (node == null) {
@@ -117,19 +117,19 @@ public abstract class GrammarFileLoader extends VisitorMap<DefaultVisitor> {
 
 	/* ------------------------------------------------------------------ */
 
-	public final void reportError(SourcePosition s, String message) {
+	public final void reportError(SourceLocation s, String message) {
 		if (this.strategy != null) {
 			this.strategy.reportError(s, message);
 		}
 	}
 
-	public final void reportWarning(SourcePosition s, String message) {
+	public final void reportWarning(SourceLocation s, String message) {
 		if (this.strategy != null) {
 			this.strategy.reportWarning(s, message);
 		}
 	}
 
-	public final void reportNotice(SourcePosition s, String message) {
+	public final void reportNotice(SourceLocation s, String message) {
 		if (this.strategy != null) {
 			this.strategy.reportNotice(s, message);
 		}

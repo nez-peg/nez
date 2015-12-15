@@ -3,7 +3,8 @@ package nez.ext;
 import java.io.File;
 import java.io.IOException;
 
-import nez.io.SourceStream;
+import nez.ast.Source;
+import nez.io.CommonSource;
 import nez.lang.regex.RegularExpression;
 import nez.main.Command;
 import nez.main.ParserFactory;
@@ -68,24 +69,24 @@ public class CommandContext extends ParserFactory {
 		return this.inputText != null || this.inputFileIndex < this.inputFileLists.size();
 	}
 
-	public final SourceStream nextInput() throws IOException {
+	public final Source nextInput() throws IOException {
 		if (this.inputText != null) {
 			String text = this.inputText;
 			this.inputText = null;
-			return SourceStream.newStringContext(text);
+			return CommonSource.newStringSource(text);
 		}
 		if (this.inputFileIndex < this.inputFileLists.size()) {
 			String f = this.inputFileLists.ArrayValues[this.inputFileIndex];
 			this.inputFileIndex++;
-			return SourceStream.newFileContext(f);
+			return CommonSource.newFileSource(f);
 		}
-		return SourceStream.newStringContext(""); // empty input
+		return CommonSource.newStringSource(""); // empty input
 	}
 
 	// -d, --dir
 	public String outputDirName = null;
 
-	public final String getOutputFileName(SourceStream input, String ext) {
+	public final String getOutputFileName(CommonSource input, String ext) {
 		if (outputDirName != null) {
 			return StringUtils.toFileName(input.getResourceName(), outputDirName, ext);
 		} else {

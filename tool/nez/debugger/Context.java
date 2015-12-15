@@ -474,7 +474,7 @@ public abstract class Context implements Source {
 
 	public final DebugVMInstruction opIdef(Idef inst) {
 		StackEntry top = this.popStack();
-		byte[] captured = this.subbyte(top.pos, this.pos);
+		byte[] captured = this.subByte(top.pos, this.pos);
 		this.symbolTable.addSymbol(inst.tableName, captured);
 		return inst.next;
 	}
@@ -490,7 +490,7 @@ public abstract class Context implements Source {
 
 	public final DebugVMInstruction opIisa(Iisa inst) {
 		StackEntry top = this.popStack();
-		byte[] captured = this.subbyte(top.pos, this.pos);
+		byte[] captured = this.subByte(top.pos, this.pos);
 		if (this.symbolTable.contains(inst.tableName, captured)) {
 			this.consume(captured.length);
 			return inst.next;

@@ -1,6 +1,6 @@
 package nez.lang.expr;
 
-import nez.ast.SourcePosition;
+import nez.ast.SourceLocation;
 import nez.ast.Symbol;
 import nez.lang.Expression;
 import nez.lang.Grammar;
@@ -9,7 +9,7 @@ import nez.util.UList;
 
 public abstract class ExpressionCommons extends Expression {
 
-	protected ExpressionCommons(SourcePosition s) {
+	protected ExpressionCommons(SourceLocation s) {
 		super(s);
 	}
 
@@ -94,25 +94,25 @@ public abstract class ExpressionCommons extends Expression {
 
 	// -----------------------------------------------------------------------
 
-	public final static NonTerminal newNonTerminal(SourcePosition s, Grammar g, String name) {
+	public final static NonTerminal newNonTerminal(SourceLocation s, Grammar g, String name) {
 		return new NonTerminal(s, g, name);
 	}
 
-	public final static Expression newEmpty(SourcePosition s) {
+	public final static Expression newEmpty(SourceLocation s) {
 		return new Pempty(s);
 	}
 
-	public final static Expression newFailure(SourcePosition s) {
+	public final static Expression newFailure(SourceLocation s) {
 		return new Pfail(s);
 	}
 
 	/* Terminal */
 
-	public final static Expression newCany(SourcePosition s, boolean binary) {
+	public final static Expression newCany(SourceLocation s, boolean binary) {
 		return new Cany(s, binary);
 	}
 
-	public final static Expression newCbyte(SourcePosition s, boolean binary, int ch) {
+	public final static Expression newCbyte(SourceLocation s, boolean binary, int ch) {
 		if (ch == 0) {
 			binary = true;
 		}
@@ -131,11 +131,11 @@ public abstract class ExpressionCommons extends Expression {
 		return byteChar;
 	}
 
-	public static Expression newCmulti(SourcePosition s, boolean binary, byte[] utf8) {
+	public static Expression newCmulti(SourceLocation s, boolean binary, byte[] utf8) {
 		return new Cmulti(s, binary, utf8);
 	}
 
-	public static Expression newCset(SourcePosition s, boolean binary, boolean[] byteMap) {
+	public static Expression newCset(SourceLocation s, boolean binary, boolean[] byteMap) {
 		int byteChar = uniqueByteChar(byteMap);
 		if (byteChar != -1) {
 			return newCbyte(s, binary, byteChar);
@@ -145,34 +145,34 @@ public abstract class ExpressionCommons extends Expression {
 
 	/* Unary */
 
-	public final static Expression newPoption(SourcePosition s, Expression p) {
+	public final static Expression newPoption(SourceLocation s, Expression p) {
 		return new Poption(s, p);
 	}
 
-	public final static Expression newPzero(SourcePosition s, Expression p) {
+	public final static Expression newPzero(SourceLocation s, Expression p) {
 		return new Pzero(s, p);
 	}
 
-	public final static Expression newPone(SourcePosition s, Expression p) {
+	public final static Expression newPone(SourceLocation s, Expression p) {
 		return new Pone(s, p);
 	}
 
-	public final static Pand newPand(SourcePosition s, Expression p) {
+	public final static Pand newPand(SourceLocation s, Expression p) {
 		return new Pand(s, p);
 	}
 
-	public final static Pnot newPnot(SourcePosition s, Expression p) {
+	public final static Pnot newPnot(SourceLocation s, Expression p) {
 		return new Pnot(s, p);
 	}
 
-	public final static Expression newPsequence(SourcePosition s, UList<Expression> l) {
+	public final static Expression newPsequence(SourceLocation s, UList<Expression> l) {
 		if (l.size() == 0) {
 			return newEmpty(s);
 		}
 		return newPsequence(s, 0, l);
 	}
 
-	private final static Expression newPsequence(SourcePosition s, int start, UList<Expression> l) {
+	private final static Expression newPsequence(SourceLocation s, int start, UList<Expression> l) {
 		Expression first = l.ArrayValues[start];
 		if (start + 1 == l.size()) {
 			return first;
@@ -180,14 +180,14 @@ public abstract class ExpressionCommons extends Expression {
 		return new Psequence(s, first, newPsequence(s, start + 1, l));
 	}
 
-	public final static Expression newPsequence(SourcePosition s, Expression p, Expression p2) {
+	public final static Expression newPsequence(SourceLocation s, Expression p, Expression p2) {
 		UList<Expression> l = new UList<Expression>(new Expression[2]);
 		addSequence(l, p);
 		addSequence(l, p2);
 		return newPsequence(s, l);
 	}
 
-	public final static Expression newPchoice(SourcePosition s, UList<Expression> l) {
+	public final static Expression newPchoice(SourceLocation s, UList<Expression> l) {
 		int size = l.size();
 		for (int i = 0; i < size; i++) {
 			if (l.ArrayValues[i] instanceof Pempty) {
@@ -201,7 +201,7 @@ public abstract class ExpressionCommons extends Expression {
 		return new Pchoice(s, l, size);
 	}
 
-	public final static Expression newPchoice(SourcePosition s, Expression p, Expression p2) {
+	public final static Expression newPchoice(SourceLocation s, Expression p, Expression p2) {
 		if (p == null) {
 			return p2 == null ? newEmpty(s) : p2;
 		}
@@ -216,15 +216,15 @@ public abstract class ExpressionCommons extends Expression {
 
 	// AST Construction
 
-	public final static Expression newTdetree(SourcePosition s, Expression p) {
+	public final static Expression newTdetree(SourceLocation s, Expression p) {
 		return new Tdetree(s, p);
 	}
 
-	public final static Expression newTlink(SourcePosition s, Expression p) {
+	public final static Expression newTlink(SourceLocation s, Expression p) {
 		return newTlink(s, null, p);
 	}
 
-	public final static Expression newTlink(SourcePosition s, Symbol label, Expression p) {
+	public final static Expression newTlink(SourceLocation s, Symbol label, Expression p) {
 		return new Tlink(s, label, p);
 	}
 
@@ -233,23 +233,23 @@ public abstract class ExpressionCommons extends Expression {
 	// return new Tnew(s, lefted, label, shift);
 	// }
 
-	public final static Expression newTnew(SourcePosition s, int shift) {
+	public final static Expression newTnew(SourceLocation s, int shift) {
 		return new Tnew(s, shift);
 	}
 
-	public final static Expression newTlfold(SourcePosition s, Symbol label, int shift) {
+	public final static Expression newTlfold(SourceLocation s, Symbol label, int shift) {
 		return new Tlfold(s, label, shift);
 	}
 
-	public final static Expression newTcapture(SourcePosition s, int shift) {
+	public final static Expression newTcapture(SourceLocation s, int shift) {
 		return new Tcapture(s, shift);
 	}
 
-	public final static Expression newTtag(SourcePosition s, Symbol tag) {
+	public final static Expression newTtag(SourceLocation s, Symbol tag) {
 		return new Ttag(s, tag);
 	}
 
-	public final static Expression newTreplace(SourcePosition s, String msg) {
+	public final static Expression newTreplace(SourceLocation s, String msg) {
 		return new Treplace(s, msg);
 	}
 
@@ -258,82 +258,82 @@ public abstract class ExpressionCommons extends Expression {
 	// <on FLAG e>
 	// <on! FLAG e>
 
-	public final static Expression newXif(SourcePosition s, String flagName) {
+	public final static Expression newXif(SourceLocation s, String flagName) {
 		return new Xif(s, true, flagName);
 	}
 
-	public final static Expression newXon(SourcePosition s, boolean predicate, String flagName, Expression e) {
+	public final static Expression newXon(SourceLocation s, boolean predicate, String flagName, Expression e) {
 		return new Xon(s, predicate, flagName, e);
 	}
 
-	public final static Expression newXblock(SourcePosition s, Expression e) {
+	public final static Expression newXblock(SourceLocation s, Expression e) {
 		return new Xblock(s, e);
 	}
 
-	public final static Expression newXlocal(SourcePosition s, Symbol tableName, Expression e) {
+	public final static Expression newXlocal(SourceLocation s, Symbol tableName, Expression e) {
 		return new Xlocal(s, tableName, e);
 	}
 
 	@Deprecated
-	public final static Expression newXdef(SourcePosition s, Grammar g, String name, Expression e) {
+	public final static Expression newXdef(SourceLocation s, Grammar g, String name, Expression e) {
 		NonTerminal pat = g.newNonTerminal(s, name);
 		g.newProduction(name, e);
 		return new Xsymbol(s, pat);
 	}
 
-	public final static Expression newXsymbol(SourcePosition s, NonTerminal pat) {
+	public final static Expression newXsymbol(SourceLocation s, NonTerminal pat) {
 		return new Xsymbol(s, pat);
 	}
 
-	public final static Expression newXsymbol(SourcePosition s, Symbol table, Expression e) {
+	public final static Expression newXsymbol(SourceLocation s, Symbol table, Expression e) {
 		return new Xsymbol(s, table, e);
 	}
 
-	public final static Expression newXmatch(SourcePosition s, Symbol tableName) {
+	public final static Expression newXmatch(SourceLocation s, Symbol tableName) {
 		return new Xmatch(s, tableName);
 	}
 
-	public final static Expression newXis(SourcePosition s, NonTerminal pat, boolean is) {
+	public final static Expression newXis(SourceLocation s, NonTerminal pat, boolean is) {
 		return new Xis(s, pat, is);
 	}
 
-	public final static Expression newXis(SourcePosition s, Symbol table, Expression e, boolean is) {
+	public final static Expression newXis(SourceLocation s, Symbol table, Expression e, boolean is) {
 		return new Xis(s, table, e, is);
 	}
 
-	public final static Expression newXis(SourcePosition s, NonTerminal pat) {
+	public final static Expression newXis(SourceLocation s, NonTerminal pat) {
 		return new Xis(s, pat, /* is */true);
 	}
 
-	public final static Expression newXisa(SourcePosition s, NonTerminal pat) {
+	public final static Expression newXisa(SourceLocation s, NonTerminal pat) {
 		return new Xis(s, pat, /* is */false);
 	}
 
-	public final static Expression newXexists(SourcePosition s, Symbol tableName, String symbol) {
+	public final static Expression newXexists(SourceLocation s, Symbol tableName, String symbol) {
 		return new Xexists(s, tableName, symbol);
 	}
 
-	public final static Expression newDefIndent(SourcePosition s) {
+	public final static Expression newDefIndent(SourceLocation s) {
 		return new Xdefindent(s);
 	}
 
-	public final static Expression newIndent(SourcePosition s) {
+	public final static Expression newIndent(SourceLocation s) {
 		return new Xindent(s);
 	}
 
 	@Deprecated
-	public final static Expression newScan(SourcePosition s, int number, Expression scan, Expression repeat) {
+	public final static Expression newScan(SourceLocation s, int number, Expression scan, Expression repeat) {
 		return null;
 	}
 
 	@Deprecated
-	public final static Expression newRepeat(SourcePosition s, Expression e) {
+	public final static Expression newRepeat(SourceLocation s, Expression e) {
 		return null;
 	}
 
 	// -----------------------------------------------------------------------
 
-	public static final Expression newString(SourcePosition s, String text) {
+	public static final Expression newString(SourceLocation s, String text) {
 		byte[] utf8 = StringUtils.toUtf8(text);
 		if (utf8.length == 0) {
 			return newEmpty(s);
@@ -344,7 +344,7 @@ public abstract class ExpressionCommons extends Expression {
 		return newByteSequence(s, false, utf8);
 	}
 
-	public final static Expression newByteSequence(SourcePosition s, boolean binary, byte[] utf8) {
+	public final static Expression newByteSequence(SourceLocation s, boolean binary, byte[] utf8) {
 		UList<Expression> l = new UList<Expression>(new Expression[utf8.length]);
 		for (int i = 0; i < utf8.length; i++) {
 			l.add(newCbyte(s, binary, utf8[i]));
@@ -352,12 +352,12 @@ public abstract class ExpressionCommons extends Expression {
 		return newPsequence(s, l);
 	}
 
-	public final static Expression newCharSet(SourcePosition s, String text) {
+	public final static Expression newCharSet(SourceLocation s, String text) {
 		boolean b[] = StringUtils.parseByteMap(text);
 		return new Cset(s, false, b);
 	}
 
-	public final static Expression newCharSet(SourcePosition s, String t, String t2) {
+	public final static Expression newCharSet(SourceLocation s, String t, String t2) {
 		int c = StringUtils.parseAscii(t);
 		int c2 = StringUtils.parseAscii(t2);
 		if (c != -1 && c2 != -1) {
@@ -372,14 +372,14 @@ public abstract class ExpressionCommons extends Expression {
 		}
 	}
 
-	public final static Expression newByteRange(SourcePosition s, boolean binary, int c, int c2) {
+	public final static Expression newByteRange(SourceLocation s, boolean binary, int c, int c2) {
 		if (c == c2) {
 			return newCbyte(s, binary, c);
 		}
 		return new Cset(s, binary, c, c2);
 	}
 
-	private final static Expression newUnicodeRange(SourcePosition s, int c, int c2) {
+	private final static Expression newUnicodeRange(SourceLocation s, int c, int c2) {
 		byte[] b = StringUtils.toUtf8(String.valueOf((char) c));
 		byte[] b2 = StringUtils.toUtf8(String.valueOf((char) c2));
 		if (equalsBase(b, b2)) {
@@ -415,7 +415,7 @@ public abstract class ExpressionCommons extends Expression {
 		return false;
 	}
 
-	private final static Expression newUnicodeRange(SourcePosition s, byte[] b, byte[] b2) {
+	private final static Expression newUnicodeRange(SourceLocation s, byte[] b, byte[] b2) {
 		if (b[b.length - 1] == b2[b.length - 1]) {
 			return newByteSequence(s, false, b);
 		} else {
@@ -428,11 +428,11 @@ public abstract class ExpressionCommons extends Expression {
 		}
 	}
 
-	public final static Expression newNewCapture(SourcePosition s, Expression e) {
+	public final static Expression newNewCapture(SourceLocation s, Expression e) {
 		return newNewCapture(s, false, null, e);
 	}
 
-	public final static Expression newNewCapture(SourcePosition s, boolean lefted, Symbol label, Expression e) {
+	public final static Expression newNewCapture(SourceLocation s, boolean lefted, Symbol label, Expression e) {
 		UList<Expression> l = new UList<Expression>(new Expression[e.size() + 3]);
 		ExpressionCommons.addSequence(l, lefted ? new Tlfold(s, label, 0) : new Tnew(s, 0));
 		ExpressionCommons.addSequence(l, e);
@@ -440,7 +440,7 @@ public abstract class ExpressionCommons extends Expression {
 		return newPsequence(s, l);
 	}
 
-	public final static Expression newLeftFoldOption(SourcePosition s, Symbol label, Expression e) {
+	public final static Expression newLeftFoldOption(SourceLocation s, Symbol label, Expression e) {
 		UList<Expression> l = new UList<Expression>(new Expression[e.size() + 3]);
 		ExpressionCommons.addSequence(l, new Tlfold(s, label, 0));
 		ExpressionCommons.addSequence(l, e);
@@ -448,7 +448,7 @@ public abstract class ExpressionCommons extends Expression {
 		return newPoption(s, ExpressionCommons.newPsequence(s, l));
 	}
 
-	public final static Expression newLeftFoldRepetition(SourcePosition s, Symbol label, Expression e) {
+	public final static Expression newLeftFoldRepetition(SourceLocation s, Symbol label, Expression e) {
 		UList<Expression> l = new UList<Expression>(new Expression[e.size() + 3]);
 		ExpressionCommons.addSequence(l, new Tlfold(s, label, 0));
 		ExpressionCommons.addSequence(l, e);
@@ -456,7 +456,7 @@ public abstract class ExpressionCommons extends Expression {
 		return newPzero(s, ExpressionCommons.newPsequence(s, l));
 	}
 
-	public final static Expression newLeftFoldRepetition1(SourcePosition s, Symbol label, Expression e) {
+	public final static Expression newLeftFoldRepetition1(SourceLocation s, Symbol label, Expression e) {
 		UList<Expression> l = new UList<Expression>(new Expression[e.size() + 3]);
 		ExpressionCommons.addSequence(l, new Tlfold(s, label, 0));
 		ExpressionCommons.addSequence(l, e);

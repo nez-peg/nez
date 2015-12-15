@@ -1,11 +1,11 @@
 package nez.lang.expr;
 
-import nez.ast.SourcePosition;
+import nez.ast.SourceLocation;
 import nez.lang.Expression;
 import nez.lang.PossibleAcceptance;
 
 public class Pand extends Unary {
-	Pand(SourcePosition s, Expression e) {
+	Pand(SourceLocation s, Expression e) {
 		super(s, e);
 	}
 

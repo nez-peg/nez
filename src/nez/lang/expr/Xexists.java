@@ -1,6 +1,6 @@
 package nez.lang.expr;
 
-import nez.ast.SourcePosition;
+import nez.ast.SourceLocation;
 import nez.ast.Symbol;
 import nez.lang.Expression;
 import nez.lang.PossibleAcceptance;
@@ -9,7 +9,7 @@ public class Xexists extends Term implements Expression.Contextual {
 	public final Symbol tableName;
 	String symbol;
 
-	Xexists(SourcePosition s, Symbol tableName, String symbol) {
+	Xexists(SourceLocation s, Symbol tableName, String symbol) {
 		super(s);
 		this.tableName = tableName;
 		this.symbol = symbol;

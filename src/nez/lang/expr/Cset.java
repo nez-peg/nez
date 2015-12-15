@@ -1,6 +1,6 @@
 package nez.lang.expr;
 
-import nez.ast.SourcePosition;
+import nez.ast.SourceLocation;
 import nez.lang.Expression;
 
 import nez.lang.PossibleAcceptance;
@@ -9,13 +9,13 @@ import nez.util.StringUtils;
 public class Cset extends Char {
 	public boolean[] byteMap; // Immutable
 
-	Cset(SourcePosition s, boolean binary, int beginChar, int endChar) {
+	Cset(SourceLocation s, boolean binary, int beginChar, int endChar) {
 		super(s, binary);
 		this.byteMap = newMap(false);
 		appendRange(this.byteMap, beginChar, endChar);
 	}
 
-	Cset(SourcePosition s, boolean binary, boolean[] b) {
+	Cset(SourceLocation s, boolean binary, boolean[] b) {
 		super(s, binary);
 		this.byteMap = b;
 	}

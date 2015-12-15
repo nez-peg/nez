@@ -1,6 +1,6 @@
 package nez.lang.expr;
 
-import nez.ast.SourcePosition;
+import nez.ast.SourceLocation;
 import nez.lang.Expression;
 
 import nez.lang.PossibleAcceptance;
@@ -9,7 +9,7 @@ import nez.util.StringUtils;
 public class Cbyte extends Char {
 	public int byteChar;
 
-	Cbyte(SourcePosition s, boolean binary, int ch) {
+	Cbyte(SourceLocation s, boolean binary, int ch) {
 		super(s, binary);
 		this.byteChar = ch;
 	}
