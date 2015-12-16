@@ -3,6 +3,7 @@ package nez.parser.hachi6;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import nez.ast.TreeVisitorMap;
 import nez.lang.Expression;
 import nez.lang.Production;
 import nez.lang.expr.ExpressionCommons;
@@ -14,9 +15,8 @@ import nez.parser.moz.MozCode;
 import nez.util.StringUtils;
 import nez.util.UList;
 import nez.util.Verbose;
-import nez.util.VisitorMap;
 
-public class Hachi6Compiler extends VisitorMap<DefaultVisitor> {
+public class Hachi6Compiler extends TreeVisitorMap<DefaultVisitor> {
 	private ParserStrategy strategy;
 	private ParserGrammar gg = null;
 	private HashMap<String, ParseFunc> funcMap = null;

@@ -133,6 +133,10 @@ public class Grammar extends GrammarHacks {
 		}
 	}
 
+	public final static String nameTerminalProduction(String t) {
+		return "\"" + t + "\"";
+	}
+
 	// ----------------------------------------------------------------------
 	/* MetaData */
 

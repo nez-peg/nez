@@ -1,10 +1,9 @@
-package nez.main;
+package nez.junks;
 
 import java.io.File;
 import java.io.IOException;
 
 import nez.Version;
-import nez.junks.GrammarFileLoader;
 import nez.lang.Grammar;
 import nez.lang.util.NezConstructor;
 import nez.parser.Parser;

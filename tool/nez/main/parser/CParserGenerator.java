@@ -1,4 +1,4 @@
-package nez.parser.generator;
+package nez.main.parser;
 
 import java.io.UnsupportedEncodingException;
 import java.text.NumberFormat;
@@ -8,6 +8,7 @@ import java.util.Stack;
 
 import nez.ast.Symbol;
 import nez.lang.Expression;
+import nez.lang.Grammar;
 import nez.lang.Production;
 import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
@@ -37,11 +38,10 @@ import nez.lang.expr.Xlocal;
 import nez.lang.expr.Xmatch;
 import nez.lang.expr.Xon;
 import nez.lang.expr.Xsymbol;
-import nez.parser.GrammarWriter;
 import nez.parser.ParserGrammar;
 import nez.util.StringUtils;
 
-public class CParserGenerator extends GrammarWriter {
+public class CParserGenerator extends SourceGenerator {
 
 	// GrammarOptimizer optimizer = null;
 	int predictionCount = 0;
@@ -521,7 +521,7 @@ public class CParserGenerator extends GrammarWriter {
 	}
 
 	@Override
-	public void visitProduction(ParserGrammar gg, Production rule) {
+	public void visitProduction(Grammar gg, Production rule) {
 		this.initFalureJumpPoint();
 		L("int p" + name(rule.getLocalName()) + "(ParsingContext ctx)");
 		Begin("{");

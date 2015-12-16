@@ -1,6 +1,7 @@
-package nez.x.generator;
+package nez.main.peg;
 
 import nez.lang.Expression;
+import nez.lang.Grammar;
 import nez.lang.Production;
 import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
@@ -31,11 +32,9 @@ import nez.lang.expr.Xlocal;
 import nez.lang.expr.Xmatch;
 import nez.lang.expr.Xon;
 import nez.lang.expr.Xsymbol;
-import nez.parser.GrammarWriter;
-import nez.parser.ParserGrammar;
 import nez.util.StringUtils;
 
-public class LPegGrammarGenerator extends GrammarWriter {
+public class LPegTranslator extends GrammarTranslator {
 
 	@Override
 	protected String getFileExtension() {
@@ -43,7 +42,7 @@ public class LPegGrammarGenerator extends GrammarWriter {
 	}
 
 	@Override
-	public void makeBody(ParserGrammar gg) {
+	public void makeBody(Grammar gg) {
 		file.writeIndent("local lpeg = require \"lpeg\"");
 		for (Production r : gg) {
 			if (!r.getLocalName().startsWith("\"")) {
@@ -64,11 +63,11 @@ public class LPegGrammarGenerator extends GrammarWriter {
 	}
 
 	@Override
-	public void makeHeader(ParserGrammar gg) {
+	public void makeHeader(Grammar gg) {
 	}
 
 	@Override
-	public void visitProduction(ParserGrammar gg, Production rule) {
+	public void visitProduction(Grammar gg, Production rule) {
 		Expression e = rule.getExpression();
 		file.incIndent();
 		file.writeIndent(rule.getLocalName() + " = ");
@@ -87,7 +86,7 @@ public class LPegGrammarGenerator extends GrammarWriter {
 	}
 
 	@Override
-	public void makeFooter(ParserGrammar gg) {
+	public void makeFooter(Grammar gg) {
 		file.writeIndent("function evalExp (s)");
 		file.incIndent();
 		file.writeIndent("for i = 0, 5 do");

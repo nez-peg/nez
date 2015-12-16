@@ -5,13 +5,12 @@ import java.io.IOException;
 
 import nez.ast.Source;
 import nez.io.CommonSource;
+import nez.junks.ParserFactory;
 import nez.lang.regex.RegularExpression;
 import nez.main.Command;
-import nez.main.ParserFactory;
-import nez.parser.GrammarWriter;
 import nez.util.ConsoleUtils;
 import nez.util.ExtensionLoader;
-import nez.util.StringUtils;
+import nez.util.FileBuilder;
 import nez.util.UList;
 
 public class CommandContext extends ParserFactory {
@@ -88,28 +87,28 @@ public class CommandContext extends ParserFactory {
 
 	public final String getOutputFileName(CommonSource input, String ext) {
 		if (outputDirName != null) {
-			return StringUtils.toFileName(input.getResourceName(), outputDirName, ext);
+			return FileBuilder.toFileName(input.getResourceName(), outputDirName, ext);
 		} else {
 			return null; // stdout
 		}
 	}
 
-	public final GrammarWriter newParserGenerator(Class<?> c) {
-		if (c != null) {
-			try {
-				GrammarWriter gen;
-				gen = (GrammarWriter) c.newInstance();
-				gen.init(this.getStrategy(), outputDirName, this.getGrammarName());
-				return gen;
-			} catch (InstantiationException e) {
-				e.printStackTrace();
-			} catch (IllegalAccessException e) {
-				e.printStackTrace();
-			}
-			ConsoleUtils.exit(1, "error: new parser generator");
-		}
-		return null;
-	}
+	// public final GrammarWriter newParserGenerator(Class<?> c) {
+	// if (c != null) {
+	// try {
+	// GrammarWriter gen;
+	// gen = (GrammarWriter) c.newInstance();
+	// gen.init(this.getStrategy(), outputDirName, this.getGrammarName());
+	// return gen;
+	// } catch (InstantiationException e) {
+	// e.printStackTrace();
+	// } catch (IllegalAccessException e) {
+	// e.printStackTrace();
+	// }
+	// ConsoleUtils.exit(1, "error: new parser generator");
+	// }
+	// return null;
+	// }
 
 	// --verbose
 	public boolean VerboseMode = false;

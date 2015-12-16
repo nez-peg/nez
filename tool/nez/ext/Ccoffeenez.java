@@ -1,10 +1,11 @@
 package nez.ext;
 
-import nez.parser.GrammarWriter;
+import nez.main.Cpeg;
 
 public class Ccoffeenez extends Cpeg {
-	@Override
-	protected GrammarWriter newParserGenerator(CommandContext config) {
-		return config.newParserGenerator(nez.x.generator.CoffeeParserGenerator.class);
-	}
+	// @Override
+	// protected GrammarWriter newParserGenerator(CommandContext config) {
+	// return
+	// config.newParserGenerator(nez.x.generator.CoffeeParserGenerator.class);
+	// }
 }

@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 import nez.ast.Symbol;
 import nez.ast.Tree;
-import nez.ast.TreeVisitor;
+import nez.junks.TreeVisitor;
 import nez.util.FileBuilder;
 
 public class NezFileFormatter extends TreeVisitor {

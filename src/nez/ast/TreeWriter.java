@@ -23,11 +23,11 @@ public class TreeWriter extends FileBuilder {
 	}
 
 	public TreeWriter(String path, String dir, String ext) {
-		this(StringUtils.toFileName(path, dir, ext));
+		this(FileBuilder.toFileName(path, dir, ext));
 	}
 
 	public TreeWriter(ParserStrategy option, String path, String dir, String ext) {
-		this(StringUtils.toFileName(path, dir, ext));
+		this(FileBuilder.toFileName(path, dir, ext));
 	}
 
 	public final void writeTree(Tree<?> node) {

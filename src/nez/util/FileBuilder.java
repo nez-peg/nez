@@ -142,4 +142,57 @@ public class FileBuilder {
 		}
 	}
 
+	/* Utils */
+
+	public final static String toFileName(String urn, String dir, String ext) {
+		if (urn == null) {
+			urn = "stdout.out";
+		}
+		int loc = urn.lastIndexOf('.');
+		if (loc > 0) {
+			urn = urn.substring(0, loc);
+			if (ext != null) {
+				urn = urn + "." + ext;
+			}
+		}
+		if (dir != null) {
+			dir = dir + "/";
+		} else {
+			dir = "";
+		}
+		loc = urn.lastIndexOf('/');
+		if (loc > 0) {
+			urn = dir + urn.substring(loc + 1);
+		}
+		return urn;
+	}
+
+	public final static String extractFileName(String path) {
+		int loc = path.lastIndexOf('/');
+		if (loc > 0) {
+			return path.substring(loc + 1);
+		}
+		loc = path.lastIndexOf('\\');
+		if (loc > 0) {
+			return path.substring(loc + 1);
+		}
+		return path;
+	}
+
+	public final static String extractFileExtension(String path) {
+		int loc = path.lastIndexOf('.');
+		if (loc > 0) {
+			return path.substring(loc + 1);
+		}
+		return path;
+	}
+
+	public final static String changeFileExtension(String path, String ext) {
+		int loc = path.lastIndexOf('.');
+		if (loc > 0) {
+			return path.substring(loc + 1) + ext;
+		}
+		return path + "." + ext;
+	}
+
 }

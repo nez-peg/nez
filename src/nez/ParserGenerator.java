@@ -12,7 +12,7 @@ import nez.lang.ast.NezGrammarCombinator;
 import nez.parser.Parser;
 import nez.parser.ParserException;
 import nez.parser.ParserStrategy;
-import nez.util.StringUtils;
+import nez.util.FileBuilder;
 
 public class ParserGenerator {
 	public static class GrammarExtension {
@@ -48,17 +48,17 @@ public class ParserGenerator {
 	}
 
 	public final Grammar loadGrammar(String fileName) throws IOException {
-		Grammar grammar = new Grammar(StringUtils.parseFileExtension(fileName));
+		Grammar grammar = new Grammar(FileBuilder.extractFileExtension(fileName));
 		grammar.setURN(fileName);
 		CommonSource source = StringSource.loadClassPath(fileName, classPath);
-		String ext = StringUtils.parseFileExtension(fileName);
+		String ext = FileBuilder.extractFileExtension(fileName);
 		updateGrammar(grammar, source, ext);
 		return grammar;
 	}
 
 	public final void updateGrammar(Grammar grammar, String fileName) throws IOException {
 		CommonSource source = StringSource.loadClassPath(fileName, classPath);
-		String ext = StringUtils.parseFileExtension(fileName);
+		String ext = FileBuilder.extractFileExtension(fileName);
 		updateGrammar(grammar, source, ext);
 	}
 

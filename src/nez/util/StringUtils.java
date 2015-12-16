@@ -382,37 +382,4 @@ public abstract class StringUtils {
 		return String.format("%.4f", thr);
 	}
 
-	// filename
-
-	public final static String toFileName(String urn, String dir, String ext) {
-		if (urn == null) {
-			urn = "stdout.out";
-		}
-		int loc = urn.lastIndexOf('.');
-		if (loc > 0) {
-			urn = urn.substring(0, loc);
-			if (ext != null) {
-				urn = urn + "." + ext;
-			}
-		}
-		if (dir != null) {
-			dir = dir + "/";
-		} else {
-			dir = "";
-		}
-		loc = urn.lastIndexOf('/');
-		if (loc > 0) {
-			urn = dir + urn.substring(loc + 1);
-		}
-		return urn;
-	}
-
-	public static String parseFileExtension(String path) {
-		int loc = path.lastIndexOf('.');
-		if (loc > 0) {
-			return path.substring(loc + 1);
-		}
-		return path;
-	}
-
 }

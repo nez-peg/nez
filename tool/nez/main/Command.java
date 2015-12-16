@@ -11,7 +11,7 @@ import nez.lang.Grammar;
 import nez.parser.Parser;
 import nez.parser.ParserStrategy;
 import nez.util.ConsoleUtils;
-import nez.util.StringUtils;
+import nez.util.FileBuilder;
 import nez.util.UList;
 import nez.util.Verbose;
 
@@ -197,7 +197,7 @@ public abstract class Command {
 
 	public final String getOutputFileName(Source input, String ext) {
 		if (outputDirectory != null) {
-			return StringUtils.toFileName(input.getResourceName(), outputDirectory, ext);
+			return FileBuilder.toFileName(input.getResourceName(), outputDirectory, ext);
 		} else {
 			return null; // stdout
 		}

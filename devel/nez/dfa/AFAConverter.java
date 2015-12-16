@@ -4,11 +4,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.TreeSet;
 
+import nez.ast.TreeVisitorMap;
 import nez.dfa.AFAConverter.DefaultVisitor;
 import nez.lang.Expression;
 import nez.lang.Grammar;
 import nez.lang.Production;
-import nez.util.VisitorMap;
 
 /*
  * 
@@ -17,7 +17,7 @@ import nez.util.VisitorMap;
  * 	複数存在する場合は新たな状態を作成し、それを初期（受理）状態とし、それにε遷移をはるようにする
  * 	
  */
-public class AFAConverter extends VisitorMap<DefaultVisitor> {
+public class AFAConverter extends TreeVisitorMap<DefaultVisitor> {
 
 	private Grammar grammar = null;
 	private AFA afa = null;

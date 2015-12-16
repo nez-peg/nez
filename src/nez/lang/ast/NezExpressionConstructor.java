@@ -2,7 +2,6 @@ package nez.lang.ast;
 
 import nez.ast.Symbol;
 import nez.ast.Tree;
-import nez.junks.GrammarFile;
 import nez.lang.Expression;
 import nez.lang.Grammar;
 import nez.lang.Production;
@@ -55,7 +54,7 @@ public class NezExpressionConstructor extends GrammarVisitorMap<ExpressionTransd
 	public class _String extends Undefined {
 		@Override
 		public Expression accept(Tree<?> node, Expression es) {
-			String name = GrammarFile.nameTerminalProduction(node.toText());
+			String name = Grammar.nameTerminalProduction(node.toText());
 			return ExpressionCommons.newNonTerminal(node, getGrammar(), name);
 		}
 	}

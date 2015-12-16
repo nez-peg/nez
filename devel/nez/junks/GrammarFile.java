@@ -18,9 +18,6 @@ public class GrammarFile extends Grammar {
 	// return ns == null ? name : ns + "." + name;
 	// }
 	//
-	public final static String nameTerminalProduction(String t) {
-		return "\"" + t + "\"";
-	}
 	//
 	// // fields
 	// final String urn;

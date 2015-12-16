@@ -1,9 +1,11 @@
-package nez.ast;
+package nez.junks;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 
+import nez.ast.Symbol;
+import nez.ast.Tree;
 import nez.util.ConsoleUtils;
 import nez.util.Verbose;
 

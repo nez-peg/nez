@@ -2,7 +2,7 @@ package nez.x.generator;
 
 import java.util.TreeMap;
 
-import nez.parser.GrammarWriter;
+import nez.main.peg.GrammarTranslator;
 import nez.util.Verbose;
 
 public class GeneratorLoader {
@@ -23,11 +23,11 @@ public class GeneratorLoader {
 		return classMap.containsKey(key);
 	}
 
-	public final static GrammarWriter load(String key) {
+	public final static GrammarTranslator load(String key) {
 		Class<?> c = classMap.get(key);
 		if (c != null) {
 			try {
-				return (GrammarWriter) c.newInstance();
+				return (GrammarTranslator) c.newInstance();
 			} catch (InstantiationException e) {
 				Verbose.traceException(e);
 			} catch (IllegalAccessException e) {

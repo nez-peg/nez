@@ -1,6 +1,7 @@
 package nez.x.generator;
 
 import nez.lang.Expression;
+import nez.lang.Grammar;
 import nez.lang.Production;
 import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
@@ -32,12 +33,11 @@ import nez.lang.expr.Xlocal;
 import nez.lang.expr.Xmatch;
 import nez.lang.expr.Xon;
 import nez.lang.expr.Xsymbol;
-import nez.parser.GrammarWriter;
+import nez.main.peg.GrammarTranslator;
 import nez.parser.Parser;
-import nez.parser.ParserGrammar;
 import nez.util.StringUtils;
 
-public class CombinatorGenerator extends GrammarWriter {
+public class CombinatorGenerator extends GrammarTranslator {
 
 	@Override
 	protected String getFileExtension() {
@@ -49,7 +49,7 @@ public class CombinatorGenerator extends GrammarWriter {
 	}
 
 	@Override
-	public void makeHeader(ParserGrammar gg) {
+	public void makeHeader(Grammar gg) {
 		L("/* Parsing Expression Grammars for Nez */");
 		L("import nez.ParserCombinator;");
 		L("import nez.lang.Expression;");
@@ -63,7 +63,7 @@ public class CombinatorGenerator extends GrammarWriter {
 	}
 
 	@Override
-	public void visitProduction(ParserGrammar gg, Production p) {
+	public void visitProduction(Grammar gg, Production p) {
 		Expression e = p.getExpression();
 		L("public Expression p");
 		W(name(p));

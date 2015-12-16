@@ -1,6 +1,7 @@
-package nez.x.generator;
+package nez.main.peg;
 
 import nez.lang.Expression;
+import nez.lang.Grammar;
 import nez.lang.Production;
 import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
@@ -20,13 +21,11 @@ import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
 import nez.lang.expr.Unary;
-import nez.parser.ParserGrammar;
-import nez.parser.generator.NezGrammarGenerator;
 
-public class MouseGrammarGenerator extends NezGrammarGenerator {
+public class MouseTranslator extends PEGTranslator {
 
 	@Override
-	public void makeHeader(ParserGrammar gg) {
+	public void makeHeader(Grammar gg) {
 		file.write("// Parsing Expression Grammars for Mouse");
 		file.writeIndent("// Translated from Nez");
 	}
@@ -40,7 +39,7 @@ public class MouseGrammarGenerator extends NezGrammarGenerator {
 	}
 
 	@Override
-	public void visitProduction(ParserGrammar gg, Production rule) {
+	public void visitProduction(Grammar gg, Production rule) {
 		Expression e = rule.getExpression();
 		file.writeIndent(name(rule.getLocalName().replaceAll("_", "under")));
 		file.incIndent();

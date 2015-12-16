@@ -1,6 +1,7 @@
-package nez.x.generator;
+package nez.main.parser;
 
 import nez.lang.Expression;
+import nez.lang.Grammar;
 import nez.lang.Production;
 import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
@@ -30,29 +31,15 @@ import nez.lang.expr.Xlocal;
 import nez.lang.expr.Xmatch;
 import nez.lang.expr.Xon;
 import nez.lang.expr.Xsymbol;
-import nez.parser.GrammarWriter;
 import nez.parser.ParserGrammar;
 import nez.util.StringUtils;
 
-public class CoffeeParserGenerator extends GrammarWriter {
+public class CoffeeParserGenerator extends SourceGenerator {
 
 	@Override
 	public String getFileExtension() {
 		return "coffee";
 	}
-
-	@Override
-	public void generate(ParserGrammar grammar) {
-		this.openOutputFile(this.getFileExtension());
-		makeHeader(grammar);
-		for (Production p : grammar.getProductionList()) {
-			visitProduction(grammar, p);
-		}
-		Close();
-		makeFooter(grammar);
-		file.writeNewLine();
-		file.flush();
-	};
 
 	@Override
 	public void makeHeader(ParserGrammar g) {
@@ -357,7 +344,7 @@ public class CoffeeParserGenerator extends GrammarWriter {
 	}
 
 	@Override
-	public void visitProduction(ParserGrammar gg, Production r) {
+	public void visitProduction(Grammar gg, Production r) {
 		FuncDecl(r).Open();
 		Let(_obj(), "null");
 		Let(_outobj(), "[]");

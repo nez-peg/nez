@@ -6,6 +6,7 @@ import java.util.HashMap;
 import nez.ast.Source;
 import nez.ast.SourceLocation;
 import nez.ast.Tree;
+import nez.ast.TreeVisitorMap;
 import nez.io.CommonSource;
 import nez.junks.GrammarFileLoader.DefaultVisitor;
 import nez.lang.Expression;
@@ -15,10 +16,9 @@ import nez.parser.Parser;
 import nez.parser.ParserStrategy;
 import nez.util.ConsoleUtils;
 import nez.util.ExtensionLoader;
-import nez.util.StringUtils;
-import nez.util.VisitorMap;
+import nez.util.FileBuilder;
 
-public abstract class GrammarFileLoader extends VisitorMap<DefaultVisitor> {
+public abstract class GrammarFileLoader extends TreeVisitorMap<DefaultVisitor> {
 
 	protected Grammar file;
 	protected ParserStrategy strategy;
@@ -140,7 +140,7 @@ public abstract class GrammarFileLoader extends VisitorMap<DefaultVisitor> {
 	static HashMap<String, GrammarFileLoader> loaderMap = new HashMap<>();
 
 	public static Grammar loadGrammar(String path, ParserStrategy strategy) throws IOException {
-		String ext = StringUtils.parseFileExtension(path);
+		String ext = FileBuilder.extractFileExtension(path);
 		GrammarFileLoader fl = (GrammarFileLoader) ExtensionLoader.newInstance("nez.ext.G", ext);
 		if (fl != null) {
 			Grammar g = fl.newGrammar(ext, path);

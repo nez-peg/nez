@@ -1,8 +1,9 @@
-package nez.parser.generator;
+package nez.main.peg;
 
 import java.util.List;
 
 import nez.lang.Expression;
+import nez.lang.Grammar;
 import nez.lang.Production;
 import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
@@ -33,11 +34,9 @@ import nez.lang.expr.Xlocal;
 import nez.lang.expr.Xmatch;
 import nez.lang.expr.Xon;
 import nez.lang.expr.Xsymbol;
-import nez.parser.GrammarWriter;
-import nez.parser.ParserGrammar;
 import nez.util.StringUtils;
 
-public class PEGGenerator extends GrammarWriter {
+public class PEGTranslator extends GrammarTranslator {
 
 	@Override
 	protected String getFileExtension() {
@@ -45,7 +44,7 @@ public class PEGGenerator extends GrammarWriter {
 	}
 
 	@Override
-	public void visitProduction(ParserGrammar gg, Production p) {
+	public void visitProduction(Grammar gg, Production p) {
 		Expression e = p.getExpression();
 		L(name(p.getLocalName()));
 		Begin("");

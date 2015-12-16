@@ -1,9 +1,9 @@
-package nez.parser;
+package nez.main.parser;
 
 import java.util.HashMap;
 
 import nez.lang.Expression;
-
+import nez.lang.Grammar;
 import nez.lang.Production;
 import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
@@ -35,72 +35,60 @@ import nez.lang.expr.Xlocal;
 import nez.lang.expr.Xmatch;
 import nez.lang.expr.Xon;
 import nez.lang.expr.Xsymbol;
+import nez.parser.Parser;
+import nez.parser.ParserGrammar;
+import nez.parser.ParserStrategy;
+import nez.util.ConsoleUtils;
 import nez.util.FileBuilder;
 import nez.util.StringUtils;
-import nez.util.Verbose;
 
-public abstract class GrammarWriter extends Expression.Visitor {
-	// public abstract String getDesc();
+public abstract class SourceGenerator extends Expression.Visitor {
+	protected Parser parser;
 	protected ParserStrategy strategy;
-	protected String dir;
-	protected String grammarName;
-	protected FileBuilder file;
 
-	protected String OpenClosure = "("; // C()
-	protected String CloseClosure = ")"; // C()
-	protected String ClosureDelim = ", "; // C()
-	protected String BeginIndent = "{"; // Begin()
-	protected String EndIndent = "}"; // End()
-
-	public GrammarWriter() {
+	public SourceGenerator() {
 		this.file = null;
 	}
 
-	public final void init(ParserStrategy strategy, String dir, String grammarName) {
-		this.strategy = strategy;
-		this.dir = dir;
-		this.grammarName = grammarName;
+	protected String path;
+	protected FileBuilder file;
+
+	public final void init(Grammar g, Parser parser, String path) {
+		this.strategy = parser.getParserStrategy();
+		if (path == null) {
+			this.file = new FileBuilder(null);
+		} else {
+			this.path = FileBuilder.extractFileName(path);
+			this.file = new FileBuilder(FileBuilder.changeFileExtension(path, this.getFileExtension()));
+			ConsoleUtils.println("generating " + path + " ... ");
+		}
 	}
 
 	protected abstract String getFileExtension();
 
-	public void generate(ParserGrammar gg) {
-		this.openOutputFile(getFileExtension());
-		makeHeader(gg);
-		makeBody(gg);
-		makeFooter(gg);
+	public void generate(ParserGrammar g) {
+		makeHeader(g);
+		makeBody(g);
+		makeFooter(g);
 		file.writeNewLine();
 		file.flush();
 	}
 
-	public void makeHeader(ParserGrammar gg) {
+	public void makeHeader(ParserGrammar g) {
 	}
 
-	public void makeBody(ParserGrammar gg) {
-		for (Production p : gg) {
-			visitProduction(gg, p);
+	public void makeBody(ParserGrammar g) {
+		for (Production p : g) {
+			visitProduction(g, p);
 		}
 	}
 
-	public void makeFooter(ParserGrammar gg) {
+	public abstract void visitProduction(Grammar g, Production p);
+
+	public void makeFooter(ParserGrammar g) {
 	}
 
-	public abstract void visitProduction(ParserGrammar gg, Production p);
-
-	/* inc */
-
-	protected void openOutputFile(String ext) {
-		if (grammarName == null) {
-			this.file = new FileBuilder(null);
-		} else {
-			String path = grammarName + "." + ext;
-			if (dir != null) {
-				path = dir + "/" + path;
-			}
-			this.file = new FileBuilder(path);
-			Verbose.println("generating " + path + " ... ");
-		}
-	}
+	/* Name */
 
 	HashMap<String, String> m = new HashMap<String, String>();
 
@@ -135,40 +123,51 @@ public abstract class GrammarWriter extends Expression.Visitor {
 
 	// Generator Macro
 
+	protected String LineComment = "// ";
+	protected String OpenClosure = "("; // C()
+	protected String CloseClosure = ")"; // C()
+	protected String ClosureDelim = ", "; // C()
+	protected String BeginIndent = "{"; // Begin()
+	protected String EndIndent = "}"; // End()
+
 	@Deprecated
-	protected GrammarWriter inc() {
+	protected SourceGenerator inc() {
 		file.incIndent();
 		return this;
 	}
 
 	@Deprecated
-	protected GrammarWriter dec() {
+	protected SourceGenerator dec() {
 		file.decIndent();
 		return this;
 	}
 
-	protected GrammarWriter L(String line) {
+	public void pCommentLine(String line) {
+		file.writeIndent(LineComment + line);
+	}
+
+	protected SourceGenerator L(String line) {
 		file.writeIndent(line);
 		return this;
 	}
 
-	protected GrammarWriter L() {
+	protected SourceGenerator L() {
 		file.writeIndent();
 		return this;
 	}
 
-	protected GrammarWriter W(String word) {
+	protected SourceGenerator W(String word) {
 		file.write(word);
 		return this;
 	}
 
-	protected GrammarWriter Begin(String t) {
+	protected SourceGenerator Begin(String t) {
 		W(t);
 		file.incIndent();
 		return this;
 	}
 
-	protected GrammarWriter End(String t) {
+	protected SourceGenerator End(String t) {
 		file.decIndent();
 		if (t != null) {
 			L(t);
@@ -176,7 +175,7 @@ public abstract class GrammarWriter extends Expression.Visitor {
 		return this;
 	}
 
-	protected GrammarWriter C(String name, Expression e) {
+	protected SourceGenerator C(String name, Expression e) {
 		int c = 0;
 		W(name).W(OpenClosure);
 		for (Expression sub : e) {
@@ -190,7 +189,7 @@ public abstract class GrammarWriter extends Expression.Visitor {
 		return this;
 	}
 
-	protected GrammarWriter C(String name, String first, Expression e) {
+	protected SourceGenerator C(String name, String first, Expression e) {
 		W(name);
 		W(OpenClosure);
 		W(first);
@@ -202,14 +201,14 @@ public abstract class GrammarWriter extends Expression.Visitor {
 		return this;
 	}
 
-	protected GrammarWriter C(String name) {
+	protected SourceGenerator C(String name) {
 		W(name);
 		W(OpenClosure);
 		W(CloseClosure);
 		return this;
 	}
 
-	protected GrammarWriter C(String name, String arg) {
+	protected SourceGenerator C(String name, String arg) {
 		if (arg.length() > 1 && arg.startsWith("\"") && arg.endsWith("\"")) {
 		} else {
 			arg = StringUtils.quoteString('"', arg, '"');
@@ -221,7 +220,7 @@ public abstract class GrammarWriter extends Expression.Visitor {
 		return this;
 	}
 
-	protected GrammarWriter C(String name, int arg) {
+	protected SourceGenerator C(String name, int arg) {
 		W(name);
 		W(OpenClosure);
 		W(String.valueOf(arg));
@@ -229,7 +228,7 @@ public abstract class GrammarWriter extends Expression.Visitor {
 		return this;
 	}
 
-	protected GrammarWriter C(String name, boolean[] arg) {
+	protected SourceGenerator C(String name, boolean[] arg) {
 		int cnt = 0;
 		W(name);
 		W(OpenClosure);

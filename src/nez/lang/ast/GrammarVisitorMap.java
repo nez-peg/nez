@@ -2,11 +2,11 @@ package nez.lang.ast;
 
 import nez.ast.SourceLocation;
 import nez.ast.Tree;
+import nez.ast.TreeVisitorMap;
 import nez.lang.Grammar;
 import nez.parser.ParserStrategy;
-import nez.util.VisitorMap;
 
-public class GrammarVisitorMap<T> extends VisitorMap<T> {
+public class GrammarVisitorMap<T> extends TreeVisitorMap<T> {
 	protected final Grammar grammar;
 	protected final ParserStrategy strategy;
 

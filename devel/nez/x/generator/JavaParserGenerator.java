@@ -5,6 +5,7 @@ import java.util.HashMap;
 
 import nez.ast.Symbol;
 import nez.lang.Expression;
+import nez.lang.Grammar;
 import nez.lang.Production;
 import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
@@ -34,11 +35,11 @@ import nez.lang.expr.Xlocal;
 import nez.lang.expr.Xmatch;
 import nez.lang.expr.Xon;
 import nez.lang.expr.Xsymbol;
-import nez.parser.GrammarWriter;
+import nez.main.parser.SourceGenerator;
 import nez.parser.ParserGrammar;
 import nez.util.StringUtils;
 
-public class JavaParserGenerator extends GrammarWriter {
+public class JavaParserGenerator extends SourceGenerator {
 
 	@Override
 	protected String getFileExtension() {
@@ -400,7 +401,7 @@ public class JavaParserGenerator extends GrammarWriter {
 	}
 
 	@Override
-	public void visitProduction(ParserGrammar gg, Production rule) {
+	public void visitProduction(Grammar gg, Production rule) {
 		DefPublicFunc(_func(rule));
 		Begin("{");
 		visitExpression(rule.getExpression());

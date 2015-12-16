@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Stack;
 
 import nez.lang.Expression;
+import nez.lang.Grammar;
 import nez.lang.Production;
 import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
@@ -34,12 +35,12 @@ import nez.lang.expr.Xlocal;
 import nez.lang.expr.Xmatch;
 import nez.lang.expr.Xon;
 import nez.lang.expr.Xsymbol;
-import nez.parser.GrammarWriter;
+import nez.main.parser.SourceGenerator;
 import nez.parser.ParserGrammar;
 import nez.util.StringUtils;
 import nez.util.UList;
 
-public class PythonParserGenerator extends GrammarWriter {
+public class PythonParserGenerator extends SourceGenerator {
 
 	@Override
 	protected String getFileExtension() {
@@ -82,17 +83,16 @@ public class PythonParserGenerator extends GrammarWriter {
 	}
 
 	@Override
-	public void generate(ParserGrammar gg) {
-		this.openOutputFile(this.getFileExtension());
-		makeHeader(gg);
+	public void generate(ParserGrammar g) {
+		makeHeader(g);
 		Class("PyNez").Begin();
 		makeParserClass();
-		for (Production p : gg) {
-			visitProduction(gg, p);
+		for (Production p : g) {
+			visitProduction(g, p);
 		}
 		makeByteMap();
 		End();
-		makeFooter(gg);
+		makeFooter(g);
 		file.writeNewLine();
 		file.flush();
 	}
@@ -402,7 +402,7 @@ public class PythonParserGenerator extends GrammarWriter {
 	}
 
 	@Override
-	public void visitProduction(ParserGrammar gg, Production r) {
+	public void visitProduction(Grammar gg, Production r) {
 		FuncDef(r, "self", "result").Begin();
 		visitExpression(r.getExpression());
 		Return("result").End().L();

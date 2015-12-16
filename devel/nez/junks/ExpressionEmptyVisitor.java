@@ -1,10 +1,10 @@
 package nez.junks;
 
+import nez.ast.TreeVisitorMap;
 import nez.junks.ExpressionEmptyVisitor.DefaultVisitor;
 import nez.lang.Expression;
-import nez.util.VisitorMap;
 
-public class ExpressionEmptyVisitor extends VisitorMap<DefaultVisitor> {
+public class ExpressionEmptyVisitor extends TreeVisitorMap<DefaultVisitor> {
 
 	public ExpressionEmptyVisitor() {
 		init(ExpressionEmptyVisitor.class, new DefaultVisitor());

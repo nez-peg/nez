@@ -13,8 +13,8 @@ import nez.util.ConsoleUtils;
 import nez.util.UList;
 
 public final class Parser {
-	private ParserGrammar grammar;
 	private ParserStrategy strategy;
+	private ParserGrammar grammar;
 	private ParserCode pcode = null;
 
 	public Parser(ParserGrammar pgrammar, ParserStrategy strategy) {

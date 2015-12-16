@@ -9,7 +9,7 @@ import java.util.Map;
 import nez.parser.ParserStrategy;
 import nez.util.StringUtils;
 
-public class LiteralConstructor extends TreeVisitor implements Constructor {
+public class LiteralConstructor extends TreeVisitorMap<nez.ast.LiteralConstructor.TreeConstructor> implements Constructor {
 
 	protected ParserStrategy strategy;
 
@@ -23,95 +23,125 @@ public class LiteralConstructor extends TreeVisitor implements Constructor {
 
 	@Override
 	public Object newInstance(Tree<?> node) {
-		return visit("new", node);
+		return find(node.getTag().getSymbol());
 	}
 
-	@Override
-	protected Object visitUndefinedNode(Tree<?> node) {
-		if (node.size() == 0) {
-			return newText(node);
-		}
-		if (node.isAllLabeled()) {
-			return newMap(node);
-		}
-		return newList(node);
+	public static interface TreeConstructor {
+		public Object newInstance(Tree<?> node);
 	}
 
-	public Boolean newBoolean(Tree<?> node) {
-		try {
-			if (node.toText().equals("true")) {
-				return true;
+	public class _Object implements TreeConstructor {
+		@Override
+		public Object newInstance(Tree<?> node) {
+			if (node.size() == 0) {
+				return node.toText();
 			}
-			return false;
-		} catch (LiteralFormatException e) {
-			throw e;
-		} catch (RuntimeException e) {
-			return report("unknown boolean literal: " + node.toText(), node, false);
+			if (node.isAllLabeled()) {
+				return newMap(node);
+			}
+			return newList(node);
 		}
 	}
 
-	public Integer newInteger(Tree<?> node) {
-		try {
-			return Integer.parseInt(node.toText());
-		} catch (LiteralFormatException e) {
-			throw e;
-		} catch (RuntimeException e) {
-			return report(e, node, 0);
+	public class _Boolean extends _Object {
+		@Override
+		public Boolean newInstance(Tree<?> node) {
+			try {
+				if (node.toText().equals("true")) {
+					return true;
+				}
+				return false;
+			} catch (LiteralFormatException e) {
+				throw e;
+			} catch (RuntimeException e) {
+				return report("unknown boolean literal: " + node.toText(), node, false);
+			}
 		}
 	}
 
-	public Long newLong(Tree<?> node) {
-		try {
-			return Long.parseLong(node.toText());
-		} catch (LiteralFormatException e) {
-			throw e;
-		} catch (RuntimeException e) {
-			return report(e, node, 0L);
+	public class _Integer extends _Object {
+		@Override
+		public Integer newInstance(Tree<?> node) {
+			try {
+				return Integer.parseInt(node.toText());
+			} catch (LiteralFormatException e) {
+				throw e;
+			} catch (RuntimeException e) {
+				return report(e, node, 0);
+			}
 		}
 	}
 
-	public BigInteger newBigInteger(Tree<?> node) {
-		try {
-			return new BigInteger(node.toText());
-		} catch (LiteralFormatException e) {
-			throw e;
-		} catch (RuntimeException e) {
-			return report(e, node, BigInteger.ZERO);
+	public class _Long extends _Object {
+		@Override
+		public Long newInstance(Tree<?> node) {
+			try {
+				return Long.parseLong(node.toText());
+			} catch (LiteralFormatException e) {
+				throw e;
+			} catch (RuntimeException e) {
+				return report(e, node, 0L);
+			}
 		}
 	}
 
-	public Float newFloat(Tree<?> node) {
-		try {
-			return Float.parseFloat(node.toText());
-		} catch (LiteralFormatException e) {
-			throw e;
-		} catch (RuntimeException e) {
-			return report(e, node, 0.0f);
+	public class _BigInteger extends _Object {
+		@Override
+		public BigInteger newInstance(Tree<?> node) {
+			try {
+				return new BigInteger(node.toText());
+			} catch (LiteralFormatException e) {
+				throw e;
+			} catch (RuntimeException e) {
+				return report(e, node, BigInteger.ZERO);
+			}
 		}
 	}
 
-	public Double newDouble(Tree<?> node) {
-		try {
-			return Double.parseDouble(node.toText());
-		} catch (LiteralFormatException e) {
-			throw e;
-		} catch (RuntimeException e) {
-			return report(e, node, 0.0);
+	public class _Float extends _Object {
+		@Override
+		public Float newInstance(Tree<?> node) {
+			try {
+				return Float.parseFloat(node.toText());
+			} catch (LiteralFormatException e) {
+				throw e;
+			} catch (RuntimeException e) {
+				return report(e, node, 0.0f);
+			}
 		}
 	}
 
-	public String newString(Tree<?> node) {
-		try {
-			return StringUtils.unquoteString(node.toText());
-		} catch (LiteralFormatException e) {
-			throw e;
-		} catch (RuntimeException e) {
-			return report(e, node, "");
+	public class _Double extends _Object {
+		@Override
+		public Double newInstance(Tree<?> node) {
+			try {
+				return Double.parseDouble(node.toText());
+			} catch (LiteralFormatException e) {
+				throw e;
+			} catch (RuntimeException e) {
+				return report(e, node, 0.0);
+			}
 		}
 	}
 
-	public String newText(Tree<?> node) {
-		return node.toText();
+	public class _String extends _Object {
+		@Override
+		public String newInstance(Tree<?> node) {
+			try {
+				return StringUtils.unquoteString(node.toText());
+			} catch (LiteralFormatException e) {
+				throw e;
+			} catch (RuntimeException e) {
+				return report(e, node, "");
+			}
+		}
+	}
+
+	public class _Text extends _Object {
+		@Override
+		public String newInstance(Tree<?> node) {
+			return node.toText();
+		}
 	}
 
 	protected List<Object> newList(int n) {
@@ -145,12 +175,6 @@ public class LiteralConstructor extends TreeVisitor implements Constructor {
 			}
 		}
 		return m;
-	}
-
-	// alias
-
-	public Integer newInt(Tree<?> node) {
-		return newInteger(node);
 	}
 
 	// report
