@@ -25,6 +25,7 @@ import nez.lang.expr.Xon;
 import nez.parser.ParseFunc;
 import nez.parser.ParserGrammar;
 import nez.parser.ParserStrategy;
+import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
 import nez.util.UFlag;
 import nez.util.UList;
@@ -70,14 +71,14 @@ public class GrammarChecker extends GrammarTransducer {
 
 	protected void dumpStack() {
 		for (Expression e : this.stacked) {
-			System.out.print(" ");
+			ConsoleUtils.print(" ");
 			if (e instanceof NonTerminal) {
-				System.out.print(((NonTerminal) e).getLocalName());
+				ConsoleUtils.print(((NonTerminal) e).getLocalName());
 			} else {
-				System.out.print(e.getClass().getSimpleName());
+				ConsoleUtils.print(e.getClass().getSimpleName());
 			}
 		}
-		System.out.println();
+		ConsoleUtils.println("");
 	}
 
 	private ParseFunc checkFirstVisitedProduction(String uname, Production p, int init) {

@@ -89,20 +89,20 @@ public abstract class Command {
 		for (int index = 1; index < args.length; index++) {
 			String as = args[index];
 			if (index + 1 < args.length) {
-				if (as.equals("-g") || as.equals("-p")) {
+				if (as.equals("-g") || as.equals("--grammar") || as.equals("-p")) {
 					grammarFile = args[index + 1];
 					grammarSource = null;
 					index++;
 					continue;
 				}
-				if (as.equals("-e")) {
+				if (as.equals("-e") || as.equals("--expression")) {
 					grammarFile = null;
 					grammarSource = args[index + 1];
 					grammarType = "nez";
 					index++;
 					continue;
 				}
-				if (as.equals("-a")) {
+				if (as.equals("-a") || as.equals("--aux")) {
 					grammarFiles.add(args[index + 1]);
 					index++;
 					continue;
@@ -143,21 +143,30 @@ public abstract class Command {
 
 	protected static void showUsage(String msg) {
 		displayVersion();
+		ConsoleUtils.println("Usage: nez <command> options inputs");
+		ConsoleUtils.println("  -g | --grammar <file>      Specify a grammar file");
+		ConsoleUtils.println("  -f | --format <string>     Specify an output format");
+		// ConsoleUtils.println("  -e <text>      Specify a Nez parsing expression");
+		// ConsoleUtils.println("  -a <file>      Specify a Nez auxiliary grammar files");
+		ConsoleUtils.println("  -s | --start <NAME>        Specify a starting production");
+		ConsoleUtils.println("  -d | --dir <dirname>       Specify an output dir");
+		ConsoleUtils.println("Example:");
+		ConsoleUtils.println("  nez parse -g js.nez jquery.js --format json");
+		ConsoleUtils.println("  nez match -g js.nez *.js");
+		ConsoleUtils.println("  nez parser -g math.nez --format c");
 		ConsoleUtils.println("");
-		ConsoleUtils.println("nez <command> options files");
-		ConsoleUtils.println("  -g <file>      Specify a grammar file");
-		ConsoleUtils.println("  -e <text>      Specify a Nez parsing expression");
-		ConsoleUtils.println("  -a <file>      Specify a Nez auxiliary grammar files");
-		ConsoleUtils.println("  -s <NAME>      Specify a starting production");
-		ConsoleUtils.println("  -d <dirname>   Specify an output dir");
-		ConsoleUtils.println("  -f <string>    Specify an output format");
-		ConsoleUtils.println("");
+
 		ConsoleUtils.println("The most commonly used nez commands are:");
-		ConsoleUtils.println("  shell      an interactive mode (by default)");
-		ConsoleUtils.println("  match      match an input");
-		ConsoleUtils.println("  parse      parse an input and construct ASTs (.ast)");
-		ConsoleUtils.println("  compile    compile a grammar to Nez bytecode .moz");
-		ConsoleUtils.println("    cnez     generate a C-based parser generator (.c)");
+		ConsoleUtils.println("  parse      parse inputs and construct ASTs");
+		ConsoleUtils.println("  match      match inputs without ASTs");
+		ConsoleUtils.println("  shell      an interactive parser");
+		ConsoleUtils.println("  parser     generate a parser source specified with --format");
+		ConsoleUtils.println("  cnez       generate a C-based fast parser (.c)");
+		ConsoleUtils.println("  peg        translate a grammar into PEG specified with --format");
+		ConsoleUtils.println("  compile    compile a grammar into Nez bytecode .moz");
+		ConsoleUtils.println("  bench      perform benchmark tests");
+		ConsoleUtils.println("  example    display examples in a grammar");
+		ConsoleUtils.println("  test       perform grammar tests");
 		ConsoleUtils.exit(0, msg);
 	}
 
@@ -203,7 +212,7 @@ public abstract class Command {
 		}
 	}
 
-	public final Object newExtendedOutputHandler(String classPath) {
+	public final Object newExtendedOutputHandler(String classPath, String options) {
 		if (outputFormat.indexOf('.') > 0) {
 			classPath = outputFormat;
 		} else {
@@ -213,6 +222,7 @@ public abstract class Command {
 			return Class.forName(classPath).newInstance();
 		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
 			Verbose.traceException(e);
+			ConsoleUtils.println("Available format: " + options);
 			ConsoleUtils.exit(1, "undefined format: " + outputFormat);
 		}
 		return null;

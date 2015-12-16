@@ -4,6 +4,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 
+import nez.util.Verbose;
+
 public class TreeVisitorMap<V> {
 	private static boolean OnWhenDebugging = false;
 
@@ -38,7 +40,7 @@ public class TreeVisitorMap<V> {
 				visitors.put(n, (V) v);
 			}
 		} catch (NoSuchMethodException | SecurityException | InvocationTargetException | IllegalAccessException | InstantiationException | IllegalArgumentException e) {
-			System.out.println(e.getMessage());
+			Verbose.traceException(e);
 		}
 	}
 

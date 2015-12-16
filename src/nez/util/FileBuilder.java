@@ -190,7 +190,7 @@ public class FileBuilder {
 	public final static String changeFileExtension(String path, String ext) {
 		int loc = path.lastIndexOf('.');
 		if (loc > 0) {
-			return path.substring(loc + 1) + ext;
+			return path.substring(0, loc + 1) + ext;
 		}
 		return path + "." + ext;
 	}

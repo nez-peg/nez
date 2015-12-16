@@ -58,8 +58,9 @@ public abstract class GrammarTranslator extends Expression.Visitor {
 			this.file = new FileBuilder(null);
 		} else {
 			this.path = FileBuilder.extractFileName(path);
-			this.file = new FileBuilder(FileBuilder.changeFileExtension(path, this.getFileExtension()));
-			ConsoleUtils.println("generating " + path + " ... ");
+			String filename = FileBuilder.changeFileExtension(path, this.getFileExtension());
+			this.file = new FileBuilder(filename);
+			ConsoleUtils.println("generating " + filename + " ... ");
 		}
 	}
 

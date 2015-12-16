@@ -26,13 +26,13 @@ public class Cpeg extends Command {
 
 	protected GrammarTranslator newGrammarWriter() {
 		if (outputFormat == null) {
-			outputFormat = "nez";
+			outputFormat = "peg";
 		}
 		switch (outputFormat) {
-		case "nez":
-			return new NezTranslator();
 		case "peg":
 			return new PEGTranslator();
+		case "nez":
+			return new NezTranslator();
 		case "pegjs":
 			return new PEGjsTranslator();
 		case "pegtl":
@@ -43,7 +43,7 @@ public class Cpeg extends Command {
 		case "lua":
 			return new LPegTranslator();
 		default:
-			return (GrammarTranslator) this.newExtendedOutputHandler("");
+			return (GrammarTranslator) this.newExtendedOutputHandler("", "peg pegjs pegtl lpeg mouse nez");
 		}
 	}
 }

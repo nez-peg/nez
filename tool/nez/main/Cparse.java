@@ -79,7 +79,7 @@ public class Cparse extends Command {
 			break;
 		}
 		default:
-			Extension e = (Extension) this.newExtendedOutputHandler("");
+			Extension e = (Extension) this.newExtendedOutputHandler("", "ast xml json md5 none");
 			if (node != null) {
 				e.makeOutputFile(node, getOutputFileName(source, null));
 			}
