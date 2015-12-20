@@ -5,11 +5,15 @@ import java.io.IOException;
 import nez.ParserGenerator;
 import nez.Version;
 import nez.ast.Source;
-import nez.ext.CommandContext;
 import nez.io.CommonSource;
 import nez.lang.Grammar;
+import nez.lang.ast.NezGrammarCombinator;
 import nez.parser.Parser;
 import nez.parser.ParserStrategy;
+import nez.tool.ast.CommandContext;
+import nez.tool.ast.TreeJSONWriter;
+import nez.tool.ast.TreeWriter;
+import nez.tool.ast.TreeXMLWriter;
 import nez.util.ConsoleUtils;
 import nez.util.FileBuilder;
 import nez.util.UList;
@@ -18,22 +22,10 @@ import nez.util.Verbose;
 public abstract class Command {
 
 	public final static String ProgName = "Nez";
-	public final static String CodeName = "yokohama";
+	public final static String CodeName = "beta";
 	public final static int MajorVersion = 1;
 	public final static int MinerVersion = 0;
 	public final static int PatchLevel = nez.Version.REV;
-
-	public static void main2(String[] args) {
-		try {
-			CommandContext c = new CommandContext();
-			c.parseCommandOption(args, true/* nezCommand */);
-			Command com = c.newCommand();
-			com.exec(c);
-		} catch (IOException e) {
-			ConsoleUtils.println(e);
-			System.exit(1);
-		}
-	}
 
 	public static void main(String[] args) {
 		try {
@@ -81,6 +73,7 @@ public abstract class Command {
 	protected String grammarType = null;
 	protected UList<String> grammarFiles = new UList<String>(new String[4]);
 	protected String startProduction = null;
+	protected String inputText = null;
 	protected UList<String> inputFiles = new UList<String>(new String[4]);
 	protected String outputFormat = null;
 	protected String outputDirectory = null;
@@ -112,6 +105,11 @@ public abstract class Command {
 					index++;
 					continue;
 				}
+				if (as.equals("--input")) {
+					inputText = args[index + 1];
+					index++;
+					continue;
+				}
 				if (as.equals("-f") || as.equals("--format")) {
 					outputFormat = args[index + 1];
 					index++;
@@ -137,7 +135,9 @@ public abstract class Command {
 	}
 
 	public final static void displayVersion() {
+		ConsoleUtils.bold();
 		ConsoleUtils.println(ProgName + "-" + nez.Version.Version + " (" + CodeName + ") on Java JVM-" + System.getProperty("java.version"));
+		ConsoleUtils.end();
 		ConsoleUtils.println(Version.Copyright);
 	}
 
@@ -183,20 +183,31 @@ public abstract class Command {
 		return this.strategy.newParser(newGrammar());
 	}
 
+	public final Parser getNezParser() {
+		Grammar grammar = new Grammar("nez");
+		Parser parser = new NezGrammarCombinator().load(grammar, "File").newParser(ParserStrategy.newSafeStrategy());
+		return parser;
+	}
+
 	private int fileIndex = 0;
 
 	public final void checkInputSource() {
-		if (inputFiles.size() == 0) {
+		if (inputFiles.size() == 0 && inputText == null) {
 			ConsoleUtils.exit(1, "no input specified");
 		}
 	}
 
 	public final boolean hasInputSource() {
-		return fileIndex < inputFiles.size();
+		return fileIndex < inputFiles.size() || inputText != null;
 	}
 
 	public final Source nextInputSource() throws IOException {
 		if (hasInputSource()) {
+			if (inputText != null) {
+				Source s = CommonSource.newStringSource(inputText);
+				inputText = null;
+				return s;
+			}
 			String path = this.inputFiles.ArrayValues[fileIndex];
 			fileIndex++;
 			return CommonSource.newFileSource(path);
@@ -212,6 +223,21 @@ public abstract class Command {
 		}
 	}
 
+	public final TreeWriter getTreeWriter(String options) {
+		if (outputFormat == null) {
+			return new TreeWriter();
+		}
+		switch (outputFormat) {
+		case "ast":
+			return new TreeWriter();
+		case "xml":
+			return new TreeXMLWriter();
+		case "json":
+			return new TreeJSONWriter();
+		}
+		return (TreeWriter) newExtendedOutputHandler("", options);
+	}
+
 	public final Object newExtendedOutputHandler(String classPath, String options) {
 		if (outputFormat.indexOf('.') > 0) {
 			classPath = outputFormat;
@@ -222,8 +248,10 @@ public abstract class Command {
 			return Class.forName(classPath).newInstance();
 		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
 			Verbose.traceException(e);
-			ConsoleUtils.println("Available format: " + options);
-			ConsoleUtils.exit(1, "undefined format: " + outputFormat);
+			if (options != null) {
+				ConsoleUtils.println("Available format: " + options);
+				ConsoleUtils.exit(1, "undefined format: " + outputFormat);
+			}
 		}
 		return null;
 	}

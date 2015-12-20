@@ -133,7 +133,7 @@ public final class Parser {
 	}
 
 	public final boolean hasErrors() {
-		return errors == null;
+		return errors != null;
 	}
 
 	public final void clearErrors() {

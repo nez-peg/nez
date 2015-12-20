@@ -2,90 +2,123 @@ package nez.main;
 
 import java.io.IOException;
 
-import nez.ast.CommonTree;
+import nez.ParserGenerator;
 import nez.ast.Source;
-import nez.debugger.DebugManager;
-import nez.ext.CommandContext;
+import nez.ast.Tree;
 import nez.io.CommonSource;
 import nez.lang.Grammar;
 import nez.parser.Parser;
+import nez.tool.ast.TreeWriter;
 import nez.util.ConsoleUtils;
+import nez.util.Verbose;
 
 public class Cshell extends Command {
+	Object console;
 	String text = null;
-	int linenum = 0;
+	int linenum = 1;
 
 	@Override
 	public void exec() throws IOException {
 		Command.displayVersion();
+		ConsoleUtils.println("");
+		ParserGenerator pg = new ParserGenerator();
+		Parser nezParser = this.getNezParser();
+		TreeWriter writer = this.getTreeWriter("ast json xml");
 		Grammar grammar = newGrammar();
 		String start = grammar.getStartProduction().getLocalName();
 		Parser p = strategy.newParser(grammar);
 		p.setDisabledUnconsumed(true);
-		while (readLine(start + ">>> ")) {
-			Source sc = CommonSource.newStringSource("<stdio>", linenum, text);
-			CommonTree node = p.parse(sc);
-			if (node == null || p.hasErrors()) {
-				p.showErrors();
-				// FIXME activateNezDebugger(config);
-				p.clearErrors();
-				continue;
+		int startline = linenum;
+		console = ReadLine.getConsoleReader();
+		while (readText(ConsoleUtils.bold(start) + ">>> ") && text != null) {
+			Source sc = CommonSource.newStringSource("<stdio>", startline, text);
+			startline = linenum;
+			Tree<?> node = nezParser.parse(sc);
+			if (node != null) {
+				grammar = pg.newGrammar(node, "nez");
+				try {
+					start = grammar.getStartProduction().getLocalName();
+					p = strategy.newParser(grammar);
+					p.setDisabledUnconsumed(true);
+					ReadLine.addHistory(console, text);
+					ConsoleUtils.bold();
+					ConsoleUtils.println("Grammar is updated!");
+					ConsoleUtils.end();
+					continue;
+				} catch (Exception e) {
+					Verbose.traceException(e);
+				}
 			}
-			sc = null;
-			ConsoleUtils.printlnIndent("   ", node.toString());
-			// if (Formatter.isSupported(g, node)) {
-			// ConsoleUtils.println("Formatted: " + Formatter.format(g, node));
-			// }
+			// System.out.println("parse " + p.hasErrors());
+			node = p.parse(sc);
+			if (p.hasErrors()) {
+				ConsoleUtils.begin(31);
+				p.showErrors();
+				ConsoleUtils.end();
+				if (node == null) {
+					ConsoleUtils.bold();
+					ConsoleUtils.println("Tips: To enter multiple lines, start an empty line and then end an empty line again.");
+					ConsoleUtils.end();
+				}
+			}
+			if (node != null) {
+				ConsoleUtils.begin(34);
+				if (writer != null) {
+					writer.writeTree(node);
+				} else {
+					ConsoleUtils.printlnIndent("   ", node.toString());
+				}
+				ConsoleUtils.end();
+			}
 		}
 	}
 
-	private boolean readLine(String prompt) {
-		Object console = ReadLine.getConsoleReader();
+	private boolean readText(String prompt) {
 		StringBuilder sb = new StringBuilder();
 		String line = ReadLine.readSingleLine(console, prompt);
 		if (line == null) {
+			text = null;
 			return false;
 		}
-		sb.append(line);
-		ReadLine.addHistory(console, line);
-		while (true) {
-			line = ReadLine.readSingleLine(console, "...");
+		int linecount = 0;
+		boolean hasNext = false;
+		if (line.equals("")) {
+			hasNext = true;
+		} else if (line.endsWith("\\")) {
+			hasNext = true;
+			sb.append(line.substring(0, line.length() - 1));
+			linecount = 1;
+		} else {
+			linecount = 1;
+			sb.append(line);
+		}
+		while (hasNext) {
+			line = ReadLine.readSingleLine(console, "");
 			if (line == null) {
+				text = ""; // cancel
 				return false;
 			}
 			if (line.equals("")) {
-				text = sb.toString();
-				return true;
+				break;
+			} else if (line.endsWith("\\")) {
+				if (linecount > 0) {
+					sb.append("\n");
+				}
+				sb.append(line.substring(0, line.length() - 1));
+				linecount++;
+			} else {
+				if (linecount > 0) {
+					sb.append("\n");
+				}
+				sb.append(line);
+				linecount++;
 			}
-			sb.append(line);
-			ReadLine.addHistory(console, line);
+		}
+		if (linecount > 1) {
 			sb.append("\n");
 		}
-	}
-
-	private boolean readActivateDebugger() {
-		Object console = ReadLine.getConsoleReader();
-		while (true) {
-			String line = ReadLine.readSingleLine(console, "Do you want to start the Nez debugger? (yes/no)");
-			if (line == null) {
-				ConsoleUtils.println("Please push the key of yes or no. You input the key: " + line);
-				continue;
-			}
-			if (line.equals("yes") || line.equals("y")) {
-				return true;
-			}
-			if (line.equals("no") || line.equals("n")) {
-				return false;
-			}
-			ConsoleUtils.println("Please push the key of yes or no. You input the key: " + line);
-		}
-	}
-
-	private void activateNezDebugger(CommandContext config) {
-		if (readActivateDebugger()) {
-			Parser parser = config.newParser();
-			DebugManager manager = new DebugManager(text);
-			manager.exec(parser, config.getStrategy());
-		}
+		text = sb.toString();
+		linenum += linecount;
+		return true;
 	}
 }

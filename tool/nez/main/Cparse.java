@@ -4,17 +4,15 @@ import java.io.IOException;
 
 import nez.ast.Source;
 import nez.ast.Tree;
-import nez.ast.TreeUtils;
-import nez.ast.TreeWriter;
 import nez.parser.Parser;
-import nez.util.ConsoleUtils;
+import nez.tool.ast.TreeWriter;
 
 public class Cparse extends Command {
 	@Override
 	public void exec() throws IOException {
 		checkInputSource();
 		Parser parser = newParser();
-		makeOutputFile(null, null); // check format
+		TreeWriter tw = this.getTreeWriter("ast xml json");
 		while (hasInputSource()) {
 			Source input = nextInputSource();
 			Tree<?> node = parser.parse(input);
@@ -25,7 +23,10 @@ public class Cparse extends Command {
 			// if (node != null) {
 			// //record(parser.getProfiler(), node);
 			// parser.logProfiler();
-			makeOutputFile(input, node);
+			if (this.outputDirectory != null) {
+				tw.init(getOutputFileName(input, tw.getFileExtension()));
+			}
+			tw.writeTree(node);
 			// }
 		}
 	}
@@ -40,54 +41,5 @@ public class Cparse extends Command {
 	// ParserProfier.recordLatencyMS(prof, "O.Overhead", t1, t2);
 	// }
 	// }
-
-	protected void makeOutputFile(Source source, Tree<?> node) {
-		if (outputFormat == null) {
-			outputFormat = "ast";
-		}
-		switch (outputFormat) {
-		case "ast":
-			if (node != null) {
-				TreeWriter w = new TreeWriter(strategy, getOutputFileName(source, "ast"));
-				w.writeTree(node);
-				w.writeNewLine();
-				w.close();
-			}
-			break;
-		case "xml":
-			if (node != null) {
-				TreeWriter w = new TreeWriter(strategy, getOutputFileName(source, "xml"));
-				w.writeXML(node);
-				w.writeNewLine();
-				w.close();
-			}
-			break;
-		case "json":
-			if (node != null) {
-				TreeWriter w = new TreeWriter(strategy, getOutputFileName(source, "json"));
-				w.writeJSON(node);
-				w.writeNewLine();
-				w.close();
-			}
-			break;
-		case "md5":
-			if (node != null) {
-				ConsoleUtils.println(source.getResourceName() + ": " + TreeUtils.digestString(node));
-			}
-			break;
-		case "none": {
-			break;
-		}
-		default:
-			Extension e = (Extension) this.newExtendedOutputHandler("", "ast xml json md5 none");
-			if (node != null) {
-				e.makeOutputFile(node, getOutputFileName(source, null));
-			}
-		}
-	}
-
-	public abstract static class Extension {
-		public abstract void makeOutputFile(Tree<?> node, String path);
-	}
 
 }

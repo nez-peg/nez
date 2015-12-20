@@ -3,9 +3,9 @@ package nez.debugger;
 import java.io.IOException;
 
 import nez.ast.CommonTree;
-import nez.ast.TreeWriter;
 import nez.parser.Parser;
 import nez.parser.ParserStrategy;
+import nez.tool.ast.TreeWriter;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
 
@@ -70,8 +70,6 @@ public class DebugManager {
 			CommonTree tree = (CommonTree) treeTransducer.commit(node);
 			TreeWriter w = new TreeWriter();
 			w.writeTree(tree);
-			w.writeNewLine();
-			w.close();
 		} else {
 			ConsoleUtils.println("unmatch!!");
 		}

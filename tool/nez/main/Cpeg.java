@@ -3,28 +3,29 @@ package nez.main;
 import java.io.IOException;
 
 import nez.lang.Grammar;
-import nez.main.peg.GrammarTranslator;
-import nez.main.peg.LPegTranslator;
-import nez.main.peg.MouseTranslator;
-import nez.main.peg.NezTranslator;
-import nez.main.peg.PEGTLTranslator;
-import nez.main.peg.PEGTranslator;
-import nez.main.peg.PEGjsTranslator;
 import nez.parser.Parser;
+import nez.tool.parser.SourceGenerator;
+import nez.tool.peg.LPegTranslator;
+import nez.tool.peg.MouseTranslator;
+import nez.tool.peg.NezTranslator;
+import nez.tool.peg.PEGTLTranslator;
+import nez.tool.peg.PEGTranslator;
+import nez.tool.peg.PEGjsTranslator;
 
 public class Cpeg extends Command {
 
 	@Override
 	public void exec() throws IOException {
-		GrammarTranslator gw = newGrammarWriter();
+		SourceGenerator generator = newGenerator();
 		Grammar g = newGrammar();
 		Parser p = newParser();
-		gw.init(g, p, g.getURN());
-		gw.pCommentLine("Translated by nez peg -g " + g.getURN() + " --format " + outputFormat);
-		gw.generate(p.getParserGrammar());
+		generator.init(g, p, g.getURN());
+		// generator.pCommentLine("Translated by nez peg -g " + g.getURN() +
+		// " --format " + outputFormat);
+		generator.generate();
 	}
 
-	protected GrammarTranslator newGrammarWriter() {
+	protected SourceGenerator newGenerator() {
 		if (outputFormat == null) {
 			outputFormat = "peg";
 		}
@@ -43,7 +44,7 @@ public class Cpeg extends Command {
 		case "lua":
 			return new LPegTranslator();
 		default:
-			return (GrammarTranslator) this.newExtendedOutputHandler("", "peg pegjs pegtl lpeg mouse nez");
+			return (SourceGenerator) this.newExtendedOutputHandler("", "peg pegjs pegtl lpeg mouse nez");
 		}
 	}
 }

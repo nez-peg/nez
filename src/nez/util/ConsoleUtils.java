@@ -32,6 +32,13 @@ public class ConsoleUtils {
 		}
 	}
 
+	public final static String bold(String text) {
+		if (isColored) {
+			return "\u001b[1m" + text + "\u001b[00m";
+		}
+		return text;
+	}
+
 	public final static void println(Object s) {
 		System.out.println(s);
 	}

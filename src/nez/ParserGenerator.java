@@ -3,6 +3,7 @@ package nez;
 import java.io.IOException;
 import java.util.HashMap;
 
+import nez.ast.Source;
 import nez.ast.Tree;
 import nez.io.CommonSource;
 import nez.io.StringSource;
@@ -47,6 +48,12 @@ public class ParserGenerator {
 		this("nez/lib");
 	}
 
+	public final Grammar newGrammar(Source source, String ext) throws IOException {
+		Grammar grammar = new Grammar(ext);
+		updateGrammar(grammar, source, ext);
+		return grammar;
+	}
+
 	public final Grammar loadGrammar(String fileName) throws IOException {
 		Grammar grammar = new Grammar(FileBuilder.extractFileExtension(fileName));
 		grammar.setURN(fileName);
@@ -62,7 +69,34 @@ public class ParserGenerator {
 		updateGrammar(grammar, source, ext);
 	}
 
-	public final void updateGrammar(Grammar grammar, CommonSource source, String ext) throws IOException {
+	public final void updateGrammar(Grammar grammar, Source source, String ext) throws IOException {
+		GrammarExtension grammarExtention = this.lookupGrammarExtension(ext);
+		Parser parser = grammarExtention.getParser();
+		Tree<?> node = parser.parse(source);
+		parser.ensureNoErrors();
+		GrammarLoader loader = new GrammarLoader(grammar, ParserStrategy.newDefaultStrategy());
+		grammarExtention.updateGrammarLoader(loader);
+		loader.load(node);
+	}
+
+	/* parsedTree */
+
+	public final Grammar newGrammar(Tree<?> parsedTree, String ext) throws IOException {
+		Grammar grammar = new Grammar(ext);
+		updateGrammar(grammar, parsedTree, ext);
+		return grammar;
+	}
+
+	public final void updateGrammar(Grammar grammar, Tree<?> parsedTree, String ext) throws IOException {
+		GrammarExtension grammarExtention = this.lookupGrammarExtension(ext);
+		GrammarLoader loader = new GrammarLoader(grammar, ParserStrategy.newDefaultStrategy());
+		grammarExtention.updateGrammarLoader(loader);
+		loader.load(parsedTree);
+	}
+
+	/* Utils */
+
+	private GrammarExtension lookupGrammarExtension(String ext) throws IOException {
 		GrammarExtension boot = extensionMap.get(ext);
 		if (boot == null) {
 			if (!ext.equals("nez")) {
@@ -85,12 +119,7 @@ public class ParserGenerator {
 			boot = new P(this);
 			extensionMap.put("nez", boot);
 		}
-		Parser parser = boot.getParser();
-		Tree<?> t = parser.parse(source);
-		parser.ensureNoErrors();
-		GrammarLoader loader = new GrammarLoader(grammar, ParserStrategy.newDefaultStrategy());
-		boot.updateGrammarLoader(loader);
-		loader.load(t);
+		return boot;
 	}
 
 	/* Parser */

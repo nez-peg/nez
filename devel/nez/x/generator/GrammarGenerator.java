@@ -1,6 +1,6 @@
 package nez.x.generator;
 
-import nez.main.peg.GrammarTranslator;
+import nez.tool.peg.GrammarTranslator;
 
 public abstract class GrammarGenerator extends GrammarTranslator {
 

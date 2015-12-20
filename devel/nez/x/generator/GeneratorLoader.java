@@ -2,7 +2,7 @@ package nez.x.generator;
 
 import java.util.TreeMap;
 
-import nez.main.peg.GrammarTranslator;
+import nez.tool.peg.GrammarTranslator;
 import nez.util.Verbose;
 
 public class GeneratorLoader {
