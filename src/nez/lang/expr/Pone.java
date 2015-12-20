@@ -2,29 +2,13 @@ package nez.lang.expr;
 
 import nez.ast.SourceLocation;
 import nez.lang.Expression;
+import nez.lang.Nez;
 import nez.lang.PossibleAcceptance;
 
-public class Pone extends Pzero {
+public class Pone extends Nez.OneMore {
 	Pone(SourceLocation s, Expression e) {
-		super(s, e);
-	}
-
-	@Override
-	public final boolean equalsExpression(Expression o) {
-		if (o instanceof Pone) {
-			return this.get(0).equalsExpression(o.get(0));
-		}
-		return false;
-	}
-
-	@Override
-	public final void format(StringBuilder sb) {
-		this.formatUnary(sb, null, this.inner, "+");
-	}
-
-	@Override
-	public Object visit(Expression.Visitor v, Object a) {
-		return v.visitPone(this, a);
+		super(e);
+		this.set(s);
 	}
 
 	@Override

@@ -1,35 +1,14 @@
 package nez.lang.expr;
 
 import nez.ast.SourceLocation;
-import nez.lang.Expression;
-
+import nez.lang.Nez;
 import nez.lang.PossibleAcceptance;
-import nez.util.StringUtils;
 
-public class Cbyte extends Char {
-	public int byteChar;
+public class Cbyte extends Nez.Byte {
 
 	Cbyte(SourceLocation s, boolean binary, int ch) {
-		super(s, binary);
-		this.byteChar = ch;
-	}
-
-	@Override
-	public final boolean equalsExpression(Expression o) {
-		if (o instanceof Cbyte) {
-			return this.byteChar == ((Cbyte) o).byteChar && this.binary == ((Cbyte) o).isBinary();
-		}
-		return false;
-	}
-
-	@Override
-	public final void format(StringBuilder sb) {
-		sb.append(StringUtils.stringfyCharacter(this.byteChar));
-	}
-
-	@Override
-	public Object visit(Expression.Visitor v, Object a) {
-		return v.visitCbyte(this, a);
+		super(ch);
+		this.set(s);
 	}
 
 	@Override

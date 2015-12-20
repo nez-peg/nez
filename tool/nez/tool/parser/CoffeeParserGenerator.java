@@ -2,9 +2,9 @@ package nez.tool.parser;
 
 import nez.lang.Expression;
 import nez.lang.Grammar;
+import nez.lang.Nez;
 import nez.lang.Production;
 import nez.lang.expr.Cany;
-import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cmulti;
 import nez.lang.expr.Cset;
 import nez.lang.expr.NonTerminal;
@@ -67,19 +67,19 @@ public class CoffeeParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitPempty(Expression p) {
+	public void visitEmpty(Expression p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitPfail(Expression p) {
+	public void visitFail(Expression p) {
 		Let("result", "false");
 
 	}
 
 	@Override
-	public void visitCany(Cany p) {
+	public void visitAny(Nez.Any p) {
 		If(MoreThan("@input.length", _pos())).Open();
 		L(_inc(_pos()));
 		Let(_result(), _true());
@@ -91,7 +91,7 @@ public class CoffeeParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitCbyte(Cbyte p) {
+	public void visitByte(Nez.Byte p) {
 		char c = (char) p.byteChar;
 		If(_regex(c) + "." + callFunc("test", "@input.charAt(@currPos)"));
 		Open();
@@ -104,7 +104,7 @@ public class CoffeeParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitCset(Cset p) {
+	public void visitByteset(Nez.Byteset p) {
 		If(_regex(p.toString())).W(".").W(callFunc("test", "@input.charAt(@currPos)"));
 		Open();
 		Let(_result(), "true");
@@ -116,7 +116,7 @@ public class CoffeeParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitPoption(Poption p) {
+	public void visitOption(Nez.Option p) {
 		Let("pos" + unique(p), _pos());
 		Let("posl" + unique(p), "poss.length");
 		visitExpression(p.get(0));
@@ -130,7 +130,7 @@ public class CoffeeParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitPzero(Pzero p) {
+	public void visitZeroMore(Nez.ZeroMore p) {
 		While(StNotEq("result", "false"));
 		Open();
 		Let("posl" + unique(p), "poss.length");
@@ -147,7 +147,7 @@ public class CoffeeParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitPone(Pone p) {
+	public void visitOneMore(Nez.OneMore p) {
 		for (Expression e : p) {
 			visitExpression(e);
 		}
@@ -170,7 +170,7 @@ public class CoffeeParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitPand(Pand p) {
+	public void visitAnd(Nez.And p) {
 		Let("pos" + unique(p), _pos());
 		Let("outs" + unique(p), _outobj());
 		visitExpression(p.get(0));
@@ -184,7 +184,7 @@ public class CoffeeParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitPnot(Pnot p) {
+	public void visitNot(Nez.Not p) {
 		Let("pos" + unique(p), _pos());
 		visitExpression(p.get(0));
 		Let(_pos(), "pos" + unique(p));
@@ -200,7 +200,7 @@ public class CoffeeParserGenerator extends ParserGrammarSourceGenerator {
 	private int cntNew = 0;
 
 	@Override
-	public void visitPsequence(Psequence p) {
+	public void visitPair(Nez.Pair p) {
 		boolean isFirst = true;
 		boolean inLeftSequence = false;
 		for (Expression s : p) {
@@ -268,7 +268,7 @@ public class CoffeeParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitPchoice(Pchoice p) {
+	public void visitChoice(Nez.Choice p) {
 		boolean isFirst = true;
 		for (Expression e : p) {
 			if (!isFirst) {
@@ -299,7 +299,7 @@ public class CoffeeParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitTlink(Tlink p) {
+	public void visitLink(Nez.Link p) {
 		visitExpression(p.get(0));
 		if (isLeftNew) {
 			L(_ltmp() + ".push " + _result() + " if " + StNotEq("typeof " + _result(), "\"boolean\""));
@@ -309,13 +309,13 @@ public class CoffeeParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitTnew(Tnew p) {
+	public void visitPreNew(Nez.PreNew p) {
 		Push();
 		makePosObj();
 	}
 
 	@Override
-	public void visitTlfold(Tlfold p) {
+	public void visitLeftFold(Nez.LeftFold p) {
 		If(StNotEq(_ltmp() + "[" + _ltmp() + ".length-1" + "]", _result())).Open();
 		L(_ltmp() + ".push " + _result() + " if " + StNotEq("typeof " + _result(), "\"boolean\""));
 		Close();
@@ -324,19 +324,19 @@ public class CoffeeParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitTcapture(Tcapture p) {
+	public void visitNew(Nez.New p) {
 		setEndPos();
 		makeObject();
 		Pop();
 	}
 
 	@Override
-	public void visitTtag(Ttag p) {
+	public void visitTag(Nez.Tag p) {
 		Let(_tag(), "\"" + p.getTagName() + "\" if " + StNotEq(_result(), _false()));
 	}
 
 	@Override
-	public void visitTreplace(Treplace p) {
+	public void visitReplace(Nez.Replace p) {
 		If(StNotEq(_result(), _false())).Open();
 		Let(_result(), StringUtils.quoteString('"', p.value, '"'));
 		Close();
@@ -651,13 +651,13 @@ public class CoffeeParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitCmulti(Cmulti p) {
+	public void visitString(Nez.String p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitTdetree(Tdetree p) {
+	public void visitDetree(Nez.Detree p) {
 		// TODO Auto-generated method stub
 
 	}

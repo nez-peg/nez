@@ -19,7 +19,6 @@ import nez.lang.expr.Tlink;
 import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
-import nez.lang.expr.Unary;
 import nez.lang.expr.Xif;
 import nez.lang.expr.Xon;
 import nez.parser.ParseFunc;
@@ -227,7 +226,7 @@ public class GrammarChecker extends GrammarTransducer {
 	}
 
 	@Override
-	public Expression visitTdetree(Tdetree p, Object a) {
+	public Expression visitDetree(Nez.Detree p, Object a) {
 		boolean stacked = this.enterNonASTContext();
 		Expression inner = this.visitInner(p.get(0));
 		this.exitNonASTContext(stacked);
@@ -235,7 +234,7 @@ public class GrammarChecker extends GrammarTransducer {
 	}
 
 	@Override
-	public Expression visitTnew(Tnew p, Object a) {
+	public Expression visitPreNew(Nez.PreNew p, Object a) {
 		if (this.isNonASTContext()) {
 			return p.newEmpty();
 		}
@@ -244,11 +243,11 @@ public class GrammarChecker extends GrammarTransducer {
 			return p.newEmpty();
 		}
 		this.requiredTypestate = Typestate.TreeMutation;
-		return super.visitTnew(p, a);
+		return super.visitPreNew(p, a);
 	}
 
 	@Override
-	public Expression visitTlfold(Tlfold p, Object a) {
+	public Expression visitLeftFold(Nez.LeftFold p, Object a) {
 		if (this.isNonASTContext()) {
 			return p.newEmpty();
 		}
@@ -257,11 +256,11 @@ public class GrammarChecker extends GrammarTransducer {
 			return p.newEmpty();
 		}
 		this.requiredTypestate = Typestate.TreeMutation;
-		return super.visitTlfold(p, a);
+		return super.visitLeftFold(p, a);
 	}
 
 	@Override
-	public Expression visitTcapture(Tcapture p, Object a) {
+	public Expression visitNew(Nez.New p, Object a) {
 		if (this.isNonASTContext()) {
 			return p.newEmpty();
 		}
@@ -270,11 +269,11 @@ public class GrammarChecker extends GrammarTransducer {
 			return p.newEmpty();
 		}
 		this.requiredTypestate = Typestate.TreeMutation;
-		return super.visitTcapture(p, a);
+		return super.visitNew(p, a);
 	}
 
 	@Override
-	public Expression visitTtag(Ttag p, Object a) {
+	public Expression visitTag(Nez.Tag p, Object a) {
 		if (this.isNonASTContext()) {
 			return p.newEmpty();
 		}
@@ -286,7 +285,7 @@ public class GrammarChecker extends GrammarTransducer {
 	}
 
 	@Override
-	public Expression visitTreplace(Treplace p, Object a) {
+	public Expression visitReplace(Nez.Replace p, Object a) {
 		if (this.isNonASTContext()) {
 			return p.newEmpty();
 		}
@@ -298,7 +297,7 @@ public class GrammarChecker extends GrammarTransducer {
 	}
 
 	@Override
-	public Expression visitTlink(Tlink p, Object a) {
+	public Expression visitLink(Nez.Link p, Object a) {
 		Expression inner = p.get(0);
 		if (this.isNonASTContext()) {
 			return this.visitInner(inner);
@@ -320,7 +319,7 @@ public class GrammarChecker extends GrammarTransducer {
 	}
 
 	@Override
-	public Expression visitPchoice(Pchoice p, Object a) {
+	public Expression visitChoice(Nez.Choice p, Object a) {
 		Typestate required = this.requiredTypestate;
 		Typestate next = this.requiredTypestate;
 		UList<Expression> l = ExpressionCommons.newList(p.size());
@@ -336,21 +335,21 @@ public class GrammarChecker extends GrammarTransducer {
 	}
 
 	@Override
-	public Expression visitPzero(Pzero p, Object a) {
+	public Expression visitZeroMore(Nez.ZeroMore p, Object a) {
 		return ExpressionCommons.newPzero(p.getSourcePosition(), visitOptionalInner(p));
 	}
 
 	@Override
-	public Expression visitPone(Pone p, Object a) {
+	public Expression visitOneMore(Nez.OneMore p, Object a) {
 		return ExpressionCommons.newPone(p.getSourcePosition(), visitOptionalInner(p));
 	}
 
 	@Override
-	public Expression visitPoption(Poption p, Object a) {
+	public Expression visitOption(Nez.Option p, Object a) {
 		return ExpressionCommons.newPoption(p.getSourcePosition(), visitOptionalInner(p));
 	}
 
-	private Expression visitOptionalInner(Unary p) {
+	private Expression visitOptionalInner(Nez.Unary p) {
 		Typestate innerTypestate = this.isNonASTContext() ? Typestate.Unit : parserGrammar.typeState(p.get(0));
 		if (innerTypestate == Typestate.Tree) {
 			if (this.requiredTypestate == Typestate.TreeMutation) {
@@ -372,12 +371,12 @@ public class GrammarChecker extends GrammarTransducer {
 	}
 
 	@Override
-	public Expression visitPand(Pand p, Object a) {
+	public Expression visitAnd(Nez.And p, Object a) {
 		return ExpressionCommons.newPand(p.getSourcePosition(), visitOptionalInner(p));
 	}
 
 	@Override
-	public Expression visitPnot(Pnot p, Object a) {
+	public Expression visitNot(Nez.Not p, Object a) {
 		Expression inner = p.get(0);
 		Typestate innerTypestate = this.isNonASTContext() ? Typestate.Unit : parserGrammar.typeState(inner);
 		if (innerTypestate != Typestate.Unit) {

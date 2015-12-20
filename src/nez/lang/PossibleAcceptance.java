@@ -34,6 +34,10 @@ public class PossibleAcceptance {
 		return e.get(0).acceptByte(ch);
 	}
 
+	public static short acceptUnary(Nez.Unary e, int ch) {
+		return e.get(0).acceptByte(ch);
+	}
+
 	public static short acceptOption(Expression e, int ch) {
 		short r = e.get(0).acceptByte(ch);
 		return (r == PossibleAcceptance.Accept) ? r : PossibleAcceptance.Unconsumed;

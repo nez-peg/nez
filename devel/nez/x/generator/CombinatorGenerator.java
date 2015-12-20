@@ -2,9 +2,9 @@ package nez.x.generator;
 
 import nez.lang.Expression;
 import nez.lang.Grammar;
+import nez.lang.Nez;
 import nez.lang.Production;
 import nez.lang.expr.Cany;
-import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cmulti;
 import nez.lang.expr.Cset;
 import nez.lang.expr.NonTerminal;
@@ -89,12 +89,12 @@ public class CombinatorGenerator extends GrammarTranslator {
 	}
 
 	@Override
-	public void visitCbyte(Cbyte e) {
+	public void visitByte(Nez.Byte e) {
 		C("t", StringUtils.stringfyByte('"', e.byteChar, '"'));
 	}
 
 	@Override
-	public void visitCset(Cset e) {
+	public void visitByteset(Nez.Byteset e) {
 		C("c", e.byteMap);
 	}
 
@@ -103,74 +103,74 @@ public class CombinatorGenerator extends GrammarTranslator {
 	}
 
 	@Override
-	public void visitCany(Cany e) {
+	public void visitAny(Nez.Any e) {
 		C("AnyChar");
 	}
 
 	@Override
-	public void visitPoption(Poption e) {
+	public void visitOption(Nez.Option e) {
 		C("Option", e);
 	}
 
 	@Override
-	public void visitPzero(Pzero e) {
+	public void visitZeroMore(Nez.ZeroMore e) {
 		C("ZeroMore", e);
 	}
 
 	@Override
-	public void visitPone(Pone e) {
+	public void visitOneMore(Nez.OneMore e) {
 		C("OneMore", e);
 	}
 
 	@Override
-	public void visitPand(Pand e) {
+	public void visitAnd(Nez.And e) {
 		C("And", e);
 	}
 
 	@Override
-	public void visitPnot(Pnot e) {
+	public void visitNot(Nez.Not e) {
 		C("Not", e);
 	}
 
 	@Override
-	public void visitPchoice(Pchoice e) {
+	public void visitChoice(Nez.Choice e) {
 		C("Choice", e);
 	}
 
 	@Override
-	public void visitPsequence(Psequence e) {
+	public void visitPair(Nez.Pair e) {
 		W("Sequence(");
-		// super.visitPsequence(e);
+		// super.visitPair(e);
 		W(")");
 	}
 
 	@Override
-	public void visitTnew(Tnew e) {
+	public void visitPreNew(Nez.PreNew e) {
 		C("NCapture", e.shift);
 	}
 
 	@Override
-	public void visitTlfold(Tlfold e) {
+	public void visitLeftFold(Nez.LeftFold e) {
 		C("LCapture", e.shift);
 	}
 
 	@Override
-	public void visitTcapture(Tcapture e) {
+	public void visitNew(Nez.New e) {
 		C("Capture", e.shift);
 	}
 
 	@Override
-	public void visitTtag(Ttag e) {
+	public void visitTag(Nez.Tag e) {
 		C("Tagging", e.getTagName());
 	}
 
 	@Override
-	public void visitTreplace(Treplace e) {
+	public void visitReplace(Nez.Replace e) {
 		C("Replace", StringUtils.quoteString('"', e.value, '"'));
 	}
 
 	@Override
-	public void visitTlink(Tlink e) {
+	public void visitLink(Nez.Link e) {
 		if (e.getLabel() != null) {
 			C("Link", e.getLabel().toString(), e);
 		} else {
@@ -190,19 +190,19 @@ public class CombinatorGenerator extends GrammarTranslator {
 	}
 
 	@Override
-	public void visitPempty(Expression p) {
+	public void visitEmpty(Expression p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitPfail(Expression p) {
+	public void visitFail(Expression p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitCmulti(Cmulti p) {
+	public void visitString(Nez.String p) {
 		// TODO Auto-generated method stub
 
 	}
@@ -250,7 +250,7 @@ public class CombinatorGenerator extends GrammarTranslator {
 	}
 
 	@Override
-	public void visitTdetree(Tdetree p) {
+	public void visitDetree(Nez.Detree p) {
 		// TODO Auto-generated method stub
 
 	}

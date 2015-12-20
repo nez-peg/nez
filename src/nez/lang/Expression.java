@@ -40,7 +40,15 @@ import nez.util.UList;
 public abstract class Expression extends AbstractList<Expression> {
 	SourceLocation s = null;
 
+	protected Expression() {
+		this(null);
+	}
+
 	protected Expression(SourceLocation s) {
+		this.s = s;
+	}
+
+	protected final void set(SourceLocation s) {
 		this.s = s;
 	}
 
@@ -166,45 +174,45 @@ public abstract class Expression extends AbstractList<Expression> {
 
 		public abstract Object visitNonTerminal(NonTerminal e, Object a);
 
-		public abstract Object visitPempty(Pempty e, Object a);
+		public abstract Object visitEmpty(Nez.Empty e, Object a);
 
-		public abstract Object visitPfail(Pfail e, Object a);
+		public abstract Object visitFail(Nez.Fail e, Object a);
 
-		public abstract Object visitCbyte(Cbyte e, Object a);
+		public abstract Object visitByte(Nez.Byte e, Object a);
 
-		public abstract Object visitCset(Cset e, Object a);
+		public abstract Object visitByteset(Nez.Byteset e, Object a);
 
-		public abstract Object visitCany(Cany e, Object a);
+		public abstract Object visitAny(Nez.Any e, Object a);
 
-		public abstract Object visitCmulti(Cmulti e, Object a);
+		public abstract Object visitString(Nez.String e, Object a);
 
-		public abstract Object visitPsequence(Psequence e, Object a);
+		public abstract Object visitPair(Nez.Pair e, Object a);
 
-		public abstract Object visitPchoice(Pchoice e, Object a);
+		public abstract Object visitChoice(Nez.Choice e, Object a);
 
-		public abstract Object visitPoption(Poption e, Object a);
+		public abstract Object visitOption(Nez.Option e, Object a);
 
-		public abstract Object visitPzero(Pzero e, Object a);
+		public abstract Object visitZeroMore(Nez.ZeroMore e, Object a);
 
-		public abstract Object visitPone(Pone e, Object a);
+		public abstract Object visitOneMore(Nez.OneMore e, Object a);
 
-		public abstract Object visitPand(Pand e, Object a);
+		public abstract Object visitAnd(Nez.And e, Object a);
 
-		public abstract Object visitPnot(Pnot e, Object a);
+		public abstract Object visitNot(Nez.Not e, Object a);
 
-		public abstract Object visitTnew(Tnew e, Object a);
+		public abstract Object visitPreNew(Nez.PreNew e, Object a);
 
-		public abstract Object visitTlfold(Tlfold e, Object a);
+		public abstract Object visitLeftFold(Nez.LeftFold e, Object a);
 
-		public abstract Object visitTlink(Tlink e, Object a);
+		public abstract Object visitLink(Nez.Link e, Object a);
 
-		public abstract Object visitTtag(Ttag e, Object a);
+		public abstract Object visitTag(Nez.Tag e, Object a);
 
-		public abstract Object visitTreplace(Treplace e, Object a);
+		public abstract Object visitReplace(Nez.Replace e, Object a);
 
-		public abstract Object visitTcapture(Tcapture e, Object a);
+		public abstract Object visitNew(Nez.New e, Object a);
 
-		public abstract Object visitTdetree(Tdetree e, Object a);
+		public abstract Object visitDetree(Nez.Detree e, Object a);
 
 		public abstract Object visitXblock(Xblock e, Object a);
 

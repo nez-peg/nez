@@ -2,36 +2,18 @@ package nez.lang.expr;
 
 import nez.ast.SourceLocation;
 import nez.ast.Symbol;
-import nez.lang.Expression;
+import nez.lang.Nez;
 import nez.lang.PossibleAcceptance;
 
-public class Ttag extends Term {
-	public Symbol tag;
+public class Ttag extends Nez.Tag {
 
 	Ttag(SourceLocation s, Symbol tag) {
-		super(s);
-		this.tag = tag;
+		super(tag);
+		this.set(s);
 	}
 
 	Ttag(SourceLocation s, String name) {
 		this(s, Symbol.tag(name));
-	}
-
-	public final String getTagName() {
-		return tag.getSymbol();
-	}
-
-	@Override
-	public final boolean equalsExpression(Expression o) {
-		if (o instanceof Ttag) {
-			return this.tag == ((Ttag) o).tag;
-		}
-		return false;
-	}
-
-	@Override
-	public final void format(StringBuilder sb) {
-		sb.append("#" + tag.getSymbol());
 	}
 
 	@Override
@@ -42,11 +24,6 @@ public class Ttag extends Term {
 	@Override
 	public short acceptByte(int ch) {
 		return PossibleAcceptance.Unconsumed;
-	}
-
-	@Override
-	public Object visit(Expression.Visitor v, Object a) {
-		return v.visitTtag(this, a);
 	}
 
 }

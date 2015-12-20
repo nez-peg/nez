@@ -2,9 +2,9 @@ package nez.tool.peg;
 
 import nez.lang.Expression;
 import nez.lang.Grammar;
+import nez.lang.Nez;
 import nez.lang.Production;
 import nez.lang.expr.Cany;
-import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cmulti;
 import nez.lang.expr.Cset;
 import nez.lang.expr.NonTerminal;
@@ -41,7 +41,7 @@ public class PEGjsTranslator extends GrammarTranslator {
 	}
 
 	@Override
-	public void visitCmulti(Cmulti p) {
+	public void visitString(Nez.String p) {
 		// TODO Auto-generated method stub
 
 	}
@@ -88,11 +88,11 @@ public class PEGjsTranslator extends GrammarTranslator {
 	}
 
 	@Override
-	public void visitPempty(Expression e) {
+	public void visitEmpty(Expression e) {
 	}
 
 	@Override
-	public void visitPfail(Expression e) {
+	public void visitFail(Expression e) {
 	}
 
 	@Override
@@ -118,7 +118,7 @@ public class PEGjsTranslator extends GrammarTranslator {
 	}
 
 	@Override
-	public void visitCbyte(Cbyte e) {
+	public void visitByte(Nez.Byte e) {
 		W(this.stringfyByte(e.byteChar));
 	}
 
@@ -157,7 +157,7 @@ public class PEGjsTranslator extends GrammarTranslator {
 	}
 
 	@Override
-	public void visitCset(Cset e) {
+	public void visitByteset(Nez.Byteset e) {
 		W("[");
 		boolean b[] = e.byteMap;
 		for (int start = 0; start < 256; start++) {
@@ -182,12 +182,12 @@ public class PEGjsTranslator extends GrammarTranslator {
 	}
 
 	@Override
-	public void visitCany(Cany e) {
+	public void visitAny(Nez.Any e) {
 		W(".");
 	}
 
 	@Override
-	public void visitPoption(Poption e) {
+	public void visitOption(Nez.Option e) {
 		for (Expression sub : e) {
 			visitExpression(sub);
 		}
@@ -195,7 +195,7 @@ public class PEGjsTranslator extends GrammarTranslator {
 	}
 
 	@Override
-	public void visitPzero(Pzero e) {
+	public void visitZeroMore(Nez.ZeroMore e) {
 		for (Expression sub : e) {
 			visitExpression(sub);
 		}
@@ -203,7 +203,7 @@ public class PEGjsTranslator extends GrammarTranslator {
 	}
 
 	@Override
-	public void visitPone(Pone e) {
+	public void visitOneMore(Nez.OneMore e) {
 		for (Expression sub : e) {
 			visitExpression(sub);
 		}
@@ -211,7 +211,7 @@ public class PEGjsTranslator extends GrammarTranslator {
 	}
 
 	@Override
-	public void visitPand(Pand e) {
+	public void visitAnd(Nez.And e) {
 		W("&");
 		for (Expression sub : e) {
 			visitExpression(sub);
@@ -219,7 +219,7 @@ public class PEGjsTranslator extends GrammarTranslator {
 	}
 
 	@Override
-	public void visitPnot(Pnot e) {
+	public void visitNot(Nez.Not e) {
 		W("!");
 		for (Expression sub : e) {
 			visitExpression(sub);
@@ -227,7 +227,7 @@ public class PEGjsTranslator extends GrammarTranslator {
 	}
 
 	@Override
-	public void visitPchoice(Pchoice e) {
+	public void visitChoice(Nez.Choice e) {
 		int checkFirst = 0;
 		W("(");
 		for (Expression sub : e) {
@@ -241,7 +241,7 @@ public class PEGjsTranslator extends GrammarTranslator {
 	}
 
 	@Override
-	public void visitPsequence(Psequence e) {
+	public void visitPair(Nez.Pair e) {
 		W("(");
 		for (Expression sub : e) {
 			visitExpression(sub);
@@ -251,26 +251,26 @@ public class PEGjsTranslator extends GrammarTranslator {
 	}
 
 	@Override
-	public void visitTnew(Tnew e) {
+	public void visitPreNew(Nez.PreNew e) {
 		for (Expression sub : e) {
 			visitExpression(sub);
 		}
 	}
 
 	@Override
-	public void visitTcapture(Tcapture e) {
+	public void visitNew(Nez.New e) {
 	}
 
 	@Override
-	public void visitTtag(Ttag e) {
+	public void visitTag(Nez.Tag e) {
 	}
 
 	@Override
-	public void visitTreplace(Treplace e) {
+	public void visitReplace(Nez.Replace e) {
 	}
 
 	@Override
-	public void visitTlink(Tlink e) {
+	public void visitLink(Nez.Link e) {
 		// if(e.index != -1) {
 		// C("Link", String.valueOf(e.index), e);
 		// }
@@ -338,7 +338,7 @@ public class PEGjsTranslator extends GrammarTranslator {
 	}
 
 	@Override
-	public void visitTdetree(Tdetree p) {
+	public void visitDetree(Nez.Detree p) {
 		// TODO Auto-generated method stub
 
 	}
@@ -356,7 +356,7 @@ public class PEGjsTranslator extends GrammarTranslator {
 	}
 
 	@Override
-	public void visitTlfold(Tlfold p) {
+	public void visitLeftFold(Nez.LeftFold p) {
 		// TODO Auto-generated method stub
 
 	}

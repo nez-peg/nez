@@ -283,7 +283,7 @@ public class GrammarOptimizer extends GrammarRewriter {
 	}
 
 	@Override
-	public Expression visitPsequence(Psequence p, Object a) {
+	public Expression visitPair(Nez.Pair p, Object a) {
 		UList<Expression> l = p.toList();
 		UList<Expression> l2 = ExpressionCommons.newList(l.size());
 		for (int i = 0; i < l.size(); i++) {
@@ -372,7 +372,6 @@ public class GrammarOptimizer extends GrammarRewriter {
 		}
 		if (next instanceof Cany) {
 			Cany any = (Cany) next;
-			isBinary = any.isBinary();
 			bany = Cset.newMap(true);
 			if (!isBinary) {
 				bany[0] = false;
@@ -380,7 +379,6 @@ public class GrammarOptimizer extends GrammarRewriter {
 		}
 		if (next instanceof Cset) {
 			Cset bm = (Cset) next;
-			isBinary = bm.isBinary();
 			bany = bm.byteMap.clone();
 		}
 
@@ -402,7 +400,7 @@ public class GrammarOptimizer extends GrammarRewriter {
 	}
 
 	@Override
-	public Expression visitTlink(Tlink p, Object a) {
+	public Expression visitLink(Nez.Link p, Object a) {
 		if (p.get(0) instanceof Pchoice) {
 			Expression choice = p.get(0);
 			UList<Expression> l = ExpressionCommons.newList(choice.size());
@@ -412,23 +410,23 @@ public class GrammarOptimizer extends GrammarRewriter {
 			}
 			return choice.newChoice(l);
 		}
-		return super.visitTlink(p, a);
+		return super.visitLink(p, a);
 	}
 
 	@Override
-	public Expression visitPchoice(Pchoice p, Object a) {
+	public Expression visitChoice(Nez.Choice p, Object a) {
 		if (!p.isOptimized()) {
 			p.setOptimized();
 			UList<Expression> l = ExpressionCommons.newList(p.size());
 			for (Expression sub : p) {
 				ExpressionCommons.addChoice(l, this.visitInner(sub));
 			}
-			return this.visitPchoice(p, l);
+			return this.visitChoice(p, l);
 		}
 		return p;
 	}
 
-	public Expression visitPchoice(Pchoice p, UList<Expression> l) {
+	public Expression visitChoice(Nez.Choice p, UList<Expression> l) {
 		Expression optimized = canConvertToCset(p, l);
 		if (optimized != null) {
 			this.verboseOptimized("choice-to-set", p, optimized);
@@ -447,23 +445,20 @@ public class GrammarOptimizer extends GrammarRewriter {
 		return n;
 	}
 
-	private Expression canConvertToCset(Pchoice choice, UList<Expression> choiceList) {
+	private Expression canConvertToCset(Nez.Choice choice, UList<Expression> choiceList) {
 		boolean byteMap[] = Cset.newMap(false);
 		boolean binary = false;
 		for (Expression e : choiceList) {
 			e = ExpressionCommons.resolveNonTerminal(e);
 			if (e instanceof Cbyte) {
 				byteMap[((Cbyte) e).byteChar] = true;
-				if (((Cbyte) e).isBinary()) {
-					binary = true;
-				}
+				// if (((Cbyte) e).isBinary()) {
+				// binary = true;
+				// }
 				continue;
 			}
 			if (e instanceof Cset) {
 				Cset.appendBitMap(byteMap, ((Cset) e).byteMap);
-				if (((Cset) e).isBinary()) {
-					binary = true;
-				}
 				continue;
 			}
 			if (e instanceof Cany) {
@@ -482,7 +477,7 @@ public class GrammarOptimizer extends GrammarRewriter {
 		return false;
 	}
 
-	private UList<Expression> checkTrieTree(Pchoice choice, UList<Expression> l) {
+	private UList<Expression> checkTrieTree(Nez.Choice choice, UList<Expression> l) {
 		for (Expression inner : l) {
 			if (isTrieTreeHead(inner)) {
 				continue;
@@ -537,7 +532,7 @@ public class GrammarOptimizer extends GrammarRewriter {
 
 	private Expression trySecondChoice(Expression e, UList<Expression> el) {
 		if (this.enabledSecondChoice && e instanceof Pchoice) {
-			return this.visitPchoice((Pchoice) e, el);
+			return this.visitChoice((Pchoice) e, el);
 		}
 		return e;
 	}

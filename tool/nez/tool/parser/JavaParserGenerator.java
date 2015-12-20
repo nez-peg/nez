@@ -6,9 +6,9 @@ import java.util.HashMap;
 import nez.ast.Symbol;
 import nez.lang.Expression;
 import nez.lang.Grammar;
+import nez.lang.Nez;
 import nez.lang.Production;
 import nez.lang.expr.Cany;
-import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cmulti;
 import nez.lang.expr.Cset;
 import nez.lang.expr.NonTerminal;
@@ -410,12 +410,12 @@ public class JavaParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitPempty(Expression e) {
+	public void visitEmpty(Expression e) {
 
 	}
 
 	@Override
-	public void visitPfail(Expression e) {
+	public void visitFail(Expression e) {
 		Return(_false());
 	}
 
@@ -429,7 +429,7 @@ public class JavaParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitCbyte(Cbyte e) {
+	public void visitByte(Nez.Byte e) {
 		IfNotThen(_match(e.byteChar)).Begin("{");
 		{
 			Return(_false());
@@ -438,7 +438,7 @@ public class JavaParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitCset(Cset e) {
+	public void visitByteset(Nez.Byteset e) {
 		IfNotThen(_match(e.byteMap)).Begin("{");
 		{
 			Return(_false());
@@ -447,7 +447,7 @@ public class JavaParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitCany(Cany e) {
+	public void visitAny(Nez.Any e) {
 		IfNotThen(_match()).Begin("{");
 		{
 			Return(_false());
@@ -456,29 +456,29 @@ public class JavaParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitCmulti(Cmulti p) {
+	public void visitString(Nez.String p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitPoption(Poption e) {
+	public void visitOption(Nez.Option e) {
 		Statement(_call(e));
 	}
 
 	@Override
-	public void visitPzero(Pzero e) {
+	public void visitZeroMore(Nez.ZeroMore e) {
 		Statement(_call(e));
 	}
 
 	@Override
-	public void visitPone(Pone e) {
+	public void visitOneMore(Nez.OneMore e) {
 		visitExpression(e.get(0));
 		Statement(_call(e));
 	}
 
 	@Override
-	public void visitPand(Pand e) {
+	public void visitAnd(Nez.And e) {
 		IfNotThen(_call(e)).Begin("{");
 		{
 			Return(_false());
@@ -487,7 +487,7 @@ public class JavaParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitPnot(Pnot e) {
+	public void visitNot(Nez.Not e) {
 		IfThen(_call(e)).Begin("{");
 		{
 			Return(_false());
@@ -496,14 +496,14 @@ public class JavaParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitPsequence(Psequence e) {
+	public void visitPair(Nez.Pair e) {
 		for (Expression s : e) {
 			visitExpression(s);
 		}
 	}
 
 	@Override
-	public void visitPchoice(Pchoice e) {
+	public void visitChoice(Nez.Choice e) {
 		IfNotThen(_call(e)).Begin("{");
 		{
 			Return(_false());
@@ -512,12 +512,12 @@ public class JavaParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitTnew(Tnew e) {
+	public void visitPreNew(Nez.PreNew e) {
 		Statement(_ccall("new"));
 	}
 
 	@Override
-	public void visitTcapture(Tcapture e) {
+	public void visitNew(Nez.New e) {
 		Statement(_ccall("capture"));
 	}
 
@@ -526,17 +526,17 @@ public class JavaParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitTtag(Ttag e) {
+	public void visitTag(Nez.Tag e) {
 		Statement(_ccall("tag", _tag(e.tag)));
 	}
 
 	@Override
-	public void visitTreplace(Treplace e) {
+	public void visitReplace(Nez.Replace e) {
 		Statement(_ccall("replace", StringUtils.quoteString('"', e.value, '"')));
 	}
 
 	@Override
-	public void visitTlink(Tlink e) {
+	public void visitLink(Nez.Link e) {
 		IfNotThen(_call(e)).Begin("{");
 		{
 			Return(_false());
@@ -592,7 +592,7 @@ public class JavaParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitTdetree(Tdetree p) {
+	public void visitDetree(Nez.Detree p) {
 		// TODO Auto-generated method stub
 
 	}
@@ -610,7 +610,7 @@ public class JavaParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitTlfold(Tlfold p) {
+	public void visitLeftFold(Nez.LeftFold p) {
 		// TODO Auto-generated method stub
 
 	}

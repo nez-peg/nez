@@ -1,7 +1,7 @@
 package nez.lang;
 
+import nez.lang.Nez.Byte;
 import nez.lang.expr.Cany;
-import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cmulti;
 import nez.lang.expr.Cset;
 import nez.lang.expr.ExpressionCommons;
@@ -55,32 +55,32 @@ public class GrammarTransducer extends Expression.Visitor {
 	}
 
 	@Override
-	public Expression visitPempty(Pempty e, Object a) {
+	public Expression visitEmpty(Nez.Empty e, Object a) {
 		return e; // immutable
 	}
 
 	@Override
-	public Expression visitPfail(Pfail e, Object a) {
+	public Expression visitFail(Nez.Fail e, Object a) {
 		return e; // immutable
 	}
 
 	@Override
-	public Expression visitCbyte(Cbyte e, Object a) {
+	public Expression visitByte(Byte e, Object a) {
 		return e; // immutable
 	}
 
 	@Override
-	public Expression visitCset(Cset e, Object a) {
+	public Expression visitByteset(Nez.Byteset e, Object a) {
 		return e; // immutable
 	}
 
 	@Override
-	public Expression visitCany(Cany e, Object a) {
+	public Expression visitAny(Nez.Any e, Object a) {
 		return e; // immutable
 	}
 
 	@Override
-	public Expression visitCmulti(Cmulti e, Object a) {
+	public Expression visitString(Nez.String e, Object a) {
 		return e; // immutable
 	}
 
@@ -91,7 +91,7 @@ public class GrammarTransducer extends Expression.Visitor {
 	}
 
 	@Override
-	public Expression visitPsequence(Psequence e, Object a) {
+	public Expression visitPair(Nez.Pair e, Object a) {
 		Expression first = e.getFirst();
 		push(first);
 		first = (Expression) first.visit(this, null);
@@ -110,7 +110,7 @@ public class GrammarTransducer extends Expression.Visitor {
 	}
 
 	@Override
-	public Expression visitPchoice(Pchoice e, Object a) {
+	public Expression visitChoice(Nez.Choice e, Object a) {
 		UList<Expression> l = ExpressionCommons.newList(e.size());
 		for (Expression sub : e) {
 			ExpressionCommons.addChoice(l, this.visitInner(sub));
@@ -119,62 +119,62 @@ public class GrammarTransducer extends Expression.Visitor {
 	}
 
 	@Override
-	public Expression visitPoption(Poption e, Object a) {
+	public Expression visitOption(Nez.Option e, Object a) {
 		return ExpressionCommons.newPoption(e.getSourcePosition(), visitInner(e.get(0)));
 	}
 
 	@Override
-	public Expression visitPzero(Pzero e, Object a) {
+	public Expression visitZeroMore(Nez.ZeroMore e, Object a) {
 		return ExpressionCommons.newPzero(e.getSourcePosition(), visitInner(e.get(0)));
 	}
 
 	@Override
-	public Expression visitPone(Pone e, Object a) {
+	public Expression visitOneMore(Nez.OneMore e, Object a) {
 		return ExpressionCommons.newPone(e.getSourcePosition(), visitInner(e.get(0)));
 	}
 
 	@Override
-	public Expression visitPand(Pand e, Object a) {
+	public Expression visitAnd(Nez.And e, Object a) {
 		return ExpressionCommons.newPand(e.getSourcePosition(), visitInner(e.get(0)));
 	}
 
 	@Override
-	public Expression visitPnot(Pnot e, Object a) {
+	public Expression visitNot(Nez.Not e, Object a) {
 		return ExpressionCommons.newPnot(e.getSourcePosition(), visitInner(e.get(0)));
 	}
 
 	@Override
-	public Expression visitTnew(Tnew e, Object a) {
+	public Expression visitPreNew(Nez.PreNew e, Object a) {
 		return ExpressionCommons.newTnew(e.getSourcePosition(), e.shift);
 	}
 
 	@Override
-	public Expression visitTlfold(Tlfold e, Object a) {
+	public Expression visitLeftFold(Nez.LeftFold e, Object a) {
 		return ExpressionCommons.newTlfold(e.getSourcePosition(), e.getLabel(), e.shift);
 	}
 
 	@Override
-	public Expression visitTlink(Tlink e, Object a) {
+	public Expression visitLink(Nez.Link e, Object a) {
 		return ExpressionCommons.newTlink(e.getSourcePosition(), e.getLabel(), visitInner(e.get(0)));
 	}
 
 	@Override
-	public Expression visitTtag(Ttag e, Object a) {
+	public Expression visitTag(Nez.Tag e, Object a) {
 		return e; // immutable
 	}
 
 	@Override
-	public Expression visitTreplace(Treplace e, Object a) {
+	public Expression visitReplace(Nez.Replace e, Object a) {
 		return e; // immutable
 	}
 
 	@Override
-	public Expression visitTcapture(Tcapture e, Object a) {
+	public Expression visitNew(Nez.New e, Object a) {
 		return ExpressionCommons.newTcapture(e.getSourcePosition(), e.shift);
 	}
 
 	@Override
-	public Expression visitTdetree(Tdetree e, Object a) {
+	public Expression visitDetree(Nez.Detree e, Object a) {
 		return ExpressionCommons.newTdetree(e.getSourcePosition(), visitInner(e.get(0)));
 	}
 

@@ -6,26 +6,12 @@ import java.util.Stack;
 
 import nez.lang.Expression;
 import nez.lang.Grammar;
+import nez.lang.Nez;
 import nez.lang.Production;
-import nez.lang.expr.Cany;
-import nez.lang.expr.Cbyte;
-import nez.lang.expr.Cmulti;
-import nez.lang.expr.Cset;
 import nez.lang.expr.NonTerminal;
-import nez.lang.expr.Pand;
-import nez.lang.expr.Pchoice;
-import nez.lang.expr.Pnot;
-import nez.lang.expr.Pone;
-import nez.lang.expr.Poption;
 import nez.lang.expr.Psequence;
-import nez.lang.expr.Pzero;
-import nez.lang.expr.Tcapture;
-import nez.lang.expr.Tdetree;
 import nez.lang.expr.Tlfold;
 import nez.lang.expr.Tlink;
-import nez.lang.expr.Tnew;
-import nez.lang.expr.Treplace;
-import nez.lang.expr.Ttag;
 import nez.lang.expr.Xblock;
 import nez.lang.expr.Xexists;
 import nez.lang.expr.Xif;
@@ -116,7 +102,7 @@ public class PythonParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	protected void makeByteMap() {
-		for (Cset map : this.byteMapList) {
+		for (Nez.Byteset map : this.byteMapList) {
 			L("map").W(String.valueOf(unique(map))).W(" = [");
 			for (int i = 0; i < map.byteMap.length; i++) {
 				if (map.byteMap[i]) {
@@ -408,29 +394,29 @@ public class PythonParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitPempty(Expression p) {
+	public void visitEmpty(Expression p) {
 		Pass();
 	}
 
 	@Override
-	public void visitPfail(Expression p) {
+	public void visitFail(Expression p) {
 		Fail();
 	}
 
 	@Override
-	public void visitCany(Cany p) {
+	public void visitAny(Nez.Any p) {
 		If("self.inputs[self.pos] != '\\0'").Begin().Consume().End().Else().Begin().Fail().End();
 	}
 
 	@Override
-	public void visitCbyte(Cbyte p) {
+	public void visitByte(Nez.Byte p) {
 		If(_match(StringUtils.stringfyCharacter(p.byteChar))).Begin().Consume().End().Else().Begin().Fail().End();
 	}
 
-	ArrayList<Cset> byteMapList = new ArrayList<Cset>();
+	ArrayList<Nez.Byteset> byteMapList = new ArrayList<Nez.Byteset>();
 
 	@Override
-	public void visitCset(Cset p) {
+	public void visitByteset(Nez.Byteset p) {
 		if (!byteMapList.contains(p)) {
 			byteMapList.add(p);
 		}
@@ -439,7 +425,7 @@ public class PythonParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitPoption(Poption p) {
+	public void visitOption(Nez.Option p) {
 		String pos = "pos_op" + unique(p);
 		Let(pos, "self.pos");
 		visitExpression(p.get(0));
@@ -447,7 +433,7 @@ public class PythonParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitPzero(Pzero p) {
+	public void visitZeroMore(Nez.ZeroMore p) {
 		String pos = "pos_op" + unique(p);
 		While("result").Begin();
 		Let(pos, "self.pos");
@@ -458,7 +444,7 @@ public class PythonParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitPone(Pone p) {
+	public void visitOneMore(Nez.OneMore p) {
 		visitExpression(p.get(0));
 		If("result").Begin();
 		String pos = "pos_op" + unique(p);
@@ -472,7 +458,7 @@ public class PythonParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitPand(Pand p) {
+	public void visitAnd(Nez.And p) {
 		String pos = "pos_and" + unique(p);
 		Let(pos, "self.pos");
 		visitExpression(p.get(0));
@@ -480,7 +466,7 @@ public class PythonParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitPnot(Pnot p) {
+	public void visitNot(Nez.Not p) {
 		String pos = "pos_not" + unique(p);
 		Let(pos, "self.pos");
 		visitExpression(p.get(0));
@@ -489,7 +475,7 @@ public class PythonParserGenerator extends ParserGrammarSourceGenerator {
 		Else().Begin().Succ().End();
 	}
 
-	public void flattenSequence(Psequence seq, UList<Expression> l) {
+	public void flattenSequence(Nez.Pair seq, UList<Expression> l) {
 		Expression first = seq.getFirst();
 		Expression last = seq.getNext();
 		if (first instanceof Psequence) {
@@ -510,7 +496,7 @@ public class PythonParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitPsequence(Psequence p) {
+	public void visitPair(Nez.Pair p) {
 		Let("index" + unique(p), _func("len", "self.compiler.func.list"));
 		boolean isLeftNew = false;
 		boolean isLink = false;
@@ -539,7 +525,7 @@ public class PythonParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitPchoice(Pchoice p) {
+	public void visitChoice(Nez.Choice p) {
 		String pos = "pos_c" + unique(p);
 		Let(pos, "self.pos");
 		for (int i = 0; i < p.size(); i++) {
@@ -580,44 +566,45 @@ public class PythonParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitTlink(Tlink p) {
-		int memoPoint = 0;
-		if (!memoMap.containsKey(unique(p))) {
-			memoPoint = this.memoPoint++;
-			this.memoMap.put(unique(p), memoPoint);
-		} else {
-			memoPoint = memoMap.get(unique(p));
-		}
-		LookupNode(memoPoint, p.index);
-		Else().Begin();
-		String inst = "inst" + unique(p);
-		String pos = "pos" + unique(p);
-		Let(pos, "self.pos");
-		Icall(inst);
-		visitExpression(p.get(0));
-		If("result").Begin().Iret().Ilink(p.index).MemoizeNode(memoPoint, pos, inst).End();
-		Else().Begin().Abort().MemoizeNode(memoPoint, pos, "None").End();
-		// If("result").Begin().Iret().Ilink(p.index).End();
-		// Else().Begin().Abort().End();
-		End();
+	public void visitLink(Nez.Link p) {
+		// int memoPoint = 0;
+		// if (!memoMap.containsKey(unique(p))) {
+		// memoPoint = this.memoPoint++;
+		// this.memoMap.put(unique(p), memoPoint);
+		// } else {
+		// memoPoint = memoMap.get(unique(p));
+		// }
+		// LookupNode(memoPoint, p.index);
+		// Else().Begin();
+		// String inst = "inst" + unique(p);
+		// String pos = "pos" + unique(p);
+		// Let(pos, "self.pos");
+		// Icall(inst);
+		// visitExpression(p.get(0));
+		// If("result").Begin().Iret().Ilink(p.index).MemoizeNode(memoPoint,
+		// pos, inst).End();
+		// Else().Begin().Abort().MemoizeNode(memoPoint, pos, "None").End();
+		// // If("result").Begin().Iret().Ilink(p.index).End();
+		// // Else().Begin().Abort().End();
+		// End();
 	}
 
 	Stack<Boolean> markStack = new Stack<Boolean>();
 
 	@Override
-	public void visitTnew(Tnew p) {
+	public void visitPreNew(Nez.PreNew p) {
 		Inew();
 		markStack.push(false);
 	}
 
 	@Override
-	public void visitTlfold(Tlfold p) {
+	public void visitLeftFold(Nez.LeftFold p) {
 		Ileftnew();
 		markStack.push(true);
 	}
 
 	@Override
-	public void visitTcapture(Tcapture p) {
+	public void visitNew(Nez.New p) {
 		if (markStack.pop()) {
 			If("result").Begin().Ileftcapture().End();
 			Else().Begin().Abort().End();
@@ -627,12 +614,12 @@ public class PythonParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitTtag(Ttag p) {
+	public void visitTag(Nez.Tag p) {
 		Itag(p.getTagName());
 	}
 
 	@Override
-	public void visitTreplace(Treplace p) {
+	public void visitReplace(Nez.Replace p) {
 		Ireplace(p.value);
 	}
 
@@ -679,13 +666,13 @@ public class PythonParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitCmulti(Cmulti p) {
+	public void visitString(Nez.String p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitTdetree(Tdetree p) {
+	public void visitDetree(Nez.Detree p) {
 		// TODO Auto-generated method stub
 
 	}

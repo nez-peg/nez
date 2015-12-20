@@ -5,17 +5,9 @@ import java.util.Arrays;
 import nez.ast.ASTMachine;
 import nez.ast.Symbol;
 import nez.lang.Expression;
+import nez.lang.Nez;
 import nez.lang.Production;
 import nez.lang.expr.Cbyte;
-import nez.lang.expr.Cmulti;
-import nez.lang.expr.Cset;
-import nez.lang.expr.Pchoice;
-import nez.lang.expr.Tcapture;
-import nez.lang.expr.Tlfold;
-import nez.lang.expr.Tlink;
-import nez.lang.expr.Tnew;
-import nez.lang.expr.Treplace;
-import nez.lang.expr.Ttag;
 import nez.lang.expr.Xblock;
 import nez.lang.expr.Xexists;
 import nez.lang.expr.Xis;
@@ -321,7 +313,7 @@ public class Moz {
 	static abstract class AbstractByteInstruction extends MozInst {
 		public final int byteChar;
 
-		AbstractByteInstruction(byte bytecode, Cbyte e, MozInst next) {
+		AbstractByteInstruction(byte bytecode, Nez.Byte e, MozInst next) {
 			super(bytecode, e, next);
 			this.byteChar = e.byteChar;
 		}
@@ -339,7 +331,7 @@ public class Moz {
 	}
 
 	public static class Byte extends AbstractByteInstruction {
-		public Byte(Cbyte e, MozInst next) {
+		public Byte(Nez.Byte e, MozInst next) {
 			super(MozSet.Byte, e, next);
 		}
 
@@ -474,7 +466,7 @@ public class Moz {
 	static abstract class AbstractSetInstruction extends MozInst {
 		public final boolean[] byteMap;
 
-		AbstractSetInstruction(byte opcode, Cset e, MozInst next) {
+		AbstractSetInstruction(byte opcode, Nez.Byteset e, MozInst next) {
 			super(opcode, e, next);
 			this.byteMap = e.byteMap;
 			if (this.byteMap[0]) {
@@ -494,7 +486,7 @@ public class Moz {
 	}
 
 	public static class Set extends AbstractSetInstruction {
-		public Set(Cset e, MozInst next) {
+		public Set(Nez.Byteset e, MozInst next) {
 			super(MozSet.Set, e, next);
 		}
 
@@ -516,7 +508,7 @@ public class Moz {
 	}
 
 	public static class OSet extends AbstractSetInstruction {
-		public OSet(Cset e, MozInst next) {
+		public OSet(Nez.Byteset e, MozInst next) {
 			super(MozSet.OSet, e, next);
 		}
 
@@ -537,7 +529,7 @@ public class Moz {
 	}
 
 	public static class NSet extends AbstractSetInstruction {
-		public NSet(Cset e, MozInst next) {
+		public NSet(Nez.Byteset e, MozInst next) {
 			super(MozSet.NSet, e, next);
 		}
 
@@ -558,7 +550,7 @@ public class Moz {
 	}
 
 	public static class RSet extends AbstractSetInstruction {
-		public RSet(Cset e, MozInst next) {
+		public RSet(Nez.Byteset e, MozInst next) {
 			super(MozSet.RSet, e, next);
 		}
 
@@ -582,7 +574,7 @@ public class Moz {
 	static abstract class AbstractStrInstruction extends MozInst {
 		final byte[] utf8;
 
-		public AbstractStrInstruction(byte opcode, Cmulti e, byte[] utf8, MozInst next) {
+		public AbstractStrInstruction(byte opcode, Nez.String e, byte[] utf8, MozInst next) {
 			super(opcode, e, next);
 			this.utf8 = utf8;
 		}
@@ -606,7 +598,7 @@ public class Moz {
 	}
 
 	public static class Str extends AbstractStrInstruction {
-		public Str(Cmulti e, MozInst next) {
+		public Str(Nez.String e, MozInst next) {
 			super(MozSet.Str, e, e.byteSeq, next);
 		}
 
@@ -627,7 +619,7 @@ public class Moz {
 	}
 
 	public static class NStr extends AbstractStrInstruction {
-		public NStr(Cmulti e, MozInst next) {
+		public NStr(Nez.String e, MozInst next) {
 			super(MozSet.NStr, e, e.byteSeq, next);
 		}
 
@@ -647,7 +639,7 @@ public class Moz {
 	}
 
 	public static class OStr extends AbstractStrInstruction {
-		public OStr(Cmulti e, MozInst next) {
+		public OStr(Nez.String e, MozInst next) {
 			super(MozSet.OStr, e, e.byteSeq, next);
 		}
 
@@ -667,7 +659,7 @@ public class Moz {
 	}
 
 	public static class RStr extends AbstractStrInstruction {
-		public RStr(Cmulti e, MozInst next) {
+		public RStr(Nez.String e, MozInst next) {
 			super(MozSet.RStr, e, e.byteSeq, next);
 		}
 
@@ -728,13 +720,13 @@ public class Moz {
 	public static class First extends MozInst {
 		MozInst[] jumpTable;
 
-		public First(byte opcode, Pchoice e, MozInst next) {
+		public First(byte opcode, Nez.Choice e, MozInst next) {
 			super(opcode, e, next);
 			jumpTable = new MozInst[257];
 			Arrays.fill(jumpTable, next);
 		}
 
-		public First(Pchoice e, MozInst next) {
+		public First(Nez.Choice e, MozInst next) {
 			this(MozSet.First, e, next);
 		}
 
@@ -764,7 +756,7 @@ public class Moz {
 	}
 
 	public static class DFirst extends First {
-		public DFirst(Pchoice e, MozInst next) {
+		public DFirst(Nez.Choice e, MozInst next) {
 			super(MozSet.DFirst, e, next);
 		}
 
@@ -890,7 +882,7 @@ public class Moz {
 	public static class TNew extends MozInst {
 		int shift;
 
-		public TNew(Tnew e, MozInst next) {
+		public TNew(Nez.PreNew e, MozInst next) {
 			super(MozSet.TNew, e, next);
 			this.shift = e.shift;
 		}
@@ -918,7 +910,7 @@ public class Moz {
 		int shift;
 		Symbol label;
 
-		public TLeftFold(Tlfold e, MozInst next) {
+		public TLeftFold(Nez.LeftFold e, MozInst next) {
 			super(MozSet.TLeftFold, e, next);
 			this.shift = e.shift;
 			this.label = e.getLabel();
@@ -947,7 +939,7 @@ public class Moz {
 	public static class TCapture extends MozInst {
 		int shift;
 
-		public TCapture(Tcapture e, MozInst next) {
+		public TCapture(Nez.New e, MozInst next) {
 			super(MozSet.TCapture, e, next);
 			this.shift = e.shift;
 		}
@@ -974,7 +966,7 @@ public class Moz {
 	public static class TReplace extends MozInst {
 		public final String value;
 
-		public TReplace(Treplace e, MozInst next) {
+		public TReplace(Nez.Replace e, MozInst next) {
 			super(MozSet.TReplace, e, next);
 			this.value = e.value;
 		}
@@ -1006,7 +998,7 @@ public class Moz {
 	public static class TTag extends MozInst {
 		public final Symbol tag;
 
-		public TTag(Ttag e, MozInst next) {
+		public TTag(Nez.Tag e, MozInst next) {
 			super(MozSet.TTag, e, next);
 			this.tag = e.tag;
 		}
@@ -1036,7 +1028,7 @@ public class Moz {
 	}
 
 	public static class TPush extends MozInst {
-		public TPush(Tlink e, MozInst next) {
+		public TPush(Nez.Link e, MozInst next) {
 			super(MozSet.TPush, e, next);
 		}
 
@@ -1062,7 +1054,7 @@ public class Moz {
 	public static class TPop extends MozInst {
 		public final Symbol label;
 
-		public TPop(Tlink e, MozInst next) {
+		public TPop(Nez.Link e, MozInst next) {
 			super(MozSet.TPop, e, next);
 			this.label = e.getLabel();
 		}
@@ -1092,7 +1084,7 @@ public class Moz {
 	}
 
 	public static class TStart extends MozInst {
-		public TStart(Tlink e, MozInst next) {
+		public TStart(Nez.Link e, MozInst next) {
 			super(MozSet.TStart, e, next);
 		}
 
@@ -1119,7 +1111,7 @@ public class Moz {
 	public static class TCommit extends MozInst {
 		public final Symbol label;
 
-		public TCommit(Tlink e, MozInst next) {
+		public TCommit(Nez.Link e, MozInst next) {
 			super(MozSet.TCommit, e, next);
 			this.label = e.getLabel();
 		}
@@ -1147,7 +1139,7 @@ public class Moz {
 	public static class TLookup extends AbstractMemoizationInstruction {
 		public final Symbol label;
 
-		public TLookup(Tlink e, MemoPoint m, boolean state, MozInst next, MozInst skip) {
+		public TLookup(Nez.Link e, MemoPoint m, boolean state, MozInst next, MozInst skip) {
 			super(MozSet.TLookup, e, m, state, next, skip);
 			this.label = e.getLabel();
 		}

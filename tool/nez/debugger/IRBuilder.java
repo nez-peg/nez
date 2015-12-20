@@ -1,19 +1,19 @@
 package nez.debugger;
 
 import nez.lang.Expression;
+import nez.lang.Nez;
 import nez.lang.Production;
 import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cset;
-import nez.lang.expr.Pchoice;
 import nez.lang.expr.Tlfold;
 import nez.lang.expr.Tlink;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
-import nez.lang.expr.Xsymbol;
 import nez.lang.expr.Xexists;
 import nez.lang.expr.Xis;
 import nez.lang.expr.Xlocal;
+import nez.lang.expr.Xsymbol;
 import nez.parser.ParserGrammar;
 
 public class IRBuilder {
@@ -283,7 +283,7 @@ public class IRBuilder {
 		return this.curBB.append(new Ialt(e));
 	}
 
-	public DebugVMInstruction createIaltend(Pchoice e, boolean last, int index) {
+	public DebugVMInstruction createIaltend(Nez.Choice e, boolean last, int index) {
 		return this.curBB.append(new Ialtend(e, last, index));
 	}
 

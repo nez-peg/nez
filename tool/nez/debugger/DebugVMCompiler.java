@@ -6,28 +6,17 @@ import java.util.Stack;
 
 import nez.ast.CommonTree;
 import nez.lang.Expression;
-
+import nez.lang.Nez;
 import nez.lang.Production;
 import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
-import nez.lang.expr.Cmulti;
 import nez.lang.expr.Cset;
 import nez.lang.expr.ExpressionCommons;
 import nez.lang.expr.NonTerminal;
-import nez.lang.expr.Pand;
-import nez.lang.expr.Pchoice;
-import nez.lang.expr.Pempty;
-import nez.lang.expr.Pfail;
-import nez.lang.expr.Pnot;
-import nez.lang.expr.Pone;
-import nez.lang.expr.Poption;
 import nez.lang.expr.Psequence;
-import nez.lang.expr.Pzero;
 import nez.lang.expr.Tcapture;
-import nez.lang.expr.Tdetree;
 import nez.lang.expr.Tlfold;
 import nez.lang.expr.Tlink;
-import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
 import nez.lang.expr.Xblock;
@@ -88,7 +77,7 @@ public class DebugVMCompiler extends Expression.Visitor {
 
 	ArrayList<Byte> charList = new ArrayList<Byte>();
 
-	public boolean optimizeString(Psequence seq) {
+	public boolean optimizeString(Nez.Pair seq) {
 		for (int i = 0; i < seq.size(); i++) {
 			Expression e = seq.get(i);
 			if (e instanceof Cbyte) {
@@ -106,7 +95,7 @@ public class DebugVMCompiler extends Expression.Visitor {
 
 	boolean checkUnreachableChoice = true;
 
-	public boolean optimizeCharSet(Pchoice p) {
+	public boolean optimizeCharSet(Nez.Choice p) {
 		boolean[] map = Cset.newMap(false);
 		for (int i = 0; i < p.size(); i++) {
 			Expression e = p.get(i);
@@ -136,46 +125,46 @@ public class DebugVMCompiler extends Expression.Visitor {
 	}
 
 	@Override
-	public MozInst visitPempty(Pempty e, Object next) {
+	public MozInst visitEmpty(Nez.Empty e, Object next) {
 		return (MozInst) next;
 	}
 
 	@Override
-	public MozInst visitPfail(Pfail p, Object next) {
+	public MozInst visitFail(Nez.Fail p, Object next) {
 		this.builder.createIfail(p);
 		return null;
 	}
 
 	@Override
-	public MozInst visitCany(Cany p, Object next) {
-		this.builder.createIany(p, this.builder.jumpFailureJump());
+	public MozInst visitAny(Nez.Any p, Object next) {
+		this.builder.createIany((Cany) p, this.builder.jumpFailureJump());
 		this.builder.setInsertPoint(new BasicBlock());
 		return null;
 	}
 
 	@Override
-	public MozInst visitCbyte(Cbyte p, Object next) {
-		this.builder.createIchar(p, this.builder.jumpFailureJump());
+	public MozInst visitByte(Nez.Byte p, Object next) {
+		this.builder.createIchar((Cbyte) p, this.builder.jumpFailureJump());
 		this.builder.setInsertPoint(new BasicBlock());
 		return null;
 	}
 
 	@Override
-	public MozInst visitCset(Cset p, Object next) {
-		this.builder.createIcharclass(p, this.builder.jumpFailureJump());
+	public MozInst visitByteset(Nez.Byteset p, Object next) {
+		this.builder.createIcharclass((Cset) p, this.builder.jumpFailureJump());
 		this.builder.setInsertPoint(new BasicBlock());
 		return null;
 	}
 
 	@Override
-	public MozInst visitCmulti(Cmulti p, Object next) {
+	public MozInst visitString(Nez.String p, Object next) {
 		this.builder.createIstr(p, this.builder.jumpFailureJump(), p.byteSeq);
 		this.builder.setInsertPoint(new BasicBlock());
 		return null;
 	}
 
 	@Override
-	public MozInst visitPoption(Poption p, Object next) {
+	public MozInst visitOption(Nez.Option p, Object next) {
 		BasicBlock fbb = new BasicBlock();
 		BasicBlock mergebb = new BasicBlock();
 		this.builder.pushFailureJumpPoint(fbb);
@@ -192,7 +181,7 @@ public class DebugVMCompiler extends Expression.Visitor {
 	}
 
 	@Override
-	public MozInst visitPzero(Pzero p, Object next) {
+	public MozInst visitZeroMore(Nez.ZeroMore p, Object next) {
 		BasicBlock topBB = new BasicBlock();
 		this.builder.setInsertPoint(topBB);
 		BasicBlock fbb = new BasicBlock();
@@ -209,7 +198,7 @@ public class DebugVMCompiler extends Expression.Visitor {
 	}
 
 	@Override
-	public MozInst visitPone(Pone p, Object next) {
+	public MozInst visitOneMore(Nez.OneMore p, Object next) {
 		p.get(0).visit(this, next);
 		BasicBlock topBB = new BasicBlock();
 		this.builder.setInsertPoint(topBB);
@@ -227,7 +216,7 @@ public class DebugVMCompiler extends Expression.Visitor {
 	}
 
 	@Override
-	public MozInst visitPand(Pand p, Object next) {
+	public MozInst visitAnd(Nez.And p, Object next) {
 		BasicBlock fbb = new BasicBlock();
 		this.builder.pushFailureJumpPoint(fbb);
 		this.builder.createIpush(p);
@@ -241,7 +230,7 @@ public class DebugVMCompiler extends Expression.Visitor {
 	}
 
 	@Override
-	public MozInst visitPnot(Pnot p, Object next) {
+	public MozInst visitNot(Nez.Not p, Object next) {
 		BasicBlock fbb = new BasicBlock();
 		this.builder.pushFailureJumpPoint(fbb);
 		this.builder.createIpush(p);
@@ -258,7 +247,7 @@ public class DebugVMCompiler extends Expression.Visitor {
 	}
 
 	@Override
-	public MozInst visitPsequence(Psequence p, Object next) {
+	public MozInst visitPair(Nez.Pair p, Object next) {
 		this.charList.clear();
 		boolean opt = this.optimizeString(p);
 		if (opt) {
@@ -276,7 +265,7 @@ public class DebugVMCompiler extends Expression.Visitor {
 	}
 
 	@Override
-	public MozInst visitPchoice(Pchoice p, Object next) {
+	public MozInst visitChoice(Nez.Choice p, Object next) {
 		if (!optimizeCharSet(p)) {
 			BasicBlock fbb = null;
 			BasicBlock mergebb = new BasicBlock();
@@ -311,7 +300,7 @@ public class DebugVMCompiler extends Expression.Visitor {
 	}
 
 	@Override
-	public MozInst visitTnew(Tnew p, Object next) {
+	public MozInst visitPreNew(Nez.PreNew p, Object next) {
 		this.leftedStack.push(false);
 		if (this.strategy.TreeConstruction) {
 			this.builder.createInew(p);
@@ -320,13 +309,13 @@ public class DebugVMCompiler extends Expression.Visitor {
 	}
 
 	@Override
-	public MozInst visitTlfold(Tlfold p, Object next) {
+	public MozInst visitLeftFold(Nez.LeftFold p, Object next) {
 		this.leftedStack.push(true);
 		if (this.strategy.TreeConstruction) {
 			BasicBlock fbb = new BasicBlock();
 			this.builder.pushFailureJumpPoint(fbb);
 			this.builder.createImark(p);
-			this.builder.createIleftnew(p);
+			this.builder.createIleftnew((Tlfold) p);
 		}
 
 		return null;
@@ -335,14 +324,14 @@ public class DebugVMCompiler extends Expression.Visitor {
 	Stack<Boolean> leftedStack = new Stack<Boolean>();
 
 	@Override
-	public MozInst visitTlink(Tlink p, Object next) {
+	public MozInst visitLink(Nez.Link p, Object next) {
 		if (this.strategy.TreeConstruction) {
 			BasicBlock fbb = new BasicBlock();
 			BasicBlock endbb = new BasicBlock();
 			this.builder.pushFailureJumpPoint(fbb);
 			this.builder.createImark(p);
 			p.get(0).visit(this, next);
-			this.builder.createIcommit(p);
+			this.builder.createIcommit((Tlink) p);
 			this.builder.createIjump(p, endbb);
 			this.builder.setInsertPoint(this.builder.popFailureJumpPoint());
 			this.builder.createIabort(p);
@@ -355,7 +344,7 @@ public class DebugVMCompiler extends Expression.Visitor {
 	}
 
 	@Override
-	public MozInst visitTcapture(Tcapture p, Object next) {
+	public MozInst visitNew(Nez.New p, Object next) {
 		/* newNode is used in the debugger for rich view */
 		CommonTree node = (CommonTree) p.getSourcePosition();
 		int len = node.toText().length();
@@ -379,23 +368,23 @@ public class DebugVMCompiler extends Expression.Visitor {
 	}
 
 	@Override
-	public MozInst visitTtag(Ttag p, Object next) {
+	public MozInst visitTag(Nez.Tag p, Object next) {
 		if (this.strategy.TreeConstruction) {
-			this.builder.createItag(p);
+			this.builder.createItag((Ttag) p);
 		}
 		return null;
 	}
 
 	@Override
-	public MozInst visitTreplace(Treplace p, Object next) {
+	public MozInst visitReplace(Nez.Replace p, Object next) {
 		if (this.strategy.TreeConstruction) {
-			this.builder.createIreplace(p);
+			this.builder.createIreplace((Treplace) p);
 		}
 		return null;
 	}
 
 	@Override
-	public MozInst visitTdetree(Tdetree p, Object next) {
+	public MozInst visitDetree(Nez.Detree p, Object next) {
 		throw new RuntimeException("undifined visit method " + p.getClass());
 	}
 

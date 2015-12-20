@@ -2,19 +2,19 @@ package nez.debugger;
 
 import nez.ast.Symbol;
 import nez.lang.Expression;
+import nez.lang.Nez;
 import nez.lang.Production;
 import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cset;
 import nez.lang.expr.NonTerminal;
-import nez.lang.expr.Pchoice;
 import nez.lang.expr.Tlfold;
 import nez.lang.expr.Tlink;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
-import nez.lang.expr.Xsymbol;
 import nez.lang.expr.Xexists;
 import nez.lang.expr.Xis;
 import nez.lang.expr.Xlocal;
+import nez.lang.expr.Xsymbol;
 import nez.util.StringUtils;
 
 public abstract class DebugVMInstruction {
@@ -835,9 +835,9 @@ class Ialt extends AltInstruction {
 class Ialtend extends AltInstruction {
 	boolean last;
 	int index;
-	Pchoice c;
+	Nez.Choice c;
 
-	public Ialtend(Pchoice e, boolean last, int index) {
+	public Ialtend(Nez.Choice e, boolean last, int index) {
 		super(e.get(index));
 		this.c = e;
 		this.op = Opcode.Ialtend;

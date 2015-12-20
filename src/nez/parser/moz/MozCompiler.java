@@ -3,6 +3,7 @@ package nez.parser.moz;
 import java.util.HashMap;
 
 import nez.lang.Expression;
+import nez.lang.Nez;
 import nez.lang.Production;
 import nez.lang.Typestate;
 import nez.lang.expr.Cany;
@@ -11,22 +12,7 @@ import nez.lang.expr.Cmulti;
 import nez.lang.expr.Cset;
 import nez.lang.expr.ExpressionCommons;
 import nez.lang.expr.NonTerminal;
-import nez.lang.expr.Pand;
-import nez.lang.expr.Pchoice;
-import nez.lang.expr.Pempty;
-import nez.lang.expr.Pfail;
-import nez.lang.expr.Pnot;
-import nez.lang.expr.Pone;
-import nez.lang.expr.Poption;
 import nez.lang.expr.Psequence;
-import nez.lang.expr.Pzero;
-import nez.lang.expr.Tcapture;
-import nez.lang.expr.Tdetree;
-import nez.lang.expr.Tlfold;
-import nez.lang.expr.Tlink;
-import nez.lang.expr.Tnew;
-import nez.lang.expr.Treplace;
-import nez.lang.expr.Ttag;
 import nez.lang.expr.Xblock;
 import nez.lang.expr.Xexists;
 import nez.lang.expr.Xif;
@@ -191,7 +177,7 @@ public class MozCompiler extends Expression.Visitor {
 	}
 
 	@Override
-	public MozInst visitPempty(Pempty p, Object next) {
+	public MozInst visitEmpty(Nez.Empty p, Object next) {
 		return (MozInst) next;
 	}
 
@@ -200,62 +186,62 @@ public class MozCompiler extends Expression.Visitor {
 	}
 
 	@Override
-	public MozInst visitPfail(Pfail p, Object next) {
+	public MozInst visitFail(Nez.Fail p, Object next) {
 		return this.commonFailure;
 	}
 
 	@Override
-	public MozInst visitCany(Cany p, Object next) {
+	public MozInst visitAny(Nez.Any p, Object next) {
 		return new Moz.Any(p, (MozInst) next);
 	}
 
 	@Override
-	public MozInst visitCbyte(Cbyte p, Object next) {
+	public MozInst visitByte(Nez.Byte p, Object next) {
 		return new Moz.Byte(p, (MozInst) next);
 	}
 
 	@Override
-	public MozInst visitCset(Cset p, Object next) {
+	public MozInst visitByteset(Nez.Byteset p, Object next) {
 		return new Moz.Set(p, (MozInst) next);
 	}
 
 	@Override
-	public MozInst visitCmulti(Cmulti p, Object next) {
+	public MozInst visitString(Nez.String p, Object next) {
 		return new Moz.Str(p, (MozInst) next);
 	}
 
-	public MozInst visitUnnPoption(Poption p, Object next) {
+	public MozInst visitUnnPoption(Nez.Option p, Object next) {
 		MozInst pop = new Moz.Succ(p, (MozInst) next);
 		return new Moz.Alt(p, (MozInst) next, visit(p.get(0), pop, next));
 	}
 
-	public MozInst visitUnnPzero(Pzero p, Object next) {
+	public MozInst visitUnnPzero(Nez.Repetition p, Object next) {
 		// Expression skip = p.possibleInfiniteLoop ? new Moz.Skip(p) : new
 		// ISkip(p);
-		MozInst skip = new Moz.Skip(p);
-		MozInst start = visit(p.get(0), skip, next/* FIXME */);
+		MozInst skip = new Moz.Skip((Expression) p);
+		MozInst start = visit(((Expression) p).get(0), skip, next/* FIXME */);
 		skip.next = start;
-		return new Moz.Alt(p, (MozInst) next, start);
+		return new Moz.Alt((Expression) p, (MozInst) next, start);
 	}
 
 	@Override
-	public MozInst visitPone(Pone p, Object next) {
-		return visit(p.get(0), this.visitPzero(p, next));
+	public MozInst visitOneMore(Nez.OneMore p, Object next) {
+		return visit(p.get(0), this.visitRepetition(p, next));
 	}
 
 	@Override
-	public MozInst visitPand(Pand p, Object next) {
+	public MozInst visitAnd(Nez.And p, Object next) {
 		MozInst inner = visit(p.get(0), new Moz.Back(p, (MozInst) next));
 		return new Moz.Pos(p, inner);
 	}
 
-	public MozInst visitUnnPnot(Pnot p, Object next) {
+	public MozInst visitUnnPnot(Nez.Not p, Object next) {
 		MozInst fail = new Moz.Succ(p, new Moz.Fail(p));
 		return new Moz.Alt(p, (MozInst) next, visit(p.get(0), fail));
 	}
 
 	@Override
-	public MozInst visitPsequence(Psequence p, Object next) {
+	public MozInst visitPair(Nez.Pair p, Object next) {
 		// return visit(p.get(0), visit(p.get(1), (MozInst)next));
 		Object nextStart = next;
 		for (int i = p.size() - 1; i >= 0; i--) {
@@ -265,7 +251,7 @@ public class MozCompiler extends Expression.Visitor {
 		return (MozInst) nextStart;
 	}
 
-	public MozInst visitUnnPchoice(Pchoice p, Object next) {
+	public MozInst visitUnnPchoice(Nez.Choice p, Object next) {
 		Object nextChoice = visit(p.get(p.size() - 1), next);
 		for (int i = p.size() - 2; i >= 0; i--) {
 			Expression e = p.get(i);
@@ -282,7 +268,7 @@ public class MozCompiler extends Expression.Visitor {
 
 	// AST Construction
 
-	public MozInst visitUnnTlink(Tlink p, Object next) {
+	public MozInst visitUnnTlink(Nez.Link p, Object next) {
 		if (this.strategy.TreeConstruction) {
 			next = new Moz.TPop(p, (MozInst) next);
 			next = visit(p.get(0), next);
@@ -292,7 +278,7 @@ public class MozCompiler extends Expression.Visitor {
 	}
 
 	@Override
-	public MozInst visitTnew(Tnew p, Object next) {
+	public MozInst visitPreNew(Nez.PreNew p, Object next) {
 		if (this.strategy.TreeConstruction) {
 			return new Moz.TNew(p, (MozInst) next);
 		}
@@ -300,7 +286,7 @@ public class MozCompiler extends Expression.Visitor {
 	}
 
 	@Override
-	public MozInst visitTlfold(Tlfold p, Object next) {
+	public MozInst visitLeftFold(Nez.LeftFold p, Object next) {
 		if (this.strategy.TreeConstruction) {
 			return new Moz.TLeftFold(p, (MozInst) next);
 		}
@@ -308,7 +294,7 @@ public class MozCompiler extends Expression.Visitor {
 	}
 
 	@Override
-	public MozInst visitTcapture(Tcapture p, Object next) {
+	public MozInst visitNew(Nez.New p, Object next) {
 		if (this.strategy.TreeConstruction) {
 			return new Moz.TCapture(p, (MozInst) next);
 		}
@@ -316,7 +302,7 @@ public class MozCompiler extends Expression.Visitor {
 	}
 
 	@Override
-	public MozInst visitTtag(Ttag p, Object next) {
+	public MozInst visitTag(Nez.Tag p, Object next) {
 		if (this.strategy.TreeConstruction) {
 			return new Moz.TTag(p, (MozInst) next);
 		}
@@ -324,7 +310,7 @@ public class MozCompiler extends Expression.Visitor {
 	}
 
 	@Override
-	public MozInst visitTreplace(Treplace p, Object next) {
+	public MozInst visitReplace(Nez.Replace p, Object next) {
 		if (this.strategy.TreeConstruction) {
 			return new Moz.TReplace(p, (MozInst) next);
 		}
@@ -375,7 +361,7 @@ public class MozCompiler extends Expression.Visitor {
 	}
 
 	@Override
-	public MozInst visitTdetree(Tdetree p, Object next) {
+	public MozInst visitDetree(Nez.Detree p, Object next) {
 		return (MozInst) next;
 	}
 
@@ -399,7 +385,7 @@ public class MozCompiler extends Expression.Visitor {
 	}
 
 	@Override
-	public final MozInst visitPoption(Poption p, Object next) {
+	public final MozInst visitOption(Nez.Option p, Object next) {
 		if (strategy.Olex) {
 			Expression inner = getInnerExpression(p);
 			if (inner instanceof Cbyte) {
@@ -419,19 +405,23 @@ public class MozCompiler extends Expression.Visitor {
 	}
 
 	@Override
-	public final MozInst visitPzero(Pzero p, Object next) {
+	public final MozInst visitZeroMore(Nez.ZeroMore p, Object next) {
+		return this.visitRepetition(p, next);
+	}
+
+	public final MozInst visitRepetition(Nez.Repetition p, Object next) {
 		if (strategy.Olex) {
-			Expression inner = getInnerExpression(p);
+			Expression inner = getInnerExpression((Expression) p);
 			if (inner instanceof Cbyte) {
-				this.optimizedUnary(p);
+				this.optimizedUnary((Expression) p);
 				return new Moz.RByte((Cbyte) inner, (MozInst) next);
 			}
 			if (inner instanceof Cset) {
-				this.optimizedUnary(p);
+				this.optimizedUnary((Expression) p);
 				return new Moz.RSet((Cset) inner, (MozInst) next);
 			}
 			if (inner instanceof Cmulti) {
-				this.optimizedUnary(p);
+				this.optimizedUnary((Expression) p);
 				return new Moz.RStr((Cmulti) inner, (MozInst) next);
 			}
 		}
@@ -439,7 +429,7 @@ public class MozCompiler extends Expression.Visitor {
 	}
 
 	@Override
-	public final MozInst visitPnot(Pnot p, Object next) {
+	public final MozInst visitNot(Nez.Not p, Object next) {
 		if (strategy.Olex) {
 			Expression inner = getInnerExpression(p);
 			if (inner instanceof Cset) {
@@ -452,7 +442,7 @@ public class MozCompiler extends Expression.Visitor {
 			}
 			if (inner instanceof Cany) {
 				this.optimizedUnary(p);
-				return new Moz.NAny(inner, ((Cany) inner).isBinary(), (MozInst) next);
+				return new Moz.NAny(inner, false, (MozInst) next);
 			}
 			if (inner instanceof Cmulti) {
 				this.optimizedUnary(p);
@@ -463,7 +453,7 @@ public class MozCompiler extends Expression.Visitor {
 	}
 
 	@Override
-	public final MozInst visitPchoice(Pchoice p, Object next) {
+	public final MozInst visitChoice(Nez.Choice p, Object next) {
 		if (/* strategy.isEnabled("Ofirst", Strategy.Ofirst) && */p.predictedCase != null) {
 			if (p.isTrieTree && strategy.Odfa) {
 				return visitDFirstChoice(p, next);
@@ -473,7 +463,7 @@ public class MozCompiler extends Expression.Visitor {
 		return visitUnnPchoice(p, next);
 	}
 
-	private final MozInst visitFirstChoice(Pchoice choice, Object next) {
+	private final MozInst visitFirstChoice(Nez.Choice choice, Object next) {
 		MozInst[] compiled = new MozInst[choice.firstInners.length];
 		// Verbose.debug("TrieTree: " + choice.isTrieTree + " " + choice);
 		Moz.First dispatch = new Moz.First(choice, commonFailure);
@@ -487,8 +477,8 @@ public class MozCompiler extends Expression.Visitor {
 			if (inst == null) {
 				// System.out.println("creating '" + (char)ch + "'("+ch+"): " +
 				// e);
-				if (predicted instanceof Pchoice) {
-					assert (((Pchoice) predicted).predictedCase == null);
+				if (predicted instanceof Nez.Choice) {
+					assert (((Nez.Choice) predicted).predictedCase == null);
 					inst = visitUnnPchoice(choice, next);
 				} else {
 					inst = visit(predicted, next);
@@ -500,7 +490,7 @@ public class MozCompiler extends Expression.Visitor {
 		return dispatch;
 	}
 
-	private final MozInst visitDFirstChoice(Pchoice choice, Object next) {
+	private final MozInst visitDFirstChoice(Nez.Choice choice, Object next) {
 		MozInst[] compiled = new MozInst[choice.firstInners.length];
 		Moz.DFirst dispatch = new Moz.DFirst(choice, commonFailure);
 		for (int ch = 0; ch < choice.predictedCase.length; ch++) {
@@ -524,7 +514,7 @@ public class MozCompiler extends Expression.Visitor {
 		return dispatch;
 	}
 
-	private int findIndex(Pchoice choice, Expression e) {
+	private int findIndex(Nez.Choice choice, Expression e) {
 		for (int i = 0; i < choice.firstInners.length; i++) {
 			if (choice.firstInners[i] == e) {
 				return i;
@@ -533,7 +523,7 @@ public class MozCompiler extends Expression.Visitor {
 		return -1;
 	}
 
-	private final MozInst visitPredicatedChoice0(Pchoice choice, Object next) {
+	private final MozInst visitPredicatedChoice0(Nez.Choice choice, Object next) {
 		HashMap<Integer, MozInst> m = new HashMap<Integer, MozInst>();
 		Moz.First dispatch = new Moz.First(choice, commonFailure);
 		for (int ch = 0; ch < choice.predictedCase.length; ch++) {
@@ -546,8 +536,8 @@ public class MozCompiler extends Expression.Visitor {
 			if (inst == null) {
 				// System.out.println("creating '" + (char)ch + "'("+ch+"): " +
 				// e);
-				if (predicted instanceof Pchoice) {
-					assert (((Pchoice) predicted).predictedCase == null);
+				if (predicted instanceof Nez.Choice) {
+					assert (((Nez.Choice) predicted).predictedCase == null);
 					inst = visitUnnPchoice(choice, next);
 				} else {
 					inst = visit(predicted, next);
@@ -571,8 +561,8 @@ public class MozCompiler extends Expression.Visitor {
 		return max;
 	}
 
-	// public final MozInst visitUnoptimizedChoice(Pchoice p, Object next) {
-	// return super.visitPchoice(p, next);
+	// public final MozInst visitUnoptimizedChoice(Nez.Choice p, Object next) {
+	// return super.visitChoice(p, next);
 	// }
 
 	@Override
@@ -617,7 +607,7 @@ public class MozCompiler extends Expression.Visitor {
 	// AST Construction
 
 	@Override
-	public final MozInst visitTlink(Tlink p, Object next) {
+	public final MozInst visitLink(Nez.Link p, Object next) {
 		if (strategy.TreeConstruction && p.get(0) instanceof NonTerminal) {
 			NonTerminal n = (NonTerminal) p.get(0);
 			ParseFunc f = this.getParseFunc(n.getProduction());
@@ -631,7 +621,7 @@ public class MozCompiler extends Expression.Visitor {
 		return visitUnnTlink(p, next);
 	}
 
-	private MozInst memoize(Tlink p, NonTerminal n, ParseFunc f, Object next) {
+	private MozInst memoize(Nez.Link p, NonTerminal n, ParseFunc f, Object next) {
 		MozInst inside = new Moz.TMemo(p, f.getMemoPoint(), f.isStateful(), (MozInst) next);
 		inside = new Moz.TCommit(p, inside);
 		inside = visitUnnNonTerminal(n, inside);

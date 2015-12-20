@@ -1,7 +1,7 @@
 package nez.lang;
 
+import nez.lang.Nez.Byte;
 import nez.lang.expr.Cany;
-import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cmulti;
 import nez.lang.expr.Cset;
 import nez.lang.expr.NonTerminal;
@@ -95,37 +95,37 @@ public enum Consumer {
 		}
 
 		@Override
-		public Object visitPempty(Pempty e, Object a) {
+		public Object visitEmpty(Nez.Empty e, Object a) {
 			return Unconsumed;
 		}
 
 		@Override
-		public Object visitPfail(Pfail e, Object a) {
+		public Object visitFail(Nez.Fail e, Object a) {
 			return Unconsumed;
 		}
 
 		@Override
-		public Object visitCbyte(Cbyte e, Object a) {
+		public Object visitByte(Byte e, Object a) {
 			return Consumed;
 		}
 
 		@Override
-		public Object visitCset(Cset e, Object a) {
+		public Object visitByteset(Nez.Byteset e, Object a) {
 			return Consumed;
 		}
 
 		@Override
-		public Object visitCany(Cany e, Object a) {
+		public Object visitAny(Nez.Any e, Object a) {
 			return Consumed;
 		}
 
 		@Override
-		public Object visitCmulti(Cmulti e, Object a) {
+		public Object visitString(Nez.String e, Object a) {
 			return Consumed;
 		}
 
 		@Override
-		public Object visitPsequence(Psequence e, Object a) {
+		public Object visitPair(Nez.Pair e, Object a) {
 			if (check(e.getFirst(), a) == Consumed) {
 				return Consumed;
 			}
@@ -133,7 +133,7 @@ public enum Consumer {
 		}
 
 		@Override
-		public Object visitPchoice(Pchoice e, Object a) {
+		public Object visitChoice(Nez.Choice e, Object a) {
 			boolean unconsumed = false;
 			boolean undecided = false;
 			for (Expression sub : e) {
@@ -153,62 +153,62 @@ public enum Consumer {
 		}
 
 		@Override
-		public Object visitPoption(Poption e, Object a) {
+		public Object visitOption(Nez.Option e, Object a) {
 			return Unconsumed;
 		}
 
 		@Override
-		public Object visitPzero(Pzero e, Object a) {
+		public Object visitZeroMore(Nez.ZeroMore e, Object a) {
 			return Unconsumed;
 		}
 
 		@Override
-		public Object visitPone(Pone e, Object a) {
+		public Object visitOneMore(Nez.OneMore e, Object a) {
 			return check(e.get(0), a);
 		}
 
 		@Override
-		public Object visitPand(Pand e, Object a) {
+		public Object visitAnd(Nez.And e, Object a) {
 			return Unconsumed;
 		}
 
 		@Override
-		public Object visitPnot(Pnot e, Object a) {
+		public Object visitNot(Nez.Not e, Object a) {
 			return Unconsumed;
 		}
 
 		@Override
-		public Object visitTnew(Tnew e, Object a) {
+		public Object visitPreNew(Nez.PreNew e, Object a) {
 			return Unconsumed;
 		}
 
 		@Override
-		public Object visitTlfold(Tlfold e, Object a) {
+		public Object visitLeftFold(Nez.LeftFold e, Object a) {
 			return Unconsumed;
 		}
 
 		@Override
-		public Object visitTlink(Tlink e, Object a) {
+		public Object visitLink(Nez.Link e, Object a) {
 			return check(e.get(0), a);
 		}
 
 		@Override
-		public Object visitTtag(Ttag e, Object a) {
+		public Object visitTag(Nez.Tag e, Object a) {
 			return Unconsumed;
 		}
 
 		@Override
-		public Object visitTreplace(Treplace e, Object a) {
+		public Object visitReplace(Nez.Replace e, Object a) {
 			return Unconsumed;
 		}
 
 		@Override
-		public Object visitTcapture(Tcapture e, Object a) {
+		public Object visitNew(Nez.New e, Object a) {
 			return Unconsumed;
 		}
 
 		@Override
-		public Object visitTdetree(Tdetree e, Object a) {
+		public Object visitDetree(Nez.Detree e, Object a) {
 			return check(e.get(0), a);
 		}
 

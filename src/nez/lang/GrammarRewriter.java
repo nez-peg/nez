@@ -1,7 +1,7 @@
 package nez.lang;
 
+import nez.lang.Nez.Byte;
 import nez.lang.expr.Cany;
-import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cmulti;
 import nez.lang.expr.Cset;
 import nez.lang.expr.NonTerminal;
@@ -38,32 +38,32 @@ public class GrammarRewriter extends GrammarTransducer {
 	}
 
 	@Override
-	public Expression visitPempty(Pempty e, Object a) {
+	public Expression visitEmpty(Nez.Empty e, Object a) {
 		return e;
 	}
 
 	@Override
-	public Expression visitPfail(Pfail e, Object a) {
+	public Expression visitFail(Nez.Fail e, Object a) {
 		return e;
 	}
 
 	@Override
-	public Expression visitCbyte(Cbyte e, Object a) {
+	public Expression visitByte(Byte e, Object a) {
 		return e;
 	}
 
 	@Override
-	public Expression visitCset(Cset e, Object a) {
+	public Expression visitByteset(Nez.Byteset e, Object a) {
 		return e;
 	}
 
 	@Override
-	public Expression visitCany(Cany e, Object a) {
+	public Expression visitAny(Nez.Any e, Object a) {
 		return e;
 	}
 
 	@Override
-	public Expression visitCmulti(Cmulti e, Object a) {
+	public Expression visitString(Nez.String e, Object a) {
 		return e;
 	}
 
@@ -73,7 +73,7 @@ public class GrammarRewriter extends GrammarTransducer {
 	}
 
 	@Override
-	public Expression visitPsequence(Psequence e, Object a) {
+	public Expression visitPair(Nez.Pair e, Object a) {
 		Expression first = e.getFirst();
 		push(first);
 		first = (Expression) first.visit(this, a);
@@ -94,7 +94,7 @@ public class GrammarRewriter extends GrammarTransducer {
 	}
 
 	@Override
-	public Expression visitPchoice(Pchoice e, Object a) {
+	public Expression visitChoice(Nez.Choice e, Object a) {
 		int i = 0;
 		for (i = 0; i < e.size(); i++) {
 			e.set(i, visitInner(e.get(i)));
@@ -103,64 +103,64 @@ public class GrammarRewriter extends GrammarTransducer {
 	}
 
 	@Override
-	public Expression visitPoption(Poption e, Object a) {
+	public Expression visitOption(Nez.Option e, Object a) {
 		e.set(0, this.visitInner(e.get(0)));
 		return e;
 	}
 
 	@Override
-	public Expression visitPzero(Pzero e, Object a) {
+	public Expression visitZeroMore(Nez.ZeroMore e, Object a) {
 		e.set(0, this.visitInner(e.get(0)));
 		return e;
 	}
 
 	@Override
-	public Expression visitPone(Pone e, Object a) {
+	public Expression visitOneMore(Nez.OneMore e, Object a) {
 		e.set(0, this.visitInner(e.get(0)));
 		return e;
 	}
 
 	@Override
-	public Expression visitPand(Pand e, Object a) {
+	public Expression visitAnd(Nez.And e, Object a) {
 		e.set(0, this.visitInner(e.get(0)));
 		return e;
 	}
 
 	@Override
-	public Expression visitPnot(Pnot e, Object a) {
+	public Expression visitNot(Nez.Not e, Object a) {
 		e.set(0, this.visitInner(e.get(0)));
 		return e;
 	}
 
 	@Override
-	public Expression visitTdetree(Tdetree e, Object a) {
+	public Expression visitDetree(Nez.Detree e, Object a) {
 		e.set(0, this.visitInner(e.get(0)));
 		return e;
 	}
 
 	@Override
-	public Expression visitTnew(Tnew e, Object a) {
+	public Expression visitPreNew(Nez.PreNew e, Object a) {
 		return e;
 	}
 
 	@Override
-	public Expression visitTlink(Tlink e, Object a) {
+	public Expression visitLink(Nez.Link e, Object a) {
 		e.set(0, this.visitInner(e.get(0)));
 		return e;
 	}
 
 	@Override
-	public Expression visitTtag(Ttag e, Object a) {
+	public Expression visitTag(Nez.Tag e, Object a) {
 		return e;
 	}
 
 	@Override
-	public Expression visitTreplace(Treplace e, Object a) {
+	public Expression visitReplace(Nez.Replace e, Object a) {
 		return e;
 	}
 
 	@Override
-	public Expression visitTcapture(Tcapture e, Object a) {
+	public Expression visitNew(Nez.New e, Object a) {
 		return e;
 	}
 

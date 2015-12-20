@@ -2,28 +2,12 @@ package nez.lang.expr;
 
 import nez.ast.SourceLocation;
 import nez.lang.Expression;
+import nez.lang.Nez;
 
-public class Tdetree extends Unary {
+public class Tdetree extends Nez.Detree {
 	Tdetree(SourceLocation s, Expression inner) {
-		super(s, inner);
-	}
-
-	@Override
-	public final boolean equalsExpression(Expression o) {
-		if (o instanceof Tdetree) {
-			return this.get(0).equalsExpression(o.get(0));
-		}
-		return false;
-	}
-
-	@Override
-	public final void format(StringBuilder sb) {
-		this.formatUnary(sb, "~", inner, null);
-	}
-
-	@Override
-	public Object visit(Expression.Visitor v, Object a) {
-		return v.visitTdetree(this, a);
+		super(inner);
+		this.set(s);
 	}
 
 	@Override

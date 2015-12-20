@@ -3,38 +3,16 @@ package nez.lang.expr;
 import nez.ast.SourceLocation;
 import nez.ast.Symbol;
 import nez.lang.Expression;
+import nez.lang.Nez;
 
-public class Tlink extends Unary {
-	@Deprecated
-	public int index = -1;
-	Symbol label;
+public class Tlink extends Nez.Link {
 
 	Tlink(SourceLocation s, Symbol label, Expression e) {
-		super(s, e);
-		this.label = label;
+		super(label, e);
 	}
 
-	public final Symbol getLabel() {
-		return this.label;
-	}
-
-	@Override
-	public final boolean equalsExpression(Expression o) {
-		if (o instanceof Tlink && this.label == ((Tlink) o).label) {
-			return this.get(0).equalsExpression(o.get(0));
-		}
-		return false;
-	}
-
-	@Override
-	public final void format(StringBuilder sb) {
-		formatUnary(sb, (label != null) ? "$" + label + "(" : "$(", this.get(0), ")");
-	}
-
-	@Override
-	public Object visit(Expression.Visitor v, Object a) {
-		return v.visitTlink(this, a);
-	}
+	@Deprecated
+	public int index = -1;
 
 	@Override
 	public boolean isConsumed() {

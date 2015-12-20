@@ -4,9 +4,10 @@ import java.util.HashMap;
 
 import nez.lang.Expression;
 import nez.lang.Grammar;
+import nez.lang.Nez;
+import nez.lang.Nez.Byte;
 import nez.lang.Production;
 import nez.lang.expr.Cany;
-import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cmulti;
 import nez.lang.expr.Cset;
 import nez.lang.expr.NonTerminal;
@@ -257,46 +258,46 @@ public abstract class ParserGrammarSourceGenerator extends Expression.Visitor im
 
 	public abstract void visitNonTerminal(NonTerminal p);
 
-	public abstract void visitPempty(Expression p);
+	public abstract void visitEmpty(Expression p);
 
-	public abstract void visitPfail(Expression p);
+	public abstract void visitFail(Expression p);
 
-	public abstract void visitCany(Cany p);
+	public abstract void visitAny(Nez.Any p);
 
-	public abstract void visitCbyte(Cbyte p);
+	public abstract void visitByte(Nez.Byte p);
 
-	public abstract void visitCset(Cset p);
+	public abstract void visitByteset(Nez.Byteset p);
 
-	public abstract void visitCmulti(Cmulti p);
+	public abstract void visitString(Nez.String p);
 
-	public abstract void visitPoption(Poption p);
+	public abstract void visitOption(Nez.Option p);
 
-	public abstract void visitPzero(Pzero p);
+	public abstract void visitZeroMore(Nez.ZeroMore p);
 
-	public abstract void visitPone(Pone p);
+	public abstract void visitOneMore(Nez.OneMore p);
 
-	public abstract void visitPand(Pand p);
+	public abstract void visitAnd(Nez.And p);
 
-	public abstract void visitPnot(Pnot p);
+	public abstract void visitNot(Nez.Not p);
 
-	public abstract void visitPsequence(Psequence p);
+	public abstract void visitPair(Nez.Pair p);
 
-	public abstract void visitPchoice(Pchoice p);
+	public abstract void visitChoice(Nez.Choice p);
 
 	// AST Construction
-	public abstract void visitTlink(Tlink p);
+	public abstract void visitLink(Nez.Link p);
 
-	public abstract void visitTnew(Tnew p);
+	public abstract void visitPreNew(Nez.PreNew p);
 
-	public abstract void visitTlfold(Tlfold p);
+	public abstract void visitLeftFold(Nez.LeftFold p);
 
-	public abstract void visitTcapture(Tcapture p);
+	public abstract void visitNew(Nez.New p);
 
-	public abstract void visitTtag(Ttag p);
+	public abstract void visitTag(Nez.Tag p);
 
-	public abstract void visitTreplace(Treplace p);
+	public abstract void visitReplace(Nez.Replace p);
 
-	public abstract void visitTdetree(Tdetree p);
+	public abstract void visitDetree(Nez.Detree p);
 
 	// Symbol Tables
 	public abstract void visitXblock(Xblock p);
@@ -327,74 +328,74 @@ public abstract class ParserGrammarSourceGenerator extends Expression.Visitor im
 	}
 
 	@Override
-	public final Object visitCany(Cany p, Object a) {
-		this.visitCany(p);
+	public final Object visitAny(Nez.Any p, Object a) {
+		this.visitAny(p);
 		return null;
 	}
 
 	@Override
-	public final Object visitCbyte(Cbyte p, Object a) {
-		this.visitCbyte(p);
+	public final Object visitByte(Byte p, Object a) {
+		this.visitByte(p);
 		return null;
 	}
 
 	@Override
-	public final Object visitCset(Cset p, Object a) {
-		this.visitCset(p);
+	public final Object visitByteset(Nez.Byteset p, Object a) {
+		this.visitByteset(p);
 		return null;
 	}
 
 	@Override
-	public final Object visitCmulti(Cmulti p, Object a) {
-		this.visitCmulti(p);
+	public final Object visitString(Nez.String p, Object a) {
+		this.visitString(p);
 		return null;
 	}
 
 	@Override
-	public final Object visitPfail(Pfail p, Object a) {
-		this.visitPfail(p);
+	public final Object visitFail(Nez.Fail p, Object a) {
+		this.visitFail(p);
 		return null;
 	}
 
 	@Override
-	public final Object visitPoption(Poption p, Object next) {
-		this.visitPoption(p);
+	public final Object visitOption(Nez.Option p, Object next) {
+		this.visitOption(p);
 		return null;
 	}
 
 	@Override
-	public final Object visitPzero(Pzero p, Object next) {
-		this.visitPzero(p);
+	public final Object visitZeroMore(Nez.ZeroMore p, Object next) {
+		this.visitZeroMore(p);
 		return null;
 	}
 
 	@Override
-	public final Object visitPone(Pone p, Object a) {
-		this.visitPone(p);
+	public final Object visitOneMore(Nez.OneMore p, Object a) {
+		this.visitOneMore(p);
 		return null;
 	}
 
 	@Override
-	public final Object visitPand(Pand p, Object a) {
-		this.visitPand(p);
+	public final Object visitAnd(Nez.And p, Object a) {
+		this.visitAnd(p);
 		return null;
 	}
 
 	@Override
-	public final Object visitPnot(Pnot p, Object a) {
-		this.visitPnot(p);
+	public final Object visitNot(Nez.Not p, Object a) {
+		this.visitNot(p);
 		return null;
 	}
 
 	@Override
-	public final Object visitPsequence(Psequence p, Object a) {
-		this.visitPsequence(p);
+	public final Object visitPair(Nez.Pair p, Object a) {
+		this.visitPair(p);
 		return null;
 	}
 
 	@Override
-	public final Object visitPchoice(Pchoice p, Object a) {
-		this.visitPchoice(p);
+	public final Object visitChoice(Nez.Choice p, Object a) {
+		this.visitChoice(p);
 		return null;
 	}
 
@@ -407,9 +408,9 @@ public abstract class ParserGrammarSourceGenerator extends Expression.Visitor im
 	// AST Construction
 
 	@Override
-	public final Object visitTdetree(Tdetree p, Object a) {
+	public final Object visitDetree(Nez.Detree p, Object a) {
 		if (strategy.TreeConstruction) {
-			this.visitTdetree(p);
+			this.visitDetree(p);
 		} else {
 			this.visitExpression(p.get(0));
 		}
@@ -417,9 +418,9 @@ public abstract class ParserGrammarSourceGenerator extends Expression.Visitor im
 	}
 
 	@Override
-	public final Object visitTlink(Tlink p, Object a) {
+	public final Object visitLink(Nez.Link p, Object a) {
 		if (strategy.TreeConstruction) {
-			this.visitTlink(p);
+			this.visitLink(p);
 		} else {
 			this.visitExpression(p.get(0));
 		}
@@ -427,41 +428,41 @@ public abstract class ParserGrammarSourceGenerator extends Expression.Visitor im
 	}
 
 	@Override
-	public final Object visitTnew(Tnew p, Object next) {
+	public final Object visitPreNew(Nez.PreNew p, Object next) {
 		if (strategy.TreeConstruction) {
-			this.visitTnew(p);
+			this.visitPreNew(p);
 		}
 		return null;
 	}
 
 	@Override
-	public final Object visitTlfold(Tlfold p, Object next) {
+	public final Object visitLeftFold(Nez.LeftFold p, Object next) {
 		if (strategy.TreeConstruction) {
-			this.visitTlfold(p);
+			this.visitLeftFold(p);
 		}
 		return null;
 	}
 
 	@Override
-	public final Object visitTcapture(Tcapture p, Object next) {
+	public final Object visitNew(Nez.New p, Object next) {
 		if (strategy.TreeConstruction) {
-			this.visitTcapture(p);
+			this.visitNew(p);
 		}
 		return null;
 	}
 
 	@Override
-	public final Object visitTtag(Ttag p, Object next) {
+	public final Object visitTag(Nez.Tag p, Object next) {
 		if (strategy.TreeConstruction) {
-			this.visitTtag(p);
+			this.visitTag(p);
 		}
 		return null;
 	}
 
 	@Override
-	public final Object visitTreplace(Treplace p, Object next) {
+	public final Object visitReplace(Nez.Replace p, Object next) {
 		if (strategy.TreeConstruction) {
-			this.visitTreplace(p);
+			this.visitReplace(p);
 		}
 		return null;
 	}
@@ -509,8 +510,8 @@ public abstract class ParserGrammarSourceGenerator extends Expression.Visitor im
 	}
 
 	@Override
-	public final Object visitPempty(Pempty p, Object a) {
-		this.visitPempty(p);
+	public final Object visitEmpty(Nez.Empty p, Object a) {
+		this.visitEmpty(p);
 		return null;
 	}
 

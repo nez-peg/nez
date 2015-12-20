@@ -2,46 +2,25 @@ package nez.lang.expr;
 
 import nez.ast.SourceLocation;
 import nez.lang.Expression;
-
+import nez.lang.Nez;
 import nez.lang.PossibleAcceptance;
-import nez.util.StringUtils;
 
-public class Cset extends Char {
-	public boolean[] byteMap; // Immutable
+public class Cset extends Nez.Byteset {
 
 	Cset(SourceLocation s, boolean binary, int beginChar, int endChar) {
-		super(s, binary);
+		super();
 		this.byteMap = newMap(false);
 		appendRange(this.byteMap, beginChar, endChar);
 	}
 
 	Cset(SourceLocation s, boolean binary, boolean[] b) {
-		super(s, binary);
+		super(b);
 		this.byteMap = b;
 	}
 
 	@Override
-	public final boolean equalsExpression(Expression o) {
-		if (o instanceof Cset && this.binary == ((Cset) o).isBinary()) {
-			Cset e = (Cset) o;
-			for (int i = 0; i < this.byteMap.length; i++) {
-				if (this.byteMap[i] != e.byteMap[i]) {
-					return false;
-				}
-			}
-			return true;
-		}
-		return false;
-	}
-
-	@Override
-	public final void format(StringBuilder sb) {
-		sb.append(StringUtils.stringfyCharacterClass(this.byteMap));
-	}
-
-	@Override
 	public Object visit(Expression.Visitor v, Object a) {
-		return v.visitCset(this, a);
+		return v.visitByteset(this, a);
 	}
 
 	@Override

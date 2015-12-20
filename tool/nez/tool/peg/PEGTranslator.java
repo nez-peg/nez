@@ -4,19 +4,11 @@ import java.util.List;
 
 import nez.lang.Expression;
 import nez.lang.Grammar;
+import nez.lang.Nez;
 import nez.lang.Production;
-import nez.lang.expr.Cany;
-import nez.lang.expr.Cbyte;
-import nez.lang.expr.Cmulti;
-import nez.lang.expr.Cset;
 import nez.lang.expr.NonTerminal;
-import nez.lang.expr.Pand;
 import nez.lang.expr.Pchoice;
-import nez.lang.expr.Pnot;
-import nez.lang.expr.Pone;
-import nez.lang.expr.Poption;
 import nez.lang.expr.Psequence;
-import nez.lang.expr.Pzero;
 import nez.lang.expr.Tcapture;
 import nez.lang.expr.Tdetree;
 import nez.lang.expr.Tlfold;
@@ -63,33 +55,50 @@ public class PEGTranslator extends GrammarTranslator {
 	}
 
 	@Override
-	public void visitPempty(Expression p) {
+	public void visitEmpty(Expression p) {
 		W("''");
 	}
 
 	@Override
-	public void visitPfail(Expression p) {
+	public void visitFail(Expression p) {
 		W("!''");
 	}
 
 	@Override
-	public void visitCany(Cany p) {
+	public void visitAny(Nez.Any p) {
 		W(".");
 	}
 
 	@Override
-	public void visitCbyte(Cbyte p) {
+	public void visitByte(Nez.Byte p) {
 		W(StringUtils.stringfyCharacter(p.byteChar));
 	}
 
 	@Override
-	public void visitCset(Cset p) {
+	public void visitByteset(Nez.Byteset p) {
 		W(StringUtils.stringfyCharacterClass(p.byteMap));
 	}
 
 	@Override
-	public void visitCmulti(Cmulti p) {
+	public void visitString(Nez.String p) {
 		W(p.toString()); // FIXME
+	}
+
+	protected void visitUnary(String prefix, Nez.Unary e, String suffix) {
+		if (prefix != null) {
+			W(prefix);
+		}
+		Expression inner = e.get(0);
+		if (inner instanceof Pchoice || inner instanceof Psequence) {
+			W("(");
+			this.visitExpression(e.get(0));
+			W(")");
+		} else {
+			this.visitExpression(e.get(0));
+		}
+		if (suffix != null) {
+			W(suffix);
+		}
 	}
 
 	protected void visitUnary(String prefix, Unary e, String suffix) {
@@ -110,32 +119,32 @@ public class PEGTranslator extends GrammarTranslator {
 	}
 
 	@Override
-	public void visitPoption(Poption e) {
+	public void visitOption(Nez.Option e) {
 		visitUnary(null, e, "?");
 	}
 
 	@Override
-	public void visitPzero(Pzero e) {
+	public void visitZeroMore(Nez.ZeroMore e) {
 		visitUnary(null, e, "*");
 	}
 
 	@Override
-	public void visitPone(Pone e) {
+	public void visitOneMore(Nez.OneMore e) {
 		visitUnary(null, e, "+");
 	}
 
 	@Override
-	public void visitPand(Pand e) {
+	public void visitAnd(Nez.And e) {
 		visitUnary("&", e, null);
 	}
 
 	@Override
-	public void visitPnot(Pnot e) {
+	public void visitNot(Nez.Not e) {
 		visitUnary("!", e, null);
 	}
 
 	@Override
-	public void visitPsequence(Psequence p) {
+	public void visitPair(Nez.Pair p) {
 		int c = 0;
 		List<Expression> l = p.toList();
 		for (Expression e : l) {
@@ -154,7 +163,7 @@ public class PEGTranslator extends GrammarTranslator {
 	}
 
 	@Override
-	public void visitPchoice(Pchoice p) {
+	public void visitChoice(Nez.Choice p) {
 		for (int i = 0; i < p.size(); i++) {
 			if (i > 0) {
 				W(" / ");
@@ -181,39 +190,39 @@ public class PEGTranslator extends GrammarTranslator {
 	}
 
 	@Override
-	public void visitTlink(Tlink p) {
+	public void visitLink(Nez.Link p) {
 		SemanticAction("start()");
 		visitExpression(p.get(0));
 		SemanticAction("commit()");
 	}
 
 	@Override
-	public void visitTnew(Tnew p) {
+	public void visitPreNew(Nez.PreNew p) {
 		SemanticAction("new()");
 	}
 
 	@Override
-	public void visitTlfold(Tlfold p) {
+	public void visitLeftFold(Nez.LeftFold p) {
 		SemanticAction("lfold(" + p.getLabel() + ")");
 	}
 
 	@Override
-	public void visitTcapture(Tcapture p) {
+	public void visitNew(Nez.New p) {
 		SemanticAction("capture()");
 	}
 
 	@Override
-	public void visitTtag(Ttag p) {
+	public void visitTag(Nez.Tag p) {
 		SemanticAction("tag(" + StringUtils.quoteString('"', p.getTagName(), '"') + ")");
 	}
 
 	@Override
-	public void visitTreplace(Treplace p) {
+	public void visitReplace(Nez.Replace p) {
 		SemanticAction("replace(" + StringUtils.quoteString('"', p.value, '"') + ")");
 	}
 
 	@Override
-	public void visitTdetree(Tdetree p) {
+	public void visitDetree(Nez.Detree p) {
 		SemanticAction("start()");
 		visitExpression(p.get(0));
 		SemanticAction("abort()");

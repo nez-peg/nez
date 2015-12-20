@@ -2,48 +2,16 @@ package nez.lang.expr;
 
 import nez.ast.SourceLocation;
 import nez.lang.Expression;
+import nez.lang.Nez;
 import nez.lang.PossibleAcceptance;
 import nez.util.StringUtils;
 import nez.util.UList;
 
-public class Psequence extends ExpressionCommons {
-	public Expression first;
-	public Expression next;
+public class Psequence extends Nez.Pair {
 
 	Psequence(SourceLocation s, Expression first, Expression next) {
-		super(s);
-		this.first = first;
-		this.next = next;
-	}
-
-	@Override
-	public final boolean equalsExpression(Expression o) {
-		if (o instanceof Psequence) {
-			return this.get(0).equalsExpression(o.get(0)) && this.get(1).equalsExpression(o.get(1));
-		}
-		return false;
-	}
-
-	@Override
-	public final int size() {
-		return 2;
-	}
-
-	@Override
-	public final Expression get(int index) {
-		return index == 0 ? this.first : this.next;
-	}
-
-	@Override
-	public final Expression set(int index, Expression e) {
-		Expression p = this.first;
-		if (index == 0) {
-			this.first = e;
-		} else {
-			p = this.next;
-			this.next = e;
-		}
-		return p;
+		super(first, next);
+		this.set(s);
 	}
 
 	@Override
@@ -54,21 +22,6 @@ public class Psequence extends ExpressionCommons {
 	@Override
 	public Expression getNext() {
 		return this.next;
-	}
-
-	public final UList<Expression> toList() {
-		UList<Expression> l = ExpressionCommons.newList(4);
-		Psequence p = this;
-		while (true) {
-			l.add(p.getFirst());
-			Expression e = p.getNext();
-			if (!(e instanceof Psequence)) {
-				break;
-			}
-			p = (Psequence) e;
-		}
-		l.add(p.getNext());
-		return l;
 	}
 
 	@Override
@@ -114,7 +67,7 @@ public class Psequence extends ExpressionCommons {
 
 	@Override
 	public Object visit(Expression.Visitor v, Object a) {
-		return v.visitPsequence(this, a);
+		return v.visitPair(this, a);
 	}
 
 	@Override
@@ -169,7 +122,7 @@ public class Psequence extends ExpressionCommons {
 			UList<Byte> l = new UList<Byte>(new Byte[16]);
 			l.add(((byte) ((Cbyte) f).byteChar));
 			Expression next = convertMultiByte(this, l);
-			Expression mb = this.newMultiChar(((Cbyte) f).isBinary(), toByteSeq(l));
+			Expression mb = this.newMultiChar(false, toByteSeq(l));
 			if (next != null) {
 				return this.newSequence(mb, next);
 			}

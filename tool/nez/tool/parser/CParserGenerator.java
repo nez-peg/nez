@@ -9,19 +9,13 @@ import java.util.Stack;
 import nez.ast.Symbol;
 import nez.lang.Expression;
 import nez.lang.Grammar;
+import nez.lang.Nez;
 import nez.lang.Production;
-import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
-import nez.lang.expr.Cmulti;
 import nez.lang.expr.Cset;
 import nez.lang.expr.NonTerminal;
-import nez.lang.expr.Pand;
 import nez.lang.expr.Pchoice;
-import nez.lang.expr.Pnot;
-import nez.lang.expr.Pone;
-import nez.lang.expr.Poption;
 import nez.lang.expr.Psequence;
-import nez.lang.expr.Pzero;
 import nez.lang.expr.Tcapture;
 import nez.lang.expr.Tdetree;
 import nez.lang.expr.Tlfold;
@@ -326,7 +320,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 		}
 	}
 
-	public boolean specializeNot(Pnot e) {
+	public boolean specializeNot(Nez.Not e) {
 		if (!this.enableOpt) {
 			return false;
 		}
@@ -408,7 +402,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 		Label(label);
 	}
 
-	public boolean specializeOption(Poption e) {
+	public boolean specializeOption(Nez.Option e) {
 		if (!this.enableOpt) {
 			return false;
 		}
@@ -459,7 +453,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 		constructByteMapRep(b);
 	}
 
-	public boolean specializeRepetition(Pzero e) {
+	public boolean specializeRepetition(Nez.ZeroMore e) {
 		if (!this.enableOpt) {
 			return false;
 		}
@@ -550,11 +544,11 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitPempty(Expression e) {
+	public void visitEmpty(Expression e) {
 	}
 
 	@Override
-	public void visitPfail(Expression e) {
+	public void visitFail(Expression e) {
 		this.jumpFailureJump();
 	}
 
@@ -594,7 +588,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitCbyte(Cbyte e) {
+	public void visitByte(Nez.Byte e) {
 		L("if((int)*ctx->cur != " + e.byteChar + ")");
 		Begin("{");
 		this.jumpFailureJump();
@@ -612,7 +606,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitCset(Cset e) {
+	public void visitByteset(Nez.Byteset e) {
 		int fid = this.fid++;
 		String label = "EXIT_BYTEMAP" + fid;
 		boolean b[] = e.byteMap;
@@ -640,7 +634,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitCany(Cany e) {
+	public void visitAny(Nez.Any e) {
 		L("if(*ctx->cur == 0)");
 		Begin("{");
 		this.jumpFailureJump();
@@ -649,7 +643,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitCmulti(Cmulti p) {
+	public void visitString(Nez.String p) {
 		int len = p.byteSeq.length;
 		L("if (TAIL(ctx) - ctx->cur >= " + len + ")");
 		Begin("{");
@@ -668,7 +662,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitPoption(Poption e) {
+	public void visitOption(Nez.Option e) {
 		if (!specializeOption(e)) {
 			this.pushFailureJumpPoint();
 			String label = "EXIT_OPTION" + this.fid;
@@ -683,7 +677,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitPzero(Pzero e) {
+	public void visitZeroMore(Nez.ZeroMore e) {
 		if (!specializeRepetition(e)) {
 			this.pushFailureJumpPoint();
 			String backtrack = "c" + this.fid;
@@ -699,7 +693,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitPone(Pone e) {
+	public void visitOneMore(Nez.OneMore e) {
 		visitExpression(e.get(0));
 		this.pushFailureJumpPoint();
 		String backtrack = "c" + this.fid;
@@ -714,7 +708,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitPand(Pand e) {
+	public void visitAnd(Nez.And e) {
 		this.pushFailureJumpPoint();
 		String label = "EXIT_AND" + this.fid;
 		String backtrack = "c" + this.fid;
@@ -729,7 +723,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitPnot(Pnot e) {
+	public void visitNot(Nez.Not e) {
 		if (!specializeNot(e)) {
 			this.pushFailureJumpPoint();
 			String backtrack = "c" + this.fid;
@@ -743,7 +737,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitPsequence(Psequence e) {
+	public void visitPair(Nez.Pair e) {
 		for (int i = 0; i < e.size(); i++) {
 			visitExpression(e.get(i));
 		}
@@ -798,7 +792,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitPchoice(Pchoice e) {
+	public void visitChoice(Nez.Choice e) {
 		// showChoiceInfo(e);
 		if ((e.predictedCase != null && this.isPrediction && this.strategy.Odchoice)) {
 			this.predictionCount++;
@@ -863,7 +857,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 	Stack<String> markStack = new Stack<String>();
 
 	@Override
-	public void visitTnew(Tnew e) {
+	public void visitPreNew(Nez.PreNew e) {
 		if (this.strategy.TreeConstruction) {
 			// this.pushFailureJumpPoint();
 			String mark = "mark" + this.fid++;
@@ -874,7 +868,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitTcapture(Tcapture e) {
+	public void visitNew(Nez.New e) {
 		if (this.strategy.TreeConstruction) {
 			String label = "EXIT_CAPTURE" + this.fid++;
 			L("ast_log_capture(ctx->ast, ctx->cur);");
@@ -887,21 +881,21 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitTtag(Ttag e) {
+	public void visitTag(Nez.Tag e) {
 		if (this.strategy.TreeConstruction) {
 			L("ast_log_tag(ctx->ast, \"" + e.tag.getSymbol() + "\");");
 		}
 	}
 
 	@Override
-	public void visitTreplace(Treplace e) {
+	public void visitReplace(Nez.Replace e) {
 		if (this.strategy.TreeConstruction) {
 			L("ast_log_replace(ctx->ast, \"" + e.value + "\");");
 		}
 	}
 
 	@Override
-	public void visitTlink(Tlink e) {
+	public void visitLink(Nez.Link e) {
 		this.pushFailureJumpPoint();
 		String mark = "mark" + this.fid;
 
@@ -994,7 +988,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitTdetree(Tdetree p) {
+	public void visitDetree(Nez.Detree p) {
 		// TODO Auto-generated method stub
 
 	}
@@ -1012,7 +1006,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitTlfold(Tlfold p) {
+	public void visitLeftFold(Nez.LeftFold p) {
 		// TODO Auto-generated method stub
 
 	}

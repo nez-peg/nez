@@ -98,12 +98,12 @@ public abstract class GrammarGenerator extends GrammarTranslator {
 	// }
 	//
 	// @Override
-	// public void visitPempty(Expression e) {
+	// public void visitEmpty(Expression e) {
 	// W("" + Quoatation() + Quoatation());
 	// }
 	//
 	// @Override
-	// public void visitPfail(Expression e) {
+	// public void visitFail(Expression e) {
 	// W(_Not() + Quoatation() + Quoatation());
 	// }
 	//
@@ -113,48 +113,48 @@ public abstract class GrammarGenerator extends GrammarTranslator {
 	// }
 	//
 	// @Override
-	// public void visitCbyte(Cbyte e) {
+	// public void visitByte(Nez.Byte e) {
 	// W(StringUtils.stringfyByte(Quoatation(), e.byteChar, Quoatation()));
 	// }
 	//
 	// @Override
-	// public void visitCset(Cset e) {
+	// public void visitByteset(Nez.Byteset e) {
 	// W(StringUtils.stringfyCharacterClass(e.byteMap));
 	// }
 	//
 	// @Override
-	// public void visitCany(Cany e) {
+	// public void visitAny(Nez.Any e) {
 	// W(_Any());
 	// }
 	//
 	//
 	// @Override
-	// public void visitPoption(Poption e) {
+	// public void visitOption(Nez.Option e) {
 	// Unary(null, e, _Option());
 	// }
 	//
 	// @Override
-	// public void visitPzero(Pzero e) {
+	// public void visitZeroMore(Nez.ZeroMore e) {
 	// Unary(null, e, _ZeroAndMore());
 	// }
 	//
 	// @Override
-	// public void visitPone(Pone e) {
+	// public void visitOneMore(Nez.OneMore e) {
 	// Unary(null, e, _OneAndMore());
 	// }
 	//
 	// @Override
-	// public void visitPand(Pand e) {
+	// public void visitAnd(Nez.And e) {
 	// Unary(_And(), e, null);
 	// }
 	//
 	// @Override
-	// public void visitPnot(Pnot e) {
+	// public void visitNot(Nez.Not e) {
 	// Unary(_Not(), e, null);
 	// }
 	//
 	// @Override
-	// public void visitPchoice(Pchoice e) {
+	// public void visitChoice(Nez.Choice e) {
 	// for (int i = 0; i < e.size(); i++) {
 	// if (i > 0) {
 	// W(" " + _Choice() + " ");
@@ -164,17 +164,17 @@ public abstract class GrammarGenerator extends GrammarTranslator {
 	// }
 	//
 	// @Override
-	// public void visitTnew(Tnew e) {
+	// public void visitPreNew(Nez.PreNew e) {
 	// // W(e.lefted ? "{@" : "{");
 	// }
 	//
 	// @Override
-	// public void visitTcapture(Tcapture e) {
+	// public void visitNew(Nez.New e) {
 	// // W("}");
 	// }
 	//
 	// @Override
-	// public void visitTtag(Ttag e) {
+	// public void visitTag(Nez.Tag e) {
 	// // W("#");
 	// // W(e.tag.getName());
 	// }
@@ -184,7 +184,7 @@ public abstract class GrammarGenerator extends GrammarTranslator {
 	// }
 	//
 	// @Override
-	// public void visitTlink(Tlink e) {
+	// public void visitLink(Nez.Link e) {
 	// // String predicate = "@";
 	// // if(e.index != -1) {
 	// // predicate += "[" + e.index + "]";
@@ -194,7 +194,7 @@ public abstract class GrammarGenerator extends GrammarTranslator {
 	// }
 	//
 	// @Override
-	// public void visitPsequence(Psequence e) {
+	// public void visitPair(Nez.Pair e) {
 	// int c = 0;
 	// for (int i = 0; i < e.size(); i++) {
 	// if (c > 0) {
@@ -253,7 +253,7 @@ public abstract class GrammarGenerator extends GrammarTranslator {
 	// }
 	//
 	// @Override
-	// public void visitTreplace(Treplace p) {
+	// public void visitReplace(Nez.Replace p) {
 	// // TODO Auto-generated method stub
 	//
 	// }
