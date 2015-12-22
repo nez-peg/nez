@@ -1,70 +1,76 @@
 package nez.lang.schema;
 
+import nez.ast.Symbol;
+import nez.junks.GrammarFile;
 import nez.lang.Expression;
-import nez.lang.Grammar;
 
 public class JSONSchemaGrammarGenerator extends SchemaGrammarGenerator {
 
-	public JSONSchemaGrammarGenerator(Grammar grammar) {
-		super(grammar);
+	public JSONSchemaGrammarGenerator(GrammarFile gfile) {
+		super(gfile);
 	}
+
+	static final Symbol _Key = Symbol.tag("key");
+	static final Symbol _Value = Symbol.tag("value");
+	static final Symbol _Member = Symbol.tag("member");
 
 	@Override
 	public void loadPredefinedRules() {
-		JSONPredefinedGrammar pre = new JSONPredefinedGrammar(grammar);
-		pre.define();
+		new JSONGrammarCombinator(gfile);
 	}
 
 	@Override
 	public void newRoot(String structName) {
-		Expression root = _NonTerminal(structName);
+		Expression root = _Link(null, _NonTerminal(structName));
 		Expression[] seq = { _NonTerminal("VALUESEP"), root };
 		Expression[] array = { _OpenSquare(), _S(), root, _S(), _OneMore(seq), _S(), _CloseSquare() };
-		grammar.addProduction(null, "Root", _Choice(_Sequence(root), _Sequence(array)));
+		gfile.addProduction(null, "Root", _New(_Choice(_Sequence(root), _Sequence(array)), _Tag("Root")));
 	}
 
 	@Override
-	public void newElement(String elementName, Type t) {
-		Expression[] l = { _DQuat(), t.getTypeExpression(), _DQuat(), _S(), _NonTerminal("NAMESEP"), t.next().getTypeExpression(), _Option(_NonTerminal("VALUESEP")), _S() };
-		grammar.addProduction(null, elementName, _Sequence(l));
+	public Element newElement(String elementName, String structName, Schema t) {
+		Expression seq = _Sequence(_DQuat(), t.getSchemaExpression(), _DQuat(), _S(), _NonTerminal("NAMESEP"), _New(_Link(_Value, t.next().getSchemaExpression()), _Tag(elementName)), _Option(_NonTerminal("VALUESEP")), _S());
+		Element element = new Element(elementName, structName, seq, false);
+		gfile.addProduction(null, element.getUniqueName(), seq);
+		return element;
 	}
 
 	@Override
-	public void newStruct(String structName, Type t) {
-		Expression[] l = { _OpenWave(), _S(), t.getTypeExpression(), _S(), _CloseWave(), _S() };
-		grammar.addProduction(null, structName, _Sequence(l));
+	public void newStruct(String structName, Schema t) {
+		Expression[] l = { _OpenWave(), _S(), t.getSchemaExpression(), _S(), _CloseWave(), _S() };
+		gfile.addProduction(null, structName, _New(_Sequence(l), _Tag(structName)));
 	}
 
 	@Override
-	public Type newTObject() {
-		return new Type(_NonTerminal("JSONObject"));
+	public Schema newTObject() {
+		return new Schema(_NonTerminal("JSONObject"));
 	}
 
 	@Override
-	public Type newTStruct(String structName) {
-		return new Type(_NonTerminal(structName));
+	public Schema newTStruct(String structName) {
+		return new Schema(_NonTerminal(structName));
 	}
 
 	@Override
-	public Type newTArray(Type t) {
-		Expression tExpr = t.getTypeExpression();
+	public Schema newTArray(Schema t) {
+		Expression tExpr = t.getSchemaExpression();
 		Expression[] array = { _OpenSquare(), _S(), tExpr, _ZeroMore(_NonTerminal("VALUESEP"), tExpr), _CloseSquare() };
-		return new Type(_Sequence(array));
+		return new Schema(_Sequence(array));
 	}
 
 	@Override
-	public Type newTEnum(String[] candidates) {
+	public Schema newTEnum(String[] candidates) {
 		Expression[] choice = new Expression[candidates.length];
 		int index = 0;
 		for (String cand : candidates) {
 			choice[index++] = _String(cand);
 		}
-		return new Type(_Choice(choice));
+		return new Schema(_Choice(choice));
 	}
 
 	@Override
-	public Type newOthers() {
-		return new Type(_NonTerminal("Member"));
+	public Schema newOthers() {
+		return new Schema(_NonTerminal("Member"));
 	}
 
 	private final Expression _OpenSquare() {

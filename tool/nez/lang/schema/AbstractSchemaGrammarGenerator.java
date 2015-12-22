@@ -5,38 +5,43 @@ public abstract class AbstractSchemaGrammarGenerator {
 
 	abstract public void newRoot(String structName);
 
-	abstract public void newElement(String elementName, Type t);
+	abstract public Element newElement(String elementName, String structName, Schema t);
 
-	abstract public void newStruct(String structName, Type t);
+	abstract public void newStruct(String structName, Schema t);
 
-	abstract public void newMembers(String structName, Type... members);
+	abstract public void newMembers(String structName);
 
 	abstract public void newSymbols();
 
-	abstract public Type newTObject();
+	abstract public Schema newTObject();
 
-	abstract public Type newTStruct(String structName);
+	abstract public Schema newTStruct(String structName);
 
-	abstract public Type newTArray(Type t);
+	abstract public Schema newTArray(Schema t);
 
-	abstract public Type newTEnum(String[] candidates);
+	abstract public Schema newTEnum(String[] candidates);
 
-	abstract public Type newTInteger();
+	abstract public Schema newTInteger();
 
-	abstract public Type newTFloat();
+	abstract public Schema newTInteger(int min, int max);
 
-	abstract public Type newTString();
+	abstract public Schema newTFloat();
 
-	abstract public Type newTAny();
+	abstract public Schema newTFloat(int min, int max);
 
-	abstract public Type newSet(String structName);
+	abstract public Schema newTString();
 
-	abstract public Type newPermutation();
+	abstract public Schema newTString(int minLength, int maxLength);
 
-	abstract public Type newUniq(String elementName, Type t);
+	abstract public Schema newTAny();
 
-	abstract public Type newAlt(String elementName);
+	abstract public Schema newSet(String structName);
 
-	abstract public Type newOthers();
+	abstract public Schema newPermutation();
 
+	abstract public Schema newUniq(String elementName, Schema t);
+
+	abstract public Schema newAlt(String elementName);
+
+	abstract public Schema newOthers();
 }

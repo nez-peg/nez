@@ -23,7 +23,7 @@ public class Gcelery extends GrammarFileLoader {
 		}
 
 		@Override
-		public Type toSchema(Tree<?> node) {
+		public Schema toSchema(Tree<?> node) {
 			ConsoleUtils.println(node.formatSourceMessage("error", "unsupproted in Celery #" + node));
 			return null;
 		}
@@ -56,7 +56,7 @@ public class Gcelery extends GrammarFileLoader {
 		find(node.getTag().toString()).accept(node);
 	}
 
-	private final Type toType(Tree<?> node) {
+	private final Schema toType(Tree<?> node) {
 		return find(node.getTag().toString()).toSchema(node);
 	}
 
@@ -129,7 +129,7 @@ public class Gcelery extends GrammarFileLoader {
 
 	public class _Type extends Undefined {
 		@Override
-		public Type toSchema(Tree<?> node) {
+		public Schema toSchema(Tree<?> node) {
 			ConsoleUtils.println(node.formatSourceMessage("error", "unsupproted type #" + node));
 			return null;
 		}
@@ -137,7 +137,7 @@ public class Gcelery extends GrammarFileLoader {
 
 	public final class TObject extends _Type {
 		@Override
-		public Type toSchema(Tree<?> node) {
+		public Schema toSchema(Tree<?> node) {
 			if (node.has(_Range)) {
 				int min = Integer.parseInt(node.getText(_Min, ""));
 				int max = Integer.parseInt(node.getText(_Max, ""));
@@ -149,21 +149,21 @@ public class Gcelery extends GrammarFileLoader {
 
 	public final class TStruct extends _Type {
 		@Override
-		public Type toSchema(Tree<?> node) {
+		public Schema toSchema(Tree<?> node) {
 			return schema.newTStruct(node.toText());
 		}
 	}
 
 	public final class TAny extends _Type {
 		@Override
-		public Type toSchema(Tree<?> node) {
+		public Schema toSchema(Tree<?> node) {
 			return schema.newTAny();
 		}
 	}
 
 	public final class TArray extends _Type {
 		@Override
-		public Type toSchema(Tree<?> node) {
+		public Schema toSchema(Tree<?> node) {
 			if (node.has(_Range)) {
 				int min = Integer.parseInt(node.getText(_Min, ""));
 				int max = Integer.parseInt(node.getText(_Max, ""));
@@ -175,7 +175,7 @@ public class Gcelery extends GrammarFileLoader {
 
 	public final class TEnum extends _Type {
 		@Override
-		public Type toSchema(Tree<?> node) {
+		public Schema toSchema(Tree<?> node) {
 			String[] candidates = new String[node.size()];
 			int index = 0;
 			for (Tree<?> subnode : node) {
@@ -187,7 +187,7 @@ public class Gcelery extends GrammarFileLoader {
 
 	public final class TInteger extends _Type {
 		@Override
-		public Type toSchema(Tree<?> node) {
+		public Schema toSchema(Tree<?> node) {
 			if (node.has(_Range)) {
 				int min = Integer.parseInt(node.getText(_Min, ""));
 				int max = Integer.parseInt(node.getText(_Max, ""));
@@ -199,7 +199,7 @@ public class Gcelery extends GrammarFileLoader {
 
 	public final class TFloat extends _Type {
 		@Override
-		public Type toSchema(Tree<?> node) {
+		public Schema toSchema(Tree<?> node) {
 			if (node.has(_Range)) {
 				float min = Float.parseFloat(node.getText(_Min, ""));
 				float max = Float.parseFloat(node.getText(_Max, ""));
@@ -211,7 +211,7 @@ public class Gcelery extends GrammarFileLoader {
 
 	public final class TString extends _Type {
 		@Override
-		public Type toSchema(Tree<?> node) {
+		public Schema toSchema(Tree<?> node) {
 			if (node.has(_Length)) {
 				int min = Integer.parseInt(node.getText(_Min, ""));
 				int max = Integer.parseInt(node.getText(_Max, ""));
