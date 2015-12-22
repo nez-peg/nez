@@ -10,7 +10,7 @@ import nez.lang.expr.ExpressionCommons;
 import nez.lang.expr.NonTerminal;
 import nez.util.UList;
 
-public abstract class SchemaGrammarGenerator extends AbstractSchemaGrammarGenerator {
+public abstract class SchemaGrammarGenerator implements SchemaGrammarGeneratorInterface {
 	protected GrammarFile gfile;
 	private List<Element> requiredElementList;
 	private List<Element> elementList;
