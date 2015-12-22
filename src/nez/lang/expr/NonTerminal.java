@@ -21,7 +21,7 @@ public class NonTerminal extends ExpressionCommons {
 	}
 
 	@Override
-	public final boolean equalsExpression(Expression o) {
+	public final boolean equals(Object o) {
 		if (o instanceof NonTerminal) {
 			return this.localName.equals(((NonTerminal) o).getLocalName());
 		}
@@ -92,7 +92,7 @@ public class NonTerminal extends ExpressionCommons {
 	}
 
 	public final NonTerminal newNonTerminal(String localName) {
-		return ExpressionCommons.newNonTerminal(this.getSourcePosition(), this.getGrammar(), localName);
+		return ExpressionCommons.newNonTerminal(this.getSourceLocation(), this.getGrammar(), localName);
 	}
 
 }

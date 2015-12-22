@@ -3,23 +3,15 @@ package nez.lang.expr;
 import nez.ast.SourceLocation;
 import nez.ast.Symbol;
 import nez.lang.Expression;
+import nez.lang.Nez;
 import nez.lang.PossibleAcceptance;
+import nez.lang.Predicate;
 
-public class Xmatch extends Term implements Expression.Contextual {
-	public final Symbol tableName;
+public class Xmatch extends Nez.SymbolPredicate implements Expression.Contextual {
 
 	Xmatch(SourceLocation s, Symbol tableName) {
-		super(s);
-		this.tableName = tableName;
-	}
-
-	@Override
-	public final boolean equalsExpression(Expression o) {
-		if (o instanceof Xmatch) {
-			Xmatch e = (Xmatch) o;
-			return this.tableName == e.tableName;
-		}
-		return false;
+		super(Predicate.match, tableName);
+		this.set(s);
 	}
 
 	public final Symbol getTable() {
@@ -28,11 +20,6 @@ public class Xmatch extends Term implements Expression.Contextual {
 
 	public final String getTableName() {
 		return tableName.getSymbol();
-	}
-
-	@Override
-	public Object visit(Expression.Visitor v, Object a) {
-		return v.visitXmatch(this, a);
 	}
 
 	@Override

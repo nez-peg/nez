@@ -14,14 +14,19 @@ import nez.parser.Parser;
 import nez.parser.ParserException;
 import nez.parser.ParserStrategy;
 import nez.util.FileBuilder;
+import nez.util.Verbose;
 
 public class ParserGenerator {
-	public static class GrammarExtension {
+	public static abstract class GrammarExtension {
 		ParserGenerator nez;
 		String path;
-		Parser parser;
+		Parser parser = null;
 
-		GrammarExtension(ParserGenerator nez) {
+		protected GrammarExtension(String path) {
+			this.path = path;
+		}
+
+		public void init(ParserGenerator nez) {
 			this.nez = nez;
 		}
 
@@ -32,9 +37,9 @@ public class ParserGenerator {
 			return parser;
 		}
 
-		public void updateGrammarLoader(GrammarLoader loader) {
+		public abstract String getExtension();
 
-		}
+		public abstract void updateGrammarLoader(GrammarLoader loader);
 	}
 
 	private String[] classPath = null;
@@ -46,6 +51,26 @@ public class ParserGenerator {
 
 	public ParserGenerator() {
 		this("nez/lib");
+		loadExtension("nez.lang.schema.DTDGrammarExtension");
+	}
+
+	public final void loadExtension(String classPath) {
+		try {
+			loadExtension(Class.forName(classPath));
+		} catch (ClassNotFoundException e) {
+			Verbose.traceException(e);
+		}
+	}
+
+	public final void loadExtension(Class<?> c) {
+		try {
+			GrammarExtension ext = (GrammarExtension) c.newInstance();
+			ext.init(this);
+			this.extensionMap.put(ext.getExtension(), ext);
+			Verbose.println("added GrammarExtension : " + ext.getClass().getName());
+		} catch (Exception e) {
+			Verbose.traceException(e);
+		}
 	}
 
 	public final Grammar newGrammar(Source source, String ext) throws IOException {
@@ -96,15 +121,16 @@ public class ParserGenerator {
 
 	/* Utils */
 
-	private GrammarExtension lookupGrammarExtension(String ext) throws IOException {
-		GrammarExtension boot = extensionMap.get(ext);
-		if (boot == null) {
-			if (!ext.equals("nez")) {
-				throw new ParserException("undefined grammar extension: " + ext);
+	private GrammarExtension lookupGrammarExtension(String fileExtension) throws IOException {
+		GrammarExtension ext = extensionMap.get(fileExtension);
+		if (ext == null) {
+			if (!fileExtension.equals("nez")) {
+				throw new ParserException("undefined grammar extension: " + fileExtension);
 			}
 			class P extends GrammarExtension {
 				P(ParserGenerator factory) {
-					super(factory);
+					super(null);
+					this.init(factory);
 				}
 
 				@Override
@@ -115,11 +141,21 @@ public class ParserGenerator {
 					}
 					return parser;
 				}
+
+				@Override
+				public String getExtension() {
+					return "nez";
+				}
+
+				@Override
+				public void updateGrammarLoader(GrammarLoader loader) {
+
+				}
 			}
-			boot = new P(this);
-			extensionMap.put("nez", boot);
+			ext = new P(this);
+			extensionMap.put(ext.getExtension(), ext);
 		}
-		return boot;
+		return ext;
 	}
 
 	/* Parser */
@@ -133,5 +169,9 @@ public class ParserGenerator {
 	}
 
 	/* Regex */
+
+	static {
+
+	}
 
 }

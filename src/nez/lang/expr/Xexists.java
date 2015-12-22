@@ -3,49 +3,26 @@ package nez.lang.expr;
 import nez.ast.SourceLocation;
 import nez.ast.Symbol;
 import nez.lang.Expression;
+import nez.lang.Nez;
 import nez.lang.PossibleAcceptance;
 
-public class Xexists extends Term implements Expression.Contextual {
-	public final Symbol tableName;
-	String symbol;
+public class Xexists extends Nez.SymbolExists implements Expression.Contextual {
 
 	Xexists(SourceLocation s, Symbol tableName, String symbol) {
-		super(s);
-		this.tableName = tableName;
-		this.symbol = symbol;
+		super(tableName, symbol);
+		this.set(s);
 	}
 
-	public final String getSymbol() {
+	public final java.lang.String getSymbol() {
 		return this.symbol;
-	}
-
-	@Override
-	public final boolean equalsExpression(Expression o) {
-		if (o instanceof Xexists) {
-			Xexists s = (Xexists) o;
-			return this.tableName == s.tableName && equals(this.symbol, s.symbol);
-		}
-		return false;
-	}
-
-	private boolean equals(String s, String s2) {
-		if (s != null && s2 != null) {
-			return s.equals(s2);
-		}
-		return s == s2;
 	}
 
 	public final Symbol getTable() {
 		return tableName;
 	}
 
-	public final String getTableName() {
+	public final java.lang.String getTableName() {
 		return tableName.getSymbol();
-	}
-
-	@Override
-	public Object visit(Expression.Visitor v, Object a) {
-		return v.visitXexists(this, a);
 	}
 
 	@Override

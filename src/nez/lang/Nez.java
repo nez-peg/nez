@@ -8,6 +8,7 @@ import nez.lang.expr.Pfail;
 import nez.lang.expr.Psequence;
 import nez.lang.expr.Tlink;
 import nez.lang.expr.Ttag;
+import nez.lang.expr.Xexists;
 import nez.util.StringUtils;
 import nez.util.UList;
 
@@ -28,7 +29,7 @@ public class Nez {
 	public abstract static class Empty extends Terminal {
 
 		@Override
-		public final boolean equalsExpression(Expression o) {
+		public final boolean equals(Object o) {
 			return (o instanceof Pempty);
 		}
 
@@ -45,7 +46,7 @@ public class Nez {
 
 	public abstract static class Fail extends Terminal {
 		@Override
-		public final boolean equalsExpression(Expression o) {
+		public final boolean equals(Object o) {
 			return (o instanceof Pfail);
 		}
 
@@ -71,7 +72,7 @@ public class Nez {
 		}
 
 		@Override
-		public final boolean equalsExpression(Expression o) {
+		public final boolean equals(Object o) {
 			if (o instanceof Nez.Byte) {
 				return this.byteChar == ((Nez.Byte) o).byteChar;
 			}
@@ -92,7 +93,7 @@ public class Nez {
 	public static abstract class Any extends Terminal implements Character {
 
 		@Override
-		public final boolean equalsExpression(Expression o) {
+		public final boolean equals(Object o) {
 			return (o instanceof Any);
 		}
 
@@ -121,7 +122,7 @@ public class Nez {
 		}
 
 		@Override
-		public final boolean equalsExpression(Expression o) {
+		public final boolean equals(Object o) {
 			if (o instanceof Byteset) {
 				Byteset e = (Byteset) o;
 				for (int i = 0; i < this.byteMap.length; i++) {
@@ -153,7 +154,7 @@ public class Nez {
 		}
 
 		@Override
-		public final boolean equalsExpression(Expression o) {
+		public final boolean equals(Object o) {
 			if (o instanceof Nez.String) {
 				Nez.String mb = (Nez.String) o;
 				if (mb.byteSeq.length == this.byteSeq.length) {
@@ -234,9 +235,9 @@ public class Nez {
 		}
 
 		@Override
-		public final boolean equalsExpression(Expression o) {
+		public final boolean equals(Object o) {
 			if (o instanceof Nez.Option) {
-				return this.get(0).equalsExpression(o.get(0));
+				return this.get(0).equals(((Expression) o).get(0));
 			}
 			return false;
 		}
@@ -262,9 +263,9 @@ public class Nez {
 		}
 
 		@Override
-		public boolean equalsExpression(Expression o) {
+		public boolean equals(Object o) {
 			if (o instanceof Nez.ZeroMore) {
-				return this.get(0).equalsExpression(o.get(0));
+				return this.get(0).equals(((Expression) o).get(0));
 			}
 			return false;
 		}
@@ -287,9 +288,9 @@ public class Nez {
 		}
 
 		@Override
-		public final boolean equalsExpression(Expression o) {
+		public final boolean equals(Object o) {
 			if (o instanceof Nez.OneMore) {
-				return this.get(0).equalsExpression(o.get(0));
+				return this.get(0).equals(((Expression) o).get(0));
 			}
 			return false;
 		}
@@ -312,9 +313,9 @@ public class Nez {
 		}
 
 		@Override
-		public final boolean equalsExpression(Expression o) {
+		public final boolean equals(Object o) {
 			if (o instanceof Nez.And) {
-				return this.get(0).equalsExpression(o.get(0));
+				return this.get(0).equals(((Expression) o).get(0));
 			}
 			return false;
 		}
@@ -337,9 +338,9 @@ public class Nez {
 		}
 
 		@Override
-		public final boolean equalsExpression(Expression o) {
+		public final boolean equals(Object o) {
 			if (o instanceof Nez.Not) {
-				return this.get(0).equalsExpression(o.get(0));
+				return this.get(0).equals(((Expression) o).get(0));
 			}
 			return false;
 		}
@@ -387,9 +388,9 @@ public class Nez {
 		}
 
 		@Override
-		public final boolean equalsExpression(Expression o) {
+		public final boolean equals(Object o) {
 			if (o instanceof Nez.Pair) {
-				return this.get(0).equalsExpression(o.get(0)) && this.get(1).equalsExpression(o.get(1));
+				return this.get(0).equals(((Expression) o).get(0)) && this.get(1).equals(((Expression) o).get(1));
 			}
 			return false;
 		}
@@ -439,7 +440,7 @@ public class Nez {
 		protected final boolean equalsList(Nez.List l) {
 			if (this.size() == l.size()) {
 				for (int i = 0; i < this.size(); i++) {
-					if (!this.get(i).equalsExpression(l.get(i))) {
+					if (!this.get(i).equals(l.get(i))) {
 						return false;
 					}
 				}
@@ -470,7 +471,7 @@ public class Nez {
 		}
 
 		@Override
-		public final boolean equalsExpression(Expression o) {
+		public final boolean equals(Object o) {
 			if (o instanceof Nez.Sequence) {
 				return this.equalsList((Nez.List) o);
 			}
@@ -492,7 +493,7 @@ public class Nez {
 		}
 
 		@Override
-		public final boolean equalsExpression(Expression o) {
+		public final boolean equals(Object o) {
 			if (o instanceof Nez.Choice) {
 				return this.equalsList((Nez.List) o);
 			}
@@ -530,7 +531,7 @@ public class Nez {
 		public int shift = 0;
 
 		@Override
-		public final boolean equalsExpression(Expression o) {
+		public final boolean equals(Object o) {
 			return (o instanceof Nez.PreNew && this.shift == ((Nez.PreNew) o).shift);
 		}
 
@@ -550,7 +551,7 @@ public class Nez {
 		public int shift = 0;
 
 		@Override
-		public final boolean equalsExpression(Expression o) {
+		public final boolean equals(Object o) {
 			return (o instanceof Nez.New && this.shift == ((Nez.New) o).shift);
 		}
 
@@ -580,7 +581,7 @@ public class Nez {
 		}
 
 		@Override
-		public final boolean equalsExpression(Expression o) {
+		public final boolean equals(Object o) {
 			if (o instanceof Nez.LeftFold) {
 				Nez.LeftFold s = (Nez.LeftFold) o;
 				return (this.label == s.label && this.shift == s.shift);
@@ -615,7 +616,7 @@ public class Nez {
 		}
 
 		@Override
-		public final boolean equalsExpression(Expression o) {
+		public final boolean equals(Object o) {
 			if (o instanceof Ttag) {
 				return this.tag == ((Ttag) o).tag;
 			}
@@ -641,7 +642,7 @@ public class Nez {
 		}
 
 		@Override
-		public final boolean equalsExpression(Expression o) {
+		public final boolean equals(Object o) {
 			if (o instanceof Nez.Replace) {
 				return this.value.equals(((Nez.Replace) o).value);
 			}
@@ -676,9 +677,9 @@ public class Nez {
 		}
 
 		@Override
-		public final boolean equalsExpression(Expression o) {
+		public final boolean equals(Object o) {
 			if (o instanceof Tlink && this.label == ((Tlink) o).label) {
-				return this.get(0).equalsExpression(o.get(0));
+				return this.get(0).equals(((Expression) o).get(0));
 			}
 			return false;
 		}
@@ -700,9 +701,9 @@ public class Nez {
 		}
 
 		@Override
-		public final boolean equalsExpression(Expression o) {
+		public final boolean equals(Object o) {
 			if (o instanceof Nez.Detree) {
-				return this.get(0).equalsExpression(o.get(0));
+				return this.get(0).equals(((Expression) o).get(0));
 			}
 			return false;
 		}
@@ -720,53 +721,242 @@ public class Nez {
 	}
 
 	/* Symbol */
-
-	public enum Operand2 {
-		block, local, _if, on,
-	}
+	private static Expression empty = ExpressionCommons.newEmpty(null);
 
 	public static abstract class Operand extends Unary {
-		public Operand2 op;
+		public final Predicate op;
 
-		public Operand(Operand2 op, Expression e) {
+		public Operand(Predicate op, Expression e) {
 			super(e);
+			this.op = op;
+		}
+
+		@Override
+		public void format(StringBuilder sb) {
+			sb.append("<");
+			sb.append(this.op);
+			if (this.inner != empty) {
+				sb.append(" ");
+				sb.append(this.inner);
+			}
+			sb.append(">");
+		}
+
+		public void formatOperand(StringBuilder sb) {
 		}
 	}
 
 	public abstract static class SymbolAction extends Operand implements AST {
-		public SymbolAction(Operand2 op, Expression e) {
+		public final Symbol tableName;
+
+		public SymbolAction(Predicate op, NonTerminal e) {
 			super(op, e);
+			tableName = Symbol.tag(e.getLocalName());
 		}
+
+		@Override
+		public final boolean equals(Object o) {
+			if (o instanceof SymbolAction) {
+				SymbolAction e = (SymbolAction) o;
+				if (this.tableName == e.tableName) {
+					return this.get(0).equals(e.get(0));
+				}
+			}
+			return false;
+		}
+
+		@Override
+		public Object visit(Expression.Visitor v, Object a) {
+			return v.visitSymbolAction(this, a);
+		}
+
 	}
 
 	public abstract static class SymbolPredicate extends Operand implements AST {
-		public SymbolPredicate(Operand2 op, Expression e) {
-			super(op, e);
+		public final Symbol tableName;
+
+		public SymbolPredicate(Predicate op, Symbol table) {
+			super(op, empty);
+			this.tableName = table;
+		}
+
+		@Override
+		public final boolean equals(Object o) {
+			if (o instanceof SymbolPredicate) {
+				SymbolPredicate e = (SymbolPredicate) o;
+				return e.op == this.op && this.tableName == e.tableName;
+			}
+			return false;
+		}
+
+		@Override
+		public Object visit(Expression.Visitor v, Object a) {
+			return v.visitSymbolPredicate(this, a);
+		}
+
+		@Override
+		public boolean isConsumed() {
+			return false;
+		}
+
+		@Override
+		public short acceptByte(int ch) {
+			return PossibleAcceptance.Accept;
+		}
+
+	}
+
+	public abstract static class SymbolExists extends Operand implements AST {
+		public final Symbol tableName;
+		public final java.lang.String symbol;
+
+		public SymbolExists(Symbol table, java.lang.String symbol) {
+			super(Predicate.exists, empty);
+			this.tableName = table;
+			this.symbol = symbol;
+		}
+
+		@Override
+		public final boolean equals(Object o) {
+			if (o instanceof Xexists) {
+				Xexists s = (Xexists) o;
+				return this.tableName == s.tableName && equals(this.symbol, s.symbol);
+			}
+			return false;
+		}
+
+		private boolean equals(java.lang.String s, java.lang.String s2) {
+			if (s != null && s2 != null) {
+				return s.equals(s2);
+			}
+			return s == s2;
+		}
+
+		@Override
+		public Object visit(Expression.Visitor v, Object a) {
+			return v.visitSymbolExists(this, a);
+		}
+
+	}
+
+	public abstract static class BlockScope extends Operand implements AST {
+		public BlockScope(Expression e) {
+			super(Predicate.block, e);
+		}
+
+		@Override
+		public final boolean equals(Object o) {
+			if (o instanceof BlockScope) {
+				return this.get(0).equals(((Expression) o).get(0));
+			}
+			return false;
+		}
+
+		@Override
+		public Object visit(Expression.Visitor v, Object a) {
+			return v.visitBlockScope(this, a);
+		}
+
+	}
+
+	public abstract static class LocalScope extends Operand implements AST {
+		public final Symbol tableName;
+
+		public LocalScope(Symbol table, Expression e) {
+			super(Predicate.local, e);
+			this.tableName = table;
+		}
+
+		@Override
+		public final boolean equals(Object o) {
+			if (o instanceof LocalScope) {
+				LocalScope s = (LocalScope) o;
+				if (this.tableName == s.tableName) {
+					return this.get(0).equals(s.get(0));
+				}
+			}
+			return false;
+		}
+
+		@Override
+		public Object visit(Expression.Visitor v, Object a) {
+			return v.visitLocalScope(this, a);
+		}
+
+		@Override
+		public void formatOperand(StringBuilder sb) {
+			sb.append(" ");
+			sb.append(this.tableName);
+		}
+
+	}
+
+	public static interface Conditional {
+
+	}
+
+	public abstract static class On extends Operand {
+		public boolean predicate;
+		public final java.lang.String flagName;
+
+		public On(boolean predicate, java.lang.String c, Expression e) {
+			super(Predicate.on, e);
+			if (c.startsWith("!")) {
+				predicate = false;
+				c = c.substring(1);
+			}
+			this.predicate = predicate;
+			this.flagName = c;
+		}
+
+		public final boolean isPositive() {
+			return predicate;
+		}
+
+		@Override
+		public final boolean equals(Object o) {
+			if (o instanceof Nez.On) {
+				Nez.On e = (Nez.On) o;
+				if (this.predicate == e.predicate && this.flagName.equals(e.flagName)) {
+					return this.get(0).equals(e.get(0));
+				}
+			}
+			return false;
+		}
+
+		@Override
+		public Object visit(Expression.Visitor v, Object a) {
+			return v.visitOn(this, a);
 		}
 	}
 
-	public abstract static class SymbolScope extends Operand implements AST {
-		public SymbolScope(Operand2 op, Expression e) {
-			super(op, e);
+	public abstract static class If extends Operand implements Conditional {
+		public final boolean predicate;
+		public final java.lang.String flagName;
+
+		public If(boolean predicate, java.lang.String c) {
+			super(Predicate._if, empty);
+			if (c.startsWith("!")) {
+				predicate = false;
+				c = c.substring(1);
+			}
+			this.predicate = predicate;
+			this.flagName = c;
+		}
+
+		@Override
+		public final boolean equals(Object o) {
+			if (o instanceof Nez.If) {
+				Nez.If e = (Nez.If) o;
+				return this.predicate == e.predicate && this.flagName.equals(e.flagName);
+			}
+			return false;
+		}
+
+		@Override
+		public Object visit(Expression.Visitor v, Object a) {
+			return v.visitIf(this, a);
 		}
 	}
-
-	// public abstract static class If extends Operand implements AST {
-	// public If(Operand2 op, String c) {
-	// super(op, e);
-	// }
-	// }
-
-	public abstract static class On extends Operand implements AST {
-		public On(Operand2 op, String c, Expression e) {
-			super(op, e);
-		}
-	}
-
-	// public abstract static class Detree extends Unary implements AST {
-	// public Detree(Expression e) {
-	// super(e);
-	// }
-	// }
 
 }

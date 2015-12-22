@@ -300,21 +300,21 @@ public abstract class ParserGrammarSourceGenerator extends Expression.Visitor im
 	public abstract void visitDetree(Nez.Detree p);
 
 	// Symbol Tables
-	public abstract void visitXblock(Xblock p);
+	public abstract void visitBlockScope(Nez.BlockScope p);
 
-	public abstract void visitXlocal(Xlocal p);
+	public abstract void visitLocalScope(Nez.LocalScope p);
 
-	public abstract void visitXdef(Xsymbol p);
+	public abstract void visitSymbolAction(Nez.SymbolAction p);
 
-	public abstract void visitXexists(Xexists p);
+	public abstract void visitSymbolExists(Nez.SymbolExists p);
 
-	public abstract void visitXmatch(Xmatch p);
+	public abstract void visitSymbolPredicate(Nez.SymbolPredicate p);
 
 	public abstract void visitXis(Xis p);
 
-	public abstract void visitXif(Xif p);
+	public abstract void visitIf(Nez.If p);
 
-	public abstract void visitXon(Xon p);
+	public abstract void visitOn(Nez.On p);
 
 	public abstract void visitXindent(Xindent p);
 
@@ -468,32 +468,32 @@ public abstract class ParserGrammarSourceGenerator extends Expression.Visitor im
 	}
 
 	@Override
-	public final Object visitXblock(Xblock p, Object a) {
-		this.visitXblock(p);
+	public final Object visitBlockScope(Nez.BlockScope p, Object a) {
+		this.visitBlockScope(p);
 		return null;
 	}
 
 	@Override
-	public final Object visitXlocal(Xlocal p, Object a) {
-		this.visitXlocal(p);
+	public final Object visitLocalScope(Nez.LocalScope p, Object a) {
+		this.visitLocalScope(p);
 		return null;
 	}
 
 	@Override
-	public final Object visitXdef(Xsymbol p, Object a) {
-		this.visitXdef(p);
+	public final Object visitSymbolAction(Nez.SymbolAction p, Object a) {
+		this.visitSymbolAction(p);
 		return null;
 	}
 
 	@Override
-	public final Object visitXexists(Xexists p, Object a) {
-		this.visitXexists(p);
+	public final Object visitSymbolExists(Nez.SymbolExists p, Object a) {
+		this.visitSymbolExists(p);
 		return null;
 	}
 
 	@Override
-	public final Object visitXmatch(Xmatch p, Object a) {
-		this.visitXmatch(p);
+	public final Object visitSymbolPredicate(Nez.SymbolPredicate p, Object a) {
+		this.visitSymbolPredicate(p);
 		return null;
 	}
 
@@ -516,14 +516,14 @@ public abstract class ParserGrammarSourceGenerator extends Expression.Visitor im
 	}
 
 	@Override
-	public final Object visitXon(Xon p, Object a) {
-		this.visitXon(p);
+	public final Object visitOn(Nez.On p, Object a) {
+		this.visitOn(p);
 		return null;
 	}
 
 	@Override
-	public final Object visitXif(Xif p, Object a) {
-		this.visitXif(p);
+	public final Object visitIf(Nez.If p, Object a) {
+		this.visitIf(p);
 		return null;
 	}
 

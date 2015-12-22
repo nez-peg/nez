@@ -9,23 +9,9 @@ import nez.lang.Production;
 import nez.lang.expr.NonTerminal;
 import nez.lang.expr.Pchoice;
 import nez.lang.expr.Psequence;
-import nez.lang.expr.Tcapture;
-import nez.lang.expr.Tdetree;
-import nez.lang.expr.Tlfold;
-import nez.lang.expr.Tlink;
-import nez.lang.expr.Tnew;
-import nez.lang.expr.Treplace;
-import nez.lang.expr.Ttag;
 import nez.lang.expr.Unary;
-import nez.lang.expr.Xblock;
-import nez.lang.expr.Xexists;
-import nez.lang.expr.Xif;
 import nez.lang.expr.Xindent;
 import nez.lang.expr.Xis;
-import nez.lang.expr.Xlocal;
-import nez.lang.expr.Xmatch;
-import nez.lang.expr.Xon;
-import nez.lang.expr.Xsymbol;
 import nez.util.StringUtils;
 
 public class PEGTranslator extends GrammarTranslator {
@@ -229,32 +215,32 @@ public class PEGTranslator extends GrammarTranslator {
 	}
 
 	@Override
-	public void visitXblock(Xblock p) {
+	public void visitBlockScope(Nez.BlockScope p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitXlocal(Xlocal p) {
+	public void visitLocalScope(Nez.LocalScope p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitXdef(Xsymbol p) {
+	public void visitSymbolAction(Nez.SymbolAction p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitXexists(Xexists p) {
+	public void visitSymbolExists(Nez.SymbolExists p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitXmatch(Xmatch p) {
-		SemanticPredicate("match(" + p.getTableName() + ")");
+	public void visitSymbolPredicate(Nez.SymbolPredicate p) {
+		SemanticPredicate("match(" + p.tableName + ")");
 	}
 
 	@Override
@@ -264,13 +250,13 @@ public class PEGTranslator extends GrammarTranslator {
 	}
 
 	@Override
-	public void visitXif(Xif p) {
+	public void visitIf(Nez.If p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitXon(Xon p) {
+	public void visitOn(Nez.On p) {
 		// TODO Auto-generated method stub
 
 	}

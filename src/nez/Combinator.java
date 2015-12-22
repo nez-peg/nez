@@ -50,7 +50,7 @@ public class Combinator {
 	private void addProduction(String name, Method m) {
 		try {
 			Expression e = (Expression) m.invoke(this);
-			g.newProduction(e.getSourcePosition(), 0, name, e);
+			g.newProduction(e.getSourceLocation(), 0, name, e);
 		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e1) {
 			Verbose.traceException(e1);
 		}

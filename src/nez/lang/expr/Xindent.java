@@ -10,7 +10,7 @@ public class Xindent extends Term implements Expression.Contextual {
 	}
 
 	@Override
-	public final boolean equalsExpression(Expression o) {
+	public final boolean equals(Object o) {
 		return (o instanceof Xindent);
 	}
 

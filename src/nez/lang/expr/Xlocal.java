@@ -3,37 +3,13 @@ package nez.lang.expr;
 import nez.ast.SourceLocation;
 import nez.ast.Symbol;
 import nez.lang.Expression;
+import nez.lang.Nez;
 
-public class Xlocal extends Unary {
-	public final Symbol tableName;
+public class Xlocal extends Nez.LocalScope {
 
 	Xlocal(SourceLocation s, Symbol table, Expression inner) {
-		super(s, inner);
-		this.tableName = table;
-	}
-
-	@Override
-	public final boolean equalsExpression(Expression o) {
-		if (o instanceof Xlocal) {
-			Xlocal s = (Xlocal) o;
-			if (this.tableName == s.tableName) {
-				return this.get(0).equalsExpression(s.get(0));
-			}
-		}
-		return false;
-	}
-
-	public final Symbol getTable() {
-		return tableName;
-	}
-
-	public final String getTableName() {
-		return tableName.getSymbol();
-	}
-
-	@Override
-	public Object visit(Expression.Visitor v, Object a) {
-		return v.visitXlocal(this, a);
+		super(table, inner);
+		this.set(s);
 	}
 
 	@Override
@@ -44,6 +20,14 @@ public class Xlocal extends Unary {
 	@Override
 	public short acceptByte(int ch) {
 		return this.inner.acceptByte(ch);
+	}
+
+	public final Symbol getTable() {
+		return tableName;
+	}
+
+	public final java.lang.String getTableName() {
+		return tableName.getSymbol();
 	}
 
 }

@@ -550,13 +550,13 @@ public class JavaParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitXblock(Xblock p) {
+	public void visitBlockScope(Nez.BlockScope p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitXdef(Xsymbol p) {
+	public void visitSymbolAction(Nez.SymbolAction p) {
 		// TODO Auto-generated method stub
 
 	}
@@ -568,7 +568,7 @@ public class JavaParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitXmatch(Xmatch p) {
+	public void visitSymbolPredicate(Nez.SymbolPredicate p) {
 		// TODO Auto-generated method stub
 
 	}
@@ -580,13 +580,13 @@ public class JavaParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitXexists(Xexists p) {
+	public void visitSymbolExists(Nez.SymbolExists p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitXlocal(Xlocal p) {
+	public void visitLocalScope(Nez.LocalScope p) {
 		// TODO Auto-generated method stub
 
 	}
@@ -598,13 +598,13 @@ public class JavaParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitXif(Xif p) {
+	public void visitIf(Nez.If p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitXon(Xon p) {
+	public void visitOn(Nez.On p) {
 		// TODO Auto-generated method stub
 
 	}

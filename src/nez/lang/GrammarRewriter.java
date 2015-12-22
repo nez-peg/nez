@@ -165,25 +165,25 @@ public class GrammarRewriter extends GrammarTransducer {
 	}
 
 	@Override
-	public Expression visitXblock(Xblock e, Object a) {
+	public Expression visitBlockScope(Nez.BlockScope e, Object a) {
 		e.set(0, this.visitInner(e.get(0)));
 		return e;
 	}
 
 	@Override
-	public Expression visitXlocal(Xlocal e, Object a) {
+	public Expression visitLocalScope(Nez.LocalScope e, Object a) {
 		e.set(0, this.visitInner(e.get(0)));
 		return e;
 	}
 
 	@Override
-	public Expression visitXdef(Xsymbol e, Object a) {
+	public Expression visitSymbolAction(Nez.SymbolAction e, Object a) {
 		e.set(0, this.visitInner(e.get(0)));
 		return e;
 	}
 
 	@Override
-	public Expression visitXmatch(Xmatch e, Object a) {
+	public Expression visitSymbolPredicate(Nez.SymbolPredicate e, Object a) {
 		return e;
 	}
 
@@ -194,7 +194,7 @@ public class GrammarRewriter extends GrammarTransducer {
 	}
 
 	@Override
-	public Expression visitXexists(Xexists e, Object a) {
+	public Expression visitSymbolExists(Nez.SymbolExists e, Object a) {
 		return e;
 	}
 
@@ -204,12 +204,12 @@ public class GrammarRewriter extends GrammarTransducer {
 	}
 
 	@Override
-	public Expression visitXif(Xif e, Object a) {
+	public Expression visitIf(Nez.If e, Object a) {
 		return e;
 	}
 
 	@Override
-	public Expression visitXon(Xon e, Object a) {
+	public Expression visitOn(Nez.On e, Object a) {
 		e.set(0, this.visitInner(e.get(0)));
 		return e;
 	}

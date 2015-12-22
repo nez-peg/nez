@@ -6,14 +6,10 @@ import nez.ast.ASTMachine;
 import nez.ast.Symbol;
 import nez.lang.Expression;
 import nez.lang.Nez;
+import nez.lang.Nez.SymbolExists;
 import nez.lang.Production;
 import nez.lang.expr.Cbyte;
-import nez.lang.expr.Xblock;
-import nez.lang.expr.Xexists;
 import nez.lang.expr.Xis;
-import nez.lang.expr.Xlocal;
-import nez.lang.expr.Xmatch;
-import nez.lang.expr.Xsymbol;
 import nez.parser.ByteCoder;
 import nez.parser.Coverage;
 import nez.parser.MemoEntry;
@@ -1218,7 +1214,7 @@ public class Moz {
 	}
 
 	public static class SOpen extends MozInst {
-		public SOpen(Xblock e, MozInst next) {
+		public SOpen(Nez.BlockScope e, MozInst next) {
 			super(MozSet.SOpen, e, next);
 		}
 
@@ -1242,8 +1238,8 @@ public class Moz {
 	}
 
 	public static class SMask extends AbstractTableInstruction {
-		public SMask(Xlocal e, MozInst next) {
-			super(MozSet.SMask, e, e.getTable(), next);
+		public SMask(Nez.LocalScope e, MozInst next) {
+			super(MozSet.SMask, e, e.tableName, next);
 		}
 
 		@Override
@@ -1286,7 +1282,7 @@ public class Moz {
 	}
 
 	public static class SDef extends AbstractTableInstruction {
-		public SDef(Xsymbol e, MozInst next) {
+		public SDef(Nez.SymbolAction e, MozInst next) {
 			super(MozSet.SDef, e, e.tableName, next);
 		}
 
@@ -1309,7 +1305,7 @@ public class Moz {
 	}
 
 	public static class SExists extends AbstractTableInstruction {
-		public SExists(Xexists e, MozInst next) {
+		public SExists(Nez.SymbolExists e, MozInst next) {
 			super(MozSet.SExists, e, e.tableName, next);
 		}
 
@@ -1329,9 +1325,9 @@ public class Moz {
 	public static class SIsDef extends AbstractTableInstruction {
 		byte[] symbol;
 
-		public SIsDef(Xexists e, MozInst next) {
+		public SIsDef(SymbolExists e, MozInst next) {
 			super(MozSet.SIsDef, e, e.tableName, next);
-			symbol = StringUtils.toUtf8(e.getSymbol());
+			symbol = StringUtils.toUtf8(e.symbol);
 		}
 
 		@Override
@@ -1356,8 +1352,8 @@ public class Moz {
 	}
 
 	public static class SMatch extends AbstractTableInstruction {
-		public SMatch(Xmatch e, MozInst next) {
-			super(MozSet.SMatch, e, e.getTable(), next);
+		public SMatch(Nez.SymbolPredicate e, MozInst next) {
+			super(MozSet.SMatch, e, e.tableName, next);
 		}
 
 		@Override

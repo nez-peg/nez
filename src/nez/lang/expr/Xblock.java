@@ -2,23 +2,12 @@ package nez.lang.expr;
 
 import nez.ast.SourceLocation;
 import nez.lang.Expression;
+import nez.lang.Nez;
 
-public class Xblock extends Unary {
+public class Xblock extends Nez.BlockScope {
 	Xblock(SourceLocation s, Expression e) {
-		super(s, e);
-	}
-
-	@Override
-	public final boolean equalsExpression(Expression o) {
-		if (o instanceof Xblock) {
-			return this.get(0).equalsExpression(o.get(0));
-		}
-		return false;
-	}
-
-	@Override
-	public Object visit(Expression.Visitor v, Object a) {
-		return v.visitXblock(this, a);
+		super(e);
+		this.set(s);
 	}
 
 	@Override

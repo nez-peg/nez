@@ -2,13 +2,10 @@ package nez.lang.expr;
 
 import nez.ast.SourceLocation;
 import nez.lang.Expression;
+import nez.lang.Nez;
 
-public class Xon extends Unary implements Expression.Conditional {
+public class Xon extends Nez.On implements Expression.Conditional {
 	boolean predicate;
-
-	public final boolean isPositive() {
-		return predicate;
-	}
 
 	String flagName;
 
@@ -17,30 +14,8 @@ public class Xon extends Unary implements Expression.Conditional {
 	}
 
 	Xon(SourceLocation s, boolean predicate, String flagName, Expression inner) {
-		super(s, inner);
-		if (flagName.startsWith("!")) {
-			predicate = false;
-			flagName = flagName.substring(1);
-		}
-		this.predicate = predicate;
-		this.flagName = flagName;
-	}
-
-	@Override
-	public final boolean equalsExpression(Expression o) {
-		if (o instanceof Xon) {
-			Xon e = (Xon) o;
-			if (this.predicate == e.predicate && this.flagName.equals(e.flagName)) {
-				return this.get(0).equalsExpression(e.get(0));
-			}
-			;
-		}
-		return false;
-	}
-
-	@Override
-	public Object visit(Expression.Visitor v, Object a) {
-		return v.visitXon(this, a);
+		super(predicate, flagName, inner);
+		this.set(s);
 	}
 
 	@Override

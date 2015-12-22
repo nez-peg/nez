@@ -19,7 +19,6 @@ import nez.lang.expr.Tlfold;
 import nez.lang.expr.Tlink;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
-import nez.lang.expr.Xblock;
 import nez.lang.expr.Xexists;
 import nez.lang.expr.Xif;
 import nez.lang.expr.Xindent;
@@ -346,7 +345,7 @@ public class DebugVMCompiler extends Expression.Visitor {
 	@Override
 	public MozInst visitNew(Nez.New p, Object next) {
 		/* newNode is used in the debugger for rich view */
-		CommonTree node = (CommonTree) p.getSourcePosition();
+		CommonTree node = (CommonTree) p.getSourceLocation();
 		int len = node.toText().length();
 		CommonTree newNode = new CommonTree(node.getTag(), node.getSource(), node.getSourcePosition() + len - 1, (int) (node.getSourcePosition() + len), 0, null);
 		p = (Tcapture) ExpressionCommons.newTcapture(newNode, p.shift);
@@ -389,7 +388,7 @@ public class DebugVMCompiler extends Expression.Visitor {
 	}
 
 	@Override
-	public MozInst visitXblock(Xblock p, Object next) {
+	public MozInst visitBlockScope(Nez.BlockScope p, Object next) {
 		BasicBlock fbb = new BasicBlock();
 		BasicBlock endbb = new BasicBlock();
 		this.builder.pushFailureJumpPoint(fbb);
@@ -405,13 +404,13 @@ public class DebugVMCompiler extends Expression.Visitor {
 	}
 
 	@Override
-	public MozInst visitXdef(Xsymbol p, Object next) {
+	public MozInst visitSymbolAction(Nez.SymbolAction p, Object next) {
 		BasicBlock fbb = new BasicBlock();
 		BasicBlock endbb = new BasicBlock();
 		this.builder.pushFailureJumpPoint(fbb);
 		this.builder.createIpush(p);
 		p.get(0).visit(this, next);
-		this.builder.createIdef(p);
+		this.builder.createIdef((Xsymbol) p);
 		this.builder.createIjump(p, endbb);
 		this.builder.setInsertPoint(this.builder.popFailureJumpPoint());
 		this.builder.createIpop(p);
@@ -421,7 +420,7 @@ public class DebugVMCompiler extends Expression.Visitor {
 	}
 
 	@Override
-	public MozInst visitXmatch(Xmatch p, Object next) {
+	public MozInst visitSymbolPredicate(Nez.SymbolPredicate p, Object next) {
 		throw new RuntimeException("undifined visit method " + p.getClass());
 	}
 
@@ -442,7 +441,7 @@ public class DebugVMCompiler extends Expression.Visitor {
 	}
 
 	// @Override
-	// public MozInst visitXdefindent(Xdefindent p, Object next) {
+	// public MozInst visitSymbolActionindent(Xdefindent p, Object next) {
 	// throw new RuntimeException("undifined visit method " + p.getClass());
 	// }
 
@@ -452,18 +451,18 @@ public class DebugVMCompiler extends Expression.Visitor {
 	}
 
 	@Override
-	public MozInst visitXexists(Xexists existsSymbol, Object next) {
-		this.builder.createIexists(existsSymbol, this.builder.jumpFailureJump());
+	public MozInst visitSymbolExists(Nez.SymbolExists existsSymbol, Object next) {
+		this.builder.createIexists((Xexists) existsSymbol, this.builder.jumpFailureJump());
 		this.builder.setInsertPoint(new BasicBlock());
 		return null;
 	}
 
 	@Override
-	public MozInst visitXlocal(Xlocal localTable, Object next) {
+	public MozInst visitLocalScope(Nez.LocalScope localTable, Object next) {
 		BasicBlock fbb = new BasicBlock();
 		BasicBlock endbb = new BasicBlock();
 		this.builder.pushFailureJumpPoint(fbb);
-		this.builder.createIbeginlocalscope(localTable);
+		this.builder.createIbeginlocalscope((Xlocal) localTable);
 		localTable.get(0).visit(this, next);
 		this.builder.createIendscope(localTable);
 		this.builder.createIjump(localTable, endbb);
@@ -475,13 +474,13 @@ public class DebugVMCompiler extends Expression.Visitor {
 	}
 
 	@Override
-	public Object visitXif(Xif e, Object a) {
+	public Object visitIf(Nez.If e, Object a) {
 		// TODO Auto-generated method stub
 		return a;
 	}
 
 	@Override
-	public Object visitXon(Xon e, Object a) {
+	public Object visitOn(Nez.On e, Object a) {
 		// TODO Auto-generated method stub
 		return a;
 	}

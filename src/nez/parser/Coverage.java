@@ -56,7 +56,7 @@ public class Coverage {
 	}
 
 	public final static Coverage getCoverage(String prefix, Expression e) {
-		String key = prefix + e.getSourcePosition();
+		String key = prefix + e.getSourceLocation();
 		Coverage cov = covMap.get(key);
 		if (cov == null) {
 			cov = new Coverage(e, covList.size());

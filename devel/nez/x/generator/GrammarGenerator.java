@@ -259,19 +259,19 @@ public abstract class GrammarGenerator extends GrammarTranslator {
 	// }
 	//
 	// @Override
-	// public void visitXblock(Xblock p) {
+	// public void visitBlockScope(Nez.BlockScope p) {
 	// // TODO Auto-generated method stub
 	//
 	// }
 	//
 	// @Override
-	// public void visitXdef(Xdef p) {
+	// public void visitSymbolAction(Xdef p) {
 	// // TODO Auto-generated method stub
 	//
 	// }
 	//
 	// @Override
-	// public void visitXmatch(Xmatch p) {
+	// public void visitSymbolPredicate(Nez.SymbolPredicate p) {
 	// // TODO Auto-generated method stub
 	//
 	// }
@@ -283,7 +283,7 @@ public abstract class GrammarGenerator extends GrammarTranslator {
 	// }
 	//
 	// @Override
-	// public void visitXdefindent(Xdefindent p) {
+	// public void visitSymbolActionindent(Xdefindent p) {
 	// // TODO Auto-generated method stub
 	//
 	// }
@@ -295,13 +295,13 @@ public abstract class GrammarGenerator extends GrammarTranslator {
 	// }
 	//
 	// @Override
-	// public void visitXexists(Xexists p) {
+	// public void visitSymbolExists(Nez.SymbolExists p) {
 	// // TODO Auto-generated method stub
 	//
 	// }
 	//
 	// @Override
-	// public void visitXlocal(Xlocal p) {
+	// public void visitLocalScope(Nez.LocalScope p) {
 	// // TODO Auto-generated method stub
 	//
 	// }

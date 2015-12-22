@@ -12,15 +12,7 @@ import nez.lang.expr.Pone;
 import nez.lang.expr.Poption;
 import nez.lang.expr.Psequence;
 import nez.lang.expr.Pzero;
-import nez.lang.expr.Tcapture;
-import nez.lang.expr.Tdetree;
-import nez.lang.expr.Tlfold;
-import nez.lang.expr.Tlink;
-import nez.lang.expr.Tnew;
-import nez.lang.expr.Treplace;
-import nez.lang.expr.Ttag;
 import nez.lang.expr.Xif;
-import nez.lang.expr.Xon;
 import nez.parser.ParseFunc;
 import nez.parser.ParserGrammar;
 import nez.parser.ParserStrategy;
@@ -140,7 +132,7 @@ public class GrammarChecker extends GrammarTransducer {
 		if (p == null) {
 			if (n.isTerminal()) {
 				reportNotice(n, "undefined terminal: " + n.getLocalName());
-				return ExpressionCommons.newString(n.getSourcePosition(), StringUtils.unquoteString(n.getLocalName()));
+				return ExpressionCommons.newString(n.getSourceLocation(), StringUtils.unquoteString(n.getLocalName()));
 			}
 			reportWarning(n, "undefined production: " + n.getLocalName());
 			return n.newEmpty();
@@ -151,7 +143,7 @@ public class GrammarChecker extends GrammarTransducer {
 			} catch (StackOverflowError e) {
 				/* Handling a bad grammar */
 				reportError(n, "terminal is recursive: " + n.getLocalName());
-				return ExpressionCommons.newString(n.getSourcePosition(), StringUtils.unquoteString(n.getLocalName()));
+				return ExpressionCommons.newString(n.getSourceLocation(), StringUtils.unquoteString(n.getLocalName()));
 			}
 		}
 		// System.out.print("NonTerminal: " + n.getLocalName() + " -> ");
@@ -165,7 +157,7 @@ public class GrammarChecker extends GrammarTransducer {
 		} else {
 			f.incCount();
 		}
-		NonTerminal pn = parserGrammar.newNonTerminal(n.getSourcePosition(), uname);
+		NonTerminal pn = parserGrammar.newNonTerminal(n.getSourceLocation(), uname);
 		if (innerTypestate == Typestate.Unit) {
 			return pn;
 		}
@@ -174,7 +166,7 @@ public class GrammarChecker extends GrammarTransducer {
 			if (innerTypestate == Typestate.TreeMutation) {
 				reportInserted(n, "{");
 				this.requiredTypestate = Typestate.TreeMutation;
-				return ExpressionCommons.newNewCapture(n.getSourcePosition(), pn);
+				return ExpressionCommons.newNewCapture(n.getSourceLocation(), pn);
 			}
 			this.requiredTypestate = Typestate.TreeMutation;
 			return pn;
@@ -183,38 +175,35 @@ public class GrammarChecker extends GrammarTransducer {
 			if (innerTypestate == Typestate.Tree) {
 				reportInserted(n, "$");
 				this.requiredTypestate = Typestate.Tree;
-				return ExpressionCommons.newTlink(n.getSourcePosition(), null, pn);
+				return ExpressionCommons.newTlink(n.getSourceLocation(), null, pn);
 			}
 		}
 		return pn;
 	}
 
 	@Override
-	public Expression visitXon(Xon p, Object a) {
-		String flagName = p.getFlagName();
-		// System.out.println("on " + flagName);
-		Boolean stackedFlag = isFlag(flagName);
+	public Expression visitOn(Nez.On p, Object a) {
+		Boolean stackedFlag = isFlag(p.flagName);
 		if (p.isPositive()) {
-			onFlag(flagName);
+			onFlag(p.flagName);
 		} else {
-			offFlag(flagName);
+			offFlag(p.flagName);
 		}
 		Expression newe = visitInner(p.get(0));
 		if (stackedFlag) {
-			onFlag(flagName);
+			onFlag(p.flagName);
 		} else {
-			offFlag(flagName);
+			offFlag(p.flagName);
 		}
 		return newe;
 	}
 
 	@Override
-	public Expression visitXif(Xif p, Object a) {
-		String flagName = p.getFlagName();
-		if (isFlag(flagName)) { /* true */
-			return p.isPredicate() ? p.newEmpty() : p.newFailure();
+	public Expression visitIf(Nez.If p, Object a) {
+		if (isFlag(p.flagName)) { /* true */
+			return p.predicate ? p.newEmpty() : p.newFailure();
 		}
-		return p.isPredicate() ? p.newFailure() : p.newEmpty();
+		return p.predicate ? p.newFailure() : p.newEmpty();
 	}
 
 	void reportInserted(Expression e, String operator) {
@@ -309,13 +298,13 @@ public class GrammarChecker extends GrammarTransducer {
 		Typestate innerTypestate = this.isNonASTContext() ? Typestate.Unit : parserGrammar.typeState(inner);
 		if (innerTypestate != Typestate.Tree) {
 			reportInserted(p, "{");
-			inner = ExpressionCommons.newNewCapture(inner.getSourcePosition(), this.visitInner(inner));
+			inner = ExpressionCommons.newNewCapture(inner.getSourceLocation(), this.visitInner(inner));
 		} else {
 			this.requiredTypestate = Typestate.Tree;
 			inner = this.visitInner(p.get(0));
 		}
 		this.requiredTypestate = Typestate.TreeMutation;
-		return ExpressionCommons.newTlink(p.getSourcePosition(), p.getLabel(), inner);
+		return ExpressionCommons.newTlink(p.getSourceLocation(), p.getLabel(), inner);
 	}
 
 	@Override
@@ -331,22 +320,22 @@ public class GrammarChecker extends GrammarTransducer {
 			}
 		}
 		this.requiredTypestate = next;
-		return ExpressionCommons.newPchoice(p.getSourcePosition(), l);
+		return ExpressionCommons.newPchoice(p.getSourceLocation(), l);
 	}
 
 	@Override
 	public Expression visitZeroMore(Nez.ZeroMore p, Object a) {
-		return ExpressionCommons.newPzero(p.getSourcePosition(), visitOptionalInner(p));
+		return ExpressionCommons.newPzero(p.getSourceLocation(), visitOptionalInner(p));
 	}
 
 	@Override
 	public Expression visitOneMore(Nez.OneMore p, Object a) {
-		return ExpressionCommons.newPone(p.getSourcePosition(), visitOptionalInner(p));
+		return ExpressionCommons.newPone(p.getSourceLocation(), visitOptionalInner(p));
 	}
 
 	@Override
 	public Expression visitOption(Nez.Option p, Object a) {
-		return ExpressionCommons.newPoption(p.getSourcePosition(), visitOptionalInner(p));
+		return ExpressionCommons.newPoption(p.getSourceLocation(), visitOptionalInner(p));
 	}
 
 	private Expression visitOptionalInner(Nez.Unary p) {
@@ -356,7 +345,7 @@ public class GrammarChecker extends GrammarTransducer {
 				this.reportInserted(p.get(0), "$");
 				this.requiredTypestate = Typestate.Tree;
 				Expression inner = visitInner(p.get(0));
-				inner = ExpressionCommons.newTlink(p.getSourcePosition(), inner);
+				inner = ExpressionCommons.newTlink(p.getSourceLocation(), inner);
 				this.requiredTypestate = Typestate.TreeMutation;
 				return inner;
 			} else {
@@ -372,7 +361,7 @@ public class GrammarChecker extends GrammarTransducer {
 
 	@Override
 	public Expression visitAnd(Nez.And p, Object a) {
-		return ExpressionCommons.newPand(p.getSourcePosition(), visitOptionalInner(p));
+		return ExpressionCommons.newPand(p.getSourceLocation(), visitOptionalInner(p));
 	}
 
 	@Override
@@ -387,7 +376,7 @@ public class GrammarChecker extends GrammarTransducer {
 		} else {
 			inner = this.visitInner(inner);
 		}
-		return ExpressionCommons.newPnot(p.getSourcePosition(), inner);
+		return ExpressionCommons.newPnot(p.getSourceLocation(), inner);
 	}
 
 	/* static context */
@@ -487,15 +476,15 @@ public class GrammarChecker extends GrammarTransducer {
 	// Report
 
 	public final void reportError(Expression p, String message) {
-		this.strategy.reportError(p.getSourcePosition(), message);
+		this.strategy.reportError(p.getSourceLocation(), message);
 	}
 
 	public final void reportWarning(Expression p, String message) {
-		this.strategy.reportWarning(p.getSourcePosition(), message);
+		this.strategy.reportWarning(p.getSourceLocation(), message);
 	}
 
 	public final void reportNotice(Expression p, String message) {
-		this.strategy.reportNotice(p.getSourcePosition(), message);
+		this.strategy.reportNotice(p.getSourceLocation(), message);
 	}
 
 }

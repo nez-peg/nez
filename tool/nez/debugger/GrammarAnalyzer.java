@@ -35,7 +35,7 @@ public class GrammarAnalyzer {
 	private boolean analizeConsumption(Expression p) {
 		if (p instanceof Pzero || p instanceof Pone) {
 			if (!this.analizeInnerOfRepetition(p.get(0))) {
-				ConsoleUtils.println(p.getSourcePosition().formatSourceMessage("warning", "unconsumed Repetition"));
+				ConsoleUtils.println(p.getSourceLocation().formatSourceMessage("warning", "unconsumed Repetition"));
 				return false;
 			}
 		}

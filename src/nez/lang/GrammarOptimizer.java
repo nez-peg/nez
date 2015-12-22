@@ -406,7 +406,7 @@ public class GrammarOptimizer extends GrammarRewriter {
 			UList<Expression> l = ExpressionCommons.newList(choice.size());
 			for (Expression inner : choice) {
 				inner = this.visitInner(inner);
-				l.add(ExpressionCommons.newTlink(p.getSourcePosition(), p.getLabel(), inner));
+				l.add(ExpressionCommons.newTlink(p.getSourceLocation(), p.getLabel(), inner));
 			}
 			return choice.newChoice(l);
 		}
@@ -437,7 +437,7 @@ public class GrammarOptimizer extends GrammarRewriter {
 			verboseOptimized("single-choice", p, l.ArrayValues[0]);
 			return l.ArrayValues[0];
 		}
-		Expression n = ExpressionCommons.newPchoice(p.getSourcePosition(), l);
+		Expression n = ExpressionCommons.newPchoice(p.getSourceLocation(), l);
 		if (n instanceof Pchoice) {
 			((Pchoice) n).isTrieTree = p.isTrieTree;
 			addChoiceToOptimizeList((Pchoice) n);
@@ -662,7 +662,7 @@ public class GrammarOptimizer extends GrammarRewriter {
 			}
 			newlist.add(sub);
 		}
-		Expression p = ExpressionCommons.newPchoice(choice.getSourcePosition(), newlist);
+		Expression p = ExpressionCommons.newPchoice(choice.getSourceLocation(), newlist);
 		newlist.clear(0);
 		if (commonFactored && !(p instanceof Pchoice)) {
 			tryFactoredSecondChoice(p);
@@ -699,7 +699,7 @@ public class GrammarOptimizer extends GrammarRewriter {
 				}
 				return null;
 			}
-			if (!f.equalsExpression(f2)) {
+			if (!f.equals(f2)) {
 				break;
 			}
 			if (l == null) {

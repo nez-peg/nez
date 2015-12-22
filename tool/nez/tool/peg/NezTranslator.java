@@ -6,30 +6,10 @@ import nez.lang.Expression;
 import nez.lang.Grammar;
 import nez.lang.Nez;
 import nez.lang.Production;
-import nez.lang.expr.Cany;
-import nez.lang.expr.Cmulti;
-import nez.lang.expr.Cset;
 import nez.lang.expr.NonTerminal;
-import nez.lang.expr.Pand;
 import nez.lang.expr.Pchoice;
-import nez.lang.expr.Pnot;
-import nez.lang.expr.Pone;
-import nez.lang.expr.Poption;
-import nez.lang.expr.Psequence;
-import nez.lang.expr.Pzero;
-import nez.lang.expr.Tcapture;
-import nez.lang.expr.Tlfold;
-import nez.lang.expr.Tlink;
-import nez.lang.expr.Tnew;
-import nez.lang.expr.Treplace;
-import nez.lang.expr.Ttag;
-import nez.lang.expr.Xblock;
-import nez.lang.expr.Xexists;
 import nez.lang.expr.Xindent;
 import nez.lang.expr.Xis;
-import nez.lang.expr.Xlocal;
-import nez.lang.expr.Xmatch;
-import nez.lang.expr.Xsymbol;
 import nez.util.StringUtils;
 
 public class NezTranslator extends PEGTranslator {
@@ -199,25 +179,25 @@ public class NezTranslator extends PEGTranslator {
 	}
 
 	@Override
-	public void visitXblock(Xblock e) {
+	public void visitBlockScope(Nez.BlockScope e) {
 		W("<block ");
 		visitExpression(e.get(0));
 		W(">");
 	}
 
 	@Override
-	public void visitXdef(Xsymbol e) {
-		W("<def ");
-		W(e.getTableName());
+	public void visitSymbolAction(Nez.SymbolAction e) {
+		W("<symbol ");
+		W(e.tableName);
 		W(" ");
 		visitExpression(e.get(0));
 		W(">");
 	}
 
 	@Override
-	public void visitXmatch(Xmatch e) {
+	public void visitSymbolPredicate(Nez.SymbolPredicate e) {
 		W("<match ");
-		W(e.getTableName());
+		W(e.tableName);
 		W(">");
 	};
 
@@ -229,10 +209,10 @@ public class NezTranslator extends PEGTranslator {
 	}
 
 	@Override
-	public void visitXexists(Xexists e) {
-		String symbol = e.getSymbol();
+	public void visitSymbolExists(Nez.SymbolExists e) {
+		String symbol = e.symbol;
 		W("<exists ");
-		W(e.getTableName());
+		W(e.tableName);
 		if (symbol != null) {
 			W(" ");
 			W("'" + symbol + "'");
@@ -241,9 +221,9 @@ public class NezTranslator extends PEGTranslator {
 	}
 
 	@Override
-	public void visitXlocal(Xlocal e) {
+	public void visitLocalScope(Nez.LocalScope e) {
 		W("<local ");
-		W(e.getTableName());
+		W(e.tableName);
 		W(" ");
 		visitExpression(e.get(0));
 		W(">");

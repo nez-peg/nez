@@ -1,4 +1,4 @@
-package nez.tool.ast;
+package nez.lang.schema;
 
 import java.io.IOException;
 
@@ -6,9 +6,6 @@ import nez.ast.Symbol;
 import nez.ast.Tree;
 import nez.junks.GrammarFileLoader;
 import nez.lang.Grammar;
-import nez.lang.schema.JSONSchemaGrammarGenerator;
-import nez.lang.schema.SchemaGrammarGenerator;
-import nez.lang.schema.Type;
 import nez.parser.Parser;
 import nez.parser.ParserStrategy;
 import nez.util.ConsoleUtils;

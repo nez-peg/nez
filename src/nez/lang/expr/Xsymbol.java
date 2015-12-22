@@ -2,50 +2,26 @@ package nez.lang.expr;
 
 import nez.ast.SourceLocation;
 import nez.ast.Symbol;
-import nez.lang.Expression;
+import nez.lang.Nez;
+import nez.lang.Predicate;
 
-public class Xsymbol extends Unary {
-	public final Symbol tableName;
-
+public class Xsymbol extends Nez.SymbolAction {
 	Xsymbol(SourceLocation s, NonTerminal pat) {
-		super(s, pat);
-		this.tableName = Symbol.tag(pat.getLocalName());
+		super(Predicate.symbol, pat);
+		this.set(s);
 	}
 
-	Xsymbol(SourceLocation s, Symbol tableName, Expression pat) {
-		super(s, pat);
-		this.tableName = tableName;
-	}
-
-	@Override
-	public final boolean equalsExpression(Expression o) {
-		if (o instanceof Xsymbol) {
-			Xsymbol e = (Xsymbol) o;
-			if (this.tableName == e.tableName) {
-				return this.get(0).equalsExpression(e.get(0));
-			}
-		}
-		return false;
-	}
+	// Xsymbol(SourceLocation s, Symbol tableName, Expression pat) {
+	// super(s, pat);
+	// this.tableName = tableName;
+	// }
 
 	public final Symbol getTable() {
 		return tableName;
 	}
 
-	public final String getTableName() {
+	public final java.lang.String getTableName() {
 		return tableName.getSymbol();
-	}
-
-	@Override
-	public void format(StringBuilder sb) {
-		sb.append("<symbol ");
-		sb.append(getTableName());
-		sb.append(">");
-	}
-
-	@Override
-	public Object visit(Expression.Visitor v, Object a) {
-		return v.visitXdef(this, a);
 	}
 
 	@Override

@@ -125,7 +125,7 @@ public class NezDebugger {
 					for (int i = 1; i <= this.sc.longestStackTop; i++) {
 						NonTerminal ne = (NonTerminal) this.sc.longestTrace[i].val;
 						long pos = this.sc.longestTrace[i].pos;
-						CommonTree tree = (CommonTree) ne.getSourcePosition();
+						CommonTree tree = (CommonTree) ne.getSourceLocation();
 						ConsoleUtils.println("[" + i + "] " + ne.getLocalName() + " (" + tree.getSource().linenum(tree.getSourcePosition()) + ")");
 						ConsoleUtils.println(sc.formatDebugPositionLine(pos, ""));
 					}
@@ -136,7 +136,7 @@ public class NezDebugger {
 				for (int i = 0; i < this.sc.failOverList.size(); i++) {
 					FailOverInfo fover = this.sc.failOverList.get(i);
 					ConsoleUtils.println("Code Layout bug " + i + ":");
-					ConsoleUtils.println("Expression: " + fover.e.getSourcePosition().formatSourceMessage("", ""));
+					ConsoleUtils.println("Expression: " + fover.e.getSourceLocation().formatSourceMessage("", ""));
 					ConsoleUtils.println("Input: " + this.sc.formatDebugPositionLine(fover.fail_pos, ""));
 				}
 			}
@@ -183,14 +183,14 @@ public class NezDebugger {
 			e = code.expr.get(0);
 		} else if (code instanceof Inop) {
 			if (running) {
-				ConsoleUtils.println(((Inop) code).p.getExpression().getSourcePosition().formatSourceMessage("debug", ""));
+				ConsoleUtils.println(((Inop) code).p.getExpression().getSourceLocation().formatSourceMessage("debug", ""));
 				return;
 			}
 		} else {
 			e = code.getExpression();
 		}
 		if (running && e != null) {
-			ConsoleUtils.println(e.getSourcePosition().formatSourceMessage("debug", ""));
+			ConsoleUtils.println(e.getSourceLocation().formatSourceMessage("debug", ""));
 		} else if (running && e == null) {
 			ConsoleUtils.println("e = null");
 		}
@@ -381,7 +381,7 @@ public class NezDebugger {
 			Production rule = ruleMap.get(o.code);
 			if (rule != null) {
 				ConsoleUtils.println(rule.getLocalName());
-				ConsoleUtils.println(rule.getExpression().getSourcePosition()); // FIXME
+				ConsoleUtils.println(rule.getExpression().getSourceLocation()); // FIXME
 																				// debug
 																				// message
 			} else {
@@ -406,7 +406,7 @@ public class NezDebugger {
 			if (this.sc.longestTrace != null) {
 				for (int i = 1; i <= this.sc.longestStackTop; i++) {
 					NonTerminal ne = (NonTerminal) this.sc.longestTrace[i].val;
-					CommonTree tree = (CommonTree) ne.getSourcePosition();
+					CommonTree tree = (CommonTree) ne.getSourceLocation();
 					ConsoleUtils.println("[" + i + "] " + ne.getLocalName() + " (" + tree.getSource().linenum(tree.getSourcePosition()) + ")");
 					ConsoleUtils.println(sc.formatDebugPositionLine(this.sc.longestTrace[i].pos, ""));
 				}
@@ -416,7 +416,7 @@ public class NezDebugger {
 		} else {
 			for (int i = 1; i <= this.sc.callStackTop; i++) {
 				NonTerminal ne = (NonTerminal) this.sc.callStack[i].val;
-				CommonTree tree = (CommonTree) ne.getSourcePosition();
+				CommonTree tree = (CommonTree) ne.getSourceLocation();
 				ConsoleUtils.println("[" + i + "] " + ne.getLocalName() + " (" + tree.getSource().linenum(tree.getSourcePosition()) + ")");
 				ConsoleUtils.println(sc.formatDebugPositionLine(this.sc.callStack[i].pos, ""));
 			}
@@ -621,7 +621,7 @@ public class NezDebugger {
 			Alt alt = new Alt(index, this.compiler.altInstructionMap.get(prev.get(index)));
 			this.sc.altJumpMap.put(prev, alt);
 			ConsoleUtils.print("check unreachable choice " + this.choicePointMap.size() + ": where = ");
-			ConsoleUtils.println(e.getSourcePosition().formatSourceMessage("reach", ""));
+			ConsoleUtils.println(e.getSourceLocation().formatSourceMessage("reach", ""));
 		} else {
 			System.out.println("error");
 		}

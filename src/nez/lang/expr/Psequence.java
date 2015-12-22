@@ -155,7 +155,7 @@ public class Psequence extends Nez.Pair {
 	}
 
 	public final Expression newMultiChar(boolean binary, byte[] byteSeq) {
-		return ExpressionCommons.newCmulti(this.getSourcePosition(), binary, byteSeq);
+		return ExpressionCommons.newCmulti(this.getSourceLocation(), binary, byteSeq);
 	}
 
 }

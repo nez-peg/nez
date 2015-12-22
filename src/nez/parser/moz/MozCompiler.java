@@ -13,15 +13,8 @@ import nez.lang.expr.Cset;
 import nez.lang.expr.ExpressionCommons;
 import nez.lang.expr.NonTerminal;
 import nez.lang.expr.Psequence;
-import nez.lang.expr.Xblock;
-import nez.lang.expr.Xexists;
-import nez.lang.expr.Xif;
 import nez.lang.expr.Xindent;
 import nez.lang.expr.Xis;
-import nez.lang.expr.Xlocal;
-import nez.lang.expr.Xmatch;
-import nez.lang.expr.Xon;
-import nez.lang.expr.Xsymbol;
 import nez.parser.Coverage;
 import nez.parser.ParseFunc;
 import nez.parser.ParserGrammar;
@@ -318,27 +311,27 @@ public class MozCompiler extends Expression.Visitor {
 	}
 
 	@Override
-	public MozInst visitXblock(Xblock p, Object next) {
+	public MozInst visitBlockScope(Nez.BlockScope p, Object next) {
 		next = new Moz.SClose(p, (MozInst) next);
 		next = visit(p.get(0), next);
 		return new Moz.SOpen(p, (MozInst) next);
 	}
 
 	@Override
-	public MozInst visitXlocal(Xlocal p, Object next) {
+	public MozInst visitLocalScope(Nez.LocalScope p, Object next) {
 		next = new Moz.SClose(p, (MozInst) next);
 		next = visit(p.get(0), next);
 		return new Moz.SMask(p, (MozInst) next);
 	}
 
 	@Override
-	public MozInst visitXdef(Xsymbol p, Object next) {
+	public MozInst visitSymbolAction(Nez.SymbolAction p, Object next) {
 		return new Moz.Pos(p, visit(p.get(0), new Moz.SDef(p, (MozInst) next)));
 	}
 
 	@Override
-	public MozInst visitXexists(Xexists p, Object next) {
-		String symbol = p.getSymbol();
+	public MozInst visitSymbolExists(Nez.SymbolExists p, Object next) {
+		String symbol = p.symbol;
 		if (symbol == null) {
 			return new Moz.SExists(p, (MozInst) next);
 		} else {
@@ -347,7 +340,7 @@ public class MozCompiler extends Expression.Visitor {
 	}
 
 	@Override
-	public MozInst visitXmatch(Xmatch p, Object next) {
+	public MozInst visitSymbolPredicate(Nez.SymbolPredicate p, Object next) {
 		return new Moz.SMatch(p, (MozInst) next);
 	}
 
@@ -554,7 +547,7 @@ public class MozCompiler extends Expression.Visitor {
 		// return predicted.getId();
 		// }
 		for (int i = 0; i < max; i++) {
-			if (predictedCase[i] != null && predicted.equalsExpression(predictedCase[i])) {
+			if (predictedCase[i] != null && predicted.equals(predictedCase[i])) {
 				return i;
 			}
 		}
@@ -637,13 +630,13 @@ public class MozCompiler extends Expression.Visitor {
 	}
 
 	@Override
-	public Object visitXif(Xif e, Object a) {
+	public Object visitIf(Nez.If e, Object a) {
 		// TODO Auto-generated method stub
 		return a;
 	}
 
 	@Override
-	public Object visitXon(Xon e, Object a) {
+	public Object visitOn(Nez.On e, Object a) {
 		// TODO Auto-generated method stub
 		return a;
 	}

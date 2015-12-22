@@ -1,36 +1,12 @@
 package nez.lang;
 
 import nez.lang.Nez.Byte;
-import nez.lang.expr.Cany;
-import nez.lang.expr.Cmulti;
-import nez.lang.expr.Cset;
 import nez.lang.expr.ExpressionCommons;
 import nez.lang.expr.NonTerminal;
-import nez.lang.expr.Pand;
-import nez.lang.expr.Pchoice;
 import nez.lang.expr.Pempty;
 import nez.lang.expr.Pfail;
-import nez.lang.expr.Pnot;
-import nez.lang.expr.Pone;
-import nez.lang.expr.Poption;
-import nez.lang.expr.Psequence;
-import nez.lang.expr.Pzero;
-import nez.lang.expr.Tcapture;
-import nez.lang.expr.Tdetree;
-import nez.lang.expr.Tlfold;
-import nez.lang.expr.Tlink;
-import nez.lang.expr.Tnew;
-import nez.lang.expr.Treplace;
-import nez.lang.expr.Ttag;
-import nez.lang.expr.Xblock;
-import nez.lang.expr.Xexists;
-import nez.lang.expr.Xif;
 import nez.lang.expr.Xindent;
 import nez.lang.expr.Xis;
-import nez.lang.expr.Xlocal;
-import nez.lang.expr.Xmatch;
-import nez.lang.expr.Xon;
-import nez.lang.expr.Xsymbol;
 import nez.util.UList;
 import nez.util.Verbose;
 
@@ -120,42 +96,42 @@ public class GrammarTransducer extends Expression.Visitor {
 
 	@Override
 	public Expression visitOption(Nez.Option e, Object a) {
-		return ExpressionCommons.newPoption(e.getSourcePosition(), visitInner(e.get(0)));
+		return ExpressionCommons.newPoption(e.getSourceLocation(), visitInner(e.get(0)));
 	}
 
 	@Override
 	public Expression visitZeroMore(Nez.ZeroMore e, Object a) {
-		return ExpressionCommons.newPzero(e.getSourcePosition(), visitInner(e.get(0)));
+		return ExpressionCommons.newPzero(e.getSourceLocation(), visitInner(e.get(0)));
 	}
 
 	@Override
 	public Expression visitOneMore(Nez.OneMore e, Object a) {
-		return ExpressionCommons.newPone(e.getSourcePosition(), visitInner(e.get(0)));
+		return ExpressionCommons.newPone(e.getSourceLocation(), visitInner(e.get(0)));
 	}
 
 	@Override
 	public Expression visitAnd(Nez.And e, Object a) {
-		return ExpressionCommons.newPand(e.getSourcePosition(), visitInner(e.get(0)));
+		return ExpressionCommons.newPand(e.getSourceLocation(), visitInner(e.get(0)));
 	}
 
 	@Override
 	public Expression visitNot(Nez.Not e, Object a) {
-		return ExpressionCommons.newPnot(e.getSourcePosition(), visitInner(e.get(0)));
+		return ExpressionCommons.newPnot(e.getSourceLocation(), visitInner(e.get(0)));
 	}
 
 	@Override
 	public Expression visitPreNew(Nez.PreNew e, Object a) {
-		return ExpressionCommons.newTnew(e.getSourcePosition(), e.shift);
+		return ExpressionCommons.newTnew(e.getSourceLocation(), e.shift);
 	}
 
 	@Override
 	public Expression visitLeftFold(Nez.LeftFold e, Object a) {
-		return ExpressionCommons.newTlfold(e.getSourcePosition(), e.getLabel(), e.shift);
+		return ExpressionCommons.newTlfold(e.getSourceLocation(), e.getLabel(), e.shift);
 	}
 
 	@Override
 	public Expression visitLink(Nez.Link e, Object a) {
-		return ExpressionCommons.newTlink(e.getSourcePosition(), e.getLabel(), visitInner(e.get(0)));
+		return ExpressionCommons.newTlink(e.getSourceLocation(), e.getLabel(), visitInner(e.get(0)));
 	}
 
 	@Override
@@ -170,42 +146,42 @@ public class GrammarTransducer extends Expression.Visitor {
 
 	@Override
 	public Expression visitNew(Nez.New e, Object a) {
-		return ExpressionCommons.newTcapture(e.getSourcePosition(), e.shift);
+		return ExpressionCommons.newTcapture(e.getSourceLocation(), e.shift);
 	}
 
 	@Override
 	public Expression visitDetree(Nez.Detree e, Object a) {
-		return ExpressionCommons.newTdetree(e.getSourcePosition(), visitInner(e.get(0)));
+		return ExpressionCommons.newTdetree(e.getSourceLocation(), visitInner(e.get(0)));
 	}
 
 	@Override
-	public Expression visitXblock(Xblock e, Object a) {
-		return ExpressionCommons.newXblock(e.getSourcePosition(), visitInner(e.get(0)));
+	public Expression visitBlockScope(Nez.BlockScope e, Object a) {
+		return ExpressionCommons.newXblock(e.getSourceLocation(), visitInner(e.get(0)));
 	}
 
 	@Override
-	public Expression visitXlocal(Xlocal e, Object a) {
-		return ExpressionCommons.newXlocal(e.getSourcePosition(), e.getTable(), visitInner(e.get(0)));
+	public Expression visitLocalScope(Nez.LocalScope e, Object a) {
+		return ExpressionCommons.newXlocal(e.getSourceLocation(), e.tableName, visitInner(e.get(0)));
 	}
 
 	@Override
-	public Expression visitXdef(Xsymbol e, Object a) {
-		return ExpressionCommons.newXsymbol(e.getSourcePosition(), e.getTable(), visitInner(e.get(0)));
+	public Expression visitSymbolAction(Nez.SymbolAction e, Object a) {
+		return ExpressionCommons.newXsymbol(e.getSourceLocation(), (NonTerminal) visitInner(e.get(0)));
 	}
 
 	@Override
-	public Expression visitXmatch(Xmatch e, Object a) {
+	public Expression visitSymbolPredicate(Nez.SymbolPredicate e, Object a) {
 		return e; // immutable
 	}
 
 	@Override
 	public Expression visitXis(Xis e, Object a) {
-		return ExpressionCommons.newXis(e.getSourcePosition(), e.getTable(), visitInner(e.get(0)), e.is);
+		return ExpressionCommons.newXis(e.getSourceLocation(), e.getTable(), visitInner(e.get(0)), e.is);
 	}
 
 	@Override
-	public Expression visitXexists(Xexists e, Object a) {
-		return ExpressionCommons.newXexists(e.getSourcePosition(), e.getTable(), e.getSymbol());
+	public Expression visitSymbolExists(Nez.SymbolExists e, Object a) {
+		return ExpressionCommons.newXexists(e.getSourceLocation(), e.tableName, e.symbol);
 	}
 
 	@Override
@@ -214,13 +190,13 @@ public class GrammarTransducer extends Expression.Visitor {
 	}
 
 	@Override
-	public Expression visitXif(Xif e, Object a) {
+	public Expression visitIf(Nez.If e, Object a) {
 		return e; // immutable
 	}
 
 	@Override
-	public Expression visitXon(Xon e, Object a) {
-		return ExpressionCommons.newXon(e.getSourcePosition(), e.isPositive(), e.getFlagName(), visitInner(e.get(0)));
+	public Expression visitOn(Nez.On e, Object a) {
+		return ExpressionCommons.newXon(e.getSourceLocation(), e.isPositive(), e.flagName, visitInner(e.get(0)));
 	}
 
 	@Override

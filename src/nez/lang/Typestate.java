@@ -201,22 +201,22 @@ public enum Typestate {
 		}
 
 		@Override
-		public final Object visitXblock(Xblock e, Object a) {
+		public final Object visitBlockScope(Nez.BlockScope e, Object a) {
 			return this.inferTypestate(e.get(0));
 		}
 
 		@Override
-		public final Object visitXlocal(Xlocal e, Object a) {
+		public final Object visitLocalScope(Nez.LocalScope e, Object a) {
 			return this.inferTypestate(e.get(0));
 		}
 
 		@Override
-		public final Object visitXdef(Xsymbol e, Object a) {
+		public final Object visitSymbolAction(Nez.SymbolAction e, Object a) {
 			return this.inferTypestate(e.get(0));
 		}
 
 		@Override
-		public final Object visitXmatch(Xmatch e, Object a) {
+		public final Object visitSymbolPredicate(Nez.SymbolPredicate e, Object a) {
 			return Typestate.Unit;
 		}
 
@@ -226,7 +226,7 @@ public enum Typestate {
 		}
 
 		@Override
-		public final Object visitXexists(Xexists e, Object a) {
+		public final Object visitSymbolExists(Nez.SymbolExists e, Object a) {
 			return Typestate.Unit;
 		}
 
@@ -236,12 +236,12 @@ public enum Typestate {
 		}
 
 		@Override
-		public final Object visitXif(Xif e, Object a) {
+		public final Object visitIf(Nez.If e, Object a) {
 			return Typestate.Unit;
 		}
 
 		@Override
-		public final Object visitXon(Xon e, Object a) {
+		public final Object visitOn(Nez.On e, Object a) {
 			return this.inferTypestate(e.get(0));
 		}
 

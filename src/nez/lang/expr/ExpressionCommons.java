@@ -14,21 +14,6 @@ public abstract class ExpressionCommons extends Expression {
 	}
 
 	@Override
-	public final boolean equals(Object o) {
-		if (o instanceof Expression) {
-			return this.equalsExpression((Expression) o);
-		}
-		return false;
-	}
-
-	@Override
-	public final String toString() {
-		StringBuilder sb = new StringBuilder();
-		format(sb);
-		return sb.toString();
-	}
-
-	@Override
 	public void format(StringBuilder sb) {
 		sb.append("<");
 		sb.append(this.getPredicate());
@@ -285,9 +270,10 @@ public abstract class ExpressionCommons extends Expression {
 		return new Xsymbol(s, pat);
 	}
 
-	public final static Expression newXsymbol(SourceLocation s, Symbol table, Expression e) {
-		return new Xsymbol(s, table, e);
-	}
+	// public final static Expression newXsymbol(SourceLocation s, Symbol table,
+	// Expression e) {
+	// return new Xsymbol(s, table, e);
+	// }
 
 	public final static Expression newXmatch(SourceLocation s, Symbol tableName) {
 		return new Xmatch(s, tableName);

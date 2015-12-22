@@ -22,7 +22,7 @@ public class Xis extends Unary implements Expression.Contextual {
 	}
 
 	@Override
-	public final boolean equalsExpression(Expression o) {
+	public final boolean equals(Object o) {
 		if (o instanceof Xis) {
 			Xis e = (Xis) o;
 			return this.get(0).equals(e.get(0)) && this.tableName == e.tableName && this.is == e.is;

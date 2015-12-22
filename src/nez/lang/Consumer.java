@@ -213,22 +213,22 @@ public enum Consumer {
 		}
 
 		@Override
-		public Object visitXblock(Xblock e, Object a) {
+		public Object visitBlockScope(Nez.BlockScope e, Object a) {
 			return check(e.get(0), a);
 		}
 
 		@Override
-		public Object visitXlocal(Xlocal e, Object a) {
+		public Object visitLocalScope(Nez.LocalScope e, Object a) {
 			return check(e.get(0), a);
 		}
 
 		@Override
-		public Object visitXdef(Xsymbol e, Object a) {
+		public Object visitSymbolAction(Nez.SymbolAction e, Object a) {
 			return check(e.get(0), a);
 		}
 
 		@Override
-		public Object visitXmatch(Xmatch e, Object a) {
+		public Object visitSymbolPredicate(Nez.SymbolPredicate e, Object a) {
 			return Undecided;
 		}
 
@@ -238,7 +238,7 @@ public enum Consumer {
 		}
 
 		@Override
-		public Object visitXexists(Xexists e, Object a) {
+		public Object visitSymbolExists(Nez.SymbolExists e, Object a) {
 			return check(e.get(0), a);
 		}
 
@@ -248,12 +248,12 @@ public enum Consumer {
 		}
 
 		@Override
-		public Object visitXif(Xif e, Object a) {
+		public Object visitIf(Nez.If e, Object a) {
 			return Unconsumed;
 		}
 
 		@Override
-		public Object visitXon(Xon e, Object a) {
+		public Object visitOn(Nez.On e, Object a) {
 			return Unconsumed;
 		}
 	}

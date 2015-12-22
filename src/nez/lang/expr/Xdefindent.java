@@ -10,7 +10,7 @@ public class Xdefindent extends Term {
 	}
 
 	@Override
-	public final boolean equalsExpression(Expression o) {
+	public final boolean equals(Object o) {
 		return (o instanceof Xsymbol);
 	}
 
