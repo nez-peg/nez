@@ -31,7 +31,7 @@ public class ParserGenerator {
 		}
 
 		public Parser getParser() throws IOException {
-			if (parser != null) {
+			if (parser == null) {
 				parser = ParserStrategy.newDefaultStrategy().newParser(nez.loadGrammar(path));
 			}
 			return parser;
@@ -40,6 +40,10 @@ public class ParserGenerator {
 		public abstract String getExtension();
 
 		public abstract void updateGrammarLoader(GrammarLoader loader);
+
+		public GrammarExtension newState() {
+			return this; // in case of stateless
+		}
 	}
 
 	private String[] classPath = null;
@@ -97,6 +101,7 @@ public class ParserGenerator {
 	public final void updateGrammar(Grammar grammar, Source source, String ext) throws IOException {
 		GrammarExtension grammarExtention = this.lookupGrammarExtension(ext);
 		Parser parser = grammarExtention.getParser();
+		System.out.println(parser);
 		Tree<?> node = parser.parse(source);
 		parser.ensureNoErrors();
 		GrammarLoader loader = new GrammarLoader(grammar, ParserStrategy.newDefaultStrategy());
@@ -122,7 +127,7 @@ public class ParserGenerator {
 	/* Utils */
 
 	private GrammarExtension lookupGrammarExtension(String fileExtension) throws IOException {
-		GrammarExtension ext = extensionMap.get(fileExtension);
+		GrammarExtension ext = getGrammarExtension(fileExtension);
 		if (ext == null) {
 			if (!fileExtension.equals("nez")) {
 				throw new ParserException("undefined grammar extension: " + fileExtension);
@@ -159,6 +164,14 @@ public class ParserGenerator {
 	}
 
 	/* Parser */
+
+	private GrammarExtension getGrammarExtension(String fileExtension) {
+		GrammarExtension ext = extensionMap.get(fileExtension);
+		if (ext != null) {
+			ext = ext.newState();
+		}
+		return ext;
+	}
 
 	public final Parser newParser(String fileName, ParserStrategy strategy) throws IOException {
 		return ParserStrategy.nullCheck(strategy).newParser(loadGrammar(fileName));
