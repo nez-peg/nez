@@ -19,6 +19,12 @@ cd nez
 ant
 ```
 
+Now, you will run `nez.jar` with:
+
+```
+java -jar nez.jar ....
+```
+
 ## Development
 Nez is originally developed by [Kimio Kuramitsu](http://kuramitsulab.github.io/) with his graduate students in Yokohama National University, JAPAN. 
 
