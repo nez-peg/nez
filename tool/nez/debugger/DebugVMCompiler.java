@@ -7,6 +7,7 @@ import java.util.Stack;
 import nez.ast.CommonTree;
 import nez.lang.Expression;
 import nez.lang.Nez;
+import nez.lang.Nez.Sequence;
 import nez.lang.Predicate;
 import nez.lang.Production;
 import nez.lang.expr.Cany;
@@ -254,6 +255,14 @@ public class DebugVMCompiler extends Expression.Visitor {
 			this.builder.createIstr(p, this.builder.jumpFailureJump(), utf8);
 			return null;
 		}
+		for (int i = 0; i < p.size(); i++) {
+			p.get(i).visit(this, next);
+		}
+		return null;
+	}
+
+	@Override
+	public Object visitSequence(Sequence p, Object next) {
 		for (int i = 0; i < p.size(); i++) {
 			p.get(i).visit(this, next);
 		}

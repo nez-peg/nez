@@ -146,6 +146,25 @@ public class PEGTranslator extends GrammarTranslator {
 		}
 	}
 
+	// @Override
+	// public void visitSequence(Nez.Sequence p) {
+	// int c = 0;
+	// List<Expression> l = p.toList();
+	// for (Expression e : l) {
+	// if (c > 0) {
+	// W(" ");
+	// }
+	// if (e instanceof Pchoice) {
+	// W("(");
+	// visitExpression(e);
+	// W(")");
+	// } else {
+	// visitExpression(e);
+	// }
+	// c++;
+	// }
+	// }
+
 	@Override
 	public void visitChoice(Nez.Choice p) {
 		for (int i = 0; i < p.size(); i++) {

@@ -164,7 +164,7 @@ public abstract class Expression extends AbstractList<Expression> {
 
 		public abstract Object visitPair(Nez.Pair e, Object a);
 
-		// public abstract Object visitSequence(Nez.Sequence e, Object a);
+		public abstract Object visitSequence(Nez.Sequence e, Object a);
 
 		public abstract Object visitChoice(Nez.Choice e, Object a);
 

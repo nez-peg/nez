@@ -105,6 +105,21 @@ public enum Consumer {
 		}
 
 		@Override
+		public Object visitSequence(Nez.Sequence e, Object a) {
+			boolean undecided = false;
+			for (Expression sub : e) {
+				Consumer c = check(sub, a);
+				if (c == Consumed) {
+					return Consumed;
+				}
+				if (c == Undecided) {
+					undecided = true;
+				}
+			}
+			return undecided ? Undecided : Unconsumed;
+		}
+
+		@Override
 		public Object visitChoice(Nez.Choice e, Object a) {
 			boolean unconsumed = false;
 			boolean undecided = false;

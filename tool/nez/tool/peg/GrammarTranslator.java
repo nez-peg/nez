@@ -13,6 +13,7 @@ import nez.tool.parser.SourceGenerator;
 import nez.util.ConsoleUtils;
 import nez.util.FileBuilder;
 import nez.util.StringUtils;
+import nez.util.Verbose;
 
 public abstract class GrammarTranslator extends Expression.Visitor implements SourceGenerator {
 	protected Parser parser;
@@ -371,6 +372,12 @@ public abstract class GrammarTranslator extends Expression.Visitor implements So
 	@Override
 	public final Object visitPair(Nez.Pair p, Object a) {
 		this.visitPair(p);
+		return null;
+	}
+
+	@Override
+	public final Object visitSequence(Nez.Sequence p, Object a) {
+		Verbose.TODO("supporting Sequence");
 		return null;
 	}
 

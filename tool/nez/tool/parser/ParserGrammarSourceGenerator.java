@@ -6,6 +6,7 @@ import nez.lang.Expression;
 import nez.lang.Grammar;
 import nez.lang.Nez;
 import nez.lang.Nez.Byte;
+import nez.lang.Nez.Sequence;
 import nez.lang.Production;
 import nez.lang.expr.NonTerminal;
 import nez.parser.Parser;
@@ -14,6 +15,7 @@ import nez.parser.ParserStrategy;
 import nez.util.ConsoleUtils;
 import nez.util.FileBuilder;
 import nez.util.StringUtils;
+import nez.util.Verbose;
 
 public abstract class ParserGrammarSourceGenerator extends Expression.Visitor implements SourceGenerator {
 	protected Parser parser;
@@ -495,6 +497,12 @@ public abstract class ParserGrammarSourceGenerator extends Expression.Visitor im
 	@Override
 	public final Object visitIf(Nez.If p, Object a) {
 		this.visitIf(p);
+		return null;
+	}
+
+	@Override
+	public final Object visitSequence(Sequence e, Object a) {
+		Verbose.TODO("suporting Sequence");
 		return null;
 	}
 

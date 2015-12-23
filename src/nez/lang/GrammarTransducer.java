@@ -84,6 +84,15 @@ public class GrammarTransducer extends Expression.Visitor {
 	}
 
 	@Override
+	public Expression visitSequence(Nez.Sequence e, Object a) {
+		UList<Expression> l = ExpressionCommons.newList(e.size());
+		for (Expression sub : e) {
+			ExpressionCommons.addSequence(l, this.visitInner(sub));
+		}
+		return e.newSequence(l);
+	}
+
+	@Override
 	public Expression visitChoice(Nez.Choice e, Object a) {
 		UList<Expression> l = ExpressionCommons.newList(e.size());
 		for (Expression sub : e) {

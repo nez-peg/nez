@@ -243,6 +243,17 @@ public class MozCompiler extends Expression.Visitor {
 		return (MozInst) nextStart;
 	}
 
+	@Override
+	public MozInst visitSequence(Nez.Sequence p, Object next) {
+		// return visit(p.get(0), visit(p.get(1), (MozInst)next));
+		Object nextStart = next;
+		for (int i = p.size() - 1; i >= 0; i--) {
+			Expression e = p.get(i);
+			nextStart = visit(e, nextStart);
+		}
+		return (MozInst) nextStart;
+	}
+
 	public MozInst visitUnnPchoice(Nez.Choice p, Object next) {
 		Object nextChoice = visit(p.get(p.size() - 1), next);
 		for (int i = p.size() - 2; i >= 0; i--) {

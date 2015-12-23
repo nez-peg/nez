@@ -460,7 +460,6 @@ public class Nez {
 		}
 
 		protected abstract java.lang.String delim();
-
 	}
 
 	public abstract static class Sequence extends Nez.List {
@@ -478,10 +477,10 @@ public class Nez {
 			return false;
 		}
 
-		// @Override
-		// public Object visit(Expression.Visitor v, Object a) {
-		// return v.visitSequence(this, a);
-		// }
+		@Override
+		public Object visit(Expression.Visitor v, Object a) {
+			return v.visitSequence(this, a);
+		}
 
 	}
 
