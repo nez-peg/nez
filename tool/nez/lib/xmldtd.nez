@@ -5,7 +5,7 @@ TopLevel
     = Document
 
 Document
-    =  PROLOG? { ($(Dtd))+ #Root}  _ 
+    =  PROLOG? { ($(Dtd))+ #DTD}  _ 
     
 PROLOG
     =  '<?xml' (!'?>' .)* '?>' _
@@ -135,7 +135,10 @@ example ElementDeclaration ~88f1fa ELEMENT a (#PCDATA)*
 /* Attribute Declaration */
 	
 AttributeListDeclaration
-	= "ATTLIST" { $name(Name) $(AttributeDefinition)+ #Attlist} _
+	= "ATTLIST" { $name(Name) $list(AttributeDefinitions) #Attlist} _
+
+AttributeDefinitions
+	= { $(AttributeDefinition)+ #List} 
 
 AttributeDefinition
 	= { $name(Name) $type(AttributeType) _AttributeQualifier } _
