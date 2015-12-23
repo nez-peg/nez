@@ -1,15 +1,15 @@
 package nez.lang.schema;
 
 import nez.ast.Symbol;
-import nez.junks.GrammarFile;
 import nez.lang.Expression;
+import nez.lang.Grammar;
 
 public class JSONGrammarCombinator extends PredefinedGrammarCombinator {
 
 	static final Symbol _Key = Symbol.tag("key");
 	static final Symbol _Value = Symbol.tag("value");
 
-	public JSONGrammarCombinator(GrammarFile grammar) {
+	public JSONGrammarCombinator(Grammar grammar) {
 		super(grammar, "File");
 	}
 

@@ -1,34 +1,67 @@
 package nez.lang.schema;
 
-import nez.junks.GrammarFile;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import nez.lang.Expression;
+import nez.lang.Grammar;
 
 public class DTDSchemaGrammarGenerator extends SchemaGrammarGenerator {
 
-	public DTDSchemaGrammarGenerator(GrammarFile gfile) {
-		super(gfile);
+	public DTDSchemaGrammarGenerator(Grammar grammar) {
+		super(grammar);
+		loadPredefinedRules();
 	}
+
+	int entityCount = 0;
+	boolean enableNezExtension = true;
+	List<String> elementNameList = new ArrayList<String>();
+	Set<String> attributeOccurences = new HashSet<String>();
 
 	@Override
 	public void loadPredefinedRules() {
-		new XMLGrammarCombinator(gfile);
+		new XMLGrammarCombinator(grammar);
+	}
+
+	public final void addElementName(String elementName) {
+		this.elementNameList.add(elementName);
 	}
 
 	@Override
 	public void newRoot(String structName) {
-		gfile.addProduction(null, "Root", _NonTerminal(structName));
+		grammar.addProduction(null, "Root", _NonTerminal(structName));
 	}
 
 	@Override
 	public Element newElement(String elementName, String structName, Schema t) {
 		Expression seq = _Sequence(t.getSchemaExpression(), _S(), _Char('='), _S(), _DQuat(), t.next().getSchemaExpression(), _DQuat(), _S());
 		Element element = new Element(elementName, structName, seq, false);
-		gfile.addProduction(null, element.getUniqueName(), seq);
+		grammar.addProduction(null, element.getUniqueName(), seq);
 		return element;
 	}
 
-	public void newMembers(String memberListName, Schema t) {
-		gfile.addProduction(null, memberListName, t.getSchemaExpression());
+	public final void newAttribute(String elementName) {
+		// generate Complete or Approximate Attribute list
+		attributeOccurences.add(elementName);
+		if (enableNezExtension) {
+			newMembers(String.format("%s_Attribute", elementName));
+			newMembers(String.format("%s_AttributeList", elementName), newSet(String.format("%s_Attribute", elementName)));
+			newSymbols();
+		} else {
+			newMembers(String.format("%s_AttributeList", elementName), newPermutation());
+		}
+	}
+
+	public void newMembers(String memberName, Schema t) {
+		grammar.addProduction(null, memberName, t.getSchemaExpression());
+	}
+
+	public void genAllDTDElements() {
+		for (String name : elementNameList) {
+			newStruct(name);
+		}
 	}
 
 	@Override
@@ -37,12 +70,12 @@ public class DTDSchemaGrammarGenerator extends SchemaGrammarGenerator {
 		Expression[] content = { _Char('>'), _S(), _NonTerminal("%s_Contents", structName), _S(), _String("</%s>", structName) };
 		Expression endChoice = _Choice(_Sequence(attOnly), _Sequence(content));
 		Expression[] l = { _String("<%s", structName), _S(), t.getSchemaExpression(), endChoice, _S() };
-		gfile.addProduction(null, structName, _Sequence(l));
+		grammar.addProduction(null, structName, _Sequence(l));
 	}
 
-	public final void newStruct(String structName, boolean hasAttribute) {
+	public final void newStruct(String structName) {
 		Expression inner = _Empty();
-		if (hasAttribute) {
+		if (attributeOccurences.contains(structName)) {
 			inner = _Sequence(_NonTerminal("%s_AttributeList", structName), _S());
 		}
 		newStruct(structName, new Schema(inner));
@@ -50,7 +83,12 @@ public class DTDSchemaGrammarGenerator extends SchemaGrammarGenerator {
 
 	public void newEntity(int id, String name, String value) {
 		String entity = String.format("Entity_%s", id);
-		gfile.addProduction(null, entity, _String(value));
+		grammar.addProduction(null, entity, _String(value));
+	}
+
+	public void newEntity(String name, String value) {
+		String entity = String.format("Entity_%s", entityCount++);
+		grammar.addProduction(null, entity, _String(value));
 	}
 
 	@Override
@@ -121,15 +159,15 @@ public class DTDSchemaGrammarGenerator extends SchemaGrammarGenerator {
 		return new Schema(_Sequence(seq));
 	}
 
-	public void newEntityList(int entityCount) {
+	public void newEntityList() {
 		if (entityCount == 0) {
-			gfile.addProduction(null, "Entity", _Failure());
+			grammar.addProduction(null, "Entity", _Failure());
 		} else {
 			Expression[] l = new Expression[entityCount];
 			for (int i = 0; i < entityCount; i++) {
 				l[i] = _NonTerminal("Entity_%s", entityCount);
 			}
-			gfile.addProduction(null, "Entity", _Choice(l));
+			grammar.addProduction(null, "Entity", _Choice(l));
 		}
 	}
 

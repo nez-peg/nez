@@ -1,13 +1,13 @@
 package nez.lang.schema;
 
 import nez.ast.Symbol;
-import nez.junks.GrammarFile;
 import nez.lang.Expression;
+import nez.lang.Grammar;
 
 public class JSONSchemaGrammarGenerator extends SchemaGrammarGenerator {
 
-	public JSONSchemaGrammarGenerator(GrammarFile gfile) {
-		super(gfile);
+	public JSONSchemaGrammarGenerator(Grammar grammar) {
+		super(grammar);
 	}
 
 	static final Symbol _Key = Symbol.tag("key");
@@ -16,7 +16,7 @@ public class JSONSchemaGrammarGenerator extends SchemaGrammarGenerator {
 
 	@Override
 	public void loadPredefinedRules() {
-		new JSONGrammarCombinator(gfile);
+		new JSONGrammarCombinator(grammar);
 	}
 
 	@Override
@@ -24,21 +24,21 @@ public class JSONSchemaGrammarGenerator extends SchemaGrammarGenerator {
 		Expression root = _Link(null, _NonTerminal(structName));
 		Expression[] seq = { _NonTerminal("VALUESEP"), root };
 		Expression[] array = { _OpenSquare(), _S(), root, _S(), _OneMore(seq), _S(), _CloseSquare() };
-		gfile.addProduction(null, "Root", _New(_Choice(_Sequence(root), _Sequence(array)), _Tag("Root")));
+		grammar.addProduction(null, "Root", _New(_Choice(_Sequence(root), _Sequence(array)), _Tag("Root")));
 	}
 
 	@Override
 	public Element newElement(String elementName, String structName, Schema t) {
 		Expression seq = _Sequence(_DQuat(), t.getSchemaExpression(), _DQuat(), _S(), _NonTerminal("NAMESEP"), _New(_Link(_Value, t.next().getSchemaExpression()), _Tag(elementName)), _Option(_NonTerminal("VALUESEP")), _S());
 		Element element = new Element(elementName, structName, seq, false);
-		gfile.addProduction(null, element.getUniqueName(), seq);
+		grammar.addProduction(null, element.getUniqueName(), seq);
 		return element;
 	}
 
 	@Override
 	public void newStruct(String structName, Schema t) {
 		Expression[] l = { _OpenWave(), _S(), t.getSchemaExpression(), _S(), _CloseWave(), _S() };
-		gfile.addProduction(null, structName, _New(_Sequence(l), _Tag(structName)));
+		grammar.addProduction(null, structName, _New(_Sequence(l), _Tag(structName)));
 	}
 
 	@Override

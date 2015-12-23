@@ -4,20 +4,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 import nez.ast.Symbol;
-import nez.junks.GrammarFile;
 import nez.lang.Expression;
+import nez.lang.Grammar;
 import nez.lang.expr.ExpressionCommons;
 import nez.lang.expr.NonTerminal;
 import nez.util.UList;
 
 public abstract class SchemaGrammarGenerator implements SchemaGrammarGeneratorInterface {
-	protected GrammarFile gfile;
+	protected Grammar grammar;
 	private List<Element> requiredElementList;
 	private List<Element> elementList;
 	private int tableCounter = 0;
 
-	public SchemaGrammarGenerator(GrammarFile gfile) {
-		this.gfile = gfile;
+	public SchemaGrammarGenerator(Grammar grammar) {
+		this.grammar = grammar;
 	}
 
 	public List<Element> getElementList() {
@@ -68,7 +68,7 @@ public abstract class SchemaGrammarGenerator implements SchemaGrammarGeneratorIn
 	/* wrapper for nez grammar */
 
 	protected final NonTerminal _NonTerminal(String nonterm) {
-		return ExpressionCommons.newNonTerminal(null, gfile, nonterm);
+		return ExpressionCommons.newNonTerminal(null, grammar, nonterm);
 	}
 
 	protected final NonTerminal _NonTerminal(String format, Object... args) {
@@ -156,7 +156,7 @@ public abstract class SchemaGrammarGenerator implements SchemaGrammarGeneratorIn
 	}
 
 	protected final Expression _S() {
-		return ExpressionCommons.newNonTerminal(null, gfile, "S");
+		return ExpressionCommons.newNonTerminal(null, grammar, "S");
 	}
 
 	protected final Expression _Empty() {
@@ -190,7 +190,7 @@ public abstract class SchemaGrammarGenerator implements SchemaGrammarGeneratorIn
 		}
 
 		// l[index] = _Link(null, newOthers().getSchemaExpression());
-		gfile.addProduction(null, memberListName, _ZeroMore(_Choice(l)));
+		grammar.addProduction(null, memberListName, _ZeroMore(_Choice(l)));
 	}
 
 	@Override
@@ -200,7 +200,7 @@ public abstract class SchemaGrammarGenerator implements SchemaGrammarGeneratorIn
 		for (Element element : elementList) {
 			l[index++] = _String(element.getElementName());
 		}
-		gfile.addProduction(null, getTableName(), _Choice(l));
+		grammar.addProduction(null, getTableName(), _Choice(l));
 	}
 
 	// FIXME
@@ -289,7 +289,7 @@ public abstract class SchemaGrammarGenerator implements SchemaGrammarGeneratorIn
 		for (Element element : impliedList) {
 			l[choiceCount++] = _NonTerminal(element.getUniqueName());
 		}
-		gfile.addProduction(null, String.format("%s_implied", getTableName()), gfile.newChoice(l));
+		grammar.addProduction(null, String.format("%s_implied", getTableName()), grammar.newChoice(l));
 	}
 
 	@Override

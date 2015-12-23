@@ -27,4 +27,5 @@ interface SchemaSymbol {
 	static final Symbol _Member = Symbol.tag("member");
 	static final Symbol _Name = Symbol.tag("name");
 	static final Symbol _Type = Symbol.tag("type");
+	static final Symbol _List = Symbol.tag("list");
 }

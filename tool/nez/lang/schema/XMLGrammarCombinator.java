@@ -1,11 +1,11 @@
 package nez.lang.schema;
 
-import nez.junks.GrammarFile;
 import nez.lang.Expression;
+import nez.lang.Grammar;
 
 public class XMLGrammarCombinator extends PredefinedGrammarCombinator {
 
-	public XMLGrammarCombinator(GrammarFile grammar) {
+	public XMLGrammarCombinator(Grammar grammar) {
 		super(grammar, "Toplevel");
 	}
 
