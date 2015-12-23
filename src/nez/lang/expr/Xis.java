@@ -3,31 +3,20 @@ package nez.lang.expr;
 import nez.ast.SourceLocation;
 import nez.ast.Symbol;
 import nez.lang.Expression;
+import nez.lang.Nez;
+import nez.lang.Predicate;
 
-public class Xis extends Unary implements Expression.Contextual {
+public class Xis extends Nez.SymbolPredicate implements Expression.Contextual {
 	// final Grammar g;
-	public final Symbol tableName;
-	public final boolean is;
 
 	Xis(SourceLocation s, NonTerminal pat, boolean is) {
-		super(s, pat);
-		this.tableName = Symbol.tag(pat.getLocalName());
-		this.is = is;
+		super(is ? Predicate.is : Predicate.isa, Symbol.tag(pat.getLocalName()), pat);
+		this.set(s);
 	}
 
 	Xis(SourceLocation s, Symbol tableName, Expression e, boolean is) {
-		super(s, e);
-		this.tableName = tableName;
-		this.is = is;
-	}
-
-	@Override
-	public final boolean equals(Object o) {
-		if (o instanceof Xis) {
-			Xis e = (Xis) o;
-			return this.get(0).equals(e.get(0)) && this.tableName == e.tableName && this.is == e.is;
-		}
-		return false;
+		super(is ? Predicate.is : Predicate.isa, tableName, e);
+		this.set(s);
 	}
 
 	public final Symbol getTable() {
@@ -36,22 +25,6 @@ public class Xis extends Unary implements Expression.Contextual {
 
 	public final String getTableName() {
 		return tableName.getSymbol();
-	}
-
-	@Override
-	public Object visit(Expression.Visitor v, Object a) {
-		return v.visitXis(this, a);
-	}
-
-	@Override
-	public void format(StringBuilder sb) {
-		if (this.is) {
-			sb.append("<is ");
-		} else {
-			sb.append("<in ");
-		}
-		sb.append(getTableName());
-		sb.append(">");
 	}
 
 	@Override

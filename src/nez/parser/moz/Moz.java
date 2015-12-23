@@ -9,7 +9,6 @@ import nez.lang.Nez;
 import nez.lang.Nez.SymbolExists;
 import nez.lang.Production;
 import nez.lang.expr.Cbyte;
-import nez.lang.expr.Xis;
 import nez.parser.ByteCoder;
 import nez.parser.Coverage;
 import nez.parser.MemoEntry;
@@ -462,7 +461,7 @@ public class Moz {
 	static abstract class AbstractSetInstruction extends MozInst {
 		public final boolean[] byteMap;
 
-		AbstractSetInstruction(byte opcode, Nez.Byteset e, MozInst next) {
+		AbstractSetInstruction(byte opcode, Nez.ByteSet e, MozInst next) {
 			super(opcode, e, next);
 			this.byteMap = e.byteMap;
 			if (this.byteMap[0]) {
@@ -482,7 +481,7 @@ public class Moz {
 	}
 
 	public static class Set extends AbstractSetInstruction {
-		public Set(Nez.Byteset e, MozInst next) {
+		public Set(Nez.ByteSet e, MozInst next) {
 			super(MozSet.Set, e, next);
 		}
 
@@ -504,7 +503,7 @@ public class Moz {
 	}
 
 	public static class OSet extends AbstractSetInstruction {
-		public OSet(Nez.Byteset e, MozInst next) {
+		public OSet(Nez.ByteSet e, MozInst next) {
 			super(MozSet.OSet, e, next);
 		}
 
@@ -525,7 +524,7 @@ public class Moz {
 	}
 
 	public static class NSet extends AbstractSetInstruction {
-		public NSet(Nez.Byteset e, MozInst next) {
+		public NSet(Nez.ByteSet e, MozInst next) {
 			super(MozSet.NSet, e, next);
 		}
 
@@ -546,7 +545,7 @@ public class Moz {
 	}
 
 	public static class RSet extends AbstractSetInstruction {
-		public RSet(Nez.Byteset e, MozInst next) {
+		public RSet(Nez.ByteSet e, MozInst next) {
 			super(MozSet.RSet, e, next);
 		}
 
@@ -1352,7 +1351,7 @@ public class Moz {
 	}
 
 	public static class SMatch extends AbstractTableInstruction {
-		public SMatch(Nez.SymbolPredicate e, MozInst next) {
+		public SMatch(Nez.SymbolMatch e, MozInst next) {
 			super(MozSet.SMatch, e, e.tableName, next);
 		}
 
@@ -1377,7 +1376,7 @@ public class Moz {
 	}
 
 	public static class SIs extends AbstractTableInstruction {
-		public SIs(Xis e, MozInst next) {
+		public SIs(Nez.SymbolPredicate e, MozInst next) {
 			super(MozSet.SIs, e, e.tableName, next);
 		}
 
@@ -1404,7 +1403,7 @@ public class Moz {
 	}
 
 	public static class SIsa extends AbstractTableInstruction {
-		public SIsa(Xis e, MozInst next) {
+		public SIsa(Nez.SymbolPredicate e, MozInst next) {
 			super(MozSet.SIsa, e, e.tableName, next);
 		}
 

@@ -5,8 +5,6 @@ import nez.lang.expr.ExpressionCommons;
 import nez.lang.expr.NonTerminal;
 import nez.lang.expr.Pempty;
 import nez.lang.expr.Pfail;
-import nez.lang.expr.Xindent;
-import nez.lang.expr.Xis;
 import nez.util.UList;
 import nez.util.Verbose;
 
@@ -46,7 +44,7 @@ public class GrammarTransducer extends Expression.Visitor {
 	}
 
 	@Override
-	public Expression visitByteset(Nez.Byteset e, Object a) {
+	public Expression visitByteSet(Nez.ByteSet e, Object a) {
 		return e; // immutable
 	}
 
@@ -170,23 +168,18 @@ public class GrammarTransducer extends Expression.Visitor {
 	}
 
 	@Override
-	public Expression visitSymbolPredicate(Nez.SymbolPredicate e, Object a) {
+	public Expression visitSymbolMatch(Nez.SymbolMatch e, Object a) {
 		return e; // immutable
 	}
 
 	@Override
-	public Expression visitXis(Xis e, Object a) {
-		return ExpressionCommons.newXis(e.getSourceLocation(), e.getTable(), visitInner(e.get(0)), e.is);
+	public Expression visitSymbolPredicate(Nez.SymbolPredicate e, Object a) {
+		return ExpressionCommons.newXis(e.getSourceLocation(), e.tableName, visitInner(e.get(0)), e.op == Predicate.is);
 	}
 
 	@Override
 	public Expression visitSymbolExists(Nez.SymbolExists e, Object a) {
 		return ExpressionCommons.newXexists(e.getSourceLocation(), e.tableName, e.symbol);
-	}
-
-	@Override
-	public Expression visitXindent(Xindent e, Object a) {
-		return e; // immutable
 	}
 
 	@Override
@@ -200,7 +193,7 @@ public class GrammarTransducer extends Expression.Visitor {
 	}
 
 	@Override
-	public Expression visitUndefined(Expression e, Object a) {
+	public Expression visitExtended(Expression e, Object a) {
 		Verbose.println("TODO: implement visit in " + this.getClass());
 		return e;
 	}

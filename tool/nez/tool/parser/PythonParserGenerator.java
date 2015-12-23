@@ -12,15 +12,6 @@ import nez.lang.expr.NonTerminal;
 import nez.lang.expr.Psequence;
 import nez.lang.expr.Tlfold;
 import nez.lang.expr.Tlink;
-import nez.lang.expr.Xblock;
-import nez.lang.expr.Xexists;
-import nez.lang.expr.Xif;
-import nez.lang.expr.Xindent;
-import nez.lang.expr.Xis;
-import nez.lang.expr.Xlocal;
-import nez.lang.expr.Xmatch;
-import nez.lang.expr.Xon;
-import nez.lang.expr.Xsymbol;
 import nez.parser.ParserGrammar;
 import nez.util.StringUtils;
 import nez.util.UList;
@@ -102,7 +93,7 @@ public class PythonParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	protected void makeByteMap() {
-		for (Nez.Byteset map : this.byteMapList) {
+		for (Nez.ByteSet map : this.byteMapList) {
 			L("map").W(String.valueOf(unique(map))).W(" = [");
 			for (int i = 0; i < map.byteMap.length; i++) {
 				if (map.byteMap[i]) {
@@ -413,10 +404,10 @@ public class PythonParserGenerator extends ParserGrammarSourceGenerator {
 		If(_match(StringUtils.stringfyCharacter(p.byteChar))).Begin().Consume().End().Else().Begin().Fail().End();
 	}
 
-	ArrayList<Nez.Byteset> byteMapList = new ArrayList<Nez.Byteset>();
+	ArrayList<Nez.ByteSet> byteMapList = new ArrayList<Nez.ByteSet>();
 
 	@Override
-	public void visitByteset(Nez.Byteset p) {
+	public void visitByteSet(Nez.ByteSet p) {
 		if (!byteMapList.contains(p)) {
 			byteMapList.add(p);
 		}
@@ -636,19 +627,13 @@ public class PythonParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitXis(Xis p) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
 	public void visitSymbolPredicate(Nez.SymbolPredicate p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitXindent(Xindent p) {
+	public void visitSymbolMatch(Nez.SymbolMatch p) {
 		// TODO Auto-generated method stub
 
 	}

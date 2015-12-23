@@ -566,7 +566,7 @@ class Icommit extends DebugVMInstruction {
 	public Icommit(Tlink e) {
 		super(e);
 		this.op = Opcode.Icommit;
-		this.index = e.index;
+		this.index = -1;
 	}
 
 	@Override

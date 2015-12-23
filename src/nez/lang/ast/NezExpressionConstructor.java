@@ -315,18 +315,4 @@ public class NezExpressionConstructor extends GrammarVisitorMap<ExpressionTransd
 		}
 	}
 
-	public class _DefIndent extends Undefined {
-		@Override
-		public Expression accept(Tree<?> node, Expression e) {
-			return ExpressionCommons.newDefIndent(node);
-		}
-	}
-
-	public class _Indent extends Undefined {
-		@Override
-		public Expression accept(Tree<?> node, Expression e) {
-			return ExpressionCommons.newIndent(node);
-		}
-	}
-
 }

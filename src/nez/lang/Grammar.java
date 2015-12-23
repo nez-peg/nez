@@ -3,6 +3,7 @@ package nez.lang;
 import java.util.HashMap;
 import java.util.List;
 
+import nez.lang.expr.ExpressionCommons;
 import nez.parser.Parser;
 import nez.parser.ParserGrammar;
 import nez.parser.ParserStrategy;
@@ -61,7 +62,10 @@ public class Grammar extends GrammarHacks {
 	}
 
 	public final Production getStartProduction() {
-		return this.prodList.ArrayValues[0];
+		if (size() > 0) {
+			return this.prodList.ArrayValues[0];
+		}
+		return this.newProduction("START", ExpressionCommons.newEmpty(null));
 	}
 
 	public final List<Production> getProductionList() {

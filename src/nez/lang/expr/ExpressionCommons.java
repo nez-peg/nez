@@ -299,14 +299,6 @@ public abstract class ExpressionCommons extends Expression {
 		return new Xexists(s, tableName, symbol);
 	}
 
-	public final static Expression newDefIndent(SourceLocation s) {
-		return new Xdefindent(s);
-	}
-
-	public final static Expression newIndent(SourceLocation s) {
-		return new Xindent(s);
-	}
-
 	@Deprecated
 	public final static Expression newScan(SourceLocation s, int number, Expression scan, Expression repeat) {
 		return null;

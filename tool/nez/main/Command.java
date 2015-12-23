@@ -159,9 +159,8 @@ public abstract class Command {
 		ConsoleUtils.println("The most commonly used nez commands are:");
 		ConsoleUtils.println("  parse      parse inputs and construct ASTs");
 		ConsoleUtils.println("  match      match inputs without ASTs");
-		ConsoleUtils.println("  shell      an interactive parser");
-		ConsoleUtils.println("  parser     generate a parser source specified with --format");
-		ConsoleUtils.println("  cnez       generate a C-based fast parser (.c)");
+		ConsoleUtils.println("  inez       an interactive parser");
+		ConsoleUtils.println("  cnez       generate a C-based fast parser");
 		ConsoleUtils.println("  peg        translate a grammar into PEG specified with --format");
 		ConsoleUtils.println("  compile    compile a grammar into Nez bytecode .moz");
 		ConsoleUtils.println("  bench      perform benchmark tests");
@@ -171,12 +170,15 @@ public abstract class Command {
 	}
 
 	public final Grammar newGrammar() throws IOException {
-		ParserGenerator pg = new ParserGenerator();
-		Grammar grammar = pg.loadGrammar(grammarFile);
-		for (String f : this.grammarFiles) {
-			pg.updateGrammar(grammar, f);
+		if (grammarFile != null) {
+			ParserGenerator pg = new ParserGenerator();
+			Grammar grammar = pg.loadGrammar(grammarFile);
+			for (String f : this.grammarFiles) {
+				pg.updateGrammar(grammar, f);
+			}
+			return grammar;
 		}
-		return grammar;
+		return new Grammar();
 	}
 
 	public final Parser newParser() throws IOException {

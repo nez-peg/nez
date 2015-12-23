@@ -7,6 +7,7 @@ import java.util.Stack;
 import nez.ast.CommonTree;
 import nez.lang.Expression;
 import nez.lang.Nez;
+import nez.lang.Predicate;
 import nez.lang.Production;
 import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
@@ -20,12 +21,8 @@ import nez.lang.expr.Tlink;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
 import nez.lang.expr.Xexists;
-import nez.lang.expr.Xif;
-import nez.lang.expr.Xindent;
 import nez.lang.expr.Xis;
 import nez.lang.expr.Xlocal;
-import nez.lang.expr.Xmatch;
-import nez.lang.expr.Xon;
 import nez.lang.expr.Xsymbol;
 import nez.parser.ParserGrammar;
 import nez.parser.ParserStrategy;
@@ -149,7 +146,7 @@ public class DebugVMCompiler extends Expression.Visitor {
 	}
 
 	@Override
-	public MozInst visitByteset(Nez.Byteset p, Object next) {
+	public MozInst visitByteSet(Nez.ByteSet p, Object next) {
 		this.builder.createIcharclass((Cset) p, this.builder.jumpFailureJump());
 		this.builder.setInsertPoint(new BasicBlock());
 		return null;
@@ -420,34 +417,24 @@ public class DebugVMCompiler extends Expression.Visitor {
 	}
 
 	@Override
-	public MozInst visitSymbolPredicate(Nez.SymbolPredicate p, Object next) {
+	public MozInst visitSymbolMatch(Nez.SymbolMatch p, Object next) {
 		throw new RuntimeException("undifined visit method " + p.getClass());
 	}
 
 	@Override
-	public MozInst visitXis(Xis p, Object next) {
-		if (p.is) {
-			this.builder.createIis(p, this.builder.jumpFailureJump());
+	public MozInst visitSymbolPredicate(Nez.SymbolPredicate p, Object next) {
+		if (p.op == Predicate.is) {
+			this.builder.createIis((Xis) p, this.builder.jumpFailureJump());
 			this.builder.setInsertPoint(new BasicBlock());
 		} else {
 			this.builder.pushFailureJumpPoint(new BasicBlock());
 			this.builder.createIpush(p);
 			p.get(0).visit(this, next);
 			this.builder.setInsertPoint(this.builder.popFailureJumpPoint());
-			this.builder.createIisa(p, this.builder.jumpFailureJump());
+			this.builder.createIisa((Xis) p, this.builder.jumpFailureJump());
 			this.builder.setInsertPoint(new BasicBlock());
 		}
 		return null;
-	}
-
-	// @Override
-	// public MozInst visitSymbolActionindent(Xdefindent p, Object next) {
-	// throw new RuntimeException("undifined visit method " + p.getClass());
-	// }
-
-	@Override
-	public MozInst visitXindent(Xindent p, Object next) {
-		throw new RuntimeException("undifined visit method " + p.getClass());
 	}
 
 	@Override

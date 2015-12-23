@@ -8,8 +8,6 @@ import nez.lang.Nez;
 import nez.lang.Production;
 import nez.lang.expr.NonTerminal;
 import nez.lang.expr.Pchoice;
-import nez.lang.expr.Xindent;
-import nez.lang.expr.Xis;
 import nez.util.StringUtils;
 
 public class NezTranslator extends PEGTranslator {
@@ -64,7 +62,7 @@ public class NezTranslator extends PEGTranslator {
 	}
 
 	@Override
-	public void visitByteset(Nez.Byteset e) {
+	public void visitByteSet(Nez.ByteSet e) {
 		W(StringUtils.stringfyCharacterClass(e.byteMap));
 	}
 
@@ -195,16 +193,16 @@ public class NezTranslator extends PEGTranslator {
 	}
 
 	@Override
-	public void visitSymbolPredicate(Nez.SymbolPredicate e) {
+	public void visitSymbolMatch(Nez.SymbolMatch e) {
 		W("<match ");
 		W(e.tableName);
 		W(">");
 	};
 
 	@Override
-	public void visitXis(Xis e) {
+	public void visitSymbolPredicate(Nez.SymbolPredicate e) {
 		W("<is ");
-		W(e.getTableName());
+		W(e.tableName);
 		W(">");
 	}
 
@@ -227,11 +225,6 @@ public class NezTranslator extends PEGTranslator {
 		W(" ");
 		visitExpression(e.get(0));
 		W(">");
-	}
-
-	@Override
-	public void visitXindent(Xindent p) {
-		this.visitUndefined(p);
 	}
 
 }

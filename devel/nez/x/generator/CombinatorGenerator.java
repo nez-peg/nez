@@ -4,35 +4,9 @@ import nez.lang.Expression;
 import nez.lang.Grammar;
 import nez.lang.Nez;
 import nez.lang.Production;
-import nez.lang.expr.Cany;
-import nez.lang.expr.Cmulti;
-import nez.lang.expr.Cset;
 import nez.lang.expr.NonTerminal;
-import nez.lang.expr.Pand;
-import nez.lang.expr.Pchoice;
 import nez.lang.expr.Pempty;
 import nez.lang.expr.Pfail;
-import nez.lang.expr.Pnot;
-import nez.lang.expr.Pone;
-import nez.lang.expr.Poption;
-import nez.lang.expr.Psequence;
-import nez.lang.expr.Pzero;
-import nez.lang.expr.Tcapture;
-import nez.lang.expr.Tdetree;
-import nez.lang.expr.Tlfold;
-import nez.lang.expr.Tlink;
-import nez.lang.expr.Tnew;
-import nez.lang.expr.Treplace;
-import nez.lang.expr.Ttag;
-import nez.lang.expr.Xblock;
-import nez.lang.expr.Xexists;
-import nez.lang.expr.Xif;
-import nez.lang.expr.Xindent;
-import nez.lang.expr.Xis;
-import nez.lang.expr.Xlocal;
-import nez.lang.expr.Xmatch;
-import nez.lang.expr.Xon;
-import nez.lang.expr.Xsymbol;
 import nez.parser.Parser;
 import nez.tool.peg.GrammarTranslator;
 import nez.util.StringUtils;
@@ -94,7 +68,7 @@ public class CombinatorGenerator extends GrammarTranslator {
 	}
 
 	@Override
-	public void visitByteset(Nez.Byteset e) {
+	public void visitByteSet(Nez.ByteSet e) {
 		C("c", e.byteMap);
 	}
 
@@ -232,19 +206,13 @@ public class CombinatorGenerator extends GrammarTranslator {
 	}
 
 	@Override
+	public void visitSymbolMatch(Nez.SymbolMatch p) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
 	public void visitSymbolPredicate(Nez.SymbolPredicate p) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void visitXis(Xis p) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void visitXindent(Xindent p) {
 		// TODO Auto-generated method stub
 
 	}

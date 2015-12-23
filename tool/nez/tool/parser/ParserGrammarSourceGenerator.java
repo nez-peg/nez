@@ -7,35 +7,7 @@ import nez.lang.Grammar;
 import nez.lang.Nez;
 import nez.lang.Nez.Byte;
 import nez.lang.Production;
-import nez.lang.expr.Cany;
-import nez.lang.expr.Cmulti;
-import nez.lang.expr.Cset;
 import nez.lang.expr.NonTerminal;
-import nez.lang.expr.Pand;
-import nez.lang.expr.Pchoice;
-import nez.lang.expr.Pempty;
-import nez.lang.expr.Pfail;
-import nez.lang.expr.Pnot;
-import nez.lang.expr.Pone;
-import nez.lang.expr.Poption;
-import nez.lang.expr.Psequence;
-import nez.lang.expr.Pzero;
-import nez.lang.expr.Tcapture;
-import nez.lang.expr.Tdetree;
-import nez.lang.expr.Tlfold;
-import nez.lang.expr.Tlink;
-import nez.lang.expr.Tnew;
-import nez.lang.expr.Treplace;
-import nez.lang.expr.Ttag;
-import nez.lang.expr.Xblock;
-import nez.lang.expr.Xexists;
-import nez.lang.expr.Xif;
-import nez.lang.expr.Xindent;
-import nez.lang.expr.Xis;
-import nez.lang.expr.Xlocal;
-import nez.lang.expr.Xmatch;
-import nez.lang.expr.Xon;
-import nez.lang.expr.Xsymbol;
 import nez.parser.Parser;
 import nez.parser.ParserGrammar;
 import nez.parser.ParserStrategy;
@@ -56,14 +28,21 @@ public abstract class ParserGrammarSourceGenerator extends Expression.Visitor im
 
 	@Override
 	public final void init(Grammar g, Parser parser, String path) {
+		this.parser = parser;
 		this.strategy = parser.getParserStrategy();
 		if (path == null) {
 			this.file = new FileBuilder(null);
 		} else {
 			this.path = FileBuilder.extractFileName(path);
-			this.file = new FileBuilder(FileBuilder.changeFileExtension(path, this.getFileExtension()));
-			ConsoleUtils.println("generating " + path + " ... ");
+			String filename = FileBuilder.changeFileExtension(path, this.getFileExtension());
+			this.file = new FileBuilder(filename);
+			ConsoleUtils.println("generating " + filename + " ... ");
 		}
+	}
+
+	@Override
+	public void doc(String command, String urn, String outputFormat) {
+		file.writeIndent(LineComment + "Translated by nez " + command + " -g " + urn + " --format " + outputFormat);
 	}
 
 	protected abstract String getFileExtension();
@@ -266,7 +245,7 @@ public abstract class ParserGrammarSourceGenerator extends Expression.Visitor im
 
 	public abstract void visitByte(Nez.Byte p);
 
-	public abstract void visitByteset(Nez.Byteset p);
+	public abstract void visitByteSet(Nez.ByteSet p);
 
 	public abstract void visitString(Nez.String p);
 
@@ -308,15 +287,13 @@ public abstract class ParserGrammarSourceGenerator extends Expression.Visitor im
 
 	public abstract void visitSymbolExists(Nez.SymbolExists p);
 
-	public abstract void visitSymbolPredicate(Nez.SymbolPredicate p);
+	public abstract void visitSymbolMatch(Nez.SymbolMatch p);
 
-	public abstract void visitXis(Xis p);
+	public abstract void visitSymbolPredicate(Nez.SymbolPredicate p);
 
 	public abstract void visitIf(Nez.If p);
 
 	public abstract void visitOn(Nez.On p);
-
-	public abstract void visitXindent(Xindent p);
 
 	public final Object visit(Expression e) {
 		return e.visit(this, null);
@@ -340,8 +317,8 @@ public abstract class ParserGrammarSourceGenerator extends Expression.Visitor im
 	}
 
 	@Override
-	public final Object visitByteset(Nez.Byteset p, Object a) {
-		this.visitByteset(p);
+	public final Object visitByteSet(Nez.ByteSet p, Object a) {
+		this.visitByteSet(p);
 		return null;
 	}
 
@@ -492,20 +469,14 @@ public abstract class ParserGrammarSourceGenerator extends Expression.Visitor im
 	}
 
 	@Override
+	public final Object visitSymbolMatch(Nez.SymbolMatch p, Object a) {
+		this.visitSymbolMatch(p);
+		return null;
+	}
+
+	@Override
 	public final Object visitSymbolPredicate(Nez.SymbolPredicate p, Object a) {
 		this.visitSymbolPredicate(p);
-		return null;
-	}
-
-	@Override
-	public final Object visitXis(Xis p, Object a) {
-		this.visitXis(p);
-		return null;
-	}
-
-	@Override
-	public final Object visitXindent(Xindent p, Object a) {
-		this.visitXindent(p);
 		return null;
 	}
 

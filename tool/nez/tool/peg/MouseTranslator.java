@@ -69,7 +69,7 @@ public class MouseTranslator extends PEGTranslator {
 	}
 
 	@Override
-	public void visitByteset(Nez.Byteset e) {
+	public void visitByteSet(Nez.ByteSet e) {
 		file.write(stringfy(e.byteMap));
 	}
 

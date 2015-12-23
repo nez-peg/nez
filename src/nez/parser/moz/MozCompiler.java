@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 import nez.lang.Expression;
 import nez.lang.Nez;
+import nez.lang.Predicate;
 import nez.lang.Production;
 import nez.lang.Typestate;
 import nez.lang.expr.Cany;
@@ -13,8 +14,6 @@ import nez.lang.expr.Cset;
 import nez.lang.expr.ExpressionCommons;
 import nez.lang.expr.NonTerminal;
 import nez.lang.expr.Psequence;
-import nez.lang.expr.Xindent;
-import nez.lang.expr.Xis;
 import nez.parser.Coverage;
 import nez.parser.ParseFunc;
 import nez.parser.ParserGrammar;
@@ -194,7 +193,7 @@ public class MozCompiler extends Expression.Visitor {
 	}
 
 	@Override
-	public MozInst visitByteset(Nez.Byteset p, Object next) {
+	public MozInst visitByteSet(Nez.ByteSet p, Object next) {
 		return new Moz.Set(p, (MozInst) next);
 	}
 
@@ -340,13 +339,13 @@ public class MozCompiler extends Expression.Visitor {
 	}
 
 	@Override
-	public MozInst visitSymbolPredicate(Nez.SymbolPredicate p, Object next) {
+	public MozInst visitSymbolMatch(Nez.SymbolMatch p, Object next) {
 		return new Moz.SMatch(p, (MozInst) next);
 	}
 
 	@Override
-	public MozInst visitXis(Xis p, Object next) {
-		if (p.is) {
+	public MozInst visitSymbolPredicate(Nez.SymbolPredicate p, Object next) {
+		if (p.op == Predicate.is) {
 			return new Moz.Pos(p, visit(p.get(0), new Moz.SIs(p, (MozInst) next)));
 		} else {
 			return new Moz.Pos(p, visit(p.get(0), new Moz.SIsa(p, (MozInst) next)));
@@ -621,12 +620,6 @@ public class MozCompiler extends Expression.Visitor {
 		inside = new Moz.TStart(p, inside);
 		inside = new Moz.Alt(p, new Moz.MemoFail(p, f.isStateful(), f.getMemoPoint()), inside);
 		return new Moz.TLookup(p, f.getMemoPoint(), f.isStateful(), inside, (MozInst) next);
-	}
-
-	@Override
-	public Object visitXindent(Xindent e, Object a) {
-		// TODO Auto-generated method stub
-		return a;
 	}
 
 	@Override

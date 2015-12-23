@@ -11,8 +11,6 @@ import nez.lang.expr.ExpressionCommons;
 import nez.lang.expr.NonTerminal;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
-import nez.lang.expr.Xindent;
-import nez.lang.expr.Xis;
 import nez.util.UList;
 
 public abstract class Expression extends AbstractList<Expression> {
@@ -158,13 +156,15 @@ public abstract class Expression extends AbstractList<Expression> {
 
 		public abstract Object visitByte(Nez.Byte e, Object a);
 
-		public abstract Object visitByteset(Nez.Byteset e, Object a);
+		public abstract Object visitByteSet(Nez.ByteSet e, Object a);
 
 		public abstract Object visitAny(Nez.Any e, Object a);
 
 		public abstract Object visitString(Nez.String e, Object a);
 
 		public abstract Object visitPair(Nez.Pair e, Object a);
+
+		// public abstract Object visitSequence(Nez.Sequence e, Object a);
 
 		public abstract Object visitChoice(Nez.Choice e, Object a);
 
@@ -200,17 +200,19 @@ public abstract class Expression extends AbstractList<Expression> {
 
 		public abstract Object visitSymbolPredicate(Nez.SymbolPredicate e, Object a);
 
+		public abstract Object visitSymbolMatch(Nez.SymbolMatch e, Object a);
+
 		public abstract Object visitSymbolExists(Nez.SymbolExists e, Object a);
 
 		public abstract Object visitIf(Nez.If e, Object a);
 
 		public abstract Object visitOn(Nez.On e, Object a);
 
-		public abstract Object visitXindent(Xindent e, Object a);
+		// public abstract Object visitSetCount(Nez.SetCount e, Object a);
+		//
+		// public abstract Object visitCount(Nez.Count e, Object a);
 
-		public abstract Object visitXis(Xis e, Object a);
-
-		public Object visitUndefined(Expression e, Object a) {
+		public Object visitExtended(Expression e, Object a) {
 			return a;
 		}
 

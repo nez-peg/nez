@@ -7,8 +7,6 @@ import nez.lang.Grammar;
 import nez.lang.Nez;
 import nez.lang.Production;
 import nez.lang.expr.NonTerminal;
-import nez.lang.expr.Xindent;
-import nez.lang.expr.Xis;
 import nez.parser.Parser;
 import nez.parser.ParserStrategy;
 import nez.tool.parser.SourceGenerator;
@@ -29,6 +27,7 @@ public abstract class GrammarTranslator extends Expression.Visitor implements So
 
 	@Override
 	public final void init(Grammar g, Parser parser, String path) {
+		this.parser = parser;
 		this.strategy = parser.getParserStrategy();
 		if (path == null) {
 			this.file = new FileBuilder(null);
@@ -38,6 +37,11 @@ public abstract class GrammarTranslator extends Expression.Visitor implements So
 			this.file = new FileBuilder(filename);
 			ConsoleUtils.println("generating " + filename + " ... ");
 		}
+	}
+
+	@Override
+	public void doc(String command, String urn, String outputFormat) {
+		file.writeIndent(LineComment + "Translated by nez " + command + " -g " + urn + " --format " + outputFormat);
 	}
 
 	protected abstract String getFileExtension();
@@ -245,7 +249,7 @@ public abstract class GrammarTranslator extends Expression.Visitor implements So
 
 	public abstract void visitByte(Nez.Byte p);
 
-	public abstract void visitByteset(Nez.Byteset p);
+	public abstract void visitByteSet(Nez.ByteSet p);
 
 	public abstract void visitString(Nez.String p);
 
@@ -287,15 +291,13 @@ public abstract class GrammarTranslator extends Expression.Visitor implements So
 
 	public abstract void visitSymbolExists(Nez.SymbolExists p);
 
-	public abstract void visitSymbolPredicate(Nez.SymbolPredicate p);
+	public abstract void visitSymbolMatch(Nez.SymbolMatch p);
 
-	public abstract void visitXis(Xis p);
+	public abstract void visitSymbolPredicate(Nez.SymbolPredicate p);
 
 	public abstract void visitIf(Nez.If p);
 
 	public abstract void visitOn(Nez.On p);
-
-	public abstract void visitXindent(Xindent p);
 
 	public final Object visit(Expression e) {
 		return e.visit(this, null);
@@ -319,8 +321,8 @@ public abstract class GrammarTranslator extends Expression.Visitor implements So
 	}
 
 	@Override
-	public final Object visitByteset(Nez.Byteset p, Object a) {
-		this.visitByteset(p);
+	public final Object visitByteSet(Nez.ByteSet p, Object a) {
+		this.visitByteSet(p);
 		return null;
 	}
 
@@ -471,20 +473,14 @@ public abstract class GrammarTranslator extends Expression.Visitor implements So
 	}
 
 	@Override
+	public final Object visitSymbolMatch(Nez.SymbolMatch p, Object a) {
+		this.visitSymbolMatch(p);
+		return null;
+	}
+
+	@Override
 	public final Object visitSymbolPredicate(Nez.SymbolPredicate p, Object a) {
 		this.visitSymbolPredicate(p);
-		return null;
-	}
-
-	@Override
-	public final Object visitXis(Xis p, Object a) {
-		this.visitXis(p);
-		return null;
-	}
-
-	@Override
-	public final Object visitXindent(Xindent p, Object a) {
-		this.visitXindent(p);
 		return null;
 	}
 

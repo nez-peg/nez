@@ -118,7 +118,7 @@ public abstract class GrammarGenerator extends GrammarTranslator {
 	// }
 	//
 	// @Override
-	// public void visitByteset(Nez.Byteset e) {
+	// public void visitByteSet(Nez.ByteSet e) {
 	// W(StringUtils.stringfyCharacterClass(e.byteMap));
 	// }
 	//
@@ -271,13 +271,13 @@ public abstract class GrammarGenerator extends GrammarTranslator {
 	// }
 	//
 	// @Override
-	// public void visitSymbolPredicate(Nez.SymbolPredicate p) {
+	// public void visitSymbolMatch(Nez.SymbolMatch p) {
 	// // TODO Auto-generated method stub
 	//
 	// }
 	//
 	// @Override
-	// public void visitXis(Xis p) {
+	// public void visitSymbolPredicate(Nez.SymbolPredicate p) {
 	// // TODO Auto-generated method stub
 	//
 	// }

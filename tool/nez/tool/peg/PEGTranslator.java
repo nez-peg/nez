@@ -10,8 +10,6 @@ import nez.lang.expr.NonTerminal;
 import nez.lang.expr.Pchoice;
 import nez.lang.expr.Psequence;
 import nez.lang.expr.Unary;
-import nez.lang.expr.Xindent;
-import nez.lang.expr.Xis;
 import nez.util.StringUtils;
 
 public class PEGTranslator extends GrammarTranslator {
@@ -61,7 +59,7 @@ public class PEGTranslator extends GrammarTranslator {
 	}
 
 	@Override
-	public void visitByteset(Nez.Byteset p) {
+	public void visitByteSet(Nez.ByteSet p) {
 		W(StringUtils.stringfyCharacterClass(p.byteMap));
 	}
 
@@ -239,12 +237,12 @@ public class PEGTranslator extends GrammarTranslator {
 	}
 
 	@Override
-	public void visitSymbolPredicate(Nez.SymbolPredicate p) {
+	public void visitSymbolMatch(Nez.SymbolMatch p) {
 		SemanticPredicate("match(" + p.tableName + ")");
 	}
 
 	@Override
-	public void visitXis(Xis p) {
+	public void visitSymbolPredicate(Nez.SymbolPredicate p) {
 		// TODO Auto-generated method stub
 
 	}
@@ -257,12 +255,6 @@ public class PEGTranslator extends GrammarTranslator {
 
 	@Override
 	public void visitOn(Nez.On p) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void visitXindent(Xindent p) {
 		// TODO Auto-generated method stub
 
 	}

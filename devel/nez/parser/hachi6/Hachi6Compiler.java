@@ -5,6 +5,7 @@ import java.util.HashMap;
 
 import nez.ast.TreeVisitorMap;
 import nez.lang.Expression;
+import nez.lang.Predicate;
 import nez.lang.Production;
 import nez.lang.expr.ExpressionCommons;
 import nez.parser.ParseFunc;
@@ -555,7 +556,7 @@ public class Hachi6Compiler extends TreeVisitorMap<DefaultVisitor> {
 		@Override
 		public Hachi6Inst accept(Expression e, Hachi6Inst next) {
 			nez.lang.expr.Xis p = (nez.lang.expr.Xis) e;
-			if (p.is) {
+			if (p.op == Predicate.is) {
 				return new Hachi6.Pos(generate(p.get(0), new Hachi6.SIs(p.getTable(), next)));
 			} else {
 				return new Hachi6.Pos(generate(p.get(0), new Hachi6.SIsa(p.getTable(), next)));

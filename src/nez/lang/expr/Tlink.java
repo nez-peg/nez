@@ -11,9 +11,6 @@ public class Tlink extends Nez.Link {
 		super(label, e);
 	}
 
-	@Deprecated
-	public int index = -1;
-
 	@Override
 	public boolean isConsumed() {
 		return this.inner.isConsumed();

@@ -108,23 +108,23 @@ public class Nez {
 		}
 	}
 
-	public static abstract class Byteset extends Terminal implements Character {
+	public static abstract class ByteSet extends Terminal implements Character {
 		public boolean[] byteMap; // Immutable
 
-		public Byteset() {
+		public ByteSet() {
 			super();
 			this.byteMap = new boolean[257];
 		}
 
-		public Byteset(boolean[] b) {
+		public ByteSet(boolean[] b) {
 			super();
 			this.byteMap = b;
 		}
 
 		@Override
 		public final boolean equals(Object o) {
-			if (o instanceof Byteset) {
-				Byteset e = (Byteset) o;
+			if (o instanceof ByteSet) {
+				ByteSet e = (ByteSet) o;
 				for (int i = 0; i < this.byteMap.length; i++) {
 					if (this.byteMap[i] != e.byteMap[i]) {
 						return false;
@@ -142,7 +142,7 @@ public class Nez {
 
 		@Override
 		public Object visit(Expression.Visitor v, Object a) {
-			return v.visitByteset(this, a);
+			return v.visitByteSet(this, a);
 		}
 	}
 
@@ -746,7 +746,7 @@ public class Nez {
 		}
 	}
 
-	public abstract static class SymbolAction extends Operand implements AST {
+	public abstract static class SymbolAction extends Operand {
 		public final Symbol tableName;
 
 		public SymbolAction(Predicate op, NonTerminal e) {
@@ -772,11 +772,11 @@ public class Nez {
 
 	}
 
-	public abstract static class SymbolPredicate extends Operand implements AST {
+	public abstract static class SymbolPredicate extends Operand {
 		public final Symbol tableName;
 
-		public SymbolPredicate(Predicate op, Symbol table) {
-			super(op, empty);
+		public SymbolPredicate(Predicate op, Symbol table, Expression e) {
+			super(op, e);
 			this.tableName = table;
 		}
 
@@ -790,18 +790,41 @@ public class Nez {
 		}
 
 		@Override
+		public void format(StringBuilder sb) {
+			sb.append("<");
+			sb.append(this.op);
+			sb.append(" ");
+			sb.append(tableName);
+			sb.append(">");
+		}
+
+		@Override
 		public Object visit(Expression.Visitor v, Object a) {
 			return v.visitSymbolPredicate(this, a);
 		}
 
+	}
+
+	public abstract static class SymbolMatch extends Operand {
+		public final Symbol tableName;
+
+		public SymbolMatch(Predicate op, Symbol table) {
+			super(op, empty);
+			this.tableName = table;
+		}
+
 		@Override
-		public boolean isConsumed() {
+		public final boolean equals(Object o) {
+			if (o instanceof SymbolMatch) {
+				SymbolMatch e = (SymbolMatch) o;
+				return e.op == this.op && this.tableName == e.tableName;
+			}
 			return false;
 		}
 
 		@Override
-		public short acceptByte(int ch) {
-			return PossibleAcceptance.Accept;
+		public Object visit(Expression.Visitor v, Object a) {
+			return v.visitSymbolMatch(this, a);
 		}
 
 	}
@@ -956,6 +979,49 @@ public class Nez {
 		@Override
 		public Object visit(Expression.Visitor v, Object a) {
 			return v.visitIf(this, a);
+		}
+	}
+
+	public abstract static class SetCount extends Operand {
+		public final long mask;
+
+		public SetCount(long mask, Expression e) {
+			super(Predicate.setcount, e);
+			this.mask = mask;
+		}
+
+		@Override
+		public final boolean equals(Object o) {
+			if (o instanceof Nez.SetCount) {
+				Nez.SetCount e = (Nez.SetCount) o;
+				return this.mask == e.mask;
+			}
+			return false;
+		}
+
+		@Override
+		public Object visit(Expression.Visitor v, Object a) {
+			return v.visitExtended(this, a);
+		}
+	}
+
+	public abstract static class Count extends Operand {
+
+		public Count(Expression e) {
+			super(Predicate.count, e);
+		}
+
+		@Override
+		public final boolean equals(Object o) {
+			if (o instanceof Nez.Count) {
+				return this.get(0).equals(((Expression) o).get(0));
+			}
+			return false;
+		}
+
+		@Override
+		public Object visit(Expression.Visitor v, Object a) {
+			return v.visitExtended(this, a);
 		}
 	}
 

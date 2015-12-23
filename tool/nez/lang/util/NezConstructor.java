@@ -417,20 +417,6 @@ public class NezConstructor extends GrammarFileLoader {
 		}
 	}
 
-	public class _DefIndent extends NezConstructorDefault {
-		@Override
-		public Expression toExpression(Tree<?> node) {
-			return ExpressionCommons.newDefIndent(node);
-		}
-	}
-
-	public class _Indent extends NezConstructorDefault {
-		@Override
-		public Expression toExpression(Tree<?> node) {
-			return ExpressionCommons.newIndent(node);
-		}
-	}
-
 	public class Undefined extends NezConstructorDefault {
 		@Override
 		public Expression toExpression(Tree<?> node) {

@@ -12,7 +12,7 @@ import nez.tool.ast.TreeWriter;
 import nez.util.ConsoleUtils;
 import nez.util.Verbose;
 
-public class Cshell extends Command {
+public class Cinez extends Command {
 	Object console;
 	String text = null;
 	int linenum = 1;
@@ -21,16 +21,22 @@ public class Cshell extends Command {
 	public void exec() throws IOException {
 		Command.displayVersion();
 		ConsoleUtils.println("");
-		ParserGenerator pg = new ParserGenerator();
 		Parser nezParser = this.getNezParser();
 		TreeWriter writer = this.getTreeWriter("ast json xml");
 		Grammar grammar = newGrammar();
 		String start = grammar.getStartProduction().getLocalName();
 		Parser p = strategy.newParser(grammar);
 		p.setDisabledUnconsumed(true);
+		ParserGenerator pg = new ParserGenerator();
 		int startline = linenum;
 		console = ReadLine.getConsoleReader();
 		while (readText(ConsoleUtils.bold(start) + ">>> ") && text != null) {
+			if (checkEmptyText(text)) {
+				ConsoleUtils.begin(32);
+				grammar.dump();
+				ConsoleUtils.end();
+				continue;
+			}
 			Source sc = CommonSource.newStringSource("<stdio>", startline, text);
 			startline = linenum;
 			Tree<?> node = nezParser.parse(sc);
@@ -121,4 +127,16 @@ public class Cshell extends Command {
 		linenum += linecount;
 		return true;
 	}
+
+	private boolean checkEmptyText(String s) {
+		for (int i = 0; i < s.length(); i++) {
+			char c = s.charAt(i);
+			if (c == ' ' || c == '\t' || c == '\n' || c == '\r') {
+				continue;
+			}
+			return false;
+		}
+		return true;
+	}
+
 }

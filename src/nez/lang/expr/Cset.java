@@ -5,7 +5,7 @@ import nez.lang.Expression;
 import nez.lang.Nez;
 import nez.lang.PossibleAcceptance;
 
-public class Cset extends Nez.Byteset {
+public class Cset extends Nez.ByteSet {
 
 	Cset(SourceLocation s, boolean binary, int beginChar, int endChar) {
 		super();
@@ -20,7 +20,7 @@ public class Cset extends Nez.Byteset {
 
 	@Override
 	public Object visit(Expression.Visitor v, Object a) {
-		return v.visitByteset(this, a);
+		return v.visitByteSet(this, a);
 	}
 
 	@Override
