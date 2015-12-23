@@ -3,31 +3,31 @@ package nez.lang;
 import nez.lang.Nez.Byte;
 import nez.lang.expr.NonTerminal;
 
-public enum Consumer {
+public enum ByteConsumption {
 	Unconsumed, //
 	Consumed, //
 	Undecided;
 
 	public final static class Analyzer extends Expression.Visitor {
 
-		public Consumer quickCheck(Production p) {
+		public ByteConsumption quickCheck(Production p) {
 			String uname = p.getUniqueName();
 			if (this.isVisited(uname)) {
-				return (Consumer) lookup(uname);
+				return (ByteConsumption) lookup(uname);
 			}
-			Consumer c = quickCheck(p.getExpression());
+			ByteConsumption c = quickCheck(p.getExpression());
 			if (c != Undecided) {
 				this.memo(uname, c);
 			}
 			return c;
 		}
 
-		public Consumer deepCheck(Production p) {
+		public ByteConsumption deepCheck(Production p) {
 			String uname = p.getUniqueName();
 			if (this.isVisited(uname)) {
-				return (Consumer) lookup(uname);
+				return (ByteConsumption) lookup(uname);
 			}
-			Consumer c = quickCheck(p.getExpression());
+			ByteConsumption c = quickCheck(p.getExpression());
 			this.memo(uname, c);
 			if (c == Undecided) {
 				c = deepCheck(p.getExpression());
@@ -36,26 +36,26 @@ public enum Consumer {
 			return c;
 		}
 
-		public final Consumer quickCheck(Expression e) {
-			return (Consumer) e.visit(this, true);
+		public final ByteConsumption quickCheck(Expression e) {
+			return (ByteConsumption) e.visit(this, true);
 		}
 
-		public final Consumer deepCheck(Expression e) {
-			return (Consumer) e.visit(this, false);
+		public final ByteConsumption deepCheck(Expression e) {
+			return (ByteConsumption) e.visit(this, false);
 		}
 
 		public final boolean isConsumed(Production p) {
-			Consumer c = deepCheck(p);
+			ByteConsumption c = deepCheck(p);
 			return c == Consumed;
 		}
 
 		public final boolean isConsumed(Expression p) {
-			Consumer c = deepCheck(p);
+			ByteConsumption c = deepCheck(p);
 			return c == Consumed;
 		}
 
-		private Consumer check(Expression e, Object a) {
-			return (Consumer) e.visit(this, a);
+		private ByteConsumption check(Expression e, Object a) {
+			return (ByteConsumption) e.visit(this, a);
 		}
 
 		@Override
@@ -108,7 +108,7 @@ public enum Consumer {
 		public Object visitSequence(Nez.Sequence e, Object a) {
 			boolean undecided = false;
 			for (Expression sub : e) {
-				Consumer c = check(sub, a);
+				ByteConsumption c = check(sub, a);
 				if (c == Consumed) {
 					return Consumed;
 				}
@@ -124,7 +124,7 @@ public enum Consumer {
 			boolean unconsumed = false;
 			boolean undecided = false;
 			for (Expression sub : e) {
-				Consumer c = check(sub, a);
+				ByteConsumption c = check(sub, a);
 				if (c == Consumed) {
 					continue;
 				}

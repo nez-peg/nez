@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
-import nez.lang.Consumer;
+import nez.lang.ByteConsumption;
 import nez.lang.Expression;
 import nez.lang.Grammar;
 import nez.lang.GrammarChecker;
@@ -26,7 +26,7 @@ public class ParserGrammar extends Grammar {
 
 	/* Consumed */
 
-	private final Consumer.Analyzer consumed = new Consumer.Analyzer();
+	private final ByteConsumption.Analyzer consumed = new ByteConsumption.Analyzer();
 
 	public final boolean isConsumed(Production p) {
 		return consumed.isConsumed(p);
