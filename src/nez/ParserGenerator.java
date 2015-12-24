@@ -101,7 +101,6 @@ public class ParserGenerator {
 	public final void updateGrammar(Grammar grammar, Source source, String ext) throws IOException {
 		GrammarExtension grammarExtention = this.lookupGrammarExtension(ext);
 		Parser parser = grammarExtention.getParser();
-		System.out.println(parser);
 		Tree<?> node = parser.parse(source);
 		parser.ensureNoErrors();
 		GrammarLoader loader = new GrammarLoader(grammar, ParserStrategy.newDefaultStrategy());
