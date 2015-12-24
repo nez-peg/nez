@@ -8,7 +8,7 @@ import nez.lang.Predicate;
 public class Xsymbol extends Nez.SymbolAction {
 	Xsymbol(SourceLocation s, NonTerminal pat) {
 		super(Predicate.symbol, pat);
-		this.set(s);
+		this.setSourceLocation(s);
 	}
 
 	// Xsymbol(SourceLocation s, Symbol tableName, Expression pat) {

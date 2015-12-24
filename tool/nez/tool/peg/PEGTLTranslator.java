@@ -200,7 +200,7 @@ public class PEGTLTranslator extends GrammarTranslator {
 	}
 
 	@Override
-	public void visitString(Nez.String p) {
+	public void visitString(Nez.MultiByte p) {
 		// TODO Auto-generated method stub
 
 	}

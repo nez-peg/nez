@@ -7,7 +7,7 @@ public class Cbyte extends Nez.Byte {
 
 	Cbyte(SourceLocation s, boolean binary, int ch) {
 		super(ch);
-		this.set(s);
+		this.setSourceLocation(s);
 	}
 
 	@Override

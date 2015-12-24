@@ -629,7 +629,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitString(Nez.String p) {
+	public void visitString(Nez.MultiByte p) {
 		int len = p.byteSeq.length;
 		L("if (TAIL(ctx) - ctx->cur >= " + len + ")");
 		Begin("{");

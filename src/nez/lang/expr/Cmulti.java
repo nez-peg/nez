@@ -3,11 +3,11 @@ package nez.lang.expr;
 import nez.ast.SourceLocation;
 import nez.lang.Nez;
 
-public class Cmulti extends Nez.String {
+public class Cmulti extends Nez.MultiByte {
 
 	Cmulti(SourceLocation s, boolean binary, byte[] byteSeq) {
 		super(byteSeq);
-		this.set(s);
+		this.setSourceLocation(s);
 	}
 
 	@Override

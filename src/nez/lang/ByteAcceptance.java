@@ -22,7 +22,6 @@ import nez.lang.Nez.Pair;
 import nez.lang.Nez.PreNew;
 import nez.lang.Nez.Replace;
 import nez.lang.Nez.Sequence;
-import nez.lang.Nez.String;
 import nez.lang.Nez.SymbolAction;
 import nez.lang.Nez.SymbolExists;
 import nez.lang.Nez.SymbolMatch;
@@ -84,7 +83,7 @@ public enum ByteAcceptance {
 		}
 
 		@Override
-		public ByteAcceptance visitString(String e, Object ch) {
+		public ByteAcceptance visitMultiByte(Nez.MultiByte e, Object ch) {
 			return ((e.byteSeq[0] & 0xff) == (int) ch) ? Accept : Reject;
 		}
 

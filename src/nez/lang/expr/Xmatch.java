@@ -10,7 +10,7 @@ public class Xmatch extends Nez.SymbolMatch implements Expression.Contextual {
 
 	Xmatch(SourceLocation s, Symbol tableName) {
 		super(Predicate.match, tableName);
-		this.set(s);
+		this.setSourceLocation(s);
 	}
 
 	public final Symbol getTable() {

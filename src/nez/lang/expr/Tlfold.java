@@ -8,7 +8,7 @@ public class Tlfold extends Nez.LeftFold {
 
 	Tlfold(SourceLocation s, Symbol label, int shift) {
 		super(shift, label);
-		this.set(s);
+		this.setSourceLocation(s);
 	}
 
 	@Override

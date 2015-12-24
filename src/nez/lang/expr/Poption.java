@@ -7,7 +7,7 @@ import nez.lang.Nez;
 public class Poption extends Nez.Option {
 	Poption(SourceLocation s, Expression e) {
 		super(e);
-		this.set(s);
+		this.setSourceLocation(s);
 	}
 
 	@Override

@@ -8,7 +8,7 @@ public class Xif extends Nez.If implements Expression.Conditional {
 
 	Xif(SourceLocation s, boolean predicate, String flagName) {
 		super(predicate, flagName);
-		this.set(s);
+		this.setSourceLocation(s);
 	}
 
 	public final String getFlagName() {

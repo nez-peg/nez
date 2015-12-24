@@ -9,7 +9,7 @@ public class Pzero extends Nez.ZeroMore {
 
 	Pzero(SourceLocation s, Expression e) {
 		super(e);
-		this.set(s);
+		this.setSourceLocation(s);
 		// e.setOuterLefted(this);
 	}
 

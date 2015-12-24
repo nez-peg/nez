@@ -92,7 +92,7 @@ public enum ByteConsumption {
 		}
 
 		@Override
-		public Object visitString(Nez.String e, Object a) {
+		public Object visitMultiByte(Nez.MultiByte e, Object a) {
 			return Consumed;
 		}
 

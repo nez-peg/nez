@@ -64,7 +64,7 @@ public class PEGTranslator extends GrammarTranslator {
 	}
 
 	@Override
-	public void visitString(Nez.String p) {
+	public void visitString(Nez.MultiByte p) {
 		W(p.toString()); // FIXME
 	}
 

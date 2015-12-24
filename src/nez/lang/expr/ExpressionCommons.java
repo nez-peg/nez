@@ -13,17 +13,6 @@ public abstract class ExpressionCommons extends Expression {
 		super(s);
 	}
 
-	@Override
-	public void format(StringBuilder sb) {
-		sb.append("<");
-		sb.append(this.getPredicate());
-		for (Expression se : this) {
-			sb.append(" ");
-			se.format(sb);
-		}
-		sb.append(">");
-	}
-
 	// -----------------------------------------------------------------------
 	// Utils
 

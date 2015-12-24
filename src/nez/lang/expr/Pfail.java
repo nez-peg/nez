@@ -5,7 +5,7 @@ import nez.lang.Nez;
 
 public class Pfail extends Nez.Fail {
 	Pfail(SourceLocation s) {
-		this.set(s);
+		this.setSourceLocation(s);
 	}
 
 	@Override

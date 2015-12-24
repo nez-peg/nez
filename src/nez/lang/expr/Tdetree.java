@@ -7,7 +7,7 @@ import nez.lang.Nez;
 public class Tdetree extends Nez.Detree {
 	Tdetree(SourceLocation s, Expression inner) {
 		super(inner);
-		this.set(s);
+		this.setSourceLocation(s);
 	}
 
 	@Override

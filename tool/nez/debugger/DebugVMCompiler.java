@@ -154,7 +154,7 @@ public class DebugVMCompiler extends Expression.Visitor {
 	}
 
 	@Override
-	public MozInst visitString(Nez.String p, Object next) {
+	public MozInst visitMultiByte(Nez.MultiByte p, Object next) {
 		this.builder.createIstr(p, this.builder.jumpFailureJump(), p.byteSeq);
 		this.builder.setInsertPoint(new BasicBlock());
 		return null;

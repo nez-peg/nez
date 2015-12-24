@@ -198,7 +198,7 @@ public class MozCompiler extends Expression.Visitor {
 	}
 
 	@Override
-	public MozInst visitString(Nez.String p, Object next) {
+	public MozInst visitMultiByte(Nez.MultiByte p, Object next) {
 		return new Moz.Str(p, (MozInst) next);
 	}
 

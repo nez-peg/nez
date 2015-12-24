@@ -11,12 +11,12 @@ public class Xis extends Nez.SymbolPredicate implements Expression.Contextual {
 
 	Xis(SourceLocation s, NonTerminal pat, boolean is) {
 		super(is ? Predicate.is : Predicate.isa, Symbol.tag(pat.getLocalName()), pat);
-		this.set(s);
+		this.setSourceLocation(s);
 	}
 
 	Xis(SourceLocation s, Symbol tableName, Expression e, boolean is) {
 		super(is ? Predicate.is : Predicate.isa, tableName, e);
-		this.set(s);
+		this.setSourceLocation(s);
 	}
 
 	public final Symbol getTable() {

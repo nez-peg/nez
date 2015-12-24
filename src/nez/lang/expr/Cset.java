@@ -1,7 +1,6 @@
 package nez.lang.expr;
 
 import nez.ast.SourceLocation;
-import nez.lang.Expression;
 import nez.lang.Nez;
 
 public class Cset extends Nez.ByteSet {
@@ -15,11 +14,6 @@ public class Cset extends Nez.ByteSet {
 	Cset(SourceLocation s, boolean binary, boolean[] b) {
 		super(b);
 		this.byteMap = b;
-	}
-
-	@Override
-	public Object visit(Expression.Visitor v, Object a) {
-		return v.visitByteSet(this, a);
 	}
 
 	@Override

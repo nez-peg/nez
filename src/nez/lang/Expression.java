@@ -14,17 +14,17 @@ import nez.lang.expr.Ttag;
 import nez.util.UList;
 
 public abstract class Expression extends AbstractList<Expression> {
-	SourceLocation s = null;
-
 	protected Expression() {
 		this(null);
 	}
+
+	private SourceLocation s = null;
 
 	protected Expression(SourceLocation s) {
 		this.s = s;
 	}
 
-	protected final void set(SourceLocation s) {
+	protected final void setSourceLocation(SourceLocation s) {
 		this.s = s;
 	}
 
@@ -43,11 +43,11 @@ public abstract class Expression extends AbstractList<Expression> {
 	@Override
 	public final String toString() {
 		StringBuilder sb = new StringBuilder();
-		format(sb);
+		ExpressionFormatter.defaultFormatter.format(this, sb);
 		return sb.toString();
 	}
 
-	public abstract void format(StringBuilder sb);
+	// public abstract void format(StringBuilder sb);
 
 	public final String getPredicate() {
 		return this.getClass().getSimpleName().substring(1);
@@ -158,7 +158,7 @@ public abstract class Expression extends AbstractList<Expression> {
 
 		public abstract Object visitAny(Nez.Any e, Object a);
 
-		public abstract Object visitString(Nez.String e, Object a);
+		public abstract Object visitMultiByte(Nez.MultiByte e, Object a);
 
 		public abstract Object visitPair(Nez.Pair e, Object a);
 

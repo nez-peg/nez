@@ -6,7 +6,7 @@ import nez.lang.Nez;
 public class Tcapture extends Nez.New {
 
 	Tcapture(SourceLocation s, int shift) {
-		this.set(s);
+		this.setSourceLocation(s);
 		this.shift = shift;
 	}
 

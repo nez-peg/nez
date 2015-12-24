@@ -15,7 +15,7 @@ public class Xon extends Nez.On implements Expression.Conditional {
 
 	Xon(SourceLocation s, boolean predicate, String flagName, Expression inner) {
 		super(predicate, flagName, inner);
-		this.set(s);
+		this.setSourceLocation(s);
 	}
 
 	@Override

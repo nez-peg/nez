@@ -7,7 +7,7 @@ import nez.lang.Nez;
 public class Xblock extends Nez.BlockScope {
 	Xblock(SourceLocation s, Expression e) {
 		super(e);
-		this.set(s);
+		this.setSourceLocation(s);
 	}
 
 	@Override

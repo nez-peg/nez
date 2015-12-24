@@ -3,14 +3,13 @@ package nez.lang.expr;
 import nez.ast.SourceLocation;
 import nez.lang.Expression;
 import nez.lang.Nez;
-import nez.util.StringUtils;
 import nez.util.UList;
 
 public class Psequence extends Nez.Pair {
 
 	Psequence(SourceLocation s, Expression first, Expression next) {
 		super(first, next);
-		this.set(s);
+		this.setSourceLocation(s);
 	}
 
 	@Override
@@ -23,51 +22,47 @@ public class Psequence extends Nez.Pair {
 		return this.next;
 	}
 
-	@Override
-	public final void format(StringBuilder sb) {
-		if (this.first instanceof Cbyte && this.next.getFirst() instanceof Cbyte) {
-			sb.append("'");
-			formatString(sb, (Cbyte) this.first, this.next);
-		} else {
-			formatInner(sb, this.first);
-			sb.append(" ");
-			formatInner(sb, this.next);
-		}
-	}
-
-	private void formatString(StringBuilder sb, Cbyte b, Expression next) {
-		while (b != null) {
-			StringUtils.appendByteChar(sb, b.byteChar, "'");
-			if (next == null) {
-				sb.append("'");
-				return;
-			}
-			Expression first = next.getFirst();
-			b = null;
-			if (first instanceof Cbyte) {
-				b = (Cbyte) first;
-				next = next.getNext();
-			}
-		}
-		sb.append("'");
-		sb.append(" ");
-		formatInner(sb, next);
-	}
-
-	private void formatInner(StringBuilder sb, Expression e) {
-		if (e instanceof Pchoice) {
-			sb.append("(");
-			e.format(sb);
-			sb.append(")");
-		} else {
-			e.format(sb);
-		}
-	}
-
-	@Override
-	public Object visit(Expression.Visitor v, Object a) {
-		return v.visitPair(this, a);
-	}
+	// @Override
+	// public final void format(StringBuilder sb) {
+	// if (this.first instanceof Cbyte && this.next.getFirst() instanceof Cbyte)
+	// {
+	// sb.append("'");
+	// formatString(sb, (Cbyte) this.first, this.next);
+	// } else {
+	// formatInner(sb, this.first);
+	// sb.append(" ");
+	// formatInner(sb, this.next);
+	// }
+	// }
+	//
+	// private void formatString(StringBuilder sb, Cbyte b, Expression next) {
+	// while (b != null) {
+	// StringUtils.appendByteChar(sb, b.byteChar, "'");
+	// if (next == null) {
+	// sb.append("'");
+	// return;
+	// }
+	// Expression first = next.getFirst();
+	// b = null;
+	// if (first instanceof Cbyte) {
+	// b = (Cbyte) first;
+	// next = next.getNext();
+	// }
+	// }
+	// sb.append("'");
+	// sb.append(" ");
+	// formatInner(sb, next);
+	// }
+	//
+	// private void formatInner(StringBuilder sb, Expression e) {
+	// if (e instanceof Pchoice) {
+	// sb.append("(");
+	// e.format(sb);
+	// sb.append(")");
+	// } else {
+	// e.format(sb);
+	// }
+	// }
 
 	@Override
 	public boolean isConsumed() {

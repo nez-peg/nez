@@ -9,7 +9,7 @@ public class Xexists extends Nez.SymbolExists implements Expression.Contextual {
 
 	Xexists(SourceLocation s, Symbol tableName, String symbol) {
 		super(tableName, symbol);
-		this.set(s);
+		this.setSourceLocation(s);
 	}
 
 	public final java.lang.String getSymbol() {

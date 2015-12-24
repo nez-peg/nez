@@ -5,7 +5,7 @@ import nez.lang.Nez;
 
 public class Tnew extends Nez.PreNew {
 	Tnew(SourceLocation s, int shift) {
-		this.set(s);
+		this.setSourceLocation(s);
 		this.shift = shift;
 	}
 

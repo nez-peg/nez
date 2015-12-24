@@ -7,7 +7,7 @@ public class Treplace extends Nez.Replace {
 
 	Treplace(SourceLocation s, String value) {
 		super(value);
-		this.set(s);
+		this.setSourceLocation(s);
 	}
 
 	@Override

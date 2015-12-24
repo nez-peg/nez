@@ -7,7 +7,7 @@ import nez.lang.Nez;
 public class Pnot extends Nez.Not {
 	Pnot(SourceLocation s, Expression e) {
 		super(e);
-		this.set(s);
+		this.setSourceLocation(s);
 	}
 
 	@Override

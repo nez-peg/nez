@@ -65,11 +65,6 @@ public class NonTerminal extends ExpressionCommons {
 	}
 
 	@Override
-	public final void format(StringBuilder sb) {
-		sb.append(this.getLocalName());
-	}
-
-	@Override
 	public Object visit(Expression.Visitor v, Object a) {
 		return v.visitNonTerminal(this, a);
 	}

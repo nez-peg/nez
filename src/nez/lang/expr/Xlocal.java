@@ -9,7 +9,7 @@ public class Xlocal extends Nez.LocalScope {
 
 	Xlocal(SourceLocation s, Symbol table, Expression inner) {
 		super(table, inner);
-		this.set(s);
+		this.setSourceLocation(s);
 	}
 
 	@Override

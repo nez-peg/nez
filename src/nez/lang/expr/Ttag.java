@@ -8,7 +8,7 @@ public class Ttag extends Nez.Tag {
 
 	Ttag(SourceLocation s, Symbol tag) {
 		super(tag);
-		this.set(s);
+		this.setSourceLocation(s);
 	}
 
 	Ttag(SourceLocation s, String name) {

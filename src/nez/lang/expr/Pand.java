@@ -7,7 +7,7 @@ import nez.lang.Nez;
 public class Pand extends Nez.And {
 	Pand(SourceLocation s, Expression e) {
 		super(e);
-		this.set(s);
+		this.setSourceLocation(s);
 	}
 
 	@Override

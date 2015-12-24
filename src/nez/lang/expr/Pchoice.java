@@ -7,7 +7,7 @@ import nez.util.UList;
 
 public class Pchoice extends Nez.Choice {
 	Pchoice(SourceLocation s, UList<Expression> l, int size) {
-		this.set(s);
+		this.setSourceLocation(s);
 		this.inners = new Expression[size];
 		for (int i = 0; i < size; i++) {
 			this.inners[i] = l.get(i);

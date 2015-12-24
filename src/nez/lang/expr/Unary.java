@@ -28,19 +28,4 @@ public abstract class Unary extends ExpressionCommons {
 		return old;
 	}
 
-	protected final void formatUnary(StringBuilder sb, String prefix, Expression inner, String suffix) {
-		if (prefix != null) {
-			sb.append(prefix);
-		}
-		if (inner instanceof NonTerminal || inner instanceof Cbyte || inner instanceof Cset) {
-			inner.format(sb);
-		} else {
-			sb.append("(");
-			inner.format(sb);
-			sb.append(")");
-		}
-		if (suffix != null) {
-			sb.append(suffix);
-		}
-	}
 }

@@ -569,7 +569,7 @@ public class Moz {
 	static abstract class AbstractStrInstruction extends MozInst {
 		final byte[] utf8;
 
-		public AbstractStrInstruction(byte opcode, Nez.String e, byte[] utf8, MozInst next) {
+		public AbstractStrInstruction(byte opcode, Nez.MultiByte e, byte[] utf8, MozInst next) {
 			super(opcode, e, next);
 			this.utf8 = utf8;
 		}
@@ -593,7 +593,7 @@ public class Moz {
 	}
 
 	public static class Str extends AbstractStrInstruction {
-		public Str(Nez.String e, MozInst next) {
+		public Str(Nez.MultiByte e, MozInst next) {
 			super(MozSet.Str, e, e.byteSeq, next);
 		}
 
@@ -614,7 +614,7 @@ public class Moz {
 	}
 
 	public static class NStr extends AbstractStrInstruction {
-		public NStr(Nez.String e, MozInst next) {
+		public NStr(Nez.MultiByte e, MozInst next) {
 			super(MozSet.NStr, e, e.byteSeq, next);
 		}
 
@@ -634,7 +634,7 @@ public class Moz {
 	}
 
 	public static class OStr extends AbstractStrInstruction {
-		public OStr(Nez.String e, MozInst next) {
+		public OStr(Nez.MultiByte e, MozInst next) {
 			super(MozSet.OStr, e, e.byteSeq, next);
 		}
 
@@ -654,7 +654,7 @@ public class Moz {
 	}
 
 	public static class RStr extends AbstractStrInstruction {
-		public RStr(Nez.String e, MozInst next) {
+		public RStr(Nez.MultiByte e, MozInst next) {
 			super(MozSet.RStr, e, e.byteSeq, next);
 		}
 

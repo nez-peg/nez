@@ -38,7 +38,7 @@ public class GrammarRewriter extends GrammarTransducer {
 	}
 
 	@Override
-	public Expression visitString(Nez.String e, Object a) {
+	public Expression visitMultiByte(Nez.MultiByte e, Object a) {
 		return e;
 	}
 

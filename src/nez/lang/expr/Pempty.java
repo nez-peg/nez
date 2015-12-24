@@ -5,7 +5,7 @@ import nez.lang.Nez;
 
 public class Pempty extends Nez.Empty {
 	Pempty(SourceLocation s) {
-		this.set(s);
+		this.setSourceLocation(s);
 	}
 
 	@Override

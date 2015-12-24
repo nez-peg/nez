@@ -9,7 +9,6 @@ import nez.lang.expr.Psequence;
 import nez.lang.expr.Tlink;
 import nez.lang.expr.Ttag;
 import nez.lang.expr.Xexists;
-import nez.util.StringUtils;
 import nez.util.UList;
 
 public class Nez {
@@ -34,12 +33,7 @@ public class Nez {
 		}
 
 		@Override
-		public final void format(StringBuilder sb) {
-			sb.append("''");
-		}
-
-		@Override
-		public Object visit(Expression.Visitor v, Object a) {
+		public final Object visit(Expression.Visitor v, Object a) {
 			return v.visitEmpty(this, a);
 		}
 	}
@@ -51,12 +45,7 @@ public class Nez {
 		}
 
 		@Override
-		public final void format(StringBuilder sb) {
-			sb.append("!''");
-		}
-
-		@Override
-		public Object visit(Expression.Visitor v, Object a) {
+		public final Object visit(Expression.Visitor v, Object a) {
 			return v.visitFail(this, a);
 		}
 	}
@@ -80,12 +69,7 @@ public class Nez {
 		}
 
 		@Override
-		public final void format(StringBuilder sb) {
-			sb.append(StringUtils.stringfyCharacter(this.byteChar));
-		}
-
-		@Override
-		public Object visit(Expression.Visitor v, Object a) {
+		public final Object visit(Expression.Visitor v, Object a) {
 			return v.visitByte(this, a);
 		}
 	}
@@ -98,12 +82,7 @@ public class Nez {
 		}
 
 		@Override
-		public final void format(StringBuilder sb) {
-			sb.append(".");
-		}
-
-		@Override
-		public Object visit(Expression.Visitor v, Object a) {
+		public final Object visit(Expression.Visitor v, Object a) {
 			return v.visitAny(this, a);
 		}
 	}
@@ -136,27 +115,22 @@ public class Nez {
 		}
 
 		@Override
-		public final void format(StringBuilder sb) {
-			sb.append(StringUtils.stringfyCharacterClass(this.byteMap));
-		}
-
-		@Override
-		public Object visit(Expression.Visitor v, Object a) {
+		public final Object visit(Expression.Visitor v, Object a) {
 			return v.visitByteSet(this, a);
 		}
 	}
 
-	public static abstract class String extends Terminal implements Character {
+	public static abstract class MultiByte extends Terminal implements Character {
 		public byte[] byteSeq;
 
-		public String(byte[] byteSeq) {
+		public MultiByte(byte[] byteSeq) {
 			this.byteSeq = byteSeq;
 		}
 
 		@Override
 		public final boolean equals(Object o) {
-			if (o instanceof Nez.String) {
-				Nez.String mb = (Nez.String) o;
+			if (o instanceof Nez.MultiByte) {
+				Nez.MultiByte mb = (Nez.MultiByte) o;
 				if (mb.byteSeq.length == this.byteSeq.length) {
 					for (int i = 0; i < this.byteSeq.length; i++) {
 						if (byteSeq[i] != mb.byteSeq[i]) {
@@ -170,17 +144,8 @@ public class Nez {
 		}
 
 		@Override
-		public final void format(StringBuilder sb) {
-			sb.append("'");
-			for (int i = 0; i < this.byteSeq.length; i++) {
-				StringUtils.appendByteChar(sb, byteSeq[i] & 0xff, "\'");
-			}
-			sb.append("'");
-		}
-
-		@Override
-		public Object visit(Expression.Visitor v, Object a) {
-			return v.visitString(this, a);
+		public final Object visit(Expression.Visitor v, Object a) {
+			return v.visitMultiByte(this, a);
 		}
 
 	}
@@ -211,22 +176,6 @@ public class Nez {
 			return old;
 		}
 
-		protected final void formatUnary(StringBuilder sb, java.lang.String prefix, Expression inner, java.lang.String suffix) {
-			if (prefix != null) {
-				sb.append(prefix);
-			}
-			if (inner instanceof NonTerminal || inner instanceof Nez.Terminal) {
-				inner.format(sb);
-			} else {
-				sb.append("(");
-				inner.format(sb);
-				sb.append(")");
-			}
-			if (suffix != null) {
-				sb.append(suffix);
-			}
-		}
-
 	}
 
 	public abstract static class Option extends Nez.Unary {
@@ -243,12 +192,7 @@ public class Nez {
 		}
 
 		@Override
-		public final void format(StringBuilder sb) {
-			this.formatUnary(sb, null, this.inner, "?");
-		}
-
-		@Override
-		public Object visit(Expression.Visitor v, Object a) {
+		public final Object visit(Expression.Visitor v, Object a) {
 			return v.visitOption(this, a);
 		}
 
@@ -271,12 +215,7 @@ public class Nez {
 		}
 
 		@Override
-		public void format(StringBuilder sb) {
-			this.formatUnary(sb, null, this.inner, "*");
-		}
-
-		@Override
-		public Object visit(Expression.Visitor v, Object a) {
+		public final Object visit(Expression.Visitor v, Object a) {
 			return v.visitZeroMore(this, a);
 		}
 
@@ -296,12 +235,7 @@ public class Nez {
 		}
 
 		@Override
-		public final void format(StringBuilder sb) {
-			this.formatUnary(sb, null, this.inner, "+");
-		}
-
-		@Override
-		public Object visit(Expression.Visitor v, Object a) {
+		public final Object visit(Expression.Visitor v, Object a) {
 			return v.visitOneMore(this, a);
 		}
 
@@ -321,12 +255,7 @@ public class Nez {
 		}
 
 		@Override
-		public final void format(StringBuilder sb) {
-			this.formatUnary(sb, "&", this.inner, null);
-		}
-
-		@Override
-		public Object visit(Expression.Visitor v, Object a) {
+		public final Object visit(Expression.Visitor v, Object a) {
 			return v.visitAnd(this, a);
 		}
 
@@ -346,12 +275,7 @@ public class Nez {
 		}
 
 		@Override
-		public final void format(StringBuilder sb) {
-			this.formatUnary(sb, "!", this.inner, null);
-		}
-
-		@Override
-		public Object visit(Expression.Visitor v, Object a) {
+		public final Object visit(Expression.Visitor v, Object a) {
 			return v.visitNot(this, a);
 		}
 	}
@@ -396,7 +320,7 @@ public class Nez {
 		}
 
 		@Override
-		public Object visit(Expression.Visitor v, Object a) {
+		public final Object visit(Expression.Visitor v, Object a) {
 			return v.visitPair(this, a);
 		}
 
@@ -449,25 +373,9 @@ public class Nez {
 			return false;
 		}
 
-		@Override
-		public final void format(StringBuilder sb) {
-			for (int i = 0; i < this.size(); i++) {
-				if (i > 0) {
-					sb.append(delim());
-				}
-				this.get(i).format(sb);
-			}
-		}
-
-		protected abstract java.lang.String delim();
 	}
 
 	public abstract static class Sequence extends Nez.List {
-
-		@Override
-		protected java.lang.String delim() {
-			return " ";
-		}
 
 		@Override
 		public final boolean equals(Object o) {
@@ -478,18 +386,13 @@ public class Nez {
 		}
 
 		@Override
-		public Object visit(Expression.Visitor v, Object a) {
+		public final Object visit(Expression.Visitor v, Object a) {
 			return v.visitSequence(this, a);
 		}
 
 	}
 
 	public abstract static class Choice extends List {
-
-		@Override
-		protected java.lang.String delim() {
-			return " / ";
-		}
 
 		@Override
 		public final boolean equals(Object o) {
@@ -500,7 +403,7 @@ public class Nez {
 		}
 
 		@Override
-		public Object visit(Expression.Visitor v, Object a) {
+		public final Object visit(Expression.Visitor v, Object a) {
 			return v.visitChoice(this, a);
 		}
 
@@ -535,12 +438,7 @@ public class Nez {
 		}
 
 		@Override
-		public final void format(StringBuilder sb) {
-			sb.append("{");
-		}
-
-		@Override
-		public Object visit(Expression.Visitor v, Object a) {
+		public final Object visit(Expression.Visitor v, Object a) {
 			return v.visitPreNew(this, a);
 		}
 
@@ -555,12 +453,7 @@ public class Nez {
 		}
 
 		@Override
-		public final void format(StringBuilder sb) {
-			sb.append("}");
-		}
-
-		@Override
-		public Object visit(Expression.Visitor v, Object a) {
+		public final Object visit(Expression.Visitor v, Object a) {
 			return v.visitNew(this, a);
 		}
 
@@ -589,15 +482,7 @@ public class Nez {
 		}
 
 		@Override
-		public final void format(StringBuilder sb) {
-			sb.append("{$");
-			if (label != null) {
-				sb.append(label);
-			}
-		}
-
-		@Override
-		public Object visit(Expression.Visitor v, Object a) {
+		public final Object visit(Expression.Visitor v, Object a) {
 			return v.visitLeftFold(this, a);
 		}
 
@@ -623,12 +508,7 @@ public class Nez {
 		}
 
 		@Override
-		public final void format(StringBuilder sb) {
-			sb.append("#" + tag.getSymbol());
-		}
-
-		@Override
-		public Object visit(Expression.Visitor v, Object a) {
+		public final Object visit(Expression.Visitor v, Object a) {
 			return v.visitTag(this, a);
 		}
 	}
@@ -649,12 +529,7 @@ public class Nez {
 		}
 
 		@Override
-		public final void format(StringBuilder sb) {
-			sb.append(StringUtils.quoteString('`', this.value, '`'));
-		}
-
-		@Override
-		public Object visit(Expression.Visitor v, Object a) {
+		public final Object visit(Expression.Visitor v, Object a) {
 			return v.visitReplace(this, a);
 		}
 	}
@@ -684,12 +559,7 @@ public class Nez {
 		}
 
 		@Override
-		public final void format(StringBuilder sb) {
-			formatUnary(sb, (label != null) ? "$" + label + "(" : "$(", this.get(0), ")");
-		}
-
-		@Override
-		public Object visit(Expression.Visitor v, Object a) {
+		public final Object visit(Expression.Visitor v, Object a) {
 			return v.visitLink(this, a);
 		}
 	}
@@ -708,12 +578,7 @@ public class Nez {
 		}
 
 		@Override
-		public final void format(StringBuilder sb) {
-			this.formatUnary(sb, "~", inner, null);
-		}
-
-		@Override
-		public Object visit(Expression.Visitor v, Object a) {
+		public final Object visit(Expression.Visitor v, Object a) {
 			return v.visitDetree(this, a);
 		}
 
@@ -722,30 +587,21 @@ public class Nez {
 	/* Symbol */
 	private static Expression empty = ExpressionCommons.newEmpty(null);
 
-	public static abstract class Operand extends Unary {
+	public static abstract class Function extends Unary {
 		public final Predicate op;
 
-		public Operand(Predicate op, Expression e) {
+		public Function(Predicate op, Expression e) {
 			super(e);
 			this.op = op;
 		}
 
-		@Override
-		public void format(StringBuilder sb) {
-			sb.append("<");
-			sb.append(this.op);
-			if (this.inner != empty) {
-				sb.append(" ");
-				sb.append(this.inner);
-			}
-			sb.append(">");
+		public boolean hasInnerExpression() {
+			return this.get(0) != empty;
 		}
 
-		public void formatOperand(StringBuilder sb) {
-		}
 	}
 
-	public abstract static class SymbolAction extends Operand {
+	public abstract static class SymbolAction extends Function {
 		public final Symbol tableName;
 
 		public SymbolAction(Predicate op, NonTerminal e) {
@@ -765,13 +621,13 @@ public class Nez {
 		}
 
 		@Override
-		public Object visit(Expression.Visitor v, Object a) {
+		public final Object visit(Expression.Visitor v, Object a) {
 			return v.visitSymbolAction(this, a);
 		}
 
 	}
 
-	public abstract static class SymbolPredicate extends Operand {
+	public abstract static class SymbolPredicate extends Function {
 		public final Symbol tableName;
 
 		public SymbolPredicate(Predicate op, Symbol table, Expression e) {
@@ -789,22 +645,13 @@ public class Nez {
 		}
 
 		@Override
-		public void format(StringBuilder sb) {
-			sb.append("<");
-			sb.append(this.op);
-			sb.append(" ");
-			sb.append(tableName);
-			sb.append(">");
-		}
-
-		@Override
-		public Object visit(Expression.Visitor v, Object a) {
+		public final Object visit(Expression.Visitor v, Object a) {
 			return v.visitSymbolPredicate(this, a);
 		}
 
 	}
 
-	public abstract static class SymbolMatch extends Operand {
+	public abstract static class SymbolMatch extends Function {
 		public final Symbol tableName;
 
 		public SymbolMatch(Predicate op, Symbol table) {
@@ -822,13 +669,13 @@ public class Nez {
 		}
 
 		@Override
-		public Object visit(Expression.Visitor v, Object a) {
+		public final Object visit(Expression.Visitor v, Object a) {
 			return v.visitSymbolMatch(this, a);
 		}
 
 	}
 
-	public abstract static class SymbolExists extends Operand implements AST {
+	public abstract static class SymbolExists extends Function implements AST {
 		public final Symbol tableName;
 		public final java.lang.String symbol;
 
@@ -855,13 +702,13 @@ public class Nez {
 		}
 
 		@Override
-		public Object visit(Expression.Visitor v, Object a) {
+		public final Object visit(Expression.Visitor v, Object a) {
 			return v.visitSymbolExists(this, a);
 		}
 
 	}
 
-	public abstract static class BlockScope extends Operand implements AST {
+	public abstract static class BlockScope extends Function implements AST {
 		public BlockScope(Expression e) {
 			super(Predicate.block, e);
 		}
@@ -875,13 +722,13 @@ public class Nez {
 		}
 
 		@Override
-		public Object visit(Expression.Visitor v, Object a) {
+		public final Object visit(Expression.Visitor v, Object a) {
 			return v.visitBlockScope(this, a);
 		}
 
 	}
 
-	public abstract static class LocalScope extends Operand implements AST {
+	public abstract static class LocalScope extends Function implements AST {
 		public final Symbol tableName;
 
 		public LocalScope(Symbol table, Expression e) {
@@ -901,14 +748,8 @@ public class Nez {
 		}
 
 		@Override
-		public Object visit(Expression.Visitor v, Object a) {
+		public final Object visit(Expression.Visitor v, Object a) {
 			return v.visitLocalScope(this, a);
-		}
-
-		@Override
-		public void formatOperand(StringBuilder sb) {
-			sb.append(" ");
-			sb.append(this.tableName);
 		}
 
 	}
@@ -917,7 +758,7 @@ public class Nez {
 
 	}
 
-	public abstract static class On extends Operand {
+	public abstract static class On extends Function {
 		public boolean predicate;
 		public final java.lang.String flagName;
 
@@ -947,12 +788,12 @@ public class Nez {
 		}
 
 		@Override
-		public Object visit(Expression.Visitor v, Object a) {
+		public final Object visit(Expression.Visitor v, Object a) {
 			return v.visitOn(this, a);
 		}
 	}
 
-	public abstract static class If extends Operand implements Conditional {
+	public abstract static class If extends Function implements Conditional {
 		public final boolean predicate;
 		public final java.lang.String flagName;
 
@@ -976,12 +817,12 @@ public class Nez {
 		}
 
 		@Override
-		public Object visit(Expression.Visitor v, Object a) {
+		public final Object visit(Expression.Visitor v, Object a) {
 			return v.visitIf(this, a);
 		}
 	}
 
-	public abstract static class SetCount extends Operand {
+	public abstract static class SetCount extends Function {
 		public final long mask;
 
 		public SetCount(long mask, Expression e) {
@@ -999,12 +840,12 @@ public class Nez {
 		}
 
 		@Override
-		public Object visit(Expression.Visitor v, Object a) {
+		public final Object visit(Expression.Visitor v, Object a) {
 			return v.visitExtended(this, a);
 		}
 	}
 
-	public abstract static class Count extends Operand {
+	public abstract static class Count extends Function {
 
 		public Count(Expression e) {
 			super(Predicate.count, e);
@@ -1019,7 +860,7 @@ public class Nez {
 		}
 
 		@Override
-		public Object visit(Expression.Visitor v, Object a) {
+		public final Object visit(Expression.Visitor v, Object a) {
 			return v.visitExtended(this, a);
 		}
 	}

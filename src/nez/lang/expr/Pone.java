@@ -7,7 +7,7 @@ import nez.lang.Nez;
 public class Pone extends Nez.OneMore {
 	Pone(SourceLocation s, Expression e) {
 		super(e);
-		this.set(s);
+		this.setSourceLocation(s);
 	}
 
 	@Override

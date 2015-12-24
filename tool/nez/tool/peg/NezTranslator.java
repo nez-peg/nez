@@ -67,7 +67,7 @@ public class NezTranslator extends PEGTranslator {
 	}
 
 	@Override
-	public void visitString(Nez.String p) {
+	public void visitString(Nez.MultiByte p) {
 		W(p.toString());
 	}
 

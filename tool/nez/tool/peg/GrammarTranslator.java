@@ -252,7 +252,7 @@ public abstract class GrammarTranslator extends Expression.Visitor implements So
 
 	public abstract void visitByteSet(Nez.ByteSet p);
 
-	public abstract void visitString(Nez.String p);
+	public abstract void visitString(Nez.MultiByte p);
 
 	public abstract void visitOption(Nez.Option p);
 
@@ -328,7 +328,7 @@ public abstract class GrammarTranslator extends Expression.Visitor implements So
 	}
 
 	@Override
-	public final Object visitString(Nez.String p, Object a) {
+	public final Object visitMultiByte(Nez.MultiByte p, Object a) {
 		this.visitString(p);
 		return null;
 	}
