@@ -11,7 +11,7 @@ import nez.io.CommonSource;
 import nez.junks.GrammarFileLoader.DefaultVisitor;
 import nez.lang.Expression;
 import nez.lang.Grammar;
-import nez.lang.schema.Type;
+import nez.lang.schema.Schema;
 import nez.parser.Parser;
 import nez.parser.ParserStrategy;
 import nez.util.ConsoleUtils;
@@ -51,7 +51,7 @@ public abstract class GrammarFileLoader extends TreeVisitorMap<DefaultVisitor> {
 			return false;
 		}
 
-		public Type toSchema(Tree<?> node) {
+		public Schema toSchema(Tree<?> node) {
 			ConsoleUtils.println(node.formatSourceMessage("error", "unsupproted in GrammarFileLoader #" + node));
 			return null;
 		}

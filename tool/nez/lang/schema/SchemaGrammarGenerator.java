@@ -10,31 +10,35 @@ import nez.lang.expr.ExpressionCommons;
 import nez.lang.expr.NonTerminal;
 import nez.util.UList;
 
-public abstract class SchemaGrammarGenerator extends AbstractSchemaGrammarGenerator {
+public abstract class SchemaGrammarGenerator implements SchemaGrammarGeneratorInterface {
 	protected Grammar grammar;
-	private List<String> requiredList;
-	private List<String> membersList;
+	private List<Element> requiredElementList;
+	private List<Element> elementList;
 	private int tableCounter = 0;
 
 	public SchemaGrammarGenerator(Grammar grammar) {
 		this.grammar = grammar;
 	}
 
-	public void addRequired(String name) {
-		this.requiredList.add(name);
-		this.membersList.add(name);
+	public List<Element> getElementList() {
+		return this.elementList;
 	}
 
-	public void addMember(String name) {
-		this.membersList.add(name);
+	public List<Element> getRequiredElementList() {
+		return this.requiredElementList;
 	}
 
-	public List<String> getMembers() {
-		return this.membersList;
+	public List<Element> getOptionalElementList() {
+		return extractOptionalMembers();
 	}
 
-	public List<String> getRequiredList() {
-		return this.requiredList;
+	public void addRequired(Element element) {
+		this.requiredElementList.add(element);
+		this.elementList.add(element);
+	}
+
+	public void addElement(Element element) {
+		this.elementList.add(element);
 	}
 
 	public int getTableCounter() {
@@ -46,16 +50,16 @@ public abstract class SchemaGrammarGenerator extends AbstractSchemaGrammarGenera
 	}
 
 	public final void initMemberList() {
-		requiredList = new ArrayList<String>();
-		membersList = new ArrayList<String>();
+		requiredElementList = new ArrayList<Element>();
+		elementList = new ArrayList<Element>();
 		tableCounter++;
 	}
 
-	protected final List<String> extractImpliedMembers() {
-		List<String> impliedList = new ArrayList<String>();
-		for (int i = 0; i < membersList.size(); i++) {
-			if (!requiredList.contains(membersList.get(i))) {
-				impliedList.add(membersList.get(i));
+	protected final List<Element> extractOptionalMembers() {
+		List<Element> impliedList = new ArrayList<Element>();
+		for (int i = 0; i < elementList.size(); i++) {
+			if (!requiredElementList.contains(elementList.get(i))) {
+				impliedList.add(elementList.get(i));
 			}
 		}
 		return impliedList;
@@ -119,6 +123,34 @@ public abstract class SchemaGrammarGenerator extends AbstractSchemaGrammarGenera
 		return ExpressionCommons.newPchoice(null, seq);
 	}
 
+	protected final Expression _Detree(Expression e) {
+		return ExpressionCommons.newTdetree(null, e);
+	}
+
+	protected final Expression _Link(Symbol label, Expression e) {
+		return ExpressionCommons.newTlink(null, label, e);
+	}
+
+	protected final Expression _New(Expression... seq) {
+		return ExpressionCommons.newNewCapture(null, false, null, _Sequence(seq));
+	}
+
+	protected final Expression _LeftFold(Symbol label, int shift) {
+		return ExpressionCommons.newTlfold(null, label, shift);
+	}
+
+	protected final Expression _Capture(int shift) {
+		return ExpressionCommons.newTcapture(null, shift);
+	}
+
+	protected final Expression _Tag(String tag) {
+		return ExpressionCommons.newTtag(null, Symbol.tag(tag));
+	}
+
+	protected final Expression _Replace(String msg) {
+		return ExpressionCommons.newTreplace(null, msg);
+	}
+
 	protected final Expression _DQuat() {
 		return _Char('"');
 	}
@@ -150,52 +182,54 @@ public abstract class SchemaGrammarGenerator extends AbstractSchemaGrammarGenera
 	/* common methods of schema grammar */
 
 	@Override
-	public void newMembers(String memberName, Type... types) {
-		Expression[] l = new Expression[types.length];
+	public void newMembers(String memberListName) {
+		Expression[] l = new Expression[elementList.size()];
 		int index = 0;
-		for (Type type : types) {
-			l[index++] = type.getTypeExpression();
+		for (Element element : elementList) {
+			l[index++] = _Link(null, _NonTerminal(element.getUniqueName()));
 		}
-		grammar.addProduction(null, memberName, _Choice(l));
+
+		// l[index] = _Link(null, newOthers().getSchemaExpression());
+		grammar.addProduction(null, memberListName, _ZeroMore(_Choice(l)));
 	}
 
 	@Override
 	public void newSymbols() {
-		Expression[] l = new Expression[getMembers().size()];
+		Expression[] l = new Expression[getElementList().size()];
 		int index = 0;
-		for (String name : getMembers()) {
-			l[index++] = _String(name);
+		for (Element element : elementList) {
+			l[index++] = _String(element.getElementName());
 		}
 		grammar.addProduction(null, getTableName(), _Choice(l));
 	}
 
 	// FIXME
 	@Override
-	public Type newSet(String structMemberName) {
-		Expression[] l = new Expression[getRequiredList().size() + 1];
+	public Schema newSet(String structMemberName) {
+		Expression[] l = new Expression[getRequiredElementList().size() + 1];
 		int index = 1;
-		l[0] = _ZeroMore(_NonTerminal(structMemberName));
-		for (String required : getRequiredList()) {
-			l[index++] = _Exists(getTableName(), required);
+		l[0] = _NonTerminal(structMemberName);
+		for (Element required : requiredElementList) {
+			l[index++] = _Exists(getTableName(), required.getElementName());
 		}
-		return new Type(_Local(getTableName(), l));
+		return new Schema(_Local(getTableName(), l));
 	}
 
 	@Override
-	public Type newUniq(String elementName, Type t) {
+	public Schema newUniq(String elementName, Schema t) {
 		Expression expr = _Sequence(_And(_String(elementName)), _Not(_Exists(getTableName(), elementName)), _Def(getTableName()));
-		return new Type(elementName, expr, t);
+		return new Schema(expr, t);
 	}
 
 	@Override
-	public Type newAlt(String name) {
-		return new Type(_NonTerminal(name));
+	public Schema newAlt(String name) {
+		return new Schema(_NonTerminal(name));
 	}
 
 	@Override
-	public Type newPermutation() {
+	public Schema newPermutation() {
 		genImpliedChoice();
-		if (getRequiredList().isEmpty()) {
+		if (getRequiredElementList().isEmpty()) {
 			return newCompletePerm();
 		} else {
 			return newAproximatePerm();
@@ -203,10 +237,10 @@ public abstract class SchemaGrammarGenerator extends AbstractSchemaGrammarGenera
 	}
 
 	// FIXME
-	protected Type newCompletePerm() {
-		int listLength = getRequiredList().size();
+	protected Schema newCompletePerm() {
+		int listLength = getRequiredElementList().size();
 		if (listLength == 1) {
-			return new Type(_NonTerminal(getRequiredList().get(0)));
+			return new Schema(_NonTerminal(requiredElementList.get(0).getUniqueName()));
 		} else {
 			PermutationGenerator permGen = new PermutationGenerator(listLength);
 			int[][] permedList = permGen.getPermList();
@@ -215,67 +249,85 @@ public abstract class SchemaGrammarGenerator extends AbstractSchemaGrammarGenera
 			for (int[] targetLine : permedList) {
 				Expression[] seqList = new Expression[listLength];
 				for (int index = 0; index < targetLine.length; index++) {
-					seqList[index] = _NonTerminal(getRequiredList().get(targetLine[index]));
+					seqList[index] = _NonTerminal(getRequiredElementList().get(targetLine[index]).getUniqueName());
 				}
 				choiceList[choiceCount++] = _Sequence(seqList);
 			}
-			return new Type(_Choice(choiceList));
+			return new Schema(_Choice(choiceList));
 		}
 	}
 
 	// FIXME
-	protected Type newAproximatePerm() {
-		int listLength = getRequiredList().size();
+	protected Schema newAproximatePerm() {
+		int listLength = getRequiredElementList().size();
 		if (listLength == 0) {
-			return new Type(_NonTerminal(getTableName() + "_implied"));
+			return new Schema(_NonTerminal("%s_implied", getTableName()));
 		} else {
 			PermutationGenerator permGen = new PermutationGenerator(listLength);
 			int[][] permutedList = permGen.getPermList();
 			Expression[] choiceList = new Expression[permutedList.length];
-			Expression impliedChoiceRule = _NonTerminal(getTableName() + "_implied");
+			Expression impliedChoiceRule = _NonTerminal("%s_implied", getTableName());
 			int choiceCount = 0;
 			for (int[] targetLine : permutedList) {
 				int seqCount = 0;
 				Expression[] seqList = new Expression[listLength * 2 + 1];
 				seqList[seqCount++] = _ZeroMore(impliedChoiceRule);
 				for (int index = 0; index < targetLine.length; index++) {
-					seqList[seqCount++] = _NonTerminal(getRequiredList().get(targetLine[index]));
+					seqList[seqCount++] = _NonTerminal(getRequiredElementList().get(targetLine[index]).getUniqueName());
 					seqList[seqCount++] = _ZeroMore(impliedChoiceRule);
 				}
 				choiceList[choiceCount++] = _Sequence(seqList);
 			}
-			return new Type(_Choice(choiceList));
+			return new Schema(_Choice(choiceList));
 		}
 	}
 
 	protected void genImpliedChoice() {
-		List<String> impliedList = extractImpliedMembers();
+		List<Element> impliedList = extractOptionalMembers();
 		Expression[] l = new Expression[impliedList.size()];
 		int choiceCount = 0;
-		for (String nonTerminalSymbol : impliedList) {
-			l[choiceCount++] = _NonTerminal(nonTerminalSymbol);
+		for (Element element : impliedList) {
+			l[choiceCount++] = _NonTerminal(element.getUniqueName());
 		}
-		grammar.addProduction(null, getTableName() + "_implied", grammar.newChoice(l));
+		grammar.addProduction(null, String.format("%s_implied", getTableName()), grammar.newChoice(l));
 	}
 
 	@Override
-	public Type newTInteger() {
-		return new Type(_NonTerminal("INT"));
+	public Schema newTInteger() {
+		return new Schema(_NonTerminal("Integer"));
 	}
 
 	@Override
-	public Type newTFloat() {
-		return new Type(_NonTerminal("Number"));
+	public Schema newTInteger(int min, int max) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
-	public Type newTString() {
-		return new Type(_NonTerminal("String"));
+	public Schema newTFloat() {
+		return new Schema(_NonTerminal("Float"));
 	}
 
 	@Override
-	public Type newTAny() {
-		return new Type(_NonTerminal("Any"));
+	public Schema newTFloat(int min, int max) {
+		// TODO Auto-generated method stub
+		return null;
+	};
+
+	@Override
+	public Schema newTString() {
+		return new Schema(_NonTerminal("String"));
+	}
+
+	@Override
+	public Schema newTString(int minLength, int maxLength) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Schema newTAny() {
+		return new Schema(_NonTerminal("Any"));
 	}
 
 }
