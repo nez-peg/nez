@@ -3,7 +3,6 @@ package nez.lang.expr;
 import nez.ast.SourceLocation;
 import nez.lang.Expression;
 import nez.lang.Nez;
-import nez.lang.PossibleAcceptance;
 import nez.util.UList;
 
 public class Pchoice extends Nez.Choice {
@@ -25,21 +24,6 @@ public class Pchoice extends Nez.Choice {
 			}
 		}
 		return afterAll;
-	}
-
-	@Override
-	public short acceptByte(int ch) {
-		boolean hasUnconsumed = false;
-		for (int i = 0; i < this.size(); i++) {
-			short r = this.get(i).acceptByte(ch);
-			if (r == PossibleAcceptance.Accept) {
-				return r;
-			}
-			if (r == PossibleAcceptance.Unconsumed) {
-				hasUnconsumed = true;
-			}
-		}
-		return hasUnconsumed ? PossibleAcceptance.Unconsumed : PossibleAcceptance.Reject;
 	}
 
 }

@@ -2,7 +2,6 @@ package nez.lang.expr;
 
 import nez.ast.SourceLocation;
 import nez.lang.Nez;
-import nez.lang.PossibleAcceptance;
 
 public class Treplace extends Nez.Replace {
 
@@ -14,11 +13,6 @@ public class Treplace extends Nez.Replace {
 	@Override
 	public boolean isConsumed() {
 		return false;
-	}
-
-	@Override
-	public short acceptByte(int ch) {
-		return PossibleAcceptance.Unconsumed;
 	}
 
 }

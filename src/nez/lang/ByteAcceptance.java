@@ -79,7 +79,8 @@ public enum ByteAcceptance {
 
 		@Override
 		public ByteAcceptance visitAny(Any e, Object ch) {
-			return Accept;
+			return ((int) ch == 0) ? Reject : Accept;
+			// return Accept;
 		}
 
 		@Override

@@ -3,7 +3,6 @@ package nez.lang.expr;
 import nez.ast.SourceLocation;
 import nez.lang.Expression;
 import nez.lang.Nez;
-import nez.lang.PossibleAcceptance;
 import nez.util.StringUtils;
 import nez.util.UList;
 
@@ -87,15 +86,6 @@ public class Psequence extends Nez.Pair {
 	// }
 	// return false;
 	// }
-
-	@Override
-	public short acceptByte(int ch) {
-		short r = this.first.acceptByte(ch);
-		if (r == PossibleAcceptance.Unconsumed) {
-			return this.next.acceptByte(ch);
-		}
-		return r;
-	}
 
 	// @Override
 	// public MozInst encode(AbstractGenerator bc, MozInst next, MozInst

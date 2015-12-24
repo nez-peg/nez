@@ -61,8 +61,6 @@ public abstract class Expression extends AbstractList<Expression> {
 	// return false;
 	// }
 
-	public abstract short acceptByte(int ch);
-
 	// test
 
 	public static final boolean isByteConsumed(Expression e) {

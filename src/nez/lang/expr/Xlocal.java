@@ -17,11 +17,6 @@ public class Xlocal extends Nez.LocalScope {
 		return this.inner.isConsumed();
 	}
 
-	@Override
-	public short acceptByte(int ch) {
-		return this.inner.acceptByte(ch);
-	}
-
 	public final Symbol getTable() {
 		return tableName;
 	}

@@ -32,9 +32,4 @@ public class Xis extends Nez.SymbolPredicate implements Expression.Contextual {
 		return this.inner.isConsumed();
 	}
 
-	@Override
-	public short acceptByte(int ch) {
-		return this.inner.acceptByte(ch);
-	}
-
 }

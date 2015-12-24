@@ -23,9 +23,4 @@ public class Xon extends Nez.On implements Expression.Conditional {
 		return this.inner.isConsumed();
 	}
 
-	@Override
-	public short acceptByte(int ch) {
-		return this.inner.acceptByte(ch);
-	}
-
 }

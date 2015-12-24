@@ -15,9 +15,4 @@ public class Xblock extends Nez.BlockScope {
 		return this.inner.isConsumed();
 	}
 
-	@Override
-	public short acceptByte(int ch) {
-		return this.inner.acceptByte(ch);
-	}
-
 }

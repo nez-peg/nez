@@ -3,7 +3,6 @@ package nez.lang.expr;
 import nez.ast.SourceLocation;
 import nez.lang.Expression;
 import nez.lang.Nez;
-import nez.lang.PossibleAcceptance;
 
 public class Cset extends Nez.ByteSet {
 
@@ -26,11 +25,6 @@ public class Cset extends Nez.ByteSet {
 	@Override
 	public boolean isConsumed() {
 		return true;
-	}
-
-	@Override
-	public short acceptByte(int ch) {
-		return PossibleAcceptance.acceptByteMap(byteMap, ch);
 	}
 
 	// Utils

@@ -3,7 +3,6 @@ package nez.lang.expr;
 import nez.ast.SourceLocation;
 import nez.ast.Symbol;
 import nez.lang.Nez;
-import nez.lang.PossibleAcceptance;
 
 public class Ttag extends Nez.Tag {
 
@@ -19,11 +18,6 @@ public class Ttag extends Nez.Tag {
 	@Override
 	public boolean isConsumed() {
 		return false;
-	}
-
-	@Override
-	public short acceptByte(int ch) {
-		return PossibleAcceptance.Unconsumed;
 	}
 
 }

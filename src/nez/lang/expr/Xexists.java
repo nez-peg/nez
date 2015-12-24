@@ -4,7 +4,6 @@ import nez.ast.SourceLocation;
 import nez.ast.Symbol;
 import nez.lang.Expression;
 import nez.lang.Nez;
-import nez.lang.PossibleAcceptance;
 
 public class Xexists extends Nez.SymbolExists implements Expression.Contextual {
 
@@ -30,8 +29,4 @@ public class Xexists extends Nez.SymbolExists implements Expression.Contextual {
 		return false;
 	}
 
-	@Override
-	public short acceptByte(int ch) {
-		return PossibleAcceptance.Unconsumed;
-	}
 }

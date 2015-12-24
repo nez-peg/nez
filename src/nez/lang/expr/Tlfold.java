@@ -3,7 +3,6 @@ package nez.lang.expr;
 import nez.ast.SourceLocation;
 import nez.ast.Symbol;
 import nez.lang.Nez;
-import nez.lang.PossibleAcceptance;
 
 public class Tlfold extends Nez.LeftFold {
 
@@ -17,8 +16,4 @@ public class Tlfold extends Nez.LeftFold {
 		return false;
 	}
 
-	@Override
-	public short acceptByte(int ch) {
-		return PossibleAcceptance.Unconsumed;
-	}
 }

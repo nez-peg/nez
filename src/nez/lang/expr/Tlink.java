@@ -16,9 +16,4 @@ public class Tlink extends Nez.Link {
 		return this.inner.isConsumed();
 	}
 
-	@Override
-	public short acceptByte(int ch) {
-		return inner.acceptByte(ch);
-	}
-
 }

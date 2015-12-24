@@ -17,7 +17,6 @@ import nez.lang.expr.Psequence;
 import nez.lang.expr.Pzero;
 import nez.lang.expr.Tcapture;
 import nez.lang.expr.Tlfold;
-import nez.lang.expr.Tlink;
 import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
@@ -630,8 +629,8 @@ public class GrammarOptimizer extends GrammarRewriter {
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < choiceList.size(); i++) {
 			Expression p = choiceList.ArrayValues[i];
-			short r = p.acceptByte(ch);
-			if (r == PossibleAcceptance.Reject) {
+			ByteAcceptance acc = ByteAcceptance.acc(p, ch);
+			if (acc == ByteAcceptance.Reject) {
 				continue;
 			}
 			sb.append(':');
@@ -646,8 +645,8 @@ public class GrammarOptimizer extends GrammarRewriter {
 		}
 		boolean commonFactored = false;
 		for (Expression sub : choiceList) {
-			short r = sub.acceptByte(ch);
-			if (r == PossibleAcceptance.Reject) {
+			ByteAcceptance acc = ByteAcceptance.acc(sub, ch);
+			if (acc == ByteAcceptance.Reject) {
 				continue;
 			}
 			if (newlist.size() > 0) {

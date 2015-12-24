@@ -4,7 +4,6 @@ import nez.ast.SourceLocation;
 import nez.ast.Symbol;
 import nez.lang.Expression;
 import nez.lang.Nez;
-import nez.lang.PossibleAcceptance;
 import nez.lang.Predicate;
 
 public class Xmatch extends Nez.SymbolMatch implements Expression.Contextual {
@@ -25,11 +24,6 @@ public class Xmatch extends Nez.SymbolMatch implements Expression.Contextual {
 	@Override
 	public boolean isConsumed() {
 		return false;
-	}
-
-	@Override
-	public short acceptByte(int ch) {
-		return PossibleAcceptance.Accept;
 	}
 
 }

@@ -3,9 +3,7 @@ package nez.lang.expr;
 import nez.ast.SourceLocation;
 import nez.lang.Expression;
 import nez.lang.Grammar;
-import nez.lang.PossibleAcceptance;
 import nez.lang.Production;
-import nez.util.Verbose;
 
 public class NonTerminal extends ExpressionCommons {
 	private Grammar g;
@@ -79,16 +77,6 @@ public class NonTerminal extends ExpressionCommons {
 	@Override
 	public boolean isConsumed() {
 		return this.getProduction().isConsumed();
-	}
-
-	@Override
-	public short acceptByte(int ch) {
-		try {
-			return this.deReference().acceptByte(ch);
-		} catch (StackOverflowError e) {
-			Verbose.debug(e + " at " + this.getLocalName());
-			return PossibleAcceptance.Accept;
-		}
 	}
 
 	public final NonTerminal newNonTerminal(String localName) {
