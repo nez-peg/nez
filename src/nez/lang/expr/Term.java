@@ -3,7 +3,7 @@ package nez.lang.expr;
 import nez.ast.SourceLocation;
 import nez.lang.Expression;
 
-abstract class Term extends ExpressionCommons {
+abstract class Term extends Expressions {
 
 	protected Term(SourceLocation s) {
 		super(s);

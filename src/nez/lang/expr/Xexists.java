@@ -24,9 +24,4 @@ public class Xexists extends Nez.SymbolExists implements Expression.Contextual {
 		return tableName.getSymbol();
 	}
 
-	@Override
-	public boolean isConsumed() {
-		return false;
-	}
-
 }

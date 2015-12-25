@@ -7,7 +7,7 @@ import nez.junks.GrammarFileLoader;
 import nez.lang.Expression;
 import nez.lang.Grammar;
 import nez.lang.Production;
-import nez.lang.expr.ExpressionCommons;
+import nez.lang.expr.Expressions;
 import nez.parser.Parser;
 import nez.parser.ParserStrategy;
 import nez.util.ConsoleUtils;
@@ -79,10 +79,10 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 		@Override
 		public Expression toExpression(Tree<?> e, Expression k) {
 			String ruleName = "Pattern";
-			Expression ne = ExpressionCommons.newNonTerminal(e, getGrammar(), ruleName);
+			Expression ne = Expressions.newNonTerminal(e, getGrammar(), ruleName);
 			getGrammar().newProduction(ruleName, pi(e.get(0), k));
-			Expression zeroMore = ExpressionCommons.newPzero(null, toSeq(null, ExpressionCommons.newPnot(null, ne), toAny(null)));
-			Expression main = toSeq(null, zeroMore, ExpressionCommons.newPone(null, toSeq(null, ne, zeroMore)));
+			Expression zeroMore = Expressions.newPzero(null, toSeq(null, Expressions.newPnot(null, ne), toAny(null)));
+			Expression main = toSeq(null, zeroMore, Expressions.newPone(null, toSeq(null, ne, zeroMore)));
 			// ruleName = "SOSPattern";
 			// isSOS = true;
 			// Expression sose = ExpressionCommons.newNonTerminal(e,
@@ -125,7 +125,7 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 	public class _And extends Undefined {
 		@Override
 		public Expression toExpression(Tree<?> e, Expression k) {
-			return toSeq(e, ExpressionCommons.newPand(null, pi(e.get(0), toEmpty(e))), k);
+			return toSeq(e, Expressions.newPand(null, pi(e.get(0), toEmpty(e))), k);
 		}
 	}
 
@@ -133,7 +133,7 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 	public class _Not extends Undefined {
 		@Override
 		public Expression toExpression(Tree<?> e, Expression k) {
-			return toSeq(e, ExpressionCommons.newPnot(null, pi(e.get(0), toEmpty(e))), k);
+			return toSeq(e, Expressions.newPnot(null, pi(e.get(0), toEmpty(e))), k);
 		}
 	}
 
@@ -152,9 +152,9 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 		@Override
 		public Expression toExpression(Tree<?> e, Expression k) {
 			String ruleName = "Repetition" + NonTerminalCount++;
-			Expression ne = ExpressionCommons.newNonTerminal(e, getGrammar(), ruleName);
+			Expression ne = Expressions.newNonTerminal(e, getGrammar(), ruleName);
 			if (k == null) {
-				k = ExpressionCommons.newEmpty(null);
+				k = Expressions.newEmpty(null);
 			}
 			getGrammar().newProduction(ruleName, toChoice(e, k, pi(e.get(0), ne)));
 			return ne;
@@ -166,7 +166,7 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 		@Override
 		public Expression toExpression(Tree<?> e, Expression k) {
 			String ruleName = "Repetition" + NonTerminalCount++;
-			Expression ne = ExpressionCommons.newNonTerminal(e, getGrammar(), ruleName);
+			Expression ne = Expressions.newNonTerminal(e, getGrammar(), ruleName);
 			getGrammar().newProduction(ruleName, toChoice(e, pi(e.get(0), ne), k));
 			return ne;
 		}
@@ -214,12 +214,12 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 		public Expression toExpression(Tree<?> e, Expression k) {
 			final int DIF = e.getInt(2, 0) - e.getInt(1, 0);
 			String ruleName = "Repetition" + NonTerminalCount++;
-			Expression ne = ExpressionCommons.newNonTerminal(e, getGrammar(), ruleName);
+			Expression ne = Expressions.newNonTerminal(e, getGrammar(), ruleName);
 			getGrammar().newProduction(ruleName, k);
 			for (int i = 0; i < DIF; i++) {
 				ruleName = "Repetition" + NonTerminalCount++;
 				Expression nne = ne;
-				ne = ExpressionCommons.newNonTerminal(e, getGrammar(), ruleName);
+				ne = Expressions.newNonTerminal(e, getGrammar(), ruleName);
 				getGrammar().newProduction(ruleName, toChoice(e, pi(e.get(0), nne), k));
 			}
 			return find("NTimesRepetition").toExpression(e, ne);
@@ -230,7 +230,7 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 
 		@Override
 		public Expression toExpression(Tree<?> e) {
-			return ExpressionCommons.newCany(null, false);
+			return Expressions.newCany(null, false);
 		}
 
 		@Override
@@ -249,7 +249,7 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 	public class NegativeCharacterSet extends Undefined {
 		@Override
 		public Expression toExpression(Tree<?> e, Expression k) {
-			Expression nce = toSeq(e, ExpressionCommons.newPnot(e, toCharacterSet(e)), toAny(e));
+			Expression nce = toSeq(e, Expressions.newPnot(e, toCharacterSet(e)), toAny(e));
 			return toSeq(e, nce, k);
 		}
 	}
@@ -260,9 +260,9 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 			UList<Expression> l = new UList<Expression>(new Expression[e.size()]);
 			byteMap = new boolean[257];
 			for (Tree<?> subnode : e) {
-				ExpressionCommons.addChoice(l, getExpression(subnode));
+				Expressions.addChoice(l, getExpression(subnode));
 			}
-			return ExpressionCommons.newCset(null, false, byteMap);
+			return Expressions.newCset(null, false, byteMap);
 		}
 
 		@Override
@@ -283,7 +283,7 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 			for (byte i = begin[0]; i <= end[0]; i++) {
 				byteMap[i] = true;
 			}
-			return ExpressionCommons.newCharSet(null, e.get(0).toText(), e.get(1).toText());
+			return Expressions.newCharSet(null, e.get(0).toText(), e.get(1).toText());
 		}
 
 		@Override
@@ -297,7 +297,7 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 		public Expression toExpression(Tree<?> e) {
 			byte[] utf8 = StringUtils.toUtf8(e.toText());
 			byteMap[utf8[0]] = true;
-			return ExpressionCommons.newCbyte(null, false, utf8[0]);
+			return Expressions.newCbyte(null, false, utf8[0]);
 		}
 
 		@Override
@@ -316,7 +316,7 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 			if (utf8.length != 1) {
 				ConsoleUtils.exit(1, "Error: not Character Literal");
 			}
-			return ExpressionCommons.newCbyte(null, false, utf8[0]);
+			return Expressions.newCbyte(null, false, utf8[0]);
 		}
 
 		@Override
@@ -336,7 +336,7 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 	public class EndOfString extends Undefined {
 		@Override
 		public Expression toExpression(Tree<?> e, Expression k) {
-			return pi(e.get(0), toSeq(null, ExpressionCommons.newPnot(null, toAny(null)), k));
+			return pi(e.get(0), toSeq(null, Expressions.newPnot(null, toAny(null)), k));
 		}
 	}
 
@@ -347,7 +347,7 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 	public class Empty extends Undefined {
 		@Override
 		public Expression toExpression(Tree<?> e, Expression k) {
-			return ExpressionCommons.newEmpty(null);
+			return Expressions.newEmpty(null);
 		}
 	}
 
@@ -355,13 +355,13 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 		@Override
 		public Expression toExpression(Tree<?> node, Expression e, Expression k) {
 			UList<Expression> l = new UList<Expression>(new Expression[2]);
-			ExpressionCommons.addChoice(l, e);
+			Expressions.addChoice(l, e);
 			if (k != null) {
-				ExpressionCommons.addChoice(l, k);
+				Expressions.addChoice(l, k);
 			} else {
-				ExpressionCommons.addChoice(l, toEmpty(node));
+				Expressions.addChoice(l, toEmpty(node));
 			}
-			return ExpressionCommons.newPchoice(null, l);
+			return Expressions.newPchoice(null, l);
 		}
 	}
 
@@ -369,21 +369,21 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 		@Override
 		public Expression toExpression(Tree<?> e, Expression k) {
 			UList<Expression> l = new UList<Expression>(new Expression[2]);
-			ExpressionCommons.addSequence(l, getExpression(e));
+			Expressions.addSequence(l, getExpression(e));
 			if (k != null) {
-				ExpressionCommons.addSequence(l, k);
+				Expressions.addSequence(l, k);
 			}
-			return ExpressionCommons.newPsequence(null, l);
+			return Expressions.newPsequence(null, l);
 		}
 
 		@Override
 		public Expression toExpression(Tree<?> node, Expression e, Expression k) {
 			UList<Expression> l = new UList<Expression>(new Expression[2]);
-			ExpressionCommons.addSequence(l, e);
+			Expressions.addSequence(l, e);
 			if (k != null) {
-				ExpressionCommons.addSequence(l, k);
+				Expressions.addSequence(l, k);
 			}
-			return ExpressionCommons.newPsequence(null, l);
+			return Expressions.newPsequence(null, l);
 		}
 	}
 
@@ -416,7 +416,7 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 	}
 
 	private final Expression _LineTerminator() {
-		Expression l[] = { ExpressionCommons.newCbyte(null, false, '\n'), ExpressionCommons.newCbyte(null, false, '\r'), ExpressionCommons.newString(null, "\r\n"), };
-		return ExpressionCommons.newPchoice(null, new UList<>(l));
+		Expression l[] = { Expressions.newCbyte(null, false, '\n'), Expressions.newCbyte(null, false, '\r'), Expressions.newString(null, "\r\n"), };
+		return Expressions.newPchoice(null, new UList<>(l));
 	}
 }

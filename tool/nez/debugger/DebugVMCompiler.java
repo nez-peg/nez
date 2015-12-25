@@ -7,14 +7,14 @@ import java.util.Stack;
 import nez.ast.CommonTree;
 import nez.lang.Expression;
 import nez.lang.Nez;
+import nez.lang.NonTerminal;
 import nez.lang.Nez.Sequence;
 import nez.lang.Predicate;
 import nez.lang.Production;
 import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cset;
-import nez.lang.expr.ExpressionCommons;
-import nez.lang.expr.NonTerminal;
+import nez.lang.expr.Expressions;
 import nez.lang.expr.Psequence;
 import nez.lang.expr.Tcapture;
 import nez.lang.expr.Tlfold;
@@ -354,7 +354,7 @@ public class DebugVMCompiler extends Expression.Visitor {
 		CommonTree node = (CommonTree) p.getSourceLocation();
 		int len = node.toText().length();
 		CommonTree newNode = new CommonTree(node.getTag(), node.getSource(), node.getSourcePosition() + len - 1, (int) (node.getSourcePosition() + len), 0, null);
-		p = (Tcapture) ExpressionCommons.newTcapture(newNode, p.shift);
+		p = (Tcapture) Expressions.newTcapture(newNode, p.shift);
 		if (this.strategy.TreeConstruction) {
 			if (this.leftedStack.pop()) {
 				BasicBlock endbb = new BasicBlock();

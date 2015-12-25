@@ -4,12 +4,13 @@ import nez.ast.SourceLocation;
 import nez.ast.Symbol;
 import nez.lang.Expression;
 import nez.lang.Grammar;
+import nez.lang.NonTerminal;
 import nez.util.StringUtils;
 import nez.util.UList;
 
-public abstract class ExpressionCommons extends Expression {
+public abstract class Expressions extends Expression {
 
-	protected ExpressionCommons(SourceLocation s) {
+	protected Expressions(SourceLocation s) {
 		super(s);
 	}
 
@@ -401,34 +402,34 @@ public abstract class ExpressionCommons extends Expression {
 
 	public final static Expression newNewCapture(SourceLocation s, boolean lefted, Symbol label, Expression e) {
 		UList<Expression> l = new UList<Expression>(new Expression[e.size() + 3]);
-		ExpressionCommons.addSequence(l, lefted ? new Tlfold(s, label, 0) : new Tnew(s, 0));
-		ExpressionCommons.addSequence(l, e);
-		ExpressionCommons.addSequence(l, ExpressionCommons.newTcapture(s, 0));
+		Expressions.addSequence(l, lefted ? new Tlfold(s, label, 0) : new Tnew(s, 0));
+		Expressions.addSequence(l, e);
+		Expressions.addSequence(l, Expressions.newTcapture(s, 0));
 		return newPsequence(s, l);
 	}
 
 	public final static Expression newLeftFoldOption(SourceLocation s, Symbol label, Expression e) {
 		UList<Expression> l = new UList<Expression>(new Expression[e.size() + 3]);
-		ExpressionCommons.addSequence(l, new Tlfold(s, label, 0));
-		ExpressionCommons.addSequence(l, e);
-		ExpressionCommons.addSequence(l, ExpressionCommons.newTcapture(s, 0));
-		return newPoption(s, ExpressionCommons.newPsequence(s, l));
+		Expressions.addSequence(l, new Tlfold(s, label, 0));
+		Expressions.addSequence(l, e);
+		Expressions.addSequence(l, Expressions.newTcapture(s, 0));
+		return newPoption(s, Expressions.newPsequence(s, l));
 	}
 
 	public final static Expression newLeftFoldRepetition(SourceLocation s, Symbol label, Expression e) {
 		UList<Expression> l = new UList<Expression>(new Expression[e.size() + 3]);
-		ExpressionCommons.addSequence(l, new Tlfold(s, label, 0));
-		ExpressionCommons.addSequence(l, e);
-		ExpressionCommons.addSequence(l, ExpressionCommons.newTcapture(s, 0));
-		return newPzero(s, ExpressionCommons.newPsequence(s, l));
+		Expressions.addSequence(l, new Tlfold(s, label, 0));
+		Expressions.addSequence(l, e);
+		Expressions.addSequence(l, Expressions.newTcapture(s, 0));
+		return newPzero(s, Expressions.newPsequence(s, l));
 	}
 
 	public final static Expression newLeftFoldRepetition1(SourceLocation s, Symbol label, Expression e) {
 		UList<Expression> l = new UList<Expression>(new Expression[e.size() + 3]);
-		ExpressionCommons.addSequence(l, new Tlfold(s, label, 0));
-		ExpressionCommons.addSequence(l, e);
-		ExpressionCommons.addSequence(l, ExpressionCommons.newTcapture(s, 0));
-		return newPone(s, ExpressionCommons.newPsequence(s, l));
+		Expressions.addSequence(l, new Tlfold(s, label, 0));
+		Expressions.addSequence(l, e);
+		Expressions.addSequence(l, Expressions.newTcapture(s, 0));
+		return newPone(s, Expressions.newPsequence(s, l));
 	}
 
 	public static void swap(UList<Expression> l, int i, int j) {

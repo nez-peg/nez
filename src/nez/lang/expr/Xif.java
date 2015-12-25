@@ -19,9 +19,4 @@ public class Xif extends Nez.If implements Expression.Conditional {
 		return predicate;
 	}
 
-	@Override
-	public boolean isConsumed() {
-		return false;
-	}
-
 }

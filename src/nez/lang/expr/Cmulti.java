@@ -10,9 +10,4 @@ public class Cmulti extends Nez.MultiByte {
 		this.setSourceLocation(s);
 	}
 
-	@Override
-	public boolean isConsumed() {
-		return true;
-	}
-
 }

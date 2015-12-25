@@ -10,9 +10,4 @@ public class Pand extends Nez.And {
 		this.setSourceLocation(s);
 	}
 
-	@Override
-	public boolean isConsumed() {
-		return false;
-	}
-
 }

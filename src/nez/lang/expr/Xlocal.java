@@ -12,11 +12,6 @@ public class Xlocal extends Nez.LocalScope {
 		this.setSourceLocation(s);
 	}
 
-	@Override
-	public boolean isConsumed() {
-		return this.inner.isConsumed();
-	}
-
 	public final Symbol getTable() {
 		return tableName;
 	}

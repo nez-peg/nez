@@ -10,9 +10,4 @@ public class Treplace extends Nez.Replace {
 		this.setSourceLocation(s);
 	}
 
-	@Override
-	public boolean isConsumed() {
-		return false;
-	}
-
 }

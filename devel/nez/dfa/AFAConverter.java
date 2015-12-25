@@ -791,7 +791,7 @@ public class AFAConverter extends TreeVisitorMap<DefaultVisitor> {
 		public AFA accept(Expression e) {
 			// System.out.println("here is NonTerminal : " + e);
 			// String nonTerminalName = ((NonTerminal) e).getLocalName();
-			String nonTerminalName = ((nez.lang.expr.NonTerminal) e).getLocalName();
+			String nonTerminalName = ((nez.lang.NonTerminal) e).getLocalName();
 
 			if (initialStateOfNonTerminal.containsKey(nonTerminalName)) { // 既にこの非終端記号を訪れた場合
 				/*
@@ -828,7 +828,7 @@ public class AFAConverter extends TreeVisitorMap<DefaultVisitor> {
 				initialStateOfNonTerminal.put(nonTerminalName, new State(s));
 				acceptingStateOfNonTerminal.put(nonTerminalName, new State(t));
 
-				AFA tmpAfa = visitProduction(((nez.lang.expr.NonTerminal) e).getProduction());
+				AFA tmpAfa = visitProduction(((nez.lang.NonTerminal) e).getProduction());
 
 				HashSet<State> S = new HashSet<State>();
 				TreeSet<Transition> transitions = new TreeSet<Transition>();

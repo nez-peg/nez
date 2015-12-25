@@ -1,12 +1,10 @@
 package nez.lang;
 
 import nez.ast.Symbol;
-import nez.lang.expr.ExpressionCommons;
-import nez.lang.expr.NonTerminal;
+import nez.lang.expr.Expressions;
 import nez.lang.expr.Pempty;
 import nez.lang.expr.Pfail;
 import nez.lang.expr.Psequence;
-import nez.lang.expr.Tlink;
 import nez.lang.expr.Ttag;
 import nez.lang.expr.Xexists;
 import nez.util.UList;
@@ -25,7 +23,7 @@ public class Nez {
 		}
 	}
 
-	public abstract static class Empty extends Terminal {
+	public static class Empty extends Terminal {
 
 		@Override
 		public final boolean equals(Object o) {
@@ -38,7 +36,7 @@ public class Nez {
 		}
 	}
 
-	public abstract static class Fail extends Terminal {
+	public static class Fail extends Terminal {
 		@Override
 		public final boolean equals(Object o) {
 			return (o instanceof Pfail);
@@ -53,7 +51,7 @@ public class Nez {
 	public static interface Character {
 	}
 
-	public abstract static class Byte extends Terminal implements Character {
+	public static class Byte extends Terminal implements Character {
 		public final int byteChar;
 
 		public Byte(int byteChar) {
@@ -74,7 +72,7 @@ public class Nez {
 		}
 	}
 
-	public static abstract class Any extends Terminal implements Character {
+	public static class Any extends Terminal implements Character {
 
 		@Override
 		public final boolean equals(Object o) {
@@ -87,7 +85,7 @@ public class Nez {
 		}
 	}
 
-	public static abstract class ByteSet extends Terminal implements Character {
+	public static class ByteSet extends Terminal implements Character {
 		public boolean[] byteMap; // Immutable
 
 		public ByteSet() {
@@ -120,7 +118,7 @@ public class Nez {
 		}
 	}
 
-	public static abstract class MultiByte extends Terminal implements Character {
+	public static class MultiByte extends Terminal implements Character {
 		public byte[] byteSeq;
 
 		public MultiByte(byte[] byteSeq) {
@@ -178,7 +176,7 @@ public class Nez {
 
 	}
 
-	public abstract static class Option extends Nez.Unary {
+	public static class Option extends Nez.Unary {
 		public Option(Expression e) {
 			super(e);
 		}
@@ -201,7 +199,7 @@ public class Nez {
 	public static interface Repetition {
 	}
 
-	public abstract static class ZeroMore extends Unary implements Repetition {
+	public static class ZeroMore extends Unary implements Repetition {
 		public ZeroMore(Expression e) {
 			super(e);
 		}
@@ -221,7 +219,7 @@ public class Nez {
 
 	}
 
-	public abstract static class OneMore extends Unary implements Repetition {
+	public static class OneMore extends Unary implements Repetition {
 		public OneMore(Expression e) {
 			super(e);
 		}
@@ -241,7 +239,7 @@ public class Nez {
 
 	}
 
-	public abstract static class And extends Unary {
+	public static class And extends Unary {
 		public And(Expression e) {
 			super(e);
 		}
@@ -261,7 +259,7 @@ public class Nez {
 
 	}
 
-	public abstract static class Not extends Unary {
+	public static class Not extends Unary {
 		public Not(Expression e) {
 			super(e);
 		}
@@ -280,7 +278,7 @@ public class Nez {
 		}
 	}
 
-	public abstract static class Pair extends Expression {
+	public static class Pair extends Expression {
 		public Expression first;
 		public Expression next;
 
@@ -325,7 +323,7 @@ public class Nez {
 		}
 
 		public final UList<Expression> toList() {
-			UList<Expression> l = ExpressionCommons.newList(4);
+			UList<Expression> l = Expressions.newList(4);
 			Nez.Pair p = this;
 			while (true) {
 				l.add(p.getFirst());
@@ -343,6 +341,10 @@ public class Nez {
 
 	public abstract static class List extends Expression {
 		public Expression[] inners;
+
+		public List(Expression[] inners) {
+			this.inners = inners;
+		}
 
 		@Override
 		public final int size() {
@@ -375,7 +377,11 @@ public class Nez {
 
 	}
 
-	public abstract static class Sequence extends Nez.List {
+	public static class Sequence extends Nez.List {
+
+		public Sequence(Expression[] inners) {
+			super(inners);
+		}
 
 		@Override
 		public final boolean equals(Object o) {
@@ -392,7 +398,11 @@ public class Nez {
 
 	}
 
-	public abstract static class Choice extends List {
+	public static class Choice extends List {
+
+		public Choice(Expression[] inners) {
+			super(inners);
+		}
 
 		@Override
 		public final boolean equals(Object o) {
@@ -429,8 +439,12 @@ public class Nez {
 	public abstract static interface AST {
 	}
 
-	public abstract static class PreNew extends Terminal implements AST {
+	public static class PreNew extends Terminal implements AST {
 		public int shift = 0;
+
+		public PreNew(int shift) {
+			this.shift = shift;
+		}
 
 		@Override
 		public final boolean equals(Object o) {
@@ -444,8 +458,12 @@ public class Nez {
 
 	}
 
-	public abstract static class New extends Terminal implements AST {
+	public static class New extends Terminal implements AST {
 		public int shift = 0;
+
+		public New(int shift) {
+			this.shift = shift;
+		}
 
 		@Override
 		public final boolean equals(Object o) {
@@ -459,17 +477,13 @@ public class Nez {
 
 	}
 
-	public abstract static class LeftFold extends Terminal implements AST {
-		public int shift = 0;
-		public Symbol label;
+	public static class LeftFold extends Terminal implements AST {
+		public int shift;
+		public final Symbol label;
 
 		public LeftFold(int shift, Symbol label) {
 			this.label = label;
 			this.shift = shift;
-		}
-
-		public final Symbol getLabel() {
-			return this.label;
 		}
 
 		@Override
@@ -488,14 +502,14 @@ public class Nez {
 
 	}
 
-	public abstract static class Tag extends Terminal implements AST {
-		public Symbol tag;
+	public static class Tag extends Terminal implements AST {
+		public final Symbol tag;
 
 		public Tag(Symbol tag) {
 			this.tag = tag;
 		}
 
-		public final java.lang.String getTagName() {
+		public final String getTagName() {
 			return tag.getSymbol();
 		}
 
@@ -513,10 +527,10 @@ public class Nez {
 		}
 	}
 
-	public abstract static class Replace extends Terminal implements AST {
-		public java.lang.String value;
+	public static class Replace extends Terminal implements AST {
+		public String value;
 
-		public Replace(java.lang.String value) {
+		public Replace(String value) {
 			this.value = value;
 		}
 
@@ -534,11 +548,11 @@ public class Nez {
 		}
 	}
 
-	public abstract static class Action extends Terminal implements AST {
+	public static abstract class Action extends Terminal implements AST {
 		Object value;
 	}
 
-	public abstract static class Link extends Unary implements AST {
+	public static class Link extends Unary implements AST {
 		public Symbol label;
 
 		public Link(Symbol label, Expression e) {
@@ -546,13 +560,9 @@ public class Nez {
 			this.label = label;
 		}
 
-		public final Symbol getLabel() {
-			return this.label;
-		}
-
 		@Override
 		public final boolean equals(Object o) {
-			if (o instanceof Tlink && this.label == ((Tlink) o).label) {
+			if (o instanceof Nez.Link && this.label == ((Nez.Link) o).label) {
 				return this.get(0).equals(((Expression) o).get(0));
 			}
 			return false;
@@ -564,7 +574,7 @@ public class Nez {
 		}
 	}
 
-	public abstract static class Detree extends Unary implements AST {
+	public static class Detree extends Unary implements AST {
 		public Detree(Expression e) {
 			super(e);
 		}
@@ -585,7 +595,7 @@ public class Nez {
 	}
 
 	/* Symbol */
-	private static Expression empty = ExpressionCommons.newEmpty(null);
+	private static Expression empty = Expressions.newEmpty(null);
 
 	public static abstract class Function extends Unary {
 		public final Predicate op;
@@ -601,7 +611,7 @@ public class Nez {
 
 	}
 
-	public abstract static class SymbolAction extends Function {
+	public static class SymbolAction extends Function {
 		public final Symbol tableName;
 
 		public SymbolAction(Predicate op, NonTerminal e) {
@@ -627,7 +637,7 @@ public class Nez {
 
 	}
 
-	public abstract static class SymbolPredicate extends Function {
+	public static class SymbolPredicate extends Function {
 		public final Symbol tableName;
 
 		public SymbolPredicate(Predicate op, Symbol table, Expression e) {
@@ -651,7 +661,7 @@ public class Nez {
 
 	}
 
-	public abstract static class SymbolMatch extends Function {
+	public static class SymbolMatch extends Function {
 		public final Symbol tableName;
 
 		public SymbolMatch(Predicate op, Symbol table) {
@@ -675,11 +685,11 @@ public class Nez {
 
 	}
 
-	public abstract static class SymbolExists extends Function implements AST {
+	public static class SymbolExists extends Function implements AST {
 		public final Symbol tableName;
-		public final java.lang.String symbol;
+		public final String symbol;
 
-		public SymbolExists(Symbol table, java.lang.String symbol) {
+		public SymbolExists(Symbol table, String symbol) {
 			super(Predicate.exists, empty);
 			this.tableName = table;
 			this.symbol = symbol;
@@ -694,7 +704,7 @@ public class Nez {
 			return false;
 		}
 
-		private boolean equals(java.lang.String s, java.lang.String s2) {
+		private boolean equals(String s, String s2) {
 			if (s != null && s2 != null) {
 				return s.equals(s2);
 			}
@@ -708,7 +718,7 @@ public class Nez {
 
 	}
 
-	public abstract static class BlockScope extends Function implements AST {
+	public static class BlockScope extends Function implements AST {
 		public BlockScope(Expression e) {
 			super(Predicate.block, e);
 		}
@@ -728,7 +738,7 @@ public class Nez {
 
 	}
 
-	public abstract static class LocalScope extends Function implements AST {
+	public static class LocalScope extends Function implements AST {
 		public final Symbol tableName;
 
 		public LocalScope(Symbol table, Expression e) {
@@ -758,11 +768,11 @@ public class Nez {
 
 	}
 
-	public abstract static class On extends Function {
-		public boolean predicate;
-		public final java.lang.String flagName;
+	public static class On extends Function {
+		public final boolean predicate;
+		public final String flagName;
 
-		public On(boolean predicate, java.lang.String c, Expression e) {
+		public On(boolean predicate, String c, Expression e) {
 			super(Predicate.on, e);
 			if (c.startsWith("!")) {
 				predicate = false;
@@ -793,11 +803,11 @@ public class Nez {
 		}
 	}
 
-	public abstract static class If extends Function implements Conditional {
+	public static class If extends Function implements Conditional {
 		public final boolean predicate;
-		public final java.lang.String flagName;
+		public final String flagName;
 
-		public If(boolean predicate, java.lang.String c) {
+		public If(boolean predicate, String c) {
 			super(Predicate._if, empty);
 			if (c.startsWith("!")) {
 				predicate = false;
@@ -822,7 +832,7 @@ public class Nez {
 		}
 	}
 
-	public abstract static class SetCount extends Function {
+	public static class SetCount extends Function {
 		public final long mask;
 
 		public SetCount(long mask, Expression e) {
@@ -845,7 +855,7 @@ public class Nez {
 		}
 	}
 
-	public abstract static class Count extends Function {
+	public static class Count extends Function {
 
 		public Count(Expression e) {
 			super(Predicate.count, e);

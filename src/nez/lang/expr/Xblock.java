@@ -10,9 +10,4 @@ public class Xblock extends Nez.BlockScope {
 		this.setSourceLocation(s);
 	}
 
-	@Override
-	public boolean isConsumed() {
-		return this.inner.isConsumed();
-	}
-
 }

@@ -3,8 +3,8 @@ package nez.tool.peg;
 import nez.lang.Expression;
 import nez.lang.Grammar;
 import nez.lang.Nez;
+import nez.lang.NonTerminal;
 import nez.lang.Production;
-import nez.lang.expr.NonTerminal;
 
 public class PEGTLTranslator extends GrammarTranslator {
 

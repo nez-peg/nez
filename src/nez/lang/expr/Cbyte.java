@@ -10,9 +10,4 @@ public class Cbyte extends Nez.Byte {
 		this.setSourceLocation(s);
 	}
 
-	@Override
-	public boolean isConsumed() {
-		return true;
-	}
-
 }

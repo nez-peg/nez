@@ -5,8 +5,8 @@ import java.util.List;
 import nez.lang.Expression;
 import nez.lang.Grammar;
 import nez.lang.Nez;
+import nez.lang.NonTerminal;
 import nez.lang.Production;
-import nez.lang.expr.NonTerminal;
 import nez.lang.expr.Pchoice;
 import nez.lang.expr.Psequence;
 import nez.lang.expr.Unary;
@@ -206,7 +206,7 @@ public class PEGTranslator extends GrammarTranslator {
 
 	@Override
 	public void visitLeftFold(Nez.LeftFold p) {
-		SemanticAction("lfold(" + p.getLabel() + ")");
+		SemanticAction("lfold(" + p.label + ")");
 	}
 
 	@Override

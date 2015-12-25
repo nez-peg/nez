@@ -1,7 +1,6 @@
 package nez.lang;
 
 import nez.lang.Nez.Byte;
-import nez.lang.expr.NonTerminal;
 import nez.util.Verbose;
 
 public enum Typestate {

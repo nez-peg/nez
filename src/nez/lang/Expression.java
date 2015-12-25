@@ -7,8 +7,7 @@ import nez.ast.SourceLocation;
 import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cset;
-import nez.lang.expr.ExpressionCommons;
-import nez.lang.expr.NonTerminal;
+import nez.lang.expr.Expressions;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
 import nez.util.UList;
@@ -47,19 +46,13 @@ public abstract class Expression extends AbstractList<Expression> {
 		return sb.toString();
 	}
 
-	// public abstract void format(StringBuilder sb);
-
 	public final String getPredicate() {
 		return this.getClass().getSimpleName().substring(1);
 	}
 
-	public abstract boolean isConsumed();
+	// public abstract boolean isConsumed();
 
 	public abstract Object visit(Expression.Visitor v, Object a);
-
-	// boolean setOuterLefted(Expression outer) {
-	// return false;
-	// }
 
 	// test
 
@@ -74,31 +67,31 @@ public abstract class Expression extends AbstractList<Expression> {
 	// convinient interface
 
 	public final Expression newEmpty() {
-		return ExpressionCommons.newEmpty(this.getSourceLocation());
+		return Expressions.newEmpty(this.getSourceLocation());
 	}
 
 	public final Expression newFailure() {
-		return ExpressionCommons.newFailure(this.getSourceLocation());
+		return Expressions.newFailure(this.getSourceLocation());
 	}
 
 	public final Expression newCset(boolean isBinary, boolean[] byteMap) {
-		return ExpressionCommons.newCset(this.getSourceLocation(), isBinary, byteMap);
+		return Expressions.newCset(this.getSourceLocation(), isBinary, byteMap);
 	}
 
 	public final Expression newSequence(Expression e, Expression e2) {
-		return ExpressionCommons.newPsequence(this.getSourceLocation(), e, e2);
+		return Expressions.newPsequence(this.getSourceLocation(), e, e2);
 	}
 
 	public final Expression newSequence(UList<Expression> l) {
-		return ExpressionCommons.newPsequence(this.getSourceLocation(), l);
+		return Expressions.newPsequence(this.getSourceLocation(), l);
 	}
 
 	public final Expression newChoice(Expression e, Expression e2) {
-		return ExpressionCommons.newPchoice(this.getSourceLocation(), e, e2);
+		return Expressions.newPchoice(this.getSourceLocation(), e, e2);
 	}
 
 	public final Expression newChoice(UList<Expression> l) {
-		return ExpressionCommons.newPchoice(this.getSourceLocation(), l);
+		return Expressions.newPchoice(this.getSourceLocation(), l);
 	}
 
 	/* static class */

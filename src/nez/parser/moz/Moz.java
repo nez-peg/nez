@@ -908,7 +908,7 @@ public class Moz {
 		public TLeftFold(Nez.LeftFold e, MozInst next) {
 			super(MozSet.TLeftFold, e, next);
 			this.shift = e.shift;
-			this.label = e.getLabel();
+			this.label = e.label;
 		}
 
 		@Override
@@ -1051,7 +1051,7 @@ public class Moz {
 
 		public TPop(Nez.Link e, MozInst next) {
 			super(MozSet.TPop, e, next);
-			this.label = e.getLabel();
+			this.label = e.label;
 		}
 
 		@Override
@@ -1108,7 +1108,7 @@ public class Moz {
 
 		public TCommit(Nez.Link e, MozInst next) {
 			super(MozSet.TCommit, e, next);
-			this.label = e.getLabel();
+			this.label = e.label;
 		}
 
 		@Override
@@ -1136,7 +1136,7 @@ public class Moz {
 
 		public TLookup(Nez.Link e, MemoPoint m, boolean state, MozInst next, MozInst skip) {
 			super(MozSet.TLookup, e, m, state, next, skip);
-			this.label = e.getLabel();
+			this.label = e.label;
 		}
 
 		@Override

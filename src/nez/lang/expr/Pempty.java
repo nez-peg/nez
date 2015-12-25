@@ -8,9 +8,4 @@ public class Pempty extends Nez.Empty {
 		this.setSourceLocation(s);
 	}
 
-	@Override
-	public boolean isConsumed() {
-		return false;
-	}
-
 }

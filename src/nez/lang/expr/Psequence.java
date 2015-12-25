@@ -64,14 +64,6 @@ public class Psequence extends Nez.Pair {
 	// }
 	// }
 
-	@Override
-	public boolean isConsumed() {
-		if (this.get(0).isConsumed()) {
-			return true;
-		}
-		return this.get(1).isConsumed();
-	}
-
 	// @Override
 	// boolean setOuterLefted(Expression outer) {
 	// for (Expression e : this) {
@@ -140,7 +132,7 @@ public class Psequence extends Nez.Pair {
 	}
 
 	public final Expression newMultiChar(boolean binary, byte[] byteSeq) {
-		return ExpressionCommons.newCmulti(this.getSourceLocation(), binary, byteSeq);
+		return Expressions.newCmulti(this.getSourceLocation(), binary, byteSeq);
 	}
 
 }

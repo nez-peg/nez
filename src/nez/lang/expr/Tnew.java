@@ -5,13 +5,7 @@ import nez.lang.Nez;
 
 public class Tnew extends Nez.PreNew {
 	Tnew(SourceLocation s, int shift) {
+		super(shift);
 		this.setSourceLocation(s);
-		this.shift = shift;
 	}
-
-	@Override
-	public boolean isConsumed() {
-		return false;
-	}
-
 }

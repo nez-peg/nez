@@ -7,7 +7,7 @@ import nez.ast.TreeVisitorMap;
 import nez.lang.Expression;
 import nez.lang.Predicate;
 import nez.lang.Production;
-import nez.lang.expr.ExpressionCommons;
+import nez.lang.expr.Expressions;
 import nez.parser.ParseFunc;
 import nez.parser.ParserGrammar;
 import nez.parser.ParserStrategy;
@@ -118,7 +118,7 @@ public class Hachi6Compiler extends TreeVisitorMap<DefaultVisitor> {
 	}
 
 	private Expression getInnerExpression(Expression p) {
-		Expression inner = ExpressionCommons.resolveNonTerminal(p.get(0));
+		Expression inner = Expressions.resolveNonTerminal(p.get(0));
 		if (strategy.Ostring && inner instanceof nez.lang.expr.Psequence) {
 			inner = ((nez.lang.expr.Psequence) inner).toMultiCharSequence();
 		}
@@ -146,7 +146,7 @@ public class Hachi6Compiler extends TreeVisitorMap<DefaultVisitor> {
 	public class NonTerminal extends DefaultVisitor {
 		@Override
 		public Hachi6Inst accept(Expression e, Hachi6Inst next) {
-			nez.lang.expr.NonTerminal n = (nez.lang.expr.NonTerminal) e;
+			nez.lang.NonTerminal n = (nez.lang.NonTerminal) e;
 			Production p = n.getProduction();
 			if (p == null) {
 				Verbose.debug("[PANIC] unresolved: " + n.getLocalName() + " ***** ");
@@ -436,7 +436,7 @@ public class Hachi6Compiler extends TreeVisitorMap<DefaultVisitor> {
 		public Hachi6Inst accept(Expression e, Hachi6Inst next) {
 			nez.lang.expr.Tlink p = (nez.lang.expr.Tlink) e;
 			if (strategy.TreeConstruction) {
-				next = new Hachi6.Link(p.getLabel(), next);
+				next = new Hachi6.Link(p.label, next);
 			}
 			return generate(e.get(0), next);
 		}
@@ -447,7 +447,7 @@ public class Hachi6Compiler extends TreeVisitorMap<DefaultVisitor> {
 		public Hachi6Inst accept(Expression e, Hachi6Inst next) {
 			if (strategy.TreeConstruction) {
 				nez.lang.expr.Tlfold p = (nez.lang.expr.Tlfold) e;
-				return new Hachi6.LeftFold(p.shift, p.getLabel(), next);
+				return new Hachi6.LeftFold(p.shift, p.label, next);
 			}
 			return next;
 		}

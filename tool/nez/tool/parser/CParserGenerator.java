@@ -10,10 +10,10 @@ import nez.ast.Symbol;
 import nez.lang.Expression;
 import nez.lang.Grammar;
 import nez.lang.Nez;
+import nez.lang.NonTerminal;
 import nez.lang.Production;
 import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cset;
-import nez.lang.expr.NonTerminal;
 import nez.lang.expr.Pchoice;
 import nez.lang.expr.Psequence;
 import nez.lang.expr.Xif;
@@ -892,7 +892,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 		if (this.strategy.TreeConstruction) {
 			String po = "ctx->left";
 			String label = "EXIT_LINK" + this.fid;
-			Symbol sym = e.getLabel();
+			Symbol sym = e.label;
 			if (sym == null) {
 				sym = Symbol.NullSymbol;
 			}

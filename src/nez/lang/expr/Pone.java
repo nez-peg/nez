@@ -10,9 +10,4 @@ public class Pone extends Nez.OneMore {
 		this.setSourceLocation(s);
 	}
 
-	@Override
-	public boolean isConsumed() {
-		return this.inner.isConsumed();
-	}
-
 }

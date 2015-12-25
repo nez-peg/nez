@@ -8,8 +8,7 @@ import nez.lang.Expression.Contextual;
 import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cset;
-import nez.lang.expr.ExpressionCommons;
-import nez.lang.expr.NonTerminal;
+import nez.lang.expr.Expressions;
 import nez.lang.expr.Pand;
 import nez.lang.expr.Pchoice;
 import nez.lang.expr.Pnot;
@@ -60,7 +59,7 @@ public class Production /* extends Expression */{
 		this.g = g;
 		this.name = name;
 		this.uname = g.uniqueName(name);
-		this.body = (body == null) ? ExpressionCommons.newEmpty(s) : body;
+		this.body = (body == null) ? Expressions.newEmpty(s) : body;
 		Production.quickCheck(this);
 	}
 
@@ -396,55 +395,56 @@ public class Production /* extends Expression */{
 		this.body = e;
 	}
 
-	public boolean isConsumed() {
-		if (!UFlag.is(this.flag, ConsumedChecked)) {
-			checkConsumed(this.getExpression(), new ProductionStacker(this, null));
-		}
-		return UFlag.is(this.flag, ConsumedProduction);
-	}
-
-	private boolean checkConsumed(Expression e, ProductionStacker s) {
-		if (e instanceof NonTerminal) {
-			NonTerminal n = (NonTerminal) e;
-			Production p = n.getProduction();
-			if (UFlag.is(p.flag, ConsumedChecked)) {
-				return p.isConsumed();
-			}
-			if (s.isVisited(p)) {
-				// left recursion
-				return false;
-			}
-			if (p.isRecursive()) {
-				return checkConsumed(p.getExpression(), new ProductionStacker(p, s));
-			}
-			return p.isConsumed();
-		}
-		if (e instanceof Psequence) {
-			if (checkConsumed(e.get(0), s)) {
-				return true;
-			}
-			return checkConsumed(e.get(1), s);
-		}
-		if (e instanceof Pchoice) {
-			boolean consumed = true;
-			for (Expression se : e) {
-				if (!checkConsumed(se, s)) {
-					consumed = false;
-				}
-			}
-			return consumed;
-		}
-		if (e.size() > 0) {
-			if (e instanceof Pone) {
-				return checkConsumed(e.get(0), s);
-			}
-			if (e instanceof Pnot || e instanceof Poption || e instanceof Pzero || e instanceof Pand) {
-				return false;
-			}
-			return checkConsumed(e.get(0), s);
-		}
-		return e.isConsumed();
-	}
+	// public boolean isConsumed() {
+	// if (!UFlag.is(this.flag, ConsumedChecked)) {
+	// checkConsumed(this.getExpression(), new ProductionStacker(this, null));
+	// }
+	// return UFlag.is(this.flag, ConsumedProduction);
+	// }
+	//
+	// private boolean checkConsumed(Expression e, ProductionStacker s) {
+	// if (e instanceof NonTerminal) {
+	// NonTerminal n = (NonTerminal) e;
+	// Production p = n.getProduction();
+	// if (UFlag.is(p.flag, ConsumedChecked)) {
+	// return p.isConsumed();
+	// }
+	// if (s.isVisited(p)) {
+	// // left recursion
+	// return false;
+	// }
+	// if (p.isRecursive()) {
+	// return checkConsumed(p.getExpression(), new ProductionStacker(p, s));
+	// }
+	// return p.isConsumed();
+	// }
+	// if (e instanceof Psequence) {
+	// if (checkConsumed(e.get(0), s)) {
+	// return true;
+	// }
+	// return checkConsumed(e.get(1), s);
+	// }
+	// if (e instanceof Pchoice) {
+	// boolean consumed = true;
+	// for (Expression se : e) {
+	// if (!checkConsumed(se, s)) {
+	// consumed = false;
+	// }
+	// }
+	// return consumed;
+	// }
+	// if (e.size() > 0) {
+	// if (e instanceof Pone) {
+	// return checkConsumed(e.get(0), s);
+	// }
+	// if (e instanceof Pnot || e instanceof Poption || e instanceof Pzero || e
+	// instanceof Pand) {
+	// return false;
+	// }
+	// return checkConsumed(e.get(0), s);
+	// }
+	// return e.isConsumed();
+	// }
 
 	public final void dump() {
 		UList<String> l = new UList<String>(new String[4]);

@@ -3,8 +3,8 @@ package nez.x.generator;
 import nez.lang.Expression;
 import nez.lang.Grammar;
 import nez.lang.Nez;
+import nez.lang.NonTerminal;
 import nez.lang.Production;
-import nez.lang.expr.NonTerminal;
 import nez.lang.expr.Pempty;
 import nez.lang.expr.Pfail;
 import nez.parser.Parser;
@@ -145,8 +145,8 @@ public class CombinatorGenerator extends GrammarTranslator {
 
 	@Override
 	public void visitLink(Nez.Link e) {
-		if (e.getLabel() != null) {
-			C("Link", e.getLabel().toString(), e);
+		if (e.label != null) {
+			C("Link", e.label.toString(), e);
 		} else {
 			C("Link", e);
 		}

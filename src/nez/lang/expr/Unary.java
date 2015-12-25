@@ -3,7 +3,7 @@ package nez.lang.expr;
 import nez.ast.SourceLocation;
 import nez.lang.Expression;
 
-public abstract class Unary extends ExpressionCommons {
+public abstract class Unary extends Expressions {
 	public Expression inner;
 
 	Unary(SourceLocation s, Expression inner) {

@@ -159,7 +159,7 @@ public class IRBuilder {
 		return this.curBB.append(new Inop(e));
 	}
 
-	public DebugVMInstruction createIcall(nez.lang.expr.NonTerminal e, BasicBlock jump, BasicBlock failjump) {
+	public DebugVMInstruction createIcall(nez.lang.NonTerminal e, BasicBlock jump, BasicBlock failjump) {
 		return this.curBB.append(new Icall(e, jump, failjump));
 	}
 

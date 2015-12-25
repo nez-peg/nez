@@ -18,9 +18,4 @@ public class Xon extends Nez.On implements Expression.Conditional {
 		this.setSourceLocation(s);
 	}
 
-	@Override
-	public boolean isConsumed() {
-		return this.inner.isConsumed();
-	}
-
 }

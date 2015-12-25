@@ -1,7 +1,6 @@
 package nez.lang;
 
 import nez.lang.Nez.Byte;
-import nez.lang.expr.NonTerminal;
 
 public enum ByteConsumption {
 	Unconsumed, //
@@ -236,7 +235,7 @@ public enum ByteConsumption {
 
 		@Override
 		public Object visitOn(Nez.On e, Object a) {
-			return Unconsumed;
+			return check(e.get(0), a);
 		}
 	}
 }

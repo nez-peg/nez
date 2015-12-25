@@ -5,8 +5,8 @@ import java.util.List;
 import nez.lang.Expression;
 import nez.lang.Grammar;
 import nez.lang.Nez;
+import nez.lang.NonTerminal;
 import nez.lang.Production;
-import nez.lang.expr.NonTerminal;
 import nez.lang.expr.Pchoice;
 import nez.util.StringUtils;
 
@@ -137,7 +137,7 @@ public class NezTranslator extends PEGTranslator {
 
 	@Override
 	public void visitLeftFold(Nez.LeftFold e) {
-		W(e.getLabel() == null ? "{$" : "{$" + e.getLabel());
+		W(e.label == null ? "{$" : "{$" + e.label);
 	}
 
 	@Override
@@ -159,8 +159,8 @@ public class NezTranslator extends PEGTranslator {
 	@Override
 	public void visitLink(Nez.Link e) {
 		String predicate = "$";
-		if (e.getLabel() != null) {
-			predicate += e.getLabel().toString();
+		if (e.label != null) {
+			predicate += e.label.toString();
 		}
 		visitUnary(predicate + "(", e, ")");
 	}

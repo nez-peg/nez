@@ -13,9 +13,4 @@ public class Pzero extends Nez.ZeroMore {
 		// e.setOuterLefted(this);
 	}
 
-	@Override
-	public boolean isConsumed() {
-		return false;
-	}
-
 }

@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 import nez.lang.Expression;
 import nez.lang.Nez;
+import nez.lang.NonTerminal;
 import nez.lang.Predicate;
 import nez.lang.Production;
 import nez.lang.Typestate;
@@ -11,8 +12,7 @@ import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cmulti;
 import nez.lang.expr.Cset;
-import nez.lang.expr.ExpressionCommons;
-import nez.lang.expr.NonTerminal;
+import nez.lang.expr.Expressions;
 import nez.lang.expr.Psequence;
 import nez.parser.Coverage;
 import nez.parser.ParseFunc;
@@ -379,7 +379,7 @@ public class MozCompiler extends Expression.Visitor {
 	}
 
 	public final Expression getInnerExpression(Expression p) {
-		Expression inner = ExpressionCommons.resolveNonTerminal(p.get(0));
+		Expression inner = Expressions.resolveNonTerminal(p.get(0));
 		if (strategy.Ostring && inner instanceof Psequence) {
 			inner = ((Psequence) inner).toMultiCharSequence();
 			// System.out.println("Stringfy:" + inner);

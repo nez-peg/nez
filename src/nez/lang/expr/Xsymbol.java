@@ -3,6 +3,7 @@ package nez.lang.expr;
 import nez.ast.SourceLocation;
 import nez.ast.Symbol;
 import nez.lang.Nez;
+import nez.lang.NonTerminal;
 import nez.lang.Predicate;
 
 public class Xsymbol extends Nez.SymbolAction {
@@ -22,11 +23,6 @@ public class Xsymbol extends Nez.SymbolAction {
 
 	public final java.lang.String getTableName() {
 		return tableName.getSymbol();
-	}
-
-	@Override
-	public boolean isConsumed() {
-		return this.inner.isConsumed();
 	}
 
 }

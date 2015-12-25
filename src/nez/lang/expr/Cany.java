@@ -8,9 +8,4 @@ public class Cany extends Nez.Any {
 		this.setSourceLocation(s);
 	}
 
-	@Override
-	public boolean isConsumed() {
-		return true;
-	}
-
 }

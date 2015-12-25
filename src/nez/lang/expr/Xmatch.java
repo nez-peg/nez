@@ -21,9 +21,4 @@ public class Xmatch extends Nez.SymbolMatch implements Expression.Contextual {
 		return tableName.getSymbol();
 	}
 
-	@Override
-	public boolean isConsumed() {
-		return false;
-	}
-
 }

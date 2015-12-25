@@ -10,9 +10,4 @@ public class Poption extends Nez.Option {
 		this.setSourceLocation(s);
 	}
 
-	@Override
-	public boolean isConsumed() {
-		return false;
-	}
-
 }

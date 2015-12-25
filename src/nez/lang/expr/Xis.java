@@ -4,6 +4,7 @@ import nez.ast.SourceLocation;
 import nez.ast.Symbol;
 import nez.lang.Expression;
 import nez.lang.Nez;
+import nez.lang.NonTerminal;
 import nez.lang.Predicate;
 
 public class Xis extends Nez.SymbolPredicate implements Expression.Contextual {
@@ -25,11 +26,6 @@ public class Xis extends Nez.SymbolPredicate implements Expression.Contextual {
 
 	public final String getTableName() {
 		return tableName.getSymbol();
-	}
-
-	@Override
-	public boolean isConsumed() {
-		return this.inner.isConsumed();
 	}
 
 }

@@ -7,7 +7,7 @@ import nez.lang.Expression;
 import nez.lang.Grammar;
 import nez.lang.GrammarHacks;
 import nez.lang.Production;
-import nez.lang.expr.ExpressionCommons;
+import nez.lang.expr.Expressions;
 import nez.util.Verbose;
 
 public abstract class PredefinedGrammarCombinator extends GrammarHacks {
@@ -54,7 +54,7 @@ public abstract class PredefinedGrammarCombinator extends GrammarHacks {
 	}
 
 	protected final Expression _NonTerminal(String name) {
-		return ExpressionCommons.newNonTerminal(null, grammar, name);
+		return Expressions.newNonTerminal(null, grammar, name);
 	}
 
 	@Override

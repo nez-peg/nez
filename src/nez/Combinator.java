@@ -9,7 +9,7 @@ import nez.ast.Symbol;
 import nez.lang.Expression;
 import nez.lang.Grammar;
 import nez.lang.expr.Cset;
-import nez.lang.expr.ExpressionCommons;
+import nez.lang.expr.Expressions;
 import nez.util.UList;
 import nez.util.Verbose;
 
@@ -98,19 +98,19 @@ public class Combinator {
 	}
 
 	protected final Expression P(String name) {
-		return ExpressionCommons.newNonTerminal(src(), g, name);
+		return Expressions.newNonTerminal(src(), g, name);
 	}
 
 	protected final Expression t(char c) {
-		return ExpressionCommons.newString(src(), String.valueOf(c));
+		return Expressions.newString(src(), String.valueOf(c));
 	}
 
 	protected final Expression t(String token) {
-		return ExpressionCommons.newString(src(), token);
+		return Expressions.newString(src(), token);
 	}
 
 	protected final Expression c(String text) {
-		return ExpressionCommons.newCharSet(src(), text);
+		return Expressions.newCharSet(src(), text);
 	}
 
 	protected final Expression c(int... chars) {
@@ -122,15 +122,15 @@ public class Combinator {
 				binary = true;
 			}
 		}
-		return ExpressionCommons.newCset(src(), binary, b);
+		return Expressions.newCset(src(), binary, b);
 	}
 
 	protected final Expression ByteChar(int byteChar) {
-		return ExpressionCommons.newCbyte(src(), false, byteChar);
+		return Expressions.newCbyte(src(), false, byteChar);
 	}
 
 	protected final Expression AnyChar() {
-		return ExpressionCommons.newCany(src(), false);
+		return Expressions.newCany(src(), false);
 	}
 
 	protected final Expression NotAny(String token) {
@@ -144,81 +144,81 @@ public class Combinator {
 	protected final Expression Sequence(Expression... elist) {
 		UList<Expression> l = new UList<Expression>(new Expression[8]);
 		for (Expression e : elist) {
-			ExpressionCommons.addSequence(l, e);
+			Expressions.addSequence(l, e);
 		}
-		return ExpressionCommons.newPsequence(src(), l);
+		return Expressions.newPsequence(src(), l);
 	}
 
 	protected final Expression Choice(Expression... elist) {
 		UList<Expression> l = new UList<Expression>(new Expression[8]);
 		for (Expression e : elist) {
-			ExpressionCommons.addChoice(l, e);
+			Expressions.addChoice(l, e);
 		}
-		return ExpressionCommons.newPchoice(src(), l);
+		return Expressions.newPchoice(src(), l);
 	}
 
 	protected final Expression Option(Expression... e) {
-		return ExpressionCommons.newPoption(src(), Sequence(e));
+		return Expressions.newPoption(src(), Sequence(e));
 	}
 
 	protected final Expression Option(String t) {
-		return ExpressionCommons.newPoption(src(), t(t));
+		return Expressions.newPoption(src(), t(t));
 	}
 
 	protected final Expression ZeroMore(Expression... e) {
-		return ExpressionCommons.newPzero(src(), Sequence(e));
+		return Expressions.newPzero(src(), Sequence(e));
 	}
 
 	protected final Expression OneMore(Expression... e) {
-		return ExpressionCommons.newPone(src(), Sequence(e));
+		return Expressions.newPone(src(), Sequence(e));
 	}
 
 	protected final Expression Not(String t) {
-		return ExpressionCommons.newPnot(src(), ExpressionCommons.newString(src(), t));
+		return Expressions.newPnot(src(), Expressions.newString(src(), t));
 	}
 
 	protected final Expression Not(Expression... e) {
-		return ExpressionCommons.newPnot(src(), Sequence(e));
+		return Expressions.newPnot(src(), Sequence(e));
 	}
 
 	protected final Expression And(Expression... e) {
-		return ExpressionCommons.newPand(src(), Sequence(e));
+		return Expressions.newPand(src(), Sequence(e));
 	}
 
 	protected final Expression NCapture(int shift) {
-		return ExpressionCommons.newTnew(src(), shift);
+		return Expressions.newTnew(src(), shift);
 	}
 
 	protected final Expression LCapture(int shift, String label) {
-		return ExpressionCommons.newTlfold(src(), toSymbol(label), shift);
+		return Expressions.newTlfold(src(), toSymbol(label), shift);
 	}
 
 	protected final Expression Capture(int shift) {
-		return ExpressionCommons.newTcapture(src(), shift);
+		return Expressions.newTcapture(src(), shift);
 	}
 
 	protected final Expression New(Expression... e) {
-		return ExpressionCommons.newNewCapture(src(), false, null, Sequence(e));
+		return Expressions.newNewCapture(src(), false, null, Sequence(e));
 	}
 
 	protected final Expression LeftFoldOption(String label, Expression... e) {
-		return ExpressionCommons.newLeftFoldOption(src(), toSymbol(label), Sequence(e));
+		return Expressions.newLeftFoldOption(src(), toSymbol(label), Sequence(e));
 	}
 
 	protected final Expression LeftFoldZeroMore(String label, Expression... e) {
-		return ExpressionCommons.newLeftFoldRepetition(src(), toSymbol(label), Sequence(e));
+		return Expressions.newLeftFoldRepetition(src(), toSymbol(label), Sequence(e));
 	}
 
 	protected final Expression LeftFoldOneMore(String label, Expression... e) {
-		return ExpressionCommons.newLeftFoldRepetition1(src(), toSymbol(label), Sequence(e));
+		return Expressions.newLeftFoldRepetition1(src(), toSymbol(label), Sequence(e));
 	}
 
 	protected Expression Link(String label, Expression e) {
-		return ExpressionCommons.newTlink(src(), toSymbol(label), e);
+		return Expressions.newTlink(src(), toSymbol(label), e);
 	}
 
 	protected Expression Link(String label, String nonTerminal) {
-		return ExpressionCommons.newTlink(src(), toSymbol(label), P(nonTerminal));
+		return Expressions.newTlink(src(), toSymbol(label), P(nonTerminal));
 	}
 
 	private Symbol toSymbol(String label) {
@@ -232,7 +232,7 @@ public class Combinator {
 	}
 
 	protected Expression Msg(String label, String msg) {
-		return ExpressionCommons.newTlink(src(), Symbol.tag(label), New(Replace(msg)));
+		return Expressions.newTlink(src(), Symbol.tag(label), New(Replace(msg)));
 	}
 
 	// protected final Expression Tag(Tag t) {
@@ -240,15 +240,15 @@ public class Combinator {
 	// }
 
 	protected final Expression Tag(String tag) {
-		return ExpressionCommons.newTtag(src(), Symbol.tag(tag));
+		return Expressions.newTtag(src(), Symbol.tag(tag));
 	}
 
 	protected final Expression Replace(char c) {
-		return ExpressionCommons.newTreplace(src(), String.valueOf(c));
+		return Expressions.newTreplace(src(), String.valueOf(c));
 	}
 
 	protected final Expression Replace(String value) {
-		return ExpressionCommons.newTreplace(src(), value);
+		return Expressions.newTreplace(src(), value);
 	}
 
 }

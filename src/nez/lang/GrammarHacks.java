@@ -4,8 +4,7 @@ import java.util.AbstractList;
 
 import nez.ast.SourceLocation;
 import nez.ast.Symbol;
-import nez.lang.expr.ExpressionCommons;
-import nez.lang.expr.NonTerminal;
+import nez.lang.expr.Expressions;
 import nez.util.UList;
 
 public abstract class GrammarHacks extends AbstractList<Production> {
@@ -26,88 +25,88 @@ public abstract class GrammarHacks extends AbstractList<Production> {
 	}
 
 	public final NonTerminal newNonTerminal(SourceLocation s, String name) {
-		return ExpressionCommons.newNonTerminal(s, (Grammar) this, name);
+		return Expressions.newNonTerminal(s, (Grammar) this, name);
 	}
 
 	public final Expression newEmpty() {
-		return ExpressionCommons.newEmpty(getSourcePosition());
+		return Expressions.newEmpty(getSourcePosition());
 	}
 
 	public final Expression newFailure() {
-		return ExpressionCommons.newFailure(getSourcePosition());
+		return Expressions.newFailure(getSourcePosition());
 	}
 
 	public final Expression newByteChar(int ch) {
-		return ExpressionCommons.newCbyte(getSourcePosition(), false, ch);
+		return Expressions.newCbyte(getSourcePosition(), false, ch);
 	}
 
 	public final Expression newAnyChar() {
-		return ExpressionCommons.newCany(getSourcePosition(), false);
+		return Expressions.newCany(getSourcePosition(), false);
 	}
 
 	public final Expression newString(String text) {
-		return ExpressionCommons.newString(getSourcePosition(), text);
+		return Expressions.newString(getSourcePosition(), text);
 	}
 
 	public final Expression newCharSet(String text) {
-		return ExpressionCommons.newCharSet(getSourcePosition(), text);
+		return Expressions.newCharSet(getSourcePosition(), text);
 	}
 
 	public final Expression newByteMap(boolean[] byteMap) {
-		return ExpressionCommons.newCset(getSourcePosition(), false, byteMap);
+		return Expressions.newCset(getSourcePosition(), false, byteMap);
 	}
 
 	public final Expression newSequence(Expression... seq) {
 		UList<Expression> l = new UList<Expression>(new Expression[8]);
 		for (Expression p : seq) {
-			ExpressionCommons.addSequence(l, p);
+			Expressions.addSequence(l, p);
 		}
-		return ExpressionCommons.newPsequence(getSourcePosition(), l);
+		return Expressions.newPsequence(getSourcePosition(), l);
 	}
 
 	public final Expression newChoice(Expression... seq) {
 		UList<Expression> l = new UList<Expression>(new Expression[8]);
 		for (Expression p : seq) {
-			ExpressionCommons.addChoice(l, p);
+			Expressions.addChoice(l, p);
 		}
-		return ExpressionCommons.newPchoice(getSourcePosition(), l);
+		return Expressions.newPchoice(getSourcePosition(), l);
 	}
 
 	public final Expression newOption(Expression... seq) {
-		return ExpressionCommons.newPoption(getSourcePosition(), newSequence(seq));
+		return Expressions.newPoption(getSourcePosition(), newSequence(seq));
 	}
 
 	public final Expression newRepetition(Expression... seq) {
-		return ExpressionCommons.newPzero(getSourcePosition(), newSequence(seq));
+		return Expressions.newPzero(getSourcePosition(), newSequence(seq));
 	}
 
 	public final Expression newRepetition1(Expression... seq) {
-		return ExpressionCommons.newPone(getSourcePosition(), newSequence(seq));
+		return Expressions.newPone(getSourcePosition(), newSequence(seq));
 	}
 
 	public final Expression newAnd(Expression... seq) {
-		return ExpressionCommons.newPand(getSourcePosition(), newSequence(seq));
+		return Expressions.newPand(getSourcePosition(), newSequence(seq));
 	}
 
 	public final Expression newNot(Expression... seq) {
-		return ExpressionCommons.newPnot(getSourcePosition(), newSequence(seq));
+		return Expressions.newPnot(getSourcePosition(), newSequence(seq));
 	}
 
 	// PEG4d
 	public final Expression newMatch(Expression... seq) {
-		return ExpressionCommons.newTdetree(getSourcePosition(), newSequence(seq));
+		return Expressions.newTdetree(getSourcePosition(), newSequence(seq));
 	}
 
 	public final Expression newLink(Expression... seq) {
-		return ExpressionCommons.newTlink(getSourcePosition(), null, newSequence(seq));
+		return Expressions.newTlink(getSourcePosition(), null, newSequence(seq));
 	}
 
 	public final Expression newLink(Symbol label, Expression... seq) {
-		return ExpressionCommons.newTlink(getSourcePosition(), label, newSequence(seq));
+		return Expressions.newTlink(getSourcePosition(), label, newSequence(seq));
 	}
 
 	public final Expression newNew(Expression... seq) {
-		return ExpressionCommons.newNewCapture(getSourcePosition(), false, null, newSequence(seq));
+		return Expressions.newNewCapture(getSourcePosition(), false, null, newSequence(seq));
 	}
 
 	// public final Expression newLeftNew(Expression ... seq) {
@@ -116,11 +115,11 @@ public abstract class GrammarHacks extends AbstractList<Production> {
 	// }
 
 	public final Expression newTagging(String tag) {
-		return ExpressionCommons.newTtag(getSourcePosition(), Symbol.tag(tag));
+		return Expressions.newTtag(getSourcePosition(), Symbol.tag(tag));
 	}
 
 	public final Expression newReplace(String msg) {
-		return ExpressionCommons.newTreplace(getSourcePosition(), msg);
+		return Expressions.newTreplace(getSourcePosition(), msg);
 	}
 
 	// Conditional Parsing
@@ -129,35 +128,35 @@ public abstract class GrammarHacks extends AbstractList<Production> {
 	// <on !FLAG e>
 
 	public final Expression newIfFlag(String flagName) {
-		return ExpressionCommons.newXif(getSourcePosition(), flagName);
+		return Expressions.newXif(getSourcePosition(), flagName);
 	}
 
 	public final Expression newXon(String flagName, Expression... seq) {
-		return ExpressionCommons.newXon(getSourcePosition(), true, flagName, newSequence(seq));
+		return Expressions.newXon(getSourcePosition(), true, flagName, newSequence(seq));
 	}
 
 	public final Expression newBlock(Expression... seq) {
-		return ExpressionCommons.newXblock(getSourcePosition(), newSequence(seq));
+		return Expressions.newXblock(getSourcePosition(), newSequence(seq));
 	}
 
 	public final Expression newDefSymbol(NonTerminal n) {
-		return ExpressionCommons.newXsymbol(getSourcePosition(), n);
+		return Expressions.newXsymbol(getSourcePosition(), n);
 	}
 
 	public final Expression newIsSymbol(NonTerminal n) {
-		return ExpressionCommons.newXis(getSourcePosition(), n);
+		return Expressions.newXis(getSourcePosition(), n);
 	}
 
 	public final Expression newIsaSymbol(NonTerminal n) {
-		return ExpressionCommons.newXisa(getSourcePosition(), n);
+		return Expressions.newXisa(getSourcePosition(), n);
 	}
 
 	public final Expression newExists(String table, String symbol) {
-		return ExpressionCommons.newXexists(getSourcePosition(), Symbol.tag(table), symbol);
+		return Expressions.newXexists(getSourcePosition(), Symbol.tag(table), symbol);
 	}
 
 	public final Expression newLocal(String table, Expression... seq) {
-		return ExpressionCommons.newXlocal(getSourcePosition(), Symbol.tag(table), newSequence(seq));
+		return Expressions.newXlocal(getSourcePosition(), Symbol.tag(table), newSequence(seq));
 	}
 
 	public final Expression newScan(int number, Expression scan, Expression repeat) {

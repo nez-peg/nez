@@ -15,9 +15,4 @@ public class Ttag extends Nez.Tag {
 		this(s, Symbol.tag(name));
 	}
 
-	@Override
-	public boolean isConsumed() {
-		return false;
-	}
-
 }

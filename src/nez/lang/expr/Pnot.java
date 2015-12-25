@@ -10,9 +10,4 @@ public class Pnot extends Nez.Not {
 		this.setSourceLocation(s);
 	}
 
-	@Override
-	public boolean isConsumed() {
-		return false;
-	}
-
 }

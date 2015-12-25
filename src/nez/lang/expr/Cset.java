@@ -16,11 +16,6 @@ public class Cset extends Nez.ByteSet {
 		this.byteMap = b;
 	}
 
-	@Override
-	public boolean isConsumed() {
-		return true;
-	}
-
 	// Utils
 	public final static boolean[] newMap(boolean initValue) {
 		boolean[] b = new boolean[257];

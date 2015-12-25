@@ -1,7 +1,6 @@
 package nez.lang;
 
 import nez.lang.Nez.Byte;
-import nez.lang.expr.NonTerminal;
 import nez.lang.expr.Pempty;
 import nez.lang.expr.Pfail;
 

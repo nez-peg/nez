@@ -8,9 +8,4 @@ public class Pfail extends Nez.Fail {
 		this.setSourceLocation(s);
 	}
 
-	@Override
-	public boolean isConsumed() {
-		return true;
-	}
-
 }

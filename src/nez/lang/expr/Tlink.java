@@ -11,9 +11,4 @@ public class Tlink extends Nez.Link {
 		super(label, e);
 	}
 
-	@Override
-	public boolean isConsumed() {
-		return this.inner.isConsumed();
-	}
-
 }

@@ -10,9 +10,4 @@ public class Tdetree extends Nez.Detree {
 		this.setSourceLocation(s);
 	}
 
-	@Override
-	public boolean isConsumed() {
-		return this.inner.isConsumed();
-	}
-
 }

@@ -30,7 +30,6 @@ import nez.lang.Nez.SymbolMatch;
 import nez.lang.Nez.SymbolPredicate;
 import nez.lang.Nez.Tag;
 import nez.lang.Nez.ZeroMore;
-import nez.lang.expr.NonTerminal;
 import nez.util.StringUtils;
 
 class ExpressionFormatter extends Expression.Visitor {

@@ -3,7 +3,7 @@ package nez.parser.hachi6;
 import nez.ast.Source;
 import nez.ast.Symbol;
 import nez.ast.Tree;
-import nez.lang.expr.NonTerminal;
+import nez.lang.NonTerminal;
 import nez.parser.MemoEntry;
 import nez.parser.MemoTable;
 

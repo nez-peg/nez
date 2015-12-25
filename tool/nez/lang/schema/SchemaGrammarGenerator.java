@@ -6,8 +6,8 @@ import java.util.List;
 import nez.ast.Symbol;
 import nez.lang.Expression;
 import nez.lang.Grammar;
-import nez.lang.expr.ExpressionCommons;
-import nez.lang.expr.NonTerminal;
+import nez.lang.NonTerminal;
+import nez.lang.expr.Expressions;
 import nez.util.UList;
 
 public abstract class SchemaGrammarGenerator implements SchemaGrammarGeneratorInterface {
@@ -68,7 +68,7 @@ public abstract class SchemaGrammarGenerator implements SchemaGrammarGeneratorIn
 	/* wrapper for nez grammar */
 
 	protected final NonTerminal _NonTerminal(String nonterm) {
-		return ExpressionCommons.newNonTerminal(null, grammar, nonterm);
+		return Expressions.newNonTerminal(null, grammar, nonterm);
 	}
 
 	protected final NonTerminal _NonTerminal(String format, Object... args) {
@@ -76,7 +76,7 @@ public abstract class SchemaGrammarGenerator implements SchemaGrammarGeneratorIn
 	}
 
 	protected final Expression _String(String text) {
-		return ExpressionCommons.newString(null, text);
+		return Expressions.newString(null, text);
 	}
 
 	protected final Expression _String(String format, Object... args) {
@@ -84,71 +84,71 @@ public abstract class SchemaGrammarGenerator implements SchemaGrammarGeneratorIn
 	}
 
 	protected final Expression _Char(int ch) {
-		return ExpressionCommons.newCbyte(null, false, ch);
+		return Expressions.newCbyte(null, false, ch);
 	}
 
 	protected final Expression _ZeroMore(Expression... l) {
-		return ExpressionCommons.newPzero(null, _Sequence(l));
+		return Expressions.newPzero(null, _Sequence(l));
 	}
 
 	protected final Expression _OneMore(Expression... l) {
-		return ExpressionCommons.newPone(null, _Sequence(l));
+		return Expressions.newPone(null, _Sequence(l));
 	}
 
 	protected final Expression _And(Expression... l) {
-		return ExpressionCommons.newPand(null, _Sequence(l));
+		return Expressions.newPand(null, _Sequence(l));
 	}
 
 	protected final Expression _Not(Expression... l) {
-		return ExpressionCommons.newPnot(null, _Sequence(l));
+		return Expressions.newPnot(null, _Sequence(l));
 	}
 
 	protected final Expression _Option(Expression... l) {
-		return ExpressionCommons.newPoption(null, _Sequence(l));
+		return Expressions.newPoption(null, _Sequence(l));
 	}
 
 	protected final Expression _Sequence(Expression... l) {
 		UList<Expression> seq = new UList<Expression>(new Expression[8]);
 		for (Expression p : l) {
-			ExpressionCommons.addSequence(seq, p);
+			Expressions.addSequence(seq, p);
 		}
-		return ExpressionCommons.newPsequence(null, seq);
+		return Expressions.newPsequence(null, seq);
 	}
 
 	protected final Expression _Choice(Expression... l) {
 		UList<Expression> seq = new UList<Expression>(new Expression[8]);
 		for (Expression p : l) {
-			ExpressionCommons.addChoice(seq, p);
+			Expressions.addChoice(seq, p);
 		}
-		return ExpressionCommons.newPchoice(null, seq);
+		return Expressions.newPchoice(null, seq);
 	}
 
 	protected final Expression _Detree(Expression e) {
-		return ExpressionCommons.newTdetree(null, e);
+		return Expressions.newTdetree(null, e);
 	}
 
 	protected final Expression _Link(Symbol label, Expression e) {
-		return ExpressionCommons.newTlink(null, label, e);
+		return Expressions.newTlink(null, label, e);
 	}
 
 	protected final Expression _New(Expression... seq) {
-		return ExpressionCommons.newNewCapture(null, false, null, _Sequence(seq));
+		return Expressions.newNewCapture(null, false, null, _Sequence(seq));
 	}
 
 	protected final Expression _LeftFold(Symbol label, int shift) {
-		return ExpressionCommons.newTlfold(null, label, shift);
+		return Expressions.newTlfold(null, label, shift);
 	}
 
 	protected final Expression _Capture(int shift) {
-		return ExpressionCommons.newTcapture(null, shift);
+		return Expressions.newTcapture(null, shift);
 	}
 
 	protected final Expression _Tag(String tag) {
-		return ExpressionCommons.newTtag(null, Symbol.tag(tag));
+		return Expressions.newTtag(null, Symbol.tag(tag));
 	}
 
 	protected final Expression _Replace(String msg) {
-		return ExpressionCommons.newTreplace(null, msg);
+		return Expressions.newTreplace(null, msg);
 	}
 
 	protected final Expression _DQuat() {
@@ -156,27 +156,27 @@ public abstract class SchemaGrammarGenerator implements SchemaGrammarGeneratorIn
 	}
 
 	protected final Expression _S() {
-		return ExpressionCommons.newNonTerminal(null, grammar, "S");
+		return Expressions.newNonTerminal(null, grammar, "S");
 	}
 
 	protected final Expression _Empty() {
-		return ExpressionCommons.newEmpty(null);
+		return Expressions.newEmpty(null);
 	}
 
 	protected final Expression _Failure() {
-		return ExpressionCommons.newFailure(null);
+		return Expressions.newFailure(null);
 	}
 
 	protected final Expression _Def(String tableName) {
-		return ExpressionCommons.newXsymbol(null, _NonTerminal(tableName));
+		return Expressions.newXsymbol(null, _NonTerminal(tableName));
 	}
 
 	protected final Expression _Exists(String table, String name) {
-		return ExpressionCommons.newXexists(null, Symbol.tag(table), name);
+		return Expressions.newXexists(null, Symbol.tag(table), name);
 	}
 
 	protected final Expression _Local(String table, Expression... seq) {
-		return ExpressionCommons.newXlocal(null, Symbol.tag(table), _Sequence(seq));
+		return Expressions.newXlocal(null, Symbol.tag(table), _Sequence(seq));
 	}
 
 	/* common methods of schema grammar */

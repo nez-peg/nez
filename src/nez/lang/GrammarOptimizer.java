@@ -6,8 +6,7 @@ import java.util.HashSet;
 import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cset;
-import nez.lang.expr.ExpressionCommons;
-import nez.lang.expr.NonTerminal;
+import nez.lang.expr.Expressions;
 import nez.lang.expr.Pchoice;
 import nez.lang.expr.Pempty;
 import nez.lang.expr.Pfail;
@@ -284,7 +283,7 @@ public class GrammarOptimizer extends GrammarRewriter {
 	@Override
 	public Expression visitPair(Nez.Pair p, Object a) {
 		UList<Expression> l = p.toList();
-		UList<Expression> l2 = ExpressionCommons.newList(l.size());
+		UList<Expression> l2 = Expressions.newList(l.size());
 		for (int i = 0; i < l.size(); i++) {
 			Expression inner = l.ArrayValues[i];
 			inner = (Expression) inner.visit(this, a);
@@ -306,27 +305,27 @@ public class GrammarOptimizer extends GrammarRewriter {
 			if (isSingleCharacter(next)) {
 				if (first instanceof Tnew) {
 					((Tnew) first).shift -= 1;
-					ExpressionCommons.swap(l, i - 1, i);
+					Expressions.swap(l, i - 1, i);
 					this.verboseOutofOrdered("out-of-order", next, first);
 					res = true;
 					continue;
 				}
 				if (first instanceof Tlfold) {
 					((Tlfold) first).shift -= 1;
-					ExpressionCommons.swap(l, i - 1, i);
+					Expressions.swap(l, i - 1, i);
 					this.verboseOutofOrdered("out-of-order", next, first);
 					res = true;
 					continue;
 				}
 				if (first instanceof Tcapture) {
 					((Tcapture) first).shift -= 1;
-					ExpressionCommons.swap(l, i - 1, i);
+					Expressions.swap(l, i - 1, i);
 					this.verboseOutofOrdered("out-of-order", next, first);
 					res = true;
 					continue;
 				}
 				if (first instanceof Ttag || first instanceof Treplace) {
-					ExpressionCommons.swap(l, i - 1, i);
+					Expressions.swap(l, i - 1, i);
 					this.verboseOutofOrdered("out-of-order", next, first);
 					res = true;
 					continue;
@@ -402,10 +401,10 @@ public class GrammarOptimizer extends GrammarRewriter {
 	public Expression visitLink(Nez.Link p, Object a) {
 		if (p.get(0) instanceof Pchoice) {
 			Expression choice = p.get(0);
-			UList<Expression> l = ExpressionCommons.newList(choice.size());
+			UList<Expression> l = Expressions.newList(choice.size());
 			for (Expression inner : choice) {
 				inner = this.visitInner(inner);
-				l.add(ExpressionCommons.newTlink(p.getSourceLocation(), p.getLabel(), inner));
+				l.add(Expressions.newTlink(p.getSourceLocation(), p.label, inner));
 			}
 			return choice.newChoice(l);
 		}
@@ -416,9 +415,9 @@ public class GrammarOptimizer extends GrammarRewriter {
 	public Expression visitChoice(Nez.Choice p, Object a) {
 		if (!p.isOptimized()) {
 			p.setOptimized();
-			UList<Expression> l = ExpressionCommons.newList(p.size());
+			UList<Expression> l = Expressions.newList(p.size());
 			for (Expression sub : p) {
-				ExpressionCommons.addChoice(l, this.visitInner(sub));
+				Expressions.addChoice(l, this.visitInner(sub));
 			}
 			return this.visitChoice(p, l);
 		}
@@ -436,7 +435,7 @@ public class GrammarOptimizer extends GrammarRewriter {
 			verboseOptimized("single-choice", p, l.ArrayValues[0]);
 			return l.ArrayValues[0];
 		}
-		Expression n = ExpressionCommons.newPchoice(p.getSourceLocation(), l);
+		Expression n = Expressions.newPchoice(p.getSourceLocation(), l);
 		if (n instanceof Pchoice) {
 			((Pchoice) n).isTrieTree = p.isTrieTree;
 			addChoiceToOptimizeList((Pchoice) n);
@@ -448,7 +447,7 @@ public class GrammarOptimizer extends GrammarRewriter {
 		boolean byteMap[] = Cset.newMap(false);
 		boolean binary = false;
 		for (Expression e : choiceList) {
-			e = ExpressionCommons.resolveNonTerminal(e);
+			e = Expressions.resolveNonTerminal(e);
 			if (e instanceof Cbyte) {
 				byteMap[((Cbyte) e).byteChar] = true;
 				// if (((Cbyte) e).isBinary()) {
@@ -504,12 +503,12 @@ public class GrammarOptimizer extends GrammarRewriter {
 				continue;
 			@SuppressWarnings("unchecked")
 			UList<Expression> el = (UList<Expression>) buffers[ch];
-			Expression be = ExpressionCommons.newCbyte(null, false, ch);
+			Expression be = Expressions.newCbyte(null, false, ch);
 			if (el.size() == 1) {
-				l.add(ExpressionCommons.newPsequence(null, be, el.get(0)));
+				l.add(Expressions.newPsequence(null, be, el.get(0)));
 			} else {
-				Expression next = trySecondChoice(ExpressionCommons.newPchoice(null, el), el);
-				l.add(ExpressionCommons.newPsequence(null, be, next));
+				Expression next = trySecondChoice(Expressions.newPchoice(null, el), el);
+				l.add(Expressions.newPsequence(null, be, next));
 			}
 		}
 		choice.isTrieTree = true;
@@ -518,14 +517,14 @@ public class GrammarOptimizer extends GrammarRewriter {
 
 	private UList<Expression> mergeChoice(Object e1, Expression e2) {
 		if (e2 == null) {
-			e2 = ExpressionCommons.newEmpty(null);
+			e2 = Expressions.newEmpty(null);
 		}
 		@SuppressWarnings("unchecked")
 		UList<Expression> l = (UList<Expression>) e1;
 		if (l == null) {
 			l = new UList<Expression>(new Expression[2]);
 		}
-		ExpressionCommons.addChoice(l, e2);
+		Expressions.addChoice(l, e2);
 		return l;
 	}
 
@@ -565,11 +564,11 @@ public class GrammarOptimizer extends GrammarRewriter {
 			}
 			p.reduced = 1.0f;
 		} else {
-			UList<Expression> choiceList = ExpressionCommons.newList(p.size());
+			UList<Expression> choiceList = Expressions.newList(p.size());
 			flattenChoiceList(p, choiceList);
 			int count = 0;
 			int selected = 0;
-			UList<Expression> newlist = ExpressionCommons.newList(p.size());
+			UList<Expression> newlist = Expressions.newList(p.size());
 			HashMap<String, Expression> map = new HashMap<String, Expression>();
 			p.predictedCase = new Expression[257];
 			boolean isTrieTree = true;
@@ -661,7 +660,7 @@ public class GrammarOptimizer extends GrammarRewriter {
 			}
 			newlist.add(sub);
 		}
-		Expression p = ExpressionCommons.newPchoice(choice.getSourceLocation(), newlist);
+		Expression p = Expressions.newPchoice(choice.getSourceLocation(), newlist);
 		newlist.clear(0);
 		if (commonFactored && !(p instanceof Pchoice)) {
 			tryFactoredSecondChoice(p);
@@ -690,7 +689,7 @@ public class GrammarOptimizer extends GrammarRewriter {
 			if (ignoredFirstChar) {
 				ignoredFirstChar = false;
 				if (Expression.isByteConsumed(f) && Expression.isByteConsumed(f2)) {
-					l = ExpressionCommons.newList(4);
+					l = Expressions.newList(4);
 					l.add(f);
 					e = e.getNext();
 					e2 = e2.getNext();
@@ -702,7 +701,7 @@ public class GrammarOptimizer extends GrammarRewriter {
 				break;
 			}
 			if (l == null) {
-				l = ExpressionCommons.newList(4);
+				l = Expressions.newList(4);
 			}
 			l.add(f);
 			e = e.getNext();

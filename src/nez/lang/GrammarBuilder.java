@@ -1,7 +1,7 @@
 package nez.lang;
 
 import nez.ast.Symbol;
-import nez.lang.expr.ExpressionCommons;
+import nez.lang.expr.Expressions;
 import nez.util.UList;
 
 public class GrammarBuilder {
@@ -23,7 +23,7 @@ public class GrammarBuilder {
 				OR, "ccc");
 	}
 
-	protected final Expression ANY = ExpressionCommons.newCany(null, false);
+	protected final Expression ANY = Expressions.newCany(null, false);
 	protected final Expression OR = null;
 
 	protected void define(String name, Object... args) {
@@ -32,7 +32,7 @@ public class GrammarBuilder {
 
 	protected final Expression S(Object... args) {
 		if (args.length == 0) {
-			return ExpressionCommons.newEmpty(null);
+			return Expressions.newEmpty(null);
 		}
 		if (args.length == 1) {
 			return E(args[0]);
@@ -44,17 +44,17 @@ public class GrammarBuilder {
 				if (choice == null) {
 					choice = new UList<>(new Expression[args.length]);
 				}
-				ExpressionCommons.addChoice(choice, ExpressionCommons.newPsequence(null, l));
+				Expressions.addChoice(choice, Expressions.newPsequence(null, l));
 				l.clear(0);
 			} else {
-				ExpressionCommons.addSequence(l, E(args[i]));
+				Expressions.addSequence(l, E(args[i]));
 			}
 		}
 		if (choice != null) {
-			ExpressionCommons.addChoice(choice, ExpressionCommons.newPsequence(null, l));
-			return ExpressionCommons.newPchoice(null, choice);
+			Expressions.addChoice(choice, Expressions.newPsequence(null, l));
+			return Expressions.newPchoice(null, choice);
 		}
-		return ExpressionCommons.newPsequence(null, l);
+		return Expressions.newPsequence(null, l);
 	}
 
 	protected final Expression E(Object value) {
@@ -62,9 +62,9 @@ public class GrammarBuilder {
 			return (Expression) value;
 		}
 		if (value instanceof Symbol) {
-			return ExpressionCommons.newTtag(null, (Symbol) value);
+			return Expressions.newTtag(null, (Symbol) value);
 		}
-		return ExpressionCommons.newString(null, value.toString());
+		return Expressions.newString(null, value.toString());
 	}
 
 	protected final Expression P(String name) {
@@ -72,47 +72,47 @@ public class GrammarBuilder {
 	}
 
 	protected final Expression C(String t) {
-		return ExpressionCommons.newCharSet(null, t);
+		return Expressions.newCharSet(null, t);
 	}
 
 	protected final Expression R0(Object... args) {
-		return ExpressionCommons.newPzero(null, S(args));
+		return Expressions.newPzero(null, S(args));
 	}
 
 	protected final Expression R1(Object... args) {
-		return ExpressionCommons.newPone(null, S(args));
+		return Expressions.newPone(null, S(args));
 	}
 
 	protected final Expression Opt(Object... args) {
-		return ExpressionCommons.newPoption(null, S(args));
+		return Expressions.newPoption(null, S(args));
 	}
 
 	protected final Expression And(Object... args) {
-		return ExpressionCommons.newPand(null, S(args));
+		return Expressions.newPand(null, S(args));
 	}
 
 	protected final Expression Not(Object... args) {
-		return ExpressionCommons.newPnot(null, S(args));
+		return Expressions.newPnot(null, S(args));
 	}
 
 	protected final Expression New(Object... args) {
-		return S(ExpressionCommons.newTnew(null, 0), S(args), ExpressionCommons.newTcapture(null, 0));
+		return S(Expressions.newTnew(null, 0), S(args), Expressions.newTcapture(null, 0));
 	}
 
 	protected final Expression Set(String name, Object... args) {
-		return ExpressionCommons.newTlink(null, Symbol.tag(name), S(args));
+		return Expressions.newTlink(null, Symbol.tag(name), S(args));
 	}
 
 	protected final Expression Add(Object... args) {
-		return ExpressionCommons.newTlink(null, null, S(args));
+		return Expressions.newTlink(null, null, S(args));
 	}
 
 	protected final Expression Tag(String t) {
-		return ExpressionCommons.newTtag(null, Symbol.tag(t));
+		return Expressions.newTtag(null, Symbol.tag(t));
 	}
 
 	protected final Expression Val(String t) {
-		return ExpressionCommons.newTreplace(null, t);
+		return Expressions.newTreplace(null, t);
 	}
 
 }

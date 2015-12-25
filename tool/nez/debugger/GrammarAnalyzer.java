@@ -2,9 +2,9 @@ package nez.debugger;
 
 import nez.lang.Expression;
 import nez.lang.Grammar;
+import nez.lang.NonTerminal;
 import nez.lang.Production;
 import nez.lang.expr.Cany;
-import nez.lang.expr.NonTerminal;
 import nez.lang.expr.Pchoice;
 import nez.lang.expr.Pfail;
 import nez.lang.expr.Pnot;

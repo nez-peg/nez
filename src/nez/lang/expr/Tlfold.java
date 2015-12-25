@@ -11,9 +11,4 @@ public class Tlfold extends Nez.LeftFold {
 		this.setSourceLocation(s);
 	}
 
-	@Override
-	public boolean isConsumed() {
-		return false;
-	}
-
 }

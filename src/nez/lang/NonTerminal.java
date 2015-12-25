@@ -1,11 +1,9 @@
-package nez.lang.expr;
+package nez.lang;
 
 import nez.ast.SourceLocation;
-import nez.lang.Expression;
-import nez.lang.Grammar;
-import nez.lang.Production;
+import nez.lang.expr.Expressions;
 
-public class NonTerminal extends ExpressionCommons {
+public class NonTerminal extends Expressions {
 	private Grammar g;
 	private String localName;
 	private String uniqueName;
@@ -69,13 +67,8 @@ public class NonTerminal extends ExpressionCommons {
 		return v.visitNonTerminal(this, a);
 	}
 
-	@Override
-	public boolean isConsumed() {
-		return this.getProduction().isConsumed();
-	}
-
 	public final NonTerminal newNonTerminal(String localName) {
-		return ExpressionCommons.newNonTerminal(this.getSourceLocation(), this.getGrammar(), localName);
+		return Expressions.newNonTerminal(this.getSourceLocation(), this.getGrammar(), localName);
 	}
 
 }
