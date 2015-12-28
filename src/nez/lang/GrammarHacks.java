@@ -61,7 +61,7 @@ public abstract class GrammarHacks extends AbstractList<Production> {
 		for (Expression p : seq) {
 			Expressions.addSequence(l, p);
 		}
-		return Expressions.newPsequence(getSourcePosition(), l);
+		return Expressions.newPair(getSourcePosition(), l);
 	}
 
 	public final Expression newChoice(Expression... seq) {

@@ -256,7 +256,7 @@ public class RegexGrammar extends TreeVisitor {
 		if (k != null) {
 			Expressions.addSequence(l, k);
 		}
-		return Expressions.newPsequence(null, l);
+		return Expressions.newPair(null, l);
 	}
 
 	public Expression toSeq(CommonTree node, Expression e, Expression k) {
@@ -265,7 +265,7 @@ public class RegexGrammar extends TreeVisitor {
 		if (k != null) {
 			Expressions.addSequence(l, k);
 		}
-		return Expressions.newPsequence(null, l);
+		return Expressions.newPair(null, l);
 	}
 
 }

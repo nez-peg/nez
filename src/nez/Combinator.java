@@ -146,7 +146,7 @@ public class Combinator {
 		for (Expression e : elist) {
 			Expressions.addSequence(l, e);
 		}
-		return Expressions.newPsequence(src(), l);
+		return Expressions.newPair(src(), l);
 	}
 
 	protected final Expression Choice(Expression... elist) {

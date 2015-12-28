@@ -1,165 +1,181 @@
 package nez.lang;
 
-import java.util.HashMap;
-import java.util.TreeMap;
-
 import nez.lang.expr.Expressions;
-import nez.lang.expr.Pand;
-import nez.lang.expr.Pchoice;
-import nez.lang.expr.Pnot;
-import nez.lang.expr.Pone;
-import nez.lang.expr.Poption;
-import nez.lang.expr.Psequence;
-import nez.lang.expr.Pzero;
-import nez.lang.expr.Xif;
-import nez.parser.ParseFunc;
-import nez.parser.ParserGrammar;
-import nez.parser.ParserStrategy;
-import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
-import nez.util.UFlag;
 import nez.util.UList;
 import nez.util.Verbose;
 
-public class GrammarChecker extends GrammarTransducer {
-	ParserGrammar parserGrammar;
+public class GrammarChecker extends GrammarTransformer {
+
+	// ParserGrammar parserGrammar;
+	private GrammarContext context;
+	private Conditions conds;
+
+	Grammar g;
+	private boolean ConstructingTree = true;
 	private Typestate requiredTypestate;
-	final TreeMap<String, Boolean> boolMap;
-	UList<Expression> stacked;
-	private final ParserStrategy strategy;
 
-	public GrammarChecker(ParserGrammar gg, TreeMap<String, Boolean> boolMap, Production start, ParserStrategy strategy) {
-		this.parserGrammar = gg;
-		this.boolMap = (boolMap == null) ? new TreeMap<String, Boolean>() : boolMap;
-		this.strategy = strategy;
+	public GrammarChecker(GrammarContext context) {
+		this.context = context;
+	}
 
-		this.stacked = new UList<Expression>(new Expression[128]);
-		if (!strategy.TreeConstruction) {
+	public final Grammar transform() {
+		this.g = context.newGrammar();
+		this.conds = this.context.newConditions();
+		if (context.getParserStrategy().TreeConstruction) {
+			this.ConstructingTree = true;
+			this.requiredTypestate = Typestate.Tree;
+		} else {
+			this.ConstructingTree = false;
+			this.requiredTypestate = Typestate.Unit;
 			this.enterNonASTContext();
 		}
-		String uname = uniqueName(start.getUniqueName(), start);
-		this.checkFirstVisitedProduction(uname, start, 1); // start
-		if (strategy.Optimization) {
-			Verbose.println("optimizing %s ..", strategy);
-			new GrammarOptimizer(gg, strategy);
-		}
+		String cname = conds.conditionalName(context.getStartProduction(), isNonTreeConstruction());
+		checkFirstVisitedProduction(cname, context.getStartProduction());
+		return this.g;
 	}
 
-	@Override
-	protected void push(Expression e) {
-		this.stacked.add(e);
+	/* ASTContext */
+
+	private boolean enterNonASTContext() {
+		boolean b = ConstructingTree;
+		ConstructingTree = false;
+		return b;
 	}
 
-	@Override
-	protected void pop(Expression e) {
-		Expression e2 = this.stacked.pop();
-		// Expression e2 = this.stacked.pop();
-		// if (e != e2) {
-		// Verbose.debug("FIXME push/pop \n\t" + e2 + "\n\t" + e);
+	private void exitNonASTContext(boolean backed) {
+		ConstructingTree = backed;
+	}
+
+	private boolean isNonTreeConstruction() {
+		return !this.ConstructingTree;
+	}
+
+	/* Conditional */
+
+	private void onFlag(String flag) {
+		this.conds.put(flag, true);
+	}
+
+	private void offFlag(String flag) {
+		this.conds.put(flag, false);
+	}
+
+	private boolean isFlag(String flag) {
+		return this.conds.get(flag);
+	}
+
+	private void reportInserted(Expression e, String operator) {
+		context.reportWarning(e, "expected " + operator + " .. => inserted!!");
+	}
+
+	private void reportRemoved(Expression e, String operator) {
+		context.reportWarning(e, "unexpected " + operator + " .. => removed!!");
+	}
+
+	private Expression check(Expression e) {
+		return (Expression) e.visit(this, null);
+	}
+
+	private Production checkFirstVisitedProduction(String cname, Production p) {
+		this.visited(cname);
+		Production gp = this.g.newProduction(cname, null);
+		// Production parserProduction/* local production */=
+		// parserGrammar.newProduction(uname, null);
+		// ParseFunc f = parserGrammar.setParseFunc(uname, p, parserProduction,
+		// init);
+		// if (UFlag.is(p.flag, Production.ResetFlag)) {
+		// p.initFlag();
+		// if (p.isRecursive()) {
+		// checkLeftRecursion(p.getExpression(), new ProductionStacker(p,
+		// null));
 		// }
-	}
-
-	protected void dumpStack() {
-		for (Expression e : this.stacked) {
-			ConsoleUtils.print(" ");
-			if (e instanceof NonTerminal) {
-				ConsoleUtils.print(((NonTerminal) e).getLocalName());
-			} else {
-				ConsoleUtils.print(e.getClass().getSimpleName());
-			}
-		}
-		ConsoleUtils.println("");
-	}
-
-	private ParseFunc checkFirstVisitedProduction(String uname, Production p, int init) {
-		Production parserProduction/* local production */= parserGrammar.newProduction(uname, null);
-		ParseFunc f = parserGrammar.setParseFunc(uname, p, parserProduction, init);
-		if (UFlag.is(p.flag, Production.ResetFlag)) {
-			p.initFlag();
-			if (p.isRecursive()) {
-				checkLeftRecursion(p.getExpression(), new ProductionStacker(p, null));
-			}
-			// p.isNoNTreeConstruction();
-		}
+		// // p.isNoNTreeConstruction();
+		// }
 		Typestate stackedTypestate = this.requiredTypestate;
-		this.requiredTypestate = this.isNonASTContext() ? Typestate.Unit : parserGrammar.typeState(p);
-		Expression e = this.visitInner(p.getExpression());
-		parserProduction.setExpression(e);
+		this.requiredTypestate = this.isNonTreeConstruction() ? Typestate.Unit : context.typeState(p);
+		gp.setExpression(check(p.getExpression()));
 		this.requiredTypestate = stackedTypestate;
-		return f;
+		return gp;
 	}
 
-	boolean checkLeftRecursion(Expression e, ProductionStacker s) {
-		if (e instanceof NonTerminal) {
-			Production p = ((NonTerminal) e).getProduction();
-			if (s.isVisited(p)) {
-				reportError(e, "left recursion: " + p.getLocalName());
-				return true; // stop as consumed
-			}
-			return checkLeftRecursion(p.getExpression(), new ProductionStacker(p, s));
-		}
-		if (e.size() > 0) {
-			if (e instanceof Psequence) {
-				if (!checkLeftRecursion(e.get(0), s)) {
-					return checkLeftRecursion(e.get(1), s);
-				}
-			}
-			if (e instanceof Pchoice) {
-				boolean consumed = true;
-				for (Expression se : e) {
-					if (!checkLeftRecursion(e.get(1), s)) {
-						consumed = false;
-					}
-				}
-				return consumed;
-			}
-			boolean r = checkLeftRecursion(e.get(0), s);
-			if (e instanceof Pone) {
-				return r;
-			}
-			if (e instanceof Pnot || e instanceof Pzero || e instanceof Poption || e instanceof Pand) {
-				return false;
-			}
-			return r;
-		}
-		return this.parserGrammar.isConsumed(e);
-	}
+	// boolean checkLeftRecursion(Expression e, ProductionStacker s) {
+	// if (e instanceof NonTerminal) {
+	// Production p = ((NonTerminal) e).getProduction();
+	// if (s.isVisited(p)) {
+	// context.reportError(e, "left recursion: " + p.getLocalName());
+	// return true; // stop as consumed
+	// }
+	// return checkLeftRecursion(p.getExpression(), new ProductionStacker(p,
+	// s));
+	// }
+	// if (e.size() > 0) {
+	// if (e instanceof Psequence) {
+	// if (!checkLeftRecursion(e.get(0), s)) {
+	// return checkLeftRecursion(e.get(1), s);
+	// }
+	// }
+	// if (e instanceof Pchoice) {
+	// boolean consumed = true;
+	// for (Expression se : e) {
+	// if (!checkLeftRecursion(e.get(1), s)) {
+	// consumed = false;
+	// }
+	// }
+	// return consumed;
+	// }
+	// boolean r = checkLeftRecursion(e.get(0), s);
+	// if (e instanceof Pone) {
+	// return r;
+	// }
+	// if (e instanceof Pnot || e instanceof Pzero || e instanceof Poption || e
+	// instanceof Pand) {
+	// return false;
+	// }
+	// return r;
+	// }
+	// return this.parserGrammar.isConsumed(e);
+	// }
 
 	@Override
 	public Expression visitNonTerminal(NonTerminal n, Object a) {
 		Production p = n.getProduction();
 		if (p == null) {
 			if (n.isTerminal()) {
-				reportNotice(n, "undefined terminal: " + n.getLocalName());
+				context.reportNotice(n, "undefined terminal: " + n.getLocalName());
 				return Expressions.newString(n.getSourceLocation(), StringUtils.unquoteString(n.getLocalName()));
 			}
-			reportWarning(n, "undefined production: " + n.getLocalName());
+			context.reportWarning(n, "undefined production: " + n.getLocalName());
 			return n.newEmpty();
 		}
 		if (n.isTerminal()) { /* Inlining Terminal */
 			try {
-				return visitInner(p.getExpression());
+				return check(p.getExpression());
 			} catch (StackOverflowError e) {
 				/* Handling a bad grammar */
-				reportError(n, "terminal is recursive: " + n.getLocalName());
+				context.reportError(n, "terminal is recursive: " + n.getLocalName());
 				return Expressions.newString(n.getSourceLocation(), StringUtils.unquoteString(n.getLocalName()));
 			}
 		}
-		// System.out.print("NonTerminal: " + n.getLocalName() + " -> ");
-		// this.dumpStack();
 
-		Typestate innerTypestate = this.isNonASTContext() ? Typestate.Unit : parserGrammar.typeState(p);
-		String uname = this.uniqueName(n.getUniqueName(), p);
-		ParseFunc f = parserGrammar.getParseFunc(uname);
-		if (f == null) {
-			f = checkFirstVisitedProduction(uname, p, 1);
-		} else {
-			f.incCount();
+		Typestate innerTypestate = this.isNonTreeConstruction() ? Typestate.Unit : context.typeState(p);
+		if (this.requiredTypestate == Typestate.TreeMutation) {
+			if (innerTypestate == Typestate.TreeMutation) {
+				Verbose.println("inlining mutation nonterminal" + p.getLocalName());
+				return check(p.getExpression());
+			}
 		}
-		NonTerminal pn = parserGrammar.newNonTerminal(n.getSourceLocation(), uname);
+
+		String cname = conds.conditionalName(p, innerTypestate == Typestate.Unit);
+		if (this.isVisited(cname)) {
+			this.checkFirstVisitedProduction(cname, p);
+		}
+
+		NonTerminal pn = g.newNonTerminal(n.getSourceLocation(), cname);
 		if (innerTypestate == Typestate.Unit) {
 			return pn;
 		}
+
 		Typestate required = this.requiredTypestate;
 		if (required == Typestate.Tree) {
 			if (innerTypestate == Typestate.TreeMutation) {
@@ -182,13 +198,21 @@ public class GrammarChecker extends GrammarTransducer {
 
 	@Override
 	public Expression visitOn(Nez.On p, Object a) {
+		if (!this.conds.containsKey(p.flagName)) {
+			this.context.reportWarning(p, "unused condition: " + p.flagName);
+			return check(p.get(0));
+		}
+		if (!conds.isConditional(p.get(0), p.flagName)) {
+			this.context.reportWarning(p, "unreached condition: " + p.flagName);
+			return check(p.get(0));
+		}
 		Boolean stackedFlag = isFlag(p.flagName);
 		if (p.isPositive()) {
 			onFlag(p.flagName);
 		} else {
 			offFlag(p.flagName);
 		}
-		Expression newe = visitInner(p.get(0));
+		Expression newe = check(p.get(0));
 		if (stackedFlag) {
 			onFlag(p.flagName);
 		} else {
@@ -205,25 +229,17 @@ public class GrammarChecker extends GrammarTransducer {
 		return p.predicate ? p.newFailure() : p.newEmpty();
 	}
 
-	void reportInserted(Expression e, String operator) {
-		reportWarning(e, "expected " + operator + " .. => inserted!!");
-	}
-
-	void reportRemoved(Expression e, String operator) {
-		reportWarning(e, "unexpected " + operator + " .. => removed!!");
-	}
-
 	@Override
 	public Expression visitDetree(Nez.Detree p, Object a) {
 		boolean stacked = this.enterNonASTContext();
-		Expression inner = this.visitInner(p.get(0));
+		Expression inner = check(p.get(0));
 		this.exitNonASTContext(stacked);
 		return inner;
 	}
 
 	@Override
 	public Expression visitPreNew(Nez.PreNew p, Object a) {
-		if (this.isNonASTContext()) {
+		if (this.isNonTreeConstruction()) {
 			return p.newEmpty();
 		}
 		if (this.requiredTypestate != Typestate.Tree) {
@@ -236,7 +252,7 @@ public class GrammarChecker extends GrammarTransducer {
 
 	@Override
 	public Expression visitLeftFold(Nez.LeftFold p, Object a) {
-		if (this.isNonASTContext()) {
+		if (this.isNonTreeConstruction()) {
 			return p.newEmpty();
 		}
 		if (this.requiredTypestate != Typestate.TreeMutation) {
@@ -249,7 +265,7 @@ public class GrammarChecker extends GrammarTransducer {
 
 	@Override
 	public Expression visitNew(Nez.New p, Object a) {
-		if (this.isNonASTContext()) {
+		if (this.isNonTreeConstruction()) {
 			return p.newEmpty();
 		}
 		if (this.requiredTypestate != Typestate.TreeMutation) {
@@ -262,7 +278,7 @@ public class GrammarChecker extends GrammarTransducer {
 
 	@Override
 	public Expression visitTag(Nez.Tag p, Object a) {
-		if (this.isNonASTContext()) {
+		if (this.isNonTreeConstruction()) {
 			return p.newEmpty();
 		}
 		if (this.requiredTypestate != Typestate.TreeMutation) {
@@ -274,7 +290,7 @@ public class GrammarChecker extends GrammarTransducer {
 
 	@Override
 	public Expression visitReplace(Nez.Replace p, Object a) {
-		if (this.isNonASTContext()) {
+		if (this.isNonTreeConstruction()) {
 			return p.newEmpty();
 		}
 		if (this.requiredTypestate != Typestate.TreeMutation) {
@@ -287,20 +303,20 @@ public class GrammarChecker extends GrammarTransducer {
 	@Override
 	public Expression visitLink(Nez.Link p, Object a) {
 		Expression inner = p.get(0);
-		if (this.isNonASTContext()) {
-			return this.visitInner(inner);
+		if (this.isNonTreeConstruction()) {
+			return this.check(inner);
 		}
 		if (this.requiredTypestate != Typestate.TreeMutation) {
 			reportRemoved(p, "$");
-			return this.visitInner(inner);
+			return this.check(inner);
 		}
-		Typestate innerTypestate = this.isNonASTContext() ? Typestate.Unit : parserGrammar.typeState(inner);
+		Typestate innerTypestate = this.isNonTreeConstruction() ? Typestate.Unit : context.typeState(inner);
 		if (innerTypestate != Typestate.Tree) {
 			reportInserted(p, "{");
-			inner = Expressions.newNewCapture(inner.getSourceLocation(), this.visitInner(inner));
+			inner = Expressions.newNewCapture(inner.getSourceLocation(), this.check(inner));
 		} else {
 			this.requiredTypestate = Typestate.Tree;
-			inner = this.visitInner(p.get(0));
+			inner = this.check(p.get(0));
 		}
 		this.requiredTypestate = Typestate.TreeMutation;
 		return Expressions.newTlink(p.getSourceLocation(), p.label, inner);
@@ -313,7 +329,7 @@ public class GrammarChecker extends GrammarTransducer {
 		UList<Expression> l = Expressions.newList(p.size());
 		for (Expression inner : p) {
 			this.requiredTypestate = required;
-			Expressions.addChoice(l, this.visitInner(inner));
+			Expressions.addChoice(l, this.check(inner));
 			if (this.requiredTypestate != required && this.requiredTypestate != next) {
 				next = this.requiredTypestate;
 			}
@@ -338,24 +354,24 @@ public class GrammarChecker extends GrammarTransducer {
 	}
 
 	private Expression visitOptionalInner(Nez.Unary p) {
-		Typestate innerTypestate = this.isNonASTContext() ? Typestate.Unit : parserGrammar.typeState(p.get(0));
+		Typestate innerTypestate = this.isNonTreeConstruction() ? Typestate.Unit : context.typeState(p.get(0));
 		if (innerTypestate == Typestate.Tree) {
 			if (this.requiredTypestate == Typestate.TreeMutation) {
-				this.reportInserted(p.get(0), "$");
+				reportInserted(p.get(0), "$");
 				this.requiredTypestate = Typestate.Tree;
-				Expression inner = visitInner(p.get(0));
+				Expression inner = check(p.get(0));
 				inner = Expressions.newTlink(p.getSourceLocation(), inner);
 				this.requiredTypestate = Typestate.TreeMutation;
 				return inner;
 			} else {
-				reportWarning(p, "disallowed tree construction in e?, e*, e+, or &e  " + innerTypestate);
+				context.reportWarning(p, "disallowed tree construction in e?, e*, e+, or &e  " + innerTypestate);
 				boolean stacked = this.enterNonASTContext();
-				Expression inner = visitInner(p.get(0));
+				Expression inner = check(p.get(0));
 				this.exitNonASTContext(stacked);
 				return inner;
 			}
 		}
-		return visitInner(p.get(0));
+		return check(p.get(0));
 	}
 
 	@Override
@@ -366,124 +382,16 @@ public class GrammarChecker extends GrammarTransducer {
 	@Override
 	public Expression visitNot(Nez.Not p, Object a) {
 		Expression inner = p.get(0);
-		Typestate innerTypestate = this.isNonASTContext() ? Typestate.Unit : parserGrammar.typeState(inner);
+		Typestate innerTypestate = this.isNonTreeConstruction() ? Typestate.Unit : context.typeState(inner);
 		if (innerTypestate != Typestate.Unit) {
-			// reportWarning(p, "disallowed tree construction in !e");
+			// context.reportWarning(p, "disallowed tree construction in !e");
 			boolean stacked = this.enterNonASTContext();
-			inner = this.visitInner(inner);
+			inner = this.check(inner);
 			this.exitNonASTContext(stacked);
 		} else {
-			inner = this.visitInner(inner);
+			inner = this.check(inner);
 		}
 		return Expressions.newPnot(p.getSourceLocation(), inner);
-	}
-
-	/* static context */
-
-	boolean enterNonASTContext() {
-		boolean b = this.boolMap.get("-") != null;
-		this.boolMap.put("-", true);
-		return b;
-	}
-
-	void exitNonASTContext(boolean backed) {
-		if (backed) {
-			this.boolMap.put("-", true);
-		} else {
-			this.boolMap.remove("-");
-		}
-	}
-
-	boolean isNonASTContext() {
-		return this.boolMap.get("-") != null;
-	}
-
-	void onFlag(String flag) {
-		this.boolMap.remove(flag);
-	}
-
-	void offFlag(String flag) {
-		this.boolMap.put(flag, false);
-	}
-
-	boolean isFlag(String flag) {
-		return this.boolMap.get(flag) == null;
-	}
-
-	/* uniquename */
-
-	String uniqueName(String uname, Production p) {
-		boolean isNonTree = parserGrammar.typeState(p) == Typestate.Unit;
-		StringBuilder sb = new StringBuilder();
-		sb.append(uname);
-		for (String flagName : this.boolMap.keySet()) {
-			if (flagName.equals("-")) {
-				if (!isNonTree) {
-					sb.append(flagName);
-				}
-				continue;
-			}
-			if (hasFlag(p, flagName) != False) {
-				sb.append("!");
-				sb.append(flagName);
-			}
-		}
-		// System.out.println("unique: " + uname + ", " + this.boolMap.keySet()
-		// + "=>" + sb.toString());
-		return sb.toString();
-	}
-
-	final static Short True = 1;
-	final static Short False = -1;
-	final static Short Unknown = 0;
-
-	HashMap<String, Short> flagMap = new HashMap<String, Short>();
-
-	private Short hasFlag(Production p, String flagName) {
-		if (flagMap == null) {
-			this.flagMap = new HashMap<String, Short>();
-		}
-		String key = p.getUniqueName() + "+" + flagName;
-		Short res = flagMap.get(key);
-		if (res == null) {
-			flagMap.put(key, Unknown);
-			res = hasFlag(p.getExpression(), flagName);
-			flagMap.put(key, res);
-		}
-		return res;
-	}
-
-	private Short hasFlag(Expression e, String flagName) {
-		if (e instanceof Xif) {
-			return flagName.equals(((Xif) e).getFlagName()) ? True : False;
-		}
-		if (e instanceof NonTerminal) {
-			Production p = ((NonTerminal) e).getProduction();
-			if (p == null) {
-				return False;
-			}
-			return hasFlag(p, flagName);
-		}
-		for (Expression se : e) {
-			if (hasFlag(se, flagName) == True) {
-				return True;
-			}
-		}
-		return False;
-	}
-
-	// Report
-
-	public final void reportError(Expression p, String message) {
-		this.strategy.reportError(p.getSourceLocation(), message);
-	}
-
-	public final void reportWarning(Expression p, String message) {
-		this.strategy.reportWarning(p.getSourceLocation(), message);
-	}
-
-	public final void reportNotice(Expression p, String message) {
-		this.strategy.reportNotice(p.getSourceLocation(), message);
 	}
 
 }

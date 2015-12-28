@@ -7,7 +7,7 @@ import nez.lang.expr.Pfail;
 import nez.util.UList;
 import nez.util.Verbose;
 
-public class GrammarTransducer extends Expression.Visitor {
+public class OldGrammarTransducer extends Expression.Visitor {
 
 	public Expression visitInner(Expression inner) {
 		push(inner);

@@ -1,9 +1,12 @@
 package nez.lang.expr;
 
+import java.util.List;
+
 import nez.ast.SourceLocation;
 import nez.ast.Symbol;
 import nez.lang.Expression;
 import nez.lang.Grammar;
+import nez.lang.Nez;
 import nez.lang.NonTerminal;
 import nez.util.StringUtils;
 import nez.util.UList;
@@ -29,38 +32,47 @@ public abstract class Expressions extends Expression {
 		return new UList<Expression>(new Expression[size]);
 	}
 
-	public final static void addSequence(UList<Expression> l, Expression e) {
-		if (e instanceof Psequence) {
+	public final static List<Expression> newList2(int size) {
+		return new UList<Expression>(new Expression[size]);
+	}
+
+	public final static void addSequence(List<Expression> l, Expression e) {
+		if (e instanceof Nez.Empty) {
+			return;
+		}
+		if (e instanceof Nez.Sequence) {
 			for (int i = 0; i < e.size(); i++) {
 				addSequence(l, e.get(i));
 			}
 			return;
 		}
-		if (e instanceof Pempty) {
+		if (e instanceof Nez.Pair) {
+			addSequence(l, e.get(0));
+			addSequence(l, e.get(1));
 			return;
 		}
 		if (l.size() > 0) {
-			Expression prev = l.ArrayValues[l.size() - 1];
-			if (prev instanceof Pfail) {
+			Expression prev = l.get(l.size() - 1);
+			if (prev instanceof Nez.Fail) {
 				return;
 			}
 		}
 		l.add(e);
 	}
 
-	public final static void addChoice(UList<Expression> l, Expression e) {
-		if (e instanceof Pchoice) {
+	public final static void addChoice(List<Expression> l, Expression e) {
+		if (e instanceof Nez.Choice) {
 			for (int i = 0; i < e.size(); i++) {
 				addChoice(l, e.get(i));
 			}
 			return;
 		}
-		if (e instanceof Pfail) {
+		if (e instanceof Nez.Fail) {
 			return;
 		}
 		if (l.size() > 0) {
-			Expression prev = l.ArrayValues[l.size() - 1];
-			if (prev instanceof Pempty) {
+			Expression prev = l.get(l.size() - 1);
+			if (prev instanceof Nez.Empty) {
 				return;
 			}
 		}
@@ -140,26 +152,46 @@ public abstract class Expressions extends Expression {
 		return new Pnot(s, p);
 	}
 
-	public final static Expression newPsequence(SourceLocation s, UList<Expression> l) {
+	public final static Expression newPair(SourceLocation s, UList<Expression> l) {
 		if (l.size() == 0) {
 			return newEmpty(s);
 		}
-		return newPsequence(s, 0, l);
+		return newPair(s, 0, l);
 	}
 
-	private final static Expression newPsequence(SourceLocation s, int start, UList<Expression> l) {
+	public final static Expression newPair(SourceLocation s, Expression p, Expression p2) {
+		UList<Expression> l = new UList<Expression>(new Expression[2]);
+		addSequence(l, p);
+		addSequence(l, p2);
+		return newPair(s, l);
+	}
+
+	private final static Expression newPair(SourceLocation s, int start, UList<Expression> l) {
 		Expression first = l.ArrayValues[start];
 		if (start + 1 == l.size()) {
 			return first;
 		}
-		return new Psequence(s, first, newPsequence(s, start + 1, l));
+		return new Psequence(s, first, newPair(s, start + 1, l));
 	}
 
-	public final static Expression newPsequence(SourceLocation s, Expression p, Expression p2) {
-		UList<Expression> l = new UList<Expression>(new Expression[2]);
-		addSequence(l, p);
-		addSequence(l, p2);
-		return newPsequence(s, l);
+	public final static Expression newSequence(SourceLocation s, List<Expression> l) {
+		if (l.size() == 0) {
+			return newEmpty(s);
+		}
+		if (l.size() == 1) {
+			return l.get(0);
+		}
+		Expression e = new Nez.Sequence(compact(l));
+		e.setSourceLocation(s);
+		return e;
+	}
+
+	private static Expression[] compact(List<Expression> l) {
+		Expression[] a = new Expression[l.size()];
+		for (int i = 0; i < l.size(); i++) {
+			a[i] = l.get(i);
+		}
+		return a;
 	}
 
 	public final static Expression newPchoice(SourceLocation s, UList<Expression> l) {
@@ -317,7 +349,7 @@ public abstract class Expressions extends Expression {
 		for (int i = 0; i < utf8.length; i++) {
 			l.add(newCbyte(s, binary, utf8[i]));
 		}
-		return newPsequence(s, l);
+		return newPair(s, l);
 	}
 
 	public final static Expression newCharSet(SourceLocation s, String text) {
@@ -392,7 +424,7 @@ public abstract class Expressions extends Expression {
 				l.add(newCbyte(s, false, b[i]));
 			}
 			l.add(newByteRange(s, false, b[b.length - 1] & 0xff, b2[b2.length - 1] & 0xff));
-			return newPsequence(s, l);
+			return newPair(s, l);
 		}
 	}
 
@@ -405,7 +437,7 @@ public abstract class Expressions extends Expression {
 		Expressions.addSequence(l, lefted ? new Tlfold(s, label, 0) : new Tnew(s, 0));
 		Expressions.addSequence(l, e);
 		Expressions.addSequence(l, Expressions.newTcapture(s, 0));
-		return newPsequence(s, l);
+		return newPair(s, l);
 	}
 
 	public final static Expression newLeftFoldOption(SourceLocation s, Symbol label, Expression e) {
@@ -413,7 +445,7 @@ public abstract class Expressions extends Expression {
 		Expressions.addSequence(l, new Tlfold(s, label, 0));
 		Expressions.addSequence(l, e);
 		Expressions.addSequence(l, Expressions.newTcapture(s, 0));
-		return newPoption(s, Expressions.newPsequence(s, l));
+		return newPoption(s, Expressions.newPair(s, l));
 	}
 
 	public final static Expression newLeftFoldRepetition(SourceLocation s, Symbol label, Expression e) {
@@ -421,7 +453,7 @@ public abstract class Expressions extends Expression {
 		Expressions.addSequence(l, new Tlfold(s, label, 0));
 		Expressions.addSequence(l, e);
 		Expressions.addSequence(l, Expressions.newTcapture(s, 0));
-		return newPzero(s, Expressions.newPsequence(s, l));
+		return newPzero(s, Expressions.newPair(s, l));
 	}
 
 	public final static Expression newLeftFoldRepetition1(SourceLocation s, Symbol label, Expression e) {
@@ -429,7 +461,7 @@ public abstract class Expressions extends Expression {
 		Expressions.addSequence(l, new Tlfold(s, label, 0));
 		Expressions.addSequence(l, e);
 		Expressions.addSequence(l, Expressions.newTcapture(s, 0));
-		return newPone(s, Expressions.newPsequence(s, l));
+		return newPone(s, Expressions.newPair(s, l));
 	}
 
 	public static void swap(UList<Expression> l, int i, int j) {

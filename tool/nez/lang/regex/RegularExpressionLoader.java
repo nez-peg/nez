@@ -373,7 +373,7 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 			if (k != null) {
 				Expressions.addSequence(l, k);
 			}
-			return Expressions.newPsequence(null, l);
+			return Expressions.newPair(null, l);
 		}
 
 		@Override
@@ -383,7 +383,7 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 			if (k != null) {
 				Expressions.addSequence(l, k);
 			}
-			return Expressions.newPsequence(null, l);
+			return Expressions.newPair(null, l);
 		}
 	}
 

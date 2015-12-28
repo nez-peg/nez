@@ -130,7 +130,7 @@ public class NezExpressionConstructor extends GrammarVisitorMap<ExpressionTransd
 			for (int i = 0; i < node.size(); i++) {
 				Expressions.addSequence(l, newInstance(node.get(i)));
 			}
-			return Expressions.newPsequence(node, l);
+			return Expressions.newPair(node, l);
 		}
 	}
 
@@ -172,7 +172,7 @@ public class NezExpressionConstructor extends GrammarVisitorMap<ExpressionTransd
 					for (int i = 0; i < ntimes; i++) {
 						Expressions.addSequence(l, newInstance(node.get(0)));
 					}
-					return Expressions.newPsequence(node, l);
+					return Expressions.newPair(node, l);
 				}
 			}
 			return Expressions.newPzero(node, newInstance(node.get(_expr)));

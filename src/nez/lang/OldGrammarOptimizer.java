@@ -25,25 +25,9 @@ import nez.parser.ParserStrategy;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
 
-public class GrammarOptimizer extends GrammarRewriter {
-	/* local optimizer option */
-
-	// boolean enabledLexicalOptimization = false;
-	// boolean enabledInlining = false;
-	// boolean enabledAliasAnalysis = false;
-	// boolean enabledOutOfOrderConstruction = true;
-	//
-	// boolean enabledTrieTreeChoice = false;
-	// boolean enabledCommonLeftFactoring = false; // true;
-	//
-	// boolean enabledFirstChoice = false;
-	// boolean enabledfirstChoiceInlining = false;
-	// boolean enabledEmptyChoice = false;
-	//
-	// boolean verboseOption = false;
+public class OldGrammarOptimizer extends OldGrammarRewriter {
 	boolean verboseGrammar = false;
 	boolean enabledSecondChoice = false;
-	// boolean verboseDebug = false;
 
 	final ParserGrammar grammar;
 	final ParserStrategy strategy;
@@ -51,7 +35,7 @@ public class GrammarOptimizer extends GrammarRewriter {
 	HashMap<String, Production> bodyMap = null;
 	HashMap<String, String> aliasMap = null;
 
-	public GrammarOptimizer(ParserGrammar gg, ParserStrategy strategy) {
+	public OldGrammarOptimizer(ParserGrammar gg, ParserStrategy strategy) {
 		this.grammar = gg;
 		this.strategy = strategy;
 		initOption();
@@ -59,16 +43,6 @@ public class GrammarOptimizer extends GrammarRewriter {
 	}
 
 	private void initOption() {
-		// if (ConsoleUtils.isDebug()) {
-		// this.verboseDebug = true;
-		// }
-		// if (strategy.isEnabled("Doption", ParserStrategy.Doption) ||
-		// ConsoleUtils.isDebug()) {
-		// this.verboseOption = true;
-		// }
-		// if (strategy.isEnabled("Dgrammar", ParserStrategy.Dgrammar)) {
-		// this.verboseGrammar = true;
-		// }
 		if (strategy.Oalias) {
 			this.bodyMap = new HashMap<String, Production>();
 			this.aliasMap = new HashMap<String, String>();
@@ -505,10 +479,10 @@ public class GrammarOptimizer extends GrammarRewriter {
 			UList<Expression> el = (UList<Expression>) buffers[ch];
 			Expression be = Expressions.newCbyte(null, false, ch);
 			if (el.size() == 1) {
-				l.add(Expressions.newPsequence(null, be, el.get(0)));
+				l.add(Expressions.newPair(null, be, el.get(0)));
 			} else {
 				Expression next = trySecondChoice(Expressions.newPchoice(null, el), el);
-				l.add(Expressions.newPsequence(null, be, next));
+				l.add(Expressions.newPair(null, be, next));
 			}
 		}
 		choice.isTrieTree = true;

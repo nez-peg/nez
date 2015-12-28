@@ -8,7 +8,7 @@ import java.util.TreeMap;
 import nez.lang.ByteConsumption;
 import nez.lang.Expression;
 import nez.lang.Grammar;
-import nez.lang.GrammarChecker;
+import nez.lang.OldGrammarChecker;
 import nez.lang.Production;
 import nez.lang.Typestate;
 import nez.util.UList;
@@ -20,7 +20,7 @@ public class ParserGrammar extends Grammar {
 
 	public ParserGrammar(Production start, ParserStrategy strategy, TreeMap<String, Boolean> boolMap) {
 		this.funcMap = new HashMap<String, ParseFunc>();
-		new GrammarChecker(this, boolMap, start, strategy);
+		new OldGrammarChecker(this, boolMap, start, strategy);
 		memo(strategy);
 	}
 

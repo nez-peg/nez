@@ -23,7 +23,7 @@ public abstract class Expression extends AbstractList<Expression> {
 		this.s = s;
 	}
 
-	protected final void setSourceLocation(SourceLocation s) {
+	public final void setSourceLocation(SourceLocation s) {
 		this.s = s;
 	}
 
@@ -79,11 +79,11 @@ public abstract class Expression extends AbstractList<Expression> {
 	}
 
 	public final Expression newSequence(Expression e, Expression e2) {
-		return Expressions.newPsequence(this.getSourceLocation(), e, e2);
+		return Expressions.newPair(this.getSourceLocation(), e, e2);
 	}
 
 	public final Expression newSequence(UList<Expression> l) {
-		return Expressions.newPsequence(this.getSourceLocation(), l);
+		return Expressions.newPair(this.getSourceLocation(), l);
 	}
 
 	public final Expression newChoice(Expression e, Expression e2) {

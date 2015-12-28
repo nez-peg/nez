@@ -112,7 +112,7 @@ public abstract class SchemaGrammarGenerator implements SchemaGrammarGeneratorIn
 		for (Expression p : l) {
 			Expressions.addSequence(seq, p);
 		}
-		return Expressions.newPsequence(null, seq);
+		return Expressions.newPair(null, seq);
 	}
 
 	protected final Expression _Choice(Expression... l) {

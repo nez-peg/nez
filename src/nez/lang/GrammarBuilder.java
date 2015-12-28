@@ -44,17 +44,17 @@ public class GrammarBuilder {
 				if (choice == null) {
 					choice = new UList<>(new Expression[args.length]);
 				}
-				Expressions.addChoice(choice, Expressions.newPsequence(null, l));
+				Expressions.addChoice(choice, Expressions.newPair(null, l));
 				l.clear(0);
 			} else {
 				Expressions.addSequence(l, E(args[i]));
 			}
 		}
 		if (choice != null) {
-			Expressions.addChoice(choice, Expressions.newPsequence(null, l));
+			Expressions.addChoice(choice, Expressions.newPair(null, l));
 			return Expressions.newPchoice(null, choice);
 		}
-		return Expressions.newPsequence(null, l);
+		return Expressions.newPair(null, l);
 	}
 
 	protected final Expression E(Object value) {
