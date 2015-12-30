@@ -79,7 +79,7 @@
 //	}
 //
 //	public final static void quickCheck(Production p, Expression e) {
-//		if (e instanceof Cbyte || e instanceof Cset || e instanceof Cany) {
+//		if (e instanceof Nez.Byte || e instanceof Nez.ByteSet || e instanceof Nez.Any) {
 //			p.flag = p.flag | ConsumedProduction | ConsumedChecked;
 //			return;
 //		}

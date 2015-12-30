@@ -76,7 +76,7 @@ public class OldGrammarTransducer extends Expression.Visitor {
 		if (first instanceof Nez.Empty) {
 			return next;
 		}
-		if (first instanceof Pfail) {
+		if (first instanceof Nez.Fail) {
 			return first;
 		}
 		return e.newSequence(first, next);
@@ -126,7 +126,7 @@ public class OldGrammarTransducer extends Expression.Visitor {
 	}
 
 	@Override
-	public Expression visitPreNew(Nez.PreNew e, Object a) {
+	public Expression visitBeginTree(Nez.BeginTree e, Object a) {
 		return Expressions.newBeginTree(e.getSourceLocation(), e.shift);
 	}
 
@@ -151,7 +151,7 @@ public class OldGrammarTransducer extends Expression.Visitor {
 	}
 
 	@Override
-	public Expression visitNew(Nez.New e, Object a) {
+	public Expression visitEndTree(Nez.EndTree e, Object a) {
 		return Expressions.newEndTree(e.getSourceLocation(), e.shift);
 	}
 

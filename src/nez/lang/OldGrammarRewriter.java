@@ -59,7 +59,7 @@ public class OldGrammarRewriter extends OldGrammarTransducer {
 		if (first instanceof Nez.Empty) {
 			return next;
 		}
-		if (first instanceof Pfail || next instanceof Nez.Empty) {
+		if (first instanceof Nez.Fail || next instanceof Nez.Empty) {
 			return first;
 		}
 		e.first = first;
@@ -113,7 +113,7 @@ public class OldGrammarRewriter extends OldGrammarTransducer {
 	}
 
 	@Override
-	public Expression visitPreNew(Nez.PreNew e, Object a) {
+	public Expression visitBeginTree(Nez.BeginTree e, Object a) {
 		return e;
 	}
 
@@ -134,7 +134,7 @@ public class OldGrammarRewriter extends OldGrammarTransducer {
 	}
 
 	@Override
-	public Expression visitNew(Nez.New e, Object a) {
+	public Expression visitEndTree(Nez.EndTree e, Object a) {
 		return e;
 	}
 

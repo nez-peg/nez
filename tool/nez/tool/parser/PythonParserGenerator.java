@@ -583,7 +583,7 @@ public class PythonParserGenerator extends ParserGrammarSourceGenerator {
 	Stack<Boolean> markStack = new Stack<Boolean>();
 
 	@Override
-	public void visitPreNew(Nez.PreNew p) {
+	public void visitPreNew(Nez.BeginTree p) {
 		Inew();
 		markStack.push(false);
 	}
@@ -595,7 +595,7 @@ public class PythonParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitNew(Nez.New p) {
+	public void visitNew(Nez.EndTree p) {
 		if (markStack.pop()) {
 			If("result").Begin().Ileftcapture().End();
 			Else().Begin().Abort().End();

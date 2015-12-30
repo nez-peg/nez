@@ -70,11 +70,11 @@ public class GrammarAnalyzer {
 		if (p instanceof Nez.ZeroMore || p instanceof Poption) {
 			return false;
 		}
-		if (p instanceof Pfail) {
+		if (p instanceof Nez.Fail) {
 			return false;
 		}
 		if (p instanceof Pnot) {
-			if (p.get(0) instanceof Cany) {
+			if (p.get(0) instanceof Nez.Any) {
 				return false;
 			}
 			return this.analizeInnerOfRepetition(p.get(0));
@@ -104,7 +104,7 @@ public class GrammarAnalyzer {
 	}
 
 	public boolean isUnconsumedASTConstruction(Expression p) {
-		if (p instanceof Tnew || p instanceof Nez.New || p instanceof Nez.Tag || p instanceof Treplace) {
+		if (p instanceof Tnew || p instanceof Nez.EndTree || p instanceof Nez.Tag || p instanceof Nez.Replace) {
 			return true;
 		}
 		return false;

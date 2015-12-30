@@ -49,7 +49,7 @@
 //
 //	static Type inferType(Production name, Expression e, Type inf) {
 //		if (e instanceof Nez.Tag) {
-//			inf.tag(((Ttag) e).tag);
+//			inf.tag(((Nez.Tag) e).tag);
 //			return inf;
 //		}
 //		if (e instanceof Nez.Choice && e.inferTypestate() != Typestate.Unit) {

@@ -134,7 +134,7 @@ public class ExpressionTransformer extends Expression.Visitor {
 	}
 
 	@Override
-	public Expression visitPreNew(Nez.PreNew e, Object a) {
+	public Expression visitBeginTree(Nez.BeginTree e, Object a) {
 		return e;
 	}
 
@@ -161,7 +161,7 @@ public class ExpressionTransformer extends Expression.Visitor {
 	}
 
 	@Override
-	public Expression visitNew(Nez.New e, Object a) {
+	public Expression visitEndTree(Nez.EndTree e, Object a) {
 		return e;
 	}
 

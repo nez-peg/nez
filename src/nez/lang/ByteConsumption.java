@@ -164,7 +164,7 @@ public enum ByteConsumption {
 		}
 
 		@Override
-		public Object visitPreNew(Nez.PreNew e, Object a) {
+		public Object visitBeginTree(Nez.BeginTree e, Object a) {
 			return Unconsumed;
 		}
 
@@ -189,7 +189,7 @@ public enum ByteConsumption {
 		}
 
 		@Override
-		public Object visitNew(Nez.New e, Object a) {
+		public Object visitEndTree(Nez.EndTree e, Object a) {
 			return Unconsumed;
 		}
 

@@ -10,7 +10,6 @@ import nez.lang.expr.Cset;
 import nez.lang.expr.Tlfold;
 import nez.lang.expr.Tlink;
 import nez.lang.expr.Treplace;
-import nez.lang.expr.Ttag;
 import nez.lang.expr.Xexists;
 import nez.lang.expr.Xis;
 import nez.lang.expr.Xlocal;
@@ -513,7 +512,7 @@ class Imark extends DebugVMInstruction {
 class Itag extends DebugVMInstruction {
 	Symbol tag;
 
-	public Itag(Ttag e) {
+	public Itag(Nez.Tag e) {
 		super(e);
 		this.op = Opcode.Itag;
 		this.tag = e.tag;

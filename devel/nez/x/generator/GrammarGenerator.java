@@ -201,7 +201,7 @@ public abstract class GrammarGenerator extends GrammarTranslator {
 	// W(_Delim());
 	// }
 	// Expression s = e.get(i);
-	// if (s instanceof Cbyte && i + 1 < e.size() && e.get(i + 1) instanceof
+	// if (s instanceof Nez.Byte && i + 1 < e.size() && e.get(i + 1) instanceof
 	// Cbyte) {
 	// i = checkString(e, i);
 	// c++;
@@ -221,7 +221,7 @@ public abstract class GrammarGenerator extends GrammarTranslator {
 	// int n = 0;
 	// for (int i = start; i < l.size(); i++) {
 	// Expression e = l.get(i);
-	// if (e instanceof Cbyte) {
+	// if (e instanceof Nez.Byte) {
 	// n++;
 	// continue;
 	// }

@@ -16,7 +16,7 @@ public class Xlocal extends Nez.LocalScope {
 		return tableName;
 	}
 
-	public final java.lang.String getTableName() {
+	public final String getTableName() {
 		return tableName.getSymbol();
 	}
 

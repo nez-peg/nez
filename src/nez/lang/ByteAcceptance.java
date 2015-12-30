@@ -13,13 +13,13 @@ import nez.lang.Nez.If;
 import nez.lang.Nez.LeftFold;
 import nez.lang.Nez.Link;
 import nez.lang.Nez.LocalScope;
-import nez.lang.Nez.New;
+import nez.lang.Nez.EndTree;
 import nez.lang.Nez.Not;
 import nez.lang.Nez.On;
 import nez.lang.Nez.OneMore;
 import nez.lang.Nez.Option;
 import nez.lang.Nez.Pair;
-import nez.lang.Nez.PreNew;
+import nez.lang.Nez.BeginTree;
 import nez.lang.Nez.Replace;
 import nez.lang.Nez.Sequence;
 import nez.lang.Nez.SymbolAction;
@@ -156,7 +156,7 @@ public enum ByteAcceptance {
 		}
 
 		@Override
-		public ByteAcceptance visitPreNew(PreNew e, Object ch) {
+		public ByteAcceptance visitBeginTree(BeginTree e, Object ch) {
 			return Unconsumed;
 		}
 
@@ -181,7 +181,7 @@ public enum ByteAcceptance {
 		}
 
 		@Override
-		public ByteAcceptance visitNew(New e, Object ch) {
+		public ByteAcceptance visitEndTree(EndTree e, Object ch) {
 			return Unconsumed;
 		}
 

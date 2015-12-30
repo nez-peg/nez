@@ -9,7 +9,6 @@ import nez.lang.expr.Cset;
 import nez.lang.expr.Tlfold;
 import nez.lang.expr.Tlink;
 import nez.lang.expr.Treplace;
-import nez.lang.expr.Ttag;
 import nez.lang.expr.Xexists;
 import nez.lang.expr.Xis;
 import nez.lang.expr.Xlocal;
@@ -231,7 +230,7 @@ public class IRBuilder {
 		return this.curBB.append(new Imark(e));
 	}
 
-	public DebugVMInstruction createItag(Ttag e) {
+	public DebugVMInstruction createItag(Nez.Tag e) {
 		return this.curBB.append(new Itag(e));
 	}
 

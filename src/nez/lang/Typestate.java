@@ -147,7 +147,7 @@ public enum Typestate {
 		}
 
 		@Override
-		public Object visitPreNew(Nez.PreNew e, Object a) {
+		public Object visitBeginTree(Nez.BeginTree e, Object a) {
 			return Typestate.Tree;
 		}
 
@@ -172,7 +172,7 @@ public enum Typestate {
 		}
 
 		@Override
-		public Object visitNew(Nez.New e, Object a) {
+		public Object visitEndTree(Nez.EndTree e, Object a) {
 			return Typestate.TreeMutation;
 		}
 

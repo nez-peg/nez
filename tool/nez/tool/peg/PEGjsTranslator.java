@@ -225,14 +225,14 @@ public class PEGjsTranslator extends GrammarTranslator {
 	}
 
 	@Override
-	public void visitPreNew(Nez.PreNew e) {
+	public void visitPreNew(Nez.BeginTree e) {
 		for (Expression sub : e) {
 			visitExpression(sub);
 		}
 	}
 
 	@Override
-	public void visitNew(Nez.New e) {
+	public void visitNew(Nez.EndTree e) {
 	}
 
 	@Override

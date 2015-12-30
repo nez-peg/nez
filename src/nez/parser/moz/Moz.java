@@ -877,7 +877,7 @@ public class Moz {
 	public static class TNew extends MozInst {
 		int shift;
 
-		public TNew(Nez.PreNew e, MozInst next) {
+		public TNew(Nez.BeginTree e, MozInst next) {
 			super(MozSet.TNew, e, next);
 			this.shift = e.shift;
 		}
@@ -934,7 +934,7 @@ public class Moz {
 	public static class TCapture extends MozInst {
 		int shift;
 
-		public TCapture(Nez.New e, MozInst next) {
+		public TCapture(Nez.EndTree e, MozInst next) {
 			super(MozSet.TCapture, e, next);
 			this.shift = e.shift;
 		}

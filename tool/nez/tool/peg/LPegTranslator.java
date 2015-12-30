@@ -6,8 +6,6 @@ import nez.lang.Nez;
 import nez.lang.NonTerminal;
 import nez.lang.Production;
 import nez.lang.expr.Cbyte;
-import nez.lang.expr.Pchoice;
-import nez.lang.expr.Psequence;
 import nez.lang.expr.Treplace;
 import nez.util.StringUtils;
 
@@ -252,7 +250,7 @@ public class LPegTranslator extends GrammarTranslator {
 		String s = "";
 		for (int i = start; i < end; i++) {
 			Expression e = l.get(i);
-			if (e instanceof Cbyte) {
+			if (e instanceof Nez.Byte) {
 				char c = (char) (((Cbyte) e).byteChar);
 				if (c >= ' ' && c < 127) {
 					s += c;
@@ -321,19 +319,19 @@ public class LPegTranslator extends GrammarTranslator {
 	// }
 
 	@Override
-	public void visitPreNew(Nez.PreNew e) {
+	public void visitPreNew(Nez.BeginTree e) {
 
 	}
 
 	@Override
-	public void visitNew(Nez.New e) {
+	public void visitNew(Nez.EndTree e) {
 
 	}
 
 	@Override
 	public void visitUndefined(Expression e) {
 		file.write("lpeg.P\"\" --[[ LPeg Unsupported <");
-		file.write(e.getPredicate());
+		// file.write(e.getPredicate());
 		for (Expression se : e) {
 			file.write(" ");
 			visitExpression(se);

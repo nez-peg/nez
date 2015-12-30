@@ -182,7 +182,7 @@ public class PEGTranslator extends GrammarTranslator {
 	}
 
 	@Override
-	public void visitPreNew(Nez.PreNew p) {
+	public void visitPreNew(Nez.BeginTree p) {
 		SemanticAction("new()");
 	}
 
@@ -192,7 +192,7 @@ public class PEGTranslator extends GrammarTranslator {
 	}
 
 	@Override
-	public void visitNew(Nez.New p) {
+	public void visitNew(Nez.EndTree p) {
 		SemanticAction("capture()");
 	}
 

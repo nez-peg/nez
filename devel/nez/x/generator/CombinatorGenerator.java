@@ -119,7 +119,7 @@ public class CombinatorGenerator extends GrammarTranslator {
 	}
 
 	@Override
-	public void visitPreNew(Nez.PreNew e) {
+	public void visitPreNew(Nez.BeginTree e) {
 		C("NCapture", e.shift);
 	}
 
@@ -129,7 +129,7 @@ public class CombinatorGenerator extends GrammarTranslator {
 	}
 
 	@Override
-	public void visitNew(Nez.New e) {
+	public void visitNew(Nez.EndTree e) {
 		C("Capture", e.shift);
 	}
 
@@ -155,7 +155,7 @@ public class CombinatorGenerator extends GrammarTranslator {
 	@Override
 	public void visitUndefined(Expression e) {
 		W("<");
-		W(e.getPredicate());
+		// W(e.getPredicate());
 		for (Expression se : e) {
 			W(" ");
 			visitExpression(se);

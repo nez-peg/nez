@@ -144,7 +144,7 @@ public class PEGTLTranslator extends GrammarTranslator {
 	}
 
 	@Override
-	public void visitPreNew(Nez.PreNew e) {
+	public void visitPreNew(Nez.BeginTree e) {
 		W("pegtl::success");
 		// if(e.lefted) {
 		// C("LCapture", e.shift);
@@ -155,7 +155,7 @@ public class PEGTLTranslator extends GrammarTranslator {
 	}
 
 	@Override
-	public void visitNew(Nez.New e) {
+	public void visitNew(Nez.EndTree e) {
 		W("pegtl::success");
 		// C("Capture", e.shift);
 	}

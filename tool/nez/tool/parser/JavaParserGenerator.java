@@ -488,12 +488,12 @@ public class JavaParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitPreNew(Nez.PreNew e) {
+	public void visitPreNew(Nez.BeginTree e) {
 		Statement(_ccall("new"));
 	}
 
 	@Override
-	public void visitNew(Nez.New e) {
+	public void visitNew(Nez.EndTree e) {
 		Statement(_ccall("capture"));
 	}
 

@@ -78,7 +78,7 @@ public class DebugVMCompiler extends Expression.Visitor {
 	public boolean optimizeString(Nez.Pair seq) {
 		for (int i = 0; i < seq.size(); i++) {
 			Expression e = seq.get(i);
-			if (e instanceof Cbyte) {
+			if (e instanceof Nez.Byte) {
 				charList.add((byte) ((Cbyte) e).byteChar);
 			} else if (e instanceof Nez.Sequence) {
 				if (!this.optimizeString((Psequence) e)) {
@@ -97,9 +97,9 @@ public class DebugVMCompiler extends Expression.Visitor {
 		boolean[] map = Bytes.newMap(false);
 		for (int i = 0; i < p.size(); i++) {
 			Expression e = p.get(i);
-			if (e instanceof Cbyte) {
+			if (e instanceof Nez.Byte) {
 				map[((Cbyte) e).byteChar] = true;
-			} else if (e instanceof Cset) {
+			} else if (e instanceof Nez.ByteSet) {
 				Cset bmap = (Cset) e;
 				for (int j = 0; j < bmap.byteMap.length; j++) {
 					if (bmap.byteMap[j]) {
@@ -306,7 +306,7 @@ public class DebugVMCompiler extends Expression.Visitor {
 	}
 
 	@Override
-	public MozInst visitPreNew(Nez.PreNew p, Object next) {
+	public MozInst visitBeginTree(Nez.BeginTree p, Object next) {
 		this.leftedStack.push(false);
 		if (this.strategy.TreeConstruction) {
 			this.builder.createInew(p);
@@ -350,7 +350,7 @@ public class DebugVMCompiler extends Expression.Visitor {
 	}
 
 	@Override
-	public MozInst visitNew(Nez.New p, Object next) {
+	public MozInst visitEndTree(Nez.EndTree p, Object next) {
 		/* newNode is used in the debugger for rich view */
 		CommonTree node = (CommonTree) p.getSourceLocation();
 		int len = node.toText().length();
@@ -376,7 +376,7 @@ public class DebugVMCompiler extends Expression.Visitor {
 	@Override
 	public MozInst visitTag(Nez.Tag p, Object next) {
 		if (this.strategy.TreeConstruction) {
-			this.builder.createItag((Ttag) p);
+			this.builder.createItag((Nez.Tag) p);
 		}
 		return null;
 	}

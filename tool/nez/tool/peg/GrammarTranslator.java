@@ -271,11 +271,11 @@ public abstract class GrammarTranslator extends Expression.Visitor implements So
 	// AST Construction
 	public abstract void visitLink(Nez.Link p);
 
-	public abstract void visitPreNew(Nez.PreNew p);
+	public abstract void visitPreNew(Nez.BeginTree p);
 
 	public abstract void visitLeftFold(Nez.LeftFold p);
 
-	public abstract void visitNew(Nez.New p);
+	public abstract void visitNew(Nez.EndTree p);
 
 	public abstract void visitTag(Nez.Tag p);
 
@@ -416,7 +416,7 @@ public abstract class GrammarTranslator extends Expression.Visitor implements So
 	}
 
 	@Override
-	public final Object visitPreNew(Nez.PreNew p, Object next) {
+	public final Object visitBeginTree(Nez.BeginTree p, Object next) {
 		if (strategy.TreeConstruction) {
 			this.visitPreNew(p);
 		}
@@ -432,7 +432,7 @@ public abstract class GrammarTranslator extends Expression.Visitor implements So
 	}
 
 	@Override
-	public final Object visitNew(Nez.New p, Object next) {
+	public final Object visitEndTree(Nez.EndTree p, Object next) {
 		if (strategy.TreeConstruction) {
 			this.visitNew(p);
 		}

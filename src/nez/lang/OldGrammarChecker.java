@@ -219,7 +219,7 @@ public class OldGrammarChecker extends OldGrammarTransducer {
 	}
 
 	@Override
-	public Expression visitPreNew(Nez.PreNew p, Object a) {
+	public Expression visitBeginTree(Nez.BeginTree p, Object a) {
 		if (this.isNonASTContext()) {
 			return p.newEmpty();
 		}
@@ -228,7 +228,7 @@ public class OldGrammarChecker extends OldGrammarTransducer {
 			return p.newEmpty();
 		}
 		this.requiredTypestate = Typestate.TreeMutation;
-		return super.visitPreNew(p, a);
+		return super.visitBeginTree(p, a);
 	}
 
 	@Override
@@ -245,7 +245,7 @@ public class OldGrammarChecker extends OldGrammarTransducer {
 	}
 
 	@Override
-	public Expression visitNew(Nez.New p, Object a) {
+	public Expression visitEndTree(Nez.EndTree p, Object a) {
 		if (this.isNonASTContext()) {
 			return p.newEmpty();
 		}
@@ -254,7 +254,7 @@ public class OldGrammarChecker extends OldGrammarTransducer {
 			return p.newEmpty();
 		}
 		this.requiredTypestate = Typestate.TreeMutation;
-		return super.visitNew(p, a);
+		return super.visitEndTree(p, a);
 	}
 
 	@Override

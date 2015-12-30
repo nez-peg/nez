@@ -14,13 +14,13 @@ import nez.lang.Nez.LeftFold;
 import nez.lang.Nez.Link;
 import nez.lang.Nez.LocalScope;
 import nez.lang.Nez.MultiByte;
-import nez.lang.Nez.New;
+import nez.lang.Nez.EndTree;
 import nez.lang.Nez.Not;
 import nez.lang.Nez.On;
 import nez.lang.Nez.OneMore;
 import nez.lang.Nez.Option;
 import nez.lang.Nez.Pair;
-import nez.lang.Nez.PreNew;
+import nez.lang.Nez.BeginTree;
 import nez.lang.Nez.Replace;
 import nez.lang.Nez.Sequence;
 import nez.lang.Nez.SymbolAction;
@@ -172,8 +172,8 @@ public abstract class GrammarTransformer extends Expression.Visitor {
 	}
 
 	@Override
-	public Expression visitPreNew(PreNew e, Object a) {
-		PreNew e2 = new PreNew(e.shift);
+	public Expression visitBeginTree(BeginTree e, Object a) {
+		BeginTree e2 = new BeginTree(e.shift);
 		e2.setSourceLocation(e.getSourceLocation());
 		return e2;
 	}
@@ -213,8 +213,8 @@ public abstract class GrammarTransformer extends Expression.Visitor {
 	}
 
 	@Override
-	public Expression visitNew(New e, Object a) {
-		New e2 = new New(e.shift);
+	public Expression visitEndTree(EndTree e, Object a) {
+		EndTree e2 = new EndTree(e.shift);
 		e2.setSourceLocation(e.getSourceLocation());
 		return e2;
 	}

@@ -279,7 +279,7 @@ public class MozCompiler extends Expression.Visitor {
 	}
 
 	@Override
-	public MozInst visitPreNew(Nez.PreNew p, Object next) {
+	public MozInst visitBeginTree(Nez.BeginTree p, Object next) {
 		if (this.strategy.TreeConstruction) {
 			return new Moz.TNew(p, (MozInst) next);
 		}
@@ -295,7 +295,7 @@ public class MozCompiler extends Expression.Visitor {
 	}
 
 	@Override
-	public MozInst visitNew(Nez.New p, Object next) {
+	public MozInst visitEndTree(Nez.EndTree p, Object next) {
 		if (this.strategy.TreeConstruction) {
 			return new Moz.TCapture(p, (MozInst) next);
 		}
@@ -389,11 +389,11 @@ public class MozCompiler extends Expression.Visitor {
 	public final MozInst visitOption(Nez.Option p, Object next) {
 		if (strategy.Olex) {
 			Expression inner = getInnerExpression(p);
-			if (inner instanceof Cbyte) {
+			if (inner instanceof Nez.Byte) {
 				this.optimizedUnary(p);
 				return new Moz.OByte((Cbyte) inner, (MozInst) next);
 			}
-			if (inner instanceof Cset) {
+			if (inner instanceof Nez.ByteSet) {
 				this.optimizedUnary(p);
 				return new Moz.OSet((Cset) inner, (MozInst) next);
 			}
@@ -413,11 +413,11 @@ public class MozCompiler extends Expression.Visitor {
 	public final MozInst visitRepetition(Nez.Repetition p, Object next) {
 		if (strategy.Olex) {
 			Expression inner = getInnerExpression((Expression) p);
-			if (inner instanceof Cbyte) {
+			if (inner instanceof Nez.Byte) {
 				this.optimizedUnary((Expression) p);
 				return new Moz.RByte((Cbyte) inner, (MozInst) next);
 			}
-			if (inner instanceof Cset) {
+			if (inner instanceof Nez.ByteSet) {
 				this.optimizedUnary((Expression) p);
 				return new Moz.RSet((Cset) inner, (MozInst) next);
 			}
@@ -433,15 +433,15 @@ public class MozCompiler extends Expression.Visitor {
 	public final MozInst visitNot(Nez.Not p, Object next) {
 		if (strategy.Olex) {
 			Expression inner = getInnerExpression(p);
-			if (inner instanceof Cset) {
+			if (inner instanceof Nez.ByteSet) {
 				this.optimizedUnary(p);
 				return new Moz.NSet((Cset) inner, (MozInst) next);
 			}
-			if (inner instanceof Cbyte) {
+			if (inner instanceof Nez.Byte) {
 				this.optimizedUnary(p);
 				return new Moz.NByte((Cbyte) inner, (MozInst) next);
 			}
-			if (inner instanceof Cany) {
+			if (inner instanceof Nez.Any) {
 				this.optimizedUnary(p);
 				return new Moz.NAny(inner, false, (MozInst) next);
 			}

@@ -238,7 +238,7 @@ public class GrammarChecker extends GrammarTransformer {
 	}
 
 	@Override
-	public Expression visitPreNew(Nez.PreNew p, Object a) {
+	public Expression visitBeginTree(Nez.BeginTree p, Object a) {
 		if (this.isNonTreeConstruction()) {
 			return p.newEmpty();
 		}
@@ -247,7 +247,7 @@ public class GrammarChecker extends GrammarTransformer {
 			return p.newEmpty();
 		}
 		this.requiredTypestate = Typestate.TreeMutation;
-		return super.visitPreNew(p, a);
+		return super.visitBeginTree(p, a);
 	}
 
 	@Override
@@ -264,7 +264,7 @@ public class GrammarChecker extends GrammarTransformer {
 	}
 
 	@Override
-	public Expression visitNew(Nez.New p, Object a) {
+	public Expression visitEndTree(Nez.EndTree p, Object a) {
 		if (this.isNonTreeConstruction()) {
 			return p.newEmpty();
 		}
@@ -273,7 +273,7 @@ public class GrammarChecker extends GrammarTransformer {
 			return p.newEmpty();
 		}
 		this.requiredTypestate = Typestate.TreeMutation;
-		return super.visitNew(p, a);
+		return super.visitEndTree(p, a);
 	}
 
 	@Override

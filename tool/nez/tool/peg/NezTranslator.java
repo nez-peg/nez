@@ -7,7 +7,6 @@ import nez.lang.Grammar;
 import nez.lang.Nez;
 import nez.lang.NonTerminal;
 import nez.lang.Production;
-import nez.lang.expr.Pchoice;
 import nez.util.StringUtils;
 
 public class NezTranslator extends PEGTranslator {
@@ -131,7 +130,7 @@ public class NezTranslator extends PEGTranslator {
 	}
 
 	@Override
-	public void visitPreNew(Nez.PreNew e) {
+	public void visitPreNew(Nez.BeginTree e) {
 		W("{");
 	}
 
@@ -141,7 +140,7 @@ public class NezTranslator extends PEGTranslator {
 	}
 
 	@Override
-	public void visitNew(Nez.New e) {
+	public void visitNew(Nez.EndTree e) {
 		W("}");
 	}
 
@@ -168,7 +167,7 @@ public class NezTranslator extends PEGTranslator {
 	@Override
 	public void visitUndefined(Expression e) {
 		W("<");
-		W(e.getPredicate());
+		// W(e.getPredicate());
 		for (Expression se : e) {
 			W(" ");
 			visitExpression(se);

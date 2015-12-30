@@ -5,7 +5,6 @@ import nez.lang.Grammar;
 import nez.lang.Nez;
 import nez.lang.NonTerminal;
 import nez.lang.Production;
-import nez.lang.expr.Pchoice;
 import nez.lang.expr.Pempty;
 import nez.lang.expr.Pfail;
 import nez.lang.expr.Treplace;
@@ -232,12 +231,12 @@ public class MouseTranslator extends PEGTranslator {
 	}
 
 	@Override
-	public void visitPreNew(Nez.PreNew e) {
+	public void visitPreNew(Nez.BeginTree e) {
 
 	}
 
 	@Override
-	public void visitNew(Nez.New e) {
+	public void visitNew(Nez.EndTree e) {
 
 	}
 
@@ -265,7 +264,7 @@ public class MouseTranslator extends PEGTranslator {
 	@Override
 	public void visitUndefined(Expression e) {
 		file.write("/* Mouse Unsupported <");
-		file.write(e.getPredicate());
+		// file.write(e.getPredicate());
 		for (Expression se : e) {
 			file.write(" ");
 			visitExpression(se);

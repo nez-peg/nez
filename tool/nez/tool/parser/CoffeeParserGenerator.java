@@ -205,7 +205,7 @@ public class CoffeeParserGenerator extends ParserGrammarSourceGenerator {
 				visitExpression(s);
 				continue;
 			}
-			if (s instanceof Treplace) {
+			if (s instanceof Nez.Replace) {
 				visitExpression(s);
 				continue;
 			}
@@ -218,7 +218,7 @@ public class CoffeeParserGenerator extends ParserGrammarSourceGenerator {
 				visitExpression(s);
 				isFirst = false;
 			}
-			if (s instanceof Nez.New) {
+			if (s instanceof Nez.EndTree) {
 				if (isLeftNew) {
 					if (cntNew > 0) {
 						cntNew--;
@@ -288,7 +288,7 @@ public class CoffeeParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitPreNew(Nez.PreNew p) {
+	public void visitPreNew(Nez.BeginTree p) {
 		Push();
 		makePosObj();
 	}
@@ -303,7 +303,7 @@ public class CoffeeParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitNew(Nez.New p) {
+	public void visitNew(Nez.EndTree p) {
 		setEndPos();
 		makeObject();
 		Pop();

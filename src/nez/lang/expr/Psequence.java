@@ -24,7 +24,7 @@ public class Psequence extends Nez.Pair {
 
 	// @Override
 	// public final void format(StringBuilder sb) {
-	// if (this.first instanceof Cbyte && this.next.getFirst() instanceof Cbyte)
+	// if (this.first instanceof Nez.Byte && this.next.getFirst() instanceof Nez.Byte)
 	// {
 	// sb.append("'");
 	// formatString(sb, (Cbyte) this.first, this.next);
@@ -44,7 +44,7 @@ public class Psequence extends Nez.Pair {
 	// }
 	// Expression first = next.getFirst();
 	// b = null;
-	// if (first instanceof Cbyte) {
+	// if (first instanceof Nez.Byte) {
 	// b = (Cbyte) first;
 	// next = next.getNext();
 	// }
@@ -89,13 +89,13 @@ public class Psequence extends Nez.Pair {
 	// }
 
 	public final boolean isMultiChar() {
-		return (this.getFirst() instanceof Cbyte && this.getNext() instanceof Cbyte);
+		return (this.getFirst() instanceof Nez.Byte && this.getNext() instanceof Nez.Byte);
 	}
 
 	public final Expression toMultiCharSequence() {
 		Expression f = this.getFirst();
 		Expression s = this.getNext().getFirst();
-		if (f instanceof Cbyte && s instanceof Cbyte) {
+		if (f instanceof Nez.Byte && s instanceof Nez.Byte) {
 			UList<Byte> l = new UList<Byte>(new Byte[16]);
 			l.add(((byte) ((Cbyte) f).byteChar));
 			Expression next = convertMultiByte(this, l);
@@ -110,7 +110,7 @@ public class Psequence extends Nez.Pair {
 
 	private Expression convertMultiByte(Psequence seq, UList<Byte> l) {
 		Expression s = seq.getNext().getFirst();
-		while (s instanceof Cbyte) {
+		while (s instanceof Nez.Byte) {
 			l.add((byte) ((Cbyte) s).byteChar);
 			Expression next = seq.getNext();
 			if (next instanceof Nez.Sequence) {

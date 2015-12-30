@@ -189,7 +189,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 		int count = 0;
 		for (int i = start; i < e.size(); i++) {
 			Expression inner = e.get(i);
-			if (inner instanceof Cbyte) {
+			if (inner instanceof Nez.Byte) {
 				count++;
 			}
 		}
@@ -202,7 +202,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 	public boolean checkByteMap(Pchoice e) {
 		for (int i = 0; i < e.size(); i++) {
 			Expression inner = e.get(i);
-			if (!(inner instanceof Cbyte || inner instanceof Cset)) {
+			if (!(inner instanceof Nez.Byte || inner instanceof Nez.ByteSet)) {
 				return false;
 			}
 		}
@@ -211,7 +211,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 
 	private boolean checkString(Psequence e) {
 		for (int i = 0; i < e.size(); i++) {
-			if (!(e.get(i) instanceof Cbyte)) {
+			if (!(e.get(i) instanceof Nez.Byte)) {
 				return false;
 			}
 		}
@@ -248,9 +248,9 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 		boolean[] map = new boolean[256];
 		for (int i = 0; i < e.size(); i++) {
 			Expression inner = e.get(i);
-			if (inner instanceof Cbyte) {
+			if (inner instanceof Nez.Byte) {
 				map[((Cbyte) inner).byteChar] = true;
-			} else if (inner instanceof Cset) {
+			} else if (inner instanceof Nez.ByteSet) {
 				boolean[] bmap = ((Cset) inner).byteMap;
 				for (int j = 0; j < bmap.length; j++) {
 					if (bmap[j]) {
@@ -291,7 +291,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 
 		for (int i = 0; i < e.size(); i++) {
 			Expression inner = e.get(i);
-			if (inner instanceof Cbyte) {
+			if (inner instanceof Nez.Byte) {
 				Cbyte b = (Cbyte) inner;
 				L("if((int)*(ctx->cur + " + i + ") == " + b.byteChar + ")");
 				Begin("{");
@@ -300,7 +300,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 		this.jumpFailureJump();
 		for (int i = 0; i < e.size(); i++) {
 			Expression inner = e.get(i);
-			if (inner instanceof Cbyte) {
+			if (inner instanceof Nez.Byte) {
 				End("}");
 			}
 		}
@@ -315,14 +315,14 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 		if (inner instanceof NonTerminal) {
 			inner = getNonTerminalRule(inner);
 		}
-		if (inner instanceof Cbyte) {
+		if (inner instanceof Nez.Byte) {
 			L("if((int)*ctx->cur == " + ((Cbyte) inner).byteChar + ")");
 			Begin("{");
 			this.jumpFailureJump();
 			End("}");
 			return true;
 		}
-		if (inner instanceof Cset) {
+		if (inner instanceof Nez.ByteSet) {
 			int fid = this.fid++;
 			boolean[] map = ((Cset) inner).byteMap;
 			constructBmap(map, fid);
@@ -372,7 +372,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 		this.let("char *", backtrack, "ctx->cur");
 		for (int i = 0; i < e.size(); i++) {
 			Expression inner = e.get(i);
-			if (inner instanceof Cbyte) {
+			if (inner instanceof Nez.Byte) {
 				L("if((int)*(ctx->cur++) == " + ((Cbyte) inner).byteChar + ")");
 				Begin("{");
 			}
@@ -380,7 +380,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 		this.gotoLabel(label);
 		for (int i = 0; i < e.size(); i++) {
 			Expression inner = e.get(i);
-			if (inner instanceof Cbyte) {
+			if (inner instanceof Nez.Byte) {
 				End("}");
 			}
 		}
@@ -397,14 +397,14 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 		if (inner instanceof NonTerminal) {
 			inner = getNonTerminalRule(inner);
 		}
-		if (inner instanceof Cbyte) {
+		if (inner instanceof Nez.Byte) {
 			L("if((int)*ctx->cur == " + ((Cbyte) inner).byteChar + ")");
 			Begin("{");
 			L("ctx->cur++;");
 			End("}");
 			return true;
 		}
-		if (inner instanceof Cset) {
+		if (inner instanceof Nez.ByteSet) {
 			int fid = this.fid++;
 			boolean[] map = ((Cset) inner).byteMap;
 			constructBmap(map, fid);
@@ -448,7 +448,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 		if (inner instanceof NonTerminal) {
 			inner = getNonTerminalRule(inner);
 		}
-		if (inner instanceof Cbyte) {
+		if (inner instanceof Nez.Byte) {
 			L("while(1)");
 			Begin("{");
 			L("if((int)*ctx->cur != " + ((Cbyte) inner).byteChar + ")");
@@ -459,7 +459,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 			End("}");
 			return true;
 		}
-		if (inner instanceof Cset) {
+		if (inner instanceof Nez.ByteSet) {
 			boolean[] b = ((Cset) inner).byteMap;
 			constructByteMapRep(b);
 			return true;
@@ -843,7 +843,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 	Stack<String> markStack = new Stack<String>();
 
 	@Override
-	public void visitPreNew(Nez.PreNew e) {
+	public void visitPreNew(Nez.BeginTree e) {
 		if (this.strategy.TreeConstruction) {
 			// this.pushFailureJumpPoint();
 			String mark = "mark" + this.fid++;
@@ -854,7 +854,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitNew(Nez.New e) {
+	public void visitNew(Nez.EndTree e) {
 		if (this.strategy.TreeConstruction) {
 			String label = "EXIT_CAPTURE" + this.fid++;
 			L("ast_log_capture(ctx->ast, ctx->cur);");

@@ -2,11 +2,6 @@ package nez.lang;
 
 import nez.ast.Symbol;
 import nez.lang.expr.Expressions;
-import nez.lang.expr.Pempty;
-import nez.lang.expr.Pfail;
-import nez.lang.expr.Psequence;
-import nez.lang.expr.Ttag;
-import nez.lang.expr.Xexists;
 import nez.util.UList;
 
 public class Nez {
@@ -39,7 +34,7 @@ public class Nez {
 	public static class Fail extends Terminal {
 		@Override
 		public final boolean equals(Object o) {
-			return (o instanceof Pfail);
+			return (o instanceof Nez.Fail);
 		}
 
 		@Override
@@ -90,7 +85,7 @@ public class Nez {
 
 		public ByteSet() {
 			super();
-			this.byteMap = new boolean[257];
+			this.byteMap = Bytes.newMap(false);
 		}
 
 		public ByteSet(boolean[] b) {
@@ -145,7 +140,6 @@ public class Nez {
 		public final Object visit(Expression.Visitor v, Object a) {
 			return v.visitMultiByte(this, a);
 		}
-
 	}
 
 	/* Unary */
@@ -173,7 +167,6 @@ public class Nez {
 			this.inner = e;
 			return old;
 		}
-
 	}
 
 	public static class Option extends Nez.Unary {
@@ -328,10 +321,10 @@ public class Nez {
 			while (true) {
 				l.add(p.getFirst());
 				Expression e = p.getNext();
-				if (!(e instanceof Nez.Sequence)) {
+				if (!(e instanceof Nez.Pair)) {
 					break;
 				}
-				p = (Psequence) e;
+				p = (Nez.Pair) e;
 			}
 			l.add(p.getNext());
 			return l;
@@ -439,40 +432,40 @@ public class Nez {
 	public abstract static interface AST {
 	}
 
-	public static class PreNew extends Terminal implements AST {
+	public static class BeginTree extends Terminal implements AST {
 		public int shift = 0;
 
-		public PreNew(int shift) {
+		public BeginTree(int shift) {
 			this.shift = shift;
 		}
 
 		@Override
 		public final boolean equals(Object o) {
-			return (o instanceof Nez.PreNew && this.shift == ((Nez.PreNew) o).shift);
+			return (o instanceof Nez.BeginTree && this.shift == ((Nez.BeginTree) o).shift);
 		}
 
 		@Override
 		public final Object visit(Expression.Visitor v, Object a) {
-			return v.visitPreNew(this, a);
+			return v.visitBeginTree(this, a);
 		}
 
 	}
 
-	public static class New extends Terminal implements AST {
+	public static class EndTree extends Terminal implements AST {
 		public int shift = 0;
 
-		public New(int shift) {
+		public EndTree(int shift) {
 			this.shift = shift;
 		}
 
 		@Override
 		public final boolean equals(Object o) {
-			return (o instanceof Nez.New && this.shift == ((Nez.New) o).shift);
+			return (o instanceof Nez.EndTree && this.shift == ((Nez.EndTree) o).shift);
 		}
 
 		@Override
 		public final Object visit(Expression.Visitor v, Object a) {
-			return v.visitNew(this, a);
+			return v.visitEndTree(this, a);
 		}
 
 	}
@@ -516,7 +509,7 @@ public class Nez {
 		@Override
 		public final boolean equals(Object o) {
 			if (o instanceof Nez.Tag) {
-				return this.tag == ((Ttag) o).tag;
+				return this.tag == ((Nez.Tag) o).tag;
 			}
 			return false;
 		}
@@ -697,8 +690,8 @@ public class Nez {
 
 		@Override
 		public final boolean equals(Object o) {
-			if (o instanceof Xexists) {
-				Xexists s = (Xexists) o;
+			if (o instanceof SymbolExists) {
+				SymbolExists s = (SymbolExists) o;
 				return this.tableName == s.tableName && equals(this.symbol, s.symbol);
 			}
 			return false;

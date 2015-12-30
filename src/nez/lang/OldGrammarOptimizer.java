@@ -198,7 +198,7 @@ public class OldGrammarOptimizer extends OldGrammarRewriter {
 				verboseInline("inline(deref)", n, deref);
 				return this.visitNonTerminal((NonTerminal) deref, a);
 			}
-			if (deref instanceof Nez.Empty || deref instanceof Pfail) {
+			if (deref instanceof Nez.Empty || deref instanceof Nez.Fail) {
 				verboseInline("inline(deref)", n, deref);
 				return deref;
 			}
@@ -226,7 +226,7 @@ public class OldGrammarOptimizer extends OldGrammarRewriter {
 
 	// used to test inlining
 	public final static boolean isSingleCharacter(Expression e) {
-		if (e instanceof Cset || e instanceof Cbyte || e instanceof Cany) {
+		if (e instanceof Nez.ByteSet || e instanceof Nez.Byte || e instanceof Nez.Any) {
 			return true;
 		}
 		return false;
@@ -285,14 +285,14 @@ public class OldGrammarOptimizer extends OldGrammarRewriter {
 					res = true;
 					continue;
 				}
-				if (first instanceof Nez.New) {
+				if (first instanceof Nez.EndTree) {
 					((Tcapture) first).shift -= 1;
 					Expressions.swap(l, i - 1, i);
 					this.verboseOutofOrdered("out-of-order", next, first);
 					res = true;
 					continue;
 				}
-				if (first instanceof Nez.Tag || first instanceof Treplace) {
+				if (first instanceof Nez.Tag || first instanceof Nez.Replace) {
 					Expressions.swap(l, i - 1, i);
 					this.verboseOutofOrdered("out-of-order", next, first);
 					res = true;
@@ -308,12 +308,12 @@ public class OldGrammarOptimizer extends OldGrammarRewriter {
 			Expression first = l.get(i - 1);
 			Expression next = l.get(i);
 			if (isNotChar(first)) {
-				if (next instanceof Cany) {
+				if (next instanceof Nez.Any) {
 					l.ArrayValues[i] = convertBitMap(next, first.get(0));
 					l.ArrayValues[i - 1] = next.newEmpty();
 					this.verboseOptimized("not-any", first, l.ArrayValues[i]);
 				}
-				if (next instanceof Cset && isNotChar(first)) {
+				if (next instanceof Nez.ByteSet && isNotChar(first)) {
 					l.ArrayValues[i] = convertBitMap(next, first.get(0));
 					l.ArrayValues[i - 1] = next.newEmpty();
 					this.verboseOptimized("not-set", first, l.ArrayValues[i]);
@@ -324,7 +324,7 @@ public class OldGrammarOptimizer extends OldGrammarRewriter {
 
 	private boolean isNotChar(Expression p) {
 		if (p instanceof Pnot) {
-			return (p.get(0) instanceof Cset || p.get(0) instanceof Cbyte);
+			return (p.get(0) instanceof Nez.ByteSet || p.get(0) instanceof Nez.Byte);
 		}
 		return false;
 	}
@@ -336,19 +336,19 @@ public class OldGrammarOptimizer extends OldGrammarRewriter {
 		if (nextNext != null) {
 			next = next.getFirst();
 		}
-		if (next instanceof Cany) {
+		if (next instanceof Nez.Any) {
 			Cany any = (Cany) next;
 			bany = Bytes.newMap(true);
 			if (!isBinary) {
 				bany[0] = false;
 			}
 		}
-		if (next instanceof Cset) {
+		if (next instanceof Nez.ByteSet) {
 			Cset bm = (Cset) next;
 			bany = bm.byteMap.clone();
 		}
 
-		if (not instanceof Cset) {
+		if (not instanceof Nez.ByteSet) {
 			Cset bm = (Cset) not;
 			for (int c = 0; c < bany.length - 1; c++) {
 				if (bm.byteMap[c] && bany[c] == true) {
@@ -356,7 +356,7 @@ public class OldGrammarOptimizer extends OldGrammarRewriter {
 				}
 			}
 		}
-		if (not instanceof Cbyte) {
+		if (not instanceof Nez.Byte) {
 			Cbyte bc = (Cbyte) not;
 			if (bany[bc.byteChar] == true) {
 				bany[bc.byteChar] = false;
@@ -416,18 +416,18 @@ public class OldGrammarOptimizer extends OldGrammarRewriter {
 		boolean binary = false;
 		for (Expression e : choiceList) {
 			e = Expressions.resolveNonTerminal(e);
-			if (e instanceof Cbyte) {
+			if (e instanceof Nez.Byte) {
 				byteMap[((Cbyte) e).byteChar] = true;
 				// if (((Cbyte) e).isBinary()) {
 				// binary = true;
 				// }
 				continue;
 			}
-			if (e instanceof Cset) {
+			if (e instanceof Nez.ByteSet) {
 				Bytes.appendBitMap(byteMap, ((Cset) e).byteMap);
 				continue;
 			}
-			if (e instanceof Cany) {
+			if (e instanceof Nez.Any) {
 				return e;
 			}
 			return null;
@@ -437,7 +437,7 @@ public class OldGrammarOptimizer extends OldGrammarRewriter {
 
 	private boolean isTrieTreeHead(Expression inner) {
 		Expression first = inner.getFirst();
-		if (first instanceof Cbyte || first instanceof Cset) {
+		if (first instanceof Nez.Byte || first instanceof Nez.ByteSet) {
 			return true;
 		}
 		return false;
@@ -453,7 +453,7 @@ public class OldGrammarOptimizer extends OldGrammarRewriter {
 		Object[] buffers = new Object[257];
 		for (Expression inner : l) {
 			Expression first = inner.getFirst();
-			if (first instanceof Cbyte) {
+			if (first instanceof Nez.Byte) {
 				Cbyte be = (Cbyte) first;
 				buffers[be.byteChar] = mergeChoice(buffers[be.byteChar], inner.getNext());
 			} else {

@@ -12,7 +12,7 @@ public class Xexists extends Nez.SymbolExists implements Expression.Contextual {
 		this.setSourceLocation(s);
 	}
 
-	public final java.lang.String getSymbol() {
+	public final String getSymbol() {
 		return this.symbol;
 	}
 
@@ -20,7 +20,7 @@ public class Xexists extends Nez.SymbolExists implements Expression.Contextual {
 		return tableName;
 	}
 
-	public final java.lang.String getTableName() {
+	public final String getTableName() {
 		return tableName.getSymbol();
 	}
 
