@@ -113,7 +113,6 @@ public class NezConstructor extends GrammarFileLoader {
 			int productionFlag = 0;
 			if (nameNode.is(_String)) {
 				localName = GrammarFile.nameTerminalProduction(localName);
-				productionFlag |= Production.TerminalProduction;
 			}
 
 			Production rule = getGrammar().getProduction(localName);

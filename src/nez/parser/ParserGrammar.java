@@ -114,10 +114,11 @@ public class ParserGrammar extends Grammar {
 		Production p = f.parserProduction;
 		if (f.refcount > 1 && typeState(p) != Typestate.TreeMutation) {
 			int memoId = memoPointList.size();
-			f.memoPoint = new MemoPoint(memoId, p.getLocalName(), f.getExpression(), p.isContextual());
+			f.memoPoint = new MemoPoint(memoId, p.getLocalName(), f.getExpression(), false); // FIXME
+																								// p.isContextual());
 			memoPointList.add(f.memoPoint);
 			if (Verbose.PackratParsing) {
-				Verbose.println("MemoPoint: " + f.memoPoint + " ref=" + f.refcount + " typestate? " + typeState(p) + " rec? " + p.isRecursive());
+				Verbose.println("MemoPoint: " + f.memoPoint + " ref=" + f.refcount + " typestate? " + typeState(p));
 			}
 		}
 	}

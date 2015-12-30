@@ -17,7 +17,6 @@ import nez.parser.ParserGrammar;
 import nez.parser.ParserStrategy;
 import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
-import nez.util.UFlag;
 import nez.util.UList;
 import nez.util.Verbose;
 
@@ -77,13 +76,14 @@ public class OldGrammarChecker extends OldGrammarTransducer {
 	private ParseFunc checkFirstVisitedProduction(String uname, Production p, int init) {
 		Production parserProduction/* local production */= parserGrammar.newProduction(uname, null);
 		ParseFunc f = parserGrammar.setParseFunc(uname, p, parserProduction, init);
-		if (UFlag.is(p.flag, Production.ResetFlag)) {
-			p.initFlag();
-			if (p.isRecursive()) {
-				checkLeftRecursion(p.getExpression(), new ProductionStacker(p, null));
-			}
-			// p.isNoNTreeConstruction();
-		}
+		// if (UFlag.is(p.flag, Production.ResetFlag)) {
+		// p.initFlag();
+		// if (p.isRecursive()) {
+		// checkLeftRecursion(p.getExpression(), new ProductionStacker(p,
+		// null));
+		// }
+		// // p.isNoNTreeConstruction();
+		// }
 		Typestate stackedTypestate = this.requiredTypestate;
 		this.requiredTypestate = this.isNonASTContext() ? Typestate.Unit : parserGrammar.typeState(p);
 		Expression e = this.visitInner(p.getExpression());

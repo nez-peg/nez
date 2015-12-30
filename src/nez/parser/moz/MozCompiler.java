@@ -75,9 +75,7 @@ public class MozCompiler extends Expression.Visitor {
 		long t = System.nanoTime();
 		UList<MozInst> codeList = new UList<MozInst>(new MozInst[64]);
 		for (Production p : gg) {
-			if (!p.isSymbolTable()) {
-				this.visitProduction(codeList, p, new Moz.Ret(p));
-			}
+			this.visitProduction(codeList, p, new Moz.Ret(p));
 		}
 		this.layoutCachedInstruction(codeList);
 		for (MozInst inst : codeList) {

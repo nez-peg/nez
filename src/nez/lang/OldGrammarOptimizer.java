@@ -109,7 +109,7 @@ public class OldGrammarOptimizer extends OldGrammarRewriter {
 			String key = p.getLocalName();
 			ParseFunc f = grammar.getParseFunc(key);
 			verboseReference(key, f.getCount());
-			if (f.getCount() > 0 || p.isSymbolTable()) {
+			if (f.getCount() > 0) {
 				prodList.add(p);
 			} else {
 				grammar.removeParseFunc(key);
@@ -196,7 +196,6 @@ public class OldGrammarOptimizer extends OldGrammarRewriter {
 		if (strategy.Oinline) {
 			ParseFunc f = grammar.getParseFunc(n.getLocalName());
 			if (f.getCount() == 1) {
-				assert (!p.isRecursive());
 				verboseInline("inline(ref=1)", n, deref);
 				return deref;
 			}

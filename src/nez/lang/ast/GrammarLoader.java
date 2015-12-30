@@ -50,7 +50,7 @@ public final class GrammarLoader extends GrammarVisitorMap<GrammarLoaderVisitor>
 			int productionFlag = 0;
 			if (nameNode.is(_String)) {
 				localName = Grammar.nameTerminalProduction(localName);
-				productionFlag |= Production.TerminalProduction;
+				// productionFlag |= Production.TerminalProduction;
 			}
 
 			Production rule = getGrammar().getProduction(localName);

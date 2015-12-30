@@ -51,18 +51,18 @@ public class GrammarExample {
 		return l;
 	}
 
-	public final void checkExample() {
-		if (exampleList == null) {
-			for (Example ex : exampleList) {
-				if (ex.isPublic) {
-					Production p = grammar.getProduction(ex.getName());
-					if (p != null) {
-						p.flag |= Production.PublicProduction;
-					}
-				}
-			}
-		}
-	}
+	// public final void checkExample() {
+	// if (exampleList == null) {
+	// for (Example ex : exampleList) {
+	// if (ex.isPublic) {
+	// Production p = grammar.getProduction(ex.getName());
+	// if (p != null) {
+	// p.flag |= Production.PublicProduction;
+	// }
+	// }
+	// }
+	// }
+	// }
 
 	public final boolean testAll(Grammar grammar, ParserStrategy strategy, boolean ExampleCommand) {
 		Coverage.init();
