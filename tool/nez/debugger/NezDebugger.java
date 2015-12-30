@@ -17,6 +17,7 @@ import jline.SimpleCompletor;
 import nez.ast.CommonTree;
 import nez.debugger.Context.FailOverInfo;
 import nez.lang.Expression;
+import nez.lang.Nez;
 import nez.lang.NonTerminal;
 import nez.lang.Production;
 import nez.lang.expr.Pchoice;
@@ -611,7 +612,7 @@ public class NezDebugger {
 			prev = e;
 			e = e.get(index);
 		}
-		if (prev instanceof Pchoice) {
+		if (prev instanceof Nez.Choice) {
 			if (index < 0) {
 				System.out.println("error: set number is unexpected");
 				return true;

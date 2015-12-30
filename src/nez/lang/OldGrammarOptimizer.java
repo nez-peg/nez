@@ -8,17 +8,12 @@ import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cset;
 import nez.lang.expr.Expressions;
 import nez.lang.expr.Pchoice;
-import nez.lang.expr.Pempty;
 import nez.lang.expr.Pfail;
 import nez.lang.expr.Pnot;
-import nez.lang.expr.Poption;
-import nez.lang.expr.Psequence;
-import nez.lang.expr.Pzero;
 import nez.lang.expr.Tcapture;
 import nez.lang.expr.Tlfold;
 import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
-import nez.lang.expr.Ttag;
 import nez.parser.ParseFunc;
 import nez.parser.ParserGrammar;
 import nez.parser.ParserStrategy;
@@ -141,7 +136,7 @@ public class OldGrammarOptimizer extends OldGrammarRewriter {
 			recheckReference(((NonTerminal) e).getProduction());
 			return;
 		}
-		if (e instanceof Pchoice && ((Pchoice) e).firstInners != null) {
+		if (e instanceof Nez.Choice && ((Pchoice) e).firstInners != null) {
 			Pchoice choice = (Pchoice) e;
 			for (Expression sub : choice.firstInners) {
 				recheckReference(sub);
@@ -203,7 +198,7 @@ public class OldGrammarOptimizer extends OldGrammarRewriter {
 				verboseInline("inline(deref)", n, deref);
 				return this.visitNonTerminal((NonTerminal) deref, a);
 			}
-			if (deref instanceof Pempty || deref instanceof Pfail) {
+			if (deref instanceof Nez.Empty || deref instanceof Pfail) {
 				verboseInline("inline(deref)", n, deref);
 				return deref;
 			}
@@ -239,7 +234,7 @@ public class OldGrammarOptimizer extends OldGrammarRewriter {
 
 	// used to test inlining
 	public final static boolean isSingleInstruction(Expression e) {
-		if (e instanceof Pnot || e instanceof Pzero || e instanceof Poption) {
+		if (e instanceof Pnot || e instanceof Nez.ZeroMore || e instanceof Nez.Option) {
 			return isSingleCharacter(e.get(0));
 		}
 		return false;
@@ -247,7 +242,7 @@ public class OldGrammarOptimizer extends OldGrammarRewriter {
 
 	// used to test inlining
 	public final static boolean isPairCharacter(Expression e) {
-		if (e instanceof Psequence && isSingleCharacter(e.getFirst()) && isSingleCharacter(e.getNext())) {
+		if (e instanceof Nez.Sequence && isSingleCharacter(e.getFirst()) && isSingleCharacter(e.getNext())) {
 			return true;
 		}
 		return false;
@@ -283,21 +278,21 @@ public class OldGrammarOptimizer extends OldGrammarRewriter {
 					res = true;
 					continue;
 				}
-				if (first instanceof Tlfold) {
+				if (first instanceof Nez.LeftFold) {
 					((Tlfold) first).shift -= 1;
 					Expressions.swap(l, i - 1, i);
 					this.verboseOutofOrdered("out-of-order", next, first);
 					res = true;
 					continue;
 				}
-				if (first instanceof Tcapture) {
+				if (first instanceof Nez.New) {
 					((Tcapture) first).shift -= 1;
 					Expressions.swap(l, i - 1, i);
 					this.verboseOutofOrdered("out-of-order", next, first);
 					res = true;
 					continue;
 				}
-				if (first instanceof Ttag || first instanceof Treplace) {
+				if (first instanceof Nez.Tag || first instanceof Treplace) {
 					Expressions.swap(l, i - 1, i);
 					this.verboseOutofOrdered("out-of-order", next, first);
 					res = true;
@@ -372,7 +367,7 @@ public class OldGrammarOptimizer extends OldGrammarRewriter {
 
 	@Override
 	public Expression visitLink(Nez.Link p, Object a) {
-		if (p.get(0) instanceof Pchoice) {
+		if (p.get(0) instanceof Nez.Choice) {
 			Expression choice = p.get(0);
 			UList<Expression> l = Expressions.newList(choice.size());
 			for (Expression inner : choice) {
@@ -409,7 +404,7 @@ public class OldGrammarOptimizer extends OldGrammarRewriter {
 			return l.ArrayValues[0];
 		}
 		Expression n = Expressions.newChoice(p.getSourceLocation(), l);
-		if (n instanceof Pchoice) {
+		if (n instanceof Nez.Choice) {
 			((Pchoice) n).isTrieTree = p.isTrieTree;
 			addChoiceToOptimizeList((Pchoice) n);
 		}
@@ -502,7 +497,7 @@ public class OldGrammarOptimizer extends OldGrammarRewriter {
 	}
 
 	private Expression trySecondChoice(Expression e, UList<Expression> el) {
-		if (this.enabledSecondChoice && e instanceof Pchoice) {
+		if (this.enabledSecondChoice && e instanceof Nez.Choice) {
 			return this.visitChoice((Pchoice) e, el);
 		}
 		return e;
@@ -550,7 +545,7 @@ public class OldGrammarOptimizer extends OldGrammarRewriter {
 				p.predictedCase[ch] = predicted;
 				if (predicted != null) {
 					count++;
-					if (predicted instanceof Pchoice) {
+					if (predicted instanceof Nez.Choice) {
 						selected += predicted.size();
 					} else {
 						selected += 1;
@@ -587,7 +582,7 @@ public class OldGrammarOptimizer extends OldGrammarRewriter {
 	private void flattenChoiceList(Pchoice choice, UList<Expression> l) {
 		for (Expression inner : choice) {
 			inner = firstChoiceInlining(inner);
-			if (inner instanceof Pchoice) {
+			if (inner instanceof Nez.Choice) {
 				flattenChoiceList((Pchoice) inner, l);
 			} else {
 				l.add(inner);
@@ -635,7 +630,7 @@ public class OldGrammarOptimizer extends OldGrammarRewriter {
 		}
 		Expression p = Expressions.newChoice(choice.getSourceLocation(), newlist);
 		newlist.clear(0);
-		if (commonFactored && !(p instanceof Pchoice)) {
+		if (commonFactored && !(p instanceof Nez.Choice)) {
 			tryFactoredSecondChoice(p);
 		}
 		map.put(key, p);
@@ -643,7 +638,7 @@ public class OldGrammarOptimizer extends OldGrammarRewriter {
 	}
 
 	private void tryFactoredSecondChoice(Expression p) {
-		if (p instanceof Pchoice) {
+		if (p instanceof Nez.Choice) {
 			if (((Pchoice) p).firstInners == null) {
 				// Verbose.debug("Second choice: " + p);
 			}

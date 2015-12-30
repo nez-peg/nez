@@ -332,13 +332,13 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 			End("}");
 			return true;
 		}
-		if (inner instanceof Pchoice) {
+		if (inner instanceof Nez.Choice) {
 			if (checkByteMap((Pchoice) inner)) {
 				specializeNotByteMap((Pchoice) inner);
 				return true;
 			}
 		}
-		if (inner instanceof Psequence) {
+		if (inner instanceof Nez.Sequence) {
 			if (checkString((Psequence) inner)) {
 				L("// Specialize not string");
 				specializeNotString((Psequence) inner);
@@ -414,13 +414,13 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 			End("}");
 			return true;
 		}
-		if (inner instanceof Pchoice) {
+		if (inner instanceof Nez.Choice) {
 			if (checkByteMap((Pchoice) inner)) {
 				specializeOptionByteMap((Pchoice) inner);
 				return true;
 			}
 		}
-		if (inner instanceof Psequence) {
+		if (inner instanceof Nez.Sequence) {
 			if (checkString((Psequence) inner)) {
 				L("// specialize option string");
 				specializeOptionString((Psequence) inner);
@@ -464,7 +464,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 			constructByteMapRep(b);
 			return true;
 		}
-		if (inner instanceof Pchoice) {
+		if (inner instanceof Nez.Choice) {
 			if (checkByteMap((Pchoice) inner)) {
 				L("// specialize repeat choice");
 				specializeZeroMoreByteMap((Pchoice) inner);
@@ -755,7 +755,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 			for (int i = 0; i < e.predictedCase.length; i++) {
 				if (e.predictedCase[i] != null) {
 					notNullSize++;
-					if (e.predictedCase[i] instanceof Pchoice) {
+					if (e.predictedCase[i] instanceof Nez.Choice) {
 						subChoiceSize += e.predictedCase[i].size();
 					} else {
 						notChoiceSize++;
@@ -809,7 +809,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 			for (int i = 0; i < l.size(); i++) {
 				Expression pe = l.get(i);
 				Label("PREDICATE_JUMP" + formatId(fid) + "" + unique(pe));
-				if (!(pe instanceof Pchoice)) {
+				if (!(pe instanceof Nez.Choice)) {
 					this.choiceCount();
 				} else {
 					this.isPrediction = false;

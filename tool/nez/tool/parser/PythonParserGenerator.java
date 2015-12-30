@@ -469,9 +469,9 @@ public class PythonParserGenerator extends ParserGrammarSourceGenerator {
 	public void flattenSequence(Nez.Pair seq, UList<Expression> l) {
 		Expression first = seq.getFirst();
 		Expression last = seq.getNext();
-		if (first instanceof Psequence) {
+		if (first instanceof Nez.Sequence) {
 			flattenSequence((Psequence) first, l);
-			if (last instanceof Psequence) {
+			if (last instanceof Nez.Sequence) {
 				flattenSequence((Psequence) last, l);
 				return;
 			}
@@ -479,7 +479,7 @@ public class PythonParserGenerator extends ParserGrammarSourceGenerator {
 			return;
 		}
 		l.add(first);
-		if (last instanceof Psequence) {
+		if (last instanceof Nez.Sequence) {
 			flattenSequence((Psequence) last, l);
 			return;
 		}
@@ -496,10 +496,10 @@ public class PythonParserGenerator extends ParserGrammarSourceGenerator {
 		System.out.println(list.toString());
 		for (int i = 0; i < list.size(); i++) {
 			If("result").Begin();
-			if (list.get(i) instanceof Tlfold) {
+			if (list.get(i) instanceof Nez.LeftFold) {
 				isLeftNew = true;
 			}
-			if (list.get(i) instanceof Tlink) {
+			if (list.get(i) instanceof Nez.Link) {
 				isLink = true;
 			}
 			visitExpression(list.get(i));

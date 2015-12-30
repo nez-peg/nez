@@ -48,7 +48,7 @@ public class LPegTranslator extends GrammarTranslator {
 		Expression e = rule.getExpression();
 		file.incIndent();
 		file.writeIndent(rule.getLocalName() + " = ");
-		if (e instanceof Pchoice) {
+		if (e instanceof Nez.Choice) {
 			for (int i = 0; i < e.size(); i++) {
 				if (i > 0) {
 					file.write(" + ");
@@ -283,7 +283,7 @@ public class LPegTranslator extends GrammarTranslator {
 				continue;
 			}
 			Expression e = l.get(i);
-			if (e instanceof Pchoice || e instanceof Psequence) {
+			if (e instanceof Nez.Choice || e instanceof Nez.Sequence) {
 				file.write("( ");
 				visitExpression(e);
 				file.write(" )");

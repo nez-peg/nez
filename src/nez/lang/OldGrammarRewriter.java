@@ -56,10 +56,10 @@ public class OldGrammarRewriter extends OldGrammarTransducer {
 		next = (Expression) next.visit(this, a);
 		pop(e.getNext());
 		pop(e.getFirst());
-		if (first instanceof Pempty) {
+		if (first instanceof Nez.Empty) {
 			return next;
 		}
-		if (first instanceof Pfail || next instanceof Pempty) {
+		if (first instanceof Pfail || next instanceof Nez.Empty) {
 			return first;
 		}
 		e.first = first;

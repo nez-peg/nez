@@ -9,12 +9,7 @@ import nez.lang.Grammar;
 import nez.lang.Nez;
 import nez.lang.NonTerminal;
 import nez.lang.Production;
-import nez.lang.expr.Pand;
-import nez.lang.expr.Pchoice;
 import nez.lang.expr.Pnot;
-import nez.lang.expr.Pone;
-import nez.lang.expr.Poption;
-import nez.lang.expr.Pzero;
 import nez.lang.expr.Tlink;
 import nez.parser.ParserGrammar;
 import nez.util.StringUtils;
@@ -311,15 +306,15 @@ public class JavaParserGenerator extends ParserGrammarSourceGenerator {
 		DefFunc(_func(e));
 		Begin("{");
 		Comment(e);
-		if (e instanceof Pchoice) {
+		if (e instanceof Nez.Choice) {
 			writeChoiceLogic(e);
-		} else if (e instanceof Tlink) {
+		} else if (e instanceof Nez.Link) {
 			writeLinkLogic((Tlink) e);
-		} else if (e instanceof Poption) {
+		} else if (e instanceof Nez.Option) {
 			writeOptionLogic(e);
-		} else if (e instanceof Pzero || e instanceof Pone) {
+		} else if (e instanceof Nez.ZeroMore || e instanceof Nez.OneMore) {
 			writeRepetitionLogic(e);
-		} else if (e instanceof Pnot || e instanceof Pand) {
+		} else if (e instanceof Pnot || e instanceof Nez.And) {
 			writePredicateLogic(e);
 		} else {
 			visitExpression(e);

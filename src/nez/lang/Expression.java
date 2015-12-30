@@ -61,7 +61,7 @@ public abstract class Expression extends AbstractList<Expression> {
 	}
 
 	public static final boolean isPositionIndependentOperation(Expression e) {
-		return (e instanceof Ttag || e instanceof Treplace);
+		return (e instanceof Nez.Tag || e instanceof Treplace);
 	}
 
 	// convinient interface

@@ -84,7 +84,7 @@ public abstract class GrammarGenerator extends GrammarTranslator {
 	// L(name(rule));
 	// inc();
 	// L(_RuleDef() + " ");
-	// if (e instanceof Pchoice) {
+	// if (e instanceof Nez.Choice) {
 	// for (int i = 0; i < e.size(); i++) {
 	// if (i > 0) {
 	// L(_Choice() + " ");
@@ -207,7 +207,7 @@ public abstract class GrammarGenerator extends GrammarTranslator {
 	// c++;
 	// continue;
 	// }
-	// if (s instanceof Pchoice || s instanceof Psequence) {
+	// if (s instanceof Nez.Choice || s instanceof Nez.Sequence) {
 	// visitGrouping(s);
 	// c++;
 	// } else {

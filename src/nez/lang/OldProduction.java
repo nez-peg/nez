@@ -121,16 +121,16 @@
 //			}
 //			return;
 //		}
-//		if (e instanceof Psequence) {
+//		if (e instanceof Nez.Sequence) {
 //			quickCheck(p, e.get(0));
 //			quickCheck(p, e.get(1));
 //			return;
 //		}
-//		if (e instanceof Pone) {
+//		if (e instanceof Nez.OneMore) {
 //			quickCheck(p, e.get(0));
 //			return;
 //		}
-//		if (e instanceof Pnot || e instanceof Poption || e instanceof Pzero || e instanceof Pand) {
+//		if (e instanceof Pnot || instanceof Nez.Option || e instanceof Nez.ZeroMore || e instanceof Nez.And) {
 //			boolean consumed = UFlag.is(p.flag, ConsumedProduction);
 //			quickCheck(p, e.get(0));
 //			if (!consumed) {
@@ -138,7 +138,7 @@
 //			}
 //			return;
 //		}
-//		if (e instanceof Pchoice) {
+//		if (e instanceof Nez.Choice) {
 //			boolean checkedConsumed = UFlag.is(p.flag, ConsumedProduction);
 //			if (checkedConsumed) {
 //				for (Expression sub : e) {
@@ -418,13 +418,13 @@
 //	// }
 //	// return p.isConsumed();
 //	// }
-//	// if (e instanceof Psequence) {
+//	// if (e instanceof Nez.Sequence) {
 //	// if (checkConsumed(e.get(0), s)) {
 //	// return true;
 //	// }
 //	// return checkConsumed(e.get(1), s);
 //	// }
-//	// if (e instanceof Pchoice) {
+//	// if (e instanceof Nez.Choice) {
 //	// boolean consumed = true;
 //	// for (Expression se : e) {
 //	// if (!checkConsumed(se, s)) {
@@ -434,11 +434,11 @@
 //	// return consumed;
 //	// }
 //	// if (e.size() > 0) {
-//	// if (e instanceof Pone) {
+//	// if (e instanceof Nez.OneMore) {
 //	// return checkConsumed(e.get(0), s);
 //	// }
-//	// if (e instanceof Pnot || e instanceof Poption || e instanceof Pzero || e
-//	// instanceof Pand) {
+//	// if (e instanceof Pnot || instanceof Nez.Option || e instanceof Nez.ZeroMore || e
+//	// instanceof Nez.And) {
 //	// return false;
 //	// }
 //	// return checkConsumed(e.get(0), s);

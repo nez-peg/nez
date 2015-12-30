@@ -190,7 +190,7 @@ public class CoffeeParserGenerator extends ParserGrammarSourceGenerator {
 				visitExpression(s);
 				continue;
 			}
-			if (s instanceof Tlfold) {
+			if (s instanceof Nez.LeftFold) {
 				if (isLeftNew) {
 					cntNew++;
 				}
@@ -201,7 +201,7 @@ public class CoffeeParserGenerator extends ParserGrammarSourceGenerator {
 				visitExpression(s);
 				continue;
 			}
-			if (s instanceof Ttag) {
+			if (s instanceof Nez.Tag) {
 				visitExpression(s);
 				continue;
 			}
@@ -218,7 +218,7 @@ public class CoffeeParserGenerator extends ParserGrammarSourceGenerator {
 				visitExpression(s);
 				isFirst = false;
 			}
-			if (s instanceof Tcapture) {
+			if (s instanceof Nez.New) {
 				if (isLeftNew) {
 					if (cntNew > 0) {
 						cntNew--;

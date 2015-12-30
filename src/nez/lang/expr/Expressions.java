@@ -196,7 +196,7 @@ public abstract class Expressions {
 	public final static Expression newChoice(SourceLocation s, UList<Expression> l) {
 		int size = l.size();
 		for (int i = 0; i < size; i++) {
-			if (l.ArrayValues[i] instanceof Pempty) {
+			if (l.ArrayValues[i] instanceof Nez.Empty) {
 				size = i + 1;
 				break;
 			}

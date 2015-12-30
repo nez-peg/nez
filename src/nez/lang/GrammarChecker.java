@@ -110,12 +110,12 @@ public class GrammarChecker extends GrammarTransformer {
 	// s));
 	// }
 	// if (e.size() > 0) {
-	// if (e instanceof Psequence) {
+	// if (e instanceof Nez.Sequence) {
 	// if (!checkLeftRecursion(e.get(0), s)) {
 	// return checkLeftRecursion(e.get(1), s);
 	// }
 	// }
-	// if (e instanceof Pchoice) {
+	// if (e instanceof Nez.Choice) {
 	// boolean consumed = true;
 	// for (Expression se : e) {
 	// if (!checkLeftRecursion(e.get(1), s)) {
@@ -125,11 +125,11 @@ public class GrammarChecker extends GrammarTransformer {
 	// return consumed;
 	// }
 	// boolean r = checkLeftRecursion(e.get(0), s);
-	// if (e instanceof Pone) {
+	// if (e instanceof Nez.OneMore) {
 	// return r;
 	// }
-	// if (e instanceof Pnot || e instanceof Pzero || e instanceof Poption || e
-	// instanceof Pand) {
+	// if (e instanceof Pnot || e instanceof Nez.ZeroMore || instanceof Nez.Option || e
+	// instanceof Nez.And) {
 	// return false;
 	// }
 	// return r;

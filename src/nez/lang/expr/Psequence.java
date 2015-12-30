@@ -55,7 +55,7 @@ public class Psequence extends Nez.Pair {
 	// }
 	//
 	// private void formatInner(StringBuilder sb, Expression e) {
-	// if (e instanceof Pchoice) {
+	// if (e instanceof Nez.Choice) {
 	// sb.append("(");
 	// e.format(sb);
 	// sb.append(")");
@@ -113,7 +113,7 @@ public class Psequence extends Nez.Pair {
 		while (s instanceof Cbyte) {
 			l.add((byte) ((Cbyte) s).byteChar);
 			Expression next = seq.getNext();
-			if (next instanceof Psequence) {
+			if (next instanceof Nez.Sequence) {
 				seq = (Psequence) next;
 				s = seq.getNext().getFirst();
 				continue;

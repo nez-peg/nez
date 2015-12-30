@@ -28,7 +28,7 @@ public class NezTranslator extends PEGTranslator {
 		}
 		Begin("");
 		L("= ");
-		if (e instanceof Pchoice) {
+		if (e instanceof Nez.Choice) {
 			for (int i = 0; i < e.size(); i++) {
 				if (i > 0) {
 					L("/ ");
@@ -109,7 +109,7 @@ public class NezTranslator extends PEGTranslator {
 			if (c > 0) {
 				W(" ");
 			}
-			if (e instanceof Pchoice) {
+			if (e instanceof Nez.Choice) {
 				W("(");
 				visitExpression(e);
 				W(")");

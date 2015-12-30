@@ -24,7 +24,7 @@ public class PEGTranslator extends GrammarTranslator {
 		L(name(p.getLocalName()));
 		Begin("");
 		L("<- ");
-		if (e instanceof Pchoice) {
+		if (e instanceof Nez.Choice) {
 			for (int i = 0; i < e.size(); i++) {
 				if (i > 0) {
 					L("/ ");
@@ -72,7 +72,7 @@ public class PEGTranslator extends GrammarTranslator {
 			W(prefix);
 		}
 		Expression inner = e.get(0);
-		if (inner instanceof Pchoice || inner instanceof Psequence) {
+		if (inner instanceof Nez.Choice || inner instanceof Nez.Sequence) {
 			W("(");
 			this.visitExpression(e.get(0));
 			W(")");
@@ -117,7 +117,7 @@ public class PEGTranslator extends GrammarTranslator {
 			if (c > 0) {
 				W(" ");
 			}
-			if (e instanceof Pchoice) {
+			if (e instanceof Nez.Choice) {
 				W("(");
 				visitExpression(e);
 				W(")");
@@ -136,7 +136,7 @@ public class PEGTranslator extends GrammarTranslator {
 	// if (c > 0) {
 	// W(" ");
 	// }
-	// if (e instanceof Pchoice) {
+	// if (e instanceof Nez.Choice) {
 	// W("(");
 	// visitExpression(e);
 	// W(")");

@@ -4,13 +4,7 @@ import java.util.HashMap;
 import java.util.TreeMap;
 
 import nez.lang.expr.Expressions;
-import nez.lang.expr.Pand;
-import nez.lang.expr.Pchoice;
 import nez.lang.expr.Pnot;
-import nez.lang.expr.Pone;
-import nez.lang.expr.Poption;
-import nez.lang.expr.Psequence;
-import nez.lang.expr.Pzero;
 import nez.lang.expr.Xif;
 import nez.parser.ParseFunc;
 import nez.parser.ParserGrammar;
@@ -102,12 +96,12 @@ public class OldGrammarChecker extends OldGrammarTransducer {
 			return checkLeftRecursion(p.getExpression(), new ProductionStacker(p, s));
 		}
 		if (e.size() > 0) {
-			if (e instanceof Psequence) {
+			if (e instanceof Nez.Sequence) {
 				if (!checkLeftRecursion(e.get(0), s)) {
 					return checkLeftRecursion(e.get(1), s);
 				}
 			}
-			if (e instanceof Pchoice) {
+			if (e instanceof Nez.Choice) {
 				boolean consumed = true;
 				for (Expression se : e) {
 					if (!checkLeftRecursion(e.get(1), s)) {
@@ -117,10 +111,10 @@ public class OldGrammarChecker extends OldGrammarTransducer {
 				return consumed;
 			}
 			boolean r = checkLeftRecursion(e.get(0), s);
-			if (e instanceof Pone) {
+			if (e instanceof Nez.OneMore) {
 				return r;
 			}
-			if (e instanceof Pnot || e instanceof Pzero || e instanceof Poption || e instanceof Pand) {
+			if (e instanceof Pnot || e instanceof Nez.ZeroMore || e instanceof Nez.Option || e instanceof Nez.And) {
 				return false;
 			}
 			return r;

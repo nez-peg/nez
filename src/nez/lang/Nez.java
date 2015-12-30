@@ -27,7 +27,7 @@ public class Nez {
 
 		@Override
 		public final boolean equals(Object o) {
-			return (o instanceof Pempty);
+			return (o instanceof Nez.Empty);
 		}
 
 		@Override
@@ -328,7 +328,7 @@ public class Nez {
 			while (true) {
 				l.add(p.getFirst());
 				Expression e = p.getNext();
-				if (!(e instanceof Psequence)) {
+				if (!(e instanceof Nez.Sequence)) {
 					break;
 				}
 				p = (Psequence) e;
@@ -515,7 +515,7 @@ public class Nez {
 
 		@Override
 		public final boolean equals(Object o) {
-			if (o instanceof Ttag) {
+			if (o instanceof Nez.Tag) {
 				return this.tag == ((Ttag) o).tag;
 			}
 			return false;

@@ -80,7 +80,7 @@ public class DebugVMCompiler extends Expression.Visitor {
 			Expression e = seq.get(i);
 			if (e instanceof Cbyte) {
 				charList.add((byte) ((Cbyte) e).byteChar);
-			} else if (e instanceof Psequence) {
+			} else if (e instanceof Nez.Sequence) {
 				if (!this.optimizeString((Psequence) e)) {
 					return false;
 				}

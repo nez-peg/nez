@@ -73,7 +73,7 @@ public class OldGrammarTransducer extends Expression.Visitor {
 		next = (Expression) next.visit(this, null);
 		pop(e.getNext());
 		pop(e.getFirst());
-		if (first instanceof Pempty) {
+		if (first instanceof Nez.Empty) {
 			return next;
 		}
 		if (first instanceof Pfail) {

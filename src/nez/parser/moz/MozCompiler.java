@@ -378,7 +378,7 @@ public class MozCompiler extends Expression.Visitor {
 
 	public final Expression getInnerExpression(Expression p) {
 		Expression inner = Expressions.resolveNonTerminal(p.get(0));
-		if (strategy.Ostring && inner instanceof Psequence) {
+		if (strategy.Ostring && inner instanceof Nez.Sequence) {
 			inner = ((Psequence) inner).toMultiCharSequence();
 			// System.out.println("Stringfy:" + inner);
 		}

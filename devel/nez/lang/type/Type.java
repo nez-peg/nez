@@ -48,18 +48,18 @@
 //	}
 //
 //	static Type inferType(Production name, Expression e, Type inf) {
-//		if (e instanceof Ttag) {
+//		if (e instanceof Nez.Tag) {
 //			inf.tag(((Ttag) e).tag);
 //			return inf;
 //		}
-//		if (e instanceof Pchoice && e.inferTypestate() != Typestate.Unit) {
+//		if (e instanceof Nez.Choice && e.inferTypestate() != Typestate.Unit) {
 //			UList<AtomType> u = new UList<AtomType>(new AtomType[e.size()]);
 //			for (int i = 0; i < e.size(); i++) {
 //				addUnionType(u, inferType(name, e.get(i), inf.dup()));
 //			}
 //			return new UnionType(u);
 //		}
-//		if (e instanceof Poption && e.get(0).inferTypestate() != Typestate.Unit) {
+//		if (instanceof Nez.Option && e.get(0).inferTypestate() != Typestate.Unit) {
 //			UList<AtomType> u = new UList<AtomType>(new AtomType[e.size()]);
 //			addUnionType(u, inferType(name, e.get(0), inf.dup()));
 //			addUnionType(u, inf);
@@ -75,12 +75,12 @@
 //				return inf;
 //			}
 //		}
-//		if (e instanceof Tlink) {
+//		if (e instanceof Nez.Link) {
 //			Type t2 = inferType(name, e.get(0), new AtomType());
 //			inf.link((Tlink) e, t2);
 //			return inf;
 //		}
-//		if (e instanceof Tlfold) {
+//		if (e instanceof Nez.LeftFold) {
 //			// if(((New) e).unRepeated) {
 //			// System.out.println("TODO: Unrepeated left new is unsupported.");
 //			// }
@@ -91,7 +91,7 @@
 //			left.right = inf;
 //			return left;
 //		}
-//		if (e instanceof Tcapture) {
+//		if (e instanceof Nez.New) {
 //			/* avoid (Expr, Expr*) in Expr {@ Expr}* */
 //			// System.out.println("*" + inf.isRepetition());
 //			if (inf.isRepetition()) {
@@ -102,23 +102,23 @@
 //			}
 //			return inf;
 //		}
-//		if (e instanceof Pone) {
+//		if (e instanceof Nez.OneMore) {
 //			inf.startRepetition();
 //			inf = inferType(name, e.get(0), inf);
 //			inf.endRepetition();
 //			inf = inferType(name, e.get(0), inf);
 //			return inf;
 //		}
-//		if (e instanceof Pzero) {
+//		if (e instanceof Nez.ZeroMore) {
 //			inf.startRepetition();
 //			inf = inferType(name, e.get(0), inf);
 //			inf.endRepetition();
 //			return inf;
 //		}
-//		if (e instanceof Pand) {
+//		if (e instanceof Nez.And) {
 //			return inferType(name, e.get(0), inf);
 //		}
-//		if (e instanceof Psequence) {
+//		if (e instanceof Nez.Sequence) {
 //			for (int i = e.size() - 1; i >= 0; i--) {
 //				inf = inferType(name, e.get(i), inf);
 //			}

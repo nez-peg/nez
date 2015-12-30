@@ -34,7 +34,7 @@ public class GrammarAnalyzer {
 	}
 
 	private boolean analizeConsumption(Expression p) {
-		if (p instanceof Pzero || p instanceof Pone) {
+		if (p instanceof Nez.ZeroMore || p instanceof Nez.OneMore) {
 			if (!this.analizeInnerOfRepetition(p.get(0))) {
 				ConsoleUtils.println(p.getSourceLocation().formatSourceMessage("warning", "unconsumed Repetition"));
 				return false;
@@ -43,7 +43,7 @@ public class GrammarAnalyzer {
 		if (p instanceof Nez.Unary) {
 			return this.analizeConsumption(p.get(0));
 		}
-		if (p instanceof Psequence || p instanceof Pchoice) {
+		if (p instanceof Nez.Sequence || p instanceof Nez.Choice) {
 			for (int i = 0; i < p.size(); i++) {
 				if (!this.analizeConsumption(p.get(i))) {
 					return false;
@@ -64,10 +64,10 @@ public class GrammarAnalyzer {
 
 	private boolean analizeInnerOfRepetition(Expression p) {
 		p = this.inlineNonTerminal(p);
-		if (p instanceof Pone) {
+		if (p instanceof Nez.OneMore) {
 			return true;
 		}
-		if (p instanceof Pzero || p instanceof Poption) {
+		if (p instanceof Nez.ZeroMore || p instanceof Poption) {
 			return false;
 		}
 		if (p instanceof Pfail) {
@@ -82,7 +82,7 @@ public class GrammarAnalyzer {
 		if (p instanceof Unary) {
 			return this.analizeInnerOfRepetition(p.get(0));
 		}
-		if (p instanceof Psequence) {
+		if (p instanceof Nez.Sequence) {
 			for (int i = 0; i < p.size(); i++) {
 				if (!isUnconsumedASTConstruction(p.get(i))) {
 					if (this.analizeInnerOfRepetition(p.get(i))) {
@@ -92,7 +92,7 @@ public class GrammarAnalyzer {
 			}
 			return false;
 		}
-		if (p instanceof Pchoice) {
+		if (p instanceof Nez.Choice) {
 			for (int i = 0; i < p.size(); i++) {
 				if (!this.analizeInnerOfRepetition(p.get(i))) {
 					return false;
@@ -104,7 +104,7 @@ public class GrammarAnalyzer {
 	}
 
 	public boolean isUnconsumedASTConstruction(Expression p) {
-		if (p instanceof Tnew || p instanceof Tcapture || p instanceof Ttag || p instanceof Treplace) {
+		if (p instanceof Tnew || p instanceof Nez.New || p instanceof Nez.Tag || p instanceof Treplace) {
 			return true;
 		}
 		return false;

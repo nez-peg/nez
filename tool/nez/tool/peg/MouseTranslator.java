@@ -8,11 +8,7 @@ import nez.lang.Production;
 import nez.lang.expr.Pchoice;
 import nez.lang.expr.Pempty;
 import nez.lang.expr.Pfail;
-import nez.lang.expr.Tcapture;
-import nez.lang.expr.Tlink;
-import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
-import nez.lang.expr.Ttag;
 
 public class MouseTranslator extends PEGTranslator {
 
@@ -36,7 +32,7 @@ public class MouseTranslator extends PEGTranslator {
 		file.writeIndent(name(rule.getLocalName().replaceAll("_", "under")));
 		file.incIndent();
 		file.writeIndent("= ");
-		if (e instanceof Pchoice) {
+		if (e instanceof Nez.Choice) {
 			for (int i = 0; i < e.size(); i++) {
 				if (i > 0) {
 					file.writeIndent("/ ");
