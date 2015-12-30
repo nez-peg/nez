@@ -13,10 +13,6 @@ import nez.util.UList;
 
 public abstract class Expressions {
 
-	// protected Expressions(SourceLocation s) {
-	// super(s);
-	// }
-
 	// -----------------------------------------------------------------------
 	// Utils
 

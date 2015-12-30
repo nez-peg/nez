@@ -343,7 +343,7 @@ public class OldGrammarOptimizer extends OldGrammarRewriter {
 		}
 		if (next instanceof Cany) {
 			Cany any = (Cany) next;
-			bany = Cset.newMap(true);
+			bany = Bytes.newMap(true);
 			if (!isBinary) {
 				bany[0] = false;
 			}
@@ -417,7 +417,7 @@ public class OldGrammarOptimizer extends OldGrammarRewriter {
 	}
 
 	private Expression canConvertToCset(Nez.Choice choice, UList<Expression> choiceList) {
-		boolean byteMap[] = Cset.newMap(false);
+		boolean byteMap[] = Bytes.newMap(false);
 		boolean binary = false;
 		for (Expression e : choiceList) {
 			e = Expressions.resolveNonTerminal(e);
@@ -429,7 +429,7 @@ public class OldGrammarOptimizer extends OldGrammarRewriter {
 				continue;
 			}
 			if (e instanceof Cset) {
-				Cset.appendBitMap(byteMap, ((Cset) e).byteMap);
+				Bytes.appendBitMap(byteMap, ((Cset) e).byteMap);
 				continue;
 			}
 			if (e instanceof Cany) {

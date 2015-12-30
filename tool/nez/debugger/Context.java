@@ -6,8 +6,8 @@ import java.util.Stack;
 
 import nez.ast.Source;
 import nez.ast.Symbol;
+import nez.lang.Bytes;
 import nez.lang.Expression;
-import nez.lang.expr.Cset;
 import nez.parser.SymbolTable;
 
 public abstract class Context implements Source {
@@ -41,7 +41,7 @@ public abstract class Context implements Source {
 		this.StackTop = 0;
 		this.callStackTop = 0;
 		this.treeTransducer = new CommonTreeTransducer();
-		this.WS = Cset.newMap(false);
+		this.WS = Bytes.newMap(false);
 		this.WS[9] = true;
 		this.WS[10] = true;
 		this.WS[13] = true;

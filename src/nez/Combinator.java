@@ -6,9 +6,9 @@ import java.lang.reflect.Method;
 import nez.ast.Source;
 import nez.ast.SourceLocation;
 import nez.ast.Symbol;
+import nez.lang.Bytes;
 import nez.lang.Expression;
 import nez.lang.Grammar;
-import nez.lang.expr.Cset;
 import nez.lang.expr.Expressions;
 import nez.util.UList;
 import nez.util.Verbose;
@@ -114,7 +114,7 @@ public class Combinator {
 	}
 
 	protected final Expression c(int... chars) {
-		boolean[] b = Cset.newMap(false);
+		boolean[] b = Bytes.newMap(false);
 		boolean binary = false;
 		for (int c : chars) {
 			b[c] = true;

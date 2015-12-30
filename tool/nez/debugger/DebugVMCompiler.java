@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Stack;
 
 import nez.ast.CommonTree;
+import nez.lang.Bytes;
 import nez.lang.Expression;
 import nez.lang.Nez;
 import nez.lang.NonTerminal;
@@ -93,7 +94,7 @@ public class DebugVMCompiler extends Expression.Visitor {
 	boolean checkUnreachableChoice = true;
 
 	public boolean optimizeCharSet(Nez.Choice p) {
-		boolean[] map = Cset.newMap(false);
+		boolean[] map = Bytes.newMap(false);
 		for (int i = 0; i < p.size(); i++) {
 			Expression e = p.get(i);
 			if (e instanceof Cbyte) {
