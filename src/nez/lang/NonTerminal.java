@@ -3,7 +3,7 @@ package nez.lang;
 import nez.ast.SourceLocation;
 import nez.lang.expr.Expressions;
 
-public class NonTerminal extends Expressions {
+public class NonTerminal extends Expression {
 	private Grammar g;
 	private String localName;
 	private String uniqueName;

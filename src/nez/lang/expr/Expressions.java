@@ -11,11 +11,11 @@ import nez.lang.NonTerminal;
 import nez.util.StringUtils;
 import nez.util.UList;
 
-public abstract class Expressions extends Expression {
+public abstract class Expressions {
 
-	protected Expressions(SourceLocation s) {
-		super(s);
-	}
+	// protected Expressions(SourceLocation s) {
+	// super(s);
+	// }
 
 	// -----------------------------------------------------------------------
 	// Utils

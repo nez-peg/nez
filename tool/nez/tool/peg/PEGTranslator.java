@@ -9,7 +9,6 @@ import nez.lang.NonTerminal;
 import nez.lang.Production;
 import nez.lang.expr.Pchoice;
 import nez.lang.expr.Psequence;
-import nez.lang.expr.Unary;
 import nez.util.StringUtils;
 
 public class PEGTranslator extends GrammarTranslator {
@@ -69,23 +68,6 @@ public class PEGTranslator extends GrammarTranslator {
 	}
 
 	protected void visitUnary(String prefix, Nez.Unary e, String suffix) {
-		if (prefix != null) {
-			W(prefix);
-		}
-		Expression inner = e.get(0);
-		if (inner instanceof Pchoice || inner instanceof Psequence) {
-			W("(");
-			this.visitExpression(e.get(0));
-			W(")");
-		} else {
-			this.visitExpression(e.get(0));
-		}
-		if (suffix != null) {
-			W(suffix);
-		}
-	}
-
-	protected void visitUnary(String prefix, Unary e, String suffix) {
 		if (prefix != null) {
 			W(prefix);
 		}

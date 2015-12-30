@@ -4,9 +4,9 @@ import java.util.HashMap;
 import java.util.List;
 
 import nez.lang.Expression;
+import nez.lang.Nez;
 import nez.lang.Production;
 import nez.lang.expr.Pchoice;
-import nez.lang.expr.Unary;
 import nez.parser.moz.Moz;
 import nez.parser.moz.MozInst;
 import nez.util.ConsoleUtils;
@@ -82,7 +82,7 @@ public class Coverage {
 		return next;
 	}
 
-	public final static MozInst encodeEnterCoverage(Unary e, int index, MozInst next) {
+	public final static MozInst encodeEnterCoverage(Nez.Unary e, int index, MozInst next) {
 		if (covList != null) {
 			Coverage cov = getCoverage("u", e.get(0));
 			return new Moz.Cov(cov, next);
@@ -90,7 +90,7 @@ public class Coverage {
 		return next;
 	}
 
-	public final static MozInst encodeExitCoverage(Unary e, int index, MozInst next) {
+	public final static MozInst encodeExitCoverage(Nez.Unary e, int index, MozInst next) {
 		if (covList != null) {
 			Coverage cov = getCoverage("u", e.get(0));
 			return new Moz.Covx(cov, next);

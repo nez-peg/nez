@@ -2,6 +2,8 @@ package nez.debugger;
 
 import nez.lang.Expression;
 import nez.lang.Grammar;
+import nez.lang.Nez;
+import nez.lang.Nez.Unary;
 import nez.lang.NonTerminal;
 import nez.lang.Production;
 import nez.lang.expr.Cany;
@@ -16,7 +18,6 @@ import nez.lang.expr.Tcapture;
 import nez.lang.expr.Tnew;
 import nez.lang.expr.Treplace;
 import nez.lang.expr.Ttag;
-import nez.lang.expr.Unary;
 import nez.util.ConsoleUtils;
 
 public class GrammarAnalyzer {
@@ -39,7 +40,7 @@ public class GrammarAnalyzer {
 				return false;
 			}
 		}
-		if (p instanceof Unary) {
+		if (p instanceof Nez.Unary) {
 			return this.analizeConsumption(p.get(0));
 		}
 		if (p instanceof Psequence || p instanceof Pchoice) {
