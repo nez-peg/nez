@@ -76,7 +76,7 @@ public abstract class SchemaGrammarGenerator implements SchemaGrammarGeneratorIn
 	}
 
 	protected final Expression _String(String text) {
-		return Expressions.newString(null, text);
+		return Expressions.newMultiByte(null, text);
 	}
 
 	protected final Expression _String(String format, Object... args) {
@@ -84,27 +84,27 @@ public abstract class SchemaGrammarGenerator implements SchemaGrammarGeneratorIn
 	}
 
 	protected final Expression _Char(int ch) {
-		return Expressions.newCbyte(null, false, ch);
+		return Expressions.newByte(null, ch);
 	}
 
 	protected final Expression _ZeroMore(Expression... l) {
-		return Expressions.newPzero(null, _Sequence(l));
+		return Expressions.newZeroMore(null, _Sequence(l));
 	}
 
 	protected final Expression _OneMore(Expression... l) {
-		return Expressions.newPone(null, _Sequence(l));
+		return Expressions.newOneMore(null, _Sequence(l));
 	}
 
 	protected final Expression _And(Expression... l) {
-		return Expressions.newPand(null, _Sequence(l));
+		return Expressions.newAnd(null, _Sequence(l));
 	}
 
 	protected final Expression _Not(Expression... l) {
-		return Expressions.newPnot(null, _Sequence(l));
+		return Expressions.newNot(null, _Sequence(l));
 	}
 
 	protected final Expression _Option(Expression... l) {
-		return Expressions.newPoption(null, _Sequence(l));
+		return Expressions.newOption(null, _Sequence(l));
 	}
 
 	protected final Expression _Sequence(Expression... l) {
@@ -120,35 +120,35 @@ public abstract class SchemaGrammarGenerator implements SchemaGrammarGeneratorIn
 		for (Expression p : l) {
 			Expressions.addChoice(seq, p);
 		}
-		return Expressions.newPchoice(null, seq);
+		return Expressions.newChoice(null, seq);
 	}
 
 	protected final Expression _Detree(Expression e) {
-		return Expressions.newTdetree(null, e);
+		return Expressions.newDetree(null, e);
 	}
 
 	protected final Expression _Link(Symbol label, Expression e) {
-		return Expressions.newTlink(null, label, e);
+		return Expressions.newLinkTree(null, label, e);
 	}
 
 	protected final Expression _New(Expression... seq) {
-		return Expressions.newNewCapture(null, false, null, _Sequence(seq));
+		return Expressions.newTree(null, false, null, _Sequence(seq));
 	}
 
 	protected final Expression _LeftFold(Symbol label, int shift) {
-		return Expressions.newTlfold(null, label, shift);
+		return Expressions.newLeftFold(null, label, shift);
 	}
 
 	protected final Expression _Capture(int shift) {
-		return Expressions.newTcapture(null, shift);
+		return Expressions.newEndTree(null, shift);
 	}
 
 	protected final Expression _Tag(String tag) {
-		return Expressions.newTtag(null, Symbol.tag(tag));
+		return Expressions.newTag(null, Symbol.tag(tag));
 	}
 
 	protected final Expression _Replace(String msg) {
-		return Expressions.newTreplace(null, msg);
+		return Expressions.newReplace(null, msg);
 	}
 
 	protected final Expression _DQuat() {
@@ -168,15 +168,15 @@ public abstract class SchemaGrammarGenerator implements SchemaGrammarGeneratorIn
 	}
 
 	protected final Expression _Def(String tableName) {
-		return Expressions.newXsymbol(null, _NonTerminal(tableName));
+		return Expressions.newSymbolAction(null, _NonTerminal(tableName));
 	}
 
 	protected final Expression _Exists(String table, String name) {
-		return Expressions.newXexists(null, Symbol.tag(table), name);
+		return Expressions.newSymbolExists(null, Symbol.tag(table), name);
 	}
 
 	protected final Expression _Local(String table, Expression... seq) {
-		return Expressions.newXlocal(null, Symbol.tag(table), _Sequence(seq));
+		return Expressions.newLocalScope(null, Symbol.tag(table), _Sequence(seq));
 	}
 
 	/* common methods of schema grammar */

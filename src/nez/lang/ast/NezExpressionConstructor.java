@@ -62,7 +62,7 @@ public class NezExpressionConstructor extends GrammarVisitorMap<ExpressionTransd
 	public class _Character extends Undefined {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
-			return Expressions.newString(node, StringUtils.unquoteString(node.toText()));
+			return Expressions.newMultiByte(node, StringUtils.unquoteString(node.toText()));
 		}
 	}
 
@@ -81,7 +81,7 @@ public class NezExpressionConstructor extends GrammarVisitorMap<ExpressionTransd
 					}
 				}
 			}
-			return Expressions.newPchoice(node, l);
+			return Expressions.newChoice(node, l);
 		}
 	}
 
@@ -95,20 +95,20 @@ public class NezExpressionConstructor extends GrammarVisitorMap<ExpressionTransd
 				c = (c * 16) + StringUtils.hex(t.charAt(4));
 				c = (c * 16) + StringUtils.hex(t.charAt(5));
 				if (c < 128) {
-					return Expressions.newCbyte(node, binary, c);
+					return Expressions.newByte(node, c);
 				}
 				String t2 = String.valueOf((char) c);
-				return Expressions.newString(node, t2);
+				return Expressions.newMultiByte(node, t2);
 			}
 			int c = StringUtils.hex(t.charAt(t.length() - 2)) * 16 + StringUtils.hex(t.charAt(t.length() - 1));
-			return Expressions.newCbyte(node, binary, c);
+			return Expressions.newByte(node, c);
 		}
 	}
 
 	public class _AnyChar extends Undefined {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
-			return Expressions.newCany(node, binary);
+			return Expressions.newAny(node);
 		}
 	}
 
@@ -119,7 +119,7 @@ public class NezExpressionConstructor extends GrammarVisitorMap<ExpressionTransd
 			for (int i = 0; i < node.size(); i++) {
 				Expressions.addChoice(l, newInstance(node.get(i)));
 			}
-			return Expressions.newPchoice(node, l);
+			return Expressions.newChoice(node, l);
 		}
 	}
 
@@ -137,28 +137,28 @@ public class NezExpressionConstructor extends GrammarVisitorMap<ExpressionTransd
 	public class _Not extends Undefined {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
-			return Expressions.newPnot(node, newInstance(node.get(_expr)));
+			return Expressions.newNot(node, newInstance(node.get(_expr)));
 		}
 	}
 
 	public class _And extends Undefined {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
-			return Expressions.newPand(node, newInstance(node.get(_expr)));
+			return Expressions.newAnd(node, newInstance(node.get(_expr)));
 		}
 	}
 
 	public class _Option extends Undefined {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
-			return Expressions.newPoption(node, newInstance(node.get(_expr)));
+			return Expressions.newOption(node, newInstance(node.get(_expr)));
 		}
 	}
 
 	public class _Repetition1 extends Undefined {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
-			return Expressions.newPone(node, newInstance(node.get(_expr)));
+			return Expressions.newOneMore(node, newInstance(node.get(_expr)));
 		}
 	}
 
@@ -175,7 +175,7 @@ public class NezExpressionConstructor extends GrammarVisitorMap<ExpressionTransd
 					return Expressions.newPair(node, l);
 				}
 			}
-			return Expressions.newPzero(node, newInstance(node.get(_expr)));
+			return Expressions.newZeroMore(node, newInstance(node.get(_expr)));
 		}
 	}
 
@@ -186,7 +186,7 @@ public class NezExpressionConstructor extends GrammarVisitorMap<ExpressionTransd
 		public Expression accept(Tree<?> node, Expression e) {
 			Tree<?> exprNode = node.get(_expr, null);
 			Expression p = (exprNode == null) ? Expressions.newEmpty(node) : newInstance(exprNode);
-			return Expressions.newNewCapture(node, false, null, p);
+			return Expressions.newTree(node, false, null, p);
 		}
 	}
 
@@ -204,28 +204,28 @@ public class NezExpressionConstructor extends GrammarVisitorMap<ExpressionTransd
 		public Expression accept(Tree<?> node, Expression e) {
 			Tree<?> exprNode = node.get(_expr, null);
 			Expression p = (exprNode == null) ? Expressions.newEmpty(node) : newInstance(exprNode);
-			return Expressions.newNewCapture(node, true, parseLabelNode(node), p);
+			return Expressions.newTree(node, true, parseLabelNode(node), p);
 		}
 	}
 
 	public class _Link extends Undefined {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
-			return Expressions.newTlink(node, parseLabelNode(node), newInstance(node.get(_expr)));
+			return Expressions.newLinkTree(node, parseLabelNode(node), newInstance(node.get(_expr)));
 		}
 	}
 
 	public class _Tagging extends Undefined {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
-			return Expressions.newTtag(node, Symbol.tag(node.toText()));
+			return Expressions.newTag(node, Symbol.tag(node.toText()));
 		}
 	}
 
 	public class _Replace extends Undefined {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
-			return Expressions.newTreplace(node, node.toText());
+			return Expressions.newReplace(node, node.toText());
 		}
 	}
 
@@ -234,30 +234,30 @@ public class NezExpressionConstructor extends GrammarVisitorMap<ExpressionTransd
 		public Expression accept(Tree<?> node, Expression e) {
 			Tree<?> exprNode = node.get(_expr, null);
 			if (exprNode != null) {
-				return Expressions.newTdetree(node, newInstance(exprNode));
+				return Expressions.newDetree(node, newInstance(exprNode));
 			}
-			return Expressions.newXmatch(node, parseLabelNode(node));
+			return Expressions.newSymbolMatch(node, parseLabelNode(node));
 		}
 	}
 
 	public class _If extends Undefined {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
-			return Expressions.newXif(node, node.getText(_name, ""));
+			return Expressions.newIf(node, node.getText(_name, ""));
 		}
 	}
 
 	public class _On extends Undefined {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
-			return Expressions.newXon(node, true, node.getText(_name, ""), newInstance(node.get(_expr)));
+			return Expressions.newOn(node, true, node.getText(_name, ""), newInstance(node.get(_expr)));
 		}
 	}
 
 	public class _Block extends Undefined {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
-			return Expressions.newXblock(node, newInstance(node.get(_expr)));
+			return Expressions.newBlockScope(node, newInstance(node.get(_expr)));
 		}
 	}
 
@@ -270,7 +270,7 @@ public class NezExpressionConstructor extends GrammarVisitorMap<ExpressionTransd
 			Expression expr = newInstance(node.get(_expr));
 			Production p = g.newProduction(pat.getLocalName(), expr);
 			reportWarning(nameNode, "new production generated: " + p);
-			return Expressions.newXsymbol(node, pat);
+			return Expressions.newSymbolAction(node, pat);
 		}
 	}
 
@@ -279,7 +279,7 @@ public class NezExpressionConstructor extends GrammarVisitorMap<ExpressionTransd
 		public Expression accept(Tree<?> node, Expression e) {
 			Grammar g = getGrammar();
 			NonTerminal pat = g.newNonTerminal(node, node.getText(_name, ""));
-			return Expressions.newXsymbol(node, pat);
+			return Expressions.newSymbolAction(node, pat);
 		}
 	}
 
@@ -288,7 +288,7 @@ public class NezExpressionConstructor extends GrammarVisitorMap<ExpressionTransd
 		public Expression accept(Tree<?> node, Expression e) {
 			Grammar g = getGrammar();
 			NonTerminal pat = g.newNonTerminal(node, node.getText(_name, ""));
-			return Expressions.newXis(node, pat);
+			return Expressions.newSymbolPredicate(node, pat);
 		}
 	}
 
@@ -304,14 +304,14 @@ public class NezExpressionConstructor extends GrammarVisitorMap<ExpressionTransd
 	public class _Exists extends Undefined {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
-			return Expressions.newXexists(node, Symbol.tag(node.getText(_name, "")), node.getText(_symbol, null));
+			return Expressions.newSymbolExists(node, Symbol.tag(node.getText(_name, "")), node.getText(_symbol, null));
 		}
 	}
 
 	public class _Local extends Undefined {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
-			return Expressions.newXlocal(node, Symbol.tag(node.getText(_name, "")), newInstance(node.get(_expr)));
+			return Expressions.newLocalScope(node, Symbol.tag(node.getText(_name, "")), newInstance(node.get(_expr)));
 		}
 	}
 

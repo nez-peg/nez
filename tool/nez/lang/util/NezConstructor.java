@@ -152,7 +152,7 @@ public class NezConstructor extends GrammarFileLoader {
 	public class _Character extends NezConstructorDefault {
 		@Override
 		public Expression toExpression(Tree<?> node) {
-			return Expressions.newString(node, StringUtils.unquoteString(node.toText()));
+			return Expressions.newMultiByte(node, StringUtils.unquoteString(node.toText()));
 		}
 	}
 
@@ -171,7 +171,7 @@ public class NezConstructor extends GrammarFileLoader {
 					}
 				}
 			}
-			return Expressions.newPchoice(node, l);
+			return Expressions.newChoice(node, l);
 		}
 	}
 
@@ -185,20 +185,20 @@ public class NezConstructor extends GrammarFileLoader {
 				c = (c * 16) + StringUtils.hex(t.charAt(4));
 				c = (c * 16) + StringUtils.hex(t.charAt(5));
 				if (c < 128) {
-					return Expressions.newCbyte(node, binary, c);
+					return Expressions.newByte(node, c);
 				}
 				String t2 = String.valueOf((char) c);
-				return Expressions.newString(node, t2);
+				return Expressions.newMultiByte(node, t2);
 			}
 			int c = StringUtils.hex(t.charAt(t.length() - 2)) * 16 + StringUtils.hex(t.charAt(t.length() - 1));
-			return Expressions.newCbyte(node, binary, c);
+			return Expressions.newByte(node, c);
 		}
 	}
 
 	public class _AnyChar extends NezConstructorDefault {
 		@Override
 		public Expression toExpression(Tree<?> node) {
-			return Expressions.newCany(node, binary);
+			return Expressions.newAny(node);
 		}
 	}
 
@@ -209,7 +209,7 @@ public class NezConstructor extends GrammarFileLoader {
 			for (int i = 0; i < node.size(); i++) {
 				Expressions.addChoice(l, newExpression(node.get(i)));
 			}
-			return Expressions.newPchoice(node, l);
+			return Expressions.newChoice(node, l);
 		}
 	}
 
@@ -227,7 +227,7 @@ public class NezConstructor extends GrammarFileLoader {
 	public class _Not extends NezConstructorDefault {
 		@Override
 		public Expression toExpression(Tree<?> node) {
-			return Expressions.newPnot(node, newExpression(node.get(_expr)));
+			return Expressions.newNot(node, newExpression(node.get(_expr)));
 		}
 	}
 
@@ -238,21 +238,21 @@ public class NezConstructor extends GrammarFileLoader {
 	public class _And extends NezConstructorDefault {
 		@Override
 		public Expression toExpression(Tree<?> node) {
-			return Expressions.newPand(node, newExpression(node.get(_expr)));
+			return Expressions.newAnd(node, newExpression(node.get(_expr)));
 		}
 	}
 
 	public class _Option extends NezConstructorDefault {
 		@Override
 		public Expression toExpression(Tree<?> node) {
-			return Expressions.newPoption(node, newExpression(node.get(_expr)));
+			return Expressions.newOption(node, newExpression(node.get(_expr)));
 		}
 	}
 
 	public class _Repetition1 extends NezConstructorDefault {
 		@Override
 		public Expression toExpression(Tree<?> node) {
-			return Expressions.newPone(node, newExpression(node.get(_expr)));
+			return Expressions.newOneMore(node, newExpression(node.get(_expr)));
 		}
 	}
 
@@ -269,7 +269,7 @@ public class NezConstructor extends GrammarFileLoader {
 					return Expressions.newPair(node, l);
 				}
 			}
-			return Expressions.newPzero(node, newExpression(node.get(_expr)));
+			return Expressions.newZeroMore(node, newExpression(node.get(_expr)));
 		}
 	}
 
@@ -280,7 +280,7 @@ public class NezConstructor extends GrammarFileLoader {
 		public Expression toExpression(Tree<?> node) {
 			Tree<?> exprNode = node.get(_expr, null);
 			Expression p = (exprNode == null) ? Expressions.newEmpty(node) : newExpression(exprNode);
-			return Expressions.newNewCapture(node, false, null, p);
+			return Expressions.newTree(node, false, null, p);
 		}
 	}
 
@@ -305,28 +305,28 @@ public class NezConstructor extends GrammarFileLoader {
 		public Expression toExpression(Tree<?> node) {
 			Tree<?> exprNode = node.get(_expr, null);
 			Expression p = (exprNode == null) ? Expressions.newEmpty(node) : newExpression(exprNode);
-			return Expressions.newNewCapture(node, true, parseLabelNode(node), p);
+			return Expressions.newTree(node, true, parseLabelNode(node), p);
 		}
 	}
 
 	public class _Link extends NezConstructorDefault {
 		@Override
 		public Expression toExpression(Tree<?> node) {
-			return Expressions.newTlink(node, parseLabelNode(node), newExpression(node.get(_expr)));
+			return Expressions.newLinkTree(node, parseLabelNode(node), newExpression(node.get(_expr)));
 		}
 	}
 
 	public class _Tagging extends NezConstructorDefault {
 		@Override
 		public Expression toExpression(Tree<?> node) {
-			return Expressions.newTtag(node, Symbol.tag(node.toText()));
+			return Expressions.newTag(node, Symbol.tag(node.toText()));
 		}
 	}
 
 	public class _Replace extends NezConstructorDefault {
 		@Override
 		public Expression toExpression(Tree<?> node) {
-			return Expressions.newTreplace(node, node.toText());
+			return Expressions.newReplace(node, node.toText());
 		}
 	}
 
@@ -335,30 +335,30 @@ public class NezConstructor extends GrammarFileLoader {
 		public Expression toExpression(Tree<?> node) {
 			Tree<?> exprNode = node.get(_expr, null);
 			if (exprNode != null) {
-				return Expressions.newTdetree(node, newExpression(exprNode));
+				return Expressions.newDetree(node, newExpression(exprNode));
 			}
-			return Expressions.newXmatch(node, parseLabelNode(node));
+			return Expressions.newSymbolMatch(node, parseLabelNode(node));
 		}
 	}
 
 	public class _If extends NezConstructorDefault {
 		@Override
 		public Expression toExpression(Tree<?> node) {
-			return Expressions.newXif(node, node.getText(_name, ""));
+			return Expressions.newIf(node, node.getText(_name, ""));
 		}
 	}
 
 	public class _On extends NezConstructorDefault {
 		@Override
 		public Expression toExpression(Tree<?> node) {
-			return Expressions.newXon(node, true, node.getText(_name, ""), newExpression(node.get(_expr)));
+			return Expressions.newOn(node, true, node.getText(_name, ""), newExpression(node.get(_expr)));
 		}
 	}
 
 	public class _Block extends NezConstructorDefault {
 		@Override
 		public Expression toExpression(Tree<?> node) {
-			return Expressions.newXblock(node, newExpression(node.get(_expr)));
+			return Expressions.newBlockScope(node, newExpression(node.get(_expr)));
 		}
 	}
 
@@ -371,7 +371,7 @@ public class NezConstructor extends GrammarFileLoader {
 			Expression e = newExpression(node.get(_expr));
 			Production p = g.newProduction(pat.getLocalName(), e);
 			reportWarning(nameNode, "new production generated: " + p);
-			return Expressions.newXsymbol(node, pat);
+			return Expressions.newSymbolAction(node, pat);
 		}
 	}
 
@@ -380,7 +380,7 @@ public class NezConstructor extends GrammarFileLoader {
 		public Expression toExpression(Tree<?> node) {
 			Grammar g = getGrammar();
 			NonTerminal pat = g.newNonTerminal(node, node.getText(_name, ""));
-			return Expressions.newXsymbol(node, pat);
+			return Expressions.newSymbolAction(node, pat);
 		}
 	}
 
@@ -389,7 +389,7 @@ public class NezConstructor extends GrammarFileLoader {
 		public Expression toExpression(Tree<?> node) {
 			Grammar g = getGrammar();
 			NonTerminal pat = g.newNonTerminal(node, node.getText(_name, ""));
-			return Expressions.newXis(node, pat);
+			return Expressions.newSymbolPredicate(node, pat);
 		}
 	}
 
@@ -405,14 +405,14 @@ public class NezConstructor extends GrammarFileLoader {
 	public class _Exists extends NezConstructorDefault {
 		@Override
 		public Expression toExpression(Tree<?> node) {
-			return Expressions.newXexists(node, Symbol.tag(node.getText(_name, "")), node.getText(_symbol, null));
+			return Expressions.newSymbolExists(node, Symbol.tag(node.getText(_name, "")), node.getText(_symbol, null));
 		}
 	}
 
 	public class _Local extends NezConstructorDefault {
 		@Override
 		public Expression toExpression(Tree<?> node) {
-			return Expressions.newXlocal(node, Symbol.tag(node.getText(_name, "")), newExpression(node.get(_expr)));
+			return Expressions.newLocalScope(node, Symbol.tag(node.getText(_name, "")), newExpression(node.get(_expr)));
 		}
 	}
 

@@ -102,42 +102,42 @@ public class OldGrammarTransducer extends Expression.Visitor {
 
 	@Override
 	public Expression visitOption(Nez.Option e, Object a) {
-		return Expressions.newPoption(e.getSourceLocation(), visitInner(e.get(0)));
+		return Expressions.newOption(e.getSourceLocation(), visitInner(e.get(0)));
 	}
 
 	@Override
 	public Expression visitZeroMore(Nez.ZeroMore e, Object a) {
-		return Expressions.newPzero(e.getSourceLocation(), visitInner(e.get(0)));
+		return Expressions.newZeroMore(e.getSourceLocation(), visitInner(e.get(0)));
 	}
 
 	@Override
 	public Expression visitOneMore(Nez.OneMore e, Object a) {
-		return Expressions.newPone(e.getSourceLocation(), visitInner(e.get(0)));
+		return Expressions.newOneMore(e.getSourceLocation(), visitInner(e.get(0)));
 	}
 
 	@Override
 	public Expression visitAnd(Nez.And e, Object a) {
-		return Expressions.newPand(e.getSourceLocation(), visitInner(e.get(0)));
+		return Expressions.newAnd(e.getSourceLocation(), visitInner(e.get(0)));
 	}
 
 	@Override
 	public Expression visitNot(Nez.Not e, Object a) {
-		return Expressions.newPnot(e.getSourceLocation(), visitInner(e.get(0)));
+		return Expressions.newNot(e.getSourceLocation(), visitInner(e.get(0)));
 	}
 
 	@Override
 	public Expression visitPreNew(Nez.PreNew e, Object a) {
-		return Expressions.newTnew(e.getSourceLocation(), e.shift);
+		return Expressions.newBeginTree(e.getSourceLocation(), e.shift);
 	}
 
 	@Override
 	public Expression visitLeftFold(Nez.LeftFold e, Object a) {
-		return Expressions.newTlfold(e.getSourceLocation(), e.label, e.shift);
+		return Expressions.newLeftFold(e.getSourceLocation(), e.label, e.shift);
 	}
 
 	@Override
 	public Expression visitLink(Nez.Link e, Object a) {
-		return Expressions.newTlink(e.getSourceLocation(), e.label, visitInner(e.get(0)));
+		return Expressions.newLinkTree(e.getSourceLocation(), e.label, visitInner(e.get(0)));
 	}
 
 	@Override
@@ -152,27 +152,27 @@ public class OldGrammarTransducer extends Expression.Visitor {
 
 	@Override
 	public Expression visitNew(Nez.New e, Object a) {
-		return Expressions.newTcapture(e.getSourceLocation(), e.shift);
+		return Expressions.newEndTree(e.getSourceLocation(), e.shift);
 	}
 
 	@Override
 	public Expression visitDetree(Nez.Detree e, Object a) {
-		return Expressions.newTdetree(e.getSourceLocation(), visitInner(e.get(0)));
+		return Expressions.newDetree(e.getSourceLocation(), visitInner(e.get(0)));
 	}
 
 	@Override
 	public Expression visitBlockScope(Nez.BlockScope e, Object a) {
-		return Expressions.newXblock(e.getSourceLocation(), visitInner(e.get(0)));
+		return Expressions.newBlockScope(e.getSourceLocation(), visitInner(e.get(0)));
 	}
 
 	@Override
 	public Expression visitLocalScope(Nez.LocalScope e, Object a) {
-		return Expressions.newXlocal(e.getSourceLocation(), e.tableName, visitInner(e.get(0)));
+		return Expressions.newLocalScope(e.getSourceLocation(), e.tableName, visitInner(e.get(0)));
 	}
 
 	@Override
 	public Expression visitSymbolAction(Nez.SymbolAction e, Object a) {
-		return Expressions.newXsymbol(e.getSourceLocation(), (NonTerminal) visitInner(e.get(0)));
+		return Expressions.newSymbolAction(e.getSourceLocation(), (NonTerminal) visitInner(e.get(0)));
 	}
 
 	@Override
@@ -182,12 +182,12 @@ public class OldGrammarTransducer extends Expression.Visitor {
 
 	@Override
 	public Expression visitSymbolPredicate(Nez.SymbolPredicate e, Object a) {
-		return Expressions.newXis(e.getSourceLocation(), e.tableName, visitInner(e.get(0)), e.op == Predicate.is);
+		return Expressions.newSymbolPredicate(e.getSourceLocation(), e.tableName, visitInner(e.get(0)), e.op == Predicate.is);
 	}
 
 	@Override
 	public Expression visitSymbolExists(Nez.SymbolExists e, Object a) {
-		return Expressions.newXexists(e.getSourceLocation(), e.tableName, e.symbol);
+		return Expressions.newSymbolExists(e.getSourceLocation(), e.tableName, e.symbol);
 	}
 
 	@Override
@@ -197,7 +197,7 @@ public class OldGrammarTransducer extends Expression.Visitor {
 
 	@Override
 	public Expression visitOn(Nez.On e, Object a) {
-		return Expressions.newXon(e.getSourceLocation(), e.isPositive(), e.flagName, visitInner(e.get(0)));
+		return Expressions.newOn(e.getSourceLocation(), e.isPositive(), e.flagName, visitInner(e.get(0)));
 	}
 
 	@Override

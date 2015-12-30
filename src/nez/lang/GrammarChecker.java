@@ -143,7 +143,7 @@ public class GrammarChecker extends GrammarTransformer {
 		if (p == null) {
 			if (n.isTerminal()) {
 				context.reportNotice(n, "undefined terminal: " + n.getLocalName());
-				return Expressions.newString(n.getSourceLocation(), StringUtils.unquoteString(n.getLocalName()));
+				return Expressions.newMultiByte(n.getSourceLocation(), StringUtils.unquoteString(n.getLocalName()));
 			}
 			context.reportWarning(n, "undefined production: " + n.getLocalName());
 			return n.newEmpty();
@@ -154,7 +154,7 @@ public class GrammarChecker extends GrammarTransformer {
 			} catch (StackOverflowError e) {
 				/* Handling a bad grammar */
 				context.reportError(n, "terminal is recursive: " + n.getLocalName());
-				return Expressions.newString(n.getSourceLocation(), StringUtils.unquoteString(n.getLocalName()));
+				return Expressions.newMultiByte(n.getSourceLocation(), StringUtils.unquoteString(n.getLocalName()));
 			}
 		}
 
@@ -181,7 +181,7 @@ public class GrammarChecker extends GrammarTransformer {
 			if (innerTypestate == Typestate.TreeMutation) {
 				reportInserted(n, "{");
 				this.requiredTypestate = Typestate.TreeMutation;
-				return Expressions.newNewCapture(n.getSourceLocation(), pn);
+				return Expressions.newTree(n.getSourceLocation(), pn);
 			}
 			this.requiredTypestate = Typestate.TreeMutation;
 			return pn;
@@ -190,7 +190,7 @@ public class GrammarChecker extends GrammarTransformer {
 			if (innerTypestate == Typestate.Tree) {
 				reportInserted(n, "$");
 				this.requiredTypestate = Typestate.Tree;
-				return Expressions.newTlink(n.getSourceLocation(), null, pn);
+				return Expressions.newLinkTree(n.getSourceLocation(), null, pn);
 			}
 		}
 		return pn;
@@ -313,13 +313,13 @@ public class GrammarChecker extends GrammarTransformer {
 		Typestate innerTypestate = this.isNonTreeConstruction() ? Typestate.Unit : context.typeState(inner);
 		if (innerTypestate != Typestate.Tree) {
 			reportInserted(p, "{");
-			inner = Expressions.newNewCapture(inner.getSourceLocation(), this.check(inner));
+			inner = Expressions.newTree(inner.getSourceLocation(), this.check(inner));
 		} else {
 			this.requiredTypestate = Typestate.Tree;
 			inner = this.check(p.get(0));
 		}
 		this.requiredTypestate = Typestate.TreeMutation;
-		return Expressions.newTlink(p.getSourceLocation(), p.label, inner);
+		return Expressions.newLinkTree(p.getSourceLocation(), p.label, inner);
 	}
 
 	@Override
@@ -335,22 +335,22 @@ public class GrammarChecker extends GrammarTransformer {
 			}
 		}
 		this.requiredTypestate = next;
-		return Expressions.newPchoice(p.getSourceLocation(), l);
+		return Expressions.newChoice(p.getSourceLocation(), l);
 	}
 
 	@Override
 	public Expression visitZeroMore(Nez.ZeroMore p, Object a) {
-		return Expressions.newPzero(p.getSourceLocation(), visitOptionalInner(p));
+		return Expressions.newZeroMore(p.getSourceLocation(), visitOptionalInner(p));
 	}
 
 	@Override
 	public Expression visitOneMore(Nez.OneMore p, Object a) {
-		return Expressions.newPone(p.getSourceLocation(), visitOptionalInner(p));
+		return Expressions.newOneMore(p.getSourceLocation(), visitOptionalInner(p));
 	}
 
 	@Override
 	public Expression visitOption(Nez.Option p, Object a) {
-		return Expressions.newPoption(p.getSourceLocation(), visitOptionalInner(p));
+		return Expressions.newOption(p.getSourceLocation(), visitOptionalInner(p));
 	}
 
 	private Expression visitOptionalInner(Nez.Unary p) {
@@ -360,7 +360,7 @@ public class GrammarChecker extends GrammarTransformer {
 				reportInserted(p.get(0), "$");
 				this.requiredTypestate = Typestate.Tree;
 				Expression inner = check(p.get(0));
-				inner = Expressions.newTlink(p.getSourceLocation(), inner);
+				inner = Expressions.newLinkTree(p.getSourceLocation(), inner);
 				this.requiredTypestate = Typestate.TreeMutation;
 				return inner;
 			} else {
@@ -376,7 +376,7 @@ public class GrammarChecker extends GrammarTransformer {
 
 	@Override
 	public Expression visitAnd(Nez.And p, Object a) {
-		return Expressions.newPand(p.getSourceLocation(), visitOptionalInner(p));
+		return Expressions.newAnd(p.getSourceLocation(), visitOptionalInner(p));
 	}
 
 	@Override
@@ -391,7 +391,7 @@ public class GrammarChecker extends GrammarTransformer {
 		} else {
 			inner = this.check(inner);
 		}
-		return Expressions.newPnot(p.getSourceLocation(), inner);
+		return Expressions.newNot(p.getSourceLocation(), inner);
 	}
 
 }

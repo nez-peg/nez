@@ -354,7 +354,7 @@ public class DebugVMCompiler extends Expression.Visitor {
 		CommonTree node = (CommonTree) p.getSourceLocation();
 		int len = node.toText().length();
 		CommonTree newNode = new CommonTree(node.getTag(), node.getSource(), node.getSourcePosition() + len - 1, (int) (node.getSourcePosition() + len), 0, null);
-		p = (Tcapture) Expressions.newTcapture(newNode, p.shift);
+		p = (Tcapture) Expressions.newEndTree(newNode, p.shift);
 		if (this.strategy.TreeConstruction) {
 			if (this.leftedStack.pop()) {
 				BasicBlock endbb = new BasicBlock();

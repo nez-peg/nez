@@ -134,7 +134,7 @@ public class OldGrammarChecker extends OldGrammarTransducer {
 		if (p == null) {
 			if (n.isTerminal()) {
 				reportNotice(n, "undefined terminal: " + n.getLocalName());
-				return Expressions.newString(n.getSourceLocation(), StringUtils.unquoteString(n.getLocalName()));
+				return Expressions.newMultiByte(n.getSourceLocation(), StringUtils.unquoteString(n.getLocalName()));
 			}
 			reportWarning(n, "undefined production: " + n.getLocalName());
 			return n.newEmpty();
@@ -145,7 +145,7 @@ public class OldGrammarChecker extends OldGrammarTransducer {
 			} catch (StackOverflowError e) {
 				/* Handling a bad grammar */
 				reportError(n, "terminal is recursive: " + n.getLocalName());
-				return Expressions.newString(n.getSourceLocation(), StringUtils.unquoteString(n.getLocalName()));
+				return Expressions.newMultiByte(n.getSourceLocation(), StringUtils.unquoteString(n.getLocalName()));
 			}
 		}
 		// System.out.print("NonTerminal: " + n.getLocalName() + " -> ");
@@ -168,7 +168,7 @@ public class OldGrammarChecker extends OldGrammarTransducer {
 			if (innerTypestate == Typestate.TreeMutation) {
 				reportInserted(n, "{");
 				this.requiredTypestate = Typestate.TreeMutation;
-				return Expressions.newNewCapture(n.getSourceLocation(), pn);
+				return Expressions.newTree(n.getSourceLocation(), pn);
 			}
 			this.requiredTypestate = Typestate.TreeMutation;
 			return pn;
@@ -177,7 +177,7 @@ public class OldGrammarChecker extends OldGrammarTransducer {
 			if (innerTypestate == Typestate.Tree) {
 				reportInserted(n, "$");
 				this.requiredTypestate = Typestate.Tree;
-				return Expressions.newTlink(n.getSourceLocation(), null, pn);
+				return Expressions.newLinkTree(n.getSourceLocation(), null, pn);
 			}
 		}
 		return pn;
@@ -300,13 +300,13 @@ public class OldGrammarChecker extends OldGrammarTransducer {
 		Typestate innerTypestate = this.isNonASTContext() ? Typestate.Unit : parserGrammar.typeState(inner);
 		if (innerTypestate != Typestate.Tree) {
 			reportInserted(p, "{");
-			inner = Expressions.newNewCapture(inner.getSourceLocation(), this.visitInner(inner));
+			inner = Expressions.newTree(inner.getSourceLocation(), this.visitInner(inner));
 		} else {
 			this.requiredTypestate = Typestate.Tree;
 			inner = this.visitInner(p.get(0));
 		}
 		this.requiredTypestate = Typestate.TreeMutation;
-		return Expressions.newTlink(p.getSourceLocation(), p.label, inner);
+		return Expressions.newLinkTree(p.getSourceLocation(), p.label, inner);
 	}
 
 	@Override
@@ -322,22 +322,22 @@ public class OldGrammarChecker extends OldGrammarTransducer {
 			}
 		}
 		this.requiredTypestate = next;
-		return Expressions.newPchoice(p.getSourceLocation(), l);
+		return Expressions.newChoice(p.getSourceLocation(), l);
 	}
 
 	@Override
 	public Expression visitZeroMore(Nez.ZeroMore p, Object a) {
-		return Expressions.newPzero(p.getSourceLocation(), visitOptionalInner(p));
+		return Expressions.newZeroMore(p.getSourceLocation(), visitOptionalInner(p));
 	}
 
 	@Override
 	public Expression visitOneMore(Nez.OneMore p, Object a) {
-		return Expressions.newPone(p.getSourceLocation(), visitOptionalInner(p));
+		return Expressions.newOneMore(p.getSourceLocation(), visitOptionalInner(p));
 	}
 
 	@Override
 	public Expression visitOption(Nez.Option p, Object a) {
-		return Expressions.newPoption(p.getSourceLocation(), visitOptionalInner(p));
+		return Expressions.newOption(p.getSourceLocation(), visitOptionalInner(p));
 	}
 
 	private Expression visitOptionalInner(Nez.Unary p) {
@@ -347,7 +347,7 @@ public class OldGrammarChecker extends OldGrammarTransducer {
 				this.reportInserted(p.get(0), "$");
 				this.requiredTypestate = Typestate.Tree;
 				Expression inner = visitInner(p.get(0));
-				inner = Expressions.newTlink(p.getSourceLocation(), inner);
+				inner = Expressions.newLinkTree(p.getSourceLocation(), inner);
 				this.requiredTypestate = Typestate.TreeMutation;
 				return inner;
 			} else {
@@ -363,7 +363,7 @@ public class OldGrammarChecker extends OldGrammarTransducer {
 
 	@Override
 	public Expression visitAnd(Nez.And p, Object a) {
-		return Expressions.newPand(p.getSourceLocation(), visitOptionalInner(p));
+		return Expressions.newAnd(p.getSourceLocation(), visitOptionalInner(p));
 	}
 
 	@Override
@@ -378,7 +378,7 @@ public class OldGrammarChecker extends OldGrammarTransducer {
 		} else {
 			inner = this.visitInner(inner);
 		}
-		return Expressions.newPnot(p.getSourceLocation(), inner);
+		return Expressions.newNot(p.getSourceLocation(), inner);
 	}
 
 	/* static context */

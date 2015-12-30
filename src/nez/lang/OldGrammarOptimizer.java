@@ -377,7 +377,7 @@ public class OldGrammarOptimizer extends OldGrammarRewriter {
 			UList<Expression> l = Expressions.newList(choice.size());
 			for (Expression inner : choice) {
 				inner = this.visitInner(inner);
-				l.add(Expressions.newTlink(p.getSourceLocation(), p.label, inner));
+				l.add(Expressions.newLinkTree(p.getSourceLocation(), p.label, inner));
 			}
 			return choice.newChoice(l);
 		}
@@ -408,7 +408,7 @@ public class OldGrammarOptimizer extends OldGrammarRewriter {
 			verboseOptimized("single-choice", p, l.ArrayValues[0]);
 			return l.ArrayValues[0];
 		}
-		Expression n = Expressions.newPchoice(p.getSourceLocation(), l);
+		Expression n = Expressions.newChoice(p.getSourceLocation(), l);
 		if (n instanceof Pchoice) {
 			((Pchoice) n).isTrieTree = p.isTrieTree;
 			addChoiceToOptimizeList((Pchoice) n);
@@ -476,11 +476,11 @@ public class OldGrammarOptimizer extends OldGrammarRewriter {
 				continue;
 			@SuppressWarnings("unchecked")
 			UList<Expression> el = (UList<Expression>) buffers[ch];
-			Expression be = Expressions.newCbyte(null, false, ch);
+			Expression be = Expressions.newByte(null, ch);
 			if (el.size() == 1) {
 				l.add(Expressions.newPair(null, be, el.get(0)));
 			} else {
-				Expression next = trySecondChoice(Expressions.newPchoice(null, el), el);
+				Expression next = trySecondChoice(Expressions.newChoice(null, el), el);
 				l.add(Expressions.newPair(null, be, next));
 			}
 		}
@@ -633,7 +633,7 @@ public class OldGrammarOptimizer extends OldGrammarRewriter {
 			}
 			newlist.add(sub);
 		}
-		Expression p = Expressions.newPchoice(choice.getSourceLocation(), newlist);
+		Expression p = Expressions.newChoice(choice.getSourceLocation(), newlist);
 		newlist.clear(0);
 		if (commonFactored && !(p instanceof Pchoice)) {
 			tryFactoredSecondChoice(p);

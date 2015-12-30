@@ -81,8 +81,8 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 			String ruleName = "Pattern";
 			Expression ne = Expressions.newNonTerminal(e, getGrammar(), ruleName);
 			getGrammar().newProduction(ruleName, pi(e.get(0), k));
-			Expression zeroMore = Expressions.newPzero(null, toSeq(null, Expressions.newPnot(null, ne), toAny(null)));
-			Expression main = toSeq(null, zeroMore, Expressions.newPone(null, toSeq(null, ne, zeroMore)));
+			Expression zeroMore = Expressions.newZeroMore(null, toSeq(null, Expressions.newNot(null, ne), toAny(null)));
+			Expression main = toSeq(null, zeroMore, Expressions.newOneMore(null, toSeq(null, ne, zeroMore)));
 			// ruleName = "SOSPattern";
 			// isSOS = true;
 			// Expression sose = ExpressionCommons.newNonTerminal(e,
@@ -125,7 +125,7 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 	public class _And extends Undefined {
 		@Override
 		public Expression toExpression(Tree<?> e, Expression k) {
-			return toSeq(e, Expressions.newPand(null, pi(e.get(0), toEmpty(e))), k);
+			return toSeq(e, Expressions.newAnd(null, pi(e.get(0), toEmpty(e))), k);
 		}
 	}
 
@@ -133,7 +133,7 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 	public class _Not extends Undefined {
 		@Override
 		public Expression toExpression(Tree<?> e, Expression k) {
-			return toSeq(e, Expressions.newPnot(null, pi(e.get(0), toEmpty(e))), k);
+			return toSeq(e, Expressions.newNot(null, pi(e.get(0), toEmpty(e))), k);
 		}
 	}
 
@@ -230,7 +230,7 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 
 		@Override
 		public Expression toExpression(Tree<?> e) {
-			return Expressions.newCany(null, false);
+			return Expressions.newAny(null);
 		}
 
 		@Override
@@ -249,7 +249,7 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 	public class NegativeCharacterSet extends Undefined {
 		@Override
 		public Expression toExpression(Tree<?> e, Expression k) {
-			Expression nce = toSeq(e, Expressions.newPnot(e, toCharacterSet(e)), toAny(e));
+			Expression nce = toSeq(e, Expressions.newNot(e, toCharacterSet(e)), toAny(e));
 			return toSeq(e, nce, k);
 		}
 	}
@@ -262,7 +262,7 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 			for (Tree<?> subnode : e) {
 				Expressions.addChoice(l, getExpression(subnode));
 			}
-			return Expressions.newCset(null, false, byteMap);
+			return Expressions.newByteSet(null, byteMap);
 		}
 
 		@Override
@@ -297,7 +297,7 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 		public Expression toExpression(Tree<?> e) {
 			byte[] utf8 = StringUtils.toUtf8(e.toText());
 			byteMap[utf8[0]] = true;
-			return Expressions.newCbyte(null, false, utf8[0]);
+			return Expressions.newByte(null, utf8[0]);
 		}
 
 		@Override
@@ -316,7 +316,7 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 			if (utf8.length != 1) {
 				ConsoleUtils.exit(1, "Error: not Character Literal");
 			}
-			return Expressions.newCbyte(null, false, utf8[0]);
+			return Expressions.newByte(null, utf8[0]);
 		}
 
 		@Override
@@ -336,7 +336,7 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 	public class EndOfString extends Undefined {
 		@Override
 		public Expression toExpression(Tree<?> e, Expression k) {
-			return pi(e.get(0), toSeq(null, Expressions.newPnot(null, toAny(null)), k));
+			return pi(e.get(0), toSeq(null, Expressions.newNot(null, toAny(null)), k));
 		}
 	}
 
@@ -361,7 +361,7 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 			} else {
 				Expressions.addChoice(l, toEmpty(node));
 			}
-			return Expressions.newPchoice(null, l);
+			return Expressions.newChoice(null, l);
 		}
 	}
 
@@ -416,7 +416,7 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 	}
 
 	private final Expression _LineTerminator() {
-		Expression l[] = { Expressions.newCbyte(null, false, '\n'), Expressions.newCbyte(null, false, '\r'), Expressions.newString(null, "\r\n"), };
-		return Expressions.newPchoice(null, new UList<>(l));
+		Expression l[] = { Expressions.newByte(null, '\n'), Expressions.newByte(null, '\r'), Expressions.newMultiByte(null, "\r\n"), };
+		return Expressions.newChoice(null, new UList<>(l));
 	}
 }

@@ -92,7 +92,7 @@ public class ExpressionTransformer extends Expression.Visitor {
 			for (Expression sub : e) {
 				Expressions.addChoice(l, sub);
 			}
-			return Expressions.newPchoice(e.getSourceLocation(), l);
+			return Expressions.newChoice(e.getSourceLocation(), l);
 		}
 		return e;
 	}

@@ -75,7 +75,7 @@ public abstract class Expression extends AbstractList<Expression> {
 	}
 
 	public final Expression newCset(boolean isBinary, boolean[] byteMap) {
-		return Expressions.newCset(this.getSourceLocation(), isBinary, byteMap);
+		return Expressions.newByteSet(this.getSourceLocation(), byteMap);
 	}
 
 	public final Expression newSequence(Expression e, Expression e2) {
@@ -87,11 +87,11 @@ public abstract class Expression extends AbstractList<Expression> {
 	}
 
 	public final Expression newChoice(Expression e, Expression e2) {
-		return Expressions.newPchoice(this.getSourceLocation(), e, e2);
+		return Expressions.newChoice(this.getSourceLocation(), e, e2);
 	}
 
 	public final Expression newChoice(UList<Expression> l) {
-		return Expressions.newPchoice(this.getSourceLocation(), l);
+		return Expressions.newChoice(this.getSourceLocation(), l);
 	}
 
 	/* static class */

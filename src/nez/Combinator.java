@@ -102,11 +102,11 @@ public class Combinator {
 	}
 
 	protected final Expression t(char c) {
-		return Expressions.newString(src(), String.valueOf(c));
+		return Expressions.newMultiByte(src(), String.valueOf(c));
 	}
 
 	protected final Expression t(String token) {
-		return Expressions.newString(src(), token);
+		return Expressions.newMultiByte(src(), token);
 	}
 
 	protected final Expression c(String text) {
@@ -122,15 +122,15 @@ public class Combinator {
 				binary = true;
 			}
 		}
-		return Expressions.newCset(src(), binary, b);
+		return Expressions.newByteSet(src(), b);
 	}
 
 	protected final Expression ByteChar(int byteChar) {
-		return Expressions.newCbyte(src(), false, byteChar);
+		return Expressions.newByte(src(), byteChar);
 	}
 
 	protected final Expression AnyChar() {
-		return Expressions.newCany(src(), false);
+		return Expressions.newAny(src());
 	}
 
 	protected final Expression NotAny(String token) {
@@ -154,51 +154,51 @@ public class Combinator {
 		for (Expression e : elist) {
 			Expressions.addChoice(l, e);
 		}
-		return Expressions.newPchoice(src(), l);
+		return Expressions.newChoice(src(), l);
 	}
 
 	protected final Expression Option(Expression... e) {
-		return Expressions.newPoption(src(), Sequence(e));
+		return Expressions.newOption(src(), Sequence(e));
 	}
 
 	protected final Expression Option(String t) {
-		return Expressions.newPoption(src(), t(t));
+		return Expressions.newOption(src(), t(t));
 	}
 
 	protected final Expression ZeroMore(Expression... e) {
-		return Expressions.newPzero(src(), Sequence(e));
+		return Expressions.newZeroMore(src(), Sequence(e));
 	}
 
 	protected final Expression OneMore(Expression... e) {
-		return Expressions.newPone(src(), Sequence(e));
+		return Expressions.newOneMore(src(), Sequence(e));
 	}
 
 	protected final Expression Not(String t) {
-		return Expressions.newPnot(src(), Expressions.newString(src(), t));
+		return Expressions.newNot(src(), Expressions.newMultiByte(src(), t));
 	}
 
 	protected final Expression Not(Expression... e) {
-		return Expressions.newPnot(src(), Sequence(e));
+		return Expressions.newNot(src(), Sequence(e));
 	}
 
 	protected final Expression And(Expression... e) {
-		return Expressions.newPand(src(), Sequence(e));
+		return Expressions.newAnd(src(), Sequence(e));
 	}
 
 	protected final Expression NCapture(int shift) {
-		return Expressions.newTnew(src(), shift);
+		return Expressions.newBeginTree(src(), shift);
 	}
 
 	protected final Expression LCapture(int shift, String label) {
-		return Expressions.newTlfold(src(), toSymbol(label), shift);
+		return Expressions.newLeftFold(src(), toSymbol(label), shift);
 	}
 
 	protected final Expression Capture(int shift) {
-		return Expressions.newTcapture(src(), shift);
+		return Expressions.newEndTree(src(), shift);
 	}
 
 	protected final Expression New(Expression... e) {
-		return Expressions.newNewCapture(src(), false, null, Sequence(e));
+		return Expressions.newTree(src(), false, null, Sequence(e));
 	}
 
 	protected final Expression LeftFoldOption(String label, Expression... e) {
@@ -214,11 +214,11 @@ public class Combinator {
 	}
 
 	protected Expression Link(String label, Expression e) {
-		return Expressions.newTlink(src(), toSymbol(label), e);
+		return Expressions.newLinkTree(src(), toSymbol(label), e);
 	}
 
 	protected Expression Link(String label, String nonTerminal) {
-		return Expressions.newTlink(src(), toSymbol(label), P(nonTerminal));
+		return Expressions.newLinkTree(src(), toSymbol(label), P(nonTerminal));
 	}
 
 	private Symbol toSymbol(String label) {
@@ -232,7 +232,7 @@ public class Combinator {
 	}
 
 	protected Expression Msg(String label, String msg) {
-		return Expressions.newTlink(src(), Symbol.tag(label), New(Replace(msg)));
+		return Expressions.newLinkTree(src(), Symbol.tag(label), New(Replace(msg)));
 	}
 
 	// protected final Expression Tag(Tag t) {
@@ -240,15 +240,15 @@ public class Combinator {
 	// }
 
 	protected final Expression Tag(String tag) {
-		return Expressions.newTtag(src(), Symbol.tag(tag));
+		return Expressions.newTag(src(), Symbol.tag(tag));
 	}
 
 	protected final Expression Replace(char c) {
-		return Expressions.newTreplace(src(), String.valueOf(c));
+		return Expressions.newReplace(src(), String.valueOf(c));
 	}
 
 	protected final Expression Replace(String value) {
-		return Expressions.newTreplace(src(), value);
+		return Expressions.newReplace(src(), value);
 	}
 
 }

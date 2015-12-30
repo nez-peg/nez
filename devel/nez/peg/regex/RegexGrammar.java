@@ -156,7 +156,7 @@ public class RegexGrammar extends TreeVisitor {
 	}
 
 	public Expression piNegativeCharacterSet(CommonTree e, Expression k) {
-		Expression nce = toSeq(e, Expressions.newPnot(e, toCharacterSet(e)), toAny(e));
+		Expression nce = toSeq(e, Expressions.newNot(e, toCharacterSet(e)), toAny(e));
 		return toSeq(e, nce, k);
 	}
 
@@ -188,7 +188,7 @@ public class RegexGrammar extends TreeVisitor {
 		if (utf8.length != 1) {
 			ConsoleUtils.exit(1, "Error: not Character Literal");
 		}
-		return Expressions.newCbyte(null, false, utf8[0]);
+		return Expressions.newByte(null, utf8[0]);
 	}
 
 	boolean byteMap[];
@@ -201,9 +201,9 @@ public class RegexGrammar extends TreeVisitor {
 			Expressions.addChoice(l, toExpression(subnode));
 		}
 		if (useByteMap) {
-			return Expressions.newCset(null, false, byteMap);
+			return Expressions.newByteSet(null, byteMap);
 		} else {
-			return Expressions.newPchoice(null, l);
+			return Expressions.newChoice(null, l);
 		}
 	}
 
@@ -220,7 +220,7 @@ public class RegexGrammar extends TreeVisitor {
 	public Expression toCharacterSetItem(CommonTree c) {
 		byte[] utf8 = StringUtils.toUtf8(c.toText());
 		byteMap[utf8[0]] = true;
-		return Expressions.newCbyte(null, false, utf8[0]);
+		return Expressions.newByte(null, utf8[0]);
 	}
 
 	public Expression toEmpty(CommonTree node) {
@@ -228,15 +228,15 @@ public class RegexGrammar extends TreeVisitor {
 	}
 
 	public Expression toAny(CommonTree e) {
-		return Expressions.newCany(null, false);
+		return Expressions.newAny(null);
 	}
 
 	public Expression toAnd(CommonTree e, Expression k) {
-		return toSeq(e, Expressions.newPand(null, pi(e.get(0), toEmpty(e))), k);
+		return toSeq(e, Expressions.newAnd(null, pi(e.get(0), toEmpty(e))), k);
 	}
 
 	public Expression toNot(CommonTree e, Expression k) {
-		return toSeq(e, Expressions.newPnot(null, pi(e.get(0), toEmpty(e))), k);
+		return toSeq(e, Expressions.newNot(null, pi(e.get(0), toEmpty(e))), k);
 	}
 
 	public Expression toChoice(CommonTree node, Expression e, Expression k) {
@@ -247,7 +247,7 @@ public class RegexGrammar extends TreeVisitor {
 		} else {
 			Expressions.addChoice(l, toEmpty(node));
 		}
-		return Expressions.newPchoice(null, l);
+		return Expressions.newChoice(null, l);
 	}
 
 	public Expression toSeq(CommonTree e, Expression k) {

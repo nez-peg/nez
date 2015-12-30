@@ -79,6 +79,12 @@ public abstract class Expressions extends Expression {
 		l.add(e);
 	}
 
+	public static void swap(List<Expression> l, int i, int j) {
+		Expression e = l.get(i);
+		l.set(i, l.get(j));
+		l.set(j, e);
+	}
+
 	// -----------------------------------------------------------------------
 
 	public final static NonTerminal newNonTerminal(SourceLocation s, Grammar g, String name) {
@@ -95,15 +101,12 @@ public abstract class Expressions extends Expression {
 
 	/* Terminal */
 
-	public final static Expression newCany(SourceLocation s, boolean binary) {
-		return new Cany(s, binary);
+	public final static Expression newAny(SourceLocation s) {
+		return new Cany(s, false);
 	}
 
-	public final static Expression newCbyte(SourceLocation s, boolean binary, int ch) {
-		if (ch == 0) {
-			binary = true;
-		}
-		return new Cbyte(s, binary, ch & 0xff);
+	public final static Expression newByte(SourceLocation s, int ch) {
+		return new Cbyte(s, false, ch & 0xff);
 	}
 
 	private static int uniqueByteChar(boolean[] byteMap) {
@@ -118,37 +121,37 @@ public abstract class Expressions extends Expression {
 		return byteChar;
 	}
 
-	public static Expression newCmulti(SourceLocation s, boolean binary, byte[] utf8) {
-		return new Cmulti(s, binary, utf8);
+	public static Expression newMultiByte(SourceLocation s, byte[] utf8) {
+		return new Cmulti(s, false, utf8);
 	}
 
-	public static Expression newCset(SourceLocation s, boolean binary, boolean[] byteMap) {
+	public static Expression newByteSet(SourceLocation s, boolean[] byteMap) {
 		int byteChar = uniqueByteChar(byteMap);
 		if (byteChar != -1) {
-			return newCbyte(s, binary, byteChar);
+			return newByte(s, byteChar);
 		}
-		return new Cset(s, binary, byteMap);
+		return new Cset(s, false, byteMap);
 	}
 
 	/* Unary */
 
-	public final static Expression newPoption(SourceLocation s, Expression p) {
+	public final static Expression newOption(SourceLocation s, Expression p) {
 		return new Poption(s, p);
 	}
 
-	public final static Expression newPzero(SourceLocation s, Expression p) {
+	public final static Expression newZeroMore(SourceLocation s, Expression p) {
 		return new Pzero(s, p);
 	}
 
-	public final static Expression newPone(SourceLocation s, Expression p) {
+	public final static Expression newOneMore(SourceLocation s, Expression p) {
 		return new Pone(s, p);
 	}
 
-	public final static Pand newPand(SourceLocation s, Expression p) {
+	public final static Expression newAnd(SourceLocation s, Expression p) {
 		return new Pand(s, p);
 	}
 
-	public final static Pnot newPnot(SourceLocation s, Expression p) {
+	public final static Expression newNot(SourceLocation s, Expression p) {
 		return new Pnot(s, p);
 	}
 
@@ -194,7 +197,7 @@ public abstract class Expressions extends Expression {
 		return a;
 	}
 
-	public final static Expression newPchoice(SourceLocation s, UList<Expression> l) {
+	public final static Expression newChoice(SourceLocation s, UList<Expression> l) {
 		int size = l.size();
 		for (int i = 0; i < size; i++) {
 			if (l.ArrayValues[i] instanceof Pempty) {
@@ -208,7 +211,7 @@ public abstract class Expressions extends Expression {
 		return new Pchoice(s, l, size);
 	}
 
-	public final static Expression newPchoice(SourceLocation s, Expression p, Expression p2) {
+	public final static Expression newChoice(SourceLocation s, Expression p, Expression p2) {
 		if (p == null) {
 			return p2 == null ? newEmpty(s) : p2;
 		}
@@ -218,20 +221,20 @@ public abstract class Expressions extends Expression {
 		UList<Expression> l = new UList<Expression>(new Expression[2]);
 		addChoice(l, p);
 		addChoice(l, p2);
-		return newPchoice(s, l);
+		return newChoice(s, l);
 	}
 
 	// AST Construction
 
-	public final static Expression newTdetree(SourceLocation s, Expression p) {
+	public final static Expression newDetree(SourceLocation s, Expression p) {
 		return new Tdetree(s, p);
 	}
 
-	public final static Expression newTlink(SourceLocation s, Expression p) {
-		return newTlink(s, null, p);
+	public final static Expression newLinkTree(SourceLocation s, Expression p) {
+		return newLinkTree(s, null, p);
 	}
 
-	public final static Expression newTlink(SourceLocation s, Symbol label, Expression p) {
+	public final static Expression newLinkTree(SourceLocation s, Symbol label, Expression p) {
 		return new Tlink(s, label, p);
 	}
 
@@ -240,23 +243,23 @@ public abstract class Expressions extends Expression {
 	// return new Tnew(s, lefted, label, shift);
 	// }
 
-	public final static Expression newTnew(SourceLocation s, int shift) {
+	public final static Expression newBeginTree(SourceLocation s, int shift) {
 		return new Tnew(s, shift);
 	}
 
-	public final static Expression newTlfold(SourceLocation s, Symbol label, int shift) {
+	public final static Expression newLeftFold(SourceLocation s, Symbol label, int shift) {
 		return new Tlfold(s, label, shift);
 	}
 
-	public final static Expression newTcapture(SourceLocation s, int shift) {
+	public final static Expression newEndTree(SourceLocation s, int shift) {
 		return new Tcapture(s, shift);
 	}
 
-	public final static Expression newTtag(SourceLocation s, Symbol tag) {
+	public final static Expression newTag(SourceLocation s, Symbol tag) {
 		return new Ttag(s, tag);
 	}
 
-	public final static Expression newTreplace(SourceLocation s, String msg) {
+	public final static Expression newReplace(SourceLocation s, String msg) {
 		return new Treplace(s, msg);
 	}
 
@@ -265,19 +268,19 @@ public abstract class Expressions extends Expression {
 	// <on FLAG e>
 	// <on! FLAG e>
 
-	public final static Expression newXif(SourceLocation s, String flagName) {
+	public final static Expression newIf(SourceLocation s, String flagName) {
 		return new Xif(s, true, flagName);
 	}
 
-	public final static Expression newXon(SourceLocation s, boolean predicate, String flagName, Expression e) {
+	public final static Expression newOn(SourceLocation s, boolean predicate, String flagName, Expression e) {
 		return new Xon(s, predicate, flagName, e);
 	}
 
-	public final static Expression newXblock(SourceLocation s, Expression e) {
+	public final static Expression newBlockScope(SourceLocation s, Expression e) {
 		return new Xblock(s, e);
 	}
 
-	public final static Expression newXlocal(SourceLocation s, Symbol tableName, Expression e) {
+	public final static Expression newLocalScope(SourceLocation s, Symbol tableName, Expression e) {
 		return new Xlocal(s, tableName, e);
 	}
 
@@ -288,7 +291,7 @@ public abstract class Expressions extends Expression {
 		return new Xsymbol(s, pat);
 	}
 
-	public final static Expression newXsymbol(SourceLocation s, NonTerminal pat) {
+	public final static Expression newSymbolAction(SourceLocation s, NonTerminal pat) {
 		return new Xsymbol(s, pat);
 	}
 
@@ -297,19 +300,19 @@ public abstract class Expressions extends Expression {
 	// return new Xsymbol(s, table, e);
 	// }
 
-	public final static Expression newXmatch(SourceLocation s, Symbol tableName) {
+	public final static Expression newSymbolMatch(SourceLocation s, Symbol tableName) {
 		return new Xmatch(s, tableName);
 	}
 
-	public final static Expression newXis(SourceLocation s, NonTerminal pat, boolean is) {
+	public final static Expression newSymbolPredicate(SourceLocation s, NonTerminal pat, boolean is) {
 		return new Xis(s, pat, is);
 	}
 
-	public final static Expression newXis(SourceLocation s, Symbol table, Expression e, boolean is) {
+	public final static Expression newSymbolPredicate(SourceLocation s, Symbol table, Expression e, boolean is) {
 		return new Xis(s, table, e, is);
 	}
 
-	public final static Expression newXis(SourceLocation s, NonTerminal pat) {
+	public final static Expression newSymbolPredicate(SourceLocation s, NonTerminal pat) {
 		return new Xis(s, pat, /* is */true);
 	}
 
@@ -317,7 +320,7 @@ public abstract class Expressions extends Expression {
 		return new Xis(s, pat, /* is */false);
 	}
 
-	public final static Expression newXexists(SourceLocation s, Symbol tableName, String symbol) {
+	public final static Expression newSymbolExists(SourceLocation s, Symbol tableName, String symbol) {
 		return new Xexists(s, tableName, symbol);
 	}
 
@@ -333,13 +336,13 @@ public abstract class Expressions extends Expression {
 
 	// -----------------------------------------------------------------------
 
-	public static final Expression newString(SourceLocation s, String text) {
+	public static final Expression newMultiByte(SourceLocation s, String text) {
 		byte[] utf8 = StringUtils.toUtf8(text);
 		if (utf8.length == 0) {
 			return newEmpty(s);
 		}
 		if (utf8.length == 1) {
-			return newCbyte(s, false, utf8[0]);
+			return newByte(s, utf8[0]);
 		}
 		return newByteSequence(s, false, utf8);
 	}
@@ -347,7 +350,7 @@ public abstract class Expressions extends Expression {
 	public final static Expression newByteSequence(SourceLocation s, boolean binary, byte[] utf8) {
 		UList<Expression> l = new UList<Expression>(new Expression[utf8.length]);
 		for (int i = 0; i < utf8.length; i++) {
-			l.add(newCbyte(s, binary, utf8[i]));
+			l.add(newByte(s, utf8[i]));
 		}
 		return newPair(s, l);
 	}
@@ -374,7 +377,7 @@ public abstract class Expressions extends Expression {
 
 	public final static Expression newByteRange(SourceLocation s, boolean binary, int c, int c2) {
 		if (c == c2) {
-			return newCbyte(s, binary, c);
+			return newByte(s, c);
 		}
 		return new Cset(s, binary, c, c2);
 	}
@@ -399,7 +402,7 @@ public abstract class Expressions extends Expression {
 		}
 		b2 = StringUtils.toUtf8(String.valueOf((char) c2));
 		l.add(newUnicodeRange(s, b, b2));
-		return newPchoice(s, l);
+		return newChoice(s, l);
 	}
 
 	private final static boolean equalsBase(byte[] b, byte[] b2) {
@@ -421,22 +424,22 @@ public abstract class Expressions extends Expression {
 		} else {
 			UList<Expression> l = new UList<Expression>(new Expression[b.length]);
 			for (int i = 0; i < b.length - 1; i++) {
-				l.add(newCbyte(s, false, b[i]));
+				l.add(newByte(s, b[i]));
 			}
 			l.add(newByteRange(s, false, b[b.length - 1] & 0xff, b2[b2.length - 1] & 0xff));
 			return newPair(s, l);
 		}
 	}
 
-	public final static Expression newNewCapture(SourceLocation s, Expression e) {
-		return newNewCapture(s, false, null, e);
+	public final static Expression newTree(SourceLocation s, Expression e) {
+		return newTree(s, false, null, e);
 	}
 
-	public final static Expression newNewCapture(SourceLocation s, boolean lefted, Symbol label, Expression e) {
+	public final static Expression newTree(SourceLocation s, boolean lefted, Symbol label, Expression e) {
 		UList<Expression> l = new UList<Expression>(new Expression[e.size() + 3]);
 		Expressions.addSequence(l, lefted ? new Tlfold(s, label, 0) : new Tnew(s, 0));
 		Expressions.addSequence(l, e);
-		Expressions.addSequence(l, Expressions.newTcapture(s, 0));
+		Expressions.addSequence(l, Expressions.newEndTree(s, 0));
 		return newPair(s, l);
 	}
 
@@ -444,30 +447,24 @@ public abstract class Expressions extends Expression {
 		UList<Expression> l = new UList<Expression>(new Expression[e.size() + 3]);
 		Expressions.addSequence(l, new Tlfold(s, label, 0));
 		Expressions.addSequence(l, e);
-		Expressions.addSequence(l, Expressions.newTcapture(s, 0));
-		return newPoption(s, Expressions.newPair(s, l));
+		Expressions.addSequence(l, Expressions.newEndTree(s, 0));
+		return newOption(s, Expressions.newPair(s, l));
 	}
 
 	public final static Expression newLeftFoldRepetition(SourceLocation s, Symbol label, Expression e) {
 		UList<Expression> l = new UList<Expression>(new Expression[e.size() + 3]);
 		Expressions.addSequence(l, new Tlfold(s, label, 0));
 		Expressions.addSequence(l, e);
-		Expressions.addSequence(l, Expressions.newTcapture(s, 0));
-		return newPzero(s, Expressions.newPair(s, l));
+		Expressions.addSequence(l, Expressions.newEndTree(s, 0));
+		return newZeroMore(s, Expressions.newPair(s, l));
 	}
 
 	public final static Expression newLeftFoldRepetition1(SourceLocation s, Symbol label, Expression e) {
 		UList<Expression> l = new UList<Expression>(new Expression[e.size() + 3]);
 		Expressions.addSequence(l, new Tlfold(s, label, 0));
 		Expressions.addSequence(l, e);
-		Expressions.addSequence(l, Expressions.newTcapture(s, 0));
-		return newPone(s, Expressions.newPair(s, l));
-	}
-
-	public static void swap(UList<Expression> l, int i, int j) {
-		Expression e = l.ArrayValues[i];
-		l.ArrayValues[i] = l.ArrayValues[j];
-		l.ArrayValues[j] = e;
+		Expressions.addSequence(l, Expressions.newEndTree(s, 0));
+		return newOneMore(s, Expressions.newPair(s, l));
 	}
 
 }

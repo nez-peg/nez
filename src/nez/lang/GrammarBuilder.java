@@ -23,7 +23,7 @@ public class GrammarBuilder {
 				OR, "ccc");
 	}
 
-	protected final Expression ANY = Expressions.newCany(null, false);
+	protected final Expression ANY = Expressions.newAny(null);
 	protected final Expression OR = null;
 
 	protected void define(String name, Object... args) {
@@ -52,7 +52,7 @@ public class GrammarBuilder {
 		}
 		if (choice != null) {
 			Expressions.addChoice(choice, Expressions.newPair(null, l));
-			return Expressions.newPchoice(null, choice);
+			return Expressions.newChoice(null, choice);
 		}
 		return Expressions.newPair(null, l);
 	}
@@ -62,9 +62,9 @@ public class GrammarBuilder {
 			return (Expression) value;
 		}
 		if (value instanceof Symbol) {
-			return Expressions.newTtag(null, (Symbol) value);
+			return Expressions.newTag(null, (Symbol) value);
 		}
-		return Expressions.newString(null, value.toString());
+		return Expressions.newMultiByte(null, value.toString());
 	}
 
 	protected final Expression P(String name) {
@@ -76,43 +76,43 @@ public class GrammarBuilder {
 	}
 
 	protected final Expression R0(Object... args) {
-		return Expressions.newPzero(null, S(args));
+		return Expressions.newZeroMore(null, S(args));
 	}
 
 	protected final Expression R1(Object... args) {
-		return Expressions.newPone(null, S(args));
+		return Expressions.newOneMore(null, S(args));
 	}
 
 	protected final Expression Opt(Object... args) {
-		return Expressions.newPoption(null, S(args));
+		return Expressions.newOption(null, S(args));
 	}
 
 	protected final Expression And(Object... args) {
-		return Expressions.newPand(null, S(args));
+		return Expressions.newAnd(null, S(args));
 	}
 
 	protected final Expression Not(Object... args) {
-		return Expressions.newPnot(null, S(args));
+		return Expressions.newNot(null, S(args));
 	}
 
 	protected final Expression New(Object... args) {
-		return S(Expressions.newTnew(null, 0), S(args), Expressions.newTcapture(null, 0));
+		return S(Expressions.newBeginTree(null, 0), S(args), Expressions.newEndTree(null, 0));
 	}
 
 	protected final Expression Set(String name, Object... args) {
-		return Expressions.newTlink(null, Symbol.tag(name), S(args));
+		return Expressions.newLinkTree(null, Symbol.tag(name), S(args));
 	}
 
 	protected final Expression Add(Object... args) {
-		return Expressions.newTlink(null, null, S(args));
+		return Expressions.newLinkTree(null, null, S(args));
 	}
 
 	protected final Expression Tag(String t) {
-		return Expressions.newTtag(null, Symbol.tag(t));
+		return Expressions.newTag(null, Symbol.tag(t));
 	}
 
 	protected final Expression Val(String t) {
-		return Expressions.newTreplace(null, t);
+		return Expressions.newReplace(null, t);
 	}
 
 }

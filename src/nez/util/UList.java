@@ -38,6 +38,13 @@ public class UList<T> extends AbstractList<T> {
 		return this.currentSize;
 	}
 
+	@Override
+	public final T set(int index, T value) {
+		T v = this.ArrayValues[index];
+		this.ArrayValues[index] = value;
+		return v;
+	}
+
 	private T[] newArray(int orgsize, int newsize) {
 		@SuppressWarnings("unchecked")
 		T[] newarrays = (T[]) Array.newInstance(this.ArrayValues.getClass().getComponentType(), newsize);

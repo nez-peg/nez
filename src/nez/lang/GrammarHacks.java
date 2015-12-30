@@ -37,15 +37,15 @@ public abstract class GrammarHacks extends AbstractList<Production> {
 	}
 
 	public final Expression newByteChar(int ch) {
-		return Expressions.newCbyte(getSourcePosition(), false, ch);
+		return Expressions.newByte(getSourcePosition(), ch);
 	}
 
 	public final Expression newAnyChar() {
-		return Expressions.newCany(getSourcePosition(), false);
+		return Expressions.newAny(getSourcePosition());
 	}
 
 	public final Expression newString(String text) {
-		return Expressions.newString(getSourcePosition(), text);
+		return Expressions.newMultiByte(getSourcePosition(), text);
 	}
 
 	public final Expression newCharSet(String text) {
@@ -53,7 +53,7 @@ public abstract class GrammarHacks extends AbstractList<Production> {
 	}
 
 	public final Expression newByteMap(boolean[] byteMap) {
-		return Expressions.newCset(getSourcePosition(), false, byteMap);
+		return Expressions.newByteSet(getSourcePosition(), byteMap);
 	}
 
 	public final Expression newSequence(Expression... seq) {
@@ -69,44 +69,44 @@ public abstract class GrammarHacks extends AbstractList<Production> {
 		for (Expression p : seq) {
 			Expressions.addChoice(l, p);
 		}
-		return Expressions.newPchoice(getSourcePosition(), l);
+		return Expressions.newChoice(getSourcePosition(), l);
 	}
 
 	public final Expression newOption(Expression... seq) {
-		return Expressions.newPoption(getSourcePosition(), newSequence(seq));
+		return Expressions.newOption(getSourcePosition(), newSequence(seq));
 	}
 
 	public final Expression newRepetition(Expression... seq) {
-		return Expressions.newPzero(getSourcePosition(), newSequence(seq));
+		return Expressions.newZeroMore(getSourcePosition(), newSequence(seq));
 	}
 
 	public final Expression newRepetition1(Expression... seq) {
-		return Expressions.newPone(getSourcePosition(), newSequence(seq));
+		return Expressions.newOneMore(getSourcePosition(), newSequence(seq));
 	}
 
 	public final Expression newAnd(Expression... seq) {
-		return Expressions.newPand(getSourcePosition(), newSequence(seq));
+		return Expressions.newAnd(getSourcePosition(), newSequence(seq));
 	}
 
 	public final Expression newNot(Expression... seq) {
-		return Expressions.newPnot(getSourcePosition(), newSequence(seq));
+		return Expressions.newNot(getSourcePosition(), newSequence(seq));
 	}
 
 	// PEG4d
 	public final Expression newMatch(Expression... seq) {
-		return Expressions.newTdetree(getSourcePosition(), newSequence(seq));
+		return Expressions.newDetree(getSourcePosition(), newSequence(seq));
 	}
 
 	public final Expression newLink(Expression... seq) {
-		return Expressions.newTlink(getSourcePosition(), null, newSequence(seq));
+		return Expressions.newLinkTree(getSourcePosition(), null, newSequence(seq));
 	}
 
 	public final Expression newLink(Symbol label, Expression... seq) {
-		return Expressions.newTlink(getSourcePosition(), label, newSequence(seq));
+		return Expressions.newLinkTree(getSourcePosition(), label, newSequence(seq));
 	}
 
 	public final Expression newNew(Expression... seq) {
-		return Expressions.newNewCapture(getSourcePosition(), false, null, newSequence(seq));
+		return Expressions.newTree(getSourcePosition(), false, null, newSequence(seq));
 	}
 
 	// public final Expression newLeftNew(Expression ... seq) {
@@ -115,11 +115,11 @@ public abstract class GrammarHacks extends AbstractList<Production> {
 	// }
 
 	public final Expression newTagging(String tag) {
-		return Expressions.newTtag(getSourcePosition(), Symbol.tag(tag));
+		return Expressions.newTag(getSourcePosition(), Symbol.tag(tag));
 	}
 
 	public final Expression newReplace(String msg) {
-		return Expressions.newTreplace(getSourcePosition(), msg);
+		return Expressions.newReplace(getSourcePosition(), msg);
 	}
 
 	// Conditional Parsing
@@ -128,23 +128,23 @@ public abstract class GrammarHacks extends AbstractList<Production> {
 	// <on !FLAG e>
 
 	public final Expression newIfFlag(String flagName) {
-		return Expressions.newXif(getSourcePosition(), flagName);
+		return Expressions.newIf(getSourcePosition(), flagName);
 	}
 
 	public final Expression newXon(String flagName, Expression... seq) {
-		return Expressions.newXon(getSourcePosition(), true, flagName, newSequence(seq));
+		return Expressions.newOn(getSourcePosition(), true, flagName, newSequence(seq));
 	}
 
 	public final Expression newBlock(Expression... seq) {
-		return Expressions.newXblock(getSourcePosition(), newSequence(seq));
+		return Expressions.newBlockScope(getSourcePosition(), newSequence(seq));
 	}
 
 	public final Expression newDefSymbol(NonTerminal n) {
-		return Expressions.newXsymbol(getSourcePosition(), n);
+		return Expressions.newSymbolAction(getSourcePosition(), n);
 	}
 
 	public final Expression newIsSymbol(NonTerminal n) {
-		return Expressions.newXis(getSourcePosition(), n);
+		return Expressions.newSymbolPredicate(getSourcePosition(), n);
 	}
 
 	public final Expression newIsaSymbol(NonTerminal n) {
@@ -152,11 +152,11 @@ public abstract class GrammarHacks extends AbstractList<Production> {
 	}
 
 	public final Expression newExists(String table, String symbol) {
-		return Expressions.newXexists(getSourcePosition(), Symbol.tag(table), symbol);
+		return Expressions.newSymbolExists(getSourcePosition(), Symbol.tag(table), symbol);
 	}
 
 	public final Expression newLocal(String table, Expression... seq) {
-		return Expressions.newXlocal(getSourcePosition(), Symbol.tag(table), newSequence(seq));
+		return Expressions.newLocalScope(getSourcePosition(), Symbol.tag(table), newSequence(seq));
 	}
 
 	public final Expression newScan(int number, Expression scan, Expression repeat) {
