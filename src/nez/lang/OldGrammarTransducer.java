@@ -2,8 +2,6 @@ package nez.lang;
 
 import nez.lang.Nez.Byte;
 import nez.lang.expr.Expressions;
-import nez.lang.expr.Pempty;
-import nez.lang.expr.Pfail;
 import nez.util.UList;
 import nez.util.Verbose;
 
@@ -65,21 +63,21 @@ public class OldGrammarTransducer extends Expression.Visitor {
 
 	@Override
 	public Expression visitPair(Nez.Pair e, Object a) {
-		Expression first = e.getFirst();
+		Expression first = e.get(0);
 		push(first);
 		first = (Expression) first.visit(this, null);
-		Expression next = e.getNext();
+		Expression next = e.get(1);
 		push(next);
 		next = (Expression) next.visit(this, null);
-		pop(e.getNext());
-		pop(e.getFirst());
+		pop(e.get(1));
+		pop(e.get(0));
 		if (first instanceof Nez.Empty) {
 			return next;
 		}
 		if (first instanceof Nez.Fail) {
 			return first;
 		}
-		return e.newSequence(first, next);
+		return e.newPair(first, next);
 	}
 
 	@Override
@@ -88,7 +86,7 @@ public class OldGrammarTransducer extends Expression.Visitor {
 		for (Expression sub : e) {
 			Expressions.addSequence(l, this.visitInner(sub));
 		}
-		return e.newSequence(l);
+		return e.newPair(l);
 	}
 
 	@Override

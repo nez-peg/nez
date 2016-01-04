@@ -119,8 +119,8 @@ public class Hachi6Compiler extends TreeVisitorMap<DefaultVisitor> {
 
 	private Expression getInnerExpression(Expression p) {
 		Expression inner = Expressions.resolveNonTerminal(p.get(0));
-		if (strategy.Ostring && inner instanceof nez.lang.expr.Psequence) {
-			inner = ((nez.lang.expr.Psequence) inner).toMultiCharSequence();
+		if (strategy.Ostring) {
+			inner = Expressions.tryMultiCharSequence(inner);
 		}
 		return inner;
 	}
@@ -286,7 +286,7 @@ public class Hachi6Compiler extends TreeVisitorMap<DefaultVisitor> {
 				int index = findIndex(choice, predicted);
 				Hachi6Inst inst = compiled[index];
 				if (inst == null) {
-					Expression next2 = predicted.getNext();
+					Expression next2 = Expressions.next(predicted);
 					if (next2 != null) {
 						inst = generate(next2, next);
 					} else {
@@ -313,13 +313,6 @@ public class Hachi6Compiler extends TreeVisitorMap<DefaultVisitor> {
 		@Override
 		public Hachi6Inst accept(Expression e, Hachi6Inst next) {
 			nez.lang.expr.Psequence p = (nez.lang.expr.Psequence) e;
-			if (strategy.Ostring) {
-				Expression inner = p.toMultiCharSequence();
-				if (inner instanceof nez.lang.expr.Cmulti) {
-					Cmulti cmulti = new Cmulti();
-					return cmulti.accept(inner, next);
-				}
-			}
 			Hachi6Inst nextStart = next;
 			for (int i = p.size() - 1; i >= 0; i--) {
 				Expression inner = p.get(i);

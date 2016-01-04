@@ -16,6 +16,19 @@ import nez.parser.ParserStrategy;
 import nez.util.FileBuilder;
 import nez.util.Verbose;
 
+/**
+ * ParserGenerator is an implementation of Nez dynamic parser generator.
+ * 
+ * <pre>
+ * ParserGenerator generator = new ParserGenerator();
+ * Parser parser = generator.newParser("grammar.nez");
+ * Tree<?> tree = parser.parse(Source, ...);
+ * </pre>
+ * 
+ * @author kiki
+ *
+ */
+
 public class ParserGenerator {
 	public static abstract class GrammarExtension {
 		ParserGenerator nez;

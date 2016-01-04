@@ -26,7 +26,7 @@ public class ParserGrammar extends Grammar {
 
 	/* Consumed */
 
-	private final ByteConsumption.Analyzer consumed = new ByteConsumption.Analyzer();
+	private final ByteConsumption consumed = new ByteConsumption();
 
 	public final boolean isConsumed(Production p) {
 		return consumed.isConsumed(p);

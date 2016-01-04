@@ -44,7 +44,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 		L("// If you want to fix something, you must edit " + __FILE__);
 		N();
 		L("#include \"cnez.h\"");
-		for (Production r : grammar.getProductionList()) {
+		for (Production r : grammar) {
 			if (!r.getLocalName().startsWith("\"")) {
 				L("int p" + r.getLocalName() + "(ParsingContext ctx);");
 			}
@@ -57,7 +57,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 		// String urn =
 		// grammar.getProductionList().get(0).getGrammarFile().getURN();
 		int flagTableSize = this.flagTable.size();
-		int prodSize = grammar.getProductionList().size();
+		int prodSize = grammar.size();
 		L("#define CNEZ_FLAG_TABLE_SIZE " + flagTableSize);
 		L("#define CNEZ_MEMO_SIZE       " + this.memoId);
 		// L("#define CNEZ_GRAMMAR_URN \"" + urn + "\"");

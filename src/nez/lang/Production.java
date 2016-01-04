@@ -5,18 +5,18 @@ import nez.lang.expr.Expressions;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
 
-public class Production /* extends Expression */{
+public class Production {
 
-	Grammar grammar;
-	String name;
-	String uname;
-	Expression body;
+	private Grammar grammar;
+	private String name;
+	private String uname;
+	private Expression body;
 
-	Production(SourceLocation s, int flag, Grammar g, String name, Expression body) {
+	Production(SourceLocation s, int flag, Grammar grammar, String name, Expression body) {
 		// super(s);
-		this.grammar = g;
+		this.grammar = grammar;
 		this.name = name;
-		this.uname = g.uniqueName(name);
+		this.uname = grammar.uniqueName(name);
 		this.body = (body == null) ? Expressions.newEmpty(s) : body;
 	}
 
@@ -24,12 +24,12 @@ public class Production /* extends Expression */{
 		return this.grammar;
 	}
 
-	public final String getUniqueName() {
-		return this.uname;
-	}
-
 	public final String getLocalName() {
 		return this.name;
+	}
+
+	public final String getUniqueName() {
+		return this.uname;
 	}
 
 	public final Expression getExpression() {

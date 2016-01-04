@@ -3,7 +3,6 @@ package nez.lang.expr;
 import nez.ast.SourceLocation;
 import nez.lang.Expression;
 import nez.lang.Nez;
-import nez.util.UList;
 
 public class Psequence extends Nez.Pair {
 
@@ -12,19 +11,10 @@ public class Psequence extends Nez.Pair {
 		this.setSourceLocation(s);
 	}
 
-	@Override
-	public Expression getFirst() {
-		return this.first;
-	}
-
-	@Override
-	public Expression getNext() {
-		return this.next;
-	}
-
 	// @Override
 	// public final void format(StringBuilder sb) {
-	// if (this.first instanceof Nez.Byte && this.next.getFirst() instanceof Nez.Byte)
+	// if (this.first instanceof Nez.Byte && this.next.get(0) instanceof
+	// Nez.Byte)
 	// {
 	// sb.append("'");
 	// formatString(sb, (Cbyte) this.first, this.next);
@@ -42,11 +32,11 @@ public class Psequence extends Nez.Pair {
 	// sb.append("'");
 	// return;
 	// }
-	// Expression first = next.getFirst();
+	// Expression first = next.get(0);
 	// b = null;
 	// if (first instanceof Nez.Byte) {
 	// b = (Cbyte) first;
-	// next = next.getNext();
+	// next = next.get(1);
 	// }
 	// }
 	// sb.append("'");
@@ -80,59 +70,12 @@ public class Psequence extends Nez.Pair {
 	// ParserStrategy option = bc.getStrategy();
 	// if (option.Ostring) {
 	// Expression e = this.toMultiCharSequence();
-	// if (e instanceof Cmulti) {
+	// if (e instanceof Nez.MultiByte) {
 	// // System.out.println("stringfy .. " + e);
 	// return bc.encodeCmulti((Cmulti) e, next, failjump);
 	// }
 	// }
 	// return bc.encodePsequence(this, next, failjump);
 	// }
-
-	public final boolean isMultiChar() {
-		return (this.getFirst() instanceof Nez.Byte && this.getNext() instanceof Nez.Byte);
-	}
-
-	public final Expression toMultiCharSequence() {
-		Expression f = this.getFirst();
-		Expression s = this.getNext().getFirst();
-		if (f instanceof Nez.Byte && s instanceof Nez.Byte) {
-			UList<Byte> l = new UList<Byte>(new Byte[16]);
-			l.add(((byte) ((Cbyte) f).byteChar));
-			Expression next = convertMultiByte(this, l);
-			Expression mb = this.newMultiChar(false, toByteSeq(l));
-			if (next != null) {
-				return this.newSequence(mb, next);
-			}
-			return mb;
-		}
-		return this;
-	}
-
-	private Expression convertMultiByte(Psequence seq, UList<Byte> l) {
-		Expression s = seq.getNext().getFirst();
-		while (s instanceof Nez.Byte) {
-			l.add((byte) ((Cbyte) s).byteChar);
-			Expression next = seq.getNext();
-			if (next instanceof Nez.Sequence) {
-				seq = (Psequence) next;
-				s = seq.getNext().getFirst();
-				continue;
-			}
-			return null;
-		}
-		return seq.getNext();
-	}
-
-	private byte[] toByteSeq(UList<Byte> l) {
-		byte[] byteSeq = new byte[l.size()];
-		for (int i = 0; i < l.size(); i++) {
-			byteSeq[i] = l.ArrayValues[i];
-		}
-		return byteSeq;
-	}
-
-	public final Expression newMultiChar(boolean binary, byte[] byteSeq) {
-		return Expressions.newMultiByte(this.getSourceLocation(), byteSeq);
-	}
 
 }

@@ -13,15 +13,103 @@ import nez.util.UList;
 
 public abstract class Expressions {
 
-	// -----------------------------------------------------------------------
-	// Utils
-
 	public final static Expression resolveNonTerminal(Expression e) {
 		while (e instanceof NonTerminal) {
 			NonTerminal nterm = (NonTerminal) e;
 			e = nterm.deReference();
 		}
 		return e;
+	}
+
+	/* Pair */
+
+	public final static Expression first(Expression e) {
+		if (e instanceof Nez.Pair) {
+			return e.get(0);
+		}
+		return e;
+	}
+
+	public final static Expression next(Expression e) {
+		if (e instanceof Nez.Pair) {
+			return e.get(1);
+		}
+		// if (e instanceof Nez.Sequence) {
+		// Nez.Sequence seq = (Nez.Sequence) e;
+		// if (seq.size() == 1) {
+		// return null;
+		// }
+		// Expression[] inners = new Expression[seq.size() - 1];
+		// for (int i = 0; i < inners.length; i++) {
+		// inners[i] = seq.get(i + 1);
+		// }
+		// return new Nez.Sequence(inners);
+		// }
+		return null;
+	}
+
+	public final static List<Expression> flatten(Expression e) {
+		UList<Expression> l = Expressions.newList(4);
+		flatten(e, l);
+		return l;
+	}
+
+	private static void flatten(Expression e, List<Expression> l) {
+		if (e instanceof Nez.Pair) {
+			flatten(e.get(0), l);
+			flatten(e.get(1), l);
+			return;
+		}
+		if (e instanceof Nez.Sequence) {
+			for (Expression sub : e) {
+				flatten(sub, e);
+			}
+			return;
+		}
+		if (e instanceof Nez.Empty) {
+			return;
+		}
+		l.add(e);
+	}
+
+	public final static Expression tryMultiCharSequence(Expression e) {
+		if (e instanceof Nez.Sequence || e instanceof Nez.Pair) {
+			List<Expression> el = flatten(e);
+			List<Expression> el2 = new UList<Expression>(new Expression[el.size()]);
+			UList<Byte> bytes = new UList<Byte>(new Byte[el.size()]);
+			int next = 0;
+			while (next < el.size()) {
+				next = appendExpressionOrMultiChar(el, next, el2, bytes);
+			}
+			return Expressions.newPair(e.getSourceLocation(), el2);
+		}
+		return e;
+	}
+
+	private final static int appendExpressionOrMultiChar(List<Expression> el, int start, List<Expression> el2, UList<Byte> bytes) {
+		Expression e = el.get(start);
+		int next = start + 1;
+		if (e instanceof Nez.Byte) {
+			bytes.clear();
+			for (int i = start; i < el.size(); i++) {
+				Expression sub = el.get(i);
+				if (sub instanceof Nez.Byte) {
+					bytes.add(((byte) ((Nez.Byte) sub).byteChar));
+					continue;
+				}
+				next = i;
+				break;
+			}
+			if (bytes.size() > 1) {
+				byte[] byteSeq = new byte[bytes.size()];
+				for (int i = 0; i < bytes.size(); i++) {
+					byteSeq[i] = bytes.get(i);
+				}
+				e = Expressions.newMultiByte(e.getSourceLocation(), byteSeq);
+			}
+		}
+		el2.add(e);
+		return next;
 	}
 
 	public final static UList<Expression> newList(int size) {
@@ -151,7 +239,7 @@ public abstract class Expressions {
 		return new Pnot(s, p);
 	}
 
-	public final static Expression newPair(SourceLocation s, UList<Expression> l) {
+	public final static Expression newPair(SourceLocation s, List<Expression> l) {
 		if (l.size() == 0) {
 			return newEmpty(s);
 		}
@@ -165,8 +253,8 @@ public abstract class Expressions {
 		return newPair(s, l);
 	}
 
-	private final static Expression newPair(SourceLocation s, int start, UList<Expression> l) {
-		Expression first = l.ArrayValues[start];
+	private final static Expression newPair(SourceLocation s, int start, List<Expression> l) {
+		Expression first = l.get(start);
 		if (start + 1 == l.size()) {
 			return first;
 		}

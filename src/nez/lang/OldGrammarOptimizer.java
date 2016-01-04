@@ -2,18 +2,17 @@ package nez.lang;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 
 import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cset;
 import nez.lang.expr.Expressions;
 import nez.lang.expr.Pchoice;
-import nez.lang.expr.Pfail;
 import nez.lang.expr.Pnot;
 import nez.lang.expr.Tcapture;
 import nez.lang.expr.Tlfold;
 import nez.lang.expr.Tnew;
-import nez.lang.expr.Treplace;
 import nez.parser.ParseFunc;
 import nez.parser.ParserGrammar;
 import nez.parser.ParserStrategy;
@@ -242,7 +241,7 @@ public class OldGrammarOptimizer extends OldGrammarRewriter {
 
 	// used to test inlining
 	public final static boolean isPairCharacter(Expression e) {
-		if (e instanceof Nez.Sequence && isSingleCharacter(e.getFirst()) && isSingleCharacter(e.getNext())) {
+		if (e instanceof Nez.Pair && isSingleCharacter(e.get(0)) && isSingleCharacter(e.get(1))) {
 			return true;
 		}
 		return false;
@@ -250,10 +249,10 @@ public class OldGrammarOptimizer extends OldGrammarRewriter {
 
 	@Override
 	public Expression visitPair(Nez.Pair p, Object a) {
-		UList<Expression> l = p.toList();
+		List<Expression> l = Expressions.flatten(p);
 		UList<Expression> l2 = Expressions.newList(l.size());
 		for (int i = 0; i < l.size(); i++) {
-			Expression inner = l.ArrayValues[i];
+			Expression inner = l.get(i);
 			inner = (Expression) inner.visit(this, a);
 			l2.add(inner);
 		}
@@ -262,7 +261,7 @@ public class OldGrammarOptimizer extends OldGrammarRewriter {
 				;
 		}
 		this.mergeNotCharacter(l2);
-		return p.newSequence(l2);
+		return p.newPair(l2);
 	}
 
 	private boolean performOutOfOrder(UList<Expression> l) {
@@ -332,9 +331,9 @@ public class OldGrammarOptimizer extends OldGrammarRewriter {
 	private Expression convertBitMap(Expression next, Expression not) {
 		boolean[] bany = null;
 		boolean isBinary = false;
-		Expression nextNext = next.getNext();
+		Expression nextNext = Expressions.next(next);
 		if (nextNext != null) {
-			next = next.getFirst();
+			next = Expressions.first(next);
 		}
 		if (next instanceof Nez.Any) {
 			Cany any = (Cany) next;
@@ -362,7 +361,7 @@ public class OldGrammarOptimizer extends OldGrammarRewriter {
 				bany[bc.byteChar] = false;
 			}
 		}
-		return not.newCset(isBinary, bany);
+		return not.newByteSet(isBinary, bany);
 	}
 
 	@Override
@@ -432,11 +431,11 @@ public class OldGrammarOptimizer extends OldGrammarRewriter {
 			}
 			return null;
 		}
-		return choice.newCset(binary, byteMap);
+		return choice.newByteSet(binary, byteMap);
 	}
 
 	private boolean isTrieTreeHead(Expression inner) {
-		Expression first = inner.getFirst();
+		Expression first = Expressions.first(inner);
 		if (first instanceof Nez.Byte || first instanceof Nez.ByteSet) {
 			return true;
 		}
@@ -452,15 +451,15 @@ public class OldGrammarOptimizer extends OldGrammarRewriter {
 		}
 		Object[] buffers = new Object[257];
 		for (Expression inner : l) {
-			Expression first = inner.getFirst();
+			Expression first = Expressions.first(inner);
 			if (first instanceof Nez.Byte) {
 				Cbyte be = (Cbyte) first;
-				buffers[be.byteChar] = mergeChoice(buffers[be.byteChar], inner.getNext());
+				buffers[be.byteChar] = mergeChoice(buffers[be.byteChar], Expressions.next(inner));
 			} else {
 				Cset bs = (Cset) first;
 				for (int ch = 0; ch < buffers.length; ch++) {
 					if (bs.byteMap[ch]) {
-						buffers[ch] = mergeChoice(buffers[ch], inner.getNext());
+						buffers[ch] = mergeChoice(buffers[ch], Expressions.next(inner));
 					}
 				}
 			}
@@ -525,7 +524,7 @@ public class OldGrammarOptimizer extends OldGrammarRewriter {
 			p.firstInners = new Expression[p.size()];
 			int c = 0;
 			for (Expression sub : p) {
-				Cbyte be = (Cbyte) sub.getFirst();
+				Cbyte be = (Cbyte) Expressions.first(sub);
 				p.predictedCase[be.byteChar] = sub;
 				p.firstInners[c] = sub;
 				c++;
@@ -550,7 +549,7 @@ public class OldGrammarOptimizer extends OldGrammarRewriter {
 					} else {
 						selected += 1;
 					}
-					if (!isSingleCharacter(predicted.getFirst())) {
+					if (!isSingleCharacter(Expressions.next(predicted))) {
 						isTrieTree = false;
 					}
 				}
@@ -652,15 +651,15 @@ public class OldGrammarOptimizer extends OldGrammarRewriter {
 	public final static Expression tryLeftCommonFactoring(Pchoice base, Expression e, Expression e2, boolean ignoredFirstChar) {
 		UList<Expression> l = null;
 		while (e != null && e2 != null) {
-			Expression f = e.getFirst();
-			Expression f2 = e2.getFirst();
+			Expression f = Expressions.first(e);
+			Expression f2 = Expressions.first(e2);
 			if (ignoredFirstChar) {
 				ignoredFirstChar = false;
 				if (Expression.isByteConsumed(f) && Expression.isByteConsumed(f2)) {
 					l = Expressions.newList(4);
 					l.add(f);
-					e = e.getNext();
-					e2 = e2.getNext();
+					e = Expressions.next(e);
+					e2 = Expressions.next(e2);
 					continue;
 				}
 				return null;
@@ -672,8 +671,8 @@ public class OldGrammarOptimizer extends OldGrammarRewriter {
 				l = Expressions.newList(4);
 			}
 			l.add(f);
-			e = e.getNext();
-			e2 = e2.getNext();
+			e = Expressions.next(e);
+			e2 = Expressions.next(e2);
 		}
 		if (l == null) {
 			return null;
@@ -686,7 +685,7 @@ public class OldGrammarOptimizer extends OldGrammarRewriter {
 		}
 		Expression alt = base.newChoice(e, e2);
 		l.add(alt);
-		return base.newSequence(l);
+		return base.newPair(l);
 	}
 
 }

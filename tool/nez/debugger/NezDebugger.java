@@ -47,7 +47,7 @@ public class NezDebugger {
 		this.sc = sc;
 		this.compiler = c;
 		this.module = c.getModule();
-		for (Production p : peg.getProductionList()) {
+		for (Production p : peg) {
 			this.ruleMap.put(p.getLocalName(), p);
 			this.nameList.add(p.getLocalName());
 		}

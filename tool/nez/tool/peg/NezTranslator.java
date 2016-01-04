@@ -7,6 +7,7 @@ import nez.lang.Grammar;
 import nez.lang.Nez;
 import nez.lang.NonTerminal;
 import nez.lang.Production;
+import nez.lang.expr.Expressions;
 import nez.util.StringUtils;
 
 public class NezTranslator extends PEGTranslator {
@@ -103,7 +104,7 @@ public class NezTranslator extends PEGTranslator {
 	@Override
 	public void visitPair(Nez.Pair p) {
 		int c = 0;
-		List<Expression> l = p.toList();
+		List<Expression> l = Expressions.flatten(p);
 		for (Expression e : l) {
 			if (c > 0) {
 				W(" ");

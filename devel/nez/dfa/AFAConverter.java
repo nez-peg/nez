@@ -9,6 +9,7 @@ import nez.dfa.AFAConverter.DefaultVisitor;
 import nez.lang.Expression;
 import nez.lang.Grammar;
 import nez.lang.Production;
+import nez.lang.expr.Expressions;
 
 /*
  * 
@@ -694,8 +695,8 @@ public class AFAConverter extends TreeVisitorMap<DefaultVisitor> {
 
 			// AFA tmpAfa1 = visitExpression(e.getFirst());
 			// AFA tmpAfa2 = visitExpression(e.getNext());
-			AFA tmpAfa1 = visit(e.getFirst());
-			AFA tmpAfa2 = visit(e.getNext());
+			AFA tmpAfa1 = visit(Expressions.first(e));
+			AFA tmpAfa2 = visit(Expressions.next(e));
 
 			HashSet<State> S = new HashSet<State>();
 			TreeSet<Transition> transitions = new TreeSet<Transition>();

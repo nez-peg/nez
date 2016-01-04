@@ -2,6 +2,7 @@ package nez.lang;
 
 import java.util.AbstractList;
 import java.util.HashMap;
+import java.util.List;
 
 import nez.ast.SourceLocation;
 import nez.ast.Symbol;
@@ -29,13 +30,13 @@ public abstract class Expression extends AbstractList<Expression> {
 		return this.s;
 	}
 
-	public Expression getFirst() {
-		return this;
-	}
-
-	public Expression getNext() {
-		return null;
-	}
+	// public Expression getFirst() {
+	// return this;
+	// }
+	//
+	// public Expression getNext() {
+	// return null;
+	// }
 
 	@Override
 	public final String toString() {
@@ -66,15 +67,15 @@ public abstract class Expression extends AbstractList<Expression> {
 		return Expressions.newFailure(this.getSourceLocation());
 	}
 
-	public final Expression newCset(boolean isBinary, boolean[] byteMap) {
+	public final Expression newByteSet(boolean isBinary, boolean[] byteMap) {
 		return Expressions.newByteSet(this.getSourceLocation(), byteMap);
 	}
 
-	public final Expression newSequence(Expression e, Expression e2) {
+	public final Expression newPair(Expression e, Expression e2) {
 		return Expressions.newPair(this.getSourceLocation(), e, e2);
 	}
 
-	public final Expression newSequence(UList<Expression> l) {
+	public final Expression newPair(List<Expression> l) {
 		return Expressions.newPair(this.getSourceLocation(), l);
 	}
 
@@ -116,7 +117,7 @@ public abstract class Expression extends AbstractList<Expression> {
 
 		public final boolean isVisited(String uname) {
 			if (visited != null) {
-				visited.containsKey(uname);
+				return visited.containsKey(uname);
 			}
 			return false;
 		}

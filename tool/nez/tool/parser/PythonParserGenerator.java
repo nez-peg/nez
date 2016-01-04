@@ -9,9 +9,6 @@ import nez.lang.Grammar;
 import nez.lang.Nez;
 import nez.lang.NonTerminal;
 import nez.lang.Production;
-import nez.lang.expr.Psequence;
-import nez.lang.expr.Tlfold;
-import nez.lang.expr.Tlink;
 import nez.parser.ParserGrammar;
 import nez.util.StringUtils;
 import nez.util.UList;
@@ -467,12 +464,12 @@ public class PythonParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	public void flattenSequence(Nez.Pair seq, UList<Expression> l) {
-		Expression first = seq.getFirst();
-		Expression last = seq.getNext();
-		if (first instanceof Nez.Sequence) {
-			flattenSequence((Psequence) first, l);
-			if (last instanceof Nez.Sequence) {
-				flattenSequence((Psequence) last, l);
+		Expression first = seq.get(0);
+		Expression last = seq.get(1);
+		if (first instanceof Nez.Pair) {
+			flattenSequence((Nez.Pair) first, l);
+			if (last instanceof Nez.Pair) {
+				flattenSequence((Nez.Pair) last, l);
 				return;
 			}
 			l.add(last);
@@ -480,7 +477,7 @@ public class PythonParserGenerator extends ParserGrammarSourceGenerator {
 		}
 		l.add(first);
 		if (last instanceof Nez.Sequence) {
-			flattenSequence((Psequence) last, l);
+			flattenSequence((Nez.Pair) last, l);
 			return;
 		}
 		l.add(last);

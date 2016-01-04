@@ -1,7 +1,6 @@
 package nez.lang;
 
 import java.util.HashMap;
-import java.util.List;
 
 import nez.lang.expr.Expressions;
 import nez.parser.Parser;
@@ -11,7 +10,7 @@ import nez.util.ConsoleUtils;
 import nez.util.UList;
 import nez.util.Verbose;
 
-public class Grammar extends GrammarHacks {
+public class Grammar extends GrammarBase {
 	private static int serialNumbering = 0;
 
 	private int id;
@@ -39,16 +38,11 @@ public class Grammar extends GrammarHacks {
 		return this.id;
 	}
 
-	public final String uniqueName(String name) {
+	final String uniqueName(String name) {
 		if (name.indexOf(':') == -1) {
 			return name; // already prefixed;
 		}
 		return this.ns + this.id + ":" + name;
-	}
-
-	@Override
-	public final boolean isEmpty() {
-		return this.prodList.size() == 0;
 	}
 
 	@Override
@@ -68,11 +62,14 @@ public class Grammar extends GrammarHacks {
 		return this.newProduction("START", Expressions.newEmpty(null));
 	}
 
-	public final List<Production> getProductionList() {
-		return this.prodList;
+	public final boolean hasProduction(String name) {
+		return this.getLocalProduction(name) != null;
 	}
 
 	public final Production getProduction(String name) {
+		if (name == null) {
+			return this.getStartProduction();
+		}
 		Production p = this.getLocalProduction(name);
 		if (p == null && this.parent != null) {
 			return this.parent.getProduction(name);
@@ -90,10 +87,6 @@ public class Grammar extends GrammarHacks {
 			}
 		}
 		return null;
-	}
-
-	public final boolean hasProduction(String name) {
-		return this.getLocalProduction(name) != null;
 	}
 
 	@Override
@@ -129,6 +122,14 @@ public class Grammar extends GrammarHacks {
 
 	public void addProduction(Object object, String name, Expression e) {
 		this.newProduction(name, e);
+	}
+
+	public void update(UList<Production> prodList) {
+		this.prodList = prodList;
+		this.prodMap = new HashMap<>();
+		for (Production p : prodList) {
+			this.prodMap.put(p.getLocalName(), p);
+		}
 	}
 
 	public void dump() {

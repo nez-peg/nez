@@ -1,8 +1,6 @@
 package nez.lang;
 
 import nez.lang.Nez.Byte;
-import nez.lang.expr.Pempty;
-import nez.lang.expr.Pfail;
 
 public class OldGrammarRewriter extends OldGrammarTransducer {
 
@@ -48,14 +46,14 @@ public class OldGrammarRewriter extends OldGrammarTransducer {
 
 	@Override
 	public Expression visitPair(Nez.Pair e, Object a) {
-		Expression first = e.getFirst();
+		Expression first = e.get(0);
 		push(first);
 		first = (Expression) first.visit(this, a);
-		Expression next = e.getNext();
+		Expression next = e.get(1);
 		push(next);
 		next = (Expression) next.visit(this, a);
-		pop(e.getNext());
-		pop(e.getFirst());
+		pop(e.get(1));
+		pop(e.get(0));
 		if (first instanceof Nez.Empty) {
 			return next;
 		}

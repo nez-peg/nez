@@ -5,12 +5,12 @@ import java.lang.reflect.Method;
 
 import nez.lang.Expression;
 import nez.lang.Grammar;
-import nez.lang.GrammarHacks;
+import nez.lang.GrammarBase;
 import nez.lang.Production;
 import nez.lang.expr.Expressions;
 import nez.util.Verbose;
 
-public abstract class PredefinedGrammarCombinator extends GrammarHacks {
+public abstract class PredefinedGrammarCombinator extends GrammarBase {
 	Grammar grammar;
 
 	public PredefinedGrammarCombinator(Grammar grammar, String start) {

@@ -8,8 +8,8 @@ import nez.ast.CommonTree;
 import nez.lang.Bytes;
 import nez.lang.Expression;
 import nez.lang.Nez;
-import nez.lang.NonTerminal;
 import nez.lang.Nez.Sequence;
+import nez.lang.NonTerminal;
 import nez.lang.Predicate;
 import nez.lang.Production;
 import nez.lang.expr.Cany;
@@ -21,7 +21,6 @@ import nez.lang.expr.Tcapture;
 import nez.lang.expr.Tlfold;
 import nez.lang.expr.Tlink;
 import nez.lang.expr.Treplace;
-import nez.lang.expr.Ttag;
 import nez.lang.expr.Xexists;
 import nez.lang.expr.Xis;
 import nez.lang.expr.Xlocal;
@@ -46,7 +45,7 @@ public class DebugVMCompiler extends Expression.Visitor {
 		this.builder.setGrammar(grammar);
 		this.analyzer = new GrammarAnalyzer(grammar);
 		this.analyzer.analyze();
-		for (Production p : grammar.getProductionList()) {
+		for (Production p : grammar) {
 			this.visitProduction(p);
 		}
 		// ConsoleUtils.println(this.builder.getModule().stringfy(new
@@ -376,7 +375,7 @@ public class DebugVMCompiler extends Expression.Visitor {
 	@Override
 	public MozInst visitTag(Nez.Tag p, Object next) {
 		if (this.strategy.TreeConstruction) {
-			this.builder.createItag((Nez.Tag) p);
+			this.builder.createItag(p);
 		}
 		return null;
 	}

@@ -8,12 +8,10 @@ import nez.lang.NonTerminal;
 import nez.lang.Predicate;
 import nez.lang.Production;
 import nez.lang.Typestate;
-import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cmulti;
 import nez.lang.expr.Cset;
 import nez.lang.expr.Expressions;
-import nez.lang.expr.Psequence;
 import nez.parser.Coverage;
 import nez.parser.ParseFunc;
 import nez.parser.ParserGrammar;
@@ -378,9 +376,8 @@ public class MozCompiler extends Expression.Visitor {
 
 	public final Expression getInnerExpression(Expression p) {
 		Expression inner = Expressions.resolveNonTerminal(p.get(0));
-		if (strategy.Ostring && inner instanceof Nez.Sequence) {
-			inner = ((Psequence) inner).toMultiCharSequence();
-			// System.out.println("Stringfy:" + inner);
+		if (strategy.Ostring) {
+			inner = Expressions.tryMultiCharSequence(inner);
 		}
 		return inner;
 	}
@@ -397,7 +394,7 @@ public class MozCompiler extends Expression.Visitor {
 				this.optimizedUnary(p);
 				return new Moz.OSet((Cset) inner, (MozInst) next);
 			}
-			if (inner instanceof Cmulti) {
+			if (inner instanceof Nez.MultiByte) {
 				this.optimizedUnary(p);
 				return new Moz.OStr((Cmulti) inner, (MozInst) next);
 			}
@@ -421,7 +418,7 @@ public class MozCompiler extends Expression.Visitor {
 				this.optimizedUnary((Expression) p);
 				return new Moz.RSet((Cset) inner, (MozInst) next);
 			}
-			if (inner instanceof Cmulti) {
+			if (inner instanceof Nez.MultiByte) {
 				this.optimizedUnary((Expression) p);
 				return new Moz.RStr((Cmulti) inner, (MozInst) next);
 			}
@@ -445,7 +442,7 @@ public class MozCompiler extends Expression.Visitor {
 				this.optimizedUnary(p);
 				return new Moz.NAny(inner, false, (MozInst) next);
 			}
-			if (inner instanceof Cmulti) {
+			if (inner instanceof Nez.MultiByte) {
 				this.optimizedUnary(p);
 				return new Moz.NStr((Cmulti) inner, (MozInst) next);
 			}
@@ -502,7 +499,7 @@ public class MozCompiler extends Expression.Visitor {
 			int index = findIndex(choice, predicted);
 			MozInst inst = compiled[index];
 			if (inst == null) {
-				Expression next2 = predicted.getNext();
+				Expression next2 = Expressions.next(predicted);
 				if (next2 != null) {
 					inst = visit(next2, next);
 				} else {

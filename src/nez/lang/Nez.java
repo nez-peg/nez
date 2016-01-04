@@ -2,7 +2,6 @@ package nez.lang;
 
 import nez.ast.Symbol;
 import nez.lang.expr.Expressions;
-import nez.util.UList;
 
 public class Nez {
 
@@ -287,19 +286,22 @@ public class Nez {
 
 		@Override
 		public final Expression get(int index) {
+			assert (index < 2);
 			return index == 0 ? this.first : this.next;
 		}
 
 		@Override
 		public final Expression set(int index, Expression e) {
-			Expression p = this.first;
+			assert (index < 2);
 			if (index == 0) {
+				Expression p = this.first;
 				this.first = e;
-			} else if (index == 1) {
-				p = this.next;
+				return p;
+			} else {
+				Expression p = this.next;
 				this.next = e;
+				return p;
 			}
-			return p;
 		}
 
 		@Override
@@ -313,21 +315,6 @@ public class Nez {
 		@Override
 		public final Object visit(Expression.Visitor v, Object a) {
 			return v.visitPair(this, a);
-		}
-
-		public final UList<Expression> toList() {
-			UList<Expression> l = Expressions.newList(4);
-			Nez.Pair p = this;
-			while (true) {
-				l.add(p.getFirst());
-				Expression e = p.getNext();
-				if (!(e instanceof Nez.Pair)) {
-					break;
-				}
-				p = (Nez.Pair) e;
-			}
-			l.add(p.getNext());
-			return l;
 		}
 
 	}

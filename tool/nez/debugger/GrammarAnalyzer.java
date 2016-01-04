@@ -6,18 +6,9 @@ import nez.lang.Nez;
 import nez.lang.Nez.Unary;
 import nez.lang.NonTerminal;
 import nez.lang.Production;
-import nez.lang.expr.Cany;
-import nez.lang.expr.Pchoice;
-import nez.lang.expr.Pfail;
 import nez.lang.expr.Pnot;
-import nez.lang.expr.Pone;
 import nez.lang.expr.Poption;
-import nez.lang.expr.Psequence;
-import nez.lang.expr.Pzero;
-import nez.lang.expr.Tcapture;
 import nez.lang.expr.Tnew;
-import nez.lang.expr.Treplace;
-import nez.lang.expr.Ttag;
 import nez.util.ConsoleUtils;
 
 public class GrammarAnalyzer {
@@ -28,7 +19,7 @@ public class GrammarAnalyzer {
 	}
 
 	public void analyze() {
-		for (Production p : this.peg.getProductionList()) {
+		for (Production p : this.peg) {
 			this.analizeConsumption(p.getExpression());
 		}
 	}

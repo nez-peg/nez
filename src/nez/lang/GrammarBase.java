@@ -7,7 +7,7 @@ import nez.ast.Symbol;
 import nez.lang.expr.Expressions;
 import nez.util.UList;
 
-public abstract class GrammarHacks extends AbstractList<Production> {
+public abstract class GrammarBase extends AbstractList<Production> {
 	protected SourceLocation getSourcePosition() {
 		return null;
 	}
