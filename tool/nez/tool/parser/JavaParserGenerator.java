@@ -314,7 +314,7 @@ public class JavaParserGenerator extends ParserGrammarSourceGenerator {
 			writeOptionLogic(e);
 		} else if (e instanceof Nez.ZeroMore || e instanceof Nez.OneMore) {
 			writeRepetitionLogic(e);
-		} else if (e instanceof Pnot || e instanceof Nez.And) {
+		} else if (e instanceof Nez.Not || e instanceof Nez.And) {
 			writePredicateLogic(e);
 		} else {
 			visitExpression(e);

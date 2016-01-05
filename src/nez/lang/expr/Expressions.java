@@ -81,14 +81,14 @@ public abstract class Expressions {
 			while (next < el.size()) {
 				next = appendExpressionOrMultiChar(el, next, el2, bytes);
 			}
-			return Expressions.newPair(e.getSourceLocation(), el2);
+			e = Expressions.newSequence(e.getSourceLocation(), el2);
 		}
 		return e;
 	}
 
 	private final static int appendExpressionOrMultiChar(List<Expression> el, int start, List<Expression> el2, UList<Byte> bytes) {
-		Expression e = el.get(start);
 		int next = start + 1;
+		Expression e = el.get(start);
 		if (e instanceof Nez.Byte) {
 			bytes.clear();
 			for (int i = start; i < el.size(); i++) {
@@ -111,6 +111,8 @@ public abstract class Expressions {
 		el2.add(e);
 		return next;
 	}
+
+	// ---------------------------------------------------------------------
 
 	public final static UList<Expression> newList(int size) {
 		return new UList<Expression>(new Expression[size]);
@@ -281,16 +283,16 @@ public abstract class Expressions {
 		return a;
 	}
 
-	public final static Expression newChoice(SourceLocation s, UList<Expression> l) {
+	public final static Expression newChoice(SourceLocation s, List<Expression> l) {
 		int size = l.size();
 		for (int i = 0; i < size; i++) {
-			if (l.ArrayValues[i] instanceof Nez.Empty) {
+			if (l.get(i) instanceof Nez.Empty) {
 				size = i + 1;
 				break;
 			}
 		}
 		if (size == 1) {
-			return l.ArrayValues[0];
+			return l.get(0);
 		}
 		return new Pchoice(s, l, size);
 	}

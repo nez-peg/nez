@@ -46,7 +46,7 @@ public class Productions {
 	}
 
 	/**
-	 * Count the number of nonterminal reference in the given grammar
+	 * Counts the number of nonterminal reference in the given grammar
 	 * 
 	 * @param grammar
 	 * @return a mapping from nonterminal (unique name) to the reference count
@@ -54,6 +54,7 @@ public class Productions {
 
 	public final static Map<String, Integer> countNonTerminalReference(Grammar grammar) {
 		HashMap<String, Integer> counts = new HashMap<>();
+		counts.put(grammar.getStartProduction().getUniqueName(), 1);
 		for (Production p : grammar) {
 			count(p.getExpression(), counts);
 		}

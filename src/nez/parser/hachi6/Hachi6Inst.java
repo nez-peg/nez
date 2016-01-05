@@ -12,6 +12,8 @@ public abstract class Hachi6Inst implements NezInst {
 		this.next = next;
 	}
 
+	public abstract void visit(Hachi6Visitor v);
+
 	public abstract Hachi6Inst exec(Hachi6Machine sc) throws TerminationException;
 
 	public final boolean isIncrementedNext() {
@@ -24,17 +26,6 @@ public abstract class Hachi6Inst implements NezInst {
 	Hachi6Inst branch() {
 		return null;
 	}
-
-	// protected static Hachi6Inst labeling(Hachi6Inst inst) {
-	// if (inst != null) {
-	// inst.label = true;
-	// }
-	// return inst;
-	// }
-	//
-	// protected static String label(Hachi6Inst inst) {
-	// return "L" + inst.id;
-	// }
 
 	public final String getName() {
 		return this.getClass().getSimpleName();

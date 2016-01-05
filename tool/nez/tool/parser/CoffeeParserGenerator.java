@@ -183,7 +183,7 @@ public class CoffeeParserGenerator extends ParserGrammarSourceGenerator {
 		boolean isFirst = true;
 		boolean inLeftSequence = false;
 		for (Expression s : p) {
-			if (s instanceof Tnew) {
+			if (s instanceof Nez.BeginTree) {
 				if (isLeftNew) {
 					cntNew++;
 				}

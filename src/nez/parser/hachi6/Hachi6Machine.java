@@ -199,6 +199,22 @@ public class Hachi6Machine {
 		return jump;
 	}
 
+	public final Hachi6Inst xSkip(Hachi6Inst jump) {
+		int n = failstack + 1;
+		// int pos = istacks[n];
+		// if (pos == this.pos) {
+		// return xFail();
+		// }
+		// istacks[n] = pos;
+		if (enabledAST) {
+			// s2.ref = astMachine.saveTransactionPoint();
+			istacks[n + 2] = this.ounused;
+			rstacks[n + 3] = this.oleft;
+		}
+		// s2.value = symbolTable.savePoint();
+		return jump;
+	}
+
 	/* AST construction */
 	private boolean enabledAST = false;
 	private Object[] ostacks = null;
@@ -219,6 +235,14 @@ public class Hachi6Machine {
 	// public final void xDup() {
 	// push(this.oleft);
 	// }
+
+	public final void xPushTree() {
+		push(this.oleft); // dup
+	}
+
+	public final void xPopTree() {
+		this.oleft = rpop();
+	}
 
 	public final void xLink(Symbol label) {
 		opush(label);
@@ -320,9 +344,9 @@ public class Hachi6Machine {
 		memoTable.setMemo(start, memo, false, this.oleft, this.pos - start, 0);
 	}
 
-}
+	public final void xFailMemo(int memo) {
+		int start = ipop();
+		memoTable.setMemo(start, memo, true, this.oleft, 0, 0);
+	}
 
-class Hachi6StackData {
-	Object ref;
-	int num;
 }

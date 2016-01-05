@@ -233,7 +233,7 @@ public class OldGrammarOptimizer extends OldGrammarRewriter {
 
 	// used to test inlining
 	public final static boolean isSingleInstruction(Expression e) {
-		if (e instanceof Pnot || e instanceof Nez.ZeroMore || e instanceof Nez.Option) {
+		if (e instanceof Nez.Not || e instanceof Nez.ZeroMore || e instanceof Nez.Option) {
 			return isSingleCharacter(e.get(0));
 		}
 		return false;
@@ -270,7 +270,7 @@ public class OldGrammarOptimizer extends OldGrammarRewriter {
 			Expression first = l.get(i - 1);
 			Expression next = l.get(i);
 			if (isSingleCharacter(next)) {
-				if (first instanceof Tnew) {
+				if (first instanceof Nez.BeginTree) {
 					((Tnew) first).shift -= 1;
 					Expressions.swap(l, i - 1, i);
 					this.verboseOutofOrdered("out-of-order", next, first);
@@ -322,7 +322,7 @@ public class OldGrammarOptimizer extends OldGrammarRewriter {
 	}
 
 	private boolean isNotChar(Expression p) {
-		if (p instanceof Pnot) {
+		if (p instanceof Nez.Not) {
 			return (p.get(0) instanceof Nez.ByteSet || p.get(0) instanceof Nez.Byte);
 		}
 		return false;

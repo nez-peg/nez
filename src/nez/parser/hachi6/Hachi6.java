@@ -11,6 +11,7 @@ public class Hachi6 {
 	//
 			{ "Nop" }, //
 			{ "Label", "name" }, //
+			{ "Cov", "uid" }, //
 			{ "Exit", "state" }, //
 
 			{ "Pos" }, //
@@ -23,19 +24,35 @@ public class Hachi6 {
 			{ "Succ" }, //
 			{ "Fail" }, //
 			{ "Guard" }, //
+			{ "Step" }, //
 
 			// Matching
 			{ "Byte", "byteChar" }, //
-			{ "Any" }, //
+			{ "Set", "byteSet" }, //
 			{ "Str", "utf8" }, //
-			{ "Set", "set" }, //
+			{ "Any" }, //
+
+			{ "NByte", "byteChar" }, //
+			{ "NSet", "byteSet" }, //
+			{ "NStr", "utf8" }, //
+			{ "NAny" }, //
+
+			{ "OByte", "byteChar" }, //
+			{ "OSet", "byteSet" }, //
+			{ "OStr", "utf8" }, //
+
+			{ "RByte", "byteChar" }, //
+			{ "RSet", "byteSet" }, //
+			{ "RStr", "utf8" }, //
 
 			// Memoization
-			{ "Lookup", "jump", "memoPoint" }, //
-			{ "Memo", "memoPoint" }, //
-			// { "MemoFail", "State", "MemoPoint" }, //
+			{ "Lookup", "jump", "uid" }, //
+			{ "Memo", "uid" }, //
+			{ "FailMemo", "uid" }, //
 
 			// AST Construction
+			{ "PushTree" }, //
+			{ "PopTree" }, //
 			{ "Init", "shift" }, //
 			{ "New", "shift" }, //
 			{ "Tag", "tag" }, //
@@ -65,22 +82,6 @@ public class Hachi6 {
 			{ "Dispatch", "jumpTable" }, //
 			{ "EDispatch", "jumpTable" }, //
 
-			// Super instructions
-			{ "NByte", "Byte" }, //
-			{ "NAny" }, //
-			{ "NStr", "Bstr" }, //
-			{ "NSet", "Bset" }, //
-			{ "OByte", "Byte" }, //
-			{ "OAny" }, //
-			{ "OStr", "Bstr" }, //
-			{ "OSet", "Bset" }, //
-			{ "RByte", "Byte" }, //
-			{ "RAny" }, //
-			{ "RStr", "Bstr" }, //
-			{ "RSet", "Bset" }, //
-
-	// { "Cov", "Id" }, //
-	// { "Covx", "Id" }, //
 	};
 
 	static HashMap<String, String[]> instMap = new HashMap<String, String[]>();
@@ -106,37 +107,37 @@ public class Hachi6 {
 		return null;
 	}
 
-	static HashMap<String, String> javaMap = new HashMap<String, String>();
-	static {
-		// type
-		javaMap.put("tNonTerminal", "String");
-		javaMap.put("tJump", "Hachi6Inst");
-		javaMap.put("tJumpTable", "Hachi6Inst[]");
-		javaMap.put("tByte", "int");
-		javaMap.put("tBset", "boolean[]");
-		javaMap.put("tBstr", "byte[]");
-		javaMap.put("tShift", "int");
-		javaMap.put("tMemoPoint", "int");
-		javaMap.put("tState", "boolean");
-		javaMap.put("tLabel", "Symbol");
-		javaMap.put("tTag", "Symbol");
-		javaMap.put("tTable", "Symbol");
-
-		// name
-		javaMap.put("nNonTerminal", "nonTerminal");
-		javaMap.put("nJump", "jump");
-		javaMap.put("nJumpTable", "jumpTable");
-		javaMap.put("nByte", "byteChar");
-		javaMap.put("nBset", "byteMap");
-		javaMap.put("nBstr", "utf8");
-		javaMap.put("nShift", "shift");
-		javaMap.put("nMemoPoint", "memoPoint");
-		javaMap.put("nState", "state");
-		javaMap.put("nLabel", "label");
-		javaMap.put("nTag", "tag");
-		javaMap.put("nTable", "table");
-
-	}
+	// static HashMap<String, String> javaMap = new HashMap<String, String>();
+	// static {
+	// // type
+	// javaMap.put("tNonTerminal", "String");
+	// javaMap.put("tJump", "Hachi6Inst");
+	// javaMap.put("tJumpTable", "Hachi6Inst[]");
+	// javaMap.put("tByte", "int");
+	// javaMap.put("tBset", "boolean[]");
+	// javaMap.put("tBstr", "byte[]");
+	// javaMap.put("tShift", "int");
+	// javaMap.put("tMemoPoint", "int");
+	// javaMap.put("tState", "boolean");
+	// javaMap.put("tLabel", "Symbol");
+	// javaMap.put("tTag", "Symbol");
+	// javaMap.put("tTable", "Symbol");
+	//
+	// // name
+	// javaMap.put("nNonTerminal", "nonTerminal");
+	// javaMap.put("nJump", "jump");
+	// javaMap.put("nJumpTable", "jumpTable");
+	// javaMap.put("nByte", "byteChar");
+	// javaMap.put("nBset", "byteMap");
+	// javaMap.put("nBstr", "utf8");
+	// javaMap.put("nShift", "shift");
+	// javaMap.put("nMemoPoint", "memoPoint");
+	// javaMap.put("nState", "state");
+	// javaMap.put("nLabel", "label");
+	// javaMap.put("nTag", "tag");
+	// javaMap.put("nTable", "table");
+	//
+	// }
 
 	public static class Nop extends Hachi6Inst {
 		public Nop(Hachi6Inst next) {
@@ -146,6 +147,11 @@ public class Hachi6 {
 		@Override
 		public Hachi6Inst exec(Hachi6Machine sc) throws TerminationException {
 			return this.next;
+		}
+
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitNop(this);
 		}
 	}
 
@@ -161,6 +167,30 @@ public class Hachi6 {
 		public Hachi6Inst exec(Hachi6Machine sc) throws TerminationException {
 			return next;
 		}
+
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitLabel(this);
+		}
+	}
+
+	public static class Cov extends Hachi6Inst {
+		int uid;
+
+		public Cov(int uid, Hachi6Inst next) {
+			super(next);
+			this.uid = uid;
+		}
+
+		@Override
+		public Hachi6Inst exec(Hachi6Machine sc) throws TerminationException {
+			return next;
+		}
+
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitCov(this);
+		}
 	}
 
 	public static class Exit extends Hachi6Inst {
@@ -175,6 +205,11 @@ public class Hachi6 {
 		public Hachi6Inst exec(Hachi6Machine sc) throws TerminationException {
 			throw new TerminationException(state);
 		}
+
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitExit(this);
+		}
 	}
 
 	public static class Pos extends Hachi6Inst {
@@ -187,6 +222,11 @@ public class Hachi6 {
 			sc.xPos();
 			return this.next;
 		}
+
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitPos(this);
+		}
 	}
 
 	public static class Back extends Hachi6Inst {
@@ -198,6 +238,11 @@ public class Hachi6 {
 		public Hachi6Inst exec(Hachi6Machine sc) throws TerminationException {
 			sc.xBack();
 			return this.next;
+		}
+
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitBack(this);
 		}
 	}
 
@@ -214,6 +259,11 @@ public class Hachi6 {
 			sc.shift(shift);
 			return this.next;
 		}
+
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitMove(this);
+		}
 	}
 
 	public static class Jump extends Hachi6Branch {
@@ -224,6 +274,11 @@ public class Hachi6 {
 		@Override
 		public Hachi6Inst exec(Hachi6Machine sc) throws TerminationException {
 			return this.jump;
+		}
+
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitJump(this);
 		}
 	}
 
@@ -241,6 +296,11 @@ public class Hachi6 {
 			sc.push(this.next);
 			return this.jump;
 		}
+
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitCall(this);
+		}
 	}
 
 	// Ret
@@ -252,6 +312,11 @@ public class Hachi6 {
 		@Override
 		public Hachi6Inst exec(Hachi6Machine sc) throws TerminationException {
 			return (Hachi6Inst) sc.rpop();
+		}
+
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitRet(this);
 		}
 	}
 
@@ -266,6 +331,11 @@ public class Hachi6 {
 			sc.xAlt(this.jump);
 			return this.next;
 		}
+
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitAlt(this);
+		}
 	}
 
 	// Succ
@@ -279,6 +349,11 @@ public class Hachi6 {
 			sc.xSucc();
 			return this.next;
 		}
+
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitSucc(this);
+		}
 	}
 
 	// Fail
@@ -290,6 +365,11 @@ public class Hachi6 {
 		@Override
 		public final Hachi6Inst exec(Hachi6Machine sc) throws TerminationException {
 			return sc.xFail();
+		}
+
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitFail(this);
 		}
 	}
 
@@ -304,6 +384,27 @@ public class Hachi6 {
 			return sc.xGuard(this.next);
 		}
 
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitGuard(this);
+		}
+	}
+
+	// Step
+	public static class Skip extends Hachi6Inst {
+		public Skip(Hachi6Inst next) {
+			super(next);
+		}
+
+		@Override
+		public final Hachi6Inst exec(Hachi6Machine sc) throws TerminationException {
+			return sc.xSkip(this.next);
+		}
+
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitSkip(this);
+		}
 	}
 
 	// Byte
@@ -323,6 +424,11 @@ public class Hachi6 {
 			return sc.xFail();
 		}
 
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitByte(this);
+		}
+
 	}
 
 	// Any
@@ -338,6 +444,11 @@ public class Hachi6 {
 				return this.next;
 			}
 			return sc.xFail();
+		}
+
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitAny(this);
 		}
 	}
 
@@ -357,55 +468,132 @@ public class Hachi6 {
 			}
 			return sc.xFail();
 		}
+
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitStr(this);
+		}
 	}
 
 	// Set
 	public static class Set extends Hachi6Inst {
-		public final boolean[] set;
+		public final boolean[] byteSet;
 
 		public Set(boolean[] set, Hachi6Inst next) {
 			super(next);
-			this.set = set;
+			this.byteSet = set;
 		}
 
 		@Override
 		public final Hachi6Inst exec(Hachi6Machine sc) throws TerminationException {
 			int u = sc.read();
-			if (set[u]) {
+			if (byteSet[u]) {
 				return this.next;
 			}
 			return sc.xFail();
+		}
+
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitSet(this);
 		}
 	}
 
 	// Lookup
 	public static class Lookup extends Hachi6Branch {
-		public final int memo;
+		public final int uid;
 
 		public Lookup(Hachi6Inst jump, int memo, Hachi6Inst next) {
 			super(jump, next);
-			this.memo = memo;
+			this.uid = memo;
 		}
 
 		@Override
 		public final Hachi6Inst exec(Hachi6Machine sc) throws TerminationException {
-			return sc.xLookup(this.memo) ? this.jump : this.next;
+			return sc.xLookup(this.uid) ? this.jump : this.next;
+		}
+
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitLookup(this);
 		}
 	}
 
 	// Memo
 	public static class Memo extends Hachi6Inst {
-		public final int memo;
+		public final int uid;
 
-		public Memo(int memo, Hachi6Inst next) {
+		public Memo(int uid, Hachi6Inst next) {
 			super(next);
-			this.memo = memo;
+			this.uid = uid;
 		}
 
 		@Override
 		public final Hachi6Inst exec(Hachi6Machine sc) throws TerminationException {
-			sc.xMemo(memo);
+			sc.xMemo(uid);
 			return this.next;
+		}
+
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitMemo(this);
+		}
+	}
+
+	// FailMemo
+	public static class FailMemo extends Hachi6Inst {
+		public final int uid;
+
+		public FailMemo(int uid, Hachi6Inst next) {
+			super(next);
+			this.uid = uid;
+		}
+
+		@Override
+		public final Hachi6Inst exec(Hachi6Machine sc) throws TerminationException {
+			sc.xFailMemo(uid);
+			return this.next;
+		}
+
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitFailMemo(this);
+		}
+	}
+
+	// PushTree
+	public static class PushTree extends Hachi6Inst {
+		public PushTree(Hachi6Inst next) {
+			super(next);
+		}
+
+		@Override
+		public final Hachi6Inst exec(Hachi6Machine sc) throws TerminationException {
+			sc.xPushTree();
+			return this.next;
+		}
+
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitPushTree(this);
+		}
+	}
+
+	// PopTree
+	public static class PopTree extends Hachi6Inst {
+		public PopTree(Hachi6Inst next) {
+			super(next);
+		}
+
+		@Override
+		public final Hachi6Inst exec(Hachi6Machine sc) throws TerminationException {
+			sc.xPopTree();
+			return this.next;
+		}
+
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitPopTree(this);
 		}
 	}
 
@@ -422,6 +610,11 @@ public class Hachi6 {
 		public final Hachi6Inst exec(Hachi6Machine sc) throws TerminationException {
 			sc.xSinit(shift);
 			return this.next;
+		}
+
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitSinit(this);
 		}
 	}
 
@@ -443,6 +636,11 @@ public class Hachi6 {
 			sc.xSnew(shift, tag, value);
 			return this.next;
 		}
+
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitSnew(this);
+		}
 	}
 
 	// Init
@@ -458,6 +656,11 @@ public class Hachi6 {
 		public final Hachi6Inst exec(Hachi6Machine sc) throws TerminationException {
 			sc.xInit(shift);
 			return this.next;
+		}
+
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitInit(this);
 		}
 	}
 
@@ -475,6 +678,11 @@ public class Hachi6 {
 			sc.xNew(shift);
 			return this.next;
 		}
+
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitNew(this);
+		}
 	}
 
 	// Tag
@@ -490,6 +698,11 @@ public class Hachi6 {
 		public final Hachi6Inst exec(Hachi6Machine sc) throws TerminationException {
 			sc.opush(tag);
 			return this.next;
+		}
+
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitTag(this);
 		}
 	}
 
@@ -507,6 +720,11 @@ public class Hachi6 {
 			sc.opush(value);
 			return this.next;
 		}
+
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitValue(this);
+		}
 	}
 
 	public static class Link extends Hachi6Inst {
@@ -521,6 +739,11 @@ public class Hachi6 {
 		public final Hachi6Inst exec(Hachi6Machine sc) throws TerminationException {
 			sc.xLink(label);
 			return this.next;
+		}
+
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitLink(this);
 		}
 	}
 
@@ -537,6 +760,11 @@ public class Hachi6 {
 		public final Hachi6Inst exec(Hachi6Machine sc) throws TerminationException {
 			sc.xEmit(label);
 			return this.next;
+		}
+
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitEmit(this);
 		}
 	}
 
@@ -555,6 +783,11 @@ public class Hachi6 {
 			sc.xLeftFold(shift, label);
 			return this.next;
 		}
+
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitLeftFold(this);
+		}
 	}
 
 	/* symbol table */
@@ -572,6 +805,10 @@ public class Hachi6 {
 			return this.next;
 		}
 
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitSOpen(this);
+		}
 	}
 
 	// SClose
@@ -585,6 +822,11 @@ public class Hachi6 {
 			// StackData s = sc.popStack();
 			// sc.getSymbolTable().rollBack((int) s.value);
 			return this.next;
+		}
+
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitSClose(this);
 		}
 	}
 
@@ -606,6 +848,11 @@ public class Hachi6 {
 			return this.next;
 		}
 
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitSMask(this);
+		}
+
 	}
 
 	public static class SDef extends Hachi6Inst {
@@ -622,6 +869,11 @@ public class Hachi6 {
 			// byte[] captured = sc.subbyte(top.value, sc.getPosition());
 			// sc.getSymbolTable().addSymbol(this.table, captured);
 			return this.next;
+		}
+
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitSDef(this);
 		}
 
 	}
@@ -645,6 +897,10 @@ public class Hachi6 {
 			return this.next;
 		}
 
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitSIsDef(this);
+		}
 	}
 
 	// SExists
@@ -661,6 +917,11 @@ public class Hachi6 {
 			// byte[] t = sc.getSymbolTable().getSymbol(table);
 			// return t != null ? this.next : sc.fail();
 			return this.next;
+		}
+
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitSExists(this);
 		}
 
 	}
@@ -686,6 +947,11 @@ public class Hachi6 {
 			// }
 			// return sc.fail();
 			return this.next;
+		}
+
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitSMatch(this);
 		}
 	}
 
@@ -716,6 +982,11 @@ public class Hachi6 {
 			return this.next;
 		}
 
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitSIs(this);
+		}
+
 	}
 
 	// SIsa
@@ -739,6 +1010,11 @@ public class Hachi6 {
 			// return sc.fail();
 			return this.next;
 		}
+
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitSIsa(this);
+		}
 	}
 
 	// SDefNum
@@ -754,6 +1030,11 @@ public class Hachi6 {
 		public Hachi6Inst exec(Hachi6Machine sc) throws TerminationException {
 			// TODO Auto-generated method stub
 			return null;
+		}
+
+		@Override
+		public void visit(Hachi6Visitor v) {
+			throw new RuntimeException("TODO");
 		}
 	}
 
@@ -771,6 +1052,11 @@ public class Hachi6 {
 			// TODO Auto-generated method stub
 			return null;
 		}
+
+		@Override
+		public void visit(Hachi6Visitor v) {
+			throw new RuntimeException("TODO");
+		}
 	}
 
 	/* DFA */
@@ -786,6 +1072,11 @@ public class Hachi6 {
 			return jumpTable[ch];
 		}
 
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitDispatch(this);
+		}
+
 	}
 
 	public static class EDispatch extends Hachi6BranchTable {
@@ -797,6 +1088,11 @@ public class Hachi6 {
 		public Hachi6Inst exec(Hachi6Machine sc) throws TerminationException {
 			int ch = sc.prefetch();
 			return jumpTable[ch];
+		}
+
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitEDispatch(this);
 		}
 
 	}
@@ -819,6 +1115,11 @@ public class Hachi6 {
 			return sc.xFail();
 		}
 
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitNByte(this);
+		}
+
 	}
 
 	// NAny
@@ -833,6 +1134,11 @@ public class Hachi6 {
 				return this.next;
 			}
 			return sc.xFail();
+		}
+
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitNAny(this);
 		}
 	}
 
@@ -851,23 +1157,33 @@ public class Hachi6 {
 			}
 			return sc.xFail();
 		}
+
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitNStr(this);
+		}
 	}
 
 	public static class NSet extends Hachi6Inst {
-		public final boolean[] set;
+		public final boolean[] byteSet;
 
 		public NSet(boolean[] set, Hachi6Inst next) {
 			super(next);
-			this.set = set;
+			this.byteSet = set;
 		}
 
 		@Override
 		public Hachi6Inst exec(Hachi6Machine sc) throws TerminationException {
 			int byteChar = sc.prefetch();
-			if (!set[byteChar]) {
+			if (!byteSet[byteChar]) {
 				return this.next;
 			}
 			return sc.xFail();
+		}
+
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitNSet(this);
 		}
 	}
 
@@ -886,6 +1202,11 @@ public class Hachi6 {
 				sc.shift(1);
 			}
 			return this.next;
+		}
+
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitOByte(this);
 		}
 	}
 
@@ -909,24 +1230,34 @@ public class Hachi6 {
 			sc.match(this.utf8);
 			return this.next;
 		}
+
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitOStr(this);
+		}
 	}
 
 	// OSet
 	public static class OSet extends Hachi6Inst {
-		public final boolean[] set;
+		public final boolean[] byteSet;
 
 		public OSet(boolean[] set, Hachi6Inst next) {
 			super(next);
-			this.set = set;
+			this.byteSet = set;
 		}
 
 		@Override
 		public Hachi6Inst exec(Hachi6Machine sc) throws TerminationException {
 			int bc = sc.prefetch();
-			if (set[bc]) {
+			if (byteSet[bc]) {
 				sc.shift(1);
 			}
 			return this.next;
+		}
+
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitOSet(this);
 		}
 	}
 
@@ -945,22 +1276,32 @@ public class Hachi6 {
 			}
 			return this.next;
 		}
-	}
-
-	public static class RAny extends Hachi6Inst {
-		public RAny(Hachi6Inst next) {
-			super(next);
-		}
 
 		@Override
-		public Hachi6Inst exec(Hachi6Machine sc) throws TerminationException {
-			while (sc.prefetch() != 0) {
-				sc.shift(1);
-			}
-			return this.next;
+		public void visit(Hachi6Visitor v) {
+			v.visitRByte(this);
 		}
-
 	}
+
+	// public static class RAny extends Hachi6Inst {
+	// public RAny(Hachi6Inst next) {
+	// super(next);
+	// }
+	//
+	// @Override
+	// public Hachi6Inst exec(Hachi6Machine sc) throws TerminationException {
+	// while (sc.prefetch() != 0) {
+	// sc.shift(1);
+	// }
+	// return this.next;
+	// }
+	//
+	// @Override
+	// public void visit(Hachi6Visitor v) {
+	// v.visitRByte(this);
+	// }
+	//
+	// }
 
 	public static class RStr extends Hachi6Inst {
 		public final byte[] utf8;
@@ -975,6 +1316,11 @@ public class Hachi6 {
 			while (sc.match(this.utf8)) {
 			}
 			return this.next;
+		}
+
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitRStr(this);
 		}
 	}
 
@@ -994,6 +1340,11 @@ public class Hachi6 {
 				byteChar = sc.prefetch();
 			}
 			return this.next;
+		}
+
+		@Override
+		public void visit(Hachi6Visitor v) {
+			v.visitRSet(this);
 		}
 	}
 

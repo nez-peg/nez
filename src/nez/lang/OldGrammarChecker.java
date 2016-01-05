@@ -114,7 +114,7 @@ public class OldGrammarChecker extends OldGrammarTransducer {
 			if (e instanceof Nez.OneMore) {
 				return r;
 			}
-			if (e instanceof Pnot || e instanceof Nez.ZeroMore || e instanceof Nez.Option || e instanceof Nez.And) {
+			if (e instanceof Nez.Not || e instanceof Nez.ZeroMore || e instanceof Nez.Option || e instanceof Nez.And) {
 				return false;
 			}
 			return r;

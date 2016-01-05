@@ -64,7 +64,7 @@ public class GrammarAnalyzer {
 		if (p instanceof Nez.Fail) {
 			return false;
 		}
-		if (p instanceof Pnot) {
+		if (p instanceof Nez.Not) {
 			if (p.get(0) instanceof Nez.Any) {
 				return false;
 			}
@@ -95,7 +95,7 @@ public class GrammarAnalyzer {
 	}
 
 	public boolean isUnconsumedASTConstruction(Expression p) {
-		if (p instanceof Tnew || p instanceof Nez.EndTree || p instanceof Nez.Tag || p instanceof Nez.Replace) {
+		if (p instanceof Nez.BeginTree || p instanceof Nez.EndTree || p instanceof Nez.Tag || p instanceof Nez.Replace) {
 			return true;
 		}
 		return false;

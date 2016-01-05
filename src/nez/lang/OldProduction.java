@@ -130,7 +130,7 @@
 //			quickCheck(p, e.get(0));
 //			return;
 //		}
-//		if (e instanceof Pnot || instanceof Nez.Option || e instanceof Nez.ZeroMore || e instanceof Nez.And) {
+//		if (e instanceof Nez.Not || instanceof Nez.Option || e instanceof Nez.ZeroMore || e instanceof Nez.And) {
 //			boolean consumed = UFlag.is(p.flag, ConsumedProduction);
 //			quickCheck(p, e.get(0));
 //			if (!consumed) {
@@ -437,7 +437,7 @@
 //	// if (e instanceof Nez.OneMore) {
 //	// return checkConsumed(e.get(0), s);
 //	// }
-//	// if (e instanceof Pnot || instanceof Nez.Option || e instanceof Nez.ZeroMore || e
+//	// if (e instanceof Nez.Not || instanceof Nez.Option || e instanceof Nez.ZeroMore || e
 //	// instanceof Nez.And) {
 //	// return false;
 //	// }

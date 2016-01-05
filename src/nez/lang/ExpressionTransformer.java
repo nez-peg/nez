@@ -140,7 +140,6 @@ public class ExpressionTransformer extends Expression.Visitor {
 
 	@Override
 	public Object visitLeftFold(LeftFold e, Object a) {
-		e.set(0, this.visit(e.get(0), a));
 		return e;
 	}
 

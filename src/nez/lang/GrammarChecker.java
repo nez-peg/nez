@@ -5,13 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import nez.lang.expr.Cbyte;
-import nez.lang.expr.Cset;
 import nez.lang.expr.Expressions;
-import nez.lang.expr.Pnot;
-import nez.lang.expr.Tcapture;
-import nez.lang.expr.Tlfold;
-import nez.lang.expr.Tnew;
 import nez.parser.ParserStrategy;
 import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
@@ -24,9 +18,8 @@ public class GrammarChecker {
 		GrammarContext context = new GrammarContext(start, null, strategy);
 		ConditionEliminator eliminator = new ConditionEliminator(context);
 		Grammar g = eliminator.transform();
-
-		final Map<String, Integer> refCounts = Productions.countNonTerminalReference(g);
-
+		new GrammarOptimizer(g, strategy);
+		new Normalizer().perform(g);
 		return g;
 	}
 
@@ -103,7 +96,6 @@ public class GrammarChecker {
 
 		private Production checkFirstVisitedProduction(String cname, Production p) {
 			this.visited(cname);
-			System.out.println("# " + cname);
 			Production gp = this.grammar.newProduction(cname, null);
 			// Production parserProduction/* local production */=
 			// parserGrammar.newProduction(uname, null);
@@ -154,7 +146,7 @@ public class GrammarChecker {
 		// if (e instanceof Nez.OneMore) {
 		// return r;
 		// }
-		// if (e instanceof Pnot || e instanceof Nez.ZeroMore || instanceof
+		// if (e instanceof Nez.Not || e instanceof Nez.ZeroMore || instanceof
 		// Nez.Option || e
 		// instanceof Nez.And) {
 		// return false;
@@ -444,11 +436,11 @@ public class GrammarChecker {
 				this.aliasMap = new HashMap<String, String>();
 			}
 			if (strategy.Odchoice) {
-				this.toOptimizeChoiceList = new UList<Nez.Choice>(new Nez.Choice[8]);
+				this.deterministicChoiceList = new UList<Nez.Choice>(new Nez.Choice[8]);
 			}
 			Production start = grammar.getStartProduction();
 			optimizeProduction(start);
-			this.optimizeFirstChoice();
+			this.optimizeDeterministicChoice();
 		}
 
 		private Expression optimizeProduction(Production p) {
@@ -587,7 +579,7 @@ public class GrammarChecker {
 
 		// used to test inlining
 		public final static boolean isSingleInstruction(Expression e) {
-			if (e instanceof Pnot || e instanceof Nez.ZeroMore || e instanceof Nez.Option) {
+			if (e instanceof Nez.Not || e instanceof Nez.ZeroMore || e instanceof Nez.Option || e instanceof Nez.OneMore) {
 				return isSingleCharacter(e.get(0)) || isMultiChar(e.get(0));
 			}
 			return false;
@@ -630,22 +622,22 @@ public class GrammarChecker {
 				Expression first = l.get(i - 1);
 				Expression next = l.get(i);
 				if (isSingleCharacter(next)) {
-					if (first instanceof Tnew) {
-						((Tnew) first).shift -= 1;
+					if (first instanceof Nez.BeginTree) {
+						((Nez.BeginTree) first).shift -= 1;
 						Expressions.swap(l, i - 1, i);
 						this.verboseOutofOrdered("out-of-order", next, first);
 						res = true;
 						continue;
 					}
 					if (first instanceof Nez.LeftFold) {
-						((Tlfold) first).shift -= 1;
+						((Nez.LeftFold) first).shift -= 1;
 						Expressions.swap(l, i - 1, i);
 						this.verboseOutofOrdered("out-of-order", next, first);
 						res = true;
 						continue;
 					}
 					if (first instanceof Nez.EndTree) {
-						((Tcapture) first).shift -= 1;
+						((Nez.EndTree) first).shift -= 1;
 						Expressions.swap(l, i - 1, i);
 						this.verboseOutofOrdered("out-of-order", next, first);
 						res = true;
@@ -682,7 +674,7 @@ public class GrammarChecker {
 		}
 
 		private boolean isNotChar(Expression p) {
-			if (p instanceof Pnot) {
+			if (p instanceof Nez.Not) {
 				return (p.get(0) instanceof Nez.ByteSet || p.get(0) instanceof Nez.Byte);
 			}
 			return false;
@@ -742,16 +734,33 @@ public class GrammarChecker {
 		public Expression visitChoice(Nez.Choice p, Object a) {
 			if (!p.isOptimized()) {
 				p.setOptimized();
-				UList<Expression> l = Expressions.newList(p.size());
-				for (Expression sub : p) {
-					Expressions.addChoice(l, this.optimize(sub));
-				}
+				List<Expression> l = Expressions.newList2(p.size());
+				flattenChoiceList(p, l);
 				return this.optimizeChoice(p, l);
 			}
 			return p;
 		}
 
-		private Expression optimizeChoice(Nez.Choice p, UList<Expression> l) {
+		private void flattenChoiceList(Nez.Choice choice, List<Expression> l) {
+			for (Expression inner : choice) {
+				inner = firstChoiceInlining(inner);
+				if (inner instanceof Nez.Choice) {
+					flattenChoiceList((Nez.Choice) inner, l);
+				} else {
+					l.add(inner);
+				}
+			}
+		}
+
+		private Expression firstChoiceInlining(Expression e) {
+			while (e instanceof NonTerminal) {
+				NonTerminal n = (NonTerminal) e;
+				e = n.getProduction().getExpression();
+			}
+			return e;
+		}
+
+		private Expression optimizeChoice(Nez.Choice p, List<Expression> l) {
 			Expression optimized = tryByteSet(p, l);
 			if (optimized != null) {
 				this.verboseOptimized("choice-to-set", p, optimized);
@@ -759,28 +768,26 @@ public class GrammarChecker {
 			}
 			l = tryTrieTree(p, l);
 			if (l.size() == 1) {
-				verboseOptimized("single-choice", p, l.ArrayValues[0]);
-				return l.ArrayValues[0];
+				verboseOptimized("single-choice", p, l.get(0));
+				return l.get(0);
 			}
 			Expression n = Expressions.newChoice(p.getSourceLocation(), l);
 			if (n instanceof Nez.Choice) {
 				((Nez.Choice) n).isTrieTree = p.isTrieTree;
-				addChoiceToOptimizeList((Nez.Choice) n);
+				addDeterministicChoice((Nez.Choice) n);
 			}
 			return n;
 		}
 
-		private Expression tryByteSet(Nez.Choice choice, UList<Expression> choiceList) {
+		private Expression tryByteSet(Nez.Choice choice, List<Expression> choiceList) {
 			boolean byteMap[] = Bytes.newMap(false);
-			boolean binary = false;
 			for (Expression e : choiceList) {
-				e = Expressions.resolveNonTerminal(e);
 				if (e instanceof Nez.Byte) {
-					byteMap[((Cbyte) e).byteChar] = true;
+					byteMap[((Nez.Byte) e).byteChar] = true;
 					continue;
 				}
 				if (e instanceof Nez.ByteSet) {
-					Bytes.appendBitMap(byteMap, ((Cset) e).byteMap);
+					Bytes.appendBitMap(byteMap, ((Nez.ByteSet) e).byteMap);
 					continue;
 				}
 				if (e instanceof Nez.Any) {
@@ -788,10 +795,10 @@ public class GrammarChecker {
 				}
 				return null;
 			}
-			return choice.newByteSet(binary, byteMap);
+			return choice.newByteSet(false, byteMap);
 		}
 
-		private UList<Expression> tryTrieTree(Nez.Choice choice, UList<Expression> l) {
+		private List<Expression> tryTrieTree(Nez.Choice choice, List<Expression> l) {
 			for (Expression inner : l) {
 				if (isTrieTreeHead(inner)) {
 					continue;
@@ -802,10 +809,10 @@ public class GrammarChecker {
 			for (Expression inner : l) {
 				Expression first = Expressions.first(inner);
 				if (first instanceof Nez.Byte) {
-					Cbyte be = (Cbyte) first;
+					Nez.Byte be = (Nez.Byte) first;
 					buffers[be.byteChar] = mergeChoice(buffers[be.byteChar], Expressions.next(inner));
 				} else {
-					Cset bs = (Cset) first;
+					Nez.ByteSet bs = (Nez.ByteSet) first;
 					for (int ch = 0; ch < buffers.length; ch++) {
 						if (bs.byteMap[ch]) {
 							buffers[ch] = mergeChoice(buffers[ch], Expressions.next(inner));
@@ -859,29 +866,29 @@ public class GrammarChecker {
 			return e;
 		}
 
-		private UList<Nez.Choice> toOptimizeChoiceList = null;
+		private UList<Nez.Choice> deterministicChoiceList = null;
 
-		private void addChoiceToOptimizeList(Nez.Choice n) {
-			if (toOptimizeChoiceList != null) {
-				toOptimizeChoiceList.add(n);
+		private void addDeterministicChoice(Nez.Choice n) {
+			if (deterministicChoiceList != null) {
+				deterministicChoiceList.add(n);
 			}
 		}
 
-		private void optimizeFirstChoice() {
-			if (toOptimizeChoiceList != null) {
-				for (Nez.Choice p : this.toOptimizeChoiceList) {
-					optimizeFirstChoice(p);
+		private void optimizeDeterministicChoice() {
+			if (deterministicChoiceList != null) {
+				for (Nez.Choice p : this.deterministicChoiceList) {
+					optimizeDeterministicChoice(p);
 				}
 			}
 		}
 
-		private void optimizeFirstChoice(Nez.Choice p) {
+		private void optimizeDeterministicChoice(Nez.Choice p) {
 			if (p.isTrieTree) {
 				p.predictedCase = new Expression[257];
 				p.firstInners = new Expression[p.size()];
 				int c = 0;
 				for (Expression sub : p) {
-					Cbyte be = (Cbyte) Expressions.first(sub);
+					Nez.Byte be = (Nez.Byte) Expressions.first(sub);
 					p.predictedCase[be.byteChar] = sub;
 					p.firstInners[c] = sub;
 					c++;
@@ -921,27 +928,6 @@ public class GrammarChecker {
 				for (String k : map.keySet()) {
 					p.firstInners[c] = map.get(k);
 					c++;
-				}
-			}
-		}
-
-		private Expression firstChoiceInlining(Expression e) {
-			// if (this.enabledfirstChoiceInlining) {
-			while (e instanceof NonTerminal) {
-				NonTerminal n = (NonTerminal) e;
-				e = n.getProduction().getExpression();
-			}
-			// }
-			return e;
-		}
-
-		private void flattenChoiceList(Nez.Choice choice, UList<Expression> l) {
-			for (Expression inner : choice) {
-				inner = firstChoiceInlining(inner);
-				if (inner instanceof Nez.Choice) {
-					flattenChoiceList((Nez.Choice) inner, l);
-				} else {
-					l.add(inner);
 				}
 			}
 		}
@@ -1047,19 +1033,32 @@ public class GrammarChecker {
 
 	}
 
-	public static class Normalizer extends ExpressionTransformer {
+	static class Normalizer extends ExpressionTransformer {
 
-		public Normalizer(Grammar g) {
+		void perform(Grammar g) {
 			final Map<String, Integer> refCounts = Productions.countNonTerminalReference(g);
 			UList<Production> prodList = new UList<Production>(new Production[g.size()]);
 			for (Production p : g) {
-				if (refCounts.get(p.getUniqueName()) > 0) {
-					p.setExpression(this.visit(p.getExpression(), null));
+				Integer refcnt = refCounts.get(p.getUniqueName());
+				if (refcnt != null && refcnt > 0) {
+					Expression e = visit(p.getExpression(), null);
+					p.setExpression(e);
 					prodList.add(p);
 				}
 			}
 			g.update(prodList);
 		}
+
+		@Override
+		public Expression visitSequence(Nez.Sequence p, Object a) {
+			return Expressions.tryMultiCharSequence(p);
+		}
+
+		@Override
+		public Expression visitPair(Nez.Pair p, Object a) {
+			return Expressions.tryMultiCharSequence(p);
+		}
+
 	}
 
 }
