@@ -8,7 +8,7 @@ import java.util.Set;
 import nez.lang.Expression;
 import nez.lang.Grammar;
 
-public class DTDSchemaGrammarGenerator extends SchemaGrammarGenerator {
+public class DTDSchemaGrammarGenerator extends AbstractSchemaGrammarGenerator {
 
 	public DTDSchemaGrammarGenerator(Grammar grammar) {
 		super(grammar);
