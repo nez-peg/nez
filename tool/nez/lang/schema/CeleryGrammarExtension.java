@@ -50,6 +50,7 @@ public class CeleryGrammarExtension extends ParserGenerator.GrammarExtension {
 				loader.load(structNode);
 			}
 			generator.newRoot(rootStructName);
+			getGrammar().dump();
 		}
 	}
 
@@ -65,7 +66,7 @@ public class CeleryGrammarExtension extends ParserGenerator.GrammarExtension {
 			String structName = node.getText(_Name, "");
 			constructor.setStructName(structName);
 			generator.initMemberList();
-			for (Tree<?> memberNode : node) {
+			for (Tree<?> memberNode : node.get(_List)) {
 				constructor.newSchema(memberNode);
 			}
 			generator.newSymbols();
