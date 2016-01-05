@@ -5,12 +5,6 @@ import nez.lang.Grammar;
 import nez.lang.Nez;
 import nez.lang.NonTerminal;
 import nez.lang.Production;
-import nez.lang.expr.Tcapture;
-import nez.lang.expr.Tlfold;
-import nez.lang.expr.Tnew;
-import nez.lang.expr.Treplace;
-import nez.lang.expr.Ttag;
-import nez.parser.ParserGrammar;
 import nez.util.StringUtils;
 
 public class CoffeeParserGenerator extends ParserGrammarSourceGenerator {
@@ -21,13 +15,13 @@ public class CoffeeParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void makeHeader(ParserGrammar g) {
+	public void makeHeader(Grammar g) {
 		// Let("input", "\'\'");
 
 	}
 
 	@Override
-	public void makeFooter(ParserGrammar g) {
+	public void makeFooter(Grammar g) {
 		L("module.exports = new Parser()");
 		// L("p = new Parser()");
 		// L("o = p.parse(input)");

@@ -2,10 +2,8 @@ package nez.debugger;
 
 import java.io.IOException;
 
-import nez.ast.CommonTree;
 import nez.parser.Parser;
 import nez.parser.ParserStrategy;
-import nez.tool.ast.TreeWriter;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
 
@@ -51,27 +49,30 @@ public class DebugManager {
 	}
 
 	private void parse(DebugSourceContext sc, Parser peg, ParserStrategy option) {
-		boolean matched;
-		DebugVMInstruction pc;
-		long startPosition = sc.getPosition();
-		DebugVMCompiler c = new DebugVMCompiler(option);
-		CommonTreeTransducer treeTransducer = new CommonTreeTransducer();
-		sc.initContext();
-		pc = c.compile(peg.getParserGrammar()).getStartPoint();
-		NezDebugger debugger = new NezDebugger(peg.getParserGrammar(), pc, sc, c);
-		matched = debugger.exec();
-		if (matched) {
-			ConsoleUtils.println("match!!");
-			sc.newTopLevelNode();
-			Object node = sc.getLeftObject();
-			if (node == null) {
-				node = treeTransducer.newNode(null, sc, startPosition, sc.getPosition(), 0, null);
-			}
-			CommonTree tree = (CommonTree) treeTransducer.commit(node);
-			TreeWriter w = new TreeWriter();
-			w.writeTree(tree);
-		} else {
-			ConsoleUtils.println("unmatch!!");
-		}
+		throw new RuntimeException("FIXME");
+		// boolean matched;
+		// DebugVMInstruction pc;
+		// long startPosition = sc.getPosition();
+		// DebugVMCompiler c = new DebugVMCompiler(option);
+		// CommonTreeTransducer treeTransducer = new CommonTreeTransducer();
+		// sc.initContext();
+		// pc = c.compile(peg.getParserGrammar()).getStartPoint();
+		// NezDebugger debugger = new NezDebugger(peg.getParserGrammar(), pc,
+		// sc, c);
+		// matched = debugger.exec();
+		// if (matched) {
+		// ConsoleUtils.println("match!!");
+		// sc.newTopLevelNode();
+		// Object node = sc.getLeftObject();
+		// if (node == null) {
+		// node = treeTransducer.newNode(null, sc, startPosition,
+		// sc.getPosition(), 0, null);
+		// }
+		// CommonTree tree = (CommonTree) treeTransducer.commit(node);
+		// TreeWriter w = new TreeWriter();
+		// w.writeTree(tree);
+		// } else {
+		// ConsoleUtils.println("unmatch!!");
+		// }
 	}
 }

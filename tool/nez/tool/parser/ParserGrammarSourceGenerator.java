@@ -5,12 +5,11 @@ import java.util.HashMap;
 import nez.lang.Expression;
 import nez.lang.Grammar;
 import nez.lang.Nez;
-import nez.lang.NonTerminal;
 import nez.lang.Nez.Byte;
 import nez.lang.Nez.Sequence;
+import nez.lang.NonTerminal;
 import nez.lang.Production;
 import nez.parser.Parser;
-import nez.parser.ParserGrammar;
 import nez.parser.ParserStrategy;
 import nez.util.ConsoleUtils;
 import nez.util.FileBuilder;
@@ -54,7 +53,7 @@ public abstract class ParserGrammarSourceGenerator extends Expression.Visitor im
 		this.generate(this.parser.getParserGrammar());
 	}
 
-	public void generate(ParserGrammar g) {
+	public void generate(Grammar g) {
 		makeHeader(g);
 		makeBody(g);
 		makeFooter(g);
@@ -62,10 +61,10 @@ public abstract class ParserGrammarSourceGenerator extends Expression.Visitor im
 		file.flush();
 	}
 
-	public void makeHeader(ParserGrammar g) {
+	public void makeHeader(Grammar g) {
 	}
 
-	public void makeBody(ParserGrammar g) {
+	public void makeBody(Grammar g) {
 		for (Production p : g) {
 			visitProduction(g, p);
 		}
@@ -73,7 +72,7 @@ public abstract class ParserGrammarSourceGenerator extends Expression.Visitor im
 
 	public abstract void visitProduction(Grammar g, Production p);
 
-	public void makeFooter(ParserGrammar g) {
+	public void makeFooter(Grammar g) {
 	}
 
 	/* Name */

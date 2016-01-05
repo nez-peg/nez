@@ -9,6 +9,7 @@ import nez.ast.Source;
 import nez.ast.SourceError;
 import nez.ast.Tree;
 import nez.io.CommonSource;
+import nez.lang.Grammar;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
 
@@ -22,7 +23,7 @@ public final class Parser {
 		this.strategy = strategy;
 	}
 
-	public final ParserGrammar getParserGrammar() {
+	public final Grammar getParserGrammar() {
 		return grammar;
 	}
 

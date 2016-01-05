@@ -161,10 +161,9 @@ public class Moz {
 			this.name = name;
 		}
 
-		public Call(ParseFunc f, String name, MozInst jump, MozInst next) {
+		public Call(String name, MozInst jump, MozInst next) {
 			super(MozSet.Call, null, jump);
 			this.name = name;
-			this.f = f;
 			this.jump = next;
 		}
 
