@@ -6,8 +6,8 @@ import nez.lang.Nez;
 import nez.lang.NonTerminal;
 import nez.lang.Predicate;
 
-class Xsymbol extends Nez.SymbolAction {
-	Xsymbol(SourceLocation s, NonTerminal pat) {
+public class Xsymbol extends Nez.SymbolAction {
+	public Xsymbol(SourceLocation s, NonTerminal pat) {
 		super(Predicate.symbol, pat);
 		this.setSourceLocation(s);
 	}

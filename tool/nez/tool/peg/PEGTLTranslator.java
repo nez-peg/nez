@@ -173,7 +173,7 @@ public class PEGTLTranslator extends GrammarTranslator {
 	}
 
 	@Override
-	public void visitLink(Nez.Link e) {
+	public void visitLink(Nez.LinkTree e) {
 		// if(e.index != -1) {
 		// C("Link", String.valueOf(e.index), e);
 		// }
@@ -248,19 +248,19 @@ public class PEGTLTranslator extends GrammarTranslator {
 	}
 
 	@Override
-	public void visitIf(Nez.If p) {
+	public void visitIf(Nez.IfCondition p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitOn(Nez.On p) {
+	public void visitOn(Nez.OnCondition p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitLeftFold(Nez.LeftFold p) {
+	public void visitLeftFold(Nez.FoldTree p) {
 		// TODO Auto-generated method stub
 
 	}

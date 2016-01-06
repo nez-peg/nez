@@ -7,10 +7,10 @@ import java.util.List;
 import nez.lang.ByteAcceptance;
 import nez.lang.Bytes;
 import nez.lang.Expression;
+import nez.lang.Expressions;
 import nez.lang.Nez;
 import nez.lang.NonTerminal;
 import nez.lang.Production;
-import nez.lang.expr.Expressions;
 import nez.parser.ParserStrategy;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
@@ -273,8 +273,8 @@ class MozGrammarOptimizer extends MozGrammarRewriter {
 					res = true;
 					continue;
 				}
-				if (first instanceof Nez.LeftFold) {
-					((Nez.LeftFold) first).shift -= 1;
+				if (first instanceof Nez.FoldTree) {
+					((Nez.FoldTree) first).shift -= 1;
 					Expressions.swap(l, i - 1, i);
 					this.verboseOutofOrdered("out-of-order", next, first);
 					res = true;
@@ -361,7 +361,7 @@ class MozGrammarOptimizer extends MozGrammarRewriter {
 	}
 
 	@Override
-	public Expression visitLink(Nez.Link p, Object a) {
+	public Expression visitLink(Nez.LinkTree p, Object a) {
 		if (p.get(0) instanceof Nez.Choice) {
 			Expression choice = p.get(0);
 			UList<Expression> l = Expressions.newList(choice.size());

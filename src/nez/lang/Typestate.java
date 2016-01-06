@@ -152,12 +152,12 @@ public enum Typestate {
 		}
 
 		@Override
-		public Object visitLeftFold(Nez.LeftFold e, Object a) {
+		public Object visitFoldTree(Nez.FoldTree e, Object a) {
 			return Typestate.TreeMutation;
 		}
 
 		@Override
-		public Object visitLink(Nez.Link e, Object a) {
+		public Object visitLink(Nez.LinkTree e, Object a) {
 			return Typestate.TreeMutation;
 		}
 
@@ -212,12 +212,12 @@ public enum Typestate {
 		}
 
 		@Override
-		public final Object visitIf(Nez.If e, Object a) {
+		public final Object visitIf(Nez.IfCondition e, Object a) {
 			return Typestate.Unit;
 		}
 
 		@Override
-		public final Object visitOn(Nez.On e, Object a) {
+		public final Object visitOn(Nez.OnCondition e, Object a) {
 			return this.inferTypestate(e.get(0));
 		}
 

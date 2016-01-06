@@ -4,7 +4,6 @@ import java.util.AbstractList;
 
 import nez.ast.SourceLocation;
 import nez.ast.Symbol;
-import nez.lang.expr.Expressions;
 import nez.util.UList;
 
 public abstract class GrammarBase extends AbstractList<Production> {

@@ -119,7 +119,7 @@ class MozGrammarRewriter extends MozGrammarTransducer {
 	}
 
 	@Override
-	public Expression visitLink(Nez.Link e, Object a) {
+	public Expression visitLink(Nez.LinkTree e, Object a) {
 		e.set(0, this.visitInner(e.get(0)));
 		return e;
 	}
@@ -174,12 +174,12 @@ class MozGrammarRewriter extends MozGrammarTransducer {
 	}
 
 	@Override
-	public Expression visitIf(Nez.If e, Object a) {
+	public Expression visitIf(Nez.IfCondition e, Object a) {
 		return e;
 	}
 
 	@Override
-	public Expression visitOn(Nez.On e, Object a) {
+	public Expression visitOn(Nez.OnCondition e, Object a) {
 		e.set(0, this.visitInner(e.get(0)));
 		return e;
 	}

@@ -4,10 +4,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import nez.lang.Expression;
+import nez.lang.Expressions;
 import nez.lang.Grammar;
 import nez.lang.GrammarBase;
 import nez.lang.Production;
-import nez.lang.expr.Expressions;
 import nez.util.Verbose;
 
 public abstract class PredefinedGrammarCombinator extends GrammarBase {

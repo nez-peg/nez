@@ -184,7 +184,7 @@ public class CoffeeParserGenerator extends ParserGrammarSourceGenerator {
 				visitExpression(s);
 				continue;
 			}
-			if (s instanceof Nez.LeftFold) {
+			if (s instanceof Nez.FoldTree) {
 				if (isLeftNew) {
 					cntNew++;
 				}
@@ -272,7 +272,7 @@ public class CoffeeParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitLink(Nez.Link p) {
+	public void visitLink(Nez.LinkTree p) {
 		visitExpression(p.get(0));
 		if (isLeftNew) {
 			L(_ltmp() + ".push " + _result() + " if " + StNotEq("typeof " + _result(), "\"boolean\""));
@@ -288,7 +288,7 @@ public class CoffeeParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitLeftFold(Nez.LeftFold p) {
+	public void visitLeftFold(Nez.FoldTree p) {
 		If(StNotEq(_ltmp() + "[" + _ltmp() + ".length-1" + "]", _result())).Open();
 		L(_ltmp() + ".push " + _result() + " if " + StNotEq("typeof " + _result(), "\"boolean\""));
 		Close();
@@ -672,13 +672,13 @@ public class CoffeeParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitIf(Nez.If p) {
+	public void visitIf(Nez.IfCondition p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitOn(Nez.On p) {
+	public void visitOn(Nez.OnCondition p) {
 		// TODO Auto-generated method stub
 
 	}

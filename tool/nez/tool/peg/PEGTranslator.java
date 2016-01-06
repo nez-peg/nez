@@ -3,11 +3,11 @@ package nez.tool.peg;
 import java.util.List;
 
 import nez.lang.Expression;
+import nez.lang.Expressions;
 import nez.lang.Grammar;
 import nez.lang.Nez;
 import nez.lang.NonTerminal;
 import nez.lang.Production;
-import nez.lang.expr.Expressions;
 import nez.util.StringUtils;
 
 public class PEGTranslator extends GrammarTranslator {
@@ -174,7 +174,7 @@ public class PEGTranslator extends GrammarTranslator {
 	}
 
 	@Override
-	public void visitLink(Nez.Link p) {
+	public void visitLink(Nez.LinkTree p) {
 		SemanticAction("start()");
 		visitExpression(p.get(0));
 		SemanticAction("commit()");
@@ -186,7 +186,7 @@ public class PEGTranslator extends GrammarTranslator {
 	}
 
 	@Override
-	public void visitLeftFold(Nez.LeftFold p) {
+	public void visitLeftFold(Nez.FoldTree p) {
 		SemanticAction("lfold(" + p.label + ")");
 	}
 
@@ -248,13 +248,13 @@ public class PEGTranslator extends GrammarTranslator {
 	}
 
 	@Override
-	public void visitIf(Nez.If p) {
+	public void visitIf(Nez.IfCondition p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitOn(Nez.On p) {
+	public void visitOn(Nez.OnCondition p) {
 		// TODO Auto-generated method stub
 
 	}

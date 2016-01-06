@@ -269,11 +269,11 @@ public abstract class GrammarTranslator extends Expression.Visitor implements So
 	public abstract void visitChoice(Nez.Choice p);
 
 	// AST Construction
-	public abstract void visitLink(Nez.Link p);
+	public abstract void visitLink(Nez.LinkTree p);
 
 	public abstract void visitPreNew(Nez.BeginTree p);
 
-	public abstract void visitLeftFold(Nez.LeftFold p);
+	public abstract void visitLeftFold(Nez.FoldTree p);
 
 	public abstract void visitNew(Nez.EndTree p);
 
@@ -296,9 +296,9 @@ public abstract class GrammarTranslator extends Expression.Visitor implements So
 
 	public abstract void visitSymbolPredicate(Nez.SymbolPredicate p);
 
-	public abstract void visitIf(Nez.If p);
+	public abstract void visitIf(Nez.IfCondition p);
 
-	public abstract void visitOn(Nez.On p);
+	public abstract void visitOn(Nez.OnCondition p);
 
 	public final Object visit(Expression e) {
 		return e.visit(this, null);
@@ -406,7 +406,7 @@ public abstract class GrammarTranslator extends Expression.Visitor implements So
 	}
 
 	@Override
-	public final Object visitLink(Nez.Link p, Object a) {
+	public final Object visitLink(Nez.LinkTree p, Object a) {
 		if (strategy.TreeConstruction) {
 			this.visitLink(p);
 		} else {
@@ -424,7 +424,7 @@ public abstract class GrammarTranslator extends Expression.Visitor implements So
 	}
 
 	@Override
-	public final Object visitLeftFold(Nez.LeftFold p, Object next) {
+	public final Object visitFoldTree(Nez.FoldTree p, Object next) {
 		if (strategy.TreeConstruction) {
 			this.visitLeftFold(p);
 		}
@@ -498,13 +498,13 @@ public abstract class GrammarTranslator extends Expression.Visitor implements So
 	}
 
 	@Override
-	public final Object visitOn(Nez.On p, Object a) {
+	public final Object visitOn(Nez.OnCondition p, Object a) {
 		this.visitOn(p);
 		return null;
 	}
 
 	@Override
-	public final Object visitIf(Nez.If p, Object a) {
+	public final Object visitIf(Nez.IfCondition p, Object a) {
 		this.visitIf(p);
 		return null;
 	}

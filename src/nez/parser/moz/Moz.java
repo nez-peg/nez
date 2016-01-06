@@ -898,7 +898,7 @@ public class Moz {
 		int shift;
 		Symbol label;
 
-		public TLeftFold(Nez.LeftFold e, MozInst next) {
+		public TLeftFold(Nez.FoldTree e, MozInst next) {
 			super(MozSet.TLeftFold, e, next);
 			this.shift = e.shift;
 			this.label = e.label;
@@ -1016,7 +1016,7 @@ public class Moz {
 	}
 
 	public static class TPush extends MozInst {
-		public TPush(Nez.Link e, MozInst next) {
+		public TPush(Nez.LinkTree e, MozInst next) {
 			super(MozSet.TPush, e, next);
 		}
 
@@ -1042,7 +1042,7 @@ public class Moz {
 	public static class TPop extends MozInst {
 		public final Symbol label;
 
-		public TPop(Nez.Link e, MozInst next) {
+		public TPop(Nez.LinkTree e, MozInst next) {
 			super(MozSet.TPop, e, next);
 			this.label = e.label;
 		}
@@ -1072,7 +1072,7 @@ public class Moz {
 	}
 
 	public static class TStart extends MozInst {
-		public TStart(Nez.Link e, MozInst next) {
+		public TStart(Nez.LinkTree e, MozInst next) {
 			super(MozSet.TStart, e, next);
 		}
 
@@ -1099,7 +1099,7 @@ public class Moz {
 	public static class TCommit extends MozInst {
 		public final Symbol label;
 
-		public TCommit(Nez.Link e, MozInst next) {
+		public TCommit(Nez.LinkTree e, MozInst next) {
 			super(MozSet.TCommit, e, next);
 			this.label = e.label;
 		}
@@ -1127,7 +1127,7 @@ public class Moz {
 	public static class TLookup extends AbstractMemoizationInstruction {
 		public final Symbol label;
 
-		public TLookup(Nez.Link e, MemoPoint m, MozInst next, MozInst skip) {
+		public TLookup(Nez.LinkTree e, MemoPoint m, MozInst next, MozInst skip) {
 			super(MozSet.TLookup, e, m, m.isStateful(), next, skip);
 			this.label = e.label;
 		}

@@ -31,8 +31,8 @@ public class Conditions extends TreeMap<String, Boolean> {
 	}
 
 	private static void checkCondition(Expression e, TreeSet<String> ts, HashMap<String, Boolean> visited) {
-		if (e instanceof Nez.If) {
-			ts.add(((Nez.If) e).flagName);
+		if (e instanceof Nez.IfCondition) {
+			ts.add(((Nez.IfCondition) e).flagName);
 		}
 		if (e instanceof NonTerminal) {
 			Production p = ((NonTerminal) e).getProduction();
@@ -77,10 +77,10 @@ public class Conditions extends TreeMap<String, Boolean> {
 	}
 
 	private final Value hasIfCondition(Expression e, String condition) {
-		if (e instanceof Nez.If) {
-			return condition.equals(((Nez.If) e).flagName) ? Value.Reachable : Value.Unreachable;
+		if (e instanceof Nez.IfCondition) {
+			return condition.equals(((Nez.IfCondition) e).flagName) ? Value.Reachable : Value.Unreachable;
 		}
-		if (e instanceof Nez.On && condition.equals(((Nez.On) e).flagName)) {
+		if (e instanceof Nez.OnCondition && condition.equals(((Nez.OnCondition) e).flagName)) {
 			return Value.Unreachable;
 		}
 		if (e instanceof NonTerminal) {

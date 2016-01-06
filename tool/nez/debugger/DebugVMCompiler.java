@@ -7,12 +7,12 @@ import java.util.Stack;
 import nez.ast.CommonTree;
 import nez.lang.Bytes;
 import nez.lang.Expression;
+import nez.lang.Expressions;
 import nez.lang.Nez;
 import nez.lang.Nez.Sequence;
 import nez.lang.NonTerminal;
 import nez.lang.Predicate;
 import nez.lang.Production;
-import nez.lang.expr.Expressions;
 import nez.lang.expr.Xis;
 import nez.parser.ParserStrategy;
 import nez.parser.moz.MozInst;
@@ -303,7 +303,7 @@ public class DebugVMCompiler extends Expression.Visitor {
 	}
 
 	@Override
-	public MozInst visitLeftFold(Nez.LeftFold p, Object next) {
+	public MozInst visitFoldTree(Nez.FoldTree p, Object next) {
 		this.leftedStack.push(true);
 		if (this.strategy.TreeConstruction) {
 			BasicBlock fbb = new BasicBlock();
@@ -318,7 +318,7 @@ public class DebugVMCompiler extends Expression.Visitor {
 	Stack<Boolean> leftedStack = new Stack<Boolean>();
 
 	@Override
-	public MozInst visitLink(Nez.Link p, Object next) {
+	public MozInst visitLink(Nez.LinkTree p, Object next) {
 		if (this.strategy.TreeConstruction) {
 			BasicBlock fbb = new BasicBlock();
 			BasicBlock endbb = new BasicBlock();
@@ -459,13 +459,13 @@ public class DebugVMCompiler extends Expression.Visitor {
 	}
 
 	@Override
-	public Object visitIf(Nez.If e, Object a) {
+	public Object visitIf(Nez.IfCondition e, Object a) {
 		// TODO Auto-generated method stub
 		return a;
 	}
 
 	@Override
-	public Object visitOn(Nez.On e, Object a) {
+	public Object visitOn(Nez.OnCondition e, Object a) {
 		// TODO Auto-generated method stub
 		return a;
 	}

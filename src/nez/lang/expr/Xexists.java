@@ -5,9 +5,9 @@ import nez.ast.Symbol;
 import nez.lang.Expression;
 import nez.lang.Nez;
 
-class Xexists extends Nez.SymbolExists implements Expression.Contextual {
+public class Xexists extends Nez.SymbolExists implements Expression.Contextual {
 
-	Xexists(SourceLocation s, Symbol tableName, String symbol) {
+	public Xexists(SourceLocation s, Symbol tableName, String symbol) {
 		super(tableName, symbol);
 		this.setSourceLocation(s);
 	}

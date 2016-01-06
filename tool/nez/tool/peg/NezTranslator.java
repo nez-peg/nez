@@ -3,11 +3,11 @@ package nez.tool.peg;
 import java.util.List;
 
 import nez.lang.Expression;
+import nez.lang.Expressions;
 import nez.lang.Grammar;
 import nez.lang.Nez;
 import nez.lang.NonTerminal;
 import nez.lang.Production;
-import nez.lang.expr.Expressions;
 import nez.util.StringUtils;
 
 public class NezTranslator extends PEGTranslator {
@@ -136,7 +136,7 @@ public class NezTranslator extends PEGTranslator {
 	}
 
 	@Override
-	public void visitLeftFold(Nez.LeftFold e) {
+	public void visitLeftFold(Nez.FoldTree e) {
 		W(e.label == null ? "{$" : "{$" + e.label);
 	}
 
@@ -157,7 +157,7 @@ public class NezTranslator extends PEGTranslator {
 	}
 
 	@Override
-	public void visitLink(Nez.Link e) {
+	public void visitLink(Nez.LinkTree e) {
 		String predicate = "$";
 		if (e.label != null) {
 			predicate += e.label.toString();

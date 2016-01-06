@@ -435,7 +435,7 @@ class Inew extends DebugVMInstruction {
 class Ileftnew extends DebugVMInstruction {
 	int index;
 
-	public Ileftnew(Nez.LeftFold e) {
+	public Ileftnew(Nez.FoldTree e) {
 		super(e);
 		this.op = Opcode.Ileftnew;
 		this.index = e.shift;
@@ -554,7 +554,7 @@ class Ireplace extends DebugVMInstruction {
 class Icommit extends DebugVMInstruction {
 	int index;
 
-	public Icommit(Nez.Link e) {
+	public Icommit(Nez.LinkTree e) {
 		super(e);
 		this.op = Opcode.Icommit;
 		this.index = -1;

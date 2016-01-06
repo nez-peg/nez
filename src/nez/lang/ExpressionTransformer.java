@@ -3,8 +3,7 @@ package nez.lang;
 import java.util.List;
 
 import nez.lang.Nez.Byte;
-import nez.lang.Nez.LeftFold;
-import nez.lang.expr.Expressions;
+import nez.lang.Nez.FoldTree;
 import nez.util.UList;
 
 public class ExpressionTransformer extends Expression.Visitor {
@@ -139,12 +138,12 @@ public class ExpressionTransformer extends Expression.Visitor {
 	}
 
 	@Override
-	public Object visitLeftFold(LeftFold e, Object a) {
+	public Object visitFoldTree(FoldTree e, Object a) {
 		return e;
 	}
 
 	@Override
-	public Expression visitLink(Nez.Link e, Object a) {
+	public Expression visitLink(Nez.LinkTree e, Object a) {
 		e.set(0, this.visit(e.get(0), a));
 		return e;
 	}
@@ -199,12 +198,12 @@ public class ExpressionTransformer extends Expression.Visitor {
 	}
 
 	@Override
-	public Expression visitIf(Nez.If e, Object a) {
+	public Expression visitIf(Nez.IfCondition e, Object a) {
 		return e;
 	}
 
 	@Override
-	public Expression visitOn(Nez.On e, Object a) {
+	public Expression visitOn(Nez.OnCondition e, Object a) {
 		e.set(0, this.visit(e.get(0), a));
 		return e;
 	}

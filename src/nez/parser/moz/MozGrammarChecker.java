@@ -5,12 +5,12 @@ import java.util.TreeMap;
 
 import nez.lang.Conditions;
 import nez.lang.Expression;
+import nez.lang.Expressions;
 import nez.lang.Nez;
 import nez.lang.NonTerminal;
 import nez.lang.Production;
 import nez.lang.ProductionStacker;
 import nez.lang.Typestate;
-import nez.lang.expr.Expressions;
 import nez.parser.ParserStrategy;
 import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
@@ -181,7 +181,7 @@ class MozGrammarChecker extends MozGrammarTransducer {
 	}
 
 	@Override
-	public Expression visitOn(Nez.On p, Object a) {
+	public Expression visitOn(Nez.OnCondition p, Object a) {
 		Boolean stackedFlag = isFlag(p.flagName);
 		if (p.isPositive()) {
 			onFlag(p.flagName);
@@ -198,7 +198,7 @@ class MozGrammarChecker extends MozGrammarTransducer {
 	}
 
 	@Override
-	public Expression visitIf(Nez.If p, Object a) {
+	public Expression visitIf(Nez.IfCondition p, Object a) {
 		if (isFlag(p.flagName)) { /* true */
 			return p.predicate ? p.newEmpty() : p.newFailure();
 		}
@@ -235,7 +235,7 @@ class MozGrammarChecker extends MozGrammarTransducer {
 	}
 
 	@Override
-	public Expression visitLeftFold(Nez.LeftFold p, Object a) {
+	public Expression visitFoldTree(Nez.FoldTree p, Object a) {
 		if (this.isNonASTContext()) {
 			return p.newEmpty();
 		}
@@ -244,7 +244,7 @@ class MozGrammarChecker extends MozGrammarTransducer {
 			return p.newEmpty();
 		}
 		this.requiredTypestate = Typestate.TreeMutation;
-		return super.visitLeftFold(p, a);
+		return super.visitFoldTree(p, a);
 	}
 
 	@Override
@@ -285,7 +285,7 @@ class MozGrammarChecker extends MozGrammarTransducer {
 	}
 
 	@Override
-	public Expression visitLink(Nez.Link p, Object a) {
+	public Expression visitLink(Nez.LinkTree p, Object a) {
 		Expression inner = p.get(0);
 		if (this.isNonASTContext()) {
 			return this.visitInner(inner);
@@ -457,8 +457,8 @@ class MozGrammarChecker extends MozGrammarTransducer {
 	}
 
 	private Short hasFlag(Expression e, String flagName) {
-		if (e instanceof Nez.If) {
-			return flagName.equals(((Nez.If) e).flagName) ? True : False;
+		if (e instanceof Nez.IfCondition) {
+			return flagName.equals(((Nez.IfCondition) e).flagName) ? True : False;
 		}
 		if (e instanceof NonTerminal) {
 			Production p = ((NonTerminal) e).getProduction();

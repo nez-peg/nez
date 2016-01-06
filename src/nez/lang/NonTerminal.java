@@ -1,19 +1,18 @@
 package nez.lang;
 
 import nez.ast.SourceLocation;
-import nez.lang.expr.Expressions;
 
 public class NonTerminal extends Expression {
-	private Grammar g;
+	private Grammar grammar;
 	private String localName;
 	private String uniqueName;
 	private Production deref = null;
 
 	public NonTerminal(SourceLocation s, Grammar g, String ruleName) {
-		super(s);
-		this.g = g;
+		// super(s);
+		this.grammar = g;
 		this.localName = ruleName;
-		this.uniqueName = this.g.uniqueName(this.localName);
+		this.uniqueName = this.grammar.uniqueName(this.localName);
 	}
 
 	@Override
@@ -25,7 +24,7 @@ public class NonTerminal extends Expression {
 	}
 
 	public final Grammar getGrammar() {
-		return g;
+		return grammar;
 	}
 
 	public final String getLocalName() {
@@ -44,11 +43,11 @@ public class NonTerminal extends Expression {
 		if (deref != null) {
 			return deref;
 		}
-		return this.g.getProduction(this.localName);
+		return this.grammar.getProduction(this.localName);
 	}
 
 	public final Expression deReference() {
-		Production r = this.g.getProduction(this.localName);
+		Production r = this.grammar.getProduction(this.localName);
 		return (r != null) ? r.getExpression() : null;
 	}
 

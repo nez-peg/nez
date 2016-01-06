@@ -268,7 +268,7 @@ public class JavaParserGenerator extends ParserGrammarSourceGenerator {
 		return this;
 	}
 
-	public void writeLinkLogic(Nez.Link e) {
+	public void writeLinkLogic(Nez.LinkTree e) {
 		VarNode(_left(), _cleft());
 		VarInt(_log(), _clog());
 		IfThen(_call(e.get(0))).Begin("{");
@@ -305,8 +305,8 @@ public class JavaParserGenerator extends ParserGrammarSourceGenerator {
 		Comment(e);
 		if (e instanceof Nez.Choice) {
 			writeChoiceLogic(e);
-		} else if (e instanceof Nez.Link) {
-			writeLinkLogic((Nez.Link) e);
+		} else if (e instanceof Nez.LinkTree) {
+			writeLinkLogic((Nez.LinkTree) e);
 		} else if (e instanceof Nez.Option) {
 			writeOptionLogic(e);
 		} else if (e instanceof Nez.ZeroMore || e instanceof Nez.OneMore) {
@@ -509,7 +509,7 @@ public class JavaParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitLink(Nez.Link e) {
+	public void visitLink(Nez.LinkTree e) {
 		IfNotThen(_call(e)).Begin("{");
 		{
 			Return(_false());
@@ -565,19 +565,19 @@ public class JavaParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitIf(Nez.If p) {
+	public void visitIf(Nez.IfCondition p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitOn(Nez.On p) {
+	public void visitOn(Nez.OnCondition p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitLeftFold(Nez.LeftFold p) {
+	public void visitLeftFold(Nez.FoldTree p) {
 		// TODO Auto-generated method stub
 
 	}

@@ -1,12 +1,12 @@
 package nez.parser.hachi6;
 
 import nez.lang.Expression;
+import nez.lang.Expressions;
 import nez.lang.Grammar;
 import nez.lang.Nez;
 import nez.lang.NonTerminal;
 import nez.lang.Predicate;
 import nez.lang.Production;
-import nez.lang.expr.Expressions;
 import nez.parser.ParserStrategy;
 import nez.parser.hachi6.Hachi6Code.ParseFunc;
 import nez.util.StringUtils;
@@ -253,7 +253,7 @@ public class Hachi6Compiler {
 		// AST Construction
 
 		@Override
-		public Hachi6Inst visitLink(Nez.Link p, Object next0) {
+		public Hachi6Inst visitLink(Nez.LinkTree p, Object next0) {
 			Hachi6Inst next = compile(p.get(0), (Hachi6Inst) next0);
 			if (strategy.TreeConstruction) {
 				return new Hachi6.Link(p.label, next);
@@ -270,7 +270,7 @@ public class Hachi6Compiler {
 		}
 
 		@Override
-		public Hachi6Inst visitLeftFold(Nez.LeftFold p, Object next) {
+		public Hachi6Inst visitFoldTree(Nez.FoldTree p, Object next) {
 			if (strategy.TreeConstruction) {
 				return new Hachi6.LeftFold(p.shift, p.label, (Hachi6Inst) next);
 			}
@@ -521,12 +521,12 @@ public class Hachi6Compiler {
 		// }
 
 		@Override
-		public Object visitIf(Nez.If e, Object a) {
+		public Object visitIf(Nez.IfCondition e, Object a) {
 			return a;
 		}
 
 		@Override
-		public Object visitOn(Nez.On e, Object a) {
+		public Object visitOn(Nez.OnCondition e, Object a) {
 			return a;
 		}
 

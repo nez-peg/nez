@@ -5,9 +5,9 @@ import java.util.List;
 
 import nez.ast.Symbol;
 import nez.lang.Expression;
+import nez.lang.Expressions;
 import nez.lang.Grammar;
 import nez.lang.NonTerminal;
-import nez.lang.expr.Expressions;
 import nez.util.UList;
 
 public abstract class AbstractSchemaGrammarGenerator implements SchemaGrammarGenerator {

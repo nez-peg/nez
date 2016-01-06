@@ -874,7 +874,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitLink(Nez.Link e) {
+	public void visitLink(Nez.LinkTree e) {
 		this.pushFailureJumpPoint();
 		String mark = "mark" + this.fid;
 
@@ -902,7 +902,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 
 	ArrayList<String> flagTable = new ArrayList<String>();
 
-	public void visitIfFlag(Nez.If e) {
+	public void visitIfFlag(Nez.IfCondition e) {
 		if (!this.flagTable.contains(e.flagName)) {
 			this.flagTable.add(e.flagName);
 		}
@@ -913,7 +913,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 		End("}");
 	}
 
-	public void visitOnFlag(Nez.On p) {
+	public void visitOnFlag(Nez.OnCondition p) {
 		if (!this.flagTable.contains(p.flagName)) {
 			this.flagTable.add(p.flagName);
 		}
@@ -967,19 +967,19 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitIf(Nez.If p) {
+	public void visitIf(Nez.IfCondition p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitOn(Nez.On p) {
+	public void visitOn(Nez.OnCondition p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitLeftFold(Nez.LeftFold p) {
+	public void visitLeftFold(Nez.FoldTree p) {
 		// TODO Auto-generated method stub
 
 	}

@@ -3,13 +3,13 @@ package nez.parser.moz;
 import java.util.HashMap;
 
 import nez.lang.Expression;
+import nez.lang.Expressions;
 import nez.lang.Grammar;
 import nez.lang.Nez;
 import nez.lang.NonTerminal;
 import nez.lang.Predicate;
 import nez.lang.Production;
 import nez.lang.Typestate;
-import nez.lang.expr.Expressions;
 import nez.parser.MemoPoint;
 import nez.parser.ParserCompiler;
 import nez.parser.ParserStrategy;
@@ -252,7 +252,7 @@ public class MozCompiler implements ParserCompiler {
 
 		// AST Construction
 
-		public MozInst visitUnnTlink(Nez.Link p, Object next) {
+		public MozInst visitUnnTlink(Nez.LinkTree p, Object next) {
 			if (strategy.TreeConstruction) {
 				next = new Moz.TPop(p, (MozInst) next);
 				next = visit(p.get(0), next);
@@ -270,7 +270,7 @@ public class MozCompiler implements ParserCompiler {
 		}
 
 		@Override
-		public MozInst visitLeftFold(Nez.LeftFold p, Object next) {
+		public MozInst visitFoldTree(Nez.FoldTree p, Object next) {
 			if (strategy.TreeConstruction) {
 				return new Moz.TLeftFold(p, (MozInst) next);
 			}
@@ -597,7 +597,7 @@ public class MozCompiler implements ParserCompiler {
 		// AST Construction
 
 		@Override
-		public final MozInst visitLink(Nez.Link p, Object next) {
+		public final MozInst visitLink(Nez.LinkTree p, Object next) {
 			if (strategy.TreeConstruction && p.get(0) instanceof NonTerminal) {
 				NonTerminal n = (NonTerminal) p.get(0);
 				ParserGrammarFunc f = this.getParseFunc(n.getProduction());
@@ -612,7 +612,7 @@ public class MozCompiler implements ParserCompiler {
 			return visitUnnTlink(p, next);
 		}
 
-		private MozInst memoize(Nez.Link p, NonTerminal n, MemoPoint m, MozInst next) {
+		private MozInst memoize(Nez.LinkTree p, NonTerminal n, MemoPoint m, MozInst next) {
 			MozInst inside = new Moz.TMemo(p, m, next);
 			inside = new Moz.TCommit(p, inside);
 			inside = visitUnnNonTerminal(n, inside);
@@ -622,13 +622,13 @@ public class MozCompiler implements ParserCompiler {
 		}
 
 		@Override
-		public Object visitIf(Nez.If e, Object a) {
+		public Object visitIf(Nez.IfCondition e, Object a) {
 			// TODO Auto-generated method stub
 			return a;
 		}
 
 		@Override
-		public Object visitOn(Nez.On e, Object a) {
+		public Object visitOn(Nez.OnCondition e, Object a) {
 			// TODO Auto-generated method stub
 			return a;
 		}

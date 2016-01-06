@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import nez.lang.expr.Expressions;
 import nez.parser.ParserStrategy;
 import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
@@ -217,7 +216,7 @@ public class GrammarChecker {
 		}
 
 		@Override
-		public Expression visitOn(Nez.On p, Object a) {
+		public Expression visitOn(Nez.OnCondition p, Object a) {
 			if (!this.conds.containsKey(p.flagName)) {
 				this.context.reportWarning(p, "unused condition: " + p.flagName);
 				return check(p.get(0));
@@ -242,7 +241,7 @@ public class GrammarChecker {
 		}
 
 		@Override
-		public Expression visitIf(Nez.If p, Object a) {
+		public Expression visitIf(Nez.IfCondition p, Object a) {
 			if (isFlag(p.flagName)) { /* true */
 				return p.predicate ? p.newEmpty() : p.newFailure();
 			}
@@ -271,7 +270,7 @@ public class GrammarChecker {
 		}
 
 		@Override
-		public Expression visitLeftFold(Nez.LeftFold p, Object a) {
+		public Expression visitFoldTree(Nez.FoldTree p, Object a) {
 			if (this.isNonTreeConstruction()) {
 				return p.newEmpty();
 			}
@@ -280,7 +279,7 @@ public class GrammarChecker {
 				return p.newEmpty();
 			}
 			this.requiredTypestate = Typestate.TreeMutation;
-			return super.visitLeftFold(p, a);
+			return super.visitFoldTree(p, a);
 		}
 
 		@Override
@@ -321,7 +320,7 @@ public class GrammarChecker {
 		}
 
 		@Override
-		public Expression visitLink(Nez.Link p, Object a) {
+		public Expression visitLink(Nez.LinkTree p, Object a) {
 			Expression inner = p.get(0);
 			if (this.isNonTreeConstruction()) {
 				return this.check(inner);
@@ -629,8 +628,8 @@ public class GrammarChecker {
 						res = true;
 						continue;
 					}
-					if (first instanceof Nez.LeftFold) {
-						((Nez.LeftFold) first).shift -= 1;
+					if (first instanceof Nez.FoldTree) {
+						((Nez.FoldTree) first).shift -= 1;
 						Expressions.swap(l, i - 1, i);
 						this.verboseOutofOrdered("out-of-order", next, first);
 						res = true;
@@ -717,7 +716,7 @@ public class GrammarChecker {
 		}
 
 		@Override
-		public Expression visitLink(Nez.Link p, Object a) {
+		public Expression visitLink(Nez.LinkTree p, Object a) {
 			if (p.get(0) instanceof Nez.Choice) {
 				Expression choice = p.get(0);
 				UList<Expression> l = Expressions.newList(choice.size());

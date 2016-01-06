@@ -7,10 +7,10 @@ import java.util.TreeSet;
 import nez.ast.TreeVisitorMap;
 import nez.dfa.AFAConverter.DefaultVisitor;
 import nez.lang.Expression;
+import nez.lang.Expressions;
 import nez.lang.Grammar;
 import nez.lang.Nez;
 import nez.lang.Production;
-import nez.lang.expr.Expressions;
 
 /*
  * 

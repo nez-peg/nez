@@ -4,7 +4,7 @@ import nez.ast.SourceLocation;
 import nez.lang.Expression;
 import nez.lang.Nez;
 
-class Xif extends Nez.If implements Expression.Conditional {
+public class Xif extends Nez.IfCondition implements Expression.Conditional {
 
 	Xif(SourceLocation s, boolean predicate, String flagName) {
 		super(predicate, flagName);

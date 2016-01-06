@@ -4,7 +4,7 @@ import nez.ast.SourceLocation;
 import nez.lang.Expression;
 import nez.lang.Nez;
 
-class Xon extends Nez.On implements Expression.Conditional {
+public class Xon extends Nez.OnCondition implements Expression.Conditional {
 	boolean predicate;
 
 	String flagName;
@@ -13,7 +13,7 @@ class Xon extends Nez.On implements Expression.Conditional {
 		return this.flagName;
 	}
 
-	Xon(SourceLocation s, boolean predicate, String flagName, Expression inner) {
+	public Xon(SourceLocation s, boolean predicate, String flagName, Expression inner) {
 		super(predicate, flagName, inner);
 		this.setSourceLocation(s);
 	}

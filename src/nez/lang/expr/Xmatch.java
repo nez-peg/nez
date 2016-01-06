@@ -6,9 +6,9 @@ import nez.lang.Expression;
 import nez.lang.Nez;
 import nez.lang.Predicate;
 
-class Xmatch extends Nez.SymbolMatch implements Expression.Contextual {
+public class Xmatch extends Nez.SymbolMatch implements Expression.Contextual {
 
-	Xmatch(SourceLocation s, Symbol tableName) {
+	public Xmatch(SourceLocation s, Symbol tableName) {
 		super(Predicate.match, tableName);
 		this.setSourceLocation(s);
 	}

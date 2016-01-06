@@ -1,11 +1,11 @@
 package nez.parser.moz;
 
 import nez.lang.Expression;
+import nez.lang.Expressions;
 import nez.lang.Nez;
 import nez.lang.NonTerminal;
 import nez.lang.Predicate;
 import nez.lang.Production;
-import nez.lang.expr.Expressions;
 import nez.util.UList;
 import nez.util.Verbose;
 
@@ -133,12 +133,12 @@ class MozGrammarTransducer extends Expression.Visitor {
 	}
 
 	@Override
-	public Expression visitLeftFold(Nez.LeftFold e, Object a) {
+	public Expression visitFoldTree(Nez.FoldTree e, Object a) {
 		return Expressions.newLeftFold(e.getSourceLocation(), e.label, e.shift);
 	}
 
 	@Override
-	public Expression visitLink(Nez.Link e, Object a) {
+	public Expression visitLink(Nez.LinkTree e, Object a) {
 		return Expressions.newLinkTree(e.getSourceLocation(), e.label, visitInner(e.get(0)));
 	}
 
@@ -193,12 +193,12 @@ class MozGrammarTransducer extends Expression.Visitor {
 	}
 
 	@Override
-	public Expression visitIf(Nez.If e, Object a) {
+	public Expression visitIf(Nez.IfCondition e, Object a) {
 		return e; // immutable
 	}
 
 	@Override
-	public Expression visitOn(Nez.On e, Object a) {
+	public Expression visitOn(Nez.OnCondition e, Object a) {
 		return Expressions.newOn(e.getSourceLocation(), e.isPositive(), e.flagName, visitInner(e.get(0)));
 	}
 

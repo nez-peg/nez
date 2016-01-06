@@ -249,7 +249,7 @@ public class MouseTranslator extends PEGTranslator {
 	}
 
 	@Override
-	public void visitLink(Nez.Link e) {
+	public void visitLink(Nez.LinkTree e) {
 		// String predicate = "@";
 		// if(e.index != -1) {
 		// predicate += "[" + e.index + "]";

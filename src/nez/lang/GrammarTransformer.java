@@ -9,14 +9,14 @@ import nez.lang.Nez.Choice;
 import nez.lang.Nez.Detree;
 import nez.lang.Nez.Empty;
 import nez.lang.Nez.Fail;
-import nez.lang.Nez.If;
-import nez.lang.Nez.LeftFold;
-import nez.lang.Nez.Link;
+import nez.lang.Nez.IfCondition;
+import nez.lang.Nez.FoldTree;
+import nez.lang.Nez.LinkTree;
 import nez.lang.Nez.LocalScope;
 import nez.lang.Nez.MultiByte;
 import nez.lang.Nez.EndTree;
 import nez.lang.Nez.Not;
-import nez.lang.Nez.On;
+import nez.lang.Nez.OnCondition;
 import nez.lang.Nez.OneMore;
 import nez.lang.Nez.Option;
 import nez.lang.Nez.Pair;
@@ -179,15 +179,15 @@ public abstract class GrammarTransformer extends Expression.Visitor {
 	}
 
 	@Override
-	public Expression visitLeftFold(LeftFold e, Object a) {
-		LeftFold e2 = new LeftFold(e.shift, e.label);
+	public Expression visitFoldTree(FoldTree e, Object a) {
+		FoldTree e2 = new FoldTree(e.shift, e.label);
 		e2.setSourceLocation(e.getSourceLocation());
 		return e2;
 	}
 
 	@Override
-	public Expression visitLink(Link e, Object a) {
-		Link e2 = new Link(e.label, inner(e));
+	public Expression visitLink(LinkTree e, Object a) {
+		LinkTree e2 = new LinkTree(e.label, inner(e));
 		e2.setSourceLocation(e.getSourceLocation());
 		return e2;
 	}
@@ -269,15 +269,15 @@ public abstract class GrammarTransformer extends Expression.Visitor {
 	}
 
 	@Override
-	public Expression visitIf(If e, Object a) {
-		If e2 = new If(e.predicate, e.flagName);
+	public Expression visitIf(IfCondition e, Object a) {
+		IfCondition e2 = new IfCondition(e.predicate, e.flagName);
 		e2.setSourceLocation(e.getSourceLocation());
 		return e2;
 	}
 
 	@Override
-	public Expression visitOn(On e, Object a) {
-		On e2 = new On(e.predicate, e.flagName, inner(e));
+	public Expression visitOn(OnCondition e, Object a) {
+		OnCondition e2 = new OnCondition(e.predicate, e.flagName, inner(e));
 		e2.setSourceLocation(e.getSourceLocation());
 		return e2;
 	}

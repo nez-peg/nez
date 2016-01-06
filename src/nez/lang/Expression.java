@@ -4,25 +4,31 @@ import java.util.AbstractList;
 import java.util.HashMap;
 import java.util.List;
 
+import nez.ast.Source;
 import nez.ast.SourceLocation;
 import nez.ast.Symbol;
-import nez.lang.Nez.Function;
-import nez.lang.expr.Expressions;
+import nez.lang.Nez.FunctionalExpression;
 import nez.util.StringUtils;
 import nez.util.UList;
 
-public abstract class Expression extends AbstractList<Expression> {
-	protected Expression() {
-		this(null);
-	}
+public abstract class Expression extends AbstractList<Expression> implements SourceLocation {
+
+	public abstract Object visit(Expression.Visitor v, Object a);
+
+	// protected Expression() {
+	// this(null);
+	// }
+	//
+	// protected Expression(SourceLocation s) {
+	// this.s = s;
+	// }
 
 	private SourceLocation s = null;
 
-	protected Expression(SourceLocation s) {
-		this.s = s;
-	}
-
 	public final void setSourceLocation(SourceLocation s) {
+		if (s instanceof Expression) {
+			s = ((Expression) s).getSourceLocation();
+		}
 		this.s = s;
 	}
 
@@ -30,22 +36,45 @@ public abstract class Expression extends AbstractList<Expression> {
 		return this.s;
 	}
 
-	// public Expression getFirst() {
-	// return this;
-	// }
-	//
-	// public Expression getNext() {
-	// return null;
-	// }
-
 	@Override
-	public final String toString() {
-		StringBuilder sb = new StringBuilder();
-		defaultFormatter.format(this, sb);
-		return sb.toString();
+	public Source getSource() {
+		if (this.s != null) {
+			return this.s.getSource();
+		}
+		return null;
 	}
 
-	public abstract Object visit(Expression.Visitor v, Object a);
+	@Override
+	public long getSourcePosition() {
+		if (this.s != null) {
+			this.s.getSourcePosition();
+		}
+		return 0L;
+	}
+
+	@Override
+	public int getLineNum() {
+		if (this.s != null) {
+			this.s.getLineNum();
+		}
+		return 0;
+	}
+
+	@Override
+	public int getColumn() {
+		if (this.s != null) {
+			this.s.getColumn();
+		}
+		return 0;
+	}
+
+	@Override
+	public String formatSourceMessage(String type, String msg) {
+		if (this.s != null) {
+			return this.s.formatSourceMessage(type, msg);
+		}
+		return msg;
+	}
 
 	// test
 
@@ -95,6 +124,13 @@ public abstract class Expression extends AbstractList<Expression> {
 
 	public static interface Contextual {
 
+	}
+
+	@Override
+	public final String toString() {
+		StringBuilder sb = new StringBuilder();
+		defaultFormatter.format(this, sb);
+		return sb.toString();
 	}
 
 	public static abstract class Visitor {
@@ -164,9 +200,9 @@ public abstract class Expression extends AbstractList<Expression> {
 
 		public abstract Object visitBeginTree(Nez.BeginTree e, Object a);
 
-		public abstract Object visitLeftFold(Nez.LeftFold e, Object a);
+		public abstract Object visitFoldTree(Nez.FoldTree e, Object a);
 
-		public abstract Object visitLink(Nez.Link e, Object a);
+		public abstract Object visitLink(Nez.LinkTree e, Object a);
 
 		public abstract Object visitTag(Nez.Tag e, Object a);
 
@@ -188,9 +224,9 @@ public abstract class Expression extends AbstractList<Expression> {
 
 		public abstract Object visitSymbolExists(Nez.SymbolExists e, Object a);
 
-		public abstract Object visitIf(Nez.If e, Object a);
+		public abstract Object visitIf(Nez.IfCondition e, Object a);
 
-		public abstract Object visitOn(Nez.On e, Object a);
+		public abstract Object visitOn(Nez.OnCondition e, Object a);
 
 		// public abstract Object visitSetCount(Nez.SetCount e, Object a);
 		//
@@ -202,7 +238,7 @@ public abstract class Expression extends AbstractList<Expression> {
 
 	}
 
-	public final static ExpressionFormatter defaultFormatter = new ExpressionFormatter();
+	private final static ExpressionFormatter defaultFormatter = new ExpressionFormatter();
 
 	static class ExpressionFormatter extends Expression.Visitor {
 
@@ -327,7 +363,7 @@ public abstract class Expression extends AbstractList<Expression> {
 		}
 
 		@Override
-		public Object visitLeftFold(Nez.LeftFold e, Object a) {
+		public Object visitFoldTree(Nez.FoldTree e, Object a) {
 			StringBuilder sb = (StringBuilder) a;
 			sb.append("{$");
 			if (e.label != null) {
@@ -337,7 +373,7 @@ public abstract class Expression extends AbstractList<Expression> {
 		}
 
 		@Override
-		public Object visitLink(Nez.Link e, Object a) {
+		public Object visitLink(Nez.LinkTree e, Object a) {
 			StringBuilder sb = (StringBuilder) a;
 			formatUnary(sb, (e.label != null) ? "$" + e.label + "(" : "$(", e.get(0), ")");
 			return null;
@@ -414,14 +450,14 @@ public abstract class Expression extends AbstractList<Expression> {
 		}
 
 		@Override
-		public Object visitIf(Nez.If e, Object a) {
+		public Object visitIf(Nez.IfCondition e, Object a) {
 			StringBuilder sb = (StringBuilder) a;
 			this.formatFunction(e, condition(e.predicate, e.flagName), sb);
 			return null;
 		}
 
 		@Override
-		public Object visitOn(Nez.On e, Object a) {
+		public Object visitOn(Nez.OnCondition e, Object a) {
 			StringBuilder sb = (StringBuilder) a;
 			this.formatFunction(e, condition(e.predicate, e.flagName), sb);
 			return null;
@@ -452,7 +488,7 @@ public abstract class Expression extends AbstractList<Expression> {
 			}
 		}
 
-		private void formatFunction(Function e, Object argument, StringBuilder sb) {
+		private void formatFunction(FunctionalExpression e, Object argument, StringBuilder sb) {
 			sb.append("<");
 			sb.append(e.op);
 			if (argument != null) {

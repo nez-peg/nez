@@ -170,12 +170,12 @@ public class ByteConsumption extends Expression.Visitor {
 	}
 
 	@Override
-	public Object visitLeftFold(Nez.LeftFold e, Object a) {
+	public Object visitFoldTree(Nez.FoldTree e, Object a) {
 		return Result.Unconsumed;
 	}
 
 	@Override
-	public Object visitLink(Nez.Link e, Object a) {
+	public Object visitLink(Nez.LinkTree e, Object a) {
 		return check(e.get(0), a);
 	}
 
@@ -230,12 +230,12 @@ public class ByteConsumption extends Expression.Visitor {
 	}
 
 	@Override
-	public Object visitIf(Nez.If e, Object a) {
+	public Object visitIf(Nez.IfCondition e, Object a) {
 		return Result.Unconsumed;
 	}
 
 	@Override
-	public Object visitOn(Nez.On e, Object a) {
+	public Object visitOn(Nez.OnCondition e, Object a) {
 		return check(e.get(0), a);
 	}
 }

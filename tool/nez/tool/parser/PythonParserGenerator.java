@@ -492,10 +492,10 @@ public class PythonParserGenerator extends ParserGrammarSourceGenerator {
 		System.out.println(list.toString());
 		for (int i = 0; i < list.size(); i++) {
 			If("result").Begin();
-			if (list.get(i) instanceof Nez.LeftFold) {
+			if (list.get(i) instanceof Nez.FoldTree) {
 				isLeftNew = true;
 			}
-			if (list.get(i) instanceof Nez.Link) {
+			if (list.get(i) instanceof Nez.LinkTree) {
 				isLink = true;
 			}
 			visitExpression(list.get(i));
@@ -553,7 +553,7 @@ public class PythonParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitLink(Nez.Link p) {
+	public void visitLink(Nez.LinkTree p) {
 		// int memoPoint = 0;
 		// if (!memoMap.containsKey(unique(p))) {
 		// memoPoint = this.memoPoint++;
@@ -585,7 +585,7 @@ public class PythonParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitLeftFold(Nez.LeftFold p) {
+	public void visitLeftFold(Nez.FoldTree p) {
 		Ileftnew();
 		markStack.push(true);
 	}
@@ -659,13 +659,13 @@ public class PythonParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void visitIf(Nez.If p) {
+	public void visitIf(Nez.IfCondition p) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void visitOn(Nez.On p) {
+	public void visitOn(Nez.OnCondition p) {
 		// TODO Auto-generated method stub
 
 	}

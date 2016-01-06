@@ -9,13 +9,13 @@ import nez.lang.Nez.Choice;
 import nez.lang.Nez.Detree;
 import nez.lang.Nez.Empty;
 import nez.lang.Nez.Fail;
-import nez.lang.Nez.If;
-import nez.lang.Nez.LeftFold;
-import nez.lang.Nez.Link;
+import nez.lang.Nez.IfCondition;
+import nez.lang.Nez.FoldTree;
+import nez.lang.Nez.LinkTree;
 import nez.lang.Nez.LocalScope;
 import nez.lang.Nez.EndTree;
 import nez.lang.Nez.Not;
-import nez.lang.Nez.On;
+import nez.lang.Nez.OnCondition;
 import nez.lang.Nez.OneMore;
 import nez.lang.Nez.Option;
 import nez.lang.Nez.Pair;
@@ -161,12 +161,12 @@ public enum ByteAcceptance {
 		}
 
 		@Override
-		public ByteAcceptance visitLeftFold(LeftFold e, Object ch) {
+		public ByteAcceptance visitFoldTree(FoldTree e, Object ch) {
 			return Unconsumed;
 		}
 
 		@Override
-		public ByteAcceptance visitLink(Link e, Object ch) {
+		public ByteAcceptance visitLink(LinkTree e, Object ch) {
 			return accept(e.get(0), ch);
 		}
 
@@ -221,12 +221,12 @@ public enum ByteAcceptance {
 		}
 
 		@Override
-		public ByteAcceptance visitIf(If e, Object ch) {
+		public ByteAcceptance visitIf(IfCondition e, Object ch) {
 			return Unconsumed;
 		}
 
 		@Override
-		public ByteAcceptance visitOn(On e, Object ch) {
+		public ByteAcceptance visitOn(OnCondition e, Object ch) {
 			return accept(e.get(0), ch);
 		}
 	}

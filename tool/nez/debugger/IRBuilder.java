@@ -209,7 +209,7 @@ public class IRBuilder {
 		return this.curBB.append(new Inew(e));
 	}
 
-	public DebugVMInstruction createIleftnew(Nez.LeftFold e) {
+	public DebugVMInstruction createIleftnew(Nez.FoldTree e) {
 		return this.curBB.append(new Ileftnew(e));
 	}
 
@@ -229,7 +229,7 @@ public class IRBuilder {
 		return this.curBB.append(new Ireplace(e));
 	}
 
-	public DebugVMInstruction createIcommit(Nez.Link e) {
+	public DebugVMInstruction createIcommit(Nez.LinkTree e) {
 		return this.curBB.append(new Icommit(e));
 	}
 
