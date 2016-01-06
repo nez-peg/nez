@@ -422,7 +422,7 @@ public abstract class Expressions {
 
 	// -----------------------------------------------------------------------
 
-	public static final Expression newMultiByte(SourceLocation s, String text) {
+	public static final Expression newExpression(SourceLocation s, String text) {
 		byte[] utf8 = StringUtils.toUtf8(text);
 		if (utf8.length == 0) {
 			return newEmpty(s);

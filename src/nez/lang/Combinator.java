@@ -99,11 +99,11 @@ public class Combinator {
 	}
 
 	protected final Expression t(char c) {
-		return Expressions.newMultiByte(src(), String.valueOf(c));
+		return Expressions.newExpression(src(), String.valueOf(c));
 	}
 
 	protected final Expression t(String token) {
-		return Expressions.newMultiByte(src(), token);
+		return Expressions.newExpression(src(), token);
 	}
 
 	protected final Expression c(String text) {
@@ -171,7 +171,7 @@ public class Combinator {
 	}
 
 	protected final Expression Not(String t) {
-		return Expressions.newNot(src(), Expressions.newMultiByte(src(), t));
+		return Expressions.newNot(src(), Expressions.newExpression(src(), t));
 	}
 
 	protected final Expression Not(Expression... e) {

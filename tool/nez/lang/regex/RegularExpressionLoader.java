@@ -416,7 +416,7 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 	}
 
 	private final Expression _LineTerminator() {
-		Expression l[] = { Expressions.newByte(null, '\n'), Expressions.newByte(null, '\r'), Expressions.newMultiByte(null, "\r\n"), };
+		Expression l[] = { Expressions.newByte(null, '\n'), Expressions.newByte(null, '\r'), Expressions.newExpression(null, "\r\n"), };
 		return Expressions.newChoice(null, new UList<>(l));
 	}
 }

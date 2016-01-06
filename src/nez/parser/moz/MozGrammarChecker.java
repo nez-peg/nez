@@ -132,7 +132,7 @@ class MozGrammarChecker extends MozGrammarTransducer {
 		if (p == null) {
 			if (n.isTerminal()) {
 				reportNotice(n, "undefined terminal: " + n.getLocalName());
-				return Expressions.newMultiByte(n.getSourceLocation(), StringUtils.unquoteString(n.getLocalName()));
+				return Expressions.newExpression(n.getSourceLocation(), StringUtils.unquoteString(n.getLocalName()));
 			}
 			reportWarning(n, "undefined production: " + n.getLocalName());
 			return n.newEmpty();
@@ -143,7 +143,7 @@ class MozGrammarChecker extends MozGrammarTransducer {
 			} catch (StackOverflowError e) {
 				/* Handling a bad grammar */
 				reportError(n, "terminal is recursive: " + n.getLocalName());
-				return Expressions.newMultiByte(n.getSourceLocation(), StringUtils.unquoteString(n.getLocalName()));
+				return Expressions.newExpression(n.getSourceLocation(), StringUtils.unquoteString(n.getLocalName()));
 			}
 		}
 		// System.out.print("NonTerminal: " + n.getLocalName() + " -> ");

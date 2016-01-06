@@ -162,7 +162,7 @@ public class GrammarChecker {
 			if (p == null) {
 				if (n.isTerminal()) {
 					context.reportNotice(n, "undefined terminal: " + n.getLocalName());
-					return Expressions.newMultiByte(n.getSourceLocation(), StringUtils.unquoteString(n.getLocalName()));
+					return Expressions.newExpression(n.getSourceLocation(), StringUtils.unquoteString(n.getLocalName()));
 				}
 				context.reportWarning(n, "undefined production: " + n.getLocalName());
 				return n.newEmpty();
@@ -173,7 +173,7 @@ public class GrammarChecker {
 				} catch (StackOverflowError e) {
 					/* Handling a bad grammar */
 					context.reportError(n, "terminal is recursive: " + n.getLocalName());
-					return Expressions.newMultiByte(n.getSourceLocation(), StringUtils.unquoteString(n.getLocalName()));
+					return Expressions.newExpression(n.getSourceLocation(), StringUtils.unquoteString(n.getLocalName()));
 				}
 			}
 

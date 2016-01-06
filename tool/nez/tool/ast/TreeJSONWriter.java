@@ -51,8 +51,9 @@ public class TreeJSONWriter extends TreeWriter {
 		if (node.isAllLabeled()) {
 			file.write("{");
 			if (!dataOption) {
-				file.write(",\"type\":");
+				file.write("\"type\":");
 				file.write(StringUtils.quoteString('"', node.getTag().toString(), '"'));
+				file.write(",");
 			}
 			for (int i = 0; i < node.size(); i++) {
 				if (i > 0) {

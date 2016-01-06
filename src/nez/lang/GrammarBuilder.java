@@ -64,7 +64,7 @@ public class GrammarBuilder {
 		if (value instanceof Symbol) {
 			return Expressions.newTag(null, (Symbol) value);
 		}
-		return Expressions.newMultiByte(null, value.toString());
+		return Expressions.newExpression(null, value.toString());
 	}
 
 	protected final Expression P(String name) {

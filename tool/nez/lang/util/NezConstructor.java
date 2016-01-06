@@ -152,7 +152,7 @@ public class NezConstructor extends GrammarFileLoader {
 	public class _Character extends NezConstructorDefault {
 		@Override
 		public Expression toExpression(Tree<?> node) {
-			return Expressions.newMultiByte(node, StringUtils.unquoteString(node.toText()));
+			return Expressions.newExpression(node, StringUtils.unquoteString(node.toText()));
 		}
 	}
 
@@ -188,7 +188,7 @@ public class NezConstructor extends GrammarFileLoader {
 					return Expressions.newByte(node, c);
 				}
 				String t2 = String.valueOf((char) c);
-				return Expressions.newMultiByte(node, t2);
+				return Expressions.newExpression(node, t2);
 			}
 			int c = StringUtils.hex(t.charAt(t.length() - 2)) * 16 + StringUtils.hex(t.charAt(t.length() - 1));
 			return Expressions.newByte(node, c);

@@ -45,7 +45,7 @@ public abstract class GrammarBase extends AbstractList<Production> {
 	}
 
 	public final Expression newString(String text) {
-		return Expressions.newMultiByte(getSourcePosition(), text);
+		return Expressions.newExpression(getSourcePosition(), text);
 	}
 
 	public final Expression newCharSet(String text) {
