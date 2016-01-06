@@ -55,6 +55,16 @@ public class Productions {
 		for (Production p : grammar) {
 			count(p.getExpression(), refc);
 		}
+		if (hasUnusedProduction(grammar, refc)) {
+			NonterminalReference refc2 = new NonterminalReference();
+			for (Production p : grammar) {
+				String uname = p.getUniqueName();
+				if (refc.count(uname) > 0) {
+					count(p.getExpression(), refc2);
+				}
+			}
+			return refc2;
+		}
 		return refc;
 	}
 
@@ -72,6 +82,16 @@ public class Productions {
 		for (Expression sub : e) {
 			count(sub, counts);
 		}
+	}
+
+	private final static boolean hasUnusedProduction(Grammar grammar, NonterminalReference refc) {
+		for (Production p : grammar) {
+			String uname = p.getUniqueName();
+			if (refc.count(uname) == 0) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
