@@ -3,11 +3,11 @@ package nez.parser.moz;
 import nez.lang.Expression;
 import nez.lang.Production;
 import nez.parser.MemoPoint;
-import nez.parser.Instruction;
+import nez.parser.ParserCode.ProductionCode;
 
-public class ParserGrammarFunc {
+public class ParserGrammarFunc extends ProductionCode<MozInst> {
 	String name;
-	Production grammarProduction;
+	// Production grammarProduction;
 	Production parserProduction;
 
 	int refcount;
@@ -15,12 +15,11 @@ public class ParserGrammarFunc {
 	boolean state;
 	MemoPoint memoPoint = null;
 
-	Instruction compiled;
-
-	public ParserGrammarFunc(String uname, Production p, Production pp, int init) {
+	ParserGrammarFunc(String uname, Production p, Production pp, int init) {
+		super(null);
 		this.name = uname;
 		this.refcount = 0;
-		this.grammarProduction = p;
+		// this.grammarProduction = p;
 		this.parserProduction = pp;
 		this.refcount = init;
 	}
@@ -51,13 +50,5 @@ public class ParserGrammarFunc {
 
 	public final boolean isInlined() {
 		return this.inlining;
-	}
-
-	public final Instruction getCompiled() {
-		return this.compiled;
-	}
-
-	public final void setCompiled(Instruction compiled) {
-		this.compiled = compiled;
 	}
 }

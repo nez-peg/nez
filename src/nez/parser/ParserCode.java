@@ -13,7 +13,6 @@ import nez.util.Verbose;
 public abstract class ParserCode<T extends Instruction> {
 
 	protected final Grammar grammar;
-	protected final HashMap<String, ParseFunc<T>> funcMap;
 	protected UList<T> codeList;
 
 	protected ParserCode(Grammar grammar, T[] initArray) {
@@ -26,16 +25,30 @@ public abstract class ParserCode<T extends Instruction> {
 		return this.grammar;
 	}
 
+	public abstract void layoutCode(T inst);
+
+	public final T getStartInstruction() {
+		return codeList.get(0);
+	}
+
+	public final int getInstSize() {
+		return codeList.size();
+	}
+
 	public abstract Object exec(ParserContext context);
 
 	/* ParserFunc */
 
-	public static class ParseFunc<T extends Instruction> {
-		Production p;
-		T compiled;
+	protected final HashMap<String, ProductionCode<T>> funcMap;
 
-		public ParseFunc(Production p, T inst) {
-			this.p = p;
+	public static class ProductionCode<T extends Instruction> {
+		private T compiled;
+
+		public ProductionCode(T inst) {
+			this.compiled = inst;
+		}
+
+		public void setCompiled(T inst) {
 			this.compiled = inst;
 		}
 
@@ -44,26 +57,16 @@ public abstract class ParserCode<T extends Instruction> {
 		}
 	}
 
-	protected int getParseFuncSize() {
+	protected int getCompiledProductionSize() {
 		return funcMap.size();
 	}
 
-	public ParseFunc<T> getParseFunc(Production p) {
+	public ProductionCode<T> getProductionCode(Production p) {
 		return funcMap.get(p.getUniqueName());
 	}
 
-	public void setParseFunc(Production p, ParseFunc<T> f) {
+	public void setProductionCode(Production p, ProductionCode<T> f) {
 		funcMap.put(p.getUniqueName(), f);
-	}
-
-	public abstract void layoutCode(T inst);
-
-	public final T getStartPoint() {
-		return codeList.get(0);
-	}
-
-	public final int getInstSize() {
-		return codeList.size();
 	}
 
 	/* MemoPoint */

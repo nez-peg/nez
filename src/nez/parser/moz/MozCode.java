@@ -23,7 +23,7 @@ public class MozCode extends ParserCode<MozInst> {
 	public Object exec(ParserContext context) {
 		long startPosition = context.getPosition();
 		MozMachine machine = (MozMachine) context.getRuntime();
-		MozInst code = this.getStartPoint();
+		MozInst code = this.getStartInstruction();
 		boolean result = false;
 		try {
 			while (true) {

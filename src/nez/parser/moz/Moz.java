@@ -9,6 +9,7 @@ import nez.lang.Nez.SymbolExists;
 import nez.lang.Production;
 import nez.parser.MemoEntry;
 import nez.parser.MemoPoint;
+import nez.parser.ParserCode.ProductionCode;
 import nez.parser.SymbolTable;
 import nez.parser.TerminationException;
 import nez.util.StringUtils;
@@ -145,11 +146,11 @@ public class Moz {
 	}
 
 	public static class Call extends MozInst {
-		ParserGrammarFunc f;
+		ProductionCode<MozInst> f;
 		String name;
 		public MozInst jump = null;
 
-		public Call(ParserGrammarFunc f, String name, MozInst next) {
+		public Call(ProductionCode<MozInst> f, String name, MozInst next) {
 			super(MozSet.Call, null, next);
 			this.f = f;
 			this.name = name;
@@ -164,7 +165,7 @@ public class Moz {
 		void sync() {
 			if (this.jump == null) {
 				this.jump = labeling(this.next);
-				this.next = labeling((MozInst) f.getCompiled());
+				this.next = labeling(f.getCompiled());
 			}
 			this.f = null;
 		}
