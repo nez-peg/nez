@@ -1,9 +1,11 @@
-package nez.parser;
+package nez.parser.moz;
 
 import nez.lang.Expression;
 import nez.lang.Production;
+import nez.parser.MemoPoint;
+import nez.parser.NezInst;
 
-public class ParseFunc {
+public class ParserGrammarFunc {
 	String name;
 	Production grammarProduction;
 	Production parserProduction;
@@ -15,7 +17,7 @@ public class ParseFunc {
 
 	NezInst compiled;
 
-	public ParseFunc(String uname, Production p, Production pp, int init) {
+	public ParserGrammarFunc(String uname, Production p, Production pp, int init) {
 		this.name = uname;
 		this.refcount = 0;
 		this.grammarProduction = p;

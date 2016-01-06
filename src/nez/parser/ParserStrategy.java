@@ -11,6 +11,7 @@ import nez.ast.Tree;
 import nez.lang.Grammar;
 import nez.parser.moz.MozCompiler;
 import nez.parser.moz.MozMachine;
+import nez.parser.moz.ParserGrammar;
 import nez.util.ConsoleUtils;
 import nez.util.Verbose;
 
@@ -222,7 +223,7 @@ public class ParserStrategy {
 		return grammar.newParser(this);
 	}
 
-	public ParserCode newParserCode(ParserGrammar pgrammar) {
+	public ParserCode<?> newParserCode(ParserGrammar pgrammar) {
 		// if (this.isEnabled("Moz", ParserStrategy.Moz)) {
 		// MozCompiler mozCompiler = new MozCompiler(this);
 		// return mozCompiler.compile(pgrammar);

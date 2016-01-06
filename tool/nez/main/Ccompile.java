@@ -13,7 +13,7 @@ public class Ccompile extends Command {
 		Grammar grammar = newGrammar();
 		Parser parser = newParser();
 		String path = grammar.getURN();
-		ParserCode code = parser.compile();
+		ParserCode<?> code = parser.compile();
 		// String path = config.getGrammarName() + ".moz";
 		MozCode.writeMozCode(parser, path + ".moz"); // FIXME
 	}

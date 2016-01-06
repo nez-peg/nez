@@ -2,33 +2,22 @@ package nez.parser.moz;
 
 import java.util.List;
 
+import nez.lang.Grammar;
 import nez.parser.ByteCoder;
 import nez.parser.MemoPoint;
 import nez.parser.Parser;
 import nez.parser.ParserCode;
 import nez.parser.ParserContext;
-import nez.parser.ParserGrammar;
 import nez.parser.TerminationException;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
 import nez.util.Verbose;
 
-public class MozCode extends ParserCode {
+public class MozCode extends ParserCode<MozInst> {
 
-	final UList<MozInst> codeList;
-
-	public MozCode(ParserGrammar gg, UList<MozInst> codeList, List<MemoPoint> memoPointList) {
-		super(gg, memoPointList);
+	public MozCode(Grammar gg, UList<MozInst> codeList, List<MemoPoint> memoPointList) {
+		super(gg, new MozInst[0]);
 		this.codeList = codeList;
-	}
-
-	public final MozInst getStartPoint() {
-		return codeList.get(0);
-	}
-
-	@Override
-	public final int getInstSize() {
-		return codeList.size();
 	}
 
 	@Override
@@ -75,9 +64,15 @@ public class MozCode extends ParserCode {
 		return result;
 	}
 
+	@Override
+	public void layoutCode(MozInst inst) {
+		// TODO Auto-generated method stub
+
+	}
+
 	public final void encode(ByteCoder coder) {
 		if (coder != null) {
-			coder.setHeader(codeList.size(), this.gg.size(), memoPointList == null ? 0 : memoPointList.size());
+			coder.setHeader(codeList.size(), this.getInstSize(), this.getMemoPointSize());
 			coder.setInstructions(codeList.ArrayValues, codeList.size());
 		}
 	}

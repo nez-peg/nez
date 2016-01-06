@@ -1,4 +1,4 @@
-package nez.parser;
+package nez.parser.moz;
 
 import java.util.HashMap;
 import java.util.List;
@@ -11,15 +11,17 @@ import nez.lang.Grammar;
 import nez.lang.OldGrammarChecker;
 import nez.lang.Production;
 import nez.lang.Typestate;
+import nez.parser.MemoPoint;
+import nez.parser.ParserStrategy;
 import nez.util.UList;
 import nez.util.Verbose;
 
 public class ParserGrammar extends Grammar {
-	HashMap<String, ParseFunc> funcMap;
+	HashMap<String, ParserGrammarFunc> funcMap;
 	public List<MemoPoint> memoPointList = null;
 
 	public ParserGrammar(Production start, ParserStrategy strategy, TreeMap<String, Boolean> boolMap) {
-		this.funcMap = new HashMap<String, ParseFunc>();
+		this.funcMap = new HashMap<String, ParserGrammarFunc>();
 		new OldGrammarChecker(this, boolMap, start, strategy);
 		memo(strategy);
 	}
@@ -50,17 +52,17 @@ public class ParserGrammar extends Grammar {
 
 	/* Acceptance */
 
-	public ParseFunc getParseFunc(String name) {
+	public ParserGrammarFunc getParseFunc(String name) {
 		return this.funcMap.get(name);
 	}
 
-	public ParseFunc setParseFunc(String uname, Production p, Production parserProduction, int init) {
-		ParseFunc f = new ParseFunc(uname, p, parserProduction, init);
+	public ParserGrammarFunc setParseFunc(String uname, Production p, Production parserProduction, int init) {
+		ParserGrammarFunc f = new ParserGrammarFunc(uname, p, parserProduction, init);
 		this.funcMap.put(uname, f);
 		return f;
 	}
 
-	public void setParseFunc(ParseFunc f) {
+	public void setParseFunc(ParserGrammarFunc f) {
 		this.funcMap.put(f.name, f);
 	}
 
@@ -87,18 +89,18 @@ public class ParserGrammar extends Grammar {
 			memoPointList = new UList<MemoPoint>(new MemoPoint[4]);
 		}
 		if (strategy.Oinline) {
-			for (Entry<String, ParseFunc> e : funcMap.entrySet()) {
+			for (Entry<String, ParserGrammarFunc> e : funcMap.entrySet()) {
 				this.checkInlining(e.getValue());
 			}
 		}
 		if (memoPointList != null) {
-			for (Entry<String, ParseFunc> e : funcMap.entrySet()) {
+			for (Entry<String, ParserGrammarFunc> e : funcMap.entrySet()) {
 				this.checkMemoizing(e.getValue());
 			}
 		}
 	}
 
-	void checkInlining(ParseFunc f) {
+	void checkInlining(ParserGrammarFunc f) {
 		// if (f.refcount == 1 || GrammarOptimizer2.isSingleCharacter(f.e)) {
 		// if (Verbose.PackratParsing) {
 		// Verbose.println("Inlining: " + f.name);
@@ -107,15 +109,15 @@ public class ParserGrammar extends Grammar {
 		// }
 	}
 
-	void checkMemoizing(ParseFunc f) {
+	void checkMemoizing(ParserGrammarFunc f) {
 		if (f.inlining || f.memoPoint != null) {
 			return;
 		}
 		Production p = f.parserProduction;
 		if (f.refcount > 1 && typeState(p) != Typestate.TreeMutation) {
 			int memoId = memoPointList.size();
-			f.memoPoint = new MemoPoint(memoId, p.getLocalName(), f.getExpression(), false); // FIXME
-																								// p.isContextual());
+			f.memoPoint = new MemoPoint(memoId, p.getLocalName(), f.getExpression(), typeState(p), false); // FIXME
+			// p.isContextual());
 			memoPointList.add(f.memoPoint);
 			if (Verbose.PackratParsing) {
 				Verbose.println("MemoPoint: " + f.memoPoint + " ref=" + f.refcount + " typestate? " + typeState(p));

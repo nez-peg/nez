@@ -1,25 +1,36 @@
 package nez.parser;
 
 import nez.lang.Expression;
+import nez.lang.Typestate;
 
 public final class MemoPoint {
 	public final int id;
 	public final String label;
 	public final Expression e;
+	public final Typestate typeState;
 	final boolean contextSensitive;
+
+	public MemoPoint(int id, String label, Expression e, Typestate typeState, boolean contextSensitive) {
+		this.id = id;
+		this.label = label;
+		this.e = e;
+		this.typeState = typeState;
+		this.contextSensitive = contextSensitive;
+	}
+
+	public final boolean isStateful() {
+		return this.contextSensitive;
+	}
+
+	public final Typestate getTypestate() {
+		return this.typeState;
+	}
 
 	int memoHit = 0;
 	int memoFailHit = 0;
 	long hitLength = 0;
 	int maxLength = 0;
 	int memoMiss = 0;
-
-	public MemoPoint(int id, String label, Expression e, boolean contextSensitive) {
-		this.id = id;
-		this.label = label;
-		this.e = e;
-		this.contextSensitive = contextSensitive;
-	}
 
 	public void memoHit(int consumed) {
 		this.memoHit += 1;

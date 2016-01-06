@@ -4,11 +4,10 @@ import java.util.HashMap;
 import java.util.TreeMap;
 
 import nez.lang.expr.Expressions;
-import nez.lang.expr.Pnot;
 import nez.lang.expr.Xif;
-import nez.parser.ParseFunc;
-import nez.parser.ParserGrammar;
 import nez.parser.ParserStrategy;
+import nez.parser.moz.ParserGrammarFunc;
+import nez.parser.moz.ParserGrammar;
 import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
 import nez.util.UList;
@@ -67,9 +66,9 @@ public class OldGrammarChecker extends OldGrammarTransducer {
 		ConsoleUtils.println("");
 	}
 
-	private ParseFunc checkFirstVisitedProduction(String uname, Production p, int init) {
+	private ParserGrammarFunc checkFirstVisitedProduction(String uname, Production p, int init) {
 		Production parserProduction/* local production */= parserGrammar.newProduction(uname, null);
-		ParseFunc f = parserGrammar.setParseFunc(uname, p, parserProduction, init);
+		ParserGrammarFunc f = parserGrammar.setParseFunc(uname, p, parserProduction, init);
 		// if (UFlag.is(p.flag, Production.ResetFlag)) {
 		// p.initFlag();
 		// if (p.isRecursive()) {
@@ -147,7 +146,7 @@ public class OldGrammarChecker extends OldGrammarTransducer {
 
 		Typestate innerTypestate = this.isNonASTContext() ? Typestate.Unit : parserGrammar.typeState(p);
 		String uname = this.uniqueName(n.getUniqueName(), p);
-		ParseFunc f = parserGrammar.getParseFunc(uname);
+		ParserGrammarFunc f = parserGrammar.getParseFunc(uname);
 		if (f == null) {
 			f = checkFirstVisitedProduction(uname, p, 1);
 		} else {

@@ -6,9 +6,7 @@ import nez.lang.Nez;
 import nez.lang.Nez.Unary;
 import nez.lang.NonTerminal;
 import nez.lang.Production;
-import nez.lang.expr.Pnot;
 import nez.lang.expr.Poption;
-import nez.lang.expr.Tnew;
 import nez.util.ConsoleUtils;
 
 public class GrammarAnalyzer {

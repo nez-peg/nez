@@ -10,13 +10,14 @@ import nez.ast.SourceError;
 import nez.ast.Tree;
 import nez.io.CommonSource;
 import nez.lang.Grammar;
+import nez.parser.moz.ParserGrammar;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
 
 public final class Parser {
 	private ParserStrategy strategy;
 	private ParserGrammar grammar;
-	private ParserCode pcode = null;
+	private ParserCode<?> pcode = null;
 
 	public Parser(ParserGrammar pgrammar, ParserStrategy strategy) {
 		this.grammar = pgrammar;
@@ -31,12 +32,12 @@ public final class Parser {
 		return this.strategy;
 	}
 
-	public final ParserCode compile() {
+	public final ParserCode<?> compile() {
 		this.pcode = this.strategy.newParserCode(grammar);
 		return pcode;
 	}
 
-	public final ParserCode getParserCode() {
+	public final ParserCode<?> getParserCode() {
 		if (this.pcode == null) {
 			pcode = this.strategy.newParserCode(grammar);
 		}
@@ -44,14 +45,14 @@ public final class Parser {
 	}
 
 	public final ParserContext newParserContext(Source source, Tree<?> prototype) {
-		ParserCode pcode = this.getParserCode();
+		ParserCode<?> pcode = this.getParserCode();
 		return this.strategy.newParserContext(source, pcode.getMemoPointSize(), prototype);
 	}
 
 	/* -------------------------------------------------------------------- */
 
 	public final Object perform(ParserContext context) {
-		ParserCode code = this.getParserCode();
+		ParserCode<?> code = this.getParserCode();
 		// context.init(newMemoTable(context), prototype);
 		if (prof != null) {
 			context.startProfiling(prof);

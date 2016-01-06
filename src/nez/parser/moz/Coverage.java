@@ -1,4 +1,4 @@
-package nez.parser;
+package nez.parser.moz;
 
 import java.util.HashMap;
 import java.util.List;
@@ -7,8 +7,6 @@ import nez.lang.Expression;
 import nez.lang.Nez;
 import nez.lang.Production;
 import nez.lang.expr.Pchoice;
-import nez.parser.moz.Moz;
-import nez.parser.moz.MozInst;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
 

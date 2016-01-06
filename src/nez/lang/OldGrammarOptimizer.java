@@ -9,13 +9,12 @@ import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cset;
 import nez.lang.expr.Expressions;
 import nez.lang.expr.Pchoice;
-import nez.lang.expr.Pnot;
 import nez.lang.expr.Tcapture;
 import nez.lang.expr.Tlfold;
 import nez.lang.expr.Tnew;
-import nez.parser.ParseFunc;
-import nez.parser.ParserGrammar;
 import nez.parser.ParserStrategy;
+import nez.parser.moz.ParserGrammarFunc;
+import nez.parser.moz.ParserGrammar;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
 
@@ -101,7 +100,7 @@ public class OldGrammarOptimizer extends OldGrammarRewriter {
 		UList<Production> prodList = new UList<Production>(new Production[grammar.size()]);
 		for (Production p : grammar) {
 			String key = p.getLocalName();
-			ParseFunc f = grammar.getParseFunc(key);
+			ParserGrammarFunc f = grammar.getParseFunc(key);
 			verboseReference(key, f.getCount());
 			if (f.getCount() > 0) {
 				prodList.add(p);
@@ -115,7 +114,7 @@ public class OldGrammarOptimizer extends OldGrammarRewriter {
 	private void resetReferenceCount() {
 		for (Production p : grammar) {
 			String key = p.getLocalName();
-			ParseFunc f = grammar.getParseFunc(key);
+			ParserGrammarFunc f = grammar.getParseFunc(key);
 			f.resetCount();
 		}
 	}
@@ -130,7 +129,7 @@ public class OldGrammarOptimizer extends OldGrammarRewriter {
 
 	private void recheckReference(Expression e) {
 		if (e instanceof NonTerminal) {
-			ParseFunc f = grammar.getParseFunc(((NonTerminal) e).getLocalName());
+			ParserGrammarFunc f = grammar.getParseFunc(((NonTerminal) e).getLocalName());
 			f.incCount();
 			recheckReference(((NonTerminal) e).getProduction());
 			return;
@@ -188,7 +187,7 @@ public class OldGrammarOptimizer extends OldGrammarRewriter {
 		Production p = n.getProduction();
 		Expression deref = optimizeProduction(p);
 		if (strategy.Oinline) {
-			ParseFunc f = grammar.getParseFunc(n.getLocalName());
+			ParserGrammarFunc f = grammar.getParseFunc(n.getLocalName());
 			if (f.getCount() == 1) {
 				verboseInline("inline(ref=1)", n, deref);
 				return deref;

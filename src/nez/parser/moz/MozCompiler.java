@@ -12,9 +12,6 @@ import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cmulti;
 import nez.lang.expr.Cset;
 import nez.lang.expr.Expressions;
-import nez.parser.Coverage;
-import nez.parser.ParseFunc;
-import nez.parser.ParserGrammar;
 import nez.parser.ParserStrategy;
 import nez.util.UList;
 import nez.util.Verbose;
@@ -39,7 +36,7 @@ public class MozCompiler extends Expression.Visitor {
 		this.gg = gg;
 	}
 
-	private HashMap<String, ParseFunc> funcMap = null;
+	private HashMap<String, ParserGrammarFunc> funcMap = null;
 
 	protected int getParseFuncSize() {
 		if (gg != null) {
@@ -51,9 +48,9 @@ public class MozCompiler extends Expression.Visitor {
 		return 0;
 	}
 
-	protected ParseFunc getParseFunc(Production p) {
+	protected ParserGrammarFunc getParseFunc(Production p) {
 		if (gg != null) {
-			ParseFunc f = gg.getParseFunc(p.getLocalName());
+			ParserGrammarFunc f = gg.getParseFunc(p.getLocalName());
 			if (f == null) {
 				f = gg.getParseFunc(p.getUniqueName());
 			}
@@ -111,7 +108,7 @@ public class MozCompiler extends Expression.Visitor {
 	}
 
 	protected void visitProduction(UList<MozInst> codeList, Production p, Object next) {
-		ParseFunc f = this.getParseFunc(p);
+		ParserGrammarFunc f = this.getParseFunc(p);
 		// System.out.println("inline: " + f.inlining + " name: " +
 		// p.getLocalName());
 		encodingProduction = p;
@@ -261,7 +258,7 @@ public class MozCompiler extends Expression.Visitor {
 
 	public MozInst visitUnnNonTerminal(NonTerminal n, Object next) {
 		Production p = n.getProduction();
-		ParseFunc f = this.getParseFunc(p);
+		ParserGrammarFunc f = this.getParseFunc(p);
 		return new Moz.Call(f, p.getLocalName(), (MozInst) next);
 	}
 
@@ -570,7 +567,7 @@ public class MozCompiler extends Expression.Visitor {
 			Verbose.debug("[PANIC] unresolved: " + n.getLocalName() + " ***** ");
 			return (MozInst) next;
 		}
-		ParseFunc f = this.getParseFunc(p);
+		ParserGrammarFunc f = this.getParseFunc(p);
 		if (f.isInlined()) {
 			this.optimizedInline(p);
 			return visit(f.getExpression(), next);
@@ -586,7 +583,7 @@ public class MozCompiler extends Expression.Visitor {
 		return new Moz.Call(f, n.getLocalName(), (MozInst) next);
 	}
 
-	private MozInst memoize(NonTerminal n, ParseFunc f, Object next) {
+	private MozInst memoize(NonTerminal n, ParserGrammarFunc f, Object next) {
 		MozInst inside = new Moz.Memo(n, f.getMemoPoint(), f.isStateful(), (MozInst) next);
 		inside = new Moz.Call(f, n.getLocalName(), inside);
 		inside = new Moz.Alt(n, new Moz.MemoFail(n, f.isStateful(), f.getMemoPoint()), inside);
@@ -608,7 +605,7 @@ public class MozCompiler extends Expression.Visitor {
 	public final MozInst visitLink(Nez.Link p, Object next) {
 		if (strategy.TreeConstruction && p.get(0) instanceof NonTerminal) {
 			NonTerminal n = (NonTerminal) p.get(0);
-			ParseFunc f = this.getParseFunc(n.getProduction());
+			ParserGrammarFunc f = this.getParseFunc(n.getProduction());
 			if (f.getMemoPoint() != null) {
 				if (Verbose.PackratParsing) {
 					Verbose.println("memoize: @" + n.getLocalName() + " at " + this.getEncodingProduction().getLocalName());
@@ -619,7 +616,7 @@ public class MozCompiler extends Expression.Visitor {
 		return visitUnnTlink(p, next);
 	}
 
-	private MozInst memoize(Nez.Link p, NonTerminal n, ParseFunc f, Object next) {
+	private MozInst memoize(Nez.Link p, NonTerminal n, ParserGrammarFunc f, Object next) {
 		MozInst inside = new Moz.TMemo(p, f.getMemoPoint(), f.isStateful(), (MozInst) next);
 		inside = new Moz.TCommit(p, inside);
 		inside = visitUnnNonTerminal(n, inside);

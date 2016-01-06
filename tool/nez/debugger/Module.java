@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import nez.lang.Production;
-import nez.parser.ParserGrammar;
+import nez.parser.moz.ParserGrammar;
 import nez.util.ConsoleUtils;
 
 public class Module {

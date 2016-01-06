@@ -4,8 +4,8 @@ import java.util.HashMap;
 
 import nez.lang.expr.Expressions;
 import nez.parser.Parser;
-import nez.parser.ParserGrammar;
 import nez.parser.ParserStrategy;
+import nez.parser.moz.ParserGrammar;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
 import nez.util.Verbose;

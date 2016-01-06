@@ -13,7 +13,7 @@ import nez.lang.expr.Xexists;
 import nez.lang.expr.Xis;
 import nez.lang.expr.Xlocal;
 import nez.lang.expr.Xsymbol;
-import nez.parser.ParserGrammar;
+import nez.parser.moz.ParserGrammar;
 
 public class IRBuilder {
 	private BasicBlock curBB;

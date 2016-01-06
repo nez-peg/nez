@@ -22,7 +22,7 @@ import nez.lang.NonTerminal;
 import nez.lang.Production;
 import nez.lang.expr.Pchoice;
 import nez.main.ReadLine;
-import nez.parser.ParserGrammar;
+import nez.parser.moz.ParserGrammar;
 import nez.util.ConsoleUtils;
 
 public class NezDebugger {
