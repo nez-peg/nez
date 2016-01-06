@@ -11,7 +11,7 @@ import nez.lang.Expressions;
 import nez.lang.Nez;
 import nez.lang.Nez.Sequence;
 import nez.lang.NonTerminal;
-import nez.lang.Predicate;
+import nez.lang.NezFunction;
 import nez.lang.Production;
 import nez.lang.expr.Xis;
 import nez.parser.ParserStrategy;
@@ -421,7 +421,7 @@ public class DebugVMCompiler extends Expression.Visitor {
 
 	@Override
 	public MozInst visitSymbolPredicate(Nez.SymbolPredicate p, Object next) {
-		if (p.op == Predicate.is) {
+		if (p.op == NezFunction.is) {
 			this.builder.createIis((Xis) p, this.builder.jumpFailureJump());
 			this.builder.setInsertPoint(new BasicBlock());
 		} else {

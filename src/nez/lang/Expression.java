@@ -7,7 +7,7 @@ import java.util.List;
 import nez.ast.Source;
 import nez.ast.SourceLocation;
 import nez.ast.Symbol;
-import nez.lang.Nez.FunctionalExpression;
+import nez.lang.Nez.Function;
 import nez.util.StringUtils;
 import nez.util.UList;
 
@@ -488,7 +488,7 @@ public abstract class Expression extends AbstractList<Expression> implements Sou
 			}
 		}
 
-		private void formatFunction(FunctionalExpression e, Object argument, StringBuilder sb) {
+		private void formatFunction(Function e, Object argument, StringBuilder sb) {
 			sb.append("<");
 			sb.append(e.op);
 			if (argument != null) {

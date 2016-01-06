@@ -4,11 +4,11 @@ import nez.ast.SourceLocation;
 import nez.ast.Symbol;
 import nez.lang.Nez;
 import nez.lang.NonTerminal;
-import nez.lang.Predicate;
+import nez.lang.NezFunction;
 
 public class Xsymbol extends Nez.SymbolAction {
 	public Xsymbol(SourceLocation s, NonTerminal pat) {
-		super(Predicate.symbol, pat);
+		super(NezFunction.symbol, pat);
 		this.setSourceLocation(s);
 	}
 

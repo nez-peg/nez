@@ -7,7 +7,7 @@ import nez.lang.Expressions;
 import nez.lang.Grammar;
 import nez.lang.Nez;
 import nez.lang.NonTerminal;
-import nez.lang.Predicate;
+import nez.lang.NezFunction;
 import nez.lang.Production;
 import nez.lang.Typestate;
 import nez.parser.MemoPoint;
@@ -337,7 +337,7 @@ public class MozCompiler implements ParserCompiler {
 
 		@Override
 		public MozInst visitSymbolPredicate(Nez.SymbolPredicate p, Object next) {
-			if (p.op == Predicate.is) {
+			if (p.op == NezFunction.is) {
 				return new Moz.Pos(p, visit(p.get(0), new Moz.SIs(p, (MozInst) next)));
 			} else {
 				return new Moz.Pos(p, visit(p.get(0), new Moz.SIsa(p, (MozInst) next)));

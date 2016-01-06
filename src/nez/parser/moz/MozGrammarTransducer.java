@@ -4,7 +4,7 @@ import nez.lang.Expression;
 import nez.lang.Expressions;
 import nez.lang.Nez;
 import nez.lang.NonTerminal;
-import nez.lang.Predicate;
+import nez.lang.NezFunction;
 import nez.lang.Production;
 import nez.util.UList;
 import nez.util.Verbose;
@@ -184,7 +184,7 @@ class MozGrammarTransducer extends Expression.Visitor {
 
 	@Override
 	public Expression visitSymbolPredicate(Nez.SymbolPredicate e, Object a) {
-		return Expressions.newSymbolPredicate(e.getSourceLocation(), e.tableName, visitInner(e.get(0)), e.op == Predicate.is);
+		return Expressions.newSymbolPredicate(e.getSourceLocation(), e.tableName, visitInner(e.get(0)), e.op == NezFunction.is);
 	}
 
 	@Override

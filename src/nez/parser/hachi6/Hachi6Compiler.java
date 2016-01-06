@@ -5,7 +5,7 @@ import nez.lang.Expressions;
 import nez.lang.Grammar;
 import nez.lang.Nez;
 import nez.lang.NonTerminal;
-import nez.lang.Predicate;
+import nez.lang.NezFunction;
 import nez.lang.Production;
 import nez.parser.ParserStrategy;
 import nez.parser.hachi6.Hachi6Code.ParseFunc;
@@ -342,7 +342,7 @@ public class Hachi6Compiler {
 
 		@Override
 		public Hachi6Inst visitSymbolPredicate(Nez.SymbolPredicate p, Object next) {
-			if (p.op == Predicate.is) {
+			if (p.op == NezFunction.is) {
 				return new Hachi6.Pos(compile(p.get(0), new Hachi6.SIs(p.tableName, (Hachi6Inst) next)));
 			} else {
 				return new Hachi6.Pos(compile(p.get(0), new Hachi6.SIsa(p.tableName, (Hachi6Inst) next)));

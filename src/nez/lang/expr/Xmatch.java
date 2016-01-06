@@ -4,12 +4,12 @@ import nez.ast.SourceLocation;
 import nez.ast.Symbol;
 import nez.lang.Expression;
 import nez.lang.Nez;
-import nez.lang.Predicate;
+import nez.lang.NezFunction;
 
 public class Xmatch extends Nez.SymbolMatch implements Expression.Contextual {
 
 	public Xmatch(SourceLocation s, Symbol tableName) {
-		super(Predicate.match, tableName);
+		super(NezFunction.match, tableName);
 		this.setSourceLocation(s);
 	}
 

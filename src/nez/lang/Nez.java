@@ -158,15 +158,9 @@ public class Nez {
 		/**
 		 * a 256-length bitmap array, represeting a character acceptance
 		 */
-		public boolean[] byteMap; // Immutable
+		public final boolean[] byteMap; // Immutable
 
-		public ByteSet() {
-			super();
-			this.byteMap = Bytes.newMap(false);
-		}
-
-		public ByteSet(boolean[] b) {
-			super();
+		ByteSet(boolean[] b) {
 			this.byteMap = b;
 		}
 
@@ -199,9 +193,9 @@ public class Nez {
 	 */
 
 	public static class MultiByte extends Terminal implements SingleCharacter {
-		public byte[] byteSeq;
+		public final byte[] byteSeq;
 
-		public MultiByte(byte[] byteSeq) {
+		MultiByte(byte[] byteSeq) {
 			this.byteSeq = byteSeq;
 		}
 
@@ -229,6 +223,13 @@ public class Nez {
 
 	/* Unary */
 
+	/**
+	 * Nez.Option represents an optional expression e?
+	 * 
+	 * @author kiki
+	 *
+	 */
+
 	public static class Option extends Nez.Unary {
 		public Option(Expression e) {
 			super(e);
@@ -249,9 +250,24 @@ public class Nez {
 
 	}
 
+	/**
+	 * Nez.Repetition is used to identify a common property of ZeroMore and
+	 * OneMore expressions.
+	 * 
+	 * @author kiki
+	 *
+	 */
+
 	public static interface Repetition {
 		Expression get(int index);
 	}
+
+	/**
+	 * Nez.ZeroMore represents a zero or more repetition e*.
+	 * 
+	 * @author kiki
+	 *
+	 */
 
 	public static class ZeroMore extends Unary implements Repetition {
 		public ZeroMore(Expression e) {
@@ -273,6 +289,13 @@ public class Nez {
 
 	}
 
+	/**
+	 * Nez.OneMore represents a one or more repetition e+.
+	 * 
+	 * @author kiki
+	 *
+	 */
+
 	public static class OneMore extends Unary implements Repetition {
 		public OneMore(Expression e) {
 			super(e);
@@ -290,8 +313,14 @@ public class Nez {
 		public final Object visit(Expression.Visitor v, Object a) {
 			return v.visitOneMore(this, a);
 		}
-
 	}
+
+	/**
+	 * Nez.And represents an and-predicate &e.
+	 * 
+	 * @author kiki
+	 *
+	 */
 
 	public static class And extends Unary {
 		public And(Expression e) {
@@ -312,6 +341,13 @@ public class Nez {
 		}
 	}
 
+	/**
+	 * Nez.Not represents a not-predicate !e.
+	 * 
+	 * @author kiki
+	 *
+	 */
+
 	public static class Not extends Unary {
 		public Not(Expression e) {
 			super(e);
@@ -330,6 +366,13 @@ public class Nez {
 			return v.visitNot(this, a);
 		}
 	}
+
+	/**
+	 * Nez.Pair is a pair representation of Nez.Sequence.
+	 * 
+	 * @author kiki
+	 *
+	 */
 
 	public static class Pair extends Expression {
 		public Expression first;
@@ -380,7 +423,7 @@ public class Nez {
 
 	}
 
-	public abstract static class List extends Expression {
+	abstract static class List extends Expression {
 		public Expression[] inners;
 
 		public List(Expression[] inners) {
@@ -417,9 +460,16 @@ public class Nez {
 		}
 	}
 
+	/**
+	 * Nez.Sequence is a standard representation of the sequence e e e .
+	 * 
+	 * @author kiki
+	 *
+	 */
+
 	public static class Sequence extends Nez.List {
 
-		public Sequence(Expression[] inners) {
+		Sequence(Expression[] inners) {
 			super(inners);
 		}
 
@@ -435,12 +485,18 @@ public class Nez {
 		public final Object visit(Expression.Visitor v, Object a) {
 			return v.visitSequence(this, a);
 		}
-
 	}
+
+	/**
+	 * Nez.Choice represents an ordered choice e / ... / e_n in Nez.
+	 * 
+	 * @author kiki
+	 *
+	 */
 
 	public static class Choice extends List {
 
-		public Choice(Expression[] inners) {
+		Choice(Expression[] inners) {
 			super(inners);
 		}
 
@@ -634,10 +690,10 @@ public class Nez {
 	/* Symbol */
 	private static Expression empty = Expressions.newEmpty(null);
 
-	public static abstract class FunctionalExpression extends Unary {
-		public final Predicate op;
+	public static abstract class Function extends Unary {
+		public final NezFunction op;
 
-		public FunctionalExpression(Predicate op, Expression e) {
+		public Function(NezFunction op, Expression e) {
 			super(e);
 			this.op = op;
 		}
@@ -648,10 +704,10 @@ public class Nez {
 
 	}
 
-	public static class SymbolAction extends FunctionalExpression {
+	public static class SymbolAction extends Function {
 		public final Symbol tableName;
 
-		public SymbolAction(Predicate op, NonTerminal e) {
+		public SymbolAction(NezFunction op, NonTerminal e) {
 			super(op, e);
 			tableName = Symbol.tag(e.getLocalName());
 		}
@@ -674,10 +730,10 @@ public class Nez {
 
 	}
 
-	public static class SymbolPredicate extends FunctionalExpression {
+	public static class SymbolPredicate extends Function {
 		public final Symbol tableName;
 
-		public SymbolPredicate(Predicate op, Symbol table, Expression e) {
+		public SymbolPredicate(NezFunction op, Symbol table, Expression e) {
 			super(op, e);
 			this.tableName = table;
 		}
@@ -698,10 +754,10 @@ public class Nez {
 
 	}
 
-	public static class SymbolMatch extends FunctionalExpression {
+	public static class SymbolMatch extends Function {
 		public final Symbol tableName;
 
-		public SymbolMatch(Predicate op, Symbol table) {
+		public SymbolMatch(NezFunction op, Symbol table) {
 			super(op, empty);
 			this.tableName = table;
 		}
@@ -722,12 +778,12 @@ public class Nez {
 
 	}
 
-	public static class SymbolExists extends FunctionalExpression {
+	public static class SymbolExists extends Function {
 		public final Symbol tableName;
 		public final String symbol;
 
 		public SymbolExists(Symbol table, String symbol) {
-			super(Predicate.exists, empty);
+			super(NezFunction.exists, empty);
 			this.tableName = table;
 			this.symbol = symbol;
 		}
@@ -755,9 +811,9 @@ public class Nez {
 
 	}
 
-	public static class BlockScope extends FunctionalExpression {
+	public static class BlockScope extends Function {
 		public BlockScope(Expression e) {
-			super(Predicate.block, e);
+			super(NezFunction.block, e);
 		}
 
 		@Override
@@ -775,11 +831,11 @@ public class Nez {
 
 	}
 
-	public static class LocalScope extends FunctionalExpression {
+	public static class LocalScope extends Function {
 		public final Symbol tableName;
 
 		public LocalScope(Symbol table, Expression e) {
-			super(Predicate.local, e);
+			super(NezFunction.local, e);
 			this.tableName = table;
 		}
 
@@ -805,12 +861,12 @@ public class Nez {
 
 	}
 
-	public static class OnCondition extends FunctionalExpression {
+	public static class OnCondition extends Function {
 		public final boolean predicate;
 		public final String flagName;
 
 		public OnCondition(boolean predicate, String c, Expression e) {
-			super(Predicate.on, e);
+			super(NezFunction.on, e);
 			this.predicate = predicate;
 			this.flagName = c;
 		}
@@ -836,16 +892,12 @@ public class Nez {
 		}
 	}
 
-	public static class IfCondition extends FunctionalExpression implements Conditional {
+	public static class IfCondition extends Function implements Conditional {
 		public final boolean predicate;
 		public final String flagName;
 
 		public IfCondition(boolean predicate, String c) {
-			super(Predicate._if, empty);
-			if (c.startsWith("!")) {
-				predicate = false;
-				c = c.substring(1);
-			}
+			super(NezFunction._if, empty);
 			this.predicate = predicate;
 			this.flagName = c;
 		}
@@ -865,11 +917,11 @@ public class Nez {
 		}
 	}
 
-	public static class SetCount extends FunctionalExpression {
+	public static class SetCount extends Function {
 		public final long mask;
 
 		public SetCount(long mask, Expression e) {
-			super(Predicate.setcount, e);
+			super(NezFunction.setcount, e);
 			this.mask = mask;
 		}
 
@@ -888,10 +940,10 @@ public class Nez {
 		}
 	}
 
-	public static class Count extends FunctionalExpression {
+	public static class Count extends Function {
 
 		public Count(Expression e) {
-			super(Predicate.count, e);
+			super(NezFunction.count, e);
 		}
 
 		@Override
