@@ -4,7 +4,7 @@ import nez.ast.SourceLocation;
 import nez.lang.Expression;
 import nez.lang.Nez;
 
-public class Xblock extends Nez.BlockScope {
+class Xblock extends Nez.BlockScope {
 	Xblock(SourceLocation s, Expression e) {
 		super(e);
 		this.setSourceLocation(s);

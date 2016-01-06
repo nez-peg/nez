@@ -11,7 +11,6 @@ import nez.lang.Production;
 import nez.lang.ProductionStacker;
 import nez.lang.Typestate;
 import nez.lang.expr.Expressions;
-import nez.lang.expr.Xif;
 import nez.parser.ParserStrategy;
 import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
@@ -458,8 +457,8 @@ class MozGrammarChecker extends MozGrammarTransducer {
 	}
 
 	private Short hasFlag(Expression e, String flagName) {
-		if (e instanceof Xif) {
-			return flagName.equals(((Xif) e).getFlagName()) ? True : False;
+		if (e instanceof Nez.If) {
+			return flagName.equals(((Nez.If) e).flagName) ? True : False;
 		}
 		if (e instanceof NonTerminal) {
 			Production p = ((NonTerminal) e).getProduction();

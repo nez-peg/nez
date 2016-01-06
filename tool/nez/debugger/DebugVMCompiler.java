@@ -12,19 +12,8 @@ import nez.lang.Nez.Sequence;
 import nez.lang.NonTerminal;
 import nez.lang.Predicate;
 import nez.lang.Production;
-import nez.lang.expr.Cany;
-import nez.lang.expr.Cbyte;
-import nez.lang.expr.Cset;
 import nez.lang.expr.Expressions;
-import nez.lang.expr.Psequence;
-import nez.lang.expr.Tcapture;
-import nez.lang.expr.Tlfold;
-import nez.lang.expr.Tlink;
-import nez.lang.expr.Treplace;
-import nez.lang.expr.Xexists;
 import nez.lang.expr.Xis;
-import nez.lang.expr.Xlocal;
-import nez.lang.expr.Xsymbol;
 import nez.parser.ParserStrategy;
 import nez.parser.moz.MozInst;
 import nez.parser.moz.ParserGrammar;
@@ -78,9 +67,9 @@ public class DebugVMCompiler extends Expression.Visitor {
 		for (int i = 0; i < seq.size(); i++) {
 			Expression e = seq.get(i);
 			if (e instanceof Nez.Byte) {
-				charList.add((byte) ((Cbyte) e).byteChar);
+				charList.add((byte) ((Nez.Byte) e).byteChar);
 			} else if (e instanceof Nez.Sequence) {
-				if (!this.optimizeString((Psequence) e)) {
+				if (!this.optimizeString((Nez.Pair) e)) {
 					return false;
 				}
 			} else {
@@ -97,9 +86,9 @@ public class DebugVMCompiler extends Expression.Visitor {
 		for (int i = 0; i < p.size(); i++) {
 			Expression e = p.get(i);
 			if (e instanceof Nez.Byte) {
-				map[((Cbyte) e).byteChar] = true;
+				map[((Nez.Byte) e).byteChar] = true;
 			} else if (e instanceof Nez.ByteSet) {
-				Cset bmap = (Cset) e;
+				Nez.ByteSet bmap = (Nez.ByteSet) e;
 				for (int j = 0; j < bmap.byteMap.length; j++) {
 					if (bmap.byteMap[j]) {
 						map[j] = true;
@@ -134,21 +123,21 @@ public class DebugVMCompiler extends Expression.Visitor {
 
 	@Override
 	public MozInst visitAny(Nez.Any p, Object next) {
-		this.builder.createIany((Cany) p, this.builder.jumpFailureJump());
+		this.builder.createIany(p, this.builder.jumpFailureJump());
 		this.builder.setInsertPoint(new BasicBlock());
 		return null;
 	}
 
 	@Override
 	public MozInst visitByte(Nez.Byte p, Object next) {
-		this.builder.createIchar((Cbyte) p, this.builder.jumpFailureJump());
+		this.builder.createIchar(p, this.builder.jumpFailureJump());
 		this.builder.setInsertPoint(new BasicBlock());
 		return null;
 	}
 
 	@Override
 	public MozInst visitByteSet(Nez.ByteSet p, Object next) {
-		this.builder.createIcharclass((Cset) p, this.builder.jumpFailureJump());
+		this.builder.createIcharclass(p, this.builder.jumpFailureJump());
 		this.builder.setInsertPoint(new BasicBlock());
 		return null;
 	}
@@ -320,7 +309,7 @@ public class DebugVMCompiler extends Expression.Visitor {
 			BasicBlock fbb = new BasicBlock();
 			this.builder.pushFailureJumpPoint(fbb);
 			this.builder.createImark(p);
-			this.builder.createIleftnew((Tlfold) p);
+			this.builder.createIleftnew(p);
 		}
 
 		return null;
@@ -336,7 +325,7 @@ public class DebugVMCompiler extends Expression.Visitor {
 			this.builder.pushFailureJumpPoint(fbb);
 			this.builder.createImark(p);
 			p.get(0).visit(this, next);
-			this.builder.createIcommit((Tlink) p);
+			this.builder.createIcommit(p);
 			this.builder.createIjump(p, endbb);
 			this.builder.setInsertPoint(this.builder.popFailureJumpPoint());
 			this.builder.createIabort(p);
@@ -354,7 +343,7 @@ public class DebugVMCompiler extends Expression.Visitor {
 		CommonTree node = (CommonTree) p.getSourceLocation();
 		int len = node.toText().length();
 		CommonTree newNode = new CommonTree(node.getTag(), node.getSource(), node.getSourcePosition() + len - 1, (int) (node.getSourcePosition() + len), 0, null);
-		p = (Tcapture) Expressions.newEndTree(newNode, p.shift);
+		p = (Nez.EndTree) Expressions.newEndTree(newNode, p.shift);
 		if (this.strategy.TreeConstruction) {
 			if (this.leftedStack.pop()) {
 				BasicBlock endbb = new BasicBlock();
@@ -383,7 +372,7 @@ public class DebugVMCompiler extends Expression.Visitor {
 	@Override
 	public MozInst visitReplace(Nez.Replace p, Object next) {
 		if (this.strategy.TreeConstruction) {
-			this.builder.createIreplace((Treplace) p);
+			this.builder.createIreplace(p);
 		}
 		return null;
 	}
@@ -416,7 +405,7 @@ public class DebugVMCompiler extends Expression.Visitor {
 		this.builder.pushFailureJumpPoint(fbb);
 		this.builder.createIpush(p);
 		p.get(0).visit(this, next);
-		this.builder.createIdef((Xsymbol) p);
+		this.builder.createIdef(p);
 		this.builder.createIjump(p, endbb);
 		this.builder.setInsertPoint(this.builder.popFailureJumpPoint());
 		this.builder.createIpop(p);
@@ -448,7 +437,7 @@ public class DebugVMCompiler extends Expression.Visitor {
 
 	@Override
 	public MozInst visitSymbolExists(Nez.SymbolExists existsSymbol, Object next) {
-		this.builder.createIexists((Xexists) existsSymbol, this.builder.jumpFailureJump());
+		this.builder.createIexists(existsSymbol, this.builder.jumpFailureJump());
 		this.builder.setInsertPoint(new BasicBlock());
 		return null;
 	}
@@ -458,7 +447,7 @@ public class DebugVMCompiler extends Expression.Visitor {
 		BasicBlock fbb = new BasicBlock();
 		BasicBlock endbb = new BasicBlock();
 		this.builder.pushFailureJumpPoint(fbb);
-		this.builder.createIbeginlocalscope((Xlocal) localTable);
+		this.builder.createIbeginlocalscope(localTable);
 		localTable.get(0).visit(this, next);
 		this.builder.createIendscope(localTable);
 		this.builder.createIjump(localTable, endbb);

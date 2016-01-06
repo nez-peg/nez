@@ -8,6 +8,7 @@ import nez.ast.TreeVisitorMap;
 import nez.dfa.AFAConverter.DefaultVisitor;
 import nez.lang.Expression;
 import nez.lang.Grammar;
+import nez.lang.Nez;
 import nez.lang.Production;
 import nez.lang.expr.Expressions;
 
@@ -158,7 +159,7 @@ public class AFAConverter extends TreeVisitorMap<DefaultVisitor> {
 			S.add(new State(s));
 			S.add(new State(t));
 
-			transitions.add(new Transition(s, t, ((nez.lang.expr.Cbyte) e).byteChar, -1));
+			transitions.add(new Transition(s, t, ((Nez.Byte) e).byteChar, -1));
 
 			F.add(new State(t));
 
@@ -183,7 +184,7 @@ public class AFAConverter extends TreeVisitorMap<DefaultVisitor> {
 			S.add(new State(t));
 
 			for (int i = 0; i < 256; i++) {
-				if (((nez.lang.expr.Cset) e).byteMap[i]) {
+				if (((Nez.ByteSet) e).byteMap[i]) {
 					transitions.add(new Transition(s, t, i, -1));
 				}
 			}

@@ -20,14 +20,13 @@ import nez.lang.Expression;
 import nez.lang.Nez;
 import nez.lang.NonTerminal;
 import nez.lang.Production;
-import nez.lang.expr.Pchoice;
 import nez.main.ReadLine;
 import nez.parser.moz.ParserGrammar;
 import nez.util.ConsoleUtils;
 
 public class NezDebugger {
 	HashMap<String, BreakPoint> breakPointMap = new HashMap<String, BreakPoint>();
-	HashMap<Pchoice, ChoicePoint> choicePointMap = new HashMap<Pchoice, ChoicePoint>();
+	HashMap<Nez.Choice, ChoicePoint> choicePointMap = new HashMap<Nez.Choice, ChoicePoint>();
 	HashMap<String, Production> ruleMap = new HashMap<String, Production>();
 	List<String> nameList = new ArrayList<String>();
 	DebugOperator command = null;
@@ -82,12 +81,12 @@ public class NezDebugger {
 	}
 
 	class ChoicePoint {
-		Pchoice e;
+		Nez.Choice e;
 		int index;
 		boolean first;
 		boolean succ;
 
-		public ChoicePoint(Pchoice e, int index) {
+		public ChoicePoint(Nez.Choice e, int index) {
 			this.e = e;
 			this.index = index;
 			this.first = true;
@@ -617,8 +616,8 @@ public class NezDebugger {
 				System.out.println("error: set number is unexpected");
 				return true;
 			}
-			ChoicePoint c = new ChoicePoint((Pchoice) prev, index);
-			this.choicePointMap.put((Pchoice) prev, c);
+			ChoicePoint c = new ChoicePoint((Nez.Choice) prev, index);
+			this.choicePointMap.put((Nez.Choice) prev, c);
 			Alt alt = new Alt(index, this.compiler.altInstructionMap.get(prev.get(index)));
 			this.sc.altJumpMap.put(prev, alt);
 			ConsoleUtils.print("check unreachable choice " + this.choicePointMap.size() + ": where = ");

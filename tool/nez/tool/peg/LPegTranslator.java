@@ -5,8 +5,6 @@ import nez.lang.Grammar;
 import nez.lang.Nez;
 import nez.lang.NonTerminal;
 import nez.lang.Production;
-import nez.lang.expr.Cbyte;
-import nez.lang.expr.Treplace;
 import nez.util.StringUtils;
 
 public class LPegTranslator extends GrammarTranslator {
@@ -231,7 +229,7 @@ public class LPegTranslator extends GrammarTranslator {
 		file.write("]]");
 	}
 
-	public void visitValue(Treplace e) {
+	public void visitValue(Nez.Replace e) {
 		file.write("lpeg.P\"\"");
 	}
 
@@ -251,7 +249,7 @@ public class LPegTranslator extends GrammarTranslator {
 		for (int i = start; i < end; i++) {
 			Expression e = l.get(i);
 			if (e instanceof Nez.Byte) {
-				char c = (char) (((Cbyte) e).byteChar);
+				char c = (char) (((Nez.Byte) e).byteChar);
 				if (c >= ' ' && c < 127) {
 					s += c;
 					continue;

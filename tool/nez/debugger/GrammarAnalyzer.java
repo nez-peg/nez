@@ -6,7 +6,6 @@ import nez.lang.Nez;
 import nez.lang.Nez.Unary;
 import nez.lang.NonTerminal;
 import nez.lang.Production;
-import nez.lang.expr.Poption;
 import nez.util.ConsoleUtils;
 
 public class GrammarAnalyzer {
@@ -56,7 +55,7 @@ public class GrammarAnalyzer {
 		if (p instanceof Nez.OneMore) {
 			return true;
 		}
-		if (p instanceof Nez.ZeroMore || p instanceof Poption) {
+		if (p instanceof Nez.ZeroMore || p instanceof Nez.Option) {
 			return false;
 		}
 		if (p instanceof Nez.Fail) {

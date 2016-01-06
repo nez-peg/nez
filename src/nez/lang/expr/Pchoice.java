@@ -6,7 +6,7 @@ import nez.ast.SourceLocation;
 import nez.lang.Expression;
 import nez.lang.Nez;
 
-public class Pchoice extends Nez.Choice {
+class Pchoice extends Nez.Choice {
 	Pchoice(SourceLocation s, List<Expression> l, int size) {
 		super(new Expression[size]);
 		this.setSourceLocation(s);

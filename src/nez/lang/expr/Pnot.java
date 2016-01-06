@@ -4,7 +4,7 @@ import nez.ast.SourceLocation;
 import nez.lang.Expression;
 import nez.lang.Nez;
 
-public class Pnot extends Nez.Not {
+class Pnot extends Nez.Not {
 	Pnot(SourceLocation s, Expression e) {
 		super(e);
 		this.setSourceLocation(s);

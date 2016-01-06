@@ -6,7 +6,7 @@ import nez.lang.Expression;
 import nez.lang.Nez;
 import nez.lang.Predicate;
 
-public class Xmatch extends Nez.SymbolMatch implements Expression.Contextual {
+class Xmatch extends Nez.SymbolMatch implements Expression.Contextual {
 
 	Xmatch(SourceLocation s, Symbol tableName) {
 		super(Predicate.match, tableName);

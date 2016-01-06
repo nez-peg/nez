@@ -4,7 +4,7 @@ import nez.ast.SourceLocation;
 import nez.lang.Bytes;
 import nez.lang.Nez;
 
-public class Cset extends Nez.ByteSet {
+class Cset extends Nez.ByteSet {
 
 	Cset(SourceLocation s, boolean binary, int beginChar, int endChar) {
 		super();

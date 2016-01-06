@@ -5,15 +5,7 @@ import nez.lang.Expression;
 import nez.lang.Nez;
 import nez.lang.NonTerminal;
 import nez.lang.Production;
-import nez.lang.expr.Cbyte;
-import nez.lang.expr.Cset;
-import nez.lang.expr.Tlfold;
-import nez.lang.expr.Tlink;
-import nez.lang.expr.Treplace;
-import nez.lang.expr.Xexists;
 import nez.lang.expr.Xis;
-import nez.lang.expr.Xlocal;
-import nez.lang.expr.Xsymbol;
 import nez.util.StringUtils;
 
 public abstract class DebugVMInstruction {
@@ -318,7 +310,7 @@ class Ifail extends DebugVMInstruction {
 class Ichar extends JumpInstruction {
 	int byteChar;
 
-	public Ichar(Cbyte e, BasicBlock jump) {
+	public Ichar(Nez.Byte e, BasicBlock jump) {
 		super(e, jump);
 		this.op = Opcode.Ichar;
 		this.byteChar = e.byteChar;
@@ -368,7 +360,7 @@ class Istr extends JumpInstruction {
 class Icharclass extends JumpInstruction {
 	boolean[] byteMap;
 
-	public Icharclass(Cset e, BasicBlock jump) {
+	public Icharclass(Nez.ByteSet e, BasicBlock jump) {
 		super(e, jump);
 		this.op = Opcode.Icharclass;
 		this.byteMap = e.byteMap;
@@ -443,7 +435,7 @@ class Inew extends DebugVMInstruction {
 class Ileftnew extends DebugVMInstruction {
 	int index;
 
-	public Ileftnew(Tlfold e) {
+	public Ileftnew(Nez.LeftFold e) {
 		super(e);
 		this.op = Opcode.Ileftnew;
 		this.index = e.shift;
@@ -537,7 +529,7 @@ class Itag extends DebugVMInstruction {
 class Ireplace extends DebugVMInstruction {
 	String value;
 
-	public Ireplace(Treplace e) {
+	public Ireplace(Nez.Replace e) {
 		super(e);
 		this.op = Opcode.Ireplace;
 		this.value = e.value;
@@ -562,7 +554,7 @@ class Ireplace extends DebugVMInstruction {
 class Icommit extends DebugVMInstruction {
 	int index;
 
-	public Icommit(Tlink e) {
+	public Icommit(Nez.Link e) {
 		super(e);
 		this.op = Opcode.Icommit;
 		this.index = -1;
@@ -609,7 +601,7 @@ class Iabort extends DebugVMInstruction {
 class Idef extends DebugVMInstruction {
 	Symbol tableName;
 
-	public Idef(Xsymbol e) {
+	public Idef(Nez.SymbolAction e) {
 		super(e);
 		this.op = Opcode.Idef;
 		this.tableName = e.tableName;
@@ -684,7 +676,7 @@ class Iisa extends JumpInstruction {
 class Iexists extends JumpInstruction {
 	Symbol tableName;
 
-	public Iexists(Xexists e, BasicBlock jumpBB) {
+	public Iexists(Nez.SymbolExists e, BasicBlock jumpBB) {
 		super(e, jumpBB);
 		this.op = Opcode.Iexists;
 		this.tableName = e.tableName;
@@ -731,7 +723,7 @@ class Ibeginscope extends DebugVMInstruction {
 class Ibeginlocalscope extends DebugVMInstruction {
 	Symbol tableName;
 
-	public Ibeginlocalscope(Xlocal e) {
+	public Ibeginlocalscope(Nez.LocalScope e) {
 		super(e);
 		this.op = Opcode.Ibeginlocalscope;
 		this.tableName = e.tableName;

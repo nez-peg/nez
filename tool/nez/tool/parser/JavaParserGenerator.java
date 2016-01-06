@@ -9,7 +9,6 @@ import nez.lang.Grammar;
 import nez.lang.Nez;
 import nez.lang.NonTerminal;
 import nez.lang.Production;
-import nez.lang.expr.Tlink;
 import nez.util.StringUtils;
 
 public class JavaParserGenerator extends ParserGrammarSourceGenerator {
@@ -269,7 +268,7 @@ public class JavaParserGenerator extends ParserGrammarSourceGenerator {
 		return this;
 	}
 
-	public void writeLinkLogic(Tlink e) {
+	public void writeLinkLogic(Nez.Link e) {
 		VarNode(_left(), _cleft());
 		VarInt(_log(), _clog());
 		IfThen(_call(e.get(0))).Begin("{");
@@ -307,7 +306,7 @@ public class JavaParserGenerator extends ParserGrammarSourceGenerator {
 		if (e instanceof Nez.Choice) {
 			writeChoiceLogic(e);
 		} else if (e instanceof Nez.Link) {
-			writeLinkLogic((Tlink) e);
+			writeLinkLogic((Nez.Link) e);
 		} else if (e instanceof Nez.Option) {
 			writeOptionLogic(e);
 		} else if (e instanceof Nez.ZeroMore || e instanceof Nez.OneMore) {

@@ -4,7 +4,7 @@ import nez.ast.SourceLocation;
 import nez.lang.Expression;
 import nez.lang.Nez;
 
-public class Pzero extends Nez.ZeroMore {
+class Pzero extends Nez.ZeroMore {
 	public boolean possibleInfiniteLoop = false;
 
 	Pzero(SourceLocation s, Expression e) {

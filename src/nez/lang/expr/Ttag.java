@@ -4,7 +4,7 @@ import nez.ast.SourceLocation;
 import nez.ast.Symbol;
 import nez.lang.Nez;
 
-public class Ttag extends Nez.Tag {
+class Ttag extends Nez.Tag {
 
 	Ttag(SourceLocation s, Symbol tag) {
 		super(tag);

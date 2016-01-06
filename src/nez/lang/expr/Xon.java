@@ -4,7 +4,7 @@ import nez.ast.SourceLocation;
 import nez.lang.Expression;
 import nez.lang.Nez;
 
-public class Xon extends Nez.On implements Expression.Conditional {
+class Xon extends Nez.On implements Expression.Conditional {
 	boolean predicate;
 
 	String flagName;

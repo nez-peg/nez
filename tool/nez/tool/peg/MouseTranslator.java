@@ -5,9 +5,6 @@ import nez.lang.Grammar;
 import nez.lang.Nez;
 import nez.lang.NonTerminal;
 import nez.lang.Production;
-import nez.lang.expr.Pempty;
-import nez.lang.expr.Pfail;
-import nez.lang.expr.Treplace;
 
 public class MouseTranslator extends PEGTranslator {
 
@@ -45,11 +42,11 @@ public class MouseTranslator extends PEGTranslator {
 		file.decIndent();
 	}
 
-	public void visitEmpty(Pempty e) {
+	public void visitEmpty(Nez.Empty e) {
 		file.write("\"\"");
 	}
 
-	public void visitFailure(Pfail e) {
+	public void visitFailure(Nez.Fail e) {
 		file.write("!_");
 	}
 
@@ -247,7 +244,7 @@ public class MouseTranslator extends PEGTranslator {
 		// file.write("}");
 	}
 
-	public void visitValue(Treplace e) {
+	public void visitValue(Nez.Replace e) {
 		// file.write(StringUtils.quoteString('`', e.value, '`'));
 	}
 

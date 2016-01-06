@@ -4,7 +4,7 @@ import nez.ast.SourceLocation;
 import nez.lang.Expression;
 import nez.lang.Nez;
 
-public class Psequence extends Nez.Pair {
+class Psequence extends Nez.Pair {
 
 	Psequence(SourceLocation s, Expression first, Expression next) {
 		super(first, next);

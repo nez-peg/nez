@@ -6,7 +6,6 @@ import java.util.List;
 import nez.lang.Expression;
 import nez.lang.Nez;
 import nez.lang.Production;
-import nez.lang.expr.Pchoice;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
 
@@ -64,7 +63,7 @@ public class Coverage {
 		return cov;
 	}
 
-	public final static MozInst encodeEnterCoverage(Pchoice e, int index, MozInst next) {
+	public final static MozInst encodeEnterCoverage(Nez.Choice e, int index, MozInst next) {
 		if (covList != null) {
 			Coverage cov = getCoverage("c", e.get(index));
 			return new Moz.Cov(cov, next);
@@ -72,7 +71,7 @@ public class Coverage {
 		return next;
 	}
 
-	public final static MozInst encodeExitCoverage(Pchoice e, int index, MozInst next) {
+	public final static MozInst encodeExitCoverage(Nez.Choice e, int index, MozInst next) {
 		if (covList != null) {
 			Coverage cov = getCoverage("c", e.get(index));
 			return new Moz.Covx(cov, next);

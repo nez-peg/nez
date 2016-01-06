@@ -10,14 +10,7 @@ import nez.lang.Expression;
 import nez.lang.Nez;
 import nez.lang.NonTerminal;
 import nez.lang.Production;
-import nez.lang.expr.Cany;
-import nez.lang.expr.Cbyte;
-import nez.lang.expr.Cset;
 import nez.lang.expr.Expressions;
-import nez.lang.expr.Pchoice;
-import nez.lang.expr.Tcapture;
-import nez.lang.expr.Tlfold;
-import nez.lang.expr.Tnew;
 import nez.parser.ParserStrategy;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
@@ -45,7 +38,7 @@ class MozGrammarOptimizer extends MozGrammarRewriter {
 			this.aliasMap = new HashMap<String, String>();
 		}
 		if (strategy.Odchoice) {
-			this.toOptimizeChoiceList = new UList<Pchoice>(new Pchoice[8]);
+			this.toOptimizeChoiceList = new UList<Nez.Choice>(new Nez.Choice[8]);
 		}
 
 	}
@@ -138,8 +131,8 @@ class MozGrammarOptimizer extends MozGrammarRewriter {
 			recheckReference(((NonTerminal) e).getProduction());
 			return;
 		}
-		if (e instanceof Nez.Choice && ((Pchoice) e).firstInners != null) {
-			Pchoice choice = (Pchoice) e;
+		if (e instanceof Nez.Choice && ((Nez.Choice) e).firstInners != null) {
+			Nez.Choice choice = (Nez.Choice) e;
 			for (Expression sub : choice.firstInners) {
 				recheckReference(sub);
 			}
@@ -274,21 +267,21 @@ class MozGrammarOptimizer extends MozGrammarRewriter {
 			Expression next = l.get(i);
 			if (isSingleCharacter(next)) {
 				if (first instanceof Nez.BeginTree) {
-					((Tnew) first).shift -= 1;
+					((Nez.BeginTree) first).shift -= 1;
 					Expressions.swap(l, i - 1, i);
 					this.verboseOutofOrdered("out-of-order", next, first);
 					res = true;
 					continue;
 				}
 				if (first instanceof Nez.LeftFold) {
-					((Tlfold) first).shift -= 1;
+					((Nez.LeftFold) first).shift -= 1;
 					Expressions.swap(l, i - 1, i);
 					this.verboseOutofOrdered("out-of-order", next, first);
 					res = true;
 					continue;
 				}
 				if (first instanceof Nez.EndTree) {
-					((Tcapture) first).shift -= 1;
+					((Nez.EndTree) first).shift -= 1;
 					Expressions.swap(l, i - 1, i);
 					this.verboseOutofOrdered("out-of-order", next, first);
 					res = true;
@@ -339,19 +332,19 @@ class MozGrammarOptimizer extends MozGrammarRewriter {
 			next = Expressions.first(next);
 		}
 		if (next instanceof Nez.Any) {
-			Cany any = (Cany) next;
+			Nez.Any any = (Nez.Any) next;
 			bany = Bytes.newMap(true);
 			if (!isBinary) {
 				bany[0] = false;
 			}
 		}
 		if (next instanceof Nez.ByteSet) {
-			Cset bm = (Cset) next;
+			Nez.ByteSet bm = (Nez.ByteSet) next;
 			bany = bm.byteMap.clone();
 		}
 
 		if (not instanceof Nez.ByteSet) {
-			Cset bm = (Cset) not;
+			Nez.ByteSet bm = (Nez.ByteSet) not;
 			for (int c = 0; c < bany.length - 1; c++) {
 				if (bm.byteMap[c] && bany[c] == true) {
 					bany[c] = false;
@@ -359,7 +352,7 @@ class MozGrammarOptimizer extends MozGrammarRewriter {
 			}
 		}
 		if (not instanceof Nez.Byte) {
-			Cbyte bc = (Cbyte) not;
+			Nez.Byte bc = (Nez.Byte) not;
 			if (bany[bc.byteChar] == true) {
 				bany[bc.byteChar] = false;
 			}
@@ -395,7 +388,7 @@ class MozGrammarOptimizer extends MozGrammarRewriter {
 	}
 
 	public Expression visitChoice(Nez.Choice p, UList<Expression> l) {
-		Expression optimized = canConvertToCset(p, l);
+		Expression optimized = canConvertToByteSet(p, l);
 		if (optimized != null) {
 			this.verboseOptimized("choice-to-set", p, optimized);
 			return optimized;
@@ -407,26 +400,26 @@ class MozGrammarOptimizer extends MozGrammarRewriter {
 		}
 		Expression n = Expressions.newChoice(p.getSourceLocation(), l);
 		if (n instanceof Nez.Choice) {
-			((Pchoice) n).isTrieTree = p.isTrieTree;
-			addChoiceToOptimizeList((Pchoice) n);
+			((Nez.Choice) n).isTrieTree = p.isTrieTree;
+			addChoiceToOptimizeList((Nez.Choice) n);
 		}
 		return n;
 	}
 
-	private Expression canConvertToCset(Nez.Choice choice, UList<Expression> choiceList) {
+	private Expression canConvertToByteSet(Nez.Choice choice, UList<Expression> choiceList) {
 		boolean byteMap[] = Bytes.newMap(false);
 		boolean binary = false;
 		for (Expression e : choiceList) {
 			e = Expressions.resolveNonTerminal(e);
 			if (e instanceof Nez.Byte) {
-				byteMap[((Cbyte) e).byteChar] = true;
-				// if (((Cbyte) e).isBinary()) {
+				byteMap[((Nez.Byte) e).byteChar] = true;
+				// if (((Nez.Byte) e).isBinary()) {
 				// binary = true;
 				// }
 				continue;
 			}
 			if (e instanceof Nez.ByteSet) {
-				Bytes.appendBitMap(byteMap, ((Cset) e).byteMap);
+				Bytes.appendBitMap(byteMap, ((Nez.ByteSet) e).byteMap);
 				continue;
 			}
 			if (e instanceof Nez.Any) {
@@ -456,10 +449,10 @@ class MozGrammarOptimizer extends MozGrammarRewriter {
 		for (Expression inner : l) {
 			Expression first = Expressions.first(inner);
 			if (first instanceof Nez.Byte) {
-				Cbyte be = (Cbyte) first;
+				Nez.Byte be = (Nez.Byte) first;
 				buffers[be.byteChar] = mergeChoice(buffers[be.byteChar], Expressions.next(inner));
 			} else {
-				Cset bs = (Cset) first;
+				Nez.ByteSet bs = (Nez.ByteSet) first;
 				for (int ch = 0; ch < buffers.length; ch++) {
 					if (bs.byteMap[ch]) {
 						buffers[ch] = mergeChoice(buffers[ch], Expressions.next(inner));
@@ -500,14 +493,14 @@ class MozGrammarOptimizer extends MozGrammarRewriter {
 
 	private Expression trySecondChoice(Expression e, UList<Expression> el) {
 		if (this.enabledSecondChoice && e instanceof Nez.Choice) {
-			return this.visitChoice((Pchoice) e, el);
+			return this.visitChoice((Nez.Choice) e, el);
 		}
 		return e;
 	}
 
-	private UList<Pchoice> toOptimizeChoiceList = null;
+	private UList<Nez.Choice> toOptimizeChoiceList = null;
 
-	private void addChoiceToOptimizeList(Pchoice n) {
+	private void addChoiceToOptimizeList(Nez.Choice n) {
 		if (toOptimizeChoiceList != null) {
 			toOptimizeChoiceList.add(n);
 		}
@@ -515,19 +508,19 @@ class MozGrammarOptimizer extends MozGrammarRewriter {
 
 	private void optimizeFirstChoice() {
 		if (toOptimizeChoiceList != null) {
-			for (Pchoice p : this.toOptimizeChoiceList) {
+			for (Nez.Choice p : this.toOptimizeChoiceList) {
 				optimizeFirstChoice(p);
 			}
 		}
 	}
 
-	private void optimizeFirstChoice(Pchoice p) {
+	private void optimizeFirstChoice(Nez.Choice p) {
 		if (p.isTrieTree) {
 			p.predictedCase = new Expression[257];
 			p.firstInners = new Expression[p.size()];
 			int c = 0;
 			for (Expression sub : p) {
-				Cbyte be = (Cbyte) Expressions.first(sub);
+				Nez.Byte be = (Nez.Byte) Expressions.first(sub);
 				p.predictedCase[be.byteChar] = sub;
 				p.firstInners[c] = sub;
 				c++;
@@ -581,11 +574,11 @@ class MozGrammarOptimizer extends MozGrammarRewriter {
 		return e;
 	}
 
-	private void flattenChoiceList(Pchoice choice, UList<Expression> l) {
+	private void flattenChoiceList(Nez.Choice choice, UList<Expression> l) {
 		for (Expression inner : choice) {
 			inner = firstChoiceInlining(inner);
 			if (inner instanceof Nez.Choice) {
-				flattenChoiceList((Pchoice) inner, l);
+				flattenChoiceList((Nez.Choice) inner, l);
 			} else {
 				l.add(inner);
 			}
@@ -594,7 +587,7 @@ class MozGrammarOptimizer extends MozGrammarRewriter {
 
 	// OptimizerLibrary
 
-	private Expression selectChoice(Pchoice choice, UList<Expression> choiceList, int ch, UList<Expression> newlist, HashMap<String, Expression> map) {
+	private Expression selectChoice(Nez.Choice choice, UList<Expression> choiceList, int ch, UList<Expression> newlist, HashMap<String, Expression> map) {
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < choiceList.size(); i++) {
 			Expression p = choiceList.ArrayValues[i];
@@ -641,7 +634,7 @@ class MozGrammarOptimizer extends MozGrammarRewriter {
 
 	private void tryFactoredSecondChoice(Expression p) {
 		if (p instanceof Nez.Choice) {
-			if (((Pchoice) p).firstInners == null) {
+			if (((Nez.Choice) p).firstInners == null) {
 				// Verbose.debug("Second choice: " + p);
 			}
 			return;
@@ -651,7 +644,7 @@ class MozGrammarOptimizer extends MozGrammarRewriter {
 		}
 	}
 
-	public final static Expression tryLeftCommonFactoring(Pchoice base, Expression e, Expression e2, boolean ignoredFirstChar) {
+	public final static Expression tryLeftCommonFactoring(Nez.Choice base, Expression e, Expression e2, boolean ignoredFirstChar) {
 		UList<Expression> l = null;
 		while (e != null && e2 != null) {
 			Expression f = Expressions.first(e);

@@ -5,7 +5,7 @@ import nez.ast.Symbol;
 import nez.lang.Expression;
 import nez.lang.Nez;
 
-public class Xlocal extends Nez.LocalScope {
+class Xlocal extends Nez.LocalScope {
 
 	Xlocal(SourceLocation s, Symbol table, Expression inner) {
 		super(table, inner);

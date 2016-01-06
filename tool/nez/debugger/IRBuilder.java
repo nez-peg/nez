@@ -3,16 +3,7 @@ package nez.debugger;
 import nez.lang.Expression;
 import nez.lang.Nez;
 import nez.lang.Production;
-import nez.lang.expr.Cany;
-import nez.lang.expr.Cbyte;
-import nez.lang.expr.Cset;
-import nez.lang.expr.Tlfold;
-import nez.lang.expr.Tlink;
-import nez.lang.expr.Treplace;
-import nez.lang.expr.Xexists;
 import nez.lang.expr.Xis;
-import nez.lang.expr.Xlocal;
-import nez.lang.expr.Xsymbol;
 import nez.parser.moz.ParserGrammar;
 
 public class IRBuilder {
@@ -194,7 +185,7 @@ public class IRBuilder {
 		return this.curBB.append(new Ifail(e));
 	}
 
-	public DebugVMInstruction createIchar(Cbyte e, BasicBlock jump) {
+	public DebugVMInstruction createIchar(Nez.Byte e, BasicBlock jump) {
 		return this.curBB.append(new Ichar(e, jump));
 	}
 
@@ -202,7 +193,7 @@ public class IRBuilder {
 		return this.curBB.append(new Istr(e, jump, utf8));
 	}
 
-	public DebugVMInstruction createIcharclass(Cset e, BasicBlock jump) {
+	public DebugVMInstruction createIcharclass(Nez.ByteSet e, BasicBlock jump) {
 		return this.curBB.append(new Icharclass(e, jump));
 	}
 
@@ -210,7 +201,7 @@ public class IRBuilder {
 		return this.curBB.append(new Icharclass(e, jump, byteMap));
 	}
 
-	public DebugVMInstruction createIany(Cany e, BasicBlock jump) {
+	public DebugVMInstruction createIany(Nez.Any e, BasicBlock jump) {
 		return this.curBB.append(new Iany(e, jump));
 	}
 
@@ -218,7 +209,7 @@ public class IRBuilder {
 		return this.curBB.append(new Inew(e));
 	}
 
-	public DebugVMInstruction createIleftnew(Tlfold e) {
+	public DebugVMInstruction createIleftnew(Nez.LeftFold e) {
 		return this.curBB.append(new Ileftnew(e));
 	}
 
@@ -234,11 +225,11 @@ public class IRBuilder {
 		return this.curBB.append(new Itag(e));
 	}
 
-	public DebugVMInstruction createIreplace(Treplace e) {
+	public DebugVMInstruction createIreplace(Nez.Replace e) {
 		return this.curBB.append(new Ireplace(e));
 	}
 
-	public DebugVMInstruction createIcommit(Tlink e) {
+	public DebugVMInstruction createIcommit(Nez.Link e) {
 		return this.curBB.append(new Icommit(e));
 	}
 
@@ -246,7 +237,7 @@ public class IRBuilder {
 		return this.curBB.append(new Iabort(e));
 	}
 
-	public DebugVMInstruction createIdef(Xsymbol e) {
+	public DebugVMInstruction createIdef(Nez.SymbolAction e) {
 		return this.curBB.append(new Idef(e));
 	}
 
@@ -258,7 +249,7 @@ public class IRBuilder {
 		return this.curBB.append(new Iisa(e, jump));
 	}
 
-	public DebugVMInstruction createIexists(Xexists e, BasicBlock jump) {
+	public DebugVMInstruction createIexists(Nez.SymbolExists e, BasicBlock jump) {
 		return this.curBB.append(new Iexists(e, jump));
 	}
 
@@ -266,7 +257,7 @@ public class IRBuilder {
 		return this.curBB.append(new Ibeginscope(e));
 	}
 
-	public DebugVMInstruction createIbeginlocalscope(Xlocal e) {
+	public DebugVMInstruction createIbeginlocalscope(Nez.LocalScope e) {
 		return this.curBB.append(new Ibeginlocalscope(e));
 	}
 

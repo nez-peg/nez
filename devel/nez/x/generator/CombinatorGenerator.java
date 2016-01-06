@@ -5,8 +5,6 @@ import nez.lang.Grammar;
 import nez.lang.Nez;
 import nez.lang.NonTerminal;
 import nez.lang.Production;
-import nez.lang.expr.Pempty;
-import nez.lang.expr.Pfail;
 import nez.parser.Parser;
 import nez.tool.peg.GrammarTranslator;
 import nez.util.StringUtils;
@@ -49,11 +47,11 @@ public class CombinatorGenerator extends GrammarTranslator {
 		End("}");
 	}
 
-	public void visitEmpty(Pempty e) {
+	public void visitEmpty(Nez.Empty e) {
 		C("Empty");
 	}
 
-	public void visitFailure(Pfail e) {
+	public void visitFailure(Nez.Fail e) {
 		C("Failure");
 	}
 

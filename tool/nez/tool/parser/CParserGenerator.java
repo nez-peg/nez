@@ -12,12 +12,6 @@ import nez.lang.Grammar;
 import nez.lang.Nez;
 import nez.lang.NonTerminal;
 import nez.lang.Production;
-import nez.lang.expr.Cbyte;
-import nez.lang.expr.Cset;
-import nez.lang.expr.Pchoice;
-import nez.lang.expr.Psequence;
-import nez.lang.expr.Xif;
-import nez.lang.expr.Xon;
 import nez.util.StringUtils;
 
 public class CParserGenerator extends ParserGrammarSourceGenerator {
@@ -184,7 +178,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 		return e;
 	}
 
-	public int specializeString(Psequence e, int start) {
+	public int specializeString(Nez.Pair e, int start) {
 		int count = 0;
 		for (int i = start; i < e.size(); i++) {
 			Expression inner = e.get(i);
@@ -198,7 +192,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 		return 0;
 	}
 
-	public boolean checkByteMap(Pchoice e) {
+	public boolean checkByteMap(Nez.Choice e) {
 		for (int i = 0; i < e.size(); i++) {
 			Expression inner = e.get(i);
 			if (!(inner instanceof Nez.Byte || inner instanceof Nez.ByteSet)) {
@@ -208,7 +202,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 		return true;
 	}
 
-	private boolean checkString(Psequence e) {
+	private boolean checkString(Nez.Pair e) {
 		for (int i = 0; i < e.size(); i++) {
 			if (!(e.get(i) instanceof Nez.Byte)) {
 				return false;
@@ -217,7 +211,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 		return true;
 	}
 
-	public void specializeByteMap(Pchoice e) {
+	public void specializeByteMap(Nez.Choice e) {
 		if (!this.enableOpt) {
 			return;
 		}
@@ -230,7 +224,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 		L("ctx->cur++;");
 	}
 
-	public void specializeNotByteMap(Pchoice e) {
+	public void specializeNotByteMap(Nez.Choice e) {
 		if (!this.enableOpt) {
 			return;
 		}
@@ -243,14 +237,14 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 		End("}");
 	}
 
-	private boolean[] constructBmap(Pchoice e) {
+	private boolean[] constructBmap(Nez.Choice e) {
 		boolean[] map = new boolean[256];
 		for (int i = 0; i < e.size(); i++) {
 			Expression inner = e.get(i);
 			if (inner instanceof Nez.Byte) {
-				map[((Cbyte) inner).byteChar] = true;
+				map[((Nez.Byte) inner).byteChar] = true;
 			} else if (inner instanceof Nez.ByteSet) {
-				boolean[] bmap = ((Cset) inner).byteMap;
+				boolean[] bmap = ((Nez.ByteSet) inner).byteMap;
 				for (int j = 0; j < bmap.length; j++) {
 					if (bmap[j]) {
 						map[j] = true;
@@ -261,7 +255,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 		return map;
 	}
 
-	private void constructBmap(Pchoice e, int fid) {
+	private void constructBmap(Nez.Choice e, int fid) {
 		boolean[] map = constructBmap(e);
 		constructBmap(map, fid);
 	}
@@ -283,7 +277,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 		W("};");
 	}
 
-	public void specializeNotString(Psequence e) {
+	public void specializeNotString(Nez.Pair e) {
 		if (!this.enableOpt) {
 			return;
 		}
@@ -291,7 +285,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 		for (int i = 0; i < e.size(); i++) {
 			Expression inner = e.get(i);
 			if (inner instanceof Nez.Byte) {
-				Cbyte b = (Cbyte) inner;
+				Nez.Byte b = (Nez.Byte) inner;
 				L("if((int)*(ctx->cur + " + i + ") == " + b.byteChar + ")");
 				Begin("{");
 			}
@@ -315,7 +309,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 			inner = getNonTerminalRule(inner);
 		}
 		if (inner instanceof Nez.Byte) {
-			L("if((int)*ctx->cur == " + ((Cbyte) inner).byteChar + ")");
+			L("if((int)*ctx->cur == " + ((Nez.Byte) inner).byteChar + ")");
 			Begin("{");
 			this.jumpFailureJump();
 			End("}");
@@ -323,7 +317,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 		}
 		if (inner instanceof Nez.ByteSet) {
 			int fid = this.fid++;
-			boolean[] map = ((Cset) inner).byteMap;
+			boolean[] map = ((Nez.ByteSet) inner).byteMap;
 			constructBmap(map, fid);
 			L("if(bmap" + fid + "[(uint8_t)*ctx->cur])");
 			Begin("{");
@@ -332,22 +326,22 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 			return true;
 		}
 		if (inner instanceof Nez.Choice) {
-			if (checkByteMap((Pchoice) inner)) {
-				specializeNotByteMap((Pchoice) inner);
+			if (checkByteMap((Nez.Choice) inner)) {
+				specializeNotByteMap((Nez.Choice) inner);
 				return true;
 			}
 		}
 		if (inner instanceof Nez.Sequence) {
-			if (checkString((Psequence) inner)) {
+			if (checkString((Nez.Pair) inner)) {
 				L("// Specialize not string");
-				specializeNotString((Psequence) inner);
+				specializeNotString((Nez.Pair) inner);
 				return true;
 			}
 		}
 		return false;
 	}
 
-	public void specializeOptionByteMap(Pchoice e) {
+	public void specializeOptionByteMap(Nez.Choice e) {
 		if (!this.enableOpt) {
 			return;
 		}
@@ -360,7 +354,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 		End("}");
 	}
 
-	public void specializeOptionString(Psequence e) {
+	public void specializeOptionString(Nez.Pair e) {
 		if (!this.enableOpt) {
 			return;
 		}
@@ -372,7 +366,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 		for (int i = 0; i < e.size(); i++) {
 			Expression inner = e.get(i);
 			if (inner instanceof Nez.Byte) {
-				L("if((int)*(ctx->cur++) == " + ((Cbyte) inner).byteChar + ")");
+				L("if((int)*(ctx->cur++) == " + ((Nez.Byte) inner).byteChar + ")");
 				Begin("{");
 			}
 		}
@@ -397,7 +391,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 			inner = getNonTerminalRule(inner);
 		}
 		if (inner instanceof Nez.Byte) {
-			L("if((int)*ctx->cur == " + ((Cbyte) inner).byteChar + ")");
+			L("if((int)*ctx->cur == " + ((Nez.Byte) inner).byteChar + ")");
 			Begin("{");
 			L("ctx->cur++;");
 			End("}");
@@ -405,7 +399,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 		}
 		if (inner instanceof Nez.ByteSet) {
 			int fid = this.fid++;
-			boolean[] map = ((Cset) inner).byteMap;
+			boolean[] map = ((Nez.ByteSet) inner).byteMap;
 			constructBmap(map, fid);
 			L("if(bmap" + fid + "[(uint8_t)*ctx->cur])");
 			Begin("{");
@@ -414,22 +408,22 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 			return true;
 		}
 		if (inner instanceof Nez.Choice) {
-			if (checkByteMap((Pchoice) inner)) {
-				specializeOptionByteMap((Pchoice) inner);
+			if (checkByteMap((Nez.Choice) inner)) {
+				specializeOptionByteMap((Nez.Choice) inner);
 				return true;
 			}
 		}
 		if (inner instanceof Nez.Sequence) {
-			if (checkString((Psequence) inner)) {
+			if (checkString((Nez.Pair) inner)) {
 				L("// specialize option string");
-				specializeOptionString((Psequence) inner);
+				specializeOptionString((Nez.Pair) inner);
 				return true;
 			}
 		}
 		return false;
 	}
 
-	public void specializeZeroMoreByteMap(Pchoice e) {
+	public void specializeZeroMoreByteMap(Nez.Choice e) {
 		if (!this.enableOpt) {
 			return;
 		}
@@ -450,7 +444,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 		if (inner instanceof Nez.Byte) {
 			L("while(1)");
 			Begin("{");
-			L("if((int)*ctx->cur != " + ((Cbyte) inner).byteChar + ")");
+			L("if((int)*ctx->cur != " + ((Nez.Byte) inner).byteChar + ")");
 			Begin("{");
 			L("break;");
 			End("}");
@@ -459,14 +453,14 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 			return true;
 		}
 		if (inner instanceof Nez.ByteSet) {
-			boolean[] b = ((Cset) inner).byteMap;
+			boolean[] b = ((Nez.ByteSet) inner).byteMap;
 			constructByteMapRep(b);
 			return true;
 		}
 		if (inner instanceof Nez.Choice) {
-			if (checkByteMap((Pchoice) inner)) {
+			if (checkByteMap((Nez.Choice) inner)) {
 				L("// specialize repeat choice");
-				specializeZeroMoreByteMap((Pchoice) inner);
+				specializeZeroMoreByteMap((Nez.Choice) inner);
 				return true;
 			}
 		}
@@ -743,7 +737,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 		return sb.toString();
 	}
 
-	private void showChoiceInfo(Pchoice e) {
+	private void showChoiceInfo(Nez.Choice e) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(e.toString() + ",").append(e.size() + ",");
 		if (e.predictedCase != null) {
@@ -908,24 +902,24 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 
 	ArrayList<String> flagTable = new ArrayList<String>();
 
-	public void visitIfFlag(Xif e) {
-		if (!this.flagTable.contains(e.getFlagName())) {
-			this.flagTable.add(e.getFlagName());
+	public void visitIfFlag(Nez.If e) {
+		if (!this.flagTable.contains(e.flagName)) {
+			this.flagTable.add(e.flagName);
 		}
-		String isPred = e.isPredicate() ? "!" : "";
-		L("if(" + isPred + "ctx->flags[" + this.flagTable.indexOf(e.getFlagName()) + "])");
+		String isPred = e.predicate ? "!" : "";
+		L("if(" + isPred + "ctx->flags[" + this.flagTable.indexOf(e.flagName) + "])");
 		Begin("{");
 		this.jumpFailureJump();
 		End("}");
 	}
 
-	public void visitOnFlag(Xon p) {
-		if (!this.flagTable.contains(p.getFlagName())) {
-			this.flagTable.add(p.getFlagName());
+	public void visitOnFlag(Nez.On p) {
+		if (!this.flagTable.contains(p.flagName)) {
+			this.flagTable.add(p.flagName);
 		}
 		visitExpression(p.get(0));
 		String isPositive = p.isPositive() ? "1" : "0";
-		L("ctx->flags[" + this.flagTable.indexOf(p.getFlagName()) + "] = " + isPositive + ";");
+		L("ctx->flags[" + this.flagTable.indexOf(p.flagName) + "] = " + isPositive + ";");
 	}
 
 	@Override
