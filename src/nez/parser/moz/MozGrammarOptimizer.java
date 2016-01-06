@@ -46,53 +46,15 @@ class MozGrammarOptimizer extends ExpressionTransformer {
 
 	}
 
-	private void verboseReference(String name, int ref) {
-		if (this.verboseGrammar) {
-			ConsoleUtils.println(name + ": ref=" + ref);
-		}
-	}
-
-	private void verboseFoundAlias(String name, String alias) {
-		if (this.verboseGrammar) {
-			ConsoleUtils.println("found alias production: " + name + ", " + alias);
-		}
-	}
-
-	private String shorten(Expression e) {
-		String s = e.toString();
-		if (s.length() > 40) {
-			return s.substring(0, 40) + " ... ";
-		}
-		return s;
-	}
-
-	private void verboseInline(String name, NonTerminal n, Expression e) {
-		if (this.verboseGrammar) {
-			ConsoleUtils.println(name + ": " + n.getLocalName() + " => " + shorten(e));
-		}
-	}
-
-	private void verboseOptimized(String msg, Expression e, Expression e2) {
-		if (this.verboseGrammar) {
-			// Verbose.debug(msg + " => " + e + "\n\t=>" + e2);
-			ConsoleUtils.println(msg + ":=> " + shorten(e2));
-		}
-	}
-
-	private void verboseOutofOrdered(String msg, Expression e, Expression e2) {
-		if (this.verboseGrammar) {
-			// Verbose.debug(msg + " => " + e + "\n\t=>" + e2);
-			ConsoleUtils.println(msg + ":=> " + e + " " + e2);
-		}
-	}
+	NonterminalReference refc = null;
 
 	private void optimize() {
+		refc = Productions.countNonterminalReference(grammar);
 		Production start = grammar.getStartProduction();
 		optimizeProduction(start);
 		this.optimizeFirstChoice();
-		this.optimizedMap.clear();
 
-		NonterminalReference refc = Productions.countNonterminalReference(grammar);
+		NonterminalReference refc2 = Productions.countNonterminalReference(grammar);
 
 		this.resetReferenceCount();
 		grammar.getParseFunc(start.getLocalName()).incCount();
@@ -101,8 +63,7 @@ class MozGrammarOptimizer extends ExpressionTransformer {
 		UList<Production> prodList = new UList<Production>(new Production[grammar.size()]);
 		for (Production p : grammar) {
 			String uname = p.getUniqueName();
-			// System.out.println("" + uname + ", refc=" + refc.count(uname));
-
+			System.out.printf("%s refc %d -> %d\n", uname, refc.count(uname), refc2.count(uname));
 			String key = p.getLocalName();
 			ParserGrammarFunc f = grammar.getParseFunc(key);
 			verboseReference(key, f.getCount());
@@ -152,9 +113,9 @@ class MozGrammarOptimizer extends ExpressionTransformer {
 
 	private Expression optimizeProduction(Production p) {
 		assert (p.getGrammar() == this.grammar);
-		String uname = p.getLocalName();
-		if (!optimizedMap.contains(uname)) {
-			optimizedMap.add(uname);
+		String uname = p.getUniqueName();
+		if (!this.isVisited(uname)) {
+			this.visited(uname);
 			Expression optimized = this.visitInner(p.getExpression(), null);
 			p.setExpression(optimized);
 			if (strategy.Oalias) {
@@ -191,8 +152,8 @@ class MozGrammarOptimizer extends ExpressionTransformer {
 		Production p = n.getProduction();
 		Expression deref = optimizeProduction(p);
 		if (strategy.Oinline) {
-			ParserGrammarFunc f = grammar.getParseFunc(n.getLocalName());
-			if (f.getCount() == 1) {
+			int c = refc.count(n.getUniqueName());
+			if (c == 1) {
 				verboseInline("inline(ref=1)", n, deref);
 				return deref;
 			}
@@ -689,6 +650,46 @@ class MozGrammarOptimizer extends ExpressionTransformer {
 		Expression alt = base.newChoice(e, e2);
 		l.add(alt);
 		return base.newPair(l);
+	}
+
+	private void verboseReference(String name, int ref) {
+		if (this.verboseGrammar) {
+			ConsoleUtils.println(name + ": ref=" + ref);
+		}
+	}
+
+	private void verboseFoundAlias(String name, String alias) {
+		if (this.verboseGrammar) {
+			ConsoleUtils.println("found alias production: " + name + ", " + alias);
+		}
+	}
+
+	private String shorten(Expression e) {
+		String s = e.toString();
+		if (s.length() > 40) {
+			return s.substring(0, 40) + " ... ";
+		}
+		return s;
+	}
+
+	private void verboseInline(String name, NonTerminal n, Expression e) {
+		if (this.verboseGrammar) {
+			ConsoleUtils.println(name + ": " + n.getLocalName() + " => " + shorten(e));
+		}
+	}
+
+	private void verboseOptimized(String msg, Expression e, Expression e2) {
+		if (this.verboseGrammar) {
+			// Verbose.debug(msg + " => " + e + "\n\t=>" + e2);
+			ConsoleUtils.println(msg + ":=> " + shorten(e2));
+		}
+	}
+
+	private void verboseOutofOrdered(String msg, Expression e, Expression e2) {
+		if (this.verboseGrammar) {
+			// Verbose.debug(msg + " => " + e + "\n\t=>" + e2);
+			ConsoleUtils.println(msg + ":=> " + e + " " + e2);
+		}
 	}
 
 }
