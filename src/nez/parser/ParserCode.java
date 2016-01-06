@@ -7,6 +7,7 @@ import nez.lang.Grammar;
 import nez.lang.Production;
 import nez.lang.Productions;
 import nez.lang.Typestate;
+import nez.lang.Typestate.TypestateAnalyzer;
 import nez.util.UList;
 import nez.util.Verbose;
 
@@ -74,7 +75,7 @@ public abstract class ParserCode<T extends Instruction> {
 	protected Map<String, MemoPoint> memoPointMap = null;
 
 	public void initMemoPoint() {
-		final Typestate.Analyzer typestate = new Typestate.Analyzer();
+		final TypestateAnalyzer typestate = Typestate.newAnalyzer();
 		memoPointMap = new HashMap<>();
 		Map<String, Integer> refs = Productions.countNonTerminalReference(grammar);
 		for (Production p : grammar) {

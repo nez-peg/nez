@@ -898,6 +898,10 @@ public class Nez {
 
 		public IfCondition(boolean predicate, String c) {
 			super(NezFunction._if, empty);
+			if (c.startsWith("!")) {
+				predicate = false;
+				c = c.substring(1);
+			}
 			this.predicate = predicate;
 			this.flagName = c;
 		}

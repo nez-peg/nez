@@ -10,6 +10,7 @@ import nez.lang.Expression;
 import nez.lang.Grammar;
 import nez.lang.Production;
 import nez.lang.Typestate;
+import nez.lang.Typestate.TypestateAnalyzer;
 import nez.parser.MemoPoint;
 import nez.parser.ParserStrategy;
 import nez.util.UList;
@@ -39,7 +40,7 @@ public class ParserGrammar extends Grammar {
 
 	/* Typestate */
 
-	private final Typestate.Analyzer typestate = new Typestate.Analyzer();
+	private final TypestateAnalyzer typestate = Typestate.newAnalyzer();
 
 	public final Typestate typeState(Production p) {
 		return typestate.inferTypestate(p);

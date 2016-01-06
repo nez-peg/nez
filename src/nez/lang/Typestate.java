@@ -10,12 +10,24 @@ public enum Typestate {
 	// public final static Integer Tree = 1;
 	// public final static Integer TreeMutation = 2;
 
-	public final static class Analyzer extends Expression.Visitor {
+	public static interface TypestateAnalyzer {
+		public Typestate inferTypestate(Production p);
 
+		public Typestate inferTypestate(Expression e);
+	}
+
+	public static final TypestateAnalyzer newAnalyzer() {
+		return new Analyzer();
+	}
+
+	final static class Analyzer extends Expression.Visitor implements TypestateAnalyzer {
+
+		@Override
 		public Typestate inferTypestate(Expression e) {
 			return (Typestate) e.visit(this, null);
 		}
 
+		@Override
 		public Typestate inferTypestate(Production p) {
 			String uname = p.getUniqueName();
 			Object v = this.lookup(uname);
@@ -83,6 +95,7 @@ public enum Typestate {
 			return Typestate.Unit;
 		}
 
+		@Override
 		public Object visitSequence(Nez.Sequence e, Object a) {
 			for (Expression s : e) {
 				Typestate ts = inferTypestate(s);
