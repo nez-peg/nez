@@ -1,19 +1,24 @@
-package nez.lang;
+package nez.parser.moz;
 
 import java.util.HashMap;
 import java.util.TreeMap;
 
+import nez.lang.Conditions;
+import nez.lang.Expression;
+import nez.lang.Nez;
+import nez.lang.NonTerminal;
+import nez.lang.Production;
+import nez.lang.ProductionStacker;
+import nez.lang.Typestate;
 import nez.lang.expr.Expressions;
 import nez.lang.expr.Xif;
 import nez.parser.ParserStrategy;
-import nez.parser.moz.ParserGrammarFunc;
-import nez.parser.moz.ParserGrammar;
 import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
 import nez.util.UList;
 import nez.util.Verbose;
 
-public class OldGrammarChecker extends OldGrammarTransducer {
+class MozGrammarChecker extends MozGrammarTransducer {
 	private final ParserStrategy strategy;
 	ParserGrammar parserGrammar;
 	final TreeMap<String, Boolean> boolMap0;
@@ -22,7 +27,7 @@ public class OldGrammarChecker extends OldGrammarTransducer {
 
 	private Typestate requiredTypestate;
 
-	public OldGrammarChecker(ParserGrammar gg, TreeMap<String, Boolean> boolMap, Production start, ParserStrategy strategy) {
+	public MozGrammarChecker(ParserGrammar gg, TreeMap<String, Boolean> boolMap, Production start, ParserStrategy strategy) {
 		this.parserGrammar = gg;
 		this.strategy = strategy;
 		this.boolMap0 = (boolMap == null) ? new TreeMap<String, Boolean>() : boolMap;
@@ -36,7 +41,7 @@ public class OldGrammarChecker extends OldGrammarTransducer {
 		this.checkFirstVisitedProduction(uname, start, 1); // start
 		if (strategy.Optimization) {
 			Verbose.println("optimizing %s ..", strategy);
-			new OldGrammarOptimizer(gg, strategy);
+			new MozGrammarOptimizer(gg, strategy);
 		}
 	}
 

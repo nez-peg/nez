@@ -1,4 +1,8 @@
-package nez.ast;
+package nez.parser.moz;
+
+import nez.ast.Source;
+import nez.ast.Symbol;
+import nez.ast.Tree;
 
 class EmptyTree extends Tree<EmptyTree> {
 

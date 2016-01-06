@@ -1,9 +1,15 @@
-package nez.lang;
+package nez.parser.moz;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
+import nez.lang.ByteAcceptance;
+import nez.lang.Bytes;
+import nez.lang.Expression;
+import nez.lang.Nez;
+import nez.lang.NonTerminal;
+import nez.lang.Production;
 import nez.lang.expr.Cany;
 import nez.lang.expr.Cbyte;
 import nez.lang.expr.Cset;
@@ -13,12 +19,10 @@ import nez.lang.expr.Tcapture;
 import nez.lang.expr.Tlfold;
 import nez.lang.expr.Tnew;
 import nez.parser.ParserStrategy;
-import nez.parser.moz.ParserGrammarFunc;
-import nez.parser.moz.ParserGrammar;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
 
-public class OldGrammarOptimizer extends OldGrammarRewriter {
+class MozGrammarOptimizer extends MozGrammarRewriter {
 	boolean verboseGrammar = false;
 	boolean enabledSecondChoice = false;
 
@@ -28,7 +32,7 @@ public class OldGrammarOptimizer extends OldGrammarRewriter {
 	HashMap<String, Production> bodyMap = null;
 	HashMap<String, String> aliasMap = null;
 
-	public OldGrammarOptimizer(ParserGrammar gg, ParserStrategy strategy) {
+	public MozGrammarOptimizer(ParserGrammar gg, ParserStrategy strategy) {
 		this.grammar = gg;
 		this.strategy = strategy;
 		initOption();

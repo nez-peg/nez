@@ -10,7 +10,7 @@ import nez.lang.Typestate;
 import nez.util.UList;
 import nez.util.Verbose;
 
-public abstract class ParserCode<T extends NezInst> {
+public abstract class ParserCode<T extends Instruction> {
 
 	protected final Grammar grammar;
 	protected final HashMap<String, ParseFunc<T>> funcMap;
@@ -30,7 +30,7 @@ public abstract class ParserCode<T extends NezInst> {
 
 	/* ParserFunc */
 
-	public static class ParseFunc<T extends NezInst> {
+	public static class ParseFunc<T extends Instruction> {
 		Production p;
 		T compiled;
 

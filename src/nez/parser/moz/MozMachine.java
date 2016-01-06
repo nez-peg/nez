@@ -1,6 +1,5 @@
 package nez.parser.moz;
 
-import nez.ast.ASTMachine;
 import nez.ast.Source;
 import nez.ast.Tree;
 import nez.parser.MemoEntry;

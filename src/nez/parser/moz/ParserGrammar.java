@@ -8,7 +8,6 @@ import java.util.TreeMap;
 import nez.lang.ByteConsumption;
 import nez.lang.Expression;
 import nez.lang.Grammar;
-import nez.lang.OldGrammarChecker;
 import nez.lang.Production;
 import nez.lang.Typestate;
 import nez.parser.MemoPoint;
@@ -22,7 +21,7 @@ public class ParserGrammar extends Grammar {
 
 	public ParserGrammar(Production start, ParserStrategy strategy, TreeMap<String, Boolean> boolMap) {
 		this.funcMap = new HashMap<String, ParserGrammarFunc>();
-		new OldGrammarChecker(this, boolMap, start, strategy);
+		new MozGrammarChecker(this, boolMap, start, strategy);
 		memo(strategy);
 	}
 

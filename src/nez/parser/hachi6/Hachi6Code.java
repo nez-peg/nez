@@ -5,9 +5,9 @@ import java.util.List;
 
 import nez.lang.Grammar;
 import nez.lang.Production;
-import nez.parser.ByteCoder;
 import nez.parser.MemoPoint;
 import nez.parser.TerminationException;
+import nez.parser.moz.ByteCoder;
 import nez.util.UList;
 import nez.util.Verbose;
 

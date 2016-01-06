@@ -2,14 +2,11 @@ package nez.parser.moz;
 
 import java.util.Arrays;
 
-import nez.ast.ASTMachine;
 import nez.ast.Symbol;
 import nez.lang.Expression;
 import nez.lang.Nez;
 import nez.lang.Nez.SymbolExists;
 import nez.lang.Production;
-import nez.lang.expr.Cbyte;
-import nez.parser.ByteCoder;
 import nez.parser.MemoEntry;
 import nez.parser.MemoPoint;
 import nez.parser.SymbolTable;
@@ -343,7 +340,7 @@ public class Moz {
 	}
 
 	public static class NByte extends AbstractByteInstruction {
-		public NByte(Cbyte e, MozInst next) {
+		public NByte(Nez.Byte e, MozInst next) {
 			super(MozSet.NByte, e, next);
 		}
 
@@ -363,7 +360,7 @@ public class Moz {
 	}
 
 	public static class OByte extends AbstractByteInstruction {
-		public OByte(Cbyte e, MozInst next) {
+		public OByte(Nez.Byte e, MozInst next) {
 			super(MozSet.OByte, e, next);
 		}
 
@@ -383,7 +380,7 @@ public class Moz {
 	}
 
 	public static class RByte extends AbstractByteInstruction {
-		public RByte(Cbyte e, MozInst next) {
+		public RByte(Nez.Byte e, MozInst next) {
 			super(MozSet.RByte, e, next);
 		}
 
@@ -803,8 +800,8 @@ public class Moz {
 	}
 
 	public static class Lookup extends AbstractMemoizationInstruction {
-		public Lookup(Expression e, MemoPoint m, boolean state, MozInst next, MozInst skip) {
-			super(MozSet.Lookup, e, m, state, next, skip);
+		public Lookup(Expression e, MemoPoint m, MozInst next, MozInst skip) {
+			super(MozSet.Lookup, e, m, m.isStateful(), next, skip);
 		}
 
 		@Override
@@ -831,8 +828,8 @@ public class Moz {
 	}
 
 	public static class Memo extends AbstractMemoizationInstruction {
-		public Memo(Expression e, MemoPoint m, boolean state, MozInst next) {
-			super(MozSet.Memo, e, m, state, next);
+		public Memo(Expression e, MemoPoint m, MozInst next) {
+			super(MozSet.Memo, e, m, m.isStateful(), next);
 		}
 
 		@Override
@@ -851,8 +848,8 @@ public class Moz {
 	}
 
 	public static class MemoFail extends AbstractMemoizationInstruction {
-		public MemoFail(Expression e, boolean state, MemoPoint m) {
-			super(MozSet.MemoFail, e, m, state, null);
+		public MemoFail(Expression e, MemoPoint m) {
+			super(MozSet.MemoFail, e, m, m.isStateful(), null);
 		}
 
 		@Override
@@ -1130,8 +1127,8 @@ public class Moz {
 	public static class TLookup extends AbstractMemoizationInstruction {
 		public final Symbol label;
 
-		public TLookup(Nez.Link e, MemoPoint m, boolean state, MozInst next, MozInst skip) {
-			super(MozSet.TLookup, e, m, state, next, skip);
+		public TLookup(Nez.Link e, MemoPoint m, MozInst next, MozInst skip) {
+			super(MozSet.TLookup, e, m, m.isStateful(), next, skip);
 			this.label = e.label;
 		}
 
@@ -1167,8 +1164,8 @@ public class Moz {
 	}
 
 	public static class TMemo extends AbstractMemoizationInstruction {
-		public TMemo(Expression e, MemoPoint m, boolean state, MozInst next) {
-			super(MozSet.TMemo, e, m, state, next);
+		public TMemo(Expression e, MemoPoint m, MozInst next) {
+			super(MozSet.TMemo, e, m, m.isStateful(), next);
 		}
 
 		@Override

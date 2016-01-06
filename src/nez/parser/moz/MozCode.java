@@ -1,10 +1,6 @@
 package nez.parser.moz;
 
-import java.util.List;
-
 import nez.lang.Grammar;
-import nez.parser.ByteCoder;
-import nez.parser.MemoPoint;
 import nez.parser.Parser;
 import nez.parser.ParserCode;
 import nez.parser.ParserContext;
@@ -15,9 +11,12 @@ import nez.util.Verbose;
 
 public class MozCode extends ParserCode<MozInst> {
 
-	public MozCode(Grammar gg, UList<MozInst> codeList, List<MemoPoint> memoPointList) {
-		super(gg, new MozInst[0]);
-		this.codeList = codeList;
+	public MozCode(Grammar gg) {
+		super(gg, new MozInst[1026]);
+	}
+
+	UList<MozInst> codeList() {
+		return this.codeList;
 	}
 
 	@Override
@@ -66,8 +65,24 @@ public class MozCode extends ParserCode<MozInst> {
 
 	@Override
 	public void layoutCode(MozInst inst) {
-		// TODO Auto-generated method stub
-
+		if (inst == null) {
+			return;
+		}
+		if (inst.id == -1) {
+			inst.id = codeList.size();
+			codeList.add(inst);
+			layoutCode(inst.next);
+			if (inst.next != null && inst.id + 1 != inst.next.id) {
+				MozInst.labeling(inst.next);
+			}
+			layoutCode(inst.branch());
+			if (inst instanceof Moz.First) {
+				Moz.First match = (Moz.First) inst;
+				for (int ch = 0; ch < match.jumpTable.length; ch++) {
+					layoutCode(match.jumpTable[ch]);
+				}
+			}
+		}
 	}
 
 	public final void encode(ByteCoder coder) {
@@ -79,7 +94,7 @@ public class MozCode extends ParserCode<MozInst> {
 
 	public final static void writeMozCode(Parser parser, String path) {
 		MozCompiler compile = MozCompiler.newCompiler(parser.getParserStrategy());
-		MozCode code = compile.compile((ParserGrammar) parser.getParserGrammar());
+		MozCode code = compile.compile(parser.getParserGrammar());
 		ByteCoder c = new ByteCoder();
 		code.encode(c);
 		Verbose.println("generating " + path);

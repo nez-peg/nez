@@ -1,4 +1,4 @@
-package nez.parser;
+package nez.parser.moz;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
@@ -8,8 +8,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import nez.ast.Symbol;
-import nez.parser.moz.MozInst;
-import nez.parser.moz.MozSet;
 import nez.util.StringUtils;
 import nez.util.Verbose;
 

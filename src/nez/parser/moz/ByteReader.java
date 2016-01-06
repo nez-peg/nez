@@ -1,4 +1,4 @@
-package nez.parser;
+package nez.parser.moz;
 
 public class ByteReader {
 	byte[] source;

@@ -1,11 +1,15 @@
-package nez.lang;
+package nez.parser.moz;
 
-import nez.lang.Nez.Byte;
+import nez.lang.Expression;
+import nez.lang.Nez;
+import nez.lang.NonTerminal;
+import nez.lang.Predicate;
+import nez.lang.Production;
 import nez.lang.expr.Expressions;
 import nez.util.UList;
 import nez.util.Verbose;
 
-public class OldGrammarTransducer extends Expression.Visitor {
+class MozGrammarTransducer extends Expression.Visitor {
 
 	public Expression visitInner(Expression inner) {
 		push(inner);
@@ -36,7 +40,7 @@ public class OldGrammarTransducer extends Expression.Visitor {
 	}
 
 	@Override
-	public Expression visitByte(Byte e, Object a) {
+	public Expression visitByte(Nez.Byte e, Object a) {
 		return e; // immutable
 	}
 

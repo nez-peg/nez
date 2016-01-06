@@ -1,8 +1,11 @@
-package nez.ast;
+package nez.parser.moz;
 
+import nez.ast.Source;
+import nez.ast.Symbol;
+import nez.ast.Tree;
 import nez.util.Verbose;
 
-public class ASTMachine {
+class ASTMachine {
 	final static boolean debugMode = false;
 	final static int Nop = 0;
 	final static int Capture = 1;

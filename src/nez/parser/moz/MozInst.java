@@ -1,11 +1,10 @@
 package nez.parser.moz;
 
 import nez.lang.Expression;
-import nez.parser.ByteCoder;
-import nez.parser.NezInst;
+import nez.parser.Instruction;
 import nez.parser.TerminationException;
 
-public abstract class MozInst implements NezInst {
+public abstract class MozInst implements Instruction {
 	public final byte opcode;
 	protected Expression e;
 	public MozInst next;

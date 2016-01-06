@@ -1,8 +1,11 @@
-package nez.lang;
+package nez.parser.moz;
 
-import nez.lang.Nez.Byte;
+import nez.lang.Expression;
+import nez.lang.Nez;
+import nez.lang.NonTerminal;
+import nez.lang.Production;
 
-public class OldGrammarRewriter extends OldGrammarTransducer {
+class MozGrammarRewriter extends MozGrammarTransducer {
 
 	@Override
 	public Production visitProduction(Production p) {
@@ -20,7 +23,7 @@ public class OldGrammarRewriter extends OldGrammarTransducer {
 	}
 
 	@Override
-	public Expression visitByte(Byte e, Object a) {
+	public Expression visitByte(Nez.Byte e, Object a) {
 		return e;
 	}
 

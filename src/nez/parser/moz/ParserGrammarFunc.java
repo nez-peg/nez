@@ -3,7 +3,7 @@ package nez.parser.moz;
 import nez.lang.Expression;
 import nez.lang.Production;
 import nez.parser.MemoPoint;
-import nez.parser.NezInst;
+import nez.parser.Instruction;
 
 public class ParserGrammarFunc {
 	String name;
@@ -15,7 +15,7 @@ public class ParserGrammarFunc {
 	boolean state;
 	MemoPoint memoPoint = null;
 
-	NezInst compiled;
+	Instruction compiled;
 
 	public ParserGrammarFunc(String uname, Production p, Production pp, int init) {
 		this.name = uname;
@@ -53,11 +53,11 @@ public class ParserGrammarFunc {
 		return this.inlining;
 	}
 
-	public final NezInst getCompiled() {
+	public final Instruction getCompiled() {
 		return this.compiled;
 	}
 
-	public final void setCompiled(NezInst compiled) {
+	public final void setCompiled(Instruction compiled) {
 		this.compiled = compiled;
 	}
 }

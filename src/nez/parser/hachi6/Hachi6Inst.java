@@ -1,9 +1,9 @@
 package nez.parser.hachi6;
 
-import nez.parser.NezInst;
+import nez.parser.Instruction;
 import nez.parser.TerminationException;
 
-public abstract class Hachi6Inst implements NezInst {
+public abstract class Hachi6Inst implements Instruction {
 	public int id;
 	public Hachi6Inst next;
 
