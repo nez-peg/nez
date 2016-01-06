@@ -1,4 +1,4 @@
-package nez.lang;
+package nez.lang.ast;
 
 import java.util.HashMap;
 import java.util.List;
@@ -6,6 +6,7 @@ import java.util.List;
 import nez.ast.Source;
 import nez.ast.Tree;
 import nez.ast.TreeUtils;
+import nez.lang.Grammar;
 import nez.parser.Parser;
 import nez.parser.ParserStrategy;
 import nez.parser.moz.Coverage;

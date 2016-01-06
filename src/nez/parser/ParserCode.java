@@ -77,7 +77,7 @@ public abstract class ParserCode<T extends Instruction> {
 	public void initMemoPoint() {
 		final TypestateAnalyzer typestate = Typestate.newAnalyzer();
 		memoPointMap = new HashMap<>();
-		Map<String, Integer> refs = Productions.countNonTerminalReference(grammar);
+		Map<String, Integer> refs = Productions.countNonterminalReference(grammar);
 		for (Production p : grammar) {
 			String uname = p.getUniqueName();
 			Integer cnt = refs.get(uname);

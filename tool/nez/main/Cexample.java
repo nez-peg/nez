@@ -3,7 +3,7 @@ package nez.main;
 import java.io.IOException;
 
 import nez.lang.Grammar;
-import nez.lang.GrammarExample;
+import nez.lang.ast.GrammarExample;
 
 public class Cexample extends Command {
 

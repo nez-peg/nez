@@ -1,3 +1,4 @@
+package nez.lang.ast;
 //package nez.lang;
 //
 //import java.util.HashMap;

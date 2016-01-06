@@ -24,7 +24,7 @@ public class Cdump extends Command {
 
 	private void dumpGrammar(Grammar grammar) throws IOException {
 		final ByteConsumption consumed = new ByteConsumption();
-		final Map<String, Integer> refCounts = Productions.countNonTerminalReference(grammar);
+		final Map<String, Integer> refCounts = Productions.countNonterminalReference(grammar);
 		for (Production p : grammar) {
 			String uname = p.getUniqueName();
 			ConsoleUtils.println(uname);

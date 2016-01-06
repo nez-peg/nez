@@ -7,15 +7,18 @@ import java.util.List;
 import nez.lang.ByteAcceptance;
 import nez.lang.Bytes;
 import nez.lang.Expression;
+import nez.lang.ExpressionTransformer;
 import nez.lang.Expressions;
 import nez.lang.Nez;
 import nez.lang.NonTerminal;
 import nez.lang.Production;
+import nez.lang.Productions;
+import nez.lang.Productions.NonterminalReference;
 import nez.parser.ParserStrategy;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
 
-class MozGrammarOptimizer extends MozGrammarRewriter {
+class MozGrammarOptimizer extends ExpressionTransformer {
 	boolean verboseGrammar = false;
 	boolean enabledSecondChoice = false;
 
@@ -25,7 +28,7 @@ class MozGrammarOptimizer extends MozGrammarRewriter {
 	HashMap<String, Production> bodyMap = null;
 	HashMap<String, String> aliasMap = null;
 
-	public MozGrammarOptimizer(ParserGrammar gg, ParserStrategy strategy) {
+	MozGrammarOptimizer(ParserGrammar gg, ParserStrategy strategy) {
 		this.grammar = gg;
 		this.strategy = strategy;
 		initOption();
@@ -86,16 +89,20 @@ class MozGrammarOptimizer extends MozGrammarRewriter {
 	private void optimize() {
 		Production start = grammar.getStartProduction();
 		optimizeProduction(start);
-
 		this.optimizeFirstChoice();
 		this.optimizedMap.clear();
-		this.resetReferenceCount();
 
+		NonterminalReference refc = Productions.countNonterminalReference(grammar);
+
+		this.resetReferenceCount();
 		grammar.getParseFunc(start.getLocalName()).incCount();
 		this.recheckReference(start);
 
 		UList<Production> prodList = new UList<Production>(new Production[grammar.size()]);
 		for (Production p : grammar) {
+			String uname = p.getUniqueName();
+			// System.out.println("" + uname + ", refc=" + refc.count(uname));
+
 			String key = p.getLocalName();
 			ParserGrammarFunc f = grammar.getParseFunc(key);
 			verboseReference(key, f.getCount());
@@ -148,7 +155,7 @@ class MozGrammarOptimizer extends MozGrammarRewriter {
 		String uname = p.getLocalName();
 		if (!optimizedMap.contains(uname)) {
 			optimizedMap.add(uname);
-			Expression optimized = this.visitInner(p.getExpression());
+			Expression optimized = this.visitInner(p.getExpression(), null);
 			p.setExpression(optimized);
 			if (strategy.Oalias) {
 				performAliasAnalysis(p);
@@ -366,7 +373,7 @@ class MozGrammarOptimizer extends MozGrammarRewriter {
 			Expression choice = p.get(0);
 			UList<Expression> l = Expressions.newList(choice.size());
 			for (Expression inner : choice) {
-				inner = this.visitInner(inner);
+				inner = this.visitInner(inner, a);
 				l.add(Expressions.newLinkTree(p.getSourceLocation(), p.label, inner));
 			}
 			return choice.newChoice(l);
@@ -380,7 +387,7 @@ class MozGrammarOptimizer extends MozGrammarRewriter {
 			p.setOptimized();
 			UList<Expression> l = Expressions.newList(p.size());
 			for (Expression sub : p) {
-				Expressions.addChoice(l, this.visitInner(sub));
+				Expressions.addChoice(l, this.visitInner(sub, a));
 			}
 			return this.visitChoice(p, l);
 		}

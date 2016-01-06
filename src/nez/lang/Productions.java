@@ -2,9 +2,6 @@ package nez.lang;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
-
-import nez.util.UList;
 
 public class Productions {
 
@@ -52,13 +49,13 @@ public class Productions {
 	 * @return a mapping from nonterminal (unique name) to the reference count
 	 */
 
-	public final static Map<String, Integer> countNonTerminalReference(Grammar grammar) {
-		HashMap<String, Integer> counts = new HashMap<>();
-		counts.put(grammar.getStartProduction().getUniqueName(), 1);
+	public final static NonterminalReference countNonterminalReference(Grammar grammar) {
+		NonterminalReference refc = new NonterminalReference();
+		refc.put(grammar.getStartProduction().getUniqueName(), 1);
 		for (Production p : grammar) {
-			count(p.getExpression(), counts);
+			count(p.getExpression(), refc);
 		}
-		return counts;
+		return refc;
 	}
 
 	private final static void count(Expression e, HashMap<String, Integer> counts) {
@@ -77,49 +74,63 @@ public class Productions {
 		}
 	}
 
-	public static class ProductionProperty extends UList<String> {
-		HashMap<String, Boolean> boolMap;
-
-		public ProductionProperty() {
-			super(new String[64]);
-			this.boolMap = new HashMap<>();
-		}
-
-		public void push(String uname) {
-			this.add(uname);
-		}
-
-		public boolean isVisited(String uname) {
-			for (String u : this) {
-				if (uname.equals(u)) {
-					return true;
-				}
-			}
-			return false;
-		}
-
-		public boolean hasProperty(String uname) {
-			return this.boolMap.containsKey(uname);
-		}
-
-		public Boolean getProperty(String uname) {
-			return this.boolMap.get(uname);
-		}
-
-		public void setProperty(String uname, Boolean result) {
-			this.boolMap.put(uname, result);
-		}
-
-		void setAll(String uname, Boolean result) {
-			for (int i = this.size() - 1; i >= 0; i--) {
-				String u = this.get(i);
-				this.boolMap.put(u, result);
-				if (uname.equals(u)) {
-					break;
-				}
-			}
+	/**
+	 * NonterminalReference holds the results of countNonterminalReference.
+	 * 
+	 * @author kiki
+	 *
+	 */
+	@SuppressWarnings("serial")
+	public static class NonterminalReference extends HashMap<String, Integer> {
+		public final int count(String key) {
+			Integer n = this.get(key);
+			return n == null ? 0 : (int) n;
 		}
 	}
+
+	// public static class ProductionProperty extends UList<String> {
+	// HashMap<String, Boolean> boolMap;
+	//
+	// public ProductionProperty() {
+	// super(new String[64]);
+	// this.boolMap = new HashMap<>();
+	// }
+	//
+	// public void push(String uname) {
+	// this.add(uname);
+	// }
+	//
+	// public boolean isVisited(String uname) {
+	// for (String u : this) {
+	// if (uname.equals(u)) {
+	// return true;
+	// }
+	// }
+	// return false;
+	// }
+	//
+	// public boolean hasProperty(String uname) {
+	// return this.boolMap.containsKey(uname);
+	// }
+	//
+	// public Boolean getProperty(String uname) {
+	// return this.boolMap.get(uname);
+	// }
+	//
+	// public void setProperty(String uname, Boolean result) {
+	// this.boolMap.put(uname, result);
+	// }
+	//
+	// void setAll(String uname, Boolean result) {
+	// for (int i = this.size() - 1; i >= 0; i--) {
+	// String u = this.get(i);
+	// this.boolMap.put(u, result);
+	// if (uname.equals(u)) {
+	// break;
+	// }
+	// }
+	// }
+	// }
 
 	/*
 	 * public final static boolean isContextual(Production p, ProductionProperty

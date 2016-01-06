@@ -4,7 +4,6 @@ import nez.ast.Source;
 import nez.ast.Tree;
 import nez.lang.Expression;
 import nez.lang.Grammar;
-import nez.lang.GrammarExample;
 import nez.lang.Production;
 import nez.parser.ParserStrategy;
 import nez.util.Verbose;

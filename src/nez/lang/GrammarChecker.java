@@ -429,7 +429,7 @@ public class GrammarChecker {
 		GrammarOptimizer(Grammar gg, ParserStrategy strategy) {
 			this.grammar = gg;
 			this.strategy = strategy;
-			this.refCounts = Productions.countNonTerminalReference(grammar);
+			this.refCounts = Productions.countNonterminalReference(grammar);
 			if (strategy.Oalias) {
 				this.bodyMap = new HashMap<String, Production>();
 				this.aliasMap = new HashMap<String, String>();
@@ -458,7 +458,7 @@ public class GrammarChecker {
 		}
 
 		private Expression optimize(Expression e) {
-			return this.visit(e, null);
+			return this.visitInner(e, null);
 		}
 
 		private void verboseReference(String name, int ref) {
@@ -1035,12 +1035,12 @@ public class GrammarChecker {
 	static class Normalizer extends ExpressionTransformer {
 
 		void perform(Grammar g) {
-			final Map<String, Integer> refCounts = Productions.countNonTerminalReference(g);
+			final Map<String, Integer> refCounts = Productions.countNonterminalReference(g);
 			UList<Production> prodList = new UList<Production>(new Production[g.size()]);
 			for (Production p : g) {
 				Integer refcnt = refCounts.get(p.getUniqueName());
 				if (refcnt != null && refcnt > 0) {
-					Expression e = visit(p.getExpression(), null);
+					Expression e = visitInner(p.getExpression(), null);
 					p.setExpression(e);
 					prodList.add(p);
 				}
