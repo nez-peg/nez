@@ -1,18 +1,16 @@
 package nez.lang.schema;
 
-import nez.ast.Symbol;
 import nez.lang.Expression;
 import nez.lang.Grammar;
 
-public class JSONSchemaGrammarGenerator extends SchemaGrammarGenerator {
+public class JSONSchemaGrammarGenerator extends AbstractSchemaGrammarGenerator implements SchemaSymbol {
+
+	boolean enableNezExtension = true; // default
 
 	public JSONSchemaGrammarGenerator(Grammar grammar) {
 		super(grammar);
+		loadPredefinedRules();
 	}
-
-	static final Symbol _Key = Symbol.tag("key");
-	static final Symbol _Value = Symbol.tag("value");
-	static final Symbol _Member = Symbol.tag("member");
 
 	@Override
 	public void loadPredefinedRules() {
@@ -71,6 +69,16 @@ public class JSONSchemaGrammarGenerator extends SchemaGrammarGenerator {
 	@Override
 	public Schema newOthers() {
 		return new Schema(_NonTerminal("Member"));
+	}
+
+	public void genStruct(String structName) {
+		if (enableNezExtension) {
+			String memberListName = String.format("%s_SMembers", structName);
+			newMembers(memberListName);
+			newStruct(structName, newSet(memberListName));
+		} else {
+			newStruct(structName, newPermutation());
+		}
 	}
 
 	private final Expression _OpenSquare() {

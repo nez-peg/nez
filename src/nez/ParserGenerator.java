@@ -56,6 +56,7 @@ public class ParserGenerator {
 	public ParserGenerator() {
 		this("nez/lib");
 		loadExtension("nez.lang.schema.DTDGrammarExtension");
+		loadExtension("nez.lang.schema.CeleryGrammarExtension");
 	}
 
 	public final void loadExtension(String classPath) {

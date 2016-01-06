@@ -9,27 +9,27 @@ File
 	= _ Root _
 
 Root 
-	= { (@ClassDeclaration)+ #Root }
+	= { $(ClassDeclaration)+ #Celery }
 
 /*////////////////////////////////////////////////
 ////////////////// Declaration ///////////////////
 ////////////////////////////////////////////////*/
 
 ClassDeclaration
-	= { 'struct' _ $Name(Name) _ '=' _ (@ClassMembers)+ _ #Struct}
+	= { 'struct' _ $name(Name) _ '=' _ $list(ClassMembers) #Struct} _
 
 ClassMembers
-	= TypedParameter / UntypedParameter 
+	= $(TypedParameter / UntypedParameter)+ 
 
 TypedParameter
-	=  { $Name(Name) qualifier ':' _ $Type(TypeDeclaration) @DefaultValue } _ 
+	=  { $name(Name) qualifier ':' _ $type(TypeDeclaration) $value(DefaultValue) } _ 
 
 qualifier
 	= '?' #Option
 	/ ''  #Required
 
 UntypedParameter 
-	= { @Name untypedqualifier _ @DefaultValue  } _ 
+	= { $name(Name) untypedqualifier _ $value(DefaultValue)  } _ 
 
 untypedqualifier
 	= '?' #UntypedOption
@@ -42,7 +42,7 @@ TypeDeclaration
 	/ ClassType
 	
 ArrayType
-	= { (@PrimaryType / @ClassType) '[' ']' #TArray }
+	= { $(PrimaryType / ClassType) '[' ']' #TArray }
 
 PrimaryType
 	= 'boolean'{       #TBoolean}
@@ -56,13 +56,13 @@ ClassType
 	= { NAMETOKEN #TStruct }
 
 DefaultValue 
-	= {(  _ '=' _ (@Literal / @FieldReference) (_ ',' _ (@Literal / @FieldReference) )* )? #DefaultValue}
+	= {(  _ '=' _ $(Literal / FieldReference) (_ ',' _ $(Literal / FieldReference) )* )? #DefaultValue}
 
 EnumType
-	= { 'enum' _ '{' _ @EnumValue _ (',' _ @EnumValue _ )* '}' _ #TEnum }
+	= { 'enum' _ '{' _ $(EnumValue) _ (',' _ $(EnumValue) _ )* '}' _ #TEnum }
 
 FieldReference 
-	= { @Name '.' @Name #FieldReference }
+	= { $parent(Name) '.' $child(Name) #FieldReference }
 
 Literal 
 	= Float
