@@ -471,6 +471,7 @@ public class Nez {
 
 		Sequence(Expression[] inners) {
 			super(inners);
+			this.setSourceLocation(inners[0].getSourceLocation());
 		}
 
 		@Override

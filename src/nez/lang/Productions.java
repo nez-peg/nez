@@ -43,10 +43,10 @@ public class Productions {
 	}
 
 	/**
-	 * Counts the number of nonterminal reference in the given grammar
+	 * Counts the number of nonterminal references in the given grammar
 	 * 
 	 * @param grammar
-	 * @return a mapping from nonterminal (unique name) to the reference count
+	 * @return
 	 */
 
 	public final static NonterminalReference countNonterminalReference(Grammar grammar) {
@@ -57,6 +57,7 @@ public class Productions {
 		}
 		if (hasUnusedProduction(grammar, refc)) {
 			NonterminalReference refc2 = new NonterminalReference();
+			refc2.put(grammar.getStartProduction().getUniqueName(), 1);
 			for (Production p : grammar) {
 				String uname = p.getUniqueName();
 				if (refc.count(uname) > 0) {

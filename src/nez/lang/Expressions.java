@@ -1,5 +1,6 @@
 package nez.lang;
 
+import java.util.Arrays;
 import java.util.List;
 
 import nez.ast.SourceLocation;
@@ -16,6 +17,8 @@ import nez.util.UList;
 
 public abstract class Expressions {
 
+	/* Optimization */
+
 	public final static Expression resolveNonTerminal(Expression e) {
 		while (e instanceof NonTerminal) {
 			NonTerminal nterm = (NonTerminal) e;
@@ -24,10 +27,40 @@ public abstract class Expressions {
 		return e;
 	}
 
+	public final static Expression tryConvertingByteSet(Nez.Choice choice) {
+		boolean byteMap[] = Bytes.newMap(false);
+		if (tryConvertingByteSet(choice, byteMap)) {
+			return Expressions.newByteSet(choice.getSourceLocation(), byteMap);
+		}
+		return choice;
+	}
+
+	private static boolean tryConvertingByteSet(Nez.Choice choice, boolean[] byteMap) {
+		for (Expression e : choice) {
+			e = Expressions.resolveNonTerminal(e);
+			if (e instanceof Nez.Choice) {
+				if (!tryConvertingByteSet((Nez.Choice) e, byteMap)) {
+					return false;
+				}
+				continue; // OK
+			}
+			if (e instanceof Nez.Byte) {
+				byteMap[((Nez.Byte) e).byteChar] = true;
+				continue; // OK
+			}
+			if (e instanceof Nez.ByteSet) {
+				Bytes.appendBitMap(byteMap, ((Nez.ByteSet) e).byteMap);
+				continue; // OK
+			}
+			return false;
+		}
+		return true;
+	}
+
 	/* Pair */
 
 	public final static Expression first(Expression e) {
-		if (e instanceof Nez.Pair) {
+		if (e instanceof Nez.Pair || e instanceof Nez.Sequence) {
 			return e.get(0);
 		}
 		return e;
@@ -37,17 +70,17 @@ public abstract class Expressions {
 		if (e instanceof Nez.Pair) {
 			return e.get(1);
 		}
-		// if (e instanceof Nez.Sequence) {
-		// Nez.Sequence seq = (Nez.Sequence) e;
-		// if (seq.size() == 1) {
-		// return null;
-		// }
-		// Expression[] inners = new Expression[seq.size() - 1];
-		// for (int i = 0; i < inners.length; i++) {
-		// inners[i] = seq.get(i + 1);
-		// }
-		// return new Nez.Sequence(inners);
-		// }
+		if (e instanceof Nez.Sequence) {
+			Nez.Sequence seq = (Nez.Sequence) e;
+			if (seq.size() == 1) {
+				return null;
+			}
+			Expression[] inners = new Expression[seq.size() - 1];
+			for (int i = 0; i < inners.length; i++) {
+				inners[i] = seq.get(i + 1);
+			}
+			return new Nez.Sequence(inners);
+		}
 		return null;
 	}
 
@@ -310,6 +343,8 @@ public abstract class Expressions {
 		return a;
 	}
 
+	/* Choice */
+
 	public final static Expression newChoice(SourceLocation s, List<Expression> l) {
 		int size = l.size();
 		for (int i = 0; i < size; i++) {
@@ -341,6 +376,54 @@ public abstract class Expressions {
 		addChoice(l, p);
 		addChoice(l, p2);
 		return newChoice(s, l);
+	}
+
+	public final static Expression tryCommonFactoring(Nez.Choice choice) {
+		List<Expression> l = Expressions.newList2(choice.size());
+		int[] indexes = new int[256];
+		Arrays.fill(indexes, -1);
+		tryCommonFactoring(choice, l, indexes);
+		for (int i = 0; i < l.size(); i++) {
+			l.set(i, tryChoiceCommonFactring(l.get(i)));
+		}
+		return Expressions.newChoice(choice, l);
+	}
+
+	private static void tryCommonFactoring(Nez.Choice choice, List<Expression> l, int[] indexes) {
+		for (Expression inner : choice) {
+			if (inner instanceof Nez.Choice) {
+				tryCommonFactoring((Nez.Choice) inner, l, indexes);
+				continue;
+			}
+			Expression first = Expressions.first(inner);
+			if (first instanceof Nez.Byte) {
+				int ch = ((Nez.Byte) first).byteChar;
+				if (indexes[ch] == -1) {
+					indexes[ch] = l.size();
+					l.add(inner);
+				} else {
+					Expression prev = l.get(indexes[ch]);
+					Expression second = Expressions.newChoice(null, Expressions.next(prev), Expressions.next(inner));
+					prev = Expressions.newPair(prev.getSourceLocation(), first, second);
+					l.set(indexes[ch], prev);
+				}
+			} else {
+				Expressions.addChoice(l, inner);
+			}
+		}
+	}
+
+	public static Expression tryChoiceCommonFactring(Expression e) {
+		if (e instanceof Nez.Choice) {
+			return tryCommonFactoring((Nez.Choice) e);
+		}
+		for (int i = 0; i < e.size(); i++) {
+			Expression sub = e.get(i);
+			if (sub instanceof Nez.Choice) {
+				e.set(i, tryCommonFactoring((Nez.Choice) sub));
+			}
+		}
+		return e;
 	}
 
 	// AST Construction
