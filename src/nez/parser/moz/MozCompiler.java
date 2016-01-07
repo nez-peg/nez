@@ -6,11 +6,12 @@ import nez.lang.Expression;
 import nez.lang.Expressions;
 import nez.lang.Grammar;
 import nez.lang.Nez;
-import nez.lang.NonTerminal;
 import nez.lang.NezFunction;
+import nez.lang.NonTerminal;
 import nez.lang.Production;
 import nez.lang.Typestate;
 import nez.parser.MemoPoint;
+import nez.parser.ParserCode.ProductionCode;
 import nez.parser.ParserCompiler;
 import nez.parser.ParserStrategy;
 import nez.util.UList;
@@ -32,6 +33,9 @@ public class MozCompiler implements ParserCompiler {
 	public MozCode compile(Grammar grammar) {
 		long t = System.nanoTime();
 		MozCode code = new MozCode(grammar);
+		if (strategy.PackratParsing) {
+			code.initMemoPoint();
+		}
 		new CompilerVisitor(code, grammar).compile(grammar);
 		long t2 = System.nanoTime();
 		Verbose.printElapsedTime("CompilingTime", t, t2);
@@ -46,6 +50,9 @@ public class MozCompiler implements ParserCompiler {
 		CompilerVisitor(MozCode code, Grammar gg) {
 			this.code = code;
 			this.gg = (ParserGrammar) gg;
+			for (Production p : gg) {
+				code.setProductionCode(p, new ProductionCode<MozInst>(null));
+			}
 		}
 
 		private HashMap<String, ParserGrammarFunc> funcMap = null;
@@ -100,23 +107,6 @@ public class MozCompiler implements ParserCompiler {
 			return this.encodingProduction;
 		}
 
-		// private UList<MozInst> cachedInstruction;
-		//
-		// protected void addCachedInstruction(MozInst inst) {
-		// if (this.cachedInstruction == null) {
-		// this.cachedInstruction = new UList<MozInst>(new MozInst[32]);
-		// }
-		// this.cachedInstruction.add(inst);
-		// }
-		//
-		// private void layoutCachedInstruction(UList<MozInst> codeList) {
-		// if (this.cachedInstruction != null) {
-		// for (MozInst inst : this.cachedInstruction) {
-		// code.layoutCode(inst);
-		// }
-		// }
-		// }
-
 		protected void visitProduction(UList<MozInst> codeList, Production p, Object next) {
 			ParserGrammarFunc f = this.getParseFunc(p);
 			// System.out.println("inline: " + f.inlining + " name: " +
@@ -127,9 +117,9 @@ public class MozCompiler implements ParserCompiler {
 			}
 			f.setCompiled(visit(f.getExpression(), (MozInst) next, null/* failjump */));
 			if (!f.isInlined()) {
-				f.setCompiled(Coverage.visitEnterCoverage(p, (MozInst) f.getCompiled()));
+				f.setCompiled(Coverage.visitEnterCoverage(p, f.getCompiled()));
 			}
-			MozInst block = new Moz.Label(p, (MozInst) f.getCompiled());
+			MozInst block = new Moz.Label(p, f.getCompiled());
 			code.layoutCode(block);
 		}
 
@@ -565,7 +555,8 @@ public class MozCompiler implements ParserCompiler {
 			// this.optimizedInline(p);
 			// return visit(f.getExpression(), next);
 			// }
-			MemoPoint m = f.getMemoPoint();
+			MemoPoint m = code.getMemoPoint(p.getUniqueName());
+			// MemoPoint m = f.getMemoPoint();
 			if (m != null) {
 				if (!strategy.TreeConstruction || this.gg.typeState(p) == Typestate.Unit) {
 					if (Verbose.PackratParsing) {
@@ -601,7 +592,8 @@ public class MozCompiler implements ParserCompiler {
 			if (strategy.TreeConstruction && p.get(0) instanceof NonTerminal) {
 				NonTerminal n = (NonTerminal) p.get(0);
 				ParserGrammarFunc f = this.getParseFunc(n.getProduction());
-				MemoPoint m = f.getMemoPoint();
+				MemoPoint m = code.getMemoPoint(n.getUniqueName());
+				// MemoPoint m = f.getMemoPoint();
 				if (m != null) {
 					if (Verbose.PackratParsing) {
 						Verbose.println("memoize: @" + n.getLocalName() + " at " + this.getEncodingProduction().getLocalName());

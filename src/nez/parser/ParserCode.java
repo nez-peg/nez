@@ -6,6 +6,7 @@ import java.util.Map;
 import nez.lang.Grammar;
 import nez.lang.Production;
 import nez.lang.Productions;
+import nez.lang.Productions.NonterminalReference;
 import nez.lang.Typestate;
 import nez.lang.Typestate.TypestateAnalyzer;
 import nez.util.UList;
@@ -77,12 +78,12 @@ public abstract class ParserCode<T extends Instruction> {
 	public void initMemoPoint() {
 		final TypestateAnalyzer typestate = Typestate.newAnalyzer();
 		memoPointMap = new HashMap<>();
-		Map<String, Integer> refs = Productions.countNonterminalReference(grammar);
+		NonterminalReference refs = Productions.countNonterminalReference(grammar);
 		for (Production p : grammar) {
 			String uname = p.getUniqueName();
-			Integer cnt = refs.get(uname);
 			Typestate ts = typestate.inferTypestate(p);
-			if (cnt != null && (cnt > 2 && ts != Typestate.TreeMutation)) {
+			if (refs.count(uname) > 2 && ts != Typestate.TreeMutation) {
+				Verbose.println("MemoPoint: %s refc=%d", uname, refs.count(uname));
 				MemoPoint memoPoint = new MemoPoint(this.memoPointMap.size(), uname, p.getExpression(), ts, false);
 				this.memoPointMap.put(uname, memoPoint);
 			}
