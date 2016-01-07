@@ -14,7 +14,7 @@ public class JSONSchemaGrammarGenerator extends AbstractSchemaGrammarGenerator i
 
 	@Override
 	public void loadPredefinedRules() {
-		new JSONGrammarCombinator(grammar);
+		new JSONPredefinedGrammarLoader(grammar);
 	}
 
 	@Override

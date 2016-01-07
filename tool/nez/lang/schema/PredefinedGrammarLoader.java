@@ -6,14 +6,14 @@ import java.lang.reflect.Method;
 import nez.lang.Expression;
 import nez.lang.Expressions;
 import nez.lang.Grammar;
-import nez.lang.GrammarBase;
-import nez.lang.Production;
+import nez.lang.NonTerminal;
+import nez.util.UList;
 import nez.util.Verbose;
 
-public abstract class PredefinedGrammarCombinator extends GrammarBase {
+public abstract class PredefinedGrammarLoader extends Expressions {
 	Grammar grammar;
 
-	public PredefinedGrammarCombinator(Grammar grammar, String start) {
+	public PredefinedGrammarLoader(Grammar grammar, String start) {
 		this.grammar = grammar;
 		load(start);
 	}
@@ -53,26 +53,24 @@ public abstract class PredefinedGrammarCombinator extends GrammarBase {
 		}
 	}
 
-	protected final Expression _NonTerminal(String name) {
-		return Expressions.newNonTerminal(null, grammar, name);
+	protected final NonTerminal _NonTerminal(String nonterm) {
+		return Expressions.newNonTerminal(null, grammar, nonterm);
 	}
 
-	@Override
-	public void addProduction(Production p) {
-		// TODO Auto-generated method stub
-
+	protected final Expression newSequence(Expression... seq) {
+		UList<Expression> l = new UList<Expression>(new Expression[8]);
+		for (Expression p : seq) {
+			Expressions.addSequence(l, p);
+		}
+		return newSequence(null, l);
 	}
 
-	@Override
-	public Production get(int index) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public int size() {
-		// TODO Auto-generated method stub
-		return 0;
+	protected final Expression newChoice(Expression... seq) {
+		UList<Expression> l = new UList<Expression>(new Expression[8]);
+		for (Expression p : seq) {
+			Expressions.addChoice(l, p);
+		}
+		return newChoice(null, l);
 	}
 
 }
