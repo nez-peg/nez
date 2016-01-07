@@ -43,48 +43,17 @@ public class MozCompiler implements ParserCompiler {
 	class CompilerVisitor extends Expression.Visitor {
 
 		final MozCode code;
-		final ParserGrammar gg;
+		final Grammar grammar;
 
-		CompilerVisitor(MozCode code, Grammar gg) {
+		CompilerVisitor(MozCode code, Grammar grammar) {
 			this.code = code;
-			this.gg = (ParserGrammar) gg;
-			for (Production p : gg) {
+			this.grammar = grammar;
+			for (Production p : grammar) {
 				code.setProductionCode(p, new ProductionCode<MozInst>(null));
 			}
 		}
 
-		//
-		// private HashMap<String, ParserGrammarFunc> funcMap = null;
-		//
-		// protected int getParseFuncSize() {
-		// if (gg != null) {
-		// return gg.size();
-		// }
-		// if (this.funcMap != null) {
-		// return funcMap.size();
-		// }
-		// return 0;
-		// }
-		//
-		// protected ParserGrammarFunc getParseFunc(Production p) {
-		// if (gg != null) {
-		// ParserGrammarFunc f = gg.getParseFunc(p.getLocalName());
-		// if (f == null) {
-		// f = gg.getParseFunc(p.getUniqueName());
-		// }
-		// if (f == null) {
-		// Verbose.debug("unfound parsefunc: " + p.getLocalName() + " " +
-		// p.getUniqueName());
-		// }
-		// return f;
-		// }
-		// if (this.funcMap != null) {
-		// return funcMap.get(p.getUniqueName());
-		// }
-		// return null;
-		// }
-
-		public MozCode compile(Grammar gg) {
+		private MozCode compile(Grammar gg) {
 			long t = System.nanoTime();
 			for (Production p : gg) {
 				this.visitProduction(code.codeList(), p, new Moz.Ret(p));
@@ -494,52 +463,6 @@ public class MozCompiler implements ParserCompiler {
 			return -1;
 		}
 
-		// private final MozInst visitPredicatedChoice0(Nez.Choice choice,
-		// Object next) {
-		// HashMap<Integer, MozInst> m = new HashMap<Integer, MozInst>();
-		// Moz.First dispatch = new Moz.First(choice, commonFailure);
-		// for (int ch = 0; ch < choice.predictedCase.length; ch++) {
-		// Expression predicted = choice.predictedCase[ch];
-		// if (predicted == null) {
-		// continue;
-		// }
-		// int id = predictId(choice.predictedCase, ch, predicted);
-		// MozInst inst = m.get(id);
-		// if (inst == null) {
-		// // System.out.println("creating '" + (char)ch +
-		// // "'("+ch+"): " +
-		// // e);
-		// if (predicted instanceof Nez.Choice) {
-		// assert (((Nez.Choice) predicted).predictedCase == null);
-		// inst = visitUnnPchoice(choice, next);
-		// } else {
-		// inst = visit(predicted, next);
-		// }
-		// m.put(id, inst);
-		// }
-		// dispatch.setJumpTable(ch, inst);
-		// }
-		// return dispatch;
-		// }
-		//
-		// private int predictId(Expression[] predictedCase, int max, Expression
-		// predicted) {
-		// // if (predicted.isInterned()) {
-		// // return predicted.getId();
-		// // }
-		// for (int i = 0; i < max; i++) {
-		// if (predictedCase[i] != null && predicted.equals(predictedCase[i])) {
-		// return i;
-		// }
-		// }
-		// return max;
-		// }
-		//
-		// public final MozInst visitUnoptimizedChoice(Nez.Choice p, Object
-		// next) {
-		// return super.visitChoice(p, next);
-		// }
-
 		@Override
 		public final MozInst visitNonTerminal(NonTerminal n, Object next) {
 			Production p = n.getProduction();
@@ -548,14 +471,9 @@ public class MozCompiler implements ParserCompiler {
 				return (MozInst) next;
 			}
 			ProductionCode<MozInst> f = code.getProductionCode(p);
-			// if (f.isInlined()) {
-			// this.optimizedInline(p);
-			// return visit(f.getExpression(), next);
-			// }
 			MemoPoint m = code.getMemoPoint(p.getUniqueName());
-			// MemoPoint m = f.getMemoPoint();
 			if (m != null) {
-				if (!strategy.TreeConstruction || this.gg.typeState(p) == Typestate.Unit) {
+				if (!strategy.TreeConstruction || m.getTypestate() == Typestate.Unit) {
 					if (Verbose.PackratParsing) {
 						Verbose.println("memoize: " + n.getLocalName() + " at " + this.getEncodingProduction().getLocalName());
 					}
@@ -572,26 +490,13 @@ public class MozCompiler implements ParserCompiler {
 			return new Moz.Lookup(n, m, inside, next);
 		}
 
-		// private Instruction memoize2(NonTerminal n, ParseFunc f, Instruction
-		// next) {
-		// if (f.compiled_memo == null) {
-		// f.compiled_memo = memoize(n, f, new Moz.Ret(n));
-		// this.addCachedInstruction(f.compiled_memo);
-		// }
-		// return new Moz.Call(f, n.getLocalName(), f.compiled_memo,
-		// (MozInst)next);
-		// }
-
 		// AST Construction
 
 		@Override
 		public final MozInst visitLink(Nez.LinkTree p, Object next) {
 			if (strategy.TreeConstruction && p.get(0) instanceof NonTerminal) {
 				NonTerminal n = (NonTerminal) p.get(0);
-				// ProductionCode<MozInst> f =
-				// code.getProductionCode(n.getProduction());
 				MemoPoint m = code.getMemoPoint(n.getUniqueName());
-				// MemoPoint m = f.getMemoPoint();
 				if (m != null) {
 					if (Verbose.PackratParsing) {
 						Verbose.println("memoize: @" + n.getLocalName() + " at " + this.getEncodingProduction().getLocalName());
@@ -613,24 +518,12 @@ public class MozCompiler implements ParserCompiler {
 
 		@Override
 		public Object visitIf(Nez.IfCondition e, Object a) {
-			// TODO Auto-generated method stub
 			return a;
 		}
 
 		@Override
 		public Object visitOn(Nez.OnCondition e, Object a) {
-			// TODO Auto-generated method stub
 			return a;
 		}
-
-		// private Instruction memoize2(Tlink p, NonTerminal n, ParseFunc f,
-		// Instruction next) {
-		// if (f.compiled_memoAST == null) {
-		// f.compiled_memoAST = memoize(p, n, f, new Moz.Ret(p));
-		// this.addCachedInstruction(f.compiled_memoAST);
-		// }
-		// return new Moz.Call(f, n.getLocalName(), f.compiled_memoAST,
-		// (MozInst)next);
-		// }
 	}
 }

@@ -44,32 +44,6 @@ class MozGrammarChecker extends ExpressionDuplicator {
 		}
 	}
 
-	// @Override
-	// protected void push(Expression e) {
-	// this.stacked.add(e);
-	// }
-	//
-	// @Override
-	// protected void pop(Expression e) {
-	// Expression e2 = this.stacked.pop();
-	// // Expression e2 = this.stacked.pop();
-	// // if (e != e2) {
-	// // Verbose.debug("FIXME push/pop \n\t" + e2 + "\n\t" + e);
-	// // }
-	// }
-	//
-	// protected void dumpStack() {
-	// for (Expression e : this.stacked) {
-	// ConsoleUtils.print(" ");
-	// if (e instanceof NonTerminal) {
-	// ConsoleUtils.print(((NonTerminal) e).getLocalName());
-	// } else {
-	// ConsoleUtils.print(e.getClass().getSimpleName());
-	// }
-	// }
-	// ConsoleUtils.println("");
-	// }
-
 	private Expression visitInner(Expression e) {
 		return (Expression) e.visit(this, null);
 	}
@@ -77,7 +51,6 @@ class MozGrammarChecker extends ExpressionDuplicator {
 	private void checkFirstVisitedProduction(String uname, Production p, int init) {
 		Production parserProduction/* local production */= parserGrammar.newProduction(uname, null);
 		this.visited(uname);
-		ParserGrammarFunc f = parserGrammar.setParseFunc(uname, p, parserProduction, init);
 		// if (UFlag.is(p.flag, Production.ResetFlag)) {
 		// p.initFlag();
 		// if (p.isRecursive()) {

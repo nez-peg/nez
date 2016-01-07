@@ -2,7 +2,6 @@ package nez.parser.moz;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import nez.lang.ByteConsumption;
@@ -13,7 +12,6 @@ import nez.lang.Typestate;
 import nez.lang.Typestate.TypestateAnalyzer;
 import nez.parser.MemoPoint;
 import nez.parser.ParserStrategy;
-import nez.util.UList;
 import nez.util.Verbose;
 
 public class ParserGrammar extends Grammar {
@@ -23,7 +21,6 @@ public class ParserGrammar extends Grammar {
 	public ParserGrammar(Production start, ParserStrategy strategy, TreeMap<String, Boolean> boolMap) {
 		this.funcMap = new HashMap<String, ParserGrammarFunc>();
 		new MozGrammarChecker(this, boolMap, start, strategy);
-		memo(strategy);
 	}
 
 	/* Consumed */
@@ -51,54 +48,39 @@ public class ParserGrammar extends Grammar {
 	}
 
 	/* Acceptance */
+	//
+	// public ParserGrammarFunc getParseFunc(String name) {
+	// return this.funcMap.get(name);
+	// }
 
-	public ParserGrammarFunc getParseFunc(String name) {
-		return this.funcMap.get(name);
-	}
+	// public ParserGrammarFunc setParseFunc(String uname, Production p,
+	// Production parserProduction, int init) {
+	// ParserGrammarFunc f = new ParserGrammarFunc(uname, p, parserProduction,
+	// init);
+	// this.funcMap.put(uname, f);
+	// return f;
+	// }
 
-	public ParserGrammarFunc setParseFunc(String uname, Production p, Production parserProduction, int init) {
-		ParserGrammarFunc f = new ParserGrammarFunc(uname, p, parserProduction, init);
-		this.funcMap.put(uname, f);
-		return f;
-	}
+	// public void setParseFunc(ParserGrammarFunc f) {
+	// this.funcMap.put(f.name, f);
+	// }
 
-	public void setParseFunc(ParserGrammarFunc f) {
-		this.funcMap.put(f.name, f);
-	}
-
-	public void removeParseFunc(String name) {
-		if (this.prodMap != null) {
-			this.prodMap.remove(name);
-		}
-		this.funcMap.remove(name);
-	}
-
-	public void updateProductionList(UList<Production> prodList) {
-		this.prodList = prodList;
-		if (this.prodMap != null) {
-			this.prodMap = new HashMap<String, Production>();
-			for (Production p : prodList) {
-				this.prodMap.put(p.getLocalName(), p);
-			}
-		}
-	}
-
-	void memo(ParserStrategy strategy) {
-		memoPointList = null;
-		if (strategy.PackratParsing) {
-			memoPointList = new UList<MemoPoint>(new MemoPoint[4]);
-		}
-		if (strategy.Oinline) {
-			for (Entry<String, ParserGrammarFunc> e : funcMap.entrySet()) {
-				this.checkInlining(e.getValue());
-			}
-		}
-		if (memoPointList != null) {
-			for (Entry<String, ParserGrammarFunc> e : funcMap.entrySet()) {
-				this.checkMemoizing(e.getValue());
-			}
-		}
-	}
+	// void memo(ParserStrategy strategy) {
+	// memoPointList = null;
+	// if (strategy.PackratParsing) {
+	// memoPointList = new UList<MemoPoint>(new MemoPoint[4]);
+	// }
+	// if (strategy.Oinline) {
+	// for (Entry<String, ParserGrammarFunc> e : funcMap.entrySet()) {
+	// this.checkInlining(e.getValue());
+	// }
+	// }
+	// if (memoPointList != null) {
+	// for (Entry<String, ParserGrammarFunc> e : funcMap.entrySet()) {
+	// this.checkMemoizing(e.getValue());
+	// }
+	// }
+	// }
 
 	void checkInlining(ParserGrammarFunc f) {
 		// if (f.refcount == 1 || GrammarOptimizer2.isSingleCharacter(f.e)) {

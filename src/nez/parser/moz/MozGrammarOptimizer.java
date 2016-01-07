@@ -17,18 +17,19 @@ import nez.lang.Productions.NonterminalReference;
 import nez.parser.ParserStrategy;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
-import nez.util.Verbose;
 
 class MozGrammarOptimizer extends ExpressionTransformer {
 
-	final static boolean InliningSubchoice = false;
+	/**
+	 * 
+	 */
+	boolean InliningSubchoice = false;
 
 	boolean verboseGrammar = false;
 	boolean enabledSecondChoice = false;
 
 	final Grammar grammar;
 	final ParserStrategy strategy;
-	// final HashSet<String> optimizedMap = new HashSet<String>();
 	HashMap<String, Production> bodyMap = null;
 	HashMap<String, String> aliasMap = null;
 
@@ -56,65 +57,17 @@ class MozGrammarOptimizer extends ExpressionTransformer {
 
 		NonterminalReference refc2 = Productions.countNonterminalReference(grammar);
 
-		// this.resetReferenceCount();
-		// grammar.getParseFunc(start.getLocalName()).incCount();
-		// this.recheckReference(start);
-
 		UList<Production> prodList = new UList<Production>(new Production[grammar.size()]);
 		for (Production p : grammar) {
 			String uname = p.getUniqueName();
-			System.out.printf("%s refc %d -> %d rec=%s\n", uname, refc.count(uname), refc2.count(uname), Productions.isRecursive(p));
+			// System.out.printf("%s refc %d -> %d rec=%s\n", uname,
+			// refc.count(uname), refc2.count(uname),
 			if (refc2.count(uname) > 0) {
 				prodList.add(p);
 			}
-			// String key = p.getLocalName();
-			// ParserGrammarFunc f = grammar.getParseFunc(key);
-			// verboseReference(key, f.getCount());
-			// if (f.getCount() > 0) {
-			// prodList.add(p);
-			// } else {
-			// grammar.removeParseFunc(key);
-			// }
 		}
-		// grammar.updateProductionList(prodList);
 		grammar.update(prodList);
 	}
-
-	// private void resetReferenceCount() {
-	// for (Production p : grammar) {
-	// String key = p.getLocalName();
-	// ParserGrammarFunc f = grammar.getParseFunc(key);
-	// f.resetCount();
-	// }
-	// }
-	//
-	// private void recheckReference(Production start) {
-	// String key = start.getLocalName();
-	// if (!this.optimizedMap.contains(key)) {
-	// this.optimizedMap.add(key);
-	// recheckReference(start.getExpression());
-	// }
-	// }
-	//
-	// private void recheckReference(Expression e) {
-	// if (e instanceof NonTerminal) {
-	// ParserGrammarFunc f = grammar.getParseFunc(((NonTerminal)
-	// e).getLocalName());
-	// f.incCount();
-	// recheckReference(((NonTerminal) e).getProduction());
-	// return;
-	// }
-	// if (e instanceof Nez.Choice && ((Nez.Choice) e).firstInners != null) {
-	// Nez.Choice choice = (Nez.Choice) e;
-	// for (Expression sub : choice.firstInners) {
-	// recheckReference(sub);
-	// }
-	// // return; // FIXME: when enableFirstInline
-	// }
-	// for (Expression sub : e) {
-	// recheckReference(sub);
-	// }
-	// }
 
 	private Expression optimizeProduction(Production p) {
 		String uname = p.getUniqueName();
@@ -409,10 +362,6 @@ class MozGrammarOptimizer extends ExpressionTransformer {
 	}
 
 	private void optimizeChoicePrediction(Nez.Choice choice) {
-		// UList<Expression> l = Expressions.newList(choice.size());
-		// flattenChoiceList(choice, l);
-		// choice.inners = l.compactArray();
-
 		int count = 0;
 		int selected = 0;
 		UList<Expression> newlist = Expressions.newList(choice.size());
@@ -459,7 +408,7 @@ class MozGrammarOptimizer extends ExpressionTransformer {
 	}
 
 	private Expression firstChoiceInlining(Expression e) {
-		if (InliningSubchoice) {
+		if (InliningSubchoice && strategy.Oinline) {
 			while (e instanceof NonTerminal) {
 				NonTerminal n = (NonTerminal) e;
 				e = n.getProduction().getExpression();
@@ -586,11 +535,11 @@ class MozGrammarOptimizer extends ExpressionTransformer {
 	}
 
 	private void verboseInline(String name, NonTerminal n, Expression e) {
-		Verbose.println(name + ": " + n.getLocalName() + " => " + shorten(e));
-		// if (this.verboseGrammar) {
-		// ConsoleUtils.println(name + ": " + n.getLocalName() + " => " +
+		// Verbose.println(name + ": " + n.getLocalName() + " => " +
 		// shorten(e));
-		// }
+		if (this.verboseGrammar) {
+			ConsoleUtils.println(name + ": " + n.getLocalName() + " => " + shorten(e));
+		}
 	}
 
 	private void verboseOptimized(String msg, Expression e, Expression e2) {
