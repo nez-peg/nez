@@ -5,6 +5,7 @@ import java.util.TreeMap;
 
 import nez.lang.Conditions;
 import nez.lang.Expression;
+import nez.lang.ExpressionDuplicator;
 import nez.lang.Expressions;
 import nez.lang.Nez;
 import nez.lang.NonTerminal;
@@ -12,12 +13,11 @@ import nez.lang.Production;
 import nez.lang.ProductionStacker;
 import nez.lang.Typestate;
 import nez.parser.ParserStrategy;
-import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
 import nez.util.UList;
 import nez.util.Verbose;
 
-class MozGrammarChecker extends MozGrammarTransducer {
+class MozGrammarChecker extends ExpressionDuplicator {
 	private final ParserStrategy strategy;
 	ParserGrammar parserGrammar;
 	final TreeMap<String, Boolean> boolMap0;
@@ -44,34 +44,39 @@ class MozGrammarChecker extends MozGrammarTransducer {
 		}
 	}
 
-	@Override
-	protected void push(Expression e) {
-		this.stacked.add(e);
+	// @Override
+	// protected void push(Expression e) {
+	// this.stacked.add(e);
+	// }
+	//
+	// @Override
+	// protected void pop(Expression e) {
+	// Expression e2 = this.stacked.pop();
+	// // Expression e2 = this.stacked.pop();
+	// // if (e != e2) {
+	// // Verbose.debug("FIXME push/pop \n\t" + e2 + "\n\t" + e);
+	// // }
+	// }
+	//
+	// protected void dumpStack() {
+	// for (Expression e : this.stacked) {
+	// ConsoleUtils.print(" ");
+	// if (e instanceof NonTerminal) {
+	// ConsoleUtils.print(((NonTerminal) e).getLocalName());
+	// } else {
+	// ConsoleUtils.print(e.getClass().getSimpleName());
+	// }
+	// }
+	// ConsoleUtils.println("");
+	// }
+
+	private Expression visitInner(Expression e) {
+		return (Expression) e.visit(this, null);
 	}
 
-	@Override
-	protected void pop(Expression e) {
-		Expression e2 = this.stacked.pop();
-		// Expression e2 = this.stacked.pop();
-		// if (e != e2) {
-		// Verbose.debug("FIXME push/pop \n\t" + e2 + "\n\t" + e);
-		// }
-	}
-
-	protected void dumpStack() {
-		for (Expression e : this.stacked) {
-			ConsoleUtils.print(" ");
-			if (e instanceof NonTerminal) {
-				ConsoleUtils.print(((NonTerminal) e).getLocalName());
-			} else {
-				ConsoleUtils.print(e.getClass().getSimpleName());
-			}
-		}
-		ConsoleUtils.println("");
-	}
-
-	private ParserGrammarFunc checkFirstVisitedProduction(String uname, Production p, int init) {
+	private void checkFirstVisitedProduction(String uname, Production p, int init) {
 		Production parserProduction/* local production */= parserGrammar.newProduction(uname, null);
+		this.visited(uname);
 		ParserGrammarFunc f = parserGrammar.setParseFunc(uname, p, parserProduction, init);
 		// if (UFlag.is(p.flag, Production.ResetFlag)) {
 		// p.initFlag();
@@ -86,7 +91,6 @@ class MozGrammarChecker extends MozGrammarTransducer {
 		Expression e = this.visitInner(p.getExpression());
 		parserProduction.setExpression(e);
 		this.requiredTypestate = stackedTypestate;
-		return f;
 	}
 
 	boolean checkLeftRecursion(Expression e, ProductionStacker s) {
@@ -150,11 +154,8 @@ class MozGrammarChecker extends MozGrammarTransducer {
 
 		Typestate innerTypestate = this.isNonASTContext() ? Typestate.Unit : parserGrammar.typeState(p);
 		String uname = this.uniqueName(n.getUniqueName(), p);
-		ParserGrammarFunc f = parserGrammar.getParseFunc(uname);
-		if (f == null) {
-			f = checkFirstVisitedProduction(uname, p, 1);
-		} else {
-			f.incCount();
+		if (!this.isVisited(uname)) {
+			checkFirstVisitedProduction(uname, p, 1);
 		}
 		NonTerminal pn = parserGrammar.newNonTerminal(n.getSourceLocation(), uname);
 		if (innerTypestate == Typestate.Unit) {

@@ -186,7 +186,7 @@ public class Combinator {
 	}
 
 	protected final Expression LCapture(int shift, String label) {
-		return Expressions.newLeftFold(src(), toSymbol(label), shift);
+		return Expressions.newFoldTree(src(), toSymbol(label), shift);
 	}
 
 	protected final Expression Capture(int shift) {

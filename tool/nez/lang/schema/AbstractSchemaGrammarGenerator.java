@@ -136,7 +136,7 @@ public abstract class AbstractSchemaGrammarGenerator implements SchemaGrammarGen
 	}
 
 	protected final Expression _LeftFold(Symbol label, int shift) {
-		return Expressions.newLeftFold(null, label, shift);
+		return Expressions.newFoldTree(null, label, shift);
 	}
 
 	protected final Expression _Capture(int shift) {

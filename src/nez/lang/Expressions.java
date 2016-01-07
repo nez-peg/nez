@@ -330,9 +330,7 @@ public abstract class Expressions {
 		if (l.size() == 1) {
 			return l.get(0);
 		}
-		Expression e = new Nez.Sequence(compact(l));
-		e.setSourceLocation(s);
-		return e;
+		return new Nez.Sequence(compact(l));
 	}
 
 	private static Expression[] compact(List<Expression> l) {
@@ -455,7 +453,7 @@ public abstract class Expressions {
 		return e;
 	}
 
-	public final static Expression newLeftFold(SourceLocation s, Symbol label, int shift) {
+	public final static Expression newFoldTree(SourceLocation s, Symbol label, int shift) {
 		Expression e = new Nez.FoldTree(shift, label);
 		e.setSourceLocation(s);
 		return e;
@@ -662,7 +660,7 @@ public abstract class Expressions {
 
 	public final static Expression newTree(SourceLocation s, boolean lefted, Symbol label, Expression e) {
 		UList<Expression> l = new UList<Expression>(new Expression[e.size() + 3]);
-		Expressions.addSequence(l, lefted ? newLeftFold(s, label, 0) : newBeginTree(s, 0));
+		Expressions.addSequence(l, lefted ? newFoldTree(s, label, 0) : newBeginTree(s, 0));
 		Expressions.addSequence(l, e);
 		Expressions.addSequence(l, Expressions.newEndTree(s, 0));
 		return newPair(s, l);
@@ -670,7 +668,7 @@ public abstract class Expressions {
 
 	public final static Expression newLeftFoldOption(SourceLocation s, Symbol label, Expression e) {
 		UList<Expression> l = new UList<Expression>(new Expression[e.size() + 3]);
-		Expressions.addSequence(l, newLeftFold(s, label, 0));
+		Expressions.addSequence(l, newFoldTree(s, label, 0));
 		Expressions.addSequence(l, e);
 		Expressions.addSequence(l, Expressions.newEndTree(s, 0));
 		return newOption(s, Expressions.newPair(s, l));
@@ -678,7 +676,7 @@ public abstract class Expressions {
 
 	public final static Expression newLeftFoldRepetition(SourceLocation s, Symbol label, Expression e) {
 		UList<Expression> l = new UList<Expression>(new Expression[e.size() + 3]);
-		Expressions.addSequence(l, newLeftFold(s, label, 0));
+		Expressions.addSequence(l, newFoldTree(s, label, 0));
 		Expressions.addSequence(l, e);
 		Expressions.addSequence(l, Expressions.newEndTree(s, 0));
 		return newZeroMore(s, Expressions.newPair(s, l));
@@ -686,7 +684,7 @@ public abstract class Expressions {
 
 	public final static Expression newLeftFoldRepetition1(SourceLocation s, Symbol label, Expression e) {
 		UList<Expression> l = new UList<Expression>(new Expression[e.size() + 3]);
-		Expressions.addSequence(l, newLeftFold(s, label, 0));
+		Expressions.addSequence(l, newFoldTree(s, label, 0));
 		Expressions.addSequence(l, e);
 		Expressions.addSequence(l, Expressions.newEndTree(s, 0));
 		return newOneMore(s, Expressions.newPair(s, l));

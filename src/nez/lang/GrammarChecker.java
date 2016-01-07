@@ -22,7 +22,7 @@ public class GrammarChecker {
 		return g;
 	}
 
-	private static class ConditionEliminator extends GrammarTransformer {
+	private static class ConditionEliminator extends ExpressionDuplicator {
 
 		private GrammarContext context;
 

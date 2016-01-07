@@ -134,7 +134,7 @@ class MozGrammarTransducer extends Expression.Visitor {
 
 	@Override
 	public Expression visitFoldTree(Nez.FoldTree e, Object a) {
-		return Expressions.newLeftFold(e.getSourceLocation(), e.label, e.shift);
+		return Expressions.newFoldTree(e.getSourceLocation(), e.label, e.shift);
 	}
 
 	@Override
