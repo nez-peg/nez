@@ -181,7 +181,7 @@ public class SymbolTable {
 		for (int i = tableSize - 1; i >= 0; i--) {
 			SymbolTableEntry2 entry = tables[i];
 			if (entry.table == table) {
-				if (entry.symbol == null) {
+				if (entry.symbol == NullSymbol) {
 					return false; // masked
 				}
 				if (entry.code == code && equals(entry.symbol, symbol)) {
