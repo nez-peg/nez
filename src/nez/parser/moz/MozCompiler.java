@@ -1,7 +1,5 @@
 package nez.parser.moz;
 
-import java.util.HashMap;
-
 import nez.lang.Expression;
 import nez.lang.Expressions;
 import nez.lang.Grammar;
@@ -55,34 +53,36 @@ public class MozCompiler implements ParserCompiler {
 			}
 		}
 
-		private HashMap<String, ParserGrammarFunc> funcMap = null;
-
-		protected int getParseFuncSize() {
-			if (gg != null) {
-				return gg.size();
-			}
-			if (this.funcMap != null) {
-				return funcMap.size();
-			}
-			return 0;
-		}
-
-		protected ParserGrammarFunc getParseFunc(Production p) {
-			if (gg != null) {
-				ParserGrammarFunc f = gg.getParseFunc(p.getLocalName());
-				if (f == null) {
-					f = gg.getParseFunc(p.getUniqueName());
-				}
-				if (f == null) {
-					Verbose.debug("unfound parsefunc: " + p.getLocalName() + " " + p.getUniqueName());
-				}
-				return f;
-			}
-			if (this.funcMap != null) {
-				return funcMap.get(p.getUniqueName());
-			}
-			return null;
-		}
+		//
+		// private HashMap<String, ParserGrammarFunc> funcMap = null;
+		//
+		// protected int getParseFuncSize() {
+		// if (gg != null) {
+		// return gg.size();
+		// }
+		// if (this.funcMap != null) {
+		// return funcMap.size();
+		// }
+		// return 0;
+		// }
+		//
+		// protected ParserGrammarFunc getParseFunc(Production p) {
+		// if (gg != null) {
+		// ParserGrammarFunc f = gg.getParseFunc(p.getLocalName());
+		// if (f == null) {
+		// f = gg.getParseFunc(p.getUniqueName());
+		// }
+		// if (f == null) {
+		// Verbose.debug("unfound parsefunc: " + p.getLocalName() + " " +
+		// p.getUniqueName());
+		// }
+		// return f;
+		// }
+		// if (this.funcMap != null) {
+		// return funcMap.get(p.getUniqueName());
+		// }
+		// return null;
+		// }
 
 		public MozCode compile(Grammar gg) {
 			long t = System.nanoTime();
@@ -107,19 +107,16 @@ public class MozCompiler implements ParserCompiler {
 			return this.encodingProduction;
 		}
 
-		protected void visitProduction(UList<MozInst> codeList, Production p, Object next) {
-			ParserGrammarFunc f = this.getParseFunc(p);
+		protected void visitProduction(UList<MozInst> codeList, Production p, MozInst next) {
+			ProductionCode<MozInst> f = code.getProductionCode(p);
 			// System.out.println("inline: " + f.inlining + " name: " +
 			// p.getLocalName());
 			encodingProduction = p;
-			if (!f.isInlined()) {
-				next = Coverage.visitExitCoverage(p, (MozInst) next);
-			}
-			f.setCompiled(visit(f.getExpression(), (MozInst) next, null/* failjump */));
-			if (!f.isInlined()) {
-				f.setCompiled(Coverage.visitEnterCoverage(p, f.getCompiled()));
-			}
-			MozInst block = new Moz.Label(p, f.getCompiled());
+			next = Coverage.visitExitCoverage(p, next);
+			next = visit(p.getExpression(), next, null/* failjump */);
+			next = Coverage.visitEnterCoverage(p, next);
+			f.setCompiled(next);
+			MozInst block = new Moz.Label(p, next);
 			code.layoutCode(block);
 		}
 
@@ -236,7 +233,7 @@ public class MozCompiler implements ParserCompiler {
 
 		public MozInst visitUnnNonTerminal(NonTerminal n, Object next) {
 			Production p = n.getProduction();
-			ParserGrammarFunc f = this.getParseFunc(p);
+			ProductionCode<MozInst> f = code.getProductionCode(p);
 			return new Moz.Call(f, p.getLocalName(), (MozInst) next);
 		}
 
@@ -550,7 +547,7 @@ public class MozCompiler implements ParserCompiler {
 				Verbose.debug("[PANIC] unresolved: " + n.getLocalName() + " ***** ");
 				return (MozInst) next;
 			}
-			ParserGrammarFunc f = this.getParseFunc(p);
+			ProductionCode<MozInst> f = code.getProductionCode(p);
 			// if (f.isInlined()) {
 			// this.optimizedInline(p);
 			// return visit(f.getExpression(), next);
@@ -568,7 +565,7 @@ public class MozCompiler implements ParserCompiler {
 			return new Moz.Call(f, n.getLocalName(), (MozInst) next);
 		}
 
-		private MozInst memoize(NonTerminal n, ParserGrammarFunc f, MemoPoint m, MozInst next) {
+		private MozInst memoize(NonTerminal n, ProductionCode<MozInst> f, MemoPoint m, MozInst next) {
 			MozInst inside = new Moz.Memo(n, m, next);
 			inside = new Moz.Call(f, n.getLocalName(), inside);
 			inside = new Moz.Alt(n, new Moz.MemoFail(n, m), inside);
@@ -591,7 +588,8 @@ public class MozCompiler implements ParserCompiler {
 		public final MozInst visitLink(Nez.LinkTree p, Object next) {
 			if (strategy.TreeConstruction && p.get(0) instanceof NonTerminal) {
 				NonTerminal n = (NonTerminal) p.get(0);
-				ParserGrammarFunc f = this.getParseFunc(n.getProduction());
+				// ProductionCode<MozInst> f =
+				// code.getProductionCode(n.getProduction());
 				MemoPoint m = code.getMemoPoint(n.getUniqueName());
 				// MemoPoint m = f.getMemoPoint();
 				if (m != null) {
