@@ -22,7 +22,7 @@ public class DTDSchemaGrammarGenerator extends AbstractSchemaGrammarGenerator {
 
 	@Override
 	public void loadPredefinedRules() {
-		new XMLGrammarCombinator(grammar);
+		new XMLPredefinedGrammarLoader(grammar);
 	}
 
 	public final void addElementName(String elementName) {
