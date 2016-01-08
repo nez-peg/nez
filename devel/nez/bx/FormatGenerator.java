@@ -164,7 +164,7 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 				elementsStack = newList;
 			}
 			elementsStack[++stackTop] = new Elements();
-			addElement(new LinkedElement(((Nez.FoldTree) e).label, new Elements(getLeft(stackTop - 1))));
+			addElement(new LinkedElement(((Nez.FoldTree) e).label, new Elements(getLeft(stackTop - 2))));
 		}
 	}
 
