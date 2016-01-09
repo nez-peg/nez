@@ -1,7 +1,12 @@
 package nez.lang;
 
+import java.util.AbstractList;
 import java.util.HashMap;
 
+import nez.ast.SourceLocation;
+import nez.ast.Tree;
+import nez.lang.ast.NezExpressionConstructor;
+import nez.lang.ast.NezGrammarCombinator;
 import nez.parser.Parser;
 import nez.parser.ParserStrategy;
 import nez.parser.moz.ParserGrammar;
@@ -9,7 +14,7 @@ import nez.util.ConsoleUtils;
 import nez.util.UList;
 import nez.util.Verbose;
 
-public class Grammar extends GrammarBase {
+public class Grammar extends AbstractList<Production> {
 	private static int serialNumbering = 0;
 
 	private int id;
@@ -33,10 +38,6 @@ public class Grammar extends GrammarBase {
 		this.prodList = new UList<Production>(new Production[1]);
 	}
 
-	public final int id() {
-		return this.id;
-	}
-
 	final String uniqueName(String name) {
 		if (name.indexOf(':') == -1) {
 			return name; // already prefixed;
@@ -58,7 +59,7 @@ public class Grammar extends GrammarBase {
 		if (size() > 0) {
 			return this.prodList.ArrayValues[0];
 		}
-		return this.newProduction("START", Expressions.newEmpty(null));
+		return this.addProduction("START", Expressions.newEmpty(null));
 	}
 
 	public final boolean hasProduction(String name) {
@@ -88,8 +89,17 @@ public class Grammar extends GrammarBase {
 		return null;
 	}
 
-	@Override
-	public final void addProduction(Production p) {
+	public final Production addProduction(SourceLocation s, String name, Expression e) {
+		Production p = new Production(s, this, name, e);
+		addProduction(p);
+		return p;
+	}
+
+	public final Production addProduction(String name, Expression e) {
+		return addProduction(null, name, e);
+	}
+
+	private void addProduction(Production p) {
 		Production p2 = this.getLocalProduction(p.getLocalName());
 		if (p2 == null) {
 			this.prodList.add(p);
@@ -117,10 +127,6 @@ public class Grammar extends GrammarBase {
 		if (p.isPublic() && this.parent != null) {
 			this.parent.addProduction(p2);
 		}
-	}
-
-	public void addProduction(Object object, String name, Expression e) {
-		this.newProduction(name, e);
 	}
 
 	public void update(UList<Production> prodList) {
@@ -180,6 +186,33 @@ public class Grammar extends GrammarBase {
 
 	public void setURN(String urn) {
 		this.setMetaData("urn", urn);
+	}
+
+	// ----------------------------------------------------------------------
+
+	private Parser nezExpressionParser() {
+		if (getMetaData("_parser") != null) {
+			Grammar grammar = new Grammar("nez");
+			ParserStrategy strategy = ParserStrategy.newSafeStrategy();
+			this.setMetaData("_parser", new NezGrammarCombinator().load(grammar, "Expression").newParser(strategy));
+			this.setMetaData("_constructor", new NezExpressionConstructor(this, strategy));
+		}
+		return (Parser) this.getMetaData("_parser");
+	}
+
+	/**
+	 * Creates an expression by parsing the given text.
+	 * 
+	 * @param expression
+	 * @return null if the parsing fails.
+	 */
+
+	public final Expression newExpression(String expression) {
+		Tree<?> parsed = nezExpressionParser().parse(expression);
+		if (parsed != null) {
+			return ((NezExpressionConstructor) getMetaData("_constructor")).newInstance(parsed);
+		}
+		return null;
 	}
 
 	// ----------------------------------------------------------------------

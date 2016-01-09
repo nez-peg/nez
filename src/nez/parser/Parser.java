@@ -1,6 +1,5 @@
 package nez.parser;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -157,7 +156,7 @@ public final class Parser {
 		return false;
 	}
 
-	public final void ensureNoErrors() throws IOException {
+	public final void ensureNoErrors() throws ParserException {
 		if (errors != null) {
 			throw new ParserException(errors.ArrayValues[0].toString());
 		}

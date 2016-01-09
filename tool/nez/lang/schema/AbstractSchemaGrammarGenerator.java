@@ -284,12 +284,12 @@ public abstract class AbstractSchemaGrammarGenerator implements SchemaGrammarGen
 
 	protected void genImpliedChoice() {
 		List<Element> impliedList = extractOptionalMembers();
-		Expression[] l = new Expression[impliedList.size()];
+		List<Expression> l = Expressions.newList(impliedList.size());
 		int choiceCount = 0;
 		for (Element element : impliedList) {
-			l[choiceCount++] = _NonTerminal(element.getUniqueName());
+			l.add(_NonTerminal(element.getUniqueName()));
 		}
-		grammar.addProduction(null, String.format("%s_implied", getTableName()), grammar.newChoice(l));
+		grammar.addProduction(null, String.format("%s_implied", getTableName()), Expressions.newChoice(l));
 	}
 
 	@Override

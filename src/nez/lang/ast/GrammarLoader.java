@@ -58,7 +58,7 @@ public final class GrammarLoader extends GrammarVisitorMap<GrammarLoaderVisitor>
 				rule = null;
 			}
 			Expression e = transducer.newInstance(node.get(_expr));
-			rule = getGrammar().newProduction(node.get(0), productionFlag, localName, e);
+			rule = getGrammar().addProduction(node.get(0), localName, e);
 		}
 	}
 

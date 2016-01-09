@@ -12,11 +12,10 @@ import nez.util.StringUtils;
 import nez.util.UList;
 
 public class NezExpressionConstructor extends GrammarVisitorMap<ExpressionTransducer> implements ExpressionConstructor, NezSymbols {
-	private boolean binary = false;
 
 	public NezExpressionConstructor(Grammar grammar, ParserStrategy strategy) {
 		super(grammar, strategy);
-		init(NezExpressionConstructor.class, new Undefined());
+		init(NezExpressionConstructor.class, new TreeVisitor());
 	}
 
 	@Override
@@ -28,7 +27,7 @@ public class NezExpressionConstructor extends GrammarVisitorMap<ExpressionTransd
 		return this.find(key(node)).accept(node, next);
 	}
 
-	public class Undefined implements ExpressionTransducer {
+	public class TreeVisitor implements ExpressionTransducer {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
 			undefined(node);
@@ -36,14 +35,14 @@ public class NezExpressionConstructor extends GrammarVisitorMap<ExpressionTransd
 		}
 	}
 
-	public class Instance extends Undefined {
+	public class Instance extends TreeVisitor {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
 			return newInstance(node);
 		}
 	}
 
-	public class _NonTerminal extends Undefined {
+	public class _NonTerminal extends TreeVisitor {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
 			String symbol = node.toText();
@@ -51,7 +50,7 @@ public class NezExpressionConstructor extends GrammarVisitorMap<ExpressionTransd
 		}
 	}
 
-	public class _String extends Undefined {
+	public class _String extends TreeVisitor {
 		@Override
 		public Expression accept(Tree<?> node, Expression es) {
 			String name = Grammar.nameTerminalProduction(node.toText());
@@ -59,14 +58,14 @@ public class NezExpressionConstructor extends GrammarVisitorMap<ExpressionTransd
 		}
 	}
 
-	public class _Character extends Undefined {
+	public class _Character extends TreeVisitor {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
 			return Expressions.newExpression(node, StringUtils.unquoteString(node.toText()));
 		}
 	}
 
-	public class _Class extends Undefined {
+	public class _Class extends TreeVisitor {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
 			UList<Expression> l = new UList<Expression>(new Expression[2]);
@@ -85,7 +84,7 @@ public class NezExpressionConstructor extends GrammarVisitorMap<ExpressionTransd
 		}
 	}
 
-	public class _ByteChar extends Undefined {
+	public class _ByteChar extends TreeVisitor {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
 			String t = node.toText();
@@ -105,14 +104,14 @@ public class NezExpressionConstructor extends GrammarVisitorMap<ExpressionTransd
 		}
 	}
 
-	public class _AnyChar extends Undefined {
+	public class _AnyChar extends TreeVisitor {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
 			return Expressions.newAny(node);
 		}
 	}
 
-	public class _Choice extends Undefined {
+	public class _Choice extends TreeVisitor {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
 			UList<Expression> l = new UList<Expression>(new Expression[node.size()]);
@@ -123,7 +122,7 @@ public class NezExpressionConstructor extends GrammarVisitorMap<ExpressionTransd
 		}
 	}
 
-	public class _Sequence extends Undefined {
+	public class _Sequence extends TreeVisitor {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
 			UList<Expression> l = new UList<Expression>(new Expression[node.size()]);
@@ -134,35 +133,35 @@ public class NezExpressionConstructor extends GrammarVisitorMap<ExpressionTransd
 		}
 	}
 
-	public class _Not extends Undefined {
+	public class _Not extends TreeVisitor {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
 			return Expressions.newNot(node, newInstance(node.get(_expr)));
 		}
 	}
 
-	public class _And extends Undefined {
+	public class _And extends TreeVisitor {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
 			return Expressions.newAnd(node, newInstance(node.get(_expr)));
 		}
 	}
 
-	public class _Option extends Undefined {
+	public class _Option extends TreeVisitor {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
 			return Expressions.newOption(node, newInstance(node.get(_expr)));
 		}
 	}
 
-	public class _Repetition1 extends Undefined {
+	public class _Repetition1 extends TreeVisitor {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
 			return Expressions.newOneMore(node, newInstance(node.get(_expr)));
 		}
 	}
 
-	public class _Repetition extends Undefined {
+	public class _Repetition extends TreeVisitor {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
 			if (node.size() == 2) {
@@ -181,7 +180,7 @@ public class NezExpressionConstructor extends GrammarVisitorMap<ExpressionTransd
 
 	// PEG4d TransCapturing
 
-	public class _New extends Undefined {
+	public class _New extends TreeVisitor {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
 			Tree<?> exprNode = node.get(_expr, null);
@@ -199,7 +198,7 @@ public class NezExpressionConstructor extends GrammarVisitorMap<ExpressionTransd
 		return label;
 	}
 
-	public class _LeftFold extends Undefined {
+	public class _LeftFold extends TreeVisitor {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
 			Tree<?> exprNode = node.get(_expr, null);
@@ -208,105 +207,105 @@ public class NezExpressionConstructor extends GrammarVisitorMap<ExpressionTransd
 		}
 	}
 
-	public class _Link extends Undefined {
+	public class _Link extends TreeVisitor {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
 			return Expressions.newLinkTree(node, parseLabelNode(node), newInstance(node.get(_expr)));
 		}
 	}
 
-	public class _Tagging extends Undefined {
+	public class _Tagging extends TreeVisitor {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
 			return Expressions.newTag(node, Symbol.tag(node.toText()));
 		}
 	}
 
-	public class _Replace extends Undefined {
+	public class _Replace extends TreeVisitor {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
 			return Expressions.newReplace(node, node.toText());
 		}
 	}
 
-	public class _If extends Undefined {
+	public class _If extends TreeVisitor {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
 			return Expressions.newIfCondition(node, node.getText(_name, ""));
 		}
 	}
 
-	public class _On extends Undefined {
+	public class _On extends TreeVisitor {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
 			return Expressions.newOnCondition(node, node.getText(_name, ""), newInstance(node.get(_expr)));
 		}
 	}
 
-	public class _Block extends Undefined {
+	public class _Block extends TreeVisitor {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
 			return Expressions.newBlockScope(node, newInstance(node.get(_expr)));
 		}
 	}
 
-	public class _Def extends Undefined {
+	public class _Def extends TreeVisitor {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
 			Grammar g = getGrammar();
 			Tree<?> nameNode = node.get(_name);
-			NonTerminal pat = g.newNonTerminal(node, nameNode.toText());
+			NonTerminal pat = Expressions.newNonTerminal(node, g, nameNode.toText());
 			Expression expr = newInstance(node.get(_expr));
-			Production p = g.newProduction(pat.getLocalName(), expr);
+			Production p = g.addProduction(pat.getLocalName(), expr);
 			reportWarning(nameNode, "new production generated: " + p);
 			return Expressions.newSymbol(node, pat);
 		}
 	}
 
-	public class _Symbol extends Undefined {
+	public class _Symbol extends TreeVisitor {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
 			Grammar g = getGrammar();
-			NonTerminal pat = g.newNonTerminal(node, node.getText(_name, ""));
+			NonTerminal pat = Expressions.newNonTerminal(node, g, node.getText(_name, ""));
 			return Expressions.newSymbol(node, pat);
 		}
 	}
 
-	public class _Is extends Undefined {
+	public class _Is extends TreeVisitor {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
 			Grammar g = getGrammar();
-			NonTerminal pat = g.newNonTerminal(node, node.getText(_name, ""));
+			NonTerminal pat = Expressions.newNonTerminal(node, g, node.getText(_name, ""));
 			return Expressions.newIsSymbol(node, pat);
 		}
 	}
 
-	public class _Isa extends Undefined {
+	public class _Isa extends TreeVisitor {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
 			Grammar g = getGrammar();
-			NonTerminal pat = g.newNonTerminal(node, node.getText(_name, ""));
+			NonTerminal pat = Expressions.newNonTerminal(node, g, node.getText(_name, ""));
 			return Expressions.newIsaSymbol(node, pat);
 		}
 	}
 
-	public class _Match extends Undefined {
+	public class _Match extends TreeVisitor {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
 			Grammar g = getGrammar();
-			NonTerminal pat = g.newNonTerminal(node, node.getText(_name, ""));
+			NonTerminal pat = Expressions.newNonTerminal(node, g, node.getText(_name, ""));
 			return Expressions.newSymbolMatch(node, pat);
 		}
 	}
 
-	public class _Exists extends Undefined {
+	public class _Exists extends TreeVisitor {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
 			return Expressions.newSymbolExists(node, Symbol.tag(node.getText(_name, "")), node.getText(_symbol, null));
 		}
 	}
 
-	public class _Local extends Undefined {
+	public class _Local extends TreeVisitor {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
 			return Expressions.newLocalScope(node, Symbol.tag(node.getText(_name, "")), newInstance(node.get(_expr)));

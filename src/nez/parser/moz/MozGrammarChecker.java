@@ -49,7 +49,7 @@ class MozGrammarChecker extends ExpressionDuplicationVisitor {
 	}
 
 	private void checkFirstVisitedProduction(String uname, Production p) {
-		Production parserProduction/* local production */= parserGrammar.newProduction(uname, null);
+		Production parserProduction/* local production */= parserGrammar.addProduction(uname, null);
 		this.visited(uname);
 		Productions.checkLeftRecursion(p);
 		Typestate stackedTypestate = this.requiredTypestate;
@@ -87,7 +87,7 @@ class MozGrammarChecker extends ExpressionDuplicationVisitor {
 		if (!this.isVisited(uname)) {
 			checkFirstVisitedProduction(uname, p);
 		}
-		NonTerminal pn = parserGrammar.newNonTerminal(n.getSourceLocation(), uname);
+		NonTerminal pn = Expressions.newNonTerminal(n.getSourceLocation(), parserGrammar, uname);
 		if (innerTypestate == Typestate.Unit) {
 			return pn;
 		}

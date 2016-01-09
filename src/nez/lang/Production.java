@@ -11,8 +11,7 @@ public class Production {
 	private String uname;
 	private Expression body;
 
-	Production(SourceLocation s, int flag, Grammar grammar, String name, Expression body) {
-		// super(s);
+	Production(SourceLocation s, Grammar grammar, String name, Expression body) {
 		this.grammar = grammar;
 		this.name = name;
 		this.uname = grammar.uniqueName(name);

@@ -3,9 +3,9 @@ package nez.main;
 import java.io.IOException;
 import java.util.Map;
 
+import nez.devel.GrammarChecker;
 import nez.lang.ByteConsumption;
 import nez.lang.Grammar;
-import nez.lang.GrammarChecker;
 import nez.lang.Production;
 import nez.lang.Productions;
 import nez.util.ConsoleUtils;

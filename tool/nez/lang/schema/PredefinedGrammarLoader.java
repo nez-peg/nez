@@ -43,7 +43,7 @@ public abstract class PredefinedGrammarLoader extends Expressions {
 	private void addProduction(String name, Method m) {
 		try {
 			Expression e = (Expression) m.invoke(this);
-			grammar.newProduction(e.getSourceLocation(), 0, name, e);
+			grammar.addProduction(e.getSourceLocation(), name, e);
 		} catch (IllegalAccessException e1) {
 			Verbose.traceException(e1);
 		} catch (IllegalArgumentException e1) {
