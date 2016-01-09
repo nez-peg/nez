@@ -2,9 +2,9 @@ package nez.parser.moz;
 
 import nez.lang.Expression;
 import nez.lang.Expressions;
+import nez.lang.FunctionName;
 import nez.lang.Grammar;
 import nez.lang.Nez;
-import nez.lang.NezFunction;
 import nez.lang.NonTerminal;
 import nez.lang.Production;
 import nez.lang.Typestate;
@@ -293,7 +293,7 @@ public class MozCompiler implements ParserCompiler {
 
 		@Override
 		public MozInst visitSymbolPredicate(Nez.SymbolPredicate p, Object next) {
-			if (p.op == NezFunction.is) {
+			if (p.op == FunctionName.is) {
 				return new Moz.Pos(p, visit(p.get(0), new Moz.SIs(p, (MozInst) next)));
 			} else {
 				return new Moz.Pos(p, visit(p.get(0), new Moz.SIsa(p, (MozInst) next)));

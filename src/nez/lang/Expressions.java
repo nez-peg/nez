@@ -887,7 +887,7 @@ public abstract class Expressions {
 	 */
 
 	public final static Expression newSymbol(NonTerminal pat) {
-		return new Nez.SymbolAction(NezFunction.symbol, pat);
+		return new Nez.SymbolAction(FunctionName.symbol, pat);
 	}
 
 	/**
@@ -899,7 +899,7 @@ public abstract class Expressions {
 	 */
 
 	public final static Expression newSymbol(SourceLocation s, NonTerminal pat) {
-		Expression p = new Nez.SymbolAction(NezFunction.symbol, pat);
+		Expression p = new Nez.SymbolAction(FunctionName.symbol, pat);
 		p.setSourceLocation(s);
 		return p;
 
@@ -965,7 +965,7 @@ public abstract class Expressions {
 	 */
 
 	public final static Expression newSymbolMatch(NonTerminal pat) {
-		return new Nez.SymbolMatch(NezFunction.match, pat, null);
+		return new Nez.SymbolMatch(FunctionName.match, pat, null);
 	}
 
 	/**
@@ -976,7 +976,7 @@ public abstract class Expressions {
 	 * @return
 	 */
 	public final static Expression newSymbolMatch(SourceLocation s, NonTerminal pat) {
-		Expression p = new Nez.SymbolMatch(NezFunction.match, pat, null);
+		Expression p = new Nez.SymbolMatch(FunctionName.match, pat, null);
 		p.setSourceLocation(s);
 		return p;
 	}
@@ -989,7 +989,7 @@ public abstract class Expressions {
 	 */
 
 	public final static Expression newIsSymbol(NonTerminal pat) {
-		return new Nez.SymbolPredicate(NezFunction.is, pat, null);
+		return new Nez.SymbolPredicate(FunctionName.is, pat, null);
 	}
 
 	/**
@@ -1001,7 +1001,7 @@ public abstract class Expressions {
 	 */
 
 	public final static Expression newIsSymbol(SourceLocation s, NonTerminal pat) {
-		Expression p = new Nez.SymbolPredicate(NezFunction.is, pat, null);
+		Expression p = new Nez.SymbolPredicate(FunctionName.is, pat, null);
 		p.setSourceLocation(s);
 		return p;
 	}
@@ -1014,7 +1014,7 @@ public abstract class Expressions {
 	 */
 
 	public final static Expression newIsaSymbol(NonTerminal pat) {
-		return new Nez.SymbolPredicate(NezFunction.isa, pat, null);
+		return new Nez.SymbolPredicate(FunctionName.isa, pat, null);
 	}
 
 	/**
@@ -1026,7 +1026,7 @@ public abstract class Expressions {
 	 */
 
 	public final static Expression newIsaSymbol(SourceLocation s, NonTerminal pat) {
-		Expression p = new Nez.SymbolPredicate(NezFunction.isa, pat, null);
+		Expression p = new Nez.SymbolPredicate(FunctionName.isa, pat, null);
 		p.setSourceLocation(s);
 		return p;
 	}

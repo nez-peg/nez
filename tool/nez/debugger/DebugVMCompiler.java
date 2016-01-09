@@ -8,9 +8,9 @@ import nez.ast.CommonTree;
 import nez.lang.Bytes;
 import nez.lang.Expression;
 import nez.lang.Expressions;
+import nez.lang.FunctionName;
 import nez.lang.Nez;
 import nez.lang.Nez.Sequence;
-import nez.lang.NezFunction;
 import nez.lang.NonTerminal;
 import nez.lang.Production;
 import nez.parser.ParserStrategy;
@@ -420,7 +420,7 @@ public class DebugVMCompiler extends Expression.Visitor {
 
 	@Override
 	public MozInst visitSymbolPredicate(Nez.SymbolPredicate p, Object next) {
-		if (p.op == NezFunction.is) {
+		if (p.op == FunctionName.is) {
 			this.builder.createIis(p, this.builder.jumpFailureJump());
 			this.builder.setInsertPoint(new BasicBlock());
 		} else {

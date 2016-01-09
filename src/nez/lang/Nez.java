@@ -698,9 +698,9 @@ public class Nez {
 	private static Expression empty = Expressions.newEmpty(null);
 
 	public static abstract class Function extends Unary {
-		public final NezFunction op;
+		public final FunctionName op;
 
-		protected Function(NezFunction op, Expression e) {
+		protected Function(FunctionName op, Expression e) {
 			super(e);
 			this.op = op;
 		}
@@ -714,7 +714,7 @@ public class Nez {
 	public static class SymbolAction extends Function {
 		public final Symbol tableName;
 
-		SymbolAction(NezFunction op, NonTerminal e) {
+		SymbolAction(FunctionName op, NonTerminal e) {
 			super(op, e);
 			tableName = Symbol.tag(e.getLocalName());
 		}
@@ -740,7 +740,7 @@ public class Nez {
 	public static class SymbolPredicate extends Function {
 		public final Symbol tableName;
 
-		SymbolPredicate(NezFunction op, NonTerminal pat, Symbol table) {
+		SymbolPredicate(FunctionName op, NonTerminal pat, Symbol table) {
 			super(op, pat);
 			this.tableName = table == null ? Symbol.tag(pat.getLocalName()) : table;
 		}
@@ -763,7 +763,7 @@ public class Nez {
 	public static class SymbolMatch extends Function {
 		public final Symbol tableName;
 
-		SymbolMatch(NezFunction op, NonTerminal pat, Symbol table) {
+		SymbolMatch(FunctionName op, NonTerminal pat, Symbol table) {
 			super(op, pat);
 			this.tableName = table == null ? Symbol.tag(pat.getLocalName()) : table;
 		}
@@ -789,7 +789,7 @@ public class Nez {
 		public final String symbol;
 
 		SymbolExists(Symbol table, String symbol) {
-			super(NezFunction.exists, empty);
+			super(FunctionName.exists, empty);
 			this.tableName = table;
 			this.symbol = symbol;
 		}
@@ -819,7 +819,7 @@ public class Nez {
 
 	public static class BlockScope extends Function {
 		BlockScope(Expression e) {
-			super(NezFunction.block, e);
+			super(FunctionName.block, e);
 		}
 
 		@Override
@@ -841,7 +841,7 @@ public class Nez {
 		public final Symbol tableName;
 
 		LocalScope(Symbol table, Expression e) {
-			super(NezFunction.local, e);
+			super(FunctionName.local, e);
 			this.tableName = table;
 		}
 
@@ -872,7 +872,7 @@ public class Nez {
 		public final String flagName;
 
 		OnCondition(boolean predicate, String c, Expression e) {
-			super(NezFunction.on, e);
+			super(FunctionName.on, e);
 			this.predicate = predicate;
 			this.flagName = c;
 		}
@@ -903,7 +903,7 @@ public class Nez {
 		public final String flagName;
 
 		IfCondition(boolean predicate, String c) {
-			super(NezFunction._if, empty);
+			super(FunctionName._if, empty);
 			this.predicate = predicate;
 			this.flagName = c;
 		}
@@ -927,7 +927,7 @@ public class Nez {
 		public final long mask;
 
 		SetCount(long mask, Expression e) {
-			super(NezFunction.setcount, e);
+			super(FunctionName.setcount, e);
 			this.mask = mask;
 		}
 
@@ -949,7 +949,7 @@ public class Nez {
 	public static class Count extends Function {
 
 		Count(Expression e) {
-			super(NezFunction.count, e);
+			super(FunctionName.count, e);
 		}
 
 		@Override

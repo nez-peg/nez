@@ -1,14 +1,14 @@
 package nez.lang;
 
 /**
- * NezFunction provides a set of Nez function names. NezFunction is used to
+ * FunctionName provides a set of Nez function names. FunctionName is used to
  * Identify the type of function in Nez.Function.
  * 
  * @author kiki
  *
  */
 
-public enum NezFunction {
+public enum FunctionName {
 	_if, on, //
 	block, local, //
 	symbol, //
