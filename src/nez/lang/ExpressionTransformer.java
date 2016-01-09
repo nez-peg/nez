@@ -66,11 +66,11 @@ public class ExpressionTransformer extends Expression.Visitor {
 			}
 		}
 		if (reduced == true) {
-			List<Expression> l = Expressions.newList2(e.size());
+			List<Expression> l = Expressions.newList(e.size());
 			for (Expression sub : e) {
 				Expressions.addSequence(l, sub);
 			}
-			return Expressions.newSequence(e.getSourceLocation(), l);
+			return Expressions.newSequence(l);
 		}
 		return e;
 	}
@@ -87,11 +87,11 @@ public class ExpressionTransformer extends Expression.Visitor {
 			}
 		}
 		if (reduced == true) {
-			UList<Expression> l = Expressions.newList(e.size());
+			UList<Expression> l = Expressions.newUList(e.size());
 			for (Expression sub : e) {
 				Expressions.addChoice(l, sub);
 			}
-			return Expressions.newChoice(e.getSourceLocation(), l);
+			return Expressions.newChoice(l);
 		}
 		return e;
 	}
@@ -143,7 +143,7 @@ public class ExpressionTransformer extends Expression.Visitor {
 	}
 
 	@Override
-	public Expression visitLink(Nez.LinkTree e, Object a) {
+	public Expression visitLinkTree(Nez.LinkTree e, Object a) {
 		e.set(0, this.visitInner(e.get(0), a));
 		return e;
 	}

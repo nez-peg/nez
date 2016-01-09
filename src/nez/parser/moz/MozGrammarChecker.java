@@ -5,19 +5,19 @@ import java.util.TreeMap;
 
 import nez.lang.Conditions;
 import nez.lang.Expression;
-import nez.lang.ExpressionDuplicator;
+import nez.lang.ExpressionDuplicationVisitor;
 import nez.lang.Expressions;
 import nez.lang.Nez;
 import nez.lang.NonTerminal;
 import nez.lang.Production;
-import nez.lang.ProductionStacker;
+import nez.lang.Productions;
 import nez.lang.Typestate;
 import nez.parser.ParserStrategy;
 import nez.util.StringUtils;
 import nez.util.UList;
 import nez.util.Verbose;
 
-class MozGrammarChecker extends ExpressionDuplicator {
+class MozGrammarChecker extends ExpressionDuplicationVisitor {
 	private final ParserStrategy strategy;
 	ParserGrammar parserGrammar;
 	final TreeMap<String, Boolean> boolMap0;
@@ -37,7 +37,7 @@ class MozGrammarChecker extends ExpressionDuplicator {
 			this.enterNonASTContext();
 		}
 		String uname = uniqueName(start.getUniqueName(), start);
-		this.checkFirstVisitedProduction(uname, start, 1); // start
+		this.checkFirstVisitedProduction(uname, start); // start
 		if (strategy.Optimization) {
 			Verbose.println("optimizing %s ..", strategy);
 			new MozGrammarOptimizer(gg, strategy);
@@ -48,58 +48,15 @@ class MozGrammarChecker extends ExpressionDuplicator {
 		return (Expression) e.visit(this, null);
 	}
 
-	private void checkFirstVisitedProduction(String uname, Production p, int init) {
+	private void checkFirstVisitedProduction(String uname, Production p) {
 		Production parserProduction/* local production */= parserGrammar.newProduction(uname, null);
 		this.visited(uname);
-		// if (UFlag.is(p.flag, Production.ResetFlag)) {
-		// p.initFlag();
-		// if (p.isRecursive()) {
-		// checkLeftRecursion(p.getExpression(), new ProductionStacker(p,
-		// null));
-		// }
-		// // p.isNoNTreeConstruction();
-		// }
+		Productions.checkLeftRecursion(p);
 		Typestate stackedTypestate = this.requiredTypestate;
 		this.requiredTypestate = this.isNonASTContext() ? Typestate.Unit : parserGrammar.typeState(p);
 		Expression e = this.visitInner(p.getExpression());
 		parserProduction.setExpression(e);
 		this.requiredTypestate = stackedTypestate;
-	}
-
-	boolean checkLeftRecursion(Expression e, ProductionStacker s) {
-		if (e instanceof NonTerminal) {
-			Production p = ((NonTerminal) e).getProduction();
-			if (s.isVisited(p)) {
-				reportError(e, "left recursion: " + p.getLocalName());
-				return true; // stop as consumed
-			}
-			return checkLeftRecursion(p.getExpression(), new ProductionStacker(p, s));
-		}
-		if (e.size() > 0) {
-			if (e instanceof Nez.Sequence) {
-				if (!checkLeftRecursion(e.get(0), s)) {
-					return checkLeftRecursion(e.get(1), s);
-				}
-			}
-			if (e instanceof Nez.Choice) {
-				boolean consumed = true;
-				for (Expression se : e) {
-					if (!checkLeftRecursion(e.get(1), s)) {
-						consumed = false;
-					}
-				}
-				return consumed;
-			}
-			boolean r = checkLeftRecursion(e.get(0), s);
-			if (e instanceof Nez.OneMore) {
-				return r;
-			}
-			if (e instanceof Nez.Not || e instanceof Nez.ZeroMore || e instanceof Nez.Option || e instanceof Nez.And) {
-				return false;
-			}
-			return r;
-		}
-		return this.parserGrammar.isConsumed(e);
 	}
 
 	@Override
@@ -128,7 +85,7 @@ class MozGrammarChecker extends ExpressionDuplicator {
 		Typestate innerTypestate = this.isNonASTContext() ? Typestate.Unit : parserGrammar.typeState(p);
 		String uname = this.uniqueName(n.getUniqueName(), p);
 		if (!this.isVisited(uname)) {
-			checkFirstVisitedProduction(uname, p, 1);
+			checkFirstVisitedProduction(uname, p);
 		}
 		NonTerminal pn = parserGrammar.newNonTerminal(n.getSourceLocation(), uname);
 		if (innerTypestate == Typestate.Unit) {
@@ -259,7 +216,7 @@ class MozGrammarChecker extends ExpressionDuplicator {
 	}
 
 	@Override
-	public Expression visitLink(Nez.LinkTree p, Object a) {
+	public Expression visitLinkTree(Nez.LinkTree p, Object a) {
 		Expression inner = p.get(0);
 		if (this.isNonASTContext()) {
 			return this.visitInner(inner);
@@ -284,7 +241,7 @@ class MozGrammarChecker extends ExpressionDuplicator {
 	public Expression visitChoice(Nez.Choice p, Object a) {
 		Typestate required = this.requiredTypestate;
 		Typestate next = this.requiredTypestate;
-		UList<Expression> l = Expressions.newList(p.size());
+		UList<Expression> l = Expressions.newUList(p.size());
 		for (Expression inner : p) {
 			this.requiredTypestate = required;
 			Expressions.addChoice(l, this.visitInner(inner));
@@ -293,7 +250,7 @@ class MozGrammarChecker extends ExpressionDuplicator {
 			}
 		}
 		this.requiredTypestate = next;
-		return Expressions.newChoice(p.getSourceLocation(), l);
+		return Expressions.newChoice(l);
 	}
 
 	@Override

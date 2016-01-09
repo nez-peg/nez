@@ -22,7 +22,7 @@ public class GrammarChecker {
 		return g;
 	}
 
-	private static class ConditionEliminator extends ExpressionDuplicator {
+	private static class ConditionEliminator extends ExpressionDuplicationVisitor {
 
 		private GrammarContext context;
 
@@ -96,64 +96,12 @@ public class GrammarChecker {
 		private Production checkFirstVisitedProduction(String cname, Production p) {
 			this.visited(cname);
 			Production gp = this.grammar.newProduction(cname, null);
-			// Production parserProduction/* local production */=
-			// parserGrammar.newProduction(uname, null);
-			// ParseFunc f = parserGrammar.setParseFunc(uname, p,
-			// parserProduction,
-			// init);
-			// if (UFlag.is(p.flag, Production.ResetFlag)) {
-			// p.initFlag();
-			// if (p.isRecursive()) {
-			// checkLeftRecursion(p.getExpression(), new ProductionStacker(p,
-			// null));
-			// }
-			// // p.isNoNTreeConstruction();
-			// }
 			Typestate stackedTypestate = this.requiredTypestate;
 			this.requiredTypestate = this.isNonTreeConstruction() ? Typestate.Unit : context.typeState(p);
 			gp.setExpression(check(p.getExpression()));
 			this.requiredTypestate = stackedTypestate;
 			return gp;
 		}
-
-		// boolean checkLeftRecursion(Expression e, ProductionStacker s) {
-		// if (e instanceof NonTerminal) {
-		// Production p = ((NonTerminal) e).getProduction();
-		// if (s.isVisited(p)) {
-		// context.reportError(e, "left recursion: " + p.getLocalName());
-		// return true; // stop as consumed
-		// }
-		// return checkLeftRecursion(p.getExpression(), new ProductionStacker(p,
-		// s));
-		// }
-		// if (e.size() > 0) {
-		// if (e instanceof Nez.Sequence) {
-		// if (!checkLeftRecursion(e.get(0), s)) {
-		// return checkLeftRecursion(e.get(1), s);
-		// }
-		// }
-		// if (e instanceof Nez.Choice) {
-		// boolean consumed = true;
-		// for (Expression se : e) {
-		// if (!checkLeftRecursion(e.get(1), s)) {
-		// consumed = false;
-		// }
-		// }
-		// return consumed;
-		// }
-		// boolean r = checkLeftRecursion(e.get(0), s);
-		// if (e instanceof Nez.OneMore) {
-		// return r;
-		// }
-		// if (e instanceof Nez.Not || e instanceof Nez.ZeroMore || instanceof
-		// Nez.Option || e
-		// instanceof Nez.And) {
-		// return false;
-		// }
-		// return r;
-		// }
-		// return this.parserGrammar.isConsumed(e);
-		// }
 
 		@Override
 		public Expression visitNonTerminal(NonTerminal n, Object a) {
@@ -320,7 +268,7 @@ public class GrammarChecker {
 		}
 
 		@Override
-		public Expression visitLink(Nez.LinkTree p, Object a) {
+		public Expression visitLinkTree(Nez.LinkTree p, Object a) {
 			Expression inner = p.get(0);
 			if (this.isNonTreeConstruction()) {
 				return this.check(inner);
@@ -345,7 +293,7 @@ public class GrammarChecker {
 		public Expression visitChoice(Nez.Choice p, Object a) {
 			Typestate required = this.requiredTypestate;
 			Typestate next = this.requiredTypestate;
-			UList<Expression> l = Expressions.newList(p.size());
+			UList<Expression> l = Expressions.newUList(p.size());
 			for (Expression inner : p) {
 				this.requiredTypestate = required;
 				Expressions.addChoice(l, this.check(inner));
@@ -354,7 +302,7 @@ public class GrammarChecker {
 				}
 			}
 			this.requiredTypestate = next;
-			return Expressions.newChoice(p.getSourceLocation(), l);
+			return Expressions.newChoice(l);
 		}
 
 		@Override
@@ -603,7 +551,7 @@ public class GrammarChecker {
 		}
 
 		private List<Expression> optimize(List<Expression> l) {
-			UList<Expression> l2 = Expressions.newList(l.size());
+			UList<Expression> l2 = Expressions.newUList(l.size());
 			for (int i = 0; i < l.size(); i++) {
 				l2.add(optimize(l.get(i)));
 			}
@@ -716,24 +664,24 @@ public class GrammarChecker {
 		}
 
 		@Override
-		public Expression visitLink(Nez.LinkTree p, Object a) {
+		public Expression visitLinkTree(Nez.LinkTree p, Object a) {
 			if (p.get(0) instanceof Nez.Choice) {
 				Expression choice = p.get(0);
-				UList<Expression> l = Expressions.newList(choice.size());
+				UList<Expression> l = Expressions.newUList(choice.size());
 				for (Expression inner : choice) {
 					inner = optimize(inner);
 					l.add(Expressions.newLinkTree(p.getSourceLocation(), p.label, inner));
 				}
 				return choice.newChoice(l);
 			}
-			return super.visitLink(p, a);
+			return super.visitLinkTree(p, a);
 		}
 
 		@Override
 		public Expression visitChoice(Nez.Choice p, Object a) {
 			if (!p.isOptimized()) {
 				p.setOptimized();
-				List<Expression> l = Expressions.newList2(p.size());
+				List<Expression> l = Expressions.newList(p.size());
 				flattenChoiceList(p, l);
 				return this.optimizeChoice(p, l);
 			}
@@ -770,7 +718,7 @@ public class GrammarChecker {
 				verboseOptimized("single-choice", p, l.get(0));
 				return l.get(0);
 			}
-			Expression n = Expressions.newChoice(p.getSourceLocation(), l);
+			Expression n = Expressions.newChoice(l);
 			if (n instanceof Nez.Choice) {
 				((Nez.Choice) n).isTrieTree = p.isTrieTree;
 				addDeterministicChoice((Nez.Choice) n);
@@ -829,7 +777,7 @@ public class GrammarChecker {
 				if (el.size() == 1) {
 					l.add(Expressions.newPair(null, be, el.get(0)));
 				} else {
-					Expression next = trySecondChoice(Expressions.newChoice(null, el), el);
+					Expression next = trySecondChoice(Expressions.newChoice(el), el);
 					l.add(Expressions.newPair(null, be, next));
 				}
 			}
@@ -894,11 +842,11 @@ public class GrammarChecker {
 				}
 				p.reduced = 1.0f;
 			} else {
-				UList<Expression> choiceList = Expressions.newList(p.size());
+				UList<Expression> choiceList = Expressions.newUList(p.size());
 				flattenChoiceList(p, choiceList);
 				int count = 0;
 				int selected = 0;
-				UList<Expression> newlist = Expressions.newList(p.size());
+				UList<Expression> newlist = Expressions.newUList(p.size());
 				HashMap<String, Expression> map = new HashMap<String, Expression>();
 				p.predictedCase = new Expression[257];
 				boolean isTrieTree = true;
@@ -969,7 +917,7 @@ public class GrammarChecker {
 				}
 				newlist.add(sub);
 			}
-			Expression p = Expressions.newChoice(choice.getSourceLocation(), newlist);
+			Expression p = Expressions.newChoice(newlist);
 			newlist.clear(0);
 			if (commonFactored && !(p instanceof Nez.Choice)) {
 				tryFactoredSecondChoice(p);
@@ -998,7 +946,7 @@ public class GrammarChecker {
 				if (ignoredFirstChar) {
 					ignoredFirstChar = false;
 					if (Expression.isByteConsumed(f) && Expression.isByteConsumed(f2)) {
-						l = Expressions.newList(4);
+						l = Expressions.newUList(4);
 						l.add(f);
 						e = Expressions.next(e);
 						e2 = Expressions.next(e2);
@@ -1010,7 +958,7 @@ public class GrammarChecker {
 					break;
 				}
 				if (l == null) {
-					l = Expressions.newList(4);
+					l = Expressions.newUList(4);
 				}
 				l.add(f);
 				e = Expressions.next(e);

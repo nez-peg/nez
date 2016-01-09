@@ -32,7 +32,7 @@ public abstract class GrammarBase extends AbstractList<Production> {
 	}
 
 	public final Expression newFailure() {
-		return Expressions.newFailure(getSourcePosition());
+		return Expressions.newFail(getSourcePosition());
 	}
 
 	public final Expression newByteChar(int ch) {
@@ -60,7 +60,7 @@ public abstract class GrammarBase extends AbstractList<Production> {
 		for (Expression p : seq) {
 			Expressions.addSequence(l, p);
 		}
-		return Expressions.newPair(getSourcePosition(), l);
+		return Expressions.newPair(l);
 	}
 
 	public final Expression newChoice(Expression... seq) {
@@ -68,7 +68,7 @@ public abstract class GrammarBase extends AbstractList<Production> {
 		for (Expression p : seq) {
 			Expressions.addChoice(l, p);
 		}
-		return Expressions.newChoice(getSourcePosition(), l);
+		return Expressions.newChoice(l);
 	}
 
 	public final Expression newOption(Expression... seq) {
@@ -127,11 +127,11 @@ public abstract class GrammarBase extends AbstractList<Production> {
 	// <on !FLAG e>
 
 	public final Expression newIfFlag(String flagName) {
-		return Expressions.newIf(getSourcePosition(), flagName);
+		return Expressions.newIfCondition(getSourcePosition(), flagName);
 	}
 
 	public final Expression newXon(String flagName, Expression... seq) {
-		return Expressions.newOn(getSourcePosition(), true, flagName, newSequence(seq));
+		return Expressions.newOnCondition(getSourcePosition(), true, flagName, newSequence(seq));
 	}
 
 	public final Expression newBlock(Expression... seq) {
@@ -139,15 +139,15 @@ public abstract class GrammarBase extends AbstractList<Production> {
 	}
 
 	public final Expression newDefSymbol(NonTerminal n) {
-		return Expressions.newSymbolAction(getSourcePosition(), n);
+		return Expressions.newSymbol(getSourcePosition(), n);
 	}
 
 	public final Expression newIsSymbol(NonTerminal n) {
-		return Expressions.newSymbolPredicate(getSourcePosition(), n);
+		return Expressions.newIsSymbol(getSourcePosition(), n);
 	}
 
 	public final Expression newIsaSymbol(NonTerminal n) {
-		return Expressions.newXisa(getSourcePosition(), n);
+		return Expressions.newIsaSymbol(getSourcePosition(), n);
 	}
 
 	public final Expression newExists(String table, String symbol) {

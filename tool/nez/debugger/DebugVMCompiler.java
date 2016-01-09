@@ -10,10 +10,9 @@ import nez.lang.Expression;
 import nez.lang.Expressions;
 import nez.lang.Nez;
 import nez.lang.Nez.Sequence;
-import nez.lang.NonTerminal;
 import nez.lang.NezFunction;
+import nez.lang.NonTerminal;
 import nez.lang.Production;
-import nez.lang.expr.Xis;
 import nez.parser.ParserStrategy;
 import nez.parser.moz.MozInst;
 import nez.parser.moz.ParserGrammar;
@@ -318,7 +317,7 @@ public class DebugVMCompiler extends Expression.Visitor {
 	Stack<Boolean> leftedStack = new Stack<Boolean>();
 
 	@Override
-	public MozInst visitLink(Nez.LinkTree p, Object next) {
+	public MozInst visitLinkTree(Nez.LinkTree p, Object next) {
 		if (this.strategy.TreeConstruction) {
 			BasicBlock fbb = new BasicBlock();
 			BasicBlock endbb = new BasicBlock();
@@ -422,14 +421,14 @@ public class DebugVMCompiler extends Expression.Visitor {
 	@Override
 	public MozInst visitSymbolPredicate(Nez.SymbolPredicate p, Object next) {
 		if (p.op == NezFunction.is) {
-			this.builder.createIis((Xis) p, this.builder.jumpFailureJump());
+			this.builder.createIis(p, this.builder.jumpFailureJump());
 			this.builder.setInsertPoint(new BasicBlock());
 		} else {
 			this.builder.pushFailureJumpPoint(new BasicBlock());
 			this.builder.createIpush(p);
 			p.get(0).visit(this, next);
 			this.builder.setInsertPoint(this.builder.popFailureJumpPoint());
-			this.builder.createIisa((Xis) p, this.builder.jumpFailureJump());
+			this.builder.createIisa(p, this.builder.jumpFailureJump());
 			this.builder.setInsertPoint(new BasicBlock());
 		}
 		return null;

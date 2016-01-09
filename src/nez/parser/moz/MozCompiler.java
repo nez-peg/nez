@@ -493,7 +493,7 @@ public class MozCompiler implements ParserCompiler {
 		// AST Construction
 
 		@Override
-		public final MozInst visitLink(Nez.LinkTree p, Object next) {
+		public final MozInst visitLinkTree(Nez.LinkTree p, Object next) {
 			if (strategy.TreeConstruction && p.get(0) instanceof NonTerminal) {
 				NonTerminal n = (NonTerminal) p.get(0);
 				MemoPoint m = code.getMemoPoint(n.getUniqueName());

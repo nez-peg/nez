@@ -203,7 +203,7 @@ public class RegexGrammar extends TreeVisitor {
 		if (useByteMap) {
 			return Expressions.newByteSet(null, byteMap);
 		} else {
-			return Expressions.newChoice(null, l);
+			return Expressions.newChoice(l);
 		}
 	}
 
@@ -247,7 +247,7 @@ public class RegexGrammar extends TreeVisitor {
 		} else {
 			Expressions.addChoice(l, toEmpty(node));
 		}
-		return Expressions.newChoice(null, l);
+		return Expressions.newChoice(l);
 	}
 
 	public Expression toSeq(CommonTree e, Expression k) {
@@ -256,7 +256,7 @@ public class RegexGrammar extends TreeVisitor {
 		if (k != null) {
 			Expressions.addSequence(l, k);
 		}
-		return Expressions.newPair(null, l);
+		return Expressions.newPair(l);
 	}
 
 	public Expression toSeq(CommonTree node, Expression e, Expression k) {
@@ -265,7 +265,7 @@ public class RegexGrammar extends TreeVisitor {
 		if (k != null) {
 			Expressions.addSequence(l, k);
 		}
-		return Expressions.newPair(null, l);
+		return Expressions.newPair(l);
 	}
 
 }

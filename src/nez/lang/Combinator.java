@@ -142,7 +142,7 @@ public class Combinator {
 		for (Expression e : elist) {
 			Expressions.addSequence(l, e);
 		}
-		return Expressions.newPair(src(), l);
+		return Expressions.newPair(l);
 	}
 
 	protected final Expression Choice(Expression... elist) {
@@ -150,7 +150,7 @@ public class Combinator {
 		for (Expression e : elist) {
 			Expressions.addChoice(l, e);
 		}
-		return Expressions.newChoice(src(), l);
+		return Expressions.newChoice(l);
 	}
 
 	protected final Expression Option(Expression... e) {

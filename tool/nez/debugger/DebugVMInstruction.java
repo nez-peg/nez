@@ -5,7 +5,6 @@ import nez.lang.Expression;
 import nez.lang.Nez;
 import nez.lang.NonTerminal;
 import nez.lang.Production;
-import nez.lang.expr.Xis;
 import nez.util.StringUtils;
 
 public abstract class DebugVMInstruction {
@@ -626,7 +625,7 @@ class Idef extends DebugVMInstruction {
 class Iis extends JumpInstruction {
 	Symbol tableName;
 
-	public Iis(Xis e, BasicBlock jumpBB) {
+	public Iis(Nez.SymbolPredicate e, BasicBlock jumpBB) {
 		super(e, jumpBB);
 		this.op = Opcode.Iis;
 		this.tableName = e.tableName;
@@ -651,7 +650,7 @@ class Iis extends JumpInstruction {
 class Iisa extends JumpInstruction {
 	Symbol tableName;
 
-	public Iisa(Xis e, BasicBlock jumpBB) {
+	public Iisa(Nez.SymbolPredicate e, BasicBlock jumpBB) {
 		super(e, jumpBB);
 		this.op = Opcode.Iisa;
 		this.tableName = e.tableName;

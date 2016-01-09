@@ -3,7 +3,6 @@ package nez.debugger;
 import nez.lang.Expression;
 import nez.lang.Nez;
 import nez.lang.Production;
-import nez.lang.expr.Xis;
 import nez.parser.moz.ParserGrammar;
 
 public class IRBuilder {
@@ -241,11 +240,11 @@ public class IRBuilder {
 		return this.curBB.append(new Idef(e));
 	}
 
-	public DebugVMInstruction createIis(Xis e, BasicBlock jump) {
+	public DebugVMInstruction createIis(Nez.SymbolPredicate e, BasicBlock jump) {
 		return this.curBB.append(new Iis(e, jump));
 	}
 
-	public DebugVMInstruction createIisa(Xis e, BasicBlock jump) {
+	public DebugVMInstruction createIisa(Nez.SymbolPredicate e, BasicBlock jump) {
 		return this.curBB.append(new Iisa(e, jump));
 	}
 

@@ -73,7 +73,7 @@ public abstract class Expression extends AbstractList<Expression> implements Sou
 		if (this.s != null) {
 			return this.s.formatSourceMessage(type, msg);
 		}
-		return msg;
+		return "(" + type + ") " + msg;
 	}
 
 	// test
@@ -93,7 +93,7 @@ public abstract class Expression extends AbstractList<Expression> implements Sou
 	}
 
 	public final Expression newFailure() {
-		return Expressions.newFailure(this.getSourceLocation());
+		return Expressions.newFail(this.getSourceLocation());
 	}
 
 	public final Expression newByteSet(boolean isBinary, boolean[] byteMap) {
@@ -105,15 +105,15 @@ public abstract class Expression extends AbstractList<Expression> implements Sou
 	}
 
 	public final Expression newPair(List<Expression> l) {
-		return Expressions.newPair(this.getSourceLocation(), l);
+		return Expressions.newPair(l);
 	}
 
 	public final Expression newChoice(Expression e, Expression e2) {
-		return Expressions.newChoice(this.getSourceLocation(), e, e2);
+		return Expressions.newChoice(e, e2);
 	}
 
 	public final Expression newChoice(UList<Expression> l) {
-		return Expressions.newChoice(this.getSourceLocation(), l);
+		return Expressions.newChoice(l);
 	}
 
 	/* static class */
@@ -202,7 +202,7 @@ public abstract class Expression extends AbstractList<Expression> implements Sou
 
 		public abstract Object visitFoldTree(Nez.FoldTree e, Object a);
 
-		public abstract Object visitLink(Nez.LinkTree e, Object a);
+		public abstract Object visitLinkTree(Nez.LinkTree e, Object a);
 
 		public abstract Object visitTag(Nez.Tag e, Object a);
 
@@ -373,7 +373,7 @@ public abstract class Expression extends AbstractList<Expression> implements Sou
 		}
 
 		@Override
-		public Object visitLink(Nez.LinkTree e, Object a) {
+		public Object visitLinkTree(Nez.LinkTree e, Object a) {
 			StringBuilder sb = (StringBuilder) a;
 			formatUnary(sb, (e.label != null) ? "$" + e.label + "(" : "$(", e.get(0), ")");
 			return null;

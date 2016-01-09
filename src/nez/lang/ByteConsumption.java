@@ -1,6 +1,5 @@
 package nez.lang;
 
-import nez.lang.Nez.Byte;
 
 public class ByteConsumption extends Expression.Visitor {
 
@@ -77,7 +76,7 @@ public class ByteConsumption extends Expression.Visitor {
 	}
 
 	@Override
-	public Object visitByte(Byte e, Object a) {
+	public Object visitByte(Nez.Byte e, Object a) {
 		return Result.Consumed;
 	}
 
@@ -175,7 +174,7 @@ public class ByteConsumption extends Expression.Visitor {
 	}
 
 	@Override
-	public Object visitLink(Nez.LinkTree e, Object a) {
+	public Object visitLinkTree(Nez.LinkTree e, Object a) {
 		return check(e.get(0), a);
 	}
 

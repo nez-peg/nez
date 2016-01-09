@@ -9,7 +9,7 @@ public class Ckonoha extends Command {
 	public static boolean release = false;
 
 	@Override
-	public void exec(CommandContext config) throws IOException {
+	public void exec() throws IOException {
 		ConsoleUtils.println("use konoha.jar");
 	}
 

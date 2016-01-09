@@ -406,7 +406,7 @@ public abstract class GrammarTranslator extends Expression.Visitor implements So
 	}
 
 	@Override
-	public final Object visitLink(Nez.LinkTree p, Object a) {
+	public final Object visitLinkTree(Nez.LinkTree p, Object a) {
 		if (strategy.TreeConstruction) {
 			this.visitLink(p);
 		} else {

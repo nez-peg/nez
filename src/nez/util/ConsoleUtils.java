@@ -1,5 +1,7 @@
 package nez.util;
 
+import nez.lang.Grammar;
+
 public class ConsoleUtils {
 	static boolean isColored = false;
 	static {
@@ -84,6 +86,12 @@ public class ConsoleUtils {
 
 	public static void notice(String message) {
 		System.out.println("NOTICE: " + message);
+	}
+
+	public final static void perror(Grammar g, String formatSourceMessage) {
+		ConsoleUtils.begin(31);
+		System.out.println();
+		ConsoleUtils.end();
 	}
 
 	// console

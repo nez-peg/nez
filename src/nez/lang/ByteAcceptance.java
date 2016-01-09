@@ -166,7 +166,7 @@ public enum ByteAcceptance {
 		}
 
 		@Override
-		public ByteAcceptance visitLink(LinkTree e, Object ch) {
+		public ByteAcceptance visitLinkTree(LinkTree e, Object ch) {
 			return accept(e.get(0), ch);
 		}
 

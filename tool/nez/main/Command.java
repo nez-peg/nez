@@ -10,7 +10,6 @@ import nez.lang.Grammar;
 import nez.lang.ast.NezGrammarCombinator;
 import nez.parser.Parser;
 import nez.parser.ParserStrategy;
-import nez.tool.ast.CommandContext;
 import nez.tool.ast.TreeJSONWriter;
 import nez.tool.ast.TreeWriter;
 import nez.tool.ast.TreeXMLWriter;
@@ -56,10 +55,6 @@ public abstract class Command {
 			showUsage("unknown command");
 		}
 		return null;
-	}
-
-	public void exec(CommandContext config) throws IOException {
-		System.out.println(strategy);
 	}
 
 	public void exec() throws IOException {

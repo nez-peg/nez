@@ -112,7 +112,7 @@ public abstract class AbstractSchemaGrammarGenerator implements SchemaGrammarGen
 		for (Expression p : l) {
 			Expressions.addSequence(seq, p);
 		}
-		return Expressions.newPair(null, seq);
+		return Expressions.newPair(seq);
 	}
 
 	protected final Expression _Choice(Expression... l) {
@@ -120,7 +120,7 @@ public abstract class AbstractSchemaGrammarGenerator implements SchemaGrammarGen
 		for (Expression p : l) {
 			Expressions.addChoice(seq, p);
 		}
-		return Expressions.newChoice(null, seq);
+		return Expressions.newChoice(seq);
 	}
 
 	protected final Expression _Detree(Expression e) {
@@ -164,11 +164,11 @@ public abstract class AbstractSchemaGrammarGenerator implements SchemaGrammarGen
 	}
 
 	protected final Expression _Failure() {
-		return Expressions.newFailure(null);
+		return Expressions.newFail(null);
 	}
 
 	protected final Expression _Def(String tableName) {
-		return Expressions.newSymbolAction(null, _NonTerminal(tableName));
+		return Expressions.newSymbol(null, _NonTerminal(tableName));
 	}
 
 	protected final Expression _Exists(String table, String name) {

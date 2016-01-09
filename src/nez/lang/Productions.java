@@ -3,6 +3,8 @@ package nez.lang;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import nez.util.ConsoleUtils;
+
 public class Productions {
 
 	/**
@@ -169,5 +171,198 @@ public class Productions {
 	 * instanceof Nez.Contextual) { stack.setAll(uname, result); return; } for
 	 * (Expression sub : e) { checkContextual(sub, v); } }
 	 */
+
+	private static LeftRecursionChecker leftRecursionChecker = new LeftRecursionChecker();
+
+	public final static boolean isLeftRecursive1(Production p) {
+		try {
+			return leftRecursionChecker.check(p.getExpression(), null);
+		} catch (StackOverflowError e) {
+		}
+		return true;
+	}
+
+	public final static void checkLeftRecursion(Production p) {
+		leftRecursionChecker.check(p.getExpression(), p.getUniqueName());
+	}
+
+	private static class LeftRecursionChecker extends Expression.Visitor {
+
+		boolean check(Expression e, Object a) {
+			return (Boolean) e.visit(this, a);
+		}
+
+		@Override
+		public Object visitNonTerminal(NonTerminal e, Object a) {
+			if (a != null) {
+				if (e.getUniqueName().equals(a)) {
+					ConsoleUtils.perror(e.getGrammar(), e.formatSourceMessage("error", "left recursion"));
+					return true;
+				}
+			}
+			return check(e.getProduction().getExpression(), a);
+		}
+
+		@Override
+		public Object visitEmpty(Nez.Empty e, Object a) {
+			return true;
+		}
+
+		@Override
+		public Object visitFail(Nez.Fail e, Object a) {
+			return true;
+		}
+
+		@Override
+		public Object visitByte(Nez.Byte e, Object a) {
+			return false;
+		}
+
+		@Override
+		public Object visitByteSet(Nez.ByteSet e, Object a) {
+			return false;
+		}
+
+		@Override
+		public Object visitAny(Nez.Any e, Object a) {
+			return false;
+		}
+
+		@Override
+		public Object visitMultiByte(Nez.MultiByte e, Object a) {
+			return false;
+		}
+
+		@Override
+		public Object visitPair(Nez.Pair e, Object a) {
+			if (check(e.get(0), a) == false) {
+				return false;
+			}
+			return check(e.get(1), a);
+		}
+
+		@Override
+		public Object visitSequence(Nez.Sequence e, Object a) {
+			for (Expression sub : e) {
+				boolean c = check(sub, a);
+				if (c == false) {
+					return false;
+				}
+			}
+			return true;
+		}
+
+		@Override
+		public Object visitChoice(Nez.Choice e, Object a) {
+			boolean unconsumed = false;
+			for (Expression sub : e) {
+				boolean c = check(sub, a);
+				if (c == true) {
+					unconsumed = true;
+				}
+			}
+			return unconsumed;
+		}
+
+		@Override
+		public Object visitOption(Nez.Option e, Object a) {
+			return true;
+		}
+
+		@Override
+		public Object visitZeroMore(Nez.ZeroMore e, Object a) {
+			return true;
+		}
+
+		@Override
+		public Object visitOneMore(Nez.OneMore e, Object a) {
+			return check(e.get(0), a);
+		}
+
+		@Override
+		public Object visitAnd(Nez.And e, Object a) {
+			return true;
+		}
+
+		@Override
+		public Object visitNot(Nez.Not e, Object a) {
+			return true;
+		}
+
+		@Override
+		public Object visitBeginTree(Nez.BeginTree e, Object a) {
+			return true;
+		}
+
+		@Override
+		public Object visitFoldTree(Nez.FoldTree e, Object a) {
+			return true;
+		}
+
+		@Override
+		public Object visitLinkTree(Nez.LinkTree e, Object a) {
+			return check(e.get(0), a);
+		}
+
+		@Override
+		public Object visitTag(Nez.Tag e, Object a) {
+			return true;
+		}
+
+		@Override
+		public Object visitReplace(Nez.Replace e, Object a) {
+			return true;
+		}
+
+		@Override
+		public Object visitEndTree(Nez.EndTree e, Object a) {
+			return true;
+		}
+
+		@Override
+		public Object visitDetree(Nez.Detree e, Object a) {
+			return check(e.get(0), a);
+		}
+
+		@Override
+		public Object visitBlockScope(Nez.BlockScope e, Object a) {
+			return check(e.get(0), a);
+		}
+
+		@Override
+		public Object visitLocalScope(Nez.LocalScope e, Object a) {
+			return check(e.get(0), a);
+		}
+
+		@Override
+		public Object visitSymbolAction(Nez.SymbolAction e, Object a) {
+			return check(e.get(0), a);
+		}
+
+		@Override
+		public Object visitSymbolMatch(Nez.SymbolMatch e, Object a) {
+			return true;
+		}
+
+		@Override
+		public Object visitSymbolPredicate(Nez.SymbolPredicate e, Object a) {
+			return check(e.get(0), a);
+		}
+
+		@Override
+		public Object visitSymbolExists(Nez.SymbolExists e, Object a) {
+			return check(e.get(0), a);
+		}
+
+		@Override
+		public Object visitIf(Nez.IfCondition e, Object a) {
+			return true;
+		}
+
+		@Override
+		public Object visitOn(Nez.OnCondition e, Object a) {
+			return check(e.get(0), a);
+		}
+	}
 
 }

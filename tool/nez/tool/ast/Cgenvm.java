@@ -7,7 +7,7 @@ import nez.main.Command;
 
 public class Cgenvm extends Command {
 	@Override
-	public void exec(CommandContext config) throws IOException {
+	public void exec() throws IOException {
 		MozSpec.genLoader();
 	}
 }

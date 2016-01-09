@@ -170,7 +170,7 @@ public enum Typestate {
 		}
 
 		@Override
-		public Object visitLink(Nez.LinkTree e, Object a) {
+		public Object visitLinkTree(Nez.LinkTree e, Object a) {
 			return Typestate.TreeMutation;
 		}
 

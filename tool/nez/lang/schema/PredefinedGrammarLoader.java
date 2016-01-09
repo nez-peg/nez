@@ -57,20 +57,12 @@ public abstract class PredefinedGrammarLoader extends Expressions {
 		return Expressions.newNonTerminal(null, grammar, nonterm);
 	}
 
-	protected final Expression newSequence(Expression... seq) {
-		UList<Expression> l = new UList<Expression>(new Expression[8]);
-		for (Expression p : seq) {
-			Expressions.addSequence(l, p);
-		}
-		return newSequence(null, l);
-	}
-
 	protected final Expression newChoice(Expression... seq) {
 		UList<Expression> l = new UList<Expression>(new Expression[8]);
 		for (Expression p : seq) {
 			Expressions.addChoice(l, p);
 		}
-		return newChoice(null, l);
+		return newChoice(l);
 	}
 
 }

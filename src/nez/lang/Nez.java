@@ -664,7 +664,7 @@ public class Nez {
 
 		@Override
 		public final Object visit(Expression.Visitor v, Object a) {
-			return v.visitLink(this, a);
+			return v.visitLinkTree(this, a);
 		}
 	}
 
@@ -734,9 +734,9 @@ public class Nez {
 	public static class SymbolPredicate extends Function {
 		public final Symbol tableName;
 
-		public SymbolPredicate(NezFunction op, Symbol table, Expression e) {
-			super(op, e);
-			this.tableName = table;
+		public SymbolPredicate(NezFunction op, NonTerminal pat, Symbol table) {
+			super(op, pat);
+			this.tableName = table == null ? Symbol.tag(pat.getLocalName()) : table;
 		}
 
 		@Override
@@ -752,15 +752,14 @@ public class Nez {
 		public final Object visit(Expression.Visitor v, Object a) {
 			return v.visitSymbolPredicate(this, a);
 		}
-
 	}
 
 	public static class SymbolMatch extends Function {
 		public final Symbol tableName;
 
-		public SymbolMatch(NezFunction op, Symbol table) {
-			super(op, empty);
-			this.tableName = table;
+		SymbolMatch(NezFunction op, NonTerminal pat, Symbol table) {
+			super(op, pat);
+			this.tableName = table == null ? Symbol.tag(pat.getLocalName()) : table;
 		}
 
 		@Override
@@ -783,7 +782,7 @@ public class Nez {
 		public final Symbol tableName;
 		public final String symbol;
 
-		public SymbolExists(Symbol table, String symbol) {
+		SymbolExists(Symbol table, String symbol) {
 			super(NezFunction.exists, empty);
 			this.tableName = table;
 			this.symbol = symbol;
@@ -813,7 +812,7 @@ public class Nez {
 	}
 
 	public static class BlockScope extends Function {
-		public BlockScope(Expression e) {
+		BlockScope(Expression e) {
 			super(NezFunction.block, e);
 		}
 
@@ -835,7 +834,7 @@ public class Nez {
 	public static class LocalScope extends Function {
 		public final Symbol tableName;
 
-		public LocalScope(Symbol table, Expression e) {
+		LocalScope(Symbol table, Expression e) {
 			super(NezFunction.local, e);
 			this.tableName = table;
 		}

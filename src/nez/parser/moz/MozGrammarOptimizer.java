@@ -185,7 +185,7 @@ class MozGrammarOptimizer extends ExpressionTransformer {
 	@Override
 	public Expression visitPair(Nez.Pair p, Object a) {
 		List<Expression> l = Expressions.flatten(p);
-		UList<Expression> l2 = Expressions.newList(l.size());
+		UList<Expression> l2 = Expressions.newUList(l.size());
 		for (int i = 0; i < l.size(); i++) {
 			Expression inner = l.get(i);
 			inner = (Expression) inner.visit(this, a);
@@ -300,17 +300,17 @@ class MozGrammarOptimizer extends ExpressionTransformer {
 	}
 
 	@Override
-	public Expression visitLink(Nez.LinkTree p, Object a) {
+	public Expression visitLinkTree(Nez.LinkTree p, Object a) {
 		if (p.get(0) instanceof Nez.Choice) {
 			Expression choice = p.get(0);
-			UList<Expression> l = Expressions.newList(choice.size());
+			UList<Expression> l = Expressions.newUList(choice.size());
 			for (Expression inner : choice) {
 				inner = this.visitInner(inner, a);
 				l.add(Expressions.newLinkTree(p.getSourceLocation(), p.label, inner));
 			}
 			return choice.newChoice(l);
 		}
-		return super.visitLink(p, a);
+		return super.visitLinkTree(p, a);
 	}
 
 	// private UList<Nez.Choice> choiceList = new UList<Nez.Choice>(new
@@ -319,7 +319,7 @@ class MozGrammarOptimizer extends ExpressionTransformer {
 	@Override
 	public Expression visitChoice(Nez.Choice p, Object a) {
 		// if (p.isOptimized()) {
-		UList<Expression> l = Expressions.newList(p.size());
+		UList<Expression> l = Expressions.newUList(p.size());
 		flattenChoiceList(p, l);
 		for (int i = 0; i < l.size(); i++) {
 			l.set(i, this.visitInner(l.get(i), a));
@@ -364,7 +364,7 @@ class MozGrammarOptimizer extends ExpressionTransformer {
 	private void optimizeChoicePrediction(Nez.Choice choice) {
 		int count = 0;
 		int selected = 0;
-		UList<Expression> newlist = Expressions.newList(choice.size());
+		UList<Expression> newlist = Expressions.newUList(choice.size());
 		HashMap<String, Expression> map = new HashMap<String, Expression>();
 		choice.predictedCase = new Expression[257];
 		boolean isTrieTree = true;
@@ -453,7 +453,7 @@ class MozGrammarOptimizer extends ExpressionTransformer {
 			}
 			newlist.add(sub);
 		}
-		Expression p = Expressions.newChoice(choiceList.getSourceLocation(), newlist);
+		Expression p = Expressions.newChoice(newlist);
 		newlist.clear(0);
 		if (commonFactored && !(p instanceof Nez.Choice)) {
 			tryFactoredSecondChoice(p);
@@ -482,7 +482,7 @@ class MozGrammarOptimizer extends ExpressionTransformer {
 			if (ignoredFirstChar) {
 				ignoredFirstChar = false;
 				if (Expression.isByteConsumed(f) && Expression.isByteConsumed(f2)) {
-					l = Expressions.newList(4);
+					l = Expressions.newUList(4);
 					l.add(f);
 					e = Expressions.next(e);
 					e2 = Expressions.next(e2);
@@ -494,7 +494,7 @@ class MozGrammarOptimizer extends ExpressionTransformer {
 				break;
 			}
 			if (l == null) {
-				l = Expressions.newList(4);
+				l = Expressions.newUList(4);
 			}
 			l.add(f);
 			e = Expressions.next(e);

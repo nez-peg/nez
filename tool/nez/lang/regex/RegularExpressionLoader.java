@@ -361,7 +361,7 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 			} else {
 				Expressions.addChoice(l, toEmpty(node));
 			}
-			return Expressions.newChoice(null, l);
+			return Expressions.newChoice(l);
 		}
 	}
 
@@ -373,7 +373,7 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 			if (k != null) {
 				Expressions.addSequence(l, k);
 			}
-			return Expressions.newPair(null, l);
+			return Expressions.newPair(l);
 		}
 
 		@Override
@@ -383,7 +383,7 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 			if (k != null) {
 				Expressions.addSequence(l, k);
 			}
-			return Expressions.newPair(null, l);
+			return Expressions.newPair(l);
 		}
 	}
 
@@ -417,6 +417,6 @@ public class RegularExpressionLoader extends GrammarFileLoader {
 
 	private final Expression _LineTerminator() {
 		Expression l[] = { Expressions.newByte(null, '\n'), Expressions.newByte(null, '\r'), Expressions.newExpression(null, "\r\n"), };
-		return Expressions.newChoice(null, new UList<>(l));
+		return Expressions.newChoice(new UList<>(l));
 	}
 }
