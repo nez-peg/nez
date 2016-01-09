@@ -1,4 +1,4 @@
-package nez.lang;
+package nez.lang.ast;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -6,6 +6,10 @@ import java.lang.reflect.Method;
 import nez.ast.Source;
 import nez.ast.SourceLocation;
 import nez.ast.Symbol;
+import nez.lang.Bytes;
+import nez.lang.Expression;
+import nez.lang.Expressions;
+import nez.lang.Grammar;
 import nez.util.UList;
 import nez.util.Verbose;
 

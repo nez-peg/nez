@@ -1,6 +1,5 @@
 package nez.lang.ast;
 
-import nez.lang.Combinator;
 import nez.lang.Expression;
 
 public class NezGrammarCombinator extends Combinator {

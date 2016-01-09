@@ -32,7 +32,7 @@ public class Nez {
 	public static abstract class Unary extends Expression {
 		public Expression inner;
 
-		public Unary(Expression e) {
+		protected Unary(Expression e) {
 			this.inner = e;
 		}
 
@@ -63,6 +63,9 @@ public class Nez {
 
 	public static class Empty extends Terminal {
 
+		Empty() {
+		}
+
 		@Override
 		public final boolean equals(Object o) {
 			return (o instanceof Nez.Empty);
@@ -82,6 +85,9 @@ public class Nez {
 	 */
 
 	public static class Fail extends Terminal {
+		Fail() {
+		}
+
 		@Override
 		public final boolean equals(Object o) {
 			return (o instanceof Nez.Fail);
@@ -231,7 +237,7 @@ public class Nez {
 	 */
 
 	public static class Option extends Nez.Unary {
-		public Option(Expression e) {
+		Option(Expression e) {
 			super(e);
 		}
 
@@ -270,7 +276,7 @@ public class Nez {
 	 */
 
 	public static class ZeroMore extends Unary implements Repetition {
-		public ZeroMore(Expression e) {
+		ZeroMore(Expression e) {
 			super(e);
 		}
 
@@ -297,7 +303,7 @@ public class Nez {
 	 */
 
 	public static class OneMore extends Unary implements Repetition {
-		public OneMore(Expression e) {
+		OneMore(Expression e) {
 			super(e);
 		}
 
@@ -323,7 +329,7 @@ public class Nez {
 	 */
 
 	public static class And extends Unary {
-		public And(Expression e) {
+		And(Expression e) {
 			super(e);
 		}
 
@@ -349,7 +355,7 @@ public class Nez {
 	 */
 
 	public static class Not extends Unary {
-		public Not(Expression e) {
+		Not(Expression e) {
 			super(e);
 		}
 
@@ -378,7 +384,7 @@ public class Nez {
 		public Expression first;
 		public Expression next;
 
-		public Pair(Expression first, Expression next) {
+		Pair(Expression first, Expression next) {
 			this.first = first;
 			this.next = next;
 		}
@@ -426,7 +432,7 @@ public class Nez {
 	abstract static class List extends Expression {
 		public Expression[] inners;
 
-		public List(Expression[] inners) {
+		protected List(Expression[] inners) {
 			this.inners = inners;
 		}
 
@@ -669,7 +675,7 @@ public class Nez {
 	}
 
 	public static class Detree extends Unary implements TreeConstruction {
-		public Detree(Expression e) {
+		Detree(Expression e) {
 			super(e);
 		}
 
@@ -694,7 +700,7 @@ public class Nez {
 	public static abstract class Function extends Unary {
 		public final NezFunction op;
 
-		public Function(NezFunction op, Expression e) {
+		protected Function(NezFunction op, Expression e) {
 			super(e);
 			this.op = op;
 		}
@@ -708,7 +714,7 @@ public class Nez {
 	public static class SymbolAction extends Function {
 		public final Symbol tableName;
 
-		public SymbolAction(NezFunction op, NonTerminal e) {
+		SymbolAction(NezFunction op, NonTerminal e) {
 			super(op, e);
 			tableName = Symbol.tag(e.getLocalName());
 		}
@@ -734,7 +740,7 @@ public class Nez {
 	public static class SymbolPredicate extends Function {
 		public final Symbol tableName;
 
-		public SymbolPredicate(NezFunction op, NonTerminal pat, Symbol table) {
+		SymbolPredicate(NezFunction op, NonTerminal pat, Symbol table) {
 			super(op, pat);
 			this.tableName = table == null ? Symbol.tag(pat.getLocalName()) : table;
 		}
@@ -865,7 +871,7 @@ public class Nez {
 		public final boolean predicate;
 		public final String flagName;
 
-		public OnCondition(boolean predicate, String c, Expression e) {
+		OnCondition(boolean predicate, String c, Expression e) {
 			super(NezFunction.on, e);
 			this.predicate = predicate;
 			this.flagName = c;
@@ -896,12 +902,8 @@ public class Nez {
 		public final boolean predicate;
 		public final String flagName;
 
-		public IfCondition(boolean predicate, String c) {
+		IfCondition(boolean predicate, String c) {
 			super(NezFunction._if, empty);
-			if (c.startsWith("!")) {
-				predicate = false;
-				c = c.substring(1);
-			}
 			this.predicate = predicate;
 			this.flagName = c;
 		}
@@ -924,7 +926,7 @@ public class Nez {
 	public static class SetCount extends Function {
 		public final long mask;
 
-		public SetCount(long mask, Expression e) {
+		SetCount(long mask, Expression e) {
 			super(NezFunction.setcount, e);
 			this.mask = mask;
 		}
@@ -946,7 +948,7 @@ public class Nez {
 
 	public static class Count extends Function {
 
-		public Count(Expression e) {
+		Count(Expression e) {
 			super(NezFunction.count, e);
 		}
 

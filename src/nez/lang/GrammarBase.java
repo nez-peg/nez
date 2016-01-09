@@ -131,7 +131,7 @@ public abstract class GrammarBase extends AbstractList<Production> {
 	}
 
 	public final Expression newXon(String flagName, Expression... seq) {
-		return Expressions.newOnCondition(getSourcePosition(), true, flagName, newSequence(seq));
+		return Expressions.newOnCondition(getSourcePosition(), flagName, newSequence(seq));
 	}
 
 	public final Expression newBlock(Expression... seq) {

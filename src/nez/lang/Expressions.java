@@ -5,7 +5,6 @@ import java.util.List;
 
 import nez.ast.SourceLocation;
 import nez.ast.Symbol;
-import nez.lang.expr.Xon;
 import nez.util.StringUtils;
 import nez.util.UList;
 
@@ -17,86 +16,6 @@ import nez.util.UList;
  */
 
 public abstract class Expressions {
-
-	/* Optimization */
-
-	public final static Expression resolveNonTerminal(Expression e) {
-		while (e instanceof NonTerminal) {
-			NonTerminal nterm = (NonTerminal) e;
-			e = nterm.deReference();
-		}
-		return e;
-	}
-
-	public final static Expression tryConvertingByteSet(Nez.Choice choice) {
-		boolean byteMap[] = Bytes.newMap(false);
-		if (tryConvertingByteSet(choice, byteMap)) {
-			return Expressions.newByteSet(choice.getSourceLocation(), byteMap);
-		}
-		return choice;
-	}
-
-	private static boolean tryConvertingByteSet(Nez.Choice choice, boolean[] byteMap) {
-		for (Expression e : choice) {
-			e = Expressions.resolveNonTerminal(e);
-			if (e instanceof Nez.Choice) {
-				if (!tryConvertingByteSet((Nez.Choice) e, byteMap)) {
-					return false;
-				}
-				continue; // OK
-			}
-			if (e instanceof Nez.Byte) {
-				byteMap[((Nez.Byte) e).byteChar] = true;
-				continue; // OK
-			}
-			if (e instanceof Nez.ByteSet) {
-				Bytes.appendBitMap(byteMap, ((Nez.ByteSet) e).byteMap);
-				continue; // OK
-			}
-			return false;
-		}
-		return true;
-	}
-
-	public final static Expression tryMultiCharSequence(Expression e) {
-		if (e instanceof Nez.Sequence || e instanceof Nez.Pair) {
-			List<Expression> el = flatten(e);
-			List<Expression> el2 = new UList<Expression>(new Expression[el.size()]);
-			UList<Byte> bytes = new UList<Byte>(new Byte[el.size()]);
-			int next = 0;
-			while (next < el.size()) {
-				next = appendExpressionOrMultiChar(el, next, el2, bytes);
-			}
-			e = Expressions.newSequence(el2);
-		}
-		return e;
-	}
-
-	private final static int appendExpressionOrMultiChar(List<Expression> el, int start, List<Expression> el2, UList<Byte> bytes) {
-		int next = start + 1;
-		Expression e = el.get(start);
-		if (e instanceof Nez.Byte) {
-			bytes.clear();
-			for (int i = start; i < el.size(); i++) {
-				Expression sub = el.get(i);
-				if (sub instanceof Nez.Byte) {
-					bytes.add(((byte) ((Nez.Byte) sub).byteChar));
-					continue;
-				}
-				next = i;
-				break;
-			}
-			if (bytes.size() > 1) {
-				byte[] byteSeq = new byte[bytes.size()];
-				for (int i = 0; i < bytes.size(); i++) {
-					byteSeq[i] = bytes.get(i);
-				}
-				e = Expressions.newMultiByte(e.getSourceLocation(), byteSeq);
-			}
-		}
-		el2.add(e);
-		return next;
-	}
 
 	// ---------------------------------------------------------------------
 
@@ -847,6 +766,24 @@ public abstract class Expressions {
 
 	/* Conditional Parsing */
 
+	/**
+	 * Creates <if C>
+	 * 
+	 * @param c
+	 * @return
+	 */
+	public final static Expression newIfCondition(String c) {
+		return Expressions.newIfCondition(null, c);
+	}
+
+	/**
+	 * Creates <if C>
+	 * 
+	 * @param s
+	 * @param c
+	 * @return
+	 */
+
 	public final static Expression newIfCondition(SourceLocation s, String c) {
 		boolean predicate = true;
 		if (c.startsWith("!")) {
@@ -858,8 +795,36 @@ public abstract class Expressions {
 		return e;
 	}
 
-	public final static Expression newOnCondition(SourceLocation s, boolean predicate, String flagName, Expression e) {
-		return new Xon(s, predicate, flagName, e);
+	/**
+	 * Creates <on C e>
+	 * 
+	 * @param c
+	 * @param e
+	 * @return
+	 */
+
+	public final static Expression newOnCondition(String c, Expression e) {
+		return Expressions.newOnCondition(null, c, e);
+	}
+
+	/**
+	 * Creates <on C e>
+	 * 
+	 * @param s
+	 * @param c
+	 * @param e
+	 * @return
+	 */
+
+	public final static Expression newOnCondition(SourceLocation s, String c, Expression e) {
+		boolean predicate = true;
+		if (c.startsWith("!")) {
+			predicate = false;
+			c = c.substring(1);
+		}
+		Expression p = new Nez.OnCondition(predicate, c, e);
+		p.setSourceLocation(s);
+		return p;
 	}
 
 	/* Symbol Table */
@@ -1016,12 +981,54 @@ public abstract class Expressions {
 		return p;
 	}
 
-	public final static Expression newIsSymbol(SourceLocation s, NonTerminal pat) {
+	/**
+	 * Creates a <is A> expression.
+	 * 
+	 * @param pat
+	 * @return
+	 */
+
+	public final static Expression newIsSymbol(NonTerminal pat) {
 		return new Nez.SymbolPredicate(NezFunction.is, pat, null);
 	}
 
-	public final static Expression newIsaSymbol(SourceLocation s, NonTerminal pat) {
+	/**
+	 * Creates a <is A> expression.
+	 * 
+	 * @param s
+	 * @param pat
+	 * @return
+	 */
+
+	public final static Expression newIsSymbol(SourceLocation s, NonTerminal pat) {
+		Expression p = new Nez.SymbolPredicate(NezFunction.is, pat, null);
+		p.setSourceLocation(s);
+		return p;
+	}
+
+	/**
+	 * Creates a <isa A> expression.
+	 * 
+	 * @param pat
+	 * @return
+	 */
+
+	public final static Expression newIsaSymbol(NonTerminal pat) {
 		return new Nez.SymbolPredicate(NezFunction.isa, pat, null);
+	}
+
+	/**
+	 * Creates a <isa A> expression.
+	 * 
+	 * @param s
+	 * @param pat
+	 * @return
+	 */
+
+	public final static Expression newIsaSymbol(SourceLocation s, NonTerminal pat) {
+		Expression p = new Nez.SymbolPredicate(NezFunction.isa, pat, null);
+		p.setSourceLocation(s);
+		return p;
 	}
 
 	@Deprecated
@@ -1167,6 +1174,86 @@ public abstract class Expressions {
 		Expressions.addSequence(l, e);
 		Expressions.addSequence(l, Expressions.newEndTree(s, 0));
 		return newOneMore(s, Expressions.newPair(l));
+	}
+
+	/* Optimization */
+
+	public final static Expression resolveNonTerminal(Expression e) {
+		while (e instanceof NonTerminal) {
+			NonTerminal nterm = (NonTerminal) e;
+			e = nterm.deReference();
+		}
+		return e;
+	}
+
+	public final static Expression tryConvertingByteSet(Nez.Choice choice) {
+		boolean byteMap[] = Bytes.newMap(false);
+		if (tryConvertingByteSet(choice, byteMap)) {
+			return Expressions.newByteSet(choice.getSourceLocation(), byteMap);
+		}
+		return choice;
+	}
+
+	private static boolean tryConvertingByteSet(Nez.Choice choice, boolean[] byteMap) {
+		for (Expression e : choice) {
+			e = Expressions.resolveNonTerminal(e);
+			if (e instanceof Nez.Choice) {
+				if (!tryConvertingByteSet((Nez.Choice) e, byteMap)) {
+					return false;
+				}
+				continue; // OK
+			}
+			if (e instanceof Nez.Byte) {
+				byteMap[((Nez.Byte) e).byteChar] = true;
+				continue; // OK
+			}
+			if (e instanceof Nez.ByteSet) {
+				Bytes.appendBitMap(byteMap, ((Nez.ByteSet) e).byteMap);
+				continue; // OK
+			}
+			return false;
+		}
+		return true;
+	}
+
+	public final static Expression tryMultiCharSequence(Expression e) {
+		if (e instanceof Nez.Sequence || e instanceof Nez.Pair) {
+			List<Expression> el = flatten(e);
+			List<Expression> el2 = new UList<Expression>(new Expression[el.size()]);
+			UList<Byte> bytes = new UList<Byte>(new Byte[el.size()]);
+			int next = 0;
+			while (next < el.size()) {
+				next = appendExpressionOrMultiChar(el, next, el2, bytes);
+			}
+			e = Expressions.newSequence(el2);
+		}
+		return e;
+	}
+
+	private final static int appendExpressionOrMultiChar(List<Expression> el, int start, List<Expression> el2, UList<Byte> bytes) {
+		int next = start + 1;
+		Expression e = el.get(start);
+		if (e instanceof Nez.Byte) {
+			bytes.clear();
+			for (int i = start; i < el.size(); i++) {
+				Expression sub = el.get(i);
+				if (sub instanceof Nez.Byte) {
+					bytes.add(((byte) ((Nez.Byte) sub).byteChar));
+					continue;
+				}
+				next = i;
+				break;
+			}
+			if (bytes.size() > 1) {
+				byte[] byteSeq = new byte[bytes.size()];
+				for (int i = 0; i < bytes.size(); i++) {
+					byteSeq[i] = bytes.get(i);
+				}
+				e = Expressions.newMultiByte(e.getSourceLocation(), byteSeq);
+			}
+		}
+		el2.add(e);
+		return next;
 	}
 
 }

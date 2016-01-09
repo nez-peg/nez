@@ -340,7 +340,7 @@ public class NezConstructor extends GrammarFileLoader {
 	public class _On extends NezConstructorDefault {
 		@Override
 		public Expression toExpression(Tree<?> node) {
-			return Expressions.newOnCondition(node, true, node.getText(_name, ""), newExpression(node.get(_expr)));
+			return Expressions.newOnCondition(node, node.getText(_name, ""), newExpression(node.get(_expr)));
 		}
 	}
 

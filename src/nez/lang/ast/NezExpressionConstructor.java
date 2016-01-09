@@ -239,7 +239,7 @@ public class NezExpressionConstructor extends GrammarVisitorMap<ExpressionTransd
 	public class _On extends Undefined {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
-			return Expressions.newOnCondition(node, true, node.getText(_name, ""), newInstance(node.get(_expr)));
+			return Expressions.newOnCondition(node, node.getText(_name, ""), newInstance(node.get(_expr)));
 		}
 	}
 
