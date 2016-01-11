@@ -6,7 +6,7 @@ public final class UMap<T> {
 	final HashMap<String, T> m;
 
 	public UMap() {
-		this.m = new HashMap<String, T>();
+		this.m = new HashMap<>();
 	}
 
 	@Override
@@ -59,7 +59,7 @@ public final class UMap<T> {
 	}
 
 	public final UList<String> keys() {
-		UList<String> a = new UList<String>(new String[this.m.size()]);
+		UList<String> a = new UList<>(new String[this.m.size()]);
 		for (String k : this.m.keySet()) {
 			a.add(k);
 		}
@@ -67,7 +67,7 @@ public final class UMap<T> {
 	}
 
 	public final UList<T> values(T[] aa) {
-		UList<T> a = new UList<T>(aa);
+		UList<T> a = new UList<>(aa);
 		for (T v : this.m.values()) {
 			a.add(v);
 		}

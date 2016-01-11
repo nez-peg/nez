@@ -15,10 +15,10 @@ public class NFA {
 	private HashSet<State> acceptingStates = null;
 
 	public NFA() {
-		allStates = new HashSet<State>();
-		stateTransitionFunction = new TreeSet<Transition>();
-		initialStates = new HashSet<State>();
-		acceptingStates = new HashSet<State>();
+		allStates = new HashSet<>();
+		stateTransitionFunction = new TreeSet<>();
+		initialStates = new HashSet<>();
+		acceptingStates = new HashSet<>();
 	}
 
 	public NFA(HashSet<State> allStates, TreeSet<Transition> stateTransitionFunction, HashSet<State> initialStates, HashSet<State> acceptingStates) {
@@ -63,7 +63,7 @@ public class NFA {
 
 	public String encode(HashSet<State> states) {
 		StringBuilder sb = new StringBuilder();
-		ArrayList<Integer> stateList = new ArrayList<Integer>();
+		ArrayList<Integer> stateList = new ArrayList<>();
 		for (State state : states) {
 			stateList.add(state.getID());
 		}
@@ -81,14 +81,14 @@ public class NFA {
 			System.out.println("ERROR : det : NFA is null");
 			return null;
 		}
-		HashSet<State> allStates = new HashSet<State>();
-		TreeSet<Transition> stateTransitionFunction = new TreeSet<Transition>();
+		HashSet<State> allStates = new HashSet<>();
+		TreeSet<Transition> stateTransitionFunction = new TreeSet<>();
 		State initialState = null;
-		HashSet<State> acceptingStates = new HashSet<State>();
+		HashSet<State> acceptingStates = new HashSet<>();
 
-		ArrayList<ArrayList<Transition>> adjacencyList = new ArrayList<ArrayList<Transition>>();
+		ArrayList<ArrayList<Transition>> adjacencyList = new ArrayList<>();
 		for (int i = 0; i < getAllStates().size(); i++) {
-			adjacencyList.add(new ArrayList<Transition>());
+			adjacencyList.add(new ArrayList<>());
 		}
 		for (Transition transition : getStateTransitionFunction()) {
 			int src = transition.getSrc();
@@ -97,8 +97,8 @@ public class NFA {
 		}
 
 		int stateID = 0;
-		Deque<HashSet<State>> deq = new ArrayDeque<HashSet<State>>();
-		TreeMap<String, State> dfaStateTable = new TreeMap<String, State>();
+		Deque<HashSet<State>> deq = new ArrayDeque<>();
+		TreeMap<String, State> dfaStateTable = new TreeMap<>();
 
 		deq.addLast(getInitialStates());
 		System.out.println("inital = " + getInitialStates());
@@ -121,7 +121,7 @@ public class NFA {
 		while (!deq.isEmpty()) {
 			HashSet<State> states = deq.poll();
 			for (int sigma = 0; sigma < 256; sigma++) {
-				HashSet<State> newStates = new HashSet<State>();
+				HashSet<State> newStates = new HashSet<>();
 				for (State state : states) {
 					for (int i = 0; i < adjacencyList.get(state.getID()).size(); i++) {
 						if (adjacencyList.get(state.getID()).get(i).getLabel() != sigma) {

@@ -11,7 +11,7 @@ public abstract class Formatter {
 	public static final Formatter Null = new NullFormatter();
 	public static final Formatter Default = new DefaultFormatter();
 
-	public static final HashMap<String, Formatter> fmtMap = new HashMap<String, Formatter>();
+	public static final HashMap<String, Formatter> fmtMap = new HashMap<>();
 	static {
 		fmtMap.put("NL", new IndentFormatter());
 		fmtMap.put("inc", new IncFormatter());
@@ -108,7 +108,7 @@ class FormatterEntry {
 }
 
 class FormatterMap {
-	HashMap<String, FormatterEntry> map = new HashMap<String, FormatterEntry>();
+	HashMap<String, FormatterEntry> map = new HashMap<>();
 
 	void set(String tag, int index, Formatter fmt) {
 		FormatterEntry entry = map.get(tag);

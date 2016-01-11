@@ -276,7 +276,7 @@ public class JavaParserGenerator extends ParserGrammarSourceGenerator {
 		Abort(_log(), _left());
 	}
 
-	HashMap<String, Object> funcMap = new HashMap<String, Object>();
+	HashMap<String, Object> funcMap = new HashMap<>();
 
 	private void ensureFunc(Expression e) {
 		String key = _func(e);
@@ -286,7 +286,7 @@ public class JavaParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	private void makeFunc() {
-		ArrayList<Expression> l = new ArrayList<Expression>(funcMap.size());
+		ArrayList<Expression> l = new ArrayList<>(funcMap.size());
 		for (String key : funcMap.keySet()) {
 			Object o = funcMap.get(key);
 			if (o instanceof Expression) {

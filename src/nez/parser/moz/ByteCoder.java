@@ -109,20 +109,20 @@ public class ByteCoder {
 
 	public void write_u16(int num) {
 		stream.write(0xff & (num >> 8));
-		stream.write(0xff & (num >> 0));
+		stream.write(0xff & (num));
 	}
 
 	public void write_u24(int num) {
 		stream.write(0xff & (num >> 16));
 		stream.write(0xff & (num >> 8));
-		stream.write(0xff & (num >> 0));
+		stream.write(0xff & (num));
 	}
 
 	public void write_u32(int num) {
 		stream.write(0xff & (num >> 24));
 		stream.write(0xff & (num >> 16));
 		stream.write(0xff & (num >> 8));
-		stream.write(0xff & (num >> 0));
+		stream.write(0xff & (num));
 	}
 
 	private void encodeData(boolean[] byteMap) {

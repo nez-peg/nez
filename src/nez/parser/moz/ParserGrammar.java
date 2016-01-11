@@ -19,7 +19,7 @@ public class ParserGrammar extends Grammar {
 	public List<MemoPoint> memoPointList = null;
 
 	public ParserGrammar(Production start, ParserStrategy strategy, TreeMap<String, Boolean> boolMap) {
-		this.funcMap = new HashMap<String, ParserGrammarFunc>();
+		this.funcMap = new HashMap<>();
 		new MozGrammarChecker(this, boolMap, start, strategy);
 	}
 

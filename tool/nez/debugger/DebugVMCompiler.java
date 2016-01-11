@@ -21,7 +21,7 @@ public class DebugVMCompiler extends Expression.Visitor {
 	ParserGrammar peg;
 	IRBuilder builder;
 	GrammarAnalyzer analyzer;
-	HashMap<Expression, DebugVMInstruction> altInstructionMap = new HashMap<Expression, DebugVMInstruction>();
+	HashMap<Expression, DebugVMInstruction> altInstructionMap = new HashMap<>();
 	ParserStrategy strategy;
 
 	public DebugVMCompiler(ParserStrategy option) {
@@ -60,7 +60,7 @@ public class DebugVMCompiler extends Expression.Visitor {
 		return (MozInst) e.visit(this, next);
 	}
 
-	ArrayList<Byte> charList = new ArrayList<Byte>();
+	ArrayList<Byte> charList = new ArrayList<>();
 
 	public boolean optimizeString(Nez.Pair seq) {
 		for (int i = 0; i < seq.size(); i++) {
@@ -314,7 +314,7 @@ public class DebugVMCompiler extends Expression.Visitor {
 		return null;
 	}
 
-	Stack<Boolean> leftedStack = new Stack<Boolean>();
+	Stack<Boolean> leftedStack = new Stack<>();
 
 	@Override
 	public MozInst visitLinkTree(Nez.LinkTree p, Object next) {

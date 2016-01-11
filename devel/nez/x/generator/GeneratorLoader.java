@@ -7,7 +7,7 @@ import nez.util.Verbose;
 
 public class GeneratorLoader {
 	public final static String GeneratorLoaderPoint = "nez.main.ext.L";
-	static TreeMap<String, Class<?>> classMap = new TreeMap<String, Class<?>>();
+	static TreeMap<String, Class<?>> classMap = new TreeMap<>();
 
 	public static void regist(String key, Class<?> c) {
 		classMap.put(key, c);

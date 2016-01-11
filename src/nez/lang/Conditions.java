@@ -50,7 +50,7 @@ public class Conditions extends TreeMap<String, Boolean> {
 		Reachable, Unreachable, Undecided;
 	}
 
-	HashMap<String, Value> reachMap = new HashMap<String, Value>();
+	HashMap<String, Value> reachMap = new HashMap<>();
 
 	public final boolean isConditional(Production p, String condition) {
 		return (hasIfCondition(p, condition) != Value.Unreachable);
@@ -62,7 +62,7 @@ public class Conditions extends TreeMap<String, Boolean> {
 
 	private Value hasIfCondition(Production p, String condition) {
 		if (reachMap == null) {
-			this.reachMap = new HashMap<String, Value>();
+			this.reachMap = new HashMap<>();
 		}
 		String key = p.getUniqueName() + "+" + condition;
 		Value res = reachMap.get(key);

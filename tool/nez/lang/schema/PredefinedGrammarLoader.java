@@ -58,7 +58,7 @@ public abstract class PredefinedGrammarLoader extends Expressions {
 	}
 
 	protected final Expression newChoice(Expression... seq) {
-		UList<Expression> l = new UList<Expression>(new Expression[8]);
+		UList<Expression> l = new UList<>(new Expression[8]);
 		for (Expression p : seq) {
 			Expressions.addChoice(l, p);
 		}

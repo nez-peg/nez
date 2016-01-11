@@ -14,7 +14,7 @@ public class Coverage {
 	static HashMap<String, Coverage> covMap;
 
 	public final static void init() {
-		covList = new UList<Coverage>(new Coverage[128]);
+		covList = new UList<>(new Coverage[128]);
 		covMap = new HashMap<>();
 	}
 
@@ -129,7 +129,7 @@ public class Coverage {
 	}
 
 	public final static List<String> getUntestedProductionList() {
-		UList<String> l = new UList<String>(new String[10]);
+		UList<String> l = new UList<>(new String[10]);
 		for (Coverage cov : covList) {
 			if (cov.p != null) {
 				if (cov.enterCount == 0) {

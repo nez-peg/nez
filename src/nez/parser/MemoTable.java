@@ -126,7 +126,7 @@ class PackratHashTable extends MemoTable {
 	private MemoEntryList UnusedMemo = null;
 
 	PackratHashTable(int w, int n) {
-		this.memoMap = new HashMap<Long, MemoEntryList>(w * n);
+		this.memoMap = new HashMap<>(w * n);
 	}
 
 	private final MemoEntryList newMemo() {

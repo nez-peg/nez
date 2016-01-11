@@ -13,14 +13,6 @@
 	<property name="build_test_dir" value="build_test" />
 	<property name="test_result" value="test_result" />
 
-	<condition property="have.cobertura">
-		<available file="${lib.cobertura.dir}" />
-	</condition>
-
-	<condition property="have.pmd">
-		<available file="${lib.pmd.dir}" />
-	</condition>
-
 	<!-- ================================== -->
 	<!-- BUILD -->
 	<!-- ================================== -->

@@ -42,8 +42,8 @@ class MozGrammarOptimizer extends ExpressionTransformer {
 
 	private void initOption() {
 		if (strategy.Oalias) {
-			this.bodyMap = new HashMap<String, Production>();
-			this.aliasMap = new HashMap<String, String>();
+			this.bodyMap = new HashMap<>();
+			this.aliasMap = new HashMap<>();
 		}
 	}
 
@@ -57,7 +57,7 @@ class MozGrammarOptimizer extends ExpressionTransformer {
 
 		NonterminalReference refc2 = Productions.countNonterminalReference(grammar);
 
-		UList<Production> prodList = new UList<Production>(new Production[grammar.size()]);
+		UList<Production> prodList = new UList<>(new Production[grammar.size()]);
 		for (Production p : grammar) {
 			String uname = p.getUniqueName();
 			// System.out.printf("%s refc %d -> %d rec=%s\n", uname,
@@ -365,7 +365,7 @@ class MozGrammarOptimizer extends ExpressionTransformer {
 		int count = 0;
 		int selected = 0;
 		UList<Expression> newlist = Expressions.newUList(choice.size());
-		HashMap<String, Expression> map = new HashMap<String, Expression>();
+		HashMap<String, Expression> map = new HashMap<>();
 		choice.predictedCase = new Expression[257];
 		boolean isTrieTree = true;
 		for (int ch = 0; ch <= 255; ch++) {

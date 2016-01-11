@@ -77,7 +77,7 @@ public abstract class ParserGrammarSourceGenerator extends Expression.Visitor im
 
 	/* Name */
 
-	HashMap<String, String> m = new HashMap<String, String>();
+	HashMap<String, String> m = new HashMap<>();
 
 	protected String name(String s) {
 		String name = m.get(s);

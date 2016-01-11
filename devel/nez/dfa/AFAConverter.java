@@ -30,8 +30,8 @@ public class AFAConverter extends TreeVisitorMap<DefaultVisitor> {
 
 	public AFAConverter(Grammar grammar) {
 		this.grammar = grammar;
-		this.initialStateOfNonTerminal = new HashMap<String, State>();
-		this.acceptingStateOfNonTerminal = new HashMap<String, State>();
+		this.initialStateOfNonTerminal = new HashMap<>();
+		this.acceptingStateOfNonTerminal = new HashMap<>();
 		this.theNumberOfStates = 0;
 		init(AFAConverter.class, new DefaultVisitor());
 	}
@@ -95,11 +95,11 @@ public class AFAConverter extends TreeVisitorMap<DefaultVisitor> {
 			// System.out.println("here is Pempty : " + e);
 
 			int s = getNewStateID();
-			HashSet<State> S = new HashSet<State>();
-			TreeSet<Transition> transitions = new TreeSet<Transition>();
+			HashSet<State> S = new HashSet<>();
+			TreeSet<Transition> transitions = new TreeSet<>();
 			State f = new State(s);
-			HashSet<State> F = new HashSet<State>();
-			HashSet<State> L = new HashSet<State>();
+			HashSet<State> F = new HashSet<>();
+			HashSet<State> L = new HashSet<>();
 
 			S.add(new State(s));
 
@@ -125,11 +125,11 @@ public class AFAConverter extends TreeVisitorMap<DefaultVisitor> {
 
 			int s = getNewStateID();
 			int t = getNewStateID();
-			HashSet<State> S = new HashSet<State>();
-			TreeSet<Transition> transitions = new TreeSet<Transition>();
+			HashSet<State> S = new HashSet<>();
+			TreeSet<Transition> transitions = new TreeSet<>();
 			State f = new State(s);
-			HashSet<State> F = new HashSet<State>();
-			HashSet<State> L = new HashSet<State>();
+			HashSet<State> F = new HashSet<>();
+			HashSet<State> L = new HashSet<>();
 
 			S.add(new State(s));
 			S.add(new State(t));
@@ -150,11 +150,11 @@ public class AFAConverter extends TreeVisitorMap<DefaultVisitor> {
 
 			int s = getNewStateID();
 			int t = getNewStateID();
-			HashSet<State> S = new HashSet<State>();
-			TreeSet<Transition> transitions = new TreeSet<Transition>();
+			HashSet<State> S = new HashSet<>();
+			TreeSet<Transition> transitions = new TreeSet<>();
 			State f = new State(s);
-			HashSet<State> F = new HashSet<State>();
-			HashSet<State> L = new HashSet<State>();
+			HashSet<State> F = new HashSet<>();
+			HashSet<State> L = new HashSet<>();
 
 			S.add(new State(s));
 			S.add(new State(t));
@@ -174,11 +174,11 @@ public class AFAConverter extends TreeVisitorMap<DefaultVisitor> {
 
 			int s = getNewStateID();
 			int t = getNewStateID();
-			HashSet<State> S = new HashSet<State>();
-			TreeSet<Transition> transitions = new TreeSet<Transition>();
+			HashSet<State> S = new HashSet<>();
+			TreeSet<Transition> transitions = new TreeSet<>();
 			State f = new State(s);
-			HashSet<State> F = new HashSet<State>();
-			HashSet<State> L = new HashSet<State>();
+			HashSet<State> F = new HashSet<>();
+			HashSet<State> L = new HashSet<>();
 
 			S.add(new State(s));
 			S.add(new State(t));
@@ -205,11 +205,11 @@ public class AFAConverter extends TreeVisitorMap<DefaultVisitor> {
 
 			int s = getNewStateID();
 
-			HashSet<State> S = new HashSet<State>();
-			TreeSet<Transition> transitions = new TreeSet<Transition>();
+			HashSet<State> S = new HashSet<>();
+			TreeSet<Transition> transitions = new TreeSet<>();
 			State f = new State(s);
-			HashSet<State> F = new HashSet<State>();
-			HashSet<State> L = new HashSet<State>();
+			HashSet<State> F = new HashSet<>();
+			HashSet<State> L = new HashSet<>();
 
 			S.add(new State(s));
 			for (State state : tmpAFA1.getS()) {
@@ -303,11 +303,11 @@ public class AFAConverter extends TreeVisitorMap<DefaultVisitor> {
 		int s = getNewStateID();
 		int t = getNewStateID();
 
-		HashSet<State> S = new HashSet<State>();
-		TreeSet<Transition> transitions = new TreeSet<Transition>();
+		HashSet<State> S = new HashSet<>();
+		TreeSet<Transition> transitions = new TreeSet<>();
 		State f = new State(s);
-		HashSet<State> F = new HashSet<State>();
-		HashSet<State> L = new HashSet<State>();
+		HashSet<State> F = new HashSet<>();
+		HashSet<State> L = new HashSet<>();
 
 		S.add(new State(s));
 		S.add(new State(t));
@@ -336,13 +336,13 @@ public class AFAConverter extends TreeVisitorMap<DefaultVisitor> {
 
 	// theNumberOfStatesを利用し、新たに状態に番号を割り振るためAFA内ではなくここに書いてある
 	private AFA copyAFA(AFA base) {
-		HashSet<State> S = new HashSet<State>();
-		TreeSet<Transition> tau = new TreeSet<Transition>();
+		HashSet<State> S = new HashSet<>();
+		TreeSet<Transition> tau = new TreeSet<>();
 		State f = new State();
-		HashSet<State> F = new HashSet<State>();
-		HashSet<State> L = new HashSet<State>();
+		HashSet<State> F = new HashSet<>();
+		HashSet<State> L = new HashSet<>();
 
-		HashMap<Integer, Integer> newStateIDTable = new HashMap<Integer, Integer>();
+		HashMap<Integer, Integer> newStateIDTable = new HashMap<>();
 
 		for (State state : base.getS()) {
 			int newStateID = getNewStateID();
@@ -379,11 +379,11 @@ public class AFAConverter extends TreeVisitorMap<DefaultVisitor> {
 
 		int s = getNewStateID();
 
-		HashSet<State> S = new HashSet<State>();
-		TreeSet<Transition> transitions = new TreeSet<Transition>();
+		HashSet<State> S = new HashSet<>();
+		TreeSet<Transition> transitions = new TreeSet<>();
 		State f = new State(s);
-		HashSet<State> F = new HashSet<State>();
-		HashSet<State> L = new HashSet<State>();
+		HashSet<State> F = new HashSet<>();
+		HashSet<State> L = new HashSet<>();
 
 		S.add(new State(s));
 		for (State state : tmpAFA1.getS()) {
@@ -431,11 +431,11 @@ public class AFAConverter extends TreeVisitorMap<DefaultVisitor> {
 
 			int s = getNewStateID();
 
-			HashSet<State> S = new HashSet<State>();
-			TreeSet<Transition> transitions = new TreeSet<Transition>();
+			HashSet<State> S = new HashSet<>();
+			TreeSet<Transition> transitions = new TreeSet<>();
 			State f = new State(s);
-			HashSet<State> F = new HashSet<State>();
-			HashSet<State> L = new HashSet<State>();
+			HashSet<State> F = new HashSet<>();
+			HashSet<State> L = new HashSet<>();
 
 			S.add(new State(s));
 			for (State state : tmpAFA1.getS()) {
@@ -480,11 +480,11 @@ public class AFAConverter extends TreeVisitorMap<DefaultVisitor> {
 
 			AFA tmpAFA2 = computePzeroAFA(copyAFA(tmpAFA1)); // e*
 
-			HashSet<State> S = new HashSet<State>();
-			TreeSet<Transition> transitions = new TreeSet<Transition>();
+			HashSet<State> S = new HashSet<>();
+			TreeSet<Transition> transitions = new TreeSet<>();
 			State f = tmpAFA1.getf();
-			HashSet<State> F = new HashSet<State>();
-			HashSet<State> L = new HashSet<State>();
+			HashSet<State> F = new HashSet<>();
+			HashSet<State> L = new HashSet<>();
 
 			for (State state : tmpAFA1.getS()) {
 				S.add(new State(state.getID()));
@@ -570,11 +570,11 @@ public class AFAConverter extends TreeVisitorMap<DefaultVisitor> {
 			AFA tmpAfa = visit(e.get(0));
 			int s = getNewStateID();
 
-			HashSet<State> S = new HashSet<State>();
-			TreeSet<Transition> transitions = new TreeSet<Transition>();
+			HashSet<State> S = new HashSet<>();
+			TreeSet<Transition> transitions = new TreeSet<>();
 			State f = new State(s);
-			HashSet<State> F = new HashSet<State>();
-			HashSet<State> L = new HashSet<State>();
+			HashSet<State> F = new HashSet<>();
+			HashSet<State> L = new HashSet<>();
 
 			S.add(new State(s));
 			for (State state : tmpAfa.getS()) {
@@ -609,11 +609,11 @@ public class AFAConverter extends TreeVisitorMap<DefaultVisitor> {
 	private AFA computePnotAFA(AFA tmpAfa) {
 		int s = getNewStateID();
 
-		HashSet<State> S = new HashSet<State>();
-		TreeSet<Transition> transitions = new TreeSet<Transition>();
+		HashSet<State> S = new HashSet<>();
+		TreeSet<Transition> transitions = new TreeSet<>();
 		State f = new State(s);
-		HashSet<State> F = new HashSet<State>();
-		HashSet<State> L = new HashSet<State>();
+		HashSet<State> F = new HashSet<>();
+		HashSet<State> L = new HashSet<>();
 
 		S.add(new State(s));
 		for (State state : tmpAfa.getS()) {
@@ -653,11 +653,11 @@ public class AFAConverter extends TreeVisitorMap<DefaultVisitor> {
 			AFA tmpAfa = visit(e.get(0));
 			int s = getNewStateID();
 
-			HashSet<State> S = new HashSet<State>();
-			TreeSet<Transition> transitions = new TreeSet<Transition>();
+			HashSet<State> S = new HashSet<>();
+			TreeSet<Transition> transitions = new TreeSet<>();
 			State f = new State(s);
-			HashSet<State> F = new HashSet<State>();
-			HashSet<State> L = new HashSet<State>();
+			HashSet<State> F = new HashSet<>();
+			HashSet<State> L = new HashSet<>();
 
 			S.add(new State(s));
 			for (State state : tmpAfa.getS()) {
@@ -699,11 +699,11 @@ public class AFAConverter extends TreeVisitorMap<DefaultVisitor> {
 			AFA tmpAfa1 = visit(Expressions.first(e));
 			AFA tmpAfa2 = visit(Expressions.next(e));
 
-			HashSet<State> S = new HashSet<State>();
-			TreeSet<Transition> transitions = new TreeSet<Transition>();
+			HashSet<State> S = new HashSet<>();
+			TreeSet<Transition> transitions = new TreeSet<>();
 			State f = new State(tmpAfa1.getf().getID());
-			HashSet<State> F = new HashSet<State>();
-			HashSet<State> L = new HashSet<State>();
+			HashSet<State> F = new HashSet<>();
+			HashSet<State> L = new HashSet<>();
 
 			for (State state : tmpAfa1.getS()) {
 				S.add(new State(state.getID()));
@@ -750,11 +750,11 @@ public class AFAConverter extends TreeVisitorMap<DefaultVisitor> {
 			int s = getNewStateID();
 			int t = getNewStateID();
 
-			HashSet<State> S = new HashSet<State>();
-			TreeSet<Transition> transitions = new TreeSet<Transition>();
+			HashSet<State> S = new HashSet<>();
+			TreeSet<Transition> transitions = new TreeSet<>();
 			State f = new State(s);
-			HashSet<State> F = new HashSet<State>();
-			HashSet<State> L = new HashSet<State>();
+			HashSet<State> F = new HashSet<>();
+			HashSet<State> L = new HashSet<>();
 
 			S.add(new State(s));
 			S.add(new State(t));
@@ -805,11 +805,11 @@ public class AFAConverter extends TreeVisitorMap<DefaultVisitor> {
 				int t = getNewStateID();
 				State nonTerminal_s = initialStateOfNonTerminal.get(nonTerminalName);
 				State nonTerminal_t = acceptingStateOfNonTerminal.get(nonTerminalName);
-				HashSet<State> S = new HashSet<State>();
-				TreeSet<Transition> transitions = new TreeSet<Transition>();
+				HashSet<State> S = new HashSet<>();
+				TreeSet<Transition> transitions = new TreeSet<>();
 				State f = new State(s);
-				HashSet<State> F = new HashSet<State>();
-				HashSet<State> L = new HashSet<State>();
+				HashSet<State> F = new HashSet<>();
+				HashSet<State> L = new HashSet<>();
 
 				S.add(new State(s));
 				S.add(new State(t));
@@ -832,11 +832,11 @@ public class AFAConverter extends TreeVisitorMap<DefaultVisitor> {
 
 				AFA tmpAfa = visitProduction(((nez.lang.NonTerminal) e).getProduction());
 
-				HashSet<State> S = new HashSet<State>();
-				TreeSet<Transition> transitions = new TreeSet<Transition>();
+				HashSet<State> S = new HashSet<>();
+				TreeSet<Transition> transitions = new TreeSet<>();
 				State f = new State(s);
-				HashSet<State> F = new HashSet<State>();
-				HashSet<State> L = new HashSet<State>();
+				HashSet<State> F = new HashSet<>();
+				HashSet<State> L = new HashSet<>();
 
 				S.add(new State(s));
 				S.add(new State(t));

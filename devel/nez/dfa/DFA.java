@@ -13,10 +13,10 @@ public class DFA {
 	private HashSet<State> F = null;
 
 	public DFA() {
-		S = new HashSet<State>();
-		tau = new TreeSet<Transition>();
+		S = new HashSet<>();
+		tau = new TreeSet<>();
 		f = new State();
-		F = new HashSet<State>();
+		F = new HashSet<>();
 	}
 
 	public DFA(HashSet<State> S, TreeSet<Transition> tau, State f, HashSet<State> F) {
@@ -50,9 +50,9 @@ public class DFA {
 	}
 
 	public ArrayList<ArrayList<Transition>> toAdjacencyList() {
-		ArrayList<ArrayList<Transition>> adjacencyList = new ArrayList<ArrayList<Transition>>();
+		ArrayList<ArrayList<Transition>> adjacencyList = new ArrayList<>();
 		for (int i = 0; i < S.size(); i++) {
-			adjacencyList.add(new ArrayList<Transition>());
+			adjacencyList.add(new ArrayList<>());
 		}
 		for (Transition transition : this.tau) {
 			int src = transition.getSrc();
@@ -64,10 +64,10 @@ public class DFA {
 
 	// DFA から逆向きのオートマトン(NFA)を生成する
 	public NFA rev(DFA dfa) {
-		HashSet<State> allStates = new HashSet<State>();
-		TreeSet<Transition> stateTransitionFunction = new TreeSet<Transition>();
-		HashSet<State> initialStates = new HashSet<State>();
-		HashSet<State> acceptingStates = new HashSet<State>();
+		HashSet<State> allStates = new HashSet<>();
+		TreeSet<Transition> stateTransitionFunction = new TreeSet<>();
+		HashSet<State> initialStates = new HashSet<>();
+		HashSet<State> acceptingStates = new HashSet<>();
 
 		for (State state : dfa.getS()) {
 			allStates.add(new State(state.getID()));

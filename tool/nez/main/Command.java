@@ -66,10 +66,10 @@ public abstract class Command {
 	protected String grammarFile = null;
 	protected String grammarSource = null;
 	protected String grammarType = null;
-	protected UList<String> grammarFiles = new UList<String>(new String[4]);
+	protected UList<String> grammarFiles = new UList<>(new String[4]);
 	protected String startProduction = null;
 	protected String inputText = null;
-	protected UList<String> inputFiles = new UList<String>(new String[4]);
+	protected UList<String> inputFiles = new UList<>(new String[4]);
 	protected String outputFormat = null;
 	protected String outputDirectory = null;
 

@@ -15,8 +15,8 @@ public class Function {
 	public Function(Production rule) {
 		this.funcName = rule.getLocalName();
 		this.rule = rule;
-		this.bbList = new ArrayList<BasicBlock>();
-		this.callers = new ArrayList<Function>();
+		this.bbList = new ArrayList<>();
+		this.callers = new ArrayList<>();
 	}
 
 	public BasicBlock get(int index) {
@@ -52,7 +52,7 @@ public class Function {
 	}
 
 	public List<DebugVMInstruction> serchInst(Expression e) {
-		List<DebugVMInstruction> ilist = new ArrayList<DebugVMInstruction>();
+		List<DebugVMInstruction> ilist = new ArrayList<>();
 		for(int i = 0; i < this.size(); i++) {
 			BasicBlock bb = this.get(i);
 			for(int j = 0; j < bb.size(); j++) {

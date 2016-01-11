@@ -29,10 +29,10 @@ class MozGrammarChecker extends ExpressionDuplicationVisitor {
 	public MozGrammarChecker(ParserGrammar gg, TreeMap<String, Boolean> boolMap, Production start, ParserStrategy strategy) {
 		this.parserGrammar = gg;
 		this.strategy = strategy;
-		this.boolMap0 = (boolMap == null) ? new TreeMap<String, Boolean>() : boolMap;
+		this.boolMap0 = (boolMap == null) ? new TreeMap<>() : boolMap;
 		this.conds = Conditions.newConditions(start, boolMap);
 
-		this.stacked = new UList<Expression>(new Expression[128]);
+		this.stacked = new UList<>(new Expression[128]);
 		if (!strategy.TreeConstruction) {
 			this.enterNonASTContext();
 		}
@@ -371,11 +371,11 @@ class MozGrammarChecker extends ExpressionDuplicationVisitor {
 	final static Short False = -1;
 	final static Short Unknown = 0;
 
-	HashMap<String, Short> flagMap = new HashMap<String, Short>();
+	HashMap<String, Short> flagMap = new HashMap<>();
 
 	private Short hasFlag(Production p, String flagName) {
 		if (flagMap == null) {
-			this.flagMap = new HashMap<String, Short>();
+			this.flagMap = new HashMap<>();
 		}
 		String key = p.getUniqueName() + "+" + flagName;
 		Short res = flagMap.get(key);

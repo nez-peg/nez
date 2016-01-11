@@ -12,7 +12,7 @@ public class Module {
 	ParserGrammar g;
 
 	public Module() {
-		this.funcList = new ArrayList<Function>();
+		this.funcList = new ArrayList<>();
 	}
 
 	public void setGrammar(ParserGrammar g) {

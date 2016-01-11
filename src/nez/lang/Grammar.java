@@ -35,7 +35,7 @@ public class Grammar extends AbstractList<Production> {
 		this.id = serialNumbering++;
 		this.parent = parent;
 		this.ns = ns != null ? ns : "g";
-		this.prodList = new UList<Production>(new Production[1]);
+		this.prodList = new UList<>(new Production[1]);
 	}
 
 	final String uniqueName(String name) {
@@ -106,7 +106,7 @@ public class Grammar extends AbstractList<Production> {
 			if (this.prodMap != null) {
 				this.prodMap.put(p.getLocalName(), p);
 			} else if (this.prodList.size() > 4) {
-				this.prodMap = new HashMap<String, Production>();
+				this.prodMap = new HashMap<>();
 				for (Production p3 : this.prodList) {
 					this.prodMap.put(p3.getLocalName(), p3);
 				}

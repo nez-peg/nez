@@ -18,18 +18,18 @@ public class StronglyConnectedComponent {
 	public StronglyConnectedComponent(int V, AFA afa) {
 		this.V = V;
 		this.afa = afa;
-		G = new ArrayList<ArrayList<Integer>>();
-		rG = new ArrayList<ArrayList<Integer>>();
-		used = new ArrayList<Boolean>();
-		cmp = new ArrayList<Integer>();
+		G = new ArrayList<>();
+		rG = new ArrayList<>();
+		used = new ArrayList<>();
+		cmp = new ArrayList<>();
 
 		for (int i = 0; i < V; i++) {
-			G.add(new ArrayList<Integer>());
-			rG.add(new ArrayList<Integer>());
+			G.add(new ArrayList<>());
+			rG.add(new ArrayList<>());
 			used.add(false);
 			cmp.add(-1);
 		}
-		vs = new ArrayList<Integer>();
+		vs = new ArrayList<>();
 	}
 
 	void add_edge(int s, int t) {
@@ -97,7 +97,7 @@ public class StronglyConnectedComponent {
 		}
 
 		nV = scc();
-		ArrayList<Integer> groupSize = new ArrayList<Integer>();
+		ArrayList<Integer> groupSize = new ArrayList<>();
 		for (int i = 0; i < V; i++) {
 			groupSize.add(0);
 		}
@@ -107,22 +107,22 @@ public class StronglyConnectedComponent {
 			groupSize.set(groupID, current_size + 1);
 		}
 
-		ArrayList<Set<State>> additionalAcceptingState = new ArrayList<Set<State>>(V);
-		ArrayList<Set<State>> additionalAcceptingStateLA = new ArrayList<Set<State>>(V);
-		Map<Integer, Integer> fromGroupIDtoVertexID = new HashMap<Integer, Integer>();
+		ArrayList<Set<State>> additionalAcceptingState = new ArrayList<>(V);
+		ArrayList<Set<State>> additionalAcceptingStateLA = new ArrayList<>(V);
+		Map<Integer, Integer> fromGroupIDtoVertexID = new HashMap<>();
 
 		int initialStateBelongsToThisGroup = -1;
 
 		int tmpV = V;
 		for (int i = 0; i < V; i++) {
-			additionalAcceptingState.add(new HashSet<State>());
-			additionalAcceptingStateLA.add(new HashSet<State>());
+			additionalAcceptingState.add(new HashSet<>());
+			additionalAcceptingStateLA.add(new HashSet<>());
 			if (groupSize.get(i) > 1) {
 				S.add(new State(tmpV));
 				fromGroupIDtoVertexID.put(i, tmpV++);
 			}
 		}
-		TreeSet<Transition> newEdges = new TreeSet<Transition>();
+		TreeSet<Transition> newEdges = new TreeSet<>();
 		for (Transition e : tau) {
 			int src = e.getSrc();
 			int dst = e.getDst();

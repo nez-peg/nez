@@ -14,13 +14,13 @@ public class AFA {
 	private HashSet<State> L;
 
 	public AFA() {
-		S = new HashSet<State>();
+		S = new HashSet<>();
 		// tau = new TreeMap<TauKey, State>();
 		f = new State();
-		F = new HashSet<State>();
-		L = new HashSet<State>();
+		F = new HashSet<>();
+		L = new HashSet<>();
 
-		tau = new TreeSet<Transition>();
+		tau = new TreeSet<>();
 	}
 
 	public AFA(HashSet<State> S, TreeSet<Transition> tau, State f, HashSet<State> F, HashSet<State> L) {
