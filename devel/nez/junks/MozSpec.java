@@ -191,7 +191,6 @@ public class MozSpec {
 		fb.decIndent();
 		fb.writeIndent("}");
 		fb.writeNewLine();
-		;
 
 		fb.close();
 	}

@@ -35,15 +35,15 @@ public class PEGTLTranslator extends GrammarTranslator {
 
 	protected String _Open() {
 		return "<";
-	};
+	}
 
 	protected String _Close() {
 		return ">";
-	};
+	}
 
 	protected String _Delim() {
 		return ",";
-	};
+	}
 
 	public void visitGrouping(Expression e) {
 		// W(_OpenGrouping());

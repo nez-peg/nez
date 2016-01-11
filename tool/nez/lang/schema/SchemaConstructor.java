@@ -18,14 +18,14 @@ public abstract class SchemaConstructor extends GrammarVisitorMap<SchemaTransduc
 }
 
 interface SchemaTransducer {
-	public Schema accept(Tree<?> node);
+	Schema accept(Tree<?> node);
 }
 
 interface SchemaSymbol {
-	static final Symbol _Key = Symbol.tag("key");
-	static final Symbol _Value = Symbol.tag("value");
-	static final Symbol _Member = Symbol.tag("member");
-	static final Symbol _Name = Symbol.tag("name");
-	static final Symbol _Type = Symbol.tag("type");
-	static final Symbol _List = Symbol.tag("list");
+	Symbol _Key = Symbol.tag("key");
+	Symbol _Value = Symbol.tag("value");
+	Symbol _Member = Symbol.tag("member");
+	Symbol _Name = Symbol.tag("name");
+	Symbol _Type = Symbol.tag("type");
+	Symbol _List = Symbol.tag("list");
 }

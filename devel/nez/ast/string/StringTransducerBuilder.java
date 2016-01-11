@@ -3,15 +3,15 @@ package nez.ast.string;
 import nez.ast.Tree;
 
 public interface StringTransducerBuilder {
-	public <E extends Tree<E>> StringTransducer lookup(Tree<E> sub);
+	<E extends Tree<E>> StringTransducer lookup(Tree<E> sub);
 
-	public void write(String text);
+	void write(String text);
 
-	public void writeNewLineIndent();
+	void writeNewLineIndent();
 
-	public void incIndent();
+	void incIndent();
 
-	public void decIndent();
+	void decIndent();
 }
 
 // class FormatterEntry {

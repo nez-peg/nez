@@ -10,10 +10,10 @@ public enum Typestate {
 	// public final static Integer Tree = 1;
 	// public final static Integer TreeMutation = 2;
 
-	public static interface TypestateAnalyzer {
-		public Typestate inferTypestate(Production p);
+	public interface TypestateAnalyzer {
+		Typestate inferTypestate(Production p);
 
-		public Typestate inferTypestate(Expression e);
+		Typestate inferTypestate(Expression e);
 	}
 
 	public static final TypestateAnalyzer newAnalyzer() {

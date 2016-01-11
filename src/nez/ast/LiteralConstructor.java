@@ -26,8 +26,8 @@ public class LiteralConstructor extends TreeVisitorMap<nez.ast.LiteralConstructo
 		return find(node.getTag().getSymbol());
 	}
 
-	public static interface TreeConstructor {
-		public Object newInstance(Tree<?> node);
+	public interface TreeConstructor {
+		Object newInstance(Tree<?> node);
 	}
 
 	public class _Object implements TreeConstructor {
