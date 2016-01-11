@@ -25,10 +25,10 @@ import nez.parser.moz.ParserGrammar;
 import nez.util.ConsoleUtils;
 
 public class NezDebugger {
-	HashMap<String, BreakPoint> breakPointMap = new HashMap<String, BreakPoint>();
-	HashMap<Nez.Choice, ChoicePoint> choicePointMap = new HashMap<Nez.Choice, ChoicePoint>();
-	HashMap<String, Production> ruleMap = new HashMap<String, Production>();
-	List<String> nameList = new ArrayList<String>();
+	HashMap<String, BreakPoint> breakPointMap = new HashMap<>();
+	HashMap<Nez.Choice, ChoicePoint> choicePointMap = new HashMap<>();
+	HashMap<String, Production> ruleMap = new HashMap<>();
+	List<String> nameList = new ArrayList<>();
 	DebugOperator command = null;
 	ParserGrammar peg;
 	DebugVMCompiler compiler;
@@ -55,7 +55,7 @@ public class NezDebugger {
 			this.cr = new ConsoleReader();
 			Completor[] br = { new SimpleCompletor(new String[] { "b", "break", "goto", "reach" }), new SimpleCompletor(this.nameList.toArray(new String[this.nameList.size()])) };
 			ArgumentCompletor abr = new ArgumentCompletor(br);
-			ArrayList<String> printlist = new ArrayList<String>();
+			ArrayList<String> printlist = new ArrayList<>();
 			printlist.addAll(this.nameList);
 			printlist.addAll(Arrays.asList("-pos", "-node", "-pr", "-call"));
 			Completor[] print = { new SimpleCompletor(new String[] { "p", "print" }), new SimpleCompletor(printlist.toArray(new String[printlist.size()])) };

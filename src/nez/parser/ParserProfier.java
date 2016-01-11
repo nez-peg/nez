@@ -29,8 +29,8 @@ public class ParserProfier {
 		}
 	}
 
-	private UList<DataPoint> dataPointList = new UList<DataPoint>(new DataPoint[64]);
-	private UMap<DataPoint> dataPointMap = new UMap<DataPoint>();
+	private UList<DataPoint> dataPointList = new UList<>(new DataPoint[64]);
+	private UMap<DataPoint> dataPointMap = new UMap<>();
 
 	private void setDataPoint(String key, Object value) {
 		if (!this.dataPointMap.hasKey(key)) {

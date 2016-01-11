@@ -142,7 +142,7 @@ public class Combinator {
 	}
 
 	protected final Expression Sequence(Expression... elist) {
-		UList<Expression> l = new UList<Expression>(new Expression[8]);
+		UList<Expression> l = new UList<>(new Expression[8]);
 		for (Expression e : elist) {
 			Expressions.addSequence(l, e);
 		}
@@ -150,7 +150,7 @@ public class Combinator {
 	}
 
 	protected final Expression Choice(Expression... elist) {
-		UList<Expression> l = new UList<Expression>(new Expression[8]);
+		UList<Expression> l = new UList<>(new Expression[8]);
 		for (Expression e : elist) {
 			Expressions.addChoice(l, e);
 		}

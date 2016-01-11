@@ -778,8 +778,8 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 			this.justPredictionCount++;
 			int fid = this.fid++;
 			String label = "EXIT_CHOICE" + fid;
-			HashMap<String, Expression> m = new HashMap<String, Expression>();
-			ArrayList<Expression> l = new ArrayList<Expression>();
+			HashMap<String, Expression> m = new HashMap<>();
+			ArrayList<Expression> l = new ArrayList<>();
 			L("void* jump_table" + formatId(fid) + "[] = {");
 			for (int ch = 0; ch < e.predictedCase.length; ch++) {
 				Expression pCase = e.predictedCase[ch];
@@ -833,7 +833,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 		}
 	}
 
-	Stack<String> markStack = new Stack<String>();
+	Stack<String> markStack = new Stack<>();
 
 	@Override
 	public void visitPreNew(Nez.BeginTree e) {
@@ -900,7 +900,7 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 		}
 	}
 
-	ArrayList<String> flagTable = new ArrayList<String>();
+	ArrayList<String> flagTable = new ArrayList<>();
 
 	public void visitIfFlag(Nez.IfCondition e) {
 		if (!this.flagTable.contains(e.flagName)) {

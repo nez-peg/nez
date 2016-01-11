@@ -20,7 +20,7 @@ public class GrammarExample {
 
 	public GrammarExample(Grammar grammar) {
 		this.grammar = grammar;
-		exampleList = new UList<Example>(new Example[8]);
+		exampleList = new UList<>(new Example[8]);
 	}
 
 	public List<Example> getExampleList() {
@@ -41,7 +41,7 @@ public class GrammarExample {
 	}
 
 	public final List<String> getExampleList(String name) {
-		UList<String> l = new UList<String>(new String[4]);
+		UList<String> l = new UList<>(new String[4]);
 		if (exampleList != null) {
 			for (Example ex : exampleList) {
 				if (name.equals(ex.getName())) {

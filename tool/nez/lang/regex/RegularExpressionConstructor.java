@@ -213,7 +213,7 @@ public class RegularExpressionConstructor extends GrammarVisitorMap<ExpressionTr
 		@Override
 		public Expression accept(Tree<?> e, Expression k) {
 			if (k == null) {
-				UList<Expression> l = new UList<Expression>(new Expression[e.size()]);
+				UList<Expression> l = new UList<>(new Expression[e.size()]);
 				byteMap = new boolean[257];
 				for (Tree<?> subnode : e) {
 					Expressions.addChoice(l, newInstance(subnode));
@@ -315,7 +315,7 @@ public class RegularExpressionConstructor extends GrammarVisitorMap<ExpressionTr
 	public class _Seq extends TreeVisitor {
 		@Override
 		public Expression accept(Tree<?> e, Expression k) {
-			UList<Expression> l = new UList<Expression>(new Expression[2]);
+			UList<Expression> l = new UList<>(new Expression[2]);
 			Expressions.addSequence(l, newInstance(e));
 			if (k != null) {
 				Expressions.addSequence(l, k);

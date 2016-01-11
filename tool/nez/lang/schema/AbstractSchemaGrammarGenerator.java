@@ -50,13 +50,13 @@ public abstract class AbstractSchemaGrammarGenerator implements SchemaGrammarGen
 	}
 
 	public final void initMemberList() {
-		requiredElementList = new ArrayList<Element>();
-		elementList = new ArrayList<Element>();
+		requiredElementList = new ArrayList<>();
+		elementList = new ArrayList<>();
 		tableCounter++;
 	}
 
 	protected final List<Element> extractOptionalMembers() {
-		List<Element> impliedList = new ArrayList<Element>();
+		List<Element> impliedList = new ArrayList<>();
 		for (int i = 0; i < elementList.size(); i++) {
 			if (!requiredElementList.contains(elementList.get(i))) {
 				impliedList.add(elementList.get(i));
@@ -108,7 +108,7 @@ public abstract class AbstractSchemaGrammarGenerator implements SchemaGrammarGen
 	}
 
 	protected final Expression _Sequence(Expression... l) {
-		UList<Expression> seq = new UList<Expression>(new Expression[8]);
+		UList<Expression> seq = new UList<>(new Expression[8]);
 		for (Expression p : l) {
 			Expressions.addSequence(seq, p);
 		}
@@ -116,7 +116,7 @@ public abstract class AbstractSchemaGrammarGenerator implements SchemaGrammarGen
 	}
 
 	protected final Expression _Choice(Expression... l) {
-		UList<Expression> seq = new UList<Expression>(new Expression[8]);
+		UList<Expression> seq = new UList<>(new Expression[8]);
 		for (Expression p : l) {
 			Expressions.addChoice(seq, p);
 		}

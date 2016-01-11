@@ -42,7 +42,7 @@ public class DOTGenerator {
 			pw.println("\ndigraph g {");
 			pw.println("\"" + afa.getf().getID() + "\"[style=filled,fillcolor=\"" + fColor + "\"];");
 
-			HashSet<State> FandL = new HashSet<State>();
+			HashSet<State> FandL = new HashSet<>();
 			for (State state : afa.getS()) {
 				if (afa.getF().contains(state) && afa.getL().contains(state)) {
 					FandL.add(new State(state.getID()));
@@ -107,13 +107,13 @@ public class DOTGenerator {
 		}
 		try {
 
-			ArrayList<ArrayList<ArrayList<Integer>>> tau = new ArrayList<ArrayList<ArrayList<Integer>>>();
+			ArrayList<ArrayList<ArrayList<Integer>>> tau = new ArrayList<>();
 			for (int i = 0; i < dfa.getS().size(); i++) {
-				tau.add(new ArrayList<ArrayList<Integer>>());
+				tau.add(new ArrayList<>());
 			}
 			for (int i = 0; i < dfa.getS().size(); i++) {
 				for (int j = 0; j < dfa.getS().size(); j++) {
-					tau.get(i).add(new ArrayList<Integer>());
+					tau.get(i).add(new ArrayList<>());
 				}
 			}
 			for (Transition transition : dfa.getTau()) {
@@ -149,7 +149,7 @@ public class DOTGenerator {
 						continue;
 					}
 					StringBuilder labels = new StringBuilder();
-					Set<Integer> exists = new HashSet<Integer>();
+					Set<Integer> exists = new HashSet<>();
 					for (int i = 0; i < tau.get(src).get(dst).size(); i++) {
 						if (i > 0) {
 

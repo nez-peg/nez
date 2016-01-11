@@ -128,7 +128,7 @@ public final class Parser {
 
 	private void perror(Source source, long pos, String message) {
 		if (this.errors == null) {
-			this.errors = new UList<SourceError>(new SourceError[4]);
+			this.errors = new UList<>(new SourceError[4]);
 		}
 		errors.add(new SourceError(source, pos, message));
 	}
@@ -142,7 +142,7 @@ public final class Parser {
 	}
 
 	public final List<SourceError> getErrors() {
-		return errors == null ? new ArrayList<SourceError>() : this.errors;
+		return errors == null ? new ArrayList<>() : this.errors;
 	}
 
 	public final boolean showErrors() {

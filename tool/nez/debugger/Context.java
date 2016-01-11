@@ -76,7 +76,7 @@ public abstract class Context implements Source {
 		}
 		this.pos = pos;
 		if (this.failOverList.size() > 0) {
-			ArrayList<FailOverInfo> list = new ArrayList<FailOverInfo>();
+			ArrayList<FailOverInfo> list = new ArrayList<>();
 			for (int i = 0; i < this.failOverList.size(); i++) {
 				FailOverInfo fover = this.failOverList.get(i);
 				if (fover.fail_pos <= this.pos) {
@@ -216,7 +216,7 @@ public abstract class Context implements Source {
 
 	boolean failOver = false;
 	boolean[] WS = null;
-	ArrayList<FailOverInfo> failOverList = new ArrayList<FailOverInfo>();
+	ArrayList<FailOverInfo> failOverList = new ArrayList<>();
 	DebugVMInstruction matchInst = null;
 
 	public final DebugVMInstruction opIchar(Ichar inst) {
@@ -521,8 +521,8 @@ public abstract class Context implements Source {
 		return inst.next;
 	}
 
-	HashMap<Expression, Alt> altJumpMap = new HashMap<Expression, Alt>();
-	Stack<AltResult> altStack = new Stack<AltResult>();
+	HashMap<Expression, Alt> altJumpMap = new HashMap<>();
+	Stack<AltResult> altStack = new Stack<>();
 
 	public final DebugVMInstruction opIaltstart(Ialtstart inst) {
 		this.altStack.push(new AltResult());

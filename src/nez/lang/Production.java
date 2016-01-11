@@ -47,7 +47,7 @@ public class Production {
 	}
 
 	public final void dump() {
-		UList<String> l = new UList<String>(new String[4]);
+		UList<String> l = new UList<>(new String[4]);
 		if (this.isPublic()) {
 			l.add("public");
 		}

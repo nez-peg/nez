@@ -96,7 +96,7 @@ public class MozSpec {
 	// { "Table", "u16", "@TableConstPools" } //
 	// };
 
-	static HashMap<String, String> javaMap = new HashMap<String, String>();
+	static HashMap<String, String> javaMap = new HashMap<>();
 	static {
 		// type
 		javaMap.put("tNonTerminal", "String");

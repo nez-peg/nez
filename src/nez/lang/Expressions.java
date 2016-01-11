@@ -20,11 +20,11 @@ public abstract class Expressions {
 	// ---------------------------------------------------------------------
 
 	public final static UList<Expression> newUList(int size) {
-		return new UList<Expression>(new Expression[size]);
+		return new UList<>(new Expression[size]);
 	}
 
 	public final static List<Expression> newList(int size) {
-		return new UList<Expression>(new Expression[size]);
+		return new UList<>(new Expression[size]);
 	}
 
 	public final static void addSequence(List<Expression> l, Expression e) {
@@ -401,7 +401,7 @@ public abstract class Expressions {
 	 */
 
 	public final static Expression newPair(SourceLocation s, Expression p, Expression p2) {
-		UList<Expression> l = new UList<Expression>(new Expression[2]);
+		UList<Expression> l = new UList<>(new Expression[2]);
 		addSequence(l, p);
 		addSequence(l, p2);
 		return newPair(l);
@@ -441,7 +441,7 @@ public abstract class Expressions {
 	 */
 
 	public final static Expression newPair(Expression... expressions) {
-		UList<Expression> l = new UList<Expression>(new Expression[expressions.length]);
+		UList<Expression> l = new UList<>(new Expression[expressions.length]);
 		for (Expression e : expressions) {
 			addSequence(l, e);
 		}
@@ -535,7 +535,7 @@ public abstract class Expressions {
 	 */
 
 	public final static Expression newSequence(Expression... expressions) {
-		UList<Expression> l = new UList<Expression>(new Expression[expressions.length]);
+		UList<Expression> l = new UList<>(new Expression[expressions.length]);
 		for (Expression e : expressions) {
 			addSequence(l, e);
 		}
@@ -584,7 +584,7 @@ public abstract class Expressions {
 		if (p2 == null) {
 			return p;
 		}
-		UList<Expression> l = new UList<Expression>(new Expression[2]);
+		UList<Expression> l = new UList<>(new Expression[2]);
 		addChoice(l, p);
 		addChoice(l, p2);
 		return newChoice(l);
@@ -1055,7 +1055,7 @@ public abstract class Expressions {
 	}
 
 	public final static Expression newByteSequence(SourceLocation s, boolean binary, byte[] utf8) {
-		UList<Expression> l = new UList<Expression>(new Expression[utf8.length]);
+		UList<Expression> l = new UList<>(new Expression[utf8.length]);
 		for (int i = 0; i < utf8.length; i++) {
 			l.add(newByte(s, utf8[i]));
 		}
@@ -1097,7 +1097,7 @@ public abstract class Expressions {
 		if (equalsBase(b, b2)) {
 			return newUnicodeRange(s, b, b2);
 		}
-		UList<Expression> l = new UList<Expression>(new Expression[b.length]);
+		UList<Expression> l = new UList<>(new Expression[b.length]);
 		b2 = b;
 		for (int pc = c + 1; pc <= c2; pc++) {
 			byte[] b3 = StringUtils.toUtf8(String.valueOf((char) pc));
@@ -1131,7 +1131,7 @@ public abstract class Expressions {
 		if (b[b.length - 1] == b2[b.length - 1]) {
 			return newByteSequence(s, false, b);
 		} else {
-			UList<Expression> l = new UList<Expression>(new Expression[b.length]);
+			UList<Expression> l = new UList<>(new Expression[b.length]);
 			for (int i = 0; i < b.length - 1; i++) {
 				l.add(newByte(s, b[i]));
 			}
@@ -1145,7 +1145,7 @@ public abstract class Expressions {
 	}
 
 	public final static Expression newTree(SourceLocation s, boolean lefted, Symbol label, Expression e) {
-		UList<Expression> l = new UList<Expression>(new Expression[e.size() + 3]);
+		UList<Expression> l = new UList<>(new Expression[e.size() + 3]);
 		Expressions.addSequence(l, lefted ? newFoldTree(s, label, 0) : newBeginTree(s, 0));
 		Expressions.addSequence(l, e);
 		Expressions.addSequence(l, Expressions.newEndTree(s, 0));
@@ -1153,7 +1153,7 @@ public abstract class Expressions {
 	}
 
 	public final static Expression newLeftFoldOption(SourceLocation s, Symbol label, Expression e) {
-		UList<Expression> l = new UList<Expression>(new Expression[e.size() + 3]);
+		UList<Expression> l = new UList<>(new Expression[e.size() + 3]);
 		Expressions.addSequence(l, newFoldTree(s, label, 0));
 		Expressions.addSequence(l, e);
 		Expressions.addSequence(l, Expressions.newEndTree(s, 0));
@@ -1161,7 +1161,7 @@ public abstract class Expressions {
 	}
 
 	public final static Expression newLeftFoldRepetition(SourceLocation s, Symbol label, Expression e) {
-		UList<Expression> l = new UList<Expression>(new Expression[e.size() + 3]);
+		UList<Expression> l = new UList<>(new Expression[e.size() + 3]);
 		Expressions.addSequence(l, newFoldTree(s, label, 0));
 		Expressions.addSequence(l, e);
 		Expressions.addSequence(l, Expressions.newEndTree(s, 0));
@@ -1169,7 +1169,7 @@ public abstract class Expressions {
 	}
 
 	public final static Expression newLeftFoldRepetition1(SourceLocation s, Symbol label, Expression e) {
-		UList<Expression> l = new UList<Expression>(new Expression[e.size() + 3]);
+		UList<Expression> l = new UList<>(new Expression[e.size() + 3]);
 		Expressions.addSequence(l, newFoldTree(s, label, 0));
 		Expressions.addSequence(l, e);
 		Expressions.addSequence(l, Expressions.newEndTree(s, 0));
@@ -1219,8 +1219,8 @@ public abstract class Expressions {
 	public final static Expression tryMultiCharSequence(Expression e) {
 		if (e instanceof Nez.Sequence || e instanceof Nez.Pair) {
 			List<Expression> el = flatten(e);
-			List<Expression> el2 = new UList<Expression>(new Expression[el.size()]);
-			UList<Byte> bytes = new UList<Byte>(new Byte[el.size()]);
+			List<Expression> el2 = new UList<>(new Expression[el.size()]);
+			UList<Byte> bytes = new UList<>(new Byte[el.size()]);
 			int next = 0;
 			while (next < el.size()) {
 				next = appendExpressionOrMultiChar(el, next, el2, bytes);

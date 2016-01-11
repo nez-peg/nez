@@ -49,7 +49,7 @@ public class MozCompiler implements ParserCompiler {
 			this.code = code;
 			this.grammar = grammar;
 			for (Production p : grammar) {
-				code.setProductionCode(p, new ProductionCode<MozInst>(null));
+				code.setProductionCode(p, new ProductionCode<>(null));
 			}
 		}
 

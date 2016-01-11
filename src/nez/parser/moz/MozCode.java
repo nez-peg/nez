@@ -38,7 +38,7 @@ public class MozCode extends ParserCode<MozInst> {
 	public boolean run(MozInst code, MozMachine sc) {
 		boolean result = false;
 		String u = "Start";
-		UList<String> stack = new UList<String>(new String[128]);
+		UList<String> stack = new UList<>(new String[128]);
 		stack.add("Start");
 		try {
 			while (true) {

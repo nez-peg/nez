@@ -18,9 +18,9 @@ public class DFAConverter {
 	public DFAConverter(AFA afa) {
 		this.afa = afa;
 		this.theNumberOfStates = afa.getS().size();
-		adjacencyList = new ArrayList<ArrayList<Transition>>();
+		adjacencyList = new ArrayList<>();
 		for (int i = 0; i < this.theNumberOfStates; i++) {
-			adjacencyList.add(new ArrayList<Transition>());
+			adjacencyList.add(new ArrayList<>());
 		}
 		for (Transition transition : afa.getTau()) {
 			adjacencyList.get(transition.getSrc()).add(transition);
@@ -60,9 +60,9 @@ public class DFAConverter {
 			return new LogicVariable(be.getID(), be.getValue());
 		}
 
-		ArrayList<LogicVariable> predicate = new ArrayList<LogicVariable>();
-		ArrayList<Integer> predicateType = new ArrayList<Integer>();
-		ArrayList<LogicVariable> epsilon = new ArrayList<LogicVariable>();
+		ArrayList<LogicVariable> predicate = new ArrayList<>();
+		ArrayList<Integer> predicateType = new ArrayList<>();
+		ArrayList<LogicVariable> epsilon = new ArrayList<>();
 		boolean hasOtherwise = false;
 		for (Transition transition : adjacencyList.get(be.getID())) {
 			if (transition.getPredicate() != -1) {
@@ -104,7 +104,7 @@ public class DFAConverter {
 					return new And(((predicateType.get(0) == 1) ? new Not(left) : left), right);
 				} else {
 					BooleanExpression left = epsilonExpansion(predicate.get(0));
-					ArrayList<BooleanExpression> arrRight = new ArrayList<BooleanExpression>();
+					ArrayList<BooleanExpression> arrRight = new ArrayList<>();
 					for (LogicVariable lv : epsilon) {
 						arrRight.add(epsilonExpansion(lv));
 					}
@@ -122,7 +122,7 @@ public class DFAConverter {
 				}
 			}
 		} else { // Or
-			ArrayList<BooleanExpression> arr = new ArrayList<BooleanExpression>();
+			ArrayList<BooleanExpression> arr = new ArrayList<>();
 			if (hasOtherwise) {
 				arr.add(new LogicVariable(be.getID()));
 			}
@@ -237,7 +237,7 @@ public class DFAConverter {
 	}
 
 	private BooleanExpression transitLogicVariable(LogicVariable be, char sigma) {
-		ArrayList<LogicVariable> next = new ArrayList<LogicVariable>();
+		ArrayList<LogicVariable> next = new ArrayList<>();
 		for (Transition transition : adjacencyList.get(be.getID())) {
 			if (transition.getPredicate() == -1 && (transition.getLabel() == sigma || transition.getLabel() == AFA.anyCharacter)) {
 				next.add(new LogicVariable(transition.getDst()));
@@ -264,15 +264,15 @@ public class DFAConverter {
 
 	public DFA convert() {
 
-		HashSet<State> S = new HashSet<State>();
-		TreeSet<Transition> tau = new TreeSet<Transition>();
+		HashSet<State> S = new HashSet<>();
+		TreeSet<Transition> tau = new TreeSet<>();
 		State f = null;
-		HashSet<State> F = new HashSet<State>();
+		HashSet<State> F = new HashSet<>();
 
 		BDD bdd = new BDD();
-		Map<Integer, Integer> BDDIDtoVertexID = new HashMap<Integer, Integer>();
+		Map<Integer, Integer> BDDIDtoVertexID = new HashMap<>();
 		int vertexID = 0;
-		Deque<BooleanExpression> deq = new ArrayDeque<BooleanExpression>();
+		Deque<BooleanExpression> deq = new ArrayDeque<>();
 		{
 			BooleanExpression lf = new LogicVariable(afa.getf().getID());
 			// BooleanExpression ef = epsilonExpansionWithEpsilonCycle(lf);
@@ -346,7 +346,7 @@ public class DFAConverter {
 	public BooleanExpression epsilonExpansionWithEpsilonCycle(BooleanExpression arg) {
 		BooleanExpression be = arg.deepCopy();
 		BDD bdd = new BDD();
-		HashSet<Integer> isAlreadyGenerated = new HashSet<Integer>();
+		HashSet<Integer> isAlreadyGenerated = new HashSet<>();
 		int bddID = bdd.build(be.recoverPredicate());
 		isAlreadyGenerated.add(new Integer(bddID));
 
@@ -399,9 +399,9 @@ public class DFAConverter {
 			return new LogicVariable(be.getID(), be.getValue());
 		}
 
-		ArrayList<LogicVariable> predicate = new ArrayList<LogicVariable>();
-		ArrayList<Integer> predicateType = new ArrayList<Integer>();
-		ArrayList<LogicVariable> epsilon = new ArrayList<LogicVariable>();
+		ArrayList<LogicVariable> predicate = new ArrayList<>();
+		ArrayList<Integer> predicateType = new ArrayList<>();
+		ArrayList<LogicVariable> epsilon = new ArrayList<>();
 		boolean hasOtherwise = false;
 		for (Transition transition : adjacencyList.get(be.getID())) {
 			if (transition.getPredicate() != -1) {
@@ -455,7 +455,7 @@ public class DFAConverter {
 					// BooleanExpression left =
 					// epsilonExpansion(predicate.get(0));
 					BooleanExpression left = predicate.get(0);
-					ArrayList<BooleanExpression> arrRight = new ArrayList<BooleanExpression>();
+					ArrayList<BooleanExpression> arrRight = new ArrayList<>();
 					for (LogicVariable lv : epsilon) {
 						// arrRight.add(epsilonExpansion(lv));
 						arrRight.add(lv);
@@ -474,7 +474,7 @@ public class DFAConverter {
 				}
 			}
 		} else { // Or
-			ArrayList<BooleanExpression> arr = new ArrayList<BooleanExpression>();
+			ArrayList<BooleanExpression> arr = new ArrayList<>();
 			if (hasOtherwise) {
 				arr.add(new LogicVariable(be.getID()));
 			}

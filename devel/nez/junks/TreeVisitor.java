@@ -11,7 +11,7 @@ import nez.util.Verbose;
 
 public class TreeVisitor {
 	private final Class<?> treeType;
-	private HashMap<String, Method> methodMap = new HashMap<String, Method>();
+	private HashMap<String, Method> methodMap = new HashMap<>();
 
 	protected TreeVisitor(Class<?> treeType) {
 		this.treeType = treeType;

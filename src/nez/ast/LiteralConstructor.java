@@ -145,7 +145,7 @@ public class LiteralConstructor extends TreeVisitorMap<nez.ast.LiteralConstructo
 	}
 
 	protected List<Object> newList(int n) {
-		return new ArrayList<Object>(n);
+		return new ArrayList<>(n);
 	}
 
 	public List<Object> newList(Tree<?> node) {
@@ -163,7 +163,7 @@ public class LiteralConstructor extends TreeVisitorMap<nez.ast.LiteralConstructo
 	}
 
 	protected Map<String, Object> newMap() {
-		return new HashMap<String, Object>();
+		return new HashMap<>();
 	}
 
 	public Map<String, Object> newMap(Tree<?> node) {

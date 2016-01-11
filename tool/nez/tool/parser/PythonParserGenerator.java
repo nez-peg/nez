@@ -400,7 +400,7 @@ public class PythonParserGenerator extends ParserGrammarSourceGenerator {
 		If(_match(StringUtils.stringfyCharacter(p.byteChar))).Begin().Consume().End().Else().Begin().Fail().End();
 	}
 
-	ArrayList<Nez.ByteSet> byteMapList = new ArrayList<Nez.ByteSet>();
+	ArrayList<Nez.ByteSet> byteMapList = new ArrayList<>();
 
 	@Override
 	public void visitByteSet(Nez.ByteSet p) {
@@ -526,7 +526,7 @@ public class PythonParserGenerator extends ParserGrammarSourceGenerator {
 		}
 	}
 
-	HashMap<String, Integer> memoMap = new HashMap<String, Integer>();
+	HashMap<String, Integer> memoMap = new HashMap<>();
 	int memoPoint = 0;
 
 	@Override
@@ -576,7 +576,7 @@ public class PythonParserGenerator extends ParserGrammarSourceGenerator {
 		// End();
 	}
 
-	Stack<Boolean> markStack = new Stack<Boolean>();
+	Stack<Boolean> markStack = new Stack<>();
 
 	@Override
 	public void visitPreNew(Nez.BeginTree p) {

@@ -154,8 +154,8 @@ public class ParserStrategy {
 
 	void init() {
 		if (Wnone) {
-			this.logs = new ArrayList<String>();
-			this.checks = new HashSet<String>();
+			this.logs = new ArrayList<>();
+			this.checks = new HashSet<>();
 		} else {
 			this.logs = null;
 			this.checks = null;

@@ -5,8 +5,8 @@ import java.util.HashMap;
 import nez.util.UList;
 
 public class Symbol {
-	private static HashMap<String, Symbol> tagIdMap = new HashMap<String, Symbol>();
-	private static UList<Symbol> tagNameList = new UList<Symbol>(new Symbol[64]);
+	private static HashMap<String, Symbol> tagIdMap = new HashMap<>();
+	private static UList<Symbol> tagNameList = new UList<>(new Symbol[64]);
 
 	public final static Symbol tag(String tagName) {
 		Symbol tag = tagIdMap.get(tagName);

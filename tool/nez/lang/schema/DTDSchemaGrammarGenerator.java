@@ -17,8 +17,8 @@ public class DTDSchemaGrammarGenerator extends AbstractSchemaGrammarGenerator {
 
 	int entityCount = 0;
 	boolean enableNezExtension = true;
-	List<String> elementNameList = new ArrayList<String>();
-	Set<String> attributeOccurences = new HashSet<String>();
+	List<String> elementNameList = new ArrayList<>();
+	Set<String> attributeOccurences = new HashSet<>();
 
 	@Override
 	public void loadPredefinedRules() {

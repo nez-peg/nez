@@ -15,7 +15,7 @@ public class Cmatch extends Command {
 		strategy.TreeConstruction = false;
 		Parser parser = newParser();
 
-		UList<String> failedInputs = new UList<String>(new String[4]);
+		UList<String> failedInputs = new UList<>(new String[4]);
 
 		int totalCount = 0, failureCount = 0, unconsumedCount = 0;
 		long consumed = 0;

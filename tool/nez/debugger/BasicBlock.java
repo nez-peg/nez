@@ -11,9 +11,9 @@ public class BasicBlock {
 	List<BasicBlock> succs;
 
 	public BasicBlock() {
-		this.insts = new ArrayList<DebugVMInstruction>();
-		this.preds = new ArrayList<BasicBlock>();
-		this.succs = new ArrayList<BasicBlock>();
+		this.insts = new ArrayList<>();
+		this.preds = new ArrayList<>();
+		this.succs = new ArrayList<>();
 	}
 
 	public DebugVMInstruction get(int index) {
