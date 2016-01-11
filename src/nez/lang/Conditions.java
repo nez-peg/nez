@@ -47,7 +47,7 @@ public class Conditions extends TreeMap<String, Boolean> {
 	}
 
 	enum Value {
-		Reachable, Unreachable, Undecided;
+		Reachable, Unreachable, Undecided
 	}
 
 	HashMap<String, Value> reachMap = new HashMap<String, Value>();

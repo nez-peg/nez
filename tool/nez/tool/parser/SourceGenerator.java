@@ -5,10 +5,10 @@ import nez.parser.Parser;
 
 public interface SourceGenerator {
 
-	public void init(Grammar g, Parser parser, String path);
+	void init(Grammar g, Parser parser, String path);
 
-	public void doc(String command, String urn, String outputFormat);
+	void doc(String command, String urn, String outputFormat);
 
-	public void generate();
+	void generate();
 
 }

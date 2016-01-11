@@ -148,7 +148,7 @@ public class MozCompiler implements ParserCompiler {
 			// Expression skip = p.possibleInfiniteLoop ? new Moz.Skip(p) : new
 			// ISkip(p);
 			MozInst skip = new Moz.Skip((Expression) p);
-			MozInst start = visit(((Expression) p).get(0), skip, next/* FIXME */);
+			MozInst start = visit(p.get(0), skip, next/* FIXME */);
 			skip.next = start;
 			return new Moz.Alt((Expression) p, (MozInst) next, start);
 		}

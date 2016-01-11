@@ -36,10 +36,7 @@ public class DebugFileContext extends DebugSourceContext {
 
 					@Override
 					protected boolean removeEldestEntry(Map.Entry<Long, byte[]> eldest) {
-						if (this.size() > FifoSize) {
-							return true;
-						}
-						return false;
+						return this.size() > FifoSize;
 					}
 				};
 				this.buffer = null;
@@ -87,25 +84,15 @@ public class DebugFileContext extends DebugSourceContext {
 			case 0:
 				break;
 			case 1:
-				if (text[0] == this.buffer[offset]) {
-					return true;
-				}
-				return false;
+				return text[0] == this.buffer[offset];
 			case 2:
-				if (text[0] == this.buffer[offset] && text[1] == this.buffer[offset + 1]) {
-					return true;
-				}
-				return false;
+				return text[0] == this.buffer[offset] && text[1] == this.buffer[offset + 1];
 			case 3:
-				if (text[0] == this.buffer[offset] && text[1] == this.buffer[offset + 1] && text[2] == this.buffer[offset + 2]) {
-					return true;
-				}
-				return false;
+				return text[0] == this.buffer[offset] && text[1] == this.buffer[offset + 1] &&
+					   text[2] == this.buffer[offset + 2];
 			case 4:
-				if (text[0] == this.buffer[offset] && text[1] == this.buffer[offset + 1] && text[2] == this.buffer[offset + 2] && text[3] == this.buffer[offset + 3]) {
-					return true;
-				}
-				return false;
+				return text[0] == this.buffer[offset] && text[1] == this.buffer[offset + 1] &&
+					   text[2] == this.buffer[offset + 2] && text[3] == this.buffer[offset + 3];
 			default:
 				for (int i = 0; i < text.length; i++) {
 					if (text[i] != this.buffer[offset + i]) {

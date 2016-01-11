@@ -197,7 +197,7 @@ public class NezTranslator extends PEGTranslator {
 		W("<match ");
 		W(e.tableName);
 		W(">");
-	};
+	}
 
 	@Override
 	public void visitSymbolPredicate(Nez.SymbolPredicate e) {

@@ -6,5 +6,5 @@ import nez.lang.Expression;
 
 public interface ExpressionConstructor extends Constructor {
 	@Override
-	public Expression newInstance(Tree<?> node);
+	Expression newInstance(Tree<?> node);
 }

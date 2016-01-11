@@ -11,10 +11,10 @@ public class Nez {
 	 *
 	 */
 
-	public static interface SingleCharacter {
+	public interface SingleCharacter {
 	}
 
-	public abstract static interface TreeConstruction {
+	public interface TreeConstruction {
 	}
 
 	static abstract class Terminal extends Expression {
@@ -264,7 +264,7 @@ public class Nez {
 	 *
 	 */
 
-	public static interface Repetition {
+	public interface Repetition {
 		Expression get(int index);
 	}
 
@@ -863,7 +863,7 @@ public class Nez {
 
 	}
 
-	public static interface Conditional {
+	public interface Conditional {
 
 	}
 

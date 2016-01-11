@@ -3,10 +3,10 @@ package nez.lang;
 
 public class ByteConsumption extends Expression.Visitor {
 
-	static enum Result {
+	enum Result {
 		Unconsumed, //
 		Consumed, //
-		Undecided;
+		Undecided
 	}
 
 	public final boolean isConsumed(Production p) {

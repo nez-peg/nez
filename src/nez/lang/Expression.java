@@ -118,11 +118,11 @@ public abstract class Expression extends AbstractList<Expression> implements Sou
 
 	/* static class */
 
-	public static interface Conditional {
+	public interface Conditional {
 
 	}
 
-	public static interface Contextual {
+	public interface Contextual {
 
 	}
 

@@ -1,47 +1,47 @@
 package nez.lang.schema;
 
 public interface SchemaGrammarGenerator {
-	public void loadPredefinedRules();
+	void loadPredefinedRules();
 
-	public void newRoot(String structName);
+	void newRoot(String structName);
 
-	public Element newElement(String elementName, String structName, Schema t);
+	Element newElement(String elementName, String structName, Schema t);
 
-	public void newStruct(String structName, Schema t);
+	void newStruct(String structName, Schema t);
 
-	public void newMembers(String structName);
+	void newMembers(String structName);
 
-	public void newSymbols();
+	void newSymbols();
 
-	public Schema newTObject();
+	Schema newTObject();
 
-	public Schema newTStruct(String structName);
+	Schema newTStruct(String structName);
 
-	public Schema newTArray(Schema t);
+	Schema newTArray(Schema t);
 
-	public Schema newTEnum(String[] candidates);
+	Schema newTEnum(String[] candidates);
 
-	public Schema newTInteger();
+	Schema newTInteger();
 
-	public Schema newTInteger(int min, int max);
+	Schema newTInteger(int min, int max);
 
-	public Schema newTFloat();
+	Schema newTFloat();
 
-	public Schema newTFloat(int min, int max);
+	Schema newTFloat(int min, int max);
 
-	public Schema newTString();
+	Schema newTString();
 
-	public Schema newTString(int minLength, int maxLength);
+	Schema newTString(int minLength, int maxLength);
 
-	public Schema newTAny();
+	Schema newTAny();
 
-	public Schema newSet(String structName);
+	Schema newSet(String structName);
 
-	public Schema newPermutation();
+	Schema newPermutation();
 
-	public Schema newUniq(String elementName, Schema t);
+	Schema newUniq(String elementName, Schema t);
 
-	public Schema newAlt(String elementName);
+	Schema newAlt(String elementName);
 
-	public Schema newOthers();
+	Schema newOthers();
 }

@@ -312,7 +312,7 @@ public abstract class AbstractSchemaGrammarGenerator implements SchemaGrammarGen
 	public Schema newTFloat(int min, int max) {
 		// TODO Auto-generated method stub
 		return null;
-	};
+	}
 
 	@Override
 	public Schema newTString() {

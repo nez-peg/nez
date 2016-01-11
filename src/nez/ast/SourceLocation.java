@@ -1,14 +1,14 @@
 package nez.ast;
 
 public interface SourceLocation {
-	public Source getSource();
+	Source getSource();
 
-	public long getSourcePosition();
+	long getSourcePosition();
 
-	public int getLineNum();
+	int getLineNum();
 
-	public int getColumn();
+	int getColumn();
 
-	public String formatSourceMessage(String type, String msg);
+	String formatSourceMessage(String type, String msg);
 
 }

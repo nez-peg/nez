@@ -130,15 +130,15 @@ class FormatterMap {
 
 interface FormatterStream {
 
-	public Formatter lookupFormatter(CommonTree sub);
+	Formatter lookupFormatter(CommonTree sub);
 
-	public void write(String text);
+	void write(String text);
 
-	public void writeNewLineIndent();
+	void writeNewLineIndent();
 
-	public void incIndent();
+	void incIndent();
 
-	public void decIndent();
+	void decIndent();
 
 }
 

@@ -88,11 +88,7 @@ public class LogicVariable extends BooleanExpression {
 			if (value == -1) {
 				System.out.println("What is this Logic Variable");
 			}
-			if (value == 1) {
-				return true;
-			} else {
-				return false;
-			}
+			return value == 1;
 		}
 		return F.contains(new State(ID)) || L.contains(new State(ID));
 	}
