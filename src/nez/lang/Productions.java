@@ -107,7 +107,7 @@ public class Productions {
 	public static class NonterminalReference extends HashMap<String, Integer> {
 		public final int count(String key) {
 			Integer n = this.get(key);
-			return n == null ? 0 : (int) n;
+			return n == null ? 0 : n;
 		}
 	}
 

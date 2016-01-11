@@ -373,7 +373,7 @@ public class NezDebugger {
 			// }
 			if (o.type == Print.printPos) {
 				ConsoleUtils.println("pos = " + ctx.getPosition());
-				ConsoleUtils.println(sc.formatDebugPositionLine(((Context) sc).getPosition(), ""));
+				ConsoleUtils.println(sc.formatDebugPositionLine(sc.getPosition(), ""));
 			} else if (o.type == Print.printNode) {
 				ConsoleUtils.println("left = " + ctx.getLeftObject());
 			}

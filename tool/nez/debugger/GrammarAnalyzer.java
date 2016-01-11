@@ -92,10 +92,8 @@ public class GrammarAnalyzer {
 	}
 
 	public boolean isUnconsumedASTConstruction(Expression p) {
-		if (p instanceof Nez.BeginTree || p instanceof Nez.EndTree || p instanceof Nez.Tag || p instanceof Nez.Replace) {
-			return true;
-		}
-		return false;
+		return p instanceof Nez.BeginTree || p instanceof Nez.EndTree || p instanceof Nez.Tag ||
+			   p instanceof Nez.Replace;
 	}
 
 }

@@ -176,10 +176,7 @@ class MozGrammarOptimizer extends ExpressionTransformer {
 
 	// used to test inlining
 	public final static boolean isSingleCharacter(Expression e) {
-		if (e instanceof Nez.ByteSet || e instanceof Nez.Byte || e instanceof Nez.Any) {
-			return true;
-		}
-		return false;
+		return e instanceof Nez.ByteSet || e instanceof Nez.Byte || e instanceof Nez.Any;
 	}
 
 	@Override

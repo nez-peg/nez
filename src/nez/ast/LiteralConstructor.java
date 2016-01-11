@@ -47,10 +47,7 @@ public class LiteralConstructor extends TreeVisitorMap<nez.ast.LiteralConstructo
 		@Override
 		public Boolean newInstance(Tree<?> node) {
 			try {
-				if (node.toText().equals("true")) {
-					return true;
-				}
-				return false;
+				return node.toText().equals("true");
 			} catch (LiteralFormatException e) {
 				throw e;
 			} catch (RuntimeException e) {
