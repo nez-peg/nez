@@ -6,6 +6,7 @@ import nez.lang.Grammar;
 import nez.parser.Parser;
 import nez.tool.parser.CParserGenerator;
 import nez.tool.parser.CoffeeParserGenerator;
+import nez.tool.parser.JavaParserGenerator;
 import nez.tool.parser.SourceGenerator;
 
 public class Ccnez extends Command {
@@ -27,10 +28,12 @@ public class Ccnez extends Command {
 		switch (outputFormat) {
 		case "c":
 			return new CParserGenerator();
+		case "java":
+			return new JavaParserGenerator();
 		case "coffee":
 			return new CoffeeParserGenerator();
 		default:
-			return (SourceGenerator) this.newExtendedOutputHandler("", "peg pegjs pegtl lpeg mouse nez");
+			return (SourceGenerator) this.newExtendedOutputHandler("", "c java coffee");
 		}
 	}
 }

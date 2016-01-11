@@ -38,6 +38,7 @@ public class ParserStrategy {
 	/* PackratParsing */
 	public boolean PackratParsing = true;
 	public int SlidingWindow = 32;
+	public boolean Binary = false;
 
 	/* Profiling */
 	public boolean Profiling = false;
