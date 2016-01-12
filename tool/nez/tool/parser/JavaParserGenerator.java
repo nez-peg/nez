@@ -6,7 +6,7 @@ public class JavaParserGenerator extends AbstractParserGenerator {
 
 	@Override
 	protected String getFileExtension() {
-		return "java";
+		return "Parser.java";
 	}
 
 	@Override

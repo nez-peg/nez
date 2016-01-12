@@ -155,6 +155,7 @@ public abstract class Command {
 		ConsoleUtils.println("  parse      parse inputs and construct ASTs");
 		ConsoleUtils.println("  match      match inputs without ASTs");
 		ConsoleUtils.println("  inez       an interactive parser");
+		ConsoleUtils.println("  code       generate a parser source code for --format");
 		ConsoleUtils.println("  cnez       generate a C-based fast parser");
 		ConsoleUtils.println("  peg        translate a grammar into PEG specified with --format");
 		ConsoleUtils.println("  compile    compile a grammar into Nez bytecode .moz");
