@@ -341,13 +341,13 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 			}
 		}
 
-		public String optionFix(Elements link, LabelSet labelSet) {
-			if (link == null) {
+		public String optionFix(Elements links, LabelSet labelSet) {
+			if (links == null) {
 				return null;
 			}
-			for (int i = 0; i < link.size; i++) {
-				Element element = link.get(i);
-				labelSet = element.optionFix(labelSet);
+			for (int i = 0; i < links.size; i++) {
+				Element link = links.get(i);
+				labelSet = link.optionFix(labelSet);
 			}
 			return labelSet.label;
 		}
