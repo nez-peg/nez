@@ -45,6 +45,14 @@ public class JavaParserGenerator extends AbstractParserGenerator {
 
 	@Override
 	protected String generateFooter(Grammar g) {
+		Line("public final static void main(String[] a)");
+		Begin();
+		{
+			Statement("Tree<?> t = parse(a[0])");
+			Statement("System.out.println(\"parsed:\" + t)");
+		}
+		End();
+
 		End();
 		file.writeIndent("/*EOF*/");
 		return null;

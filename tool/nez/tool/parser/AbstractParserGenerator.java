@@ -35,6 +35,8 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 	protected TypestateAnalyzer typeState = Typestate.newAnalyzer();
 	protected StateAnalyzer symbolState = Symbolstate.newAnalyzer();
 
+	protected boolean verboseMode = true;
+
 	@Override
 	public final void init(Grammar g, Parser parser, String path) {
 		this.parser = parser;
@@ -137,6 +139,12 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 
 	protected void LineComment(String stmt) {
 		file.writeIndent(_comment() + " " + stmt);
+	}
+
+	protected void Verbose(String stmt) {
+		if (verboseMode) {
+			file.writeIndent(_comment() + " " + stmt);
+		}
 	}
 
 	protected void Return(String expr) {
@@ -522,6 +530,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		private void generateFunction(String name, Expression e) {
 			BeginFunc(name);
 			{
+				Verbose(e.toString());
 				initFunc(e);
 				visit(e, null);
 				Succ();
@@ -717,6 +726,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 			initVal(_unchoiced(), _true());
 			for (Expression sub : e) {
 				String f = makeFuncCall(sub);
+				Verbose(e.toString());
 				If(local(_unchoiced()));
 				{
 					SavePoint(sub);

@@ -82,7 +82,7 @@ public class ParserContext {
 		AstLog next;
 	}
 
-	private AstLog last = null;
+	private AstLog last = new AstLog();
 	private AstLog unused = null;
 
 	private void log(Operation op, int pos, Symbol label, Object value) {
