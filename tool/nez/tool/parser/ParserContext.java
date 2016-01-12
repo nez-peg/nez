@@ -134,12 +134,12 @@ public class ParserContext {
 				objectSize++;
 				break;
 			case Tag:
-				if (tag != null) {
+				if (tag == null) {
 					tag = (Symbol) start.value;
 				}
 				break;
 			case Replace:
-				if (value != null) {
+				if (value == null) {
 					value = (String) start.value;
 				}
 				break;
