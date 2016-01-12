@@ -61,13 +61,13 @@ public class NezFileFormatter extends TreeVisitor {
 		visit("p", node);
 	}
 
-	public final static Symbol _name = Symbol.tag("name");
-	public final static Symbol _expr = Symbol.tag("expr");
-	public final static Symbol _symbol = Symbol.tag("symbol");
+	public final static Symbol _name = Symbol.unique("name");
+	public final static Symbol _expr = Symbol.unique("expr");
+	public final static Symbol _symbol = Symbol.unique("symbol");
 
-	public final static Symbol _Production = Symbol.tag("Production");
-	public final static Symbol _Example = Symbol.tag("Example");
-	public final static Symbol _Format = Symbol.tag("Format");
+	public final static Symbol _Production = Symbol.unique("Production");
+	public final static Symbol _Example = Symbol.unique("Example");
+	public final static Symbol _Format = Symbol.unique("Format");
 
 	public boolean pSource(Tree<?> node) {
 		ArrayList<Tree<?>> l = new ArrayList<>(node.size() * 2);
@@ -137,12 +137,12 @@ public class NezFileFormatter extends TreeVisitor {
 		return start + node.getLength();
 	}
 
-	public final static Symbol _NonTerminal = Symbol.tag("NonTerminal");
+	public final static Symbol _NonTerminal = Symbol.unique("NonTerminal");
 
-	public final static Symbol _Choice = Symbol.tag("Choice");
-	public final static Symbol _Sequence = Symbol.tag("Sequence");
-	public final static Symbol _List = Symbol.tag("List");
-	public final static Symbol _Class = Symbol.tag("Class");
+	public final static Symbol _Choice = Symbol.unique("Choice");
+	public final static Symbol _Sequence = Symbol.unique("Sequence");
+	public final static Symbol _List = Symbol.unique("List");
+	public final static Symbol _Class = Symbol.unique("Class");
 
 	//
 	// public final static Tag _anno = Tag.tag("anno");
@@ -312,7 +312,7 @@ public class NezFileFormatter extends TreeVisitor {
 		Symbol label = null;
 		Tree<?> labelNode = node.get(_name, null);
 		if (labelNode != null) {
-			label = Symbol.tag(labelNode.toText());
+			label = Symbol.unique(labelNode.toText());
 		}
 		return label;
 	}
@@ -414,9 +414,9 @@ public class NezFileFormatter extends TreeVisitor {
 		throw new RuntimeException("undefined node");
 	}
 
-	public final static Symbol _hash = Symbol.tag("hash"); // example
-	public final static Symbol _name2 = Symbol.tag("name2"); // example
-	public final static Symbol _text = Symbol.tag("text"); // example
+	public final static Symbol _hash = Symbol.unique("hash"); // example
+	public final static Symbol _name2 = Symbol.unique("name2"); // example
+	public final static Symbol _text = Symbol.unique("text"); // example
 
 	public boolean pExample(Tree<?> node) {
 		Tree<?> nameNode = node.get(_name);
@@ -438,8 +438,8 @@ public class NezFileFormatter extends TreeVisitor {
 		return true;
 	}
 
-	public final static Symbol _size = Symbol.tag("hash"); // format
-	public final static Symbol _format = Symbol.tag("format"); // format
+	public final static Symbol _size = Symbol.unique("hash"); // format
+	public final static Symbol _format = Symbol.unique("format"); // format
 
 	public boolean pFormat(Tree<?> node) {
 		// System.out.println("node:" + node);

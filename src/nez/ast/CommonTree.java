@@ -3,7 +3,7 @@ package nez.ast;
 public class CommonTree extends Tree<CommonTree> {
 
 	public CommonTree() {
-		super(Symbol.tag("prototype"), null, 0, 0, null, null);
+		super(Symbol.unique("prototype"), null, 0, 0, null, null);
 	}
 
 	public CommonTree(Symbol tag, Source source, long pos, int len, int size, Object value) {

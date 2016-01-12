@@ -8,7 +8,7 @@ public class Symbol {
 	private static HashMap<String, Symbol> tagIdMap = new HashMap<String, Symbol>();
 	private static UList<Symbol> tagNameList = new UList<Symbol>(new Symbol[64]);
 
-	public final static Symbol tag(String tagName) {
+	public final static Symbol unique(String tagName) {
 		Symbol tag = tagIdMap.get(tagName);
 		if (tag == null) {
 			tag = new Symbol(tagIdMap.size(), tagName);
@@ -19,15 +19,15 @@ public class Symbol {
 	}
 
 	public final static int id(String tagName) {
-		return tag(tagName).id;
+		return unique(tagName).id;
 	}
 
 	public final static Symbol tag(int tagId) {
 		return tagNameList.ArrayValues[tagId];
 	}
 
-	public final static Symbol NullSymbol = tag("");
-	public final static Symbol MetaSymbol = tag("$");
+	public final static Symbol NullSymbol = unique("");
+	public final static Symbol MetaSymbol = unique("$");
 
 	final int id;
 	final String symbol;

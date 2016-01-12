@@ -1216,7 +1216,7 @@ public abstract class Expressions {
 		return true;
 	}
 
-	public final static Expression tryMultiCharSequence(Expression e) {
+	public final static Expression tryConvertingMultiCharSequence(Expression e) {
 		if (e instanceof Nez.Sequence || e instanceof Nez.Pair) {
 			List<Expression> el = flatten(e);
 			List<Expression> el2 = new UList<Expression>(new Expression[el.size()]);

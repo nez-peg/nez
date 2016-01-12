@@ -17,7 +17,7 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements
 	protected E[] subTree;
 
 	protected Tree() {
-		this.tag = Symbol.tag("prototype");
+		this.tag = Symbol.unique("prototype");
 		this.source = null;
 		this.pos = 0;
 		this.length = 0;

@@ -22,10 +22,10 @@ public class StringTransducer {
 
 	//
 
-	private static final Symbol FormatTag = Symbol.tag("Format");
-	private static final Symbol NameTag = Symbol.tag("Name");
-	private static final Symbol ListTag = Symbol.tag("List");
-	private static final Symbol IntTag = Symbol.tag("Integer");
+	private static final Symbol FormatTag = Symbol.unique("Format");
+	private static final Symbol NameTag = Symbol.unique("Name");
+	private static final Symbol ListTag = Symbol.unique("List");
+	private static final Symbol IntTag = Symbol.unique("Integer");
 
 	public final static <E extends Tree<E>> StringTransducer parseStringTransducer(Tree<E> node) {
 		if (node.is(NameTag)) {

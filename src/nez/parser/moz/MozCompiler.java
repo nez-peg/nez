@@ -318,7 +318,7 @@ public class MozCompiler implements ParserCompiler {
 		public final Expression getInnerExpression(Expression p) {
 			Expression inner = Expressions.resolveNonTerminal(p.get(0));
 			if (strategy.Ostring) {
-				inner = Expressions.tryMultiCharSequence(inner);
+				inner = Expressions.tryConvertingMultiCharSequence(inner);
 			}
 			return inner;
 		}

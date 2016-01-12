@@ -708,15 +708,20 @@ public class Nez {
 		public boolean hasInnerExpression() {
 			return this.get(0) != empty;
 		}
-
 	}
 
-	public static class SymbolAction extends Function {
+	public abstract static class SymbolFunction extends Function {
 		public final Symbol tableName;
 
-		SymbolAction(FunctionName op, NonTerminal e) {
+		SymbolFunction(FunctionName op, Expression e, Symbol symbol) {
 			super(op, e);
-			tableName = Symbol.tag(e.getLocalName());
+			tableName = symbol;
+		}
+	}
+
+	public static class SymbolAction extends SymbolFunction {
+		SymbolAction(FunctionName op, NonTerminal e) {
+			super(op, e, Symbol.unique(e.getLocalName()));
 		}
 
 		@Override
@@ -737,12 +742,9 @@ public class Nez {
 
 	}
 
-	public static class SymbolPredicate extends Function {
-		public final Symbol tableName;
-
+	public static class SymbolPredicate extends SymbolFunction {
 		SymbolPredicate(FunctionName op, NonTerminal pat, Symbol table) {
-			super(op, pat);
-			this.tableName = table == null ? Symbol.tag(pat.getLocalName()) : table;
+			super(op, pat, table == null ? Symbol.unique(pat.getLocalName()) : table);
 		}
 
 		@Override
@@ -760,12 +762,10 @@ public class Nez {
 		}
 	}
 
-	public static class SymbolMatch extends Function {
-		public final Symbol tableName;
+	public static class SymbolMatch extends SymbolFunction {
 
 		SymbolMatch(FunctionName op, NonTerminal pat, Symbol table) {
-			super(op, pat);
-			this.tableName = table == null ? Symbol.tag(pat.getLocalName()) : table;
+			super(op, pat, table == null ? Symbol.unique(pat.getLocalName()) : table);
 		}
 
 		@Override
@@ -784,13 +784,11 @@ public class Nez {
 
 	}
 
-	public static class SymbolExists extends Function {
-		public final Symbol tableName;
+	public static class SymbolExists extends SymbolFunction {
 		public final String symbol;
 
 		SymbolExists(Symbol table, String symbol) {
-			super(FunctionName.exists, empty);
-			this.tableName = table;
+			super(FunctionName.exists, empty, table);
 			this.symbol = symbol;
 		}
 
@@ -837,12 +835,10 @@ public class Nez {
 
 	}
 
-	public static class LocalScope extends Function {
-		public final Symbol tableName;
+	public static class LocalScope extends SymbolFunction {
 
 		LocalScope(Symbol table, Expression e) {
-			super(FunctionName.local, e);
-			this.tableName = table;
+			super(FunctionName.local, e, table);
 		}
 
 		@Override

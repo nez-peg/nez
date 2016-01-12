@@ -226,13 +226,13 @@ public class Combinator {
 			return null;
 		}
 		if (label.startsWith("$")) {
-			return Symbol.tag(label.substring(1));
+			return Symbol.unique(label.substring(1));
 		}
-		return Symbol.tag(label);
+		return Symbol.unique(label);
 	}
 
 	protected Expression Msg(String label, String msg) {
-		return Expressions.newLinkTree(src(), Symbol.tag(label), New(Replace(msg)));
+		return Expressions.newLinkTree(src(), Symbol.unique(label), New(Replace(msg)));
 	}
 
 	// protected final Expression Tag(Tag t) {
@@ -240,7 +240,7 @@ public class Combinator {
 	// }
 
 	protected final Expression Tag(String tag) {
-		return Expressions.newTag(src(), Symbol.tag(tag));
+		return Expressions.newTag(src(), Symbol.unique(tag));
 	}
 
 	protected final Expression Replace(char c) {

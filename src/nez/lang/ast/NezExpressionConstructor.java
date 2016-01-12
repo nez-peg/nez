@@ -193,7 +193,7 @@ public class NezExpressionConstructor extends GrammarVisitorMap<ExpressionTransd
 		Symbol label = null;
 		Tree<?> labelNode = node.get(_name, null);
 		if (labelNode != null) {
-			label = Symbol.tag(labelNode.toText());
+			label = Symbol.unique(labelNode.toText());
 		}
 		return label;
 	}
@@ -217,7 +217,7 @@ public class NezExpressionConstructor extends GrammarVisitorMap<ExpressionTransd
 	public class _Tagging extends TreeVisitor {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
-			return Expressions.newTag(node, Symbol.tag(node.toText()));
+			return Expressions.newTag(node, Symbol.unique(node.toText()));
 		}
 	}
 
@@ -301,14 +301,14 @@ public class NezExpressionConstructor extends GrammarVisitorMap<ExpressionTransd
 	public class _Exists extends TreeVisitor {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
-			return Expressions.newSymbolExists(node, Symbol.tag(node.getText(_name, "")), node.getText(_symbol, null));
+			return Expressions.newSymbolExists(node, Symbol.unique(node.getText(_name, "")), node.getText(_symbol, null));
 		}
 	}
 
 	public class _Local extends TreeVisitor {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
-			return Expressions.newLocalScope(node, Symbol.tag(node.getText(_name, "")), newInstance(node.get(_expr)));
+			return Expressions.newLocalScope(node, Symbol.unique(node.getText(_name, "")), newInstance(node.get(_expr)));
 		}
 	}
 

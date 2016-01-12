@@ -31,6 +31,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 	protected ParserStrategy strategy;
 	protected String path;
 	protected FileBuilder file;
+	//
 	protected TypestateAnalyzer typeState = Typestate.newAnalyzer();
 	protected StateAnalyzer symbolState = Symbolstate.newAnalyzer();
 
@@ -65,6 +66,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 	public void generate() {
 		Grammar g = this.parser.getParserGrammar();
 		this.generateHeader(g);
+		this.checkSymbol(g);
 		this.generate(g);
 		this.generateFooter(g);
 		file.writeNewLine();
@@ -113,6 +115,10 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		file.decIndent();
 		file.writeIndent();
 		file.write("}");
+	}
+
+	protected void Line(String stmt) {
+		file.writeIndent(stmt);
 	}
 
 	protected void Statement(String stmt) {
@@ -189,14 +195,14 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 
 	protected void VarDecl(String t, String v, String expr) {
 		if (t == null) {
-			Val(v, expr);
+			VarAssign(v, expr);
 		} else {
 			file.writeIndent(t + " " + v + " = " + expr);
 			Semicolon();
 		}
 	}
 
-	protected void Val(String v, String expr) {
+	protected void VarAssign(String v, String expr) {
 		file.writeIndent(v + " = " + expr);
 		Semicolon();
 	}
@@ -229,10 +235,6 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		return "false";
 	}
 
-	protected String _istrue(String expr) {
-		return expr;
-	}
-
 	protected String _not(String expr) {
 		return "!" + expr;
 	}
@@ -251,8 +253,23 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		return f + "(" + _state() + ")";
 	}
 
+	protected String _argument(String var, String type) {
+		if (type == null) {
+			return var;
+		}
+		return type + " " + var;
+	}
+
 	protected String _argument() {
-		return "Context " + _state();
+		return _argument(_state(), getType(_state()));
+	}
+
+	protected String _beginA() {
+		return "{";
+	}
+
+	protected String _endA() {
+		return "}";
 	}
 
 	protected String _field(String o, String name) {
@@ -278,19 +295,15 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		return "null";
 	}
 
-	protected String _symbol(Symbol s) {
-		return s == null ? _null() : StringUtils.quoteString('"', s.toString(), '"');
-	}
-
-	protected String _string(String s) {
-		return StringUtils.quoteString('"', s, '"');
-	}
-
 	protected String _funcname(String uname) {
 		return "p" + uname;
 	}
 
-	protected String PFunc(String name, String... args) {
+	private String GetArray(String array, String c) {
+		return array + "[" + c + "]";
+	}
+
+	protected String ParserFunc(String name, String... args) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(_state());
 		sb.append(".");
@@ -344,7 +357,16 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		return "unchoiced";
 	}
 
+	protected String _byteMap() {
+		return "byteMap";
+	}
+
+	protected String _byteSeq() {
+		return "byteSeq";
+	}
+
 	protected HashMap<String, String> typeMap = new HashMap<>();
+	protected HashMap<String, String> symbolMap = new HashMap<>();
 
 	protected void addType(String name, String type) {
 		typeMap.put(name, type);
@@ -355,6 +377,103 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 	}
 
 	protected abstract void initTypeMap();
+
+	/* Symbols */
+
+	private String _symbol(boolean[] b) {
+		String key = StringUtils.stringfyBitmap(b);
+		return symbolMap.get(key);
+	}
+
+	protected String _symbol(Symbol s) {
+		if (s == null) {
+			return _null();
+		}
+		String sym = symbolMap.get(s.getSymbol());
+		if (sym != null) {
+			return sym;
+		}
+		return s == null ? _null() : StringUtils.quoteString('"', s.toString(), '"');
+	}
+
+	protected String _string(String s) {
+		return StringUtils.quoteString('"', s, '"');
+	}
+
+	private void checkSymbol(Grammar g) {
+		for (Production p : g) {
+			checkSymbol(p.getExpression());
+		}
+	}
+
+	private void checkSymbol(Expression e) {
+		if (e instanceof Nez.ByteSet) {
+			boolean[] b = ((Nez.ByteSet) e).byteMap;
+			String key = StringUtils.stringfyBitmap(b);
+			String sym = symbolMap.get(key);
+			if (sym == null) {
+				sym = _byteMap() + symbolMap.size();
+				symbolMap.put(key, sym);
+				DeclSymbolBitmap(sym, b);
+			}
+		}
+		if (e instanceof Nez.Tag) {
+			DeclSymbol(((Nez.Tag) e).tag);
+		}
+		if (e instanceof Nez.LinkTree) {
+			DeclSymbol(((Nez.LinkTree) e).label);
+		}
+		if (e instanceof Nez.FoldTree) {
+			DeclSymbol(((Nez.FoldTree) e).label);
+		}
+		if (e instanceof Nez.SymbolFunction) {
+			DeclSymbol(((Nez.SymbolFunction) e).tableName);
+		}
+		for (Expression sub : e) {
+			checkSymbol(sub);
+		}
+	}
+
+	protected void DeclSymbol(String name, String value) {
+		Statement("private final static Symbol " + name + " = Symbol.unique(" + StringUtils.quoteString('"', value, '"') + ")");
+	}
+
+	void DeclConst(String type, String name, String val) {
+		if (type == null) {
+			Statement("private final static " + name + " = " + val);
+		} else {
+			Statement("private final static " + type + " " + name + " = " + val);
+		}
+	}
+
+	void DeclSymbol(Symbol s) {
+		if (s != null) {
+			String key = s.getSymbol();
+			String val = symbolMap.get(key);
+			if (val == null) {
+				symbolMap.put(key, "_" + key);
+				DeclSymbol("_" + key, key);
+			}
+		}
+	}
+
+	void DeclSymbolBitmap(String name, boolean b[]) {
+		StringBuilder sb = new StringBuilder();
+		String type = getType(_byteMap());
+		sb.append(_beginA());
+		for (int i = 0; i < 256; i++) {
+			if (b[i]) {
+				sb.append(_true());
+			} else {
+				sb.append(_false());
+			}
+			if (i < 255) {
+				sb.append(",");
+			}
+		}
+		sb.append(_endA());
+		DeclConst(type, name, sb.toString());
+	}
 
 	class ParserGeneratorVisitor extends Expression.Visitor {
 
@@ -445,33 +564,59 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 			VarDecl(type, local(name), expr);
 		}
 
-		protected void Pos() {
+		private String savePos() {
 			initVal(_pos(), _cpos());
+			return local(_pos());
 		}
 
-		protected void Back() {
-			Val(_cpos(), local(_pos()));
+		private void backPos() {
+			VarAssign(_cpos(), local(_pos()));
 		}
 
-		protected void Store(Expression inner) {
-			initVal(_pos(), _cpos());
+		private String saveTree() {
+			initVal(_left(), _cleft());
+			return local(_left());
+		}
+
+		private void backTree() {
+			VarAssign(_cleft(), local(_left()));
+		}
+
+		private void saveLog() {
+			initVal(_log(), ParserFunc("saveLog"));
+		}
+
+		private void backLog() {
+			Statement(ParserFunc("backLog", local(_log())));
+		}
+
+		private void saveSymbol() {
+			initVal(_sym(), ParserFunc("saveSymbolPoint"));
+		}
+
+		private void backSymbol() {
+			Statement(ParserFunc("backSymbolPoint", local(_sym())));
+		}
+
+		private void SavePoint(Expression inner) {
+			savePos();
 			if (typeState.inferTypestate(inner) != Typestate.Unit) {
-				initVal(_left(), _cleft());
-				initVal(_log(), _clog());
+				saveTree();
+				saveLog();
 			}
 			if (symbolState.isStateful(inner)) {
-				initVal(_sym(), _csym());
+				saveSymbol();
 			}
 		}
 
-		protected void Backtrack(Expression inner) {
-			Val(_cpos(), local(_pos()));
+		private void Backtrack(Expression inner) {
+			backPos();
 			if (typeState.inferTypestate(inner) != Typestate.Unit) {
-				Val(_cleft(), local(_left()));
-				Val(_clog(), local(_log()));
+				backTree();
+				backLog();
 			}
 			if (symbolState.isStateful(inner)) {
-				Val(_csym(), local(_sym()));
+				backSymbol();
 			}
 		}
 
@@ -499,7 +644,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 
 		@Override
 		public Object visitByte(Nez.Byte e, Object a) {
-			If(PFunc("read"), _noteq(), _byte(e.byteChar));
+			If(ParserFunc("read"), _noteq(), _byte(e.byteChar));
 			{
 				Fail();
 			}
@@ -509,7 +654,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 
 		@Override
 		public Object visitByteSet(Nez.ByteSet e, Object a) {
-			If(MatchByteArray(e.byteMap, PFunc("read")));
+			If(MatchByteArray(e.byteMap, ParserFunc("read")));
 			{
 				Fail();
 			}
@@ -518,24 +663,20 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		}
 
 		private String MatchByteArray(boolean[] byteMap, String c) {
-			return GetArray(StringUtils.stringfyBitmap(byteMap), c);
-		}
-
-		private String GetArray(String array, String c) {
-			return array + "[" + c + "]";
+			return GetArray(_symbol(byteMap), c);
 		}
 
 		@Override
 		public Object visitAny(Nez.Any e, Object a) {
 			if (strategy.Binary) {
-				Statement(PFunc("move", "1"));
-				If(PFunc("eof"));
+				Statement(ParserFunc("move", "1"));
+				If(ParserFunc("eof"));
 				{
 					Fail();
 				}
 				EndIf();
 			} else {
-				If(PFunc("read"), _eq(), "0");
+				If(ParserFunc("read"), _eq(), "0");
 				{
 					Fail();
 				}
@@ -546,7 +687,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 
 		@Override
 		public Object visitMultiByte(Nez.MultiByte e, Object a) {
-			If(_not(PFunc("match", _bytes(e.byteSeq), _int(e.byteSeq.length))));
+			If(_not(ParserFunc("match", _bytes(e.byteSeq), _int(e.byteSeq.length))));
 			{
 				Fail();
 			}
@@ -557,7 +698,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		@Override
 		public Object visitPair(Nez.Pair e, Object a) {
 			for (Expression sub : e) {
-				visit(sub, e);
+				visit(sub, a);
 			}
 			return null;
 		}
@@ -565,7 +706,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		@Override
 		public Object visitSequence(Nez.Sequence e, Object a) {
 			for (Expression sub : e) {
-				visit(sub, e);
+				visit(sub, a);
 			}
 			return null;
 		}
@@ -576,12 +717,12 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 			initVal(_unchoiced(), _true());
 			for (Expression sub : e) {
 				String f = makeFuncCall(sub);
-				If(_istrue(local(_unchoiced())));
+				If(local(_unchoiced()));
 				{
-					Store(sub);
-					If(_istrue(f));
+					SavePoint(sub);
+					If(f);
 					{
-						Val(local(_unchoiced()), _false());
+						VarAssign(local(_unchoiced()), _false());
 					}
 					Else();
 					{
@@ -591,7 +732,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 				}
 				EndIf();
 			}
-			If(_istrue(local(_unchoiced())));
+			If(local(_unchoiced()));
 			{
 				Fail();
 			}
@@ -605,7 +746,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 			Expression sub = e.get(0);
 			if (!tryOptionOptimization(sub)) {
 				String f = makeFuncCall(sub);
-				Store(sub);
+				SavePoint(sub);
 				If(_not(f));
 				{
 					Backtrack(sub);
@@ -634,7 +775,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 				String f = makeFuncCall(sub);
 				While(_true());
 				{
-					Store(sub);
+					SavePoint(sub);
 					If(_not(f));
 					{
 						Backtrack(sub);
@@ -652,13 +793,13 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 			if (!this.tryAndOptimization(sub)) {
 				String f = makeFuncCall(sub);
 				BeginScope();
-				Pos();
+				savePos();
 				If(_not(f));
 				{
 					Fail();
 				}
 				EndIf();
-				Back();
+				backPos();
 				EndScope();
 			}
 			return null;
@@ -670,8 +811,8 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 			if (!this.tryNotOptimization(sub)) {
 				String f = makeFuncCall(sub);
 				BeginScope();
-				Store(sub);
-				If(_istrue(f));
+				SavePoint(sub);
+				If(f);
 				{
 					Fail();
 				}
@@ -686,32 +827,32 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 			if (strategy.Olex) {
 				if (inner instanceof Nez.Byte) {
 					Nez.Byte e = (Nez.Byte) inner;
-					If(PFunc("prefetch"), _eq(), _byte(e.byteChar));
+					If(ParserFunc("prefetch"), _eq(), _byte(e.byteChar));
 					{
-						PFunc("move", "1");
+						ParserFunc("move", "1");
 					}
 					EndIf();
 					return true;
 				}
 				if (inner instanceof Nez.ByteSet) {
 					Nez.ByteSet e = (Nez.ByteSet) inner;
-					If(MatchByteArray(e.byteMap, PFunc("prefetch")));
+					If(MatchByteArray(e.byteMap, ParserFunc("prefetch")));
 					{
-						PFunc("move", "1");
+						ParserFunc("move", "1");
 					}
 					EndIf();
 					return true;
 				}
 				if (inner instanceof Nez.MultiByte) {
 					Nez.MultiByte e = (Nez.MultiByte) inner;
-					Statement(PFunc("match", _bytes(e.byteSeq), _int(e.byteSeq.length)));
+					Statement(ParserFunc("match", _bytes(e.byteSeq), _int(e.byteSeq.length)));
 					return true;
 				}
 				if (inner instanceof Nez.Any) {
 					// Nez.Any e = (Nez.Any) inner;
-					If(_not(PFunc("eof")));
+					If(_not(ParserFunc("eof")));
 					{
-						PFunc("move", "1");
+						ParserFunc("move", "1");
 					}
 					EndIf();
 					return true;
@@ -724,25 +865,25 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 			if (strategy.Olex) {
 				if (inner instanceof Nez.Byte) {
 					Nez.Byte e = (Nez.Byte) inner;
-					While(_op(PFunc("prefetch"), _eq(), _byte(e.byteChar)));
+					While(_op(ParserFunc("prefetch"), _eq(), _byte(e.byteChar)));
 					{
-						PFunc("move", "1");
+						ParserFunc("move", "1");
 					}
 					EndWhile();
 					return true;
 				}
 				if (inner instanceof Nez.ByteSet) {
 					Nez.ByteSet e = (Nez.ByteSet) inner;
-					While(MatchByteArray(e.byteMap, PFunc("prefetch")));
+					While(MatchByteArray(e.byteMap, ParserFunc("prefetch")));
 					{
-						PFunc("move", "1");
+						ParserFunc("move", "1");
 					}
 					EndWhile();
 					return true;
 				}
 				if (inner instanceof Nez.MultiByte) {
 					Nez.MultiByte e = (Nez.MultiByte) inner;
-					While(PFunc("match", _bytes(e.byteSeq), _int(e.byteSeq.length)));
+					While(ParserFunc("match", _bytes(e.byteSeq), _int(e.byteSeq.length)));
 					{
 						EmptyStatement();
 					}
@@ -751,9 +892,9 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 				}
 				if (inner instanceof Nez.Any) {
 					// Nez.Any e = (Nez.Any) inner;
-					While(_not(PFunc("eof")));
+					While(_not(ParserFunc("eof")));
 					{
-						PFunc("move", "1");
+						ParserFunc("move", "1");
 					}
 					EndWhile();
 					return true;
@@ -766,7 +907,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 			if (strategy.Olex) {
 				if (inner instanceof Nez.Byte) {
 					Nez.Byte e = (Nez.Byte) inner;
-					If(PFunc("prefetch"), _noteq(), _byte(e.byteChar));
+					If(ParserFunc("prefetch"), _noteq(), _byte(e.byteChar));
 					{
 						Fail();
 					}
@@ -775,7 +916,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 				}
 				if (inner instanceof Nez.ByteSet) {
 					Nez.ByteSet e = (Nez.ByteSet) inner;
-					If(_not(MatchByteArray(e.byteMap, PFunc("prefetch"))));
+					If(_not(MatchByteArray(e.byteMap, ParserFunc("prefetch"))));
 					{
 						Fail();
 					}
@@ -784,7 +925,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 				}
 				if (inner instanceof Nez.MultiByte) {
 					Nez.MultiByte e = (Nez.MultiByte) inner;
-					If(_not(PFunc("match", _bytes(e.byteSeq), _int(e.byteSeq.length))));
+					If(_not(ParserFunc("match", _bytes(e.byteSeq), _int(e.byteSeq.length))));
 					{
 						Fail();
 					}
@@ -793,7 +934,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 				}
 				if (inner instanceof Nez.Any) {
 					// Nez.Any e = (Nez.Any) inner;
-					If(PFunc("eof"));
+					If(ParserFunc("eof"));
 					{
 						Fail();
 					}
@@ -808,7 +949,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 			if (strategy.Olex) {
 				if (inner instanceof Nez.Byte) {
 					Nez.Byte e = (Nez.Byte) inner;
-					If(PFunc("prefetch"), _eq(), _byte(e.byteChar));
+					If(ParserFunc("prefetch"), _eq(), _byte(e.byteChar));
 					{
 						Fail();
 					}
@@ -817,7 +958,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 				}
 				if (inner instanceof Nez.ByteSet) {
 					Nez.ByteSet e = (Nez.ByteSet) inner;
-					If(MatchByteArray(e.byteMap, PFunc("prefetch")));
+					If(MatchByteArray(e.byteMap, ParserFunc("prefetch")));
 					{
 						Fail();
 					}
@@ -826,7 +967,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 				}
 				if (inner instanceof Nez.MultiByte) {
 					Nez.MultiByte e = (Nez.MultiByte) inner;
-					If(PFunc("match", _bytes(e.byteSeq), _int(e.byteSeq.length)));
+					If(ParserFunc("match", _bytes(e.byteSeq), _int(e.byteSeq.length)));
 					{
 						Fail();
 					}
@@ -835,7 +976,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 				}
 				if (inner instanceof Nez.Any) {
 					// Nez.Any e = (Nez.Any) inner;
-					If(_not(PFunc("eof")));
+					If(_not(ParserFunc("eof")));
 					{
 						Fail();
 					}
@@ -850,51 +991,53 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 
 		@Override
 		public Object visitBeginTree(Nez.BeginTree e, Object a) {
-			Statement(PFunc("beginTree", _int(e.shift)));
+			Statement(ParserFunc("beginTree", _int(e.shift)));
 			return null;
 		}
 
 		@Override
 		public Object visitEndTree(Nez.EndTree e, Object a) {
-			Statement(PFunc("endTree", _int(e.shift)));
+			Statement(ParserFunc("endTree", _null(), _null(), _int(e.shift)));
 			return null;
 		}
 
 		@Override
 		public Object visitFoldTree(Nez.FoldTree e, Object a) {
-			Statement(PFunc("foldTree", _int(e.shift), _symbol(e.label)));
+			Statement(ParserFunc("foldTree", _int(e.shift), _symbol(e.label)));
 			return null;
 		}
 
 		@Override
 		public Object visitLinkTree(Nez.LinkTree e, Object a) {
 			BeginScope();
-			initVal(_left(), _cleft());
+			String tree = saveTree();
 			visit(e.get(0), a);
-			Statement(PFunc("linkTree", local(_left())));
-			Val(_cleft(), local(_left()));
+			Statement(ParserFunc("linkTree", tree, _symbol(e.label)));
+			backTree();
 			EndScope();
 			return null;
 		}
 
 		@Override
 		public Object visitTag(Nez.Tag e, Object a) {
-			Statement(PFunc("tagTree", _symbol(e.tag)));
+			Statement(ParserFunc("tagTree", _symbol(e.tag)));
 			return null;
 		}
 
 		@Override
 		public Object visitReplace(Nez.Replace e, Object a) {
-			Statement(PFunc("valueTree", _string(e.value)));
+			Statement(ParserFunc("valueTree", _string(e.value)));
 			return null;
 		}
 
 		@Override
 		public Object visitDetree(Nez.Detree e, Object a) {
 			BeginScope();
-			initVal(_left(), _cleft());
+			saveTree();
+			saveLog();
 			visit(e, a);
-			Val(_cleft(), local(_left()));
+			backTree();
+			backLog();
 			EndScope();
 			return null;
 		}
@@ -902,9 +1045,9 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		@Override
 		public Object visitBlockScope(Nez.BlockScope e, Object a) {
 			BeginScope();
-			initVal(_sym(), _csym());
+			saveSymbol();
 			visit(e, a);
-			Statement(PFunc("rollbackSymbolTable", local(_sym())));
+			backSymbol();
 			EndScope();
 			return null;
 		}
@@ -912,10 +1055,10 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		@Override
 		public Object visitLocalScope(LocalScope e, Object a) {
 			BeginScope();
-			initVal(_sym(), _csym());
-			Statement(PFunc("maskSymbolTable", _symbol(e.tableName)));
+			saveSymbol();
+			Statement(ParserFunc("maskSymbolTable", _symbol(e.tableName)));
 			visit(e, a);
-			Statement(PFunc("rollbackSymbolTable", local(_sym())));
+			backSymbol();
 			EndScope();
 			return null;
 		}
@@ -923,9 +1066,9 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		@Override
 		public Object visitSymbolAction(SymbolAction e, Object a) {
 			BeginScope();
-			initVal(_pos(), _cpos());
+			String pos = savePos();
 			visit(e, a);
-			Statement(PFunc("addSymbol", _symbol(e.tableName), local(_pos())));
+			Statement(ParserFunc("addSymbol", _symbol(e.tableName), pos));
 			EndScope();
 			return null;
 		}

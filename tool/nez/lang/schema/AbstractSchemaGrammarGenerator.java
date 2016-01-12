@@ -144,7 +144,7 @@ public abstract class AbstractSchemaGrammarGenerator implements SchemaGrammarGen
 	}
 
 	protected final Expression _Tag(String tag) {
-		return Expressions.newTag(null, Symbol.tag(tag));
+		return Expressions.newTag(null, Symbol.unique(tag));
 	}
 
 	protected final Expression _Replace(String msg) {
@@ -172,11 +172,11 @@ public abstract class AbstractSchemaGrammarGenerator implements SchemaGrammarGen
 	}
 
 	protected final Expression _Exists(String table, String name) {
-		return Expressions.newSymbolExists(null, Symbol.tag(table), name);
+		return Expressions.newSymbolExists(null, Symbol.unique(table), name);
 	}
 
 	protected final Expression _Local(String table, Expression... seq) {
-		return Expressions.newLocalScope(null, Symbol.tag(table), _Sequence(seq));
+		return Expressions.newLocalScope(null, Symbol.unique(table), _Sequence(seq));
 	}
 
 	/* common methods of schema grammar */

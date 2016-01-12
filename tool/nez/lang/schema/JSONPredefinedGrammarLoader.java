@@ -6,8 +6,8 @@ import nez.lang.Grammar;
 
 public class JSONPredefinedGrammarLoader extends PredefinedGrammarLoader {
 
-	static final Symbol _Key = Symbol.tag("key");
-	static final Symbol _Value = Symbol.tag("value");
+	static final Symbol _Key = Symbol.unique("key");
+	static final Symbol _Value = Symbol.unique("value");
 
 	public JSONPredefinedGrammarLoader(Grammar grammar) {
 		super(grammar, "File");
@@ -19,7 +19,7 @@ public class JSONPredefinedGrammarLoader extends PredefinedGrammarLoader {
 	}
 
 	public final Expression pAny() {
-		return newSequence(newLinkTree(null, _NonTerminal("Member")), _NonTerminal("S"), newOption(null, _NonTerminal("VALUESEP")), newTag(null, Symbol.tag("Any")));
+		return newSequence(newLinkTree(null, _NonTerminal("Member")), _NonTerminal("S"), newOption(null, _NonTerminal("VALUESEP")), newTag(null, Symbol.unique("Any")));
 	}
 
 	public final Expression pMember() {
@@ -34,20 +34,20 @@ public class JSONPredefinedGrammarLoader extends PredefinedGrammarLoader {
 
 	public final Expression pJSONObject() {
 		Expression[] l = { newByte(null, '{'), _NonTerminal("S"), newBeginTree(null, 0), newLinkTree(null, _NonTerminal("Member")), _NonTerminal("S"), newZeroMore(null, newSequence(_NonTerminal("VALUESEP"), newLinkTree(null, _NonTerminal("Member")))),
-				newTag(null, Symbol.tag("Object")), newEndTree(null, 0), _NonTerminal("S"), newByte(null, '}'), };
+				newTag(null, Symbol.unique("Object")), newEndTree(null, 0), _NonTerminal("S"), newByte(null, '}'), };
 		return newSequence(l);
 	}
 
 	public final Expression pArray() {
 		Expression[] valueSeq = { _NonTerminal("S"), newLinkTree(null, _NonTerminal("Value")), _NonTerminal("S"), newZeroMore(null, newSequence(_NonTerminal("VALUESEP"), newLinkTree(null, _NonTerminal("Value")))) };
-		Expression[] l = { newByte(null, '['), newBeginTree(null, 0), newSequence(valueSeq), newTag(null, Symbol.tag("Array")), newEndTree(null, 0), _NonTerminal("S"), newByte(null, ']') };
+		Expression[] l = { newByte(null, '['), newBeginTree(null, 0), newSequence(valueSeq), newTag(null, Symbol.unique("Array")), newEndTree(null, 0), _NonTerminal("S"), newByte(null, ']') };
 		return newSequence(l);
 	}
 
 	public final Expression pString() {
 		Expression notSeq = newSequence(newNot(null, newByte(null, '"')), newAny(null));
 		Expression strValue = newChoice(newExpression(null, "\\\""), newExpression(null, "\\\\"), notSeq);
-		Expression[] seq = { newByte(null, '"'), newBeginTree(null, 0), newZeroMore(null, strValue), newTag(null, Symbol.tag("String")), newEndTree(null, 0), newByte(null, '"'), _NonTerminal("S") };
+		Expression[] seq = { newByte(null, '"'), newBeginTree(null, 0), newZeroMore(null, strValue), newTag(null, Symbol.unique("String")), newEndTree(null, 0), newByte(null, '"'), _NonTerminal("S") };
 		return newSequence(seq);
 	}
 
@@ -56,25 +56,25 @@ public class JSONPredefinedGrammarLoader extends PredefinedGrammarLoader {
 	}
 
 	public final Expression pInteger() {
-		Expression[] l = { newBeginTree(null, 0), newOption(null, newByte(null, '-')), _NonTerminal("INT"), newTag(null, Symbol.tag("Integer")), newEndTree(null, 0), _NonTerminal("S") };
+		Expression[] l = { newBeginTree(null, 0), newOption(null, newByte(null, '-')), _NonTerminal("INT"), newTag(null, Symbol.unique("Integer")), newEndTree(null, 0), _NonTerminal("S") };
 		return newSequence(l);
 	}
 
 	public final Expression pFloat() {
-		Expression[] l = { newBeginTree(null, 0), newOption(null, newByte(null, '-')), _NonTerminal("INT"), _NonTerminal("FRAC"), newOption(null, _NonTerminal("EXP")), newTag(null, Symbol.tag("Float")), newEndTree(null, 0), _NonTerminal("S") };
+		Expression[] l = { newBeginTree(null, 0), newOption(null, newByte(null, '-')), _NonTerminal("INT"), _NonTerminal("FRAC"), newOption(null, _NonTerminal("EXP")), newTag(null, Symbol.unique("Float")), newEndTree(null, 0), _NonTerminal("S") };
 		return newSequence(l);
 	}
 
 	public final Expression pTrue() {
-		return newSequence(newBeginTree(null, 0), newExpression(null, "true"), newTag(null, Symbol.tag("True")), newEndTree(null, 0));
+		return newSequence(newBeginTree(null, 0), newExpression(null, "true"), newTag(null, Symbol.unique("True")), newEndTree(null, 0));
 	}
 
 	public final Expression pFalse() {
-		return newSequence(newBeginTree(null, 0), newExpression(null, "false"), newTag(null, Symbol.tag("False")), newEndTree(null, 0));
+		return newSequence(newBeginTree(null, 0), newExpression(null, "false"), newTag(null, Symbol.unique("False")), newEndTree(null, 0));
 	}
 
 	public final Expression pNull() {
-		return newSequence(newBeginTree(null, 0), newExpression(null, "null"), newTag(null, Symbol.tag("Null")), newEndTree(null, 0));
+		return newSequence(newBeginTree(null, 0), newExpression(null, "null"), newTag(null, Symbol.unique("Null")), newEndTree(null, 0));
 	}
 
 	public final Expression pNAMESEP() {

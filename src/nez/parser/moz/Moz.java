@@ -1219,7 +1219,7 @@ public class Moz {
 		@Override
 		public MozInst exec(MozMachine sc) throws TerminationException {
 			StackData s = sc.newUnusedStack();
-			s.value = sc.getSymbolTable().savePoint();
+			s.value = sc.getSymbolTable().saveSymbolPoint();
 			return this.next;
 		}
 
@@ -1239,7 +1239,7 @@ public class Moz {
 		public MozInst exec(MozMachine sc) throws TerminationException {
 			StackData s = sc.newUnusedStack();
 			SymbolTable st = sc.getSymbolTable();
-			s.value = st.savePoint();
+			s.value = st.saveSymbolPoint();
 			st.addSymbolMask(tableName);
 			return this.next;
 		}
@@ -1263,7 +1263,7 @@ public class Moz {
 		@Override
 		public MozInst exec(MozMachine sc) throws TerminationException {
 			StackData s = sc.popStack();
-			sc.getSymbolTable().rollBack((int) s.value);
+			sc.getSymbolTable().backSymbolPoint((int) s.value);
 			return this.next;
 		}
 
@@ -1381,7 +1381,7 @@ public class Moz {
 				StackData s = sc.popStack();
 				byte[] captured = sc.subbyte(s.value, sc.getPosition());
 				// System.out.println("captured:" + new String(captured));
-				if (symbol.length == captured.length && SymbolTable.equals(symbol, captured)) {
+				if (symbol.length == captured.length && SymbolTable.equalsBytes(symbol, captured)) {
 					// sc.consume(symbol.length);
 					return this.next;
 				}

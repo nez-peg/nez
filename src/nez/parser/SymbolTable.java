@@ -3,16 +3,16 @@ package nez.parser;
 import nez.ast.Symbol;
 
 public class SymbolTable {
-	public final static byte[] NullSymbol = { 0, 0, 0, 0 }; // to distinguish
-															// others
-	SymbolTableEntry2[] tables;
-	int tableSize = 0;
-	int maxTableSize = 0;
+	private final static byte[] NullSymbol = { 0, 0, 0, 0 }; // to distinguish
+																// others
+	private SymbolTableEntry[] tables;
+	private int tableSize = 0;
+	private int maxTableSize = 0;
 
-	public int stateValue = 0;
-	int stateCount = 0;
+	private int stateValue = 0;
+	private int stateCount = 0;
 
-	final class SymbolTableEntry2 {
+	static final class SymbolTableEntry {
 		int stateValue;
 		Symbol table;
 		long code;
@@ -40,7 +40,7 @@ public class SymbolTable {
 		return hashCode;
 	}
 
-	public static final boolean equals(byte[] utf8, byte[] b) {
+	public static final boolean equalsBytes(byte[] utf8, byte[] b) {
 		if (utf8.length == b.length) {
 			for (int i = 0; i < utf8.length; i++) {
 				if (utf8[i] != b[i]) {
@@ -54,7 +54,7 @@ public class SymbolTable {
 
 	private void initEntry(int s, int e) {
 		for (int i = s; i < e; i++) {
-			this.tables[i] = new SymbolTableEntry2();
+			this.tables[i] = new SymbolTableEntry();
 		}
 	}
 
@@ -62,19 +62,19 @@ public class SymbolTable {
 		if (!(tableSize < maxTableSize)) {
 			if (maxTableSize == 0) {
 				maxTableSize = 128;
-				this.tables = new SymbolTableEntry2[128];
+				this.tables = new SymbolTableEntry[128];
 				initEntry(0, maxTableSize);
 			} else {
 				maxTableSize *= 2;
-				SymbolTableEntry2[] newtable = new SymbolTableEntry2[maxTableSize];
+				SymbolTableEntry[] newtable = new SymbolTableEntry[maxTableSize];
 				System.arraycopy(this.tables, 0, newtable, 0, tables.length);
 				this.tables = newtable;
 				initEntry(tables.length / 2, maxTableSize);
 			}
 		}
-		SymbolTableEntry2 entry = tables[tableSize];
+		SymbolTableEntry entry = tables[tableSize];
 		tableSize++;
-		if (entry.table == table && equals(entry.symbol, utf8)) {
+		if (entry.table == table && equalsBytes(entry.symbol, utf8)) {
 			// reuse state value
 			entry.code = code;
 			this.stateValue = entry.stateValue;
@@ -88,11 +88,11 @@ public class SymbolTable {
 		}
 	}
 
-	public final int savePoint() {
+	public final int saveSymbolPoint() {
 		return this.tableSize;
 	}
 
-	public final void rollBack(int savePoint) {
+	public final void backSymbolPoint(int savePoint) {
 		if (this.tableSize != savePoint) {
 			this.tableSize = savePoint;
 			if (this.tableSize == 0) {
@@ -117,7 +117,7 @@ public class SymbolTable {
 
 	public final boolean exists(Symbol table) {
 		for (int i = tableSize - 1; i >= 0; i--) {
-			SymbolTableEntry2 entry = tables[i];
+			SymbolTableEntry entry = tables[i];
 			if (entry.table == table) {
 				return entry.symbol != NullSymbol;
 			}
@@ -128,36 +128,11 @@ public class SymbolTable {
 	public final boolean exists(Symbol table, byte[] symbol) {
 		long code = hash(symbol);
 		for (int i = tableSize - 1; i >= 0; i--) {
-			SymbolTableEntry2 entry = tables[i];
+			SymbolTableEntry entry = tables[i];
 			if (entry.table == table) {
 				if (entry.symbol == NullSymbol)
 					return false; // masked
-				if (entry.code == code && equals(entry.symbol, symbol)) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-
-	public final boolean exists(Symbol table, Symbol xtable, byte[] symbol) {
-		long code = hash(symbol);
-		for (int i = tableSize - 1; i >= 0; i--) {
-			SymbolTableEntry2 entry = tables[i];
-			if (entry.table == xtable) {
-				if (entry.symbol == NullSymbol) {
-					xtable = null;
-					continue;
-				}
-				if (entry.code == code && equals(entry.symbol, symbol)) {
-					return false;
-				}
-				continue;
-			}
-			if (entry.table == table) {
-				if (entry.symbol == null)
-					return false; // masked
-				if (entry.code == code && equals(entry.symbol, symbol)) {
+				if (entry.code == code && equalsBytes(entry.symbol, symbol)) {
 					return true;
 				}
 			}
@@ -167,7 +142,7 @@ public class SymbolTable {
 
 	public final byte[] getSymbol(Symbol table) {
 		for (int i = tableSize - 1; i >= 0; i--) {
-			SymbolTableEntry2 entry = tables[i];
+			SymbolTableEntry entry = tables[i];
 			if (entry.table == table) {
 				return entry.symbol;
 			}
@@ -178,12 +153,12 @@ public class SymbolTable {
 	public final boolean contains(Symbol table, byte[] symbol) {
 		long code = hash(symbol);
 		for (int i = tableSize - 1; i >= 0; i--) {
-			SymbolTableEntry2 entry = tables[i];
+			SymbolTableEntry entry = tables[i];
 			if (entry.table == table) {
 				if (entry.symbol == NullSymbol) {
 					return false; // masked
 				}
-				if (entry.code == code && equals(entry.symbol, symbol)) {
+				if (entry.code == code && equalsBytes(entry.symbol, symbol)) {
 					return true;
 				}
 			}
@@ -191,20 +166,45 @@ public class SymbolTable {
 		return false;
 	}
 
-	public final void setCount(Symbol table, int number) {
-		push(table, number, NullSymbol);
-	}
-
-	public final boolean count(Symbol table) {
-		for (int i = tableSize - 1; i >= 0; i--) {
-			SymbolTableEntry2 entry = tables[i];
-			if (entry.table == table) {
-				if (entry.code == 0)
-					return false;
-				entry.code--;
-				return true;
-			}
-		}
-		return false;
-	}
+	// public final boolean exists(Symbol table, Symbol xtable, byte[] symbol) {
+	// long code = hash(symbol);
+	// for (int i = tableSize - 1; i >= 0; i--) {
+	// SymbolTableEntry entry = tables[i];
+	// if (entry.table == xtable) {
+	// if (entry.symbol == NullSymbol) {
+	// xtable = null;
+	// continue;
+	// }
+	// if (entry.code == code && equalsBytes(entry.symbol, symbol)) {
+	// return false;
+	// }
+	// continue;
+	// }
+	// if (entry.table == table) {
+	// if (entry.symbol == null)
+	// return false; // masked
+	// if (entry.code == code && equalsBytes(entry.symbol, symbol)) {
+	// return true;
+	// }
+	// }
+	// }
+	// return false;
+	// }
+	//
+	// public final void setCount(Symbol table, int number) {
+	// push(table, number, NullSymbol);
+	// }
+	//
+	// public final boolean count(Symbol table) {
+	// for (int i = tableSize - 1; i >= 0; i--) {
+	// SymbolTableEntry entry = tables[i];
+	// if (entry.table == table) {
+	// if (entry.code == 0)
+	// return false;
+	// entry.code--;
+	// return true;
+	// }
+	// }
+	// return false;
+	// }
 }

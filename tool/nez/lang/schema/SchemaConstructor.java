@@ -22,10 +22,10 @@ interface SchemaTransducer {
 }
 
 interface SchemaSymbol {
-	static final Symbol _Key = Symbol.tag("key");
-	static final Symbol _Value = Symbol.tag("value");
-	static final Symbol _Member = Symbol.tag("member");
-	static final Symbol _Name = Symbol.tag("name");
-	static final Symbol _Type = Symbol.tag("type");
-	static final Symbol _List = Symbol.tag("list");
+	static final Symbol _Key = Symbol.unique("key");
+	static final Symbol _Value = Symbol.unique("value");
+	static final Symbol _Member = Symbol.unique("member");
+	static final Symbol _Name = Symbol.unique("name");
+	static final Symbol _Type = Symbol.unique("type");
+	static final Symbol _List = Symbol.unique("list");
 }

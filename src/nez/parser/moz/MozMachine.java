@@ -108,7 +108,7 @@ public final class MozMachine extends ParserRuntime {
 		this.stacks[1].ref = new Moz.Exit(false);
 		this.stacks[1].value = this.getPosition();
 		this.stacks[2].ref = astMachine.saveTransactionPoint();
-		this.stacks[2].value = symbolTable.savePoint();
+		this.stacks[2].value = symbolTable.saveSymbolPoint();
 		this.stacks[3].ref = new Moz.Exit(true);
 		this.stacks[3].value = 0;
 		this.catchStackTop = 0;
@@ -152,7 +152,7 @@ public final class MozMachine extends ParserRuntime {
 		s1.ref = failjump;
 		s1.value = this.pos;
 		s2.ref = astMachine.saveTransactionPoint();
-		s2.value = symbolTable.savePoint();
+		s2.value = symbolTable.saveSymbolPoint();
 	}
 
 	public final long popAlt() {
@@ -177,7 +177,7 @@ public final class MozMachine extends ParserRuntime {
 			this.rollback(s1.value);
 		}
 		this.astMachine.rollTransactionPoint(s2.ref);
-		this.symbolTable.rollBack((int) s2.value);
+		this.symbolTable.backSymbolPoint((int) s2.value);
 		assert (s1.ref != null);
 		return (MozInst) s1.ref;
 	}
@@ -190,7 +190,7 @@ public final class MozMachine extends ParserRuntime {
 		s1.value = this.pos;
 		StackData s2 = stacks[catchStackTop + 2];
 		s2.ref = astMachine.saveTransactionPoint();
-		s2.value = symbolTable.savePoint();
+		s2.value = symbolTable.saveSymbolPoint();
 		return next;
 	}
 
@@ -202,7 +202,7 @@ public final class MozMachine extends ParserRuntime {
 	}
 
 	public final MemoEntry getMemo(int memoId, boolean state) {
-		return state ? memoTable.getMemo2(this.pos, memoId, symbolTable.getState()) : memoTable.getMemo(this.pos, memoId);
+		return state ? memoTable.getStateMemo(this.pos, memoId, symbolTable.getState()) : memoTable.getMemo(this.pos, memoId);
 	}
 
 	// Profiling ------------------------------------------------------------
