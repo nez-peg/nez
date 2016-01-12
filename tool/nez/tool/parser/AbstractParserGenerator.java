@@ -480,6 +480,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 			}
 		}
 		sb.append(_endA());
+		Verbose(StringUtils.stringfyCharacterClass(b));
 		DeclConst(type, name, sb.toString());
 	}
 
@@ -528,9 +529,9 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		}
 
 		private void generateFunction(String name, Expression e) {
+			Verbose(e.toString());
 			BeginFunc(name);
 			{
-				Verbose(e.toString());
 				initFunc(e);
 				visit(e, null);
 				Succ();
@@ -663,7 +664,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 
 		@Override
 		public Object visitByteSet(Nez.ByteSet e, Object a) {
-			If(MatchByteArray(e.byteMap, ParserFunc("read")));
+			If(_not(MatchByteArray(e.byteMap, ParserFunc("read"))));
 			{
 				Fail();
 			}
@@ -726,10 +727,10 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 			initVal(_unchoiced(), _true());
 			for (Expression sub : e) {
 				String f = makeFuncCall(sub);
-				Verbose(e.toString());
 				If(local(_unchoiced()));
 				{
 					SavePoint(sub);
+					Verbose(sub.toString());
 					If(f);
 					{
 						VarAssign(local(_unchoiced()), _false());
@@ -757,6 +758,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 			if (!tryOptionOptimization(sub)) {
 				String f = makeFuncCall(sub);
 				SavePoint(sub);
+				Verbose(sub.toString());
 				If(_not(f));
 				{
 					Backtrack(sub);
@@ -786,6 +788,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 				While(_true());
 				{
 					SavePoint(sub);
+					Verbose(sub.toString());
 					If(_not(f));
 					{
 						Backtrack(sub);
@@ -804,6 +807,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 				String f = makeFuncCall(sub);
 				BeginScope();
 				savePos();
+				Verbose(sub.toString());
 				If(_not(f));
 				{
 					Fail();
@@ -822,6 +826,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 				String f = makeFuncCall(sub);
 				BeginScope();
 				SavePoint(sub);
+				Verbose(sub.toString());
 				If(f);
 				{
 					Fail();
