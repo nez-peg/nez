@@ -393,75 +393,82 @@ public class MozCompiler implements ParserCompiler {
 
 		@Override
 		public final MozInst visitChoice(Nez.Choice p, Object next) {
-			if (/* strategy.isEnabled("Ofirst", Strategy.Ofirst) && */p.predictedCase != null) {
-				if (p.isTrieTree && strategy.Odfa) {
-					return visitDFirstChoice(p, next);
-				}
-				return visitFirstChoice(p, next);
+			if (/* strategy.isEnabled("Ofirst", Strategy.Ofirst) && */p.predicted != null) {
+				// if (p.isTrieTree && strategy.Odfa) {
+				// return visitDeterministicChoice(p, next);
+				// }
+				return visitPredictedChoice(p, p.predicted, next);
 			}
 			return visitUnnPchoice(p, next);
 		}
 
-		private final MozInst visitFirstChoice(Nez.Choice choice, Object next) {
-			MozInst[] compiled = new MozInst[choice.firstInners.length];
+		private final MozInst visitPredictedChoice(Nez.Choice choice, Nez.ChoicePrediction p, Object next) {
+			MozInst[] compiled = new MozInst[p.unique0.length - 1];
 			// Verbose.debug("TrieTree: " + choice.isTrieTree + " " + choice);
 			Moz.First dispatch = new Moz.First(choice, commonFailure);
-			for (int ch = 0; ch < choice.predictedCase.length; ch++) {
-				Expression predicted = choice.predictedCase[ch];
+			for (int ch = 0; ch < p.predictedCase.length; ch++) {
+				Expression predicted = p.predictedCase[ch];
 				if (predicted == null) {
 					continue;
 				}
-				int index = findIndex(choice, predicted);
-				MozInst inst = compiled[index];
+				int index = findIndex(choice, p, predicted);
+				int index2 = p.indexMap[ch];
+				assert (index == index2);
+				if (index2 == 0) {
+					continue;
+				}
+				MozInst inst = compiled[index2 - 1];
 				if (inst == null) {
 					// System.out.println("creating '" + (char)ch +
 					// "'("+ch+"): " +
 					// e);
 					if (predicted instanceof Nez.Choice) {
-						assert (((Nez.Choice) predicted).predictedCase == null);
+						// assert (((Nez.Choice) predicted).predictedCase ==
+						// null);
 						inst = visitUnnPchoice(choice, next);
 					} else {
 						inst = visit(predicted, next);
 					}
-					compiled[index] = inst;
+					compiled[index2 - 1] = inst;
 				}
 				dispatch.setJumpTable(ch, inst);
 			}
 			return dispatch;
 		}
 
-		private final MozInst visitDFirstChoice(Nez.Choice choice, Object next) {
-			MozInst[] compiled = new MozInst[choice.firstInners.length];
-			Moz.DFirst dispatch = new Moz.DFirst(choice, commonFailure);
-			for (int ch = 0; ch < choice.predictedCase.length; ch++) {
-				Expression predicted = choice.predictedCase[ch];
-				if (predicted == null) {
-					continue;
-				}
-				int index = findIndex(choice, predicted);
-				MozInst inst = compiled[index];
-				if (inst == null) {
-					Expression next2 = Expressions.next(predicted);
-					if (next2 != null) {
-						inst = visit(next2, next);
-					} else {
-						inst = (MozInst) next;
-					}
-					compiled[index] = inst;
-				}
-				dispatch.setJumpTable(ch, inst);
-			}
-			return dispatch;
-		}
-
-		private int findIndex(Nez.Choice choice, Expression e) {
-			for (int i = 0; i < choice.firstInners.length; i++) {
-				if (choice.firstInners[i] == e) {
+		private int findIndex(Nez.Choice choice, Nez.ChoicePrediction p, Expression e) {
+			for (int i = 0; i < p.unique0.length; i++) {
+				if (p.unique0[i] == e) {
 					return i;
 				}
 			}
 			return -1;
 		}
+
+		// private final MozInst visitDeterministicChoice(Nez.Choice choice,
+		// Nez.ChoicePrediction p, Object next) {
+		// MozInst[] compiled = new MozInst[p.firstInners.length];
+		// Moz.DFirst dispatch = new Moz.DFirst(choice, commonFailure);
+		// for (int ch = 0; ch < p.predictedCase.length; ch++) {
+		// Expression predicted = p.predictedCase[ch];
+		// if (predicted == null) {
+		// continue;
+		// }
+		// int index = findIndex(choice, p, predicted);
+		// MozInst inst = compiled[index];
+		// if (inst == null) {
+		// Expression next2 = Expressions.next(predicted);
+		// if (next2 != null) {
+		// inst = visit(next2, next);
+		// } else {
+		// inst = (MozInst) next;
+		// }
+		// compiled[index] = inst;
+		// }
+		// dispatch.setJumpTable(ch, inst);
+		// }
+		// return dispatch;
+		// }
 
 		@Override
 		public final MozInst visitNonTerminal(NonTerminal n, Object next) {

@@ -1,9 +1,7 @@
 package nez.tool.parser;
 
 import java.io.UnsupportedEncodingException;
-import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Stack;
 
 import nez.ast.Symbol;
@@ -740,82 +738,85 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 	private void showChoiceInfo(Nez.Choice e) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(e.toString() + ",").append(e.size() + ",");
-		if (e.predictedCase != null) {
-			int notNullSize = 0;
-			int notChoiceSize = 0;
-			int containsEmpty = 0;
-			int subChoiceSize = 0;
-			for (int i = 0; i < e.predictedCase.length; i++) {
-				if (e.predictedCase[i] != null) {
-					notNullSize++;
-					if (e.predictedCase[i] instanceof Nez.Choice) {
-						subChoiceSize += e.predictedCase[i].size();
-					} else {
-						notChoiceSize++;
-						if (e.predictedCase[i].isEmpty()) {
-							containsEmpty = 1;
-						}
-					}
-				}
-			}
-			double evaluationValue = (double) (notChoiceSize + subChoiceSize) / (double) notNullSize;
-			NumberFormat format = NumberFormat.getInstance();
-			format.setMaximumFractionDigits(3);
-			sb.append(notNullSize + ",");
-			sb.append(notChoiceSize + ",");
-			sb.append(containsEmpty + ",");
-			sb.append(subChoiceSize + ",");
-			sb.append(format.format(evaluationValue));
-		}
+		// if (e.predictedCase != null) {
+		// int notNullSize = 0;
+		// int notChoiceSize = 0;
+		// int containsEmpty = 0;
+		// int subChoiceSize = 0;
+		// for (int i = 0; i < e.predictedCase.length; i++) {
+		// if (e.predictedCase[i] != null) {
+		// notNullSize++;
+		// if (e.predictedCase[i] instanceof Nez.Choice) {
+		// subChoiceSize += e.predictedCase[i].size();
+		// } else {
+		// notChoiceSize++;
+		// if (e.predictedCase[i].isEmpty()) {
+		// containsEmpty = 1;
+		// }
+		// }
+		// }
+		// }
+		// double evaluationValue = (double) (notChoiceSize + subChoiceSize) /
+		// (double) notNullSize;
+		// NumberFormat format = NumberFormat.getInstance();
+		// format.setMaximumFractionDigits(3);
+		// sb.append(notNullSize + ",");
+		// sb.append(notChoiceSize + ",");
+		// sb.append(containsEmpty + ",");
+		// sb.append(subChoiceSize + ",");
+		// sb.append(format.format(evaluationValue));
+		// }
 		System.out.println(sb.toString());
 	}
 
 	@Override
 	public void visitChoice(Nez.Choice e) {
 		// showChoiceInfo(e);
-		if ((e.predictedCase != null && this.isPrediction && this.strategy.Odchoice)) {
-			this.predictionCount++;
-			this.justPredictionCount++;
-			int fid = this.fid++;
-			String label = "EXIT_CHOICE" + fid;
-			HashMap<String, Expression> m = new HashMap<String, Expression>();
-			ArrayList<Expression> l = new ArrayList<Expression>();
-			L("void* jump_table" + formatId(fid) + "[] = {");
-			for (int ch = 0; ch < e.predictedCase.length; ch++) {
-				Expression pCase = e.predictedCase[ch];
-				if (pCase != null) {
-					Expression me = m.get(unique(pCase));
-					if (me == null) {
-						m.put(unique(pCase), pCase);
-						l.add(pCase);
-					}
-					W("&&PREDICATE_JUMP" + formatId(fid) + "" + unique(pCase));
-				} else {
-					W("&&PREDICATE_JUMP" + formatId(fid) + "" + 0);
-				}
-				if (ch < e.predictedCase.length - 1) {
-					W(", ");
-				}
-			}
-			W("};");
-			L("goto *jump_table" + formatId(fid) + "[(uint8_t)*ctx->cur];");
-			for (int i = 0; i < l.size(); i++) {
-				Expression pe = l.get(i);
-				Label("PREDICATE_JUMP" + formatId(fid) + "" + unique(pe));
-				if (!(pe instanceof Nez.Choice)) {
-					this.choiceCount();
-				} else {
-					this.isPrediction = false;
-				}
-				visitExpression(pe);
-				this.isPrediction = true;
-				this.gotoLabel(label);
-			}
-			Label("PREDICATE_JUMP" + formatId(fid) + "" + 0);
-			this.jumpFailureJump();
-			Label(label);
-			this.justPredictionCount--;
-		} else {
+		// if ((e.predictedCase != null && this.isPrediction &&
+		// this.strategy.Odchoice)) {
+		// this.predictionCount++;
+		// this.justPredictionCount++;
+		// int fid = this.fid++;
+		// String label = "EXIT_CHOICE" + fid;
+		// HashMap<String, Expression> m = new HashMap<String, Expression>();
+		// ArrayList<Expression> l = new ArrayList<Expression>();
+		// L("void* jump_table" + formatId(fid) + "[] = {");
+		// for (int ch = 0; ch < e.predictedCase.length; ch++) {
+		// Expression pCase = e.predictedCase[ch];
+		// if (pCase != null) {
+		// Expression me = m.get(unique(pCase));
+		// if (me == null) {
+		// m.put(unique(pCase), pCase);
+		// l.add(pCase);
+		// }
+		// W("&&PREDICATE_JUMP" + formatId(fid) + "" + unique(pCase));
+		// } else {
+		// W("&&PREDICATE_JUMP" + formatId(fid) + "" + 0);
+		// }
+		// if (ch < e.predictedCase.length - 1) {
+		// W(", ");
+		// }
+		// }
+		// W("};");
+		// L("goto *jump_table" + formatId(fid) + "[(uint8_t)*ctx->cur];");
+		// for (int i = 0; i < l.size(); i++) {
+		// Expression pe = l.get(i);
+		// Label("PREDICATE_JUMP" + formatId(fid) + "" + unique(pe));
+		// if (!(pe instanceof Nez.Choice)) {
+		// this.choiceCount();
+		// } else {
+		// this.isPrediction = false;
+		// }
+		// visitExpression(pe);
+		// this.isPrediction = true;
+		// this.gotoLabel(label);
+		// }
+		// Label("PREDICATE_JUMP" + formatId(fid) + "" + 0);
+		// this.jumpFailureJump();
+		// Label(label);
+		// this.justPredictionCount--;
+		// } else
+		{
 			this.fid++;
 			String label = "EXIT_CHOICE" + this.fid;
 			String backtrack = "c" + this.fid;

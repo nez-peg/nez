@@ -502,6 +502,7 @@ public class Nez {
 	 */
 
 	public static class Choice extends List {
+		public ChoicePrediction predicted = null;
 
 		Choice(Expression[] inners) {
 			super(inners);
@@ -520,21 +521,15 @@ public class Nez {
 			return v.visitChoice(this, a);
 		}
 
-		/* optimized */
+	}
 
+	public static class ChoicePrediction {
 		public boolean isTrieTree = false;
 		public Expression[] predictedCase = null;
 		public float reduced;
-		public Expression[] firstInners = null;
-		private final static Expression[] optimized = new Expression[0];
 
-		public boolean isOptimized() {
-			return this.firstInners != null;
-		}
-
-		public void setOptimized() {
-			this.firstInners = optimized;
-		}
+		public byte[] indexMap;
+		public Expression[] unique0 = null;
 	}
 
 	/* AST */

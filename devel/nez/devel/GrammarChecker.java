@@ -18,29 +18,6 @@ import nez.lang.NonTerminal;
 import nez.lang.Production;
 import nez.lang.Productions;
 import nez.lang.Typestate;
-import nez.lang.Nez.And;
-import nez.lang.Nez.Any;
-import nez.lang.Nez.BeginTree;
-import nez.lang.Nez.Byte;
-import nez.lang.Nez.ByteSet;
-import nez.lang.Nez.Choice;
-import nez.lang.Nez.Detree;
-import nez.lang.Nez.Empty;
-import nez.lang.Nez.EndTree;
-import nez.lang.Nez.FoldTree;
-import nez.lang.Nez.IfCondition;
-import nez.lang.Nez.LinkTree;
-import nez.lang.Nez.MultiByte;
-import nez.lang.Nez.Not;
-import nez.lang.Nez.OnCondition;
-import nez.lang.Nez.OneMore;
-import nez.lang.Nez.Option;
-import nez.lang.Nez.Pair;
-import nez.lang.Nez.Replace;
-import nez.lang.Nez.Sequence;
-import nez.lang.Nez.Tag;
-import nez.lang.Nez.Unary;
-import nez.lang.Nez.ZeroMore;
 import nez.parser.ParserStrategy;
 import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
@@ -713,141 +690,146 @@ public class GrammarChecker {
 			return super.visitLinkTree(p, a);
 		}
 
-		@Override
-		public Expression visitChoice(Nez.Choice p, Object a) {
-			if (!p.isOptimized()) {
-				p.setOptimized();
-				List<Expression> l = Expressions.newList(p.size());
-				flattenChoiceList(p, l);
-				return this.optimizeChoice(p, l);
-			}
-			return p;
-		}
-
-		private void flattenChoiceList(Nez.Choice choice, List<Expression> l) {
-			for (Expression inner : choice) {
-				inner = firstChoiceInlining(inner);
-				if (inner instanceof Nez.Choice) {
-					flattenChoiceList((Nez.Choice) inner, l);
-				} else {
-					l.add(inner);
-				}
-			}
-		}
-
-		private Expression firstChoiceInlining(Expression e) {
-			while (e instanceof NonTerminal) {
-				NonTerminal n = (NonTerminal) e;
-				e = n.getProduction().getExpression();
-			}
-			return e;
-		}
-
-		private Expression optimizeChoice(Nez.Choice p, List<Expression> l) {
-			Expression optimized = tryByteSet(p, l);
-			if (optimized != null) {
-				this.verboseOptimized("choice-to-set", p, optimized);
-				return optimized;
-			}
-			l = tryTrieTree(p, l);
-			if (l.size() == 1) {
-				verboseOptimized("single-choice", p, l.get(0));
-				return l.get(0);
-			}
-			Expression n = Expressions.newChoice(l);
-			if (n instanceof Nez.Choice) {
-				((Nez.Choice) n).isTrieTree = p.isTrieTree;
-				addDeterministicChoice((Nez.Choice) n);
-			}
-			return n;
-		}
-
-		private Expression tryByteSet(Nez.Choice choice, List<Expression> choiceList) {
-			boolean byteMap[] = Bytes.newMap(false);
-			for (Expression e : choiceList) {
-				if (e instanceof Nez.Byte) {
-					byteMap[((Nez.Byte) e).byteChar] = true;
-					continue;
-				}
-				if (e instanceof Nez.ByteSet) {
-					Bytes.appendBitMap(byteMap, ((Nez.ByteSet) e).byteMap);
-					continue;
-				}
-				if (e instanceof Nez.Any) {
-					return e;
-				}
-				return null;
-			}
-			return choice.newByteSet(false, byteMap);
-		}
-
-		private List<Expression> tryTrieTree(Nez.Choice choice, List<Expression> l) {
-			for (Expression inner : l) {
-				if (isTrieTreeHead(inner)) {
-					continue;
-				}
-				return l;
-			}
-			Object[] buffers = new Object[257];
-			for (Expression inner : l) {
-				Expression first = Expressions.first(inner);
-				if (first instanceof Nez.Byte) {
-					Nez.Byte be = (Nez.Byte) first;
-					buffers[be.byteChar] = mergeChoice(buffers[be.byteChar], Expressions.next(inner));
-				} else {
-					Nez.ByteSet bs = (Nez.ByteSet) first;
-					for (int ch = 0; ch < buffers.length; ch++) {
-						if (bs.byteMap[ch]) {
-							buffers[ch] = mergeChoice(buffers[ch], Expressions.next(inner));
-						}
-					}
-				}
-			}
-			l = new UList<Expression>(new Expression[8]);
-			for (int ch = 0; ch < buffers.length; ch++) {
-				if (buffers[ch] == null)
-					continue;
-				@SuppressWarnings("unchecked")
-				UList<Expression> el = (UList<Expression>) buffers[ch];
-				Expression be = Expressions.newByte(null, ch);
-				if (el.size() == 1) {
-					l.add(Expressions.newPair(null, be, el.get(0)));
-				} else {
-					Expression next = trySecondChoice(Expressions.newChoice(el), el);
-					l.add(Expressions.newPair(null, be, next));
-				}
-			}
-			choice.isTrieTree = true;
-			return l;
-		}
-
-		private boolean isTrieTreeHead(Expression inner) {
-			Expression first = Expressions.first(inner);
-			if (first instanceof Nez.Byte || first instanceof Nez.ByteSet) {
-				return true;
-			}
-			return false;
-		}
-
-		private UList<Expression> mergeChoice(Object e1, Expression e2) {
-			if (e2 == null) {
-				e2 = Expressions.newEmpty(null);
-			}
-			@SuppressWarnings("unchecked")
-			UList<Expression> l = (UList<Expression>) e1;
-			if (l == null) {
-				l = new UList<Expression>(new Expression[2]);
-			}
-			Expressions.addChoice(l, e2);
-			return l;
-		}
-
-		private Expression trySecondChoice(Expression e, UList<Expression> el) {
-			if (this.enabledSecondChoice && e instanceof Nez.Choice) {
-				return this.optimizeChoice((Nez.Choice) e, el);
-			}
-			return e;
-		}
+		// @Override
+		// public Expression visitChoice(Nez.Choice p, Object a) {
+		// if (!p.isOptimized()) {
+		// p.setOptimized();
+		// List<Expression> l = Expressions.newList(p.size());
+		// flattenChoiceList(p, l);
+		// return this.optimizeChoice(p, l);
+		// }
+		// return p;
+		// }
+		//
+		// private void flattenChoiceList(Nez.Choice choice, List<Expression> l)
+		// {
+		// for (Expression inner : choice) {
+		// inner = firstChoiceInlining(inner);
+		// if (inner instanceof Nez.Choice) {
+		// flattenChoiceList((Nez.Choice) inner, l);
+		// } else {
+		// l.add(inner);
+		// }
+		// }
+		// }
+		//
+		// private Expression firstChoiceInlining(Expression e) {
+		// while (e instanceof NonTerminal) {
+		// NonTerminal n = (NonTerminal) e;
+		// e = n.getProduction().getExpression();
+		// }
+		// return e;
+		// }
+		//
+		// private Expression optimizeChoice(Nez.Choice p, List<Expression> l) {
+		// Expression optimized = tryByteSet(p, l);
+		// if (optimized != null) {
+		// this.verboseOptimized("choice-to-set", p, optimized);
+		// return optimized;
+		// }
+		// l = tryTrieTree(p, l);
+		// if (l.size() == 1) {
+		// verboseOptimized("single-choice", p, l.get(0));
+		// return l.get(0);
+		// }
+		// Expression n = Expressions.newChoice(l);
+		// if (n instanceof Nez.Choice) {
+		// ((Nez.Choice) n).isTrieTree = p.isTrieTree;
+		// addDeterministicChoice((Nez.Choice) n);
+		// }
+		// return n;
+		// }
+		//
+		// private Expression tryByteSet(Nez.Choice choice, List<Expression>
+		// choiceList) {
+		// boolean byteMap[] = Bytes.newMap(false);
+		// for (Expression e : choiceList) {
+		// if (e instanceof Nez.Byte) {
+		// byteMap[((Nez.Byte) e).byteChar] = true;
+		// continue;
+		// }
+		// if (e instanceof Nez.ByteSet) {
+		// Bytes.appendBitMap(byteMap, ((Nez.ByteSet) e).byteMap);
+		// continue;
+		// }
+		// if (e instanceof Nez.Any) {
+		// return e;
+		// }
+		// return null;
+		// }
+		// return choice.newByteSet(false, byteMap);
+		// }
+		//
+		// private List<Expression> tryTrieTree(Nez.Choice choice,
+		// List<Expression> l) {
+		// for (Expression inner : l) {
+		// if (isTrieTreeHead(inner)) {
+		// continue;
+		// }
+		// return l;
+		// }
+		// Object[] buffers = new Object[257];
+		// for (Expression inner : l) {
+		// Expression first = Expressions.first(inner);
+		// if (first instanceof Nez.Byte) {
+		// Nez.Byte be = (Nez.Byte) first;
+		// buffers[be.byteChar] = mergeChoice(buffers[be.byteChar],
+		// Expressions.next(inner));
+		// } else {
+		// Nez.ByteSet bs = (Nez.ByteSet) first;
+		// for (int ch = 0; ch < buffers.length; ch++) {
+		// if (bs.byteMap[ch]) {
+		// buffers[ch] = mergeChoice(buffers[ch], Expressions.next(inner));
+		// }
+		// }
+		// }
+		// }
+		// l = new UList<Expression>(new Expression[8]);
+		// for (int ch = 0; ch < buffers.length; ch++) {
+		// if (buffers[ch] == null)
+		// continue;
+		// @SuppressWarnings("unchecked")
+		// UList<Expression> el = (UList<Expression>) buffers[ch];
+		// Expression be = Expressions.newByte(null, ch);
+		// if (el.size() == 1) {
+		// l.add(Expressions.newPair(null, be, el.get(0)));
+		// } else {
+		// Expression next = trySecondChoice(Expressions.newChoice(el), el);
+		// l.add(Expressions.newPair(null, be, next));
+		// }
+		// }
+		// choice.isTrieTree = true;
+		// return l;
+		// }
+		//
+		// private boolean isTrieTreeHead(Expression inner) {
+		// Expression first = Expressions.first(inner);
+		// if (first instanceof Nez.Byte || first instanceof Nez.ByteSet) {
+		// return true;
+		// }
+		// return false;
+		// }
+		//
+		// private UList<Expression> mergeChoice(Object e1, Expression e2) {
+		// if (e2 == null) {
+		// e2 = Expressions.newEmpty(null);
+		// }
+		// @SuppressWarnings("unchecked")
+		// UList<Expression> l = (UList<Expression>) e1;
+		// if (l == null) {
+		// l = new UList<Expression>(new Expression[2]);
+		// }
+		// Expressions.addChoice(l, e2);
+		// return l;
+		// }
+		//
+		// private Expression trySecondChoice(Expression e, UList<Expression>
+		// el) {
+		// if (this.enabledSecondChoice && e instanceof Nez.Choice) {
+		// return this.optimizeChoice((Nez.Choice) e, el);
+		// }
+		// return e;
+		// }
 
 		private UList<Nez.Choice> deterministicChoiceList = null;
 
@@ -866,53 +848,55 @@ public class GrammarChecker {
 		}
 
 		private void optimizeDeterministicChoice(Nez.Choice p) {
-			if (p.isTrieTree) {
-				p.predictedCase = new Expression[257];
-				p.firstInners = new Expression[p.size()];
-				int c = 0;
-				for (Expression sub : p) {
-					Nez.Byte be = (Nez.Byte) Expressions.first(sub);
-					p.predictedCase[be.byteChar] = sub;
-					p.firstInners[c] = sub;
-					c++;
-				}
-				p.reduced = 1.0f;
-			} else {
-				UList<Expression> choiceList = Expressions.newUList(p.size());
-				flattenChoiceList(p, choiceList);
-				int count = 0;
-				int selected = 0;
-				UList<Expression> newlist = Expressions.newUList(p.size());
-				HashMap<String, Expression> map = new HashMap<String, Expression>();
-				p.predictedCase = new Expression[257];
-				boolean isTrieTree = true;
-				for (int ch = 0; ch <= 255; ch++) {
-					Expression predicted = selectChoice(p, choiceList, ch, newlist, map);
-					p.predictedCase[ch] = predicted;
-					if (predicted != null) {
-						count++;
-						if (predicted instanceof Nez.Choice) {
-							selected += predicted.size();
-						} else {
-							selected += 1;
-						}
-						if (!isSingleCharacter(Expressions.next(predicted))) {
-							isTrieTree = false;
-						}
-					}
-				}
-				p.isTrieTree = isTrieTree;
-				p.reduced = (float) selected / count;
-				p.firstInners = new Expression[map.size()];
-				// Verbose.debug("reduced: " + choiceList.size() + " => " +
-				// p.reduced);
-				// Verbose.debug("map: " + map);
-				int c = 0;
-				for (String k : map.keySet()) {
-					p.firstInners[c] = map.get(k);
-					c++;
-				}
-			}
+			// if (p.isTrieTree) {
+			// p.predictedCase = new Expression[257];
+			// p.firstInners = new Expression[p.size()];
+			// int c = 0;
+			// for (Expression sub : p) {
+			// Nez.Byte be = (Nez.Byte) Expressions.first(sub);
+			// p.predictedCase[be.byteChar] = sub;
+			// p.firstInners[c] = sub;
+			// c++;
+			// }
+			// p.reduced = 1.0f;
+			// } else {
+			// UList<Expression> choiceList = Expressions.newUList(p.size());
+			// flattenChoiceList(p, choiceList);
+			// int count = 0;
+			// int selected = 0;
+			// UList<Expression> newlist = Expressions.newUList(p.size());
+			// HashMap<String, Expression> map = new HashMap<String,
+			// Expression>();
+			// p.predictedCase = new Expression[257];
+			// boolean isTrieTree = true;
+			// for (int ch = 0; ch <= 255; ch++) {
+			// Expression predicted = selectChoice(p, choiceList, ch, newlist,
+			// map);
+			// p.predictedCase[ch] = predicted;
+			// if (predicted != null) {
+			// count++;
+			// if (predicted instanceof Nez.Choice) {
+			// selected += predicted.size();
+			// } else {
+			// selected += 1;
+			// }
+			// if (!isSingleCharacter(Expressions.next(predicted))) {
+			// isTrieTree = false;
+			// }
+			// }
+			// }
+			// p.isTrieTree = isTrieTree;
+			// p.reduced = (float) selected / count;
+			// p.firstInners = new Expression[map.size()];
+			// // Verbose.debug("reduced: " + choiceList.size() + " => " +
+			// // p.reduced);
+			// // Verbose.debug("map: " + map);
+			// int c = 0;
+			// for (String k : map.keySet()) {
+			// p.firstInners[c] = map.get(k);
+			// c++;
+			// }
+			// }
 		}
 
 		// OptimizerLibrary
@@ -964,7 +948,7 @@ public class GrammarChecker {
 
 		private void tryFactoredSecondChoice(Expression p) {
 			if (p instanceof Nez.Choice) {
-				if (((Nez.Choice) p).firstInners == null) {
+				if (((Nez.Choice) p).predicted == null) {
 					// Verbose.debug("Second choice: " + p);
 				}
 				return;

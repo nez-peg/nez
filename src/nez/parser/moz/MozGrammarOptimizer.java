@@ -351,7 +351,7 @@ class MozGrammarOptimizer extends ExpressionTransformer {
 
 	private void optimizeChoicePrediction(Expression e) {
 		if (e instanceof Nez.Choice) {
-			if (((Nez.Choice) e).predictedCase == null) {
+			if (((Nez.Choice) e).predicted == null) {
 				optimizeChoicePrediction((Nez.Choice) e);
 			}
 			return;
@@ -364,13 +364,15 @@ class MozGrammarOptimizer extends ExpressionTransformer {
 	private void optimizeChoicePrediction(Nez.Choice choice) {
 		int count = 0;
 		int selected = 0;
-		UList<Expression> newlist = Expressions.newUList(choice.size());
-		HashMap<String, Expression> map = new HashMap<String, Expression>();
-		choice.predictedCase = new Expression[257];
+		Nez.ChoicePrediction p = new Nez.ChoicePrediction();
+		choice.predicted = p;
+		p.predictedCase = new Expression[257];
+		UList<Expression> bufferList = Expressions.newUList(choice.size());
+		HashMap<String, Expression> bufferMap = new HashMap<String, Expression>();
 		boolean isTrieTree = true;
 		for (int ch = 0; ch <= 255; ch++) {
-			Expression predicted = selectChoice(choice, ch, newlist, map);
-			choice.predictedCase[ch] = predicted;
+			Expression predicted = selectPredictedChoice(choice, ch, bufferList, bufferMap);
+			p.predictedCase[ch] = predicted;
 			if (predicted != null) {
 				count++;
 				if (predicted instanceof Nez.Choice) {
@@ -383,17 +385,32 @@ class MozGrammarOptimizer extends ExpressionTransformer {
 				}
 			}
 		}
-		choice.isTrieTree = isTrieTree;
-		choice.reduced = (float) selected / count;
-		choice.firstInners = new Expression[map.size()];
+		p.isTrieTree = isTrieTree;
+		p.reduced = (float) selected / count;
+		p.unique0 = new Expression[bufferMap.size() + 1];
 		// Verbose.debug("reduced: " + choiceList.size() + " => " +
 		// p.reduced);
 		// Verbose.debug("map: " + map);
-		int c = 0;
-		for (String k : map.keySet()) {
-			choice.firstInners[c] = map.get(k);
+		int c = 1;
+		for (String k : bufferMap.keySet()) {
+			p.unique0[c] = bufferMap.get(k);
 			c++;
 		}
+		p.indexMap = new byte[256];
+		for (int ch = 0; ch <= 255; ch++) {
+			p.indexMap[ch] = (byte) makeIndexMap(p.predictedCase[ch], p.unique0);
+			assert (p.unique0[p.indexMap[ch]] == p.predictedCase[ch]);
+		}
+	}
+
+	private int makeIndexMap(Expression e, Expression[] unique0) {
+		for (int i = 0; i < unique0.length; i++) {
+			if (unique0[i] == e) {
+				return i;
+			}
+		}
+		ConsoleUtils.exit(1, "bugs");
+		return -1;
 	}
 
 	private void flattenChoiceList(Nez.Choice choice, UList<Expression> l) {
@@ -417,7 +434,7 @@ class MozGrammarOptimizer extends ExpressionTransformer {
 		return e;
 	}
 
-	private Expression selectChoice(Nez.Choice choiceList, int ch, UList<Expression> newlist, HashMap<String, Expression> map) {
+	private Expression selectPredictedChoice(Nez.Choice choiceList, int ch, UList<Expression> bufferList, HashMap<String, Expression> bufferMap) {
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < choiceList.size(); i++) {
 			Expression p = choiceList.get(i);
@@ -432,8 +449,8 @@ class MozGrammarOptimizer extends ExpressionTransformer {
 		if (key.length() == 0) {
 			return null; // empty
 		}
-		if (map.containsKey(key)) {
-			return map.get(key);
+		if (bufferMap.containsKey(key)) {
+			return bufferMap.get(key);
 		}
 		boolean commonFactored = false;
 		for (Expression sub : choiceList) {
@@ -441,30 +458,30 @@ class MozGrammarOptimizer extends ExpressionTransformer {
 			if (acc == ByteAcceptance.Reject) {
 				continue;
 			}
-			if (newlist.size() > 0) {
-				int prev = newlist.size() - 1;
-				Expression last = newlist.ArrayValues[prev];
-				Expression common = tryLeftCommonFactoring(choiceList, last, sub, true);
+			if (bufferList.size() > 0) {
+				int prev = bufferList.size() - 1;
+				Expression last = bufferList.ArrayValues[prev];
+				Expression common = tryCommonLeftFactoring(choiceList, last, sub, true);
 				if (common != null) {
-					newlist.ArrayValues[prev] = common;
+					bufferList.ArrayValues[prev] = common;
 					commonFactored = true;
 					continue;
 				}
 			}
-			newlist.add(sub);
+			bufferList.add(sub);
 		}
-		Expression p = Expressions.newChoice(newlist);
-		newlist.clear(0);
+		Expression p = Expressions.newChoice(bufferList);
+		bufferList.clear(0);
 		if (commonFactored && !(p instanceof Nez.Choice)) {
 			tryFactoredSecondChoice(p);
 		}
-		map.put(key, p);
+		bufferMap.put(key, p);
 		return p;
 	}
 
 	private void tryFactoredSecondChoice(Expression p) {
 		if (p instanceof Nez.Choice) {
-			if (((Nez.Choice) p).firstInners == null) {
+			if (((Nez.Choice) p).predicted == null) {
 				// Verbose.debug("Second choice: " + p);
 			}
 			return;
@@ -474,7 +491,7 @@ class MozGrammarOptimizer extends ExpressionTransformer {
 		}
 	}
 
-	public final static Expression tryLeftCommonFactoring(Nez.Choice base, Expression e, Expression e2, boolean ignoredFirstChar) {
+	public final static Expression tryCommonLeftFactoring(Nez.Choice base, Expression e, Expression e2, boolean ignoredFirstChar) {
 		UList<Expression> l = null;
 		while (e != null && e2 != null) {
 			Expression f = Expressions.first(e);
