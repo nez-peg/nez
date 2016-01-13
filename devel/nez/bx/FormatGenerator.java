@@ -315,11 +315,16 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 
 		public void writeFormat(int capturedId) {
 			for (int i = 0; i < size; i++) {
-				for (int progression = 0; true; progression++) {
-					LabelSet labelSet = new LabelSet(progression);
+				for (int labelProgression = 0, tagProgression = 0; true; tagProgression++) {
+					LabelSet labelSet = new LabelSet(labelProgression, tagProgression);
 					String label = optionFix(formatSet[i].link, labelSet);
-					if (labelSet.progression > 0) {
+					if (labelSet.labelProgression > 0) {
 						break;
+					}
+					if (labelSet.tagProgression > 0) {
+						labelProgression++;
+						tagProgression = -1;
+						continue;
 					}
 					writeln("format " + formatSet[i].tag);
 					if (label == null) {
@@ -330,10 +335,7 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 					if (format == null) {
 						writeln("${this.toText()}");
 					} else {
-						writeln("${");
-						writeln("int i = 0;");
 						writeln(format);
-						writeln("}");
 					}
 					writeln("`");
 					writeln("");
@@ -617,6 +619,7 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 		Elements inner;
 		LinkedInner[] linkedInner;
 		int size;
+		int labelFix;
 
 		public LinkedElement(Symbol label, Elements inner) {
 			this.label = label;
@@ -628,15 +631,40 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 			linkedInner = inner.checkInner();
 			checkedNonterminal = new Elements();
 			size = linkedInner.length;
+			optimizeLinkedInner();
 			return new Elements(this);
+		}
+
+		public void optimizeLinkedInner() {
+			boolean[] checked = new boolean[capturedId];
+			LinkedInner[] newLinkedinner = new LinkedInner[size];
+			int newSize = 0;
+			for (int i = 0; i < size; i++) {
+				if (linkedInner[i].id != 1 && !checked[linkedInner[i].id]) {
+					checked[linkedInner[i].id] = true;
+					newLinkedinner[newSize] = linkedInner[i];
+					newSize++;
+				}
+			}
+			linkedInner = new LinkedInner[newSize];
+			System.arraycopy(newLinkedinner, 0, linkedInner, 0, newSize);
+			size = newSize;
 		}
 
 		@Override
 		public LabelSet optionFix(LabelSet labelSet) {
+			labelFix = labelSet.tagProgression % size;
+			labelSet.tagProgression = labelSet.tagProgression / size;
+			String ret = "";
+			FormatSet[] formatSet = capturedList[linkedInner[labelFix].id].formatSet;
+			ret += toLabel(labelSet.inRepetition) + ": " + formatSet[0].tag;
+			for (int j = 1; j < capturedList[linkedInner[labelFix].id].size; j++) {
+				ret += " / " + formatSet[j].tag;
+			}
 			if (labelSet.label == null) {
-				labelSet.label = toLabel(labelSet.inRepetition);
+				labelSet.label = ret;
 			} else {
-				labelSet.label += ", " + toLabel(labelSet.inRepetition);
+				labelSet.label += ", " + ret;
 			}
 			return labelSet;
 		}
@@ -656,43 +684,26 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 
 		@Override
 		public String toFormat() {
-			String ret;
+			String ret = "";
+
 			if (label == null) {
-				ret = "\nswitch(typeof this.get(i)){\n";
+				if (!linkedInner[labelFix].before.equals("")) {
+					ret += linkedInner[labelFix].before;
+				}
+				ret += "${this.get(i)}";
+				if (!linkedInner[labelFix].after.equals("")) {
+					ret += linkedInner[labelFix].after;
+				}
 			} else {
-				ret = "\nswitch(typeof " + label + "){\n";
-			}
-			boolean[] checkd = new boolean[capturedId];
-			for (int i = 0; i < size; i++) {
-				if (linkedInner[i].id != -1 && !checkd[linkedInner[i].id]) {
-					checkd[linkedInner[i].id] = true;
-					FormatSet[] formatSet = capturedList[linkedInner[i].id].formatSet;
-					ret += "case " + formatSet[0].tag;
-					for (int j = 1; j < capturedList[linkedInner[i].id].size; j++) {
-						ret += " + " + formatSet[j].tag;
-					}
-					ret += ": ";
-					if (label == null) {
-						if (!linkedInner[i].before.equals("")) {
-							ret += "\"" + linkedInner[i].before + "\" ";
-						}
-						ret += "$this.get(i)";
-						if (!linkedInner[i].after.equals("")) {
-							ret += " \"" + linkedInner[i].after + "\"";
-						}
-					} else {
-						if (!linkedInner[i].before.equals("")) {
-							ret += "\"" + linkedInner[i].before + "\" ";
-						}
-						ret += "$" + label;
-						if (!linkedInner[i].after.equals("")) {
-							ret += " \"" + linkedInner[i].after + "\"";
-						}
-					}
-					ret += "\n";
+				if (!linkedInner[labelFix].before.equals("")) {
+					ret += linkedInner[labelFix].before;
+				}
+				ret += "${" + label + "}";
+				if (!linkedInner[labelFix].after.equals("")) {
+					ret += linkedInner[labelFix].after;
 				}
 			}
-			ret += "default :return;\n}\ni++;\n";
+
 			return ret;
 		}
 
@@ -735,7 +746,7 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 			} else if (cByte == '\r') {
 				return "\\r";
 			} else {
-				return "\"" + String.valueOf(cByte) + "\"";
+				return String.valueOf(cByte);
 			}
 		}
 
@@ -850,15 +861,15 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 			if (linkRate == null) {
 				countOption();
 			}
-			linkFixBranch = labelSet.progression % rate;
-			int generalProgression = labelSet.progression / rate;
+			linkFixBranch = labelSet.labelProgression % rate;
+			int generalProgression = labelSet.labelProgression / rate;
 			for (int i = 0; i <= linkRate.length; i++) {
 				if (i == linkRate.length) {
 					linkFixBranch = -1;
 					break;
 				}
 				if (linkFixBranch < linkRate[i]) {
-					labelSet.progression = linkFixBranch;
+					labelSet.labelProgression = linkFixBranch;
 					for (int j = 0; j < link[i].size; j++) {
 						labelSet = link[i].get(j).optionFix(labelSet);
 					}
@@ -867,7 +878,7 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 					linkFixBranch -= linkRate[i];
 				}
 			}
-			labelSet.progression = generalProgression;
+			labelSet.labelProgression = generalProgression;
 			return labelSet;
 		}
 
@@ -948,13 +959,13 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 			if (rate == 0) {
 				countOption();
 			}
-			int generalProgression = labelSet.progression / rate;
-			labelSet.progression = labelSet.progression % rate;
+			int generalProgression = labelSet.labelProgression / rate;
+			labelSet.labelProgression = labelSet.labelProgression % rate;
 			labelSet.inRepetition = true;
 			for (int j = 0; j < link.size; j++) {
 				labelSet = link.get(j).optionFix(labelSet);
 			}
-			labelSet.progression = generalProgression;
+			labelSet.labelProgression = generalProgression;
 			labelSet.inRepetition = false;
 			return labelSet;
 		}
@@ -1021,10 +1032,10 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 			if (rate == 0) {
 				countOption();
 			}
-			int generalProgression = labelSet.progression / rate;
-			labelSet.progression = labelSet.progression % rate;
+			int generalProgression = labelSet.labelProgression / rate;
+			labelSet.labelProgression = labelSet.labelProgression % rate;
 			labelSet.inRepetition = true;
-			if (labelSet.progression != rate - 1 && !tagFix) {
+			if (labelSet.labelProgression != rate - 1 && !tagFix) {
 				for (int j = 0; j < link.size; j++) {
 					labelSet = link.get(j).optionFix(labelSet);
 				}
@@ -1032,7 +1043,7 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 			} else {
 				linkFix = false;
 			}
-			labelSet.progression = generalProgression;
+			labelSet.labelProgression = generalProgression;
 			labelSet.inRepetition = false;
 			return labelSet;
 		}
@@ -1105,10 +1116,10 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 			if (rate == 0) {
 				countOption();
 			}
-			int currentBranch = labelSet.progression % rate;
-			int generalProgression = labelSet.progression / rate;
+			int currentBranch = labelSet.labelProgression % rate;
+			int generalProgression = labelSet.labelProgression / rate;
 			if (currentBranch != rate - 1) {
-				labelSet.progression = currentBranch;
+				labelSet.labelProgression = currentBranch;
 				for (int j = 0; j < link.size; j++) {
 					labelSet = link.get(j).optionFix(labelSet);
 				}
@@ -1116,7 +1127,7 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 			} else {
 				linkFix = false;
 			}
-			labelSet.progression = generalProgression;
+			labelSet.labelProgression = generalProgression;
 			return labelSet;
 		}
 
@@ -1151,11 +1162,13 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 
 	class LabelSet {
 		String label;
-		int progression;
+		int labelProgression;
+		int tagProgression;
 		boolean inRepetition;
 
-		public LabelSet(int progression) {
-			this.progression = progression;
+		public LabelSet(int lagelProgression, int tagProgression) {
+			this.labelProgression = lagelProgression;
+			this.tagProgression = tagProgression;
 			this.inRepetition = false;
 		}
 	}
