@@ -26,6 +26,7 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 	private int capturedId = 0;
 	private int stackTop = 0;
 	private Elements checkedNonterminal = new Elements();
+	private int uniqueNumber = 0;
 
 	public FormatGenerator(String dir, String outputFile) {
 		if (outputFile != null) {
@@ -326,20 +327,22 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 						tagProgression = -1;
 						continue;
 					}
-					writeln("format " + formatSet[i].tag);
 					if (label == null) {
 						label = "";
 					}
-					write("(" + label + ")`");
+					write("format " + formatSet[i].tag + "(" + label + ")");
+					writeln("` ");
 					String format = toFormat();
 					if (format == null) {
-						writeln("${this.toText()}");
+						write("${this.toText()}");
 					} else {
-						writeln(format);
+						write(format);
 					}
-					writeln("`");
+					write(" `");
+					writeln("");
 					writeln("");
 				}
+				activateDelay();
 			}
 		}
 
@@ -657,7 +660,7 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 			labelSet.tagProgression = labelSet.tagProgression / size;
 			String ret = "";
 			FormatSet[] formatSet = capturedList[linkedInner[labelFix].id].formatSet;
-			ret += toLabel(labelSet.inRepetition) + ": " + formatSet[0].tag;
+			ret += toLabel() + ": " + formatSet[0].tag;
 			for (int j = 1; j < capturedList[linkedInner[labelFix].id].size; j++) {
 				ret += " / " + formatSet[j].tag;
 			}
@@ -669,17 +672,12 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 			return labelSet;
 		}
 
-		public String toLabel(boolean inRepetition) {
-			String ret;
+		public String toLabel() {
 			if (label == null) {
-				ret = "unlabeld";
+				return "unlabeld";
 			} else {
-				ret = label.toString();
+				return label.toString();
 			}
-			if (inRepetition) {
-				ret += "[]";
-			}
-			return ret;
 		}
 
 		@Override
@@ -688,19 +686,19 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 
 			if (label == null) {
 				if (!linkedInner[labelFix].before.equals("")) {
-					ret += linkedInner[labelFix].before;
+					ret += linkedInner[labelFix].before + " ";
 				}
 				ret += "${this.get(i)}";
 				if (!linkedInner[labelFix].after.equals("")) {
-					ret += linkedInner[labelFix].after;
+					ret += " " + linkedInner[labelFix].after;
 				}
 			} else {
 				if (!linkedInner[labelFix].before.equals("")) {
-					ret += linkedInner[labelFix].before;
+					ret += linkedInner[labelFix].before + " ";
 				}
 				ret += "${" + label + "}";
 				if (!linkedInner[labelFix].after.equals("")) {
-					ret += linkedInner[labelFix].after;
+					ret += " " + linkedInner[labelFix].after;
 				}
 			}
 
@@ -928,8 +926,9 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 
 	class OneElement extends Element {
 		Elements inner;
-		Elements link;
+		Elements links;
 		int rate;
+		int id = -1;
 
 		public OneElement(Elements inner) {
 			this.inner = inner;
@@ -950,7 +949,7 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 			if (oneLink == null) {
 				return null;
 			}
-			link = oneLink;
+			links = oneLink;
 			return new Elements(this);
 		}
 
@@ -959,23 +958,57 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 			if (rate == 0) {
 				countOption();
 			}
+			if (id == -1) {
+				id = uniqueNumber++;
+				for (int labelProgression = 0, tagProgression = 0; true; tagProgression++) {
+					LabelSet repetitionLabelSet = new LabelSet(labelProgression, tagProgression);
+					for (int i = 0; i < links.size; i++) {
+						Element link = links.get(i);
+						repetitionLabelSet = link.optionFix(repetitionLabelSet);
+					}
+					String label = repetitionLabelSet.label;
+					if (repetitionLabelSet.labelProgression > 0) {
+						break;
+					}
+					if (repetitionLabelSet.tagProgression > 0) {
+						labelProgression++;
+						tagProgression = -1;
+						continue;
+					}
+					if (label == null) {
+						label = "";
+					}
+					delayWrite("format repetition" + id + "(" + label + ")");
+					delayWriteln("` ");
+					delayWrite(inner.toFormat() + " ${repetition" + id + "} `");
+					delayWriteln("");
+					delayWriteln("");
+				}
+				delayWrite("format repetition" + id + "()");
+				delayWriteln("` `");
+				delayWriteln("");
+				delayWriteln("");
+			}
 			int generalProgression = labelSet.labelProgression / rate;
 			labelSet.labelProgression = labelSet.labelProgression % rate;
-			labelSet.inRepetition = true;
-			for (int j = 0; j < link.size; j++) {
-				labelSet = link.get(j).optionFix(labelSet);
+			for (int i = 0; i < links.size; i++) {
+				labelSet = links.get(i).optionFix(labelSet);
 			}
 			labelSet.labelProgression = generalProgression;
-			labelSet.inRepetition = false;
+			if (labelSet.label == null) {
+				labelSet.label = "repetition" + id;
+			} else {
+				labelSet.label += ", repetition" + id;
+			}
 			return labelSet;
 		}
 
 		@Override
 		public int countOption() {
 			rate = 1;
-			if (link != null) {
-				for (int j = 0; j < link.size; j++) {
-					rate *= link.get(j).countOption();
+			if (links != null) {
+				for (int j = 0; j < links.size; j++) {
+					rate *= links.get(j).countOption();
 				}
 			}
 			return rate;
@@ -983,10 +1016,10 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 
 		@Override
 		public String toFormat() {
-			if (inner.toFormat() != null) {
-				return "\nwhile(true){\n" + inner.toFormat() + "\n}\n";
+			if (id == -1) {
+				return null;
 			}
-			return null;
+			return inner.toFormat() + " ${repetition" + id + "}";
 		}
 
 		@Override
@@ -997,10 +1030,10 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 
 	class ZeroElement extends Element {
 		Elements inner;
-		Elements link;
+		Elements links;
 		boolean tagFix = false;
 		int rate;
-		boolean linkFix = false;
+		int id = -1;
 
 		public ZeroElement(Elements inner) {
 			this.inner = inner;
@@ -1023,7 +1056,7 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 			if (zeroLink == null) {
 				return null;
 			}
-			link = zeroLink;
+			links = zeroLink;
 			return new Elements(this);
 		}
 
@@ -1032,42 +1065,73 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 			if (rate == 0) {
 				countOption();
 			}
-			int generalProgression = labelSet.labelProgression / rate;
-			labelSet.labelProgression = labelSet.labelProgression % rate;
-			labelSet.inRepetition = true;
-			if (labelSet.labelProgression != rate - 1 && !tagFix) {
-				for (int j = 0; j < link.size; j++) {
-					labelSet = link.get(j).optionFix(labelSet);
+			if (id == -1) {
+				id = uniqueNumber++;
+				for (int labelProgression = 0, tagProgression = 0; true; tagProgression++) {
+					LabelSet repetitionLabelSet = new LabelSet(labelProgression, tagProgression);
+					for (int i = 0; i < links.size; i++) {
+						Element link = links.get(i);
+						repetitionLabelSet = link.optionFix(repetitionLabelSet);
+					}
+					String label = repetitionLabelSet.label;
+					if (repetitionLabelSet.labelProgression > 0) {
+						break;
+					}
+					if (repetitionLabelSet.tagProgression > 0) {
+						labelProgression++;
+						tagProgression = -1;
+						continue;
+					}
+					if (label == null) {
+						label = "";
+					}
+					delayWrite("format repetition" + id + "(" + label + ")");
+					delayWriteln("` ");
+					delayWrite(inner.toFormat() + " ${repetition" + id + "} `");
+					delayWriteln("");
+					delayWriteln("");
 				}
-				linkFix = true;
-			} else {
-				linkFix = false;
+				delayWrite("format repetition" + id + "()");
+				delayWriteln("` `");
+				delayWriteln("");
+				delayWriteln("");
 			}
-			labelSet.labelProgression = generalProgression;
-			labelSet.inRepetition = false;
+			if (tagFix) {
+				int generalProgression = labelSet.labelProgression / rate;
+				labelSet.labelProgression = labelSet.labelProgression % rate;
+				for (int i = 0; i < links.size; i++) {
+					labelSet = links.get(i).optionFix(labelSet);
+				}
+				labelSet.labelProgression = generalProgression;
+			}
+			if (labelSet.label == null) {
+				labelSet.label = "repetition" + id;
+			} else {
+				labelSet.label += ", repetition" + id;
+			}
 			return labelSet;
 		}
 
 		@Override
 		public int countOption() {
 			rate = 1;
-			if (link != null) {
-				for (int j = 0; j < link.size; j++) {
-					rate *= link.get(j).countOption();
+			if (links != null && tagFix) {
+				for (int j = 0; j < links.size; j++) {
+					rate *= links.get(j).countOption();
 				}
-			}
-			if (!tagFix) {
-				rate++;
 			}
 			return rate;
 		}
 
 		@Override
 		public String toFormat() {
-			if (!tagFix && !linkFix) {
+			if (id == -1) {
 				return null;
 			}
-			return "\nwhile(true){\n" + inner.toFormat() + "\n}\n";
+			if (tagFix) {
+				return inner.toFormat() + " ${repetition" + id + "}";
+			}
+			return "${repetition" + id + "}";
 		}
 
 		@Override
@@ -1164,12 +1228,10 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 		String label;
 		int labelProgression;
 		int tagProgression;
-		boolean inRepetition;
 
-		public LabelSet(int lagelProgression, int tagProgression) {
-			this.labelProgression = lagelProgression;
+		public LabelSet(int labelProgression, int tagProgression) {
+			this.labelProgression = labelProgression;
 			this.tagProgression = tagProgression;
-			this.inRepetition = false;
 		}
 	}
 
@@ -1210,5 +1272,20 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 
 	public void write(String word) {
 		file.write(word);
+	}
+
+	private String delayString = "";
+
+	public void delayWriteln(String line) {
+		delayString += "\n" + line;
+	}
+
+	public void delayWrite(String word) {
+		delayString += word;
+	}
+
+	public void activateDelay() {
+		file.write(delayString);
+		delayString = "";
 	}
 }
