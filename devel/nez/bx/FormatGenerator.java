@@ -1,5 +1,6 @@
 package nez.bx;
 
+import java.util.Arrays;
 import java.util.HashMap;
 
 import nez.ast.Symbol;
@@ -26,7 +27,9 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 	private int capturedId = 0;
 	private int stackTop = 0;
 	private Elements checkedNonterminal = new Elements();
-	private int uniqueNumber = 0;
+	private int repetitionId = 0;
+	private String[] tagList = new String[4];
+	private int tagId = 0;
 
 	public FormatGenerator(String dir, String outputFile) {
 		if (outputFile != null) {
@@ -193,7 +196,13 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 	public class _Tag extends DefaultVisitor {
 		@Override
 		public void accept(Expression e) {
-			addElement(new TagElement(((Nez.Tag) e).getTagName()));
+			if (tagId == tagList.length) {
+				String[] newList = new String[tagList.length * 2];
+				System.arraycopy(tagList, 0, newList, 0, tagList.length);
+				tagList = newList;
+			}
+			tagList[tagId] = "#" + ((Nez.Tag) e).getTagName();
+			addElement(new TagElement(tagId++));
 		}
 	}
 
@@ -298,8 +307,8 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 
 		public void setFormat(int capturedId) {
 			while (true) {
-				String tag = searchTag();
-				if (tag != null) {
+				int tag = searchTag();
+				if (tag != -1) {
 					if (size == formatSet.length) {
 						FormatSet[] newList = new FormatSet[formatSet.length * 2];
 						System.arraycopy(formatSet, 0, newList, 0, formatSet.length);
@@ -318,7 +327,7 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 			for (int i = 0; i < size; i++) {
 				for (int labelProgression = 0, tagProgression = 0; true; tagProgression++) {
 					LabelSet labelSet = new LabelSet(labelProgression, tagProgression);
-					String label = optionFix(formatSet[i].link, labelSet);
+					String label = optionFix(formatSet[i].link, labelSet, formatSet[i].tag);
 					if (labelSet.labelProgression > 0) {
 						break;
 					}
@@ -330,9 +339,9 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 					if (label == null) {
 						label = "";
 					}
-					write("format " + formatSet[i].tag + "(" + label + ")");
+					write("format " + tagList[formatSet[i].tag] + "(" + label + ")");
 					writeln("` ");
-					String format = toFormat();
+					String format = toFormat(formatSet[i].tag);
 					if (format == null) {
 						write("${this.toText()}");
 					} else {
@@ -346,18 +355,18 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 			}
 		}
 
-		public String optionFix(Elements links, LabelSet labelSet) {
+		public String optionFix(Elements links, LabelSet labelSet, int tag) {
 			if (links == null) {
 				return null;
 			}
 			for (int i = 0; i < links.size; i++) {
 				Element link = links.get(i);
-				labelSet = link.optionFix(labelSet);
+				labelSet = link.optionFix(labelSet, tag);
 			}
 			return labelSet.label;
 		}
 
-		public String searchTag() {
+		public int searchTag() {
 			return elements.searchTag();
 		}
 
@@ -369,8 +378,8 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 			return elements.checkInner();
 		}
 
-		public String toFormat() {
-			String formats = elements.toFormat();
+		public String toFormat(int tag) {
+			String formats = elements.toFormat(tag);
 			if (this.name == null) {
 				if (formats == null || formats.indexOf('$') == -1) {
 					return null;
@@ -406,14 +415,14 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 			return elementList[i];
 		}
 
-		public String searchTag() {
+		public int searchTag() {
 			for (int i = 0; i < this.size; i++) {
-				String tag = elementList[i].searchTag();
-				if (tag != null) {
+				int tag = elementList[i].searchTag();
+				if (tag != -1) {
 					return tag;
 				}
 			}
-			return null;
+			return -1;
 		}
 
 		public Elements searchLink() {
@@ -454,11 +463,11 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 			return inners;
 		}
 
-		public String toFormat() {
+		public String toFormat(int tag) {
 			String formats = null;
 			for (int i = 0; i < this.size; i++) {
 				Element element = elementList[i];
-				String format = element.toFormat();
+				String format = element.toFormat(tag);
 				if (format != null) {
 					if (formats == null) {
 						formats = format;
@@ -512,8 +521,8 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 	}
 
 	abstract class Element {
-		public String searchTag() {
-			return null;
+		public int searchTag() {
+			return -1;
 		}
 
 		public Elements searchLink() {
@@ -524,12 +533,12 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 			return null;
 		}
 
-		public LabelSet optionFix(LabelSet labelSet) {
+		public LabelSet optionFix(LabelSet labelSet, int tag) {
 			assert true;
 			return null;
 		}
 
-		public int countOption() {
+		public int countOption(int tag) {
 			return 1;
 		}
 
@@ -537,7 +546,7 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 			return null;
 		}
 
-		public String toFormat() {
+		public String toFormat(int tag) {
 			return null;
 		}
 
@@ -564,7 +573,7 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 		}
 
 		@Override
-		public String searchTag() {
+		public int searchTag() {
 			nullCheck();
 			return captured.searchTag();
 		}
@@ -580,9 +589,9 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 		}
 
 		@Override
-		public String toFormat() {
+		public String toFormat(int tag) {
 			nullCheck();
-			return captured.toFormat();
+			return captured.toFormat(tag);
 		}
 
 		@Override
@@ -643,7 +652,7 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 			LinkedInner[] newLinkedinner = new LinkedInner[size];
 			int newSize = 0;
 			for (int i = 0; i < size; i++) {
-				if (linkedInner[i].id != 1 && !checked[linkedInner[i].id]) {
+				if (linkedInner[i].id != -1 && !checked[linkedInner[i].id]) {
 					checked[linkedInner[i].id] = true;
 					newLinkedinner[newSize] = linkedInner[i];
 					newSize++;
@@ -655,14 +664,14 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 		}
 
 		@Override
-		public LabelSet optionFix(LabelSet labelSet) {
+		public LabelSet optionFix(LabelSet labelSet, int tag) {
 			labelFix = labelSet.tagProgression % size;
 			labelSet.tagProgression = labelSet.tagProgression / size;
 			String ret = "";
 			FormatSet[] formatSet = capturedList[linkedInner[labelFix].id].formatSet;
-			ret += toLabel() + ": " + formatSet[0].tag;
+			ret += toLabel() + ": " + tagList[formatSet[0].tag];
 			for (int j = 1; j < capturedList[linkedInner[labelFix].id].size; j++) {
-				ret += " / " + formatSet[j].tag;
+				ret += " / " + tagList[formatSet[j].tag];
 			}
 			if (labelSet.label == null) {
 				labelSet.label = ret;
@@ -681,7 +690,7 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 		}
 
 		@Override
-		public String toFormat() {
+		public String toFormat(int tag) {
 			String ret = "";
 
 			if (label == null) {
@@ -730,7 +739,7 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 		}
 
 		@Override
-		public String toFormat() {
+		public String toFormat(int tag) {
 			if (cByte == '\\' || cByte == '\"' || cByte == '\'') {
 				return "\\" + cByte;
 			} else if (cByte == '\b') {
@@ -767,25 +776,25 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 	}
 
 	class TagElement extends Element {
-		String name;
+		int id;
 		boolean unused = true;
 
-		public TagElement(String name) {
-			this.name = "#" + name;
+		public TagElement(int id) {
+			this.id = id;
 		}
 
 		@Override
-		public String searchTag() {
+		public int searchTag() {
 			if (unused) {
 				unused = false;
-				return name;
+				return id;
 			}
-			return null;
+			return -1;
 		}
 
 		@Override
 		public String toString() {
-			return this.name;
+			return tagList[id];
 		}
 	}
 
@@ -794,30 +803,33 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 		Elements[] link;
 		int rate;
 		int[] linkRate;
-		int tagFixBranch = -1;
+		int currentTagFixBranch;
+		int[] tagFixBranch = new int[tagId];
 		int linkFixBranch = -1;
 		boolean hasNullBranch = false;
 
 		public ChoiceElement(Elements[] branch) {
 			this.branch = branch;
+			Arrays.fill(tagFixBranch, -1);
 		}
 
 		@Override
-		public String searchTag() {
+		public int searchTag() {
 			for (int i = 0; i < branch.length; i++) {
-				String tag = branch[i].searchTag();
-				if (tag != null) {
-					tagFixBranch = i;
+				int tag = branch[i].searchTag();
+				if (tag != -1) {
+					currentTagFixBranch = i;
+					tagFixBranch[tag] = i;
 					return tag;
 				}
 			}
-			tagFixBranch = -1;
-			return null;
+			currentTagFixBranch = -1;
+			return -1;
 		}
 
 		@Override
 		public Elements searchLink() {
-			if (tagFixBranch == -1) {
+			if (currentTagFixBranch == -1) {
 				for (int i = 0; i < branch.length; i++) {
 					Elements choicedLink = branch[i].searchLink();
 					if (choicedLink != null) {
@@ -832,7 +844,7 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 				}
 				return new Elements(this);
 			}
-			return branch[tagFixBranch].searchLink();
+			return branch[currentTagFixBranch].searchLink();
 		}
 
 		@Override
@@ -855,9 +867,9 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 		}
 
 		@Override
-		public LabelSet optionFix(LabelSet labelSet) {
+		public LabelSet optionFix(LabelSet labelSet, int tag) {
 			if (linkRate == null) {
-				countOption();
+				countOption(tag);
 			}
 			linkFixBranch = labelSet.labelProgression % rate;
 			int generalProgression = labelSet.labelProgression / rate;
@@ -869,7 +881,7 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 				if (linkFixBranch < linkRate[i]) {
 					labelSet.labelProgression = linkFixBranch;
 					for (int j = 0; j < link[i].size; j++) {
-						labelSet = link[i].get(j).optionFix(labelSet);
+						labelSet = link[i].get(j).optionFix(labelSet, tag);
 					}
 					break;
 				} else {
@@ -881,14 +893,14 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 		}
 
 		@Override
-		public int countOption() {
+		public int countOption(int tag) {
 			rate = 0;
 			linkRate = new int[link.length];
 			for (int i = 0; i < linkRate.length; i++) {
 				if (link[i] != null) {
 					linkRate[i] = 1;
 					for (int j = 0; j < link[i].size; j++) {
-						linkRate[i] *= link[i].get(j).countOption();
+						linkRate[i] *= link[i].get(j).countOption(tag);
 					}
 				} else {
 					hasNullBranch = true;
@@ -902,15 +914,15 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 		}
 
 		@Override
-		public String toFormat() {
-			if (tagFixBranch == -1) {
+		public String toFormat(int tag) {
+			if (tagFixBranch[tag] == -1) {
 				if (linkFixBranch == -1) {
 					return null;
 				} else {
-					return branch[linkFixBranch].toFormat();
+					return branch[linkFixBranch].toFormat(tag);
 				}
 			} else {
-				return branch[tagFixBranch].toFormat();
+				return branch[tagFixBranch[tag]].toFormat(tag);
 			}
 		}
 
@@ -935,12 +947,8 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 		}
 
 		@Override
-		public String searchTag() {
-			String tag = inner.searchTag();
-			if (tag != null) {
-				return tag;
-			}
-			return null;
+		public int searchTag() {
+			return inner.searchTag();
 		}
 
 		@Override
@@ -954,17 +962,17 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 		}
 
 		@Override
-		public LabelSet optionFix(LabelSet labelSet) {
+		public LabelSet optionFix(LabelSet labelSet, int tag) {
 			if (rate == 0) {
-				countOption();
+				countOption(tag);
 			}
 			if (id == -1) {
-				id = uniqueNumber++;
+				id = repetitionId++;
 				for (int labelProgression = 0, tagProgression = 0; true; tagProgression++) {
 					LabelSet repetitionLabelSet = new LabelSet(labelProgression, tagProgression);
 					for (int i = 0; i < links.size; i++) {
 						Element link = links.get(i);
-						repetitionLabelSet = link.optionFix(repetitionLabelSet);
+						repetitionLabelSet = link.optionFix(repetitionLabelSet, tag);
 					}
 					String label = repetitionLabelSet.label;
 					if (repetitionLabelSet.labelProgression > 0) {
@@ -980,7 +988,7 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 					}
 					delayWrite("format repetition" + id + "(" + label + ")");
 					delayWriteln("` ");
-					delayWrite(inner.toFormat() + " ${repetition" + id + "} `");
+					delayWrite(inner.toFormat(tag) + " ${repetition" + id + "} `");
 					delayWriteln("");
 					delayWriteln("");
 				}
@@ -992,7 +1000,7 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 			int generalProgression = labelSet.labelProgression / rate;
 			labelSet.labelProgression = labelSet.labelProgression % rate;
 			for (int i = 0; i < links.size; i++) {
-				labelSet = links.get(i).optionFix(labelSet);
+				labelSet = links.get(i).optionFix(labelSet, tag);
 			}
 			labelSet.labelProgression = generalProgression;
 			if (labelSet.label == null) {
@@ -1004,22 +1012,22 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 		}
 
 		@Override
-		public int countOption() {
+		public int countOption(int tag) {
 			rate = 1;
 			if (links != null) {
 				for (int j = 0; j < links.size; j++) {
-					rate *= links.get(j).countOption();
+					rate *= links.get(j).countOption(tag);
 				}
 			}
 			return rate;
 		}
 
 		@Override
-		public String toFormat() {
+		public String toFormat(int tag) {
 			if (id == -1) {
 				return null;
 			}
-			return inner.toFormat() + " ${repetition" + id + "}";
+			return inner.toFormat(tag) + " ${repetition" + id + "}";
 		}
 
 		@Override
@@ -1031,7 +1039,7 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 	class ZeroElement extends Element {
 		Elements inner;
 		Elements links;
-		boolean tagFix = false;
+		boolean[] tagFix = new boolean[tagId];
 		int rate;
 		int id = -1;
 
@@ -1040,14 +1048,13 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 		}
 
 		@Override
-		public String searchTag() {
-			String tag = inner.searchTag();
-			if (tag != null) {
-				tagFix = true;
+		public int searchTag() {
+			int tag = inner.searchTag();
+			if (tag != -1) {
+				tagFix[tag] = true;
 				return tag;
 			}
-			tagFix = false;
-			return null;
+			return -1;
 		}
 
 		@Override
@@ -1061,17 +1068,17 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 		}
 
 		@Override
-		public LabelSet optionFix(LabelSet labelSet) {
+		public LabelSet optionFix(LabelSet labelSet, int tag) {
 			if (rate == 0) {
-				countOption();
+				countOption(tag);
 			}
 			if (id == -1) {
-				id = uniqueNumber++;
+				id = repetitionId++;
 				for (int labelProgression = 0, tagProgression = 0; true; tagProgression++) {
 					LabelSet repetitionLabelSet = new LabelSet(labelProgression, tagProgression);
 					for (int i = 0; i < links.size; i++) {
 						Element link = links.get(i);
-						repetitionLabelSet = link.optionFix(repetitionLabelSet);
+						repetitionLabelSet = link.optionFix(repetitionLabelSet, tag);
 					}
 					String label = repetitionLabelSet.label;
 					if (repetitionLabelSet.labelProgression > 0) {
@@ -1087,7 +1094,7 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 					}
 					delayWrite("format repetition" + id + "(" + label + ")");
 					delayWriteln("` ");
-					delayWrite(inner.toFormat() + " ${repetition" + id + "} `");
+					delayWrite(inner.toFormat(tag) + " ${repetition" + id + "} `");
 					delayWriteln("");
 					delayWriteln("");
 				}
@@ -1096,11 +1103,11 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 				delayWriteln("");
 				delayWriteln("");
 			}
-			if (tagFix) {
+			if (tagFix[tag]) {
 				int generalProgression = labelSet.labelProgression / rate;
 				labelSet.labelProgression = labelSet.labelProgression % rate;
 				for (int i = 0; i < links.size; i++) {
-					labelSet = links.get(i).optionFix(labelSet);
+					labelSet = links.get(i).optionFix(labelSet, tag);
 				}
 				labelSet.labelProgression = generalProgression;
 			}
@@ -1113,23 +1120,23 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 		}
 
 		@Override
-		public int countOption() {
+		public int countOption(int tag) {
 			rate = 1;
-			if (links != null && tagFix) {
+			if (links != null && tagFix[tag]) {
 				for (int j = 0; j < links.size; j++) {
-					rate *= links.get(j).countOption();
+					rate *= links.get(j).countOption(tag);
 				}
 			}
 			return rate;
 		}
 
 		@Override
-		public String toFormat() {
+		public String toFormat(int tag) {
 			if (id == -1) {
 				return null;
 			}
-			if (tagFix) {
-				return inner.toFormat() + " ${repetition" + id + "}";
+			if (tagFix[tag]) {
+				return inner.toFormat(tag) + " ${repetition" + id + "}";
 			}
 			return "${repetition" + id + "}";
 		}
@@ -1143,7 +1150,8 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 	class OptionElement extends Element {
 		Elements inner;
 		Elements link;
-		boolean tagFix = false;
+		boolean hasTag;
+		boolean[] tagFix = new boolean[tagId];
 		int rate;
 		boolean linkFix = false;
 
@@ -1152,20 +1160,21 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 		}
 
 		@Override
-		public String searchTag() {
-			String tag = inner.searchTag();
-			if (tag != null) {
-				tagFix = true;
+		public int searchTag() {
+			int tag = inner.searchTag();
+			if (tag != -1) {
+				tagFix[tag] = true;
+				hasTag = true;
 				return tag;
 			}
-			tagFix = false;
-			return null;
+			hasTag = false;
+			return -1;
 		}
 
 		@Override
 		public Elements searchLink() {
 			Elements optionalLink = inner.searchLink();
-			if (tagFix) {
+			if (hasTag) {
 				return optionalLink;
 			}
 			if (optionalLink == null) {
@@ -1176,16 +1185,16 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 		}
 
 		@Override
-		public LabelSet optionFix(LabelSet labelSet) {
+		public LabelSet optionFix(LabelSet labelSet, int tag) {
 			if (rate == 0) {
-				countOption();
+				countOption(tag);
 			}
 			int currentBranch = labelSet.labelProgression % rate;
 			int generalProgression = labelSet.labelProgression / rate;
 			if (currentBranch != rate - 1) {
 				labelSet.labelProgression = currentBranch;
 				for (int j = 0; j < link.size; j++) {
-					labelSet = link.get(j).optionFix(labelSet);
+					labelSet = link.get(j).optionFix(labelSet, tag);
 				}
 				linkFix = true;
 			} else {
@@ -1196,25 +1205,25 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 		}
 
 		@Override
-		public int countOption() {
+		public int countOption(int tag) {
 			rate = 1;
 			if (link != null) {
 				for (int j = 0; j < link.size; j++) {
-					rate *= link.get(j).countOption();
+					rate *= link.get(j).countOption(tag);
 				}
 			}
 			return ++rate;
 		}
 
 		@Override
-		public String toFormat() {
-			if (!tagFix) {
+		public String toFormat(int tag) {
+			if (!tagFix[tag]) {
 				if (!linkFix) {
 					return null;
 				}
-				return inner.toFormat();
+				return inner.toFormat(tag);
 			}
-			return inner.toFormat();
+			return inner.toFormat(tag);
 		}
 
 		@Override
@@ -1262,7 +1271,7 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 	}
 
 	class FormatSet {
-		String tag;
+		int tag;
 		Elements link;
 	}
 
