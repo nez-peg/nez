@@ -60,7 +60,10 @@ public class JavaParserGenerator extends AbstractParserGenerator {
 
 	@Override
 	protected void initTypeMap() {
+		this.addType("parse", "boolean");
 		this.addType(_byteMap(), "boolean[]");
+		this.addType(_indexMap(), "byte[]");
+		this.addType(_byteSeq(), "byte[]");
 		this.addType(_unchoiced(), "boolean");
 		this.addType(_pos(), "int");
 		this.addType(_left(), "Tree<?>");

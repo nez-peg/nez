@@ -317,8 +317,8 @@ public class MozCompiler implements ParserCompiler {
 
 		public final Expression getInnerExpression(Expression p) {
 			Expression inner = Expressions.resolveNonTerminal(p.get(0));
-			if (strategy.Ostring) {
-				inner = Expressions.tryConvertingMultiCharSequence(inner);
+			if (strategy.Ostring && inner instanceof Nez.Pair) {
+				inner = Expressions.tryConvertingMultiCharSequence((Nez.Pair) inner);
 			}
 			return inner;
 		}
@@ -413,7 +413,6 @@ public class MozCompiler implements ParserCompiler {
 				}
 				int index = findIndex(choice, p, predicted);
 				int index2 = p.indexMap[ch];
-				assert (index == index2);
 				if (index2 == 0) {
 					continue;
 				}

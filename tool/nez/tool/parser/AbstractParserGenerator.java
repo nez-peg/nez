@@ -4,8 +4,11 @@ import java.util.HashMap;
 
 import nez.ast.Symbol;
 import nez.lang.Expression;
+import nez.lang.Expressions;
+import nez.lang.FunctionName;
 import nez.lang.Grammar;
 import nez.lang.Nez;
+import nez.lang.Nez.ChoicePrediction;
 import nez.lang.Nez.IfCondition;
 import nez.lang.Nez.LocalScope;
 import nez.lang.Nez.OnCondition;
@@ -19,7 +22,9 @@ import nez.lang.Symbolstate;
 import nez.lang.Symbolstate.StateAnalyzer;
 import nez.lang.Typestate;
 import nez.lang.Typestate.TypestateAnalyzer;
+import nez.parser.MemoPoint;
 import nez.parser.Parser;
+import nez.parser.ParserCode;
 import nez.parser.ParserStrategy;
 import nez.util.ConsoleUtils;
 import nez.util.FileBuilder;
@@ -29,6 +34,7 @@ import nez.util.UList;
 public abstract class AbstractParserGenerator implements SourceGenerator {
 	protected Parser parser;
 	protected ParserStrategy strategy;
+	protected ParserCode<?> code;
 	protected String path;
 	protected FileBuilder file;
 	//
@@ -41,6 +47,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 	public final void init(Grammar g, Parser parser, String path) {
 		this.parser = parser;
 		this.strategy = parser.getParserStrategy();
+		this.code = parser.getParserCode();
 		if (path == null) {
 			this.file = new FileBuilder(null);
 		} else {
@@ -84,7 +91,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 
 	protected void BeginFunc(String f) {
 		file.writeIndent();
-		file.write(_defun());
+		file.write(_function(getType("parse")));
 		file.write(" ");
 		file.write(f);
 		file.write("(");
@@ -201,6 +208,22 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		Semicolon();
 	}
 
+	protected void Switch(String c) {
+		Line("switch(" + c + ")");
+		Begin();
+	}
+
+	protected void EndSwitch() {
+		End();
+	}
+
+	protected void Case(String n) {
+		Line("case " + n + ": ");
+	}
+
+	protected void EndCase() {
+	}
+
 	protected void VarDecl(String t, String v, String expr) {
 		if (t == null) {
 			VarAssign(v, expr);
@@ -214,8 +237,6 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		file.writeIndent(v + " = " + expr);
 		Semicolon();
 	}
-
-	/* Backtrack */
 
 	/* Syntax */
 
@@ -243,22 +264,18 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		return "false";
 	}
 
+	protected String _null() {
+		return "null";
+	}
+
 	protected String _not(String expr) {
 		return "!" + expr;
 	}
 
 	/* Expression */
 
-	protected String _defun() {
-		return "private static boolean";
-	}
-
-	protected String _state() {
-		return "c";
-	}
-
-	protected String _call(String f) {
-		return f + "(" + _state() + ")";
+	protected String _function(String type) {
+		return "private static " + type;
 	}
 
 	protected String _argument(String var, String type) {
@@ -272,11 +289,27 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		return _argument(_state(), getType(_state()));
 	}
 
-	protected String _beginA() {
+	protected String _funccall(String name) {
+		return name + "(" + _state() + ")";
+	}
+
+	protected String _state() {
+		return "c";
+	}
+
+	protected String _beginArray() {
 		return "{";
 	}
 
-	protected String _endA() {
+	protected String _endArray() {
+		return "}";
+	}
+
+	protected String _beginBlock() {
+		return " {";
+	}
+
+	protected String _endBlock() {
 		return "}";
 	}
 
@@ -289,9 +322,9 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 	}
 
 	protected String _byte(int ch) {
-		if (ch < 128 && (!Character.isISOControl(ch))) {
-			return "'" + (char) ch + "'";
-		}
+		// if (ch < 128 && (!Character.isISOControl(ch))) {
+		// return "'" + (char) ch + "'";
+		// }
 		return "" + ch;
 	}
 
@@ -299,15 +332,11 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		return StringUtils.quoteString('"', new String(utf8), '"');
 	}
 
-	protected String _null() {
-		return "null";
-	}
-
 	protected String _funcname(String uname) {
-		return "p" + uname;
+		return "p" + uname.replace("!", "NoT");
 	}
 
-	private String GetArray(String array, String c) {
+	private String _getarray(String array, String c) {
 		return array + "[" + c + "]";
 	}
 
@@ -365,6 +394,10 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		return "unchoiced";
 	}
 
+	protected String _indexMap() {
+		return "indexMap";
+	}
+
 	protected String _byteMap() {
 		return "byteMap";
 	}
@@ -404,6 +437,10 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		return s == null ? _null() : StringUtils.quoteString('"', s.toString(), '"');
 	}
 
+	protected String _symbol(ChoicePrediction p) {
+		return symbolMap.get(p.indexMap.toString());
+	}
+
 	protected String _string(String s) {
 		return StringUtils.quoteString('"', s, '"');
 	}
@@ -437,6 +474,9 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		if (e instanceof Nez.SymbolFunction) {
 			DeclSymbol(((Nez.SymbolFunction) e).tableName);
 		}
+		if (e instanceof Nez.Choice && ((Nez.Choice) e).predicted != null) {
+			DeclSymbol(((Nez.Choice) e).predicted);
+		}
 		for (Expression sub : e) {
 			checkSymbol(sub);
 		}
@@ -454,6 +494,25 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		}
 	}
 
+	void DeclSymbolBitmap(String name, boolean b[]) {
+		StringBuilder sb = new StringBuilder();
+		String type = getType(_byteMap());
+		sb.append(_beginArray());
+		for (int i = 0; i < 256; i++) {
+			if (b[i]) {
+				sb.append(_true());
+			} else {
+				sb.append(_false());
+			}
+			if (i < 255) {
+				sb.append(",");
+			}
+		}
+		sb.append(_endArray());
+		Verbose(StringUtils.stringfyCharacterClass(b));
+		DeclConst(type, name, sb.toString());
+	}
+
 	void DeclSymbol(Symbol s) {
 		if (s != null) {
 			String key = s.getSymbol();
@@ -465,22 +524,26 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		}
 	}
 
-	void DeclSymbolBitmap(String name, boolean b[]) {
+	void DeclSymbol(Nez.ChoicePrediction p) {
+		String key = p.indexMap.toString();
+		String val = symbolMap.get(key);
+		if (val == null) {
+			String name = _indexMap() + symbolMap.size();
+			symbolMap.put(key, name);
+			DeclSymbolIndexMap(getType(_indexMap()), name, p.indexMap);
+		}
+	}
+
+	private void DeclSymbolIndexMap(String type, String name, byte b[]) {
 		StringBuilder sb = new StringBuilder();
-		String type = getType(_byteMap());
-		sb.append(_beginA());
+		sb.append(_beginArray());
 		for (int i = 0; i < 256; i++) {
-			if (b[i]) {
-				sb.append(_true());
-			} else {
-				sb.append(_false());
-			}
+			sb.append(_int(b[i]));
 			if (i < 255) {
 				sb.append(",");
 			}
 		}
-		sb.append(_endA());
-		Verbose(StringUtils.stringfyCharacterClass(b));
+		sb.append(_endArray());
 		DeclConst(type, name, sb.toString());
 	}
 
@@ -489,6 +552,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		HashMap<String, Expression> funcMap = new HashMap<>();
 		HashMap<String, String> exprMap = new HashMap<>();
 		UList<String> funcList = new UList<String>(new String[128]);
+		HashMap<String, Integer> memoPointMap = new HashMap<>();
 		int generated = 0;
 
 		void generate(Production start, String func) {
@@ -512,8 +576,12 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 			if (!funcMap.containsKey(key)) {
 				funcList.add(key);
 				funcMap.put(key, e);
+				MemoPoint memoPoint = code.getMemoPoint(uname);
+				if (memoPoint != null) {
+					memoPointMap.put(key, memoPoint.id);
+				}
 			}
-			return _call(key);
+			return _funccall(key);
 		}
 
 		private String makeFuncCall(Expression e) {
@@ -525,15 +593,24 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 				funcList.add(f);
 				funcMap.put(f, e);
 			}
-			return _call(f);
+			return _funccall(f);
 		}
 
 		private void generateFunction(String name, Expression e) {
+			Integer memoPoint = memoPointMap.get(name);
 			Verbose(e.toString());
 			BeginFunc(name);
 			{
-				initFunc(e);
-				visit(e, null);
+				if (memoPoint != null) {
+					If(ParserFunc("lookupMemo", _int(memoPoint)));
+					Succ();
+					EndIf();
+					String pos = savePos();
+					visit(e, null);
+					Statement(ParserFunc("memoSucc", _int(memoPoint), pos));
+				} else {
+					visit(e, null);
+				}
 				Succ();
 			}
 			EndFunc();
@@ -543,7 +620,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 
 		}
 
-		int nested = -1;
+		int nested = 0;
 
 		private void visit(Expression e, Object a) {
 			int lnested = this.nested;
@@ -673,7 +750,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		}
 
 		private String MatchByteArray(boolean[] byteMap, String c) {
-			return GetArray(_symbol(byteMap), c);
+			return _getarray(_symbol(byteMap), c);
 		}
 
 		@Override
@@ -723,33 +800,67 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 
 		@Override
 		public Object visitChoice(Nez.Choice e, Object a) {
-			BeginScope();
-			initVal(_unchoiced(), _true());
-			for (Expression sub : e) {
-				String f = makeFuncCall(sub);
-				If(local(_unchoiced()));
-				{
-					SavePoint(sub);
-					Verbose(sub.toString());
-					If(f);
+			if (e.predicted != null) {
+				visitPredicatedChoice(e.predicted);
+			} else {
+				BeginScope();
+				initVal(_unchoiced(), _true());
+				for (Expression sub : e) {
+					String f = makeFuncCall(sub);
+					If(local(_unchoiced()));
 					{
-						VarAssign(local(_unchoiced()), _false());
-					}
-					Else();
-					{
-						Backtrack(sub);
+						SavePoint(sub);
+						Verbose(sub.toString());
+						If(f);
+						{
+							VarAssign(local(_unchoiced()), _false());
+						}
+						Else();
+						{
+							Backtrack(sub);
+						}
+						EndIf();
 					}
 					EndIf();
 				}
+				If(local(_unchoiced()));
+				{
+					Fail();
+				}
 				EndIf();
+				EndScope();
 			}
-			If(local(_unchoiced()));
-			{
-				Fail();
-			}
-			EndIf();
-			EndScope();
 			return null;
+		}
+
+		private void visitPredicatedChoice(ChoicePrediction p) {
+			if (p.isTrieTree) {
+				Switch(_getarray(_symbol(p), ParserFunc("read")));
+				Case("0");
+				Fail();
+				for (int i = 1; i < p.unique0.length; i++) {
+					Case(_int(i));
+					Expression sub = p.unique0[i];
+					String f = makeFuncCall(Expressions.next(sub));
+					Verbose(sub.toString());
+					Return(f);
+					EndCase();
+				}
+				EndSwitch();
+			} else {
+				Switch(_getarray(_symbol(p), ParserFunc("prefetch")));
+				Case("0");
+				Fail();
+				for (int i = 1; i < p.unique0.length; i++) {
+					Case(_int(i));
+					Expression sub = p.unique0[i];
+					String f = makeFuncCall(sub);
+					Verbose(sub.toString());
+					Return(f);
+					EndCase();
+				}
+				EndSwitch();
+			}
 		}
 
 		@Override
@@ -844,7 +955,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 					Nez.Byte e = (Nez.Byte) inner;
 					If(ParserFunc("prefetch"), _eq(), _byte(e.byteChar));
 					{
-						ParserFunc("move", "1");
+						Statement(ParserFunc("move", "1"));
 					}
 					EndIf();
 					return true;
@@ -853,7 +964,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 					Nez.ByteSet e = (Nez.ByteSet) inner;
 					If(MatchByteArray(e.byteMap, ParserFunc("prefetch")));
 					{
-						ParserFunc("move", "1");
+						Statement(ParserFunc("move", "1"));
 					}
 					EndIf();
 					return true;
@@ -867,7 +978,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 					// Nez.Any e = (Nez.Any) inner;
 					If(_not(ParserFunc("eof")));
 					{
-						ParserFunc("move", "1");
+						Statement(ParserFunc("move", "1"));
 					}
 					EndIf();
 					return true;
@@ -882,7 +993,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 					Nez.Byte e = (Nez.Byte) inner;
 					While(_op(ParserFunc("prefetch"), _eq(), _byte(e.byteChar)));
 					{
-						ParserFunc("move", "1");
+						Statement(ParserFunc("move", "1"));
 					}
 					EndWhile();
 					return true;
@@ -891,7 +1002,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 					Nez.ByteSet e = (Nez.ByteSet) inner;
 					While(MatchByteArray(e.byteMap, ParserFunc("prefetch")));
 					{
-						ParserFunc("move", "1");
+						Statement(ParserFunc("move", "1"));
 					}
 					EndWhile();
 					return true;
@@ -909,7 +1020,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 					// Nez.Any e = (Nez.Any) inner;
 					While(_not(ParserFunc("eof")));
 					{
-						ParserFunc("move", "1");
+						Statement(ParserFunc("move", "1"));
 					}
 					EndWhile();
 					return true;
@@ -1090,18 +1201,43 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 
 		@Override
 		public Object visitSymbolPredicate(SymbolPredicate e, Object a) {
-			// TODO Auto-generated method stub
+			BeginScope();
+			String pos = savePos();
+			visit(e, a);
+			if (e.op == FunctionName.is) {
+				Statement(ParserFunc("equals", _symbol(e.tableName), pos));
+			} else {
+				Statement(ParserFunc("contains", _symbol(e.tableName), pos));
+			}
+			EndScope();
 			return null;
 		}
 
 		@Override
 		public Object visitSymbolMatch(SymbolMatch e, Object a) {
-			// TODO Auto-generated method stub
+			If(_not(ParserFunc("match", ParserFunc("getSymbol", _symbol(e.tableName)))));
+			{
+				Fail();
+			}
+			EndIf();
 			return null;
 		}
 
 		@Override
 		public Object visitSymbolExists(SymbolExists e, Object a) {
+			if (e.symbol == null) {
+				If(_not(ParserFunc("exists", _symbol(e.tableName))));
+				{
+					Fail();
+				}
+				EndIf();
+			} else {
+				If(_not(ParserFunc("existsSymbol", _symbol(e.tableName), _string(e.symbol))));
+				{
+					Fail();
+				}
+				EndIf();
+			}
 			// TODO Auto-generated method stub
 			return null;
 		}

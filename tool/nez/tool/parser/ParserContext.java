@@ -206,18 +206,30 @@ public class ParserContext {
 		}
 	}
 
-	final static long hash(byte[] utf8) {
+	private final static long hash(byte[] utf8, int ppos, int pos) {
 		long hashCode = 1;
-		for (int i = 0; i < utf8.length; i++) {
+		for (int i = ppos; i < pos; i++) {
 			hashCode = hashCode * 31 + (utf8[i] & 0xff);
 		}
 		return hashCode;
 	}
 
-	public static final boolean equalsBytes(byte[] utf8, byte[] b) {
+	private final static boolean equalsBytes(byte[] utf8, byte[] b) {
 		if (utf8.length == b.length) {
 			for (int i = 0; i < utf8.length; i++) {
 				if (utf8[i] != b[i]) {
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+
+	private final boolean equalsBytes(byte[] b, int ppos, int pos, byte[] b2) {
+		if ((pos - ppos) == b2.length) {
+			for (int i = 0; i < b2.length; i++) {
+				if (b[ppos + i] != b2[i]) {
 					return false;
 				}
 			}
@@ -277,8 +289,10 @@ public class ParserContext {
 		}
 	}
 
-	public final void addSymbol(Symbol table, byte[] utf8) {
-		push(table, hash(utf8), utf8);
+	public final void addSymbol(Symbol table, int ppos) {
+		byte[] b = new byte[pos - ppos];
+		System.arraycopy(inputs, ppos, b, 0, b.length);
+		push(table, hash(inputs, ppos, pos), b);
 	}
 
 	public final void addSymbolMask(Symbol table) {
@@ -295,8 +309,8 @@ public class ParserContext {
 		return false;
 	}
 
-	public final boolean exists(Symbol table, byte[] symbol) {
-		long code = hash(symbol);
+	public final boolean existsSymbol(Symbol table, byte[] symbol) {
+		long code = hash(symbol, 0, symbol.length);
 		for (int i = tableSize - 1; i >= 0; i--) {
 			SymbolTableEntry entry = tables[i];
 			if (entry.table == table) {
@@ -320,15 +334,28 @@ public class ParserContext {
 		return null;
 	}
 
-	public final boolean contains(Symbol table, byte[] symbol) {
-		long code = hash(symbol);
+	public final boolean equals(Symbol table, int ppos) {
 		for (int i = tableSize - 1; i >= 0; i--) {
 			SymbolTableEntry entry = tables[i];
 			if (entry.table == table) {
 				if (entry.symbol == NullSymbol) {
 					return false; // masked
 				}
-				if (entry.code == code && equalsBytes(entry.symbol, symbol)) {
+				return equalsBytes(inputs, ppos, pos, entry.symbol);
+			}
+		}
+		return false;
+	}
+
+	public final boolean contains(Symbol table, int ppos) {
+		long code = hash(inputs, ppos, pos);
+		for (int i = tableSize - 1; i >= 0; i--) {
+			SymbolTableEntry entry = tables[i];
+			if (entry.table == table) {
+				if (entry.symbol == NullSymbol) {
+					return false; // masked
+				}
+				if (entry.code == code && equalsBytes(inputs, ppos, pos, entry.symbol)) {
 					return true;
 				}
 			}
@@ -362,29 +389,30 @@ public class ParserContext {
 		return ((pos << shift) | memoPoint) & Long.MAX_VALUE;
 	}
 
-	public final int lookupMemo(int memoPoint) {
+	public final boolean lookupMemo(int memoPoint) {
 		long key = longkey(pos, memoPoint, shift);
 		int hash = (int) (key % memoArray.length);
 		MemoEntry m = this.memoArray[hash];
 		if (m.key == key) {
 			this.left = m.result;
-			return m.consumed;
+			this.pos += m.consumed;
+			return true;
 		}
-		return -1; // unfound
+		return false; // unfound
 	}
 
-	public void memoSucc(int memoPoint, int consumed) {
+	public void memoSucc(int memoPoint, int ppos) {
 		long key = longkey(pos, memoPoint, shift);
 		int hash = (int) (key % memoArray.length);
 		MemoEntry m = this.memoArray[hash];
 		m.key = key;
 		m.result = left;
-		m.consumed = consumed;
+		m.consumed = pos - ppos;
 		m.stateValue = -1;
 		// this.CountStored += 1;
 	}
 
-	public void memoFail(int memoPoint, int consumed) {
+	public void memoFail(int memoPoint) {
 		long key = longkey(pos, memoPoint, shift);
 		int hash = (int) (key % memoArray.length);
 		MemoEntry m = this.memoArray[hash];
@@ -394,31 +422,32 @@ public class ParserContext {
 		m.stateValue = -1;
 	}
 
-	public final int lookupStateMemo(int memoPoint) {
+	public final boolean lookupStateMemo(int memoPoint) {
 		long key = longkey(pos, memoPoint, shift);
 		int hash = (int) (key % memoArray.length);
 		MemoEntry m = this.memoArray[hash];
 		if (m.key == key) {
 			if (m.stateValue == stateValue) {
+				this.pos = m.consumed;
 				this.left = m.result;
-				return m.consumed;
+				return true;
 			}
 		}
-		return -1; // unfound
+		return false; // unfound
 	}
 
-	public void memoStateSucc(int memoPoint, int consumed) {
+	public void memoStateSucc(int memoPoint, int ppos) {
 		long key = longkey(pos, memoPoint, shift);
 		int hash = (int) (key % memoArray.length);
 		MemoEntry m = this.memoArray[hash];
 		m.key = key;
 		m.result = left;
-		m.consumed = consumed;
+		m.consumed = pos - ppos;
 		m.stateValue = stateValue;
 		// this.CountStored += 1;
 	}
 
-	public void memoStateFail(int memoPoint, int consumed) {
+	public void memoStateFail(int memoPoint) {
 		long key = longkey(pos, memoPoint, shift);
 		int hash = (int) (key % memoArray.length);
 		MemoEntry m = this.memoArray[hash];

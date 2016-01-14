@@ -31,7 +31,7 @@ public class GrammarChecker {
 		ConditionEliminator eliminator = new ConditionEliminator(context);
 		Grammar g = eliminator.transform();
 		new GrammarOptimizer(g, strategy);
-		new Normalizer().perform(g);
+		// new Normalizer().perform(g);
 		return g;
 	}
 
@@ -996,34 +996,6 @@ public class GrammarChecker {
 			Expression alt = base.newChoice(e, e2);
 			l.add(alt);
 			return base.newPair(l);
-		}
-
-	}
-
-	static class Normalizer extends ExpressionTransformer {
-
-		void perform(Grammar g) {
-			final Map<String, Integer> refCounts = Productions.countNonterminalReference(g);
-			UList<Production> prodList = new UList<Production>(new Production[g.size()]);
-			for (Production p : g) {
-				Integer refcnt = refCounts.get(p.getUniqueName());
-				if (refcnt != null && refcnt > 0) {
-					Expression e = visitInner(p.getExpression(), null);
-					p.setExpression(e);
-					prodList.add(p);
-				}
-			}
-			g.update(prodList);
-		}
-
-		@Override
-		public Expression visitSequence(Nez.Sequence p, Object a) {
-			return Expressions.tryConvertingMultiCharSequence(p);
-		}
-
-		@Override
-		public Expression visitPair(Nez.Pair p, Object a) {
-			return Expressions.tryConvertingMultiCharSequence(p);
 		}
 
 	}

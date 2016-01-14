@@ -1216,44 +1216,102 @@ public abstract class Expressions {
 		return true;
 	}
 
-	public final static Expression tryConvertingMultiCharSequence(Expression e) {
-		if (e instanceof Nez.Sequence || e instanceof Nez.Pair) {
-			List<Expression> el = flatten(e);
-			List<Expression> el2 = new UList<Expression>(new Expression[el.size()]);
-			UList<Byte> bytes = new UList<Byte>(new Byte[el.size()]);
-			int next = 0;
-			while (next < el.size()) {
-				next = appendExpressionOrMultiChar(el, next, el2, bytes);
+	public final static Expression tryConvertingMultiCharSequence(Nez.Pair e) {
+		if (isFirstChar(e) && isSecondChar(e)) {
+			UList<Byte> bytes = new UList<Byte>(new Byte[8]);
+			Expression first = Expressions.first(e);
+			bytes.add((byte) ((Nez.Byte) first).byteChar);
+			Expression next = Expressions.next(e);
+			while (true) {
+				if (next instanceof Nez.Byte) {
+					bytes.add((byte) ((Nez.Byte) next).byteChar);
+					next = null;
+					break;
+				}
+				if (next instanceof Nez.Pair) {
+					first = next.get(0);
+					if (first instanceof Nez.Byte) {
+						bytes.add((byte) ((Nez.Byte) first).byteChar);
+						next = next.get(1);
+						continue;
+					}
+				}
+				break;
 			}
-			e = Expressions.newSequence(el2);
+			byte[] byteSeq = new byte[bytes.size()];
+			for (int i = 0; i < bytes.size(); i++) {
+				byteSeq[i] = bytes.get(i);
+			}
+			first = Expressions.newMultiByte(e.getSourceLocation(), byteSeq);
+			if (next == null) {
+				return first;
+			}
+			return new Nez.Pair(first, next);
+		}
+		if (e.get(1) instanceof Nez.Pair) {
+			Expression next = tryConvertingMultiCharSequence((Nez.Pair) e.get(1));
+			e.set(1, next);
 		}
 		return e;
 	}
 
-	private final static int appendExpressionOrMultiChar(List<Expression> el, int start, List<Expression> el2, UList<Byte> bytes) {
-		int next = start + 1;
-		Expression e = el.get(start);
-		if (e instanceof Nez.Byte) {
-			bytes.clear();
-			for (int i = start; i < el.size(); i++) {
-				Expression sub = el.get(i);
-				if (sub instanceof Nez.Byte) {
-					bytes.add(((byte) ((Nez.Byte) sub).byteChar));
-					continue;
-				}
-				next = i;
-				break;
-			}
-			if (bytes.size() > 1) {
-				byte[] byteSeq = new byte[bytes.size()];
-				for (int i = 0; i < bytes.size(); i++) {
-					byteSeq[i] = bytes.get(i);
-				}
-				e = Expressions.newMultiByte(e.getSourceLocation(), byteSeq);
-			}
+	private static boolean isFirstChar(Expression e) {
+		if (e instanceof Nez.Pair || e instanceof Nez.Sequence) {
+			return e.get(0) instanceof Nez.Byte;
 		}
-		el2.add(e);
-		return next;
+		return e instanceof Nez.Byte;
 	}
+
+	private static boolean isSecondChar(Expression e) {
+		if (e instanceof Nez.Pair) {
+			return isFirstChar(e.get(1));
+		}
+		if (e instanceof Nez.Sequence) {
+			return e.get(1) instanceof Nez.Byte;
+		}
+		return false;
+	}
+
+	// public final static Expression tryConvertingMultiCharSequence(Expression
+	// e) {
+	// if (e instanceof Nez.Sequence || e instanceof Nez.Pair) {
+	// List<Expression> el = flatten(e);
+	// List<Expression> el2 = new UList<Expression>(new Expression[el.size()]);
+	// UList<Byte> bytes = new UList<Byte>(new Byte[el.size()]);
+	// int next = 0;
+	// while (next < el.size()) {
+	// next = appendExpressionOrMultiChar(el, next, el2, bytes);
+	// }
+	// e = Expressions.newSequence(el2);
+	// }
+	// return e;
+	// }
+	//
+	// private final static int appendExpressionOrMultiChar(List<Expression> el,
+	// int start, List<Expression> el2, UList<Byte> bytes) {
+	// int next = start + 1;
+	// Expression e = el.get(start);
+	// if (e instanceof Nez.Byte) {
+	// bytes.clear();
+	// for (int i = start; i < el.size(); i++) {
+	// Expression sub = el.get(i);
+	// if (sub instanceof Nez.Byte) {
+	// bytes.add(((byte) ((Nez.Byte) sub).byteChar));
+	// continue;
+	// }
+	// next = i;
+	// break;
+	// }
+	// if (bytes.size() > 1) {
+	// byte[] byteSeq = new byte[bytes.size()];
+	// for (int i = 0; i < bytes.size(); i++) {
+	// byteSeq[i] = bytes.get(i);
+	// }
+	// e = Expressions.newMultiByte(e.getSourceLocation(), byteSeq);
+	// }
+	// }
+	// el2.add(e);
+	// return next;
+	// }
 
 }

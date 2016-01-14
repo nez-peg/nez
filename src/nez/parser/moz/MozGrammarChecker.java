@@ -1,12 +1,15 @@
 package nez.parser.moz;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.TreeMap;
 
 import nez.lang.Conditions;
 import nez.lang.Expression;
 import nez.lang.ExpressionDuplicationVisitor;
+import nez.lang.ExpressionTransformer;
 import nez.lang.Expressions;
+import nez.lang.Grammar;
 import nez.lang.Nez;
 import nez.lang.NonTerminal;
 import nez.lang.Production;
@@ -42,6 +45,7 @@ class MozGrammarChecker extends ExpressionDuplicationVisitor {
 			Verbose.println("optimizing %s ..", strategy);
 			new MozGrammarOptimizer(gg, strategy);
 		}
+		new Normalizer().perform(gg);
 	}
 
 	private Expression visitInner(Expression e) {
@@ -418,6 +422,42 @@ class MozGrammarChecker extends ExpressionDuplicationVisitor {
 
 	public final void reportNotice(Expression p, String message) {
 		this.strategy.reportNotice(p.getSourceLocation(), message);
+	}
+
+	static class Normalizer extends ExpressionTransformer {
+
+		void perform(Grammar g) {
+			final Map<String, Integer> refCounts = Productions.countNonterminalReference(g);
+			UList<Production> prodList = new UList<Production>(new Production[g.size()]);
+			for (Production p : g) {
+				Integer refcnt = refCounts.get(p.getUniqueName());
+				if (refcnt != null && refcnt > 0) {
+					Expression e = visitInner(p.getExpression(), null);
+					p.setExpression(e);
+					prodList.add(p);
+				}
+			}
+			g.update(prodList);
+		}
+
+		@Override
+		public Expression visitChoice(Nez.Choice p, Object a) {
+			if (p.predicted != null) {
+				Expression[] l = p.predicted.unique0;
+				for (int i = 1; i < l.length; i++) {
+					l[i] = (Expression) l[i].visit(this, a);
+				}
+				return p;
+			} else {
+				return super.visitChoice(p, a);
+			}
+		}
+
+		@Override
+		public Expression visitPair(Nez.Pair p, Object a) {
+			return Expressions.tryConvertingMultiCharSequence(p);
+		}
+
 	}
 
 }
