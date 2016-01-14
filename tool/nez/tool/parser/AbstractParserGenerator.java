@@ -289,6 +289,9 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 	}
 
 	protected String _byte(int ch) {
+		if (ch == 92) { // [ad-hoc] insert one more backslash '\\'
+			return "'" + "\\\\" + "'";
+		}
 		if (ch < 128 && (!Character.isISOControl(ch))) {
 			return "'" + (char) ch + "'";
 		}
