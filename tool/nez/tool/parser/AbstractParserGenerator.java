@@ -844,7 +844,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 					Nez.Byte e = (Nez.Byte) inner;
 					If(ParserFunc("prefetch"), _eq(), _byte(e.byteChar));
 					{
-						ParserFunc("move", "1");
+						Statement(ParserFunc("move", "1"));
 					}
 					EndIf();
 					return true;
@@ -853,7 +853,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 					Nez.ByteSet e = (Nez.ByteSet) inner;
 					If(MatchByteArray(e.byteMap, ParserFunc("prefetch")));
 					{
-						ParserFunc("move", "1");
+						Statement(ParserFunc("move", "1"));
 					}
 					EndIf();
 					return true;
@@ -867,7 +867,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 					// Nez.Any e = (Nez.Any) inner;
 					If(_not(ParserFunc("eof")));
 					{
-						ParserFunc("move", "1");
+						Statement(ParserFunc("move", "1"));
 					}
 					EndIf();
 					return true;
@@ -882,7 +882,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 					Nez.Byte e = (Nez.Byte) inner;
 					While(_op(ParserFunc("prefetch"), _eq(), _byte(e.byteChar)));
 					{
-						ParserFunc("move", "1");
+						Statement(ParserFunc("move", "1"));
 					}
 					EndWhile();
 					return true;
@@ -891,7 +891,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 					Nez.ByteSet e = (Nez.ByteSet) inner;
 					While(MatchByteArray(e.byteMap, ParserFunc("prefetch")));
 					{
-						ParserFunc("move", "1");
+						Statement(ParserFunc("move", "1"));
 					}
 					EndWhile();
 					return true;
@@ -909,7 +909,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 					// Nez.Any e = (Nez.Any) inner;
 					While(_not(ParserFunc("eof")));
 					{
-						ParserFunc("move", "1");
+						Statement(ParserFunc("move", "1"));
 					}
 					EndWhile();
 					return true;
