@@ -906,21 +906,21 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 			if (linkRate == null) {
 				countOption(tag);
 			}
-			linkFixBranch = labelSet.labelProgression % rate;
 			int generalProgression = labelSet.labelProgression / rate;
+			labelSet.labelProgression = labelSet.labelProgression % rate;
 			for (int i = 0; i <= linkRate.length; i++) {
 				if (i == linkRate.length) {
 					linkFixBranch = -1;
 					break;
 				}
-				if (linkFixBranch < linkRate[i]) {
-					labelSet.labelProgression = linkFixBranch;
+				if (labelSet.labelProgression < linkRate[i]) {
 					for (int j = 0; j < link[i].size; j++) {
 						labelSet = link[i].get(j).optionFix(labelSet, tag);
 					}
+					linkFixBranch = i;
 					break;
 				} else {
-					linkFixBranch -= linkRate[i];
+					labelSet.labelProgression -= linkRate[i];
 				}
 			}
 			labelSet.labelProgression = generalProgression;
