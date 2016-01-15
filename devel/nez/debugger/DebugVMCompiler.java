@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Stack;
 
 import nez.ast.CommonTree;
+import nez.junks.ParserGrammar;
 import nez.lang.Bytes;
 import nez.lang.Expression;
 import nez.lang.Expressions;
@@ -15,7 +16,6 @@ import nez.lang.NonTerminal;
 import nez.lang.Production;
 import nez.parser.ParserStrategy;
 import nez.parser.moz.MozInst;
-import nez.parser.moz.ParserGrammar;
 
 public class DebugVMCompiler extends Expression.Visitor {
 	ParserGrammar peg;

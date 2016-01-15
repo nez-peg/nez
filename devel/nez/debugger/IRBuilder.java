@@ -1,9 +1,9 @@
 package nez.debugger;
 
+import nez.junks.ParserGrammar;
 import nez.lang.Expression;
 import nez.lang.Nez;
 import nez.lang.Production;
-import nez.parser.moz.ParserGrammar;
 
 public class IRBuilder {
 	private BasicBlock curBB;

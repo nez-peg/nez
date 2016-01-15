@@ -7,7 +7,7 @@ import nez.ast.SourceLocation;
 import nez.ast.Tree;
 import nez.lang.ast.NezExpressionConstructor;
 import nez.lang.ast.NezGrammarCombinator;
-import nez.parser.GrammarOptimizer;
+import nez.parser.ParserOptimizer;
 import nez.parser.Parser;
 import nez.parser.ParserStrategy;
 import nez.util.ConsoleUtils;
@@ -225,7 +225,7 @@ public class Grammar extends AbstractList<Production> {
 	 */
 
 	public final Parser newParser(ParserStrategy strategy) {
-		Grammar gg = new GrammarOptimizer().optimize(this.getStartProduction(), strategy, null);
+		Grammar gg = new ParserOptimizer().optimize(this.getStartProduction(), strategy, null);
 		return new Parser(gg, strategy);
 	}
 
@@ -237,7 +237,7 @@ public class Grammar extends AbstractList<Production> {
 		if (name != null) {
 			Production p = this.getProduction(name);
 			if (p != null) {
-				Grammar gg = new GrammarOptimizer().optimize(p, strategy, null);
+				Grammar gg = new ParserOptimizer().optimize(p, strategy, null);
 				return new Parser(gg, strategy);
 			}
 			Verbose.println("undefined production: " + name);

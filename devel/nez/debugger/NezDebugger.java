@@ -16,12 +16,12 @@ import jline.MultiCompletor;
 import jline.SimpleCompletor;
 import nez.ast.CommonTree;
 import nez.debugger.Context.FailOverInfo;
+import nez.junks.ParserGrammar;
 import nez.lang.Expression;
 import nez.lang.Nez;
 import nez.lang.NonTerminal;
 import nez.lang.Production;
 import nez.main.ReadLine;
-import nez.parser.moz.ParserGrammar;
 import nez.util.ConsoleUtils;
 
 public class NezDebugger {
