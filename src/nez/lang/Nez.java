@@ -524,12 +524,11 @@ public class Nez {
 	}
 
 	public static class ChoicePrediction {
-		public boolean isTrieTree = false;
-		public Expression[] predictedCase = null;
-		public float reduced;
-
 		public byte[] indexMap;
-		public Expression[] unique0 = null;
+		public boolean isTrieTree = false;
+		public boolean[] striped;
+		public Expression[] uniqued = null;
+		public float reduced;
 	}
 
 	/* AST */

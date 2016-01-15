@@ -4,7 +4,6 @@ import java.util.HashMap;
 
 import nez.ast.Symbol;
 import nez.lang.Expression;
-import nez.lang.Expressions;
 import nez.lang.FunctionName;
 import nez.lang.Grammar;
 import nez.lang.Nez;
@@ -801,7 +800,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		@Override
 		public Object visitChoice(Nez.Choice e, Object a) {
 			if (e.predicted != null) {
-				visitPredicatedChoice(e.predicted);
+				visitPredicatedChoice(e, e.predicted);
 			} else {
 				BeginScope();
 				initVal(_unchoiced(), _true());
@@ -833,34 +832,24 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 			return null;
 		}
 
-		private void visitPredicatedChoice(ChoicePrediction p) {
-			if (p.isTrieTree) {
-				Switch(_getarray(_symbol(p), ParserFunc("read")));
-				Case("0");
-				Fail();
-				for (int i = 1; i < p.unique0.length; i++) {
-					Case(_int(i));
-					Expression sub = p.unique0[i];
-					String f = makeFuncCall(Expressions.next(sub));
+		private void visitPredicatedChoice(Nez.Choice choice, ChoicePrediction p) {
+			Switch(_getarray(_symbol(p), ParserFunc("prefetch")));
+			Case("0");
+			Fail();
+			for (int i = 0; i < choice.size(); i++) {
+				Case(_int(i + 1));
+				Expression sub = choice.get(i);
+				String f = makeFuncCall(sub);
+				if (p.striped[i]) {
+					Verbose(". " + sub);
+					Statement(ParserFunc("move", "1"));
+				} else {
 					Verbose(sub.toString());
-					Return(f);
-					EndCase();
 				}
-				EndSwitch();
-			} else {
-				Switch(_getarray(_symbol(p), ParserFunc("prefetch")));
-				Case("0");
-				Fail();
-				for (int i = 1; i < p.unique0.length; i++) {
-					Case(_int(i));
-					Expression sub = p.unique0[i];
-					String f = makeFuncCall(sub);
-					Verbose(sub.toString());
-					Return(f);
-					EndCase();
-				}
-				EndSwitch();
+				Return(f);
+				EndCase();
 			}
+			EndSwitch();
 		}
 
 		@Override

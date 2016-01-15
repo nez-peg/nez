@@ -41,11 +41,15 @@ class MozGrammarChecker extends ExpressionDuplicationVisitor {
 		}
 		String uname = uniqueName(start.getUniqueName(), start);
 		this.checkFirstVisitedProduction(uname, start); // start
+
+		long t1 = System.nanoTime();
 		if (strategy.Optimization) {
 			Verbose.println("optimizing %s ..", strategy);
 			new MozGrammarOptimizer(gg, strategy);
 		}
+		long t2 = System.nanoTime();
 		new Normalizer().perform(gg);
+		Verbose.printElapsedTime("Optimization time", t1, t2);
 	}
 
 	private Expression visitInner(Expression e) {
@@ -438,19 +442,6 @@ class MozGrammarChecker extends ExpressionDuplicationVisitor {
 				}
 			}
 			g.update(prodList);
-		}
-
-		@Override
-		public Expression visitChoice(Nez.Choice p, Object a) {
-			if (p.predicted != null) {
-				Expression[] l = p.predicted.unique0;
-				for (int i = 1; i < l.length; i++) {
-					l[i] = (Expression) l[i].visit(this, a);
-				}
-				return p;
-			} else {
-				return super.visitChoice(p, a);
-			}
 		}
 
 		@Override
