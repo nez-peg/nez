@@ -13,6 +13,37 @@ public class Bytes {
 		return b;
 	}
 
+	public final static boolean[] parseOctet(String octet) {
+		boolean[] b = Bytes.newMap(true);
+		assert (octet.length() == 8);
+		for (int i = 0; i < 8; i++) {
+			int position = 0x80 >> i;
+			switch (octet.charAt(i)) {
+			case '0':
+				for (int j = 0; j < 256; j++) {
+					if ((j & position) == 0) {
+						continue;
+					}
+					b[j] = false;
+				}
+				break;
+			case '1':
+				for (int j = 0; j < 256; j++) {
+					if ((j & position) != 0) {
+						continue;
+					}
+					b[j] = false;
+				}
+				break;
+			case 'x':
+			default:
+				break;
+			}
+		}
+		b[256] = false;
+		return b;
+	}
+
 	public final static void clear(boolean[] byteMap) {
 		for (int c = 0; c < byteMap.length; c++) {
 			byteMap[c] = false;
