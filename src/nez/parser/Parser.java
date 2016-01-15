@@ -9,16 +9,15 @@ import nez.ast.SourceError;
 import nez.ast.Tree;
 import nez.io.CommonSource;
 import nez.lang.Grammar;
-import nez.parser.moz.ParserGrammar;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
 
 public final class Parser {
 	private ParserStrategy strategy;
-	private ParserGrammar grammar;
+	private Grammar grammar;
 	private ParserCode<?> pcode = null;
 
-	public Parser(ParserGrammar pgrammar, ParserStrategy strategy) {
+	public Parser(Grammar pgrammar, ParserStrategy strategy) {
 		this.grammar = pgrammar;
 		this.strategy = strategy;
 	}
