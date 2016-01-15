@@ -2,6 +2,7 @@ package nez.lang.ast;
 
 import nez.ast.Symbol;
 import nez.ast.Tree;
+import nez.lang.Bytes;
 import nez.lang.Expression;
 import nez.lang.Expressions;
 import nez.lang.Grammar;
@@ -101,6 +102,14 @@ public class NezExpressionConstructor extends GrammarVisitorMap<ExpressionTransd
 			}
 			int c = StringUtils.hex(t.charAt(t.length() - 2)) * 16 + StringUtils.hex(t.charAt(t.length() - 1));
 			return Expressions.newByte(node, c);
+		}
+	}
+
+	public class _ByteClass extends TreeVisitor {
+		@Override
+		public Expression accept(Tree<?> node, Expression e) {
+			String t = node.toText();
+			return Expressions.newByteSet(node, Bytes.parseOctet(t));
 		}
 	}
 

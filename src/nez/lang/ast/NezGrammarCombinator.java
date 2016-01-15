@@ -197,9 +197,10 @@ public class NezGrammarCombinator extends Combinator {
 	public Expression pTerm() {
 		Expression _Any = New(t("."), Tag("AnyChar"));
 		Expression _Byte = New(t("0x"), P("HEX"), P("HEX"), Tag("ByteChar"));
+		Expression _ByteClass = New(c("01x"), c("01x"), c("01x"), c("01x"), c("01x"), c("01x"), c("01x"), c("01x"), Tag("ByteClass"));
 		Expression _Unicode = New(t("U+"), P("HEX"), P("HEX"), P("HEX"), P("HEX"), Tag("ByteChar"));
 		Expression _Inner = Sequence(t("("), P("_"), P("Expression"), P("_"), t(")"));
-		return Choice(P("Character"), P("Charset"), P("String"), _Any, _Byte, _Unicode, P("Constructor"), P("LabelLink"), P("Replace"), P("Tagging"), _Inner, P("Func"), P("NonTerminal"));
+		return Choice(P("Character"), P("Charset"), P("String"), _Any, _Byte, _ByteClass, _Unicode, P("Constructor"), P("LabelLink"), P("Replace"), P("Tagging"), _Inner, P("Func"), P("NonTerminal"));
 	}
 
 	public Expression pCharacter() {
@@ -235,11 +236,6 @@ public class NezGrammarCombinator extends Combinator {
 	/**
 	 * #ABC #$
 	 */
-	// public Expression pTagging() {
-	// Expression Tag = New(Choice(Sequence(c("A-Za-z0-9"),
-	// ZeroMore(c("A-Za-z0-9_")), t('$'))), Tag("Tagging"));
-	// return Sequence(Choice(t('#'), t(':')), Tag);
-	// }
 
 	public Expression pTagName() {
 		return New(c("A-Za-z0-9$"), ZeroMore(c("A-Za-z0-9_$")), Tag("Tagging"));

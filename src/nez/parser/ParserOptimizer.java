@@ -748,11 +748,7 @@ public class ParserOptimizer {
 			NonterminalReference refc = Productions.countNonterminalReference(grammar);
 			for (Production p : grammar) {
 				if (refc.count(p.getUniqueName()) > 1) {
-					// long t1 = System.nanoTime();
 					optimizeChoicePrediction(p.getExpression());
-					// long t2 = System.nanoTime();
-					// Verbose.printElapsedTime("Optimizing " + p.getLocalName()
-					// + ", ref=" + refc.count(p.getUniqueName()), t1, t2);
 				}
 			}
 		}
