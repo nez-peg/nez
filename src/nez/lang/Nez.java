@@ -527,7 +527,6 @@ public class Nez {
 		public byte[] indexMap;
 		public boolean isTrieTree = false;
 		public boolean[] striped;
-		public Expression[] uniqued = null;
 		public float reduced;
 	}
 

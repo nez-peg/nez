@@ -44,12 +44,14 @@ class MozGrammarChecker extends ExpressionDuplicationVisitor {
 
 		long t1 = System.nanoTime();
 		if (strategy.Optimization) {
-			Verbose.println("optimizing %s ..", strategy);
+			// Verbose.println("optimizing %s ..", strategy);
 			new MozGrammarOptimizer(gg, strategy);
 		}
 		long t2 = System.nanoTime();
 		new Normalizer().perform(gg);
+		long t3 = System.nanoTime();
 		Verbose.printElapsedTime("Optimization time", t1, t2);
+		Verbose.printElapsedTime("Normalization time", t2, t3);
 	}
 
 	private Expression visitInner(Expression e) {

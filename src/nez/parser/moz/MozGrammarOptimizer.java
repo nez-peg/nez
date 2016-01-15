@@ -1,5 +1,6 @@
 package nez.parser.moz;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -17,15 +18,16 @@ import nez.lang.Productions.NonterminalReference;
 import nez.parser.ParserStrategy;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
+import nez.util.Verbose;
 
 class MozGrammarOptimizer extends ExpressionTransformer {
 
 	/**
 	 * 
 	 */
-	boolean InliningSubchoice = false;
 
 	boolean verboseGrammar = false;
+	boolean InliningSubchoice = false;
 	boolean enabledSecondChoice = false;
 
 	final Grammar grammar;
@@ -50,10 +52,17 @@ class MozGrammarOptimizer extends ExpressionTransformer {
 	private NonterminalReference refc = null;
 
 	private void optimize() {
+		long t1 = System.nanoTime();
 		refc = Productions.countNonterminalReference(grammar);
 		Production start = grammar.getStartProduction();
 		optimizeProduction(start);
-		optimizeChoicePrediction();
+		long t2 = System.nanoTime();
+		Verbose.printElapsedTime("lexical", t1, t2);
+		if (strategy.Odchoice) {
+			optimizeChoicePrediction();
+		}
+		long t3 = System.nanoTime();
+		Verbose.printElapsedTime("prediction", t2, t3);
 
 		NonterminalReference refc2 = Productions.countNonterminalReference(grammar);
 
@@ -67,6 +76,8 @@ class MozGrammarOptimizer extends ExpressionTransformer {
 			}
 		}
 		grammar.update(prodList);
+		long t4 = System.nanoTime();
+		Verbose.printElapsedTime("inlining", t3, t4);
 	}
 
 	private Expression optimizeProduction(Production p) {
@@ -359,8 +370,11 @@ class MozGrammarOptimizer extends ExpressionTransformer {
 	private void optimizeChoicePrediction() {
 		NonterminalReference refc = Productions.countNonterminalReference(grammar);
 		for (Production p : this.grammar) {
-			if (refc.count(p.getUniqueName()) > 0) {
+			if (refc.count(p.getUniqueName()) > 1) {
+				long t1 = System.nanoTime();
 				optimizeChoicePrediction(p.getExpression());
+				long t2 = System.nanoTime();
+				Verbose.printElapsedTime("Optimizing " + p.getLocalName() + ", ref=" + refc.count(p.getUniqueName()), t1, t2);
 			}
 		}
 	}
@@ -374,6 +388,8 @@ class MozGrammarOptimizer extends ExpressionTransformer {
 						optimizeChoicePrediction(sub);
 					}
 				}
+			} else {
+				Verbose.println("already optimized: " + e);
 			}
 			return;
 		}
@@ -383,15 +399,18 @@ class MozGrammarOptimizer extends ExpressionTransformer {
 	}
 
 	private void optimizeChoicePrediction(Nez.Choice choice) {
-		int count = 0;
-		int selected = 0;
 		Nez.ChoicePrediction p = new Nez.ChoicePrediction();
 		choice.predicted = p;
 		Expression[] predictedCase = new Expression[256];
 		UList<Expression> bufferList = Expressions.newUList(choice.size());
-		HashMap<String, Expression> bufferMap = new HashMap<String, Expression>();
+		HashMap<String, Expression> bufferMap = new HashMap<>();
+		ArrayList<Expression> uniqueList = new ArrayList<>();
+		byte[] indexMap = new byte[256];
+		HashMap<String, Byte> bufferIndex = new HashMap<>();
+		int count = 0;
+		int selected = 0;
 		for (int ch = 0; ch < 255; ch++) {
-			Expression predicted = selectPredictedChoice(choice, ch, bufferList, bufferMap);
+			Expression predicted = selectPredictedChoice(choice, ch, bufferList, bufferMap, uniqueList, indexMap, bufferIndex);
 			predictedCase[ch] = predicted;
 			if (predicted != null) {
 				count++;
@@ -409,8 +428,9 @@ class MozGrammarOptimizer extends ExpressionTransformer {
 		// " newlist=" + newlist.length);
 		// Verbose.debug("map: " + map);
 		int c = 0;
-		for (String k : bufferMap.keySet()) {
-			Expression e = bufferMap.get(k);
+		for (String key : bufferMap.keySet()) {
+			Expression e = bufferMap.get(key);
+			assert (uniqueList.contains(e));
 			// if (Expressions.first(e) instanceof Nez.Byte) {
 			// e = Expressions.next(e);
 			// p.striped[c] = true;
@@ -418,7 +438,16 @@ class MozGrammarOptimizer extends ExpressionTransformer {
 			newlist[c] = e;
 			c++;
 		}
-		choice.inners = newlist;
+		c = 0;
+		Expression[] newlist2 = new Expression[bufferMap.size()];
+		for (Expression e : uniqueList) {
+			newlist2[c] = e;
+			c++;
+		}
+		// for (int i = 0; i < newlist.length; i++) {
+		// System.out.println("" + i + "\t" + newlist[i] + "\n\t" +
+		// newlist2[i]);
+		// }
 		p.indexMap = new byte[256];
 		for (int ch = 0; ch <= 255; ch++) {
 			if (predictedCase[ch] == null) {
@@ -427,6 +456,14 @@ class MozGrammarOptimizer extends ExpressionTransformer {
 				p.indexMap[ch] = (byte) (makeIndexMap(predictedCase[ch], newlist) + 1);
 			}
 		}
+		choice.inners = newlist;
+		for (int ch = 0; ch <= 255; ch++) {
+			if (indexMap[ch] > 0) {
+				assert (newlist2[indexMap[ch] - 1] == newlist[p.indexMap[ch] - 1]);
+			}
+		}
+		// choice.inners = newlist2;
+		// p.indexMap = indexMap;
 	}
 
 	private int makeIndexMap(Expression e, Expression[] unique0) {
@@ -439,7 +476,7 @@ class MozGrammarOptimizer extends ExpressionTransformer {
 		return -1;
 	}
 
-	private Expression selectPredictedChoice(Nez.Choice choice, int ch, UList<Expression> bufferList, HashMap<String, Expression> bufferMap) {
+	private Expression selectPredictedChoice(Nez.Choice choice, int ch, UList<Expression> bufferList, HashMap<String, Expression> bufferMap, ArrayList<Expression> uniqueList, byte[] indexMap, HashMap<String, Byte> bufferIndex) {
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < choice.size(); i++) {
 			Expression p = choice.get(i);
@@ -452,9 +489,12 @@ class MozGrammarOptimizer extends ExpressionTransformer {
 		}
 		String key = sb.toString();
 		if (key.length() == 0) {
+			indexMap[ch] = 0;
 			return null; // empty
 		}
 		if (bufferMap.containsKey(key)) {
+			indexMap[ch] = bufferIndex.get(key);
+			assert (uniqueList.get(indexMap[ch] - 1) == bufferMap.get(key));
 			return bufferMap.get(key);
 		}
 		// boolean commonFactored = false;
@@ -481,20 +521,13 @@ class MozGrammarOptimizer extends ExpressionTransformer {
 		// tryFactoredSecondChoice(p);
 		// }
 		bufferMap.put(key, p);
+		uniqueList.add(p);
+		byte b = (byte) uniqueList.size();
+		indexMap[ch] = b;
+		bufferIndex.put(key, b);
+		assert (uniqueList.get(indexMap[ch] - 1) == bufferMap.get(key));
 		return p;
 	}
-
-	// private void tryFactoredSecondChoice(Expression p) {
-	// if (p instanceof Nez.Choice) {
-	// if (((Nez.Choice) p).predicted == null) {
-	// // Verbose.debug("Second choice: " + p);
-	// }
-	// return;
-	// }
-	// for (Expression sub : p) {
-	// tryFactoredSecondChoice(sub);
-	// }
-	// }
 
 	public final static Expression tryFactoringCommonLeft(Nez.Choice base, Expression e, Expression e2, boolean ignoredFirstChar) {
 		UList<Expression> l = null;
