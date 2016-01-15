@@ -19,6 +19,7 @@ public class ParserStrategy {
 	/* Grammars */
 	public boolean TreeConstruction = true;
 	public boolean SymbolTable = true;
+	public boolean DefaultCondition = false;
 	public boolean PEGCompatible = false;
 
 	/* Optimization */
@@ -29,7 +30,7 @@ public class ParserStrategy {
 	public boolean Olex = true;
 	public boolean Ostring = true;
 	public boolean Otrie = true;
-	public boolean Odchoice = true;
+	public int ChoicePrediction = 2;
 	public boolean Odfa = false;
 
 	public boolean Oorder = true;

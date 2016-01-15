@@ -9,14 +9,14 @@ import java.util.TreeSet;
 @SuppressWarnings("serial")
 public class Conditions extends TreeMap<String, Boolean> {
 
-	public final static Conditions newConditions(Production start, Map<String, Boolean> inits) {
+	public final static Conditions newConditions(Production start, Map<String, Boolean> inits, boolean defaultTrue) {
 		Conditions conds = new Conditions();
 		Set<String> s = retriveConditionSet(start);
 		for (String c : s) {
 			if (inits != null && inits.containsKey(c)) {
 				conds.put(c, inits.get(c));
 			} else {
-				conds.put(c, true); // FIXME: false
+				conds.put(c, defaultTrue); // FIXME: false
 			}
 		}
 		// System.out.println("new conditions: " + conds);

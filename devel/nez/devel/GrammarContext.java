@@ -33,7 +33,7 @@ public class GrammarContext {
 	}
 
 	public Conditions newConditions() {
-		return Conditions.newConditions(start, conditionMap);
+		return Conditions.newConditions(start, conditionMap, strategy.DefaultCondition);
 	}
 
 	/* Contextual */
