@@ -5,14 +5,14 @@ import java.util.HashMap;
 
 import nez.ast.Source;
 import nez.ast.Tree;
-import nez.io.CommonSource;
-import nez.io.StringSource;
 import nez.lang.Grammar;
 import nez.lang.ast.GrammarLoader;
 import nez.lang.ast.NezGrammarCombinator;
 import nez.parser.Parser;
 import nez.parser.ParserException;
 import nez.parser.ParserStrategy;
+import nez.parser.io.CommonSource;
+import nez.parser.io.StringSource;
 import nez.util.FileBuilder;
 import nez.util.Verbose;
 

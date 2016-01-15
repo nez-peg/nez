@@ -1,4 +1,4 @@
-package nez.io;
+package nez.parser.io;
 
 import java.io.BufferedReader;
 import java.io.File;

@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.IOException;
 
 import nez.ast.Source;
-import nez.io.StringSource;
+import nez.parser.io.StringSource;
 import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
 

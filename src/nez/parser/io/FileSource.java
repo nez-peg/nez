@@ -1,4 +1,4 @@
-package nez.io;
+package nez.parser.io;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;

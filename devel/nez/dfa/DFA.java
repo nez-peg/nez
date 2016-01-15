@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.TreeSet;
 
-import nez.io.StringSource;
+import nez.parser.io.StringSource;
 
 public class DFA {
 	private HashSet<State> S = null;

@@ -7,8 +7,8 @@ import nez.ast.CommonTree;
 import nez.ast.Source;
 import nez.ast.SourceError;
 import nez.ast.Tree;
-import nez.io.CommonSource;
 import nez.lang.Grammar;
+import nez.parser.io.CommonSource;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
 

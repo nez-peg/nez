@@ -2,7 +2,7 @@ package nez.ast;
 
 import java.util.AbstractList;
 
-import nez.io.CommonSource;
+import nez.parser.io.CommonSource;
 import nez.util.StringUtils;
 
 public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements SourceLocation {

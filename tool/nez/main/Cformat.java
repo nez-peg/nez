@@ -4,8 +4,8 @@ import java.io.IOException;
 
 import nez.ast.Source;
 import nez.ast.Tree;
-import nez.io.CommonSource;
 import nez.parser.Parser;
+import nez.parser.io.CommonSource;
 import nez.tool.ast.NezFileFormatter;
 
 public class Cformat extends Command {

@@ -3,7 +3,7 @@ package nez.tool.parser;
 import nez.ast.CommonTree;
 import nez.ast.Symbol;
 import nez.ast.Tree;
-import nez.io.StringSource;
+import nez.parser.io.StringSource;
 
 public class ParserContext {
 	public int pos = 0;
