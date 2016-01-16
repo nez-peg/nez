@@ -1,6 +1,7 @@
 package nez.parser;
 
 import nez.ast.CommonTree;
+import nez.ast.Source;
 import nez.ast.Symbol;
 import nez.ast.Tree;
 import nez.parser.io.StringSource;
@@ -10,26 +11,35 @@ public class ParserContext {
 	public Tree<?> left;
 
 	public ParserContext(String s) {
-		source = new StringSource(s);
+		StringSource source = new StringSource(s);
+		this.source = source;
 		inputs = source.inputs;
 		length = inputs.length - 1;
 		this.pos = 0;
 		this.left = new CommonTree();
 	}
 
-	private StringSource source;
+	protected ParserContext(Source s) {
+		source = s;
+		inputs = null;
+		length = 0;
+		this.pos = 0;
+		this.left = new CommonTree();
+	}
+
+	protected Source source;
 	private byte[] inputs;
 	private int length;
 
-	public final boolean eof() {
+	public boolean eof() {
 		return !(pos < length);
 	}
 
-	public final int read() {
+	public int read() {
 		return inputs[pos++] & 0xff;
 	}
 
-	public final int prefetch() {
+	public int prefetch() {
 		return inputs[pos] & 0xff;
 	}
 
@@ -37,11 +47,11 @@ public class ParserContext {
 		pos += shift;
 	}
 
-	public final void back(int pos) {
+	public void back(int pos) {
 		this.pos = pos;
 	}
 
-	public final boolean match(byte[] text, int len) {
+	public boolean match(byte[] text, int len) {
 		if (pos + len > this.length) {
 			return false;
 		}
@@ -54,12 +64,12 @@ public class ParserContext {
 		return true;
 	}
 
-	// @Override
-	// public final byte[] subByte(long startIndex, long endIndex) {
-	// byte[] b = new byte[(int) (endIndex - startIndex)];
-	// System.arraycopy(this.inputs, (int) (startIndex), b, 0, b.length);
-	// return b;
-	// }
+	public byte[] subByte(int startIndex, int endIndex) {
+		byte[] b = new byte[endIndex - startIndex];
+		System.arraycopy(this.inputs, (startIndex), b, 0, b.length);
+		return b;
+	}
+
 	//
 	// @Override
 	// public final String subString(long startIndex, long endIndex) {

@@ -3,12 +3,15 @@ package nez.parser;
 import java.util.HashMap;
 import java.util.Map;
 
+import nez.ast.Tree;
 import nez.lang.Grammar;
 import nez.lang.Production;
 import nez.lang.Productions;
 import nez.lang.Productions.NonterminalReference;
 import nez.lang.Typestate;
 import nez.lang.Typestate.TypestateAnalyzer;
+import nez.parser.vm.MozInst;
+import nez.parser.vm.ParserMachineContext;
 import nez.util.UList;
 import nez.util.Verbose;
 
@@ -35,6 +38,20 @@ public abstract class ParserCode<T extends Instruction> {
 
 	public final int getInstSize() {
 		return codeList.size();
+	}
+
+	public final Tree<?> exec(ParserMachineContext ctx) {
+		MozInst code = (MozInst) this.getStartInstruction();
+		boolean result = false;
+		try {
+			while (true) {
+				code = code.exec2(ctx);
+			}
+		} catch (TerminationException e) {
+			result = e.status;
+		}
+		return result ? ctx.left : null;
+
 	}
 
 	public abstract Object exec(ParserInstance context);

@@ -18,8 +18,9 @@ public class ParserStrategy {
 
 	/* Grammars */
 	public boolean TreeConstruction = true;
-	public boolean SymbolTable = true;
 	public boolean DefaultCondition = false;
+	public boolean SymbolTable = true;
+	public boolean BinaryGrammar = false;
 	public boolean PEGCompatible = false;
 
 	/* Optimization */
@@ -35,10 +36,12 @@ public class ParserStrategy {
 
 	public boolean Oorder = true;
 
+	/* MozClassic */
+	public boolean MozClassic = true;
+
 	/* PackratParsing */
 	public boolean PackratParsing = true;
 	public int SlidingWindow = 32;
-	public boolean Binary = false;
 
 	/* Profiling */
 	public boolean Profiling = false;
@@ -225,10 +228,6 @@ public class ParserStrategy {
 	}
 
 	public ParserCode<?> newParserCode(Grammar pgrammar) {
-		// if (this.isEnabled("Moz", ParserStrategy.Moz)) {
-		// MozCompiler mozCompiler = new MozCompiler(this);
-		// return mozCompiler.compile(pgrammar);
-		// }
 		MozCompiler bc = MozCompiler.newCompiler(this);
 		return bc.compile(pgrammar);
 	}

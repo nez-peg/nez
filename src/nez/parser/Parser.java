@@ -9,8 +9,10 @@ import nez.ast.SourceError;
 import nez.ast.Tree;
 import nez.lang.Grammar;
 import nez.parser.io.CommonSource;
+import nez.parser.vm.ParserMachineContext;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
+import nez.util.Verbose;
 
 public final class Parser {
 	private ParserStrategy strategy;
@@ -69,6 +71,32 @@ public final class Parser {
 		return matched;
 	}
 
+	public final Object perform(Source s, Tree<?> proto) {
+		if (strategy.MozClassic) {
+			Verbose.println("ClassicMoz");
+			return perform(this.newParserContext(s, proto));
+		}
+		Verbose.println("FT86");
+		ParserMachineContext ctx = new ParserMachineContext(s, proto);
+		ParserCode<?> code = this.getParserCode();
+		// context.init(newMemoTable(context), prototype);
+		// if (prof != null) {
+		// context.startProfiling(prof);
+		// }
+		Tree<?> matched = code.exec(ctx);
+		// if (prof != null) {
+		// context.doneProfiling(prof);
+		// }
+		if (matched == null) {
+			perror(s, ctx.getMaximumPosition(), "syntax error");
+			return null;
+		}
+		if (this.disabledUncosumed && !ctx.eof()) {
+			perror(s, ctx.getPosition(), "unconsumed");
+		}
+		return matched;
+	}
+
 	protected ParserProfier prof = null;
 
 	public void setProfiler(ParserProfier prof) {
@@ -104,7 +132,7 @@ public final class Parser {
 
 	public Tree<?> parse(Source source, Tree<?> proto) {
 		ParserInstance context = this.newParserContext(source, proto);
-		return (Tree<?>) this.perform(context);
+		return (Tree<?>) this.perform(source, proto);
 	}
 
 	public final CommonTree parse(Source sc) {

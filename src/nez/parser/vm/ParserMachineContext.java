@@ -1,5 +1,6 @@
 package nez.parser.vm;
 
+import nez.ast.Source;
 import nez.ast.Symbol;
 import nez.ast.Tree;
 import nez.parser.ParserContext;
@@ -8,6 +9,59 @@ public class ParserMachineContext extends ParserContext {
 
 	public ParserMachineContext(String s) {
 		super(s);
+	}
+
+	public ParserMachineContext(Source source, Tree<?> proto) {
+		super(source);
+		if (proto != null) {
+			this.left = proto;
+		}
+		initVM();
+	}
+
+	@Override
+	public final boolean eof() {
+		return this.source.eof(pos);
+	}
+
+	@Override
+	public final int read() {
+		return this.source.byteAt(pos++);
+	}
+
+	@Override
+	public final int prefetch() {
+		return this.source.byteAt(pos);
+	}
+
+	public final boolean match(byte[] utf8) {
+		return source.match(pos, utf8);
+	}
+
+	public final byte[] subByte(long start, long end) {
+		return source.subByte(start, end);
+	}
+
+	private int head_pos = 0;
+
+	@Override
+	public final void back(int pos) {
+		if (head_pos < this.pos) {
+			this.head_pos = this.pos;
+		}
+		this.pos = pos;
+	}
+
+	public final long getPosition() {
+		return this.pos;
+	}
+
+	public final long getMaximumPosition() {
+		return head_pos;
+	}
+
+	public final void setPosition(long pos) {
+		this.pos = (int) pos;
 	}
 
 	// ----------------------------------------------------------------------

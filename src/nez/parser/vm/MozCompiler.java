@@ -42,7 +42,6 @@ public class MozCompiler implements ParserCompiler {
 
 	class CompilerVisitor extends Expression.Visitor {
 
-		private boolean MozMode = true;
 		final MozCode code;
 		final Grammar grammar;
 
@@ -143,7 +142,7 @@ public class MozCompiler implements ParserCompiler {
 		@Override
 		public final MozInst visitNonTerminal(NonTerminal n, Object next) {
 			Production p = n.getProduction();
-			if (MozMode) {
+			if (strategy.MozClassic) {
 				MemoPoint m = code.getMemoPoint(p.getUniqueName());
 				ProductionCode<MozInst> f = code.getProductionCode(p);
 				if (m != null) {
@@ -364,7 +363,7 @@ public class MozCompiler implements ParserCompiler {
 
 		@Override
 		public final MozInst visitLinkTree(Nez.LinkTree p, Object next) {
-			if (strategy.TreeConstruction && MozMode && p.get(0) instanceof NonTerminal) {
+			if (strategy.TreeConstruction && strategy.MozClassic && p.get(0) instanceof NonTerminal) {
 				NonTerminal n = (NonTerminal) p.get(0);
 				MemoPoint m = code.getMemoPoint(n.getUniqueName());
 				if (m != null) {

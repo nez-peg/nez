@@ -754,7 +754,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 
 		@Override
 		public Object visitAny(Nez.Any e, Object a) {
-			if (strategy.Binary) {
+			if (strategy.BinaryGrammar) {
 				Statement(ParserFunc("move", "1"));
 				If(ParserFunc("eof"));
 				{
