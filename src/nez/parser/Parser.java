@@ -72,7 +72,7 @@ public final class Parser {
 	}
 
 	public final Object perform(Source s, Tree<?> proto) {
-		if (strategy.MozClassic) {
+		if (strategy.Moz) {
 			Verbose.println("ClassicMoz");
 			return perform(this.newParserContext(s, proto));
 		}

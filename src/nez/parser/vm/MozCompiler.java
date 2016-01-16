@@ -142,7 +142,7 @@ public class MozCompiler implements ParserCompiler {
 		@Override
 		public final MozInst visitNonTerminal(NonTerminal n, Object next) {
 			Production p = n.getProduction();
-			if (strategy.MozClassic) {
+			if (strategy.Moz) {
 				MemoPoint m = code.getMemoPoint(p.getUniqueName());
 				ProductionCode<MozInst> f = code.getProductionCode(p);
 				if (m != null) {
@@ -363,7 +363,7 @@ public class MozCompiler implements ParserCompiler {
 
 		@Override
 		public final MozInst visitLinkTree(Nez.LinkTree p, Object next) {
-			if (strategy.TreeConstruction && strategy.MozClassic && p.get(0) instanceof NonTerminal) {
+			if (strategy.TreeConstruction && strategy.Moz && p.get(0) instanceof NonTerminal) {
 				NonTerminal n = (NonTerminal) p.get(0);
 				MemoPoint m = code.getMemoPoint(n.getUniqueName());
 				if (m != null) {

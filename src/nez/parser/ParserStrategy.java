@@ -37,7 +37,7 @@ public class ParserStrategy {
 	public boolean Oorder = true;
 
 	/* MozClassic */
-	public boolean MozClassic = true;
+	public boolean Moz = true;
 
 	/* PackratParsing */
 	public boolean PackratParsing = true;
