@@ -13,7 +13,7 @@ public class JavaParserGenerator extends AbstractParserGenerator {
 	protected String generateHeader(Grammar g) {
 		Statement("import nez.ast.Tree");
 		Statement("import nez.ast.Symbol");
-		Statement("import nez.tool.parser.ParserContext");
+		Statement("import nez.parser.ParserContext");
 		Line("public class Parser");
 		Begin();
 		Line("public final static Tree<?> parse(String text)");
