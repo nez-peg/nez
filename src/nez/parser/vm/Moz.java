@@ -1514,7 +1514,7 @@ public class Moz {
 	}
 
 	public static class TPush extends MozInst {
-		public TPush(Nez.LinkTree e, MozInst next) {
+		public TPush(Expression e, MozInst next) {
 			super(MozSet.TPush, e, next);
 		}
 
@@ -1537,15 +1537,16 @@ public class Moz {
 
 		@Override
 		public MozInst exec2(ParserMachineContext sc) throws TerminationException {
+			sc.xTPush();
 			return this.next;
 		}
 
 	}
 
-	public static class TPop extends MozInst {
+	public static class TLink extends MozInst {
 		public final Symbol label;
 
-		public TPop(Nez.LinkTree e, MozInst next) {
+		public TLink(Nez.LinkTree e, MozInst next) {
 			super(MozSet.TPop, e, next);
 			this.label = e.label;
 		}
@@ -1562,7 +1563,7 @@ public class Moz {
 
 		@Override
 		public void visit(MozVisitor v) {
-			v.visitTPop(this);
+			v.visitTLink(this);
 		}
 
 		@Override
@@ -1574,6 +1575,38 @@ public class Moz {
 
 		@Override
 		public MozInst exec2(ParserMachineContext sc) throws TerminationException {
+			sc.xTLink(label);
+			return this.next;
+		}
+
+	}
+
+	public static class TPop extends MozInst {
+
+		public TPop(Expression e, MozInst next) {
+			super(MozSet.TPop, e, next);
+		}
+
+		@Override
+		protected void encodeImpl(ByteCoder c) {
+		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitTPop(this);
+		}
+
+		@Override
+		public MozInst exec(MozMachine sc) throws TerminationException {
+			// ASTMachine astMachine = sc.getAstMachine();
+			// astMachine.a(label);
+			System.out.println("unsupported");
+			return this.next;
+		}
+
+		@Override
+		public MozInst exec2(ParserMachineContext sc) throws TerminationException {
+			sc.xTPop();
 			return this.next;
 		}
 

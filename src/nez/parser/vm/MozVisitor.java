@@ -68,6 +68,8 @@ public abstract class MozVisitor {
 
 	public abstract void visitTPop(Moz.TPop inst);
 
+	public abstract void visitTLink(Moz.TLink inst);
+
 	public abstract void visitTLeftFold(Moz.TLeftFold inst);
 
 	public abstract void visitTNew(Moz.TNew inst);

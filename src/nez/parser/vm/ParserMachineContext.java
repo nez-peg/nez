@@ -1,5 +1,7 @@
 package nez.parser.vm;
 
+import nez.ast.Symbol;
+import nez.ast.Tree;
 import nez.parser.ParserContext;
 
 public class ParserMachineContext extends ParserContext {
@@ -135,6 +137,28 @@ public class ParserMachineContext extends ParserContext {
 		s2.ref = this.saveLog();
 		s2.value = this.saveSymbolPoint();
 		return next;
+	}
+
+	public void xTPush() {
+		StackData s = this.newUnusedStack();
+		s.ref = this.left;
+		s = this.newUnusedStack();
+		s.ref = this.saveLog();
+	}
+
+	public void xTLink(Symbol label) {
+		StackData s = this.popStack();
+		this.backLog(s.ref);
+		s = this.popStack();
+		this.linkTree((Tree<?>) s.ref, label);
+		this.left = (Tree<?>) s.ref;
+	}
+
+	public void xTPop() {
+		StackData s = this.popStack();
+		this.backLog(s.ref);
+		s = this.popStack();
+		this.left = (Tree<?>) s.ref;
 	}
 
 	public void xSOpen() {
