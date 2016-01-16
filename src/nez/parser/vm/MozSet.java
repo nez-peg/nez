@@ -1,4 +1,4 @@
-package nez.parser.moz;
+package nez.parser.vm;
 
 public class MozSet {
 	public final static byte Nop = 0; // Do nothing

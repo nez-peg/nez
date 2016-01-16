@@ -1,4 +1,4 @@
-package nez.parser.moz;
+package nez.parser.vm;
 
 public abstract class MozVisitor {
 
@@ -54,7 +54,7 @@ public abstract class MozVisitor {
 
 	public abstract void visitRSet(Moz.RSet inst); //
 
-	public abstract void visitConsume(Moz.Consume inst); //
+	public abstract void visitMove(Moz.Move inst); //
 
 	public abstract void visitFirst(Moz.First inst); //
 

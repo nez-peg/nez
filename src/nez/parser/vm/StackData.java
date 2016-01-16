@@ -1,4 +1,4 @@
-package nez.parser.moz;
+package nez.parser.vm;
 
 public class StackData {
 	public Object ref;

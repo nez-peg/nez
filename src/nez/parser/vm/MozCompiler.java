@@ -1,4 +1,4 @@
-package nez.parser.moz;
+package nez.parser.vm;
 
 import nez.lang.Expression;
 import nez.lang.Expressions;
@@ -85,7 +85,7 @@ public class MozCompiler implements ParserCompiler {
 			next = visit(p.getExpression(), next, null/* failjump */);
 			next = Coverage.visitEnterCoverage(p, next);
 			f.setCompiled(next);
-			MozInst block = new Moz.Label(p, next);
+			MozInst block = new Moz.Label(p.getLocalName(), next);
 			code.layoutCode(block);
 		}
 
@@ -414,7 +414,7 @@ public class MozCompiler implements ParserCompiler {
 					inst = visit(predicted, next);
 				}
 				if (p.striped[i]) {
-					inst = new Moz.Consume(predicted, 1, inst);
+					inst = new Moz.Move(predicted, 1, inst);
 				}
 				compiled[i] = inst;
 			}

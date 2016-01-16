@@ -9,7 +9,7 @@ import nez.ast.TreeUtils;
 import nez.lang.Grammar;
 import nez.parser.Parser;
 import nez.parser.ParserStrategy;
-import nez.parser.moz.Coverage;
+import nez.parser.vm.Coverage;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
 import nez.util.Verbose;

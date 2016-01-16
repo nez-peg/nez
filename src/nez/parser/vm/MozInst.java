@@ -1,4 +1,4 @@
-package nez.parser.moz;
+package nez.parser.vm;
 
 import nez.lang.Expression;
 import nez.parser.Instruction;
@@ -43,6 +43,8 @@ public abstract class MozInst implements Instruction {
 	protected abstract void encodeImpl(ByteCoder c);
 
 	public abstract MozInst exec(MozMachine sc) throws TerminationException;
+
+	public abstract MozInst exec2(ParserMachineContext sc) throws TerminationException;
 
 	protected static MozInst labeling(MozInst inst) {
 		if (inst != null) {

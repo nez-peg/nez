@@ -4,7 +4,7 @@ import nez.lang.Expression;
 import nez.lang.Production;
 import nez.parser.MemoPoint;
 import nez.parser.ParserCode.ProductionCode;
-import nez.parser.moz.MozInst;
+import nez.parser.vm.MozInst;
 
 public class ParserGrammarFunc extends ProductionCode<MozInst> {
 	String name;

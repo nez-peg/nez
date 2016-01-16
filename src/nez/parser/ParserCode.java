@@ -37,7 +37,7 @@ public abstract class ParserCode<T extends Instruction> {
 		return codeList.size();
 	}
 
-	public abstract Object exec(ParserContext context);
+	public abstract Object exec(ParserInstance context);
 
 	/* ParserFunc */
 

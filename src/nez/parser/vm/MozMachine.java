@@ -1,4 +1,4 @@
-package nez.parser.moz;
+package nez.parser.vm;
 
 import nez.ast.Source;
 import nez.ast.Tree;
@@ -164,7 +164,7 @@ public final class MozMachine extends ParserRuntime {
 		return pos;
 	}
 
-	public final MozInst fail() {
+	public final MozInst xFail() {
 		StackData s0 = stacks[catchStackTop];
 		StackData s1 = stacks[catchStackTop + 1];
 		StackData s2 = stacks[catchStackTop + 2];
@@ -185,7 +185,7 @@ public final class MozMachine extends ParserRuntime {
 	public final MozInst skip(MozInst next) {
 		StackData s1 = stacks[catchStackTop + 1];
 		if (s1.value == this.pos) {
-			return fail();
+			return xFail();
 		}
 		s1.value = this.pos;
 		StackData s2 = stacks[catchStackTop + 2];

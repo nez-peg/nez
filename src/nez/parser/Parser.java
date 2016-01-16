@@ -42,14 +42,14 @@ public final class Parser {
 		return pcode;
 	}
 
-	public final ParserContext newParserContext(Source source, Tree<?> prototype) {
+	public final ParserInstance newParserContext(Source source, Tree<?> prototype) {
 		ParserCode<?> pcode = this.getParserCode();
 		return this.strategy.newParserContext(source, pcode.getMemoPointSize(), prototype);
 	}
 
 	/* -------------------------------------------------------------------- */
 
-	public final Object perform(ParserContext context) {
+	public final Object perform(ParserInstance context) {
 		ParserCode<?> code = this.getParserCode();
 		// context.init(newMemoTable(context), prototype);
 		if (prof != null) {
@@ -103,7 +103,7 @@ public final class Parser {
 	}
 
 	public Tree<?> parse(Source source, Tree<?> proto) {
-		ParserContext context = this.newParserContext(source, proto);
+		ParserInstance context = this.newParserContext(source, proto);
 		return (Tree<?>) this.perform(context);
 	}
 

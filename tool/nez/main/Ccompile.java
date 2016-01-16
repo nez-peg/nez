@@ -5,7 +5,7 @@ import java.io.IOException;
 import nez.lang.Grammar;
 import nez.parser.Parser;
 import nez.parser.ParserCode;
-import nez.parser.moz.MozCode;
+import nez.parser.vm.MozCode;
 
 public class Ccompile extends Command {
 	@Override

@@ -1,4 +1,4 @@
-package nez.parser.moz;
+package nez.parser.vm;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;

@@ -1,9 +1,9 @@
-package nez.parser.moz;
+package nez.parser.vm;
 
 import nez.lang.Grammar;
 import nez.parser.Parser;
 import nez.parser.ParserCode;
-import nez.parser.ParserContext;
+import nez.parser.ParserInstance;
 import nez.parser.TerminationException;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
@@ -20,7 +20,7 @@ public class MozCode extends ParserCode<MozInst> {
 	}
 
 	@Override
-	public Object exec(ParserContext context) {
+	public Object exec(ParserInstance context) {
 		long startPosition = context.getPosition();
 		MozMachine machine = (MozMachine) context.getRuntime();
 		MozInst code = this.getStartInstruction();

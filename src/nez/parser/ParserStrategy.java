@@ -9,8 +9,8 @@ import nez.ast.Source;
 import nez.ast.SourceLocation;
 import nez.ast.Tree;
 import nez.lang.Grammar;
-import nez.parser.moz.MozCompiler;
-import nez.parser.moz.MozMachine;
+import nez.parser.vm.MozCompiler;
+import nez.parser.vm.MozMachine;
 import nez.util.ConsoleUtils;
 import nez.util.Verbose;
 
@@ -233,11 +233,11 @@ public class ParserStrategy {
 		return bc.compile(pgrammar);
 	}
 
-	public ParserContext newParserContext(Source source, int memoPointSize, Tree<?> prototype) {
+	public ParserInstance newParserContext(Source source, int memoPointSize, Tree<?> prototype) {
 		MemoTable table = MemoTable.newTable(this.SlidingWindow, memoPointSize);
 		MozMachine machine = new MozMachine(source);
 		machine.init(table, prototype);
-		return new ParserContext(source, machine);
+		return new ParserInstance(source, machine);
 	}
 
 }

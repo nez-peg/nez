@@ -15,7 +15,7 @@ import nez.lang.Nez.Sequence;
 import nez.lang.NonTerminal;
 import nez.lang.Production;
 import nez.parser.ParserStrategy;
-import nez.parser.moz.MozInst;
+import nez.parser.vm.MozInst;
 
 public class DebugVMCompiler extends Expression.Visitor {
 	ParserGrammar peg;
