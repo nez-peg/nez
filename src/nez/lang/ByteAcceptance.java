@@ -39,6 +39,19 @@ public enum ByteAcceptance {
 		return analyzer.accept(e, ch);
 	}
 
+	public final static boolean isDisjoint(Expression e, Expression e2) {
+		for (int ch = 0; ch < 256; ch++) {
+			if (acc(e, ch) == Reject) {
+				continue;
+			}
+			if (acc(e2, ch) == Reject) {
+				continue;
+			}
+			return false;
+		}
+		return true;
+	}
+
 	public final static class Analyzer extends Expression.Visitor {
 
 		public ByteAcceptance accept(Expression e, Object ch) {
