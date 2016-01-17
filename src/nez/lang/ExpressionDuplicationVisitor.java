@@ -210,7 +210,7 @@ public abstract class ExpressionDuplicationVisitor extends Expression.Visitor {
 
 	@Override
 	public Expression visitSymbolPredicate(Nez.SymbolPredicate e, Object a) {
-		return new Nez.SymbolPredicate(e.op, (NonTerminal) e.get(0), e.tableName);
+		return new Nez.SymbolPredicate(e.op, (NonTerminal) inner(e), e.tableName);
 	}
 
 	@Override
@@ -221,6 +221,16 @@ public abstract class ExpressionDuplicationVisitor extends Expression.Visitor {
 	@Override
 	public Expression visitSymbolExists(Nez.SymbolExists e, Object a) {
 		return new Nez.SymbolExists(e.tableName, e.symbol);
+	}
+
+	@Override
+	public Expression visitScanf(Nez.Scanf e, Object a) {
+		return new Nez.Scanf(e.mask, e.shift, inner(e.get(0)));
+	}
+
+	@Override
+	public Expression visitRepeat(Nez.Repeat e, Object a) {
+		return new Nez.Repeat(inner(e.get(0)));
 	}
 
 	@Override

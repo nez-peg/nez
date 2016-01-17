@@ -1,6 +1,5 @@
 package nez.lang;
 
-
 public class ByteConsumption extends Expression.Visitor {
 
 	static enum Result {
@@ -226,6 +225,17 @@ public class ByteConsumption extends Expression.Visitor {
 	@Override
 	public Object visitSymbolExists(Nez.SymbolExists e, Object a) {
 		return check(e.get(0), a);
+	}
+
+	@Override
+	public Object visitScanf(Nez.Scanf e, Object a) {
+		return check(e.get(0), a);
+	}
+
+	@Override
+	public Object visitRepeat(Nez.Repeat e, Object a) {
+		/* There is a case where we repeat 0 times */
+		return Result.Unconsumed;
 	}
 
 	@Override

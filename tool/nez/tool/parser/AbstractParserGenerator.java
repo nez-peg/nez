@@ -320,6 +320,10 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		return "" + n;
 	}
 
+	protected String _long(long n) {
+		return "" + n + "L";
+	}
+
 	protected String _byte(int ch) {
 		// if (ch < 128 && (!Character.isISOControl(ch))) {
 		// return "'" + (char) ch + "'";
@@ -1228,6 +1232,26 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 				EndIf();
 			}
 			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public Object visitScanf(Nez.Scanf e, Object a) {
+			BeginScope();
+			String ppos = savePos();
+			visit(e, a);
+			Statement(ParserFunc("setCount", ppos, _long(e.mask), _int(e.shift)));
+			EndScope();
+			return null;
+		}
+
+		@Override
+		public Object visitRepeat(Nez.Repeat e, Object a) {
+			While(_op(ParserFunc("decCount"), _noteq(), "0"));
+			{
+				visit(e, a);
+			}
+			EndWhile();
 			return null;
 		}
 

@@ -13,7 +13,7 @@ public enum FunctionName {
 	block, local, //
 	symbol, //
 	match, is, isa, exists, //
-	setcount, count;
+	scanf, repeat;
 
 	@Override
 	public String toString() {

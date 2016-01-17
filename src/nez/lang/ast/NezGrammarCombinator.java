@@ -264,10 +264,8 @@ public class NezGrammarCombinator extends Combinator {
 		Expression _Isa = Sequence(t("isa"), P("S"), Link("$name", "NonTerminal"), Tag("Isa"));
 		Expression _Block = Sequence(t("block"), P("S"), Link("$expr", "Expression"), Tag("Block"));
 		Expression _Local = Sequence(t("local"), P("S"), Link("$name", "TableName"), P("S"), Link("$expr", "Expression"), Tag("Local"));
-		// Expression _Number = Sequence(t("number"), P("S"), Link("$name",
-		// "NonTerminal"), Tag("Number"));
-		// Expression _Repeat = Sequence(t("repeat"), P("S"), Link("$expr",
-		// "Expression"), Tag("Repeat"));
+		Expression _Scanf = Sequence(t("number"), P("S"), Option(Link("$mask", "Mask"), P("S")), Link("$expr", "Expression"), Tag("Scanf"));
+		Expression _Repeat = Sequence(t("repeat"), P("S"), Link("$expr", "Expression"), Tag("Repeat"));
 		Expression _Def = Sequence(t("def"), P("S"), Link("$name", "TableName"), P("S"), Link("$expr", "Expression"), Tag("Def"));
 		// Expression _Uniq = ;
 		// Expression _Set = ;
@@ -285,6 +283,10 @@ public class NezGrammarCombinator extends Combinator {
 
 	public Expression pNonTerminal() {
 		return New(P("NAME"), Option(t('.'), P("NAME")), Tag("NonTerminal"));
+	}
+
+	public Expression pMask() {
+		return New(OneMore(c("01")), Tag("Name"));
 	}
 
 }

@@ -3,6 +3,8 @@ package nez.tool.parser;
 import nez.lang.Expression;
 import nez.lang.Grammar;
 import nez.lang.Nez;
+import nez.lang.Nez.Repeat;
+import nez.lang.Nez.Scanf;
 import nez.lang.NonTerminal;
 import nez.lang.Production;
 import nez.util.StringUtils;
@@ -681,6 +683,18 @@ public class CoffeeParserGenerator extends ParserGrammarSourceGenerator {
 	public void visitOn(Nez.OnCondition p) {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public Object visitScanf(Scanf scanf, Object a) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Object visitRepeat(Repeat e, Object a) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

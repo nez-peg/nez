@@ -225,6 +225,20 @@ public enum Typestate {
 		}
 
 		@Override
+		public final Object visitScanf(Nez.Scanf e, Object a) {
+			return this.inferTypestate(e.get(0));
+		}
+
+		@Override
+		public final Object visitRepeat(Nez.Repeat e, Object a) {
+			Typestate ts = this.inferTypestate(e.get(0));
+			if (ts == Typestate.Tree) {
+				return Typestate.TreeMutation;
+			}
+			return ts;
+		}
+
+		@Override
 		public final Object visitIf(Nez.IfCondition e, Object a) {
 			return Typestate.Unit;
 		}
@@ -233,16 +247,6 @@ public enum Typestate {
 		public final Object visitOn(Nez.OnCondition e, Object a) {
 			return this.inferTypestate(e.get(0));
 		}
-
-		// @Override
-		// public final Object visitSetCount(Nez.SetCount e, Object a) {
-		// return this.inferTypestate(e.get(0));
-		// }
-		//
-		// @Override
-		// public final Object visitCount(Nez.Count e, Object a) {
-		// return this.inferTypestate(e.get(0));
-		// }
 
 	}
 }

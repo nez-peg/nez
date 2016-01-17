@@ -912,38 +912,40 @@ public class Nez {
 		}
 	}
 
-	public static class SetCount extends Function {
+	public static class Scanf extends Function {
 		public final long mask;
+		public final int shift;
 
-		SetCount(long mask, Expression e) {
-			super(FunctionName.setcount, e);
+		Scanf(long mask, int shift, Expression e) {
+			super(FunctionName.scanf, e);
 			this.mask = mask;
+			this.shift = shift;
 		}
 
 		@Override
 		public final boolean equals(Object o) {
-			if (o instanceof Nez.SetCount) {
-				Nez.SetCount e = (Nez.SetCount) o;
-				return this.mask == e.mask;
+			if (o instanceof Nez.Scanf) {
+				Nez.Scanf e = (Nez.Scanf) o;
+				return this.mask == e.mask && this.shift == e.shift && this.get(0).equals(e.get(0));
 			}
 			return false;
 		}
 
 		@Override
 		public final Object visit(Expression.Visitor v, Object a) {
-			return v.visitExtended(this, a);
+			return v.visitScanf(this, a);
 		}
 	}
 
-	public static class Count extends Function {
+	public static class Repeat extends Function {
 
-		Count(Expression e) {
-			super(FunctionName.count, e);
+		Repeat(Expression e) {
+			super(FunctionName.repeat, e);
 		}
 
 		@Override
 		public final boolean equals(Object o) {
-			if (o instanceof Nez.Count) {
+			if (o instanceof Nez.Repeat) {
 				return this.get(0).equals(((Expression) o).get(0));
 			}
 			return false;
@@ -951,7 +953,7 @@ public class Nez {
 
 		@Override
 		public final Object visit(Expression.Visitor v, Object a) {
-			return v.visitExtended(this, a);
+			return v.visitRepeat(this, a);
 		}
 	}
 

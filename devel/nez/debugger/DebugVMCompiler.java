@@ -11,6 +11,8 @@ import nez.lang.Expression;
 import nez.lang.Expressions;
 import nez.lang.FunctionName;
 import nez.lang.Nez;
+import nez.lang.Nez.Repeat;
+import nez.lang.Nez.Scanf;
 import nez.lang.Nez.Sequence;
 import nez.lang.NonTerminal;
 import nez.lang.Production;
@@ -467,6 +469,18 @@ public class DebugVMCompiler extends Expression.Visitor {
 	public Object visitOn(Nez.OnCondition e, Object a) {
 		// TODO Auto-generated method stub
 		return a;
+	}
+
+	@Override
+	public Object visitScanf(Scanf scanf, Object a) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Object visitRepeat(Repeat e, Object a) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

@@ -182,12 +182,22 @@ public enum Symbolstate {
 
 		@Override
 		public final Object visitSymbolPredicate(Nez.SymbolPredicate e, Object a) {
-			return Symbolstate.Unchanged;
+			return visitExpression(e);
 		}
 
 		@Override
 		public final Object visitSymbolExists(Nez.SymbolExists e, Object a) {
 			return Symbolstate.Unchanged;
+		}
+
+		@Override
+		public final Object visitScanf(Nez.Scanf e, Object a) {
+			return visitExpression(e);
+		}
+
+		@Override
+		public final Object visitRepeat(Nez.Repeat e, Object a) {
+			return visitExpression(e);
 		}
 
 		@Override

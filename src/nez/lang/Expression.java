@@ -8,6 +8,8 @@ import nez.ast.Source;
 import nez.ast.SourceLocation;
 import nez.ast.Symbol;
 import nez.lang.Nez.Function;
+import nez.lang.Nez.Repeat;
+import nez.lang.Nez.Scanf;
 import nez.util.StringUtils;
 import nez.util.UList;
 
@@ -228,9 +230,9 @@ public abstract class Expression extends AbstractList<Expression> implements Sou
 
 		public abstract Object visitOn(Nez.OnCondition e, Object a);
 
-		// public abstract Object visitSetCount(Nez.SetCount e, Object a);
-		//
-		// public abstract Object visitCount(Nez.Count e, Object a);
+		public abstract Object visitScanf(Nez.Scanf scanf, Object a);
+
+		public abstract Object visitRepeat(Nez.Repeat e, Object a);
 
 		public Object visitExtended(Expression e, Object a) {
 			return a;
@@ -446,6 +448,24 @@ public abstract class Expression extends AbstractList<Expression> implements Sou
 		public Object visitSymbolExists(Nez.SymbolExists e, Object a) {
 			StringBuilder sb = (StringBuilder) a;
 			this.formatFunction(e, symbol(e.tableName, e.symbol), sb); // FIXME
+			return null;
+		}
+
+		@Override
+		public Object visitScanf(Scanf e, Object a) {
+			StringBuilder sb = (StringBuilder) a;
+			String mask = null;
+			if (e.mask != 0) {
+				mask = Long.toBinaryString(e.mask);
+			}
+			this.formatFunction(e, mask, sb);
+			return null;
+		}
+
+		@Override
+		public Object visitRepeat(Repeat e, Object a) {
+			StringBuilder sb = (StringBuilder) a;
+			this.formatFunction(e, null, sb);
 			return null;
 		}
 

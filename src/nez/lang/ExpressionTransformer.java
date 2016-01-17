@@ -198,6 +198,18 @@ public class ExpressionTransformer extends Expression.Visitor {
 	}
 
 	@Override
+	public Expression visitScanf(Nez.Scanf e, Object a) {
+		e.set(0, this.visitInner(e.get(0), a));
+		return e;
+	}
+
+	@Override
+	public Expression visitRepeat(Nez.Repeat e, Object a) {
+		e.set(0, this.visitInner(e.get(0), a));
+		return e;
+	}
+
+	@Override
 	public Expression visitIf(Nez.IfCondition e, Object a) {
 		return e;
 	}

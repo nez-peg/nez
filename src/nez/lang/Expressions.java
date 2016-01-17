@@ -1031,14 +1031,34 @@ public abstract class Expressions {
 		return p;
 	}
 
-	@Deprecated
-	public final static Expression newScan(SourceLocation s, int number, Expression scan, Expression repeat) {
-		return null;
+	public final static Expression newScanf(String mask, Expression e) {
+		return newScanf(null, mask, e);
 	}
 
-	@Deprecated
+	public final static Expression newScanf(SourceLocation s, String mask, Expression e) {
+		long bits = 0;
+		int shift = 0;
+		if (mask != null) {
+			bits = Long.parseUnsignedLong(mask, 2);
+			long m = bits;
+			while ((m & 1L) == 0) {
+				m >>= 1;
+				shift++;
+			}
+		}
+		Expression p = new Nez.Scanf(bits, shift, e);
+		p.setSourceLocation(s);
+		return p;
+	}
+
+	public final static Expression newRepeat(Expression e) {
+		return new Nez.Repeat(e);
+	}
+
 	public final static Expression newRepeat(SourceLocation s, Expression e) {
-		return null;
+		Expression p = new Nez.Repeat(e);
+		p.setSourceLocation(s);
+		return p;
 	}
 
 	// -----------------------------------------------------------------------

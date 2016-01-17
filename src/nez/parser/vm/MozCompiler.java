@@ -445,6 +445,19 @@ public class MozCompiler implements ParserCompiler {
 			}
 		}
 
+		@Override
+		public MozInst visitScanf(Nez.Scanf p, Object next) {
+			return new Moz.Pos(p, visit(p.get(0), new Moz.Scanf(p.mask, p.shift, (MozInst) next)));
+		}
+
+		@Override
+		public MozInst visitRepeat(Nez.Repeat p, Object next) {
+			MozInst check = new Moz.DecCheck((MozInst) next, null);
+			MozInst repeated = visit(p.get(0), check);
+			check.next = repeated;
+			return check;
+		}
+
 		/* Optimization */
 
 		protected void optimizedUnary(Expression p) {

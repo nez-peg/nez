@@ -6,6 +6,7 @@ public interface NezSymbols {
 	public final static Symbol _name = Symbol.unique("name");
 	public final static Symbol _expr = Symbol.unique("expr");
 	public final static Symbol _symbol = Symbol.unique("symbol");
+	public final static Symbol _mask = Symbol.unique("mask"); // <scanf >
 	public final static Symbol _hash = Symbol.unique("hash"); // example
 	public final static Symbol _name2 = Symbol.unique("name2"); // example
 	public final static Symbol _text = Symbol.unique("text"); // example

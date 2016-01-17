@@ -562,6 +562,68 @@ public class Moz {
 		}
 	}
 
+	public static class Scanf extends MozInst {
+		public final long mask;
+		public final int shift;
+
+		public Scanf(long mask, int shift, MozInst next) {
+			super(MozSet.Skip, null, next);
+			this.mask = mask;
+			this.shift = shift;
+		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			// v.visitGuard(this);
+		}
+
+		@Override
+		protected void encodeImpl(ByteCoder c) {
+			// No argument
+		}
+
+		@Override
+		public MozInst exec(MozMachine sc) throws TerminationException {
+			return this.next;
+		}
+
+		@Override
+		public MozInst exec2(ParserMachineContext sc) throws TerminationException {
+			int ppos = sc.xPPos();
+			sc.setCount(ppos, mask, shift);
+			return next;
+		}
+	}
+
+	public static class DecCheck extends MozInst {
+		public final MozInst jump;
+
+		public DecCheck(MozInst jump, MozInst next) {
+			super(MozSet.Skip, null, next);
+			this.jump = jump;
+		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			// v.visitGuard(this);
+		}
+
+		@Override
+		protected void encodeImpl(ByteCoder c) {
+			// No argument
+		}
+
+		@Override
+		public MozInst exec(MozMachine sc) throws TerminationException {
+			return this.jump;
+		}
+
+		@Override
+		public MozInst exec2(ParserMachineContext sc) throws TerminationException {
+			return sc.decCount() == 0 ? this.jump : this.next;
+		}
+	}
+
 	/**
 	 * Byte
 	 * 

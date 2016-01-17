@@ -147,7 +147,10 @@ public class ParserStrategy {
 	}
 
 	public final static ParserStrategy newSafeStrategy() {
-		return new ParserStrategy("-PackratParsing -Odchoice");
+		ParserStrategy s = new ParserStrategy();
+		s.Moz = true;
+		s.ChoicePrediction = 1;
+		return s;
 	}
 
 	// ----------------------------------------------------------------------

@@ -5,6 +5,7 @@ import nez.ast.Source;
 import nez.ast.Symbol;
 import nez.ast.Tree;
 import nez.parser.io.StringSource;
+import nez.util.StringUtils;
 
 public class ParserContext {
 	public int pos = 0;
@@ -376,6 +377,28 @@ public class ParserContext {
 			}
 		}
 		return false;
+	}
+
+	// Counter ------------------------------------------------------------
+
+	private int count = 0;
+
+	public final void setCount(int ppos, long mask, int shift) {
+		if (mask == 0) {
+			String num = StringUtils.newString(subByte(ppos, pos));
+			count = (int) Long.parseLong(num);
+		} else {
+			StringBuilder sb = new StringBuilder();
+			for (int i = ppos; i < pos; i++) {
+				sb.append(Integer.toBinaryString(inputs[i] & 0xff));
+			}
+			long v = Long.parseUnsignedLong(sb.toString(), 2);
+			count = (int) ((v & mask) >> shift);
+		}
+	}
+
+	public final int decCount() {
+		return --count;
 	}
 
 	// Memotable ------------------------------------------------------------

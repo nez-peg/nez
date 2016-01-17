@@ -321,4 +321,19 @@ public class NezExpressionConstructor extends GrammarVisitorMap<ExpressionTransd
 		}
 	}
 
+	public class _Scanf extends TreeVisitor {
+		@Override
+		public Expression accept(Tree<?> node, Expression e) {
+			String mask = node.getText(_name, null);
+			return Expressions.newScanf(node, node.getText(_name, null), newInstance(node.get(_expr)));
+		}
+	}
+
+	public class _Repeat extends TreeVisitor {
+		@Override
+		public Expression accept(Tree<?> node, Expression e) {
+			return Expressions.newRepeat(node, newInstance(node.get(_expr)));
+		}
+	}
+
 }

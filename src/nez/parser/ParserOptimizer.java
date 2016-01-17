@@ -397,6 +397,7 @@ public class ParserOptimizer {
 			}
 			return Expressions.newNot(p.getSourceLocation(), inner);
 		}
+
 	}
 
 	// used to test inlining

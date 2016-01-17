@@ -341,7 +341,7 @@ public class Productions {
 
 		@Override
 		public Object visitSymbolMatch(Nez.SymbolMatch e, Object a) {
-			return true;
+			return check(e.get(0), a);
 		}
 
 		@Override
@@ -351,7 +351,17 @@ public class Productions {
 
 		@Override
 		public Object visitSymbolExists(Nez.SymbolExists e, Object a) {
+			return true;
+		}
+
+		@Override
+		public Object visitScanf(Nez.Scanf e, Object a) {
 			return check(e.get(0), a);
+		}
+
+		@Override
+		public Object visitRepeat(Nez.Repeat e, Object a) {
+			return true;
 		}
 
 		@Override

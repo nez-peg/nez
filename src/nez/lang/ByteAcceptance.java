@@ -2,24 +2,24 @@ package nez.lang;
 
 import nez.lang.Nez.And;
 import nez.lang.Nez.Any;
+import nez.lang.Nez.BeginTree;
 import nez.lang.Nez.BlockScope;
 import nez.lang.Nez.Byte;
 import nez.lang.Nez.ByteSet;
 import nez.lang.Nez.Choice;
 import nez.lang.Nez.Detree;
 import nez.lang.Nez.Empty;
+import nez.lang.Nez.EndTree;
 import nez.lang.Nez.Fail;
-import nez.lang.Nez.IfCondition;
 import nez.lang.Nez.FoldTree;
+import nez.lang.Nez.IfCondition;
 import nez.lang.Nez.LinkTree;
 import nez.lang.Nez.LocalScope;
-import nez.lang.Nez.EndTree;
 import nez.lang.Nez.Not;
 import nez.lang.Nez.OnCondition;
 import nez.lang.Nez.OneMore;
 import nez.lang.Nez.Option;
 import nez.lang.Nez.Pair;
-import nez.lang.Nez.BeginTree;
 import nez.lang.Nez.Replace;
 import nez.lang.Nez.Sequence;
 import nez.lang.Nez.SymbolAction;
@@ -218,6 +218,16 @@ public enum ByteAcceptance {
 		@Override
 		public ByteAcceptance visitSymbolExists(SymbolExists e, Object ch) {
 			return Unconsumed;
+		}
+
+		@Override
+		public ByteAcceptance visitScanf(Nez.Scanf e, Object ch) {
+			return accept(e.get(0), ch);
+		}
+
+		@Override
+		public ByteAcceptance visitRepeat(Nez.Repeat e, Object ch) {
+			return accept(e.get(0), ch);
 		}
 
 		@Override
