@@ -7,18 +7,18 @@ import nez.ast.Symbol;
 import nez.ast.TreeVisitorMap;
 import nez.bx.FormatGenerator.DefaultVisitor;
 import nez.lang.Expression;
+import nez.lang.Grammar;
 import nez.lang.Nez;
 import nez.lang.Nez.Pair;
 import nez.lang.NonTerminal;
 import nez.lang.Production;
-import nez.parser.moz.ParserGrammar;
 import nez.util.FileBuilder;
 
 public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 	private String dir = "./devel/nez/bx";
 	private String outputFile = "GeneratedFormat";
 	private FileBuilder file;
-	private ParserGrammar grammar = null;
+	private Grammar grammar = null;
 
 	private HashMap<String, Captured> nonterminalMap = new HashMap<String, Captured>();
 	private Captured[] capturedList = new Captured[4];
@@ -41,7 +41,7 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 		init(FormatGenerator.class, new DefaultVisitor());
 	}
 
-	public void generate(ParserGrammar grammar) {
+	public void generate(Grammar grammar) {
 		this.grammar = grammar;
 		this.openOutputFile();
 		this.makeFormat();
@@ -293,6 +293,8 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 		String name;
 		Elements elements;
 		FormatSet[] formatSet = new FormatSet[4];
+		String left;// TODO
+		String right;// TODO
 		int size = 0;
 
 		public Captured(Elements elements) {
@@ -341,12 +343,14 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 					}
 					write("format " + tagList[formatSet[i].tag] + "(" + label + ")");
 					writeln("` ");
+					// TODO write left
 					String format = toFormat(formatSet[i].tag);
 					if (format == null) {
 						write("${this.toText()}");
 					} else {
 						write(format);
 					}
+					// TODO write right
 					write(" `");
 					writeln("");
 					writeln("");
