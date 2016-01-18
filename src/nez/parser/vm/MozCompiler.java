@@ -34,7 +34,7 @@ public class MozCompiler implements ParserCompiler {
 		if (strategy.PackratParsing) {
 			code.initMemoPoint();
 		}
-		new CompilerVisitor(code, grammar).compile(grammar);
+		new CompilerVisitor(code, grammar).compile();
 		long t2 = System.nanoTime();
 		Verbose.printElapsedTime("CompilingTime", t, t2);
 		return code;
@@ -53,12 +53,11 @@ public class MozCompiler implements ParserCompiler {
 			}
 		}
 
-		private MozCode compile(Grammar gg) {
+		private MozCode compile() {
 			long t = System.nanoTime();
-			for (Production p : gg) {
+			for (Production p : grammar) {
 				this.visitProduction(code.codeList(), p, new Moz.Ret(p));
 			}
-			// this.layoutCachedInstruction(code.codeList());
 			for (MozInst inst : code.codeList()) {
 				if (inst instanceof Moz.Call) {
 					((Moz.Call) inst).sync();

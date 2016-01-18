@@ -19,11 +19,14 @@ public abstract class ParserCode<T extends Instruction> {
 
 	protected final Grammar grammar;
 	protected UList<T> codeList;
+	protected final boolean RecognitionMode;
 
 	protected ParserCode(Grammar grammar, T[] initArray) {
 		this.grammar = grammar;
 		this.funcMap = new HashMap<>();
 		this.codeList = initArray != null ? new UList<>(initArray) : null;
+		TypestateAnalyzer typestate = Typestate.newAnalyzer();
+		this.RecognitionMode = typestate.inferTypestate(grammar.getStartProduction()) == Typestate.Unit;
 	}
 
 	public final Grammar getCompiledGrammar() {
@@ -36,11 +39,12 @@ public abstract class ParserCode<T extends Instruction> {
 		return codeList.get(0);
 	}
 
-	public final int getInstSize() {
+	public final int getInstructionSize() {
 		return codeList.size();
 	}
 
 	public final Tree<?> exec(ParserMachineContext ctx) {
+		int ppos = (int) ctx.getPosition();
 		MozInst code = (MozInst) this.getStartInstruction();
 		boolean result = false;
 		try {
@@ -50,13 +54,16 @@ public abstract class ParserCode<T extends Instruction> {
 		} catch (TerminationException e) {
 			result = e.status;
 		}
+		if (RecognitionMode && result) {
+			ctx.left = ctx.newTree(null, ppos, (int) ctx.getPosition(), 0, null);
+		}
 		return result ? ctx.left : null;
 
 	}
 
 	public abstract Object exec(ParserInstance context);
 
-	/* ParserFunc */
+	/* ProductionCode */
 
 	protected final HashMap<String, ProductionCode<T>> funcMap;
 
@@ -131,34 +138,3 @@ public abstract class ParserCode<T extends Instruction> {
 	}
 
 }
-//
-// public abstract class ParserCode<I extends NezInst> {
-// final protected ParserGrammar gg;
-// final protected List<MemoPoint> memoPointList;
-//
-// public ParserCode(ParserGrammar pgrammar, List<MemoPoint> memoPointList) {
-// this.gg = pgrammar;
-// this.memoPointList = memoPointList;
-// }
-//
-// public abstract int getInstSize();
-//
-// public final int getMemoPointSize() {
-// return this.memoPointList != null ? this.memoPointList.size() : 0;
-// }
-//
-// public final void dumpMemoPoints() {
-// if (this.memoPointList != null) {
-// Verbose.println("ID\tPEG\tCount\tHit\tFail\tMean");
-// for (MemoPoint p : this.memoPointList) {
-// String s = String.format("%d\t%s\t%d\t%f\t%f\t%f", p.id, p.label, p.count(),
-// p.hitRatio(), p.failHitRatio(), p.meanLength());
-// Verbose.println(s);
-// }
-// Verbose.println("");
-// }
-// }
-//
-// public abstract Object exec(ParserContext context);
-//
-// }

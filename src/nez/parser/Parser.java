@@ -105,7 +105,7 @@ public final class Parser {
 			this.compile();
 			// prof.setFile("G.File", this.start.getGrammarFile().getURN());
 			prof.setCount("G.Production", this.grammar.size());
-			prof.setCount("G.Instruction", this.pcode.getInstSize());
+			prof.setCount("G.Instruction", this.pcode.getInstructionSize());
 			prof.setCount("G.MemoPoint", this.pcode.getMemoPointSize());
 		}
 	}

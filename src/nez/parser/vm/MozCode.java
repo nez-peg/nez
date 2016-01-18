@@ -11,8 +11,8 @@ import nez.util.Verbose;
 
 public class MozCode extends ParserCode<MozInst> {
 
-	public MozCode(Grammar gg) {
-		super(gg, new MozInst[1026]);
+	public MozCode(Grammar compiledGrammar) {
+		super(compiledGrammar, new MozInst[1026]);
 	}
 
 	UList<MozInst> codeList() {
@@ -87,7 +87,7 @@ public class MozCode extends ParserCode<MozInst> {
 
 	public final void encode(ByteCoder coder) {
 		if (coder != null) {
-			coder.setHeader(codeList.size(), this.getInstSize(), this.getMemoPointSize());
+			coder.setHeader(codeList.size(), this.getInstructionSize(), this.getMemoPointSize());
 			coder.setInstructions(codeList.ArrayValues, codeList.size());
 		}
 	}

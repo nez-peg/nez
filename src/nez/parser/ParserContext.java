@@ -52,7 +52,8 @@ public class ParserContext {
 		this.pos = pos;
 	}
 
-	public boolean match(byte[] text, int len) {
+	public boolean match(byte[] text) {
+		int len = text.length;
 		if (pos + len > this.length) {
 			return false;
 		}
@@ -164,7 +165,7 @@ public class ParserContext {
 			}
 		}
 
-		left = left.newInstance(tag, source, start.pos, (pos + shift - start.pos), objectSize, value);
+		left = newTree(tag, start.pos, (pos + shift), objectSize, value);
 		if (objectSize > 0) {
 			int n = 0;
 			for (AstLog cur = start; cur != null; cur = cur.next) {
@@ -175,6 +176,13 @@ public class ParserContext {
 			}
 		}
 		this.backLog(start.prev);
+	}
+
+	public final Tree<?> newTree(Symbol tag, int start, int end, int n, String value) {
+		if (tag == null) {
+			tag = n == 0 ? Symbol.tokenTag : Symbol.treeTag;
+		}
+		return left.newInstance(tag, source, start, (end - start), n, value);
 	}
 
 	public final Object saveLog() {

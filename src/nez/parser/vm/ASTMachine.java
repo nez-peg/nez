@@ -246,7 +246,7 @@ class ASTMachine {
 			}
 		}
 		if (parseResult == null) {
-			parseResult = prototype.newInstance(_token, source, startpos, 0, 0, null);
+			parseResult = prototype.newInstance(_token, source, startpos, (int) (endpos - startpos), 0, null);
 		}
 		this.firstLog = null;
 		this.unusedDataLog = null;

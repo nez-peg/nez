@@ -28,6 +28,8 @@ public class Symbol {
 
 	public final static Symbol NullSymbol = unique("");
 	public final static Symbol MetaSymbol = unique("$");
+	public final static Symbol tokenTag = unique("Token");
+	public final static Symbol treeTag = unique("Tree");
 
 	final int id;
 	final String symbol;

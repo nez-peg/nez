@@ -1078,7 +1078,7 @@ public class Moz {
 
 		@Override
 		public MozInst exec2(ParserMachineContext sc) throws TerminationException {
-			if (sc.match(this.utf8, utf8.length)) {
+			if (sc.match(this.utf8)) {
 				return this.next;
 			}
 			return sc.xFail();
@@ -1110,7 +1110,7 @@ public class Moz {
 
 		@Override
 		public MozInst exec2(ParserMachineContext sc) throws TerminationException {
-			if (!sc.match(this.utf8, this.utf8.length)) {
+			if (!sc.match(this.utf8)) {
 				return this.next;
 			}
 			return sc.xFail();
@@ -1142,7 +1142,7 @@ public class Moz {
 
 		@Override
 		public MozInst exec2(ParserMachineContext sc) throws TerminationException {
-			sc.match(this.utf8, this.utf8.length);
+			sc.match(this.utf8);
 			return this.next;
 		}
 
@@ -1172,7 +1172,7 @@ public class Moz {
 
 		@Override
 		public MozInst exec2(ParserMachineContext sc) throws TerminationException {
-			while (sc.match(this.utf8, this.utf8.length)) {
+			while (sc.match(this.utf8)) {
 			}
 			return this.next;
 		}
@@ -2026,7 +2026,7 @@ public class Moz {
 		@Override
 		public MozInst exec2(ParserMachineContext sc) throws TerminationException {
 			byte[] sym = sc.getSymbol(tableName);
-			return sc.match(sym, sym.length) ? this.next : sc.xFail();
+			return sc.match(sym) ? this.next : sc.xFail();
 		}
 
 	}

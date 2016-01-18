@@ -200,6 +200,11 @@ public class Productions {
 					return true;
 				}
 			}
+			Production p = e.getProduction();
+			if (p == null) {
+				ConsoleUtils.perror(e.getGrammar(), e.formatSourceMessage("error", "undefined name: " + e.getLocalName()));
+				return true;
+			}
 			return check(e.getProduction().getExpression(), a);
 		}
 

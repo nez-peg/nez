@@ -88,9 +88,9 @@ public class ConsoleUtils {
 		System.out.println("NOTICE: " + message);
 	}
 
-	public final static void perror(Grammar g, String formatSourceMessage) {
+	public final static void perror(Grammar g, String msg) {
 		ConsoleUtils.begin(31);
-		System.out.println();
+		System.out.println(msg);
 		ConsoleUtils.end();
 	}
 

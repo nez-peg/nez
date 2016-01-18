@@ -34,8 +34,13 @@ public class ParserMachineContext extends ParserContext {
 		return this.source.byteAt(pos);
 	}
 
+	@Override
 	public final boolean match(byte[] utf8) {
-		return source.match(pos, utf8);
+		if (source.match(pos, utf8)) {
+			this.move(utf8.length);
+			return true;
+		}
+		return false;
 	}
 
 	public final byte[] subByte(long start, long end) {
