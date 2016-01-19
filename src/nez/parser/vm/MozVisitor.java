@@ -119,8 +119,6 @@ public abstract class MozVisitor {
 
 	public abstract void visitCov(Moz.Cov inst);
 
-	public abstract void visitCovx(Moz.Covx inst);
-
 	public abstract void visitLabel(Moz.Label inst); // 7-bit
 
 }

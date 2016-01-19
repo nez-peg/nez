@@ -1292,6 +1292,14 @@ public abstract class Expressions {
 		return false;
 	}
 
+	public static Expression newCoverage(String label, Expression e) {
+		List<Expression> l = Expressions.newList(e.size() + 3);
+		l.add(new Nez.Label(label, true));
+		Expressions.addSequence(l, e);
+		l.add(new Nez.Label(label, false));
+		return newPair(l);
+	}
+
 	// public final static Expression tryConvertingMultiCharSequence(Expression
 	// e) {
 	// if (e instanceof Nez.Sequence || e instanceof Nez.Pair) {

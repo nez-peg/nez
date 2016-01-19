@@ -7,9 +7,9 @@ import nez.lang.Expression;
 import nez.lang.Nez;
 import nez.lang.Nez.SymbolExists;
 import nez.lang.Production;
+import nez.parser.CoverageProfiler;
 import nez.parser.MemoEntry;
 import nez.parser.MemoPoint;
-import nez.parser.ParserCode;
 import nez.parser.ParserCode.ProductionCode;
 import nez.parser.SymbolTable;
 import nez.parser.TerminationException;
@@ -2109,20 +2109,20 @@ public class Moz {
 	}
 
 	public static class Cov extends MozInst {
-		final ParserCode<?> code;
+		final CoverageProfiler prof;
 		final int id;
 		final boolean start;
 
-		public Cov(ParserCode<?> code, int covPoint, boolean start, MozInst next) {
+		public Cov(CoverageProfiler prof, int covPoint, boolean start, MozInst next) {
 			super(MozSet.Cov, null, next);
-			this.code = code;
+			this.prof = prof;
 			this.id = covPoint;
 			this.start = start;
 		}
 
 		public Cov(int id, MozInst next) {
 			super(MozSet.Cov, null, next);
-			this.code = null;
+			this.prof = null;
 			this.id = id;
 			this.start = true;
 		}
@@ -2140,49 +2140,50 @@ public class Moz {
 
 		@Override
 		public MozInst exec(MozMachine sc) throws TerminationException {
-			Coverage.enter(this.id);
+			// Coverage.enter(this.id);
 			return this.next;
 		}
 
 		@Override
 		public MozInst exec2(ParserMachineContext sc) throws TerminationException {
-			code.countCoverage(this.id, start);
+			prof.countCoverage(this.id, start);
 			return this.next;
 		}
 
 	}
 
-	public static class Covx extends MozInst {
-		final int covPoint;
-
-		public Covx(Coverage cov, MozInst next) {
-			super(MozSet.Covx, null, next);
-			this.covPoint = cov.covPoint;
-		}
-
-		@Override
-		protected void encodeImpl(ByteCoder c) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void visit(MozVisitor v) {
-			v.visitCovx(this);
-		}
-
-		@Override
-		public MozInst exec(MozMachine sc) throws TerminationException {
-			Coverage.exit(this.covPoint);
-			return this.next;
-		}
-
-		@Override
-		public MozInst exec2(ParserMachineContext sc) throws TerminationException {
-			Coverage.exit(this.covPoint);
-			return this.next;
-		}
-
-	}
+	// public static class Covx extends MozInst {
+	// final int covPoint;
+	//
+	// public Covx(Coverage cov, MozInst next) {
+	// super(MozSet.Covx, null, next);
+	// this.covPoint = cov.covPoint;
+	// }
+	//
+	// @Override
+	// protected void encodeImpl(ByteCoder c) {
+	// // TODO Auto-generated method stub
+	//
+	// }
+	//
+	// @Override
+	// public void visit(MozVisitor v) {
+	// v.visitCovx(this);
+	// }
+	//
+	// @Override
+	// public MozInst exec(MozMachine sc) throws TerminationException {
+	// //Coverage.exit(this.covPoint);
+	// return this.next;
+	// }
+	//
+	// @Override
+	// public MozInst exec2(ParserMachineContext sc) throws TerminationException
+	// {
+	// Coverage.exit(this.covPoint);
+	// return this.next;
+	// }
+	//
+	// }
 
 }

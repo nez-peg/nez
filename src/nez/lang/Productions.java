@@ -3,6 +3,7 @@ package nez.lang;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import nez.lang.Nez.Label;
 import nez.util.ConsoleUtils;
 
 public class Productions {
@@ -377,6 +378,11 @@ public class Productions {
 		@Override
 		public Object visitOn(Nez.OnCondition e, Object a) {
 			return check(e.get(0), a);
+		}
+
+		@Override
+		public Object visitLabel(Label e, Object a) {
+			return true;
 		}
 	}
 

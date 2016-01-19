@@ -957,4 +957,29 @@ public class Nez {
 		}
 	}
 
+	public static class Label extends Terminal {
+		public final String label;
+		public final boolean start;
+
+		Label(String label, boolean start) {
+			super();
+			this.label = label;
+			this.start = start;
+		}
+
+		@Override
+		public final boolean equals(Object o) {
+			if (o instanceof Nez.Label) {
+				Nez.Label l = (Nez.Label) o;
+				return this.label.equals(l.label) && this.start == l.start;
+			}
+			return false;
+		}
+
+		@Override
+		public final Object visit(Expression.Visitor v, Object a) {
+			return v.visitLabel(this, a);
+		}
+	}
+
 }

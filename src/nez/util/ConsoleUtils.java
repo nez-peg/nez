@@ -16,6 +16,13 @@ public class ConsoleUtils {
 	}
 
 	// 31 :red 　　　32 green, 34 blue, 37 gray
+	public final static int Red = 31;
+	public final static int Green = 32;
+	public final static int Yellow = 32;
+	public final static int Blue = 34;
+	public final static int Magenta = 35;
+	public final static int Gray = 37;
+
 	public final static void begin(int c) {
 		if (isColored) {
 			System.out.print("\u001b[00;" + c + "m");

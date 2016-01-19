@@ -46,6 +46,7 @@ public class ParserStrategy {
 	public double MemoLimit = 0.1;
 
 	/* Profiling */
+	public boolean ProductionCoverage = false;
 	public boolean Profiling = false;
 	public boolean Wnone = false;
 	public boolean Wall = false;
@@ -249,6 +250,20 @@ public class ParserStrategy {
 		MozMachine machine = new MozMachine(source);
 		machine.init(table, prototype);
 		return new ParserInstance(source, machine);
+	}
+
+	/* Profiler */
+
+	private CoverageProfiler cov;
+
+	public final CoverageProfiler getCoverageProfier() {
+		if (ProductionCoverage) {
+			if (cov == null) {
+				cov = new CoverageProfiler();
+			}
+			return cov;
+		}
+		return null;
 	}
 
 }

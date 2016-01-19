@@ -4,6 +4,7 @@ import java.util.List;
 
 import nez.lang.Nez.Byte;
 import nez.lang.Nez.FoldTree;
+import nez.lang.Nez.Label;
 import nez.util.UList;
 
 public class ExpressionTransformer extends Expression.Visitor {
@@ -217,6 +218,11 @@ public class ExpressionTransformer extends Expression.Visitor {
 	@Override
 	public Expression visitOn(Nez.OnCondition e, Object a) {
 		e.set(0, this.visitInner(e.get(0), a));
+		return e;
+	}
+
+	@Override
+	public Object visitLabel(Label e, Object a) {
 		return e;
 	}
 

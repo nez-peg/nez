@@ -9,6 +9,7 @@ import nez.lang.Grammar;
 import nez.lang.Nez;
 import nez.lang.Nez.ChoicePrediction;
 import nez.lang.Nez.IfCondition;
+import nez.lang.Nez.Label;
 import nez.lang.Nez.LocalScope;
 import nez.lang.Nez.OnCondition;
 import nez.lang.Nez.SymbolAction;
@@ -1263,6 +1264,12 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 
 		@Override
 		public Object visitOn(OnCondition e, Object a) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public Object visitLabel(Label e, Object a) {
 			// TODO Auto-generated method stub
 			return null;
 		}

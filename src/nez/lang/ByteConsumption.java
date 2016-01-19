@@ -1,5 +1,7 @@
 package nez.lang;
 
+import nez.lang.Nez.Label;
+
 public class ByteConsumption extends Expression.Visitor {
 
 	static enum Result {
@@ -246,5 +248,10 @@ public class ByteConsumption extends Expression.Visitor {
 	@Override
 	public Object visitOn(Nez.OnCondition e, Object a) {
 		return check(e.get(0), a);
+	}
+
+	@Override
+	public Object visitLabel(Label e, Object a) {
+		return Result.Unconsumed;
 	}
 }

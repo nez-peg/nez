@@ -13,6 +13,7 @@ import nez.lang.Nez.EndTree;
 import nez.lang.Nez.Fail;
 import nez.lang.Nez.FoldTree;
 import nez.lang.Nez.IfCondition;
+import nez.lang.Nez.Label;
 import nez.lang.Nez.LinkTree;
 import nez.lang.Nez.LocalScope;
 import nez.lang.Nez.Not;
@@ -251,6 +252,11 @@ public enum ByteAcceptance {
 		@Override
 		public ByteAcceptance visitOn(OnCondition e, Object ch) {
 			return accept(e.get(0), ch);
+		}
+
+		@Override
+		public Object visitLabel(Label e, Object a) {
+			return Unconsumed;
 		}
 	}
 }

@@ -7,10 +7,11 @@ import nez.ast.SourceLocation;
 import nez.ast.Tree;
 import nez.lang.ast.NezExpressionConstructor;
 import nez.lang.ast.NezGrammarCombinator;
-import nez.parser.ParserOptimizer;
 import nez.parser.Parser;
+import nez.parser.ParserOptimizer;
 import nez.parser.ParserStrategy;
 import nez.util.ConsoleUtils;
+import nez.util.FileBuilder;
 import nez.util.UList;
 import nez.util.Verbose;
 
@@ -173,7 +174,14 @@ public class Grammar extends AbstractList<Production> {
 	}
 
 	public String getDesc() {
-		return (String) this.getMetaData("desc");
+		String desc = (String) this.getMetaData("desc");
+		if (desc != null) {
+			desc = getURN();
+			if (desc != null) {
+				return FileBuilder.extractFileName(desc);
+			}
+		}
+		return desc;
 	}
 
 	public void setDesc(String desc) {

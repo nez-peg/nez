@@ -210,6 +210,11 @@ public enum Symbolstate {
 			return Symbolstate.Mutated;
 		}
 
+		@Override
+		public Object visitLabel(Nez.Label e, Object a) {
+			return Symbolstate.Unchanged;
+		}
+
 		// @Override
 		// public final Object visitSetCount(Nez.SetCount e, Object a) {
 		// return this.inferSymbolstate(e.get(0));

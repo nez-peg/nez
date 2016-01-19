@@ -7,6 +7,7 @@ import java.util.Stack;
 import nez.lang.Expression;
 import nez.lang.Grammar;
 import nez.lang.Nez;
+import nez.lang.Nez.Label;
 import nez.lang.Nez.Repeat;
 import nez.lang.Nez.Scanf;
 import nez.lang.NonTerminal;
@@ -680,6 +681,12 @@ public class PythonParserGenerator extends ParserGrammarSourceGenerator {
 
 	@Override
 	public Object visitRepeat(Repeat e, Object a) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Object visitLabel(Label e, Object a) {
 		// TODO Auto-generated method stub
 		return null;
 	}

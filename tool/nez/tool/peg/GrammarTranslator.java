@@ -504,6 +504,12 @@ public abstract class GrammarTranslator extends Expression.Visitor implements So
 	}
 
 	@Override
+	public final Object visitLabel(Nez.Label p, Object a) {
+		// this.visitSymbolPredicate(p);
+		return null;
+	}
+
+	@Override
 	public final Object visitEmpty(Nez.Empty p, Object a) {
 		this.visitEmpty(p);
 		return null;

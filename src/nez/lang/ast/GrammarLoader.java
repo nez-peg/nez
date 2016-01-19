@@ -46,12 +46,10 @@ public final class GrammarLoader extends GrammarVisitorMap<GrammarLoaderVisitor>
 		public void accept(Tree<?> node) {
 			Tree<?> nameNode = node.get(_name);
 			String localName = nameNode.toText();
-			int productionFlag = 0;
 			if (nameNode.is(_String)) {
 				localName = Grammar.nameTerminalProduction(localName);
 				// productionFlag |= Production.TerminalProduction;
 			}
-
 			Production rule = getGrammar().getProduction(localName);
 			if (rule != null) {
 				reportWarning(node, "duplicated rule name: " + localName);
@@ -161,7 +159,7 @@ public final class GrammarLoader extends GrammarVisitorMap<GrammarLoaderVisitor>
 	 *           path.substring(0, loc + 1) + path2; } } return path2; }
 	 **/
 
-	public String parseGrammarDescription(Source sc) {
+	public final static String parseGrammarDescription(Source sc) {
 		StringBuilder sb = new StringBuilder();
 		long pos = 0;
 		boolean found = false;

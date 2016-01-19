@@ -34,6 +34,7 @@ public class ParserMachineCompiler implements ParserCompiler {
 		if (strategy.PackratParsing) {
 			code.initMemoPoint(strategy);
 		}
+		code.initCoverage(strategy);
 		new CompilerVisitor(code, grammar).compile();
 		long t2 = System.nanoTime();
 		Verbose.printElapsedTime("CompilingTime", t, t2);
@@ -76,9 +77,9 @@ public class ParserMachineCompiler implements ParserCompiler {
 			ProductionCode<MozInst> f = code.getProductionCode(p);
 			encodingProduction = p;
 			if (strategy.Moz) {
-				next = Coverage.visitExitCoverage(p, next);
+				// next = Coverage.visitExitCoverage(p, next);
 				next = compile(p.getExpression(), next, null/* failjump */);
-				next = Coverage.visitEnterCoverage(p, next);
+				// next = Coverage.visitEnterCoverage(p, next);
 				f.setCompiled(next);
 			} else {
 				MemoPoint memoPoint = code.getMemoPoint(p.getUniqueName());
@@ -471,6 +472,11 @@ public class ParserMachineCompiler implements ParserCompiler {
 			MozInst repeated = compile(p.get(0), check);
 			check.next = repeated;
 			return check;
+		}
+
+		@Override
+		public MozInst visitLabel(Nez.Label p, Object next) {
+			return code.compileCoverage(p.label, p.start, (MozInst) next);
 		}
 
 		/* Optimization */

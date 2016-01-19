@@ -100,9 +100,10 @@ public class ParserGenerator {
 	public final Grammar loadGrammar(String fileName) throws IOException {
 		Grammar grammar = new Grammar(FileBuilder.extractFileExtension(fileName));
 		grammar.setURN(fileName);
-		CommonSource source = StringSource.loadClassPath(fileName, classPath);
+		Source source = StringSource.loadClassPath(fileName, classPath);
 		String ext = FileBuilder.extractFileExtension(fileName);
 		updateGrammar(grammar, source, ext);
+		grammar.setDesc(GrammarLoader.parseGrammarDescription(source));
 		return grammar;
 	}
 

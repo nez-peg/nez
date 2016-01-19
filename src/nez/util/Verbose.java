@@ -39,15 +39,15 @@ public class Verbose {
 		}
 	}
 
-	public static void traceException(Exception e) {
-		if (enabled) {
-			if (e instanceof InvocationTargetException) {
-				Throwable e2 = ((InvocationTargetException) e).getTargetException();
-				if (e2 instanceof RuntimeException) {
-					throw (RuntimeException) e2;
-				}
+	public static void traceException(Throwable e) {
+		if (e instanceof InvocationTargetException) {
+			Throwable e2 = ((InvocationTargetException) e).getTargetException();
+			if (e2 instanceof RuntimeException) {
+				throw (RuntimeException) e2;
 			}
-			ConsoleUtils.begin(34);
+		}
+		if (enabled) {
+			ConsoleUtils.begin(ConsoleUtils.Red);
 			e.printStackTrace();
 			ConsoleUtils.end();
 		}

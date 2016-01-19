@@ -999,4 +999,10 @@ public class CParserGenerator extends ParserGrammarSourceGenerator {
 		return null;
 	}
 
+	@Override
+	public Object visitLabel(nez.lang.Nez.Label e, Object a) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

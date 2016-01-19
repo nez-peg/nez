@@ -248,5 +248,10 @@ public enum Typestate {
 			return this.inferTypestate(e.get(0));
 		}
 
+		@Override
+		public Object visitLabel(Nez.Label e, Object a) {
+			return Typestate.Unit;
+		}
+
 	}
 }

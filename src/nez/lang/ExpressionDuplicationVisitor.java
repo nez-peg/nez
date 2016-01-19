@@ -243,4 +243,12 @@ public abstract class ExpressionDuplicationVisitor extends Expression.Visitor {
 		return new Nez.OnCondition(e.predicate, e.flagName, inner(e));
 	}
 
+	@Override
+	public Expression visitLabel(Nez.Label e, Object a) {
+		if (!enableImmutableDuplication && e.getSourceLocation() == null) {
+			return e;
+		}
+		return new Nez.Label(e.label, e.start);
+	}
+
 }

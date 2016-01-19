@@ -234,6 +234,8 @@ public abstract class Expression extends AbstractList<Expression> implements Sou
 
 		public abstract Object visitRepeat(Nez.Repeat e, Object a);
 
+		public abstract Object visitLabel(Nez.Label e, Object a);
+
 		public Object visitExtended(Expression e, Object a) {
 			return a;
 		}
@@ -480,6 +482,11 @@ public abstract class Expression extends AbstractList<Expression> implements Sou
 		public Object visitOn(Nez.OnCondition e, Object a) {
 			StringBuilder sb = (StringBuilder) a;
 			this.formatFunction(e, condition(e.predicate, e.flagName), sb);
+			return null;
+		}
+
+		@Override
+		public Object visitLabel(Nez.Label e, Object a) {
 			return null;
 		}
 
