@@ -72,6 +72,10 @@ public class ParserContext {
 		return b;
 	}
 
+	protected final byte byteAt(int n) {
+		return inputs[n];
+	}
+
 	//
 	// @Override
 	// public final String subString(long startIndex, long endIndex) {
@@ -250,10 +254,18 @@ public class ParserContext {
 		return false;
 	}
 
-	private final boolean equalsBytes(byte[] b, int ppos, int pos, byte[] b2) {
+	private final long hashInputs(int ppos, int pos) {
+		long hashCode = 1;
+		for (int i = ppos; i < pos; i++) {
+			hashCode = hashCode * 31 + (byteAt(i) & 0xff);
+		}
+		return hashCode;
+	}
+
+	private final boolean equalsInputs(int ppos, int pos, byte[] b2) {
 		if ((pos - ppos) == b2.length) {
 			for (int i = 0; i < b2.length; i++) {
-				if (b[ppos + i] != b2[i]) {
+				if (byteAt(ppos + i) != b2[i]) {
 					return false;
 				}
 			}
@@ -314,9 +326,8 @@ public class ParserContext {
 	}
 
 	public final void addSymbol(Symbol table, int ppos) {
-		byte[] b = new byte[pos - ppos];
-		System.arraycopy(inputs, ppos, b, 0, b.length);
-		push(table, hash(inputs, ppos, pos), b);
+		byte[] b = this.subByte(ppos, pos);
+		push(table, hash(b, 0, b.length), b);
 	}
 
 	public final void addSymbolMask(Symbol table) {
@@ -338,8 +349,9 @@ public class ParserContext {
 		for (int i = tableSize - 1; i >= 0; i--) {
 			SymbolTableEntry entry = tables[i];
 			if (entry.table == table) {
-				if (entry.symbol == NullSymbol)
+				if (entry.symbol == NullSymbol) {
 					return false; // masked
+				}
 				if (entry.code == code && equalsBytes(entry.symbol, symbol)) {
 					return true;
 				}
@@ -365,21 +377,21 @@ public class ParserContext {
 				if (entry.symbol == NullSymbol) {
 					return false; // masked
 				}
-				return equalsBytes(inputs, ppos, pos, entry.symbol);
+				return equalsInputs(ppos, pos, entry.symbol);
 			}
 		}
 		return false;
 	}
 
-	public final boolean contains(Symbol table, int ppos) {
-		long code = hash(inputs, ppos, pos);
+	public boolean contains(Symbol table, int ppos) {
+		long code = hashInputs(ppos, pos);
 		for (int i = tableSize - 1; i >= 0; i--) {
 			SymbolTableEntry entry = tables[i];
 			if (entry.table == table) {
 				if (entry.symbol == NullSymbol) {
 					return false; // masked
 				}
-				if (entry.code == code && equalsBytes(inputs, ppos, pos, entry.symbol)) {
+				if (entry.code == code && equalsInputs(ppos, pos, entry.symbol)) {
 					return true;
 				}
 			}
