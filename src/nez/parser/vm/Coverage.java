@@ -31,7 +31,7 @@ public class Coverage {
 	public final static MozInst visitEnterCoverage(Production p, MozInst next) {
 		if (covList != null) {
 			Coverage cov = getCoverage(p);
-			return new Moz.Cov(cov, next);
+			return new Moz.Cov(cov.covPoint, next);
 		}
 		return next;
 	}
@@ -66,7 +66,7 @@ public class Coverage {
 	public final static MozInst encodeEnterCoverage(Nez.Choice e, int index, MozInst next) {
 		if (covList != null) {
 			Coverage cov = getCoverage("c", e.get(index));
-			return new Moz.Cov(cov, next);
+			return new Moz.Cov(cov.covPoint, next);
 		}
 		return next;
 	}
@@ -74,22 +74,6 @@ public class Coverage {
 	public final static MozInst encodeExitCoverage(Nez.Choice e, int index, MozInst next) {
 		if (covList != null) {
 			Coverage cov = getCoverage("c", e.get(index));
-			return new Moz.Covx(cov, next);
-		}
-		return next;
-	}
-
-	public final static MozInst encodeEnterCoverage(Nez.Unary e, int index, MozInst next) {
-		if (covList != null) {
-			Coverage cov = getCoverage("u", e.get(0));
-			return new Moz.Cov(cov, next);
-		}
-		return next;
-	}
-
-	public final static MozInst encodeExitCoverage(Nez.Unary e, int index, MozInst next) {
-		if (covList != null) {
-			Coverage cov = getCoverage("u", e.get(0));
 			return new Moz.Covx(cov, next);
 		}
 		return next;

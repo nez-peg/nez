@@ -12,8 +12,10 @@ import nez.lang.Productions;
 import nez.lang.Productions.NonterminalReference;
 import nez.lang.Typestate;
 import nez.lang.Typestate.TypestateAnalyzer;
+import nez.parser.vm.Moz;
 import nez.parser.vm.MozInst;
 import nez.parser.vm.ParserMachineContext;
+import nez.util.ConsoleUtils;
 import nez.util.UList;
 import nez.util.Verbose;
 
@@ -173,6 +175,75 @@ public abstract class ParserCode<T extends Instruction> {
 				Verbose.println(s);
 			}
 			Verbose.println("");
+		}
+	}
+
+	/* Coverage */
+
+	private static class Coverage {
+		String label;
+		public int covPoint;
+		int enterCount;
+		int exitCount;
+
+		Coverage(String label, int point) {
+			this.label = label;
+			this.covPoint = point;
+		}
+
+		private void count(boolean start) {
+			if (start) {
+				this.enterCount++;
+			} else {
+				this.exitCount++;
+			}
+		}
+	}
+
+	UList<Coverage> covList = null;
+	HashMap<String, Coverage> covMap;
+
+	public final void initCoverage() {
+		covList = new UList<Coverage>(new Coverage[128]);
+		covMap = new HashMap<>();
+	}
+
+	private Coverage getCoverage(String u) {
+		Coverage cov = covMap.get(u);
+		if (cov == null) {
+			cov = new Coverage(u, covList.size());
+			covList.add(cov);
+			covMap.put(u, cov);
+		}
+		return cov;
+	}
+
+	public final MozInst compileEnterCoverage(String u, MozInst next) {
+		if (covList != null) {
+			Coverage cov = getCoverage(u);
+			return new Moz.Cov(this, cov.covPoint, true, next);
+		}
+		return next;
+	}
+
+	public final MozInst compileExitCoverage(String u, MozInst next) {
+		if (covList != null) {
+			Coverage cov = getCoverage(u);
+			return new Moz.Cov(this, cov.covPoint, true, next);
+		}
+		return next;
+	}
+
+	public void countCoverage(int id, boolean start) {
+		covList.ArrayValues[id].count(start);
+	}
+
+	public final void dumpCoverage() {
+		ConsoleUtils.println("Coverage:");
+		if (covList != null) {
+			for (Coverage cov : covList) {
+				ConsoleUtils.println(String.format("  %-40s: %d / %d", cov.label, cov.enterCount, cov.exitCount));
+			}
 		}
 	}
 

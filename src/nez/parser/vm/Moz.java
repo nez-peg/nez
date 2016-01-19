@@ -9,6 +9,7 @@ import nez.lang.Nez.SymbolExists;
 import nez.lang.Production;
 import nez.parser.MemoEntry;
 import nez.parser.MemoPoint;
+import nez.parser.ParserCode;
 import nez.parser.ParserCode.ProductionCode;
 import nez.parser.SymbolTable;
 import nez.parser.TerminationException;
@@ -2108,11 +2109,22 @@ public class Moz {
 	}
 
 	public static class Cov extends MozInst {
-		final int covPoint;
+		final ParserCode<?> code;
+		final int id;
+		final boolean start;
 
-		public Cov(Coverage cov, MozInst next) {
+		public Cov(ParserCode<?> code, int covPoint, boolean start, MozInst next) {
 			super(MozSet.Cov, null, next);
-			this.covPoint = cov.covPoint;
+			this.code = code;
+			this.id = covPoint;
+			this.start = start;
+		}
+
+		public Cov(int id, MozInst next) {
+			super(MozSet.Cov, null, next);
+			this.code = null;
+			this.id = id;
+			this.start = true;
 		}
 
 		@Override
@@ -2128,13 +2140,13 @@ public class Moz {
 
 		@Override
 		public MozInst exec(MozMachine sc) throws TerminationException {
-			Coverage.enter(this.covPoint);
+			Coverage.enter(this.id);
 			return this.next;
 		}
 
 		@Override
 		public MozInst exec2(ParserMachineContext sc) throws TerminationException {
-			Coverage.enter(this.covPoint);
+			code.countCoverage(this.id, start);
 			return this.next;
 		}
 
