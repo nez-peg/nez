@@ -1613,7 +1613,7 @@ public class Moz {
 		@Override
 		public MozInst exec2(ParserMachineContext sc) throws TerminationException {
 			sc.valueTree(value);
-			return null;
+			return this.next;
 		}
 
 	}
@@ -2149,41 +2149,6 @@ public class Moz {
 			prof.countCoverage(this.id, start);
 			return this.next;
 		}
-
 	}
-
-	// public static class Covx extends MozInst {
-	// final int covPoint;
-	//
-	// public Covx(Coverage cov, MozInst next) {
-	// super(MozSet.Covx, null, next);
-	// this.covPoint = cov.covPoint;
-	// }
-	//
-	// @Override
-	// protected void encodeImpl(ByteCoder c) {
-	// // TODO Auto-generated method stub
-	//
-	// }
-	//
-	// @Override
-	// public void visit(MozVisitor v) {
-	// v.visitCovx(this);
-	// }
-	//
-	// @Override
-	// public MozInst exec(MozMachine sc) throws TerminationException {
-	// //Coverage.exit(this.covPoint);
-	// return this.next;
-	// }
-	//
-	// @Override
-	// public MozInst exec2(ParserMachineContext sc) throws TerminationException
-	// {
-	// Coverage.exit(this.covPoint);
-	// return this.next;
-	// }
-	//
-	// }
 
 }
