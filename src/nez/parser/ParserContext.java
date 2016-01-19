@@ -440,7 +440,6 @@ public class ParserContext {
 		int hash = (int) (key % memoArray.length);
 		MemoEntry m = this.memoArray[hash];
 		if (m.key == key) {
-			this.left = m.result;
 			this.pos += m.consumed;
 			return true;
 		}
@@ -448,7 +447,29 @@ public class ParserContext {
 	}
 
 	public void memoSucc(int memoPoint, int ppos) {
+		long key = longkey(ppos, memoPoint, shift);
+		int hash = (int) (key % memoArray.length);
+		MemoEntry m = this.memoArray[hash];
+		m.key = key;
+		m.consumed = pos - ppos;
+		m.stateValue = -1;
+		// this.CountStored += 1;
+	}
+
+	public final boolean lookupTreeMemo(int memoPoint) {
 		long key = longkey(pos, memoPoint, shift);
+		int hash = (int) (key % memoArray.length);
+		MemoEntry m = this.memoArray[hash];
+		if (m.key == key) {
+			this.left = m.result;
+			this.pos += m.consumed;
+			return true;
+		}
+		return false; // unfound
+	}
+
+	public void memoTreeSucc(int memoPoint, int ppos) {
+		long key = longkey(ppos, memoPoint, shift);
 		int hash = (int) (key % memoArray.length);
 		MemoEntry m = this.memoArray[hash];
 		m.key = key;

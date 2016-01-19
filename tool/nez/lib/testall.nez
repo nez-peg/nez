@@ -1,0 +1,106 @@
+/**
+ * Email Demo File
+ */
+
+S
+    = [ \t]
+    
+_
+	= S*
+
+DIGIT
+	= [0-9]
+
+NUMBER
+	= DIGIT+
+
+ALPHA
+	= [A-Z] / [a-z]
+
+ALNUM
+	= ALPHA / DIGIT
+
+NAME
+	= (ALPHA / '_' ) (ALNUM / '_')*
+
+example DIGIT   ~f6be4c 1
+example NUMBER  ~d01ffe 123a
+example ALPHA   ~362df7 Aa1
+example ALNUM   ~362df7 Aa1
+example NAME    ~362df7 Aa1_
+
+example EMAIL ~f3d141 mail@address.com
+
+public EMAIL
+        = LOCAL '@' DOMAIN
+LOCAL
+        = ([A-Za-z0-9] / '-')+ ('.' LOCAL)?
+DOMAIN
+        = SUBDOMAIN ('.' SUBDOMAIN)+
+SUBDOMAIN
+        = ([A-Za-z0-9] / '-')+
+
+ZEROMORE0 = 'ab'* 
+ZEROMORE = 'ab'* / 'a'
+ONEMORE  = 'ab'+ / 'a'
+
+example ZEROMORE ~1d59a2f abababa
+example ONEMORE  ~cca265 aababab
+
+/* Tree, Tree Operation */
+
+Name
+	= { NAME #Name }
+
+example Name ~fdb051  Apple
+
+example Name ~7e7edc6 Banana
+example Name ~7e7edc6 Banana Republic
+
+/* Token with no tag */
+
+NoTag = { NAME }
+Replace = { NAME #Name `Apple` }
+
+example NoTag ~c5f2a69 Banana
+example Replace ~fdb051 Banana
+
+/* List,LeftPair,RightPair */
+
+List
+        = { $(Term) (',' S* $(Term))+ #List } / Term
+
+LeftPair
+        = Term {$left ',' S* $right(Term) #Pair }*
+
+RightPair
+        = { $left(Term) ',' S* $right(RightPair) #Pair } / Term
+
+Term
+        = { [A-Za-z0-9]+ #Term } S*
+
+example List ~070f0a80 A,B,C,D
+
+example LeftPair ~8b91eca A,B,C,D
+
+example RightPair ~dec0e50 A,B,C,D
+
+/* Mathematical */        
+
+Math
+	= Product {$left ( '+' #Add / '-' #Sub ) $right(Product) }*
+
+Product
+	= Value {$left ( '*' #Mul / '/' #Div / '%' #Mod ) $right(Value) }*
+
+Value
+	= { [0-9]+ #Int } _
+	/ { [A-Za-z0-9_]+ #Variable } _
+	/ '(' Math ')'
+
+example Math ~6e97d13 1+2*3
+example Math ~d0e1fdc 1*2+3 
+example Math ~82ef86b 1+2-3 
+example Math ~870539  1+2*3-4/5
+example Math ~870539  1+(2*3)-(4/5)
+

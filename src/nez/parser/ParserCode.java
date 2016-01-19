@@ -1,5 +1,7 @@
 package nez.parser;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -46,19 +48,26 @@ public abstract class ParserCode<T extends Instruction> {
 	public final Tree<?> exec(ParserMachineContext ctx) {
 		int ppos = (int) ctx.getPosition();
 		MozInst code = (MozInst) this.getStartInstruction();
-		boolean result = false;
-		try {
-			while (true) {
-				code = code.exec2(ctx);
-			}
-		} catch (TerminationException e) {
-			result = e.status;
-		}
+		boolean result = exec(ctx, code);
 		if (RecognitionMode && result) {
 			ctx.left = ctx.newTree(null, ppos, (int) ctx.getPosition(), 0, null);
 		}
 		return result ? ctx.left : null;
+	}
 
+	private boolean exec(ParserMachineContext ctx, MozInst inst) {
+		MozInst cur = inst;
+		try {
+			while (true) {
+				MozInst next = cur.exec2(ctx);
+				if (next == null) {
+					System.out.println("null " + cur);
+				}
+				cur = next;
+			}
+		} catch (TerminationException e) {
+			return e.status;
+		}
 	}
 
 	public abstract Object exec(ParserInstance context);
@@ -99,19 +108,49 @@ public abstract class ParserCode<T extends Instruction> {
 
 	protected Map<String, MemoPoint> memoPointMap = null;
 
-	public void initMemoPoint() {
+	private static class Score {
+		Production p;
+		Typestate ts;
+		double score;
+
+		Score(Production p, Typestate ts, int score, double factor) {
+			this.p = p;
+			this.ts = ts;
+			this.score = score * factor;
+		}
+	}
+
+	public void initMemoPoint(ParserStrategy strategy) {
 		final TypestateAnalyzer typestate = Typestate.newAnalyzer();
 		memoPointMap = new HashMap<>();
 		NonterminalReference refs = Productions.countNonterminalReference(grammar);
+		ArrayList<Score> l = new ArrayList<Score>();
 		for (Production p : grammar) {
 			String uname = p.getUniqueName();
 			Typestate ts = typestate.inferTypestate(p);
-			if (refs.count(uname) > 2 && ts != Typestate.TreeMutation) {
-				Verbose.println("MemoPoint: %s refc=%d", uname, refs.count(uname));
-				MemoPoint memoPoint = new MemoPoint(this.memoPointMap.size(), uname, p.getExpression(), ts, false);
-				this.memoPointMap.put(uname, memoPoint);
+			if (ts != Typestate.TreeMutation) {
+				l.add(new Score(p, ts, refs.count(uname), ts == Typestate.Unit ? 1 : 1 * strategy.TreeFactor));
+				// Verbose.println("MemoPoint: %s refc=%d", uname,
+				// refs.count(uname));
+				// MemoPoint memoPoint = new MemoPoint(this.memoPointMap.size(),
+				// uname, p.getExpression(), ts, false);
+				// this.memoPointMap.put(uname, memoPoint);
 			}
 		}
+		int c = 0;
+		int limits = (int) (l.size() * strategy.MemoLimit);
+		Collections.sort(l, (s, s2) -> (int) (s2.score - s.score));
+		for (Score s : l) {
+			c++;
+			if (c < limits && s.score >= 3 * strategy.TreeFactor) {
+				Production p = s.p;
+				String uname = p.getUniqueName();
+				MemoPoint memoPoint = new MemoPoint(this.memoPointMap.size(), uname, p.getExpression(), s.ts, false);
+				this.memoPointMap.put(uname, memoPoint);
+				Verbose.println("MomoPoint(%d): %s score=%f", memoPoint.id, uname, s.score);
+			}
+		}
+
 	}
 
 	public final MemoPoint getMemoPoint(String uname) {

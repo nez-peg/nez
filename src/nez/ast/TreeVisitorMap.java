@@ -40,7 +40,8 @@ public class TreeVisitorMap<V> {
 				visitors.put(n, (V) v);
 			}
 		} catch (NoSuchMethodException | SecurityException | InvocationTargetException | IllegalAccessException | InstantiationException | IllegalArgumentException e) {
-			Verbose.traceException(e);
+			Verbose.println("TreeVisitorMap.load(%s, %s): %s", baseClass.getName(), c.getName(), e.toString());
+			// Verbose.traceException(e);
 		}
 	}
 

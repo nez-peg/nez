@@ -5,12 +5,10 @@ import nez.ast.Source;
 import nez.ast.Symbol;
 
 public class CommonTreeTransducer extends TreeTransducer {
-	private static final Symbol Token = Symbol.unique("token");
-	private static final Symbol Tree = Symbol.unique("tree");
 
 	@Override
 	public Object newNode(Symbol tag, Source s, long spos, long epos, int size, Object value) {
-		return new CommonTree(tag == null ? (size == 0 ? Token : Tree) : tag, s, spos, (int) (epos - spos), size, value);
+		return new CommonTree(tag == null ? (size == 0 ? Symbol.tokenTag : Symbol.treeTag) : tag, s, spos, (int) (epos - spos), size, value);
 	}
 
 	@Override

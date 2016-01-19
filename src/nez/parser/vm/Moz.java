@@ -1312,7 +1312,11 @@ public class Moz {
 
 		@Override
 		public MozInst exec2(ParserMachineContext sc) throws TerminationException {
-			return sc.lookupMemo(memoId) ? this.skip : this.next;
+			if (sc.lookupMemo(memoId)) {
+				return this.skip;
+			}
+			sc.xPos();
+			return this.next;
 		}
 	}
 
@@ -1361,6 +1365,87 @@ public class Moz {
 		@Override
 		public MozInst exec2(ParserMachineContext sc) throws TerminationException {
 			sc.memoFail(memoId);
+			return this.next;
+		}
+
+	}
+
+	public static class TLookup extends AbstractMemoizationInstruction {
+		public final Symbol label;
+
+		public TLookup(Nez.LinkTree e, MemoPoint m, MozInst next, MozInst skip) {
+			super(MozSet.TLookup, e, m, m.isStateful(), next, skip);
+			this.label = e.label;
+		}
+
+		public TLookup(MemoPoint m, MozInst next, MozInst skip) {
+			super(MozSet.TLookup, null, m, m.isStateful(), next, skip);
+			this.label = null;
+		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitTLookup(this);
+		}
+
+		@Override
+		protected void encodeImpl(ByteCoder c) {
+			super.encodeImpl(c);
+			c.encodeLabel(label);
+		}
+
+		@Override
+		public MozInst exec(MozMachine sc) throws TerminationException {
+			MemoEntry entry = sc.getMemo(memoId, state);
+			if (entry != null) {
+				if (entry.failed) {
+					memoPoint.failHit();
+					return sc.xFail();
+				}
+				memoPoint.memoHit(entry.consumed);
+				sc.consume(entry.consumed);
+				ASTMachine astMachine = sc.getAstMachine();
+				astMachine.logLink(label, entry.result);
+				return this.skip;
+			}
+			memoPoint.miss();
+			return this.next;
+		}
+
+		@Override
+		public MozInst exec2(ParserMachineContext sc) throws TerminationException {
+			if (sc.lookupTreeMemo(memoId)) {
+				return this.skip;
+			}
+			sc.xPos();
+			return this.next;
+		}
+
+	}
+
+	public static class TMemo extends AbstractMemoizationInstruction {
+		public TMemo(Expression e, MemoPoint m, MozInst next) {
+			super(MozSet.TMemo, e, m, m.isStateful(), next);
+		}
+
+		@Override
+		public void visit(MozVisitor v) {
+			v.visitTMemo(this);
+		}
+
+		@Override
+		public MozInst exec(MozMachine sc) throws TerminationException {
+			ASTMachine astMachine = sc.getAstMachine();
+			long ppos = sc.popAlt();
+			int length = (int) (sc.getPosition() - ppos);
+			sc.setMemo(ppos, memoId, false, astMachine.getLatestLinkedNode(), length, this.state);
+			return this.next;
+		}
+
+		@Override
+		public MozInst exec2(ParserMachineContext sc) throws TerminationException {
+			int ppos = sc.xPPos();
+			sc.memoTreeSucc(memoId, ppos);
 			return this.next;
 		}
 
@@ -1732,78 +1817,6 @@ public class Moz {
 
 		@Override
 		public MozInst exec2(ParserMachineContext sc) throws TerminationException {
-			return this.next;
-		}
-
-	}
-
-	public static class TLookup extends AbstractMemoizationInstruction {
-		public final Symbol label;
-
-		public TLookup(Nez.LinkTree e, MemoPoint m, MozInst next, MozInst skip) {
-			super(MozSet.TLookup, e, m, m.isStateful(), next, skip);
-			this.label = e.label;
-		}
-
-		@Override
-		public void visit(MozVisitor v) {
-			v.visitTLookup(this);
-		}
-
-		@Override
-		protected void encodeImpl(ByteCoder c) {
-			super.encodeImpl(c);
-			c.encodeLabel(label);
-		}
-
-		@Override
-		public MozInst exec(MozMachine sc) throws TerminationException {
-			MemoEntry entry = sc.getMemo(memoId, state);
-			if (entry != null) {
-				if (entry.failed) {
-					memoPoint.failHit();
-					return sc.xFail();
-				}
-				memoPoint.memoHit(entry.consumed);
-				sc.consume(entry.consumed);
-				ASTMachine astMachine = sc.getAstMachine();
-				astMachine.logLink(label, entry.result);
-				return this.skip;
-			}
-			memoPoint.miss();
-			return this.next;
-		}
-
-		@Override
-		public MozInst exec2(ParserMachineContext sc) throws TerminationException {
-			return sc.lookupMemo(memoId) ? this.skip : this.next;
-		}
-
-	}
-
-	public static class TMemo extends AbstractMemoizationInstruction {
-		public TMemo(Expression e, MemoPoint m, MozInst next) {
-			super(MozSet.TMemo, e, m, m.isStateful(), next);
-		}
-
-		@Override
-		public void visit(MozVisitor v) {
-			v.visitTMemo(this);
-		}
-
-		@Override
-		public MozInst exec(MozMachine sc) throws TerminationException {
-			ASTMachine astMachine = sc.getAstMachine();
-			long ppos = sc.popAlt();
-			int length = (int) (sc.getPosition() - ppos);
-			sc.setMemo(ppos, memoId, false, astMachine.getLatestLinkedNode(), length, this.state);
-			return this.next;
-		}
-
-		@Override
-		public MozInst exec2(ParserMachineContext sc) throws TerminationException {
-			int ppos = sc.xPPos();
-			sc.memoSucc(memoId, ppos);
 			return this.next;
 		}
 

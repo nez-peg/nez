@@ -93,7 +93,7 @@ public class MozCode extends ParserCode<MozInst> {
 	}
 
 	public final static void writeMozCode(Parser parser, String path) {
-		MozCompiler compile = MozCompiler.newCompiler(parser.getParserStrategy());
+		ParserMachineCompiler compile = ParserMachineCompiler.newCompiler(parser.getParserStrategy());
 		MozCode code = compile.compile(parser.getParserGrammar());
 		ByteCoder c = new ByteCoder();
 		code.encode(c);

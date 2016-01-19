@@ -12,7 +12,6 @@ import nez.parser.io.CommonSource;
 import nez.parser.vm.ParserMachineContext;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
-import nez.util.Verbose;
 
 public final class Parser {
 	private ParserStrategy strategy;
@@ -73,13 +72,13 @@ public final class Parser {
 
 	public final Object perform(Source s, Tree<?> proto) {
 		if (strategy.Moz) {
-			Verbose.println("ClassicMoz");
+			// Verbose.println("ClassicMoz");
 			return perform(this.newParserContext(s, proto));
 		}
-		Verbose.println("FT86");
+		// Verbose.println("FT86");
 		ParserMachineContext ctx = new ParserMachineContext(s, proto);
 		ParserCode<?> code = this.getParserCode();
-		// context.init(newMemoTable(context), prototype);
+		ctx.initMemoTable(strategy.SlidingWindow, code.getMemoPointSize());
 		// if (prof != null) {
 		// context.startProfiling(prof);
 		// }
