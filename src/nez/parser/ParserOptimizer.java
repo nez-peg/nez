@@ -42,10 +42,12 @@ public class ParserOptimizer {
 			// Verbose.println("optimizing %s ..", strategy);
 			new OptimizerVisitor().optimize();
 		}
-		// new NormalizerVisitor().perform();
+		if (strategy.Ostring) {
+			new NormalizerVisitor().perform();
+		}
 		long t3 = System.nanoTime();
-		Verbose.printElapsedTime("Optimization time", t1, t2);
-		Verbose.printElapsedTime("Normalization time", t2, t3);
+		Verbose.printElapsedTime("Grammar checking time", t1, t2);
+		Verbose.printElapsedTime("Optimization time", t2, t3);
 		return grammar;
 	}
 
@@ -566,7 +568,7 @@ public class ParserOptimizer {
 		 */
 
 		boolean verboseGrammar = false;
-		boolean InliningSubchoice = false;
+		boolean InliningSubchoice = true;
 		boolean enabledSecondChoice = false;
 
 		HashMap<String, Production> bodyMap = null;
@@ -655,37 +657,29 @@ public class ParserOptimizer {
 			Expression deref = optimizeProduction(p);
 			if (strategy.Oinline) {
 				if (deref instanceof NonTerminal) {
-					verboseInline("inline(deref)", n, deref);
+					// verboseInline("inline(deref)", n, deref);
 					return this.visitNonTerminal((NonTerminal) deref, a);
 				}
 				if (deref.size() == 0) {
-					verboseInline("inline(deref)", n, deref);
-					return deref;
-				}
-				if (isMultiChar(deref)) {
-					verboseInline("multi-char", n, deref);
+					// verboseInline("inline(single)", n, deref);
 					return deref;
 				}
 				if (strategy.Olex && isSingleInstruction(deref)) {
-					verboseInline("inline(instruction)", n, deref);
-					return deref;
-				}
-				if (strategy.Olex && isSingleInstruction(deref)) {
-					verboseInline("inline(instruction)", n, deref);
+					// verboseInline("inline(single instruction)", n, deref);
 					return deref;
 				}
 			}
 			if (strategy.Oinline) {
 				int c = refc.count(n.getUniqueName());
 				if (c == 1 && !Productions.isRecursive(p)) {
-					verboseInline("inline(ref=1)", n, deref);
+					// verboseInline("inline(ref=1)", n, deref);
 					return deref;
 				}
 			}
 			String alias = findAliasName(n.getLocalName());
 			if (alias != null) {
 				NonTerminal nn = n.newNonTerminal(alias);
-				verboseInline("inline(alias)", n, nn);
+				// verboseInline("inline(alias)", n, nn);
 				return nn;
 			}
 			// verboseInline("*inline(ref=" + refc.count(n.getUniqueName()), n,
@@ -696,72 +690,90 @@ public class ParserOptimizer {
 		@Override
 		public Expression visitPair(Nez.Pair p, Object a) {
 			List<Expression> l = Expressions.flatten(p);
-			UList<Expression> l2 = Expressions.newUList(l.size());
+			List<Expression> l2 = Expressions.newList(l.size());
 			for (int i = 0; i < l.size(); i++) {
 				Expression inner = l.get(i);
 				inner = (Expression) inner.visit(this, a);
-				l2.add(inner);
+				Expressions.addSequence(l2, inner);
 			}
+			this.optimizeNotCharacterSet(l2);
 			if (strategy.Oorder) {
-				while (this.performOutOfOrder(l2))
+				while (this.optimizeTreeConstruction(l2))
 					;
 			}
-			this.mergeNotCharacter(l2);
-			return p.newPair(l2);
+			return Expressions.newPair(l2);
 		}
 
-		private boolean performOutOfOrder(UList<Expression> l) {
+		private boolean optimizeTreeConstruction(List<Expression> l) {
 			boolean res = false;
 			for (int i = 1; i < l.size(); i++) {
 				Expression first = l.get(i - 1);
-				Expression next = l.get(i);
-				if (isSingleCharacter(next)) {
+				Expression second = l.get(i);
+				if (isSingleCharacter(second)) {
 					if (first instanceof Nez.BeginTree) {
 						((Nez.BeginTree) first).shift -= 1;
 						Expressions.swap(l, i - 1, i);
-						this.verboseOutofOrdered("out-of-order", next, first);
+						// this.verboseSequence("reorder", second, first);
 						res = true;
 						continue;
 					}
 					if (first instanceof Nez.FoldTree) {
 						((Nez.FoldTree) first).shift -= 1;
 						Expressions.swap(l, i - 1, i);
-						this.verboseOutofOrdered("out-of-order", next, first);
+						// this.verboseSequence("reorder", second, first);
 						res = true;
 						continue;
 					}
 					if (first instanceof Nez.EndTree) {
 						((Nez.EndTree) first).shift -= 1;
 						Expressions.swap(l, i - 1, i);
-						this.verboseOutofOrdered("out-of-order", next, first);
+						// this.verboseSequence("reorder", second, first);
 						res = true;
 						continue;
 					}
 					if (first instanceof Nez.Tag || first instanceof Nez.Replace) {
 						Expressions.swap(l, i - 1, i);
-						this.verboseOutofOrdered("out-of-order", next, first);
+						// this.verboseSequence("reorder", second, first);
 						res = true;
 						continue;
+					}
+				}
+				if (!strategy.Moz) {
+					if (second instanceof Nez.EndTree) {
+						if (first instanceof Nez.Tag) {
+							((Nez.EndTree) second).tag = ((Nez.Tag) first).tag;
+							Expressions.swap(l, i - 1, i);
+							l.set(i, Expressions.newEmpty());
+							// this.verboseSequence("merge", second, first);
+							res = true;
+							continue;
+						}
+						if (first instanceof Nez.Replace) {
+							((Nez.EndTree) second).value = ((Nez.Replace) first).value;
+							Expressions.swap(l, i - 1, i);
+							l.set(i, Expressions.newEmpty());
+							// this.verboseSequence("merge", second, first);
+							res = true;
+							continue;
+						}
 					}
 				}
 			}
 			return res;
 		}
 
-		private void mergeNotCharacter(UList<Expression> l) {
-			for (int i = 1; i < l.size(); i++) {
+		private void optimizeNotCharacterSet(List<Expression> l) {
+			for (int i = l.size() - 1; i > 0; i--) {
 				Expression first = l.get(i - 1);
-				Expression next = l.get(i);
+				Expression second = l.get(i);
 				if (isNotChar(first)) {
-					if (next instanceof Nez.Any) {
-						l.ArrayValues[i] = convertBitMap(next, first.get(0));
-						l.ArrayValues[i - 1] = next.newEmpty();
-						this.verboseOptimized("not-any", first, l.ArrayValues[i]);
+					if (second instanceof Nez.Any) {
+						l.set(i, convertBitMap(second, first.get(0)));
+						l.set(i - 1, Expressions.newEmpty());
 					}
-					if (next instanceof Nez.ByteSet && isNotChar(first)) {
-						l.ArrayValues[i] = convertBitMap(next, first.get(0));
-						l.ArrayValues[i - 1] = next.newEmpty();
-						this.verboseOptimized("not-set", first, l.ArrayValues[i]);
+					if (second instanceof Nez.ByteSet /* && isNotChar(first) */) {
+						l.set(i, convertBitMap(second, first.get(0)));
+						l.set(i - 1, Expressions.newEmpty());
 					}
 				}
 			}
@@ -776,15 +788,14 @@ public class ParserOptimizer {
 
 		private Expression convertBitMap(Expression next, Expression not) {
 			boolean[] bany = null;
-			boolean isBinary = false;
+			// boolean isBinary = false;
 			Expression nextNext = Expressions.next(next);
 			if (nextNext != null) {
 				next = Expressions.first(next);
 			}
 			if (next instanceof Nez.Any) {
-				Nez.Any any = (Nez.Any) next;
 				bany = Bytes.newMap(true);
-				if (!isBinary) {
+				if (!strategy.BinaryGrammar) {
 					bany[0] = false;
 				}
 			}
@@ -807,7 +818,7 @@ public class ParserOptimizer {
 					bany[bc.byteChar] = false;
 				}
 			}
-			return not.newByteSet(isBinary, bany);
+			return Expressions.newByteSet(next.getSourceLocation(), bany);
 		}
 
 		@Override
@@ -824,47 +835,45 @@ public class ParserOptimizer {
 			return super.visitLinkTree(p, a);
 		}
 
-		// private UList<Nez.Choice> choiceList = new UList<Nez.Choice>(new
-		// Nez.Choice[10]);
-
 		@Override
 		public Expression visitChoice(Nez.Choice p, Object a) {
+			assert (p.visited == false);
+			p.visited = true;
+			UList<Expression> l = Expressions.newUList(p.size());
+			flattenAndOptimizeSubExpressions(p, l, a);
+			// for (Expression inner : p) {
+			// Expressions.addChoice(l, this.visitInner(inner, a));
+			// }
+			p.inners = l.compactArray();
 			if (strategy.ChoicePrediction != 0) {
-				UList<Expression> l = Expressions.newUList(p.size());
-				flattenChoiceList(p, l);
-				for (int i = 0; i < l.size(); i++) {
-					l.set(i, this.visitInner(l.get(i), a));
-				}
-				p.inners = l.compactArray();
-				//
 				Expression optimized = Expressions.tryConvertingByteSet(p);
 				if (optimized != p) {
-					this.verboseOptimized("choice-to-set", p, optimized);
+					// this.verboseOptimized("choice-to-set", p, optimized);
 					return optimized;
 				}
 			}
 			return p;
 		}
 
-		private void flattenChoiceList(Nez.Choice choice, UList<Expression> l) {
+		private void flattenAndOptimizeSubExpressions(Nez.Choice choice, List<Expression> l, Object a) {
 			for (Expression inner : choice) {
-				inner = firstChoiceInlining(inner);
-				if (inner instanceof Nez.Choice) {
-					flattenChoiceList((Nez.Choice) inner, l);
-				} else {
-					l.add(inner);
-				}
+				inner = optimizeSubExpression(inner, a);
+				Expressions.addChoice(l, inner);
 			}
 		}
 
-		private Expression firstChoiceInlining(Expression e) {
-			if (InliningSubchoice && strategy.Oinline) {
-				while (e instanceof NonTerminal) {
-					NonTerminal n = (NonTerminal) e;
-					e = n.getProduction().getExpression();
+		private Expression optimizeSubExpression(Expression e, Object a) {
+			if (e instanceof NonTerminal) {
+				if (InliningSubchoice && strategy.Oinline) {
+					while (e instanceof NonTerminal) {
+						NonTerminal n = (NonTerminal) e;
+						Production p = n.getProduction();
+						e = optimizeProduction(p);
+					}
+					return e;
 				}
 			}
-			return e;
+			return this.visitInner(e, a);
 		}
 
 		/* Choice Prediction */
@@ -887,8 +896,6 @@ public class ParserOptimizer {
 							optimizeChoicePrediction(sub);
 						}
 					}
-				} else {
-					Verbose.println("already optimized: " + e);
 				}
 				return;
 			}
@@ -897,20 +904,25 @@ public class ParserOptimizer {
 			}
 		}
 
+		UList<Expression> bufferList = Expressions.newUList(256);
+		HashMap<String, Expression> bufferMap = new HashMap<>();
+		ArrayList<Expression> uniqueList = new ArrayList<>();
+		HashMap<String, Byte> bufferIndex = new HashMap<>();
+
 		private void optimizeChoicePrediction(Nez.Choice choice) {
 			Nez.ChoicePrediction p = new Nez.ChoicePrediction();
 			choice.predicted = p;
-			Expression[] predictedCase = new Expression[256];
-			UList<Expression> bufferList = Expressions.newUList(choice.size());
-			HashMap<String, Expression> bufferMap = new HashMap<>();
-			ArrayList<Expression> uniqueList = new ArrayList<>();
+
+			bufferList.clear(0);
+			bufferMap.clear();
+			uniqueList.clear();
+			bufferIndex.clear();
+
 			byte[] indexMap = new byte[256];
-			HashMap<String, Byte> bufferIndex = new HashMap<>();
 			int count = 0;
 			int selected = 0;
 			for (int ch = 0; ch < 255; ch++) {
-				Expression predicted = selectPredictedChoice(choice, ch, bufferList, bufferMap, uniqueList, indexMap, bufferIndex);
-				predictedCase[ch] = predicted;
+				Expression predicted = selectPredictedChoice(choice, ch, indexMap);
 				if (predicted != null) {
 					count++;
 					if (predicted instanceof Nez.Choice) {
@@ -921,61 +933,18 @@ public class ParserOptimizer {
 				}
 			}
 			p.reduced = (float) selected / count;
-			Expression[] newlist = new Expression[bufferMap.size()];
-			p.striped = new boolean[newlist.length];
-			// Verbose.debug("reduced: " + choice.size() + " => " + p.reduced +
-			// " newlist=" + newlist.length);
-			// Verbose.debug("map: " + map);
+			p.striped = new boolean[bufferMap.size()];
 			int c = 0;
-			for (String key : bufferMap.keySet()) {
-				Expression e = bufferMap.get(key);
-				assert (uniqueList.contains(e));
-				// if (Expressions.first(e) instanceof Nez.Byte) {
-				// e = Expressions.next(e);
-				// p.striped[c] = true;
-				// }
-				newlist[c] = e;
-				c++;
-			}
-			c = 0;
 			Expression[] newlist2 = new Expression[bufferMap.size()];
 			for (Expression e : uniqueList) {
 				newlist2[c] = e;
 				c++;
 			}
-			// for (int i = 0; i < newlist.length; i++) {
-			// System.out.println("" + i + "\t" + newlist[i] + "\n\t" +
-			// newlist2[i]);
-			// }
-			p.indexMap = new byte[256];
-			for (int ch = 0; ch <= 255; ch++) {
-				if (predictedCase[ch] == null) {
-					p.indexMap[ch] = 0;
-				} else {
-					p.indexMap[ch] = (byte) (makeIndexMap(predictedCase[ch], newlist) + 1);
-				}
-			}
-			choice.inners = newlist;
-			for (int ch = 0; ch <= 255; ch++) {
-				if (indexMap[ch] > 0) {
-					assert (newlist2[indexMap[ch] - 1] == newlist[p.indexMap[ch] - 1]);
-				}
-			}
-			// choice.inners = newlist2;
-			// p.indexMap = indexMap;
+			choice.inners = newlist2;
+			p.indexMap = indexMap;
 		}
 
-		private int makeIndexMap(Expression e, Expression[] unique0) {
-			for (int i = 0; i < unique0.length; i++) {
-				if (unique0[i] == e) {
-					return i;
-				}
-			}
-			ConsoleUtils.exit(1, "bugs");
-			return -1;
-		}
-
-		private Expression selectPredictedChoice(Nez.Choice choice, int ch, UList<Expression> bufferList, HashMap<String, Expression> bufferMap, ArrayList<Expression> uniqueList, byte[] indexMap, HashMap<String, Byte> bufferIndex) {
+		private Expression selectPredictedChoice(Nez.Choice choice, int ch, byte[] indexMap) {
 			StringBuilder sb = new StringBuilder();
 			for (int i = 0; i < choice.size(); i++) {
 				Expression p = choice.get(i);
@@ -1016,9 +985,6 @@ public class ParserOptimizer {
 			}
 			Expression p = Expressions.newChoice(bufferList);
 			bufferList.clear(0);
-			// if (commonFactored && !(p instanceof Nez.Choice)) {
-			// tryFactoredSecondChoice(p);
-			// }
 			bufferMap.put(key, p);
 			uniqueList.add(p);
 			byte b = (byte) uniqueList.size();
@@ -1040,34 +1006,34 @@ public class ParserOptimizer {
 			}
 		}
 
-		private String shorten(Expression e) {
-			String s = e.toString();
-			if (s.length() > 40) {
-				return s.substring(0, 40) + " ... ";
-			}
-			return s;
-		}
-
-		private void verboseInline(String name, NonTerminal n, Expression e) {
-			Verbose.println(name + ": " + n.getLocalName() + " => " + e);
-			if (this.verboseGrammar) {
-				ConsoleUtils.println(name + ": " + n.getLocalName() + " => " + shorten(e));
-			}
-		}
-
-		private void verboseOptimized(String msg, Expression e, Expression e2) {
-			if (this.verboseGrammar) {
-				// Verbose.debug(msg + " => " + e + "\n\t=>" + e2);
-				ConsoleUtils.println(msg + ":=> " + shorten(e2));
-			}
-		}
-
-		private void verboseOutofOrdered(String msg, Expression e, Expression e2) {
-			if (this.verboseGrammar) {
-				// Verbose.debug(msg + " => " + e + "\n\t=>" + e2);
-				ConsoleUtils.println(msg + ":=> " + e + " " + e2);
-			}
-		}
+		// private String shorten(Expression e) {
+		// String s = e.toString();
+		// if (s.length() > 40) {
+		// return s.substring(0, 40) + " ... ";
+		// }
+		// return s;
+		// }
+		//
+		// private void verboseInline(String name, NonTerminal n, Expression e)
+		// {
+		// Verbose.println(name + ": " + n.getLocalName() + " => " + e);
+		// if (this.verboseGrammar) {
+		// ConsoleUtils.println(name + ": " + n.getLocalName() + " => " +
+		// shorten(e));
+		// }
+		// }
+		//
+		// private void verboseOptimized(String msg, Expression e, Expression
+		// e2) {
+		// Verbose.println(msg + ":=> " + e + " => " + e2);
+		// }
+		//
+		// private void verboseSequence(String msg, Expression e, Expression e2)
+		// {
+		// Verbose.println(msg + ":=> " + e + " " + e2);
+		// // if (this.verboseGrammar) {
+		// // }
+		// }
 	}
 
 	public final static Expression tryFactoringCommonLeft(Nez.Choice base, Expression e, Expression e2, boolean ignoredFirstChar) {
@@ -1127,7 +1093,16 @@ public class ParserOptimizer {
 
 		@Override
 		public Expression visitPair(Nez.Pair p, Object a) {
-			return Expressions.tryConvertingMultiCharSequence(p);
+			Expression e = Expressions.tryConvertingMultiCharSequence(p);
+			if (e instanceof Nez.Pair) {
+				e.set(0, this.visitInner(e.get(0), a));
+				e.set(1, this.visitInner(e.get(1), a));
+			}
+			// if (Expressions.first(e) instanceof Nez.MultiByte) {
+			if (e != p) {
+				Verbose.println("" + p + " => " + e);
+			}
+			return e;
 		}
 	}
 

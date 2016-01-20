@@ -250,7 +250,7 @@ public abstract class Expression extends AbstractList<Expression> implements Sou
 
 	private final static ExpressionFormatter defaultFormatter = new ExpressionFormatter();
 
-	static class ExpressionFormatter extends Expression.Visitor {
+	private static class ExpressionFormatter extends Expression.Visitor {
 
 		public void format(Expression e, StringBuilder sb) {
 			e.visit(this, sb);
@@ -406,6 +406,14 @@ public abstract class Expression extends AbstractList<Expression> implements Sou
 		@Override
 		public Object visitEndTree(Nez.EndTree e, Object a) {
 			StringBuilder sb = (StringBuilder) a;
+			if (e.value != null) {
+				sb.append(StringUtils.quoteString('`', e.value, '`'));
+				sb.append(" ");
+			}
+			if (e.tag != null) {
+				sb.append("#" + e.tag);
+				sb.append(" ");
+			}
 			sb.append("}");
 			return null;
 		}
@@ -696,7 +704,10 @@ public abstract class Expression extends AbstractList<Expression> implements Sou
 
 		@Override
 		public Expression visitEndTree(EndTree e, Object a) {
-			return new Nez.EndTree(e.shift);
+			Nez.EndTree n = new Nez.EndTree(e.shift);
+			n.tag = e.tag;
+			n.value = e.value;
+			return n;
 		}
 
 		@Override

@@ -1547,8 +1547,8 @@ public class Moz {
 		public TCapture(Nez.EndTree e, MozInst next) {
 			super(MozSet.TCapture, e, next);
 			this.shift = e.shift;
-			this.tag = null;
-			this.value = null;
+			this.tag = e.tag;
+			this.value = e.value;
 		}
 
 		public TCapture(Symbol tag, String value, int shift, MozInst next) {

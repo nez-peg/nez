@@ -1,5 +1,7 @@
 package nez.lang;
 
+import java.util.Objects;
+
 import nez.ast.Symbol;
 
 public class Nez {
@@ -502,6 +504,7 @@ public class Nez {
 	 */
 
 	public static class Choice extends List {
+		public boolean visited = false;
 		public ChoicePrediction predicted = null;
 
 		Choice(Expression[] inners) {
@@ -552,15 +555,22 @@ public class Nez {
 	}
 
 	public static class EndTree extends Terminal implements TreeConstruction {
-		public int shift = 0;
+		public int shift = 0; // optimization parameter
+		public Symbol tag = null; // optimization parameter
+		public String value = null; // optimization parameter
 
 		public EndTree(int shift) {
 			this.shift = shift;
+			this.tag = null;
+			this.value = null;
 		}
 
 		@Override
 		public final boolean equals(Object o) {
-			return (o instanceof Nez.EndTree && this.shift == ((Nez.EndTree) o).shift);
+			return o instanceof Nez.EndTree //
+					&& this.shift == ((Nez.EndTree) o).shift //
+					&& this.tag == ((Nez.EndTree) o).tag //
+					&& Objects.equals(this.value, ((Nez.EndTree) o).value);
 		}
 
 		@Override

@@ -430,7 +430,20 @@ public abstract class Expressions {
 		if (start + 1 == l.size()) {
 			return first;
 		}
-		return new Nez.Pair(first, newPair(start + 1, l));
+		return pair(first, newPair(start + 1, l));
+	}
+
+	public final static Expression pair(Expression first, Expression second) {
+		if (first instanceof Nez.Fail || second instanceof Nez.Fail) {
+			return first;
+		}
+		if (second instanceof Nez.Empty) {
+			return first;
+		}
+		if (first instanceof Nez.Empty) {
+			return second;
+		}
+		return new Nez.Pair(first, second);
 	}
 
 	/**
@@ -1266,11 +1279,7 @@ public abstract class Expressions {
 			if (next == null) {
 				return first;
 			}
-			return new Nez.Pair(first, next);
-		}
-		if (e.get(1) instanceof Nez.Pair) {
-			Expression next = tryConvertingMultiCharSequence((Nez.Pair) e.get(1));
-			e.set(1, next);
+			return Expressions.pair(first, next);
 		}
 		return e;
 	}

@@ -42,8 +42,8 @@ public class ParserStrategy {
 	/* PackratParsing */
 	public boolean PackratParsing = true;
 	public int SlidingWindow = 64;
-	public double TreeFactor = 1.00;
-	public double MemoLimit = 0.9;
+	public double TreeFactor = 3.00;
+	public double MemoLimit = 0.5;
 
 	/* Profiling */
 	public boolean ProductionCoverage = false;
