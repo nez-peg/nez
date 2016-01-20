@@ -7,8 +7,14 @@ import java.util.List;
 import nez.ast.Source;
 import nez.ast.SourceLocation;
 import nez.ast.Symbol;
+import nez.lang.Nez.Byte;
+import nez.lang.Nez.Detree;
+import nez.lang.Nez.EndTree;
+import nez.lang.Nez.FoldTree;
 import nez.lang.Nez.Function;
+import nez.lang.Nez.Label;
 import nez.lang.Nez.Repeat;
+import nez.lang.Nez.Replace;
 import nez.lang.Nez.Scanf;
 import nez.util.StringUtils;
 import nez.util.UList;
@@ -537,6 +543,471 @@ public abstract class Expression extends AbstractList<Expression> implements Sou
 			return predicate ? name : "!" + name;
 		}
 
+	}
+
+	public static abstract class DuplicateVisitor extends Visitor {
+
+		protected boolean enforcedSequence = false;
+		protected boolean enforcedPair = false;
+
+		protected boolean enableImmutableDuplication = false;
+
+		public Expression visit(Expression e) {
+			SourceLocation s = e.getSourceLocation();
+			e = (Expression) e.visit(this, null);
+			if (s != null) {
+				e.setSourceLocation(s);
+			}
+			return e;
+		}
+
+		private Expression inner(Expression e) {
+			return visit(e.get(0));
+		}
+
+		private Expression sub(Expression e, int i) {
+			return visit(e.get(i));
+		}
+
+		// @Override
+		// public Expression visitNonTerminal(NonTerminal e, Object a) {
+		// NonTerminal e2 = null; // FIXME
+		// e2.setSourceLocation(e.getSourceLocation());
+		// return e2;
+		// }
+
+		@Override
+		public Expression visitEmpty(Nez.Empty e, Object a) {
+			if (!enableImmutableDuplication && e.getSourceLocation() == null) {
+				return e;
+			}
+			return new Nez.Empty();
+		}
+
+		@Override
+		public Expression visitFail(Nez.Fail e, Object a) {
+			if (!enableImmutableDuplication && e.getSourceLocation() == null) {
+				return e;
+			}
+			return new Nez.Fail();
+		}
+
+		@Override
+		public Expression visitByte(Nez.Byte e, Object a) {
+			if (!enableImmutableDuplication && e.getSourceLocation() == null) {
+				return e;
+			}
+			return new Nez.Byte(e.byteChar);
+		}
+
+		@Override
+		public Expression visitByteSet(Nez.ByteSet e, Object a) {
+			if (!enableImmutableDuplication && e.getSourceLocation() == null) {
+				return e;
+			}
+			return new Nez.ByteSet(e.byteMap);
+		}
+
+		@Override
+		public Expression visitAny(Nez.Any e, Object a) {
+			if (!enableImmutableDuplication && e.getSourceLocation() == null) {
+				return e;
+			}
+			return new Nez.Any();
+		}
+
+		@Override
+		public Expression visitMultiByte(Nez.MultiByte e, Object a) {
+			if (!enableImmutableDuplication && e.getSourceLocation() == null) {
+				return e;
+			}
+			return new Nez.MultiByte(e.byteSeq);
+		}
+
+		@Override
+		public Expression visitPair(Nez.Pair e, Object a) {
+			if (enforcedSequence) {
+				List<Expression> l = Expressions.flatten(e);
+				UList<Expression> l2 = Expressions.newUList(l.size());
+				for (int i = 0; i < l.size(); i++) {
+					Expressions.addSequence(l2, visit(l.get(i)));
+				}
+				return new Nez.Sequence(l2.compactArray());
+			}
+			return new Nez.Pair(sub(e, 0), sub(e, 1));
+		}
+
+		@Override
+		public Expression visitSequence(Nez.Sequence e, Object a) {
+			if (enforcedPair) {
+				List<Expression> l = Expressions.flatten(e);
+				UList<Expression> l2 = Expressions.newUList(l.size());
+				for (int i = 0; i < l.size(); i++) {
+					Expressions.addSequence(l2, visit(l.get(i)));
+				}
+				return Expressions.newPair(l2);
+			}
+			UList<Expression> l = Expressions.newUList(e.size());
+			for (Expression sub : e) {
+				Expressions.addSequence(l, visit(sub));
+			}
+			return new Nez.Sequence(l.compactArray());
+
+		}
+
+		@Override
+		public Expression visitChoice(Nez.Choice e, Object a) {
+			UList<Expression> l = Expressions.newUList(e.size());
+			for (Expression sub : e) {
+				Expressions.addChoice(l, visit(sub));
+			}
+			return new Nez.Choice(l.compactArray());
+		}
+
+		@Override
+		public Expression visitOption(Nez.Option e, Object a) {
+			return new Nez.Option(inner(e));
+		}
+
+		@Override
+		public Expression visitZeroMore(Nez.ZeroMore e, Object a) {
+			return new Nez.ZeroMore(inner(e));
+		}
+
+		@Override
+		public Expression visitOneMore(Nez.OneMore e, Object a) {
+			return new Nez.OneMore(inner(e));
+		}
+
+		@Override
+		public Expression visitAnd(Nez.And e, Object a) {
+			return new Nez.And(inner(e));
+		}
+
+		@Override
+		public Expression visitNot(Nez.Not e, Object a) {
+			return new Nez.Not(inner(e));
+		}
+
+		@Override
+		public Expression visitBeginTree(Nez.BeginTree e, Object a) {
+			return new Nez.BeginTree(e.shift);
+		}
+
+		@Override
+		public Expression visitEndTree(EndTree e, Object a) {
+			return new Nez.EndTree(e.shift);
+		}
+
+		@Override
+		public Expression visitFoldTree(Nez.FoldTree e, Object a) {
+			return new Nez.FoldTree(e.shift, e.label);
+		}
+
+		@Override
+		public Expression visitLinkTree(Nez.LinkTree e, Object a) {
+			return new Nez.LinkTree(e.label, inner(e));
+		}
+
+		@Override
+		public Expression visitTag(Nez.Tag e, Object a) {
+			if (!enableImmutableDuplication && e.getSourceLocation() == null) {
+				return e;
+			}
+			return new Nez.Tag(e.tag);
+		}
+
+		@Override
+		public Expression visitReplace(Replace e, Object a) {
+			if (!enableImmutableDuplication && e.getSourceLocation() == null) {
+				return e;
+			}
+			return new Nez.Replace(e.value);
+		}
+
+		@Override
+		public Expression visitDetree(Detree e, Object a) {
+			return new Nez.Detree(inner(e));
+		}
+
+		@Override
+		public Expression visitBlockScope(Nez.BlockScope e, Object a) {
+			return new Nez.BlockScope(inner(e));
+		}
+
+		@Override
+		public Expression visitLocalScope(Nez.LocalScope e, Object a) {
+			return new Nez.LocalScope(e.tableName, inner(e));
+		}
+
+		@Override
+		public Expression visitSymbolAction(Nez.SymbolAction e, Object a) {
+			return new Nez.SymbolAction(e.op, (NonTerminal) inner(e));
+		}
+
+		@Override
+		public Expression visitSymbolPredicate(Nez.SymbolPredicate e, Object a) {
+			return new Nez.SymbolPredicate(e.op, (NonTerminal) inner(e), e.tableName);
+		}
+
+		@Override
+		public Expression visitSymbolMatch(Nez.SymbolMatch e, Object a) {
+			return new Nez.SymbolMatch(e.op, (NonTerminal) e.get(0), e.tableName);
+		}
+
+		@Override
+		public Expression visitSymbolExists(Nez.SymbolExists e, Object a) {
+			return new Nez.SymbolExists(e.tableName, e.symbol);
+		}
+
+		@Override
+		public Expression visitScanf(Nez.Scanf e, Object a) {
+			return new Nez.Scanf(e.mask, e.shift, inner(e.get(0)));
+		}
+
+		@Override
+		public Expression visitRepeat(Nez.Repeat e, Object a) {
+			return new Nez.Repeat(inner(e.get(0)));
+		}
+
+		@Override
+		public Expression visitIf(Nez.IfCondition e, Object a) {
+			return new Nez.IfCondition(e.predicate, e.flagName);
+		}
+
+		@Override
+		public Expression visitOn(Nez.OnCondition e, Object a) {
+			return new Nez.OnCondition(e.predicate, e.flagName, inner(e));
+		}
+
+		@Override
+		public Expression visitLabel(Nez.Label e, Object a) {
+			if (!enableImmutableDuplication && e.getSourceLocation() == null) {
+				return e;
+			}
+			return new Nez.Label(e.label, e.start);
+		}
+
+	}
+
+	public static class TransformVisitor extends Visitor {
+
+		protected Expression visitInner(Expression e, Object a) {
+			return (Expression) e.visit(this, null);
+		}
+
+		@Override
+		public Expression visitEmpty(Nez.Empty e, Object a) {
+			return e;
+		}
+
+		@Override
+		public Expression visitFail(Nez.Fail e, Object a) {
+			return e;
+		}
+
+		@Override
+		public Expression visitByte(Byte e, Object a) {
+			return e;
+		}
+
+		@Override
+		public Expression visitByteSet(Nez.ByteSet e, Object a) {
+			return e;
+		}
+
+		@Override
+		public Expression visitAny(Nez.Any e, Object a) {
+			return e;
+		}
+
+		@Override
+		public Expression visitMultiByte(Nez.MultiByte e, Object a) {
+			return e;
+		}
+
+		@Override
+		public Expression visitNonTerminal(NonTerminal e, Object a) {
+			return e;
+		}
+
+		@Override
+		public Expression visitPair(Nez.Pair e, Object a) {
+			e.set(0, visitInner(e.get(0), a));
+			e.set(1, visitInner(e.get(1), a));
+			return e;
+		}
+
+		@Override
+		public Expression visitSequence(Nez.Sequence e, Object a) {
+			boolean reduced = false;
+			int i = 0;
+			for (i = 0; i < e.size(); i++) {
+				Expression sub = visitInner(e.get(i), a);
+				e.set(i, sub);
+				if (sub instanceof Nez.Empty || sub instanceof Nez.Fail || sub instanceof Nez.Sequence || sub instanceof Nez.Pair) {
+					reduced = true;
+				}
+			}
+			if (reduced == true) {
+				List<Expression> l = Expressions.newList(e.size());
+				for (Expression sub : e) {
+					Expressions.addSequence(l, sub);
+				}
+				return Expressions.newSequence(l);
+			}
+			return e;
+		}
+
+		@Override
+		public Expression visitChoice(Nez.Choice e, Object a) {
+			boolean reduced = false;
+			int i = 0;
+			for (i = 0; i < e.size(); i++) {
+				Expression sub = visitInner(e.get(i), a);
+				e.set(i, sub);
+				if (sub instanceof Nez.Empty || sub instanceof Nez.Fail || sub instanceof Nez.Choice) {
+					reduced = true;
+				}
+			}
+			if (reduced == true) {
+				UList<Expression> l = Expressions.newUList(e.size());
+				for (Expression sub : e) {
+					Expressions.addChoice(l, sub);
+				}
+				return Expressions.newChoice(l);
+			}
+			return e;
+		}
+
+		@Override
+		public Expression visitOption(Nez.Option e, Object a) {
+			e.set(0, this.visitInner(e.get(0), a));
+			return e;
+		}
+
+		@Override
+		public Expression visitZeroMore(Nez.ZeroMore e, Object a) {
+			e.set(0, this.visitInner(e.get(0), a));
+			return e;
+		}
+
+		@Override
+		public Expression visitOneMore(Nez.OneMore e, Object a) {
+			e.set(0, this.visitInner(e.get(0), a));
+			return e;
+		}
+
+		@Override
+		public Expression visitAnd(Nez.And e, Object a) {
+			e.set(0, this.visitInner(e.get(0), a));
+			return e;
+		}
+
+		@Override
+		public Expression visitNot(Nez.Not e, Object a) {
+			e.set(0, this.visitInner(e.get(0), a));
+			return e;
+		}
+
+		@Override
+		public Expression visitDetree(Nez.Detree e, Object a) {
+			e.set(0, this.visitInner(e.get(0), a));
+			return e;
+		}
+
+		@Override
+		public Expression visitBeginTree(Nez.BeginTree e, Object a) {
+			return e;
+		}
+
+		@Override
+		public Object visitFoldTree(FoldTree e, Object a) {
+			return e;
+		}
+
+		@Override
+		public Expression visitLinkTree(Nez.LinkTree e, Object a) {
+			e.set(0, this.visitInner(e.get(0), a));
+			return e;
+		}
+
+		@Override
+		public Expression visitTag(Nez.Tag e, Object a) {
+			return e;
+		}
+
+		@Override
+		public Expression visitReplace(Nez.Replace e, Object a) {
+			return e;
+		}
+
+		@Override
+		public Expression visitEndTree(Nez.EndTree e, Object a) {
+			return e;
+		}
+
+		@Override
+		public Expression visitBlockScope(Nez.BlockScope e, Object a) {
+			e.set(0, this.visitInner(e.get(0), a));
+			return e;
+		}
+
+		@Override
+		public Expression visitLocalScope(Nez.LocalScope e, Object a) {
+			e.set(0, this.visitInner(e.get(0), a));
+			return e;
+		}
+
+		@Override
+		public Expression visitSymbolAction(Nez.SymbolAction e, Object a) {
+			e.set(0, this.visitInner(e.get(0), a));
+			return e;
+		}
+
+		@Override
+		public Expression visitSymbolMatch(Nez.SymbolMatch e, Object a) {
+			return e;
+		}
+
+		@Override
+		public Expression visitSymbolPredicate(Nez.SymbolPredicate e, Object a) {
+			e.set(0, this.visitInner(e.get(0), a));
+			return e;
+		}
+
+		@Override
+		public Expression visitSymbolExists(Nez.SymbolExists e, Object a) {
+			return e;
+		}
+
+		@Override
+		public Expression visitScanf(Nez.Scanf e, Object a) {
+			e.set(0, this.visitInner(e.get(0), a));
+			return e;
+		}
+
+		@Override
+		public Expression visitRepeat(Nez.Repeat e, Object a) {
+			e.set(0, this.visitInner(e.get(0), a));
+			return e;
+		}
+
+		@Override
+		public Expression visitIf(Nez.IfCondition e, Object a) {
+			return e;
+		}
+
+		@Override
+		public Expression visitOn(Nez.OnCondition e, Object a) {
+			e.set(0, this.visitInner(e.get(0), a));
+			return e;
+		}
+
+		@Override
+		public Object visitLabel(Label e, Object a) {
+			return e;
+		}
 	}
 
 }
