@@ -591,13 +591,13 @@ public class ParserOptimizer {
 			Production start = grammar.getStartProduction();
 			optimizeProduction(start);
 			long t2 = System.nanoTime();
-			Verbose.printElapsedTime("lexical", t1, t2);
+			Verbose.printElapsedTime("Lexical Optimization", t1, t2);
 
 			if (strategy.ChoicePrediction > 1) {
 				t1 = t2;
 				optimizeChoicePrediction();
 				t2 = System.nanoTime();
-				Verbose.printElapsedTime("prediction", t2, t2);
+				Verbose.printElapsedTime("Choice Prediction", t2, t2);
 			}
 			NonterminalReference refc2 = Productions.countNonterminalReference(grammar);
 			UList<Production> prodList = new UList<Production>(new Production[grammar.size()]);
@@ -611,7 +611,7 @@ public class ParserOptimizer {
 			}
 			grammar.update(prodList);
 			long t3 = System.nanoTime();
-			Verbose.printElapsedTime("inlining", t2, t3);
+			Verbose.printElapsedTime("Inlining", t2, t3);
 		}
 
 		private Expression optimizeProduction(Production p) {
@@ -1049,8 +1049,7 @@ public class ParserOptimizer {
 		}
 
 		private void verboseInline(String name, NonTerminal n, Expression e) {
-			// Verbose.println(name + ": " + n.getLocalName() + " => " +
-			// shorten(e));
+			Verbose.println(name + ": " + n.getLocalName() + " => " + e);
 			if (this.verboseGrammar) {
 				ConsoleUtils.println(name + ": " + n.getLocalName() + " => " + shorten(e));
 			}
