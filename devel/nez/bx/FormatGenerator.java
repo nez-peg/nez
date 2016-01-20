@@ -1,7 +1,6 @@
 package nez.bx;
 
 import java.util.Arrays;
-import java.util.HashMap;
 
 import nez.ast.Symbol;
 import nez.ast.TreeVisitorMap;
@@ -20,16 +19,18 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 	private FileBuilder file;
 	private Grammar grammar = null;
 
-	private HashMap<String, Captured> nonterminalMap = new HashMap<String, Captured>();
+	private Captured[] nonterminalList = new Captured[4];
+	private String[] nonterminalNameList = new String[4];
 	private Captured[] capturedList = new Captured[4];
+	private String[] tagList = new String[4];
 	private Elements[] elementsStack = new Elements[4];
-	private String currentRuleName = null;
+	private int nonterminalId = 0;
 	private int capturedId = 0;
+	private int tagId = 0;
 	private int stackTop = 0;
 	private Elements checkedNonterminal = new Elements();
+	private boolean[] checkedNullLabelTag;
 	private int repetitionId = 0;
-	private String[] tagList = new String[4];
-	private int tagId = 0;
 
 	public FormatGenerator(String dir, String outputFile) {
 		if (outputFile != null) {
@@ -45,7 +46,8 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 		this.grammar = grammar;
 		this.openOutputFile();
 		this.makeFormat();
-		this.setFormat();
+		this.reshapeFormat();
+		this.makeFormatSet();
 		this.writeFormat();
 	}
 
@@ -62,13 +64,62 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 	public void makeFormat() {
 		for (Production rule : grammar) {
 			elementsStack[stackTop] = new Elements();
-			currentRuleName = rule.getLocalName();
 			makeProductionFormat(rule);
-			nonterminalMap.put(currentRuleName, new Captured(elementsStack[stackTop], currentRuleName));
+			String nonterminalName = rule.getLocalName();
+			nonterminalList[convertNonterminalName(nonterminalName)] = new Captured(elementsStack[stackTop], nonterminalName);
 		}
 	}
 
-	public void setFormat() {
+	public int convertNonterminalName(String nonterminalName) {
+		for (int i = 0; i < nonterminalId; i++) {
+			if (nonterminalName.equals(nonterminalNameList[i])) {
+				return i;
+			}
+		}
+		if (nonterminalId == nonterminalNameList.length) {
+			String[] newList = new String[nonterminalNameList.length * 2];
+			System.arraycopy(nonterminalNameList, 0, newList, 0, nonterminalNameList.length);
+			nonterminalNameList = newList;
+			Captured[] newList2 = new Captured[nonterminalList.length * 2];
+			System.arraycopy(nonterminalList, 0, newList2, 0, nonterminalList.length);
+			nonterminalList = newList2;
+		}
+		nonterminalNameList[nonterminalId] = nonterminalName;
+		return nonterminalId++;
+	}
+
+	public void reshapeFormat() {
+		for (int i = 0; i < nonterminalId; i++) {
+			nonterminalList[i].elements = reshapeElements(nonterminalList[i].elements);
+		}
+	}
+
+	public Elements reshapeElements(Elements elements) {
+		if (elements.hasCapturedElement()) {
+			elementsStack[stackTop] = new Elements();
+			CapturedElement captured = null;
+			for (int i = 0; i < elements.size; i++) {
+				if (elements.get(i) instanceof CapturedElement) {
+					elementsStack[++stackTop] = new Elements();
+					captured = (CapturedElement) elements.get(i);
+				} else {
+					elementsStack[stackTop].addElement(elements.get(i));
+				}
+			}
+			capturedList[captured.id].right = elementsStack[stackTop--];
+			capturedList[captured.id].left = elementsStack[stackTop];
+			return new Elements(captured);
+		}
+		ChoiceElement choiceElement = elements.getChoiceElement();
+		if (choiceElement != null) {
+			for (int i = 0; i < choiceElement.branch.length; i++) {
+				choiceElement.branch[i] = reshapeElements(choiceElement.branch[i]);
+			}
+		}
+		return elements;
+	}
+
+	public void makeFormatSet() {
 		for (int i = 0; i < this.capturedList.length; i++) {
 			if (this.capturedList[i] == null) {
 				break;
@@ -78,6 +129,7 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 	}
 
 	public void writeFormat() {
+		checkedNullLabelTag = new boolean[tagId];
 		for (int i = 0; i < this.capturedList.length; i++) {
 			if (this.capturedList[i] == null) {
 				break;
@@ -102,7 +154,7 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 	public class _NonTerminal extends DefaultVisitor {
 		@Override
 		public void accept(Expression e) {
-			addElement(new NonTerminalElement(((NonTerminal) e).getLocalName()));
+			addElement(new NonTerminalElement(convertNonterminalName(((NonTerminal) e).getLocalName())));
 		}
 	}
 
@@ -136,6 +188,16 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 		@Override
 		public void accept(Expression e) {
 			addElement(new ByteElement(((Nez.Byte) e).byteChar));
+		}
+	}
+
+	public class _MultiByte extends DefaultVisitor {
+		@Override
+		public void accept(Expression e) {
+			byte[] byteSeq = ((Nez.MultiByte) e).byteSeq;
+			for (int i = 0; i < byteSeq.length; i++) {
+				addElement(new ByteElement(byteSeq[i]));
+			}
 		}
 	}
 
@@ -196,12 +258,19 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 	public class _Tag extends DefaultVisitor {
 		@Override
 		public void accept(Expression e) {
+			String tagName = "#" + ((Nez.Tag) e).getTagName();
+			for (int i = 0; i < tagId; i++) {
+				if (tagName.equals(tagList[i])) {
+					addElement(new TagElement(i));
+					return;
+				}
+			}
 			if (tagId == tagList.length) {
 				String[] newList = new String[tagList.length * 2];
 				System.arraycopy(tagList, 0, newList, 0, tagList.length);
 				tagList = newList;
 			}
-			tagList[tagId] = "#" + ((Nez.Tag) e).getTagName();
+			tagList[tagId] = tagName;
 			addElement(new TagElement(tagId++));
 		}
 	}
@@ -293,8 +362,8 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 		String name;
 		Elements elements;
 		FormatSet[] formatSet = new FormatSet[4];
-		String left;// TODO
-		String right;// TODO
+		Elements left;
+		Elements right;
 		int size = 0;
 
 		public Captured(Elements elements) {
@@ -325,37 +394,51 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 			}
 		}
 
+		// TODO fix verbose
 		public void writeFormat(int capturedId) {
 			for (int i = 0; i < size; i++) {
-				for (int labelProgression = 0, tagProgression = 0; true; tagProgression++) {
-					LabelSet labelSet = new LabelSet(labelProgression, tagProgression);
-					String label = optionFix(formatSet[i].link, labelSet, formatSet[i].tag);
-					if (labelSet.labelProgression > 0) {
-						break;
+				if (formatSet[i].link != null || !checkedNullLabelTag[formatSet[i].tag]) {
+					for (int labelProgression = 0, tagProgression = 0; true; tagProgression++) {
+						LabelSet labelSet = new LabelSet(labelProgression, tagProgression);
+						String label = optionFix(formatSet[i].link, labelSet, formatSet[i].tag);
+						if (labelSet.labelProgression > 0) {
+							break;
+						}
+						if (labelSet.tagProgression > 0) {
+							labelProgression++;
+							tagProgression = -1;
+							continue;
+						}
+						if (label == null) {
+							label = "";
+							checkedNullLabelTag[formatSet[i].tag] = true;
+						}
+						write("format " + tagList[formatSet[i].tag] + "(" + label + ")");
+						writeln("` ");
+						if (left != null) {
+							String format = left.toFormat(formatSet[i].tag);
+							if (format != null) {
+								write(format + " ");
+							}
+						}
+						String format = toFormat(formatSet[i].tag);
+						if (format == null) {
+							write("${this.toText()}");
+						} else {
+							write(format);
+						}
+						if (right != null) {
+							format = right.toFormat(formatSet[i].tag);
+							if (format != null) {
+								write(" " + format);
+							}
+						}
+						write(" `");
+						writeln("");
+						writeln("");
 					}
-					if (labelSet.tagProgression > 0) {
-						labelProgression++;
-						tagProgression = -1;
-						continue;
-					}
-					if (label == null) {
-						label = "";
-					}
-					write("format " + tagList[formatSet[i].tag] + "(" + label + ")");
-					writeln("` ");
-					// TODO write left
-					String format = toFormat(formatSet[i].tag);
-					if (format == null) {
-						write("${this.toText()}");
-					} else {
-						write(format);
-					}
-					// TODO write right
-					write(" `");
-					writeln("");
-					writeln("");
+					activateDelay();
 				}
-				activateDelay();
 			}
 		}
 
@@ -492,6 +575,24 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 			return false;
 		}
 
+		public boolean hasCapturedElement() {
+			for (int i = 0; i < size; i++) {
+				if (elementList[i] instanceof CapturedElement) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+		public ChoiceElement getChoiceElement() {
+			for (int i = 0; i < size; i++) {
+				if (elementList[i] instanceof ChoiceElement) {
+					return (ChoiceElement) elementList[i];
+				}
+			}
+			return null;
+		}
+
 		public void addElement(Element element) {
 			if (size == elementList.length) {
 				Element[] newList = new Element[elementList.length * 2];
@@ -563,11 +664,11 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 	}
 
 	class NonTerminalElement extends Element {
-		String name;
+		int id;
 		Captured captured;
 
-		public NonTerminalElement(String name) {
-			this.name = name;
+		public NonTerminalElement(int id) {
+			this.id = id;
 		}
 
 		@Override
@@ -600,12 +701,12 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 
 		@Override
 		public String toString() {
-			return "[" + this.name + "]";
+			return "[" + nonterminalNameList[id] + "]";
 		}
 
 		public void nullCheck() {
 			if (captured == null) {
-				this.captured = nonterminalMap.get(name);
+				this.captured = nonterminalList[id];
 			}
 		}
 	}
@@ -695,17 +796,27 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 		public LabelSet optionFix(LabelSet labelSet, int tag) {
 			labelFix = mainId[labelSet.tagProgression % groupSize];
 			labelSet.tagProgression = labelSet.tagProgression / groupSize;
-			String ret = "";
+			boolean[] needTag = new boolean[tagId];
 			FormatSet[] formatSet = capturedList[linkedInner[labelFix].id].formatSet;
-			ret += toLabel() + ": " + tagList[formatSet[0].tag];
+			needTag[formatSet[0].tag] = true;
 			for (int i = 1; i < capturedList[linkedInner[labelFix].id].size; i++) {
-				ret += " / " + tagList[formatSet[i].tag];
+				needTag[formatSet[i].tag] = true;
 			}
 			for (int i = 0; i < size; i++) {
 				if (groupId[i] == labelFix && i != labelFix) {
 					formatSet = capturedList[linkedInner[i].id].formatSet;
 					for (int j = 0; j < capturedList[linkedInner[i].id].size; j++) {
-						ret += " / " + tagList[formatSet[j].tag];
+						needTag[formatSet[j].tag] = true;
+					}
+				}
+			}
+			String ret = null;
+			for (int i = 0; i < tagId; i++) {
+				if (needTag[i]) {
+					if (ret == null) {
+						ret = toLabel() + ": " + tagList[i];
+					} else {
+						ret += " / " + tagList[i];
 					}
 				}
 			}
@@ -767,6 +878,10 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 			cByte = (char) byteChar;
 		}
 
+		public ByteElement(byte byteChar) {
+			cByte = (char) byteChar;
+		}
+
 		@Override
 		public LinkedInner[] checkInner() {
 			LinkedInner[] ret = { new LinkedInner() };
@@ -776,9 +891,7 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 
 		@Override
 		public String toFormat(int tag) {
-			if (cByte == '\\' || cByte == '\"' || cByte == '\'') {
-				return "\\" + cByte;
-			} else if (cByte == '\b') {
+			if (cByte == '\b') {
 				return "\\b";
 			} else if (cByte == '\t') {
 				return "\\t";
