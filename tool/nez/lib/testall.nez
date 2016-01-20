@@ -8,26 +8,39 @@ S
 _
 	= S*
 
-DIGIT
-	= [0-9]
+EMPTY = ''
+CHAR = 'a'
+ANY  = .
+BYTE = 0x61  /* a */
+CHARSET = [0-9]
+BYTESET = 0xxxxxxx 
+STRING  = 'abc'
+NONTERMINAL = SEQUENCE
+SEQUENCE = 'a' [0-9]
+CHOICE   = 'abc' / 'a' / 'ab'
 
-NUMBER
-	= DIGIT+
+OPTION   = STRING? CHAR
+ZEROMORE = 'ab'* / 'a'
+ONEMORE  = 'ab'+ / 'a'
+AND      = &STRING 'abc'
+NOT      = !STRING SEQUENCE
 
-ALPHA
-	= [A-Z] / [a-z]
+example EMPTY ~c70ff aa
+example CHAR ~cca2658 aa
+example ANY  ~cca2658 aa
+example BYTE ~cca2658 aa  
+example CHARSET ~adcafb 0
+example BYTESET ~adcafb 0
+example STRING ~8caf11 abcd
+example NONTERMINAL ~fa7122 a9
+example SEQUENCE ~fa7122 a9
+example CHOICE ~cca2658 ab
+example OPTION ~cca2658 aa
+example ZEROMORE ~1d59a2f abababa
+example ONEMORE  ~cca265 aababab
+example AND ~8caf11 abcd
+example NOT ~fa7122 a9
 
-ALNUM
-	= ALPHA / DIGIT
-
-NAME
-	= (ALPHA / '_' ) (ALNUM / '_')*
-
-example DIGIT   ~f6be4c 1
-example NUMBER  ~d01ffe 123a
-example ALPHA   ~362df7 Aa1
-example ALNUM   ~362df7 Aa1
-example NAME    ~362df7 Aa1_
 
 example EMAIL ~f3d141 mail@address.com
 
@@ -40,24 +53,14 @@ DOMAIN
 SUBDOMAIN
         = ([A-Za-z0-9] / '-')+
 
-ZEROMORE0 = 'ab'* 
-ZEROMORE = 'ab'* / 'a'
-ONEMORE  = 'ab'+ / 'a'
-
-example ZEROMORE ~1d59a2f abababa
-example ONEMORE  ~cca265 aababab
 
 /* Tree, Tree Operation */
 
-Name
-	= { NAME #Name }
+NAME = [A-Za-z]+
 
-example Name ~fdb051  Apple
+NewTree = { NAME #Name }
 
-example Name ~7e7edc6 Banana
-example Name ~7e7edc6 Banana Republic
-
-/* Token with no tag */
+example NewTree ~fdb051  Apple2
 
 NoTag = { NAME }
 Replace = { NAME #Name `Apple` }

@@ -130,11 +130,6 @@ public abstract class ParserCode<T extends Instruction> {
 			Typestate ts = typestate.inferTypestate(p);
 			if (ts != Typestate.TreeMutation) {
 				l.add(new Score(p, ts, refs.count(uname), ts == Typestate.Unit ? 1 : 1 * strategy.TreeFactor));
-				// Verbose.println("MemoPoint: %s refc=%d", uname,
-				// refs.count(uname));
-				// MemoPoint memoPoint = new MemoPoint(this.memoPointMap.size(),
-				// uname, p.getExpression(), ts, false);
-				// this.memoPointMap.put(uname, memoPoint);
 			}
 		}
 		int c = 0;

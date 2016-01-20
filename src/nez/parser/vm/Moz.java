@@ -11,6 +11,7 @@ import nez.parser.CoverageProfiler;
 import nez.parser.MemoEntry;
 import nez.parser.MemoPoint;
 import nez.parser.ParserCode.ProductionCode;
+import nez.parser.ParserContext;
 import nez.parser.SymbolTable;
 import nez.parser.TerminationException;
 import nez.util.StringUtils;
@@ -1313,11 +1314,14 @@ public class Moz {
 
 		@Override
 		public MozInst exec2(ParserMachineContext sc) throws TerminationException {
-			if (sc.lookupMemo(memoId)) {
+			switch (sc.lookupMemo(memoId)) {
+			case ParserContext.NotFound:
+				return this.next;
+			case ParserContext.SuccFound:
 				return this.skip;
+			default:
+				return sc.xFail();
 			}
-			sc.xPos();
-			return this.next;
 		}
 	}
 
@@ -1341,7 +1345,7 @@ public class Moz {
 
 		@Override
 		public MozInst exec2(ParserMachineContext sc) throws TerminationException {
-			int ppos = sc.xPPos();
+			int ppos = sc.xSuccPos();
 			sc.memoSucc(memoId, ppos);
 			return this.next;
 		}
@@ -1366,7 +1370,7 @@ public class Moz {
 		@Override
 		public MozInst exec2(ParserMachineContext sc) throws TerminationException {
 			sc.memoFail(memoId);
-			return this.next;
+			return sc.xFail();
 		}
 
 	}
@@ -1415,11 +1419,14 @@ public class Moz {
 
 		@Override
 		public MozInst exec2(ParserMachineContext sc) throws TerminationException {
-			if (sc.lookupTreeMemo(memoId)) {
+			switch (sc.lookupTreeMemo(memoId)) {
+			case ParserContext.NotFound:
+				return this.next;
+			case ParserContext.SuccFound:
 				return this.skip;
+			default:
+				return sc.xFail();
 			}
-			sc.xPos();
-			return this.next;
 		}
 
 	}
@@ -1445,7 +1452,7 @@ public class Moz {
 
 		@Override
 		public MozInst exec2(ParserMachineContext sc) throws TerminationException {
-			int ppos = sc.xPPos();
+			int ppos = sc.xSuccPos();
 			sc.memoTreeSucc(memoId, ppos);
 			return this.next;
 		}

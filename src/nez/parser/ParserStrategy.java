@@ -41,9 +41,9 @@ public class ParserStrategy {
 
 	/* PackratParsing */
 	public boolean PackratParsing = true;
-	public int SlidingWindow = 32;
-	public double TreeFactor = 3.0;
-	public double MemoLimit = 0.1;
+	public int SlidingWindow = 64;
+	public double TreeFactor = 1.00;
+	public double MemoLimit = 0.9;
 
 	/* Profiling */
 	public boolean ProductionCoverage = false;
@@ -74,12 +74,12 @@ public class ParserStrategy {
 				return this.setValue(name, false);
 			}
 			try {
-				double nvalue = Double.parseDouble(value);
+				int nvalue = Integer.parseInt(value);
 				return setValue(name, nvalue);
 			} catch (Exception e) {
 			}
 			try {
-				int nvalue = Integer.parseInt(value);
+				double nvalue = Double.parseDouble(value);
 				return setValue(name, nvalue);
 			} catch (Exception e) {
 			}
@@ -102,7 +102,7 @@ public class ParserStrategy {
 		} catch (Exception e) {
 			ConsoleUtils.println("cannot set %s = %s", name, value);
 			Verbose.traceException(e);
-			return false;
+			return true; // this is not a file
 		}
 	}
 

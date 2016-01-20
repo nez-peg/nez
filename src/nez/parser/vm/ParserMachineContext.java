@@ -168,6 +168,14 @@ public class ParserMachineContext extends ParserContext {
 		catchStackTop = s0.value;
 	}
 
+	public final int xSuccPos() {
+		StackData s0 = stacks[catchStackTop];
+		StackData s1 = stacks[catchStackTop + 1];
+		usedStackTop = catchStackTop - 1;
+		catchStackTop = s0.value;
+		return s1.value;
+	}
+
 	public final MozInst xFail() {
 		StackData s0 = stacks[catchStackTop];
 		StackData s1 = stacks[catchStackTop + 1];

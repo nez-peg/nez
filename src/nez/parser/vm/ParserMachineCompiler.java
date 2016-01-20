@@ -95,10 +95,14 @@ public class ParserMachineCompiler implements ParserCompiler {
 				if (memoPoint.typeState == Typestate.Unit) {
 					MozInst memo = new Moz.Memo(null, memoPoint, next);
 					MozInst inside = compile(p, memo);
+					MozInst failmemo = new Moz.MemoFail(null, memoPoint);
+					inside = new Moz.Alt(failmemo, inside);
 					return new Moz.Lookup(null, memoPoint, inside, next);
 				} else {
 					MozInst memo = new Moz.TMemo(null, memoPoint, next);
 					MozInst inside = compile(p, memo);
+					MozInst failmemo = new Moz.MemoFail(null, memoPoint);
+					inside = new Moz.Alt(failmemo, inside);
 					return new Moz.TLookup(memoPoint, inside, next);
 				}
 			}
