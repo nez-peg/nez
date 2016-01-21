@@ -851,43 +851,39 @@ public abstract class Expression extends AbstractList<Expression> implements Sou
 
 		@Override
 		public Expression visitSequence(Nez.Sequence e, Object a) {
-			boolean reduced = false;
-			int i = 0;
-			for (i = 0; i < e.size(); i++) {
+			// boolean reduced = false;
+			for (int i = 0; i < e.size(); i++) {
 				Expression sub = visitInner(e.get(i), a);
 				e.set(i, sub);
-				if (sub instanceof Nez.Empty || sub instanceof Nez.Fail || sub instanceof Nez.Sequence || sub instanceof Nez.Pair) {
-					reduced = true;
-				}
+				// if (sub instanceof Nez.Empty || sub instanceof Nez.Fail ||
+				// sub instanceof Nez.Sequence || sub instanceof Nez.Pair) {
+				// reduced = true;
+				// }
 			}
-			if (reduced == true) {
-				List<Expression> l = Expressions.newList(e.size());
-				for (Expression sub : e) {
-					Expressions.addSequence(l, sub);
-				}
-				return Expressions.newSequence(l);
-			}
+			// if (reduced == true) {
+			// List<Expression> l = Expressions.newList(e.size());
+			// for (Expression sub : e) {
+			// Expressions.addSequence(l, sub);
+			// }
+			// return Expressions.newSequence(l);
+			// }
 			return e;
 		}
 
 		@Override
 		public Expression visitChoice(Nez.Choice e, Object a) {
-			boolean reduced = false;
-			int i = 0;
-			for (i = 0; i < e.size(); i++) {
+			// boolean reduced = false;
+			for (int i = 0; i < e.size(); i++) {
 				Expression sub = visitInner(e.get(i), a);
 				e.set(i, sub);
-				if (sub instanceof Nez.Empty || sub instanceof Nez.Fail || sub instanceof Nez.Choice) {
-					reduced = true;
-				}
 			}
-			if (reduced == true) {
-				UList<Expression> l = Expressions.newUList(e.size());
-				for (Expression sub : e) {
-					Expressions.addChoice(l, sub);
-				}
-				return Expressions.newChoice(l);
-			}
+			// if (reduced == true) {
+			// UList<Expression> l = Expressions.newUList(e.size());
+			// for (Expression sub : e) {
+			// Expressions.addChoice(l, sub);
+			// }
+			// return Expressions.newChoice(l);
+			// }
 			return e;
 		}
 
@@ -933,6 +929,11 @@ public abstract class Expression extends AbstractList<Expression> implements Sou
 		}
 
 		@Override
+		public Expression visitEndTree(Nez.EndTree e, Object a) {
+			return e;
+		}
+
+		@Override
 		public Object visitFoldTree(FoldTree e, Object a) {
 			return e;
 		}
@@ -950,11 +951,6 @@ public abstract class Expression extends AbstractList<Expression> implements Sou
 
 		@Override
 		public Expression visitReplace(Nez.Replace e, Object a) {
-			return e;
-		}
-
-		@Override
-		public Expression visitEndTree(Nez.EndTree e, Object a) {
 			return e;
 		}
 

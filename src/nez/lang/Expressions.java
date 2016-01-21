@@ -1288,12 +1288,16 @@ public abstract class Expressions {
 		if (e instanceof Nez.Pair || e instanceof Nez.Sequence) {
 			return e.get(0) instanceof Nez.Byte;
 		}
-		return e instanceof Nez.Byte;
+		return false;
 	}
 
 	private static boolean isSecondChar(Expression e) {
 		if (e instanceof Nez.Pair) {
-			return isFirstChar(e.get(1));
+			e = e.get(1);
+			if (e instanceof Nez.Pair || e instanceof Nez.Sequence) {
+				return e.get(0) instanceof Nez.Byte;
+			}
+			return e instanceof Nez.Byte;
 		}
 		if (e instanceof Nez.Sequence) {
 			return e.get(1) instanceof Nez.Byte;

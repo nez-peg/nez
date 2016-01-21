@@ -42,9 +42,7 @@ public class ParserOptimizer {
 			// Verbose.println("optimizing %s ..", strategy);
 			new OptimizerVisitor().optimize();
 		}
-		if (strategy.Ostring) {
-			new NormalizerVisitor().perform();
-		}
+		new NormalizerVisitor().perform();
 		long t3 = System.nanoTime();
 		Verbose.printElapsedTime("Grammar checking time", t1, t2);
 		Verbose.printElapsedTime("Optimization time", t2, t3);
@@ -1083,8 +1081,10 @@ public class ParserOptimizer {
 			UList<Production> prodList = new UList<Production>(new Production[grammar.size()]);
 			for (Production p : grammar) {
 				if (refCounts.count(p.getUniqueName()) > 0) {
-					Expression e = visitInner(p.getExpression(), null);
-					p.setExpression(e);
+					if (strategy.Ostring) {
+						Expression e = visitInner(p.getExpression(), null);
+						p.setExpression(e);
+					}
 					prodList.add(p);
 				}
 			}
@@ -1093,17 +1093,34 @@ public class ParserOptimizer {
 
 		@Override
 		public Expression visitPair(Nez.Pair p, Object a) {
+			if (!fastCheck(p)) {
+				p.set(0, this.visitInner(p.get(0), a));
+				p.set(1, this.visitInner(p.get(1), a));
+				return p;
+			}
 			Expression e = Expressions.tryConvertingMultiCharSequence(p);
 			if (e instanceof Nez.Pair) {
-				e.set(0, this.visitInner(e.get(0), a));
 				e.set(1, this.visitInner(e.get(1), a));
 			}
-			// if (Expressions.first(e) instanceof Nez.MultiByte) {
 			if (e != p) {
 				Verbose.println("" + p + " => " + e);
 			}
 			return e;
 		}
+
+		private boolean fastCheck(Nez.Pair e) {
+			if (e.get(0) instanceof Nez.Byte) {
+				Expression second = e.get(1);
+				if (second instanceof Nez.Byte) {
+					return true;
+				}
+				if (second instanceof Nez.Pair) {
+					return second.get(0) instanceof Nez.Byte;
+				}
+			}
+			return false;
+		}
+
 	}
 
 	// Report
