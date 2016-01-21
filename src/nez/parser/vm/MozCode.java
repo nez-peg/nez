@@ -27,7 +27,7 @@ public class MozCode extends ParserCode<MozInst> {
 		boolean result = false;
 		try {
 			while (true) {
-				code = code.exec(machine);
+				code = code.execMoz(machine);
 			}
 		} catch (TerminationException e) {
 			result = e.status;
@@ -51,7 +51,7 @@ public class MozCode extends ParserCode<MozInst> {
 					stack.clear(stack.size() - 1);
 				}
 				ConsoleUtils.println(u + "(" + sc.getPosition() + ")  " + code.id + " " + code);
-				MozInst code2 = code.exec(sc);
+				MozInst code2 = code.execMoz(sc);
 				if (code2 == null) {
 					Verbose.debug("@@ returning null at " + code);
 				}
@@ -72,12 +72,12 @@ public class MozCode extends ParserCode<MozInst> {
 			inst.id = codeList.size();
 			codeList.add(inst);
 			layoutCode(inst.next);
-			if (inst.next != null && inst.id + 1 != inst.next.id) {
-				MozInst.labeling(inst.next);
-			}
+			// if (inst.next != null && inst.id + 1 != inst.next.id) {
+			// MozInst.joinPoint(inst.next);
+			// }
 			layoutCode(inst.branch());
-			if (inst instanceof Moz.First) {
-				Moz.First match = (Moz.First) inst;
+			if (inst instanceof Moz.Dispatch) {
+				Moz.Dispatch match = (Moz.Dispatch) inst;
 				for (int ch = 0; ch < match.jumpTable.length; ch++) {
 					layoutCode(match.jumpTable[ch]);
 				}
@@ -85,7 +85,7 @@ public class MozCode extends ParserCode<MozInst> {
 		}
 	}
 
-	public final void encode(ByteCoder coder) {
+	public final void encode(MozWriter coder) {
 		if (coder != null) {
 			coder.setHeader(codeList.size(), this.getInstructionSize(), this.getMemoPointSize());
 			coder.setInstructions(codeList.ArrayValues, codeList.size());
@@ -95,7 +95,7 @@ public class MozCode extends ParserCode<MozInst> {
 	public final static void writeMozCode(Parser parser, String path) {
 		ParserMachineCompiler compile = ParserMachineCompiler.newCompiler(parser.getParserStrategy());
 		MozCode code = compile.compile(parser.getParserGrammar());
-		ByteCoder c = new ByteCoder();
+		MozWriter c = new MozWriter();
 		code.encode(c);
 		Verbose.println("generating " + path);
 		c.writeTo(path);

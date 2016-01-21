@@ -59,7 +59,7 @@ public abstract class ParserCode<T extends Instruction> {
 		MozInst cur = inst;
 		try {
 			while (true) {
-				MozInst next = cur.exec2(ctx);
+				MozInst next = cur.exec(ctx);
 				if (next == null) {
 					System.out.println("null " + cur);
 				}

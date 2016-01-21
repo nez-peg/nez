@@ -19,7 +19,7 @@ public class ParserStrategy {
 	/* Grammars */
 	public boolean TreeConstruction = true;
 	public boolean DefaultCondition = false;
-	public boolean SymbolTable = true;
+	// public boolean SymbolTable = true;
 	public boolean BinaryGrammar = false;
 	public boolean PEGCompatible = false;
 
@@ -30,13 +30,12 @@ public class ParserStrategy {
 
 	public boolean Olex = true;
 	public boolean Ostring = true;
-	public boolean Otrie = true;
 	public int ChoicePrediction = 2;
 	public boolean Odfa = false;
 
 	public boolean Oorder = true;
 
-	/* MozClassic */
+	/* Classic */
 	public boolean Moz = true;
 
 	/* PackratParsing */
@@ -46,7 +45,7 @@ public class ParserStrategy {
 	public double MemoLimit = 0.5;
 
 	/* Profiling */
-	public boolean ProductionCoverage = false;
+	public boolean Coverage = false;
 	public boolean Profiling = false;
 	public boolean Wnone = false;
 	public boolean Wall = false;
@@ -257,7 +256,7 @@ public class ParserStrategy {
 	private CoverageProfiler cov;
 
 	public final CoverageProfiler getCoverageProfier() {
-		if (ProductionCoverage) {
+		if (Coverage) {
 			if (cov == null) {
 				cov = new CoverageProfiler();
 			}

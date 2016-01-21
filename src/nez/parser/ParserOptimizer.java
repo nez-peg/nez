@@ -258,7 +258,7 @@ public class ParserOptimizer {
 			Typestate stackedTypestate = this.requiredTypestate;
 			this.requiredTypestate = this.isNoTreeConstruction() ? Typestate.Unit : typeState(p);
 			Expression e = this.visitInner(p.getExpression());
-			if (strategy.ProductionCoverage) {
+			if (strategy.Coverage) {
 				e = Expressions.newCoverage(p.getUniqueName(), e);
 			}
 			parserProduction.setExpression(e);

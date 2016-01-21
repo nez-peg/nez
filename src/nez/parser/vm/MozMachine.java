@@ -6,7 +6,6 @@ import nez.parser.MemoEntry;
 import nez.parser.MemoTable;
 import nez.parser.ParserProfier;
 import nez.parser.ParserRuntime;
-import nez.parser.SymbolTable;
 import nez.util.ConsoleUtils;
 import nez.util.Verbose;
 

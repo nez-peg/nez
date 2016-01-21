@@ -194,7 +194,7 @@ public class ParserMachineContext extends ParserContext {
 		return (MozInst) s1.ref;
 	}
 
-	public final MozInst xSkip(MozInst next) {
+	public final MozInst xStep(MozInst next) {
 		StackData s1 = stacks[catchStackTop + 1];
 		if (s1.value == this.pos) {
 			return xFail();

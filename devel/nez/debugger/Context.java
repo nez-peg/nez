@@ -8,7 +8,7 @@ import nez.ast.Source;
 import nez.ast.Symbol;
 import nez.lang.Bytes;
 import nez.lang.Expression;
-import nez.parser.SymbolTable;
+import nez.parser.vm.SymbolTable;
 
 public abstract class Context implements Source {
 	long pos;

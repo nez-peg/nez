@@ -29,7 +29,7 @@ public class Ctest extends Command {
 	public final boolean testAll(Grammar grammar, List<Example> exampleList, ParserStrategy strategy) {
 		TestStat result = new TestStat();
 		if (!(this instanceof Cexample)) {
-			strategy.ProductionCoverage = true;
+			strategy.Coverage = true;
 			strategy.Oinline = false;
 			strategy.ChoicePrediction = 1;
 		}

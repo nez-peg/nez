@@ -5,15 +5,15 @@ import nez.parser.Instruction;
 import nez.parser.TerminationException;
 
 public abstract class MozInst implements Instruction {
-	public final byte opcode;
-	protected Expression e;
-	public MozInst next;
 	public int id;
-	public boolean label = false;
+	public boolean joinPoint = false;
+	public final byte opcode;
+	// protected Expression e;
+	public MozInst next;
 
 	public MozInst(byte opcode, Expression e, MozInst next) {
 		this.opcode = opcode;
-		this.e = e;
+		// this.e = e;
 		this.id = -1;
 		this.next = next;
 	}
@@ -29,36 +29,16 @@ public abstract class MozInst implements Instruction {
 		return null;
 	}
 
-	public final void encode(ByteCoder c) {
-		if (isIncrementedNext()) {
-			c.encodeOpcode(this.opcode);
-			this.encodeImpl(c);
-		} else {
-			c.encodeOpcode((byte) (this.opcode | 128)); // opcode | 10000000
-			this.encodeImpl(c);
-			c.encodeJump(this.next);
-		}
-	}
+	public abstract MozInst execMoz(MozMachine sc) throws TerminationException;
 
-	protected abstract void encodeImpl(ByteCoder c);
-
-	public abstract MozInst exec(MozMachine sc) throws TerminationException;
-
-	public abstract MozInst exec2(ParserMachineContext sc) throws TerminationException;
-
-	protected static MozInst labeling(MozInst inst) {
-		if (inst != null) {
-			inst.label = true;
-		}
-		return inst;
-	}
+	public abstract MozInst exec(ParserMachineContext sc) throws TerminationException;
 
 	protected static String label(MozInst inst) {
 		return "L" + inst.id;
 	}
 
 	public final String getName() {
-		return MozSet.stringfy(this.opcode);
+		return this.getClass().getSimpleName();
 	}
 
 	protected String getOperand() {
@@ -66,24 +46,16 @@ public abstract class MozInst implements Instruction {
 	}
 
 	public Expression getExpression() {
-		return this.e;
-	}
-
-	protected void stringfy(StringBuilder sb) {
-		sb.append(this.getName());
-		String op = getOperand();
-		if (op != null) {
-			sb.append(" ");
-			sb.append(op);
-		}
+		return null;// this.e;
 	}
 
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		stringfy(sb);
+		Moz.stringfy(this, sb);
 		return sb.toString();
 	}
 
-	public abstract void visit(MozVisitor v);
+	public abstract void visit(InstructionVisitor v);
+
 }

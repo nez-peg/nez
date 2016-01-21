@@ -973,7 +973,7 @@ public abstract class Expressions {
 	/**
 	 * Creates a <match A> expression
 	 * 
-	 * @param tableName
+	 * @param table
 	 * @return
 	 */
 
@@ -985,7 +985,7 @@ public abstract class Expressions {
 	 * Creates a <match A> expression
 	 * 
 	 * @param s
-	 * @param tableName
+	 * @param table
 	 * @return
 	 */
 	public final static Expression newSymbolMatch(SourceLocation s, NonTerminal pat) {

@@ -86,7 +86,7 @@ public class ParserMachineCompiler implements ParserCompiler {
 				next = compile(memoPoint, p.getExpression(), next);
 				f.setCompiled(next);
 			}
-			MozInst block = new Moz.Label(p.getLocalName(), next);
+			MozInst block = new Moz.Nop(p.getLocalName(), next);
 			code.layoutCode(block);
 		}
 
@@ -237,7 +237,7 @@ public class ParserMachineCompiler implements ParserCompiler {
 					return new Moz.RStr((Nez.MultiByte) inner, (MozInst) next);
 				}
 			}
-			MozInst skip = new Moz.Skip((Expression) p);
+			MozInst skip = new Moz.Step((Expression) p);
 			MozInst start = compile(((Expression) p).get(0), skip, next/* FIXME */);
 			skip.next = start;
 			return new Moz.Alt((Expression) p, (MozInst) next, start);
@@ -305,7 +305,7 @@ public class ParserMachineCompiler implements ParserCompiler {
 		}
 
 		private final MozInst visitPredictedChoice(Nez.Choice choice, Nez.ChoicePrediction p, Object next) {
-			Moz.First dispatch = new Moz.First(choice, commonFailure);
+			Moz.Dispatch dispatch = new Moz.Dispatch(choice, commonFailure);
 			MozInst[] compiled = new MozInst[choice.size()];
 			for (int i = 0; i < choice.size(); i++) {
 				Expression predicted = choice.get(i);
@@ -342,7 +342,7 @@ public class ParserMachineCompiler implements ParserCompiler {
 		@Override
 		public MozInst visitBeginTree(Nez.BeginTree p, Object next) {
 			if (strategy.TreeConstruction) {
-				return new Moz.TNew(p, (MozInst) next);
+				return new Moz.TBegin(p, (MozInst) next);
 			}
 			return (MozInst) next;
 		}
@@ -350,7 +350,7 @@ public class ParserMachineCompiler implements ParserCompiler {
 		@Override
 		public MozInst visitFoldTree(Nez.FoldTree p, Object next) {
 			if (strategy.TreeConstruction) {
-				return new Moz.TLeftFold(p, (MozInst) next);
+				return new Moz.TFold(p, (MozInst) next);
 			}
 			return (MozInst) next;
 		}
@@ -358,7 +358,7 @@ public class ParserMachineCompiler implements ParserCompiler {
 		@Override
 		public MozInst visitEndTree(Nez.EndTree p, Object next) {
 			if (strategy.TreeConstruction) {
-				return new Moz.TCapture(p, (MozInst) next);
+				return new Moz.TEnd(p, (MozInst) next);
 			}
 			return (MozInst) next;
 		}
@@ -403,7 +403,7 @@ public class ParserMachineCompiler implements ParserCompiler {
 
 		private MozInst memoize(Nez.LinkTree p, NonTerminal n, MemoPoint m, MozInst next) {
 			MozInst inside = new Moz.TMemo(p, m, next);
-			inside = new Moz.TCommit(p, inside);
+			inside = new Moz.TEmit(p, inside);
 			inside = compileNonTerminal(n, inside);
 			inside = new Moz.TStart(p, inside);
 			inside = new Moz.Alt(p, new Moz.MemoFail(p, m), inside);
@@ -467,12 +467,12 @@ public class ParserMachineCompiler implements ParserCompiler {
 
 		@Override
 		public MozInst visitScanf(Nez.Scanf p, Object next) {
-			return new Moz.Pos(p, compile(p.get(0), new Moz.Scanf(p.mask, p.shift, (MozInst) next)));
+			return new Moz.Pos(p, compile(p.get(0), new Moz.NScan(p.mask, p.shift, (MozInst) next)));
 		}
 
 		@Override
 		public MozInst visitRepeat(Nez.Repeat p, Object next) {
-			MozInst check = new Moz.DecCheck((MozInst) next, null);
+			MozInst check = new Moz.NDec((MozInst) next, null);
 			MozInst repeated = compile(p.get(0), check);
 			check.next = repeated;
 			return check;

@@ -1,26 +1,39 @@
 package nez.parser.vm;
 
-public abstract class MozVisitor {
+public abstract class InstructionVisitor {
 
-	// public abstract void visitNop(Moz.Nop inst); // Do nothing
+	/* Machine Control */
+	public abstract void visitNop(Moz.Nop inst); // 7-bit
 
-	public abstract void visitFail(Moz.Fail inst); // Fail
+	public abstract void visitExit(Moz.Exit inst); // 7-bit only
 
-	public abstract void visitAlt(Moz.Alt inst); // Alt
+	public abstract void visitCov(Moz.Cov inst);
 
-	public abstract void visitSucc(Moz.Succ inst); // Succ
-
-	// public abstract void visitJump(Moz.Jump inst); // Jump
-
-	public abstract void visitCall(Moz.Call inst); // Call
-
-	public abstract void visitRet(Moz.Ret inst); // Ret
+	/* Control */
 
 	public abstract void visitPos(Moz.Pos inst); // Pos
 
 	public abstract void visitBack(Moz.Back inst); // Back
 
-	public abstract void visitSkip(Moz.Skip inst); // Skip
+	public abstract void visitMove(Moz.Move inst); //
+
+	public abstract void visitJump(Moz.Jump inst); // Jump
+
+	public abstract void visitCall(Moz.Call inst); // Call
+
+	public abstract void visitRet(Moz.Ret inst); // Ret
+
+	public abstract void visitAlt(Moz.Alt inst); // Alt
+
+	public abstract void visitSucc(Moz.Succ inst); // Succ
+
+	public abstract void visitFail(Moz.Fail inst); // Fail
+
+	public abstract void visitGuard(Moz.Guard inst); // Skip
+
+	public abstract void visitStep(Moz.Step inst); // Skip
+
+	/* Matching */
 
 	public abstract void visitByte(Moz.Byte inst); // match a byte character
 
@@ -54,41 +67,37 @@ public abstract class MozVisitor {
 
 	public abstract void visitRSet(Moz.RSet inst); //
 
-	public abstract void visitMove(Moz.Move inst); //
+	/* Dispatch */
 
-	public abstract void visitFirst(Moz.First inst); //
+	public abstract void visitDispatch(Moz.Dispatch inst); //
 
-	public abstract void visitLookup(Moz.Lookup inst); // match a character
+	public abstract void visitDDispatch(Moz.DDispatch inst); // Dfa
 
-	public abstract void visitMemo(Moz.Memo inst); // match a character
-
-	public abstract void visitMemoFail(Moz.MemoFail inst); // match a character
+	/* Matching */
 
 	public abstract void visitTPush(Moz.TPush inst);
 
 	public abstract void visitTPop(Moz.TPop inst);
 
-	public abstract void visitTLink(Moz.TLink inst);
+	public abstract void visitTBegin(Moz.TBegin inst);
 
-	public abstract void visitTLeftFold(Moz.TLeftFold inst);
-
-	public abstract void visitTNew(Moz.TNew inst);
-
-	public abstract void visitTCapture(Moz.TCapture inst);
+	public abstract void visitTEnd(Moz.TEnd inst);
 
 	public abstract void visitTTag(Moz.TTag inst);
 
 	public abstract void visitTReplace(Moz.TReplace inst);
 
+	public abstract void visitTLink(Moz.TLink inst);
+
+	public abstract void visitTFold(Moz.TFold inst);
+
 	public abstract void visitTStart(Moz.TStart inst);
 
-	public abstract void visitTCommit(Moz.TCommit inst);
+	public abstract void visitTEmit(Moz.TEmit inst);
 
 	// public abstract void visitTAbort(Moz.TAbort inst);
 
-	public abstract void visitTLookup(Moz.TLookup inst);
-
-	public abstract void visitTMemo(Moz.TMemo inst);
+	/* Symbol */
 
 	public abstract void visitSOpen(Moz.SOpen inst);
 
@@ -108,17 +117,22 @@ public abstract class MozVisitor {
 
 	public abstract void visitSIsa(Moz.SIsa inst);
 
-	// public abstract void visitSDefNum(Moz.SDefNum inst);
+	/* Number */
 
-	// public abstract void visitSCount(Moz.SCount inst);
+	public abstract void visitNScan(Moz.NScan inst);
 
-	public abstract void visitExit(Moz.Exit inst); // 7-bit only
+	public abstract void visitNDec(Moz.NDec inst);
 
-	/* extended */
-	public abstract void visitDFirst(Moz.DFirst inst); // Dfa
+	/* memoization */
 
-	public abstract void visitCov(Moz.Cov inst);
+	public abstract void visitLookup(Moz.Lookup inst); // match a character
 
-	public abstract void visitLabel(Moz.Label inst); // 7-bit
+	public abstract void visitMemo(Moz.Memo inst); // match a character
+
+	public abstract void visitMemoFail(Moz.MemoFail inst); // match a character
+
+	public abstract void visitTLookup(Moz.TLookup inst);
+
+	public abstract void visitTMemo(Moz.TMemo inst);
 
 }
