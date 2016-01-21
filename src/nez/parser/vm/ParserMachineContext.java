@@ -88,11 +88,11 @@ public class ParserMachineContext extends ParserContext {
 		}
 		this.stacks[0].ref = null;
 		this.stacks[0].value = 0;
-		this.stacks[1].ref = new Moz.Exit(false);
+		this.stacks[1].ref = new Moz86.Exit(false);
 		this.stacks[1].value = pos;
 		this.stacks[2].ref = this.saveLog();
 		this.stacks[2].value = this.saveSymbolPoint();
-		this.stacks[3].ref = new Moz.Exit(true);
+		this.stacks[3].ref = new Moz86.Exit(true);
 		this.stacks[3].value = 0;
 		this.catchStackTop = 0;
 		this.usedStackTop = 3;

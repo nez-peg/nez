@@ -42,11 +42,11 @@ public class MozCode extends ParserCode<MozInst> {
 		stack.add("Start");
 		try {
 			while (true) {
-				if (code instanceof Moz.Call) {
+				if (code instanceof Moz86.Call) {
 					stack.add(u);
-					u = ((Moz.Call) code).getNonTerminalName();
+					u = ((Moz86.Call) code).getNonTerminalName();
 				}
-				if (code instanceof Moz.Ret) {
+				if (code instanceof Moz86.Ret) {
 					u = stack.ArrayValues[stack.size() - 1];
 					stack.clear(stack.size() - 1);
 				}
@@ -76,8 +76,8 @@ public class MozCode extends ParserCode<MozInst> {
 			// MozInst.joinPoint(inst.next);
 			// }
 			layoutCode(inst.branch());
-			if (inst instanceof Moz.Dispatch) {
-				Moz.Dispatch match = (Moz.Dispatch) inst;
+			if (inst instanceof Moz86.Dispatch) {
+				Moz86.Dispatch match = (Moz86.Dispatch) inst;
 				for (int ch = 0; ch < match.jumpTable.length; ch++) {
 					layoutCode(match.jumpTable[ch]);
 				}

@@ -2,7 +2,7 @@ package nez.parser;
 
 import java.util.HashMap;
 
-import nez.parser.vm.Moz;
+import nez.parser.vm.Moz86;
 import nez.parser.vm.MozInst;
 import nez.util.ConsoleUtils;
 import nez.util.UList;
@@ -49,7 +49,7 @@ public class CoverageProfiler {
 	public final MozInst compileCoverage(String label, boolean start, MozInst next) {
 		if (covList != null) {
 			CoverageEntry cov = getCoverage(label);
-			return new Moz.Cov(this, cov.covPoint, start, next);
+			return new Moz86.Cov(this, cov.covPoint, start, next);
 		}
 		return next;
 	}

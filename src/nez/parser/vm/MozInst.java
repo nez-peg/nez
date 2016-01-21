@@ -52,7 +52,7 @@ public abstract class MozInst implements Instruction {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		Moz.stringfy(this, sb);
+		Moz86.stringfy(this, sb);
 		return sb.toString();
 	}
 

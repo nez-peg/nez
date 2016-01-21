@@ -15,9 +15,10 @@ import nez.parser.MemoPoint;
 import nez.parser.ParserCode.ProductionCode;
 import nez.parser.ParserContext;
 import nez.parser.TerminationException;
+import nez.parser.vm.MozMachine.MozStackData;
 import nez.util.StringUtils;
 
-public class Moz {
+public class Moz86 {
 	public final static String[][] Specification = { //
 	//
 			{ "Nop", "name" }, // name is for debug symbol
@@ -240,7 +241,7 @@ public class Moz {
 
 		@Override
 		public MozInst execMoz(MozMachine sc) throws TerminationException {
-			StackData s = sc.newUnusedStack();
+			MozStackData s = sc.newUnusedStack();
 			s.value = sc.getPosition();
 			return this.next;
 		}
@@ -269,7 +270,7 @@ public class Moz {
 
 		@Override
 		public MozInst execMoz(MozMachine sc) throws TerminationException {
-			StackData s = sc.popStack();
+			MozStackData s = sc.popStack();
 			sc.setPosition(s.value);
 			return this.next;
 		}
@@ -381,7 +382,7 @@ public class Moz {
 
 		@Override
 		public MozInst execMoz(MozMachine sc) throws TerminationException {
-			StackData s = sc.newUnusedStack();
+			MozStackData s = sc.newUnusedStack();
 			s.ref = this.jump;
 			return this.next;
 		}
@@ -414,7 +415,7 @@ public class Moz {
 
 		@Override
 		public MozInst execMoz(MozMachine sc) throws TerminationException {
-			StackData s = sc.popStack();
+			MozStackData s = sc.popStack();
 			return (MozInst) s.ref;
 		}
 
@@ -1446,7 +1447,7 @@ public class Moz {
 
 		@Override
 		public MozInst execMoz(MozMachine sc) throws TerminationException {
-			StackData s = sc.popStack();
+			MozStackData s = sc.popStack();
 			ASTMachine astMachine = sc.getAstMachine();
 			astMachine.commitTransactionPoint(label, s.ref);
 			return this.next;
@@ -1471,7 +1472,7 @@ public class Moz {
 
 		@Override
 		public MozInst execMoz(MozMachine sc) throws TerminationException {
-			StackData s = sc.newUnusedStack();
+			MozStackData s = sc.newUnusedStack();
 			ASTMachine astMachine = sc.getAstMachine();
 			s.ref = astMachine.saveTransactionPoint();
 			return this.next;
@@ -1513,7 +1514,7 @@ public class Moz {
 
 		@Override
 		public MozInst execMoz(MozMachine sc) throws TerminationException {
-			StackData s = sc.newUnusedStack();
+			MozStackData s = sc.newUnusedStack();
 			s.value = sc.getSymbolTable().saveSymbolPoint();
 			return this.next;
 		}
@@ -1538,7 +1539,7 @@ public class Moz {
 
 		@Override
 		public MozInst execMoz(MozMachine sc) throws TerminationException {
-			StackData s = sc.popStack();
+			MozStackData s = sc.popStack();
 			sc.getSymbolTable().backSymbolPoint((int) s.value);
 			return this.next;
 		}
@@ -1562,7 +1563,7 @@ public class Moz {
 
 		@Override
 		public MozInst execMoz(MozMachine sc) throws TerminationException {
-			StackData s = sc.newUnusedStack();
+			MozStackData s = sc.newUnusedStack();
 			SymbolTable st = sc.getSymbolTable();
 			s.value = st.saveSymbolPoint();
 			st.addSymbolMask(table);
@@ -1589,7 +1590,7 @@ public class Moz {
 
 		@Override
 		public MozInst execMoz(MozMachine sc) throws TerminationException {
-			StackData top = sc.popStack();
+			MozStackData top = sc.popStack();
 			byte[] captured = sc.subbyte(top.value, sc.getPosition());
 			// System.out.println("symbol captured: " + new String(captured) +
 			// ", @"
@@ -1701,7 +1702,7 @@ public class Moz {
 		public MozInst execMoz(MozMachine sc) throws TerminationException {
 			byte[] symbol = sc.getSymbolTable().getSymbol(table);
 			if (symbol != null) {
-				StackData s = sc.popStack();
+				MozStackData s = sc.popStack();
 				byte[] captured = sc.subbyte(s.value, sc.getPosition());
 				// System.out.println("captured:" + new String(captured));
 				if (symbol.length == captured.length && SymbolTable.equalsBytes(symbol, captured)) {
@@ -1732,7 +1733,7 @@ public class Moz {
 
 		@Override
 		public MozInst execMoz(MozMachine sc) throws TerminationException {
-			StackData s = sc.popStack();
+			MozStackData s = sc.popStack();
 			byte[] captured = sc.subbyte(s.value, sc.getPosition());
 			if (sc.getSymbolTable().contains(this.table, captured)) {
 				// sc.consume(captured.length);

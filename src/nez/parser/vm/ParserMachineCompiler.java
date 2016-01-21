@@ -56,11 +56,11 @@ public class ParserMachineCompiler implements ParserCompiler {
 
 		private MozCode compile() {
 			for (Production p : grammar) {
-				this.visitProduction(code.codeList(), p, new Moz.Ret(p));
+				this.visitProduction(code.codeList(), p, new Moz86.Ret(p));
 			}
 			for (MozInst inst : code.codeList()) {
-				if (inst instanceof Moz.Call) {
-					((Moz.Call) inst).sync();
+				if (inst instanceof Moz86.Call) {
+					((Moz86.Call) inst).sync();
 				}
 				// Verbose.debug("\t" + inst.id + "\t" + inst);
 			}
@@ -86,24 +86,24 @@ public class ParserMachineCompiler implements ParserCompiler {
 				next = compile(memoPoint, p.getExpression(), next);
 				f.setCompiled(next);
 			}
-			MozInst block = new Moz.Nop(p.getLocalName(), next);
+			MozInst block = new Moz86.Nop(p.getLocalName(), next);
 			code.layoutCode(block);
 		}
 
 		private MozInst compile(MemoPoint memoPoint, Expression p, MozInst next) {
 			if (memoPoint != null) {
 				if (memoPoint.typeState == Typestate.Unit) {
-					MozInst memo = new Moz.Memo(null, memoPoint, next);
+					MozInst memo = new Moz86.Memo(null, memoPoint, next);
 					MozInst inside = compile(p, memo);
-					MozInst failmemo = new Moz.MemoFail(null, memoPoint);
-					inside = new Moz.Alt(failmemo, inside);
-					return new Moz.Lookup(null, memoPoint, inside, next);
+					MozInst failmemo = new Moz86.MemoFail(null, memoPoint);
+					inside = new Moz86.Alt(failmemo, inside);
+					return new Moz86.Lookup(null, memoPoint, inside, next);
 				} else {
-					MozInst memo = new Moz.TMemo(null, memoPoint, next);
+					MozInst memo = new Moz86.TMemo(null, memoPoint, next);
 					MozInst inside = compile(p, memo);
-					MozInst failmemo = new Moz.MemoFail(null, memoPoint);
-					inside = new Moz.Alt(failmemo, inside);
-					return new Moz.TLookup(memoPoint, inside, next);
+					MozInst failmemo = new Moz86.MemoFail(null, memoPoint);
+					inside = new Moz86.Alt(failmemo, inside);
+					return new Moz86.TLookup(memoPoint, inside, next);
 				}
 			}
 			return compile(p, next);
@@ -128,7 +128,7 @@ public class ParserMachineCompiler implements ParserCompiler {
 			return (MozInst) next;
 		}
 
-		protected final MozInst commonFailure = new Moz.Fail(null);
+		protected final MozInst commonFailure = new Moz86.Fail(null);
 
 		public MozInst fail(Expression e) {
 			return this.commonFailure;
@@ -141,22 +141,22 @@ public class ParserMachineCompiler implements ParserCompiler {
 
 		@Override
 		public MozInst visitAny(Nez.Any p, Object next) {
-			return new Moz.Any(p, (MozInst) next);
+			return new Moz86.Any(p, (MozInst) next);
 		}
 
 		@Override
 		public MozInst visitByte(Nez.Byte p, Object next) {
-			return new Moz.Byte(p, (MozInst) next);
+			return new Moz86.Byte(p, (MozInst) next);
 		}
 
 		@Override
 		public MozInst visitByteSet(Nez.ByteSet p, Object next) {
-			return new Moz.Set(p, (MozInst) next);
+			return new Moz86.Set(p, (MozInst) next);
 		}
 
 		@Override
 		public MozInst visitMultiByte(Nez.MultiByte p, Object next) {
-			return new Moz.Str(p, (MozInst) next);
+			return new Moz86.Str(p, (MozInst) next);
 		}
 
 		@Override
@@ -180,14 +180,14 @@ public class ParserMachineCompiler implements ParserCompiler {
 		private MozInst compileNonTerminal(NonTerminal n, Object next) {
 			Production p = n.getProduction();
 			ProductionCode<MozInst> f = code.getProductionCode(p);
-			return new Moz.Call(f, p.getLocalName(), (MozInst) next);
+			return new Moz86.Call(f, p.getLocalName(), (MozInst) next);
 		}
 
 		private MozInst memoize(NonTerminal n, ProductionCode<MozInst> f, MemoPoint m, MozInst next) {
-			MozInst inside = new Moz.Memo(n, m, next);
-			inside = new Moz.Call(f, n.getLocalName(), inside);
-			inside = new Moz.Alt(n, new Moz.MemoFail(n, m), inside);
-			return new Moz.Lookup(n, m, inside, next);
+			MozInst inside = new Moz86.Memo(n, m, next);
+			inside = new Moz86.Call(f, n.getLocalName(), inside);
+			inside = new Moz86.Alt(n, new Moz86.MemoFail(n, m), inside);
+			return new Moz86.Lookup(n, m, inside, next);
 		}
 
 		@Override
@@ -196,19 +196,19 @@ public class ParserMachineCompiler implements ParserCompiler {
 				Expression inner = getInnerExpression(p);
 				if (inner instanceof Nez.Byte) {
 					this.optimizedUnary(p);
-					return new Moz.OByte((Nez.Byte) inner, (MozInst) next);
+					return new Moz86.OByte((Nez.Byte) inner, (MozInst) next);
 				}
 				if (inner instanceof Nez.ByteSet) {
 					this.optimizedUnary(p);
-					return new Moz.OSet((Nez.ByteSet) inner, (MozInst) next);
+					return new Moz86.OSet((Nez.ByteSet) inner, (MozInst) next);
 				}
 				if (inner instanceof Nez.MultiByte) {
 					this.optimizedUnary(p);
-					return new Moz.OStr((Nez.MultiByte) inner, (MozInst) next);
+					return new Moz86.OStr((Nez.MultiByte) inner, (MozInst) next);
 				}
 			}
-			MozInst pop = new Moz.Succ(p, (MozInst) next);
-			return new Moz.Alt(p, (MozInst) next, compile(p.get(0), pop, next));
+			MozInst pop = new Moz86.Succ(p, (MozInst) next);
+			return new Moz86.Alt(p, (MozInst) next, compile(p.get(0), pop, next));
 		}
 
 		@Override
@@ -226,27 +226,27 @@ public class ParserMachineCompiler implements ParserCompiler {
 				Expression inner = getInnerExpression((Expression) p);
 				if (inner instanceof Nez.Byte) {
 					this.optimizedUnary((Expression) p);
-					return new Moz.RByte((Nez.Byte) inner, (MozInst) next);
+					return new Moz86.RByte((Nez.Byte) inner, (MozInst) next);
 				}
 				if (inner instanceof Nez.ByteSet) {
 					this.optimizedUnary((Expression) p);
-					return new Moz.RSet((Nez.ByteSet) inner, (MozInst) next);
+					return new Moz86.RSet((Nez.ByteSet) inner, (MozInst) next);
 				}
 				if (inner instanceof Nez.MultiByte) {
 					this.optimizedUnary((Expression) p);
-					return new Moz.RStr((Nez.MultiByte) inner, (MozInst) next);
+					return new Moz86.RStr((Nez.MultiByte) inner, (MozInst) next);
 				}
 			}
-			MozInst skip = new Moz.Step((Expression) p);
+			MozInst skip = new Moz86.Step((Expression) p);
 			MozInst start = compile(((Expression) p).get(0), skip, next/* FIXME */);
 			skip.next = start;
-			return new Moz.Alt((Expression) p, (MozInst) next, start);
+			return new Moz86.Alt((Expression) p, (MozInst) next, start);
 		}
 
 		@Override
 		public MozInst visitAnd(Nez.And p, Object next) {
-			MozInst inner = compile(p.get(0), new Moz.Back(p, (MozInst) next));
-			return new Moz.Pos(p, inner);
+			MozInst inner = compile(p.get(0), new Moz86.Back(p, (MozInst) next));
+			return new Moz86.Pos(p, inner);
 		}
 
 		@Override
@@ -255,23 +255,23 @@ public class ParserMachineCompiler implements ParserCompiler {
 				Expression inner = getInnerExpression(p);
 				if (inner instanceof Nez.ByteSet) {
 					this.optimizedUnary(p);
-					return new Moz.NSet((Nez.ByteSet) inner, (MozInst) next);
+					return new Moz86.NSet((Nez.ByteSet) inner, (MozInst) next);
 				}
 				if (inner instanceof Nez.Byte) {
 					this.optimizedUnary(p);
-					return new Moz.NByte((Nez.Byte) inner, (MozInst) next);
+					return new Moz86.NByte((Nez.Byte) inner, (MozInst) next);
 				}
 				if (inner instanceof Nez.Any) {
 					this.optimizedUnary(p);
-					return new Moz.NAny(inner, false, (MozInst) next);
+					return new Moz86.NAny(inner, false, (MozInst) next);
 				}
 				if (inner instanceof Nez.MultiByte) {
 					this.optimizedUnary(p);
-					return new Moz.NStr((Nez.MultiByte) inner, (MozInst) next);
+					return new Moz86.NStr((Nez.MultiByte) inner, (MozInst) next);
 				}
 			}
-			MozInst fail = new Moz.Succ(p, new Moz.Fail(p));
-			return new Moz.Alt(p, (MozInst) next, compile(p.get(0), fail));
+			MozInst fail = new Moz86.Succ(p, new Moz86.Fail(p));
+			return new Moz86.Alt(p, (MozInst) next, compile(p.get(0), fail));
 		}
 
 		@Override
@@ -305,7 +305,7 @@ public class ParserMachineCompiler implements ParserCompiler {
 		}
 
 		private final MozInst visitPredictedChoice(Nez.Choice choice, Nez.ChoicePrediction p, Object next) {
-			Moz.Dispatch dispatch = new Moz.Dispatch(choice, commonFailure);
+			Moz86.Dispatch dispatch = new Moz86.Dispatch(choice, commonFailure);
 			MozInst[] compiled = new MozInst[choice.size()];
 			for (int i = 0; i < choice.size(); i++) {
 				Expression predicted = choice.get(i);
@@ -316,7 +316,7 @@ public class ParserMachineCompiler implements ParserCompiler {
 					inst = compile(predicted, next);
 				}
 				if (p.striped[i]) {
-					inst = new Moz.Move(predicted, 1, inst);
+					inst = new Moz86.Move(predicted, 1, inst);
 				}
 				compiled[i] = inst;
 			}
@@ -334,7 +334,7 @@ public class ParserMachineCompiler implements ParserCompiler {
 			Object nextChoice = compile(p.get(p.size() - 1), next);
 			for (int i = p.size() - 2; i >= 0; i--) {
 				Expression e = p.get(i);
-				nextChoice = new Moz.Alt(e, (MozInst) nextChoice, compile(e, new Moz.Succ(e, (MozInst) next), nextChoice));
+				nextChoice = new Moz86.Alt(e, (MozInst) nextChoice, compile(e, new Moz86.Succ(e, (MozInst) next), nextChoice));
 			}
 			return (MozInst) nextChoice;
 		}
@@ -342,7 +342,7 @@ public class ParserMachineCompiler implements ParserCompiler {
 		@Override
 		public MozInst visitBeginTree(Nez.BeginTree p, Object next) {
 			if (strategy.TreeConstruction) {
-				return new Moz.TBegin(p, (MozInst) next);
+				return new Moz86.TBegin(p, (MozInst) next);
 			}
 			return (MozInst) next;
 		}
@@ -350,7 +350,7 @@ public class ParserMachineCompiler implements ParserCompiler {
 		@Override
 		public MozInst visitFoldTree(Nez.FoldTree p, Object next) {
 			if (strategy.TreeConstruction) {
-				return new Moz.TFold(p, (MozInst) next);
+				return new Moz86.TFold(p, (MozInst) next);
 			}
 			return (MozInst) next;
 		}
@@ -358,7 +358,7 @@ public class ParserMachineCompiler implements ParserCompiler {
 		@Override
 		public MozInst visitEndTree(Nez.EndTree p, Object next) {
 			if (strategy.TreeConstruction) {
-				return new Moz.TEnd(p, (MozInst) next);
+				return new Moz86.TEnd(p, (MozInst) next);
 			}
 			return (MozInst) next;
 		}
@@ -366,7 +366,7 @@ public class ParserMachineCompiler implements ParserCompiler {
 		@Override
 		public MozInst visitTag(Nez.Tag p, Object next) {
 			if (strategy.TreeConstruction) {
-				return new Moz.TTag(p, (MozInst) next);
+				return new Moz86.TTag(p, (MozInst) next);
 			}
 			return (MozInst) next;
 		}
@@ -374,7 +374,7 @@ public class ParserMachineCompiler implements ParserCompiler {
 		@Override
 		public MozInst visitReplace(Nez.Replace p, Object next) {
 			if (strategy.TreeConstruction) {
-				return new Moz.TReplace(p, (MozInst) next);
+				return new Moz86.TReplace(p, (MozInst) next);
 			}
 			return (MozInst) next;
 		}
@@ -394,28 +394,28 @@ public class ParserMachineCompiler implements ParserCompiler {
 				}
 			}
 			if (strategy.TreeConstruction) {
-				next = new Moz.TLink(p, (MozInst) next);
+				next = new Moz86.TLink(p, (MozInst) next);
 				next = compile(p.get(0), next);
-				return new Moz.TPush(p, (MozInst) next);
+				return new Moz86.TPush(p, (MozInst) next);
 			}
 			return compile(p.get(0), next);
 		}
 
 		private MozInst memoize(Nez.LinkTree p, NonTerminal n, MemoPoint m, MozInst next) {
-			MozInst inside = new Moz.TMemo(p, m, next);
-			inside = new Moz.TEmit(p, inside);
+			MozInst inside = new Moz86.TMemo(p, m, next);
+			inside = new Moz86.TEmit(p, inside);
 			inside = compileNonTerminal(n, inside);
-			inside = new Moz.TStart(p, inside);
-			inside = new Moz.Alt(p, new Moz.MemoFail(p, m), inside);
-			return new Moz.TLookup(p, m, inside, next);
+			inside = new Moz86.TStart(p, inside);
+			inside = new Moz86.Alt(p, new Moz86.MemoFail(p, m), inside);
+			return new Moz86.TLookup(p, m, inside, next);
 		}
 
 		@Override
 		public MozInst visitDetree(Nez.Detree p, Object next) {
 			if (strategy.TreeConstruction) {
-				next = new Moz.TPop(p, (MozInst) next);
+				next = new Moz86.TPop(p, (MozInst) next);
 				next = compile(p.get(0), next);
-				return new Moz.TPush(p, (MozInst) next);
+				return new Moz86.TPush(p, (MozInst) next);
 			}
 			return compile(p.get(0), next);
 		}
@@ -424,55 +424,55 @@ public class ParserMachineCompiler implements ParserCompiler {
 
 		@Override
 		public MozInst visitBlockScope(Nez.BlockScope p, Object next) {
-			next = new Moz.SClose(p, (MozInst) next);
+			next = new Moz86.SClose(p, (MozInst) next);
 			next = compile(p.get(0), next);
-			return new Moz.SOpen(p, (MozInst) next);
+			return new Moz86.SOpen(p, (MozInst) next);
 		}
 
 		@Override
 		public MozInst visitLocalScope(Nez.LocalScope p, Object next) {
-			next = new Moz.SClose(p, (MozInst) next);
+			next = new Moz86.SClose(p, (MozInst) next);
 			next = compile(p.get(0), next);
-			return new Moz.SMask(p, (MozInst) next);
+			return new Moz86.SMask(p, (MozInst) next);
 		}
 
 		@Override
 		public MozInst visitSymbolAction(Nez.SymbolAction p, Object next) {
-			return new Moz.Pos(p, compile(p.get(0), new Moz.SDef(p, (MozInst) next)));
+			return new Moz86.Pos(p, compile(p.get(0), new Moz86.SDef(p, (MozInst) next)));
 		}
 
 		@Override
 		public MozInst visitSymbolExists(Nez.SymbolExists p, Object next) {
 			String symbol = p.symbol;
 			if (symbol == null) {
-				return new Moz.SExists(p, (MozInst) next);
+				return new Moz86.SExists(p, (MozInst) next);
 			} else {
-				return new Moz.SIsDef(p, (MozInst) next);
+				return new Moz86.SIsDef(p, (MozInst) next);
 			}
 		}
 
 		@Override
 		public MozInst visitSymbolMatch(Nez.SymbolMatch p, Object next) {
-			return new Moz.SMatch(p, (MozInst) next);
+			return new Moz86.SMatch(p, (MozInst) next);
 		}
 
 		@Override
 		public MozInst visitSymbolPredicate(Nez.SymbolPredicate p, Object next) {
 			if (p.op == FunctionName.is) {
-				return new Moz.Pos(p, compile(p.get(0), new Moz.SIs(p, (MozInst) next)));
+				return new Moz86.Pos(p, compile(p.get(0), new Moz86.SIs(p, (MozInst) next)));
 			} else {
-				return new Moz.Pos(p, compile(p.get(0), new Moz.SIsa(p, (MozInst) next)));
+				return new Moz86.Pos(p, compile(p.get(0), new Moz86.SIsa(p, (MozInst) next)));
 			}
 		}
 
 		@Override
 		public MozInst visitScanf(Nez.Scanf p, Object next) {
-			return new Moz.Pos(p, compile(p.get(0), new Moz.NScan(p.mask, p.shift, (MozInst) next)));
+			return new Moz86.Pos(p, compile(p.get(0), new Moz86.NScan(p.mask, p.shift, (MozInst) next)));
 		}
 
 		@Override
 		public MozInst visitRepeat(Nez.Repeat p, Object next) {
-			MozInst check = new Moz.NDec((MozInst) next, null);
+			MozInst check = new Moz86.NDec((MozInst) next, null);
 			MozInst repeated = compile(p.get(0), check);
 			check.next = repeated;
 			return check;

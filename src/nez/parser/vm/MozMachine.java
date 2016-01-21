@@ -91,24 +91,29 @@ public final class MozMachine extends ParserRuntime {
 
 	// ----------------------------------------------------------------------
 
+	static class MozStackData {
+		public Object ref;
+		public long value;
+	}
+
 	private static int StackSize = 64;
-	private StackData[] stacks = null;
+	private MozStackData[] stacks = null;
 	private int usedStackTop;
 	private int catchStackTop;
 
 	public final void init(MemoTable memoTable, Tree<?> prototype) {
 		this.astMachine = new ASTMachine(s, prototype);
-		this.stacks = new StackData[StackSize];
+		this.stacks = new MozStackData[StackSize];
 		for (int i = 0; i < StackSize; i++) {
-			this.stacks[i] = new StackData();
+			this.stacks[i] = new MozStackData();
 		}
 		this.stacks[0].ref = null;
 		this.stacks[0].value = 0;
-		this.stacks[1].ref = new Moz.Exit(false);
+		this.stacks[1].ref = new Moz86.Exit(false);
 		this.stacks[1].value = this.getPosition();
 		this.stacks[2].ref = astMachine.saveTransactionPoint();
 		this.stacks[2].value = symbolTable.saveSymbolPoint();
-		this.stacks[3].ref = new Moz.Exit(true);
+		this.stacks[3].ref = new Moz86.Exit(true);
 		this.stacks[3].value = 0;
 		this.catchStackTop = 0;
 		this.usedStackTop = 3;
@@ -118,34 +123,34 @@ public final class MozMachine extends ParserRuntime {
 		}
 	}
 
-	public final StackData getUsedStackTop() {
+	public final MozStackData getUsedStackTop() {
 		return stacks[usedStackTop];
 	}
 
-	public final StackData newUnusedStack() {
+	public final MozStackData newUnusedStack() {
 		usedStackTop++;
 		if (stacks.length == usedStackTop) {
-			StackData[] newstack = new StackData[stacks.length * 2];
+			MozStackData[] newstack = new MozStackData[stacks.length * 2];
 			System.arraycopy(stacks, 0, newstack, 0, stacks.length);
 			for (int i = this.stacks.length; i < newstack.length; i++) {
-				newstack[i] = new StackData();
+				newstack[i] = new MozStackData();
 			}
 			stacks = newstack;
 		}
 		return stacks[usedStackTop];
 	}
 
-	public final StackData popStack() {
-		StackData s = stacks[this.usedStackTop];
+	public final MozStackData popStack() {
+		MozStackData s = stacks[this.usedStackTop];
 		usedStackTop--;
 		// assert(this.catchStackTop <= this.usedStackTop);
 		return s;
 	}
 
 	public final void pushAlt(MozInst failjump/* op.failjump */) {
-		StackData s0 = newUnusedStack();
-		StackData s1 = newUnusedStack();
-		StackData s2 = newUnusedStack();
+		MozStackData s0 = newUnusedStack();
+		MozStackData s1 = newUnusedStack();
+		MozStackData s2 = newUnusedStack();
 		s0.value = catchStackTop;
 		catchStackTop = usedStackTop - 2;
 		s1.ref = failjump;
@@ -155,8 +160,8 @@ public final class MozMachine extends ParserRuntime {
 	}
 
 	public final long popAlt() {
-		StackData s0 = stacks[catchStackTop];
-		StackData s1 = stacks[catchStackTop + 1];
+		MozStackData s0 = stacks[catchStackTop];
+		MozStackData s1 = stacks[catchStackTop + 1];
 		long pos = s1.value;
 		usedStackTop = catchStackTop - 1;
 		catchStackTop = (int) s0.value;
@@ -164,9 +169,9 @@ public final class MozMachine extends ParserRuntime {
 	}
 
 	public final MozInst xFail() {
-		StackData s0 = stacks[catchStackTop];
-		StackData s1 = stacks[catchStackTop + 1];
-		StackData s2 = stacks[catchStackTop + 2];
+		MozStackData s0 = stacks[catchStackTop];
+		MozStackData s1 = stacks[catchStackTop + 1];
+		MozStackData s2 = stacks[catchStackTop + 2];
 		usedStackTop = catchStackTop - 1;
 		catchStackTop = (int) s0.value;
 		if (s1.value < this.pos) {
@@ -182,12 +187,12 @@ public final class MozMachine extends ParserRuntime {
 	}
 
 	public final MozInst skip(MozInst next) {
-		StackData s1 = stacks[catchStackTop + 1];
+		MozStackData s1 = stacks[catchStackTop + 1];
 		if (s1.value == this.pos) {
 			return xFail();
 		}
 		s1.value = this.pos;
-		StackData s2 = stacks[catchStackTop + 2];
+		MozStackData s2 = stacks[catchStackTop + 2];
 		s2.ref = astMachine.saveTransactionPoint();
 		s2.value = symbolTable.saveSymbolPoint();
 		return next;
