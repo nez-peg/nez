@@ -19,6 +19,8 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 	private FileBuilder file;
 	private Grammar grammar = null;
 
+	private boolean inFirst = false;
+	private Element currentLeft = null;
 	private Captured[] nonterminalList = new Captured[4];
 	private String[] nonterminalNameList = new String[4];
 	private Captured[] capturedList = new Captured[4];
@@ -28,7 +30,7 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 	private int capturedId = 0;
 	private int tagId = 0;
 	private int stackTop = 0;
-	private Elements checkedNonterminal = new Elements();
+	private boolean[] checkedNonterminal;
 	private boolean[] checkedNullLabelTag;
 	private int repetitionId = 0;
 
@@ -66,7 +68,8 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 			elementsStack[stackTop] = new Elements();
 			makeProductionFormat(rule);
 			String nonterminalName = rule.getLocalName();
-			nonterminalList[convertNonterminalName(nonterminalName)] = new Captured(elementsStack[stackTop], nonterminalName);
+			int nonterminalId = convertNonterminalName(nonterminalName);
+			nonterminalList[nonterminalId] = new Captured(elementsStack[stackTop], nonterminalName);
 		}
 	}
 
@@ -154,7 +157,11 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 	public class _NonTerminal extends DefaultVisitor {
 		@Override
 		public void accept(Expression e) {
-			addElement(new NonTerminalElement(convertNonterminalName(((NonTerminal) e).getLocalName())));
+			Element nonterminal = new NonTerminalElement(convertNonterminalName(((NonTerminal) e).getLocalName()));
+			if (inFirst) {
+				currentLeft = nonterminal;
+			}
+			addElement(nonterminal);
 		}
 	}
 
@@ -172,14 +179,20 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 				visit(e.get(i));
 				branch[i] = elementsStack[stackTop--];
 			}
-			addElement(new ChoiceElement(branch));
+			Element choice = new ChoiceElement(branch);
+			if (inFirst) {
+				currentLeft = choice;
+			}
+			addElement(choice);
 		}
 	}
 
 	public class _Pair extends DefaultVisitor {
 		@Override
 		public void accept(Expression e) {
+			inFirst = true;
 			visit(((Pair) e).first);
+			inFirst = false;
 			visit(((Pair) e).next);
 		}
 	}
@@ -201,6 +214,20 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 		}
 	}
 
+	// TODO check
+	public class _ByteSet extends DefaultVisitor {
+		@Override
+		public void accept(Expression e) {
+			boolean[] byteSet = ((Nez.ByteSet) e).byteMap;
+			for (int i = 0; i < byteSet.length; i++) {
+				if (byteSet[i]) {
+					addElement(new ByteElement(i));
+					break;
+				}
+			}
+		}
+	}
+
 	public class _EndTree extends DefaultVisitor {
 		@Override
 		public void accept(Expression e) {
@@ -216,7 +243,11 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 				branch[1] = ((LinkedElement) capturedList[capturedId].elements.get(0)).inner;
 				((LinkedElement) capturedList[capturedId].elements.get(0)).inner = new Elements(new ChoiceElement(branch));
 			}
-			addElement(new CapturedElement(capturedId++));
+			Element captured = new CapturedElement(capturedId++);
+			if (inFirst) {
+				currentLeft = captured;
+			}
+			addElement(captured);
 		}
 	}
 
@@ -230,7 +261,9 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 				elementsStack = newList;
 			}
 			elementsStack[++stackTop] = new Elements();
-			addElement(new LinkedElement(((Nez.FoldTree) e).label, new Elements(getLeft(stackTop - 2))));
+			addElement(new LinkedElement(((Nez.FoldTree) e).label, new Elements(getLeft(stackTop - 2))
+			// new Elements(currentLeft)
+			));
 		}
 	}
 
@@ -378,6 +411,7 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 
 		public void setFormat(int capturedId) {
 			while (true) {
+				checkedNonterminal = new boolean[nonterminalId];
 				int tag = searchTag();
 				if (tag != -1) {
 					if (size == formatSet.length) {
@@ -387,58 +421,63 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 					}
 					formatSet[size] = new FormatSet();
 					formatSet[size].tag = tag;
+					checkedNonterminal = new boolean[nonterminalId];
 					formatSet[size++].link = searchLink();
 				} else {
 					break;
 				}
+			}
+			if (size == 0) {
+				System.out.println("CAUTION:UNTAGGED BLOCK EXISTS");
 			}
 		}
 
 		// TODO fix verbose
 		public void writeFormat(int capturedId) {
 			for (int i = 0; i < size; i++) {
-				if (formatSet[i].link != null || !checkedNullLabelTag[formatSet[i].tag]) {
-					for (int labelProgression = 0, tagProgression = 0; true; tagProgression++) {
-						LabelSet labelSet = new LabelSet(labelProgression, tagProgression);
-						String label = optionFix(formatSet[i].link, labelSet, formatSet[i].tag);
-						if (labelSet.labelProgression > 0) {
-							break;
-						}
-						if (labelSet.tagProgression > 0) {
-							labelProgression++;
-							tagProgression = -1;
-							continue;
-						}
-						if (label == null) {
-							label = "";
-							checkedNullLabelTag[formatSet[i].tag] = true;
-						}
-						write("format " + tagList[formatSet[i].tag] + "(" + label + ")");
-						writeln("` ");
-						if (left != null) {
-							String format = left.toFormat(formatSet[i].tag);
-							if (format != null) {
-								write(format + " ");
-							}
-						}
-						String format = toFormat(formatSet[i].tag);
-						if (format == null) {
-							write("${this.toText()}");
-						} else {
-							write(format);
-						}
-						if (right != null) {
-							format = right.toFormat(formatSet[i].tag);
-							if (format != null) {
-								write(" " + format);
-							}
-						}
-						write(" `");
-						writeln("");
-						writeln("");
+				// if (formatSet[i].link != null ||
+				// !checkedNullLabelTag[formatSet[i].tag]) {
+				for (int labelProgression = 0, tagProgression = 0; true; tagProgression++) {
+					LabelSet labelSet = new LabelSet(labelProgression, tagProgression);
+					String label = optionFix(formatSet[i].link, labelSet, formatSet[i].tag);
+					if (labelSet.labelProgression > 0) {
+						break;
 					}
-					activateDelay();
+					if (labelSet.tagProgression > 0) {
+						labelProgression++;
+						tagProgression = -1;
+						continue;
+					}
+					if (label == null) {
+						label = "";
+						checkedNullLabelTag[formatSet[i].tag] = true;
+					}
+					write("format " + tagList[formatSet[i].tag] + "(" + label + ")");
+					writeln("` ");
+					if (left != null) {
+						String format = left.toFormat(formatSet[i].tag);
+						if (format != null) {
+							write(format + " ");
+						}
+					}
+					String format = toFormat(formatSet[i].tag);
+					if (format == null) {
+						write("${this.toText()}");
+					} else {
+						write(format);
+					}
+					if (right != null) {
+						format = right.toFormat(formatSet[i].tag);
+						if (format != null) {
+							write(" " + format);
+						}
+					}
+					write(" `");
+					writeln("");
+					writeln("");
 				}
+				activateDelay();
+				// }
 			}
 		}
 
@@ -530,20 +569,22 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 		public LinkedInner[] checkInner() {
 			LinkedInner[] inners = null;
 			for (int i = 0; i < size; i++) {
-				LinkedInner[] inner = elementList[i].checkInner();
-				if (inner != null) {
-					if (inners == null) {
-						inners = inner;
-					} else {
-						LinkedInner[] newList = new LinkedInner[inner.length * inners.length];
-						for (int j = 0; j < inners.length; j++) {
-							for (int k = 0; k < inner.length; k++) {
-								newList[j * inner.length + k] = new LinkedInner();
-								newList[j * inner.length + k].join(inners[j]);
-								newList[j * inner.length + k].join(inner[k]);
+				if (elementList[i] != null) {// TODO check
+					LinkedInner[] inner = elementList[i].checkInner();
+					if (inner != null) {
+						if (inners == null) {
+							inners = inner;
+						} else {
+							LinkedInner[] newList = new LinkedInner[inner.length * inners.length];
+							for (int j = 0; j < inners.length; j++) {
+								for (int k = 0; k < inner.length; k++) {
+									newList[j * inner.length + k] = new LinkedInner();
+									newList[j * inner.length + k].join(inners[j]);
+									newList[j * inner.length + k].join(inner[k]);
+								}
 							}
+							inners = newList;
 						}
-						inners = newList;
 					}
 				}
 			}
@@ -564,15 +605,6 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 				}
 			}
 			return formats;
-		}
-
-		public boolean has(Element element) {
-			for (int i = 0; i < size; i++) {
-				if (elementList[i] == element) {
-					return true;
-				}
-			}
-			return false;
 		}
 
 		public boolean hasCapturedElement() {
@@ -674,22 +706,30 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 		@Override
 		public Elements searchLink() {
 			nullCheck();
+			if (checkedNonterminal[id]) {
+				return null;
+			}
+			checkedNonterminal[id] = true;
 			return captured.searchLink();
 		}
 
 		@Override
 		public int searchTag() {
 			nullCheck();
+			if (checkedNonterminal[id]) {
+				return -1;
+			}
+			checkedNonterminal[id] = true;
 			return captured.searchTag();
 		}
 
 		@Override
 		public LinkedInner[] checkInner() {
 			nullCheck();
-			if (checkedNonterminal.has(this)) {
+			if (checkedNonterminal[id]) {
 				return null;
 			}
-			checkedNonterminal.addElement(this);
+			checkedNonterminal[id] = true;
 			return captured.checkInner();
 		}
 
@@ -749,8 +789,10 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 		@Override
 		public Elements searchLink() {
 			if (linkedInner == null) {
+				boolean[] currentCheckedNonterminal = checkedNonterminal;
+				checkedNonterminal = new boolean[nonterminalId];
 				linkedInner = inner.checkInner();
-				checkedNonterminal = new Elements();
+				checkedNonterminal = currentCheckedNonterminal;
 				size = linkedInner.length;
 				optimizeLinkedInner();
 			}
@@ -797,26 +839,30 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 			labelFix = mainId[labelSet.tagProgression % groupSize];
 			labelSet.tagProgression = labelSet.tagProgression / groupSize;
 			boolean[] needTag = new boolean[tagId];
-			FormatSet[] formatSet = capturedList[linkedInner[labelFix].id].formatSet;
-			needTag[formatSet[0].tag] = true;
-			for (int i = 1; i < capturedList[linkedInner[labelFix].id].size; i++) {
-				needTag[formatSet[i].tag] = true;
-			}
-			for (int i = 0; i < size; i++) {
-				if (groupId[i] == labelFix && i != labelFix) {
-					formatSet = capturedList[linkedInner[i].id].formatSet;
-					for (int j = 0; j < capturedList[linkedInner[i].id].size; j++) {
-						needTag[formatSet[j].tag] = true;
+			String ret = null;
+			if (capturedList[linkedInner[labelFix].id].size == 0) {
+				ret = toLabel() + ": #Tree";
+			} else {
+				FormatSet[] formatSet = capturedList[linkedInner[labelFix].id].formatSet;
+				needTag[formatSet[0].tag] = true;
+				for (int i = 1; i < capturedList[linkedInner[labelFix].id].size; i++) {
+					needTag[formatSet[i].tag] = true;
+				}
+				for (int i = 0; i < size; i++) {
+					if (groupId[i] == labelFix && i != labelFix) {
+						formatSet = capturedList[linkedInner[i].id].formatSet;
+						for (int j = 0; j < capturedList[linkedInner[i].id].size; j++) {
+							needTag[formatSet[j].tag] = true;
+						}
 					}
 				}
-			}
-			String ret = null;
-			for (int i = 0; i < tagId; i++) {
-				if (needTag[i]) {
-					if (ret == null) {
-						ret = toLabel() + ": " + tagList[i];
-					} else {
-						ret += " / " + tagList[i];
+				for (int i = 0; i < tagId; i++) {
+					if (needTag[i]) {
+						if (ret == null) {
+							ret = toLabel() + ": " + tagList[i];
+						} else {
+							ret += " / " + tagList[i];
+						}
 					}
 				}
 			}
@@ -1067,9 +1113,15 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 
 		@Override
 		public String toFormat(int tag) {
+			if (tagFixBranch == null) {
+				return branch[0].toFormat(tag);
+				// return null;
+			}
 			if (tagFixBranch[tag] == -1) {
 				if (linkFixBranch == -1) {
-					return null;
+					return branch[0].toFormat(tag);
+					// TODO check
+					// return null;
 				} else {
 					return branch[linkFixBranch].toFormat(tag);
 				}
@@ -1177,7 +1229,9 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 		@Override
 		public String toFormat(int tag) {
 			if (id == -1) {
-				return null;
+				// TODO check
+				// return null;
+				return inner.toFormat(tag);
 			}
 			return inner.toFormat(tag) + " ${repetition" + id + "}";
 		}
@@ -1375,6 +1429,9 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 
 		@Override
 		public String toFormat(int tag) {
+			if (tagFix == null) {
+				return null;
+			}
 			if (!tagFix[tag]) {
 				if (!linkFix) {
 					return null;
