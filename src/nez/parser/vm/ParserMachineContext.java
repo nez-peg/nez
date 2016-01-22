@@ -43,7 +43,8 @@ public class ParserMachineContext extends ParserContext {
 		return false;
 	}
 
-	public final byte[] subByte(long start, long end) {
+	@Override
+	public final byte[] subByte(int start, int end) {
 		return source.subByte(start, end);
 	}
 

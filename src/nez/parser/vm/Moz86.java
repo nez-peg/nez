@@ -1776,7 +1776,7 @@ public class Moz86 {
 		@Override
 		public MozInst exec(ParserMachineContext sc) throws TerminationException {
 			int ppos = sc.xPPos();
-			sc.setCount(ppos, mask, shift);
+			sc.scanCount(ppos, mask, shift);
 			return next;
 		}
 	}
@@ -1801,7 +1801,7 @@ public class Moz86 {
 
 		@Override
 		public MozInst exec(ParserMachineContext sc) throws TerminationException {
-			return sc.decCount() == 0 ? this.jump : this.next;
+			return sc.decCount() ? this.next : this.jump;
 		}
 	}
 

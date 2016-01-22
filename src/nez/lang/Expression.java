@@ -773,12 +773,12 @@ public abstract class Expression extends AbstractList<Expression> implements Sou
 
 		@Override
 		public Expression visitScanf(Nez.Scanf e, Object a) {
-			return new Nez.Scanf(e.mask, e.shift, inner(e.get(0)));
+			return new Nez.Scanf(e.mask, e.shift, inner(e));
 		}
 
 		@Override
 		public Expression visitRepeat(Nez.Repeat e, Object a) {
-			return new Nez.Repeat(inner(e.get(0)));
+			return new Nez.Repeat(inner(e));
 		}
 
 		@Override

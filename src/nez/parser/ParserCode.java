@@ -60,9 +60,9 @@ public abstract class ParserCode<T extends Instruction> {
 		try {
 			while (true) {
 				MozInst next = cur.exec(ctx);
-				if (next == null) {
-					System.out.println("null " + cur);
-				}
+				// if (next == null) {
+				// System.out.println("null " + cur);
+				// }
 				cur = next;
 			}
 		} catch (TerminationException e) {

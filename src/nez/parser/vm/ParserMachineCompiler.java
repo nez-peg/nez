@@ -467,7 +467,10 @@ public class ParserMachineCompiler implements ParserCompiler {
 
 		@Override
 		public MozInst visitScanf(Nez.Scanf p, Object next) {
-			return new Moz86.Pos(p, compile(p.get(0), new Moz86.NScan(p.mask, p.shift, (MozInst) next)));
+			if (!strategy.Moz) {
+				return new Moz86.Pos(p, compile(p.get(0), new Moz86.NScan(p.mask, p.shift, (MozInst) next)));
+			}
+			return (MozInst) next;
 		}
 
 		@Override

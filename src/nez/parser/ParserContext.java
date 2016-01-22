@@ -403,7 +403,7 @@ public class ParserContext {
 
 	private int count = 0;
 
-	public final void setCount(int ppos, long mask, int shift) {
+	public final void scanCount(int ppos, long mask, int shift) {
 		if (mask == 0) {
 			String num = StringUtils.newString(subByte(ppos, pos));
 			count = (int) Long.parseLong(num);
@@ -417,8 +417,8 @@ public class ParserContext {
 		}
 	}
 
-	public final int decCount() {
-		return --count;
+	public final boolean decCount() {
+		return count-- > 0;
 	}
 
 	// Memotable ------------------------------------------------------------

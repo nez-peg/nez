@@ -2,11 +2,22 @@
  * Email Demo File
  */
 
-S
-    = [ \t]
-    
-_
-	= S*
+FILE
+	= EMPTY
+	/ CHAR
+	/ ANY
+	/ BYTE
+	/ CHARSET
+	/ BYTESET
+	/ STRING
+	/ NONTERMINAL
+	/ SEQUENCE
+	/ CHOICE
+	/ OPTION
+	/ ZEROMORE
+	/ ONEMORE
+	/ AND
+	/ NOT
 
 EMPTY = ''
 CHAR = 'a'
@@ -41,7 +52,24 @@ example ONEMORE  ~cca265 aababab
 example AND ~8caf11 abcd
 example NOT ~fa7122 a9
 
+/* Conditional Parsing */
 
+ON	    = IF <on A IF> <on !A IF>
+
+IF      = <if  A> 'a'
+	    / <if !A> 'b'
+
+example IF ~615076 b
+example ON ~ba069a bab
+
+/* Numeric Repetition */
+
+SCAN    = <scan [0-9]> <repeat 'a'>
+
+example SCAN ~2e3e6a 3aaa
+
+/* Bigger Sample */
+	
 example EMAIL ~f3d141 mail@address.com
 
 public EMAIL
@@ -52,6 +80,12 @@ DOMAIN
         = SUBDOMAIN ('.' SUBDOMAIN)+
 SUBDOMAIN
         = ([A-Za-z0-9] / '-')+
+
+S
+    = [ \t]
+    
+_
+	= S*
 
 
 /* Tree, Tree Operation */
@@ -87,6 +121,7 @@ example List ~070f0a80 A,B,C,D
 example LeftPair ~8b91eca A,B,C,D
 
 example RightPair ~dec0e50 A,B,C,D
+
 
 /* Mathematical */        
 
