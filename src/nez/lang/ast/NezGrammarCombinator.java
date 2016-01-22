@@ -255,22 +255,22 @@ public class NezGrammarCombinator extends Combinator {
 	}
 
 	public Expression pFunc() {
-		Expression _If = Sequence(t("if"), P("S"), Link("$name", "FlagName"), Tag("If"));
-		Expression _On = Sequence(Choice(t("on"), t("with")), P("S"), Link("$name", "FlagName"), P("S"), Link("$expr", "Expression"), Tag("On"));
-		Expression _Symbol = Sequence(t("symbol"), P("S"), Link("$name", "NonTerminal"), Tag("Symbol"));
-		Expression _Exists = Sequence(t("exists"), P("S"), Link("$name", "TableName"), Option(P("S"), Link("$symbol", "Character")), Tag("Exists"));
-		Expression _Match = Sequence(t("match"), P("S"), Link("$name", "TableName"), Tag("Match"));
-		Expression _Is = Sequence(t("is"), P("S"), Link("$name", "NonTerminal"), Tag("Is"));
-		Expression _Isa = Sequence(t("isa"), P("S"), Link("$name", "NonTerminal"), Tag("Isa"));
-		Expression _Block = Sequence(t("block"), P("S"), Link("$expr", "Expression"), Tag("Block"));
-		Expression _Local = Sequence(t("local"), P("S"), Link("$name", "TableName"), P("S"), Link("$expr", "Expression"), Tag("Local"));
-		Expression _Scanf = Sequence(t("number"), P("S"), Option(Link("$mask", "Mask"), P("S")), Link("$expr", "Expression"), Tag("Scanf"));
-		Expression _Repeat = Sequence(t("repeat"), P("S"), Link("$expr", "Expression"), Tag("Repeat"));
-		Expression _Def = Sequence(t("def"), P("S"), Link("$name", "TableName"), P("S"), Link("$expr", "Expression"), Tag("Def"));
+		Expression _If = Sequence(t("if"), P("S"), P("_"), Link("$name", "FlagName"), Tag("If"));
+		Expression _On = Sequence(Choice(t("on"), t("with")), P("S"), P("_"), Link("$name", "FlagName"), P("S"), P("_"), Link("$expr", "Expression"), Tag("On"));
+		Expression _Symbol = Sequence(t("symbol"), P("S"), P("_"), Link("$name", "NonTerminal"), Tag("Symbol"));
+		Expression _Exists = Sequence(t("exists"), P("S"), P("_"), Link("$name", "TableName"), Option(P("S"), P("_"), Link("$symbol", "Character")), Tag("Exists"));
+		Expression _Match = Sequence(t("match"), P("S"), P("_"), Link("$name", "TableName"), Tag("Match"));
+		Expression _Is = Sequence(t("is"), P("S"), P("_"), Link("$name", "NonTerminal"), Tag("Is"));
+		Expression _Isa = Sequence(t("isa"), P("S"), P("_"), Link("$name", "NonTerminal"), Tag("Isa"));
+		Expression _Block = Sequence(t("block"), P("S"), P("_"), Link("$expr", "Expression"), Tag("Block"));
+		Expression _Local = Sequence(t("local"), P("S"), P("_"), Link("$name", "TableName"), P("S"), P("_"), Link("$expr", "Expression"), Tag("Local"));
+		Expression _Scanf = Sequence(t("scan"), P("S"), P("_"), Option(Link("$mask", "Mask"), P("S"), P("_")), Link("$expr", "Expression"), Tag("Scanf"));
+		Expression _Repeat = Sequence(t("repeat"), P("S"), P("_"), Link("$expr", "Expression"), Tag("Repeat"));
+		Expression _Def = Sequence(t("def"), P("S"), P("_"), Link("$name", "TableName"), P("S"), P("_"), Link("$expr", "Expression"), Tag("Def"));
 		// Expression _Uniq = ;
 		// Expression _Set = ;
 		Expression _Undefined = Sequence(OneMore(Not(">"), AnyChar()), Tag("Undefined"));
-		return Sequence(t("<"), New(Choice(_If, _On, _Symbol, _Def, _Exists, _Match, _Is, _Isa, _Block, _Local, _Undefined)), P("_"), t(">"));
+		return Sequence(t("<"), New(Choice(_If, _On, _Symbol, _Def, _Exists, _Match, _Is, _Isa, _Block, _Local, _Scanf, _Repeat, _Undefined)), P("_"), t(">"));
 	}
 
 	public Expression pFlagName() {
