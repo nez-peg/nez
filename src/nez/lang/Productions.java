@@ -197,13 +197,13 @@ public class Productions {
 		public Object visitNonTerminal(NonTerminal e, Object a) {
 			if (a != null) {
 				if (e.getUniqueName().equals(a)) {
-					ConsoleUtils.perror(e.getGrammar(), e.formatSourceMessage("error", "left recursion"));
+					ConsoleUtils.perror(e.getGrammar(), ConsoleUtils.ErrorColor, e.formatSourceMessage("error", "left recursion"));
 					return true;
 				}
 			}
 			Production p = e.getProduction();
 			if (p == null) {
-				ConsoleUtils.perror(e.getGrammar(), e.formatSourceMessage("error", "undefined name: " + e.getLocalName()));
+				ConsoleUtils.perror(e.getGrammar(), ConsoleUtils.ErrorColor, e.formatSourceMessage("error", "undefined name: " + e.getLocalName()));
 				return true;
 			}
 			return check(e.getProduction().getExpression(), a);

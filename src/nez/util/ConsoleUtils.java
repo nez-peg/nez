@@ -95,8 +95,12 @@ public class ConsoleUtils {
 		System.out.println("NOTICE: " + message);
 	}
 
-	public final static void perror(Grammar g, String msg) {
-		ConsoleUtils.begin(31);
+	public final static int ErrorColor = 31;
+	public final static int WarningColor = 35;
+	public final static int NoticeColor = 36;
+
+	public final static void perror(Grammar g, int color, String msg) {
+		ConsoleUtils.begin(color);
 		System.out.println(msg);
 		ConsoleUtils.end();
 	}

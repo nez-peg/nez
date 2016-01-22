@@ -245,7 +245,7 @@ public class ParserOptimizer {
 			this.checkFirstVisitedProduction(uname, start); // start
 		}
 
-		private Expression visitInner(Expression e) {
+		private Expression visitExpression(Expression e) {
 			return (Expression) e.visit(this, null);
 		}
 
@@ -255,7 +255,7 @@ public class ParserOptimizer {
 			Productions.checkLeftRecursion(p);
 			Typestate stackedTypestate = this.requiredTypestate;
 			this.requiredTypestate = this.isNoTreeConstruction() ? Typestate.Unit : typeState(p);
-			Expression e = this.visitInner(p.getExpression());
+			Expression e = this.visitExpression(p.getExpression());
 			if (strategy.Coverage) {
 				e = Expressions.newCoverage(p.getUniqueName(), e);
 			}
@@ -276,7 +276,7 @@ public class ParserOptimizer {
 			}
 			if (n.isTerminal()) { /* Inlining Terminal */
 				try {
-					return visitInner(p.getExpression());
+					return visitExpression(p.getExpression());
 				} catch (StackOverflowError e) {
 					/* Handling a bad grammar */
 					reportError(n, "terminal is recursive: " + n.getLocalName());
@@ -291,7 +291,7 @@ public class ParserOptimizer {
 			if (innerTypestate == Typestate.TreeMutation) {
 				if (this.requiredTypestate == Typestate.TreeMutation) {
 					reportNotice(n, "inlining mutation nonterminal" + p.getLocalName());
-					return visitInner(p.getExpression());
+					return visitExpression(p.getExpression());
 				}
 			}
 
@@ -326,13 +326,17 @@ public class ParserOptimizer {
 
 		@Override
 		public Expression visitOn(Nez.OnCondition p, Object a) {
+			if (!conds.isConditional(p.get(0), p.flagName)) {
+				reportWarning(p, "unused condition: " + p.flagName);
+				return visitExpression(p.get(0));
+			}
 			Boolean stackedFlag = isFlag(p.flagName);
 			if (p.isPositive()) {
 				onFlag(p.flagName);
 			} else {
 				offFlag(p.flagName);
 			}
-			Expression newe = visitInner(p.get(0));
+			Expression newe = visitExpression(p.get(0));
 			if (stackedFlag) {
 				onFlag(p.flagName);
 			} else {
@@ -360,7 +364,7 @@ public class ParserOptimizer {
 		@Override
 		public Expression visitDetree(Nez.Detree p, Object a) {
 			boolean stacked = this.enterNoTreeConstruction();
-			Expression inner = this.visitInner(p.get(0));
+			Expression inner = this.visitExpression(p.get(0));
 			this.exitNoTreeConstruction(stacked);
 			return inner;
 		}
@@ -432,19 +436,19 @@ public class ParserOptimizer {
 		public Expression visitLinkTree(Nez.LinkTree p, Object a) {
 			Expression inner = p.get(0);
 			if (this.isNoTreeConstruction()) {
-				return this.visitInner(inner);
+				return this.visitExpression(inner);
 			}
 			if (this.requiredTypestate != Typestate.TreeMutation) {
 				reportRemoved(p, "$");
-				return this.visitInner(inner);
+				return this.visitExpression(inner);
 			}
 			Typestate innerTypestate = this.isNoTreeConstruction() ? Typestate.Unit : typeState(inner);
 			if (innerTypestate != Typestate.Tree) {
 				reportInserted(p, "{");
-				inner = Expressions.newTree(inner.getSourceLocation(), this.visitInner(inner));
+				inner = Expressions.newTree(inner.getSourceLocation(), this.visitExpression(inner));
 			} else {
 				this.requiredTypestate = Typestate.Tree;
-				inner = this.visitInner(p.get(0));
+				inner = this.visitExpression(p.get(0));
 			}
 			this.requiredTypestate = Typestate.TreeMutation;
 			return Expressions.newLinkTree(p.getSourceLocation(), p.label, inner);
@@ -457,7 +461,7 @@ public class ParserOptimizer {
 			UList<Expression> l = Expressions.newUList(p.size());
 			for (Expression inner : p) {
 				this.requiredTypestate = required;
-				Expressions.addChoice(l, this.visitInner(inner));
+				Expressions.addChoice(l, this.visitExpression(inner));
 				if (this.requiredTypestate != required && this.requiredTypestate != next) {
 					next = this.requiredTypestate;
 				}
@@ -487,19 +491,19 @@ public class ParserOptimizer {
 				if (this.requiredTypestate == Typestate.TreeMutation) {
 					this.reportInserted(p.get(0), "$");
 					this.requiredTypestate = Typestate.Tree;
-					Expression inner = visitInner(p.get(0));
+					Expression inner = visitExpression(p.get(0));
 					inner = Expressions.newLinkTree(p.getSourceLocation(), inner);
 					this.requiredTypestate = Typestate.TreeMutation;
 					return inner;
 				} else {
 					reportWarning(p, "disallowed tree construction in e?, e*, e+, or &e  " + innerTypestate);
 					boolean stacked = this.enterNoTreeConstruction();
-					Expression inner = visitInner(p.get(0));
+					Expression inner = visitExpression(p.get(0));
 					this.exitNoTreeConstruction(stacked);
 					return inner;
 				}
 			}
-			return visitInner(p.get(0));
+			return visitExpression(p.get(0));
 		}
 
 		@Override
@@ -514,10 +518,10 @@ public class ParserOptimizer {
 			if (innerTypestate != Typestate.Unit) {
 				// reportWarning(p, "disallowed tree construction in !e");
 				boolean stacked = this.enterNoTreeConstruction();
-				inner = this.visitInner(inner);
+				inner = this.visitExpression(inner);
 				this.exitNoTreeConstruction(stacked);
 			} else {
-				inner = this.visitInner(inner);
+				inner = this.visitExpression(inner);
 			}
 			return Expressions.newNot(p.getSourceLocation(), inner);
 		}
@@ -1102,9 +1106,9 @@ public class ParserOptimizer {
 			if (e instanceof Nez.Pair) {
 				e.set(1, this.visitInner(e.get(1), a));
 			}
-			if (e != p) {
-				Verbose.println("" + p + " => " + e);
-			}
+			// if (e != p) {
+			// Verbose.println("" + p + " => " + e);
+			// }
 			return e;
 		}
 
@@ -1126,15 +1130,20 @@ public class ParserOptimizer {
 	// Report
 
 	private final void reportError(Expression p, String message) {
-		this.strategy.reportError(p.getSourceLocation(), message);
+		if (p.getSourceLocation() != null) {
+			ConsoleUtils.perror(grammar, ConsoleUtils.ErrorColor, p.formatSourceMessage("error", message));
+		}
 	}
 
 	private final void reportWarning(Expression p, String message) {
-		this.strategy.reportWarning(p.getSourceLocation(), message);
+		if (p.getSourceLocation() != null) {
+			ConsoleUtils.perror(grammar, ConsoleUtils.WarningColor, p.formatSourceMessage("warning", message));
+		}
 	}
 
 	private final void reportNotice(Expression p, String message) {
-		this.strategy.reportNotice(p.getSourceLocation(), message);
+		if (p.getSourceLocation() != null) {
+			ConsoleUtils.perror(grammar, ConsoleUtils.WarningColor, p.formatSourceMessage("notice", message));
+		}
 	}
-
 }

@@ -21,6 +21,10 @@ public class Ctest extends Command {
 	public void exec() throws IOException {
 		Grammar grammar = newGrammar();
 		GrammarExample example = (GrammarExample) grammar.getMetaData("example");
+		if (example == null) {
+			ConsoleUtils.println("No example is specified");
+			return;
+		}
 		if (!testAll(grammar, example.getExampleList(), strategy)) {
 			System.exit(1);
 		}
