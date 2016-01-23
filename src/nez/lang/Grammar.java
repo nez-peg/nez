@@ -60,7 +60,7 @@ public class Grammar extends AbstractList<Production> {
 		if (size() > 0) {
 			return this.prodList.ArrayValues[0];
 		}
-		return this.addProduction("START", Expressions.newEmpty(null));
+		return this.addProduction("EMPTY", Expressions.newEmpty(null));
 	}
 
 	public final boolean hasProduction(String name) {

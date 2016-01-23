@@ -19,8 +19,10 @@ public class ConsoleUtils {
 	public final static int Red = 31;
 	public final static int Green = 32;
 	public final static int Yellow = 32;
+	public final static int Blue_ = 33;
 	public final static int Blue = 34;
 	public final static int Magenta = 35;
+	public final static int Cyan = 36;
 	public final static int Gray = 37;
 
 	public final static void begin(int c) {

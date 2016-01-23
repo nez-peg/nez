@@ -17,22 +17,31 @@ public class Cinez extends Command {
 	String text = null;
 	int linenum = 1;
 
+	private void p(String line) {
+		ConsoleUtils.begin(ConsoleUtils.Blue_);
+		ConsoleUtils.println(line);
+		ConsoleUtils.end();
+	}
+
 	@Override
 	public void exec() throws IOException {
 		Command.displayVersion();
+		p("Enter an input string to match (or a grammar if you want to update).");
+		p("Tips: Start with an empty line for multiple lines.");
+		p("      Entering two empty lines diplays the current grammar.");
 		ConsoleUtils.println("");
 		Parser nezParser = this.getNezParser();
 		TreeWriter writer = this.getTreeWriter("ast json xml");
 		Grammar grammar = newGrammar();
 		String start = grammar.getStartProduction().getLocalName();
 		Parser p = strategy.newParser(grammar);
-		p.setDisabledUnconsumed(true);
+		p.setDisabledUnconsumed(false);
 		ParserGenerator pg = new ParserGenerator();
 		int startline = linenum;
 		console = ReadLine.getConsoleReader();
 		while (readText(ConsoleUtils.bold(start) + ">>> ") && text != null) {
 			if (checkEmptyText(text)) {
-				ConsoleUtils.begin(32);
+				ConsoleUtils.begin(ConsoleUtils.Blue);
 				grammar.dump();
 				ConsoleUtils.end();
 				continue;
@@ -45,11 +54,9 @@ public class Cinez extends Command {
 				try {
 					start = grammar.getStartProduction().getLocalName();
 					p = strategy.newParser(grammar);
-					p.setDisabledUnconsumed(true);
+					p.setDisabledUnconsumed(false);
 					ReadLine.addHistory(console, text);
-					ConsoleUtils.bold();
-					ConsoleUtils.println("Grammar is updated!");
-					ConsoleUtils.end();
+					p("Grammar is updated!");
 					continue;
 				} catch (Exception e) {
 					Verbose.traceException(e);
@@ -58,17 +65,15 @@ public class Cinez extends Command {
 			// System.out.println("parse " + p.hasErrors());
 			node = p.parse(sc);
 			if (p.hasErrors()) {
-				ConsoleUtils.begin(31);
+				ConsoleUtils.begin(ConsoleUtils.Red);
 				p.showErrors();
 				ConsoleUtils.end();
 				if (node == null) {
-					ConsoleUtils.bold();
-					ConsoleUtils.println("Tips: To enter multiple lines, start an empty line and then end an empty line again.");
-					ConsoleUtils.end();
+					p("Tips: To enter multiple lines, start and end an empty line.");
 				}
 			}
 			if (node != null) {
-				ConsoleUtils.begin(34);
+				ConsoleUtils.begin(ConsoleUtils.Blue);
 				if (writer != null) {
 					writer.writeTree(node);
 				} else {

@@ -23,7 +23,7 @@ EMPTY = ''
 CHAR = 'a'
 ANY  = .
 BYTE = 0x61  /* a */
-CHARSET = [0-9]
+CHARSET = [a-z]
 BYTESET = 0xxxxxxx 
 STRING  = 'abc'
 NONTERMINAL = SEQUENCE
@@ -36,21 +36,21 @@ ONEMORE  = 'ab'+ / 'a'
 AND      = &STRING 'abc'
 NOT      = !STRING SEQUENCE
 
-example EMPTY ~c70ff aa
-example CHAR ~cca2658 aa
-example ANY  ~cca2658 aa
-example BYTE ~cca2658 aa  
-example CHARSET ~adcafb 0
-example BYTESET ~adcafb 0
-example STRING ~8caf11 abcd
-example NONTERMINAL ~fa7122 a9
-example SEQUENCE ~fa7122 a9
-example CHOICE ~cca2658 ab
-example OPTION ~cca2658 aa
-example ZEROMORE ~1d59a2f abababa
-example ONEMORE  ~cca265 aababab
-example AND ~8caf11 abcd
-example NOT ~fa7122 a9
+example EMPTY ~d9834e aa
+example CHAR ~fc3b311 aa
+example ANY  ~fc3b311 aa
+example BYTE ~fc3b311 aa  
+example CHARSET ~fc3b311 aa
+example BYTESET ~fc3b311 aa
+example STRING ~605e55 abcd
+example NONTERMINAL ~b4a3577 a9
+example SEQUENCE ~b4a3577 a9
+example CHOICE ~fc3b311 ab
+example OPTION ~fc3b311 aa
+example ZEROMORE ~46d896 abababa
+example ONEMORE  ~fc3b311 aababab
+example AND ~605e55 abcd
+example NOT ~b4a3577 a9
 
 /* Conditional Parsing */
 
@@ -59,14 +59,34 @@ ON	    = IF <on A IF> <on !A IF>
 IF      = <if  A> 'a'
 	    / <if !A> 'b'
 
-example IF ~615076 b
-example ON ~ba069a bab
+example IF ~13a89dc b
+example ON ~0481baf bab
 
 /* Numeric Repetition */
 
 SCAN    = <scan [0-9]> <repeat 'a'>
 
-example SCAN ~2e3e6a 3aaa
+example SCAN ~7356c 3aaa
+
+/* Symbol table */
+
+NAME = [A-Za-z] [A-Za-z_0-9]*
+
+SYMBOL = <symbol NAME>
+EXISTS = <symbol NAME> <exists NAME> !<exists MATCH>
+EXISTSSYMBOL = <symbol NAME> <exists NAME 'Apple'> !<exists NAME 'Orange'>
+
+MATCH  = <symbol NAME> '/' <match NAME>
+IS     = <symbol NAME> '/' <is NAME>
+ISA    = (<symbol NAME> ',')* '/' <isa NAME>
+
+example SYMBOL ~9539deb Apple
+example EXISTS ~9539de Apple
+example EXISTSSYMBOL ~9539de Apple
+
+example MATCH ~1d96fb6 Apple/AppleII
+example IS    Apple/Apple
+example ISA   Apple,Orange,Banana/Apple
 
 /* Bigger Sample */
 	
