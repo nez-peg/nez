@@ -1581,6 +1581,7 @@ public class Moz86 {
 		@Override
 		public MozInst exec(ParserMachineContext sc) throws TerminationException {
 			sc.xSOpen();
+			sc.addSymbolMask(table);
 			return this.next;
 		}
 

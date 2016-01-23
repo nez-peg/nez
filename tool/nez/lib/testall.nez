@@ -18,6 +18,15 @@ FILE
 	/ ONEMORE
 	/ AND
 	/ NOT
+	/ SCAN
+	/ SYMBOL
+	/ EXISTS
+	/ EXISTSSYMBOL
+	/ MATCH
+	/ ISA
+	/ IS
+	/ BLOCK
+	/ LOCAL
 
 EMPTY = ''
 CHAR = 'a'
@@ -92,21 +101,20 @@ BLOCK  = <block <symbol NAME>> !<exists NAME>
 BLOCK2  = <symbol NAME> '/' <block <match NAME>>
 
 LOCAL  = <local NAME <symbol NAME>> !<exists NAME>
-LOCAL2  = <symbol NAME> ('/' <local NAME <match NAME>>)?
+LOCAL2  = <symbol NAME> <local NAME !<exists NAME>>
 
-example BLOCK    Apple
-example BLOCK2   Apple/Apple
-example LOCAL    Apple
-example LOCAL2   Apple/Apple
-
+example BLOCK  ~9539de  Apple
+example BLOCK2 ~1d96fb  Apple/Apple
+example LOCAL  ~9539de  Apple
+example LOCAL2 ~9539de  Apple
 
 /* Bigger Sample */
 	
 example EMAIL ~c07595 mail@address.com
 
 public EMAIL
-        = LOCAL '@' DOMAIN
-LOCAL
+        = USER '@' DOMAIN
+USER
         = ([A-Za-z0-9] / '-')+ ('.' LOCAL)?
 DOMAIN
         = SUBDOMAIN ('.' SUBDOMAIN)+
@@ -124,7 +132,7 @@ _
 
 NewTree = { NAME #Name }
 
-example NewTree ~fdb051  Apple2
+example NewTree ~5c0f58 Apple2
 
 NoTag = { NAME }
 Replace = { NAME #Name `Apple` }

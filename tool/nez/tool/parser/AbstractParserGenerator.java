@@ -30,6 +30,7 @@ import nez.util.ConsoleUtils;
 import nez.util.FileBuilder;
 import nez.util.StringUtils;
 import nez.util.UList;
+import nez.util.Verbose;
 
 public abstract class AbstractParserGenerator implements SourceGenerator {
 	protected Parser parser;
@@ -74,6 +75,11 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 	@Override
 	public void generate() {
 		Grammar g = this.parser.getParserGrammar();
+		if (Verbose.enabled) {
+			for (Production p : g) {
+				Verbose.println(p.getLocalName() + " = " + p.getExpression());
+			}
+		}
 		this.generateHeader(g);
 		this.checkSymbol(g);
 		this.generate(g);
@@ -1155,7 +1161,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 			BeginScope();
 			saveTree();
 			saveLog();
-			visit(e, a);
+			visit(e.get(0), a);
 			backTree();
 			backLog();
 			EndScope();
@@ -1166,7 +1172,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		public Object visitBlockScope(Nez.BlockScope e, Object a) {
 			BeginScope();
 			saveSymbol();
-			visit(e, a);
+			visit(e.get(0), a);
 			backSymbol();
 			EndScope();
 			return null;
@@ -1177,7 +1183,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 			BeginScope();
 			saveSymbol();
 			Statement(ParserFunc("maskSymbolTable", _symbol(e.tableName)));
-			visit(e, a);
+			visit(e.get(0), a);
 			backSymbol();
 			EndScope();
 			return null;
@@ -1187,7 +1193,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		public Object visitSymbolAction(SymbolAction e, Object a) {
 			BeginScope();
 			String pos = savePos();
-			visit(e, a);
+			visit(e.get(0), a);
 			Statement(ParserFunc("addSymbol", _symbol(e.tableName), pos));
 			EndScope();
 			return null;
@@ -1197,7 +1203,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		public Object visitSymbolPredicate(SymbolPredicate e, Object a) {
 			BeginScope();
 			String pos = savePos();
-			visit(e, a);
+			visit(e.get(0), a);
 			if (e.op == FunctionName.is) {
 				Statement(ParserFunc("equals", _symbol(e.tableName), pos));
 			} else {
@@ -1240,17 +1246,17 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		public Object visitScan(Nez.Scan e, Object a) {
 			BeginScope();
 			String ppos = savePos();
-			visit(e, a);
-			Statement(ParserFunc("setCount", ppos, _long(e.mask), _int(e.shift)));
+			visit(e.get(0), a);
+			Statement(ParserFunc("scanCount", ppos, _long(e.mask), _int(e.shift)));
 			EndScope();
 			return null;
 		}
 
 		@Override
 		public Object visitRepeat(Nez.Repeat e, Object a) {
-			While(_op(ParserFunc("decCount"), _noteq(), "0"));
+			While(ParserFunc("decCount"));
 			{
-				visit(e, a);
+				visit(e.get(0), a);
 			}
 			EndWhile();
 			return null;

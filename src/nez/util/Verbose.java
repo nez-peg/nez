@@ -64,7 +64,9 @@ public class Verbose {
 	public final static void printElapsedTime(String msg, long t1, long t2) {
 		if (enabled) {
 			double d = (t2 - t1) / 1000000;
-			println("%s : %f[ms]", msg, d);
+			if (d > 0.1) {
+				println("%s : %f[ms]", msg, d);
+			}
 		}
 	}
 
