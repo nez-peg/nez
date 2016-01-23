@@ -72,20 +72,9 @@ public class ParserContext {
 		return b;
 	}
 
-	protected final byte byteAt(int n) {
+	protected byte byteAt(int n) {
 		return inputs[n];
 	}
-
-	//
-	// @Override
-	// public final String subString(long startIndex, long endIndex) {
-	// try {
-	// return new String(this.inputs, (int) (startIndex), (int) (endIndex -
-	// startIndex), StringUtils.DefaultEncoding);
-	// } catch (UnsupportedEncodingException e) {
-	// }
-	// return null;
-	// }
 
 	// AST
 
@@ -391,7 +380,7 @@ public class ParserContext {
 				if (entry.symbol == NullSymbol) {
 					return false; // masked
 				}
-				if (entry.code == code && equalsInputs(ppos, pos, entry.symbol)) {
+				if (code == entry.code && equalsInputs(ppos, pos, entry.symbol)) {
 					return true;
 				}
 			}

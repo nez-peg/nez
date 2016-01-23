@@ -48,6 +48,11 @@ public class ParserMachineContext extends ParserContext {
 		return source.subByte(start, end);
 	}
 
+	@Override
+	public final byte byteAt(int pos) {
+		return (byte) source.byteAt(pos);
+	}
+
 	private int head_pos = 0;
 
 	@Override

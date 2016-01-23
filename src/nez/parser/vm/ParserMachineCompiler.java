@@ -162,7 +162,7 @@ public class ParserMachineCompiler implements ParserCompiler {
 
 		@Override
 		public MozInst visitByteSet(Nez.ByteSet p, Object next) {
-			return new Moz86.Set(p, binaryCheck(p, next));
+			return new Moz86.Set(p.byteMap, binaryCheck(p, next));
 		}
 
 		@Override

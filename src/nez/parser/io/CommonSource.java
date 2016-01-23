@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import nez.ast.Source;
+import nez.util.FileBuilder;
 
 public abstract class CommonSource implements Source {
 
@@ -106,25 +107,13 @@ public abstract class CommonSource implements Source {
 	}
 
 	public final String formatPositionMessage(String messageType, long pos, String message) {
-		return "(" + this.getResourceName() + ":" + this.linenum(pos) + ") [" + messageType + "] " + message;
+		return "(" + FileBuilder.extractFileName(this.getResourceName()) + ":" + this.linenum(pos) + ") [" + messageType + "] " + message;
 	}
 
 	@Override
 	public final String formatPositionLine(String messageType, long pos, String message) {
 		return this.formatPositionMessage(messageType, pos, message) + this.getTextAround(pos, "\n ");
 	}
-
-	// @Override
-	// public final String formatDebugPositionMessage(long pos, String message)
-	// {
-	// return "(" + this.getResourceName() + ":" + this.linenum(pos) + ")" +
-	// message;
-	// }
-	//
-	// public final String formatDebugPositionLine(long pos, String message) {
-	// return this.formatDebugPositionMessage(pos, message) +
-	// this.getTextAround(pos, "\n ");
-	// }
 
 	private final String getTextAround(long pos, String delim) {
 		int ch = 0;
@@ -162,11 +151,11 @@ public abstract class CommonSource implements Source {
 		for (long i = startIndex; i < endIndex; i++) {
 			ch = byteAt(i);
 			if (ch == '\n') {
-				source.append("\\N");
+				source.append("\\n");
 				if (i == pos) {
 					marker.append("^^");
 				} else {
-					marker.append("\\N");
+					marker.append("\\n");
 				}
 			} else if (ch == '\t') {
 				source.append("    ");
@@ -187,35 +176,6 @@ public abstract class CommonSource implements Source {
 		return delim + source.toString() + delim + marker.toString();
 	}
 
-	// public final int charAt(long pos) {
-	// int c = byteAt(pos), c2, c3, c4;
-	// int len = StringUtils.lengthOfUtf8(c);
-	// switch (len) {
-	// case 1:
-	// return c;
-	// case 2:
-	// // 0b11111 = 31
-	// // 0b111111 = 63
-	// c2 = byteAt(pos + 1) & 63;
-	// return ((c & 31) << 6) | c2;
-	// case 3:
-	// c2 = byteAt(pos + 1) & 63;
-	// c3 = byteAt(pos + 2) & 63;
-	// return ((c & 15) << 12) | c2 << 6 | c3;
-	// case 4:
-	// c2 = byteAt(pos + 1) & 63;
-	// c3 = byteAt(pos + 2) & 63;
-	// c4 = byteAt(pos + 3) & 63;
-	// return ((c & 7) << 18) | c2 << 12 | c3 << 6 | c4;
-	// }
-	// return -1;
-	// }
-	//
-	// public final int charLength(long pos) {
-	// int c = byteAt(pos);
-	// return StringUtils.lengthOfUtf8(c);
-	// }
-
 	public final static Source newStringSource(String str) {
 		return new StringSource(str);
 	}
@@ -226,12 +186,7 @@ public abstract class CommonSource implements Source {
 
 	public final static Source newFileSource(String fileName) throws IOException {
 		File f = new File(fileName);
-		// System.out.println("file: " + fileName + " " + f.isFile());
 		if (!f.isFile()) {
-			// URL url = new URL(SourceContext.class.getResource("."),
-			// fileName);
-			// System.out.println("url: " + url);
-			// Stream = url.openStream();
 			InputStream Stream = CommonSource.class.getResourceAsStream("/nez/lib/" + fileName);
 			if (Stream != null) {
 				BufferedReader reader = new BufferedReader(new InputStreamReader(Stream));

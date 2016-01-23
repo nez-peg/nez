@@ -816,10 +816,10 @@ public class Moz86 {
 		}
 	}
 
-	static abstract class AbstractSetInstruction extends MozInst {
+	static abstract class AbstSet extends MozInst {
 		public final boolean[] byteSet;
 
-		AbstractSetInstruction(byte opcode, Nez.ByteSet e, MozInst next) {
+		AbstSet(byte opcode, Nez.ByteSet e, MozInst next) {
 			super(opcode, e, next);
 			this.byteSet = e.byteMap;
 			// if (this.byteMap[0]) {
@@ -827,7 +827,7 @@ public class Moz86 {
 			// }
 		}
 
-		AbstractSetInstruction(byte opcode, boolean[] byteMap, MozInst next) {
+		AbstSet(byte opcode, boolean[] byteMap, MozInst next) {
 			super(opcode, null, next);
 			this.byteSet = byteMap;
 			// if (this.byteMap[0]) {
@@ -842,11 +842,7 @@ public class Moz86 {
 
 	}
 
-	public final static class Set extends AbstractSetInstruction {
-		public Set(Nez.ByteSet e, MozInst next) {
-			super(MozSet.Set, e, next);
-		}
-
+	public final static class Set extends AbstSet {
 		public Set(boolean[] byteMap, MozInst next) {
 			super(MozSet.Set, byteMap, next);
 		}
@@ -877,11 +873,7 @@ public class Moz86 {
 
 	}
 
-	public final static class OSet extends AbstractSetInstruction {
-		public OSet(Nez.ByteSet e, MozInst next) {
-			super(MozSet.OSet, e, next);
-		}
-
+	public final static class OSet extends AbstSet {
 		public OSet(boolean[] byteMap, MozInst next) {
 			super(MozSet.OSet, byteMap, next);
 		}
@@ -911,11 +903,7 @@ public class Moz86 {
 
 	}
 
-	public final static class NSet extends AbstractSetInstruction {
-		public NSet(Nez.ByteSet e, MozInst next) {
-			super(MozSet.NSet, e, next);
-		}
-
+	public final static class NSet extends AbstSet {
 		public NSet(boolean[] byteMap, MozInst next) {
 			super(MozSet.OSet, byteMap, next);
 		}
@@ -945,11 +933,7 @@ public class Moz86 {
 
 	}
 
-	public final static class RSet extends AbstractSetInstruction {
-		public RSet(Nez.ByteSet e, MozInst next) {
-			super(MozSet.RSet, e, next);
-		}
-
+	public final static class RSet extends AbstSet {
 		public RSet(boolean[] byteMap, MozInst next) {
 			super(MozSet.OSet, byteMap, next);
 		}
@@ -979,10 +963,10 @@ public class Moz86 {
 
 	}
 
-	static abstract class AbstractStrInstruction extends MozInst {
+	static abstract class AbstStr extends MozInst {
 		final byte[] utf8;
 
-		public AbstractStrInstruction(byte opcode, Nez.MultiByte e, byte[] utf8, MozInst next) {
+		public AbstStr(byte opcode, Nez.MultiByte e, byte[] utf8, MozInst next) {
 			super(opcode, e, next);
 			this.utf8 = utf8;
 		}
@@ -1001,7 +985,7 @@ public class Moz86 {
 
 	}
 
-	public final static class Str extends AbstractStrInstruction {
+	public final static class Str extends AbstStr {
 		public Str(Nez.MultiByte e, MozInst next) {
 			super(MozSet.Str, e, e.byteSeq, next);
 		}
@@ -1034,7 +1018,7 @@ public class Moz86 {
 
 	}
 
-	public final static class NStr extends AbstractStrInstruction {
+	public final static class NStr extends AbstStr {
 		public NStr(Nez.MultiByte e, MozInst next) {
 			super(MozSet.NStr, e, e.byteSeq, next);
 		}
@@ -1066,7 +1050,7 @@ public class Moz86 {
 
 	}
 
-	public final static class OStr extends AbstractStrInstruction {
+	public final static class OStr extends AbstStr {
 		public OStr(Nez.MultiByte e, MozInst next) {
 			super(MozSet.OStr, e, e.byteSeq, next);
 		}
@@ -1096,7 +1080,7 @@ public class Moz86 {
 
 	}
 
-	public final static class RStr extends AbstractStrInstruction {
+	public final static class RStr extends AbstStr {
 		public RStr(Nez.MultiByte e, MozInst next) {
 			super(MozSet.RStr, e, e.byteSeq, next);
 		}

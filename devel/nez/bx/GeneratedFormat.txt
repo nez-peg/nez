@@ -1,0 +1,54 @@
+format #Add(left: #Add / #Sub / #Mul / #Div / #Mod / #Int / #Variable, right: #Mul / #Div / #Mod / #Int / #Variable)
+` ${left} + ${right} `
+
+format #Add(left: #Add / #Sub / #Mul / #Div / #Mod / #Int / #Variable, right: #Add / #Sub)
+` ${left} + ( ${right} ) `
+
+format #Sub(left: #Add / #Sub / #Mul / #Div / #Mod / #Int / #Variable, right: #Mul / #Div / #Mod / #Int / #Variable)
+` ${left} - ${right} `
+
+format #Sub(left: #Add / #Sub / #Mul / #Div / #Mod / #Int / #Variable, right: #Add / #Sub)
+` ${left} - ( ${right} ) `
+
+format #Mul(left: #Mul / #Div / #Mod / #Int / #Variable, right: #Int / #Variable)
+` ${left} * ${right} `
+
+format #Mul(left: #Add / #Sub, right: #Int / #Variable)
+` ( ${left} ) * ${right} `
+
+format #Mul(left: #Mul / #Div / #Mod / #Int / #Variable, right: #Add / #Sub / #Mul / #Div / #Mod)
+` ${left} * ( ${right} ) `
+
+format #Mul(left: #Add / #Sub, right: #Add / #Sub / #Mul / #Div / #Mod)
+` ( ${left} ) * ( ${right} ) `
+
+format #Div(left: #Mul / #Div / #Mod / #Int / #Variable, right: #Int / #Variable)
+` ${left} / ${right} `
+
+format #Div(left: #Add / #Sub, right: #Int / #Variable)
+` ( ${left} ) / ${right} `
+
+format #Div(left: #Mul / #Div / #Mod / #Int / #Variable, right: #Add / #Sub / #Mul / #Div / #Mod)
+` ${left} / ( ${right} ) `
+
+format #Div(left: #Add / #Sub, right: #Add / #Sub / #Mul / #Div / #Mod)
+` ( ${left} ) / ( ${right} ) `
+
+format #Mod(left: #Mul / #Div / #Mod / #Int / #Variable, right: #Int / #Variable)
+` ${left} % ${right} `
+
+format #Mod(left: #Add / #Sub, right: #Int / #Variable)
+` ( ${left} ) % ${right} `
+
+format #Mod(left: #Mul / #Div / #Mod / #Int / #Variable, right: #Add / #Sub / #Mul / #Div / #Mod)
+` ${left} % ( ${right} ) `
+
+format #Mod(left: #Add / #Sub, right: #Add / #Sub / #Mul / #Div / #Mod)
+` ( ${left} ) % ( ${right} ) `
+
+format #Int()
+` ${this.toText()} `
+
+format #Variable()
+` ${this.toText()} `
+

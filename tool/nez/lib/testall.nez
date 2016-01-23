@@ -78,7 +78,7 @@ EXISTSSYMBOL = <symbol NAME> <exists NAME 'Apple'> !<exists NAME 'Orange'>
 
 MATCH  = <symbol NAME> '/' <match NAME>
 IS     = <symbol NAME> '/' <is NAME>
-ISA    = (<symbol NAME> ',')* '/' <isa NAME>
+ISA    = (<symbol NAME> ','?)* '/' <isa NAME>
 
 example SYMBOL ~9539deb Apple
 example EXISTS ~9539de Apple
@@ -88,9 +88,21 @@ example MATCH ~1d96fb6 Apple/AppleII
 example IS    Apple/Apple
 example ISA   Apple,Orange,Banana/Apple
 
+BLOCK  = <block <symbol NAME>> !<exists NAME>
+BLOCK2  = <symbol NAME> '/' <block <match NAME>>
+
+LOCAL  = <local NAME <symbol NAME>> !<exists NAME>
+LOCAL2  = <symbol NAME> ('/' <local NAME <match NAME>>)?
+
+example BLOCK    Apple
+example BLOCK2   Apple/Apple
+example LOCAL    Apple
+example LOCAL2   Apple/Apple
+
+
 /* Bigger Sample */
 	
-example EMAIL ~f3d141 mail@address.com
+example EMAIL ~c07595 mail@address.com
 
 public EMAIL
         = LOCAL '@' DOMAIN
@@ -110,8 +122,6 @@ _
 
 /* Tree, Tree Operation */
 
-NAME = [A-Za-z]+
-
 NewTree = { NAME #Name }
 
 example NewTree ~fdb051  Apple2
@@ -119,7 +129,7 @@ example NewTree ~fdb051  Apple2
 NoTag = { NAME }
 Replace = { NAME #Name `Apple` }
 
-example NoTag ~c5f2a69 Banana
+example NoTag ~dec077 Banana
 example Replace ~fdb051 Banana
 
 /* List,LeftPair,RightPair */
