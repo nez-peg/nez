@@ -722,9 +722,17 @@ public class Nez {
 		}
 	}
 
+	final static Symbol TableName(NonTerminal n, Symbol table) {
+		if (table == null) {
+			String u = n.getLocalName().replace("~", "");
+			return Symbol.unique(u);
+		}
+		return table;
+	}
+
 	public static class SymbolAction extends SymbolFunction {
 		SymbolAction(FunctionName op, NonTerminal e) {
-			super(op, e, Symbol.unique(e.getLocalName()));
+			super(op, e, TableName(e, null));
 		}
 
 		@Override
@@ -747,7 +755,7 @@ public class Nez {
 
 	public static class SymbolPredicate extends SymbolFunction {
 		SymbolPredicate(FunctionName op, NonTerminal pat, Symbol table) {
-			super(op, pat, table == null ? Symbol.unique(pat.getLocalName()) : table);
+			super(op, pat, TableName(pat, table));
 		}
 
 		@Override
@@ -768,7 +776,7 @@ public class Nez {
 	public static class SymbolMatch extends SymbolFunction {
 
 		SymbolMatch(FunctionName op, NonTerminal pat, Symbol table) {
-			super(op, pat, table == null ? Symbol.unique(pat.getLocalName()) : table);
+			super(op, pat, TableName(pat, table));
 		}
 
 		@Override
@@ -922,11 +930,11 @@ public class Nez {
 		}
 	}
 
-	public static class Scanf extends Function {
+	public static class Scan extends Function {
 		public final long mask;
 		public final int shift;
 
-		Scanf(long mask, int shift, Expression e) {
+		Scan(long mask, int shift, Expression e) {
 			super(FunctionName.scanf, e);
 			this.mask = mask;
 			this.shift = shift;
@@ -934,8 +942,8 @@ public class Nez {
 
 		@Override
 		public final boolean equals(Object o) {
-			if (o instanceof Nez.Scanf) {
-				Nez.Scanf e = (Nez.Scanf) o;
+			if (o instanceof Nez.Scan) {
+				Nez.Scan e = (Nez.Scan) o;
 				return this.mask == e.mask && this.shift == e.shift && this.get(0).equals(e.get(0));
 			}
 			return false;
@@ -943,7 +951,7 @@ public class Nez {
 
 		@Override
 		public final Object visit(Expression.Visitor v, Object a) {
-			return v.visitScanf(this, a);
+			return v.visitScan(this, a);
 		}
 	}
 

@@ -235,7 +235,7 @@ public enum ByteAcceptance {
 		}
 
 		@Override
-		public ByteAcceptance visitScanf(Nez.Scanf e, Object ch) {
+		public ByteAcceptance visitScan(Nez.Scan e, Object ch) {
 			return accept(e.get(0), ch);
 		}
 

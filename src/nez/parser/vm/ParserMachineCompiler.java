@@ -139,19 +139,35 @@ public class ParserMachineCompiler implements ParserCompiler {
 			return this.commonFailure;
 		}
 
-		@Override
-		public MozInst visitAny(Nez.Any p, Object next) {
-			return new Moz86.Any(p, (MozInst) next);
+		private MozInst binaryCheck(Expression e, Object next) {
+			if (strategy.BinaryGrammar) {
+				if (e instanceof Nez.Byte) {
+					if (((Nez.Byte) e).byteChar == 0) {
+						return new Moz86.NotEOF((MozInst) next);
+					}
+				}
+				if (e instanceof Nez.ByteSet) {
+					if (((Nez.ByteSet) e).byteMap[0]) {
+						return new Moz86.NotEOF((MozInst) next);
+					}
+				}
+			}
+			return (MozInst) next;
 		}
 
 		@Override
 		public MozInst visitByte(Nez.Byte p, Object next) {
-			return new Moz86.Byte(p, (MozInst) next);
+			return new Moz86.Byte(p.byteChar, binaryCheck(p, next));
 		}
 
 		@Override
 		public MozInst visitByteSet(Nez.ByteSet p, Object next) {
-			return new Moz86.Set(p, (MozInst) next);
+			return new Moz86.Set(p, binaryCheck(p, next));
+		}
+
+		@Override
+		public MozInst visitAny(Nez.Any p, Object next) {
+			return new Moz86.Any(p, (MozInst) next);
 		}
 
 		@Override
@@ -196,15 +212,15 @@ public class ParserMachineCompiler implements ParserCompiler {
 				Expression inner = getInnerExpression(p);
 				if (inner instanceof Nez.Byte) {
 					this.optimizedUnary(p);
-					return new Moz86.OByte((Nez.Byte) inner, (MozInst) next);
+					return new Moz86.OByte(((Nez.Byte) inner).byteChar, (MozInst) next);
 				}
 				if (inner instanceof Nez.ByteSet) {
 					this.optimizedUnary(p);
-					return new Moz86.OSet((Nez.ByteSet) inner, (MozInst) next);
+					return new Moz86.OSet(((Nez.ByteSet) inner).byteMap, (MozInst) next);
 				}
 				if (inner instanceof Nez.MultiByte) {
 					this.optimizedUnary(p);
-					return new Moz86.OStr((Nez.MultiByte) inner, (MozInst) next);
+					return new Moz86.OStr(((Nez.MultiByte) inner).byteSeq, (MozInst) next);
 				}
 			}
 			MozInst pop = new Moz86.Succ(p, (MozInst) next);
@@ -225,16 +241,13 @@ public class ParserMachineCompiler implements ParserCompiler {
 			if (strategy.Olex) {
 				Expression inner = getInnerExpression((Expression) p);
 				if (inner instanceof Nez.Byte) {
-					this.optimizedUnary((Expression) p);
-					return new Moz86.RByte((Nez.Byte) inner, (MozInst) next);
+					return new Moz86.RByte(((Nez.Byte) inner).byteChar, (MozInst) next);
 				}
 				if (inner instanceof Nez.ByteSet) {
-					this.optimizedUnary((Expression) p);
-					return new Moz86.RSet((Nez.ByteSet) inner, (MozInst) next);
+					return new Moz86.RSet(((Nez.ByteSet) inner).byteMap, (MozInst) next);
 				}
 				if (inner instanceof Nez.MultiByte) {
-					this.optimizedUnary((Expression) p);
-					return new Moz86.RStr((Nez.MultiByte) inner, (MozInst) next);
+					return new Moz86.RStr(((Nez.MultiByte) inner).byteSeq, (MozInst) next);
 				}
 			}
 			MozInst skip = new Moz86.Step((Expression) p);
@@ -253,21 +266,17 @@ public class ParserMachineCompiler implements ParserCompiler {
 		public final MozInst visitNot(Nez.Not p, Object next) {
 			if (strategy.Olex) {
 				Expression inner = getInnerExpression(p);
-				if (inner instanceof Nez.ByteSet) {
-					this.optimizedUnary(p);
-					return new Moz86.NSet((Nez.ByteSet) inner, (MozInst) next);
-				}
 				if (inner instanceof Nez.Byte) {
-					this.optimizedUnary(p);
-					return new Moz86.NByte((Nez.Byte) inner, (MozInst) next);
+					return new Moz86.NByte(((Nez.Byte) inner).byteChar, (MozInst) next);
 				}
-				if (inner instanceof Nez.Any) {
-					this.optimizedUnary(p);
-					return new Moz86.NAny(inner, false, (MozInst) next);
+				if (inner instanceof Nez.ByteSet) {
+					return new Moz86.NSet(((Nez.ByteSet) inner).byteMap, (MozInst) next);
 				}
 				if (inner instanceof Nez.MultiByte) {
-					this.optimizedUnary(p);
-					return new Moz86.NStr((Nez.MultiByte) inner, (MozInst) next);
+					return new Moz86.NStr(((Nez.MultiByte) inner).byteSeq, (MozInst) next);
+				}
+				if (inner instanceof Nez.Any) {
+					return new Moz86.NAny(inner, false, (MozInst) next);
 				}
 			}
 			MozInst fail = new Moz86.Succ(p, new Moz86.Fail(p));
@@ -276,7 +285,6 @@ public class ParserMachineCompiler implements ParserCompiler {
 
 		@Override
 		public MozInst visitPair(Nez.Pair p, Object next) {
-			// return visit(p.get(0), visit(p.get(1), (MozInst)next));
 			Object nextStart = next;
 			for (int i = p.size() - 1; i >= 0; i--) {
 				Expression e = p.get(i);
@@ -466,7 +474,7 @@ public class ParserMachineCompiler implements ParserCompiler {
 		}
 
 		@Override
-		public MozInst visitScanf(Nez.Scanf p, Object next) {
+		public MozInst visitScan(Nez.Scan p, Object next) {
 			if (!strategy.Moz) {
 				return new Moz86.Pos(p, compile(p.get(0), new Moz86.NScan(p.mask, p.shift, (MozInst) next)));
 			}

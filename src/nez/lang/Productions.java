@@ -361,7 +361,7 @@ public class Productions {
 		}
 
 		@Override
-		public Object visitScanf(Nez.Scanf e, Object a) {
+		public Object visitScan(Nez.Scan e, Object a) {
 			return check(e.get(0), a);
 		}
 

@@ -34,9 +34,9 @@ public class ParserStrategy {
 	public boolean Odfa = false;
 
 	public boolean Oorder = true;
-
+	public boolean Detree = false;
 	/* Classic */
-	public boolean Moz = true;
+	public boolean Moz = false;
 
 	/* PackratParsing */
 	public boolean PackratParsing = true;
@@ -156,9 +156,9 @@ public class ParserStrategy {
 
 	public final static ParserStrategy newSafeStrategy() {
 		ParserStrategy s = new ParserStrategy();
-		s.Moz = true;
+		s.Moz = false;
 		s.ChoicePrediction = 1;
-		s.PackratParsing = false;
+		// s.PackratParsing = false;
 		return s;
 	}
 

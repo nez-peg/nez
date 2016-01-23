@@ -199,43 +199,42 @@ public class ParserOptimizer {
 	}
 
 	class CheckerVisitor extends Expression.DuplicateVisitor {
-		Conditions conds;
-		private boolean ConstructingTree = true;
-
-		private Typestate requiredTypestate;
-
 		CheckerVisitor() {
 		}
 
-		private boolean enterNoTreeConstruction() {
+		Conditions conds;
+		boolean ConstructingTree = true;
+		Typestate requiredTypestate;
+
+		final boolean enterNoTreeConstruction() {
 			boolean b = ConstructingTree;
 			ConstructingTree = false;
 			return b;
 		}
 
-		private void exitNoTreeConstruction(boolean backed) {
+		final void exitNoTreeConstruction(boolean backed) {
 			ConstructingTree = backed;
 		}
 
-		private boolean isNoTreeConstruction() {
+		final boolean isNoTreeConstruction() {
 			return !this.ConstructingTree;
 		}
 
 		/* Conditional */
 
-		private void onFlag(String flag) {
+		final void onFlag(String flag) {
 			this.conds.put(flag, true);
 		}
 
-		private void offFlag(String flag) {
+		final void offFlag(String flag) {
 			this.conds.put(flag, false);
 		}
 
-		private boolean isFlag(String flag) {
+		final boolean isFlag(String flag) {
 			return this.conds.get(flag);
 		}
 
-		void check(Production start, TreeMap<String, Boolean> boolMap) {
+		final void check(Production start, TreeMap<String, Boolean> boolMap) {
 			this.conds = Conditions.newConditions(start, boolMap, strategy.DefaultCondition);
 			if (!strategy.TreeConstruction) {
 				this.enterNoTreeConstruction();
@@ -245,11 +244,11 @@ public class ParserOptimizer {
 			this.checkFirstVisitedProduction(uname, start); // start
 		}
 
-		private Expression visitExpression(Expression e) {
+		private final Expression visitExpression(Expression e) {
 			return (Expression) e.visit(this, null);
 		}
 
-		private void checkFirstVisitedProduction(String uname, Production p) {
+		void checkFirstVisitedProduction(String uname, Production p) {
 			Production parserProduction/* local production */= grammar.addProduction(uname, null);
 			this.visited(uname);
 			Productions.checkLeftRecursion(p);
@@ -283,45 +282,62 @@ public class ParserOptimizer {
 					return Expressions.newExpression(n.getSourceLocation(), StringUtils.unquoteString(n.getLocalName()));
 				}
 			}
-			// System.out.print("NonTerminal: " + n.getLocalName() + " -> ");
-			// this.dumpStack();
 
-			Typestate innerTypestate = this.isNoTreeConstruction() ? Typestate.Unit : typeState(p);
+			Typestate innerState = this.isNoTreeConstruction() ? Typestate.Unit : typeState(p);
 
-			if (innerTypestate == Typestate.TreeMutation) {
-				if (this.requiredTypestate == Typestate.TreeMutation) {
-					reportNotice(n, "inlining mutation nonterminal" + p.getLocalName());
-					return visitExpression(p.getExpression());
-				}
-			}
+			// if (innerTypestate == Typestate.TreeMutation) {
+			// if (this.requiredTypestate == Typestate.TreeMutation) {
+			// reportNotice(n, "inlining mutation nonterminal" +
+			// p.getLocalName());
+			// return visitExpression(p.getExpression());
+			// }
+			// }
 
-			String uname = conds.conditionalName(p, innerTypestate == Typestate.Unit);
-			// String uname = this.uniqueName(n.getUniqueName(), p);
+			String uname = conds.conditionalName(p, innerState == Typestate.Unit);
 			if (!this.isVisited(uname)) {
 				checkFirstVisitedProduction(uname, p);
 			}
+			Typestate required = this.requiredTypestate;
 			NonTerminal pn = Expressions.newNonTerminal(n.getSourceLocation(), grammar, uname);
-			if (innerTypestate == Typestate.Unit) {
+			if (innerState == Typestate.Unit) {
 				return pn;
 			}
-			Typestate required = this.requiredTypestate;
-			if (required == Typestate.Tree) {
-				if (innerTypestate == Typestate.TreeMutation) {
-					reportInserted(n, "{");
-					this.requiredTypestate = Typestate.TreeMutation;
-					return Expressions.newTree(n.getSourceLocation(), pn);
+			if (innerState == Typestate.TreeMutation) {
+				if (required == Typestate.Tree || required == Typestate.Immutation) {
+					reportWarning(n, "The left tree cannot be mutated");
+					return Expressions.newDetree(pn);
 				}
 				this.requiredTypestate = Typestate.TreeMutation;
 				return pn;
 			}
-			if (required == Typestate.TreeMutation) {
-				if (innerTypestate == Typestate.Tree) {
-					reportInserted(n, "$");
-					this.requiredTypestate = Typestate.Tree;
+			if (innerState == Typestate.Tree) {
+				if (required == Typestate.Unit || required == Typestate.Immutation) {
+					reportWarning(n, "The left tree cannot be mutated");
+					return detree(pn);
+				}
+				if (required == Typestate.TreeMutation) {
+					reportWarning(n, "unlabeled link");
 					return Expressions.newLinkTree(n.getSourceLocation(), null, pn);
 				}
+				this.requiredTypestate = Typestate.Immutation;
 			}
 			return pn;
+		}
+
+		@Override
+		public Expression visitDetree(Nez.Detree p, Object a) {
+			return detree(p.get(0));
+		}
+
+		private Expression detree(Expression inner) {
+			if (strategy.Moz || strategy.Detree) {
+				boolean stacked = this.enterNoTreeConstruction();
+				inner = this.visitExpression(inner);
+				this.exitNoTreeConstruction(stacked);
+				return inner;
+			} else {
+				return Expressions.newDetree(inner);
+			}
 		}
 
 		@Override
@@ -353,69 +369,81 @@ public class ParserOptimizer {
 			return p.predicate ? p.newFailure() : p.newEmpty();
 		}
 
-		void reportInserted(Expression e, String operator) {
-			reportWarning(e, "expected " + operator + " .. => inserted!!");
-		}
-
-		void reportRemoved(Expression e, String operator) {
-			reportWarning(e, "unexpected " + operator + " .. => removed!!");
-		}
-
-		@Override
-		public Expression visitDetree(Nez.Detree p, Object a) {
-			boolean stacked = this.enterNoTreeConstruction();
-			Expression inner = this.visitExpression(p.get(0));
-			this.exitNoTreeConstruction(stacked);
-			return inner;
-		}
+		//
+		// void reportInserted(Expression e, String operator) {
+		// reportWarning(e, "expected " + operator + " .. => inserted!!");
+		// }
+		//
+		// void reportRemoved(Expression e, String operator) {
+		// reportWarning(e, "unexpected " + operator + " .. => removed!!");
+		// }
 
 		@Override
 		public Expression visitBeginTree(Nez.BeginTree p, Object a) {
 			if (this.isNoTreeConstruction()) {
-				return p.newEmpty();
+				return Expressions.newEmpty();
+			}
+			if (this.requiredTypestate == Typestate.TreeMutation) {
+				if (this.requiredTypestate != null) {
+					reportError(p, "The labeled link ${ is required");
+					this.requiredTypestate = null;
+				}
+				return Expressions.newEmpty();
 			}
 			if (this.requiredTypestate != Typestate.Tree) {
-				this.reportRemoved(p, "{");
-				return p.newEmpty();
+				if (this.requiredTypestate != null) {
+					reportError(p, "The tree constrution is unexpected");
+					this.requiredTypestate = null;
+				}
+				return Expressions.newEmpty();
 			}
 			this.requiredTypestate = Typestate.TreeMutation;
 			return super.visitBeginTree(p, a);
 		}
 
 		@Override
-		public Expression visitFoldTree(Nez.FoldTree p, Object a) {
+		public Expression visitEndTree(Nez.EndTree p, Object a) {
 			if (this.isNoTreeConstruction()) {
-				return p.newEmpty();
+				return Expressions.newEmpty();
 			}
 			if (this.requiredTypestate != Typestate.TreeMutation) {
-				this.reportRemoved(p, "{$");
-				return p.newEmpty();
+				if (this.requiredTypestate != null) {
+					reportWarning(p, "The left tree cannot be mutated");
+					this.requiredTypestate = null;
+				}
+				return Expressions.newEmpty();
+			}
+			this.requiredTypestate = Typestate.Immutation;
+			return super.visitEndTree(p, a);
+		}
+
+		@Override
+		public Expression visitFoldTree(Nez.FoldTree p, Object a) {
+			if (this.isNoTreeConstruction()) {
+				return Expressions.newEmpty();
+			}
+			if (this.requiredTypestate != Typestate.Immutation) {
+				if (this.requiredTypestate != null) {
+					reportWarning(p, "A tree to fold is expected on the left hand");
+					this.requiredTypestate = null;
+				}
+				return Expressions.newEmpty();
 			}
 			this.requiredTypestate = Typestate.TreeMutation;
 			return super.visitFoldTree(p, a);
 		}
 
 		@Override
-		public Expression visitEndTree(Nez.EndTree p, Object a) {
-			if (this.isNoTreeConstruction()) {
-				return p.newEmpty();
-			}
-			if (this.requiredTypestate != Typestate.TreeMutation) {
-				this.reportRemoved(p, "}");
-				return p.newEmpty();
-			}
-			this.requiredTypestate = Typestate.TreeMutation;
-			return super.visitEndTree(p, a);
-		}
-
-		@Override
 		public Expression visitTag(Nez.Tag p, Object a) {
 			if (this.isNoTreeConstruction()) {
-				return p.newEmpty();
+				return Expressions.newEmpty();
 			}
 			if (this.requiredTypestate != Typestate.TreeMutation) {
-				reportRemoved(p, "#" + p.tag.getSymbol());
-				return p.newEmpty();
+				if (requiredTypestate != null) {
+					reportWarning(p, "The left tree cannot be mutated");
+					this.requiredTypestate = null;
+				}
+				return Expressions.newEmpty();
 			}
 			return p;
 		}
@@ -423,11 +451,14 @@ public class ParserOptimizer {
 		@Override
 		public Expression visitReplace(Nez.Replace p, Object a) {
 			if (this.isNoTreeConstruction()) {
-				return p.newEmpty();
+				return Expressions.newEmpty();
 			}
 			if (this.requiredTypestate != Typestate.TreeMutation) {
-				reportRemoved(p, "`" + p.value + "`");
-				return p.newEmpty();
+				if (requiredTypestate != null) {
+					reportWarning(p, "The left tree cannot be mutated");
+					this.requiredTypestate = null;
+				}
+				return Expressions.newEmpty();
 			}
 			return p;
 		}
@@ -439,12 +470,19 @@ public class ParserOptimizer {
 				return this.visitExpression(inner);
 			}
 			if (this.requiredTypestate != Typestate.TreeMutation) {
-				reportRemoved(p, "$");
-				return this.visitExpression(inner);
+				if (requiredTypestate != null) {
+					reportWarning(p, "The left tree cannot be mutated");
+					this.requiredTypestate = null;
+				}
+				boolean backed = this.enterNoTreeConstruction();
+				inner = this.visitExpression(inner);
+				this.exitNoTreeConstruction(backed);
+				return inner;
 			}
-			Typestate innerTypestate = this.isNoTreeConstruction() ? Typestate.Unit : typeState(inner);
-			if (innerTypestate != Typestate.Tree) {
-				reportInserted(p, "{");
+
+			Typestate innerState = this.isNoTreeConstruction() ? Typestate.Unit : typeState(inner);
+			if (innerState != Typestate.Tree) {
+				reportWarning(p, "Implicit tree construction");
 				inner = Expressions.newTree(inner.getSourceLocation(), this.visitExpression(inner));
 			} else {
 				this.requiredTypestate = Typestate.Tree;
@@ -486,24 +524,33 @@ public class ParserOptimizer {
 		}
 
 		private Expression visitOptionalInner(Nez.Unary p) {
-			Typestate innerTypestate = this.isNoTreeConstruction() ? Typestate.Unit : typeState(p.get(0));
-			if (innerTypestate == Typestate.Tree) {
+			Typestate innerState = this.isNoTreeConstruction() ? Typestate.Unit : typeState(p.get(0));
+			if (innerState == Typestate.Tree) {
 				if (this.requiredTypestate == Typestate.TreeMutation) {
-					this.reportInserted(p.get(0), "$");
+					reportWarning(p.get(0), "Implicit subtree construction");
 					this.requiredTypestate = Typestate.Tree;
 					Expression inner = visitExpression(p.get(0));
 					inner = Expressions.newLinkTree(p.getSourceLocation(), inner);
 					this.requiredTypestate = Typestate.TreeMutation;
-					return inner;
+					return checkUnconsumed(p, inner);
 				} else {
-					reportWarning(p, "disallowed tree construction in e?, e*, e+, or &e  " + innerTypestate);
+					reportWarning(p, "disallowed tree construction in e?, e*, e+, or &e  " + innerState);
 					boolean stacked = this.enterNoTreeConstruction();
 					Expression inner = visitExpression(p.get(0));
 					this.exitNoTreeConstruction(stacked);
-					return inner;
+					return checkUnconsumed(p, inner);
 				}
 			}
-			return visitExpression(p.get(0));
+			return checkUnconsumed(p, visitExpression(p.get(0)));
+		}
+
+		private Expression checkUnconsumed(Nez.Unary p, Expression inner) {
+			if (strategy.PEGCompatible && (p instanceof Nez.OneMore || p instanceof Nez.ZeroMore)) {
+				if (consumed.isConsumed(inner)) {
+					reportError(p, "unconsumed repetition");
+				}
+			}
+			return inner;
 		}
 
 		@Override

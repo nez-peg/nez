@@ -264,6 +264,18 @@ public abstract class Expressions {
 		return e;
 	}
 
+	public final boolean requireBinaryHandle(Nez.Byte e) {
+		return e.byteChar == 0;
+	}
+
+	public final boolean requireBinaryHandle(Nez.ByteSet e) {
+		return e.byteMap[0];
+	}
+
+	public final boolean requireBinaryHandle(Nez.Any e) {
+		return true;
+	}
+
 	/* Unary */
 
 	/**
@@ -652,6 +664,10 @@ public abstract class Expressions {
 	}
 
 	// AST Construction
+
+	public final static Expression newDetree(Expression p) {
+		return new Nez.Detree(p);
+	}
 
 	public final static Expression newDetree(SourceLocation s, Expression p) {
 		Expression e = new Nez.Detree(p);
@@ -1059,7 +1075,7 @@ public abstract class Expressions {
 				shift++;
 			}
 		}
-		Expression p = new Nez.Scanf(bits, shift, e);
+		Expression p = new Nez.Scan(bits, shift, e);
 		p.setSourceLocation(s);
 		return p;
 	}

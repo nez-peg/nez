@@ -67,6 +67,8 @@ public abstract class InstructionVisitor {
 
 	public abstract void visitRSet(Moz86.RSet inst); //
 
+	public abstract void visitNotEOF(Moz86.NotEOF inst); // not EOF
+
 	/* Dispatch */
 
 	public abstract void visitDispatch(Moz86.Dispatch inst); //
@@ -129,7 +131,8 @@ public abstract class InstructionVisitor {
 
 	public abstract void visitMemo(Moz86.Memo inst); // match a character
 
-	public abstract void visitMemoFail(Moz86.MemoFail inst); // match a character
+	public abstract void visitMemoFail(Moz86.MemoFail inst); // match a
+																// character
 
 	public abstract void visitTLookup(Moz86.TLookup inst);
 

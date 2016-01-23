@@ -191,7 +191,7 @@ public enum Symbolstate {
 		}
 
 		@Override
-		public final Object visitScanf(Nez.Scanf e, Object a) {
+		public final Object visitScan(Nez.Scan e, Object a) {
 			return visitExpression(e);
 		}
 

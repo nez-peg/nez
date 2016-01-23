@@ -492,7 +492,7 @@ public abstract class GrammarTranslator extends Expression.Visitor implements So
 	}
 
 	@Override
-	public final Object visitScanf(Nez.Scanf p, Object a) {
+	public final Object visitScan(Nez.Scan p, Object a) {
 		// this.visitSymbolMatch(p);
 		return null;
 	}

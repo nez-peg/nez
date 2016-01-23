@@ -565,6 +565,8 @@ public class Moz86 {
 		}
 	}
 
+	public final static boolean BinaryMachine = true;
+
 	/**
 	 * Byte
 	 * 
@@ -572,15 +574,15 @@ public class Moz86 {
 	 *
 	 */
 
-	static abstract class AbstractByteInstruction extends MozInst {
+	static abstract class AbstByte extends MozInst {
 		public final int byteChar;
 
-		AbstractByteInstruction(byte bytecode, Nez.Byte e, MozInst next) {
+		AbstByte(byte bytecode, Nez.Byte e, MozInst next) {
 			super(bytecode, e, next);
 			this.byteChar = e.byteChar;
 		}
 
-		AbstractByteInstruction(byte bytecode, int byteChar, MozInst next) {
+		AbstByte(byte bytecode, int byteChar, MozInst next) {
 			super(bytecode, null, next);
 			this.byteChar = byteChar;
 		}
@@ -592,11 +594,7 @@ public class Moz86 {
 
 	}
 
-	public final static class Byte extends AbstractByteInstruction {
-		public Byte(Nez.Byte e, MozInst next) {
-			super(MozSet.Byte, e, next);
-		}
-
+	public final static class Byte extends AbstByte {
 		public Byte(int byteChar, MozInst next) {
 			super(MozSet.Byte, byteChar, next);
 		}
@@ -617,6 +615,7 @@ public class Moz86 {
 
 		@Override
 		public MozInst exec(ParserMachineContext sc) throws TerminationException {
+			/* EOF must be checked at the next instruction */
 			if (sc.read() == this.byteChar) {
 				return this.next;
 			}
@@ -625,11 +624,7 @@ public class Moz86 {
 
 	}
 
-	public final static class NByte extends AbstractByteInstruction {
-		public NByte(Nez.Byte e, MozInst next) {
-			super(MozSet.NByte, e, next);
-		}
-
+	public final static class NByte extends AbstByte {
 		public NByte(int byteChar, MozInst next) {
 			super(MozSet.NByte, byteChar, next);
 		}
@@ -657,11 +652,7 @@ public class Moz86 {
 
 	}
 
-	public final static class OByte extends AbstractByteInstruction {
-		public OByte(Nez.Byte e, MozInst next) {
-			super(MozSet.OByte, e, next);
-		}
-
+	public final static class OByte extends AbstByte {
 		public OByte(int byteChar, MozInst next) {
 			super(MozSet.OByte, byteChar, next);
 		}
@@ -682,18 +673,16 @@ public class Moz86 {
 		@Override
 		public MozInst exec(ParserMachineContext sc) throws TerminationException {
 			if (sc.prefetch() == this.byteChar) {
+				if (BinaryMachine && this.byteChar == 0 && sc.eof()) {
+					return this.next;
+				}
 				sc.move(1);
 			}
 			return this.next;
 		}
-
 	}
 
-	public final static class RByte extends AbstractByteInstruction {
-		public RByte(Nez.Byte e, MozInst next) {
-			super(MozSet.RByte, e, next);
-		}
-
+	public final static class RByte extends AbstByte {
 		public RByte(int byteChar, MozInst next) {
 			super(MozSet.RByte, byteChar, next);
 		}
@@ -713,21 +702,30 @@ public class Moz86 {
 
 		@Override
 		public MozInst exec(ParserMachineContext sc) throws TerminationException {
-			while (sc.prefetch() == this.byteChar) {
-				sc.move(1);
+			if (BinaryMachine) {
+				while (sc.prefetch() == this.byteChar) {
+					if (this.byteChar == 0 && sc.eof()) {
+						return this.next;
+					}
+					sc.move(1);
+				}
+			} else {
+				while (sc.prefetch() == this.byteChar) {
+					sc.move(1);
+				}
 			}
 			return this.next;
 		}
 	}
 
-	static abstract class AbstractAnyInstruction extends MozInst {
-		AbstractAnyInstruction(byte opcode, Expression e, MozInst next) {
+	static abstract class AbstAny extends MozInst {
+		AbstAny(byte opcode, Expression e, MozInst next) {
 			super(opcode, e, next);
 		}
 
 	}
 
-	public final static class Any extends AbstractAnyInstruction {
+	public final static class Any extends AbstAny {
 		public Any(Expression e, MozInst next) {
 			super(MozSet.Any, e, next);
 		}
@@ -760,7 +758,7 @@ public class Moz86 {
 		}
 	}
 
-	public final static class NAny extends AbstractAnyInstruction {
+	public final static class NAny extends AbstAny {
 		public NAny(Expression e, boolean isBinary, MozInst next) {
 			super(MozSet.NAny, e, next);
 		}
@@ -789,7 +787,33 @@ public class Moz86 {
 			}
 			return sc.xFail();
 		}
+	}
 
+	public final static class NotEOF extends AbstAny {
+		public NotEOF(MozInst next) {
+			super(MozSet.NAny, null, next);
+		}
+
+		@Override
+		public void visit(InstructionVisitor v) {
+			v.visitNotEOF(this);
+		}
+
+		@Override
+		public MozInst execMoz(MozMachine sc) throws TerminationException {
+			if (sc.hasUnconsumed()) {
+				return next;
+			}
+			return sc.xFail();
+		}
+
+		@Override
+		public MozInst exec(ParserMachineContext sc) throws TerminationException {
+			if (sc.eof()) {
+				return sc.xFail();
+			}
+			return next;
+		}
 	}
 
 	static abstract class AbstractSetInstruction extends MozInst {

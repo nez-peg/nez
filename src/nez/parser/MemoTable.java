@@ -30,7 +30,7 @@ public abstract class MemoTable {
 		return new ElasticTable(windowSize, memoPointSize);
 	}
 
-	public void record(ParserProfier rec) {
+	public void record(ParserProfiler rec) {
 		rec.setText("M.TableType", this.getClass().getSimpleName());
 		rec.setCount("M.MemoStored", this.CountStored);
 		rec.setRatio("M.MemoHit", this.CountUsed, this.CountStored);

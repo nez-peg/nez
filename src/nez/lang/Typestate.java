@@ -4,7 +4,7 @@ import nez.lang.Nez.Byte;
 import nez.util.Verbose;
 
 public enum Typestate {
-	Unit, Tree, TreeMutation, Undecided;
+	Unit, Tree, TreeMutation, Immutation, Undecided;
 	// // public final static Integer Undecided = -1;
 	// public final static Integer Unit = 0;
 	// public final static Integer Tree = 1;
@@ -225,7 +225,7 @@ public enum Typestate {
 		}
 
 		@Override
-		public final Object visitScanf(Nez.Scanf e, Object a) {
+		public final Object visitScan(Nez.Scan e, Object a) {
 			return this.inferTypestate(e.get(0));
 		}
 

@@ -47,12 +47,12 @@ public final class ParserInstance {
 		return source.getResourceName();
 	}
 
-	public void startProfiling(ParserProfier prof) {
+	public void startProfiling(ParserProfiler prof) {
 		// TODO Auto-generated method stub
 
 	}
 
-	public void doneProfiling(ParserProfier prof) {
+	public void doneProfiling(ParserProfiler prof) {
 		// TODO Auto-generated method stub
 
 	}

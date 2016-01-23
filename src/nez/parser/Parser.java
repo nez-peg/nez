@@ -96,9 +96,9 @@ public final class Parser {
 		return matched;
 	}
 
-	protected ParserProfier prof = null;
+	protected ParserProfiler prof = null;
 
-	public void setProfiler(ParserProfier prof) {
+	public void setProfiler(ParserProfiler prof) {
 		this.prof = prof;
 		if (prof != null) {
 			this.compile();
@@ -109,7 +109,7 @@ public final class Parser {
 		}
 	}
 
-	public ParserProfier getProfiler() {
+	public ParserProfiler getProfiler() {
 		return this.prof;
 	}
 

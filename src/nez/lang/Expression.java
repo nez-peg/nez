@@ -15,7 +15,7 @@ import nez.lang.Nez.Function;
 import nez.lang.Nez.Label;
 import nez.lang.Nez.Repeat;
 import nez.lang.Nez.Replace;
-import nez.lang.Nez.Scanf;
+import nez.lang.Nez.Scan;
 import nez.util.StringUtils;
 import nez.util.UList;
 
@@ -236,7 +236,7 @@ public abstract class Expression extends AbstractList<Expression> implements Sou
 
 		public abstract Object visitOn(Nez.OnCondition e, Object a);
 
-		public abstract Object visitScanf(Nez.Scanf scanf, Object a);
+		public abstract Object visitScan(Nez.Scan scanf, Object a);
 
 		public abstract Object visitRepeat(Nez.Repeat e, Object a);
 
@@ -468,7 +468,7 @@ public abstract class Expression extends AbstractList<Expression> implements Sou
 		}
 
 		@Override
-		public Object visitScanf(Scanf e, Object a) {
+		public Object visitScan(Scan e, Object a) {
 			StringBuilder sb = (StringBuilder) a;
 			String mask = null;
 			if (e.mask != 0) {
@@ -772,8 +772,8 @@ public abstract class Expression extends AbstractList<Expression> implements Sou
 		}
 
 		@Override
-		public Expression visitScanf(Nez.Scanf e, Object a) {
-			return new Nez.Scanf(e.mask, e.shift, inner(e));
+		public Expression visitScan(Nez.Scan e, Object a) {
+			return new Nez.Scan(e.mask, e.shift, inner(e));
 		}
 
 		@Override
@@ -989,7 +989,7 @@ public abstract class Expression extends AbstractList<Expression> implements Sou
 		}
 
 		@Override
-		public Expression visitScanf(Nez.Scanf e, Object a) {
+		public Expression visitScan(Nez.Scan e, Object a) {
 			e.set(0, this.visitInner(e.get(0), a));
 			return e;
 		}

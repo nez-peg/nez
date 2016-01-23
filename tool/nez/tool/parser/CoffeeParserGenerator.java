@@ -5,7 +5,7 @@ import nez.lang.Grammar;
 import nez.lang.Nez;
 import nez.lang.Nez.Label;
 import nez.lang.Nez.Repeat;
-import nez.lang.Nez.Scanf;
+import nez.lang.Nez.Scan;
 import nez.lang.NonTerminal;
 import nez.lang.Production;
 import nez.util.StringUtils;
@@ -687,7 +687,7 @@ public class CoffeeParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public Object visitScanf(Scanf scanf, Object a) {
+	public Object visitScan(Scan scanf, Object a) {
 		// TODO Auto-generated method stub
 		return null;
 	}

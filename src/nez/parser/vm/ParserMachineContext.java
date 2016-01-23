@@ -207,14 +207,14 @@ public class ParserMachineContext extends ParserContext {
 		return next;
 	}
 
-	public void xTPush() {
+	public final void xTPush() {
 		StackData s = this.newUnusedStack();
 		s.ref = this.left;
 		s = this.newUnusedStack();
 		s.ref = this.saveLog();
 	}
 
-	public void xTLink(Symbol label) {
+	public final void xTLink(Symbol label) {
 		StackData s = this.popStack();
 		this.backLog(s.ref);
 		s = this.popStack();
@@ -222,19 +222,19 @@ public class ParserMachineContext extends ParserContext {
 		this.left = (Tree<?>) s.ref;
 	}
 
-	public void xTPop() {
+	public final void xTPop() {
 		StackData s = this.popStack();
 		this.backLog(s.ref);
 		s = this.popStack();
 		this.left = (Tree<?>) s.ref;
 	}
 
-	public void xSOpen() {
+	public final void xSOpen() {
 		StackData s = this.newUnusedStack();
 		s.value = this.saveSymbolPoint();
 	}
 
-	public void xSClose() {
+	public final void xSClose() {
 		StackData s = this.popStack();
 		this.backSymbolPoint(s.value);
 	}

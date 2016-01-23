@@ -1237,7 +1237,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		}
 
 		@Override
-		public Object visitScanf(Nez.Scanf e, Object a) {
+		public Object visitScan(Nez.Scan e, Object a) {
 			BeginScope();
 			String ppos = savePos();
 			visit(e, a);

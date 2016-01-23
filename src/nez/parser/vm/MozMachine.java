@@ -4,7 +4,7 @@ import nez.ast.Source;
 import nez.ast.Tree;
 import nez.parser.MemoEntry;
 import nez.parser.MemoTable;
-import nez.parser.ParserProfier;
+import nez.parser.ParserProfiler;
 import nez.parser.ParserRuntime;
 import nez.util.ConsoleUtils;
 import nez.util.Verbose;
@@ -213,7 +213,7 @@ public final class MozMachine extends ParserRuntime {
 
 	private LocalProfiler lprof;
 
-	public final void startProfiling(ParserProfier prof) {
+	public final void startProfiling(ParserProfiler prof) {
 		if (prof != null) {
 			prof.setFile("I.File", s.getResourceName());
 			prof.setCount("I.Size", s.length());
@@ -222,7 +222,7 @@ public final class MozMachine extends ParserRuntime {
 		}
 	}
 
-	public final void doneProfiling(ParserProfier prof) {
+	public final void doneProfiling(ParserProfiler prof) {
 		if (prof != null) {
 			this.lprof.parsed(prof, this.getPosition());
 			this.memoTable.record(prof);
@@ -254,12 +254,12 @@ public final class MozMachine extends ParserRuntime {
 			this.BacktrackHistgrams = new int[32];
 		}
 
-		void parsed(ParserProfier rec, long consumed) {
+		void parsed(ParserProfiler rec, long consumed) {
 			consumed -= this.startPosition;
 			this.endingNanoTime = System.nanoTime();
-			ParserProfier.recordLatencyMS(rec, "P.Latency", startingNanoTime, endingNanoTime);
+			ParserProfiler.recordLatencyMS(rec, "P.Latency", startingNanoTime, endingNanoTime);
 			rec.setCount("P.Consumed", consumed);
-			ParserProfier.recordThroughputKPS(rec, "P.Throughput", consumed, startingNanoTime, endingNanoTime);
+			ParserProfiler.recordThroughputKPS(rec, "P.Throughput", consumed, startingNanoTime, endingNanoTime);
 			rec.setRatio("P.Failure", this.FailureCount, consumed);
 			rec.setRatio("P.Backtrack", this.BacktrackCount, consumed);
 			rec.setRatio("P.BacktrackLength", this.BacktrackLength, consumed);

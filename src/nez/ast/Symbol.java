@@ -8,18 +8,18 @@ public class Symbol {
 	private static HashMap<String, Symbol> tagIdMap = new HashMap<String, Symbol>();
 	private static UList<Symbol> tagNameList = new UList<Symbol>(new Symbol[64]);
 
-	public final static Symbol unique(String tagName) {
-		Symbol tag = tagIdMap.get(tagName);
+	public final static Symbol unique(String s) {
+		Symbol tag = tagIdMap.get(s);
 		if (tag == null) {
-			tag = new Symbol(tagIdMap.size(), tagName);
-			tagIdMap.put(tagName, tag);
+			tag = new Symbol(tagIdMap.size(), s);
+			tagIdMap.put(s, tag);
 			tagNameList.add(tag);
 		}
 		return tag;
 	}
 
-	public final static int id(String tagName) {
-		return unique(tagName).id;
+	public final static int uniqueId(String symbol) {
+		return unique(symbol).id;
 	}
 
 	public final static Symbol tag(int tagId) {
