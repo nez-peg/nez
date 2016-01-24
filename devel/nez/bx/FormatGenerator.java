@@ -291,7 +291,7 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 	public class _Tag extends DefaultVisitor {
 		@Override
 		public void accept(Expression e) {
-			String tagName = "#" + ((Nez.Tag) e).getTagName();
+			String tagName = "#" + ((Nez.Tag) e).symbol();
 			for (int i = 0; i < tagId; i++) {
 				if (tagName.equals(tagList[i])) {
 					addElement(new TagElement(i));

@@ -1,5 +1,8 @@
 package nez.tool.parser;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 
 import nez.ast.Symbol;
@@ -26,11 +29,11 @@ import nez.parser.MemoPoint;
 import nez.parser.Parser;
 import nez.parser.ParserCode;
 import nez.parser.ParserStrategy;
+import nez.parser.io.CommonSource;
 import nez.util.ConsoleUtils;
 import nez.util.FileBuilder;
 import nez.util.StringUtils;
 import nez.util.UList;
-import nez.util.Verbose;
 
 public abstract class AbstractParserGenerator implements SourceGenerator {
 	protected Parser parser;
@@ -66,22 +69,32 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		// " -g " + urn + " --format " + outputFormat);
 	}
 
+	protected final void ImportFile(String path) {
+		try {
+			InputStream s = CommonSource.class.getResourceAsStream(path);
+			BufferedReader reader = new BufferedReader(new InputStreamReader(s));
+			String line = null;
+			while ((line = reader.readLine()) != null) {
+				file.writeIndent(line);
+			}
+			reader.close();
+		} catch (Exception e) {
+			ConsoleUtils.exit(1, "cannot load " + path + "; " + e);
+		}
+	}
+
 	protected abstract String getFileExtension();
 
-	protected abstract String generateHeader(Grammar g);
+	protected abstract void generateHeader(Grammar g);
 
-	protected abstract String generateFooter(Grammar g);
+	protected abstract void generateFooter(Grammar g);
 
 	@Override
 	public void generate() {
-		Grammar g = this.parser.getParserGrammar();
-		if (Verbose.enabled) {
-			for (Production p : g) {
-				Verbose.println(p.getLocalName() + " = " + p.getExpression());
-			}
-		}
+		Grammar g = this.parser.getGrammar();
 		this.generateHeader(g);
-		this.checkSymbol(g);
+		SymbolVisitor symbolChecker = new SymbolVisitor();
+		symbolChecker.check(g);
 		this.generate(g);
 		this.generateFooter(g);
 		file.writeNewLine();
@@ -93,331 +106,25 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		gen.generate(g.getStartProduction(), "parse");
 	}
 
-	/* Statment */
-
-	protected void BeginFunc(String f) {
-		file.writeIndent();
-		file.write(_function(getType("parse")));
-		file.write(" ");
-		file.write(f);
-		file.write("(");
-		file.write(_argument());
-		file.write(")");
-		Begin();
-	}
-
-	protected void EndFunc() {
-		End();
-	}
-
-	protected void Begin() {
-		file.write(" {");
-		file.incIndent();
-	}
-
-	protected void End() {
-		file.decIndent();
-		file.writeIndent();
-		file.write("}");
-	}
-
-	protected void BeginLocalScopeBlock() {
-		file.writeIndent("{");
-		file.incIndent();
-	}
-
-	protected void EndLocalScopeBlock() {
-		file.decIndent();
-		file.writeIndent();
-		file.write("}");
-	}
-
-	protected void Line(String stmt) {
-		file.writeIndent(stmt);
-	}
-
-	protected void Statement(String stmt) {
-		file.writeIndent(stmt);
-		Semicolon();
-	}
-
-	protected void EmptyStatement() {
-		file.writeIndent();
-		Semicolon();
-	}
-
-	protected void Semicolon() {
-		file.write(";");
-	}
-
-	protected void LineComment(String stmt) {
-		file.writeIndent(_comment() + " " + stmt);
-	}
-
 	protected void Verbose(String stmt) {
 		if (verboseMode) {
-			file.writeIndent(_comment() + " " + stmt);
+			file.writeIndent(_Comment() + " " + stmt);
 		}
 	}
 
-	protected void Return(String expr) {
-		Statement("return " + expr);
-	}
-
-	protected void Succ() {
-		Return(_true());
-	}
-
-	protected void Fail() {
-		Return(_false());
-	}
-
-	protected void If(String cond) {
-		file.writeIndent("if (");
-		file.write(cond);
-		file.write(")");
-		Begin();
-	}
-
-	protected String _op(String a, String op, String b) {
-		return a + " " + op + " " + b;
-	}
-
-	protected void If(String a, String op, String b) {
-		If(a + " " + op + " " + b);
-	}
-
-	protected void Else() {
-		End();
-		file.write(" else");
-		Begin();
-	}
-
-	protected void EndIf() {
-		End();
-	}
-
-	protected void While(String cond) {
-		file.writeIndent();
-		file.write("while (");
-		file.write(cond);
-		file.write(")");
-		Begin();
-	}
-
-	protected void EndWhile() {
-		End();
-	}
-
-	protected void Break() {
-		file.writeIndent("break");
-		Semicolon();
-	}
-
-	protected void Switch(String c) {
-		Line("switch(" + c + ")");
-		Begin();
-	}
-
-	protected void EndSwitch() {
-		End();
-	}
-
-	protected void Case(String n) {
-		Line("case " + n + ": ");
-	}
-
-	protected void EndCase() {
-	}
-
-	protected void VarDecl(String t, String v, String expr) {
-		if (t == null) {
-			VarAssign(v, expr);
-		} else {
-			file.writeIndent(t + " " + v + " = " + expr);
-			Semicolon();
-		}
-	}
-
-	protected void VarAssign(String v, String expr) {
-		file.writeIndent(v + " = " + expr);
-		Semicolon();
-	}
-
-	/* Syntax */
-
-	protected String _comment() {
-		return "//";
-	}
-
-	protected String _and() {
-		return "&&";
-	}
-
-	protected String _eq() {
-		return "==";
-	}
-
-	protected String _noteq() {
-		return "!=";
-	}
-
-	protected String _true() {
-		return "true";
-	}
-
-	protected String _false() {
-		return "false";
-	}
-
-	protected String _null() {
-		return "null";
-	}
-
-	protected String _not(String expr) {
-		return "!" + expr;
-	}
-
-	/* Expression */
-
-	protected String _function(String type) {
-		return "private static " + type;
-	}
-
-	protected String _argument(String var, String type) {
-		if (type == null) {
-			return var;
-		}
-		return type + " " + var;
-	}
-
-	protected String _argument() {
-		return _argument(_state(), getType(_state()));
-	}
-
-	protected String _funccall(String name) {
-		return name + "(" + _state() + ")";
-	}
-
-	protected String _state() {
-		return "c";
-	}
-
-	protected String _beginArray() {
-		return "{";
-	}
-
-	protected String _endArray() {
-		return "}";
-	}
-
-	protected String _beginBlock() {
-		return " {";
-	}
-
-	protected String _endBlock() {
-		return "}";
-	}
-
-	protected String _field(String o, String name) {
-		return o + "." + name;
-	}
-
-	protected String _int(int n) {
-		return "" + n;
-	}
-
-	protected String _long(long n) {
-		return "" + n + "L";
-	}
-
-	protected String _byte(int ch) {
-		// if (ch < 128 && (!Character.isISOControl(ch))) {
-		// return "'" + (char) ch + "'";
-		// }
-		return "" + ch;
-	}
-
-	protected String _bytes(byte[] utf8) {
-		return StringUtils.quoteString('"', new String(utf8), '"');
+	protected String _funcname(Production p) {
+		return _funcname(p.getUniqueName());
 	}
 
 	protected String _funcname(String uname) {
-		return "p" + uname.replace("!", "NoT");
-	}
-
-	private String _getarray(String array, String c) {
-		return array + "[" + c + "]";
-	}
-
-	protected String ParserFunc(String name, String... args) {
-		StringBuilder sb = new StringBuilder();
-		sb.append(_state());
-		sb.append(".");
-		sb.append(name);
-		sb.append("(");
-		for (int i = 0; i < args.length; i++) {
-			if (i > 0) {
-				sb.append(",");
-			}
-			sb.append(args[i]);
-		}
-		sb.append(")");
-		return sb.toString();
+		return "p" + uname.replace("!", "NOT").replace("~", "_").replace("&", "AND");
 	}
 
 	/* Variable */
 
-	protected String _pos() {
-		return "pos";
-	}
-
-	protected String _cpos() {
-		return _field(_state(), "pos");
-	}
-
-	protected String _left() {
-		return "left";
-	}
-
-	protected String _cleft() {
-		return _field(_state(), "left");
-	}
-
-	protected String _log() {
-		return "log";
-	}
-
-	protected String _clog() {
-		return _field(_state(), "log");
-	}
-
-	protected String _sym() {
-		return "sym";
-	}
-
-	protected String _csym() {
-		return _field(_state(), "sym");
-	}
-
-	protected String _unchoiced() {
-		return "unchoiced";
-	}
-
-	protected String _indexMap() {
-		return "indexMap";
-	}
-
-	protected String _byteMap() {
-		return "byteMap";
-	}
-
-	protected String _byteSeq() {
-		return "byteSeq";
-	}
-
 	protected HashMap<String, String> typeMap = new HashMap<>();
-	protected HashMap<String, String> symbolMap = new HashMap<>();
+
+	protected abstract void initTypeMap();
 
 	protected void addType(String name, String type) {
 		typeMap.put(name, type);
@@ -427,134 +134,344 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		return typeMap.get(name);
 	}
 
-	protected abstract void initTypeMap();
-
 	/* Symbols */
 
+	protected HashMap<String, String> symbolMap = new HashMap<>();
+
+	private String key(boolean[] b) {
+		return StringUtils.stringfyBitmap(b);
+	}
+
+	private String key(Symbol s) {
+		return "_" + s.getSymbol();
+	}
+
+	private String key(String s) {
+		return s;
+	}
+
+	private String key(byte[] indexMap) {
+		StringBuilder sb = new StringBuilder();
+		for (byte c : indexMap) {
+			sb.append(c);
+			sb.append(",");
+		}
+		return sb.toString();
+	}
+
 	private String _symbol(boolean[] b) {
-		String key = StringUtils.stringfyBitmap(b);
-		return symbolMap.get(key);
+		return symbolMap.get(key(b));
 	}
 
 	protected String _symbol(Symbol s) {
 		if (s == null) {
-			return _null();
+			return _Null();
 		}
-		String sym = symbolMap.get(s.getSymbol());
+		String sym = symbolMap.get(key(s));
 		if (sym != null) {
 			return sym;
 		}
-		return s == null ? _null() : StringUtils.quoteString('"', s.toString(), '"');
+		return StringUtils.quoteString('"', s.toString(), '"');
 	}
 
-	protected String _symbol(ChoicePrediction p) {
-		return symbolMap.get(p.indexMap.toString());
-	}
-
-	protected String _string(String s) {
+	protected String _symbol(String s) {
+		if (s == null) {
+			return _Null();
+		}
+		String sym = symbolMap.get(key(s));
+		if (sym != null) {
+			return sym;
+		}
 		return StringUtils.quoteString('"', s, '"');
 	}
 
-	private void checkSymbol(Grammar g) {
-		for (Production p : g) {
-			checkSymbol(p.getExpression());
-		}
+	protected String _bytes(byte[] utf8) {
+		return _symbol(new String(utf8));
 	}
 
-	private void checkSymbol(Expression e) {
-		if (e instanceof Nez.ByteSet) {
-			boolean[] b = ((Nez.ByteSet) e).byteMap;
-			String key = StringUtils.stringfyBitmap(b);
-			String sym = symbolMap.get(key);
-			if (sym == null) {
-				sym = _byteMap() + symbolMap.size();
-				symbolMap.put(key, sym);
-				DeclSymbolBitmap(sym, b);
-			}
-		}
-		if (e instanceof Nez.Tag) {
-			DeclSymbol(((Nez.Tag) e).tag);
-		}
-		if (e instanceof Nez.LinkTree) {
-			DeclSymbol(((Nez.LinkTree) e).label);
-		}
-		if (e instanceof Nez.FoldTree) {
-			DeclSymbol(((Nez.FoldTree) e).label);
-		}
-		if (e instanceof Nez.SymbolFunction) {
-			DeclSymbol(((Nez.SymbolFunction) e).tableName);
-		}
-		if (e instanceof Nez.Choice && ((Nez.Choice) e).predicted != null) {
-			DeclSymbol(((Nez.Choice) e).predicted);
-		}
-		for (Expression sub : e) {
-			checkSymbol(sub);
-		}
+	protected String _symbol(ChoicePrediction p) {
+		return symbolMap.get(key(p.indexMap));
 	}
 
-	protected void DeclSymbol(String name, String value) {
-		Statement("private final static Symbol " + name + " = Symbol.unique(" + StringUtils.quoteString('"', value, '"') + ")");
-	}
-
-	void DeclConst(String type, String name, String val) {
-		if (type == null) {
-			Statement("private final static " + name + " = " + val);
-		} else {
-			Statement("private final static " + type + " " + name + " = " + val);
-		}
-	}
-
-	void DeclSymbolBitmap(String name, boolean b[]) {
+	protected void DeclSymbol(String name, boolean b[]) {
 		StringBuilder sb = new StringBuilder();
-		String type = getType(_byteMap());
-		sb.append(_beginArray());
+		String type = getType(_byteSet_());
+		sb.append(_BeginArray());
 		for (int i = 0; i < 256; i++) {
 			if (b[i]) {
-				sb.append(_true());
+				sb.append(_True());
 			} else {
-				sb.append(_false());
+				sb.append(_False());
 			}
 			if (i < 255) {
 				sb.append(",");
 			}
 		}
-		sb.append(_endArray());
+		sb.append(_EndArray());
 		Verbose(StringUtils.stringfyCharacterClass(b));
-		DeclConst(type, name, sb.toString());
+		ConstDecl(type, name, sb.toString());
 	}
 
-	void DeclSymbol(Symbol s) {
-		if (s != null) {
-			String key = s.getSymbol();
-			String val = symbolMap.get(key);
-			if (val == null) {
-				symbolMap.put(key, "_" + key);
-				DeclSymbol("_" + key, key);
-			}
-		}
+	protected void DeclSymbol(String name, String value) {
+		ConstDecl("byte[]", name, "toUTF8(" + StringUtils.quoteString('"', value.toString(), '"') + ")");
 	}
 
-	void DeclSymbol(Nez.ChoicePrediction p) {
-		String key = p.indexMap.toString();
-		String val = symbolMap.get(key);
-		if (val == null) {
-			String name = _indexMap() + symbolMap.size();
-			symbolMap.put(key, name);
-			DeclSymbolIndexMap(getType(_indexMap()), name, p.indexMap);
-		}
+	protected void DeclSymbol(String name, Symbol value) {
+		ConstDecl("Symbol", name, "Symbol.unique(" + StringUtils.quoteString('"', value.toString(), '"') + ")");
 	}
 
-	private void DeclSymbolIndexMap(String type, String name, byte b[]) {
+	protected void DeclSymbol(String name, byte b[]) {
 		StringBuilder sb = new StringBuilder();
-		sb.append(_beginArray());
+		sb.append(_BeginArray());
 		for (int i = 0; i < 256; i++) {
 			sb.append(_int(b[i]));
 			if (i < 255) {
 				sb.append(",");
 			}
 		}
-		sb.append(_endArray());
-		DeclConst(type, name, sb.toString());
+		sb.append(_EndArray());
+		ConstDecl(getType(_indexMap_()), name, sb.toString());
+	}
+
+	class SymbolVisitor extends Expression.Visitor {
+
+		void decl(boolean[] b) {
+			String key = key(b);
+			String sym = symbolMap.get(key);
+			if (sym == null) {
+				sym = _byteSet_() + symbolMap.size();
+				symbolMap.put(key, sym);
+				DeclSymbol(sym, b);
+			}
+		}
+
+		void decl(Symbol s) {
+			if (s != null) {
+				String key = key(s);
+				String val = symbolMap.get(key);
+				if (val == null) {
+					symbolMap.put(key, key);
+					DeclSymbol(key, s);
+				}
+			}
+		}
+
+		void decl(String s) {
+			if (s != null) {
+				String key = key(s);
+				String val = symbolMap.get(key);
+				if (val == null) {
+					String name = _utf8_() + symbolMap.size();
+					symbolMap.put(key, name);
+					DeclSymbol(name, s);
+				}
+			}
+		}
+
+		void decl(Nez.ChoicePrediction p) {
+			String key = key(p.indexMap);
+			String val = symbolMap.get(key);
+			if (val == null) {
+				String name = _indexMap_() + symbolMap.size();
+				symbolMap.put(key, name);
+				DeclSymbol(name, p.indexMap);
+			}
+		}
+
+		private Object check(Grammar g) {
+			for (Production p : g) {
+				p.getExpression().visit(this, null);
+			}
+			return null;
+		}
+
+		private Object check(Expression e) {
+			for (Expression sub : e) {
+				sub.visit(this, null);
+			}
+			return null;
+		}
+
+		@Override
+		public Object visitNonTerminal(NonTerminal e, Object a) {
+			return check(e);
+		}
+
+		@Override
+		public Object visitEmpty(Nez.Empty e, Object a) {
+			return check(e);
+		}
+
+		@Override
+		public Object visitFail(Nez.Fail e, Object a) {
+			return check(e);
+		}
+
+		@Override
+		public Object visitByte(Nez.Byte e, Object a) {
+			return check(e);
+		}
+
+		@Override
+		public Object visitByteSet(Nez.ByteSet e, Object a) {
+			decl(e.byteMap);
+			return check(e);
+		}
+
+		@Override
+		public Object visitAny(Nez.Any e, Object a) {
+			return check(e);
+		}
+
+		@Override
+		public Object visitMultiByte(Nez.MultiByte e, Object a) {
+			decl(new String(e.byteSeq));
+			return check(e);
+		}
+
+		@Override
+		public Object visitPair(Nez.Pair e, Object a) {
+			return check(e);
+		}
+
+		@Override
+		public Object visitSequence(Nez.Sequence e, Object a) {
+			return check(e);
+		}
+
+		@Override
+		public Object visitChoice(Nez.Choice e, Object a) {
+			if (e.predicted != null) {
+				decl(e.predicted);
+			}
+			return check(e);
+		}
+
+		@Override
+		public Object visitOption(Nez.Option e, Object a) {
+			return check(e);
+		}
+
+		@Override
+		public Object visitZeroMore(Nez.ZeroMore e, Object a) {
+			return check(e);
+		}
+
+		@Override
+		public Object visitOneMore(Nez.OneMore e, Object a) {
+			return check(e);
+		}
+
+		@Override
+		public Object visitAnd(Nez.And e, Object a) {
+			return check(e);
+		}
+
+		@Override
+		public Object visitNot(Nez.Not e, Object a) {
+			return check(e);
+		}
+
+		@Override
+		public Object visitBeginTree(Nez.BeginTree e, Object a) {
+			return check(e);
+		}
+
+		@Override
+		public Object visitEndTree(Nez.EndTree e, Object a) {
+			decl(e.tag);
+			decl(e.value);
+			return check(e);
+		}
+
+		@Override
+		public Object visitFoldTree(Nez.FoldTree e, Object a) {
+			decl(e.label);
+			return check(e);
+		}
+
+		@Override
+		public Object visitLinkTree(Nez.LinkTree e, Object a) {
+			decl(e.label);
+			return check(e);
+		}
+
+		@Override
+		public Object visitTag(Nez.Tag e, Object a) {
+			decl(e.tag);
+			return check(e);
+		}
+
+		@Override
+		public Object visitReplace(Nez.Replace e, Object a) {
+			decl(e.value);
+			return check(e);
+		}
+
+		@Override
+		public Object visitDetree(Nez.Detree e, Object a) {
+			return check(e);
+		}
+
+		@Override
+		public Object visitBlockScope(Nez.BlockScope e, Object a) {
+			return check(e);
+		}
+
+		@Override
+		public Object visitLocalScope(LocalScope e, Object a) {
+			return check(e);
+		}
+
+		@Override
+		public Object visitSymbolAction(SymbolAction e, Object a) {
+			decl(e.tableName);
+			return check(e);
+		}
+
+		@Override
+		public Object visitSymbolPredicate(SymbolPredicate e, Object a) {
+			decl(e.tableName);
+			return check(e);
+		}
+
+		@Override
+		public Object visitSymbolMatch(SymbolMatch e, Object a) {
+			decl(e.tableName);
+			return check(e);
+		}
+
+		@Override
+		public Object visitSymbolExists(SymbolExists e, Object a) {
+			decl(e.tableName);
+			decl(e.symbol);
+			return check(e);
+		}
+
+		@Override
+		public Object visitScan(Nez.Scan e, Object a) {
+			return check(e);
+		}
+
+		@Override
+		public Object visitRepeat(Nez.Repeat e, Object a) {
+			return check(e);
+		}
+
+		@Override
+		public Object visitIf(IfCondition e, Object a) {
+			return check(e);
+		}
+
+		@Override
+		public Object visitOn(OnCondition e, Object a) {
+			return check(e);
+		}
+
+		@Override
+		public Object visitLabel(Label e, Object a) {
+			return check(e);
+		}
 	}
 
 	class ParserGeneratorVisitor extends Expression.Visitor {
@@ -612,16 +529,18 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 			BeginFunc(name);
 			{
 				if (memoPoint != null) {
-					If(ParserFunc("lookupMemo", _int(memoPoint)));
-					Succ();
-					EndIf();
+					InitVal("memo", _Func("lookupMemo", _int(memoPoint)));
+					If("memo", _Eq(), "0");
 					String pos = savePos();
 					visit(e, null);
-					Statement(ParserFunc("memoSucc", _int(memoPoint), pos));
+					Statement(_Func("memoSucc", _int(memoPoint), pos));
+					Succ();
+					EndIf();
+					Return(_Binary("memo", _Eq(), "1"));
 				} else {
 					visit(e, null);
+					Succ();
 				}
-				Succ();
 			}
 			EndFunc();
 		}
@@ -642,13 +561,13 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 
 		protected void BeginScope() {
 			if (nested > 0) {
-				BeginLocalScopeBlock();
+				BeginLocalScope();
 			}
 		}
 
 		protected void EndScope() {
 			if (nested > 0) {
-				EndLocalScopeBlock();
+				EndLocalScope();
 			}
 		}
 
@@ -656,43 +575,43 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 			return nested > 0 ? name + nested : name;
 		}
 
-		void initVal(String name, String expr) {
+		private void InitVal(String name, String expr) {
 			String type = getType(name);
 			VarDecl(type, local(name), expr);
 		}
 
 		private String savePos() {
-			initVal(_pos(), _cpos());
-			return local(_pos());
+			InitVal(_pos_(), _cpos_());
+			return local(_pos_());
 		}
 
 		private void backPos() {
-			VarAssign(_cpos(), local(_pos()));
+			VarAssign(_cpos_(), local(_pos_()));
 		}
 
 		private String saveTree() {
-			initVal(_left(), _cleft());
-			return local(_left());
+			InitVal(_left_(), _cleft_());
+			return local(_left_());
 		}
 
 		private void backTree() {
-			VarAssign(_cleft(), local(_left()));
+			VarAssign(_cleft_(), local(_left_()));
 		}
 
 		private void saveLog() {
-			initVal(_log(), ParserFunc("saveLog"));
+			InitVal(_log_(), _Func("saveLog"));
 		}
 
 		private void backLog() {
-			Statement(ParserFunc("backLog", local(_log())));
+			Statement(_Func("backLog", local(_log_())));
 		}
 
 		private void saveSymbol() {
-			initVal(_sym(), ParserFunc("saveSymbolPoint"));
+			InitVal(_sym_(), _Func("saveSymbolPoint"));
 		}
 
 		private void backSymbol() {
-			Statement(ParserFunc("backSymbolPoint", local(_sym())));
+			Statement(_Func("backSymbolPoint", local(_sym_())));
 		}
 
 		private void SavePoint(Expression inner) {
@@ -720,7 +639,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		@Override
 		public Object visitNonTerminal(NonTerminal e, Object a) {
 			String f = makeFuncCall(e.getUniqueName(), e.deReference());
-			If(_not(f));
+			If(_Not(f));
 			{
 				Fail();
 			}
@@ -741,7 +660,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 
 		@Override
 		public Object visitByte(Nez.Byte e, Object a) {
-			If(ParserFunc("read"), _noteq(), _byte(e.byteChar));
+			If(_Func("read"), _NotEq(), _byte(e.byteChar));
 			{
 				Fail();
 			}
@@ -751,7 +670,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 
 		@Override
 		public Object visitByteSet(Nez.ByteSet e, Object a) {
-			If(_not(MatchByteArray(e.byteMap, ParserFunc("read"))));
+			If(_Not(MatchByteArray(e.byteMap, _Func("read"))));
 			{
 				Fail();
 			}
@@ -760,20 +679,20 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		}
 
 		private String MatchByteArray(boolean[] byteMap, String c) {
-			return _getarray(_symbol(byteMap), c);
+			return _GetArray(_symbol(byteMap), c);
 		}
 
 		@Override
 		public Object visitAny(Nez.Any e, Object a) {
 			if (strategy.BinaryGrammar) {
-				Statement(ParserFunc("move", "1"));
-				If(ParserFunc("eof"));
+				Statement(_Func("move", "1"));
+				If(_Func("eof"));
 				{
 					Fail();
 				}
 				EndIf();
 			} else {
-				If(ParserFunc("read"), _eq(), "0");
+				If(_Func("read"), _Eq(), "0");
 				{
 					Fail();
 				}
@@ -784,7 +703,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 
 		@Override
 		public Object visitMultiByte(Nez.MultiByte e, Object a) {
-			If(_not(ParserFunc("match", _bytes(e.byteSeq), _int(e.byteSeq.length))));
+			If(_Not(_Func("match", _bytes(e.byteSeq))));
 			{
 				Fail();
 			}
@@ -814,16 +733,16 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 				visitPredicatedChoice(e, e.predicted);
 			} else {
 				BeginScope();
-				initVal(_unchoiced(), _true());
+				InitVal(_unchoiced_(), _True());
 				for (Expression sub : e) {
 					String f = makeFuncCall(sub);
-					If(local(_unchoiced()));
+					If(local(_unchoiced_()));
 					{
 						SavePoint(sub);
 						Verbose(sub.toString());
 						If(f);
 						{
-							VarAssign(local(_unchoiced()), _false());
+							VarAssign(local(_unchoiced_()), _False());
 						}
 						Else();
 						{
@@ -833,7 +752,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 					}
 					EndIf();
 				}
-				If(local(_unchoiced()));
+				If(local(_unchoiced_()));
 				{
 					Fail();
 				}
@@ -844,7 +763,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		}
 
 		private void visitPredicatedChoice(Nez.Choice choice, ChoicePrediction p) {
-			Switch(_getarray(_symbol(p), ParserFunc("prefetch")));
+			Switch(_GetArray(_symbol(p), _Func("prefetch")));
 			Case("0");
 			Fail();
 			for (int i = 0; i < choice.size(); i++) {
@@ -853,7 +772,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 				String f = makeFuncCall(sub);
 				if (p.striped[i]) {
 					Verbose(". " + sub);
-					Statement(ParserFunc("move", "1"));
+					Statement(_Func("move", "1"));
 				} else {
 					Verbose(sub.toString());
 				}
@@ -870,7 +789,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 				String f = makeFuncCall(sub);
 				SavePoint(sub);
 				Verbose(sub.toString());
-				If(_not(f));
+				If(_Not(f));
 				{
 					Backtrack(sub);
 				}
@@ -896,11 +815,11 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 			Expression sub = e.get(0);
 			if (!this.tryRepetitionOptimization(sub)) {
 				String f = makeFuncCall(sub);
-				While(_true());
+				While(_True());
 				{
 					SavePoint(sub);
 					Verbose(sub.toString());
-					If(_not(f));
+					If(_Not(f));
 					{
 						Backtrack(sub);
 						Break();
@@ -919,7 +838,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 				BeginScope();
 				savePos();
 				Verbose(sub.toString());
-				If(_not(f));
+				If(_Not(f));
 				{
 					Fail();
 				}
@@ -953,32 +872,32 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 			if (strategy.Olex) {
 				if (inner instanceof Nez.Byte) {
 					Nez.Byte e = (Nez.Byte) inner;
-					If(ParserFunc("prefetch"), _eq(), _byte(e.byteChar));
+					If(_Func("prefetch"), _Eq(), _byte(e.byteChar));
 					{
-						Statement(ParserFunc("move", "1"));
+						Statement(_Func("move", "1"));
 					}
 					EndIf();
 					return true;
 				}
 				if (inner instanceof Nez.ByteSet) {
 					Nez.ByteSet e = (Nez.ByteSet) inner;
-					If(MatchByteArray(e.byteMap, ParserFunc("prefetch")));
+					If(MatchByteArray(e.byteMap, _Func("prefetch")));
 					{
-						Statement(ParserFunc("move", "1"));
+						Statement(_Func("move", "1"));
 					}
 					EndIf();
 					return true;
 				}
 				if (inner instanceof Nez.MultiByte) {
 					Nez.MultiByte e = (Nez.MultiByte) inner;
-					Statement(ParserFunc("match", _bytes(e.byteSeq), _int(e.byteSeq.length)));
+					Statement(_Func("match", _bytes(e.byteSeq)));
 					return true;
 				}
 				if (inner instanceof Nez.Any) {
 					// Nez.Any e = (Nez.Any) inner;
-					If(_not(ParserFunc("eof")));
+					If(_Not(_Func("eof")));
 					{
-						Statement(ParserFunc("move", "1"));
+						Statement(_Func("move", "1"));
 					}
 					EndIf();
 					return true;
@@ -991,25 +910,25 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 			if (strategy.Olex) {
 				if (inner instanceof Nez.Byte) {
 					Nez.Byte e = (Nez.Byte) inner;
-					While(_op(ParserFunc("prefetch"), _eq(), _byte(e.byteChar)));
+					While(_Binary(_Func("prefetch"), _Eq(), _byte(e.byteChar)));
 					{
-						Statement(ParserFunc("move", "1"));
+						Statement(_Func("move", "1"));
 					}
 					EndWhile();
 					return true;
 				}
 				if (inner instanceof Nez.ByteSet) {
 					Nez.ByteSet e = (Nez.ByteSet) inner;
-					While(MatchByteArray(e.byteMap, ParserFunc("prefetch")));
+					While(MatchByteArray(e.byteMap, _Func("prefetch")));
 					{
-						Statement(ParserFunc("move", "1"));
+						Statement(_Func("move", "1"));
 					}
 					EndWhile();
 					return true;
 				}
 				if (inner instanceof Nez.MultiByte) {
 					Nez.MultiByte e = (Nez.MultiByte) inner;
-					While(ParserFunc("match", _bytes(e.byteSeq), _int(e.byteSeq.length)));
+					While(_Func("match", _bytes(e.byteSeq)));
 					{
 						EmptyStatement();
 					}
@@ -1018,9 +937,9 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 				}
 				if (inner instanceof Nez.Any) {
 					// Nez.Any e = (Nez.Any) inner;
-					While(_not(ParserFunc("eof")));
+					While(_Not(_Func("eof")));
 					{
-						Statement(ParserFunc("move", "1"));
+						Statement(_Func("move", "1"));
 					}
 					EndWhile();
 					return true;
@@ -1033,7 +952,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 			if (strategy.Olex) {
 				if (inner instanceof Nez.Byte) {
 					Nez.Byte e = (Nez.Byte) inner;
-					If(ParserFunc("prefetch"), _noteq(), _byte(e.byteChar));
+					If(_Func("prefetch"), _NotEq(), _byte(e.byteChar));
 					{
 						Fail();
 					}
@@ -1042,7 +961,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 				}
 				if (inner instanceof Nez.ByteSet) {
 					Nez.ByteSet e = (Nez.ByteSet) inner;
-					If(_not(MatchByteArray(e.byteMap, ParserFunc("prefetch"))));
+					If(_Not(MatchByteArray(e.byteMap, _Func("prefetch"))));
 					{
 						Fail();
 					}
@@ -1051,7 +970,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 				}
 				if (inner instanceof Nez.MultiByte) {
 					Nez.MultiByte e = (Nez.MultiByte) inner;
-					If(_not(ParserFunc("match", _bytes(e.byteSeq), _int(e.byteSeq.length))));
+					If(_Not(_Func("match", _bytes(e.byteSeq))));
 					{
 						Fail();
 					}
@@ -1060,7 +979,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 				}
 				if (inner instanceof Nez.Any) {
 					// Nez.Any e = (Nez.Any) inner;
-					If(ParserFunc("eof"));
+					If(_Func("eof"));
 					{
 						Fail();
 					}
@@ -1075,7 +994,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 			if (strategy.Olex) {
 				if (inner instanceof Nez.Byte) {
 					Nez.Byte e = (Nez.Byte) inner;
-					If(ParserFunc("prefetch"), _eq(), _byte(e.byteChar));
+					If(_Func("prefetch"), _Eq(), _byte(e.byteChar));
 					{
 						Fail();
 					}
@@ -1084,7 +1003,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 				}
 				if (inner instanceof Nez.ByteSet) {
 					Nez.ByteSet e = (Nez.ByteSet) inner;
-					If(MatchByteArray(e.byteMap, ParserFunc("prefetch")));
+					If(MatchByteArray(e.byteMap, _Func("prefetch")));
 					{
 						Fail();
 					}
@@ -1093,7 +1012,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 				}
 				if (inner instanceof Nez.MultiByte) {
 					Nez.MultiByte e = (Nez.MultiByte) inner;
-					If(ParserFunc("match", _bytes(e.byteSeq), _int(e.byteSeq.length)));
+					If(_Func("match", _bytes(e.byteSeq)));
 					{
 						Fail();
 					}
@@ -1102,7 +1021,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 				}
 				if (inner instanceof Nez.Any) {
 					// Nez.Any e = (Nez.Any) inner;
-					If(_not(ParserFunc("eof")));
+					If(_Not(_Func("eof")));
 					{
 						Fail();
 					}
@@ -1117,19 +1036,19 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 
 		@Override
 		public Object visitBeginTree(Nez.BeginTree e, Object a) {
-			Statement(ParserFunc("beginTree", _int(e.shift)));
+			Statement(_Func("beginTree", _int(e.shift)));
 			return null;
 		}
 
 		@Override
 		public Object visitEndTree(Nez.EndTree e, Object a) {
-			Statement(ParserFunc("endTree", _null(), _null(), _int(e.shift)));
+			Statement(_Func("endTree", _Null(), _Null(), _int(e.shift)));
 			return null;
 		}
 
 		@Override
 		public Object visitFoldTree(Nez.FoldTree e, Object a) {
-			Statement(ParserFunc("foldTree", _int(e.shift), _symbol(e.label)));
+			Statement(_Func("foldTree", _int(e.shift), _symbol(e.label)));
 			return null;
 		}
 
@@ -1138,7 +1057,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 			BeginScope();
 			String tree = saveTree();
 			visit(e.get(0), a);
-			Statement(ParserFunc("linkTree", tree, _symbol(e.label)));
+			Statement(_Func("linkTree", tree, _symbol(e.label)));
 			backTree();
 			EndScope();
 			return null;
@@ -1146,13 +1065,13 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 
 		@Override
 		public Object visitTag(Nez.Tag e, Object a) {
-			Statement(ParserFunc("tagTree", _symbol(e.tag)));
+			Statement(_Func("tagTree", _symbol(e.tag)));
 			return null;
 		}
 
 		@Override
 		public Object visitReplace(Nez.Replace e, Object a) {
-			Statement(ParserFunc("valueTree", _string(e.value)));
+			Statement(_Func("valueTree", _symbol(e.value)));
 			return null;
 		}
 
@@ -1182,7 +1101,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		public Object visitLocalScope(LocalScope e, Object a) {
 			BeginScope();
 			saveSymbol();
-			Statement(ParserFunc("maskSymbolTable", _symbol(e.tableName)));
+			Statement(_Func("addSymbolMask", _symbol(e.tableName)));
 			visit(e.get(0), a);
 			backSymbol();
 			EndScope();
@@ -1194,7 +1113,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 			BeginScope();
 			String pos = savePos();
 			visit(e.get(0), a);
-			Statement(ParserFunc("addSymbol", _symbol(e.tableName), pos));
+			Statement(_Func("addSymbol", _symbol(e.tableName), pos));
 			EndScope();
 			return null;
 		}
@@ -1205,9 +1124,9 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 			String pos = savePos();
 			visit(e.get(0), a);
 			if (e.op == FunctionName.is) {
-				Statement(ParserFunc("equals", _symbol(e.tableName), pos));
+				Statement(_Func("equals", _symbol(e.tableName), pos));
 			} else {
-				Statement(ParserFunc("contains", _symbol(e.tableName), pos));
+				Statement(_Func("contains", _symbol(e.tableName), pos));
 			}
 			EndScope();
 			return null;
@@ -1215,7 +1134,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 
 		@Override
 		public Object visitSymbolMatch(SymbolMatch e, Object a) {
-			If(_not(ParserFunc("match", ParserFunc("getSymbol", _symbol(e.tableName)))));
+			If(_Not(_Func("match", _Func("getSymbol", _symbol(e.tableName)))));
 			{
 				Fail();
 			}
@@ -1226,13 +1145,13 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		@Override
 		public Object visitSymbolExists(SymbolExists e, Object a) {
 			if (e.symbol == null) {
-				If(_not(ParserFunc("exists", _symbol(e.tableName))));
+				If(_Not(_Func("exists", _symbol(e.tableName))));
 				{
 					Fail();
 				}
 				EndIf();
 			} else {
-				If(_not(ParserFunc("existsSymbol", _symbol(e.tableName), _string(e.symbol))));
+				If(_Not(_Func("existsSymbol", _symbol(e.tableName), _symbol(e.symbol))));
 				{
 					Fail();
 				}
@@ -1247,14 +1166,14 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 			BeginScope();
 			String ppos = savePos();
 			visit(e.get(0), a);
-			Statement(ParserFunc("scanCount", ppos, _long(e.mask), _int(e.shift)));
+			Statement(_Func("scanCount", ppos, _long(e.mask), _int(e.shift)));
 			EndScope();
 			return null;
 		}
 
 		@Override
 		public Object visitRepeat(Nez.Repeat e, Object a) {
-			While(ParserFunc("decCount"));
+			While(_Func("decCount"));
 			{
 				visit(e.get(0), a);
 			}
@@ -1280,5 +1199,355 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 			return null;
 		}
 
+	}
+
+	/* Syntax */
+
+	protected String _Comment() {
+		return "//";
+	}
+
+	protected String _Comment(String c) {
+		return "/*" + c + "*/";
+	}
+
+	protected String _And() {
+		return "&&";
+	}
+
+	protected String _Or() {
+		return "||";
+	}
+
+	protected String _Not(String expr) {
+		return "!" + expr;
+	}
+
+	protected String _Eq() {
+		return "==";
+	}
+
+	protected String _NotEq() {
+		return "!=";
+	}
+
+	protected String _True() {
+		return "true";
+	}
+
+	protected String _False() {
+		return "false";
+	}
+
+	protected String _Null() {
+		return "null";
+	}
+
+	/* Expression */
+
+	private String _GetArray(String array, String c) {
+		return array + "[" + c + "]";
+	}
+
+	protected String _BeginArray() {
+		return "{";
+	}
+
+	protected String _EndArray() {
+		return "}";
+	}
+
+	protected String _BeginBlock() {
+		return " {";
+	}
+
+	protected String _EndBlock() {
+		return "}";
+	}
+
+	protected String _Field(String o, String name) {
+		return o + "." + name;
+	}
+
+	protected String _Func(String name, String... args) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(_state_());
+		sb.append(".");
+		sb.append(name);
+		sb.append("(");
+		for (int i = 0; i < args.length; i++) {
+			if (i > 0) {
+				sb.append(",");
+			}
+			sb.append(args[i]);
+		}
+		sb.append(")");
+		return sb.toString();
+	}
+
+	protected String _int(int n) {
+		return "" + n;
+	}
+
+	protected String _long(long n) {
+		return "" + n + "L";
+	}
+
+	protected String _byte(int ch) {
+		// if (ch < 128 && (!Character.isISOControl(ch))) {
+		// return "'" + (char) ch + "'";
+		// }
+		return "" + ch;
+	}
+
+	/* Expression */
+
+	protected String _function(String type) {
+		return "private static " + type;
+	}
+
+	protected String _argument(String var, String type) {
+		if (type == null) {
+			return var;
+		}
+		return type + " " + var;
+	}
+
+	protected String _argument() {
+		return _argument(_state_(), getType(_state_()));
+	}
+
+	protected String _funccall(String name) {
+		return name + "(" + _state_() + ")";
+	}
+
+	/* Statement */
+
+	protected void BeginDecl(String line) {
+		file.writeIndent(line);
+		Begin();
+	}
+
+	protected void EndDecl() {
+		End();
+	}
+
+	protected void Begin() {
+		file.write(" {");
+		file.incIndent();
+	}
+
+	protected void End() {
+		file.decIndent();
+		file.writeIndent();
+		file.write("}");
+	}
+
+	protected void BeginFunc(String type, String name, String args) {
+		file.writeIndent();
+		file.write(_function(type));
+		file.write(" ");
+		file.write(name);
+		file.write("(");
+		file.write(args);
+		file.write(")");
+		Begin();
+	}
+
+	protected final void BeginFunc(String f, String args) {
+		BeginFunc(getType("parse"), f, args);
+	}
+
+	protected final void BeginFunc(String f) {
+		BeginFunc(getType("parse"), f, _argument());
+	}
+
+	protected void EndFunc() {
+		End();
+	}
+
+	protected void BeginLocalScope() {
+		file.writeIndent("{");
+		file.incIndent();
+	}
+
+	protected void EndLocalScope() {
+		file.decIndent();
+		file.writeIndent();
+		file.write("}");
+	}
+
+	protected void Line(String stmt) {
+		file.writeIndent(stmt);
+	}
+
+	protected void Statement(String stmt) {
+		file.writeIndent(stmt);
+		Semicolon();
+	}
+
+	protected void EmptyStatement() {
+		file.writeIndent();
+		Semicolon();
+	}
+
+	protected void Semicolon() {
+		file.write(";");
+	}
+
+	protected void LineComment(String stmt) {
+		file.writeIndent(_Comment() + " " + stmt);
+	}
+
+	protected void Return(String expr) {
+		Statement("return " + expr);
+	}
+
+	protected void Succ() {
+		Return(_True());
+	}
+
+	protected void Fail() {
+		Return(_False());
+	}
+
+	protected void If(String cond) {
+		file.writeIndent("if (");
+		file.write(cond);
+		file.write(")");
+		Begin();
+	}
+
+	protected String _Binary(String a, String op, String b) {
+		return a + " " + op + " " + b;
+	}
+
+	protected void If(String a, String op, String b) {
+		If(a + " " + op + " " + b);
+	}
+
+	protected void Else() {
+		End();
+		file.write(" else");
+		Begin();
+	}
+
+	protected void EndIf() {
+		End();
+	}
+
+	protected void While(String cond) {
+		file.writeIndent();
+		file.write("while (");
+		file.write(cond);
+		file.write(")");
+		Begin();
+	}
+
+	protected void EndWhile() {
+		End();
+	}
+
+	protected void Break() {
+		file.writeIndent("break");
+		Semicolon();
+	}
+
+	protected void Switch(String c) {
+		Line("switch(" + c + ")");
+		Begin();
+	}
+
+	protected void EndSwitch() {
+		End();
+	}
+
+	protected void Case(String n) {
+		Line("case " + n + ": ");
+	}
+
+	protected void EndCase() {
+	}
+
+	protected void VarDecl(String name, String expr) {
+		VarDecl(this.getType(name), name, expr);
+	}
+
+	protected void VarDecl(String t, String v, String expr) {
+		if (t == null) {
+			VarAssign(v, expr);
+		} else {
+			Statement(t + " " + v + " = " + expr);
+		}
+	}
+
+	protected void VarAssign(String v, String expr) {
+		Statement(v + " = " + expr);
+	}
+
+	protected void ConstDecl(String type, String name, String val) {
+		if (type == null) {
+			Statement("private final static " + name + " = " + val);
+		} else {
+			Statement("private final static " + type + " " + name + " = " + val);
+		}
+	}
+
+	/* Variables */
+
+	protected String _state_() {
+		return "c";
+	}
+
+	protected String _pos_() {
+		return "pos";
+	}
+
+	protected String _cpos_() {
+		return _Field(_state_(), "pos");
+	}
+
+	protected String _left_() {
+		return "left";
+	}
+
+	protected String _cleft_() {
+		return _Field(_state_(), "left");
+	}
+
+	protected String _log_() {
+		return "log";
+	}
+
+	protected String _clog_() {
+		return _Field(_state_(), "log");
+	}
+
+	protected String _sym_() {
+		return "sym";
+	}
+
+	protected String _csym_() {
+		return _Field(_state_(), "sym");
+	}
+
+	protected String _unchoiced_() {
+		return "unchoiced";
+	}
+
+	protected String _utf8_() {
+		return "u";
+	}
+
+	protected String _indexMap_() {
+		return "indexMap";
+	}
+
+	protected String _byteSet_() {
+		return "byteSet";
+	}
+
+	protected String _byteSeq_() {
+		return "byteSeq";
 	}
 }

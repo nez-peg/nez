@@ -308,7 +308,7 @@ public class CoffeeParserGenerator extends ParserGrammarSourceGenerator {
 
 	@Override
 	public void visitTag(Nez.Tag p) {
-		Let(_tag(), "\"" + p.getTagName() + "\" if " + StNotEq(_result(), _false()));
+		Let(_tag(), "\"" + p.symbol() + "\" if " + StNotEq(_result(), _false()));
 	}
 
 	@Override

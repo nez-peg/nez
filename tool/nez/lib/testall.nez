@@ -94,8 +94,8 @@ example EXISTS ~9539de Apple
 example EXISTSSYMBOL ~9539de Apple
 
 example MATCH ~1d96fb6 Apple/AppleII
-example IS    Apple/Apple
-example ISA   Apple,Orange,Banana/Apple
+example IS    ~1d96fb  Apple/Apple
+example ISA   ~21d5d6  Apple,Orange,Banana/Apple
 
 BLOCK  = <block <symbol NAME>> !<exists NAME>
 BLOCK2  = <symbol NAME> '/' <block <match NAME>>

@@ -49,7 +49,7 @@ public abstract class GrammarTranslator extends Expression.Visitor implements So
 
 	@Override
 	public void generate() {
-		generate(this.parser.getParserGrammar());
+		generate(this.parser.getGrammar());
 	}
 
 	public void generate(Grammar g) {

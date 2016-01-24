@@ -551,7 +551,6 @@ public class Nez {
 		public final Object visit(Expression.Visitor v, Object a) {
 			return v.visitBeginTree(this, a);
 		}
-
 	}
 
 	public static class EndTree extends Terminal implements TreeConstruction {
@@ -577,7 +576,6 @@ public class Nez {
 		public final Object visit(Expression.Visitor v, Object a) {
 			return v.visitEndTree(this, a);
 		}
-
 	}
 
 	public static class FoldTree extends Terminal implements TreeConstruction {
@@ -602,7 +600,6 @@ public class Nez {
 		public final Object visit(Expression.Visitor v, Object a) {
 			return v.visitFoldTree(this, a);
 		}
-
 	}
 
 	public static class Tag extends Terminal implements TreeConstruction {
@@ -612,8 +609,8 @@ public class Nez {
 			this.tag = tag;
 		}
 
-		public final String getTagName() {
-			return tag.getSymbol();
+		public final Symbol symbol() {
+			return tag;
 		}
 
 		@Override

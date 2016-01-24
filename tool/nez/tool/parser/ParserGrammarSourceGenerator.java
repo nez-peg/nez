@@ -50,7 +50,7 @@ public abstract class ParserGrammarSourceGenerator extends Expression.Visitor im
 
 	@Override
 	public void generate() {
-		this.generate(this.parser.getParserGrammar());
+		this.generate(this.parser.getGrammar());
 	}
 
 	public void generate(Grammar g) {

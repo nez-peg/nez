@@ -94,7 +94,7 @@ public class MozCode extends ParserCode<MozInst> {
 
 	public final static void writeMozCode(Parser parser, String path) {
 		ParserMachineCompiler compile = ParserMachineCompiler.newCompiler(parser.getParserStrategy());
-		MozCode code = compile.compile(parser.getParserGrammar());
+		MozCode code = compile.compile(parser.getGrammar());
 		MozWriter c = new MozWriter();
 		code.encode(c);
 		Verbose.println("generating " + path);

@@ -18,13 +18,17 @@ public final class Parser {
 	private Grammar grammar;
 	private ParserCode<?> pcode = null;
 
-	public Parser(Grammar pgrammar, ParserStrategy strategy) {
-		this.grammar = pgrammar;
+	public Parser(Grammar grammar, ParserStrategy strategy) {
+		this.grammar = grammar;
 		this.strategy = strategy;
 	}
 
-	public final Grammar getParserGrammar() {
+	public final Grammar getGrammar() {
 		return grammar;
+	}
+
+	public final Grammar getCompiledGrammar() {
+		return this.getParserCode().getCompiledGrammar();
 	}
 
 	public final ParserStrategy getParserStrategy() {

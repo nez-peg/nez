@@ -1,21 +1,329 @@
 package nez.tool.parser;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Stack;
-
-import nez.lang.Expression;
 import nez.lang.Grammar;
-import nez.lang.Nez;
-import nez.lang.Nez.Label;
-import nez.lang.Nez.Repeat;
-import nez.lang.Nez.Scan;
-import nez.lang.NonTerminal;
-import nez.lang.Production;
-import nez.util.StringUtils;
-import nez.util.UList;
 
-public class PythonParserGenerator extends ParserGrammarSourceGenerator {
+public class PythonParserGenerator extends AbstractParserGenerator {
+
+	public boolean Python3 = false;
+
+	/* Syntax */
+
+	@Override
+	protected String _Comment() {
+		return "##";
+	}
+
+	@Override
+	protected String _Comment(String c) {
+		return "";
+	}
+
+	@Override
+	protected String _And() {
+		return "and";
+	}
+
+	@Override
+	protected String _Or() {
+		return "or";
+	}
+
+	@Override
+	protected String _Not(String expr) {
+		return "not " + expr;
+	}
+
+	@Override
+	protected String _Eq() {
+		return "==";
+	}
+
+	@Override
+	protected String _NotEq() {
+		return "!=";
+	}
+
+	@Override
+	protected String _True() {
+		return "True";
+	}
+
+	@Override
+	protected String _False() {
+		return "False";
+	}
+
+	@Override
+	protected String _Null() {
+		return "None";
+	}
+
+	/* Expression */
+
+	protected String _GetArray(String array, String c) {
+		return array + "[" + c + "]";
+	}
+
+	@Override
+	protected String _BeginArray() {
+		return "[";
+	}
+
+	@Override
+	protected String _EndArray() {
+		return "]";
+	}
+
+	@Override
+	protected String _BeginBlock() {
+		return " {";
+	}
+
+	@Override
+	protected String _EndBlock() {
+		return "}";
+	}
+
+	@Override
+	protected String _Field(String o, String name) {
+		return o + "." + name;
+	}
+
+	@Override
+	protected String _Func(String name, String... args) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(_state_());
+		sb.append(".");
+		sb.append(name);
+		sb.append("(");
+		for (int i = 0; i < args.length; i++) {
+			if (i > 0) {
+				sb.append(",");
+			}
+			sb.append(args[i]);
+		}
+		sb.append(")");
+		return sb.toString();
+	}
+
+	@Override
+	protected String _int(int n) {
+		return "" + n;
+	}
+
+	@Override
+	protected String _long(long n) {
+		return "" + n;
+	}
+
+	@Override
+	protected String _byte(int ch) {
+		// if (ch < 128 && (!Character.isISOControl(ch))) {
+		// return "'" + (char) ch + "'";
+		// }
+		return "" + ch;
+	}
+
+	/* Expression */
+
+	@Override
+	protected String _function(String type) {
+		return "def";
+	}
+
+	@Override
+	protected String _argument(String var, String type) {
+		return var;
+	}
+
+	@Override
+	protected String _argument() {
+		return _argument(_state_(), getType(_state_()));
+	}
+
+	@Override
+	protected String _funccall(String name) {
+		return name + "(" + _state_() + ")";
+	}
+
+	/* Statement */
+
+	@Override
+	protected void BeginFunc(String type, String name, String args) {
+		file.writeIndent();
+		file.write(_function(type));
+		file.write(" ");
+		file.write(name);
+		file.write("(");
+		file.write(args);
+		file.write(")");
+		Begin();
+	}
+
+	@Override
+	protected void EndFunc() {
+		End();
+	}
+
+	@Override
+	protected void Begin() {
+		file.write(" :");
+		file.incIndent();
+	}
+
+	@Override
+	protected void End() {
+		file.decIndent();
+		// file.writeIndent();
+		// file.write("#");
+	}
+
+	@Override
+	protected void BeginLocalScope() {
+		/* No local scope */
+	}
+
+	@Override
+	protected void EndLocalScope() {
+		/* No local scope */
+	}
+
+	@Override
+	protected void Line(String stmt) {
+		file.writeIndent(stmt);
+	}
+
+	@Override
+	protected void Statement(String stmt) {
+		file.writeIndent(stmt);
+		Semicolon();
+	}
+
+	@Override
+	protected void EmptyStatement() {
+		file.writeIndent("pass");
+		Semicolon();
+	}
+
+	@Override
+	protected void Semicolon() {
+	}
+
+	@Override
+	protected void LineComment(String stmt) {
+		file.writeIndent(_Comment() + " " + stmt);
+	}
+
+	@Override
+	protected void Return(String expr) {
+		Statement("return " + expr);
+	}
+
+	@Override
+	protected void Succ() {
+		Return(_True());
+	}
+
+	@Override
+	protected void Fail() {
+		Return(_False());
+	}
+
+	@Override
+	protected void If(String cond) {
+		file.writeIndent("if ");
+		file.write(cond);
+		file.write("");
+		Begin();
+	}
+
+	@Override
+	protected String _Binary(String a, String op, String b) {
+		return a + " " + op + " " + b;
+	}
+
+	@Override
+	protected void If(String a, String op, String b) {
+		If(a + " " + op + " " + b);
+	}
+
+	@Override
+	protected void Else() {
+		End();
+		file.writeIndent("else");
+		Begin();
+	}
+
+	@Override
+	protected void EndIf() {
+		End();
+	}
+
+	@Override
+	protected void While(String cond) {
+		file.writeIndent();
+		file.write("while ");
+		file.write(cond);
+		file.write("");
+		Begin();
+	}
+
+	@Override
+	protected void EndWhile() {
+		End();
+	}
+
+	@Override
+	protected void Break() {
+		file.writeIndent("break");
+		Semicolon();
+	}
+
+	@Override
+	protected void Switch(String c) {
+		Line("switch (" + c + ")");
+		Begin();
+	}
+
+	@Override
+	protected void EndSwitch() {
+		End();
+	}
+
+	@Override
+	protected void Case(String n) {
+		Line("case " + n + ": ");
+	}
+
+	@Override
+	protected void EndCase() {
+	}
+
+	@Override
+	protected void VarDecl(String v, String expr) {
+		VarDecl(null, v, expr);
+	}
+
+	@Override
+	protected void VarDecl(String t, String v, String expr) {
+		if (t == null) {
+			VarAssign(v, expr);
+		} else {
+			Statement(t + " " + v + " = " + expr);
+		}
+	}
+
+	@Override
+	protected void VarAssign(String name, String expr) {
+		Statement(name + " = " + expr);
+	}
+
+	@Override
+	protected void ConstDecl(String type, String name, String expr) {
+		Statement(name + " = " + expr);
+	}
+
+	// Grammar Generator
 
 	@Override
 	protected String getFileExtension() {
@@ -23,672 +331,55 @@ public class PythonParserGenerator extends ParserGrammarSourceGenerator {
 	}
 
 	@Override
-	public void makeHeader(Grammar g) {
-		W("# This file is generated by the Nez Python parser generator");
-		Import("sys");
-		Import("time");
-		L().Func("sys.path.append", "'libnez/py/'");
-		FromImport("libnez", "*");
-		L();
-	}
-
-	@Override
-	public void makeFooter(Grammar g) {
-		Let("argvs", "sys.argv");
-		Let("argc", "len(argvs)");
-		If("argc != 2").Begin().Print("Usage: python [parser_file] [input_file]").Quit().End();
-		Let("f", _func("open", "argvs[1]", "'r'"));
-		Let("inputs", _func("''.join", _func("f.readlines", "")));
-		Let("length", _func("len", "inputs") + " - 1");
-		Let("inputs", "inputs + '\\0'");
-		Let("compiler", _func("ASTMachineCompiler", ""));
-		Let("memoTable", _func("ElasticTable", "32", String.valueOf(memoPoint)));
-		Let("parser", _func("PyNez", "inputs", "compiler, memoTable"));
-		Let("start", "time.clock()");
-		L("r = ").Func("parser.pFile", "True");
-		L().Func("compiler.encode", "Instruction.Iret", "0", "None");
-		If("r == False").Begin().Print("parse error!!").End();
-		// ElIf("parser.pos != length").Begin().Print("unconsume!!").End();
-		Else().Begin().Let("end", "time.clock()").Print("time = {0}[sec]", "(end - start)").Print("match!!");
-		Let("machine", _func("ASTMachine", "inputs"));
-		Print("\\nAST Construction:\\n");
-		Let("ast", _func("machine.commitLog", "compiler.func"));
-		L().Func("ast.dump", "");
-		End();
-	}
-
-	@Override
-	public void generate(Grammar g) {
-		makeHeader(g);
-		Class("PyNez").Begin();
-		makeParserClass();
-		for (Production p : g) {
-			visitProduction(g, p);
-		}
-		makeByteMap();
-		End();
-		makeFooter(g);
-		file.writeNewLine();
-		file.flush();
-	}
-
-	protected void makeParserClass() {
-		FuncDef("__init__", "self", "inputs, compiler, memoTable").Begin();
-		Let("self.pos", "0");
-		Let("self.inputs", "inputs");
-		Let("self.inputSize", _func("len", "inputs"));
-		Let("self.compiler", "compiler");
-		Let("self.memoTable", "memoTable");
-		End().L();
-		FuncDef("charInputAt", "self").Begin();
-		If("self.inputSize == self.pos").Begin().Return("None").End();
-		Return("self.inputs[self.pos]").End().L();
-		FuncDef("matchCharMap", "self", "map").Begin();
-		Let("ch", "self.charInputAt()");
-		If("ch is not None").Begin();
-		If("map[ord(ch)] == True").Begin().Consume().Return("True").End();
-		End();
-		Return("False").End().L();
-	}
-
-	protected void makeByteMap() {
-		for (Nez.ByteSet map : this.byteMapList) {
-			L("map").W(String.valueOf(unique(map))).W(" = [");
-			for (int i = 0; i < map.byteMap.length; i++) {
-				if (map.byteMap[i]) {
-					W("True");
-				} else {
-					W("False");
-				}
-				if (i != map.byteMap.length - 1) {
-					W(", ");
-				}
+	protected void generateHeader(Grammar g) {
+		BeginFunc("parse", "text");
+		{
+			VarDecl(_state_(), "ParserContext(text)");
+			If(_funccall(_funcname(g.getStartProduction())));
+			{
+				Return(_cleft_());
 			}
-			W("]").L();
+			EndIf();
+			Return(_Null());
 		}
-	}
-
-	@Override
-	protected PythonParserGenerator W(String word) {
-		file.write(word);
-		return this;
-	}
-
-	@Override
-	protected PythonParserGenerator L() {
-		file.writeIndent();
-		return this;
-	}
-
-	@Override
-	protected PythonParserGenerator L(String line) {
-		file.writeIndent(line);
-		return this;
-	}
-
-	protected PythonParserGenerator Begin() {
-		file.incIndent();
-		return this;
-	}
-
-	protected PythonParserGenerator End() {
-		file.decIndent();
-		return this;
-	}
-
-	protected PythonParserGenerator Import(String name) {
-		L("import ").W(name);
-		return this;
-	}
-
-	protected PythonParserGenerator FromImport(String packageName, String name) {
-		L("from ").W(packageName).W(" import ").W(name);
-		return this;
-	}
-
-	protected PythonParserGenerator Class(String name) {
-		L("class ").W(name).W(":");
-		return this;
-	}
-
-	protected String _func(String name, String... args) {
-		StringBuilder sb = new StringBuilder();
-		sb.append(name).append("(");
-		for (int i = 0; i < args.length; i++) {
-			sb.append(args[i]);
-			if (i != args.length - 1) {
-				sb.append(", ");
+		EndFunc();
+		BeginFunc("match", "text");
+		{
+			VarDecl(_state_(), "ParserContext(text)");
+			If(_funccall(_funcname(g.getStartProduction())));
+			{
+				Return(_cpos_());
 			}
+			EndIf();
+			Return("-1");
 		}
-		sb.append(")");
-		return sb.toString();
+		EndFunc();
 	}
 
-	protected PythonParserGenerator FuncDef(Production p, String... args) {
-		L("def p").W(p.getLocalName()).W("(");
-		for (int i = 0; i < args.length; i++) {
-			W(args[i]);
-			if (i != args.length - 1) {
-				W(", ");
-			}
+	@Override
+	protected void generateFooter(Grammar g) {
+		If("__name__ == '__main__'");
+		{
+			Statement("t = parse(sys.argv[1])");
+			Statement("print (\"parsed:\" + t)");
 		}
-		W("):");
-		return this;
-	}
-
-	protected PythonParserGenerator FuncDef(String name, String... args) {
-		L("def ").W(name).W("(");
-		for (int i = 0; i < args.length; i++) {
-			W(args[i]);
-			if (i != args.length - 1) {
-				W(", ");
-			}
-		}
-		W("):");
-		return this;
-	}
-
-	protected PythonParserGenerator Func(String name, String... args) {
-		W(name).W("(");
-		for (int i = 0; i < args.length; i++) {
-			W(args[i]);
-			if (i != args.length - 1) {
-				W(", ");
-			}
-		}
-		W(")");
-		return this;
-	}
-
-	protected PythonParserGenerator Return(String ret) {
-		L("return ").W(ret);
-		return this;
-	}
-
-	protected PythonParserGenerator Break() {
-		L("break");
-		return this;
-	}
-
-	protected PythonParserGenerator Pass() {
-		L("pass");
-		return this;
-	}
-
-	protected PythonParserGenerator Let(String var, String e) {
-		L(var).W(" = ").W(e);
-		return this;
-	}
-
-	protected PythonParserGenerator While(String cond) {
-		L("while ").W(cond).W(":");
-		return this;
-	}
-
-	protected PythonParserGenerator If(String cond) {
-		L("if ").W(cond).W(":");
-		return this;
-	}
-
-	protected PythonParserGenerator ElIf(String cond) {
-		L("elif ").W(cond).W(":");
-		return this;
-	}
-
-	protected PythonParserGenerator Else() {
-		L("else").W(":");
-		return this;
-	}
-
-	protected PythonParserGenerator Print(String str) {
-		L("print('").W(str).W("')");
-		return this;
-	}
-
-	protected PythonParserGenerator Print(String str, String val) {
-		L("print(\"").W(str).W("\".format(" + val + "))");
-		return this;
-	}
-
-	protected PythonParserGenerator Quit() {
-		L("quit()");
-		return this;
-	}
-
-	protected PythonParserGenerator Inc(String val) {
-		W(val).W(" += ").W("1");
-		return this;
-	}
-
-	protected PythonParserGenerator Dec(String val) {
-		W(val).W(" -= ").W("1");
-		return this;
-	}
-
-	protected PythonParserGenerator Consume() {
-		L().Inc("self.pos");
-		return this;
-	}
-
-	protected PythonParserGenerator Fail() {
-		Let("result", "False");
-		return this;
-	}
-
-	protected PythonParserGenerator Succ() {
-		Let("result", "True");
-		return this;
-	}
-
-	protected String _match(String str) {
-		return "self.inputs[self.pos]" + "== " + str;
-	}
-
-	protected PythonParserGenerator Inew() {
-		L().Func("self.compiler.encode", "Instruction.Inew", "self.pos", "None");
-		return this;
-	}
-
-	protected PythonParserGenerator Ileftnew() {
-		L().Func("self.compiler.encode", "Instruction.Ileftnew", "self.pos", "0");
-		return this;
-	}
-
-	protected PythonParserGenerator Icapture() {
-		L().Func("self.compiler.encode", "Instruction.Icapture", "self.pos", "None");
-		return this;
-	}
-
-	protected PythonParserGenerator Ileftcapture() {
-		L().Func("self.compiler.encode", "Instruction.Ileftcapture", "self.pos", "None");
-		return this;
-	}
-
-	protected PythonParserGenerator Ilink(int index) {
-		L().Func("self.compiler.encode", "Instruction.Ilink", "0", String.valueOf(index));
-		return this;
-	}
-
-	protected PythonParserGenerator Itag(String tag) {
-		L().Func("self.compiler.encode", "Instruction.Itag", "0", "'" + tag + "'");
-		return this;
-	}
-
-	protected PythonParserGenerator Ireplace(String value) {
-		L().Func("self.compiler.encode", "Instruction.Ireplace", "0", "'" + value + "'");
-		return this;
-	}
-
-	protected PythonParserGenerator Icall(String inst) {
-		L().Let(inst, _func("self.compiler.encode", "Instruction.Icall", "0", "None"));
-		return this;
-	}
-
-	protected PythonParserGenerator Iret() {
-		L().Func("self.compiler.encode", "Instruction.Iret", "0", "None");
-		return this;
-	}
-
-	protected PythonParserGenerator Abort() {
-		L().Func("self.compiler.abort", "");
-		return this;
-	}
-
-	protected PythonParserGenerator Abort(String arg) {
-		L().Func("self.compiler.abortFunc", arg);
-		return this;
-	}
-
-	protected PythonParserGenerator Lookup(int memoPoint) {
-		Let("m", _func("self.memoTable.getMemo", "self.pos", String.valueOf(memoPoint)));
-		If("m is not None").Begin();
-		If("m.failed").Begin().Let("result", "False").End();
-		Else().Begin();
-		Let("self.pos", "self.pos + m.consumed");
-		L("self.memoTable.stat.Used += 1");
-		Print("memoHit");
-		End();
-		End();
-		return this;
-	}
-
-	protected PythonParserGenerator LookupNode(int memoPoint, int index) {
-		Let("m", _func("self.memoTable.getMemo", "self.pos", String.valueOf(memoPoint)));
-		If("m is not None").Begin();
-		If("m.failed").Begin().Let("result", "False").End();
-		Else().Begin();
-		L().Func("self.compiler.func.list.append", "m.inst");
-		Ilink(index);
-		Let("self.pos", "self.pos + m.consumed");
-		L("self.memoTable.stat.Used += 1");
-		End();
-		End();
-		return this;
-	}
-
-	protected PythonParserGenerator Memoize(int memoPoint, String pos) {
-		L().Func("self.memoTable.setMemo", pos, String.valueOf(memoPoint), "not result", "None", "self.pos -" + pos);
-		return this;
-	}
-
-	protected PythonParserGenerator MemoizeNode(int memoPoint, String pos, String inst) {
-		L().Func("self.memoTable.setMemo", pos, String.valueOf(memoPoint), "not result", inst, "self.pos -" + pos);
-		return this;
+		EndIf();
+		file.writeIndent("## End of File");
 	}
 
 	@Override
-	public void visitProduction(Grammar gg, Production r) {
-		FuncDef(r, "self", "result").Begin();
-		visitExpression(r.getExpression());
-		Return("result").End().L();
-	}
-
-	@Override
-	public void visitEmpty(Expression p) {
-		Pass();
-	}
-
-	@Override
-	public void visitFail(Expression p) {
-		Fail();
-	}
-
-	@Override
-	public void visitAny(Nez.Any p) {
-		If("self.inputs[self.pos] != '\\0'").Begin().Consume().End().Else().Begin().Fail().End();
-	}
-
-	@Override
-	public void visitByte(Nez.Byte p) {
-		If(_match(StringUtils.stringfyCharacter(p.byteChar))).Begin().Consume().End().Else().Begin().Fail().End();
-	}
-
-	ArrayList<Nez.ByteSet> byteMapList = new ArrayList<Nez.ByteSet>();
-
-	@Override
-	public void visitByteSet(Nez.ByteSet p) {
-		if (!byteMapList.contains(p)) {
-			byteMapList.add(p);
-		}
-		If("self.map" + unique(p) + "[ord(self.inputs[self.pos])]").Begin().Consume().End();
-		Else().Begin().Fail().End();
-	}
-
-	@Override
-	public void visitOption(Nez.Option p) {
-		String pos = "pos_op" + unique(p);
-		Let(pos, "self.pos");
-		visitExpression(p.get(0));
-		If("not result").Begin().Let("self.pos", pos).Succ().End();
-	}
-
-	@Override
-	public void visitZeroMore(Nez.ZeroMore p) {
-		String pos = "pos_op" + unique(p);
-		While("result").Begin();
-		Let(pos, "self.pos");
-		visitExpression(p.get(0));
-		If("not result").Begin().Break().End();
-		End();
-		Let("self.pos", pos).Succ();
-	}
-
-	@Override
-	public void visitOneMore(Nez.OneMore p) {
-		visitExpression(p.get(0));
-		If("result").Begin();
-		String pos = "pos_op" + unique(p);
-		While("result").Begin();
-		Let(pos, "self.pos");
-		visitExpression(p.get(0));
-		If("not result").Begin().Break().End();
-		End();
-		Let("self.pos", pos).Succ();
-		End();
-	}
-
-	@Override
-	public void visitAnd(Nez.And p) {
-		String pos = "pos_and" + unique(p);
-		Let(pos, "self.pos");
-		visitExpression(p.get(0));
-		Let("self.pos", pos);
-	}
-
-	@Override
-	public void visitNot(Nez.Not p) {
-		String pos = "pos_not" + unique(p);
-		Let(pos, "self.pos");
-		visitExpression(p.get(0));
-		Let("self.pos", pos);
-		If("result").Begin().Fail().End();
-		Else().Begin().Succ().End();
-	}
-
-	public void flattenSequence(Nez.Pair seq, UList<Expression> l) {
-		Expression first = seq.get(0);
-		Expression last = seq.get(1);
-		if (first instanceof Nez.Pair) {
-			flattenSequence((Nez.Pair) first, l);
-			if (last instanceof Nez.Pair) {
-				flattenSequence((Nez.Pair) last, l);
-				return;
-			}
-			l.add(last);
-			return;
-		}
-		l.add(first);
-		if (last instanceof Nez.Sequence) {
-			flattenSequence((Nez.Pair) last, l);
-			return;
-		}
-		l.add(last);
-	}
-
-	@Override
-	public void visitPair(Nez.Pair p) {
-		Let("index" + unique(p), _func("len", "self.compiler.func.list"));
-		boolean isLeftNew = false;
-		boolean isLink = false;
-		UList<Expression> list = new UList<>(new Expression[p.size()]);
-		flattenSequence(p, list);
-		System.out.println(list.toString());
-		for (int i = 0; i < list.size(); i++) {
-			If("result").Begin();
-			if (list.get(i) instanceof Nez.FoldTree) {
-				isLeftNew = true;
-			}
-			if (list.get(i) instanceof Nez.LinkTree) {
-				isLink = true;
-			}
-			visitExpression(list.get(i));
-		}
-		for (int i = list.size(); i > 0; i--) {
-			End();
-		}
-		if (isLeftNew) {
-			If("not result").Begin().Abort().End();
-		} else if (isLink) {
-			If("not result").Begin().Abort("index" + unique(p)).End();
-		}
-		isLeftNew = false;
-	}
-
-	@Override
-	public void visitChoice(Nez.Choice p) {
-		String pos = "pos_c" + unique(p);
-		Let(pos, "self.pos");
-		for (int i = 0; i < p.size(); i++) {
-			visitExpression(p.get(i));
-			if (i < p.size() - 1) {
-				If("not result").Begin().Let("self.pos", pos).Succ();
-			}
-		}
-		for (int i = 0; i < p.size() - 1; i++) {
-			End();
-		}
-	}
-
-	HashMap<String, Integer> memoMap = new HashMap<String, Integer>();
-	int memoPoint = 0;
-
-	@Override
-	public void visitNonTerminal(NonTerminal p) {
-		Production rule = p.getProduction();
-		/* FIXME */
-		// if (rule.isNoNTreeConstruction()) {
-		// int memoPoint = 0;
-		// if (!memoMap.containsKey(unique(p))) {
-		// memoPoint = this.memoPoint++;
-		// this.memoMap.put(unique(p), memoPoint);
-		// } else {
-		// memoPoint = memoMap.get(unique(p));
-		// }
-		// Lookup(memoPoint);
-		// Else().Begin();
-		// Let("pos" + unique(p), "self.pos");
-		// Let("result", _func("self.p" + p.getLocalName(), "result"));
-		// Memoize(memoPoint, "pos" + unique(p));
-		// End();
-		// } else {
-		// Let("result", _func("self.p" + p.getLocalName(), "result"));
-		// }
-	}
-
-	@Override
-	public void visitLink(Nez.LinkTree p) {
-		// int memoPoint = 0;
-		// if (!memoMap.containsKey(unique(p))) {
-		// memoPoint = this.memoPoint++;
-		// this.memoMap.put(unique(p), memoPoint);
-		// } else {
-		// memoPoint = memoMap.get(unique(p));
-		// }
-		// LookupNode(memoPoint, p.index);
-		// Else().Begin();
-		// String inst = "inst" + unique(p);
-		// String pos = "pos" + unique(p);
-		// Let(pos, "self.pos");
-		// Icall(inst);
-		// visitExpression(p.get(0));
-		// If("result").Begin().Iret().Ilink(p.index).MemoizeNode(memoPoint,
-		// pos, inst).End();
-		// Else().Begin().Abort().MemoizeNode(memoPoint, pos, "None").End();
-		// // If("result").Begin().Iret().Ilink(p.index).End();
-		// // Else().Begin().Abort().End();
-		// End();
-	}
-
-	Stack<Boolean> markStack = new Stack<Boolean>();
-
-	@Override
-	public void visitPreNew(Nez.BeginTree p) {
-		Inew();
-		markStack.push(false);
-	}
-
-	@Override
-	public void visitLeftFold(Nez.FoldTree p) {
-		Ileftnew();
-		markStack.push(true);
-	}
-
-	@Override
-	public void visitNew(Nez.EndTree p) {
-		if (markStack.pop()) {
-			If("result").Begin().Ileftcapture().End();
-			Else().Begin().Abort().End();
-		} else {
-			Icapture();
-		}
-	}
-
-	@Override
-	public void visitTag(Nez.Tag p) {
-		Itag(p.getTagName());
-	}
-
-	@Override
-	public void visitReplace(Nez.Replace p) {
-		Ireplace(p.value);
-	}
-
-	@Override
-	public void visitBlockScope(Nez.BlockScope p) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void visitSymbolAction(Nez.SymbolAction p) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void visitSymbolPredicate(Nez.SymbolPredicate p) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void visitSymbolMatch(Nez.SymbolMatch p) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void visitSymbolExists(Nez.SymbolExists p) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void visitLocalScope(Nez.LocalScope p) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void visitString(Nez.MultiByte p) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void visitDetree(Nez.Detree p) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void visitIf(Nez.IfCondition p) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void visitOn(Nez.OnCondition p) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public Object visitScan(Scan scanf, Object a) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Object visitRepeat(Repeat e, Object a) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Object visitLabel(Label e, Object a) {
-		// TODO Auto-generated method stub
-		return null;
+	protected void initTypeMap() {
+		// this.addType("parse", "boolean");
+		// this.addType("memo", "int");
+		// this.addType(_byteSet_(), "boolean[]");
+		// this.addType(_indexMap_(), "byte[]");
+		// this.addType(_byteSeq_(), "byte[]");
+		// this.addType(_unchoiced_(), "boolean");
+		// this.addType(_pos_(), "int");
+		// this.addType(_left_(), "Tree<?>");
+		// this.addType(_log_(), "Object");
+		// this.addType(_sym_(), "int");
+		// this.addType(_state_(), "ParserContext");
 	}
 
 }

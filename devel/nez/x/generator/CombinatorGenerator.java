@@ -133,7 +133,7 @@ public class CombinatorGenerator extends GrammarTranslator {
 
 	@Override
 	public void visitTag(Nez.Tag e) {
-		C("Tagging", e.getTagName());
+		C("Tagging", e.symbol().toString());
 	}
 
 	@Override

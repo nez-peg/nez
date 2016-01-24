@@ -197,7 +197,7 @@ public class PEGTranslator extends GrammarTranslator {
 
 	@Override
 	public void visitTag(Nez.Tag p) {
-		SemanticAction("tag(" + StringUtils.quoteString('"', p.getTagName(), '"') + ")");
+		SemanticAction("tag(" + StringUtils.quoteString('"', p.tag.toString(), '"') + ")");
 	}
 
 	@Override

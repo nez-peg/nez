@@ -62,6 +62,7 @@
 		<jar jarfile="${BinaryName}.jar">
 			<fileset dir="${build_dir}" includes="**/*.class" />
 			<fileset dir="${tool_dir}"  includes="**/*.class" />
+                        <fileset dir="${tool_dir}"  includes="**/*.txt" />
 			<fileset dir="${tool_dir}" includes="**/*.nez" />
             <fileset dir="${tool_dir}" includes="**/*.properties" />
 			<exclude name="**/*Test.class" />
