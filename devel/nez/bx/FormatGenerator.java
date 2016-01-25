@@ -3,17 +3,45 @@ package nez.bx;
 import java.util.Arrays;
 
 import nez.ast.Symbol;
-import nez.ast.TreeVisitorMap;
-import nez.bx.FormatGenerator.DefaultVisitor;
 import nez.lang.Expression;
 import nez.lang.Grammar;
-import nez.lang.Nez;
+import nez.lang.Nez.And;
+import nez.lang.Nez.Any;
+import nez.lang.Nez.BeginTree;
+import nez.lang.Nez.BlockScope;
+import nez.lang.Nez.Byte;
+import nez.lang.Nez.ByteSet;
+import nez.lang.Nez.Choice;
+import nez.lang.Nez.Detree;
+import nez.lang.Nez.Empty;
+import nez.lang.Nez.EndTree;
+import nez.lang.Nez.Fail;
+import nez.lang.Nez.FoldTree;
+import nez.lang.Nez.IfCondition;
+import nez.lang.Nez.Label;
+import nez.lang.Nez.LinkTree;
+import nez.lang.Nez.LocalScope;
+import nez.lang.Nez.MultiByte;
+import nez.lang.Nez.Not;
+import nez.lang.Nez.OnCondition;
+import nez.lang.Nez.OneMore;
+import nez.lang.Nez.Option;
 import nez.lang.Nez.Pair;
+import nez.lang.Nez.Repeat;
+import nez.lang.Nez.Replace;
+import nez.lang.Nez.Scan;
+import nez.lang.Nez.Sequence;
+import nez.lang.Nez.SymbolAction;
+import nez.lang.Nez.SymbolExists;
+import nez.lang.Nez.SymbolMatch;
+import nez.lang.Nez.SymbolPredicate;
+import nez.lang.Nez.Tag;
+import nez.lang.Nez.ZeroMore;
 import nez.lang.NonTerminal;
 import nez.lang.Production;
 import nez.util.FileBuilder;
 
-public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
+public class FormatGenerator {
 	private String dir = null;
 	private String outputFile = null;
 	private FileBuilder file;
@@ -37,7 +65,6 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 	public FormatGenerator(String dir, String outputFile) {
 		this.outputFile = outputFile;
 		this.dir = dir;
-		init(FormatGenerator.class, new DefaultVisitor());
 	}
 
 	public void generate(Grammar grammar) {
@@ -137,33 +164,90 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 		}
 	}
 
+	private FormatVisitor formatVisitor = new FormatVisitor();
+
 	public void makeProductionFormat(Production rule) {
-		visit(rule.getExpression());
+		formatVisitor.visit(rule.getExpression());
 	}
 
-	public class DefaultVisitor {
-		public void accept(Expression e) {
+	private class FormatVisitor extends Expression.Visitor {
+
+		public void visit(Expression e) {
+			e.visit(this, null);
 		}
-	}
 
-	public void visit(Expression e) {
-		find(e.getClass().getSimpleName()).accept(e);
-	}
-
-	public class _NonTerminal extends DefaultVisitor {
 		@Override
-		public void accept(Expression e) {
-			Element nonterminal = new NonTerminalElement(convertNonterminalName(((NonTerminal) e).getLocalName()));
+		public Object visitNonTerminal(NonTerminal e, Object a) {
+			Element nonterminal = new NonTerminalElement(convertNonterminalName(e.getLocalName()));
 			if (inFirst) {
 				currentLeft = nonterminal;
 			}
 			addElement(nonterminal);
+			return null;
 		}
-	}
 
-	public class _Choice extends DefaultVisitor {
 		@Override
-		public void accept(Expression e) {
+		public Object visitEmpty(Empty e, Object a) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public Object visitFail(Fail e, Object a) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public Object visitByte(Byte e, Object a) {
+			addElement(new ByteElement(e.byteChar));
+			return null;
+		}
+
+		@Override
+		public Object visitByteSet(ByteSet e, Object a) {
+			boolean[] byteSet = e.byteMap;
+			for (int i = 0; i < byteSet.length; i++) {
+				if (byteSet[i]) {
+					addElement(new ByteElement(i));
+					break;
+				}
+			}
+			return null;
+		}
+
+		@Override
+		public Object visitAny(Any e, Object a) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public Object visitMultiByte(MultiByte e, Object a) {
+			byte[] byteSeq = e.byteSeq;
+			for (int i = 0; i < byteSeq.length; i++) {
+				addElement(new ByteElement(byteSeq[i]));
+			}
+			return null;
+		}
+
+		@Override
+		public Object visitPair(Pair e, Object a) {
+			inFirst = true;
+			visit(e.first);
+			inFirst = false;
+			visit(e.next);
+			return null;
+		}
+
+		@Override
+		public Object visitSequence(Sequence e, Object a) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public Object visitChoice(Choice e, Object a) {
 			Elements[] branch = new Elements[e.size()];
 			if (stackTop + 1 == elementsStack.length) {
 				Elements[] newList = new Elements[elementsStack.length * 2];
@@ -180,132 +264,11 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 				currentLeft = choice;
 			}
 			addElement(choice);
+			return null;
 		}
-	}
 
-	public class _Pair extends DefaultVisitor {
 		@Override
-		public void accept(Expression e) {
-			inFirst = true;
-			visit(((Pair) e).first);
-			inFirst = false;
-			visit(((Pair) e).next);
-		}
-	}
-
-	public class _Byte extends DefaultVisitor {
-		@Override
-		public void accept(Expression e) {
-			addElement(new ByteElement(((Nez.Byte) e).byteChar));
-		}
-	}
-
-	public class _MultiByte extends DefaultVisitor {
-		@Override
-		public void accept(Expression e) {
-			byte[] byteSeq = ((Nez.MultiByte) e).byteSeq;
-			for (int i = 0; i < byteSeq.length; i++) {
-				addElement(new ByteElement(byteSeq[i]));
-			}
-		}
-	}
-
-	public class _ByteSet extends DefaultVisitor {
-		@Override
-		public void accept(Expression e) {
-			boolean[] byteSet = ((Nez.ByteSet) e).byteMap;
-			for (int i = 0; i < byteSet.length; i++) {
-				if (byteSet[i]) {
-					addElement(new ByteElement(i));
-					break;
-				}
-			}
-		}
-	}
-
-	public class _EndTree extends DefaultVisitor {
-		@Override
-		public void accept(Expression e) {
-			if (capturedId == capturedList.length) {
-				Captured[] newList = new Captured[capturedList.length * 2];
-				System.arraycopy(capturedList, 0, newList, 0, capturedList.length);
-				capturedList = newList;
-			}
-			capturedList[capturedId] = new Captured(elementsStack[stackTop--]);
-			if (elementsStack[stackTop].hasLF && !elementsStack[stackTop].inOptional) {
-				Elements[] branch = { new Elements(), null };
-				branch[0].addElement(new CapturedElement(capturedId));
-				branch[1] = ((LinkedElement) capturedList[capturedId].elements.get(0)).inner;
-				((LinkedElement) capturedList[capturedId].elements.get(0)).inner = new Elements(new ChoiceElement(branch));
-			}
-			Element captured = new CapturedElement(capturedId++);
-			if (inFirst) {
-				currentLeft = captured;
-			}
-			addElement(captured);
-		}
-	}
-
-	public class _FoldTree extends DefaultVisitor {
-		@Override
-		public void accept(Expression e) {
-			elementsStack[stackTop].hasLF = true;
-			if (stackTop + 1 == elementsStack.length) {
-				Elements[] newList = new Elements[elementsStack.length * 2];
-				System.arraycopy(elementsStack, 0, newList, 0, elementsStack.length);
-				elementsStack = newList;
-			}
-			elementsStack[++stackTop] = new Elements();
-			addElement(new LinkedElement(((Nez.FoldTree) e).label, new Elements(getLeft(stackTop - 2))
-			// new Elements(currentLeft)
-			));
-		}
-	}
-
-	public Element getLeft(int stackTop) {
-		int size = elementsStack[stackTop].size;
-		if (size != 0) {
-			elementsStack[stackTop].size--;
-			return elementsStack[stackTop].elementList[size - 1];
-		}
-		return getLeft(stackTop - 1);
-	}
-
-	public class _BeginTree extends DefaultVisitor {
-		@Override
-		public void accept(Expression e) {
-			if (stackTop + 1 == elementsStack.length) {
-				Elements[] newList = new Elements[elementsStack.length * 2];
-				System.arraycopy(elementsStack, 0, newList, 0, elementsStack.length);
-				elementsStack = newList;
-			}
-			elementsStack[++stackTop] = new Elements();
-		}
-	}
-
-	public class _Tag extends DefaultVisitor {
-		@Override
-		public void accept(Expression e) {
-			String tagName = "#" + ((Nez.Tag) e).symbol();
-			for (int i = 0; i < tagId; i++) {
-				if (tagName.equals(tagList[i])) {
-					addElement(new TagElement(i));
-					return;
-				}
-			}
-			if (tagId == tagList.length) {
-				String[] newList = new String[tagList.length * 2];
-				System.arraycopy(tagList, 0, newList, 0, tagList.length);
-				tagList = newList;
-			}
-			tagList[tagId] = tagName;
-			addElement(new TagElement(tagId++));
-		}
-	}
-
-	public class _Option extends DefaultVisitor {
-		@Override
-		public void accept(Expression e) {
+		public Object visitOption(Option e, Object a) {
 			if (stackTop + 1 == elementsStack.length) {
 				Elements[] newList = new Elements[elementsStack.length * 2];
 				System.arraycopy(elementsStack, 0, newList, 0, elementsStack.length);
@@ -323,12 +286,11 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 			} else {
 				addElement(new OptionElement(elementsStack[stackTop + 1]));
 			}
+			return null;
 		}
-	}
 
-	public class _ZeroMore extends DefaultVisitor {
 		@Override
-		public void accept(Expression e) {
+		public Object visitZeroMore(ZeroMore e, Object a) {
 			if (stackTop + 1 == elementsStack.length) {
 				Elements[] newList = new Elements[elementsStack.length * 2];
 				System.arraycopy(elementsStack, 0, newList, 0, elementsStack.length);
@@ -345,12 +307,11 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 			} else {
 				addElement(new ZeroElement(elementsStack[stackTop + 1]));
 			}
+			return null;
 		}
-	}
 
-	public class _OneMore extends DefaultVisitor {
 		@Override
-		public void accept(Expression e) {
+		public Object visitOneMore(OneMore e, Object a) {
 			if (stackTop + 1 == elementsStack.length) {
 				Elements[] newList = new Elements[elementsStack.length * 2];
 				System.arraycopy(elementsStack, 0, newList, 0, elementsStack.length);
@@ -364,12 +325,49 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 			} else {
 				addElement(new OneElement(elementsStack[stackTop + 1]));
 			}
+			return null;
 		}
-	}
 
-	public class _LinkTree extends DefaultVisitor {
 		@Override
-		public void accept(Expression e) {
+		public Object visitAnd(And e, Object a) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public Object visitNot(Not e, Object a) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public Object visitBeginTree(BeginTree e, Object a) {
+			if (stackTop + 1 == elementsStack.length) {
+				Elements[] newList = new Elements[elementsStack.length * 2];
+				System.arraycopy(elementsStack, 0, newList, 0, elementsStack.length);
+				elementsStack = newList;
+			}
+			elementsStack[++stackTop] = new Elements();
+			return null;
+		}
+
+		@Override
+		public Object visitFoldTree(FoldTree e, Object a) {
+			elementsStack[stackTop].hasLF = true;
+			if (stackTop + 1 == elementsStack.length) {
+				Elements[] newList = new Elements[elementsStack.length * 2];
+				System.arraycopy(elementsStack, 0, newList, 0, elementsStack.length);
+				elementsStack = newList;
+			}
+			elementsStack[++stackTop] = new Elements();
+			addElement(new LinkedElement(e.label, new Elements(getLeft(stackTop - 2))
+			// new Elements(currentLeft)
+			));
+			return null;
+		}
+
+		@Override
+		public Object visitLinkTree(LinkTree e, Object a) {
 			if (stackTop + 1 == elementsStack.length) {
 				Elements[] newList = new Elements[elementsStack.length * 2];
 				System.arraycopy(elementsStack, 0, newList, 0, elementsStack.length);
@@ -378,8 +376,138 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 			elementsStack[++stackTop] = new Elements();
 			visit(e.get(0));
 			stackTop--;
-			addElement(new LinkedElement(((Nez.LinkTree) e).label, elementsStack[stackTop + 1]));
+			addElement(new LinkedElement(e.label, elementsStack[stackTop + 1]));
+			return null;
 		}
+
+		@Override
+		public Object visitTag(Tag e, Object a) {
+			String tagName = "#" + e.symbol();
+			for (int i = 0; i < tagId; i++) {
+				if (tagName.equals(tagList[i])) {
+					addElement(new TagElement(i));
+					return null;
+				}
+			}
+			if (tagId == tagList.length) {
+				String[] newList = new String[tagList.length * 2];
+				System.arraycopy(tagList, 0, newList, 0, tagList.length);
+				tagList = newList;
+			}
+			tagList[tagId] = tagName;
+			addElement(new TagElement(tagId++));
+			return null;
+		}
+
+		@Override
+		public Object visitReplace(Replace e, Object a) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public Object visitEndTree(EndTree e, Object a) {
+			if (capturedId == capturedList.length) {
+				Captured[] newList = new Captured[capturedList.length * 2];
+				System.arraycopy(capturedList, 0, newList, 0, capturedList.length);
+				capturedList = newList;
+			}
+			capturedList[capturedId] = new Captured(elementsStack[stackTop--]);
+			if (elementsStack[stackTop].hasLF && !elementsStack[stackTop].inOptional) {
+				Elements[] branch = { new Elements(), null };
+				branch[0].addElement(new CapturedElement(capturedId));
+				branch[1] = ((LinkedElement) capturedList[capturedId].elements.get(0)).inner;
+				((LinkedElement) capturedList[capturedId].elements.get(0)).inner = new Elements(new ChoiceElement(branch));
+			}
+			Element captured = new CapturedElement(capturedId++);
+			if (inFirst) {
+				currentLeft = captured;
+			}
+			addElement(captured);
+			return null;
+		}
+
+		@Override
+		public Object visitDetree(Detree e, Object a) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public Object visitBlockScope(BlockScope e, Object a) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public Object visitLocalScope(LocalScope e, Object a) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public Object visitSymbolAction(SymbolAction e, Object a) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public Object visitSymbolPredicate(SymbolPredicate e, Object a) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public Object visitSymbolMatch(SymbolMatch e, Object a) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public Object visitSymbolExists(SymbolExists e, Object a) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public Object visitIf(IfCondition e, Object a) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public Object visitOn(OnCondition e, Object a) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public Object visitScan(Scan scanf, Object a) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public Object visitRepeat(Repeat e, Object a) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public Object visitLabel(Label e, Object a) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+	}
+
+	public Element getLeft(int stackTop) {
+		int size = elementsStack[stackTop].size;
+		if (size != 0) {
+			elementsStack[stackTop].size--;
+			return elementsStack[stackTop].elementList[size - 1];
+		}
+		return getLeft(stackTop - 1);
 	}
 
 	public void addElement(Element element) {

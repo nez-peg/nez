@@ -703,7 +703,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 
 		@Override
 		public Object visitMultiByte(Nez.MultiByte e, Object a) {
-			If(_Not(_Func("match", _bytes(e.byteSeq))));
+			If(_Not(_Match(e.byteSeq)));
 			{
 				Fail();
 			}
@@ -890,7 +890,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 				}
 				if (inner instanceof Nez.MultiByte) {
 					Nez.MultiByte e = (Nez.MultiByte) inner;
-					Statement(_Func("match", _bytes(e.byteSeq)));
+					Statement(_Match(e.byteSeq));
 					return true;
 				}
 				if (inner instanceof Nez.Any) {
@@ -928,7 +928,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 				}
 				if (inner instanceof Nez.MultiByte) {
 					Nez.MultiByte e = (Nez.MultiByte) inner;
-					While(_Func("match", _bytes(e.byteSeq)));
+					While(_Match(e.byteSeq));
 					{
 						EmptyStatement();
 					}
@@ -970,7 +970,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 				}
 				if (inner instanceof Nez.MultiByte) {
 					Nez.MultiByte e = (Nez.MultiByte) inner;
-					If(_Not(_Func("match", _bytes(e.byteSeq))));
+					If(_Not(_Match(e.byteSeq)));
 					{
 						Fail();
 					}
@@ -1012,7 +1012,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 				}
 				if (inner instanceof Nez.MultiByte) {
 					Nez.MultiByte e = (Nez.MultiByte) inner;
-					If(_Func("match", _bytes(e.byteSeq)));
+					If(_Match(e.byteSeq));
 					{
 						Fail();
 					}
@@ -1285,6 +1285,10 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		return sb.toString();
 	}
 
+	protected String _Match(byte[] byteSeq) {
+		return _Func("match", _bytes(byteSeq));
+	}
+
 	protected String _int(int n) {
 		return "" + n;
 	}
@@ -1473,11 +1477,11 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		VarDecl(this.getType(name), name, expr);
 	}
 
-	protected void VarDecl(String t, String v, String expr) {
-		if (t == null) {
-			VarAssign(v, expr);
+	protected void VarDecl(String type, String name, String expr) {
+		if (name == null) {
+			VarAssign(name, expr);
 		} else {
-			Statement(t + " " + v + " = " + expr);
+			Statement(type + " " + name + " = " + expr);
 		}
 	}
 

@@ -305,12 +305,8 @@ public class PythonParserGenerator extends AbstractParserGenerator {
 	}
 
 	@Override
-	protected void VarDecl(String t, String v, String expr) {
-		if (t == null) {
-			VarAssign(v, expr);
-		} else {
-			Statement(t + " " + v + " = " + expr);
-		}
+	protected void VarDecl(String type, String name, String expr) {
+		VarAssign(name, expr);
 	}
 
 	@Override
