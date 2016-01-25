@@ -10,7 +10,7 @@ public class Command extends nez.main.Command {
 		/* Setting requird options */
 		strategy.Optimization = false;
 		Grammar grammar = this.newGrammar();
-		FormatGenerator gen = new FormatGenerator(null, null);
+		FormatGenerator gen = new FormatGenerator(outputDirectory, grammarFile);
 		gen.generate(grammar);
 	}
 

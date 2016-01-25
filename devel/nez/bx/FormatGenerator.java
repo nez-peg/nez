@@ -14,8 +14,8 @@ import nez.lang.Production;
 import nez.util.FileBuilder;
 
 public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
-	private String dir = "./devel/nez/bx";
-	private String outputFile = "GeneratedFormat";
+	private String dir = null;
+	private String outputFile = null;
 	private FileBuilder file;
 	private Grammar grammar = null;
 
@@ -35,12 +35,8 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 	private int repetitionId = 0;
 
 	public FormatGenerator(String dir, String outputFile) {
-		if (outputFile != null) {
-			this.outputFile = outputFile;
-		}
-		if (dir != null) {
-			this.dir = dir;
-		}
+		this.outputFile = outputFile;
+		this.dir = dir;
 		init(FormatGenerator.class, new DefaultVisitor());
 	}
 
@@ -54,10 +50,10 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 	}
 
 	public void openOutputFile() {
-		if (outputFile == null) {
+		if (dir == null || outputFile == null) {
 			this.file = new FileBuilder(null);
 		} else {
-			String path = dir + "/" + outputFile + ".txt";
+			String path = FileBuilder.toFileName(outputFile, dir, "bxnez");
 			this.file = new FileBuilder(path);
 			System.out.println("generating " + path + " ... ");
 		}
@@ -214,7 +210,6 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 		}
 	}
 
-	// TODO check
 	public class _ByteSet extends DefaultVisitor {
 		@Override
 		public void accept(Expression e) {
@@ -453,7 +448,7 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 						checkedNullLabelTag[formatSet[i].tag] = true;
 					}
 					write("format " + tagList[formatSet[i].tag] + "(" + label + ")");
-					writeln("` ");
+					writeln("`");
 					if (left != null) {
 						String format = left.toFormat(formatSet[i].tag);
 						if (format != null) {
@@ -462,7 +457,7 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 					}
 					String format = toFormat(formatSet[i].tag);
 					if (format == null) {
-						write("${this.toText()}");
+						write("${$toText}");
 					} else {
 						write(format);
 					}
@@ -472,8 +467,7 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 							write(" " + format);
 						}
 					}
-					write(" `");
-					writeln("");
+					write("`");
 					writeln("");
 				}
 				activateDelay();
@@ -507,7 +501,7 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 		public String toFormat(int tag) {
 			String formats = elements.toFormat(tag);
 			if (this.name == null) {
-				if (formats == null || formats.indexOf('$') == -1) {
+				if (formats == null || formats.indexOf("${") == -1) {
 					return null;
 				}
 			}
@@ -569,7 +563,7 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 		public LinkedInner[] checkInner() {
 			LinkedInner[] inners = null;
 			for (int i = 0; i < size; i++) {
-				if (elementList[i] != null) {// TODO check
+				if (elementList[i] != null) {
 					LinkedInner[] inner = elementList[i].checkInner();
 					if (inner != null) {
 						if (inners == null) {
@@ -841,7 +835,7 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 			boolean[] needTag = new boolean[tagId];
 			String ret = null;
 			if (capturedList[linkedInner[labelFix].id].size == 0) {
-				ret = toLabel() + ": #Tree";
+				ret = toLabel() + ":#Tree";
 			} else {
 				FormatSet[] formatSet = capturedList[linkedInner[labelFix].id].formatSet;
 				needTag[formatSet[0].tag] = true;
@@ -859,9 +853,9 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 				for (int i = 0; i < tagId; i++) {
 					if (needTag[i]) {
 						if (ret == null) {
-							ret = toLabel() + ": " + tagList[i];
+							ret = toLabel() + ":" + tagList[i];
 						} else {
-							ret += " / " + tagList[i];
+							ret += "|" + tagList[i];
 						}
 					}
 				}
@@ -869,14 +863,14 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 			if (labelSet.label == null) {
 				labelSet.label = ret;
 			} else {
-				labelSet.label += ", " + ret;
+				labelSet.label += "," + ret;
 			}
 			return labelSet;
 		}
 
 		public String toLabel() {
 			if (label == null) {
-				return "unlabeld";
+				return "$unlabeled";
 			} else {
 				return label.toString();
 			}
@@ -890,7 +884,7 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 				if (!linkedInner[labelFix].before.equals("")) {
 					ret += linkedInner[labelFix].before + " ";
 				}
-				ret += "${unlabeled}";
+				ret += "${$unlabeled}";
 				if (!linkedInner[labelFix].after.equals("")) {
 					ret += " " + linkedInner[labelFix].after;
 				}
@@ -1115,13 +1109,10 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 		public String toFormat(int tag) {
 			if (tagFixBranch == null) {
 				return branch[0].toFormat(tag);
-				// return null;
 			}
 			if (tagFixBranch[tag] == -1) {
 				if (linkFixBranch == -1) {
 					return branch[0].toFormat(tag);
-					// TODO check
-					// return null;
 				} else {
 					return branch[linkFixBranch].toFormat(tag);
 				}
@@ -1190,14 +1181,19 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 					if (label == null) {
 						label = "";
 					}
-					delayWrite("format repetition" + id + "(" + label + ")");
-					delayWriteln("` ");
-					delayWrite(inner.toFormat(tag) + " ${repetition" + id + "} `");
+					delayWrite("format $repetition" + id + "(" + label + ")");
+					delayWriteln("`");
+					String format = inner.toFormat(tag);
+					if (format != null) {
+						delayWrite(format + " ${$repetition" + id + "}`");
+					} else {
+						delayWrite("${$repetition" + id + "}`");
+					}
 					delayWriteln("");
 					delayWriteln("");
 				}
-				delayWrite("format repetition" + id + "()");
-				delayWriteln("` `");
+				delayWrite("format $repetition" + id + "()");
+				delayWriteln("``");
 				delayWriteln("");
 				delayWriteln("");
 			}
@@ -1207,11 +1203,6 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 				labelSet = links.get(i).optionFix(labelSet, tag);
 			}
 			labelSet.labelProgression = generalProgression;
-			if (labelSet.label == null) {
-				labelSet.label = "repetition" + id;
-			} else {
-				labelSet.label += ", repetition" + id;
-			}
 			return labelSet;
 		}
 
@@ -1229,11 +1220,13 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 		@Override
 		public String toFormat(int tag) {
 			if (id == -1) {
-				// TODO check
-				// return null;
 				return inner.toFormat(tag);
 			}
-			return inner.toFormat(tag) + " ${repetition" + id + "}";
+			String format = inner.toFormat(tag);
+			if (format != null) {
+				return format + " ${$repetition" + id + "}";
+			}
+			return "${$repetition" + id + "}";
 		}
 
 		@Override
@@ -1301,15 +1294,18 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 					if (label == null) {
 						label = "";
 					}
-					delayWrite("format repetition" + id + "(" + label + ")");
-					delayWriteln("` ");
-					delayWrite(inner.toFormat(tag) + " ${repetition" + id + "} `");
-					delayWriteln("");
+					delayWrite("format $repetition" + id + "(" + label + ")");
+					delayWriteln("`");
+					String format = inner.toFormat(tag);
+					if (format != null) {
+						delayWrite(inner.toFormat(tag) + " ${$repetition" + id + "}`");
+					} else {
+						delayWrite("${$repetition" + id + "}`");
+					}
 					delayWriteln("");
 				}
-				delayWrite("format repetition" + id + "()");
-				delayWriteln("` `");
-				delayWriteln("");
+				delayWrite("format $repetition" + id + "()");
+				delayWriteln("``");
 				delayWriteln("");
 			}
 			if (tagFix[tag]) {
@@ -1319,11 +1315,6 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 					labelSet = links.get(i).optionFix(labelSet, tag);
 				}
 				labelSet.labelProgression = generalProgression;
-			}
-			if (labelSet.label == null) {
-				labelSet.label = "repetition" + id;
-			} else {
-				labelSet.label += ", repetition" + id;
 			}
 			return labelSet;
 		}
@@ -1345,9 +1336,12 @@ public class FormatGenerator extends TreeVisitorMap<DefaultVisitor> {
 				return null;
 			}
 			if (tagFix[tag]) {
-				return inner.toFormat(tag) + " ${repetition" + id + "}";
+				String format = inner.toFormat(tag);
+				if (format != null) {
+					return format + " ${$repetition" + id + "}";
+				}
 			}
-			return "${repetition" + id + "}";
+			return "${$repetition" + id + "}";
 		}
 
 		@Override
