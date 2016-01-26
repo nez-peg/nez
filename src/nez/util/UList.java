@@ -99,15 +99,8 @@ public class UList<T> extends AbstractList<T> {
 		}
 	}
 
-	//
-	// public static void ThrowOutOfArrayIndex(int Size, long Index) {
-	// throw new SoftwareFault("out of array index " + Index + " < " + Size);
-	// }
-
 	@Override
 	public boolean add(T e) {
-		// System.out.println("size: " + this.currentSize + ", " +
-		// this.ArrayValues.length);
 		this.reserve(this.currentSize + 1);
 		this.ArrayValues[this.currentSize] = e;
 		this.currentSize = this.currentSize + 1;
@@ -127,10 +120,6 @@ public class UList<T> extends AbstractList<T> {
 	@Override
 	public T get(int index) {
 		return this.ArrayValues[index];
-	}
-
-	public UList<T> f() {
-		return null;
 	}
 
 }

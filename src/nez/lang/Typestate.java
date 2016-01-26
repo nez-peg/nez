@@ -14,6 +14,14 @@ public enum Typestate {
 		public Typestate inferTypestate(Production p);
 
 		public Typestate inferTypestate(Expression e);
+
+		public boolean isUnit(Production p);
+
+		public boolean isUnit(Expression e);
+
+		public boolean isTree(Production p);
+
+		public boolean isTree(Expression e);
 	}
 
 	public static final TypestateAnalyzer newAnalyzer() {
@@ -21,6 +29,26 @@ public enum Typestate {
 	}
 
 	final static class Analyzer extends Expression.Visitor implements TypestateAnalyzer {
+
+		@Override
+		public boolean isUnit(Production p) {
+			return this.inferTypestate(p) == Unit;
+		}
+
+		@Override
+		public boolean isUnit(Expression e) {
+			return this.inferTypestate(e) == Unit;
+		}
+
+		@Override
+		public boolean isTree(Production p) {
+			return this.inferTypestate(p) == Tree;
+		}
+
+		@Override
+		public boolean isTree(Expression e) {
+			return this.inferTypestate(e) == Tree;
+		}
 
 		@Override
 		public Typestate inferTypestate(Expression e) {
