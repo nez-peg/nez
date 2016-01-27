@@ -13,7 +13,9 @@ import nez.lang.ast.GrammarExample.Example;
 import nez.parser.CoverageProfiler;
 import nez.parser.Parser;
 import nez.parser.ParserStrategy;
+import nez.parser.io.StringSource;
 import nez.util.ConsoleUtils;
+import nez.util.UList;
 import nez.util.Verbose;
 
 public class Ctest extends Command {
@@ -81,7 +83,10 @@ public class Ctest extends Command {
 	}
 
 	public boolean testExample(Example ex, Parser p, TestStat stat, boolean verbose) {
-		Source source = ex.textNode.toSource();
+		Source source = newSource(ex.textNode, p.getParserStrategy());
+		if (source == null) {
+			return false;
+		}
 		String name = ex.nameNode.toText() + " (" + ex.textNode.getSource().getResourceName() + ":" + ex.textNode.getLineNum() + ")";
 		stat.testCount += 1;
 		try {
@@ -133,6 +138,72 @@ public class Ctest extends Command {
 			ConsoleUtils.println("---");
 			ConsoleUtils.printlnIndent("   ", node);
 			ConsoleUtils.println("---");
+		}
+	}
+
+	private Source newSource(Tree<?> textNode, ParserStrategy strategy) {
+		if (strategy.BinaryGrammar) {
+			byte[] b = parseBinary(textNode.toText());
+			if (b == null) {
+				ConsoleUtils.begin(ConsoleUtils.Red);
+				ConsoleUtils.println(textNode.formatSourceMessage("error", "Invalid binary format"));
+				ConsoleUtils.end();
+				return null;
+			}
+			return new StringSource(textNode.getSource().getResourceName(), textNode.getSourcePosition(), b, true);
+		}
+		return textNode.toSource();
+	}
+
+	byte[] parseBinary(String t) {
+		UList<Byte> bytes = new UList<>(new Byte[t.length()]);
+		for (int i = 0; i < t.length(); i++) {
+			char ch = t.charAt(i);
+			if (ch == ' ' || ch == '\n' || ch == '\r') {
+				continue;
+			}
+			int b = parseBinary(t, i);
+			if (b != -1) {
+				i += 7;
+				bytes.add((byte) b);
+				continue;
+			}
+			b = parseHex(t, i);
+			if (b != -1) {
+				i += 1;
+				bytes.add((byte) b);
+				continue;
+			}
+
+		}
+		bytes.add((byte) 0);
+		byte[] b = new byte[bytes.size()];
+		for (int i = 0; i < b.length; i++) {
+			b[i] = bytes.get(i);
+		}
+		return b;
+	}
+
+	int parseBinary(String t, int i) {
+		try {
+			char ch = t.charAt(i);
+			if (ch == '0' && ch == '1') {
+				String s = t.substring(i, i + 8);
+				return Integer.parseInt(s, 2);
+			}
+		} catch (Exception e) {
+		}
+		return -1;
+	}
+
+	int parseHex(String t, int i) {
+		try {
+			char ch = t.charAt(i);
+			char ch2 = t.charAt(i + 1);
+			return Integer.parseInt("" + ch + ch2, 16);
+
+		} catch (Exception e) {
+			return -1;
 		}
 	}
 

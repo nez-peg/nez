@@ -191,9 +191,8 @@ public class ParserOptimizer {
 				}
 			}
 			String cname = sb.toString();
-			// System.out.println("unique: " + uname + ", " +
-			// this.boolMap.keySet()
-			// + "=>" + sb.toString());
+			// System.out.println("flags: " + this.keySet());
+			// System.out.println(p.getUniqueName() + "=>" + cname);
 			return cname;
 		}
 	}
