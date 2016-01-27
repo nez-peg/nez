@@ -145,7 +145,7 @@ public abstract class Expression extends AbstractList<Expression> implements Sou
 
 		protected HashMap<String, Object> visited = null;
 
-		public final Object lookup(String uname) {
+		public Object lookup(String uname) {
 			if (visited != null) {
 				return visited.get(uname);
 			}
@@ -1014,6 +1014,232 @@ public abstract class Expression extends AbstractList<Expression> implements Sou
 		@Override
 		public Object visitLabel(Label e, Object a) {
 			return e;
+		}
+	}
+
+	public static abstract class AnalyzeVisitor<T> extends Expression.Visitor implements PropertyAnalyzer<T> {
+		protected T defaultResult;
+		protected T undecided;
+
+		protected AnalyzeVisitor(T defaultResult, T undecided) {
+			this.defaultResult = defaultResult;
+			this.undecided = undecided;
+		}
+
+		@Override
+		@SuppressWarnings("unchecked")
+		public T analyze(Production p) {
+			String uname = p.getUniqueName();
+			Object v = this.lookup(uname);
+			if (v == null) {
+				this.visited(uname);
+				v = p.getExpression().visit(this, null);
+				if (undecided != v) {
+					this.memo(uname, v);
+				}
+			}
+			return (T) v;
+		}
+
+		@Override
+		@SuppressWarnings("unchecked")
+		public T analyze(Expression e) {
+			return (T) e.visit(this, null);
+		}
+
+		protected T analyzeInners(Expression e) {
+			T result = defaultResult;
+			for (Expression sub : e) {
+				@SuppressWarnings("unchecked")
+				T ts = (T) sub.visit(this, null);
+				if (ts == defaultResult) {
+					return ts;
+				}
+				if (ts == undecided) {
+					result = ts;
+				}
+			}
+			return result;
+		}
+
+		@Override
+		public Object visitNonTerminal(NonTerminal e, Object a) {
+			Production p = e.getProduction();
+			return this.analyze(p);
+		}
+
+		@Override
+		public Object visitEmpty(Nez.Empty e, Object a) {
+			return defaultResult;
+		}
+
+		@Override
+		public Object visitFail(Nez.Fail e, Object a) {
+			return defaultResult;
+		}
+
+		@Override
+		public Object visitByte(Byte e, Object a) {
+			return defaultResult;
+		}
+
+		@Override
+		public Object visitByteSet(Nez.ByteSet e, Object a) {
+			return defaultResult;
+		}
+
+		@Override
+		public Object visitAny(Nez.Any e, Object a) {
+			return defaultResult;
+		}
+
+		@Override
+		public Object visitMultiByte(Nez.MultiByte e, Object a) {
+			return defaultResult;
+		}
+
+		@Override
+		public Object visitPair(Nez.Pair e, Object a) {
+			return analyzeInners(e);
+		}
+
+		@Override
+		public Object visitSequence(Nez.Sequence e, Object a) {
+			return analyzeInners(e);
+		}
+
+		@Override
+		public Object visitChoice(Nez.Choice e, Object a) {
+			T result = defaultResult;
+			for (Expression sub : e) {
+				@SuppressWarnings("unchecked")
+				T ts = (T) sub.visit(this, null);
+				if (ts == undecided) {
+					result = ts;
+					continue;
+				}
+				if (ts != defaultResult) {
+					if (result != undecided) {
+						result = ts;
+					}
+				}
+			}
+			return result;
+		}
+
+		@Override
+		public Object visitOption(Nez.Option e, Object a) {
+			return analyzeInners(e);
+		}
+
+		@Override
+		public Object visitZeroMore(Nez.ZeroMore e, Object a) {
+			return analyzeInners(e);
+		}
+
+		@Override
+		public Object visitOneMore(Nez.OneMore e, Object a) {
+			return analyzeInners(e);
+		}
+
+		@Override
+		public Object visitAnd(Nez.And e, Object a) {
+			return analyzeInners(e);
+		}
+
+		@Override
+		public Object visitNot(Nez.Not e, Object a) {
+			return analyzeInners(e);
+		}
+
+		@Override
+		public Object visitBeginTree(Nez.BeginTree e, Object a) {
+			return defaultResult;
+		}
+
+		@Override
+		public Object visitFoldTree(Nez.FoldTree e, Object a) {
+			return defaultResult;
+		}
+
+		@Override
+		public Object visitLinkTree(Nez.LinkTree e, Object a) {
+			return analyzeInners(e);
+		}
+
+		@Override
+		public Object visitTag(Nez.Tag e, Object a) {
+			return defaultResult;
+		}
+
+		@Override
+		public Object visitReplace(Nez.Replace e, Object a) {
+			return defaultResult;
+		}
+
+		@Override
+		public Object visitEndTree(Nez.EndTree e, Object a) {
+			return defaultResult;
+		}
+
+		@Override
+		public Object visitDetree(Nez.Detree e, Object a) {
+			return analyzeInners(e);
+		}
+
+		@Override
+		public Object visitBlockScope(Nez.BlockScope e, Object a) {
+			return analyzeInners(e);
+		}
+
+		@Override
+		public Object visitLocalScope(Nez.LocalScope e, Object a) {
+			return analyzeInners(e);
+		}
+
+		@Override
+		public Object visitSymbolAction(Nez.SymbolAction e, Object a) {
+			return analyzeInners(e);
+		}
+
+		@Override
+		public Object visitSymbolMatch(Nez.SymbolMatch e, Object a) {
+			return analyzeInners(e);
+		}
+
+		@Override
+		public Object visitSymbolPredicate(Nez.SymbolPredicate e, Object a) {
+			return analyzeInners(e);
+		}
+
+		@Override
+		public Object visitSymbolExists(Nez.SymbolExists e, Object a) {
+			return defaultResult;
+		}
+
+		@Override
+		public Object visitScan(Nez.Scan e, Object a) {
+			return analyzeInners(e);
+		}
+
+		@Override
+		public Object visitRepeat(Nez.Repeat e, Object a) {
+			return analyzeInners(e);
+		}
+
+		@Override
+		public Object visitIf(Nez.IfCondition e, Object a) {
+			return defaultResult;
+		}
+
+		@Override
+		public Object visitOn(Nez.OnCondition e, Object a) {
+			return analyzeInners(e);
+		}
+
+		@Override
+		public Object visitLabel(Nez.Label e, Object a) {
+			return defaultResult;
 		}
 	}
 

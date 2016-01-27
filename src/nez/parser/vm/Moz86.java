@@ -1691,8 +1691,7 @@ public class Moz86 {
 
 		@Override
 		public MozInst exec(ParserMachineContext sc) throws TerminationException {
-			byte[] sym = sc.getSymbol(table);
-			return sc.match(sym) ? this.next : sc.xFail();
+			return sc.matchSymbol(table) ? this.next : sc.xFail();
 		}
 
 	}

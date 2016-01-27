@@ -21,8 +21,10 @@ import nez.lang.Nez.SymbolMatch;
 import nez.lang.Nez.SymbolPredicate;
 import nez.lang.NonTerminal;
 import nez.lang.Production;
-import nez.lang.Symbolstate;
-import nez.lang.Symbolstate.StateAnalyzer;
+import nez.lang.SymbolDependency;
+import nez.lang.SymbolDependency.SymbolDependencyAnalyzer;
+import nez.lang.SymbolMutation;
+import nez.lang.SymbolMutation.SymbolMutationAnalyzer;
 import nez.lang.Typestate;
 import nez.lang.Typestate.TypestateAnalyzer;
 import nez.parser.MemoPoint;
@@ -43,7 +45,8 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 	protected FileBuilder file;
 	//
 	protected TypestateAnalyzer typeState = Typestate.newAnalyzer();
-	protected StateAnalyzer symbolState = Symbolstate.newAnalyzer();
+	protected SymbolMutationAnalyzer symbolMutation = SymbolMutation.newAnalyzer();
+	protected SymbolDependencyAnalyzer symbolDeps = SymbolDependency.newAnalyzer();
 
 	protected boolean verboseMode = true;
 
@@ -529,12 +532,37 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 			BeginFunc(name);
 			{
 				if (memoPoint != null) {
-					InitVal("memo", _Func("lookupMemo", _int(memoPoint)));
+					String memoLookup = "memoLookupStateTree";
+					String memoSucc = "memoStateTreeSucc";
+					String memoFail = "memoStateFail";
+					if (!typeState.isTree(e)) {
+						memoLookup = memoLookup.replace("Tree", "");
+						memoSucc = memoSucc.replace("Tree", "");
+						memoFail = memoFail.replace("Tree", "");
+					}
+					if (!strategy.StatefulPackratParsing || !symbolDeps.isDependent(e)) {
+						memoLookup = memoLookup.replace("State", "");
+						memoSucc = memoSucc.replace("State", "");
+						memoFail = memoFail.replace("State", "");
+					}
+					InitVal("memo", _Func(memoLookup, _int(memoPoint)));
 					If("memo", _Eq(), "0");
-					String pos = savePos();
-					visit(e, null);
-					Statement(_Func("memoSucc", _int(memoPoint), pos));
-					Succ();
+					{
+						String f = makeFuncCall(e);
+						String ppos = SavePoint(e);
+						If(f);
+						{
+							Statement(_Func(memoSucc, _int(memoPoint), ppos));
+							Succ();
+						}
+						Else();
+						{
+							Backtrack(e);
+							Statement(_Func(memoFail, _int(memoPoint)));
+							Fail();
+						}
+						EndIf();
+					}
 					EndIf();
 					Return(_Binary("memo", _Eq(), "1"));
 				} else {
@@ -614,15 +642,16 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 			Statement(_Func("backSymbolPoint", local(_sym_())));
 		}
 
-		private void SavePoint(Expression inner) {
-			savePos();
+		private String SavePoint(Expression inner) {
+			String pos = savePos();
 			if (typeState.inferTypestate(inner) != Typestate.Unit) {
 				saveTree();
 				saveLog();
 			}
-			if (symbolState.isStateful(inner)) {
+			if (symbolMutation.isMutated(inner)) {
 				saveSymbol();
 			}
+			return pos;
 		}
 
 		private void Backtrack(Expression inner) {
@@ -631,7 +660,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 				backTree();
 				backLog();
 			}
-			if (symbolState.isStateful(inner)) {
+			if (symbolMutation.isMutated(inner)) {
 				backSymbol();
 			}
 		}
@@ -1134,7 +1163,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 
 		@Override
 		public Object visitSymbolMatch(SymbolMatch e, Object a) {
-			If(_Not(_Func("match", _Func("getSymbol", _symbol(e.tableName)))));
+			If(_Not(_Func("matchSymbol", _symbol(e.tableName))));
 			{
 				Fail();
 			}

@@ -349,14 +349,17 @@ public class ParserContext {
 		return false;
 	}
 
-	public final byte[] getSymbol(Symbol table) {
+	public final boolean matchSymbol(Symbol table) {
 		for (int i = tableSize - 1; i >= 0; i--) {
 			SymbolTableEntry entry = tables[i];
 			if (entry.table == table) {
-				return entry.symbol;
+				if (entry.symbol == NullSymbol) {
+					return false; // masked
+				}
+				return this.match(entry.symbol);
 			}
 		}
-		return null;
+		return false;
 	}
 
 	public final boolean equals(Symbol table, int ppos) {
@@ -500,39 +503,64 @@ public class ParserContext {
 		m.stateValue = -1;
 	}
 
-	// public final boolean lookupStateMemo(int memoPoint) {
-	// long key = longkey(pos, memoPoint, shift);
-	// int hash = (int) (key % memoArray.length);
-	// MemoEntry m = this.memoArray[hash];
-	// if (m.key == key) {
-	// if (m.stateValue == stateValue) {
-	// this.pos = m.consumed;
-	// this.left = m.result;
-	// return true;
-	// }
-	// }
-	// return false; // unfound
-	// }
-	//
-	// public void memoStateSucc(int memoPoint, int ppos) {
-	// long key = longkey(pos, memoPoint, shift);
-	// int hash = (int) (key % memoArray.length);
-	// MemoEntry m = this.memoArray[hash];
-	// m.key = key;
-	// m.result = left;
-	// m.consumed = pos - ppos;
-	// m.stateValue = stateValue;
-	// // this.CountStored += 1;
-	// }
-	//
-	// public void memoStateFail(int memoPoint) {
-	// long key = longkey(pos, memoPoint, shift);
-	// int hash = (int) (key % memoArray.length);
-	// MemoEntry m = this.memoArray[hash];
-	// m.key = key;
-	// m.result = null;
-	// m.consumed = 0;
-	// m.stateValue = stateValue;
-	// }
+	/* State Version */
+
+	public final int lookupStateMemo(int memoPoint) {
+		long key = longkey(pos, memoPoint, shift);
+		int hash = (int) (key % memoArray.length);
+		MemoEntry m = this.memoArray[hash];
+		if (m.key == key) {
+			this.pos += m.consumed;
+			return m.result;
+		}
+		return NotFound;
+	}
+
+	public final int lookupStateTreeMemo(int memoPoint) {
+		long key = longkey(pos, memoPoint, shift);
+		int hash = (int) (key % memoArray.length);
+		MemoEntry m = this.memoArray[hash];
+		if (m.key == key && m.stateValue == this.stateValue) {
+			this.pos += m.consumed;
+			this.left = m.memoTree;
+			return m.result;
+		}
+		return NotFound;
+	}
+
+	public void memoStateSucc(int memoPoint, int ppos) {
+		long key = longkey(ppos, memoPoint, shift);
+		int hash = (int) (key % memoArray.length);
+		MemoEntry m = this.memoArray[hash];
+		m.key = key;
+		m.memoTree = left;
+		m.consumed = pos - ppos;
+		m.result = SuccFound;
+		m.stateValue = this.stateValue;
+		// this.CountStored += 1;
+	}
+
+	public void memoStateTreeSucc(int memoPoint, int ppos) {
+		long key = longkey(ppos, memoPoint, shift);
+		int hash = (int) (key % memoArray.length);
+		MemoEntry m = this.memoArray[hash];
+		m.key = key;
+		m.memoTree = left;
+		m.consumed = pos - ppos;
+		m.result = SuccFound;
+		m.stateValue = this.stateValue;
+		// this.CountStored += 1;
+	}
+
+	public void memoStateFail(int memoPoint) {
+		long key = longkey(pos, memoPoint, shift);
+		int hash = (int) (key % memoArray.length);
+		MemoEntry m = this.memoArray[hash];
+		m.key = key;
+		m.memoTree = left;
+		m.consumed = 0;
+		m.result = FailFound;
+		m.stateValue = this.stateValue;
+	}
 
 }
