@@ -10,7 +10,9 @@ public class Command extends nez.main.Command {
 		/* Setting requird options */
 		strategy.Optimization = false;
 		Grammar grammar = this.newGrammar();
-		new TypingVisitor().typing(grammar);
+		Schema schema = new Schema();
+		new TypeAnalysis(schema).typing(grammar);
+		schema.deref();
 	}
 
 }

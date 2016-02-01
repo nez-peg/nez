@@ -19,7 +19,7 @@ public class JSONPredefinedGrammarLoader extends PredefinedGrammarLoader {
 	}
 
 	public final Expression pAny() {
-		return newSequence(newLinkTree(null, _NonTerminal("Member")), _NonTerminal("S"), newOption(null, _NonTerminal("VALUESEP")), newTag(null, Symbol.unique("Any")));
+		return newSequence(newLinkTree(_NonTerminal("Member")), _NonTerminal("S"), newOption(null, _NonTerminal("VALUESEP")), newTag(null, Symbol.unique("Any")));
 	}
 
 	public final Expression pMember() {
@@ -33,13 +33,13 @@ public class JSONPredefinedGrammarLoader extends PredefinedGrammarLoader {
 	}
 
 	public final Expression pJSONObject() {
-		Expression[] l = { newByte(null, '{'), _NonTerminal("S"), newBeginTree(null, 0), newLinkTree(null, _NonTerminal("Member")), _NonTerminal("S"), newZeroMore(null, newSequence(_NonTerminal("VALUESEP"), newLinkTree(null, _NonTerminal("Member")))),
+		Expression[] l = { newByte(null, '{'), _NonTerminal("S"), newBeginTree(null, 0), newLinkTree(_NonTerminal("Member")), _NonTerminal("S"), newZeroMore(null, newSequence(_NonTerminal("VALUESEP"), newLinkTree(_NonTerminal("Member")))),
 				newTag(null, Symbol.unique("Object")), newEndTree(null, 0), _NonTerminal("S"), newByte(null, '}'), };
 		return newSequence(l);
 	}
 
 	public final Expression pArray() {
-		Expression[] valueSeq = { _NonTerminal("S"), newLinkTree(null, _NonTerminal("Value")), _NonTerminal("S"), newZeroMore(null, newSequence(_NonTerminal("VALUESEP"), newLinkTree(null, _NonTerminal("Value")))) };
+		Expression[] valueSeq = { _NonTerminal("S"), newLinkTree(_NonTerminal("Value")), _NonTerminal("S"), newZeroMore(null, newSequence(_NonTerminal("VALUESEP"), newLinkTree(_NonTerminal("Value")))) };
 		Expression[] l = { newByte(null, '['), newBeginTree(null, 0), newSequence(valueSeq), newTag(null, Symbol.unique("Array")), newEndTree(null, 0), _NonTerminal("S"), newByte(null, ']') };
 		return newSequence(l);
 	}

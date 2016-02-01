@@ -90,10 +90,10 @@ public Value
 	/ ObjectId
 
 public Object
-	= { "{" ($(Member) ("," $(Member) )* )? "}" #JSON }
+	= { "{" ($_(Member) ("," $_(Member) )* )? "}" #Object }
 
 Member
-	= { $key(String) ":" $value(Value) #meta }
+	= { $key(String) ":" $value(Value) #Member }
 
 Key
 	= String

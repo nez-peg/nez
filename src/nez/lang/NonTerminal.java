@@ -1,15 +1,12 @@
 package nez.lang;
 
-import nez.ast.SourceLocation;
-
 public class NonTerminal extends Expression {
 	private Grammar grammar;
 	private String localName;
 	private String uniqueName;
 	private Production deref = null;
 
-	public NonTerminal(SourceLocation s, Grammar g, String ruleName) {
-		// super(s);
+	public NonTerminal(Grammar g, String ruleName) {
 		this.grammar = g;
 		this.localName = ruleName;
 		this.uniqueName = this.grammar.uniqueName(this.localName);

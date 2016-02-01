@@ -78,8 +78,14 @@ public abstract class Expressions {
 
 	// -----------------------------------------------------------------------
 
+	public final static NonTerminal newNonTerminal(Grammar g, String name) {
+		return new NonTerminal(g, name);
+	}
+
 	public final static NonTerminal newNonTerminal(SourceLocation s, Grammar g, String name) {
-		return new NonTerminal(s, g, name);
+		NonTerminal e = new NonTerminal(g, name);
+		e.setSourceLocation(s);
+		return e;
 	}
 
 	// Immutable Expressions
@@ -675,8 +681,16 @@ public abstract class Expressions {
 		return e;
 	}
 
+	public final static Expression newLinkTree(Expression p) {
+		return newLinkTree(null, null, p);
+	}
+
 	public final static Expression newLinkTree(SourceLocation s, Expression p) {
 		return newLinkTree(s, null, p);
+	}
+
+	public final static Expression newLinkTree(Symbol label, Expression p) {
+		return new Nez.LinkTree(label, p);
 	}
 
 	public final static Expression newLinkTree(SourceLocation s, Symbol label, Expression p) {
@@ -1091,6 +1105,10 @@ public abstract class Expressions {
 	}
 
 	// -----------------------------------------------------------------------
+
+	public static final Expression newExpression(String text) {
+		return Expressions.newExpression(null, text);
+	}
 
 	public static final Expression newExpression(SourceLocation s, String text) {
 		byte[] utf8 = StringUtils.toUtf8(text);
