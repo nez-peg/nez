@@ -156,6 +156,21 @@ public class Schema {
 			return false;
 		}
 
+		public final boolean isRecordType() {
+			if (size() > 0) {
+				for (Property p : members) {
+					if (p.type instanceof Schema.OptionType) {
+						return false;
+					}
+					if (p.label != null) {
+						return false;
+					}
+				}
+				return true;
+			}
+			return false;
+		}
+
 		public final Type getListElementType() {
 			if (size() == 1 && get(0).label == null) {
 				Type t = get(0).type;

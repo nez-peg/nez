@@ -50,75 +50,80 @@ public class SchemaTransformer {
 			return baseType(((UnaryType) t).type);
 		}
 
-		public final boolean contain(Type castType, Type t) {
+		public final boolean contain(Type castType, Type grammarType) {
 			if (castType == null) {
 				return true;
 			}
 			ObjectType objectType = baseType(castType);
-			Type derefType = schema.derefType(t);
+			Type derefType = schema.derefType(grammarType);
 			// System.out.println("CAST: " + castType + " base: " + objectType);
 			// System.out.println("EXPR: " + t + " => " + derefType);
 			if (objectType.isSingleType()) {
-				return containSingleType(objectType.getTag(), derefType);
+				return containSingleType(objectType, derefType);
 			}
 			if (objectType.isListType()) {
-				Type elementType = objectType.getListElementType();
-				return containListType(derefType, elementType);
+				return containListType(objectType, derefType);
 			}
-			return containObjectType(derefType);
+			return containObjectType(objectType, derefType);
 		}
 
-		private boolean containObjectType(Type t) {
-			if (t instanceof UnionType) {
-				UnionType u = (UnionType) t;
+		private boolean containSingleType(ObjectType castType, Type grammarType) {
+			if (grammarType instanceof UnionType) {
+				UnionType u = (UnionType) grammarType;
 				for (Type t2 : u.unions) {
-					if (containObjectType(t2)) {
+					if (containSingleType(castType, t2)) {
+						return true;
+					}
+				}
+				return false;
+			}
+			if (grammarType instanceof ObjectType) {
+				ObjectType t = (ObjectType) grammarType;
+				return t.getTag() == castType.getTag() && t.isSingleType();
+			}
+			return false;
+		}
+
+		private boolean containListType(ObjectType castType, Type grammarType) {
+			if (grammarType instanceof UnionType) {
+				UnionType u = (UnionType) grammarType;
+				for (Type t2 : u.unions) {
+					if (containListType(castType, t2)) {
+						return true;
+					}
+				}
+				return false;
+			}
+			if (grammarType instanceof ObjectType) {
+				ObjectType gt = (ObjectType) grammarType;
+				if (gt.isListType()) {
+					Type t1 = castType.getListElementType();
+					Type t2 = gt.getListElementType();
+					return contain(t1, t2);
+				}
+			}
+			return false;
+		}
+
+		private boolean containObjectType(ObjectType castType, Type grammarType) {
+			if (grammarType instanceof UnionType) {
+				UnionType u = (UnionType) grammarType;
+				for (Type t2 : u.unions) {
+					if (containObjectType(castType, t2)) {
 						this.recording = -1;
 						return true;
 					}
 				}
 				return false;
 			}
-			if (t instanceof ObjectType) {
-				if (((ObjectType) t).isEmptyObjectType()) {
+			if (grammarType instanceof ObjectType) {
+				if (((ObjectType) grammarType).isEmptyObjectType()) {
 					return true;
 				}
-				if (((ObjectType) t).isListType()) {
+				if (((ObjectType) grammarType).isRecordType()) {
 					this.recording = 0;
 					return true;
 				}
-			}
-			return false;
-		}
-
-		private boolean containListType(Type t, Type elementType) {
-			if (t instanceof UnionType) {
-				UnionType u = (UnionType) t;
-				for (Type t2 : u.unions) {
-					if (containListType(t2, elementType)) {
-						return true;
-					}
-				}
-				return false;
-			}
-			if (t instanceof ObjectType) {
-				return ((ObjectType) t).isListType();
-			}
-			return false;
-		}
-
-		private boolean containSingleType(Symbol tag, Type t) {
-			if (t instanceof UnionType) {
-				UnionType u = (UnionType) t;
-				for (Type t2 : u.unions) {
-					if (containSingleType(tag, t2)) {
-						return true;
-					}
-				}
-				return false;
-			}
-			if (t instanceof ObjectType) {
-				return ((ObjectType) t).getTag() == tag && ((ObjectType) t).isSingleType();
 			}
 			return false;
 		}
