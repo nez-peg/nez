@@ -1,0 +1,180 @@
+File = _ Declaration _
+
+/* Code Layout (Whitespace) */
+_                                  = ( S / BLOCKCOMMENT / LINECOMMENT )*
+__                                 = !S
+S                                  = [ \n\r\t\u000B\u000C]
+BLOCKCOMMENT                       = '/*' ( !'*/' . )* '*/'
+LINECOMMENT                        = '//' ( !'\n' . )*
+EOL                                = '\r'? '\n'
+                                   / !.
+EOT                                = !.
+
+/* Identifier */
+Identifier                         = { NAME #Name } _
+QualifiedName                      = Identifier {$ "." $(Identifier) #QualifiedName }*
+W                                  = [a-zA-Z0-9_]
+NAME                               = !DIGIT !KEYWORD W+
+DIGIT                              = [0-9]
+KEYWORD                            = "type"
+LETTER = [A-Z_a-z]
+INT = DIGIT DIGIT*
+HEX = [0-9A-Fa-f]
+
+/* Operators */
+"="                                = '=' _
+":"                                = ':' !':' _
+"::"                               = '::' _
+"*"                                = '*' _
+"+"                                = '+' _
+"?"                                = '?' _
+"("                                = '(' _
+")"                                = ')' _
+/* Keywords */
+"Number"                           = 'Number' !W _
+"Integer"                          = 'Integer' !W _
+"Float"                            = 'Float' !W _
+"String"                           = 'String' !W _
+"Boolean"                          = 'Boolean' !W _
+"type"                             = 'type' !W _
+"format"                           = 'format' !W _
+"property"                         = 'property' !W _
+"delim"                            = 'delim' !W _
+"#Property"                        = '#Property' !W _
+"#Key"                             = '#Key' !W _
+"#Value"                           = '#Value' !W _
+
+
+
+/* TopLevel */
+Declaration = TypeDeclarations
+
+TypeDeclarations = { $(TypeDeclaration)+ #NezSchema}
+TypeDeclaration = { "type" ($alias(Identifier) "::")? $name(TreeType) _OccurrenceModifier _ "=" $list(PropertyDefinitions) } _
+_OccurrenceModifier = '{}' #ObjectType
+                    / '[]' #ListType
+PropertyDefinitions = {  $(PropertyDefinition)+ #List} _
+PropertyDefinition = { ($fixed(Identifier) "::")? '$' $name(Identifier) ":" $type(Type) #Property} _
+
+example File '''
+type #Person{} =
+  $name: #String
+'''
+example Declaration '''
+type #Person{} =
+  $name: #String
+'''
+example Declaration '''
+type #Person{} =
+  $name: #String
+  $age: #Integer
+'''
+
+/* Types */
+Type = UnaryType {$ (_ '/' _ $(UnaryType))+ #Union}?
+UnaryType = SimpleType {$ _Qualifier }?
+_Qualifier = "*" #ZeroMore
+           / "+" #OneMore
+           / "?" #Option
+SimpleType = TreeType
+           / ReferenceType
+           / Inner
+TreeType = {'#' /*BuiltInType /*/  NAME #TreeType }  _
+ReferenceType = { NAME #Reference }
+/*BuiltInType = "Boolean" {#Boolean}
+/"Number" {#Number}
+/"Integer" {#Integer}
+/"Float" {#Float}
+/"String" {#String}*/
+Inner = "(" Type ")"
+
+example Type '''
+#Type
+'''
+example Type '''
+#Type?
+'''
+example Type '''
+(#Type)
+'''
+example Type '''
+(#Type)?
+'''
+example Type '''
+((#Type)+)?
+'''
+example Type '''
+(#Type1/#Type2)
+'''
+example Type '''
+(#Type1/#Type2/#Type3)
+'''
+example Type '''
+(Person/Dog/#String)
+'''
+
+
+/* Nez Production */
+/*NezProduction = { addQualifers $name((NonTerminal / String)) _ SKIP '=' _ $expr(Expression) #NezProduction }
+addQualifers = (&QUALIFERS $anno(Qualifers))?
+QUALIFERS = 'p' 'u' 'b' 'l' 'i' 'c' / 'i' 'n' 'l' 'i' 'n' 'e' !W
+Qualifers = { ($(({ QUALIFERS })) S)* }
+DOC = (!']' !'[' .)* ('[' DOC ']' DOC)?
+ANNOTATION = '[' DOC ']' _
+SKIP = ANNOTATION*
+NOTRULE = !(';' / RuleHead)
+RuleHead = { addQualifers $((NonTerminal / String)) _ SKIP '=' }
+Expression = Sequence ({$ (_ '/' _ $(Sequence))+ #Choice })?
+Sequence = Predicate ({$ (_ NOTRULE $(Predicate))+ #Sequence })?
+Predicate = { ('&' #And / '!' #Not ) $expr(Suffix) } / Suffix
+Suffix = Term ({$expr ('*' ($times(Integer))? #Repetition / '+' #Repetition1 / '?' #Option ) })?
+Term = Character / Charset / String
+/ { '.' #AnyChar }
+/ { '0' 'x' HEX HEX #ByteChar }
+/ { [0-1x] [0-1x] [0-1x] [0-1x] [0-1x] [0-1x] [0-1x] [0-1x] #ByteClass }
+/ { 'U' '+' HEX HEX HEX HEX #ByteChar }
+/ Constructor
+/ LabelLink
+/ Replace
+/ Tagging
+/ '(' _ Expression _ ')' / Func / NonTerminal
+Character = '\'' { ('\\' '\'' / '\\' '\\' / !'\'' .)* #Character } '\''
+String = '"' { ('\\' '"' / '\\' '\\' / !'"' .)* #String } '"'
+Charset = '[' { ($(({ CHAR #Class } ({$right '-' $left(({ CHAR #Class })) #List })?)))* #Class } ']'
+CHAR = '\\' 'u' HEX HEX HEX HEX / '\\' 'x' HEX HEX / '\\' 'n' / '\\' 't' / '\\' '\\' / '\\' 'r' / '\\' 'v' / '\\' 'f' / '\\' '-' / '\\' ']' / !']' .
+Constructor = { '{' ('$' ($name(Identifier))? S #LeftFold / '@' S #LeftFold / #New) _ ($expr(Expression) _ )? '}' }
+TagName = { [$0-9A-Za-z] [$0-9A-Z_a-z]* #Tagging }
+Tagging = ('#' / ':') TagName
+Replace = '`' { ('\\' '`' / '\\' '\\' / !'`' .)* #Replace } '`'
+LabelLink = '$' { ($name(Identifier))? '(' _ $expr(Expression) _ ')' #Link }
+Func = '<' { (
+  ('i' 'f' S _ $name(FlagName) #If)
+/ (('o' 'n' / 'w' 'i' 't' 'h') S _ $name(FlagName) S _ $expr(Expression) #On)
+/ ('s' 'y' 'm' 'b' 'o' 'l' S _ $name(NonTerminal) #Symbol )
+/ ('d' 'e' 'f' S _ $name(TableName) S _ $expr(Expression) #Def )
+/ ('e' 'x' 'i' 's' 't' 's' S _ $name(TableName) (S _ $symbol(Character))? #Exists)
+/ ('m' 'a' 't' 'c' 'h' S _ $name(TableName) #Match)
+/ ('i' 's' S _ $name(NonTerminal) #Is )
+/ ('i' 's' 'a' S _ $name(NonTerminal) #Isa)
+/ ('b' 'l' 'o' 'c' 'k' S _ $expr(Expression) #Block)
+/ ('l' 'o' 'c' 'a' 'l' S _ $name(TableName) S _ $expr(Expression) #Local)
+/ ('s' 'c' 'a' 'n' S _ ($mask(Mask) S _)? $expr(Expression) #Scanf)
+/ ('r' 'e' 'p' 'e' 'a' 't' S _ $expr(Expression) #Repeat)
+/ (!'>' .)+ #Undefined
+) } _ '>'
+FlagName = { '!'? LETTER W* #Name }
+TableName = { LETTER (W / '-')* #Name }
+NonTerminal = { NAME ('.' NAME)? #NonTerminal }
+Mask = { [0-1]+ #Name }
+Integer = { INT #Integer }
+Index = { '-'? INT #Integer }
+
+example Production A = 'a'
+example Production A = 'a'*
+example Production A = B*
+example Production A = !B
+example Production A = B / C
+example Production A = B C
+example Production A = (A B)
+example Production A = <exists T 'a'>
+example Production A = { (B /'a') #Tag}*/
