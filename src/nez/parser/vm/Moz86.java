@@ -565,8 +565,6 @@ public class Moz86 {
 		}
 	}
 
-	public final static boolean BinaryMachine = true;
-
 	/**
 	 * Byte
 	 * 
@@ -594,7 +592,7 @@ public class Moz86 {
 
 	}
 
-	public final static class Byte extends AbstByte {
+	public static class Byte extends AbstByte {
 		public Byte(int byteChar, MozInst next) {
 			super(MozSet.Byte, byteChar, next);
 		}
@@ -621,10 +619,24 @@ public class Moz86 {
 			}
 			return sc.xFail();
 		}
-
 	}
 
-	public final static class NByte extends AbstByte {
+	public final static class BinaryByte extends Byte {
+		public BinaryByte(MozInst next) {
+			super(0, next);
+		}
+
+		@Override
+		public MozInst exec(ParserMachineContext sc) throws TerminationException {
+			if (sc.prefetch() == 0 && !sc.eof()) {
+				sc.move(1);
+				return this.next;
+			}
+			return sc.xFail();
+		}
+	}
+
+	public static class NByte extends AbstByte {
 		public NByte(int byteChar, MozInst next) {
 			super(MozSet.NByte, byteChar, next);
 		}
@@ -652,7 +664,21 @@ public class Moz86 {
 
 	}
 
-	public final static class OByte extends AbstByte {
+	public final static class BinaryNByte extends NByte {
+		public BinaryNByte(int byteChar, MozInst next) {
+			super(byteChar, next);
+		}
+
+		@Override
+		public MozInst exec(ParserMachineContext sc) throws TerminationException {
+			if (sc.prefetch() != this.byteChar && !sc.eof()) {
+				return this.next;
+			}
+			return sc.xFail();
+		}
+	}
+
+	public static class OByte extends AbstByte {
 		public OByte(int byteChar, MozInst next) {
 			super(MozSet.OByte, byteChar, next);
 		}
@@ -673,7 +699,7 @@ public class Moz86 {
 		@Override
 		public MozInst exec(ParserMachineContext sc) throws TerminationException {
 			if (sc.prefetch() == this.byteChar) {
-				if (BinaryMachine && this.byteChar == 0 && sc.eof()) {
+				if (this.byteChar == 0) {
 					return this.next;
 				}
 				sc.move(1);
@@ -682,7 +708,21 @@ public class Moz86 {
 		}
 	}
 
-	public final static class RByte extends AbstByte {
+	public static class BinaryOByte extends OByte {
+		public BinaryOByte(MozInst next) {
+			super(0, next);
+		}
+
+		@Override
+		public MozInst exec(ParserMachineContext sc) throws TerminationException {
+			if (sc.prefetch() == 0 && !sc.eof()) {
+				sc.move(1);
+			}
+			return this.next;
+		}
+	}
+
+	public static class RByte extends AbstByte {
 		public RByte(int byteChar, MozInst next) {
 			super(MozSet.RByte, byteChar, next);
 		}
@@ -702,17 +742,22 @@ public class Moz86 {
 
 		@Override
 		public MozInst exec(ParserMachineContext sc) throws TerminationException {
-			if (BinaryMachine) {
-				while (sc.prefetch() == this.byteChar) {
-					if (this.byteChar == 0 && sc.eof()) {
-						return this.next;
-					}
-					sc.move(1);
-				}
-			} else {
-				while (sc.prefetch() == this.byteChar) {
-					sc.move(1);
-				}
+			while (sc.prefetch() == this.byteChar) {
+				sc.move(1);
+			}
+			return this.next;
+		}
+	}
+
+	public static class BinaryRByte extends RByte {
+		public BinaryRByte(MozInst next) {
+			super(0, next);
+		}
+
+		@Override
+		public MozInst exec(ParserMachineContext sc) throws TerminationException {
+			while (sc.prefetch() == 0 && !sc.eof()) {
+				sc.move(1);
 			}
 			return this.next;
 		}
@@ -842,7 +887,7 @@ public class Moz86 {
 
 	}
 
-	public final static class Set extends AbstSet {
+	public static class Set extends AbstSet {
 		public Set(boolean[] byteMap, MozInst next) {
 			super(MozSet.Set, byteMap, next);
 		}
@@ -873,7 +918,24 @@ public class Moz86 {
 
 	}
 
-	public final static class OSet extends AbstSet {
+	public final static class BinarySet extends Set {
+		public BinarySet(boolean[] byteMap, MozInst next) {
+			super(byteMap, next);
+		}
+
+		@Override
+		public MozInst exec(ParserMachineContext sc) throws TerminationException {
+			int byteChar = sc.prefetch();
+			if (byteSet[byteChar] && !sc.eof()) {
+				sc.move(1);
+				return this.next;
+			}
+			return sc.xFail();
+		}
+
+	}
+
+	public static class OSet extends AbstSet {
 		public OSet(boolean[] byteMap, MozInst next) {
 			super(MozSet.OSet, byteMap, next);
 		}
@@ -903,9 +965,24 @@ public class Moz86 {
 
 	}
 
-	public final static class NSet extends AbstSet {
+	public static class BinaryOSet extends OSet {
+		public BinaryOSet(boolean[] byteMap, MozInst next) {
+			super(byteMap, next);
+		}
+
+		@Override
+		public MozInst exec(ParserMachineContext sc) throws TerminationException {
+			int byteChar = sc.prefetch();
+			if (byteSet[byteChar] && sc.eof()) {
+				sc.move(1);
+			}
+			return this.next;
+		}
+	}
+
+	public static class NSet extends AbstSet {
 		public NSet(boolean[] byteMap, MozInst next) {
-			super(MozSet.OSet, byteMap, next);
+			super(MozSet.NSet, byteMap, next);
 		}
 
 		@Override
@@ -933,9 +1010,25 @@ public class Moz86 {
 
 	}
 
-	public final static class RSet extends AbstSet {
+	public final static class BinaryNSet extends NSet {
+		public BinaryNSet(boolean[] byteMap, MozInst next) {
+			super(byteMap, next);
+		}
+
+		@Override
+		public MozInst exec(ParserMachineContext sc) throws TerminationException {
+			int byteChar = sc.prefetch();
+			if (!byteSet[byteChar] && !sc.eof()) {
+				return this.next;
+			}
+			return sc.xFail();
+		}
+
+	}
+
+	public static class RSet extends AbstSet {
 		public RSet(boolean[] byteMap, MozInst next) {
-			super(MozSet.OSet, byteMap, next);
+			super(MozSet.RSet, byteMap, next);
 		}
 
 		@Override
@@ -956,6 +1049,21 @@ public class Moz86 {
 		@Override
 		public MozInst exec(ParserMachineContext sc) throws TerminationException {
 			while (byteSet[sc.prefetch()]) {
+				sc.move(1);
+			}
+			return this.next;
+		}
+
+	}
+
+	public static class BinaryRSet extends RSet {
+		public BinaryRSet(boolean[] byteMap, MozInst next) {
+			super(byteMap, next);
+		}
+
+		@Override
+		public MozInst exec(ParserMachineContext sc) throws TerminationException {
+			while (byteSet[sc.prefetch()] && !sc.eof()) {
 				sc.move(1);
 			}
 			return this.next;

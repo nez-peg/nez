@@ -7,11 +7,9 @@ import nez.lang.Grammar;
 import nez.util.UList;
 
 public class GrammarExample {
-	private Grammar grammar;
 	private UList<Example> exampleList;
 
 	public GrammarExample(Grammar grammar) {
-		this.grammar = grammar;
 		exampleList = new UList<Example>(new Example[8]);
 	}
 

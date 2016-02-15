@@ -162,19 +162,13 @@ public class Ctest extends Command {
 			if (ch == ' ' || ch == '\n' || ch == '\r') {
 				continue;
 			}
-			int b = parseBinary(t, i);
+			int b = parseHex(t, i);
 			if (b != -1) {
-				i += 7;
-				bytes.add((byte) b);
-				continue;
-			}
-			b = parseHex(t, i);
-			if (b != -1) {
+				// System.out.println("hex=" + b);
 				i += 1;
 				bytes.add((byte) b);
 				continue;
 			}
-
 		}
 		bytes.add((byte) 0);
 		byte[] b = new byte[bytes.size()];
@@ -182,18 +176,6 @@ public class Ctest extends Command {
 			b[i] = bytes.get(i);
 		}
 		return b;
-	}
-
-	int parseBinary(String t, int i) {
-		try {
-			char ch = t.charAt(i);
-			if (ch == '0' && ch == '1') {
-				String s = t.substring(i, i + 8);
-				return Integer.parseInt(s, 2);
-			}
-		} catch (Exception e) {
-		}
-		return -1;
 	}
 
 	int parseHex(String t, int i) {

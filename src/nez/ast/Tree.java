@@ -1,6 +1,8 @@
 package nez.ast;
 
+import java.io.UnsupportedEncodingException;
 import java.util.AbstractList;
+import java.util.Arrays;
 
 import nez.parser.io.CommonSource;
 import nez.util.StringUtils;
@@ -237,15 +239,16 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements
 		if (label != null) {
 			sb.append("$");
 			sb.append(label);
-			sb.append(" ");
+			sb.append(" = ");
 		}
 		sb.append("#");
-		sb.append(this.getTag().getSymbol());
+		if (this.getTag() != null) {
+			sb.append(this.getTag().getSymbol());
+		}
 		sb.append("[");
 		if (this.subTree == null) {
-			sb.append(" ");
+			// sb.append(" ");
 			StringUtils.formatQuoteString(sb, '\'', this.toText(), '\'');
-			sb.append("]");
 		} else {
 			String nindent = "   " + indent;
 			for (int i = 0; i < this.size(); i++) {
@@ -259,8 +262,8 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements
 			}
 			sb.append("\n");
 			sb.append(indent);
-			sb.append("]");
 		}
+		sb.append("]");
 	}
 
 	public final Object getValue() {
@@ -281,15 +284,23 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements
 		if (this.source != null) {
 			long pos = this.getSourcePosition();
 			long epos = pos + this.length;
-			this.value = this.source.subString(pos, epos);
-			// try {
-			// this.value = this.source.substring(pos, epos);
-			// } catch (Exception e) {
-			// System.out.println(e);
-			// System.out.println("pos: " + pos + " epos: " + epos + " < " +
-			// this.getSource().length());
-			// this.value = "";
-			// }
+			String s = this.source.subString(pos, epos);
+			/* Binary */
+			byte[] tmp = this.source.subByte(pos, epos);
+			try {
+				if (Arrays.equals(tmp, s.getBytes("UTF8"))) {
+					this.value = s;
+				}
+			} catch (UnsupportedEncodingException e) {
+			}
+			if (this.value == null) {
+				StringBuilder sb = new StringBuilder();
+				sb.append("0x");
+				for (byte c : tmp) {
+					sb.append(String.format("%02x", c & 0xff));
+				}
+				this.value = sb.toString();
+			}
 			return this.value.toString();
 		}
 		return "";
@@ -356,12 +367,6 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements
 	public final String formatSourceMessage(String type, String msg) {
 		return this.getSource().formatPositionLine(type, this.getSourcePosition(), msg);
 	}
-
-	// @Override
-	// public final String formatDebugSourceMessage(String msg) {
-	// return this.source.formatDebugPositionMessage(this.getSourcePosition(),
-	// msg);
-	// }
 
 	/**
 	 * Create new input stream
