@@ -31,7 +31,6 @@ import nez.parser.vm.Moz86.NScan;
 import nez.parser.vm.Moz86.NSet;
 import nez.parser.vm.Moz86.NStr;
 import nez.parser.vm.Moz86.Nop;
-import nez.parser.vm.Moz86.NotEOF;
 import nez.parser.vm.Moz86.OByte;
 import nez.parser.vm.Moz86.OSet;
 import nez.parser.vm.Moz86.OStr;
@@ -452,10 +451,6 @@ public class MozWriter extends InstructionVisitor {
 
 	@Override
 	public void visitAny(Any inst) {
-	}
-
-	@Override
-	public void visitNotEOF(NotEOF inst) {
 	}
 
 	@Override

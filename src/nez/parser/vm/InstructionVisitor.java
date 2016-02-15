@@ -67,8 +67,6 @@ public abstract class InstructionVisitor {
 
 	public abstract void visitRSet(Moz86.RSet inst); //
 
-	public abstract void visitNotEOF(Moz86.NotEOF inst); // not EOF
-
 	/* Dispatch */
 
 	public abstract void visitDispatch(Moz86.Dispatch inst); //

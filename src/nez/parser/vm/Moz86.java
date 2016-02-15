@@ -834,33 +834,6 @@ public class Moz86 {
 		}
 	}
 
-	public final static class NotEOF extends AbstAny {
-		public NotEOF(MozInst next) {
-			super(MozSet.NAny, null, next);
-		}
-
-		@Override
-		public void visit(InstructionVisitor v) {
-			v.visitNotEOF(this);
-		}
-
-		@Override
-		public MozInst execMoz(MozMachine sc) throws TerminationException {
-			if (sc.hasUnconsumed()) {
-				return next;
-			}
-			return sc.xFail();
-		}
-
-		@Override
-		public MozInst exec(ParserMachineContext sc) throws TerminationException {
-			if (sc.eof()) {
-				return sc.xFail();
-			}
-			return next;
-		}
-	}
-
 	static abstract class AbstSet extends MozInst {
 		public final boolean[] byteSet;
 
