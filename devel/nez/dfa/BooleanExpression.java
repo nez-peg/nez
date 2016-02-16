@@ -3,6 +3,9 @@ package nez.dfa;
 import java.util.HashSet;
 
 public class BooleanExpression {
+
+	public int bddID;
+
 	public BooleanExpression deepCopy() {
 		System.out.println("WARNING");
 		return this.deepCopy();

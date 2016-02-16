@@ -8,7 +8,7 @@ import nez.parser.io.StringSource;
 
 public class DFA {
 	private HashSet<State> S = null;
-	private TreeSet<Transition> tau = null;
+	public TreeSet<Transition> tau = null;
 	private State f = null;
 	private HashSet<State> F = null;
 
@@ -25,7 +25,7 @@ public class DFA {
 			this.S.add(new State(state.getID()));
 		}
 		for (Transition transition : tau) {
-			this.tau.add(new Transition(transition.getSrc(), transition.getDst(), transition.getLabel(), transition.getPredicate()));
+			this.tau.add(new Transition(transition.getSrc(), transition.getDst(), transition.getLabel(), transition.getPredicate(), transition.getTheOthers()));
 		}
 		this.f = new State(f.getID());
 		for (State state : F) {
@@ -74,7 +74,7 @@ public class DFA {
 		}
 
 		for (Transition transition : dfa.getTau()) {
-			stateTransitionFunction.add(new Transition(transition.getDst(), transition.getSrc(), transition.getLabel(), transition.getPredicate()));
+			stateTransitionFunction.add(new Transition(transition.getDst(), transition.getSrc(), transition.getLabel(), transition.getPredicate(), transition.getTheOthers()));
 		}
 
 		for (State state : dfa.getF()) {
@@ -110,6 +110,14 @@ public class DFA {
 		}
 
 		return getF().contains(new State(stateID));
+	}
+
+	public String pexec(StringSource context) {
+		return null;
+	}
+
+	public DFA minimize_Hopcroft() {
+		return null;
 	}
 
 }

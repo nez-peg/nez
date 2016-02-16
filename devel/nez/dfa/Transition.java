@@ -6,6 +6,7 @@ public class Transition implements Comparable<Transition> {
 	private int label; // any character -> -2 empty -> ε(-1), otherwise ->
 						// alphabet
 	private int predicate; // and predicate : 0, not predicate : 1
+	private boolean theOthers = false;
 
 	public Transition() {
 
@@ -16,6 +17,9 @@ public class Transition implements Comparable<Transition> {
 		this.dst = new State(dst);
 		this.label = label;
 		this.predicate = predicate;
+		if (label == AFA.theOthers) {
+			this.theOthers = true;
+		}
 	}
 
 	public Transition(State src, State dst, int label, int predicate) {
@@ -23,6 +27,25 @@ public class Transition implements Comparable<Transition> {
 		this.dst = new State(dst.getID());
 		this.label = label;
 		this.predicate = predicate;
+		if (label == AFA.theOthers) {
+			this.theOthers = true;
+		}
+	}
+
+	public Transition(int src, int dst, int label, int predicate, boolean theOthers) {
+		this.src = new State(src);
+		this.dst = new State(dst);
+		this.label = label;
+		this.predicate = predicate;
+		this.theOthers = theOthers;
+	}
+
+	public Transition(State src, State dst, int label, int predicate, boolean theOthers) {
+		this.src = new State(src.getID());
+		this.dst = new State(dst.getID());
+		this.label = label;
+		this.predicate = predicate;
+		this.theOthers = theOthers;
 	}
 
 	public void setSrc(int ID) {
@@ -57,6 +80,10 @@ public class Transition implements Comparable<Transition> {
 		return this.predicate;
 	}
 
+	public boolean getTheOthers() {
+		return this.theOthers;
+	}
+
 	@Override
 	public String toString() {
 		if (this.label == AFA.epsilon) {
@@ -69,6 +96,8 @@ public class Transition implements Comparable<Transition> {
 			StringBuilder sb = new StringBuilder("((" + src + ",");
 			if (this.label == AFA.anyCharacter) {
 				sb.append(new StringBuilder("any"));
+			} else if (this.label == AFA.theOthers) {
+				sb.append(new StringBuilder("other"));
 			} else {
 				sb.append(new StringBuilder((char) this.label));
 			}
