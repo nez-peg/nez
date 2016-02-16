@@ -805,7 +805,8 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 				} else {
 					Verbose(sub.toString());
 				}
-				Return(f);
+				Statement(f);
+				Break();
 				EndCase();
 			}
 			EndSwitch();
@@ -1071,6 +1072,9 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 
 		@Override
 		public Object visitEndTree(Nez.EndTree e, Object a) {
+			if (e.tag != null) {
+				Statement(_Func("tagTree", _symbol(e.tag)));
+			}
 			Statement(_Func("endTree", _Null(), _Null(), _int(e.shift)));
 			return null;
 		}
