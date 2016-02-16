@@ -8,8 +8,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.TreeSet;
 
-// AFA を DFA に変換する
+//AFA を DFA に変換する
 public class DFAConverter {
+
+	private boolean showExecTimes = false;
 
 	private int theNumberOfStates;
 	private AFA afa = null;
@@ -94,9 +96,12 @@ public class DFAConverter {
 				return new And(((predicateType.get(0) == 1) ? new Not(tmp) : tmp), new LogicVariable(be.getID()));
 			} else {
 				// if (epsilon.size() != 1) {
-				// System.out.println("FATAL ERROR : epsilonExpansionLogicVariable : predicate and epsilon.size() = "
+				// System.out.println("FATAL ERROR :
+				// epsilonExpansionLogicVariable : predicate and epsilon.size()
+				// = "
 				// + epsilon.size() +
-				// " : epsilon.size() must be 1 or My understanding is a little bit wrong");
+				// " : epsilon.size() must be 1 or My understanding is a little
+				// bit wrong");
 				// }
 				if (epsilon.size() == 1) {
 					BooleanExpression left = epsilonExpansion(predicate.get(0));
@@ -280,8 +285,12 @@ public class DFAConverter {
 
 			// System.out.println("lf = " + lf);
 			// System.out.println("epsilon expansion lf = " + ef);
-			deq.addFirst(ef);
+
 			int bddID = bdd.build(ef);
+			ef.bddID = bddID;
+
+			deq.addFirst(ef);
+
 			// System.out.println(bddID + " => " + vertexID);
 			f = new State(vertexID);
 			S.add(new State(vertexID));
@@ -291,45 +300,102 @@ public class DFAConverter {
 			BDDIDtoVertexID.put(bddID, vertexID++);
 		}
 
+		HashMap<String, Integer> cacheVertexID = new HashMap<String, Integer>();
 		while (!deq.isEmpty()) {
 			BooleanExpression be = deq.poll();
-
+			// System.out.println("-----" + be);
+			// System.out.println("BDD ID = " + be.bddID);
 			if (be instanceof LogicVariable && (((LogicVariable) be).isFalse() || ((LogicVariable) be).isTrue())) {
 				continue;
 			}
 
 			// for (char c = '!'; c <= '~'; c++) {
 			// for (char c = 'a'; c <= 'd'; c++) {
+
+			int src = BDDIDtoVertexID.get(be.bddID);
 			for (int i = 0; i < 256; i++) {
 				char c = (char) i;
 				// System.out.println("---");
 				// System.out.println("be = " + be + "," + c);
+				// System.out.println("transit --START");
+				long t = System.nanoTime();
 				BooleanExpression transitBe = transit(be, c);
+				long t2 = System.nanoTime();
+				if (showExecTimes) {
+					System.out.println("transit time           : " + (t2 - t));
+				}
+
+				// System.out.println("transit --END");
 				// System.out.println("transitBe = " + transitBe);
 
 				if (be instanceof LogicVariable && (((LogicVariable) be).isFalse() || ((LogicVariable) be).isTrue())) {
 					continue;
 				}
 
+				// System.out.println("epsilonExpansion --START");
+
+				t = System.nanoTime();
 				BooleanExpression epsilonExpansionTransitBe = epsilonExpansion(transitBe);
+				t2 = System.nanoTime();
+				if (showExecTimes) {
+					System.out.println("epsilon Expansion time : " + (t2 - t));
+				}
+
+				if (cacheVertexID.containsKey(epsilonExpansionTransitBe.toString())) {
+					int dst = cacheVertexID.get(epsilonExpansionTransitBe.toString());
+					tau.add(new Transition(src, dst, c, -1));
+					continue;
+				}
+
+				// System.out.println("epsilonExpansion --END");
 				// BooleanExpression epsilonExpansionTransitBe =
 				// epsilonExpansionWithEpsilonCycle(transitBe);
 
 				// System.out.println("eetb = " + epsilonExpansionTransitBe);
+				// System.out.println("bdd.build --START");
+				t = System.nanoTime();
 				int bddID = bdd.build(epsilonExpansionTransitBe);
+				t2 = System.nanoTime();
+				if (showExecTimes) {
+					System.out.println("bdd.build time         : " + (t2 - t));
+				}
+				epsilonExpansionTransitBe.bddID = bddID;
+
+				// System.out.println("bdd.build --END");
 				// System.out.println("bddID = " + bddID +
 				// " already exists?? -> " + BDDIDtoVertexID.containsKey(new
 				// Integer(bddID)));
 
-				int src = BDDIDtoVertexID.get(bdd.build(be));
+				// System.out.println("bdd.build(2) --START");
+				// int src = BDDIDtoVertexID.get(bdd.build(be));
+				t = System.nanoTime();
+				if (!BDDIDtoVertexID.containsKey(be.bddID)) {
+					System.out.println("ERROR :: DFAConverter.convert :: BDDIDtoVertexID does not contain " + be.bddID);
+				}
+
+				t2 = System.nanoTime();
+				if (showExecTimes) {
+					System.out.println("get time               : " + (t2 - t));
+				}
+
+				// System.out.println("bdd.build(2) --END");
 				int dst = -1;
 				if (!BDDIDtoVertexID.containsKey(new Integer(bddID))) { // 初めて現れた状態ならば追加する
-					System.out.println("vertexID = " + vertexID);
+					// System.out.println("vertexID = " + vertexID);
 					S.add(new State(vertexID));
+					// System.out.println("epsilonExpansionTransitBe.eval --START");
+					t = System.nanoTime();
 					if (epsilonExpansionTransitBe.eval(afa.getF(), afa.getL())) {
 						F.add(new State(vertexID));
 					}
+					t2 = System.nanoTime();
+					if (showExecTimes) {
+						System.out.println("eval time              : " + (t2 - t));
+					}
+
+					// System.out.println("epsilonExpansionTransitBe.eval --END");
 					dst = vertexID;
+					cacheVertexID.put(epsilonExpansionTransitBe.toString(), vertexID);
 					BDDIDtoVertexID.put(bddID, vertexID++);
 					deq.addLast(epsilonExpansionTransitBe);
 				} else {
@@ -428,8 +494,11 @@ public class DFAConverter {
 			if (hasOtherwise) {
 				// System.out.println(be + " -> FATAL SUPPORT : " +
 				// predicate.get(0));
-				// System.out.println("FATAL ERROR : epsilonExpansionLogicVariable : predicate.size() == 1 && hasOtherwise");
-				// System.out.println("WARNING : epsilonExpansionLogicVariable : predicate.size() == 1 && hasOtherwise");
+				// System.out.println("FATAL ERROR :
+				// epsilonExpansionLogicVariable : predicate.size() == 1 &&
+				// hasOtherwise");
+				// System.out.println("WARNING : epsilonExpansionLogicVariable :
+				// predicate.size() == 1 && hasOtherwise");
 			}
 			if (epsilon.isEmpty()) {
 				// BooleanExpression tmp =
@@ -439,9 +508,12 @@ public class DFAConverter {
 				return new And(((predicateType.get(0) == 1) ? new Not(tmp) : tmp), new LogicVariable(-be.getID()));
 			} else {
 				// if (epsilon.size() != 1) {
-				// System.out.println("FATAL ERROR : epsilonExpansionLogicVariable : predicate and epsilon.size() = "
+				// System.out.println("FATAL ERROR :
+				// epsilonExpansionLogicVariable : predicate and epsilon.size()
+				// = "
 				// + epsilon.size() +
-				// " : epsilon.size() must be 1 or My understanding is a little bit wrong");
+				// " : epsilon.size() must be 1 or My understanding is a little
+				// bit wrong");
 				// }
 				if (epsilon.size() == 1) {
 					// BooleanExpression left =
