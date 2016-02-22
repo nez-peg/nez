@@ -1,0 +1,36 @@
+/**
+ * vmnez
+ *
+ */
+
+Start      = { ($(Oprand) / $(Opcode) / COMMENT)* #Source}
+Oprand     = {'oprand' S+ $name(Name) S+ $code(Expression) #Oprand}
+Name       = { [A-Za-z0-9_]+ #Name}
+Expression = { (!'\n' .)* #Expression } LF
+Opcode     = { 'opcode' S+ $name(Name) $params(Param) S* LF $code(Code) #Opcode}
+Param      = { (S+ $(Name))* #List }
+Code       = { ('\t' (!'\n' .)* LF)* #Code}
+COMMENT    = (!'\n' .)* LF
+LF = '\r'? '\n'
+S = [ \t]
+
+example Oprand '''
+oprand jumpTable 'L' [0-9]+ (',' 'L' [0-9]+)*
+oprand jumpTable 'L' [0-9]+ (',' 'L' [0-9]+)*
+'''
+
+example Opcode '''
+opcode nop name
+	;
+'''
+
+example Start '''
+; 3. define void dump_T(T a);
+oprand name [A-Za-z0-9_]+
+opcode sopen
+opcode sclose
+	return ;
+opcode nop
+;
+'''
+

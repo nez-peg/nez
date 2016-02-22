@@ -74,19 +74,20 @@ public final class Parser {
 		return matched;
 	}
 
-	public final Object perform(Source s, Tree<?> proto) {
+	@SuppressWarnings("unchecked")
+	public final <T extends Tree<T>> T perform(Source s, T proto) {
 		if (strategy.Moz) {
 			// Verbose.println("ClassicMoz");
-			return perform(this.newParserContext(s, proto));
+			return (T) perform(this.newParserContext(s, proto));
 		}
 		// Verbose.println("FT86");
-		ParserMachineContext ctx = new ParserMachineContext(s, proto);
+		ParserMachineContext<T> ctx = new ParserMachineContext<T>(s, proto);
 		ParserCode<?> code = this.getParserCode();
 		ctx.initMemoTable(strategy.SlidingWindow, code.getMemoPointSize());
 		// if (prof != null) {
 		// context.startProfiling(prof);
 		// }
-		Tree<?> matched = code.exec(ctx);
+		T matched = code.exec(ctx);
 		// if (prof != null) {
 		// context.doneProfiling(prof);
 		// }
@@ -133,18 +134,17 @@ public final class Parser {
 		return match(CommonSource.newStringSource(str));
 	}
 
-	public Tree<?> parse(Source source, Tree<?> proto) {
-		ParserInstance context = this.newParserContext(source, proto);
-		return (Tree<?>) this.perform(source, proto);
+	public <T extends Tree<T>> T parse(Source source, T proto) {
+		return this.perform(source, proto);
 	}
 
 	public final CommonTree parse(Source sc) {
-		return (CommonTree) this.parse(sc, new CommonTree());
+		return this.parse(sc, new CommonTree());
 	}
 
 	public final CommonTree parse(String str) {
 		Source sc = CommonSource.newStringSource(str);
-		return (CommonTree) this.parse(sc, new CommonTree());
+		return this.parse(sc, new CommonTree());
 	}
 
 	/* Errors */

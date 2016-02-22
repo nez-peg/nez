@@ -12,6 +12,7 @@ import nez.lang.Productions;
 import nez.lang.Productions.NonterminalReference;
 import nez.lang.Typestate;
 import nez.lang.Typestate.TypestateAnalyzer;
+import nez.parser.vm.Moz86;
 import nez.parser.vm.MozInst;
 import nez.parser.vm.ParserMachineContext;
 import nez.util.UList;
@@ -45,7 +46,26 @@ public abstract class ParserCode<T extends Instruction> {
 		return codeList.size();
 	}
 
-	public final Tree<?> exec(ParserMachineContext ctx) {
+	/* dump */
+
+	public void dump() {
+		for (T inst : codeList) {
+			MozInst in = (MozInst) inst;
+			if (in instanceof Moz86.Nop) {
+				System.out.println(((Moz86.Nop) in).name);
+				continue;
+			}
+			if (in.joinPoint) {
+				System.out.println("L" + in.id);
+			}
+			System.out.println("\t" + inst);
+			if (!in.isIncrementedNext()) {
+				System.out.println("\tjump L" + in.next.id);
+			}
+		}
+	}
+
+	public final <E extends Tree<E>> E exec(ParserMachineContext<E> ctx) {
 		int ppos = (int) ctx.getPosition();
 		MozInst code = (MozInst) this.getStartInstruction();
 		boolean result = exec(ctx, code);
@@ -55,7 +75,7 @@ public abstract class ParserCode<T extends Instruction> {
 		return result ? ctx.left : null;
 	}
 
-	private boolean exec(ParserMachineContext ctx, MozInst inst) {
+	private <E extends Tree<E>> boolean exec(ParserMachineContext<E> ctx, MozInst inst) {
 		MozInst cur = inst;
 		try {
 			while (true) {

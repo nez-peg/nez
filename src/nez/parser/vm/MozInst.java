@@ -31,7 +31,7 @@ public abstract class MozInst implements Instruction {
 
 	public abstract MozInst execMoz(MozMachine sc) throws TerminationException;
 
-	public abstract MozInst exec(ParserMachineContext sc) throws TerminationException;
+	public abstract MozInst exec(ParserMachineContext<?> sc) throws TerminationException;
 
 	protected static String label(MozInst inst) {
 		return "L" + inst.id;
@@ -39,10 +39,6 @@ public abstract class MozInst implements Instruction {
 
 	public final String getName() {
 		return this.getClass().getSimpleName();
-	}
-
-	protected String getOperand() {
-		return null;
 	}
 
 	public Expression getExpression() {

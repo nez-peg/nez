@@ -1,31 +1,30 @@
 package nez.parser;
 
-import nez.ast.CommonTree;
 import nez.ast.Source;
 import nez.ast.Symbol;
 import nez.ast.Tree;
 import nez.parser.io.StringSource;
 import nez.util.StringUtils;
 
-public class ParserContext {
+public class ParserContext<T extends Tree<T>> {
 	public int pos = 0;
-	public Tree<?> left;
+	public T left;
 
-	public ParserContext(String s) {
+	public ParserContext(String s, T proto) {
 		StringSource source = new StringSource(s);
 		this.source = source;
 		inputs = source.inputs;
 		length = inputs.length - 1;
 		this.pos = 0;
-		this.left = new CommonTree();
+		this.left = proto;
 	}
 
-	protected ParserContext(Source s) {
+	protected ParserContext(Source s, T proto) {
 		source = s;
 		inputs = null;
 		length = 0;
 		this.pos = 0;
-		this.left = new CommonTree();
+		this.left = proto;
 	}
 
 	protected Source source;
@@ -118,7 +117,7 @@ public class ParserContext {
 		log(Operation.New, pos + shift, null, null);
 	}
 
-	public final void linkTree(Tree<?> parent, Symbol label) {
+	public final void linkTree(T parent, Symbol label) {
 		log(Operation.Link, 0, label, left);
 	}
 
@@ -171,7 +170,7 @@ public class ParserContext {
 		this.backLog(start.prev);
 	}
 
-	public final Tree<?> newTree(Symbol tag, int start, int end, int n, String value) {
+	public final T newTree(Symbol tag, int start, int end, int n, String value) {
 		if (tag == null) {
 			tag = n == 0 ? Symbol.tokenTag : Symbol.treeTag;
 		}
@@ -419,21 +418,22 @@ public class ParserContext {
 	public final static int SuccFound = 1;
 	public final static int FailFound = 2;
 
-	private static class MemoEntry {
+	private static class MemoEntry<E extends Tree<E>> {
 		long key = -1;
 		public int consumed;
-		public Tree<?> memoTree;
+		public E memoTree;
 		public int result;
 		public int stateValue = 0;
 	}
 
-	private MemoEntry[] memoArray = null;
+	private MemoEntry<T>[] memoArray = null;
 	private int shift = 0;
 
+	@SuppressWarnings("unchecked")
 	public void initMemoTable(int w, int n) {
 		this.memoArray = new MemoEntry[w * n + 1];
 		for (int i = 0; i < this.memoArray.length; i++) {
-			this.memoArray[i] = new MemoEntry();
+			this.memoArray[i] = new MemoEntry<T>();
 			this.memoArray[i].key = -1;
 			this.memoArray[i].result = NotFound;
 		}
@@ -448,7 +448,7 @@ public class ParserContext {
 	public final int lookupMemo(int memoPoint) {
 		long key = longkey(pos, memoPoint, shift);
 		int hash = (int) (key % memoArray.length);
-		MemoEntry m = this.memoArray[hash];
+		MemoEntry<T> m = this.memoArray[hash];
 		if (m.key == key) {
 			this.pos += m.consumed;
 			return m.result;
@@ -459,7 +459,7 @@ public class ParserContext {
 	public final int lookupTreeMemo(int memoPoint) {
 		long key = longkey(pos, memoPoint, shift);
 		int hash = (int) (key % memoArray.length);
-		MemoEntry m = this.memoArray[hash];
+		MemoEntry<T> m = this.memoArray[hash];
 		if (m.key == key) {
 			this.pos += m.consumed;
 			this.left = m.memoTree;
@@ -471,7 +471,7 @@ public class ParserContext {
 	public void memoSucc(int memoPoint, int ppos) {
 		long key = longkey(ppos, memoPoint, shift);
 		int hash = (int) (key % memoArray.length);
-		MemoEntry m = this.memoArray[hash];
+		MemoEntry<T> m = this.memoArray[hash];
 		m.key = key;
 		m.memoTree = left;
 		m.consumed = pos - ppos;
@@ -483,7 +483,7 @@ public class ParserContext {
 	public void memoTreeSucc(int memoPoint, int ppos) {
 		long key = longkey(ppos, memoPoint, shift);
 		int hash = (int) (key % memoArray.length);
-		MemoEntry m = this.memoArray[hash];
+		MemoEntry<T> m = this.memoArray[hash];
 		m.key = key;
 		m.memoTree = left;
 		m.consumed = pos - ppos;
@@ -495,7 +495,7 @@ public class ParserContext {
 	public void memoFail(int memoPoint) {
 		long key = longkey(pos, memoPoint, shift);
 		int hash = (int) (key % memoArray.length);
-		MemoEntry m = this.memoArray[hash];
+		MemoEntry<T> m = this.memoArray[hash];
 		m.key = key;
 		m.memoTree = left;
 		m.consumed = 0;
@@ -508,7 +508,7 @@ public class ParserContext {
 	public final int lookupStateMemo(int memoPoint) {
 		long key = longkey(pos, memoPoint, shift);
 		int hash = (int) (key % memoArray.length);
-		MemoEntry m = this.memoArray[hash];
+		MemoEntry<T> m = this.memoArray[hash];
 		if (m.key == key) {
 			this.pos += m.consumed;
 			return m.result;
@@ -519,7 +519,7 @@ public class ParserContext {
 	public final int lookupStateTreeMemo(int memoPoint) {
 		long key = longkey(pos, memoPoint, shift);
 		int hash = (int) (key % memoArray.length);
-		MemoEntry m = this.memoArray[hash];
+		MemoEntry<T> m = this.memoArray[hash];
 		if (m.key == key && m.stateValue == this.stateValue) {
 			this.pos += m.consumed;
 			this.left = m.memoTree;
@@ -531,7 +531,7 @@ public class ParserContext {
 	public void memoStateSucc(int memoPoint, int ppos) {
 		long key = longkey(ppos, memoPoint, shift);
 		int hash = (int) (key % memoArray.length);
-		MemoEntry m = this.memoArray[hash];
+		MemoEntry<T> m = this.memoArray[hash];
 		m.key = key;
 		m.memoTree = left;
 		m.consumed = pos - ppos;
@@ -543,7 +543,7 @@ public class ParserContext {
 	public void memoStateTreeSucc(int memoPoint, int ppos) {
 		long key = longkey(ppos, memoPoint, shift);
 		int hash = (int) (key % memoArray.length);
-		MemoEntry m = this.memoArray[hash];
+		MemoEntry<T> m = this.memoArray[hash];
 		m.key = key;
 		m.memoTree = left;
 		m.consumed = pos - ppos;
@@ -555,7 +555,7 @@ public class ParserContext {
 	public void memoStateFail(int memoPoint) {
 		long key = longkey(pos, memoPoint, shift);
 		int hash = (int) (key % memoArray.length);
-		MemoEntry m = this.memoArray[hash];
+		MemoEntry<T> m = this.memoArray[hash];
 		m.key = key;
 		m.memoTree = left;
 		m.consumed = 0;

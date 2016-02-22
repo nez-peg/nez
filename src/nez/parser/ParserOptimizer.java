@@ -37,6 +37,7 @@ public class ParserOptimizer {
 
 		long t1 = System.nanoTime();
 		new CheckerVisitor().check(start, boolMap);
+		grammar.dump();
 		long t2 = System.nanoTime();
 		if (strategy.Optimization) {
 			// Verbose.println("optimizing %s ..", strategy);
@@ -293,6 +294,8 @@ public class ParserOptimizer {
 			// }
 
 			String uname = conds.conditionalName(p, innerState == Typestate.Unit);
+			// System.out.println("@@@@@ uname=" + p.getLocalName() + ", " +
+			// uname);
 			if (!this.isVisited(uname)) {
 				checkFirstVisitedProduction(uname, p);
 			}

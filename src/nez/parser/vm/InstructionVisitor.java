@@ -3,11 +3,13 @@ package nez.parser.vm;
 public abstract class InstructionVisitor {
 
 	/* Machine Control */
-	public abstract void visitNop(Moz86.Nop inst); // 7-bit
+	public abstract void visitNop(Moz86.Nop inst);
 
-	public abstract void visitExit(Moz86.Exit inst); // 7-bit only
+	public abstract void visitExit(Moz86.Exit inst);
 
 	public abstract void visitCov(Moz86.Cov inst);
+
+	public abstract void visitTrap(Moz86.Trap inst);
 
 	/* Control */
 

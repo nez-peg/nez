@@ -3,9 +3,9 @@ package nez.parser.vm;
 import nez.ast.Source;
 import nez.ast.Tree;
 
-public class ParserMachineProfiler extends ParserMachineContext {
+public class ParserMachineProfiler<T extends Tree<T>> extends ParserMachineContext<T> {
 
-	public ParserMachineProfiler(Source source, Tree<?> proto) {
+	public ParserMachineProfiler(Source source, T proto) {
 		super(source, proto);
 	}
 

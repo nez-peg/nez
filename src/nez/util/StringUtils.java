@@ -1,6 +1,7 @@
 package nez.util;
 
 import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
 
 import nez.lang.Bytes;
 
@@ -9,6 +10,7 @@ public abstract class StringUtils {
 	public final static String DefaultEncoding = "UTF8";
 
 	private final static int E = 1;
+
 	final static int[] utf8LengthMatrix = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E,
 			E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3,
@@ -33,6 +35,18 @@ public abstract class StringUtils {
 		return text.getBytes();
 	}
 
+	public final static void appendUtf8(StringBuilder sb, byte[] utf8) {
+		String s = newString(utf8);
+		if (Arrays.equals(utf8, toUtf8(s))) {
+			appendQuatedString(sb, '"', s, '"');
+		} else {
+			sb.append("0x");
+			for (byte c : utf8) {
+				sb.append(String.format("%02x", c & 0xff));
+			}
+		}
+	}
+
 	public final static int lengthOfUtf8(int ch) {
 		return StringUtils.utf8LengthMatrix[ch];
 	}
@@ -43,11 +57,11 @@ public abstract class StringUtils {
 
 	public final static String quoteString(char openChar, String text, char closeChar) {
 		StringBuilder sb = new StringBuilder();
-		StringUtils.formatQuoteString(sb, openChar, text, closeChar);
+		StringUtils.appendQuatedString(sb, openChar, text, closeChar);
 		return sb.toString();
 	}
 
-	public final static void formatQuoteString(StringBuilder sb, char openChar, String text, char closeChar) {
+	public final static void appendQuatedString(StringBuilder sb, char openChar, String text, char closeChar) {
 		char slashChar = '\\';
 		sb.append(openChar);
 		int i = 0;
@@ -307,8 +321,9 @@ public abstract class StringUtils {
 		}
 	}
 
-	public final static String stringfyBitmap(boolean[] b) {
-		StringBuilder sb = new StringBuilder();
+	private final static char[] HexChar = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
+
+	public final static void appendBitSet(StringBuilder sb, boolean[] b) {
 		int end = 0;
 		for (int c = 0; c < b.length; c++) {
 			if (b[c]) {
@@ -317,15 +332,12 @@ public abstract class StringUtils {
 		}
 		for (int offset = 0; offset < end; offset += 4) {
 			if (offset + 3 < b.length) {
-				appendBitmap(sb, b, offset);
+				appendBitSet(sb, b, offset);
 			}
 		}
-		return sb.toString();
 	}
 
-	private final static char[] HexChar = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
-
-	private static void appendBitmap(StringBuilder sb, boolean[] b, int offset) {
+	private static void appendBitSet(StringBuilder sb, boolean[] b, int offset) {
 		int n = 0;
 		if (b[offset + 0]) {
 			n |= (1 << 3);
@@ -340,6 +352,12 @@ public abstract class StringUtils {
 			n |= 1;
 		}
 		sb.append(HexChar[n]);
+	}
+
+	public final static String stringfyBitmap(boolean[] b) {
+		StringBuilder sb = new StringBuilder();
+		appendBitSet(sb, b);
+		return sb.toString();
 	}
 
 	public static final boolean[] parseByteMap(String text) {

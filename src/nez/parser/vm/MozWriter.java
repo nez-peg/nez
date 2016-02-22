@@ -64,6 +64,7 @@ import nez.parser.vm.Moz86.TPush;
 import nez.parser.vm.Moz86.TReplace;
 import nez.parser.vm.Moz86.TStart;
 import nez.parser.vm.Moz86.TTag;
+import nez.parser.vm.Moz86.Trap;
 import nez.util.StringUtils;
 import nez.util.Verbose;
 
@@ -389,8 +390,13 @@ public class MozWriter extends InstructionVisitor {
 
 	@Override
 	public void visitCov(Cov inst) {
-		this.write_u16(inst.id);
-		this.write_b(inst.start);
+		this.write_u16(inst.uid);
+		this.write_b(inst.state);
+	}
+
+	@Override
+	public void visitTrap(Trap inst) {
+		this.write_u16(inst.uid);
 	}
 
 	@Override

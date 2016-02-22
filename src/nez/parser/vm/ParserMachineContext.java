@@ -5,17 +5,14 @@ import nez.ast.Symbol;
 import nez.ast.Tree;
 import nez.parser.ParserContext;
 
-public class ParserMachineContext extends ParserContext {
+public class ParserMachineContext<T extends Tree<T>> extends ParserContext<T> {
 
-	public ParserMachineContext(String s) {
-		super(s);
+	public ParserMachineContext(String s, T proto) {
+		super(s, proto);
 	}
 
-	public ParserMachineContext(Source source, Tree<?> proto) {
-		super(source);
-		if (proto != null) {
-			this.left = proto;
-		}
+	public ParserMachineContext(Source source, T proto) {
+		super(source, proto);
 		initVM();
 	}
 
@@ -219,19 +216,21 @@ public class ParserMachineContext extends ParserContext {
 		s.ref = this.saveLog();
 	}
 
+	@SuppressWarnings("unchecked")
 	public final void xTLink(Symbol label) {
 		StackData s = this.popStack();
 		this.backLog(s.ref);
 		s = this.popStack();
-		this.linkTree((Tree<?>) s.ref, label);
-		this.left = (Tree<?>) s.ref;
+		this.linkTree((T) s.ref, label);
+		this.left = (T) s.ref;
 	}
 
+	@SuppressWarnings("unchecked")
 	public final void xTPop() {
 		StackData s = this.popStack();
 		this.backLog(s.ref);
 		s = this.popStack();
-		this.left = (Tree<?>) s.ref;
+		this.left = (T) s.ref;
 	}
 
 	public final void xSOpen() {
@@ -242,6 +241,13 @@ public class ParserMachineContext extends ParserContext {
 	public final void xSClose() {
 		StackData s = this.popStack();
 		this.backSymbolPoint(s.value);
+	}
+
+	/* ----------------------------------------------------------------- */
+	/* Trap */
+
+	public final void trap(int uid) {
+
 	}
 
 }

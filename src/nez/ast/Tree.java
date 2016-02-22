@@ -14,12 +14,12 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements
 	protected Source source;
 	protected int pos;
 	protected int length;
-	protected Object value;
 	protected Symbol[] labels;
 	protected E[] subTree;
+	protected Object value;
 
 	protected Tree() {
-		this.tag = Symbol.unique("prototype");
+		this.tag = Symbol.NullSymbol;
 		this.source = null;
 		this.pos = 0;
 		this.length = 0;
@@ -100,8 +100,8 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements
 		this.tag = tag;
 	}
 
-	public final boolean is(Symbol t) {
-		return t == this.getTag();
+	public final boolean is(Symbol tag) {
+		return tag == this.getTag();
 	}
 
 	@Override
@@ -158,10 +158,9 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements
 		return oldValue;
 	}
 
-	@SuppressWarnings("unchecked")
-	public final void set(int index, Symbol label, Tree<?> node) {
+	public final void set(int index, Symbol label, E node) {
 		this.labels[index] = label;
-		this.subTree[index] = (E) node;
+		this.subTree[index] = node;
 	}
 
 	public final int indexOf(Symbol label) {
@@ -224,46 +223,10 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements
 		}
 	}
 
-	@Override
-	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		this.stringfy("", null, sb);
-		return sb.toString();
-	}
+	/* Value */
 
-	protected void stringfy(String indent, Symbol label, StringBuilder sb) {
-		if (indent.length() > 0) {
-			sb.append("\n");
-		}
-		sb.append(indent);
-		if (label != null) {
-			sb.append("$");
-			sb.append(label);
-			sb.append(" = ");
-		}
-		sb.append("#");
-		if (this.getTag() != null) {
-			sb.append(this.getTag().getSymbol());
-		}
-		sb.append("[");
-		if (this.subTree == null) {
-			// sb.append(" ");
-			StringUtils.formatQuoteString(sb, '\'', this.toText(), '\'');
-		} else {
-			String nindent = "   " + indent;
-			for (int i = 0; i < this.size(); i++) {
-				if (this.subTree[i] == null) {
-					sb.append("\n");
-					sb.append(nindent);
-					sb.append("null");
-				} else {
-					this.subTree[i].stringfy(nindent, this.labels[i], sb);
-				}
-			}
-			sb.append("\n");
-			sb.append(indent);
-		}
-		sb.append("]");
+	public final byte[] getRawCharacters() {
+		return this.source.subByte(this.getSourcePosition(), this.getSourcePosition() + this.getLength());
 	}
 
 	public final Object getValue() {
@@ -271,7 +234,6 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements
 	}
 
 	public final void setValue(Object value) {
-		assert (!(value instanceof Tree<?>));
 		this.value = value;
 	}
 
@@ -294,12 +256,16 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements
 			} catch (UnsupportedEncodingException e) {
 			}
 			if (this.value == null) {
-				StringBuilder sb = new StringBuilder();
-				sb.append("0x");
-				for (byte c : tmp) {
-					sb.append(String.format("%02x", c & 0xff));
+				if (tmp != null) {
+					StringBuilder sb = new StringBuilder();
+					sb.append("0x");
+					for (byte c : tmp) {
+						sb.append(String.format("%02x", c & 0xff));
+					}
+					this.value = sb.toString();
+				} else {
+					this.value = "";
 				}
-				this.value = sb.toString();
 			}
 			return this.value.toString();
 		}
@@ -385,6 +351,48 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements
 			}
 		}
 		return token.equals(toText());
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		this.stringfy("", null, sb);
+		return sb.toString();
+	}
+
+	protected void stringfy(String indent, Symbol label, StringBuilder sb) {
+		if (indent.length() > 0) {
+			sb.append("\n");
+		}
+		sb.append(indent);
+		if (label != null) {
+			sb.append("$");
+			sb.append(label);
+			sb.append(" = ");
+		}
+		sb.append("#");
+		if (this.getTag() != null) {
+			sb.append(this.getTag().getSymbol());
+		}
+		sb.append("[");
+		if (this.subTree == null) {
+			// sb.append(" ");
+			StringUtils.appendQuatedString(sb, '\'', this.toText(), '\'');
+		} else {
+			String nindent = "   " + indent;
+			for (int i = 0; i < this.size(); i++) {
+				if (this.subTree[i] == null) {
+					sb.append("\n");
+					sb.append(nindent);
+					sb.append("null");
+				} else {
+					this.subTree[i].stringfy(nindent, this.labels[i], sb);
+				}
+			}
+			sb.append("\n");
+			sb.append(indent);
+		}
+		sb.append("]");
 	}
 
 }
