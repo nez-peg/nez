@@ -37,7 +37,7 @@ public class ParserOptimizer {
 
 		long t1 = System.nanoTime();
 		new CheckerVisitor().check(start, boolMap);
-		grammar.dump();
+		// grammar.dump();
 		long t2 = System.nanoTime();
 		if (strategy.Optimization) {
 			// Verbose.println("optimizing %s ..", strategy);
