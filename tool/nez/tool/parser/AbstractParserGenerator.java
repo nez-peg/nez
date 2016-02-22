@@ -805,7 +805,9 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 				} else {
 					Verbose(sub.toString());
 				}
-				Statement(f);
+				If(_Not(f));
+				Return(_False());
+				EndIf();
 				Break();
 				EndCase();
 			}
