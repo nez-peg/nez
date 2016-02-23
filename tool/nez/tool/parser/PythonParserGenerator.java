@@ -92,7 +92,7 @@ public class PythonParserGenerator extends AbstractParserGenerator {
 	@Override
 	protected String _Func(String name, String... args) {
 		StringBuilder sb = new StringBuilder();
-		sb.append(_state_());
+		sb.append(_state());
 		sb.append(".");
 		sb.append(name);
 		sb.append("(");
@@ -138,12 +138,12 @@ public class PythonParserGenerator extends AbstractParserGenerator {
 
 	@Override
 	protected String _argument() {
-		return _argument(_state_(), getType(_state_()));
+		return _argument(_state(), type(_state()));
 	}
 
 	@Override
 	protected String _funccall(String name) {
-		return name + "(" + _state_() + ")";
+		return name + "(" + _state() + ")";
 	}
 
 	/* Statement */
@@ -315,7 +315,7 @@ public class PythonParserGenerator extends AbstractParserGenerator {
 	}
 
 	@Override
-	protected void ConstDecl(String type, String name, String expr) {
+	protected void DeclConst(String type, String name, String expr) {
 		Statement(name + " = " + expr);
 	}
 
@@ -330,10 +330,10 @@ public class PythonParserGenerator extends AbstractParserGenerator {
 	protected void generateHeader(Grammar g) {
 		BeginFunc("parse", "text");
 		{
-			VarDecl(_state_(), "ParserContext(text)");
+			VarDecl(_state(), "ParserContext(text)");
 			If(_funccall(_funcname(g.getStartProduction())));
 			{
-				Return(_cleft_());
+				Return(_Field(_state(), _tree()));
 			}
 			EndIf();
 			Return(_Null());
@@ -341,7 +341,7 @@ public class PythonParserGenerator extends AbstractParserGenerator {
 		EndFunc();
 		BeginFunc("match", "text");
 		{
-			VarDecl(_state_(), "ParserContext(text)");
+			VarDecl(_state(), "ParserContext(text)");
 			If(_funccall(_funcname(g.getStartProduction())));
 			{
 				Return(_cpos_());

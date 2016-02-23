@@ -1,0 +1,806 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include<assert.h>
+
+struct Tree;
+struct TreeLog;
+struct MemoEntry;
+
+typedef unsigned long int symbol_t;
+
+typedef struct ParserContext {
+    const char  *inputs;
+    size_t       length;
+    const char  *pos;
+    struct Tree *left;
+    // AST
+    struct TreeLog *logs;
+    size_t          log_size;
+    size_t          unused_log;
+	// stack
+    struct Wstack  *stacks;
+    size_t          stack_size;
+    size_t          unused_stack;
+    size_t          fail_stack;
+    // Memo
+    struct MemoEntry *memoArray;
+    size_t memoSize;
+    // APIs
+	void* (*fnew)(symbol_t, const char *, size_t, size_t, void *);
+	void  (*fsub)(void *, size_t, symbol_t, void *);
+	void  (*fgc)(void *, int);
+} ParserContext;
+
+#define GCSET(c, v1, v2) c->fgc(v2, 1); c->fgc(v1, -1)
+
+/* TreeLog */
+
+#define STACKSIZE 64
+
+#define OpLink 0
+#define OpTag  1
+#define OpReplace 2
+#define OpNew 3
+#define OpNone 4
+
+typedef struct TreeLog {
+	int op;
+	void *value;
+	struct Tree *tree;
+} TreeLog;
+
+// stack
+
+typedef struct Wstack {
+	size_t value;
+	struct Tree *tree;
+} Wstack;
+
+static Wstack *unusedStack(ParserContext *c)
+{
+	if (c->stack_size == c->unused_stack) {
+		Wstack *newstack = (Wstack *)calloc(c->stack_size * 2, sizeof(struct Wstack));
+		memcpy(newstack, c->stacks, sizeof(struct Wstack) * c->stack_size);
+		c->stacks = newstack;
+		c->stack_size *= 2;
+	}
+	Wstack *s = c->stacks + c->unused_stack;
+	c->unused_stack++;
+	return s;
+}
+
+static
+void push(ParserContext *c, size_t value)
+{
+	Wstack *s = unusedStack(c);
+	s->value = value;
+	c->fgc(s->tree, -1);
+	s->tree  = NULL;
+}
+
+static
+void pushW(ParserContext *c, size_t value, struct Tree *t)
+{
+	Wstack *s = unusedStack(c);
+	s->value = value;
+	GCSET(c, s->tree, t);
+	s->tree  = t;
+}
+
+static
+Wstack *popW(ParserContext *c)
+{
+	c->unused_stack--;
+	return c->stacks + c->unused_stack;
+}
+
+/* memoization */
+
+#define NotFound    0
+#define SuccFound   1
+#define FailFound   2
+
+typedef long long int  uniquekey_t;
+
+typedef struct MemoEntry {
+    uniquekey_t key;
+    long consumed;
+	struct Tree *memoTree;
+	int result;
+	int stateValue;
+} MemoEntry;
+
+
+/* Tree */
+
+typedef struct Tree {
+    long           refc;
+    symbol_t       tag;
+    const char    *text;
+    size_t         len;
+    size_t         size;
+    symbol_t      *labels;
+    struct Tree  **childs;
+} Tree;
+
+static
+void *NEW(symbol_t tag, const char *pos, size_t len, size_t n, void *value)
+{
+    Tree *t = (Tree*)malloc(sizeof(struct Tree));
+    t->tag = tag;
+    t->text = pos;
+    t->len = len;
+    t->size = n;
+    if(n > 0) {
+        t->labels = (symbol_t*)calloc(n, sizeof(symbol_t));
+        t->childs = (struct Tree**)calloc(n, sizeof(struct Tree*));
+    }
+    else {
+        t->labels = NULL;
+        t->childs = NULL;
+    }
+    return t;
+}
+
+static
+void LINK(void *parent, size_t n, symbol_t label, void *child)
+{
+    Tree *t = (Tree*)parent;
+    t->labels[n] = label;
+    t->childs[n] = (struct Tree*)child;
+}
+
+static
+void GC(void *parent, int c)
+{
+    Tree *t = (Tree*)parent;
+	if(t == NULL) {
+		return;
+	}
+	if(c == 1) {
+		t->refc ++;
+		return;
+	}
+	t->refc --;
+	if(t->refc == 0) {
+		if(t->size > 0) {
+			size_t i = 0;
+			for(i = 0; i < t->size; i++) {
+				GC(t->childs[i], -1);
+			}
+			free(t->labels);
+			free(t->childs);
+		}
+		free(t);
+	}
+}
+
+static void ParserContext_initTreeFunc(ParserContext *c, void* (*fnew)(symbol_t, const char *, size_t, size_t, void *), void  (*fset)(void *, size_t, symbol_t, void *), void  (*fgc)(void *, int))
+{
+	if(fnew != NULL && fset != NULL && fgc != NULL) {
+		c->fnew = fnew;
+		c->fsub = fset;
+		c->fgc  = fgc;
+	}
+	else {
+    	c->fnew = NEW;
+    	c->fsub = LINK;
+    	c->fgc  = GC;
+    }
+}
+
+static
+void *nonew(symbol_t tag, const char *pos, size_t len, size_t n, void *value)
+{
+    return NULL;
+}
+
+static
+void nosub(void *parent, size_t n, symbol_t label, void *child)
+{
+}
+
+static
+void nogc(void *parent, int c)
+{
+}
+
+static void ParserContext_initNoTreeFunc(ParserContext *c)
+{
+    c->fnew = nonew;
+    c->fsub = nosub;
+    c->fgc  = nogc;
+}
+
+void cnez_dump(void *v, FILE *fp)
+{
+	Tree *t = (Tree*)v;
+	if(t == NULL) {
+		fputs("null", fp);
+		return;
+	}
+	//fprintf(fp, "{\"tag\": \"%s\"", tags(t->tag));
+}
+
+
+/* ParserContext */
+
+static ParserContext *ParserContext_new(const char *text, size_t len)
+{
+    ParserContext *c = (ParserContext*) malloc(sizeof(ParserContext));
+    c->inputs = text;
+    c->length = len;
+    c->pos = text;
+    c->left = NULL;
+    // tree
+    c->log_size = 64;
+    c->logs = (struct TreeLog*)calloc(c->log_size, sizeof(struct TreeLog));
+    c->unused_log = 0;
+    // stack
+    c->stack_size = 64;
+    c->stacks = (struct Wstack*)calloc(c->log_size, sizeof(struct Wstack));
+    c->unused_stack = 0;
+    c->fail_stack   = 0;
+    // memo
+    c->memoArray = NULL;
+    c->memoSize = 0;
+    return c;
+}
+
+static int ParserContext_eof(ParserContext *c)
+{
+    return !(c->pos < (c->inputs + c->length));
+}
+
+static int ParserContext_read(ParserContext *c)
+{
+    return (*(c->pos++) & 0xff);
+}
+
+static int ParserContext_prefetch(ParserContext *c)
+{
+    return (*c->pos & 0xff);
+}
+
+static void ParserContext_move(ParserContext *c, int shift)
+{
+    c->pos += shift;
+}
+
+static void ParserContext_back(ParserContext *c, const char *ppos)
+{
+    c->pos = ppos;
+}
+
+static int ParserContext_match(ParserContext *c, const char *text, size_t len) {
+	if (c->pos + len > c->inputs + c->length) {
+		return 0;
+	}
+	size_t i;
+	for (i = 0; i < len; i++) {
+		if (text[i] != c->pos[i]) {
+			return 0;
+		}
+	}
+	c->pos += len;
+	return 1;
+}
+
+// AST
+
+static
+void _log(ParserContext *c, int op, void *value, struct Tree *tree)
+{
+	if(!(c->unused_log < c->log_size)) {
+		TreeLog *newlogs = (TreeLog *)calloc(c->log_size * 2, sizeof(TreeLog));
+		memcpy(newlogs, c->logs, c->log_size * sizeof(TreeLog));
+		c->logs = newlogs;
+		c->log_size *= 2;
+	}
+	TreeLog *l = c->logs + c->unused_log;
+	l->op = op;
+	l->value = value;
+	assert(l->tree == NULL);
+	l->tree  = tree;
+	c->unused_log++;
+}
+
+static void ParserContext_beginTree(ParserContext *c, int shift)
+{
+    _log(c, OpNew, (void *)(c->pos + shift), NULL);
+}
+
+static void ParserContext_linkTree(ParserContext *c, void *parent, symbol_t label)
+{
+    _log(c, OpLink, (void*)label, c->left);
+    c->fgc(c->left, 1);
+}
+
+static void ParserContext_tagTree(ParserContext *c, symbol_t tag)
+{
+    _log(c, OpTag, (void*)((long)tag), NULL);
+}
+
+static void ParserContext_valueTree(ParserContext *c, void *value)
+{
+    _log(c, OpReplace, value, NULL);
+}
+
+static void ParserContext_foldTree(ParserContext *c, int shift, symbol_t label)
+{
+    _log(c, OpNew, (void*)(c->pos + shift), NULL);
+    _log(c, OpLink, (void*)label, c->left);
+    c->fgc(c->left, 1);
+}
+
+static size_t ParserContext_saveLog(ParserContext *c)
+{
+    return c->unused_log;
+}
+
+static void ParserContext_backLog(ParserContext *c, size_t unused_log)
+{
+    if (unused_log != c->unused_log) {
+		size_t i;
+		for(i = unused_log; i < c->unused_log; i++) {
+			TreeLog *l = c->logs + i;
+			if(l->op == OpLink) {
+				c->fgc(l->tree, -1);
+			}
+			l->tree = NULL;
+		}
+		c->unused_log = unused_log;
+    }
+}
+
+static void ParserContext_endTree(ParserContext *c, symbol_t tag, void *value, int shift)
+{
+    long i;
+    int objectSize = 0;
+    for(i = c->unused_log - 1; i >= 0; i--) {
+ 	   TreeLog * l = c->logs + i;
+ 	   if(l->op == OpLink) {
+	     objectSize++;
+	     continue;
+	   }
+ 	   if(l->op == OpNew) {
+ 	     break;
+ 	   }
+	   if(l->op == OpTag && tag == 0) {
+	     tag = (symbol_t)l->value;
+	   }
+	   if(l->op == OpReplace && value == NULL) {
+	     value = l->value;
+	   }
+	}
+ 	TreeLog * start = c->logs + i;
+    const char *ppos = (const char*)start->value;
+    Tree *t = c->fnew(tag, ppos, ((c->pos + shift) - ppos), objectSize, value);
+	GCSET(c, c->left, t);
+    c->left = t;
+    if (objectSize > 0) {
+        int n = 0;
+        size_t j;
+        for(j = i; j < c->unused_log; j++) {
+ 		   TreeLog * cur = c->logs + j;
+           if (cur->op == OpLink) {
+              c->fsub(c->left, n++, (symbol_t)cur->value, cur->tree);
+           }
+           cur->tree = NULL;
+        }
+    }
+    ParserContext_backLog(c, i);
+}
+
+static size_t ParserContext_saveTree(ParserContext *c)
+{
+	size_t back = c->unused_stack;
+	pushW(c, 0, c->left);
+	return back;
+}
+
+static void ParserContext_backTree(ParserContext *c, size_t back)
+{
+	Tree* t = c->stacks[back].tree;
+	if(c->left != t) {
+		GCSET(c, c->left, t);
+		c->left = t;
+	}
+	c->unused_stack = back;
+}
+
+
+//// SymbolTable ---------------------------------------------------------
+//
+//	private final static byte[] NULLSymbol = { 0, 0, 0, 0 }; // to distinguish
+//	// others
+//	private SymbolTableEntry[] tables;
+//	private int tableSize = 0;
+//	private int maxTableSize = 0;
+//
+//	private int stateValue = 0;
+//	private int stateCount = 0;
+//
+//	static final class SymbolTableEntry {
+//		int stateValue;
+//		Symbol table;
+//		long code;
+//		byte[] Symbol; // if uft8 is NULL, hidden
+//
+//		@Override
+//		public String toString() {
+//			StringBuilder sb = new StringBuilder();
+//			sb.append('[');
+//			sb.append(stateValue);
+//			sb.append(", ");
+//			sb.append(table);
+//			sb.append(", ");
+//			sb.append((Symbol == NULL) ? "<masked>" : new String(Symbol));
+//			sb.append("]");
+//			return sb.toString();
+//		}
+//	}
+//
+//	private final static long hash(byte[] utf8, int ppos, int pos) {
+//		long hashCode = 1;
+//		for (int i = ppos; i < pos; i++) {
+//			hashCode = hashCode * 31 + (utf8[i] & 0xff);
+//		}
+//		return hashCode;
+//	}
+//
+//	private final static boolean equalsBytes(byte[] utf8, byte[] b) {
+//		if (utf8.length == b.length) {
+//			for (int i = 0; i < utf8.length; i++) {
+//				if (utf8[i] != b[i]) {
+//					return false;
+//				}
+//			}
+//			return true;
+//		}
+//		return false;
+//	}
+//
+//	private final long hashInputs(int ppos, int pos) {
+//		long hashCode = 1;
+//		for (int i = ppos; i < pos; i++) {
+//			hashCode = hashCode * 31 + (byteAt(i) & 0xff);
+//		}
+//		return hashCode;
+//	}
+//
+//	private final boolean equalsInputs(int ppos, int pos, byte[] b2) {
+//		if ((pos - ppos) == b2.length) {
+//			for (int i = 0; i < b2.length; i++) {
+//				if (byteAt(ppos + i) != b2[i]) {
+//					return false;
+//				}
+//			}
+//			return true;
+//		}
+//		return false;
+//	}
+//
+//	private void initEntry(int s, int e) {
+//		for (int i = s; i < e; i++) {
+//			this.tables[i] = new SymbolTableEntry();
+//		}
+//	}
+//
+//	private void push(Symbol table, long code, byte[] utf8) {
+//		if (!(tableSize < maxTableSize)) {
+//			if (maxTableSize == 0) {
+//				maxTableSize = 128;
+//				this.tables = new SymbolTableEntry[128];
+//				initEntry(0, maxTableSize);
+//			} else {
+//				maxTableSize *= 2;
+//				SymbolTableEntry[] newtable = new SymbolTableEntry[maxTableSize];
+//				System.arraycopy(this.tables, 0, newtable, 0, tables.length);
+//				this.tables = newtable;
+//				initEntry(tables.length / 2, maxTableSize);
+//			}
+//		}
+//		SymbolTableEntry entry = tables[tableSize];
+//		tableSize++;
+//		if (entry.table == table && equalsBytes(entry.Symbol, utf8)) {
+//			// reuse state value
+//			entry.code = code;
+//			this.stateValue = entry.stateValue;
+//		} else {
+//			entry.table = table;
+//			entry.code = code;
+//			entry.Symbol = utf8;
+//			this.stateCount += 1;
+//			this.stateValue = stateCount;
+//			entry.stateValue = stateCount;
+//		}
+//	}
+//
+//	public final int saveSymbolPoint() {
+//		return this.tableSize;
+//	}
+//
+//	public final void backSymbolPoint(int savePoint) {
+//		if (this.tableSize != savePoint) {
+//			this.tableSize = savePoint;
+//			if (this.tableSize == 0) {
+//				this.stateValue = 0;
+//			} else {
+//				this.stateValue = tables[savePoint - 1].stateValue;
+//			}
+//		}
+//	}
+//
+//	public final void addSymbol(Symbol table, int ppos) {
+//		byte[] b = this.subByte(ppos, pos);
+//		push(table, hash(b, 0, b.length), b);
+//	}
+//
+//	public final void addSymbolMask(Symbol table) {
+//		push(table, 0, NULLSymbol);
+//	}
+//
+//	public final boolean exists(Symbol table) {
+//		for (int i = tableSize - 1; i >= 0; i--) {
+//			SymbolTableEntry entry = tables[i];
+//			if (entry.table == table) {
+//				return entry.Symbol != NULLSymbol;
+//			}
+//		}
+//		return false;
+//	}
+//
+//	public final boolean existsSymbol(Symbol table, byte[] Symbol) {
+//		long code = hash(Symbol, 0, Symbol.length);
+//		for (int i = tableSize - 1; i >= 0; i--) {
+//			SymbolTableEntry entry = tables[i];
+//			if (entry.table == table) {
+//				if (entry.Symbol == NULLSymbol) {
+//					return false; // masked
+//				}
+//				if (entry.code == code && equalsBytes(entry.Symbol, Symbol)) {
+//					return true;
+//				}
+//			}
+//		}
+//		return false;
+//	}
+//
+//	public final boolean matchSymbol(Symbol table) {
+//		for (int i = tableSize - 1; i >= 0; i--) {
+//			SymbolTableEntry entry = tables[i];
+//			if (entry.table == table) {
+//				if (entry.Symbol == NULLSymbol) {
+//					return false; // masked
+//				}
+//				return this.match(entry.Symbol);
+//			}
+//		}
+//		return false;
+//	}
+//
+//	public final boolean equals(Symbol table, int ppos) {
+//		for (int i = tableSize - 1; i >= 0; i--) {
+//			SymbolTableEntry entry = tables[i];
+//			if (entry.table == table) {
+//				if (entry.Symbol == NULLSymbol) {
+//					return false; // masked
+//				}
+//				return equalsInputs(ppos, pos, entry.Symbol);
+//			}
+//		}
+//		return false;
+//	}
+//
+//	public boolean contains(Symbol table, int ppos) {
+//		long code = hashInputs(ppos, pos);
+//		for (int i = tableSize - 1; i >= 0; i--) {
+//			SymbolTableEntry entry = tables[i];
+//			if (entry.table == table) {
+//				if (entry.Symbol == NULLSymbol) {
+//					return false; // masked
+//				}
+//				if (code == entry.code && equalsInputs(ppos, pos, entry.Symbol)) {
+//					return true;
+//				}
+//			}
+//		}
+//		return false;
+//	}
+//
+//	// Counter ------------------------------------------------------------
+//
+//	private int count = 0;
+//
+//	public final void scanCount(int ppos, long mask, int shift) {
+//		if (mask == 0) {
+//			String num = StringUtils.newString(subByte(ppos, pos));
+//			count = (int) Long.parseLong(num);
+//		} else {
+//			StringBuilder sb = new StringBuilder();
+//			for (int i = ppos; i < pos; i++) {
+//				sb.append(Integer.toBinaryString(inputs[i] & 0xff));
+//			}
+//			long v = Long.parseUnsignedLong(sb.toString(), 2);
+//			count = (int) ((v & mask) >> shift);
+//		}
+//	}
+//
+//	public final boolean decCount() {
+//		return count-- > 0;
+//	}
+
+// Memotable ------------------------------------------------------------
+
+static
+void ParserContext_initMemoPoint(ParserContext *c, int w, int n)
+{
+    int i;
+    c->memoSize = w * n + 1;
+    c->memoArray = (MemoEntry *)calloc(sizeof(MemoEntry), c->memoSize);
+    for (i = 0; i < c->memoSize; i++) {
+        c->memoArray[i].key = -1LL;
+    }
+}
+
+static  uniquekey_t longkey( uniquekey_t pos, int memoPoint) {
+    return ((pos << 10) | memoPoint);
+}
+
+static
+int ParserContext_lookupMemo(ParserContext *c, int memoPoint)
+{
+    uniquekey_t key = longkey((c->pos - c->inputs), memoPoint);
+    unsigned int hash = (unsigned int) (key % c->memoSize);
+    MemoEntry* m = c->memoArray + hash;
+    if (m->key == key) {
+        c->pos += m->consumed;
+        return m->result;
+    }
+    return NotFound;
+}
+
+static
+int ParserContext_lookupTreeMemo(ParserContext *c, int memoPoint)
+{
+    uniquekey_t key = longkey((c->pos - c->inputs), memoPoint);
+    unsigned int hash = (unsigned int) (key % c->memoSize);
+    MemoEntry* m = c->memoArray + hash;
+    if (m->key == key) {
+        c->pos += m->consumed;
+    	GCSET(c, c->left, m->memoTree);
+        c->left = m->memoTree;
+        return m->result;
+    }
+    return NotFound;
+}
+
+static
+void ParserContext_memoSucc(ParserContext *c, int memoPoint, const char* ppos)
+{
+     uniquekey_t key = longkey((ppos - c->inputs), memoPoint);
+    unsigned int hash = (unsigned int) (key % c->memoSize);
+    MemoEntry* m = c->memoArray + hash;
+    m->key = key;
+    GCSET(c, m->memoTree, c->left);
+    m->memoTree = c->left;
+    m->consumed = c->pos - ppos;
+    m->result = SuccFound;
+    m->stateValue = -1;
+}
+
+static
+void ParserContext_memoTreeSucc(ParserContext *c, int memoPoint, const char* ppos)
+{
+     uniquekey_t key = longkey((ppos - c->inputs), memoPoint);
+    unsigned int hash = (unsigned int) (key % c->memoSize);
+    MemoEntry* m = c->memoArray + hash;
+    m->key = key;
+    GCSET(c, m->memoTree, c->left);
+    m->memoTree = c->left;
+    m->consumed = c->pos - ppos;
+    m->result = SuccFound;
+    m->stateValue = -1;
+}
+
+static
+void ParserContext_memoFail(ParserContext *c, int memoPoint, const char* ppos)
+{
+	uniquekey_t key = longkey((ppos - c->inputs), memoPoint);
+    unsigned int hash = (unsigned int) (key % c->memoSize);
+    MemoEntry* m = c->memoArray + hash;
+    m->key = key;
+    GCSET(c, m->memoTree, c->left);
+    m->memoTree = c->left;
+    m->consumed = 0;
+    m->result = FailFound;
+    m->stateValue = -1;
+}
+
+	/* State Version */
+
+//	public final int lookupStateMemo(int memoPoint) {
+//		long key = longkey(pos, memoPoint, shift);
+//		int hash = (int) (key % memoArray.length);
+//		MemoEntry m = this.memoArray[hash];
+//		if (m.key == key) {
+//			this.pos += m.consumed;
+//			return m.result;
+//		}
+//		return NotFound;
+//	}
+//
+//	public final int lookupStateTreeMemo(int memoPoint) {
+//		long key = longkey(pos, memoPoint, shift);
+//		int hash = (int) (key % memoArray.length);
+//		MemoEntry m = this.memoArray[hash];
+//		if (m.key == key && m.stateValue == this.stateValue) {
+//			this.pos += m.consumed;
+//			this.left = m.memoTree;
+//			return m.result;
+//		}
+//		return NotFound;
+//	}
+//
+//	public void memoStateSucc(int memoPoint, int ppos) {
+//		long key = longkey(ppos, memoPoint, shift);
+//		int hash = (int) (key % memoArray.length);
+//		MemoEntry m = this.memoArray[hash];
+//		m.key = key;
+//		m.memoTree = left;
+//		m.consumed = pos - ppos;
+//		m.result = SuccFound;
+//		m.stateValue = this.stateValue;
+//		// this.CountStored += 1;
+//	}
+//
+//	public void memoStateTreeSucc(int memoPoint, int ppos) {
+//		long key = longkey(ppos, memoPoint, shift);
+//		int hash = (int) (key % memoArray.length);
+//		MemoEntry m = this.memoArray[hash];
+//		m.key = key;
+//		m.memoTree = left;
+//		m.consumed = pos - ppos;
+//		m.result = SuccFound;
+//		m.stateValue = this.stateValue;
+//		// this.CountStored += 1;
+//	}
+//
+//	public void memoStateFail(int memoPoint) {
+//		long key = longkey(pos, memoPoint, shift);
+//		int hash = (int) (key % memoArray.length);
+//		MemoEntry m = this.memoArray[hash];
+//		m.key = key;
+//		m.memoTree = left;
+//		m.consumed = 0;
+//		m.result = FailFound;
+//		m.stateValue = this.stateValue;
+//	}
+
+
+static void ParserContext_free(ParserContext *c)
+{
+	size_t i;
+    if(c->memoArray != NULL) {
+    	for(i = 0; i < c->memoSize; i++) {
+    		c->fgc(c->memoArray[i].memoTree, -1);
+    		c->memoArray[i].memoTree = NULL;
+    	}
+        free(c->memoArray);
+        c->memoArray = NULL;
+    }
+    ParserContext_backLog(c, 0);
+    free(c->logs);
+    c->logs = NULL;
+    for(i = 0; i < c->stack_size; i++) {
+    	c->fgc(c->stacks[i].tree, -1);
+    	c->stacks[i].tree = NULL;
+    }
+    free(c->stacks);
+    c->stacks = NULL;
+    free(c);
+}
+
+

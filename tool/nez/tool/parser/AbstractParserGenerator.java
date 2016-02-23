@@ -96,8 +96,10 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 	public void generate() {
 		Grammar g = this.parser.getGrammar();
 		this.generateHeader(g);
-		SymbolVisitor symbolChecker = new SymbolVisitor();
-		symbolChecker.check(g);
+		ConstVisitor constDecl = new ConstVisitor();
+		constDecl.decl(g);
+		this.generateSymbolTables();
+
 		this.generate(g);
 		this.generateFooter(g);
 		file.writeNewLine();
@@ -106,7 +108,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 
 	public void generate(Grammar g) {
 		ParserGeneratorVisitor gen = new ParserGeneratorVisitor();
-		gen.generate(g.getStartProduction(), "parse");
+		gen.generate(g.getStartProduction(), "start");
 	}
 
 	protected void Verbose(String stmt) {
@@ -123,7 +125,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		return "p" + uname.replace("!", "NOT").replace("~", "_").replace("&", "AND");
 	}
 
-	/* Variable */
+	/* Types */
 
 	protected HashMap<String, String> typeMap = new HashMap<>();
 
@@ -133,155 +135,242 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		typeMap.put(name, type);
 	}
 
-	protected String getType(String name) {
+	protected String type(String name) {
 		return typeMap.get(name);
 	}
 
 	/* Symbols */
 
-	protected HashMap<String, String> symbolMap = new HashMap<>();
+	protected boolean UniqueNumberingSymbol = true;
 
-	private String key(boolean[] b) {
-		return StringUtils.stringfyBitmap(b);
+	protected HashMap<String, String> nameMap = new HashMap<>();
+
+	protected UList<String> tagList = new UList<>(new String[8]);
+	protected HashMap<String, Integer> tagMap = new HashMap<>();
+
+	protected HashMap<String, Integer> labelMap = new HashMap<>();
+	protected UList<String> labelList = new UList<>(new String[8]);
+
+	protected UList<String> tableList = new UList<>(new String[8]);
+	protected HashMap<String, Integer> tableMap = new HashMap<>();
+
+	final String _set(boolean[] b) {
+		String key = StringUtils.stringfyBitmap(b);
+		return nameMap.get(key);
 	}
 
-	private String key(Symbol s) {
-		return "_" + s.getSymbol();
+	final void DeclSet(boolean[] b) {
+		String key = StringUtils.stringfyBitmap(b);
+		String name = nameMap.get(key);
+		if (name == null) {
+			name = _set() + nameMap.size();
+			nameMap.put(key, name);
+			DeclConst(type("$set"), name, b.length, _initBooleanArray(b));
+		}
 	}
 
-	private String key(String s) {
-		return s;
+	final String _index(byte[] b) {
+		String key = key(b);
+		return nameMap.get(key);
 	}
 
-	private String key(byte[] indexMap) {
+	final void DeclIndex(byte[] b) {
+		String key = key(b);
+		String name = nameMap.get(key);
+		if (name == null) {
+			name = _index() + nameMap.size();
+			nameMap.put(key, name);
+			DeclConst(type("$index"), name, b.length, _initByteArray(b));
+		}
+	}
+
+	private String key(byte[] b) {
 		StringBuilder sb = new StringBuilder();
-		for (byte c : indexMap) {
+		for (byte c : b) {
 			sb.append(c);
 			sb.append(",");
 		}
 		return sb.toString();
 	}
 
-	private String _symbol(boolean[] b) {
-		return symbolMap.get(key(b));
+	final String _text(byte[] text) {
+		String key = new String(text);
+		return nameMap.get(key);
 	}
 
-	protected String _symbol(Symbol s) {
-		if (s == null) {
+	final String _text(String key) {
+		if (key == null) {
 			return _Null();
 		}
-		String sym = symbolMap.get(key(s));
-		if (sym != null) {
-			return sym;
+		return nameMap.get(key);
+	}
+
+	final void DeclText(byte[] text) {
+		String key = new String(text);
+		String name = nameMap.get(key);
+		if (name == null) {
+			name = _text() + nameMap.size();
+			nameMap.put(key, name);
+			DeclConst(type("$text"), name, text.length, _initByteArray(text));
+			// DeclArity(type("$arity"), name, text.length);
+		}
+	}
+
+	// private void DeclArity(String type, String name, int arity) {
+	// if (type != null) {
+	// DeclConst(type, _arity(name), "" + arity);
+	// }
+	// }
+
+	final void DeclByteSet(String name, boolean b[]) {
+		Verbose(StringUtils.stringfyCharacterClass(b));
+		DeclConst(type(_set()), name, b.length, _initBooleanArray(b));
+	}
+
+	final void DeclIndexMap(String name, byte b[]) {
+		DeclConst(type(_index()), name, b.length, _initByteArray(b));
+	}
+
+	final String _tag(Symbol s) {
+		return _tagname(s == null ? "" : s.getSymbol());
+	}
+
+	final void DeclTag(String s) {
+		if (!tagMap.containsKey(s)) {
+			int n = tagMap.size();
+			tagMap.put(s, n);
+			tagList.add(s);
+			DeclConst(this.type("$tag"), _tagname(s), _initTag(n, s));
+		}
+	}
+
+	final String _label(Symbol s) {
+		return _labelname(s == null ? "" : s.getSymbol());
+	}
+
+	final void DeclLabel(String s) {
+		if (!labelMap.containsKey(s)) {
+			int n = labelMap.size();
+			labelMap.put(s, n);
+			labelList.add(s);
+			DeclConst(type("$label"), _labelname(s), _initLabel(n, s));
+		}
+	}
+
+	final String _table(Symbol s) {
+		return _tablename(s == null ? "" : s.getSymbol());
+	}
+
+	final void DeclTable(Symbol t) {
+		String s = t.getSymbol();
+		if (!tableMap.containsKey(s)) {
+			int n = tableMap.size();
+			tableMap.put(s, n);
+			tableList.add(s);
+			DeclConst(type("$table"), _tablename(s), _initTable(n, s));
+		}
+	}
+
+	final void generateSymbolTables() {
+		if (UniqueNumberingSymbol) {
+			generateSymbolTable("_tags", tagList);
+			generateSymbolTable("_labels", labelList);
+			generateSymbolTable("_tables", tableList);
+		}
+	}
+
+	private void generateSymbolTable(String name, UList<String> l) {
+		if (l.size() > 0) {
+			DeclConst(this.type("$string"), name, l.size(), _initStringArray(l.ArrayValues, l.size()));
+		}
+	}
+
+	protected String _prefix() {
+		return "cnez_";
+	}
+
+	protected String _quote(String s) {
+		if (s == null) {
+			return "\"\"";
 		}
 		return StringUtils.quoteString('"', s.toString(), '"');
 	}
 
-	protected String _symbol(String s) {
-		if (s == null) {
-			return _Null();
-		}
-		String sym = symbolMap.get(key(s));
-		if (sym != null) {
-			return sym;
-		}
-		return StringUtils.quoteString('"', s, '"');
-	}
-
-	protected String _bytes(byte[] utf8) {
-		return _symbol(new String(utf8));
-	}
-
-	protected String _symbol(ChoicePrediction p) {
-		return symbolMap.get(key(p.indexMap));
-	}
-
-	protected void DeclSymbol(String name, boolean b[]) {
+	protected String _initBooleanArray(boolean[] b) {
 		StringBuilder sb = new StringBuilder();
-		String type = getType(_byteSet_());
 		sb.append(_BeginArray());
-		for (int i = 0; i < 256; i++) {
+		for (int i = 0; i < b.length; i++) {
+			if (i > 0) {
+				sb.append(",");
+			}
 			if (b[i]) {
 				sb.append(_True());
 			} else {
 				sb.append(_False());
 			}
-			if (i < 255) {
-				sb.append(",");
-			}
 		}
 		sb.append(_EndArray());
-		Verbose(StringUtils.stringfyCharacterClass(b));
-		ConstDecl(type, name, sb.toString());
+		return sb.toString();
 	}
 
-	protected void DeclSymbol(String name, String value) {
-		ConstDecl("byte[]", name, "toUTF8(" + StringUtils.quoteString('"', value.toString(), '"') + ")");
-	}
-
-	protected void DeclSymbol(String name, Symbol value) {
-		ConstDecl("Symbol", name, "Symbol.unique(" + StringUtils.quoteString('"', value.toString(), '"') + ")");
-	}
-
-	protected void DeclSymbol(String name, byte b[]) {
+	protected String _initByteArray(byte[] b) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(_BeginArray());
-		for (int i = 0; i < 256; i++) {
-			sb.append(_int(b[i]));
-			if (i < 255) {
+		for (int i = 0; i < b.length; i++) {
+			if (i > 0) {
 				sb.append(",");
 			}
+			sb.append(_int(b[i]));
 		}
 		sb.append(_EndArray());
-		ConstDecl(getType(_indexMap_()), name, sb.toString());
+		return sb.toString();
 	}
 
-	class SymbolVisitor extends Expression.Visitor {
-
-		void decl(boolean[] b) {
-			String key = key(b);
-			String sym = symbolMap.get(key);
-			if (sym == null) {
-				sym = _byteSet_() + symbolMap.size();
-				symbolMap.put(key, sym);
-				DeclSymbol(sym, b);
+	protected String _initStringArray(String[] a, int size) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(_BeginArray());
+		for (int i = 0; i < size; i++) {
+			if (i > 0) {
+				sb.append(",");
 			}
+			sb.append(_quote(a[i]));
+		}
+		sb.append(_EndArray());
+		return sb.toString();
+	}
+
+	protected String _tagname(String name) {
+		return "_" + name;
+	}
+
+	protected String _labelname(String name) {
+		return "_L" + name;
+	}
+
+	protected String _tablename(String name) {
+		return "_T" + name;
+	}
+
+	protected String _initTag(int id, String s) {
+		return UniqueNumberingSymbol ? "" + id : _quote(s);
+	}
+
+	protected String _initLabel(int id, String s) {
+		return UniqueNumberingSymbol ? "" + id : _quote(s);
+	}
+
+	protected String _initTable(int id, String s) {
+		return UniqueNumberingSymbol ? "" + id : _quote(s);
+	}
+
+	class ConstVisitor extends Expression.Visitor {
+
+		ConstVisitor() {
+			DeclTag("");
+			DeclLabel("");
 		}
 
-		void decl(Symbol s) {
-			if (s != null) {
-				String key = key(s);
-				String val = symbolMap.get(key);
-				if (val == null) {
-					symbolMap.put(key, key);
-					DeclSymbol(key, s);
-				}
-			}
-		}
-
-		void decl(String s) {
-			if (s != null) {
-				String key = key(s);
-				String val = symbolMap.get(key);
-				if (val == null) {
-					String name = _utf8_() + symbolMap.size();
-					symbolMap.put(key, name);
-					DeclSymbol(name, s);
-				}
-			}
-		}
-
-		void decl(Nez.ChoicePrediction p) {
-			String key = key(p.indexMap);
-			String val = symbolMap.get(key);
-			if (val == null) {
-				String name = _indexMap_() + symbolMap.size();
-				symbolMap.put(key, name);
-				DeclSymbol(name, p.indexMap);
-			}
-		}
-
-		private Object check(Grammar g) {
+		private Object decl(Grammar g) {
 			for (Production p : g) {
 				p.getExpression().visit(this, null);
 			}
@@ -317,7 +406,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 
 		@Override
 		public Object visitByteSet(Nez.ByteSet e, Object a) {
-			decl(e.byteMap);
+			DeclSet(e.byteMap);
 			return check(e);
 		}
 
@@ -328,7 +417,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 
 		@Override
 		public Object visitMultiByte(Nez.MultiByte e, Object a) {
-			decl(new String(e.byteSeq));
+			DeclText(e.byteSeq);
 			return check(e);
 		}
 
@@ -345,7 +434,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		@Override
 		public Object visitChoice(Nez.Choice e, Object a) {
 			if (e.predicted != null) {
-				decl(e.predicted);
+				DeclIndex(e.predicted.indexMap);
 			}
 			return check(e);
 		}
@@ -382,32 +471,40 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 
 		@Override
 		public Object visitEndTree(Nez.EndTree e, Object a) {
-			decl(e.tag);
-			decl(e.value);
+			if (e.tag != null) {
+				DeclTag(e.tag.getSymbol());
+			}
+			if (e.value != null) {
+				DeclText(StringUtils.toUtf8(e.value));
+			}
 			return check(e);
 		}
 
 		@Override
 		public Object visitFoldTree(Nez.FoldTree e, Object a) {
-			decl(e.label);
+			if (e.label != null) {
+				DeclLabel(e.label.getSymbol());
+			}
 			return check(e);
 		}
 
 		@Override
 		public Object visitLinkTree(Nez.LinkTree e, Object a) {
-			decl(e.label);
+			if (e.label != null) {
+				DeclLabel(e.label.getSymbol());
+			}
 			return check(e);
 		}
 
 		@Override
 		public Object visitTag(Nez.Tag e, Object a) {
-			decl(e.tag);
+			DeclTag(e.tag.getSymbol());
 			return check(e);
 		}
 
 		@Override
 		public Object visitReplace(Nez.Replace e, Object a) {
-			decl(e.value);
+			DeclText(StringUtils.toUtf8(e.value));
 			return check(e);
 		}
 
@@ -428,26 +525,26 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 
 		@Override
 		public Object visitSymbolAction(SymbolAction e, Object a) {
-			decl(e.tableName);
+			DeclTable(e.tableName);
 			return check(e);
 		}
 
 		@Override
 		public Object visitSymbolPredicate(SymbolPredicate e, Object a) {
-			decl(e.tableName);
+			DeclTable(e.tableName);
 			return check(e);
 		}
 
 		@Override
 		public Object visitSymbolMatch(SymbolMatch e, Object a) {
-			decl(e.tableName);
+			DeclTable(e.tableName);
 			return check(e);
 		}
 
 		@Override
 		public Object visitSymbolExists(SymbolExists e, Object a) {
-			decl(e.tableName);
-			decl(e.symbol);
+			DeclTable(e.tableName);
+			DeclText(StringUtils.toUtf8(e.symbol));
 			return check(e);
 		}
 
@@ -484,6 +581,10 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		UList<String> funcList = new UList<String>(new String[128]);
 		HashMap<String, Integer> memoPointMap = new HashMap<>();
 		int generated = 0;
+
+		void generate(Production p) {
+			generate(p, _funcname(p.getUniqueName()));
+		}
 
 		void generate(Production start, String func) {
 			String f = makeFuncCall(start.getUniqueName(), start.getExpression());
@@ -529,6 +630,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		private void generateFunction(String name, Expression e) {
 			Integer memoPoint = memoPointMap.get(name);
 			Verbose(e.toString());
+			initLocal();
 			BeginFunc(name);
 			{
 				if (memoPoint != null) {
@@ -549,15 +651,15 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 					If("memo", _Eq(), "0");
 					{
 						String f = makeFuncCall(e);
-						String ppos = SavePoint(e);
+						String[] n = SaveState(e);
 						If(f);
 						{
-							Statement(_Func(memoSucc, _int(memoPoint), ppos));
+							Statement(_Func(memoSucc, _int(memoPoint), n[0]));
 							Succ();
 						}
 						Else();
 						{
-							Backtrack(e);
+							BackState(e, n);
 							Statement(_Func(memoFail, _int(memoPoint)));
 							Fail();
 						}
@@ -577,7 +679,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 
 		}
 
-		int nested = 0;
+		int nested = -1;
 
 		private void visit(Expression e, Object a) {
 			int lnested = this.nested;
@@ -599,69 +701,82 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 			}
 		}
 
+		HashMap<String, String> localMap;
+
+		private void initLocal() {
+			localMap = new HashMap<>();
+		}
+
 		private String local(String name) {
-			return nested > 0 ? name + nested : name;
+			if (!localMap.containsKey(name)) {
+				localMap.put(name, name);
+				return name;
+			}
+			return name + localMap.size();
 		}
 
-		private void InitVal(String name, String expr) {
-			String type = getType(name);
-			VarDecl(type, local(name), expr);
+		private String InitVal(String name, String expr) {
+			String type = type(name);
+			String lname = local(name);
+			VarDecl(type, lname, expr);
+			return lname;
 		}
 
-		private String savePos() {
-			InitVal(_pos_(), _cpos_());
-			return local(_pos_());
+		private String SavePos() {
+			return InitVal(_pos(), _Field(_state(), "pos"));
 		}
 
-		private void backPos() {
-			VarAssign(_cpos_(), local(_pos_()));
+		private void BackPos(String lname) {
+			VarAssign(_Field(_state(), "pos"), lname);
 		}
 
-		private String saveTree() {
-			InitVal(_left_(), _cleft_());
-			return local(_left_());
+		private String SaveTree() {
+			return InitVal(_tree(), _Func("saveTree"));
 		}
 
-		private void backTree() {
-			VarAssign(_cleft_(), local(_left_()));
+		private void BackTree(String lname) {
+			Statement(_Func("backLog", lname));
 		}
 
-		private void saveLog() {
-			InitVal(_log_(), _Func("saveLog"));
+		private String SaveLog() {
+			return InitVal(_log(), _Func("saveLog"));
 		}
 
-		private void backLog() {
-			Statement(_Func("backLog", local(_log_())));
+		private void BackLog(String lname) {
+			Statement(_Func("backLog", lname));
 		}
 
-		private void saveSymbol() {
-			InitVal(_sym_(), _Func("saveSymbolPoint"));
+		private String SaveSymbolTable() {
+			return InitVal(_sym_(), _Func("saveSymbolPoint"));
 		}
 
-		private void backSymbol() {
-			Statement(_Func("backSymbolPoint", local(_sym_())));
+		private void BackSymbolTable(String lname) {
+			Statement(_Func("backSymbolPoint", lname));
 		}
 
-		private String SavePoint(Expression inner) {
-			String pos = savePos();
+		private String[] SaveState(Expression inner) {
+			String[] names = new String[4];
+			names[0] = SavePos();
 			if (typeState.inferTypestate(inner) != Typestate.Unit) {
-				saveTree();
-				saveLog();
+				names[1] = SaveTree();
+				names[2] = SaveLog();
 			}
 			if (symbolMutation.isMutated(inner)) {
-				saveSymbol();
+				names[3] = SaveSymbolTable();
 			}
-			return pos;
+			return names;
 		}
 
-		private void Backtrack(Expression inner) {
-			backPos();
-			if (typeState.inferTypestate(inner) != Typestate.Unit) {
-				backTree();
-				backLog();
+		private void BackState(Expression inner, String[] names) {
+			BackPos(names[0]);
+			if (names[1] != null) {
+				BackTree(names[1]);
 			}
-			if (symbolMutation.isMutated(inner)) {
-				backSymbol();
+			if (names[2] != null) {
+				BackLog(names[2]);
+			}
+			if (names[3] != null) {
+				BackSymbolTable(names[3]);
 			}
 		}
 
@@ -708,7 +823,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		}
 
 		private String MatchByteArray(boolean[] byteMap, String c) {
-			return _GetArray(_symbol(byteMap), c);
+			return _GetArray(_set(byteMap), c);
 		}
 
 		@Override
@@ -762,26 +877,26 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 				visitPredicatedChoice(e, e.predicted);
 			} else {
 				BeginScope();
-				InitVal(_unchoiced_(), _True());
+				String unchoiced = InitVal(_unchoiced(), _True());
 				for (Expression sub : e) {
 					String f = makeFuncCall(sub);
-					If(local(_unchoiced_()));
+					If(unchoiced);
 					{
-						SavePoint(sub);
+						String[] n = SaveState(sub);
 						Verbose(sub.toString());
 						If(f);
 						{
-							VarAssign(local(_unchoiced_()), _False());
+							VarAssign(unchoiced, _False());
 						}
 						Else();
 						{
-							Backtrack(sub);
+							BackState(sub, n);
 						}
 						EndIf();
 					}
 					EndIf();
 				}
-				If(local(_unchoiced_()));
+				If(unchoiced);
 				{
 					Fail();
 				}
@@ -792,7 +907,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		}
 
 		private void visitPredicatedChoice(Nez.Choice choice, ChoicePrediction p) {
-			Switch(_GetArray(_symbol(p), _Func("prefetch")));
+			Switch(_GetArray(_index(p.indexMap), _Func("prefetch")));
 			Case("0");
 			Fail();
 			for (int i = 0; i < choice.size(); i++) {
@@ -817,11 +932,11 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 			Expression sub = e.get(0);
 			if (!tryOptionOptimization(sub)) {
 				String f = makeFuncCall(sub);
-				SavePoint(sub);
+				String[] n = SaveState(sub);
 				Verbose(sub.toString());
 				If(_Not(f));
 				{
-					Backtrack(sub);
+					BackState(sub, n);
 				}
 				EndIf();
 			}
@@ -847,11 +962,11 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 				String f = makeFuncCall(sub);
 				While(_True());
 				{
-					SavePoint(sub);
+					String[] n = SaveState(sub);
 					Verbose(sub.toString());
 					If(_Not(f));
 					{
-						Backtrack(sub);
+						BackState(sub, n);
 						Break();
 					}
 					EndIf();
@@ -866,14 +981,14 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 			if (!this.tryAndOptimization(sub)) {
 				String f = makeFuncCall(sub);
 				BeginScope();
-				savePos();
+				String n = SavePos();
 				Verbose(sub.toString());
 				If(_Not(f));
 				{
 					Fail();
 				}
 				EndIf();
-				backPos();
+				BackPos(n);
 				EndScope();
 			}
 			return null;
@@ -885,14 +1000,14 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 			if (!this.tryNotOptimization(sub)) {
 				String f = makeFuncCall(sub);
 				BeginScope();
-				SavePoint(sub);
+				String[] n = SaveState(sub);
 				Verbose(sub.toString());
 				If(f);
 				{
 					Fail();
 				}
 				EndIf();
-				Backtrack(sub);
+				BackState(sub, n);
 				EndScope();
 			}
 			return null;
@@ -1072,50 +1187,47 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 
 		@Override
 		public Object visitEndTree(Nez.EndTree e, Object a) {
-			if (e.tag != null) {
-				Statement(_Func("tagTree", _symbol(e.tag)));
-			}
-			Statement(_Func("endTree", _Null(), _Null(), _int(e.shift)));
+			Statement(_Func("endTree", _tag(e.tag), _text(e.value), _int(e.shift)));
 			return null;
 		}
 
 		@Override
 		public Object visitFoldTree(Nez.FoldTree e, Object a) {
-			Statement(_Func("foldTree", _int(e.shift), _symbol(e.label)));
+			Statement(_Func("foldTree", _int(e.shift), _label(e.label)));
 			return null;
 		}
 
 		@Override
 		public Object visitLinkTree(Nez.LinkTree e, Object a) {
 			BeginScope();
-			String tree = saveTree();
+			String tree = SaveTree();
 			visit(e.get(0), a);
-			Statement(_Func("linkTree", tree, _symbol(e.label)));
-			backTree();
+			Statement(_Func("linkTree", _Null(), _label(e.label)));
+			BackTree(tree);
 			EndScope();
 			return null;
 		}
 
 		@Override
 		public Object visitTag(Nez.Tag e, Object a) {
-			Statement(_Func("tagTree", _symbol(e.tag)));
+			Statement(_Func("tagTree", _tag(e.tag)));
 			return null;
 		}
 
 		@Override
 		public Object visitReplace(Nez.Replace e, Object a) {
-			Statement(_Func("valueTree", _symbol(e.value)));
+			Statement(_Func("valueTree", _text(e.value)));
 			return null;
 		}
 
 		@Override
 		public Object visitDetree(Nez.Detree e, Object a) {
 			BeginScope();
-			saveTree();
-			saveLog();
+			String n1 = SaveTree();
+			String n2 = SaveLog();
 			visit(e.get(0), a);
-			backTree();
-			backLog();
+			BackTree(n1);
+			BackLog(n2);
 			EndScope();
 			return null;
 		}
@@ -1123,9 +1235,9 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		@Override
 		public Object visitBlockScope(Nez.BlockScope e, Object a) {
 			BeginScope();
-			saveSymbol();
+			String n = SaveSymbolTable();
 			visit(e.get(0), a);
-			backSymbol();
+			BackSymbolTable(n);
 			EndScope();
 			return null;
 		}
@@ -1133,10 +1245,10 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		@Override
 		public Object visitLocalScope(LocalScope e, Object a) {
 			BeginScope();
-			saveSymbol();
-			Statement(_Func("addSymbolMask", _symbol(e.tableName)));
+			String n = SaveSymbolTable();
+			Statement(_Func("addSymbolMask", _table(e.tableName)));
 			visit(e.get(0), a);
-			backSymbol();
+			BackSymbolTable(n);
 			EndScope();
 			return null;
 		}
@@ -1144,9 +1256,9 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		@Override
 		public Object visitSymbolAction(SymbolAction e, Object a) {
 			BeginScope();
-			String pos = savePos();
+			String ppos = SavePos();
 			visit(e.get(0), a);
-			Statement(_Func("addSymbol", _symbol(e.tableName), pos));
+			Statement(_Func("addSymbol", _table(e.tableName), ppos));
 			EndScope();
 			return null;
 		}
@@ -1154,12 +1266,12 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		@Override
 		public Object visitSymbolPredicate(SymbolPredicate e, Object a) {
 			BeginScope();
-			String pos = savePos();
+			String ppos = SavePos();
 			visit(e.get(0), a);
 			if (e.op == FunctionName.is) {
-				Statement(_Func("equals", _symbol(e.tableName), pos));
+				Statement(_Func("equals", _table(e.tableName), ppos));
 			} else {
-				Statement(_Func("contains", _symbol(e.tableName), pos));
+				Statement(_Func("contains", _table(e.tableName), ppos));
 			}
 			EndScope();
 			return null;
@@ -1167,7 +1279,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 
 		@Override
 		public Object visitSymbolMatch(SymbolMatch e, Object a) {
-			If(_Not(_Func("matchSymbol", _symbol(e.tableName))));
+			If(_Not(_Func("matchSymbol", _table(e.tableName))));
 			{
 				Fail();
 			}
@@ -1178,13 +1290,13 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		@Override
 		public Object visitSymbolExists(SymbolExists e, Object a) {
 			if (e.symbol == null) {
-				If(_Not(_Func("exists", _symbol(e.tableName))));
+				If(_Not(_Func("exists", _table(e.tableName))));
 				{
 					Fail();
 				}
 				EndIf();
 			} else {
-				If(_Not(_Func("existsSymbol", _symbol(e.tableName), _symbol(e.symbol))));
+				If(_Not(_Func("existsSymbol", _table(e.tableName), _text(e.symbol))));
 				{
 					Fail();
 				}
@@ -1197,7 +1309,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		@Override
 		public Object visitScan(Nez.Scan e, Object a) {
 			BeginScope();
-			String ppos = savePos();
+			String ppos = SavePos();
 			visit(e.get(0), a);
 			Statement(_Func("scanCount", ppos, _long(e.mask), _int(e.shift)));
 			EndScope();
@@ -1304,7 +1416,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 
 	protected String _Func(String name, String... args) {
 		StringBuilder sb = new StringBuilder();
-		sb.append(_state_());
+		sb.append(_state());
 		sb.append(".");
 		sb.append(name);
 		sb.append("(");
@@ -1319,7 +1431,11 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 	}
 
 	protected String _Match(byte[] byteSeq) {
-		return _Func("match", _bytes(byteSeq));
+		if (type("$arity") == null) {
+			return _Func("match", _text(byteSeq));
+		} else {
+			return _Func("match", _text(byteSeq), _int(byteSeq.length));
+		}
 	}
 
 	protected String _int(int n) {
@@ -1351,11 +1467,11 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 	}
 
 	protected String _argument() {
-		return _argument(_state_(), getType(_state_()));
+		return _argument(_state(), type(_state()));
 	}
 
 	protected String _funccall(String name) {
-		return name + "(" + _state_() + ")";
+		return name + "(" + _state() + ")";
 	}
 
 	/* Statement */
@@ -1392,11 +1508,11 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 	}
 
 	protected final void BeginFunc(String f, String args) {
-		BeginFunc(getType("parse"), f, args);
+		BeginFunc(type("$parse"), f, args);
 	}
 
 	protected final void BeginFunc(String f) {
-		BeginFunc(getType("parse"), f, _argument());
+		BeginFunc(type("$parse"), f, _argument());
 	}
 
 	protected void EndFunc() {
@@ -1507,7 +1623,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 	}
 
 	protected void VarDecl(String name, String expr) {
-		VarDecl(this.getType(name), name, expr);
+		VarDecl(this.type(name), name, expr);
 	}
 
 	protected void VarDecl(String type, String name, String expr) {
@@ -1522,7 +1638,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		Statement(v + " = " + expr);
 	}
 
-	protected void ConstDecl(String type, String name, String val) {
+	protected void DeclConst(String type, String name, String val) {
 		if (type == null) {
 			Statement("private final static " + name + " = " + val);
 		} else {
@@ -1530,61 +1646,84 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		}
 	}
 
+	protected String _arity(int arity) {
+		return "[" + arity + "]";
+	}
+
+	protected void DeclConst(String type, String name, int arity, String val) {
+		if (type("$arity") != null) {
+			DeclConst(type, name + _arity(arity), val);
+		} else {
+			DeclConst(type, name, val);
+		}
+	}
+
+	protected void GCinc(String expr) {
+	}
+
+	protected void GCdec(String expr) {
+	}
+
 	/* Variables */
 
-	protected String _state_() {
+	protected String _state() {
 		return "c";
 	}
 
-	protected String _pos_() {
+	protected String _pos() {
 		return "pos";
 	}
 
 	protected String _cpos_() {
-		return _Field(_state_(), "pos");
+		return _Field(_state(), "pos");
 	}
 
-	protected String _left_() {
+	protected String _tree() {
 		return "left";
 	}
 
-	protected String _cleft_() {
-		return _Field(_state_(), "left");
-	}
+	// protected String _cleft_() {
+	// return _Field(_state_(), "left");
+	// }
 
-	protected String _log_() {
+	protected String _log() {
 		return "log";
 	}
 
-	protected String _clog_() {
-		return _Field(_state_(), "log");
-	}
+	// protected String _clog_() {
+	// return _Field(_state_(), "log");
+	// }
 
 	protected String _sym_() {
 		return "sym";
 	}
 
 	protected String _csym_() {
-		return _Field(_state_(), "sym");
+		return _Field(_state(), "sym");
 	}
 
-	protected String _unchoiced_() {
+	protected String _unchoiced() {
 		return "unchoiced";
 	}
 
-	protected String _utf8_() {
-		return "u";
+	// protected String _utf8_() {
+	// return "u";
+	// }
+
+	protected String _index() {
+		return "_index";
 	}
 
-	protected String _indexMap_() {
-		return "indexMap";
+	protected String _set() {
+		return "_byteset";
 	}
 
-	protected String _byteSet_() {
-		return "byteSet";
+	protected String _text() {
+		return "_text";
 	}
 
-	protected String _byteSeq_() {
-		return "byteSeq";
+	protected String _arity(String name) {
+		return name + "_len";
 	}
+
 }

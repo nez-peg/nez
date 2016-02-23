@@ -5,6 +5,26 @@ import nez.lang.Grammar;
 public class JavaParserGenerator extends AbstractParserGenerator {
 
 	@Override
+	protected void initTypeMap() {
+		this.addType("$parse", "boolean");
+		this.addType("$tag", "Symbol");
+		this.addType("$label", "Symbol");
+		this.addType("$table", "Symbol");
+		this.addType("$arity", "int");
+		this.addType("$text", "byte[]");
+		this.addType("$index", "byte[]");
+		this.addType("memo", "int");
+		this.addType(_set(), "boolean[]");
+		this.addType(_index(), "byte[]");
+		this.addType(_unchoiced(), "boolean");
+		this.addType(_pos(), "int");
+		this.addType(_tree(), "Tree<?>");
+		this.addType(_log(), "Object");
+		this.addType(_sym_(), "int");
+		this.addType(_state(), "ParserContext");
+	}
+
+	@Override
 	protected String getFileExtension() {
 		return "Parser.java";
 	}
@@ -20,10 +40,10 @@ public class JavaParserGenerator extends AbstractParserGenerator {
 		BeginDecl("public class Parser/**Change Here*/");
 		BeginDecl("public final static Tree<?> parse(String text)");
 		{
-			VarDecl(_state_(), "new ParserContext(text)");
+			VarDecl(_state(), "new ParserContext(text)");
 			If(_funccall(_funcname(g.getStartProduction())));
 			{
-				Return(_cleft_());
+				Return(_Field(_state(), _tree()));
 			}
 			EndIf();
 			Return(_Null());
@@ -31,7 +51,7 @@ public class JavaParserGenerator extends AbstractParserGenerator {
 		EndDecl();
 		BeginDecl("public final static int match(String text)");
 		{
-			VarDecl(_state_(), "new ParserContext(text)");
+			VarDecl(_state(), "new ParserContext(text)");
 			If(_funccall(_funcname(g.getStartProduction())));
 			{
 				Return(_cpos_());
@@ -56,19 +76,22 @@ public class JavaParserGenerator extends AbstractParserGenerator {
 		file.writeIndent("/*EOF*/");
 	}
 
-	@Override
-	protected void initTypeMap() {
-		this.addType("parse", "boolean");
-		this.addType("memo", "int");
-		this.addType(_byteSet_(), "boolean[]");
-		this.addType(_indexMap_(), "byte[]");
-		this.addType(_byteSeq_(), "byte[]");
-		this.addType(_unchoiced_(), "boolean");
-		this.addType(_pos_(), "int");
-		this.addType(_left_(), "Tree<?>");
-		this.addType(_log_(), "Object");
-		this.addType(_sym_(), "int");
-		this.addType(_state_(), "ParserContext");
-	}
+	// @Override
+	// protected String _init(String value) {
+	// if (value == null) {
+	// return "\"\"";
+	// }
+	// return "toUTF8(" + StringUtils.quoteString('"', value.toString(), '"') +
+	// ")";
+	// }
+	//
+	// @Override
+	// protected String _init(Symbol value) {
+	// if (value == null) {
+	// return "\"\"";
+	// }
+	// return "Symbol.unique(" + StringUtils.quoteString('"', value.toString(),
+	// '"') + ")";
+	// }
 
 }
