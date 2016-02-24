@@ -49,6 +49,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 	protected SymbolDependencyAnalyzer symbolDeps = SymbolDependency.newAnalyzer();
 
 	protected boolean verboseMode = true;
+	protected boolean SupportedSwitchCase = true;
 
 	@Override
 	public final void init(Grammar g, Parser parser, String path) {
@@ -735,7 +736,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		}
 
 		private void BackTree(String lname) {
-			Statement(_Func("backLog", lname));
+			Statement(_Func("backTree", lname));
 		}
 
 		private String SaveLog() {
@@ -873,7 +874,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 
 		@Override
 		public Object visitChoice(Nez.Choice e, Object a) {
-			if (e.predicted != null) {
+			if (e.predicted != null && SupportedSwitchCase) {
 				visitPredicatedChoice(e, e.predicted);
 			} else {
 				BeginScope();

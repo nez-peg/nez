@@ -1,0 +1,28 @@
+void cnez_dump(void *v, FILE *fp)
+{
+	size_t i;
+	Tree *t = (Tree*)v;
+	if(t == NULL) {
+		fputs("null", fp);
+		return;
+	}
+	fputs("[#", fp);
+	fputs(_tags[t->tag], fp);
+	if(t->size == 0) {
+		fputs(" '", fp);
+		for(i = 0; i < t->len; i++) {
+			fputc(t->text[i], fp);
+		}
+		fputs("'", fp);
+	}
+	else {
+		for(i = 0; i < t->size; i++) {
+			fputs(" $", fp);
+			fputs(_labels[t->labels[i]], fp);
+			fputs("=", fp);
+			cnez_dump(t->childs[i], fp);
+		}
+	}
+	fputs("]", fp);
+}
+

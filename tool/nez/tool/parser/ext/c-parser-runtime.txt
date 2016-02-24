@@ -42,13 +42,14 @@ typedef struct ParserContext {
 #define OpTag  1
 #define OpReplace 2
 #define OpNew 3
-#define OpNone 4
 
 typedef struct TreeLog {
 	int op;
 	void *value;
 	struct Tree *tree;
 } TreeLog;
+
+static const char* ops[5] = {"link", "tag", "value", "new"};
 
 // stack
 
@@ -213,17 +214,6 @@ static void ParserContext_initNoTreeFunc(ParserContext *c)
     c->fgc  = nogc;
 }
 
-void cnez_dump(void *v, FILE *fp)
-{
-	Tree *t = (Tree*)v;
-	if(t == NULL) {
-		fputs("null", fp);
-		return;
-	}
-	//fprintf(fp, "{\"tag\": \"%s\"", tags(t->tag));
-}
-
-
 /* ParserContext */
 
 static ParserContext *ParserContext_new(const char *text, size_t len)
@@ -303,7 +293,24 @@ void _log(ParserContext *c, int op, void *value, struct Tree *tree)
 	l->value = value;
 	assert(l->tree == NULL);
 	l->tree  = tree;
+	//printf("LOG[%d] %s %p %p\n", (int)c->unused_log, ops[op], value, tree);
 	c->unused_log++;
+}
+
+void cnez_dump(void *v, FILE *fp);
+
+static
+void DEBUG_dumplog(ParserContext *c) 
+{
+	long i;
+	for(i = c->unused_log-1; i >= 0; i--) {
+		TreeLog *l = c->logs + i;
+		printf("[%d] %s %p ", (int)i, ops[l->op], l->value);
+		if(l->tree != NULL) {
+			cnez_dump(l->tree, stdout);
+		}
+		printf("\n");
+	}
 }
 
 static void ParserContext_beginTree(ParserContext *c, int shift)
@@ -341,13 +348,15 @@ static size_t ParserContext_saveLog(ParserContext *c)
 
 static void ParserContext_backLog(ParserContext *c, size_t unused_log)
 {
-    if (unused_log != c->unused_log) {
-		size_t i;
+    if (unused_log < c->unused_log) {
+  		size_t i;
 		for(i = unused_log; i < c->unused_log; i++) {
 			TreeLog *l = c->logs + i;
 			if(l->op == OpLink) {
 				c->fgc(l->tree, -1);
 			}
+			l->op = 0;
+			l->value = NULL;
 			l->tree = NULL;
 		}
 		c->unused_log = unused_log;
@@ -356,8 +365,8 @@ static void ParserContext_backLog(ParserContext *c, size_t unused_log)
 
 static void ParserContext_endTree(ParserContext *c, symbol_t tag, void *value, int shift)
 {
-    long i;
     int objectSize = 0;
+    long i;
     for(i = c->unused_log - 1; i >= 0; i--) {
  	   TreeLog * l = c->logs + i;
  	   if(l->op == OpLink) {
@@ -390,6 +399,9 @@ static void ParserContext_endTree(ParserContext *c, symbol_t tag, void *value, i
            cur->tree = NULL;
         }
     }
+	//printf("NEWTREE");
+	//cnez_dump(c->left, stdout);
+	//printf("\n");
     ParserContext_backLog(c, i);
 }
 

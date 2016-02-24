@@ -3,6 +3,8 @@ package nez.tool.parser;
 import nez.lang.Expression;
 import nez.lang.Grammar;
 import nez.lang.Production;
+import nez.util.ConsoleUtils;
+import nez.util.FileBuilder;
 
 public class CParserGenerator extends AbstractParserGenerator {
 
@@ -93,6 +95,8 @@ public class CParserGenerator extends AbstractParserGenerator {
 
 	@Override
 	protected void generateFooter(Grammar g) {
+		ImportFile("/nez/tool/parser/ext/c-tree-utils.txt");
+		//
 		BeginDecl("void* " + _prefix() + "parse(const char *text, size_t len, void* (*fnew)(symbol_t, const char *, size_t, size_t, void *), void  (*fset)(void *, size_t, symbol_t, void *), void  (*fgc)(void *, int))");
 		{
 			VarDecl("void*", "result", _Null());
@@ -141,10 +145,13 @@ public class CParserGenerator extends AbstractParserGenerator {
 		{
 			Statement("void *t = " + _prefix() + "parse(argv[1], strlen(argv[1]), NULL, NULL, NULL)");
 			Statement("cnez_dump(t, stderr)");
+			Statement("fprintf(stderr, \"\\n\")");
 			Return("0");
 		}
 		EndDecl();
 		file.writeIndent("// End of File");
+		generateHeaderFile();
+
 	}
 
 	private void DeclPrototype(Grammar g) {
@@ -171,6 +178,36 @@ public class CParserGenerator extends AbstractParserGenerator {
 
 	private void DeclPrototype(String name) {
 		Statement(_function("int " + name) + "(ParserContext *c)");
+	}
+
+	private void generateHeaderFile() {
+		String filename = FileBuilder.changeFileExtension(this.path, "h");
+		this.file = new FileBuilder(filename);
+		ConsoleUtils.println("generating " + filename + " ... ");
+		Statement("typedef unsigned long int symbol_t");
+		int c = 1;
+		for (String s : this.tagList) {
+			if (s.equals("")) {
+				continue;
+			}
+			Statement("#define _" + s + " ((symbol_t)" + c + ")");
+			c++;
+		}
+		Statement("#define MAXTAG " + c);
+		c = 1;
+		for (String s : this.labelList) {
+			if (s.equals("")) {
+				continue;
+			}
+			Statement("#define _" + s + " ((symbol_t)" + c + ")");
+			c++;
+		}
+		Statement("#define MAXLABEL " + c);
+		Statement("void* " + _prefix() + "parse(const char *text, size_t len, void* (*fnew)(symbol_t, const char *, size_t, size_t, void *), void  (*fset)(void *, size_t, symbol_t, void *), void  (*fgc)(void *, int))");
+		Statement("long " + _prefix() + "match(const char *text, size_t len)");
+		Statement("const char* " + _prefix() + "tag(symbol_t n)");
+		Statement("const char* " + _prefix() + "label(symbol_t n)");
+		this.file.close();
 	}
 
 }
