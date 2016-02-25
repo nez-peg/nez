@@ -1,0 +1,2 @@
+File = {<symbol T> <symbol T> <isa T> #File}
+T = 'a' / 'b'

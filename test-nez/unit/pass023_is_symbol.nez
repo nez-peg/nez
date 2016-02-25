@@ -1,0 +1,3 @@
+Symbol = <symbol NAME> S { <is NAME> #Name }?
+NAME = [A-Za-z]+
+S = [ \t]+
