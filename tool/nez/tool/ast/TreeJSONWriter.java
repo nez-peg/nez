@@ -4,9 +4,9 @@ import nez.ast.Tree;
 import nez.util.StringUtils;
 
 public class TreeJSONWriter extends TreeWriter {
-	@Override
-	public String getFileExtension() {
-		return "json";
+
+	public TreeJSONWriter() {
+		super(".json");
 	}
 
 	@Override

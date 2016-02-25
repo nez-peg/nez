@@ -221,13 +221,15 @@ public abstract class Command {
 		}
 	}
 
-	public final TreeWriter getTreeWriter(String options) {
+	public final TreeWriter getTreeWriter(String options, String defaultFormat) {
 		if (outputFormat == null) {
-			return new TreeWriter();
+			outputFormat = defaultFormat;
 		}
 		switch (outputFormat) {
 		case "ast":
-			return new TreeWriter();
+			return new TreeWriter.AstWriter();
+		case "line":
+			return new TreeWriter.LineWriter();
 		case "xml":
 			return new TreeXMLWriter();
 		case "json":

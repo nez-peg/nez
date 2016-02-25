@@ -5,72 +5,93 @@ import nez.ast.Tree;
 import nez.util.FileBuilder;
 import nez.util.StringUtils;
 
-public class TreeWriter {
+public abstract class TreeWriter {
+	protected String fileExtension;
 	protected FileBuilder file = new FileBuilder();
 	protected boolean dataOption = false;
 
-	public void init(String path) {
+	public TreeWriter(String ext) {
+		this.fileExtension = ext;
+	}
+
+	public final void init(String path) {
 		file.close();
 		file = new FileBuilder(path);
 	}
 
-	public void setDataOption(boolean dataOption) {
+	public final String getFileExtension() {
+		return fileExtension;
+	}
+
+	public final void setDataOption(boolean dataOption) {
 		this.dataOption = dataOption;
 	}
 
-	public void writeTree(Tree<?> node) {
-		writeTree(null, node);
-		file.writeNewLine();
-		file.flush();
+	public abstract void writeTree(Tree<?> node);
+
+	public static class LineWriter extends TreeWriter {
+		public LineWriter() {
+			super(".out");
+		}
+
+		@Override
+		public void writeTree(Tree<?> node) {
+			file.write(node == null ? "null" : node.toString());
+			file.writeNewLine();
+			file.flush();
+		}
 	}
 
-	private void writeTree(Symbol label, Tree<?> node) {
-		if (node == null) {
-			file.writeIndent("null");
-			return;
+	public static class AstWriter extends TreeWriter {
+		public AstWriter() {
+			super(".ast");
 		}
-		if (label == null) {
-			file.writeIndent("#" + node.getTag().toString() + "[");
-		} else {
-			file.writeIndent("$" + label + " #" + node.getTag() + "[");
-		}
-		if (node.size() == 0) {
-			file.write(StringUtils.quoteString('\'', node.toText(), '\''));
-			file.write("]");
-		} else {
-			file.incIndent();
-			for (int i = 0; i < node.size(); i++) {
-				this.writeTree(node.getLabel(i), node.get(i));
+
+		@Override
+		public void writeTree(Tree<?> node) {
+			if (node != null) {
+				writeTree(null, node);
 			}
-			file.decIndent();
-			file.writeIndent("]");
+			file.writeNewLine();
+			file.flush();
+		}
+
+		private void writeTree(Symbol label, Tree<?> node) {
+			if (node == null) {
+				file.writeIndent("null");
+				return;
+			}
+			if (label == null) {
+				file.writeIndent("#" + node.getTag().toString() + "[");
+			} else {
+				file.writeIndent("$" + label + " #" + node.getTag() + "[");
+			}
+			if (node.size() == 0) {
+				file.write(StringUtils.quoteString('\'', node.toText(), '\''));
+				file.write("]");
+			} else {
+				file.incIndent();
+				for (int i = 0; i < node.size(); i++) {
+					this.writeTree(node.getLabel(i), node.get(i));
+				}
+				file.decIndent();
+				file.writeIndent("]");
+			}
+		}
+
+	}
+
+	public static class DigestWriter extends TreeWriter {
+		public DigestWriter() {
+			super(".md5");
+		}
+
+		@Override
+		public void writeTree(Tree<?> node) {
+			file.write(node == null ? "null" : node.toString());
+			file.writeNewLine();
+			file.flush();
 		}
 	}
-
-	public String getFileExtension() {
-		return "ast";
-	}
-
-	// public void writeTag(Tree<?> node) {
-	// TreeMap<String, Integer> m = new TreeMap<String, Integer>();
-	// this.countTag(node, m);
-	// for (String k : m.keySet()) {
-	// this.write("#" + k + ":" + m.get(k));
-	// }
-	// this.writeNewLine();
-	// }
-	//
-	// private void countTag(Tree<?> node, TreeMap<String, Integer> m) {
-	// for (int i = 0; i < node.size(); i++) {
-	// countTag(node.get(i), m);
-	// }
-	// String key = node.getTag().toString();
-	// Integer n = m.get(key);
-	// if (n == null) {
-	// m.put(key, 1);
-	// } else {
-	// m.put(key, n + 1);
-	// }
-	// }
 
 }

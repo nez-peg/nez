@@ -356,43 +356,73 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		this.stringfy("", null, sb);
+		this.appendStringfied(sb);
 		return sb.toString();
 	}
 
-	protected void stringfy(String indent, Symbol label, StringBuilder sb) {
-		if (indent.length() > 0) {
-			sb.append("\n");
-		}
-		sb.append(indent);
-		if (label != null) {
-			sb.append("$");
-			sb.append(label);
-			sb.append(" = ");
-		}
-		sb.append("#");
+	protected void appendStringfied(StringBuilder sb) {
+		sb.append("[#");
 		if (this.getTag() != null) {
 			sb.append(this.getTag().getSymbol());
 		}
-		sb.append("[");
 		if (this.subTree == null) {
-			// sb.append(" ");
+			sb.append(" ");
 			StringUtils.appendQuatedString(sb, '\'', this.toText(), '\'');
 		} else {
-			String nindent = "   " + indent;
 			for (int i = 0; i < this.size(); i++) {
+				sb.append(" ");
+				if (this.labels[i] != null) {
+					sb.append("$");
+					sb.append(this.labels[i].getSymbol());
+					sb.append("=");
+				}
 				if (this.subTree[i] == null) {
-					sb.append("\n");
-					sb.append(nindent);
 					sb.append("null");
 				} else {
-					this.subTree[i].stringfy(nindent, this.labels[i], sb);
+					this.subTree[i].appendStringfied(sb);
 				}
 			}
-			sb.append("\n");
-			sb.append(indent);
 		}
+		appendExtraStringfied(sb);
 		sb.append("]");
 	}
+
+	protected void appendExtraStringfied(StringBuilder sb) {
+
+	}
+	// protected void stringfy(String indent, Symbol label, StringBuilder sb) {
+	// if (indent.length() > 0) {
+	// sb.append("\n");
+	// }
+	// sb.append(indent);
+	// if (label != null) {
+	// sb.append("$");
+	// sb.append(label);
+	// sb.append(" = ");
+	// }
+	// sb.append("#");
+	// if (this.getTag() != null) {
+	// sb.append(this.getTag().getSymbol());
+	// }
+	// sb.append("[");
+	// if (this.subTree == null) {
+	// // sb.append(" ");
+	// StringUtils.appendQuatedString(sb, '\'', this.toText(), '\'');
+	// } else {
+	// String nindent = "   " + indent;
+	// for (int i = 0; i < this.size(); i++) {
+	// if (this.subTree[i] == null) {
+	// sb.append("\n");
+	// sb.append(nindent);
+	// sb.append("null");
+	// } else {
+	// this.subTree[i].stringfy(nindent, this.labels[i], sb);
+	// }
+	// }
+	// sb.append("\n");
+	// sb.append(indent);
+	// }
+	// sb.append("]");
+	// }
 
 }

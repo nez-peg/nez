@@ -5,9 +5,8 @@ import nez.ast.Tree;
 import nez.util.StringUtils;
 
 public class TreeXMLWriter extends TreeWriter {
-	@Override
-	public String getFileExtension() {
-		return "xml";
+	public TreeXMLWriter() {
+		super(".xml");
 	}
 
 	@Override

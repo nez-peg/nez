@@ -31,7 +31,7 @@ public class Cinez extends Command {
 		p("      Entering two empty lines diplays the current grammar.");
 		ConsoleUtils.println("");
 		Parser nezParser = this.getNezParser();
-		TreeWriter writer = this.getTreeWriter("ast json xml");
+		TreeWriter writer = this.getTreeWriter("ast json xml", "ast");
 		Grammar grammar = newGrammar();
 		String start = grammar.getStartProduction().getLocalName();
 		Parser p = strategy.newParser(grammar);
