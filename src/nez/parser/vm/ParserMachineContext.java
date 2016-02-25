@@ -160,8 +160,8 @@ public class ParserMachineContext<T extends Tree<T>> extends ParserContext<T> {
 		catchStackTop = usedStackTop - 2;
 		s1.ref = failjump;
 		s1.value = this.pos;
-		s2.ref = this.saveLog();
-		s2.value = this.saveSymbolPoint();
+		s2.value = this.saveLog();
+		s2.ref = this.saveSymbolPoint();
 	}
 
 	public final void xSucc() {
@@ -191,8 +191,8 @@ public class ParserMachineContext<T extends Tree<T>> extends ParserContext<T> {
 			// }
 			this.back(s1.value);
 		}
-		this.backLog(s2.ref);
-		this.backSymbolPoint(s2.value);
+		this.backLog(s2.value);
+		this.backSymbolPoint((Integer) s2.ref); // FIXME slow
 		assert (s1.ref != null);
 		return (MozInst) s1.ref;
 	}
@@ -204,23 +204,21 @@ public class ParserMachineContext<T extends Tree<T>> extends ParserContext<T> {
 		}
 		s1.value = this.pos;
 		StackData s2 = stacks[catchStackTop + 2];
-		s2.ref = this.saveLog();
-		s2.value = this.saveSymbolPoint();
+		s2.value = this.saveLog();
+		s2.ref = this.saveSymbolPoint(); // FIXME slow
 		return next;
 	}
 
 	public final void xTPush() {
 		StackData s = this.newUnusedStack();
 		s.ref = this.left;
-		s = this.newUnusedStack();
-		s.ref = this.saveLog();
+		s.value = this.saveLog();
 	}
 
 	@SuppressWarnings("unchecked")
 	public final void xTLink(Symbol label) {
 		StackData s = this.popStack();
-		this.backLog(s.ref);
-		s = this.popStack();
+		this.backLog(s.value);
 		this.linkTree((T) s.ref, label);
 		this.left = (T) s.ref;
 	}
@@ -228,8 +226,7 @@ public class ParserMachineContext<T extends Tree<T>> extends ParserContext<T> {
 	@SuppressWarnings("unchecked")
 	public final void xTPop() {
 		StackData s = this.popStack();
-		this.backLog(s.ref);
-		s = this.popStack();
+		this.backLog(s.value);
 		this.left = (T) s.ref;
 	}
 

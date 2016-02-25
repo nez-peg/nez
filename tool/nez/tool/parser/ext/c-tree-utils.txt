@@ -17,9 +17,11 @@ void cnez_dump(void *v, FILE *fp)
 	}
 	else {
 		for(i = 0; i < t->size; i++) {
-			fputs(" $", fp);
-			fputs(_labels[t->labels[i]], fp);
-			fputs("=", fp);
+			if(t->labels[i] != 0) {
+				fputs(" $", fp);
+				fputs(_labels[t->labels[i]], fp);
+				fputs("=", fp);
+			}
 			cnez_dump(t->childs[i], fp);
 		}
 	}

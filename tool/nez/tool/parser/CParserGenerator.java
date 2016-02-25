@@ -5,6 +5,7 @@ import nez.lang.Grammar;
 import nez.lang.Production;
 import nez.util.ConsoleUtils;
 import nez.util.FileBuilder;
+import nez.util.StringUtils;
 
 public class CParserGenerator extends AbstractParserGenerator {
 
@@ -27,7 +28,7 @@ public class CParserGenerator extends AbstractParserGenerator {
 		this.addType(_pos(), "const char *");
 		this.addType(_tree(), "size_t");
 		this.addType(_log(), "size_t");
-		this.addType(_sym_(), "size_t");
+		this.addType(_table(), "size_t");
 		this.addType(_state(), "ParserContext *");
 	}
 
@@ -69,6 +70,19 @@ public class CParserGenerator extends AbstractParserGenerator {
 	}
 
 	@Override
+	protected String _text(byte[] text) {
+		return super._text(text) + ", " + _int(text.length);
+	}
+
+	@Override
+	protected String _text(String key) {
+		if (key == null) {
+			return _Null() + ", 0";
+		}
+		return nameMap.get(key) + ", " + _int(StringUtils.toUtf8(key).length);
+	}
+
+	@Override
 	protected String _function(String type) {
 		return type;
 	}
@@ -97,17 +111,22 @@ public class CParserGenerator extends AbstractParserGenerator {
 	protected void generateFooter(Grammar g) {
 		ImportFile("/nez/tool/parser/ext/c-tree-utils.txt");
 		//
-		BeginDecl("void* " + _prefix() + "parse(const char *text, size_t len, void* (*fnew)(symbol_t, const char *, size_t, size_t, void *), void  (*fset)(void *, size_t, symbol_t, void *), void  (*fgc)(void *, int))");
+		BeginDecl("void* " + _prefix() + "parse(const char *text, size_t len, void *thunk, void* (*fnew)(symbol_t, const char *, size_t, size_t, void *), void  (*fset)(void *, size_t, symbol_t, void *, void *), void  (*fgc)(void *, int, void *))");
 		{
 			VarDecl("void*", "result", _Null());
 			VarDecl(_state(), "ParserContext_new(text, len)");
-			Statement(_Func("initTreeFunc", "fnew", "fset", "fgc"));
+			Statement(_Func("initTreeFunc", "thunk", "fnew", "fset", "fgc"));
 			if (code.getMemoPointSize() > 0) {
 				Statement(_Func("initMemoPoint", _int(strategy.SlidingWindow), _int(code.getMemoPointSize())));
 			}
 			If(_funccall(_funcname(g.getStartProduction())));
 			{
 				VarAssign("result", _Field(_state(), _tree()));
+				If("result == NULL");
+				{
+					Statement("result = c->fnew(0, text, (c->pos - text), 0, c->thunk)");
+				}
+				EndIf();
 			}
 			EndIf();
 			Statement(_Func("free"));
@@ -141,14 +160,16 @@ public class CParserGenerator extends AbstractParserGenerator {
 			Return("_labels[n]");
 		}
 		EndDecl();
+		Line("//#ifdef USE_MAIN");
 		BeginDecl("int main(int ac, const char **argv)");
 		{
-			Statement("void *t = " + _prefix() + "parse(argv[1], strlen(argv[1]), NULL, NULL, NULL)");
-			Statement("cnez_dump(t, stderr)");
-			Statement("fprintf(stderr, \"\\n\")");
+			Statement("void *t = " + _prefix() + "parse(argv[1], strlen(argv[1]), NULL, NULL, NULL, NULL)");
+			Statement("cnez_dump(t, stdout)");
+			Statement("fprintf(stdout, \"\\n\")");
 			Return("0");
 		}
 		EndDecl();
+		Line("//#endif/*USE_MAIN*/");
 		file.writeIndent("// End of File");
 		generateHeaderFile();
 
@@ -190,20 +211,20 @@ public class CParserGenerator extends AbstractParserGenerator {
 			if (s.equals("")) {
 				continue;
 			}
-			Statement("#define _" + s + " ((symbol_t)" + c + ")");
+			Line("#define _" + s + " ((symbol_t)" + c + ")");
 			c++;
 		}
-		Statement("#define MAXTAG " + c);
+		Line("#define MAXTAG " + c);
 		c = 1;
 		for (String s : this.labelList) {
 			if (s.equals("")) {
 				continue;
 			}
-			Statement("#define _" + s + " ((symbol_t)" + c + ")");
+			Line("#define _" + s + " ((symbol_t)" + c + ")");
 			c++;
 		}
-		Statement("#define MAXLABEL " + c);
-		Statement("void* " + _prefix() + "parse(const char *text, size_t len, void* (*fnew)(symbol_t, const char *, size_t, size_t, void *), void  (*fset)(void *, size_t, symbol_t, void *), void  (*fgc)(void *, int))");
+		Line("#define MAXLABEL " + c);
+		Statement("void* " + _prefix() + "parse(const char *text, size_t len, void *, void* (*fnew)(symbol_t, const char *, size_t, size_t, void *), void  (*fset)(void *, size_t, symbol_t, void *, void *), void  (*fgc)(void *, int, void *))");
 		Statement("long " + _prefix() + "match(const char *text, size_t len)");
 		Statement("const char* " + _prefix() + "tag(symbol_t n)");
 		Statement("const char* " + _prefix() + "label(symbol_t n)");

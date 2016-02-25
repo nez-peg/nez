@@ -23,7 +23,7 @@ public class JavaParserGenerator extends AbstractParserGenerator {
 		this.addType(_pos(), "int");
 		this.addType(_tree(), "Tree<?>");
 		this.addType(_log(), "Object");
-		this.addType(_sym_(), "int");
+		this.addType(_table(), "int");
 		this.addType(_state(), "ParserContext");
 	}
 

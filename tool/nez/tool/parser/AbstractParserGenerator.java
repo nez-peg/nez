@@ -194,12 +194,12 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		return sb.toString();
 	}
 
-	final String _text(byte[] text) {
+	protected String _text(byte[] text) {
 		String key = new String(text);
 		return nameMap.get(key);
 	}
 
-	final String _text(String key) {
+	protected String _text(String key) {
 		if (key == null) {
 			return _Null();
 		}
@@ -748,7 +748,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		}
 
 		private String SaveSymbolTable() {
-			return InitVal(_sym_(), _Func("saveSymbolPoint"));
+			return InitVal(_table(), _Func("saveSymbolPoint"));
 		}
 
 		private void BackSymbolTable(String lname) {
@@ -810,6 +810,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 				Fail();
 			}
 			EndIf();
+			checkBinaryEOF(e.byteChar == 0);
 			return null;
 		}
 
@@ -820,7 +821,18 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 				Fail();
 			}
 			EndIf();
+			checkBinaryEOF(e.byteMap[0]);
 			return null;
+		}
+
+		private void checkBinaryEOF(boolean checked) {
+			if (strategy.BinaryGrammar && checked) {
+				If(_Func("eof"));
+				{
+					Fail();
+				}
+				EndIf();
+			}
 		}
 
 		private String MatchByteArray(boolean[] byteMap, String c) {
@@ -921,8 +933,10 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 				} else {
 					Verbose(sub.toString());
 				}
-				If(_Not(f));
-				Return(_False());
+				If(_Not(f)); // FIXME slow?
+				{
+					Return(_False());
+				}
 				EndIf();
 				Break();
 				EndCase();
@@ -1022,7 +1036,15 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 					Nez.Byte e = (Nez.Byte) inner;
 					If(_Func("prefetch"), _Eq(), _byte(e.byteChar));
 					{
-						Statement(_Func("move", "1"));
+						if (strategy.BinaryGrammar && e.byteChar == 0) {
+							If(_Not(_Func("eof")));
+							{
+								Statement(_Func("move", "1"));
+							}
+							EndIf();
+						} else {
+							Statement(_Func("move", "1"));
+						}
 					}
 					EndIf();
 					return true;
@@ -1031,7 +1053,15 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 					Nez.ByteSet e = (Nez.ByteSet) inner;
 					If(MatchByteArray(e.byteMap, _Func("prefetch")));
 					{
-						Statement(_Func("move", "1"));
+						if (strategy.BinaryGrammar && e.byteMap[0]) {
+							If(_Not(_Func("eof")));
+							{
+								Statement(_Func("move", "1"));
+							}
+							EndIf();
+						} else {
+							Statement(_Func("move", "1"));
+						}
 					}
 					EndIf();
 					return true;
@@ -1060,6 +1090,13 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 					Nez.Byte e = (Nez.Byte) inner;
 					While(_Binary(_Func("prefetch"), _Eq(), _byte(e.byteChar)));
 					{
+						if (strategy.BinaryGrammar && e.byteChar == 0) {
+							If(_Func("eof"));
+							{
+								Break();
+							}
+							EndIf();
+						}
 						Statement(_Func("move", "1"));
 					}
 					EndWhile();
@@ -1069,6 +1106,13 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 					Nez.ByteSet e = (Nez.ByteSet) inner;
 					While(MatchByteArray(e.byteMap, _Func("prefetch")));
 					{
+						if (strategy.BinaryGrammar && e.byteMap[0]) {
+							If(_Func("eof"));
+							{
+								Break();
+							}
+							EndIf();
+						}
 						Statement(_Func("move", "1"));
 					}
 					EndWhile();
@@ -1105,6 +1149,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 						Fail();
 					}
 					EndIf();
+					this.checkBinaryEOF(e.byteChar == 0);
 					return true;
 				}
 				if (inner instanceof Nez.ByteSet) {
@@ -1114,6 +1159,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 						Fail();
 					}
 					EndIf();
+					this.checkBinaryEOF(e.byteMap[0]);
 					return true;
 				}
 				if (inner instanceof Nez.MultiByte) {
@@ -1147,6 +1193,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 						Fail();
 					}
 					EndIf();
+					this.checkBinaryEOF(e.byteChar != 0);
 					return true;
 				}
 				if (inner instanceof Nez.ByteSet) {
@@ -1156,6 +1203,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 						Fail();
 					}
 					EndIf();
+					this.checkBinaryEOF(!e.byteMap[0]);
 					return true;
 				}
 				if (inner instanceof Nez.MultiByte) {
@@ -1190,7 +1238,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 
 		@Override
 		public Object visitEndTree(Nez.EndTree e, Object a) {
-			Statement(_Func("endTree", _tag(e.tag), _text(e.value), _int(e.shift)));
+			Statement(_Func("endTree", _int(e.shift), _tag(e.tag), _text(e.value)));
 			return null;
 		}
 
@@ -1305,7 +1353,6 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 				}
 				EndIf();
 			}
-			// TODO Auto-generated method stub
 			return null;
 		}
 
@@ -1331,7 +1378,6 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 
 		@Override
 		public Object visitIf(IfCondition e, Object a) {
-			// TODO Auto-generated method stub
 			return null;
 		}
 
@@ -1434,11 +1480,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 	}
 
 	protected String _Match(byte[] byteSeq) {
-		if (type("$arity") == null) {
-			return _Func("match", _text(byteSeq));
-		} else {
-			return _Func("match", _text(byteSeq), _int(byteSeq.length));
-		}
+		return _Func("match", _text(byteSeq));
 	}
 
 	protected String _int(int n) {
@@ -1697,7 +1739,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 	// return _Field(_state_(), "log");
 	// }
 
-	protected String _sym_() {
+	protected String _table() {
 		return "sym";
 	}
 

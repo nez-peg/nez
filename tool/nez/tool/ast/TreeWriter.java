@@ -64,7 +64,7 @@ public abstract class TreeWriter {
 			if (label == null) {
 				file.writeIndent("#" + node.getTag().toString() + "[");
 			} else {
-				file.writeIndent("$" + label + " #" + node.getTag() + "[");
+				file.writeIndent("$" + label + "=#" + node.getTag() + "[");
 			}
 			if (node.size() == 0) {
 				file.write(StringUtils.quoteString('\'', node.toText(), '\''));

@@ -23,16 +23,27 @@ typedef struct ParserContext {
     size_t          stack_size;
     size_t          unused_stack;
     size_t          fail_stack;
+    // SymbolTable
+    struct SymbolTableEntry* tables;
+	size_t                   tableSize;
+	size_t                   tableMax;
+	size_t                   stateValue;
+	size_t                   stateCount;
+	unsigned long int        count;
     // Memo
     struct MemoEntry *memoArray;
     size_t memoSize;
     // APIs
+    void *thunk;
 	void* (*fnew)(symbol_t, const char *, size_t, size_t, void *);
-	void  (*fsub)(void *, size_t, symbol_t, void *);
-	void  (*fgc)(void *, int);
+	void  (*fsub)(void *, size_t, symbol_t, void *, void *);
+	void  (*fgc)(void *, int, void*);
 } ParserContext;
 
-#define GCSET(c, v1, v2) c->fgc(v2, 1); c->fgc(v1, -1)
+
+#define GCINC(c, v2)     c->fgc(v2,  1, c->thunk)
+#define GCDEC(c, v1)     c->fgc(v1, -1, c->thunk)
+#define GCSET(c, v1, v2) c->fgc(v2, 1, c->thunk); c->fgc(v1, -1, c->thunk)
 
 /* TreeLog */
 
@@ -76,7 +87,7 @@ void push(ParserContext *c, size_t value)
 {
 	Wstack *s = unusedStack(c);
 	s->value = value;
-	c->fgc(s->tree, -1);
+	GCDEC(c, s->tree);
 	s->tree  = NULL;
 }
 
@@ -126,11 +137,11 @@ typedef struct Tree {
 } Tree;
 
 static
-void *NEW(symbol_t tag, const char *pos, size_t len, size_t n, void *value)
+void *NEW(symbol_t tag, const char *text, size_t len, size_t n, void *thunk)
 {
     Tree *t = (Tree*)malloc(sizeof(struct Tree));
     t->tag = tag;
-    t->text = pos;
+    t->text = text;
     t->len = len;
     t->size = n;
     if(n > 0) {
@@ -145,7 +156,7 @@ void *NEW(symbol_t tag, const char *pos, size_t len, size_t n, void *value)
 }
 
 static
-void LINK(void *parent, size_t n, symbol_t label, void *child)
+void LINK(void *parent, size_t n, symbol_t label, void *child, void *thunk)
 {
     Tree *t = (Tree*)parent;
     t->labels[n] = label;
@@ -153,7 +164,7 @@ void LINK(void *parent, size_t n, symbol_t label, void *child)
 }
 
 static
-void GC(void *parent, int c)
+void GC(void *parent, int c, void *thunk)
 {
     Tree *t = (Tree*)parent;
 	if(t == NULL) {
@@ -168,7 +179,7 @@ void GC(void *parent, int c)
 		if(t->size > 0) {
 			size_t i = 0;
 			for(i = 0; i < t->size; i++) {
-				GC(t->childs[i], -1);
+				GC(t->childs[i], -1, thunk);
 			}
 			free(t->labels);
 			free(t->childs);
@@ -177,7 +188,11 @@ void GC(void *parent, int c)
 	}
 }
 
-static void ParserContext_initTreeFunc(ParserContext *c, void* (*fnew)(symbol_t, const char *, size_t, size_t, void *), void  (*fset)(void *, size_t, symbol_t, void *), void  (*fgc)(void *, int))
+static void ParserContext_initTreeFunc(ParserContext *c, 
+	void *thunk,
+	void* (*fnew)(symbol_t, const char *, size_t, size_t, void *), 
+	void  (*fset)(void *, size_t, symbol_t, void *, void *), 
+	void  (*fgc)(void *, int, void*))
 {
 	if(fnew != NULL && fset != NULL && fgc != NULL) {
 		c->fnew = fnew;
@@ -185,25 +200,27 @@ static void ParserContext_initTreeFunc(ParserContext *c, void* (*fnew)(symbol_t,
 		c->fgc  = fgc;
 	}
 	else {
+		c->thunk = c;
     	c->fnew = NEW;
     	c->fsub = LINK;
     	c->fgc  = GC;
     }
+    c->thunk = thunk == NULL ? c : thunk;
 }
 
 static
-void *nonew(symbol_t tag, const char *pos, size_t len, size_t n, void *value)
+void *nonew(symbol_t tag, const char *pos, size_t len, size_t n, void *thunk)
 {
     return NULL;
 }
 
 static
-void nosub(void *parent, size_t n, symbol_t label, void *child)
+void nosub(void *parent, size_t n, symbol_t label, void *child, void *thunk)
 {
 }
 
 static
-void nogc(void *parent, int c)
+void nogc(void *parent, int c, void *thunk)
 {
 }
 
@@ -212,6 +229,7 @@ static void ParserContext_initNoTreeFunc(ParserContext *c)
     c->fnew = nonew;
     c->fsub = nosub;
     c->fgc  = nogc;
+    c->thunk = c;
 }
 
 /* ParserContext */
@@ -232,6 +250,13 @@ static ParserContext *ParserContext_new(const char *text, size_t len)
     c->stacks = (struct Wstack*)calloc(c->log_size, sizeof(struct Wstack));
     c->unused_stack = 0;
     c->fail_stack   = 0;
+    // symbol table
+    c->tables = NULL;
+    c->tableSize = 0;
+    c->tableMax  = 0;
+    c->stateValue = 0;
+    c->stateCount = 0;
+    c->count = 0;
     // memo
     c->memoArray = NULL;
     c->memoSize = 0;
@@ -285,6 +310,7 @@ void _log(ParserContext *c, int op, void *value, struct Tree *tree)
 	if(!(c->unused_log < c->log_size)) {
 		TreeLog *newlogs = (TreeLog *)calloc(c->log_size * 2, sizeof(TreeLog));
 		memcpy(newlogs, c->logs, c->log_size * sizeof(TreeLog));
+		free(c->logs);
 		c->logs = newlogs;
 		c->log_size *= 2;
 	}
@@ -320,8 +346,8 @@ static void ParserContext_beginTree(ParserContext *c, int shift)
 
 static void ParserContext_linkTree(ParserContext *c, void *parent, symbol_t label)
 {
+    GCINC(c, c->left);
     _log(c, OpLink, (void*)label, c->left);
-    c->fgc(c->left, 1);
 }
 
 static void ParserContext_tagTree(ParserContext *c, symbol_t tag)
@@ -329,16 +355,16 @@ static void ParserContext_tagTree(ParserContext *c, symbol_t tag)
     _log(c, OpTag, (void*)((long)tag), NULL);
 }
 
-static void ParserContext_valueTree(ParserContext *c, void *value)
+static void ParserContext_valueTree(ParserContext *c, const char *text, size_t len)
 {
-    _log(c, OpReplace, value, NULL);
+    _log(c, OpReplace, (void*)text, (Tree*)len);
 }
 
 static void ParserContext_foldTree(ParserContext *c, int shift, symbol_t label)
 {
     _log(c, OpNew, (void*)(c->pos + shift), NULL);
+    GCINC(c, c->left);
     _log(c, OpLink, (void*)label, c->left);
-    c->fgc(c->left, 1);
 }
 
 static size_t ParserContext_saveLog(ParserContext *c)
@@ -353,7 +379,7 @@ static void ParserContext_backLog(ParserContext *c, size_t unused_log)
 		for(i = unused_log; i < c->unused_log; i++) {
 			TreeLog *l = c->logs + i;
 			if(l->op == OpLink) {
-				c->fgc(l->tree, -1);
+				GCDEC(c, l->tree);
 			}
 			l->op = 0;
 			l->value = NULL;
@@ -363,7 +389,7 @@ static void ParserContext_backLog(ParserContext *c, size_t unused_log)
     }
 }
 
-static void ParserContext_endTree(ParserContext *c, symbol_t tag, void *value, int shift)
+static void ParserContext_endTree(ParserContext *c, int shift, symbol_t tag, const char *text, size_t len)
 {
     int objectSize = 0;
     long i;
@@ -379,13 +405,20 @@ static void ParserContext_endTree(ParserContext *c, symbol_t tag, void *value, i
 	   if(l->op == OpTag && tag == 0) {
 	     tag = (symbol_t)l->value;
 	   }
-	   if(l->op == OpReplace && value == NULL) {
-	     value = l->value;
+	   if(l->op == OpReplace) {
+	   	 if(text == NULL) {
+		     text = (const char*)l->value;
+		     len = (size_t)l->tree;
+		 }
+	     l->tree = NULL;
 	   }
 	}
  	TreeLog * start = c->logs + i;
-    const char *ppos = (const char*)start->value;
-    Tree *t = c->fnew(tag, ppos, ((c->pos + shift) - ppos), objectSize, value);
+ 	if(text == NULL) {
+    	text = (const char*)start->value;
+    	len = ((c->pos + shift) - text);
+    }
+    Tree *t = c->fnew(tag, text, len, objectSize, c->thunk);
 	GCSET(c, c->left, t);
     c->left = t;
     if (objectSize > 0) {
@@ -394,7 +427,7 @@ static void ParserContext_endTree(ParserContext *c, symbol_t tag, void *value, i
         for(j = i; j < c->unused_log; j++) {
  		   TreeLog * cur = c->logs + j;
            if (cur->op == OpLink) {
-              c->fsub(c->left, n++, (symbol_t)cur->value, cur->tree);
+              c->fsub(c->left, n++, (symbol_t)cur->value, cur->tree, c->thunk);
            }
            cur->tree = NULL;
         }
@@ -422,227 +455,175 @@ static void ParserContext_backTree(ParserContext *c, size_t back)
 	c->unused_stack = back;
 }
 
+// Symbol Table ---------------------------------------------------------
 
-//// SymbolTable ---------------------------------------------------------
-//
-//	private final static byte[] NULLSymbol = { 0, 0, 0, 0 }; // to distinguish
-//	// others
-//	private SymbolTableEntry[] tables;
-//	private int tableSize = 0;
-//	private int maxTableSize = 0;
-//
-//	private int stateValue = 0;
-//	private int stateCount = 0;
-//
-//	static final class SymbolTableEntry {
-//		int stateValue;
-//		Symbol table;
-//		long code;
-//		byte[] Symbol; // if uft8 is NULL, hidden
-//
-//		@Override
-//		public String toString() {
-//			StringBuilder sb = new StringBuilder();
-//			sb.append('[');
-//			sb.append(stateValue);
-//			sb.append(", ");
-//			sb.append(table);
-//			sb.append(", ");
-//			sb.append((Symbol == NULL) ? "<masked>" : new String(Symbol));
-//			sb.append("]");
-//			return sb.toString();
-//		}
-//	}
-//
-//	private final static long hash(byte[] utf8, int ppos, int pos) {
-//		long hashCode = 1;
-//		for (int i = ppos; i < pos; i++) {
-//			hashCode = hashCode * 31 + (utf8[i] & 0xff);
-//		}
-//		return hashCode;
-//	}
-//
-//	private final static boolean equalsBytes(byte[] utf8, byte[] b) {
-//		if (utf8.length == b.length) {
-//			for (int i = 0; i < utf8.length; i++) {
-//				if (utf8[i] != b[i]) {
-//					return false;
-//				}
-//			}
-//			return true;
-//		}
-//		return false;
-//	}
-//
-//	private final long hashInputs(int ppos, int pos) {
-//		long hashCode = 1;
-//		for (int i = ppos; i < pos; i++) {
-//			hashCode = hashCode * 31 + (byteAt(i) & 0xff);
-//		}
-//		return hashCode;
-//	}
-//
-//	private final boolean equalsInputs(int ppos, int pos, byte[] b2) {
-//		if ((pos - ppos) == b2.length) {
-//			for (int i = 0; i < b2.length; i++) {
-//				if (byteAt(ppos + i) != b2[i]) {
-//					return false;
-//				}
-//			}
-//			return true;
-//		}
-//		return false;
-//	}
-//
-//	private void initEntry(int s, int e) {
-//		for (int i = s; i < e; i++) {
-//			this.tables[i] = new SymbolTableEntry();
-//		}
-//	}
-//
-//	private void push(Symbol table, long code, byte[] utf8) {
-//		if (!(tableSize < maxTableSize)) {
-//			if (maxTableSize == 0) {
-//				maxTableSize = 128;
-//				this.tables = new SymbolTableEntry[128];
-//				initEntry(0, maxTableSize);
-//			} else {
-//				maxTableSize *= 2;
-//				SymbolTableEntry[] newtable = new SymbolTableEntry[maxTableSize];
-//				System.arraycopy(this.tables, 0, newtable, 0, tables.length);
-//				this.tables = newtable;
-//				initEntry(tables.length / 2, maxTableSize);
-//			}
-//		}
-//		SymbolTableEntry entry = tables[tableSize];
-//		tableSize++;
-//		if (entry.table == table && equalsBytes(entry.Symbol, utf8)) {
-//			// reuse state value
-//			entry.code = code;
-//			this.stateValue = entry.stateValue;
-//		} else {
-//			entry.table = table;
-//			entry.code = code;
-//			entry.Symbol = utf8;
-//			this.stateCount += 1;
-//			this.stateValue = stateCount;
-//			entry.stateValue = stateCount;
-//		}
-//	}
-//
-//	public final int saveSymbolPoint() {
-//		return this.tableSize;
-//	}
-//
-//	public final void backSymbolPoint(int savePoint) {
-//		if (this.tableSize != savePoint) {
-//			this.tableSize = savePoint;
-//			if (this.tableSize == 0) {
-//				this.stateValue = 0;
-//			} else {
-//				this.stateValue = tables[savePoint - 1].stateValue;
-//			}
-//		}
-//	}
-//
-//	public final void addSymbol(Symbol table, int ppos) {
-//		byte[] b = this.subByte(ppos, pos);
-//		push(table, hash(b, 0, b.length), b);
-//	}
-//
-//	public final void addSymbolMask(Symbol table) {
-//		push(table, 0, NULLSymbol);
-//	}
-//
-//	public final boolean exists(Symbol table) {
-//		for (int i = tableSize - 1; i >= 0; i--) {
-//			SymbolTableEntry entry = tables[i];
-//			if (entry.table == table) {
-//				return entry.Symbol != NULLSymbol;
-//			}
-//		}
-//		return false;
-//	}
-//
-//	public final boolean existsSymbol(Symbol table, byte[] Symbol) {
-//		long code = hash(Symbol, 0, Symbol.length);
-//		for (int i = tableSize - 1; i >= 0; i--) {
-//			SymbolTableEntry entry = tables[i];
-//			if (entry.table == table) {
-//				if (entry.Symbol == NULLSymbol) {
-//					return false; // masked
-//				}
-//				if (entry.code == code && equalsBytes(entry.Symbol, Symbol)) {
-//					return true;
-//				}
-//			}
-//		}
-//		return false;
-//	}
-//
-//	public final boolean matchSymbol(Symbol table) {
-//		for (int i = tableSize - 1; i >= 0; i--) {
-//			SymbolTableEntry entry = tables[i];
-//			if (entry.table == table) {
-//				if (entry.Symbol == NULLSymbol) {
-//					return false; // masked
-//				}
-//				return this.match(entry.Symbol);
-//			}
-//		}
-//		return false;
-//	}
-//
-//	public final boolean equals(Symbol table, int ppos) {
-//		for (int i = tableSize - 1; i >= 0; i--) {
-//			SymbolTableEntry entry = tables[i];
-//			if (entry.table == table) {
-//				if (entry.Symbol == NULLSymbol) {
-//					return false; // masked
-//				}
-//				return equalsInputs(ppos, pos, entry.Symbol);
-//			}
-//		}
-//		return false;
-//	}
-//
-//	public boolean contains(Symbol table, int ppos) {
-//		long code = hashInputs(ppos, pos);
-//		for (int i = tableSize - 1; i >= 0; i--) {
-//			SymbolTableEntry entry = tables[i];
-//			if (entry.table == table) {
-//				if (entry.Symbol == NULLSymbol) {
-//					return false; // masked
-//				}
-//				if (code == entry.code && equalsInputs(ppos, pos, entry.Symbol)) {
-//					return true;
-//				}
-//			}
-//		}
-//		return false;
-//	}
-//
-//	// Counter ------------------------------------------------------------
-//
-//	private int count = 0;
-//
-//	public final void scanCount(int ppos, long mask, int shift) {
-//		if (mask == 0) {
-//			String num = StringUtils.newString(subByte(ppos, pos));
-//			count = (int) Long.parseLong(num);
-//		} else {
-//			StringBuilder sb = new StringBuilder();
-//			for (int i = ppos; i < pos; i++) {
-//				sb.append(Integer.toBinaryString(inputs[i] & 0xff));
-//			}
-//			long v = Long.parseUnsignedLong(sb.toString(), 2);
-//			count = (int) ((v & mask) >> shift);
-//		}
-//	}
-//
-//	public final boolean decCount() {
-//		return count-- > 0;
-//	}
+static const char NullSymbol[4] = { 0, 0, 0, 0 };
+
+typedef struct SymbolTableEntry {
+	int stateValue;
+	symbol_t table;
+	const char* symbol;
+	size_t      length;
+} SymbolTableEntry;
+
+
+static
+void _push(ParserContext *c, symbol_t table, const char * utf8, size_t length) 
+{
+	if (!(c->tableSize < c->tableMax)) {
+		SymbolTableEntry* newtable = (SymbolTableEntry*)calloc(sizeof(SymbolTableEntry), (c->tableMax + 256));
+		if(c->tables != NULL) {
+			memcpy(newtable, c->tables, sizeof(SymbolTableEntry) * (c->tableMax));
+			free(c->tables);
+		}
+		c->tables = newtable;
+		c->tableMax += 256;
+	}
+	SymbolTableEntry *entry = c->tables + c->tableSize;
+	c->tableSize++;
+	if (entry->table == table && entry->length == length && memcmp(utf8, entry->symbol, length) == 0) {
+		// reuse state value
+		c->stateValue = entry->stateValue;
+	} else {
+		entry->table = table;
+		entry->symbol = utf8;
+		entry->length = length;
+		c->stateValue = c->stateCount++;
+		entry->stateValue = c->stateValue;
+	}
+}
+
+static int ParserContext_saveSymbolPoint(ParserContext *c) 
+{
+	return c->tableSize;
+}
+
+static 
+void ParserContext_backSymbolPoint(ParserContext *c, int savePoint) 
+{
+	if (c->tableSize != savePoint) {
+		c->tableSize = savePoint;
+		if (c->tableSize == 0) {
+			c->stateValue = 0;
+		} else {
+			c->stateValue = c->tables[savePoint - 1].stateValue;
+		}
+	}
+}
+
+static
+void ParserContext_addSymbol(ParserContext *c, symbol_t table, const char *ppos) {
+	size_t length = c->pos - ppos;
+	_push(c, table, ppos, length);
+}
+
+static
+void ParserContext_addSymbolMask(ParserContext *c, symbol_t table) {
+	_push(c, table, NullSymbol, 4);
+}
+
+static int ParserContext_exists(ParserContext *c, symbol_t table) 
+{
+	long i;
+	for (i = c->tableSize - 1; i >= 0; i--) {
+		SymbolTableEntry * entry = c->tables + i;
+		if (entry->table == table) {
+			return entry->symbol != NullSymbol;
+		}
+	}
+	return 0;
+}
+
+static int ParserContext_existsSymbol(ParserContext *c, symbol_t table, const char *symbol, size_t length) 
+{
+	long i;
+	for (i = c->tableSize - 1; i >= 0; i--) {
+		SymbolTableEntry * entry = c->tables + i;
+		if (entry->table == table) {
+			if (entry->symbol == NullSymbol) {
+				return 0; // masked
+			}
+			if (entry->length == length && memcmp(entry->symbol, symbol, length) == 0) {
+				return 1;
+			}
+		}
+	}
+	return 0;
+}
+
+static int ParserContext_matchSymbol(ParserContext *c, symbol_t table) 
+{
+	long i;
+	for (i = c->tableSize - 1; i >= 0; i--) {
+		SymbolTableEntry * entry = c->tables + i;
+		if (entry->table == table) {
+			if (entry->symbol == NullSymbol) {
+				return 0; // masked
+			}
+			return ParserContext_match(c, entry->symbol, entry->length);
+		}
+	}
+	return 0;
+}
+
+static int ParserContext_equals(ParserContext *c, symbol_t table, const char *ppos) {
+	long i;
+	size_t length = c->pos - ppos;
+	for (i = c->tableSize - 1; i >= 0; i--) {
+		SymbolTableEntry * entry = c->tables + i;
+		if (entry->table == table) {
+			if (entry->symbol == NullSymbol) {
+				return 0; // masked
+			}
+			return (entry->length == length && memcmp(entry->symbol, ppos, length) == 0);
+		}
+	}
+	return 0;
+}
+
+static int ParserContext_contains(ParserContext *c, symbol_t table, const char *ppos) 
+{
+	long i;
+	size_t length = c->pos - ppos;
+	for (i = c->tableSize - 1; i >= 0; i--) {
+		SymbolTableEntry * entry = c->tables + i;
+		if (entry->table == table) {
+			if (entry->symbol == NullSymbol) {
+				return 0; // masked
+			}
+			if (length == entry->length && memcmp(ppos, entry->symbol, length) == 0) {
+				return 1;
+			}
+		}
+	}
+	return 0;
+}
+
+
+// Counter -----------------------------------------------------------------
+
+static void ParserContext_scanCount(ParserContext *c, const char *ppos, long mask, int shift) 
+{
+	long i;
+	size_t length = c->pos - ppos;
+	if (mask == 0) {
+		c->count = strtol(ppos, NULL, 10);
+	} else {
+		long n = 0;
+		const char *p = ppos;
+		while(p < c->pos) {
+			n <<= 8;
+			n |= (*p & 0xff);
+			p++;
+		}
+		c->count = (n & mask) >> shift;
+	}
+}
+
+static int ParserContext_decCount(ParserContext *c) 
+{
+	return (c->count--) > 0;
+}
 
 // Memotable ------------------------------------------------------------
 
@@ -736,9 +717,9 @@ void ParserContext_memoFail(ParserContext *c, int memoPoint, const char* ppos)
 //	public final int lookupStateMemo(int memoPoint) {
 //		long key = longkey(pos, memoPoint, shift);
 //		int hash = (int) (key % memoArray.length);
-//		MemoEntry m = this.memoArray[hash];
+//		MemoEntry m = c->memoArray[hash];
 //		if (m.key == key) {
-//			this.pos += m.consumed;
+//			c->pos += m.consumed;
 //			return m.result;
 //		}
 //		return NotFound;
@@ -747,10 +728,10 @@ void ParserContext_memoFail(ParserContext *c, int memoPoint, const char* ppos)
 //	public final int lookupStateTreeMemo(int memoPoint) {
 //		long key = longkey(pos, memoPoint, shift);
 //		int hash = (int) (key % memoArray.length);
-//		MemoEntry m = this.memoArray[hash];
-//		if (m.key == key && m.stateValue == this.stateValue) {
-//			this.pos += m.consumed;
-//			this.left = m.memoTree;
+//		MemoEntry m = c->memoArray[hash];
+//		if (m.key == key && m.stateValue == c->stateValue) {
+//			c->pos += m.consumed;
+//			c->left = m.memoTree;
 //			return m.result;
 //		}
 //		return NotFound;
@@ -759,36 +740,36 @@ void ParserContext_memoFail(ParserContext *c, int memoPoint, const char* ppos)
 //	public void memoStateSucc(int memoPoint, int ppos) {
 //		long key = longkey(ppos, memoPoint, shift);
 //		int hash = (int) (key % memoArray.length);
-//		MemoEntry m = this.memoArray[hash];
+//		MemoEntry m = c->memoArray[hash];
 //		m.key = key;
 //		m.memoTree = left;
 //		m.consumed = pos - ppos;
 //		m.result = SuccFound;
-//		m.stateValue = this.stateValue;
-//		// this.CountStored += 1;
+//		m.stateValue = c->stateValue;
+//		// c->CountStored += 1;
 //	}
 //
 //	public void memoStateTreeSucc(int memoPoint, int ppos) {
 //		long key = longkey(ppos, memoPoint, shift);
 //		int hash = (int) (key % memoArray.length);
-//		MemoEntry m = this.memoArray[hash];
+//		MemoEntry m = c->memoArray[hash];
 //		m.key = key;
 //		m.memoTree = left;
 //		m.consumed = pos - ppos;
 //		m.result = SuccFound;
-//		m.stateValue = this.stateValue;
-//		// this.CountStored += 1;
+//		m.stateValue = c->stateValue;
+//		// c->CountStored += 1;
 //	}
 //
 //	public void memoStateFail(int memoPoint) {
 //		long key = longkey(pos, memoPoint, shift);
 //		int hash = (int) (key % memoArray.length);
-//		MemoEntry m = this.memoArray[hash];
+//		MemoEntry m = c->memoArray[hash];
 //		m.key = key;
 //		m.memoTree = left;
 //		m.consumed = 0;
 //		m.result = FailFound;
-//		m.stateValue = this.stateValue;
+//		m.stateValue = c->stateValue;
 //	}
 
 
@@ -797,17 +778,21 @@ static void ParserContext_free(ParserContext *c)
 	size_t i;
     if(c->memoArray != NULL) {
     	for(i = 0; i < c->memoSize; i++) {
-    		c->fgc(c->memoArray[i].memoTree, -1);
+    		GCDEC(c, c->memoArray[i].memoTree);
     		c->memoArray[i].memoTree = NULL;
     	}
         free(c->memoArray);
         c->memoArray = NULL;
     }
+    if(c->tables != NULL) {
+    	free(c->tables);
+    	c->tables = NULL;
+    }
     ParserContext_backLog(c, 0);
     free(c->logs);
     c->logs = NULL;
     for(i = 0; i < c->stack_size; i++) {
-    	c->fgc(c->stacks[i].tree, -1);
+    	GCDEC(c, c->stacks[i].tree);
     	c->stacks[i].tree = NULL;
     }
     free(c->stacks);

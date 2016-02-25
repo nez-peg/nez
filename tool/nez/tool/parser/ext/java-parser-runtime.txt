@@ -129,7 +129,7 @@ static final class ParserContext {
 		log(Operation.Link, 0, label, left);
 	}
 
-	public final void endTree(Symbol tag, String value, int shift) {
+	public final void endTree(int shift, Symbol tag, String value) {
 		int objectSize = 0;
 		AstLog start;
 		for (start = last; start.op != Operation.New; start = start.prev) {
@@ -186,13 +186,21 @@ static final class ParserContext {
 		}
 	}
 
+	public final Tree<?> saveTree() {
+		return this.left;
+	}
+
+	public final void backTree(Tree<?> tree) {
+		this.left = tree;
+	}
+
 	// Symbol Table ---------------------------------------------------------
 
 	private final static byte[] NullSymbol = { 0, 0, 0, 0 }; // to distinguish
+
 	// others
-	private SymbolTableEntry[] tables;
+	private SymbolTableEntry[] tables = new SymbolTableEntry[0];
 	private int tableSize = 0;
-	private int maxTableSize = 0;
 
 	private int stateValue = 0;
 	private int stateCount = 0;
@@ -202,19 +210,6 @@ static final class ParserContext {
 		Symbol table;
 		long code;
 		byte[] symbol; // if uft8 is null, hidden
-
-		@Override
-		public String toString() {
-			StringBuilder sb = new StringBuilder();
-			sb.append('[');
-			sb.append(stateValue);
-			sb.append(", ");
-			sb.append(table);
-			sb.append(", ");
-			sb.append((symbol == null) ? "<masked>" : new String(symbol));
-			sb.append("]");
-			return sb.toString();
-		}
 	}
 
 	private final static long hash(byte[] utf8, int ppos, int pos) {
@@ -237,45 +232,14 @@ static final class ParserContext {
 		return false;
 	}
 
-	private final long hashInputs(int ppos, int pos) {
-		long hashCode = 1;
-		for (int i = ppos; i < pos; i++) {
-			hashCode = hashCode * 31 + (byteAt(i) & 0xff);
-		}
-		return hashCode;
-	}
-
-	private final boolean equalsInputs(int ppos, int pos, byte[] b2) {
-		if ((pos - ppos) == b2.length) {
-			for (int i = 0; i < b2.length; i++) {
-				if (byteAt(ppos + i) != b2[i]) {
-					return false;
-				}
-			}
-			return true;
-		}
-		return false;
-	}
-
-	private void initEntry(int s, int e) {
-		for (int i = s; i < e; i++) {
-			this.tables[i] = new SymbolTableEntry();
-		}
-	}
-
 	private void push(Symbol table, long code, byte[] utf8) {
-		if (!(tableSize < maxTableSize)) {
-			if (maxTableSize == 0) {
-				maxTableSize = 128;
-				this.tables = new SymbolTableEntry[128];
-				initEntry(0, maxTableSize);
-			} else {
-				maxTableSize *= 2;
-				SymbolTableEntry[] newtable = new SymbolTableEntry[maxTableSize];
-				System.arraycopy(this.tables, 0, newtable, 0, tables.length);
-				this.tables = newtable;
-				initEntry(tables.length / 2, maxTableSize);
+		if (!(tableSize < tables.length)) {
+			SymbolTableEntry[] newtable = new SymbolTableEntry[tables.length + 256];
+			System.arraycopy(this.tables, 0, newtable, 0, tables.length);
+			for (int i = tables.length; i < newtable.length; i++) {
+				newtable[i] = new SymbolTableEntry();
 			}
+			this.tables = newtable;
 		}
 		SymbolTableEntry entry = tables[tableSize];
 		tableSize++;
@@ -287,6 +251,7 @@ static final class ParserContext {
 			entry.table = table;
 			entry.code = code;
 			entry.symbol = utf8;
+
 			this.stateCount += 1;
 			this.stateValue = stateCount;
 			entry.stateValue = stateCount;
@@ -356,6 +321,26 @@ static final class ParserContext {
 		return false;
 	}
 
+	private final long hashInputs(int ppos, int pos) {
+		long hashCode = 1;
+		for (int i = ppos; i < pos; i++) {
+			hashCode = hashCode * 31 + (byteAt(i) & 0xff);
+		}
+		return hashCode;
+	}
+
+	private final boolean equalsInputs(int ppos, int pos, byte[] b2) {
+		if ((pos - ppos) == b2.length) {
+			for (int i = 0; i < b2.length; i++) {
+				if (byteAt(ppos + i) != b2[i]) {
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+
 	public final boolean equals(Symbol table, int ppos) {
 		for (int i = tableSize - 1; i >= 0; i--) {
 			SymbolTableEntry entry = tables[i];
@@ -401,6 +386,7 @@ static final class ParserContext {
 			long v = Long.parseUnsignedLong(sb.toString(), 2);
 			count = (int) ((v & mask) >> shift);
 		}
+		Verbose.println("set count %d", count);
 	}
 
 	public final boolean decCount() {
