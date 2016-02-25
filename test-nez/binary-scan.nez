@@ -1,0 +1,17 @@
+// binary-scan.nez
+// 0b00111100 => 60, '<'
+// >>> 0b01000110 => 70, 'F'
+// >>> 0b01001110 => 78, 'N'
+
+
+START = <scan 00111100 .> <repeat LETTER>
+LETTER = [A-Za-z]
+ 
+example START '''
+Faaaaaaa
+'''
+
+example START '''
+Naaaaaaa
+'''
+

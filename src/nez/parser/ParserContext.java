@@ -389,14 +389,16 @@ public class ParserContext<T extends Tree<T>> {
 			String num = StringUtils.newString(subByte(ppos, pos));
 			count = (int) Long.parseLong(num);
 		} else {
-			StringBuilder sb = new StringBuilder();
+			long v = 0;
 			for (int i = ppos; i < pos; i++) {
-				sb.append(Integer.toBinaryString(inputs[i] & 0xff));
+				int n = this.byteAt(i) & 0xff;
+				v <<= 8;
+				v |= n;
 			}
-			long v = Long.parseUnsignedLong(sb.toString(), 2);
+			v = v & mask;
 			count = (int) ((v & mask) >> shift);
 		}
-		Verbose.println("set count %d", count);
+		Verbose.println("set count %d mask=%s, shift=%s", count, mask, shift);
 	}
 
 	public final boolean decCount() {

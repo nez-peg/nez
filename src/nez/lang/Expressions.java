@@ -1088,6 +1088,7 @@ public abstract class Expressions {
 				m >>= 1;
 				shift++;
 			}
+			// Verbose.println("@@ mask=%s, shift=%d,%d", mask, bits, shift);
 		}
 		Expression p = new Nez.Scan(bits, shift, e);
 		p.setSourceLocation(s);

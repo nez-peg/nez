@@ -1,0 +1,22 @@
+/**
+ * list.nez - a right-associative pair
+ * 
+ **/
+
+
+Expression
+	= Pair / Term
+
+Pair
+	= { $left(Term) ',' S* $right(Expression) #Pair }
+
+Term
+	= { [A-Za-z0-9]+ } S*
+
+S
+	= [ \t]
+
+
+example Expression A,B,C,D
+
+

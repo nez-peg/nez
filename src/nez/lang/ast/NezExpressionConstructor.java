@@ -324,8 +324,8 @@ public class NezExpressionConstructor extends GrammarVisitorMap<ExpressionTransd
 	public class _Scanf extends TreeVisitor {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
-			String mask = node.getText(_name, null);
-			return Expressions.newScanf(node, node.getText(_name, null), newInstance(node.get(_expr)));
+			String mask = node.getText(_mask, null);
+			return Expressions.newScanf(node, mask, newInstance(node.get(_expr)));
 		}
 	}
 

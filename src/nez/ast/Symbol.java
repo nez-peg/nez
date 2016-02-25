@@ -28,8 +28,8 @@ public class Symbol {
 
 	public final static Symbol NullSymbol = unique("");
 	public final static Symbol MetaSymbol = unique("$");
-	public final static Symbol tokenTag = unique("String");
-	public final static Symbol treeTag = unique("Tree");
+	public final static Symbol tokenTag = unique(""); // for compatibility Cnez
+	public final static Symbol treeTag = unique("");
 
 	final int id;
 	final String symbol;

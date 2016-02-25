@@ -1,0 +1,4 @@
+// recursion.nez
+
+A = 'a' A 'a' / 'a'
+

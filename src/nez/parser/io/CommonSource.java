@@ -120,7 +120,7 @@ public abstract class CommonSource implements Source {
 		if (pos < 0) {
 			pos = 0;
 		}
-		while (this.byteAt(pos) == 0 /* this.EOF() */&& pos > 0) {
+		while ((this.eof(pos) || this.byteAt(pos) == 0) && pos > 0) {
 			pos -= 1;
 		}
 		long startIndex = pos;

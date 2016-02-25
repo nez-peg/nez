@@ -60,7 +60,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 			this.file = new FileBuilder(null);
 		} else {
 			this.path = FileBuilder.extractFileName(path);
-			String filename = FileBuilder.changeFileExtension(path, this.getFileExtension());
+			String filename = FileBuilder.changeFileExtension(this.path, this.getFileExtension());
 			this.file = new FileBuilder(filename);
 			ConsoleUtils.println("generating " + filename + " ... ");
 		}
@@ -1320,9 +1320,17 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 			String ppos = SavePos();
 			visit(e.get(0), a);
 			if (e.op == FunctionName.is) {
-				Statement(_Func("equals", _table(e.tableName), ppos));
+				If(_Not(_Func("equals", _table(e.tableName), ppos)));
+				{
+					Fail();
+				}
+				EndIf();
 			} else {
-				Statement(_Func("contains", _table(e.tableName), ppos));
+				If(_Not(_Func("contains", _table(e.tableName), ppos)));
+				{
+					Fail();
+				}
+				EndIf();
 			}
 			EndScope();
 			return null;

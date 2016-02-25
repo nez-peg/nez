@@ -1,0 +1,41 @@
+// RNA Structure
+// Author: Maskaki Ishii
+// This grammar involves many of backtracking to parse.
+
+Start = { $(Sequence)+ #Root} S* EOT
+
+Sequence = PSeq
+         / LSeq 
+         / Element
+
+PSeq     = {A $(Sequence) U #AU}
+         / {U $(Sequence) A #UA}
+         / {C $(Sequence) G #CG}
+         / {G $(Sequence) C #GC}
+
+
+LSeq     = {A ($(Element) / $(LSeq) / $(Sequence)) #A}
+         / {U ($(Element) / $(LSeq) / $(Sequence)) #U}
+         / {C ($(Element) / $(LSeq) / $(Sequence)) #C}
+         / {G ($(Element) / $(LSeq) / $(Sequence)) #G}
+
+Element  = { A }
+         / { U }
+         / { C }
+         / { G }
+
+A = 'A'
+U = 'U'
+C = 'C'
+G = 'G'
+
+_
+	= S*
+
+S
+	= [ \n\r\t]
+
+EOL
+	= ('\r'? '\n' / !.)
+
+EOT	= !.
