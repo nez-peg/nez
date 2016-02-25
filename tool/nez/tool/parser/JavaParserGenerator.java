@@ -6,13 +6,16 @@ public class JavaParserGenerator extends AbstractParserGenerator {
 
 	@Override
 	protected void initTypeMap() {
+		this.UniqueNumberingSymbol = false;
 		this.addType("$parse", "boolean");
 		this.addType("$tag", "Symbol");
 		this.addType("$label", "Symbol");
 		this.addType("$table", "Symbol");
-		this.addType("$arity", "int");
 		this.addType("$text", "byte[]");
 		this.addType("$index", "byte[]");
+		this.addType("$set", "boolean[]");
+		this.addType("$string", "String");
+
 		this.addType("memo", "int");
 		this.addType(_set(), "boolean[]");
 		this.addType(_index(), "byte[]");
@@ -84,14 +87,20 @@ public class JavaParserGenerator extends AbstractParserGenerator {
 	// return "toUTF8(" + StringUtils.quoteString('"', value.toString(), '"') +
 	// ")";
 	// }
-	//
-	// @Override
-	// protected String _init(Symbol value) {
-	// if (value == null) {
-	// return "\"\"";
-	// }
-	// return "Symbol.unique(" + StringUtils.quoteString('"', value.toString(),
-	// '"') + ")";
-	// }
+
+	@Override
+	protected String _initTag(int id, String s) {
+		return "Symbol.unique(" + _quote(s) + ")";
+	}
+
+	@Override
+	protected String _initLabel(int id, String s) {
+		return "Symbol.unique(" + _quote(s) + ")";
+	}
+
+	@Override
+	protected String _initTable(int id, String s) {
+		return "Symbol.unique(" + _quote(s) + ")";
+	}
 
 }

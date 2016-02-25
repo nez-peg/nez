@@ -1,0 +1,2 @@
+[#Add $left=[#Mul $left=[#Int '1'] $right=[#Int '2']] $right=[#Int '3']]
+
