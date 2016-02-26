@@ -10,7 +10,7 @@ public final static <T> T parse(String text, NewFunc<T> f, SetFunc<T> f2) {
 			left = c.f.newTree(0, c.inputs, 0, c.pos, 0);
 		}
 	}
-	return null;
+	return left;
 }
 
 public final static SimpleTree parse(String text) {
