@@ -357,7 +357,7 @@ public class PythonParserGenerator extends AbstractParserGenerator {
 		If("__name__ == '__main__'");
 		{
 			Statement("t = parse(sys.argv[1])");
-			Statement("print (\"parsed:\" + t)");
+			Statement("print (t)");
 		}
 		EndIf();
 		file.writeIndent("## End of File");
