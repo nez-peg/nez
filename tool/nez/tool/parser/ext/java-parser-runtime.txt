@@ -11,7 +11,7 @@ public final static <T> T parse(String text, NewFunc<T> f, SetFunc<T> f2) {
 		}
 		return left;
 	}
-	return null;
+	return left;
 }
 
 public final static SimpleTree parse(String text) {
