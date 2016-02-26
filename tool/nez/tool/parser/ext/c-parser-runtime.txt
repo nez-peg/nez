@@ -643,7 +643,7 @@ static  uniquekey_t longkey( uniquekey_t pos, int memoPoint) {
 }
 
 static
-int ParserContext_lookupMemo(ParserContext *c, int memoPoint)
+int ParserContext_memoLookup(ParserContext *c, int memoPoint)
 {
     uniquekey_t key = longkey((c->pos - c->inputs), memoPoint);
     unsigned int hash = (unsigned int) (key % c->memoSize);
@@ -656,7 +656,7 @@ int ParserContext_lookupMemo(ParserContext *c, int memoPoint)
 }
 
 static
-int ParserContext_lookupTreeMemo(ParserContext *c, int memoPoint)
+int ParserContext_memoLookupTree(ParserContext *c, int memoPoint)
 {
     uniquekey_t key = longkey((c->pos - c->inputs), memoPoint);
     unsigned int hash = (unsigned int) (key % c->memoSize);
@@ -699,9 +699,9 @@ void ParserContext_memoTreeSucc(ParserContext *c, int memoPoint, const char* ppo
 }
 
 static
-void ParserContext_memoFail(ParserContext *c, int memoPoint, const char* ppos)
+void ParserContext_memoFail(ParserContext *c, int memoPoint)
 {
-	uniquekey_t key = longkey((ppos - c->inputs), memoPoint);
+	uniquekey_t key = longkey((c->pos - c->inputs), memoPoint);
     unsigned int hash = (unsigned int) (key % c->memoSize);
     MemoEntry* m = c->memoArray + hash;
     m->key = key;

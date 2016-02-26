@@ -9,6 +9,7 @@ public final static <T> T parse(String text, NewFunc<T> f, SetFunc<T> f2) {
 		if (left == null) {
 			left = c.f.newTree(0, c.inputs, 0, c.pos, 0);
 		}
+		return left;
 	}
 	return null;
 }
@@ -521,7 +522,7 @@ static final class ParserContext<T> {
 		return ((pos << 12) | memoPoint);
 	}
 
-	public final int lookupMemo(int memoPoint) {
+	public final int memoLookup(int memoPoint) {
 		long key = longkey(pos, memoPoint, shift);
 		int hash = (int) (key % memoArray.length);
 		MemoEntry m = this.memoArray[hash];
@@ -533,7 +534,7 @@ static final class ParserContext<T> {
 	}
 
 	@SuppressWarnings("unchecked")
-	public final int lookupTreeMemo(int memoPoint) {
+	public final int memoLookupTree(int memoPoint) {
 		long key = longkey(pos, memoPoint, shift);
 		int hash = (int) (key % memoArray.length);
 		MemoEntry m = this.memoArray[hash];
