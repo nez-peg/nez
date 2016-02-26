@@ -19,7 +19,7 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements
 	protected Object value;
 
 	protected Tree() {
-		this.tag = Symbol.NullSymbol;
+		this.tag = Symbol.Null;
 		this.source = null;
 		this.pos = 0;
 		this.length = 0;

@@ -130,7 +130,7 @@ public class ParserContext<T extends Tree<T>> {
 		log2(Operation.Link, 0, label, left);
 	}
 
-	public final void endTree(Symbol tag, String value, int shift) {
+	public final void endTree(int shift, Symbol tag, String value) {
 		int objectSize = 0;
 		TreeLog start = null;
 		int start_index = 0;
@@ -168,7 +168,7 @@ public class ParserContext<T extends Tree<T>> {
 
 	public final T newTree(Symbol tag, int start, int end, int n, String value) {
 		if (tag == null) {
-			tag = n == 0 ? Symbol.tokenTag : Symbol.treeTag;
+			tag = Symbol.Null;
 		}
 		return left.newInstance(tag, source, start, (end - start), n, value);
 	}

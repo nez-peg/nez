@@ -183,7 +183,7 @@ class ASTMachine {
 
 	private Tree<?> constructLeft(ASTLog start, ASTLog end, long spos, long epos, int objectSize, Symbol tag, Object value) {
 		if (tag == null) {
-			tag = objectSize > 0 ? Symbol.treeTag : Symbol.tokenTag;
+			tag = Symbol.Null;
 		}
 		Tree<?> newnode = this.prototype.newInstance(tag, source, spos, (int) (epos - spos), objectSize, value);
 		int n = 0;
@@ -243,7 +243,7 @@ class ASTMachine {
 			}
 		}
 		if (parseResult == null) {
-			parseResult = prototype.newInstance(Symbol.tokenTag, source, startpos, (int) (endpos - startpos), 0, null);
+			parseResult = prototype.newInstance(Symbol.Null, source, startpos, (int) (endpos - startpos), 0, null);
 		}
 		this.firstLog = null;
 		this.unusedDataLog = null;

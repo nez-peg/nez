@@ -344,7 +344,7 @@ public class PythonParserGenerator extends AbstractParserGenerator {
 			VarDecl(_state(), "ParserContext(text)");
 			If(_funccall(_funcname(g.getStartProduction())));
 			{
-				Return(_cpos_());
+				Return(_cpos());
 			}
 			EndIf();
 			Return("-1");

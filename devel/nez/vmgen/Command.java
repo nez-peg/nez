@@ -146,7 +146,7 @@ public class Command extends nez.main.Command {
 		int id = 0;
 
 		public MyTree() {
-			super(Symbol.tokenTag, null, 0, 0, null, null);
+			super(Symbol.Null, null, 0, 0, null, null);
 		}
 
 		public MyTree(Symbol tag, Source source, long pos, int len, int size, Object value) {

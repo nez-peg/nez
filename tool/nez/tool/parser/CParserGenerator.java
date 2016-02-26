@@ -111,14 +111,12 @@ public class CParserGenerator extends AbstractParserGenerator {
 	protected void generateFooter(Grammar g) {
 		ImportFile("/nez/tool/parser/ext/c-tree-utils.txt");
 		//
-		BeginDecl("void* " + _prefix() + "parse(const char *text, size_t len, void *thunk, void* (*fnew)(symbol_t, const char *, size_t, size_t, void *), void  (*fset)(void *, size_t, symbol_t, void *, void *), void  (*fgc)(void *, int, void *))");
+		BeginDecl("void* " + _ns() + "parse(const char *text, size_t len, void *thunk, void* (*fnew)(symbol_t, const char *, size_t, size_t, void *), void  (*fset)(void *, size_t, symbol_t, void *, void *), void  (*fgc)(void *, int, void *))");
 		{
 			VarDecl("void*", "result", _Null());
 			VarDecl(_state(), "ParserContext_new(text, len)");
 			Statement(_Func("initTreeFunc", "thunk", "fnew", "fset", "fgc"));
-			if (code.getMemoPointSize() > 0) {
-				Statement(_Func("initMemoPoint", _int(strategy.SlidingWindow), _int(code.getMemoPointSize())));
-			}
+			this.InitMemoPoint();
 			If(_funccall(_funcname(g.getStartProduction())));
 			{
 				VarAssign("result", _Field(_state(), _tree()));
@@ -133,29 +131,27 @@ public class CParserGenerator extends AbstractParserGenerator {
 			Return("result");
 		}
 		EndDecl();
-		BeginDecl("long " + _prefix() + "match(const char *text, size_t len)");
+		BeginDecl("long " + _ns() + "match(const char *text, size_t len)");
 		{
 			VarDecl("long", "result", "-1");
 			VarDecl(_state(), "ParserContext_new(text, len)");
 			Statement(_Func("initNoTreeFunc"));
-			if (code.getMemoPointSize() > 0) {
-				Statement(_Func("initMemoPoint", _int(strategy.SlidingWindow), _int(code.getMemoPointSize())));
-			}
+			this.InitMemoPoint();
 			If(_funccall(_funcname(g.getStartProduction())));
 			{
-				VarAssign("result", _cpos_() + "-" + _Field(_state(), "inputs"));
+				VarAssign("result", _cpos() + "-" + _Field(_state(), "inputs"));
 			}
 			EndIf();
 			Statement(_Func("free"));
 			Return("result");
 		}
 		EndDecl();
-		BeginDecl("const char* " + _prefix() + "tag(symbol_t n)");
+		BeginDecl("const char* " + _ns() + "tag(symbol_t n)");
 		{
 			Return("_tags[n]");
 		}
 		EndDecl();
-		BeginDecl("const char* " + _prefix() + "label(symbol_t n)");
+		BeginDecl("const char* " + _ns() + "label(symbol_t n)");
 		{
 			Return("_labels[n]");
 		}
@@ -163,7 +159,7 @@ public class CParserGenerator extends AbstractParserGenerator {
 		Line("//#ifdef USE_MAIN");
 		BeginDecl("int main(int ac, const char **argv)");
 		{
-			Statement("void *t = " + _prefix() + "parse(argv[1], strlen(argv[1]), NULL, NULL, NULL, NULL)");
+			Statement("void *t = " + _ns() + "parse(argv[1], strlen(argv[1]), NULL, NULL, NULL, NULL)");
 			Statement("cnez_dump(t, stdout)");
 			Statement("fprintf(stdout, \"\\n\")");
 			Return("0");
@@ -224,10 +220,10 @@ public class CParserGenerator extends AbstractParserGenerator {
 			c++;
 		}
 		Line("#define MAXLABEL " + c);
-		Statement("void* " + _prefix() + "parse(const char *text, size_t len, void *, void* (*fnew)(symbol_t, const char *, size_t, size_t, void *), void  (*fset)(void *, size_t, symbol_t, void *, void *), void  (*fgc)(void *, int, void *))");
-		Statement("long " + _prefix() + "match(const char *text, size_t len)");
-		Statement("const char* " + _prefix() + "tag(symbol_t n)");
-		Statement("const char* " + _prefix() + "label(symbol_t n)");
+		Statement("void* " + _ns() + "parse(const char *text, size_t len, void *, void* (*fnew)(symbol_t, const char *, size_t, size_t, void *), void  (*fset)(void *, size_t, symbol_t, void *, void *), void  (*fgc)(void *, int, void *))");
+		Statement("long " + _ns() + "match(const char *text, size_t len)");
+		Statement("const char* " + _ns() + "tag(symbol_t n)");
+		Statement("const char* " + _ns() + "label(symbol_t n)");
 		this.file.close();
 	}
 

@@ -302,7 +302,7 @@ public class MozWriter extends InstructionVisitor {
 
 	public void encodeLabel(Symbol label) {
 		if (label == null) {
-			this.encodeTag(Symbol.NullSymbol);
+			this.encodeTag(Symbol.Null);
 		} else {
 			this.encodeTag(label);
 		}

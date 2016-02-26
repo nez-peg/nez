@@ -1,28 +1,137 @@
 
 /* Embedded ParserContext from nez.parser.ParserContext */
 
-static final class ParserContext {
-	public int pos = 0;
-	public Tree<?> left;
+public final static <T> T parse(String text, NewFunc<T> f, SetFunc<T> f2) {
+	T left = null;
+	ParserContext<T> c = new ParserContext<T>(text, f, f2);
+	if (start(c)) {
+		left = c.left;
+		if (left == null) {
+			left = c.f.newTree(0, c.inputs, 0, c.pos, 0);
+		}
+	}
+	return null;
+}
 
-	public ParserContext(String s) {
-		StringSource source = new StringSource(s);
-		this.source = source;
-		inputs = source.inputs;
+public final static SimpleTree parse(String text) {
+	SimpleTree f = new SimpleTree();
+	return parse(text, f, f);
+}
+
+public final static int match(String text) {
+	NoneTree f = new NoneTree();
+	ParserContext<NoneTree> c = new ParserContext<NoneTree>(text, f, f);
+	if (start(c)) {
+		return c.pos;
+	}
+	return -1;
+}
+
+public static interface NewFunc<T> {
+	T newTree(int tag, byte[] inputs, int pos, int len, int size);
+}
+
+public static interface SetFunc<T> {
+	void setTree(T parent, int n, int label, T child);
+}
+
+private static final int[] EmptyLabels = new int[0];
+private static final SimpleTree[] EmptyTrees = new SimpleTree[0];
+
+public static class SimpleTree implements NewFunc<SimpleTree>, SetFunc<SimpleTree> {
+	public int tag;
+	public byte[] text;
+	public int start;
+	public int len;
+	public int[] labels;
+	public SimpleTree[] childs;
+	
+	@Override
+	public SimpleTree newTree(int tag, byte[] inputs, int pos, int len, int size) {
+		SimpleTree t = new SimpleTree();
+		t.tag = tag;
+		t.text = inputs;
+		t.start = pos;
+		t.len = len;
+		if(size == 0) {
+			t.labels = EmptyLabels;
+			t.childs = EmptyTrees;
+		}
+		else {
+			t.labels = new int[size];
+			t.childs = new SimpleTree[size];
+		}
+		return t;
+	}
+
+	@Override
+	public void setTree(SimpleTree parent, int n, int label, SimpleTree child) {
+		parent.labels[n] = label;
+		parent.childs[n] = child;
+	}
+	
+	@Override
+   	public String toString() {
+   		StringBuilder sb = new StringBuilder();
+   		this.appendStringfied(sb);
+   		return sb.toString();
+   	}
+	
+	private void appendStringfied(StringBuilder sb) {
+		sb.append("[#");
+		sb.append(_tags[this.tag]);
+		if(this.childs.length == 0) {
+			sb.append(" '");
+			for(int i = 0; i < len; i++) {
+				char ch = (char)this.text[i + this.start];
+				sb.append(ch);
+			}
+			sb.append("'");
+		}
+		else {
+			for(int i = 0; i < labels.length; i++) {
+				if(labels[i] != 0) {
+					sb.append(" $");
+					sb.append(_labels[this.labels[i]]);
+					sb.append("=");
+				}
+				else {
+					sb.append(" ");
+				}
+				childs[i].appendStringfied(sb);
+			}
+		}
+		sb.append("]");
+	}
+}
+
+public static class NoneTree implements NewFunc<NoneTree>, SetFunc<NoneTree> {
+	@Override
+	public void setTree(NoneTree parent, int n, int label, NoneTree child) {
+	}
+
+	@Override
+	public NoneTree newTree(int tag, byte[] inputs, int pos, int len, int size) {
+		return null;
+	}
+
+}
+
+static final class ParserContext<T> {
+	public int pos = 0;
+	public T left;
+	NewFunc<T> f;
+	SetFunc<T> f2;
+	
+	public ParserContext(String s, NewFunc<T> f, SetFunc<T> f2) {
+		inputs = toUTF8(s + "\0");
 		length = inputs.length - 1;
 		this.pos = 0;
-		this.left = new CommonTree();
+		this.left = null;
+		this.f = f;
+		this.f2 = f2;
 	}
 
-	protected ParserContext(Source s) {
-		source = s;
-		inputs = null;
-		length = 0;
-		this.pos = 0;
-		this.left = new CommonTree();
-	}
-
-	protected Source source;
 	private byte[] inputs;
 	private int length;
 
@@ -60,156 +169,134 @@ static final class ParserContext {
 		return true;
 	}
 
-	public byte[] subByte(int startIndex, int endIndex) {
-		byte[] b = new byte[endIndex - startIndex];
-		System.arraycopy(this.inputs, (startIndex), b, 0, b.length);
-		return b;
-	}
-
-	protected byte byteAt(int n) {
-		return inputs[n];
-	}
-
 	// AST
 
 	private enum Operation {
 		Link, Tag, Replace, New;
 	}
 
-	static class AstLog {
+	static class TreeLog {
 		Operation op;
-		// int debugId;
-		int pos;
-		Symbol label;
-		Object value;
-		AstLog prev;
-		AstLog next;
+		int iValue;
+		Object oValue;
 	}
 
-	private AstLog last = new AstLog();
-	private AstLog unused = null;
+	private TreeLog[] logs = new TreeLog[0];
+	private int unused_log = 0;
 
-	private void log(Operation op, int pos, Symbol label, Object value) {
-		AstLog l;
-		if (this.unused == null) {
-			l = new AstLog();
-		} else {
-			l = this.unused;
-			this.unused = l.next;
+	private void log2(Operation op, int iValue, Object oValue) {
+		if (!(unused_log < logs.length)) {
+			TreeLog[] newlogs = new TreeLog[logs.length + 1024];
+			System.arraycopy(logs, 0, newlogs, 0, logs.length);
+			for (int i = logs.length; i < newlogs.length; i++) {
+				newlogs[i] = new TreeLog();
+			}
+			logs = newlogs;
 		}
-		// l.debugId = last.debugId + 1;
+		TreeLog l = logs[unused_log];
 		l.op = op;
-		l.pos = pos;
-		l.label = label;
-		l.value = value;
-		l.prev = last;
-		l.next = null;
-		last.next = l;
-		last = l;
+		l.iValue = iValue;
+		l.oValue = oValue;
+		this.unused_log++;
 	}
 
 	public final void beginTree(int shift) {
-		log(Operation.New, pos + shift, null, null);
+		log2(Operation.New, pos + shift, null);
 	}
 
-	public final void linkTree(Tree<?> parent, Symbol label) {
-		log(Operation.Link, 0, label, left);
+	public final void linkTree(int label) {
+		log2(Operation.Link, label, left);
 	}
 
-	public final void tagTree(Symbol tag) {
-		log(Operation.Tag, 0, null, tag);
+	public final void tagTree(int tag) {
+		log2(Operation.Tag, tag, null);
 	}
 
-	public final void valueTree(String value) {
-		log(Operation.Replace, 0, null, value);
+	public final void valueTree(byte[] value) {
+		log2(Operation.Replace, 0, value);
 	}
 
-	public final void foldTree(int shift, Symbol label) {
-		log(Operation.New, pos + shift, null, null);
-		log(Operation.Link, 0, label, left);
+	public final void foldTree(int shift, int label) {
+		log2(Operation.New, pos + shift,  null);
+		log2(Operation.Link, label, left);
 	}
 
-	public final void endTree(int shift, Symbol tag, String value) {
+	@SuppressWarnings("unchecked")
+	public final void endTree(int shift, int tag, byte[] value) {
 		int objectSize = 0;
-		AstLog start;
-		for (start = last; start.op != Operation.New; start = start.prev) {
-			switch (start.op) {
-			case Link:
+		TreeLog start = null;
+		int start_index = 0;
+		for (int i = unused_log - 1; i >= 0; i--) {
+			TreeLog l = logs[i];
+			if (l.op == Operation.Link) {
 				objectSize++;
-				break;
-			case Tag:
-				if (tag == null) {
-					tag = (Symbol) start.value;
-				}
-				break;
-			case Replace:
-				if (value == null) {
-					value = (String) start.value;
-				}
-				break;
-			case New:
+				continue;
+			}
+			if (l.op == Operation.New) {
+				start = l;
+				start_index = i;
 				break;
 			}
+			if (l.op == Operation.Tag && tag == 0) {
+				tag = l.iValue;
+			}
+			if (l.op == Operation.Replace && value == null) {
+				value = (byte[]) l.oValue;
+			}
 		}
-
-		left = newTree(tag, start.pos, (pos + shift), objectSize, value);
+		if(value == null) {
+			left = f.newTree(tag, this.inputs, start.iValue, (pos + shift) - start.iValue, objectSize);
+		}
+		else {
+			left = f.newTree(tag, value, 0, value.length, objectSize);
+		}
 		if (objectSize > 0) {
 			int n = 0;
-			for (AstLog cur = start; cur != null; cur = cur.next) {
-				if (cur.op == Operation.Link) {
-					left.link(n++, cur.label, cur.value);
-					cur.value = null;
+			for (int j = start_index; j < unused_log; j++) {
+				TreeLog l = logs[j];
+				if (l.op == Operation.Link) {
+					f2.setTree(left, n++, l.iValue, (T)l.oValue);
+					l.oValue = null;
 				}
 			}
 		}
-		this.backLog(start.prev);
+		this.backLog(start_index);
 	}
 
-	public final Tree<?> newTree(Symbol tag, int start, int end, int n, String value) {
-		if (tag == null) {
-			tag = n == 0 ? Symbol.tokenTag : Symbol.treeTag;
-		}
-		return left.newInstance(tag, source, start, (end - start), n, value);
+	public final int saveLog() {
+		return unused_log;
 	}
 
-	public final Object saveLog() {
-		return last;
-	}
-
-	public final void backLog(Object ref) {
-		AstLog save = (AstLog) ref;
-		if (save != last) {
-			last.next = this.unused;
-			this.unused = save.next;
-			save.next = null;
-			this.last = save;
+	public final void backLog(int log) {
+		if (this.unused_log > log) {
+			this.unused_log = log;
 		}
 	}
 
-	public final Tree<?> saveTree() {
+	public final T saveTree() {
 		return this.left;
 	}
 
-	public final void backTree(Tree<?> tree) {
+	public final void backTree(T tree) {
 		this.left = tree;
 	}
 
-	// Symbol Table ---------------------------------------------------------
+	// int Table
+	// ---------------------------------------------------------
 
-	private final static byte[] NullSymbol = { 0, 0, 0, 0 }; // to distinguish
-
+	private final static byte[] NullSymbol = { 0, 0, 0, 0 }; // to
+																// distinguish
 	// others
 	private SymbolTableEntry[] tables = new SymbolTableEntry[0];
 	private int tableSize = 0;
-
 	private int stateValue = 0;
 	private int stateCount = 0;
 
 	static final class SymbolTableEntry {
 		int stateValue;
-		Symbol table;
+		int table;
 		long code;
-		byte[] symbol; // if uft8 is null, hidden
+		byte[] symbol; // if symbol is null, hidden
 	}
 
 	private final static long hash(byte[] utf8, int ppos, int pos) {
@@ -231,8 +318,14 @@ static final class ParserContext {
 		}
 		return false;
 	}
+	
+	public final byte[] subByte(int startIndex, int endIndex) {
+		byte[] b = new byte[endIndex - startIndex];
+		System.arraycopy(this.inputs, (startIndex), b, 0, b.length);
+		return b;
+	}
 
-	private void push(Symbol table, long code, byte[] utf8) {
+	private void push(int table, long code, byte[] utf8) {
 		if (!(tableSize < tables.length)) {
 			SymbolTableEntry[] newtable = new SymbolTableEntry[tables.length + 256];
 			System.arraycopy(this.tables, 0, newtable, 0, tables.length);
@@ -273,16 +366,16 @@ static final class ParserContext {
 		}
 	}
 
-	public final void addSymbol(Symbol table, int ppos) {
+	public final void addSymbol(int table, int ppos) {
 		byte[] b = this.subByte(ppos, pos);
 		push(table, hash(b, 0, b.length), b);
 	}
 
-	public final void addSymbolMask(Symbol table) {
+	public final void addSymbolMask(int table) {
 		push(table, 0, NullSymbol);
 	}
 
-	public final boolean exists(Symbol table) {
+	public final boolean exists(int table) {
 		for (int i = tableSize - 1; i >= 0; i--) {
 			SymbolTableEntry entry = tables[i];
 			if (entry.table == table) {
@@ -292,7 +385,7 @@ static final class ParserContext {
 		return false;
 	}
 
-	public final boolean existsSymbol(Symbol table, byte[] symbol) {
+	public final boolean existsSymbol(int table, byte[] symbol) {
 		long code = hash(symbol, 0, symbol.length);
 		for (int i = tableSize - 1; i >= 0; i--) {
 			SymbolTableEntry entry = tables[i];
@@ -308,7 +401,7 @@ static final class ParserContext {
 		return false;
 	}
 
-	public final boolean matchSymbol(Symbol table) {
+	public final boolean matchSymbol(int table) {
 		for (int i = tableSize - 1; i >= 0; i--) {
 			SymbolTableEntry entry = tables[i];
 			if (entry.table == table) {
@@ -324,7 +417,7 @@ static final class ParserContext {
 	private final long hashInputs(int ppos, int pos) {
 		long hashCode = 1;
 		for (int i = ppos; i < pos; i++) {
-			hashCode = hashCode * 31 + (byteAt(i) & 0xff);
+			hashCode = hashCode * 31 + (this.inputs[ppos + i] & 0xff);
 		}
 		return hashCode;
 	}
@@ -332,7 +425,7 @@ static final class ParserContext {
 	private final boolean equalsInputs(int ppos, int pos, byte[] b2) {
 		if ((pos - ppos) == b2.length) {
 			for (int i = 0; i < b2.length; i++) {
-				if (byteAt(ppos + i) != b2[i]) {
+				if (this.inputs[ppos + i] != b2[i]) {
 					return false;
 				}
 			}
@@ -341,7 +434,7 @@ static final class ParserContext {
 		return false;
 	}
 
-	public final boolean equals(Symbol table, int ppos) {
+	public final boolean equals(int table, int ppos) {
 		for (int i = tableSize - 1; i >= 0; i--) {
 			SymbolTableEntry entry = tables[i];
 			if (entry.table == table) {
@@ -354,7 +447,7 @@ static final class ParserContext {
 		return false;
 	}
 
-	public boolean contains(Symbol table, int ppos) {
+	public boolean contains(int table, int ppos) {
 		long code = hashInputs(ppos, pos);
 		for (int i = tableSize - 1; i >= 0; i--) {
 			SymbolTableEntry entry = tables[i];
@@ -376,8 +469,11 @@ static final class ParserContext {
 
 	public final void scanCount(int ppos, long mask, int shift) {
 		if (mask == 0) {
-			String num = StringUtils.newString(subByte(ppos, pos));
-			count = (int) Long.parseLong(num);
+			StringBuilder sb = new StringBuilder();
+			for (int i = ppos; i < pos; i++) {
+				sb.append((char)inputs[i]);
+			}
+			count = (int) Long.parseLong(sb.toString());
 		} else {
 			StringBuilder sb = new StringBuilder();
 			for (int i = ppos; i < pos; i++) {
@@ -386,14 +482,15 @@ static final class ParserContext {
 			long v = Long.parseUnsignedLong(sb.toString(), 2);
 			count = (int) ((v & mask) >> shift);
 		}
-		Verbose.println("set count %d", count);
+		// Verbose.println("set count %d", count);
 	}
 
 	public final boolean decCount() {
 		return count-- > 0;
 	}
 
-	// Memotable ------------------------------------------------------------
+	// Memotable
+	// ------------------------------------------------------------
 
 	public final static int NotFound = 0;
 	public final static int SuccFound = 1;
@@ -402,7 +499,7 @@ static final class ParserContext {
 	private static class MemoEntry {
 		long key = -1;
 		public int consumed;
-		public Tree<?> memoTree;
+		public Object memoTree;
 		public int result;
 		public int stateValue = 0;
 	}
@@ -410,19 +507,18 @@ static final class ParserContext {
 	private MemoEntry[] memoArray = null;
 	private int shift = 0;
 
-	public void initMemoTable(int w, int n) {
+	public void initMemo(int w, int n) {
 		this.memoArray = new MemoEntry[w * n + 1];
 		for (int i = 0; i < this.memoArray.length; i++) {
 			this.memoArray[i] = new MemoEntry();
 			this.memoArray[i].key = -1;
 			this.memoArray[i].result = NotFound;
 		}
-		this.shift = (int) (Math.log(n) / Math.log(2.0)) + 1;
 		// this.initStat();
 	}
 
 	final long longkey(long pos, int memoPoint, int shift) {
-		return ((pos << shift) | memoPoint) & Long.MAX_VALUE;
+		return ((pos << 12) | memoPoint);
 	}
 
 	public final int lookupMemo(int memoPoint) {
@@ -436,13 +532,14 @@ static final class ParserContext {
 		return NotFound;
 	}
 
+	@SuppressWarnings("unchecked")
 	public final int lookupTreeMemo(int memoPoint) {
 		long key = longkey(pos, memoPoint, shift);
 		int hash = (int) (key % memoArray.length);
 		MemoEntry m = this.memoArray[hash];
 		if (m.key == key) {
 			this.pos += m.consumed;
-			this.left = m.memoTree;
+			this.left = (T)m.memoTree;
 			return m.result;
 		}
 		return NotFound;
@@ -496,13 +593,15 @@ static final class ParserContext {
 		return NotFound;
 	}
 
+	
+	@SuppressWarnings("unchecked")
 	public final int lookupStateTreeMemo(int memoPoint) {
 		long key = longkey(pos, memoPoint, shift);
 		int hash = (int) (key % memoArray.length);
 		MemoEntry m = this.memoArray[hash];
 		if (m.key == key && m.stateValue == this.stateValue) {
 			this.pos += m.consumed;
-			this.left = m.memoTree;
+			this.left = (T) m.memoTree;
 			return m.result;
 		}
 		return NotFound;
@@ -542,14 +641,12 @@ static final class ParserContext {
 		m.result = FailFound;
 		m.stateValue = this.stateValue;
 	}
-
 }
-
 
 final static byte[] toUTF8(String text) {
 	try {
 		return text.getBytes("UTF8");
-	} catch (UnsupportedEncodingException e) {
+	} catch (java.io.UnsupportedEncodingException e) {
 	}
 	return text.getBytes();
 }

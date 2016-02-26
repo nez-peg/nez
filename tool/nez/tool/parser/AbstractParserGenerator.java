@@ -43,12 +43,14 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 	protected ParserCode<?> code;
 	protected String path;
 	protected FileBuilder file;
+	protected String base = "nez";
 	//
 	protected TypestateAnalyzer typeState = Typestate.newAnalyzer();
 	protected SymbolMutationAnalyzer symbolMutation = SymbolMutation.newAnalyzer();
 	protected SymbolDependencyAnalyzer symbolDeps = SymbolDependency.newAnalyzer();
 
 	protected boolean verboseMode = true;
+	protected boolean UniqueNumberingSymbol = true;
 	protected boolean SupportedSwitchCase = true;
 
 	@Override
@@ -60,6 +62,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 			this.file = new FileBuilder(null);
 		} else {
 			this.path = FileBuilder.extractFileName(path);
+			this.base = this.path.replace(".nez", "");
 			String filename = FileBuilder.changeFileExtension(this.path, this.getFileExtension());
 			this.file = new FileBuilder(filename);
 			ConsoleUtils.println("generating " + filename + " ... ");
@@ -142,8 +145,6 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 
 	/* Symbols */
 
-	protected boolean UniqueNumberingSymbol = true;
-
 	protected HashMap<String, String> nameMap = new HashMap<>();
 
 	protected UList<String> tagList = new UList<>(new String[8]);
@@ -213,15 +214,8 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 			name = _text() + nameMap.size();
 			nameMap.put(key, name);
 			DeclConst(type("$text"), name, text.length, _initByteArray(text));
-			// DeclArity(type("$arity"), name, text.length);
 		}
 	}
-
-	// private void DeclArity(String type, String name, int arity) {
-	// if (type != null) {
-	// DeclConst(type, _arity(name), "" + arity);
-	// }
-	// }
 
 	final void DeclByteSet(String name, boolean b[]) {
 		Verbose(StringUtils.stringfyCharacterClass(b));
@@ -233,6 +227,9 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 	}
 
 	final String _tag(Symbol s) {
+		if (!this.UniqueNumberingSymbol && s == null) {
+			return _Null();
+		}
 		return _tagname(s == null ? "" : s.getSymbol());
 	}
 
@@ -246,6 +243,9 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 	}
 
 	final String _label(Symbol s) {
+		if (!this.UniqueNumberingSymbol && s == null) {
+			return _Null();
+		}
 		return _labelname(s == null ? "" : s.getSymbol());
 	}
 
@@ -254,11 +254,16 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 			int n = labelMap.size();
 			labelMap.put(s, n);
 			labelList.add(s);
-			DeclConst(type("$label"), _labelname(s), _initLabel(n, s));
+			if (this.UniqueNumberingSymbol || !s.equals("_")) {
+				DeclConst(type("$label"), _labelname(s), _initLabel(n, s));
+			}
 		}
 	}
 
 	final String _table(Symbol s) {
+		if (!this.UniqueNumberingSymbol && s.equals("")) {
+			return _Null();
+		}
 		return _tablename(s == null ? "" : s.getSymbol());
 	}
 
@@ -286,8 +291,12 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		}
 	}
 
-	protected String _prefix() {
-		return "cnez_";
+	protected String _basename() {
+		return base;
+	}
+
+	protected String _ns() {
+		return base + "_";
 	}
 
 	protected String _quote(String s) {
@@ -341,7 +350,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 	}
 
 	protected String _tagname(String name) {
-		return "_" + name;
+		return "_T" + name;
 	}
 
 	protected String _labelname(String name) {
@@ -349,7 +358,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 	}
 
 	protected String _tablename(String name) {
-		return "_T" + name;
+		return "_S" + name;
 	}
 
 	protected String _initTag(int id, String s) {
@@ -1253,7 +1262,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 			BeginScope();
 			String tree = SaveTree();
 			visit(e.get(0), a);
-			Statement(_Func("linkTree", _Null(), _label(e.label)));
+			Statement(_Func("linkTree", /* _Null(), */_label(e.label)));
 			BackTree(tree);
 			EndScope();
 			return null;
@@ -1509,7 +1518,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 	/* Expression */
 
 	protected String _function(String type) {
-		return "private static " + type;
+		return "private static <T> " + type;
 	}
 
 	protected String _argument(String var, String type) {
@@ -1727,7 +1736,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		return "pos";
 	}
 
-	protected String _cpos_() {
+	protected String _cpos() {
 		return _Field(_state(), "pos");
 	}
 
@@ -1735,33 +1744,17 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		return "left";
 	}
 
-	// protected String _cleft_() {
-	// return _Field(_state_(), "left");
-	// }
-
 	protected String _log() {
 		return "log";
 	}
-
-	// protected String _clog_() {
-	// return _Field(_state_(), "log");
-	// }
 
 	protected String _table() {
 		return "sym";
 	}
 
-	protected String _csym_() {
-		return _Field(_state(), "sym");
-	}
-
 	protected String _unchoiced() {
 		return "unchoiced";
 	}
-
-	// protected String _utf8_() {
-	// return "u";
-	// }
 
 	protected String _index() {
 		return "_index";
@@ -1775,8 +1768,13 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		return "_text";
 	}
 
-	protected String _arity(String name) {
-		return name + "_len";
-	}
+	// protected String _arity(String name) {
+	// return name + "_len";
+	// }
 
+	protected void InitMemoPoint() {
+		if (code.getMemoPointSize() > 0) {
+			Statement(_Func("initMemo", _int(strategy.SlidingWindow), _int(code.getMemoPointSize())));
+		}
+	}
 }

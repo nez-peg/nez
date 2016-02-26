@@ -344,7 +344,7 @@ static void ParserContext_beginTree(ParserContext *c, int shift)
     _log(c, OpNew, (void *)(c->pos + shift), NULL);
 }
 
-static void ParserContext_linkTree(ParserContext *c, void *parent, symbol_t label)
+static void ParserContext_linkTree(ParserContext *c, symbol_t label)
 {
     GCINC(c, c->left);
     _log(c, OpLink, (void*)label, c->left);
@@ -628,7 +628,7 @@ static int ParserContext_decCount(ParserContext *c)
 // Memotable ------------------------------------------------------------
 
 static
-void ParserContext_initMemoPoint(ParserContext *c, int w, int n)
+void ParserContext_initMemo(ParserContext *c, int w, int n)
 {
     int i;
     c->memoSize = w * n + 1;
@@ -639,7 +639,7 @@ void ParserContext_initMemoPoint(ParserContext *c, int w, int n)
 }
 
 static  uniquekey_t longkey( uniquekey_t pos, int memoPoint) {
-    return ((pos << 10) | memoPoint);
+    return ((pos << 12) | memoPoint);
 }
 
 static

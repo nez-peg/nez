@@ -1425,7 +1425,7 @@ public class Moz86 {
 
 		@Override
 		public MozInst exec(ParserMachineContext<?> sc) throws TerminationException {
-			sc.endTree(tag, value, shift);
+			sc.endTree(shift, tag, value);
 			return this.next;
 		}
 	}

@@ -109,6 +109,9 @@ public class NezExpressionConstructor extends GrammarVisitorMap<ExpressionTransd
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
 			String t = node.toText();
+			if (!strategy.BinaryGrammar) {
+				strategy.BinaryGrammar = true;
+			}
 			return Expressions.newByteSet(node, Bytes.parseOctet(t));
 		}
 	}
@@ -325,6 +328,9 @@ public class NezExpressionConstructor extends GrammarVisitorMap<ExpressionTransd
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
 			String mask = node.getText(_mask, null);
+			if (mask != null && !strategy.BinaryGrammar) {
+				strategy.BinaryGrammar = true;
+			}
 			return Expressions.newScanf(node, mask, newInstance(node.get(_expr)));
 		}
 	}

@@ -8,7 +8,7 @@ public class CommonTreeTransducer extends TreeTransducer {
 
 	@Override
 	public Object newNode(Symbol tag, Source s, long spos, long epos, int size, Object value) {
-		return new CommonTree(tag == null ? (size == 0 ? Symbol.tokenTag : Symbol.treeTag) : tag, s, spos, (int) (epos - spos), size, value);
+		return new CommonTree(tag == null ? Symbol.Null : tag, s, spos, (int) (epos - spos), size, value);
 	}
 
 	@Override
