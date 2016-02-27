@@ -2,7 +2,7 @@ package nez.tool.parser;
 
 import nez.lang.Grammar;
 
-public class PythonParserGenerator extends AbstractParserGenerator {
+public class PythonParserGenerator extends CommonParserGenerator {
 
 	public boolean Python3 = false;
 
@@ -127,8 +127,8 @@ public class PythonParserGenerator extends AbstractParserGenerator {
 	/* Expression */
 
 	@Override
-	protected String _function(String type) {
-		return "def";
+	protected String _defun(String type, String name) {
+		return "def " + name;
 	}
 
 	@Override
@@ -151,9 +151,7 @@ public class PythonParserGenerator extends AbstractParserGenerator {
 	@Override
 	protected void BeginFunc(String type, String name, String args) {
 		file.writeIndent();
-		file.write(_function(type));
-		file.write(" ");
-		file.write(name);
+		file.write(_defun(type, name));
 		file.write("(");
 		file.write(args);
 		file.write(")");

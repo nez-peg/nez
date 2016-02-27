@@ -1,13 +1,11 @@
 package nez.tool.parser;
 
-import nez.lang.Expression;
 import nez.lang.Grammar;
-import nez.lang.Production;
 import nez.util.ConsoleUtils;
 import nez.util.FileBuilder;
 import nez.util.StringUtils;
 
-public class CParserGenerator extends AbstractParserGenerator {
+public class CParserGenerator extends CommonParserGenerator {
 
 	@Override
 	protected void initTypeMap() {
@@ -24,7 +22,7 @@ public class CParserGenerator extends AbstractParserGenerator {
 		this.addType("memo", "int");
 		this.addType(_set(), "const char *");/* boolean */
 		this.addType(_index(), "const unsigned char *");
-		this.addType(_unchoiced(), "int");/* boolean */
+		this.addType(_temp(), "int");/* boolean */
 		this.addType(_pos(), "const char *");
 		this.addType(_tree(), "size_t");
 		this.addType(_log(), "size_t");
@@ -83,8 +81,11 @@ public class CParserGenerator extends AbstractParserGenerator {
 	}
 
 	@Override
-	protected String _function(String type) {
-		return type;
+	protected String _defun(String type, String name) {
+		if (this.crossSet.contains(name)) {
+			return type + " " + name;
+		}
+		return "static inline " + type + " " + name;
 	}
 
 	/* Statement */
@@ -104,7 +105,14 @@ public class CParserGenerator extends AbstractParserGenerator {
 	@Override
 	protected void generateHeader(Grammar g) {
 		ImportFile("/nez/tool/parser/ext/c-parser-runtime.txt");
-		DeclPrototype(g);
+	}
+
+	@Override
+	protected void generatePrototypes() {
+		LineComment("Prototypes");
+		for (String name : this.crossSet) {
+			Statement(_defun("int", name) + "(ParserContext *c)");
+		}
 	}
 
 	@Override
@@ -171,31 +179,19 @@ public class CParserGenerator extends AbstractParserGenerator {
 
 	}
 
-	private void DeclPrototype(Grammar g) {
-		int c = 0;
-		for (Production p : g) {
-			String n = _funcname(p.getUniqueName());
-			DeclPrototype(n);
-			c = checkInner(p.getExpression(), c);
-		}
-		for (int i = 0; i < c; i++) {
-			DeclPrototype("e" + i);
-		}
-	}
-
-	private int checkInner(Expression e, int c) {
-		if (e.size() == 1) {
-			return checkInner(e.get(0), c) + 1;
-		}
-		for (Expression sub : e) {
-			c = checkInner(sub, c);
-		}
-		return c;
-	}
-
-	private void DeclPrototype(String name) {
-		Statement(_function("int " + name) + "(ParserContext *c)");
-	}
+	//
+	// private int checkInner(Expression e, int c) {
+	// if (e.size() == 1) {
+	// return checkInner(e.get(0), c) + 1;
+	// }
+	// for (Expression sub : e) {
+	// c = checkInner(sub, c);
+	// }
+	// return c;
+	// }
+	//
+	// private void DeclPrototype(String name) {
+	// }
 
 	private void generateHeaderFile() {
 		String filename = FileBuilder.changeFileExtension(this.path, "h");

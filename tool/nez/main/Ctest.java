@@ -21,14 +21,23 @@ import nez.util.Verbose;
 public class Ctest extends Command {
 	@Override
 	public void exec() throws IOException {
-		Grammar grammar = newGrammar();
-		GrammarExample example = (GrammarExample) grammar.getMetaData("example");
-		if (example == null) {
-			ConsoleUtils.println("No example is specified");
-			return;
-		}
-		if (!testAll(grammar, example.getExampleList(), strategy)) {
-			System.exit(1);
+		if (this.hasInputSource()) {
+			Parser parser = newParser();
+			while (hasInputSource()) {
+				Source input = nextInputSource();
+				Tree<?> node = parser.parse(input);
+				System.out.println(node);
+			}
+		} else {
+			Grammar grammar = newGrammar();
+			GrammarExample example = (GrammarExample) grammar.getMetaData("example");
+			if (example == null) {
+				ConsoleUtils.println("No example is specified");
+				return;
+			}
+			if (!testAll(grammar, example.getExampleList(), strategy)) {
+				System.exit(1);
+			}
 		}
 	}
 

@@ -2,7 +2,7 @@ package nez.tool.parser;
 
 import nez.lang.Grammar;
 
-public class JavaParserGenerator extends AbstractParserGenerator {
+public class JavaParserGenerator extends CommonParserGenerator {
 
 	@Override
 	protected void initTypeMap() {
@@ -19,7 +19,7 @@ public class JavaParserGenerator extends AbstractParserGenerator {
 		this.addType("memo", "int");
 		this.addType(_set(), "boolean[]");
 		this.addType(_index(), "byte[]");
-		this.addType(_unchoiced(), "boolean");
+		this.addType(_temp(), "boolean");
 		this.addType(_pos(), "int");
 		this.addType(_tree(), "T");
 		this.addType(_log(), "int");
@@ -52,8 +52,8 @@ public class JavaParserGenerator extends AbstractParserGenerator {
 	}
 
 	@Override
-	protected String _function(String type) {
-		return "private static <T> " + type;
+	protected String _defun(String type, String name) {
+		return "private static <T> " + type + " " + name;
 	}
 
 }

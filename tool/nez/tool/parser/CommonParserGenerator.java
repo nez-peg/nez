@@ -4,8 +4,10 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import nez.ast.Symbol;
+import nez.lang.ByteConsumption;
 import nez.lang.Expression;
 import nez.lang.FunctionName;
 import nez.lang.Grammar;
@@ -37,7 +39,7 @@ import nez.util.FileBuilder;
 import nez.util.StringUtils;
 import nez.util.UList;
 
-public abstract class AbstractParserGenerator implements SourceGenerator {
+public abstract class CommonParserGenerator implements SourceGenerator {
 	protected Parser parser;
 	protected ParserStrategy strategy;
 	protected ParserCode<?> code;
@@ -45,6 +47,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 	protected FileBuilder file;
 	protected String base = "nez";
 	//
+	protected ByteConsumption consumption = new ByteConsumption();
 	protected TypestateAnalyzer typeState = Typestate.newAnalyzer();
 	protected SymbolMutationAnalyzer symbolMutation = SymbolMutation.newAnalyzer();
 	protected SymbolDependencyAnalyzer symbolDeps = SymbolDependency.newAnalyzer();
@@ -52,6 +55,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 	protected boolean verboseMode = true;
 	protected boolean UniqueNumberingSymbol = true;
 	protected boolean SupportedSwitchCase = true;
+	protected boolean SupportedDoWhile = true;
 
 	@Override
 	public final void init(Grammar g, Parser parser, String path) {
@@ -101,8 +105,9 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		Grammar g = this.parser.getGrammar();
 		this.generateHeader(g);
 		ConstVisitor constDecl = new ConstVisitor();
-		constDecl.decl(g);
+		constDecl.decl(g.getStartProduction());
 		this.generateSymbolTables();
+		this.generatePrototypes();
 
 		this.generate(g);
 		this.generateFooter(g);
@@ -110,9 +115,13 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		file.flush();
 	}
 
-	public void generate(Grammar g) {
+	protected void generatePrototypes() {
+
+	}
+
+	private void generate(Grammar g) {
 		ParserGeneratorVisitor gen = new ParserGeneratorVisitor();
-		gen.generate(g.getStartProduction(), "start");
+		gen.generate();
 	}
 
 	protected void Verbose(String stmt) {
@@ -373,6 +382,55 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		return UniqueNumberingSymbol ? "" + id : _quote(s);
 	}
 
+	/* function */
+	HashMap<String, String> exprMap = new HashMap<>();
+	HashMap<String, Expression> funcMap = new HashMap<>();
+	UList<String> funcList = new UList<String>(new String[128]);
+	HashSet<String> crossSet = new HashSet<>();
+	HashMap<String, Integer> memoPointMap = new HashMap<>();
+
+	private boolean checkFuncName(Production p) {
+		String f = _funcname(p.getUniqueName());
+		if (!funcMap.containsKey(f)) {
+			funcMap.put(f, p.getExpression());
+			funcList.add(f);
+			MemoPoint memoPoint = code.getMemoPoint(p.getUniqueName());
+			if (memoPoint != null) {
+				memoPointMap.put(f, memoPoint.id);
+				checkFuncName(p.getExpression());
+			}
+			return true;
+		}
+		crossSet.add(f);
+		return false;
+	}
+
+	private String _funcname(Expression e) {
+		String key = e.toString();
+		return exprMap.get(key);
+	}
+
+	private void checkFuncName(Expression e) {
+		String key = e.toString();
+		String f = exprMap.get(key);
+		if (f == null) {
+			f = "e" + exprMap.size();
+			exprMap.put(key, f);
+			funcList.add(f);
+			funcMap.put(f, e);
+			return;
+		}
+		// System.out.println("cross: " + e);
+		crossSet.add(f);
+	}
+
+	private void checkNonLexicalFuncName(Expression e) {
+		if (e instanceof Nez.Byte || e instanceof Nez.ByteSet || e instanceof Nez.MultiByte || e instanceof Nez.Any) {
+			return;
+		}
+		checkFuncName(e);
+	}
+
 	class ConstVisitor extends Expression.Visitor {
 
 		ConstVisitor() {
@@ -380,8 +438,8 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 			DeclLabel("");
 		}
 
-		private Object decl(Grammar g) {
-			for (Production p : g) {
+		private Object decl(Production p) {
+			if (checkFuncName(p)) {
 				p.getExpression().visit(this, null);
 			}
 			return null;
@@ -396,39 +454,40 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 
 		@Override
 		public Object visitNonTerminal(NonTerminal e, Object a) {
-			return check(e);
+			Production p = e.getProduction();
+			return decl(p);
 		}
 
 		@Override
 		public Object visitEmpty(Nez.Empty e, Object a) {
-			return check(e);
+			return null;
 		}
 
 		@Override
 		public Object visitFail(Nez.Fail e, Object a) {
-			return check(e);
+			return null;
 		}
 
 		@Override
 		public Object visitByte(Nez.Byte e, Object a) {
-			return check(e);
+			return null;
 		}
 
 		@Override
 		public Object visitByteSet(Nez.ByteSet e, Object a) {
 			DeclSet(e.byteMap);
-			return check(e);
+			return null;
 		}
 
 		@Override
 		public Object visitAny(Nez.Any e, Object a) {
-			return check(e);
+			return null;
 		}
 
 		@Override
 		public Object visitMultiByte(Nez.MultiByte e, Object a) {
 			DeclText(e.byteSeq);
-			return check(e);
+			return null;
 		}
 
 		@Override
@@ -446,31 +505,39 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 			if (e.predicted != null) {
 				DeclIndex(e.predicted.indexMap);
 			}
+			for (Expression sub : e) {
+				checkFuncName(sub);
+			}
 			return check(e);
 		}
 
 		@Override
 		public Object visitOption(Nez.Option e, Object a) {
+			checkNonLexicalFuncName(e.get(0));
 			return check(e);
 		}
 
 		@Override
 		public Object visitZeroMore(Nez.ZeroMore e, Object a) {
+			checkNonLexicalFuncName(e.get(0));
 			return check(e);
 		}
 
 		@Override
 		public Object visitOneMore(Nez.OneMore e, Object a) {
+			checkNonLexicalFuncName(e.get(0));
 			return check(e);
 		}
 
 		@Override
 		public Object visitAnd(Nez.And e, Object a) {
+			checkNonLexicalFuncName(e.get(0));
 			return check(e);
 		}
 
 		@Override
 		public Object visitNot(Nez.Not e, Object a) {
+			checkNonLexicalFuncName(e.get(0));
 			return check(e);
 		}
 
@@ -586,55 +653,20 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 
 	class ParserGeneratorVisitor extends Expression.Visitor {
 
-		HashMap<String, Expression> funcMap = new HashMap<>();
-		HashMap<String, String> exprMap = new HashMap<>();
-		UList<String> funcList = new UList<String>(new String[128]);
-		HashMap<String, Integer> memoPointMap = new HashMap<>();
-		int generated = 0;
-
-		void generate(Production p) {
-			generate(p, _funcname(p.getUniqueName()));
-		}
-
-		void generate(Production start, String func) {
-			String f = makeFuncCall(start.getUniqueName(), start.getExpression());
-			BeginFunc(func);
-			{
-				Return(f);
-			}
-			EndFunc();
-			int size = funcList.size();
-			while (generated < size) {
-				String key = funcList.get(generated);
-				generateFunction(key, funcMap.get(key));
-				size = funcList.size();
-				generated++;
+		void generate() {
+			int i;
+			for (i = funcList.size() - 1; i >= 0; i--) {
+				String f = funcList.get(i);
+				generateFunction(f, funcMap.get(f));
 			}
 		}
 
-		private String makeFuncCall(String uname, Expression e) {
-			String key = _funcname(uname);
-			if (!funcMap.containsKey(key)) {
-				funcList.add(key);
-				funcMap.put(key, e);
-				MemoPoint memoPoint = code.getMemoPoint(uname);
-				if (memoPoint != null) {
-					memoPointMap.put(key, memoPoint.id);
-				}
-			}
-			return _funccall(key);
+		private String _eval(Expression e) {
+			return _funccall(_funcname(e));
 		}
 
-		private String makeFuncCall(Expression e) {
-			String key = e.toString();
-			String f = exprMap.get(key);
-			if (f == null) {
-				f = "e" + exprMap.size();
-				exprMap.put(key, f);
-				funcList.add(f);
-				funcMap.put(f, e);
-			}
-			return _funccall(f);
+		private String _eval(String uname) {
+			return _funccall(_funcname(uname));
 		}
 
 		private void generateFunction(String name, Expression e) {
@@ -660,7 +692,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 					InitVal("memo", _Func(memoLookup, _int(memoPoint)));
 					If("memo", _Eq(), "0");
 					{
-						String f = makeFuncCall(e);
+						String f = _eval(e);
 						String[] n = SaveState(e);
 						If(f);
 						{
@@ -722,7 +754,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 				localMap.put(name, name);
 				return name;
 			}
-			return name + localMap.size();
+			return local(name + localMap.size());
 		}
 
 		private String InitVal(String name, String expr) {
@@ -792,7 +824,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 
 		@Override
 		public Object visitNonTerminal(NonTerminal e, Object a) {
-			String f = makeFuncCall(e.getUniqueName(), e.deReference());
+			String f = _eval(e.getUniqueName());
 			If(_Not(f));
 			{
 				Fail();
@@ -896,12 +928,12 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		@Override
 		public Object visitChoice(Nez.Choice e, Object a) {
 			if (e.predicted != null && SupportedSwitchCase) {
-				visitPredicatedChoice(e, e.predicted);
+				generateSwitchPrediction(e, e.predicted);
 			} else {
 				BeginScope();
-				String unchoiced = InitVal(_unchoiced(), _True());
+				String unchoiced = InitVal(_temp(), _True());
 				for (Expression sub : e) {
-					String f = makeFuncCall(sub);
+					String f = _eval(sub);
 					If(unchoiced);
 					{
 						String[] n = SaveState(sub);
@@ -928,36 +960,38 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 			return null;
 		}
 
-		private void visitPredicatedChoice(Nez.Choice choice, ChoicePrediction p) {
+		private void generateSwitchPrediction(Nez.Choice choice, ChoicePrediction p) {
+			String temp = InitVal(_temp(), _True());
 			Switch(_GetArray(_index(p.indexMap), _Func("prefetch")));
 			Case("0");
 			Fail();
 			for (int i = 0; i < choice.size(); i++) {
 				Case(_int(i + 1));
 				Expression sub = choice.get(i);
-				String f = makeFuncCall(sub);
+				String f = _eval(sub);
 				if (p.striped[i]) {
 					Verbose(". " + sub);
 					Statement(_Func("move", "1"));
 				} else {
 					Verbose(sub.toString());
 				}
-				If(_Not(f)); // FIXME slow?
-				{
-					Return(_False());
-				}
-				EndIf();
+				VarAssign(temp, f);
 				Break();
 				EndCase();
 			}
 			EndSwitch();
+			If(_Not(temp)); // FIXME slow?
+			{
+				Return(_False());
+			}
+			EndIf();
 		}
 
 		@Override
 		public Object visitOption(Nez.Option e, Object a) {
 			Expression sub = e.get(0);
 			if (!tryOptionOptimization(sub)) {
-				String f = makeFuncCall(sub);
+				String f = _eval(sub);
 				String[] n = SaveState(sub);
 				Verbose(sub.toString());
 				If(_Not(f));
@@ -971,21 +1005,14 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 
 		@Override
 		public Object visitZeroMore(Nez.ZeroMore e, Object a) {
-			visitRepetition(e, a);
+			generateWhile(e, a);
 			return null;
 		}
 
-		@Override
-		public Object visitOneMore(Nez.OneMore e, Object a) {
-			visit(e.get(0), a);
-			visitRepetition(e, a);
-			return null;
-		}
-
-		private void visitRepetition(Expression e, Object a) {
+		private void generateWhile(Expression e, Object a) {
 			Expression sub = e.get(0);
-			if (!this.tryRepetitionOptimization(sub)) {
-				String f = makeFuncCall(sub);
+			if (!this.tryRepetitionOptimization(sub, false)) {
+				String f = _eval(sub);
 				While(_True());
 				{
 					String[] n = SaveState(sub);
@@ -996,8 +1023,50 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 						Break();
 					}
 					EndIf();
+					CheckInfiniteLoop(sub, n[0]);
 				}
 				EndWhile();
+			}
+		}
+
+		@Override
+		public Object visitOneMore(Nez.OneMore e, Object a) {
+			if (SupportedDoWhile) {
+				generateDoWhile(e, a);
+			} else {
+				visit(e.get(0), a);
+				generateWhile(e, a);
+			}
+			return null;
+		}
+
+		private void generateDoWhile(Expression e, Object a) {
+			Expression sub = e.get(0);
+			if (!this.tryRepetitionOptimization(sub, true)) {
+				String f = _eval(sub);
+				Do();
+				{
+					String[] n = SaveState(sub);
+					Verbose(sub.toString());
+					If(_Not(f));
+					{
+						BackState(sub, n);
+						Break();
+					}
+					EndIf();
+					CheckInfiniteLoop(sub, n[0]);
+				}
+				DoWhile(_True());
+			}
+		}
+
+		private void CheckInfiniteLoop(Expression e, String var) {
+			if (!consumption.isConsumed(e)) {
+				If(var, _Eq(), _Field(_state(), "pos"));
+				{
+					Break();
+				}
+				EndIf();
 			}
 		}
 
@@ -1005,7 +1074,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		public Object visitAnd(Nez.And e, Object a) {
 			Expression sub = e.get(0);
 			if (!this.tryAndOptimization(sub)) {
-				String f = makeFuncCall(sub);
+				String f = _funcname(sub);
 				BeginScope();
 				String n = SavePos();
 				Verbose(sub.toString());
@@ -1024,7 +1093,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		public Object visitNot(Nez.Not e, Object a) {
 			Expression sub = e.get(0);
 			if (!this.tryNotOptimization(sub)) {
-				String f = makeFuncCall(sub);
+				String f = _funcname(sub);
 				BeginScope();
 				String[] n = SaveState(sub);
 				Verbose(sub.toString());
@@ -1093,10 +1162,13 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 			return false;
 		}
 
-		private boolean tryRepetitionOptimization(Expression inner) {
+		private boolean tryRepetitionOptimization(Expression inner, boolean OneMore) {
 			if (strategy.Olex) {
 				if (inner instanceof Nez.Byte) {
 					Nez.Byte e = (Nez.Byte) inner;
+					if (OneMore) {
+						visit(inner, null);
+					}
 					While(_Binary(_Func("prefetch"), _Eq(), _byte(e.byteChar)));
 					{
 						if (strategy.BinaryGrammar && e.byteChar == 0) {
@@ -1113,6 +1185,9 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 				}
 				if (inner instanceof Nez.ByteSet) {
 					Nez.ByteSet e = (Nez.ByteSet) inner;
+					if (OneMore) {
+						visit(inner, null);
+					}
 					While(MatchByteArray(e.byteMap, _Func("prefetch")));
 					{
 						if (strategy.BinaryGrammar && e.byteMap[0]) {
@@ -1129,6 +1204,9 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 				}
 				if (inner instanceof Nez.MultiByte) {
 					Nez.MultiByte e = (Nez.MultiByte) inner;
+					if (OneMore) {
+						visit(inner, null);
+					}
 					While(_Match(e.byteSeq));
 					{
 						EmptyStatement();
@@ -1138,6 +1216,9 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 				}
 				if (inner instanceof Nez.Any) {
 					// Nez.Any e = (Nez.Any) inner;
+					if (OneMore) {
+						visit(inner, null);
+					}
 					While(_Not(_Func("eof")));
 					{
 						Statement(_Func("move", "1"));
@@ -1517,8 +1598,8 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 
 	/* Expression */
 
-	protected String _function(String type) {
-		return "private static <T> " + type;
+	protected String _defun(String type, String name) {
+		return "private static <T> " + type + "name";
 	}
 
 	protected String _argument(String var, String type) {
@@ -1560,9 +1641,7 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 
 	protected void BeginFunc(String type, String name, String args) {
 		file.writeIndent();
-		file.write(_function(type));
-		file.write(" ");
-		file.write(name);
+		file.write(_defun(type, name));
 		file.write("(");
 		file.write(args);
 		file.write(")");
@@ -1663,6 +1742,20 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		End();
 	}
 
+	protected void Do() {
+		file.writeIndent();
+		file.write("do");
+		Begin();
+	}
+
+	protected void DoWhile(String cond) {
+		End();
+		file.write("while (");
+		file.write(cond);
+		file.write(")");
+		Semicolon();
+	}
+
 	protected void Break() {
 		file.writeIndent("break");
 		Semicolon();
@@ -1752,8 +1845,8 @@ public abstract class AbstractParserGenerator implements SourceGenerator {
 		return "sym";
 	}
 
-	protected String _unchoiced() {
-		return "unchoiced";
+	protected String _temp() {
+		return "temp";
 	}
 
 	protected String _index() {
