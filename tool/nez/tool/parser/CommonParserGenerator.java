@@ -621,7 +621,9 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 		@Override
 		public Object visitSymbolExists(SymbolExists e, Object a) {
 			DeclTable(e.tableName);
-			DeclText(StringUtils.toUtf8(e.symbol));
+			if (e.symbol != null) {
+				DeclText(StringUtils.toUtf8(e.symbol));
+			}
 			return check(e);
 		}
 
@@ -980,7 +982,7 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 				EndCase();
 			}
 			EndSwitch();
-			If(_Not(temp)); // FIXME slow?
+			If(_Not(temp));
 			{
 				Return(_False());
 			}

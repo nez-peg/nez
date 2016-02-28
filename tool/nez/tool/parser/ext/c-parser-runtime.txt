@@ -800,4 +800,11 @@ static void ParserContext_free(ParserContext *c)
     free(c);
 }
 
+//----------------------------------------------------------------------------
+
+static int bitset(int *bits, size_t n)
+{
+	return (bits[n % 32] & (1 << (n/32))) != 0;
+}
+
 
