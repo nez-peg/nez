@@ -14,16 +14,24 @@ public class CParserGenerator extends CommonParserGenerator {
 		this.addType("$label", "int");
 		this.addType("$table", "int");
 		this.addType("$arity", "int");
-		this.addType("$text", "const char");
-		this.addType("$index", "const unsigned short");
-		this.addType("$set", "const char");
+		this.addType("$text", "const unsigned char");
+		this.addType("$index", "const unsigned char");
+		if (UsingBitmap) {
+			this.addType("$set", "int");
+		} else {
+			this.addType("$set", "const unsigned char");
+		}
 		this.addType("$string", "const char *");
 
 		this.addType("memo", "int");
-		this.addType(_set(), "const char *");/* boolean */
+		if (UsingBitmap) {
+			this.addType(_set(), "int");
+		} else {
+			this.addType(_set(), "const unsigned char *");/* boolean */
+		}
 		this.addType(_index(), "const unsigned char *");
 		this.addType(_temp(), "int");/* boolean */
-		this.addType(_pos(), "const char *");
+		this.addType(_pos(), "const unsigned char *");
 		this.addType(_tree(), "size_t");
 		this.addType(_log(), "size_t");
 		this.addType(_table(), "size_t");
@@ -82,7 +90,7 @@ public class CParserGenerator extends CommonParserGenerator {
 
 	@Override
 	protected String _defun(String type, String name) {
-		if (this.crossSet.contains(name)) {
+		if (this.crossRefNames.contains(name)) {
 			return type + " " + name;
 		}
 		return "static inline " + type + " " + name;
@@ -110,7 +118,7 @@ public class CParserGenerator extends CommonParserGenerator {
 	@Override
 	protected void generatePrototypes() {
 		LineComment("Prototypes");
-		for (String name : this.crossSet) {
+		for (String name : this.crossRefNames) {
 			Statement(_defun("int", name) + "(ParserContext *c)");
 		}
 	}
@@ -119,10 +127,10 @@ public class CParserGenerator extends CommonParserGenerator {
 	protected void generateFooter(Grammar g) {
 		ImportFile("/nez/tool/parser/ext/c-tree-utils.txt");
 		//
-		BeginDecl("void* " + _ns() + "parse(const char *text, size_t len, void *thunk, void* (*fnew)(symbol_t, const char *, size_t, size_t, void *), void  (*fset)(void *, size_t, symbol_t, void *, void *), void  (*fgc)(void *, int, void *))");
+		BeginDecl("void* " + _ns() + "parse(const char *text, size_t len, void *thunk, void* (*fnew)(symbol_t, const unsigned char *, size_t, size_t, void *), void  (*fset)(void *, size_t, symbol_t, void *, void *), void  (*fgc)(void *, int, void *))");
 		{
 			VarDecl("void*", "result", _Null());
-			VarDecl(_state(), "ParserContext_new(text, len)");
+			VarDecl(_state(), "ParserContext_new((const unsigned char*)text, len)");
 			Statement(_Func("initTreeFunc", "thunk", "fnew", "fset", "fgc"));
 			this.InitMemoPoint();
 			If(_funccall(_funcname(g.getStartProduction())));
@@ -130,7 +138,7 @@ public class CParserGenerator extends CommonParserGenerator {
 				VarAssign("result", _Field(_state(), _tree()));
 				If("result == NULL");
 				{
-					Statement("result = c->fnew(0, text, (c->pos - text), 0, c->thunk)");
+					Statement("result = c->fnew(0, (const unsigned char*)text, (c->pos - (const unsigned char*)text), 0, c->thunk)");
 				}
 				EndIf();
 			}
@@ -142,7 +150,7 @@ public class CParserGenerator extends CommonParserGenerator {
 		BeginDecl("long " + _ns() + "match(const char *text, size_t len)");
 		{
 			VarDecl("long", "result", "-1");
-			VarDecl(_state(), "ParserContext_new(text, len)");
+			VarDecl(_state(), "ParserContext_new((const unsigned char*)text, len)");
 			Statement(_Func("initNoTreeFunc"));
 			this.InitMemoPoint();
 			If(_funccall(_funcname(g.getStartProduction())));

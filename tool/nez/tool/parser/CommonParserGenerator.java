@@ -3,10 +3,14 @@ package nez.tool.parser;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Map;
 
 import nez.ast.Symbol;
+import nez.lang.Bitmap;
 import nez.lang.ByteConsumption;
 import nez.lang.Expression;
 import nez.lang.FunctionName;
@@ -38,6 +42,7 @@ import nez.util.ConsoleUtils;
 import nez.util.FileBuilder;
 import nez.util.StringUtils;
 import nez.util.UList;
+import nez.util.Verbose;
 
 public abstract class CommonParserGenerator implements SourceGenerator {
 	protected Parser parser;
@@ -56,6 +61,15 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 	protected boolean UniqueNumberingSymbol = true;
 	protected boolean SupportedSwitchCase = true;
 	protected boolean SupportedDoWhile = true;
+	protected boolean UsingBitmap = false;
+	protected boolean SupportedRange = true;
+	protected boolean SupportedMatch2 = true;
+	protected boolean SupportedMatch3 = true;
+	protected boolean SupportedMatch4 = true;
+	protected boolean SupportedMatch5 = true;
+	protected boolean SupportedMatch6 = true;
+	protected boolean SupportedMatch7 = true;
+	protected boolean SupportedMatch8 = true;
 
 	@Override
 	public final void init(Grammar g, Parser parser, String path) {
@@ -104,8 +118,9 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 	public void generate() {
 		Grammar g = this.parser.getGrammar();
 		this.generateHeader(g);
-		ConstVisitor constDecl = new ConstVisitor();
+		SymbolAnalysis constDecl = new SymbolAnalysis();
 		constDecl.decl(g.getStartProduction());
+		this.sortFuncList();
 		this.generateSymbolTables();
 		this.generatePrototypes();
 
@@ -171,12 +186,15 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 	}
 
 	final void DeclSet(boolean[] b) {
+		if (this.SupportedRange && isRange(b) != null) {
+			return;
+		}
 		String key = StringUtils.stringfyBitmap(b);
 		String name = nameMap.get(key);
 		if (name == null) {
 			name = _set() + nameMap.size();
 			nameMap.put(key, name);
-			DeclConst(type("$set"), name, b.length, _initBooleanArray(b));
+			DeclConst(type("$set"), name, UsingBitmap ? 8 : 256, _initBooleanArray(b));
 		}
 	}
 
@@ -224,6 +242,50 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 			nameMap.put(key, name);
 			DeclConst(type("$text"), name, text.length, _initByteArray(text));
 		}
+	}
+
+	private int[] isRange(boolean[] b) {
+		int start = 0;
+		for (int i = 0; i < 256; i++) {
+			if (b[i]) {
+				start = i;
+				break;
+			}
+		}
+		int end = start;
+		for (int i = start; i < 256; i++) {
+			if (!b[i]) {
+				end = i;
+				break;
+			}
+		}
+		for (int i = end; i < 256; i++) {
+			if (b[i]) {
+				return null;
+			}
+		}
+		int[] a = { start, end };
+		return a;
+	}
+
+	private boolean isMatchText(byte[] t, int n) {
+		if (t.length == n) {
+			for (int i = 0; i < n; i++) {
+				if (t[i] == 0) {
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+
+	final void DeclMatchText(byte[] text) {
+		if ((SupportedMatch2 && isMatchText(text, 2)) || (SupportedMatch3 && isMatchText(text, 3)) || (SupportedMatch4 && isMatchText(text, 4)) || (SupportedMatch5 && isMatchText(text, 5)) || (SupportedMatch6 && isMatchText(text, 6))
+				|| (SupportedMatch7 && isMatchText(text, 7)) || (SupportedMatch8 && isMatchText(text, 8))) {
+			return;
+		}
+		DeclText(text);
 	}
 
 	final void DeclByteSet(String name, boolean b[]) {
@@ -318,14 +380,30 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 	protected String _initBooleanArray(boolean[] b) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(_BeginArray());
-		for (int i = 0; i < b.length; i++) {
-			if (i > 0) {
-				sb.append(",");
+		if (UsingBitmap) {
+			Bitmap bits = new Bitmap();
+			for (int i = 0; i < 256; i++) {
+				if (b[i]) {
+					bits.set(i, true);
+					assert (bits.is(i));
+				}
 			}
-			if (b[i]) {
-				sb.append(_True());
-			} else {
-				sb.append(_False());
+			for (int i = 0; i < 8; i++) {
+				if (i > 0) {
+					sb.append(",");
+				}
+				sb.append(_hex(bits.n(i)));
+			}
+		} else {
+			for (int i = 0; i < 256; i++) {
+				if (i > 0) {
+					sb.append(",");
+				}
+				if (b[i]) {
+					sb.append(_True());
+				} else {
+					sb.append(_False());
+				}
 			}
 		}
 		sb.append(_EndArray());
@@ -385,57 +463,102 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 	/* function */
 	HashMap<String, String> exprMap = new HashMap<>();
 	HashMap<String, Expression> funcMap = new HashMap<>();
-	UList<String> funcList = new UList<String>(new String[128]);
-	HashSet<String> crossSet = new HashSet<>();
+	ArrayList<String> funcList = new ArrayList<>();
+	HashSet<String> crossRefNames = new HashSet<>();
 	HashMap<String, Integer> memoPointMap = new HashMap<>();
 
-	private boolean checkFuncName(Production p) {
-		String f = _funcname(p.getUniqueName());
-		if (!funcMap.containsKey(f)) {
-			funcMap.put(f, p.getExpression());
-			funcList.add(f);
-			MemoPoint memoPoint = code.getMemoPoint(p.getUniqueName());
-			if (memoPoint != null) {
-				memoPointMap.put(f, memoPoint.id);
-				checkFuncName(p.getExpression());
-			}
-			return true;
-		}
-		crossSet.add(f);
-		return false;
-	}
-
 	private String _funcname(Expression e) {
+		if (e instanceof NonTerminal) {
+			return _funcname(((NonTerminal) e).getUniqueName());
+		}
 		String key = e.toString();
 		return exprMap.get(key);
 	}
 
-	private void checkFuncName(Expression e) {
-		String key = e.toString();
-		String f = exprMap.get(key);
-		if (f == null) {
-			f = "e" + exprMap.size();
-			exprMap.put(key, f);
-			funcList.add(f);
-			funcMap.put(f, e);
-			return;
+	String start = null;
+	HashMap<String, HashSet<String>> nodes = new HashMap<>();
+
+	private void addEdge(String sour, String dest) {
+		if (sour != null) {
+			HashSet<String> set = nodes.get(sour);
+			if (set == null) {
+				set = new HashSet<String>();
+				nodes.put(sour, set);
+			}
+			set.add(dest);
 		}
-		// System.out.println("cross: " + e);
-		crossSet.add(f);
 	}
 
-	private void checkNonLexicalFuncName(Expression e) {
-		if (e instanceof Nez.Byte || e instanceof Nez.ByteSet || e instanceof Nez.MultiByte || e instanceof Nez.Any) {
-			return;
+	void sortFuncList() {
+		class TopologicalSorter {
+			private final HashMap<String, HashSet<String>> nodes;
+			private final LinkedList<String> result;
+			private final HashMap<String, Short> visited;
+			private final Short Visiting = 1;
+			private final Short Visited = 2;
+
+			TopologicalSorter(HashMap<String, HashSet<String>> nodes) {
+				this.nodes = nodes;
+				this.result = new LinkedList<String>();
+				this.visited = new HashMap<String, Short>();
+				for (Map.Entry<String, HashSet<String>> e : this.nodes.entrySet()) {
+					if (this.visited.get(e.getKey()) == null) {
+						visit(e.getKey(), e.getValue());
+					}
+				}
+			}
+
+			private void visit(String key, HashSet<String> nextNodes) {
+				visited.put(key, Visiting);
+				if (nextNodes != null) {
+					for (String nextNode : nextNodes) {
+						Short v = this.visited.get(nextNode);
+						if (v == null) {
+							visit(nextNode, nodes.get(nextNode));
+						} else if (v == Visiting) {
+							if (!key.equals(nextNode)) {
+								Verbose.println("Cyclic " + key + " => " + nextNode);
+								crossRefNames.add(nextNode);
+							}
+						}
+					}
+				}
+				visited.put(key, Visited);
+				result.add(key);
+			}
+
+			public ArrayList<String> getResult() {
+				return new ArrayList<String>(result);
+			}
 		}
-		checkFuncName(e);
+		TopologicalSorter sorter = new TopologicalSorter(nodes);
+		funcList = sorter.getResult();
+		// HashMap<String, Integer> indexMap = new HashMap<>();
+		// int c = 0;
+		// for (String f : funcList) {
+		// indexMap.put(f, c);
+		// c++;
+		// }
+		// for (Map.Entry<String, HashSet<String>> e : this.nodes.entrySet()) {
+		// String f = e.getKey();
+		// Integer findex = indexMap.get(f);
+		// for (String d : e.getValue()) {
+		// Integer dindex = indexMap.get(d);
+		// if (!(dindex <= findex)) {
+		// crossRefNames.add(d);
+		// // Verbose.println("crossref: " + d);
+		// }
+		// }
+		// }
+		nodes.clear();
 	}
 
-	class ConstVisitor extends Expression.Visitor {
+	private class SymbolAnalysis extends Expression.Visitor {
 
-		ConstVisitor() {
+		SymbolAnalysis() {
 			DeclTag("");
 			DeclLabel("");
+			DeclTable(Symbol.Null);
 		}
 
 		private Object decl(Production p) {
@@ -445,7 +568,65 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 			return null;
 		}
 
-		private Object check(Expression e) {
+		String cur = null; // name
+
+		private boolean checkFuncName(Production p) {
+			String f = _funcname(p.getUniqueName());
+			if (!funcMap.containsKey(f)) {
+				String stacked2 = cur;
+				cur = f;
+				funcMap.put(f, p.getExpression());
+				funcList.add(f);
+				MemoPoint memoPoint = code.getMemoPoint(p.getUniqueName());
+				if (memoPoint != null) {
+					memoPointMap.put(f, memoPoint.id);
+					String stacked = cur;
+					cur = f;
+					checkInner(p.getExpression());
+					cur = stacked;
+					addEdge(cur, f);
+				} else {
+					p.getExpression().visit(this, null);
+				}
+				cur = stacked2;
+				addEdge(cur, f);
+				return true;
+			}
+			addEdge(cur, f);
+			// crossRefNames.add(f);
+			return false;
+		}
+
+		private void checkInner(Expression e) {
+			if (e instanceof NonTerminal) {
+				e.visit(this, null);
+				return;
+			}
+			String key = e.toString();
+			String f = exprMap.get(key);
+			if (f == null) {
+				f = "e" + exprMap.size();
+				exprMap.put(key, f);
+				funcList.add(f);
+				funcMap.put(f, e);
+				String stacked = cur;
+				cur = f;
+				e.visit(this, null);
+				cur = stacked;
+			}
+			addEdge(cur, f);
+			// crossRefNames.add(f);
+		}
+
+		private void checkNonLexicalInner(Expression e) {
+			if (e instanceof Nez.Byte || e instanceof Nez.ByteSet || e instanceof Nez.MultiByte || e instanceof Nez.Any) {
+				e.visit(this, null);
+				return;
+			}
+			checkInner(e);
+		}
+
+		private Object visitAll(Expression e) {
 			for (Expression sub : e) {
 				sub.visit(this, null);
 			}
@@ -454,8 +635,7 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 
 		@Override
 		public Object visitNonTerminal(NonTerminal e, Object a) {
-			Production p = e.getProduction();
-			return decl(p);
+			return decl(e.getProduction());
 		}
 
 		@Override
@@ -486,18 +666,18 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 
 		@Override
 		public Object visitMultiByte(Nez.MultiByte e, Object a) {
-			DeclText(e.byteSeq);
+			DeclMatchText(e.byteSeq);
 			return null;
 		}
 
 		@Override
 		public Object visitPair(Nez.Pair e, Object a) {
-			return check(e);
+			return visitAll(e);
 		}
 
 		@Override
 		public Object visitSequence(Nez.Sequence e, Object a) {
-			return check(e);
+			return visitAll(e);
 		}
 
 		@Override
@@ -506,44 +686,44 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 				DeclIndex(e.predicted.indexMap);
 			}
 			for (Expression sub : e) {
-				checkFuncName(sub);
+				checkInner(sub);
 			}
-			return check(e);
+			return null;
 		}
 
 		@Override
 		public Object visitOption(Nez.Option e, Object a) {
-			checkNonLexicalFuncName(e.get(0));
-			return check(e);
+			checkNonLexicalInner(e.get(0));
+			return null;
 		}
 
 		@Override
 		public Object visitZeroMore(Nez.ZeroMore e, Object a) {
-			checkNonLexicalFuncName(e.get(0));
-			return check(e);
+			checkNonLexicalInner(e.get(0));
+			return null;
 		}
 
 		@Override
 		public Object visitOneMore(Nez.OneMore e, Object a) {
-			checkNonLexicalFuncName(e.get(0));
-			return check(e);
+			checkNonLexicalInner(e.get(0));
+			return null;
 		}
 
 		@Override
 		public Object visitAnd(Nez.And e, Object a) {
-			checkNonLexicalFuncName(e.get(0));
-			return check(e);
+			checkNonLexicalInner(e.get(0));
+			return null;
 		}
 
 		@Override
 		public Object visitNot(Nez.Not e, Object a) {
-			checkNonLexicalFuncName(e.get(0));
-			return check(e);
+			checkNonLexicalInner(e.get(0));
+			return null;
 		}
 
 		@Override
 		public Object visitBeginTree(Nez.BeginTree e, Object a) {
-			return check(e);
+			return null;
 		}
 
 		@Override
@@ -554,7 +734,7 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 			if (e.value != null) {
 				DeclText(StringUtils.toUtf8(e.value));
 			}
-			return check(e);
+			return null;
 		}
 
 		@Override
@@ -562,7 +742,7 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 			if (e.label != null) {
 				DeclLabel(e.label.getSymbol());
 			}
-			return check(e);
+			return visitAll(e);
 		}
 
 		@Override
@@ -570,52 +750,52 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 			if (e.label != null) {
 				DeclLabel(e.label.getSymbol());
 			}
-			return check(e);
+			return visitAll(e);
 		}
 
 		@Override
 		public Object visitTag(Nez.Tag e, Object a) {
 			DeclTag(e.tag.getSymbol());
-			return check(e);
+			return null;
 		}
 
 		@Override
 		public Object visitReplace(Nez.Replace e, Object a) {
 			DeclText(StringUtils.toUtf8(e.value));
-			return check(e);
+			return null;
 		}
 
 		@Override
 		public Object visitDetree(Nez.Detree e, Object a) {
-			return check(e);
+			return visitAll(e);
 		}
 
 		@Override
 		public Object visitBlockScope(Nez.BlockScope e, Object a) {
-			return check(e);
+			return visitAll(e);
 		}
 
 		@Override
 		public Object visitLocalScope(LocalScope e, Object a) {
-			return check(e);
+			return visitAll(e);
 		}
 
 		@Override
 		public Object visitSymbolAction(SymbolAction e, Object a) {
 			DeclTable(e.tableName);
-			return check(e);
+			return visitAll(e);
 		}
 
 		@Override
 		public Object visitSymbolPredicate(SymbolPredicate e, Object a) {
 			DeclTable(e.tableName);
-			return check(e);
+			return visitAll(e);
 		}
 
 		@Override
 		public Object visitSymbolMatch(SymbolMatch e, Object a) {
 			DeclTable(e.tableName);
-			return check(e);
+			return visitAll(e);
 		}
 
 		@Override
@@ -624,41 +804,39 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 			if (e.symbol != null) {
 				DeclText(StringUtils.toUtf8(e.symbol));
 			}
-			return check(e);
+			return visitAll(e);
 		}
 
 		@Override
 		public Object visitScan(Nez.Scan e, Object a) {
-			return check(e);
+			return visitAll(e);
 		}
 
 		@Override
 		public Object visitRepeat(Nez.Repeat e, Object a) {
-			return check(e);
+			return visitAll(e);
 		}
 
 		@Override
 		public Object visitIf(IfCondition e, Object a) {
-			return check(e);
+			return visitAll(e);
 		}
 
 		@Override
 		public Object visitOn(OnCondition e, Object a) {
-			return check(e);
+			return visitAll(e);
 		}
 
 		@Override
 		public Object visitLabel(Label e, Object a) {
-			return check(e);
+			return visitAll(e);
 		}
 	}
 
 	class ParserGeneratorVisitor extends Expression.Visitor {
 
 		void generate() {
-			int i;
-			for (i = funcList.size() - 1; i >= 0; i--) {
-				String f = funcList.get(i);
+			for (String f : funcList) {
 				generateFunction(f, funcMap.get(f));
 			}
 		}
@@ -859,7 +1037,7 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 
 		@Override
 		public Object visitByteSet(Nez.ByteSet e, Object a) {
-			If(_Not(MatchByteArray(e.byteMap, _Func("read"))));
+			If(_Not(MatchByteArray(e.byteMap, true)));
 			{
 				Fail();
 			}
@@ -878,8 +1056,19 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 			}
 		}
 
-		private String MatchByteArray(boolean[] byteMap, String c) {
-			return _GetArray(_set(byteMap), c);
+		private String MatchByteArray(boolean[] byteMap, boolean inc) {
+			String c = inc ? _Func("read") : _Func("prefetch");
+			if (SupportedRange) {
+				int[] range = isRange(byteMap);
+				if (range != null) {
+					return _Binary(_Binary(_byte(range[0]), "<=", _Func("read")), _And(), _Binary(c, "<", _byte(range[1])));
+				}
+			}
+			if (UsingBitmap) {
+				return _Func("bitis", _set(byteMap), c);
+			} else {
+				return _GetArray(_set(byteMap), c);
+			}
 		}
 
 		@Override
@@ -1076,7 +1265,7 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 		public Object visitAnd(Nez.And e, Object a) {
 			Expression sub = e.get(0);
 			if (!this.tryAndOptimization(sub)) {
-				String f = _funcname(sub);
+				String f = _eval(sub);
 				BeginScope();
 				String n = SavePos();
 				Verbose(sub.toString());
@@ -1095,7 +1284,7 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 		public Object visitNot(Nez.Not e, Object a) {
 			Expression sub = e.get(0);
 			if (!this.tryNotOptimization(sub)) {
-				String f = _funcname(sub);
+				String f = _eval(sub);
 				BeginScope();
 				String[] n = SaveState(sub);
 				Verbose(sub.toString());
@@ -1131,7 +1320,7 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 				}
 				if (inner instanceof Nez.ByteSet) {
 					Nez.ByteSet e = (Nez.ByteSet) inner;
-					If(MatchByteArray(e.byteMap, _Func("prefetch")));
+					If(MatchByteArray(e.byteMap, false));
 					{
 						if (strategy.BinaryGrammar && e.byteMap[0]) {
 							If(_Not(_Func("eof")));
@@ -1190,7 +1379,7 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 					if (OneMore) {
 						visit(inner, null);
 					}
-					While(MatchByteArray(e.byteMap, _Func("prefetch")));
+					While(MatchByteArray(e.byteMap, false));
 					{
 						if (strategy.BinaryGrammar && e.byteMap[0]) {
 							If(_Func("eof"));
@@ -1246,7 +1435,7 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 				}
 				if (inner instanceof Nez.ByteSet) {
 					Nez.ByteSet e = (Nez.ByteSet) inner;
-					If(_Not(MatchByteArray(e.byteMap, _Func("prefetch"))));
+					If(_Not(MatchByteArray(e.byteMap, false)));
 					{
 						Fail();
 					}
@@ -1290,7 +1479,7 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 				}
 				if (inner instanceof Nez.ByteSet) {
 					Nez.ByteSet e = (Nez.ByteSet) inner;
-					If(MatchByteArray(e.byteMap, _Func("prefetch")));
+					If(MatchByteArray(e.byteMap, false));
 					{
 						Fail();
 					}
@@ -1579,23 +1768,48 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 		return sb.toString();
 	}
 
-	protected String _Match(byte[] byteSeq) {
-		return _Func("match", _text(byteSeq));
+	protected String _byte(int ch) {
+		// if (ch < 128 && (!Character.isISOControl(ch))) {
+		// return "'" + (char) ch + "'";
+		// }
+		return "" + (ch & 0xff);
+	}
+
+	protected String _Match(byte[] t) {
+		if (SupportedMatch2 && isMatchText(t, 2)) {
+			return _Func("match2", _byte(t[0]), _byte(t[1]));
+		}
+		if (SupportedMatch3 && isMatchText(t, 3)) {
+			return _Func("match3", _byte(t[0]), _byte(t[1]), _byte(t[2]));
+		}
+		if (SupportedMatch4 && isMatchText(t, 4)) {
+			return _Func("match4", _byte(t[0]), _byte(t[1]), _byte(t[2]), _byte(t[3]));
+		}
+		if (SupportedMatch4 && isMatchText(t, 5)) {
+			return _Func("match5", _byte(t[0]), _byte(t[1]), _byte(t[2]), _byte(t[3]), _byte(t[4]));
+		}
+		if (SupportedMatch4 && isMatchText(t, 6)) {
+			return _Func("match6", _byte(t[0]), _byte(t[1]), _byte(t[2]), _byte(t[3]), _byte(t[4]), _byte(t[5]));
+		}
+		if (SupportedMatch4 && isMatchText(t, 7)) {
+			return _Func("match7", _byte(t[0]), _byte(t[1]), _byte(t[2]), _byte(t[3]), _byte(t[4]), _byte(t[5]), _byte(t[6]));
+		}
+		if (SupportedMatch4 && isMatchText(t, 8)) {
+			return _Func("match8", _byte(t[0]), _byte(t[1]), _byte(t[2]), _byte(t[3]), _byte(t[4]), _byte(t[5]), _byte(t[6]), _byte(t[7]));
+		}
+		return _Func("match", _text(t));
 	}
 
 	protected String _int(int n) {
 		return "" + n;
 	}
 
-	protected String _long(long n) {
-		return "" + n + "L";
+	protected String _hex(int n) {
+		return String.format("0x%08x", n);
 	}
 
-	protected String _byte(int ch) {
-		// if (ch < 128 && (!Character.isISOControl(ch))) {
-		// return "'" + (char) ch + "'";
-		// }
-		return "" + ch;
+	protected String _long(long n) {
+		return "" + n + "L";
 	}
 
 	/* Expression */

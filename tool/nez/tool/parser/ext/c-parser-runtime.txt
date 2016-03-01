@@ -10,9 +10,9 @@ struct MemoEntry;
 typedef unsigned long int symbol_t;
 
 typedef struct ParserContext {
-    const char  *inputs;
+    const unsigned char  *inputs;
     size_t       length;
-    const char  *pos;
+    const unsigned char  *pos;
     struct Tree *left;
     // AST
     struct TreeLog *logs;
@@ -35,7 +35,7 @@ typedef struct ParserContext {
     size_t memoSize;
     // APIs
     void *thunk;
-	void* (*fnew)(symbol_t, const char *, size_t, size_t, void *);
+	void* (*fnew)(symbol_t, const unsigned char *, size_t, size_t, void *);
 	void  (*fsub)(void *, size_t, symbol_t, void *, void *);
 	void  (*fgc)(void *, int, void*);
 } ParserContext;
@@ -129,7 +129,7 @@ typedef struct MemoEntry {
 typedef struct Tree {
     long           refc;
     symbol_t       tag;
-    const char    *text;
+    const unsigned char    *text;
     size_t         len;
     size_t         size;
     symbol_t      *labels;
@@ -137,7 +137,7 @@ typedef struct Tree {
 } Tree;
 
 static
-void *NEW(symbol_t tag, const char *text, size_t len, size_t n, void *thunk)
+void *NEW(symbol_t tag, const unsigned char *text, size_t len, size_t n, void *thunk)
 {
     Tree *t = (Tree*)malloc(sizeof(struct Tree));
     t->tag = tag;
@@ -190,7 +190,7 @@ void GC(void *parent, int c, void *thunk)
 
 static void ParserContext_initTreeFunc(ParserContext *c, 
 	void *thunk,
-	void* (*fnew)(symbol_t, const char *, size_t, size_t, void *), 
+	void* (*fnew)(symbol_t, const unsigned char *, size_t, size_t, void *), 
 	void  (*fset)(void *, size_t, symbol_t, void *, void *), 
 	void  (*fgc)(void *, int, void*))
 {
@@ -209,7 +209,7 @@ static void ParserContext_initTreeFunc(ParserContext *c,
 }
 
 static
-void *nonew(symbol_t tag, const char *pos, size_t len, size_t n, void *thunk)
+void *nonew(symbol_t tag, const unsigned char *pos, size_t len, size_t n, void *thunk)
 {
     return NULL;
 }
@@ -234,7 +234,7 @@ static void ParserContext_initNoTreeFunc(ParserContext *c)
 
 /* ParserContext */
 
-static ParserContext *ParserContext_new(const char *text, size_t len)
+static ParserContext *ParserContext_new(const unsigned char *text, size_t len)
 {
     ParserContext *c = (ParserContext*) malloc(sizeof(ParserContext));
     c->inputs = text;
@@ -283,12 +283,12 @@ static void ParserContext_move(ParserContext *c, int shift)
     c->pos += shift;
 }
 
-static void ParserContext_back(ParserContext *c, const char *ppos)
+static void ParserContext_back(ParserContext *c, const unsigned char *ppos)
 {
     c->pos = ppos;
 }
 
-static int ParserContext_match(ParserContext *c, const char *text, size_t len) {
+static int ParserContext_match(ParserContext *c, const unsigned char *text, size_t len) {
 	if (c->pos + len > c->inputs + c->length) {
 		return 0;
 	}
@@ -300,6 +300,69 @@ static int ParserContext_match(ParserContext *c, const char *text, size_t len) {
 	}
 	c->pos += len;
 	return 1;
+}
+
+static int ParserContext_eof2(ParserContext *c, size_t n) {
+	if (c->pos + n <= c->inputs + c->length) {
+		return 1;
+	}
+	return 0;
+}
+
+static int ParserContext_match2(ParserContext *c, const unsigned char c1, const unsigned char c2) {
+	if (c->pos[0] == c1 && c->pos[1] == c2) {
+		c->pos+=2;
+		return 1;
+	}
+	return 0;
+}
+
+static int ParserContext_match3(ParserContext *c, const unsigned char c1, const unsigned char c2, const unsigned char c3) {
+	if (c->pos[0] == c1 && c->pos[1] == c2 && c->pos[2] == c3) {
+		c->pos+=3;
+		return 1;
+	}
+	return 0;
+}
+
+static int ParserContext_match4(ParserContext *c, const unsigned char c1, const unsigned char c2, const unsigned char c3, const unsigned char c4) {
+	if (c->pos[0] == c1 && c->pos[1] == c2 && c->pos[2] == c3 && c->pos[3] == c4) {
+		c->pos+=4;
+		return 1;
+	}
+	return 0;
+}
+
+static int ParserContext_match5(ParserContext *c, const unsigned char c1, const unsigned char c2, const unsigned char c3, const unsigned char c4, const unsigned char c5) {
+	if (c->pos[0] == c1 && c->pos[1] == c2 && c->pos[2] == c3 && c->pos[3] == c4 && c->pos[4] == c5 ) {
+		c->pos+=4;
+		return 1;
+	}
+	return 0;
+}
+
+static int ParserContext_match6(ParserContext *c, const unsigned char c1, const unsigned char c2, const unsigned char c3, const unsigned char c4, const unsigned char c5, const unsigned char c6) {
+	if (c->pos[0] == c1 && c->pos[1] == c2 && c->pos[2] == c3 && c->pos[3] == c4 && c->pos[4] == c5 && c->pos[5] == c6 ) {
+		c->pos+=4;
+		return 1;
+	}
+	return 0;
+}
+
+static int ParserContext_match7(ParserContext *c, const unsigned char c1, const unsigned char c2, const unsigned char c3, const unsigned char c4, const unsigned char c5, const unsigned char c6, const unsigned char c7) {
+	if (c->pos[0] == c1 && c->pos[1] == c2 && c->pos[2] == c3 && c->pos[3] == c4 && c->pos[4] == c5 && c->pos[5] == c6 && c->pos[6] == c7) {
+		c->pos+=4;
+		return 1;
+	}
+	return 0;
+}
+
+static int ParserContext_match8(ParserContext *c, const unsigned char c1, const unsigned char c2, const unsigned char c3, const unsigned char c4, const unsigned char c5, const unsigned char c6, const unsigned char c7, const unsigned char c8) {
+	if (c->pos[0] == c1 && c->pos[1] == c2 && c->pos[2] == c3 && c->pos[3] == c4 && c->pos[4] == c5 && c->pos[5] == c6 && c->pos[6] == c7 && c->pos[7] == c8) {
+		c->pos+=4;
+		return 1;
+	}
+	return 0;
 }
 
 // AST
@@ -355,7 +418,7 @@ static void ParserContext_tagTree(ParserContext *c, symbol_t tag)
     _log(c, OpTag, (void*)((long)tag), NULL);
 }
 
-static void ParserContext_valueTree(ParserContext *c, const char *text, size_t len)
+static void ParserContext_valueTree(ParserContext *c, const unsigned char *text, size_t len)
 {
     _log(c, OpReplace, (void*)text, (Tree*)len);
 }
@@ -389,7 +452,7 @@ static void ParserContext_backLog(ParserContext *c, size_t unused_log)
     }
 }
 
-static void ParserContext_endTree(ParserContext *c, int shift, symbol_t tag, const char *text, size_t len)
+static void ParserContext_endTree(ParserContext *c, int shift, symbol_t tag, const unsigned char *text, size_t len)
 {
     int objectSize = 0;
     long i;
@@ -407,7 +470,7 @@ static void ParserContext_endTree(ParserContext *c, int shift, symbol_t tag, con
 	   }
 	   if(l->op == OpReplace) {
 	   	 if(text == NULL) {
-		     text = (const char*)l->value;
+		     text = (const unsigned char*)l->value;
 		     len = (size_t)l->tree;
 		 }
 	     l->tree = NULL;
@@ -415,7 +478,7 @@ static void ParserContext_endTree(ParserContext *c, int shift, symbol_t tag, con
 	}
  	TreeLog * start = c->logs + i;
  	if(text == NULL) {
-    	text = (const char*)start->value;
+    	text = (const unsigned char*)start->value;
     	len = ((c->pos + shift) - text);
     }
     Tree *t = c->fnew(tag, text, len, objectSize, c->thunk);
@@ -457,18 +520,18 @@ static void ParserContext_backTree(ParserContext *c, size_t back)
 
 // Symbol Table ---------------------------------------------------------
 
-static const char NullSymbol[4] = { 0, 0, 0, 0 };
+static const unsigned char NullSymbol[4] = { 0, 0, 0, 0 };
 
 typedef struct SymbolTableEntry {
 	int stateValue;
 	symbol_t table;
-	const char* symbol;
+	const unsigned char* symbol;
 	size_t      length;
 } SymbolTableEntry;
 
 
 static
-void _push(ParserContext *c, symbol_t table, const char * utf8, size_t length) 
+void _push(ParserContext *c, symbol_t table, const unsigned char * utf8, size_t length) 
 {
 	if (!(c->tableSize < c->tableMax)) {
 		SymbolTableEntry* newtable = (SymbolTableEntry*)calloc(sizeof(SymbolTableEntry), (c->tableMax + 256));
@@ -512,7 +575,7 @@ void ParserContext_backSymbolPoint(ParserContext *c, int savePoint)
 }
 
 static
-void ParserContext_addSymbol(ParserContext *c, symbol_t table, const char *ppos) {
+void ParserContext_addSymbol(ParserContext *c, symbol_t table, const unsigned char *ppos) {
 	size_t length = c->pos - ppos;
 	_push(c, table, ppos, length);
 }
@@ -534,7 +597,7 @@ static int ParserContext_exists(ParserContext *c, symbol_t table)
 	return 0;
 }
 
-static int ParserContext_existsSymbol(ParserContext *c, symbol_t table, const char *symbol, size_t length) 
+static int ParserContext_existsSymbol(ParserContext *c, symbol_t table, const unsigned char *symbol, size_t length) 
 {
 	long i;
 	for (i = c->tableSize - 1; i >= 0; i--) {
@@ -566,7 +629,7 @@ static int ParserContext_matchSymbol(ParserContext *c, symbol_t table)
 	return 0;
 }
 
-static int ParserContext_equals(ParserContext *c, symbol_t table, const char *ppos) {
+static int ParserContext_equals(ParserContext *c, symbol_t table, const unsigned char *ppos) {
 	long i;
 	size_t length = c->pos - ppos;
 	for (i = c->tableSize - 1; i >= 0; i--) {
@@ -581,7 +644,7 @@ static int ParserContext_equals(ParserContext *c, symbol_t table, const char *pp
 	return 0;
 }
 
-static int ParserContext_contains(ParserContext *c, symbol_t table, const char *ppos) 
+static int ParserContext_contains(ParserContext *c, symbol_t table, const unsigned char *ppos) 
 {
 	long i;
 	size_t length = c->pos - ppos;
@@ -602,15 +665,15 @@ static int ParserContext_contains(ParserContext *c, symbol_t table, const char *
 
 // Counter -----------------------------------------------------------------
 
-static void ParserContext_scanCount(ParserContext *c, const char *ppos, long mask, int shift) 
+static void ParserContext_scanCount(ParserContext *c, const unsigned char *ppos, long mask, int shift) 
 {
 	long i;
 	size_t length = c->pos - ppos;
 	if (mask == 0) {
-		c->count = strtol(ppos, NULL, 10);
+		c->count = strtol((const char*)ppos, NULL, 10);
 	} else {
 		long n = 0;
-		const char *p = ppos;
+		const unsigned char *p = ppos;
 		while(p < c->pos) {
 			n <<= 8;
 			n |= (*p & 0xff);
@@ -671,9 +734,9 @@ int ParserContext_memoLookupTree(ParserContext *c, int memoPoint)
 }
 
 static
-void ParserContext_memoSucc(ParserContext *c, int memoPoint, const char* ppos)
+void ParserContext_memoSucc(ParserContext *c, int memoPoint, const unsigned char* ppos)
 {
-     uniquekey_t key = longkey((ppos - c->inputs), memoPoint);
+    uniquekey_t key = longkey((ppos - c->inputs), memoPoint);
     unsigned int hash = (unsigned int) (key % c->memoSize);
     MemoEntry* m = c->memoArray + hash;
     m->key = key;
@@ -685,9 +748,9 @@ void ParserContext_memoSucc(ParserContext *c, int memoPoint, const char* ppos)
 }
 
 static
-void ParserContext_memoTreeSucc(ParserContext *c, int memoPoint, const char* ppos)
+void ParserContext_memoTreeSucc(ParserContext *c, int memoPoint, const unsigned char* ppos)
 {
-     uniquekey_t key = longkey((ppos - c->inputs), memoPoint);
+    uniquekey_t key = longkey((ppos - c->inputs), memoPoint);
     unsigned int hash = (unsigned int) (key % c->memoSize);
     MemoEntry* m = c->memoArray + hash;
     m->key = key;
@@ -802,9 +865,9 @@ static void ParserContext_free(ParserContext *c)
 
 //----------------------------------------------------------------------------
 
-static int bitset(int *bits, size_t n)
+static inline int ParserContext_bitis(ParserContext *c, int *bits, size_t n)
 {
-	return (bits[n % 32] & (1 << (n/32))) != 0;
+	return (bits[n / 32] & (1 << (n % 32))) != 0;
 }
 
 
