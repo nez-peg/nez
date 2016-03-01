@@ -252,7 +252,7 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 				break;
 			}
 		}
-		int end = start;
+		int end = 256;
 		for (int i = start; i < 256; i++) {
 			if (!b[i]) {
 				end = i;
@@ -264,8 +264,11 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 				return null;
 			}
 		}
-		int[] a = { start, end };
-		return a;
+		if (start < end) {
+			int[] a = { start, end };
+			return a;
+		}
+		return null;
 	}
 
 	private boolean isMatchText(byte[] t, int n) {
@@ -1061,7 +1064,9 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 			if (SupportedRange) {
 				int[] range = isRange(byteMap);
 				if (range != null) {
-					return _Binary(_Binary(_byte(range[0]), "<=", _Func("read")), _And(), _Binary(c, "<", _byte(range[1])));
+					String s = _Binary(_Binary(_byte(range[0]), "<=", _Func("prefetch")), _And(), _Binary(c, "<", _byte(range[1])));
+					System.out.println(s);
+					return s;
 				}
 			}
 			if (UsingBitmap) {
