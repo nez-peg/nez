@@ -536,23 +536,6 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 		}
 		TopologicalSorter sorter = new TopologicalSorter(nodes);
 		funcList = sorter.getResult();
-		// HashMap<String, Integer> indexMap = new HashMap<>();
-		// int c = 0;
-		// for (String f : funcList) {
-		// indexMap.put(f, c);
-		// c++;
-		// }
-		// for (Map.Entry<String, HashSet<String>> e : this.nodes.entrySet()) {
-		// String f = e.getKey();
-		// Integer findex = indexMap.get(f);
-		// for (String d : e.getValue()) {
-		// Integer dindex = indexMap.get(d);
-		// if (!(dindex <= findex)) {
-		// crossRefNames.add(d);
-		// // Verbose.println("crossref: " + d);
-		// }
-		// }
-		// }
 		nodes.clear();
 	}
 
@@ -622,9 +605,11 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 		}
 
 		private void checkNonLexicalInner(Expression e) {
-			if (e instanceof Nez.Byte || e instanceof Nez.ByteSet || e instanceof Nez.MultiByte || e instanceof Nez.Any) {
-				e.visit(this, null);
-				return;
+			if (strategy.Olex) {
+				if (e instanceof Nez.Byte || e instanceof Nez.ByteSet || e instanceof Nez.MultiByte || e instanceof Nez.Any) {
+					e.visit(this, null);
+					return;
+				}
 			}
 			checkInner(e);
 		}
