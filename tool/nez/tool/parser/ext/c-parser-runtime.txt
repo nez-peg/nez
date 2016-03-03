@@ -268,14 +268,14 @@ static int ParserContext_eof(ParserContext *c)
     return !(c->pos < (c->inputs + c->length));
 }
 
-static int ParserContext_read(ParserContext *c)
+static const unsigned char ParserContext_read(ParserContext *c)
 {
-    return (*(c->pos++) & 0xff);
+    return *(c->pos++);
 }
 
-static int ParserContext_prefetch(ParserContext *c)
+static const unsigned char ParserContext_prefetch(ParserContext *c)
 {
-    return (*c->pos & 0xff);
+    return *(c->pos);
 }
 
 static void ParserContext_move(ParserContext *c, int shift)
