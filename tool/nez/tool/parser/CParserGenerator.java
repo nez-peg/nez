@@ -9,7 +9,7 @@ public class CParserGenerator extends CommonParserGenerator {
 
 	@Override
 	protected void initTypeMap() {
-		SupportedRange = false;
+		// SupportedRange = false;
 		// SupportedMatch2 = false;
 		// SupportedMatch3 = false;
 		// SupportedMatch4 = false;

@@ -990,19 +990,13 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 			}
 		}
 
-		private void trace(String t) {
-
-		}
-
 		@Override
 		public Object visitNonTerminal(NonTerminal e, Object a) {
 			String f = _eval(e.getUniqueName());
 			If(_Not(f));
 			{
-				trace("A");
 				Fail();
 			}
-			trace("a");
 			EndIf();
 			return null;
 		}
@@ -1014,7 +1008,6 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 
 		@Override
 		public Object visitFail(Nez.Fail e, Object a) {
-			trace("F");
 			Fail();
 			return null;
 		}
@@ -1023,10 +1016,8 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 		public Object visitByte(Nez.Byte e, Object a) {
 			If(_Func("read"), _NotEq(), _byte(e.byteChar));
 			{
-				trace("C");
 				Fail();
 			}
-			trace("c");
 			EndIf();
 			checkBinaryEOF(e.byteChar == 0);
 			return null;
@@ -1036,10 +1027,8 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 		public Object visitByteSet(Nez.ByteSet e, Object a) {
 			If(_Not(MatchByteArray(e.byteMap, true)));
 			{
-				trace("S");
 				Fail();
 			}
-			trace("s");
 			EndIf();
 			checkBinaryEOF(e.byteMap[0]);
 			return null;
@@ -1049,10 +1038,8 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 			if (strategy.BinaryGrammar && checked) {
 				If(_Func("eof"));
 				{
-					trace("B");
 					Fail();
 				}
-				trace("b");
 				EndIf();
 			}
 		}
@@ -1062,7 +1049,7 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 			if (SupportedRange) {
 				int[] range = isRange(byteMap);
 				if (range != null) {
-					String s = _Binary(_Binary(_byte(range[0]), "<=", _Func("prefetch")), _And(), _Binary(c, "<", _byte(range[1])));
+					String s = "(" + _Binary(_Binary(_byte(range[0]), "<=", _Func("prefetch")), _And(), _Binary(c, "<", _byte(range[1]))) + ")";
 					// System.out.println(s);
 					return s;
 				}
@@ -1080,14 +1067,12 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 				Statement(_Func("move", "1"));
 				If(_Func("eof"));
 				{
-					trace(".");
 					Fail();
 				}
 				EndIf();
 			} else {
 				If(_Func("read"), _Eq(), "0");
 				{
-					trace(".");
 					Fail();
 				}
 				EndIf();
@@ -1099,10 +1084,8 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 		public Object visitMultiByte(Nez.MultiByte e, Object a) {
 			If(_Not(_Match(e.byteSeq)));
 			{
-				trace("M");
 				Fail();
 			}
-			trace("m");
 			EndIf();
 			return null;
 		}
@@ -1150,10 +1133,8 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 				}
 				If(temp);
 				{
-					trace("Z");
 					Fail();
 				}
-				trace("z");
 				EndIf();
 				EndScope();
 			}
@@ -1182,10 +1163,8 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 			EndSwitch();
 			If(_Not(temp));
 			{
-				trace("Z");
 				Fail();
 			}
-			trace("z");
 			EndIf();
 		}
 
@@ -1198,10 +1177,8 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 				Verbose(sub.toString());
 				If(_Not(f));
 				{
-					trace("O");
 					BackState(sub, n);
 				}
-				trace("o");
 				EndIf();
 			}
 			return null;
@@ -1268,7 +1245,6 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 			if (!consumption.isConsumed(e)) {
 				If(var, _Eq(), _Field(_state(), "pos"));
 				{
-					trace("");
 					Break();
 				}
 				EndIf();
@@ -1285,12 +1261,10 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 				Verbose(sub.toString());
 				If(_Not(f));
 				{
-					trace("L");
 					Fail();
 				}
 				EndIf();
 				BackPos(n);
-				trace("l");
 				EndScope();
 			}
 			return null;
@@ -1306,12 +1280,10 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 				Verbose(sub.toString());
 				If(f);
 				{
-					trace("N");
 					Fail();
 				}
 				EndIf();
 				BackState(sub, n);
-				trace("n");
 				EndScope();
 			}
 			return null;

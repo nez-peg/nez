@@ -6,6 +6,7 @@ import nez.ParserGenerator;
 import nez.Version;
 import nez.ast.Source;
 import nez.lang.Grammar;
+import nez.lang.Production;
 import nez.lang.ast.NezGrammarCombinator;
 import nez.parser.Parser;
 import nez.parser.ParserStrategy;
@@ -174,8 +175,16 @@ public abstract class Command {
 			}
 			if (this.startProduction != null) {
 				if (!grammar.hasProduction(this.startProduction)) {
-					ConsoleUtils.println("No such start production: %s", this.startProduction);
-					return grammar;
+					String s = startProduction.substring(0, 1);
+					StringBuilder sb = new StringBuilder();
+					for (Production p : grammar) {
+						if (p.getLocalName().startsWith(s)) {
+							sb.append(" ");
+							sb.append(p.getLocalName());
+						}
+					}
+					ConsoleUtils.println("No such production -s " + this.startProduction + ". Try " + sb.toString());
+					throw new IOException("No such start production: " + this.startProduction);
 				}
 				grammar.setStartProduction(this.startProduction);
 			}
