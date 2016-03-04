@@ -156,7 +156,7 @@ public class ParserGenerator {
 				public Parser getParser() {
 					if (parser == null) {
 						Grammar g = new Grammar("nez");
-						parser = new NezGrammarCombinator().load(g, "File").newParser("File", ParserStrategy.newSafeStrategy());
+						parser = new NezGrammarCombinator().load(g, "File").newParser(ParserStrategy.newSafeStrategy());
 					}
 					return parser;
 				}

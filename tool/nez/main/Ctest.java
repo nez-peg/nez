@@ -29,7 +29,7 @@ public class Ctest extends Command {
 				System.out.println(node);
 			}
 		} else {
-			Grammar grammar = newGrammar();
+			Grammar grammar = getSpecifiedGrammar();
 			GrammarExample example = (GrammarExample) grammar.getMetaData("example");
 			if (example == null) {
 				ConsoleUtils.println("No example is specified");

@@ -29,7 +29,7 @@ void cnez_dump(void *v, FILE *fp)
 	fputs("]", fp);
 }
 
-#ifdef MAIN
+#ifndef UNUSE_MAIN
 #include<sys/time.h> // for using gettimeofday
 
 static const char *get_input(const char *path, size_t *size)
@@ -65,18 +65,22 @@ static double timediff(struct timeval *s, struct timeval *e)
 int cnez_main(int ac, const char **av, void* (*parse)(const char *input, size_t len))
 {
 	size_t len;
+	if(ac == 1) {
+		fprintf(stdout, "Usage: %s file [or input-text]", av[0]);
+		return 1;
+	}		
 	const char *input = get_input(av[1], &len);
 	if(getenv("BENCH") != NULL) {
 		struct timeval s, e;
 		gettimeofday(&s, NULL);
 		void *data = parse(input, len);
 		gettimeofday(&e, NULL);
-		fprintf(stdout, "%s %f[ms]\n", data != NULL ? "OK" : "FAIL", timediff(&s, &e));
-		return 0;
+		fprintf(stdout, "%s %s %f[ms]\n", av[1], data != NULL ? "OK" : "FAIL", timediff(&s, &e));
+		return 1;
 	}
 	void *data = parse(input, len);
 	cnez_dump(data, stdout);
 	fprintf(stdout, "\n");
 	return 0;
 }
-#endif
+#endif/*UNUSE_MAIN*/

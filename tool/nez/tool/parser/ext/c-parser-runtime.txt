@@ -335,7 +335,7 @@ static int ParserContext_match4(ParserContext *c, const unsigned char c1, const 
 
 static int ParserContext_match5(ParserContext *c, const unsigned char c1, const unsigned char c2, const unsigned char c3, const unsigned char c4, const unsigned char c5) {
 	if (c->pos[0] == c1 && c->pos[1] == c2 && c->pos[2] == c3 && c->pos[3] == c4 && c->pos[4] == c5 ) {
-		c->pos+=4;
+		c->pos+=5;
 		return 1;
 	}
 	return 0;
@@ -343,7 +343,7 @@ static int ParserContext_match5(ParserContext *c, const unsigned char c1, const 
 
 static int ParserContext_match6(ParserContext *c, const unsigned char c1, const unsigned char c2, const unsigned char c3, const unsigned char c4, const unsigned char c5, const unsigned char c6) {
 	if (c->pos[0] == c1 && c->pos[1] == c2 && c->pos[2] == c3 && c->pos[3] == c4 && c->pos[4] == c5 && c->pos[5] == c6 ) {
-		c->pos+=4;
+		c->pos+=6;
 		return 1;
 	}
 	return 0;
@@ -351,7 +351,7 @@ static int ParserContext_match6(ParserContext *c, const unsigned char c1, const 
 
 static int ParserContext_match7(ParserContext *c, const unsigned char c1, const unsigned char c2, const unsigned char c3, const unsigned char c4, const unsigned char c5, const unsigned char c6, const unsigned char c7) {
 	if (c->pos[0] == c1 && c->pos[1] == c2 && c->pos[2] == c3 && c->pos[3] == c4 && c->pos[4] == c5 && c->pos[5] == c6 && c->pos[6] == c7) {
-		c->pos+=4;
+		c->pos+=7;
 		return 1;
 	}
 	return 0;
@@ -359,7 +359,7 @@ static int ParserContext_match7(ParserContext *c, const unsigned char c1, const 
 
 static int ParserContext_match8(ParserContext *c, const unsigned char c1, const unsigned char c2, const unsigned char c3, const unsigned char c4, const unsigned char c5, const unsigned char c6, const unsigned char c7, const unsigned char c8) {
 	if (c->pos[0] == c1 && c->pos[1] == c2 && c->pos[2] == c3 && c->pos[3] == c4 && c->pos[4] == c5 && c->pos[5] == c6 && c->pos[6] == c7 && c->pos[7] == c8) {
-		c->pos+=4;
+		c->pos+=8;
 		return 1;
 	}
 	return 0;

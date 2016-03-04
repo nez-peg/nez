@@ -18,7 +18,7 @@ public class Command extends nez.main.Command {
 	public void exec() throws IOException {
 		/* Setting required options */
 		strategy.Optimization = false;
-		Grammar grammar = this.newGrammar();
+		Grammar grammar = this.getSpecifiedGrammar();
 		SchemaTransformer conv = new SchemaTransformer();
 		Schema schema = new Schema();
 		Type topType = loadSchema(schema);

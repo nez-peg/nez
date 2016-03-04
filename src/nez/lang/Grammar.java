@@ -58,9 +58,24 @@ public class Grammar extends AbstractList<Production> {
 
 	public final Production getStartProduction() {
 		if (size() > 0) {
-			return this.prodList.ArrayValues[0];
+			return this.prodList.get(0);
 		}
 		return this.addProduction("EMPTY", Expressions.newEmpty(null));
+	}
+
+	public final void setStartProduction(String name) {
+		Production p = this.getProduction(name);
+		int index = 0;
+		for (int i = 0; i < this.size(); i++) {
+			if (this.prodList.get(i) == p) {
+				index = i;
+				break;
+			}
+		}
+		if (index != 0) {
+			this.prodList.set(index, this.prodList.get(0));
+			this.prodList.set(0, p);
+		}
 	}
 
 	public final boolean hasProduction(String name) {

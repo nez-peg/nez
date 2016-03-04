@@ -17,7 +17,7 @@ public class Cpeg extends Command {
 	@Override
 	public void exec() throws IOException {
 		SourceGenerator generator = newGenerator();
-		Grammar g = newGrammar();
+		Grammar g = getSpecifiedGrammar();
 		Parser p = newParser();
 		generator.init(g, p, g.getURN());
 		// generator.pCommentLine("Translated by nez peg -g " + g.getURN() +

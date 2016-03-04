@@ -9,7 +9,7 @@ public class Command2 extends nez.main.Command {
 	public void exec() throws IOException {
 		/* Setting requird options */
 		strategy.Optimization = false;
-		Grammar grammar = this.newGrammar();
+		Grammar grammar = this.getSpecifiedGrammar();
 		SchemaTransformer conv = new SchemaTransformer();
 		Schema schema = new Schema();
 		schema.newType("#String");

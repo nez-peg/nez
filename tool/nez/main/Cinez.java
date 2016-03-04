@@ -32,7 +32,7 @@ public class Cinez extends Command {
 		ConsoleUtils.println("");
 		Parser nezParser = this.getNezParser();
 		TreeWriter writer = this.getTreeWriter("ast json xml", "ast");
-		Grammar grammar = newGrammar();
+		Grammar grammar = getSpecifiedGrammar();
 		String start = grammar.getStartProduction().getLocalName();
 		Parser p = strategy.newParser(grammar);
 		p.setDisabledUnconsumed(false);

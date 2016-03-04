@@ -12,7 +12,7 @@ public class Cformat extends Command {
 	@Override
 	public void exec() throws IOException {
 		Parser nezParser = getNezParser();
-		Source source = CommonSource.newFileSource(newGrammar().getURN());
+		Source source = CommonSource.newFileSource(getSpecifiedGrammar().getURN());
 		Tree<?> node = nezParser.parse(source);
 		nezParser.ensureNoErrors();
 		NezFileFormatter fmt = new NezFileFormatter();

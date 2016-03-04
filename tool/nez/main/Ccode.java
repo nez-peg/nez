@@ -15,7 +15,7 @@ public class Ccode extends Command {
 	@Override
 	public void exec() throws IOException {
 		SourceGenerator generator = newGenerator();
-		Grammar g = newGrammar();
+		Grammar g = getSpecifiedGrammar();
 		Parser p = newParser();
 		generator.init(g, p, g.getURN());
 		generator.doc("code", g.getURN(), outputFormat);

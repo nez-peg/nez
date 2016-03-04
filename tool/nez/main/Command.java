@@ -165,12 +165,19 @@ public abstract class Command {
 		ConsoleUtils.exit(0, msg);
 	}
 
-	public final Grammar newGrammar() throws IOException {
+	public final Grammar getSpecifiedGrammar() throws IOException {
 		if (grammarFile != null) {
 			ParserGenerator pg = new ParserGenerator();
 			Grammar grammar = pg.loadGrammar(grammarFile);
 			for (String f : this.grammarFiles) {
 				pg.updateGrammar(grammar, f);
+			}
+			if (this.startProduction != null) {
+				if (!grammar.hasProduction(this.startProduction)) {
+					ConsoleUtils.println("No such start production: %s", this.startProduction);
+					return grammar;
+				}
+				grammar.setStartProduction(this.startProduction);
 			}
 			return grammar;
 		}
@@ -178,7 +185,7 @@ public abstract class Command {
 	}
 
 	public final Parser newParser() throws IOException {
-		return this.strategy.newParser(newGrammar());
+		return this.strategy.newParser(getSpecifiedGrammar());
 	}
 
 	public final Parser getNezParser() {

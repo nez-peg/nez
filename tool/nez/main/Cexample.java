@@ -9,7 +9,7 @@ public class Cexample extends Ctest {
 
 	@Override
 	public void exec() throws IOException {
-		Grammar grammar = newGrammar();
+		Grammar grammar = getSpecifiedGrammar();
 		GrammarExample example = (GrammarExample) grammar.getMetaData("example");
 		testAll(grammar, example.getExampleList(), strategy);
 	}

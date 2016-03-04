@@ -186,7 +186,7 @@ public class CParserGenerator extends CommonParserGenerator {
 			Return("_labels[n]");
 		}
 		EndDecl();
-		Line("#ifdef MAIN");
+		Line("#ifndef UNUSE_MAIN");
 		BeginDecl("int main(int ac, const char **argv)");
 		{
 			Return("cnez_main(ac, argv, cnez_parse)");
@@ -195,22 +195,8 @@ public class CParserGenerator extends CommonParserGenerator {
 		Line("#endif/*MAIN*/");
 		file.writeIndent("// End of File");
 		generateHeaderFile();
-		ConsoleUtils.println("For quick start, make %s CFLAGS=-DMAIN", _basename());
+		ConsoleUtils.println("For quick start, make %s CFLAGS=-O2", _basename());
 	}
-
-	//
-	// private int checkInner(Expression e, int c) {
-	// if (e.size() == 1) {
-	// return checkInner(e.get(0), c) + 1;
-	// }
-	// for (Expression sub : e) {
-	// c = checkInner(sub, c);
-	// }
-	// return c;
-	// }
-	//
-	// private void DeclPrototype(String name) {
-	// }
 
 	private void generateHeaderFile() {
 		String filename = FileBuilder.changeFileExtension(this.path, "h");
