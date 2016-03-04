@@ -156,6 +156,11 @@ public class CParserGenerator extends CommonParserGenerator {
 			Return("result");
 		}
 		EndDecl();
+		BeginDecl("static void* cnez_parse(const char *text, size_t len)");
+		{
+			Return(_ns() + "parse(text, len, NULL, NULL, NULL, NULL)");
+		}
+		EndDecl();
 		BeginDecl("long " + _ns() + "match(const char *text, size_t len)");
 		{
 			VarDecl("long", "result", "-1");
@@ -181,19 +186,16 @@ public class CParserGenerator extends CommonParserGenerator {
 			Return("_labels[n]");
 		}
 		EndDecl();
-		Line("//#ifdef USE_MAIN");
+		Line("#ifdef MAIN");
 		BeginDecl("int main(int ac, const char **argv)");
 		{
-			Statement("void *t = " + _ns() + "parse(argv[1], strlen(argv[1]), NULL, NULL, NULL, NULL)");
-			Statement("cnez_dump(t, stdout)");
-			Statement("fprintf(stdout, \"\\n\")");
-			Return("0");
+			Return("cnez_main(ac, argv, cnez_parse)");
 		}
 		EndDecl();
-		Line("//#endif/*USE_MAIN*/");
+		Line("#endif/*MAIN*/");
 		file.writeIndent("// End of File");
 		generateHeaderFile();
-
+		ConsoleUtils.println("For quick start, make %s CFLAGS=-DMAIN", _basename());
 	}
 
 	//
