@@ -9,14 +9,14 @@ public class CParserGenerator extends CommonParserGenerator {
 
 	@Override
 	protected void initTypeMap() {
-		// SupportedRange = false;
-		// SupportedMatch2 = false;
-		// SupportedMatch3 = false;
-		// SupportedMatch4 = false;
-		// SupportedMatch5 = false;
-		// SupportedMatch6 = false;
-		// SupportedMatch7 = false;
-		// SupportedMatch8 = false;
+		SupportedRange = true;
+		SupportedMatch2 = true;
+		SupportedMatch3 = true;
+		SupportedMatch4 = true;
+		SupportedMatch5 = true;
+		SupportedMatch6 = true;
+		SupportedMatch7 = true;
+		SupportedMatch8 = true;
 
 		this.addType("$parse", "int");
 		this.addType("$tag", "int");

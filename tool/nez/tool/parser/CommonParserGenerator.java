@@ -62,14 +62,14 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 	protected boolean SupportedSwitchCase = true;
 	protected boolean SupportedDoWhile = true;
 	protected boolean UsingBitmap = false;
-	protected boolean SupportedRange = true;
-	protected boolean SupportedMatch2 = true;
-	protected boolean SupportedMatch3 = true;
-	protected boolean SupportedMatch4 = true;
-	protected boolean SupportedMatch5 = true;
-	protected boolean SupportedMatch6 = true;
-	protected boolean SupportedMatch7 = true;
-	protected boolean SupportedMatch8 = true;
+	protected boolean SupportedRange = false;
+	protected boolean SupportedMatch2 = false;
+	protected boolean SupportedMatch3 = false;
+	protected boolean SupportedMatch4 = false;
+	protected boolean SupportedMatch5 = false;
+	protected boolean SupportedMatch6 = false;
+	protected boolean SupportedMatch7 = false;
+	protected boolean SupportedMatch8 = false;
 
 	@Override
 	public final void init(Grammar g, Parser parser, String path) {
