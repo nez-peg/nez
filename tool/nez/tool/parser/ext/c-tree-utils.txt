@@ -6,6 +6,9 @@ void cnez_dump(void *v, FILE *fp)
 		fputs("null", fp);
 		return;
 	}
+	if(t->refc != 1) {
+		fprintf(fp, "@%ld", t->refc);
+	}
 	fputs("[#", fp);
 	fputs(_tags[t->tag], fp);
 	if(t->size == 0) {
@@ -28,6 +31,21 @@ void cnez_dump(void *v, FILE *fp)
 	}
 	fputs("]", fp);
 }
+
+size_t cnez_count(void *v, size_t c)
+{
+	size_t i;
+	Tree *t = (Tree*)v;
+	if(t == NULL) {
+		return c+0;
+	}
+	c++;
+	for(i = 0; i < t->size; i++) {
+		c = cnez_count(t->childs[i], c);
+	}
+	return c;
+}
+
 
 #ifndef UNUSE_MAIN
 #include<sys/time.h> // for using gettimeofday
@@ -67,19 +85,36 @@ int cnez_main(int ac, const char **av, void* (*parse)(const char *input, size_t 
 	if(ac == 1) {
 		fprintf(stdout, "Usage: %s file [or input-text]", av[0]);
 		return 1;
-	}		
+	}
 	const char *input = get_input(av[1], &len);
 	if(getenv("BENCH") != NULL) {
-		struct timeval s, e;
-		gettimeofday(&s, NULL);
-		void *data = parse(input, len);
-		gettimeofday(&e, NULL);
-		fprintf(stdout, "%s %s %f[ms]\n", av[1], data != NULL ? "OK" : "FAIL", timediff(&s, &e));
-		return 1;
+		double tsum = 0.0;
+		double t[5];
+		int i = 0;
+		for(i = 0; i < 5; i++) {
+			struct timeval s, e;
+			gettimeofday(&s, NULL);
+			void *data = parse(input, len);
+			gettimeofday(&e, NULL);
+			if(data == NULL) {
+				fprintf(stdout, "%s FAIL %f[ms]\n", av[1], timediff(&s, &e));
+				return 1;
+			}
+			t[i] = timediff(&s, &e);
+			tsum += t[i];
+			//cnez_dump_memory("BEFORE");
+			//cnez_dump(data, stdout);
+			//fprintf(stdout, "  C = %ld\n", cnez_count(data, 0));
+			cnez_freetree(data);
+			//cnez_dump_memory("AFTER");
+		}
+		fprintf(stdout, "%s OK %.4f[ms] %.3f %.3f %.3f %.3f %.3f\n", av[1], tsum / 5, t[0], t[1], t[2], t[3], t[4]);
+		return 0;
 	}
 	void *data = parse(input, len);
 	cnez_dump(data, stdout);
 	fprintf(stdout, "\n");
+	cnez_freetree(data);
 	return 0;
 }
 #endif/*UNUSE_MAIN*/

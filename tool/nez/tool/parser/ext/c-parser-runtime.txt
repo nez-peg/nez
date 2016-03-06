@@ -40,7 +40,6 @@ typedef struct ParserContext {
 	void  (*fgc)(void *, int, void*);
 } ParserContext;
 
-
 #define GCINC(c, v2)     c->fgc(v2,  1, c->thunk)
 #define GCDEC(c, v1)     c->fgc(v1, -1, c->thunk)
 #define GCSET(c, v1, v2) c->fgc(v2, 1, c->thunk); c->fgc(v1, -1, c->thunk)
@@ -62,6 +61,29 @@ typedef struct TreeLog {
 
 static const char* ops[5] = {"link", "tag", "value", "new"};
 
+static size_t cnez_used = 0;
+
+static void *_malloc(size_t t)
+{
+	size_t *d = (size_t*)malloc(sizeof(size_t) + t);
+	cnez_used += t;
+	d[0] = t;
+	memset((void*)(d+1), 0, t);
+	return (void*)(d+1);
+}
+
+static void *_calloc(size_t items, size_t size)
+{
+	return _malloc(items * size);
+}
+
+static void _free(void *p)
+{
+	size_t *d = (size_t*)p;
+	cnez_used -= d[-1];
+	free(d-1);
+}
+
 // stack
 
 typedef struct Wstack {
@@ -72,8 +94,9 @@ typedef struct Wstack {
 static Wstack *unusedStack(ParserContext *c)
 {
 	if (c->stack_size == c->unused_stack) {
-		Wstack *newstack = (Wstack *)calloc(c->stack_size * 2, sizeof(struct Wstack));
+		Wstack *newstack = (Wstack *)_calloc(c->stack_size * 2, sizeof(struct Wstack));
 		memcpy(newstack, c->stacks, sizeof(struct Wstack) * c->stack_size);
+		_free(c->stacks);
 		c->stacks = newstack;
 		c->stack_size *= 2;
 	}
@@ -87,7 +110,7 @@ void push(ParserContext *c, size_t value)
 {
 	Wstack *s = unusedStack(c);
 	s->value = value;
-	GCDEC(c, s->tree);
+	GCDEC(c, s->tree);  // FIXME
 	s->tree  = NULL;
 }
 
@@ -136,31 +159,51 @@ typedef struct Tree {
     struct Tree  **childs;
 } Tree;
 
+static size_t t_used = 0;
+static size_t t_newcount = 0;
+static size_t t_gccount = 0;
+ 
+static void *tree_malloc(size_t t)
+{
+	size_t *d = (size_t*)malloc(sizeof(size_t) + t);
+	t_used += t;
+	d[0] = t;
+	return (void*)(d+1);
+}
+
+static void *tree_calloc(size_t items, size_t size)
+{
+	void *d = tree_malloc(items * size);
+	memset(d, 0, items * size);
+	return d;
+}
+
+static void tree_free(void *p)
+{
+	size_t *d = (size_t*)p;
+	t_used -= d[-1];
+	free(d-1);
+}
+
 static
 void *NEW(symbol_t tag, const unsigned char *text, size_t len, size_t n, void *thunk)
 {
-    Tree *t = (Tree*)malloc(sizeof(struct Tree));
+    Tree *t = (Tree*)tree_malloc(sizeof(struct Tree));
+	t->refc = 0;
     t->tag = tag;
     t->text = text;
     t->len = len;
     t->size = n;
     if(n > 0) {
-        t->labels = (symbol_t*)calloc(n, sizeof(symbol_t));
-        t->childs = (struct Tree**)calloc(n, sizeof(struct Tree*));
+        t->labels = (symbol_t*)tree_calloc(n, sizeof(symbol_t));
+        t->childs = (struct Tree**)tree_calloc(n, sizeof(struct Tree*));
     }
     else {
         t->labels = NULL;
         t->childs = NULL;
     }
+	t_newcount++;
     return t;
-}
-
-static
-void LINK(void *parent, size_t n, symbol_t label, void *child, void *thunk)
-{
-    Tree *t = (Tree*)parent;
-    t->labels[n] = label;
-    t->childs[n] = (struct Tree*)child;
 }
 
 static
@@ -181,11 +224,31 @@ void GC(void *parent, int c, void *thunk)
 			for(i = 0; i < t->size; i++) {
 				GC(t->childs[i], -1, thunk);
 			}
-			free(t->labels);
-			free(t->childs);
+			tree_free(t->labels);
+			tree_free(t->childs);
 		}
-		free(t);
+		tree_free(t);
+		t_gccount++;
 	}
+}
+
+static
+void LINK(void *parent, size_t n, symbol_t label, void *child, void *thunk)
+{
+    Tree *t = (Tree*)parent;
+    t->labels[n] = label;
+    t->childs[n] = (struct Tree*)child;
+	GC(child, 1, thunk);
+}
+
+void cnez_freetree(void *t)
+{
+	GC(t, -1, NULL);
+}
+
+static void cnez_dump_memory(const char *msg)
+{
+	fprintf(stdout, "%s: runtime=%ld, tree=%ld, new=%ld, gc=%ld, alive=%ld\n", msg, cnez_used, t_used, t_newcount, t_gccount, (t_newcount - t_gccount));
 }
 
 static void ParserContext_initTreeFunc(ParserContext *c, 
@@ -236,18 +299,18 @@ static void ParserContext_initNoTreeFunc(ParserContext *c)
 
 static ParserContext *ParserContext_new(const unsigned char *text, size_t len)
 {
-    ParserContext *c = (ParserContext*) malloc(sizeof(ParserContext));
+    ParserContext *c = (ParserContext*) _malloc(sizeof(ParserContext));
     c->inputs = text;
     c->length = len;
     c->pos = text;
     c->left = NULL;
     // tree
     c->log_size = 64;
-    c->logs = (struct TreeLog*)calloc(c->log_size, sizeof(struct TreeLog));
+    c->logs = (struct TreeLog*) _calloc(c->log_size, sizeof(struct TreeLog));
     c->unused_log = 0;
     // stack
     c->stack_size = 64;
-    c->stacks = (struct Wstack*)calloc(c->log_size, sizeof(struct Wstack));
+    c->stacks = (struct Wstack*) _calloc(c->stack_size, sizeof(struct Wstack));
     c->unused_stack = 0;
     c->fail_stack   = 0;
     // symbol table
@@ -371,9 +434,9 @@ static
 void _log(ParserContext *c, int op, void *value, struct Tree *tree)
 {
 	if(!(c->unused_log < c->log_size)) {
-		TreeLog *newlogs = (TreeLog *)calloc(c->log_size * 2, sizeof(TreeLog));
+		TreeLog *newlogs = (TreeLog *)_calloc(c->log_size * 2, sizeof(TreeLog));
 		memcpy(newlogs, c->logs, c->log_size * sizeof(TreeLog));
-		free(c->logs);
+		_free(c->logs);
 		c->logs = newlogs;
 		c->log_size *= 2;
 	}
@@ -381,6 +444,9 @@ void _log(ParserContext *c, int op, void *value, struct Tree *tree)
 	l->op = op;
 	l->value = value;
 	assert(l->tree == NULL);
+	if(op == OpLink) {
+		GCSET(c, l->tree, tree);
+	}
 	l->tree  = tree;
 	//printf("LOG[%d] %s %p %p\n", (int)c->unused_log, ops[op], value, tree);
 	c->unused_log++;
@@ -409,7 +475,6 @@ static void ParserContext_beginTree(ParserContext *c, int shift)
 
 static void ParserContext_linkTree(ParserContext *c, symbol_t label)
 {
-    GCINC(c, c->left);
     _log(c, OpLink, (void*)label, c->left);
 }
 
@@ -426,7 +491,6 @@ static void ParserContext_valueTree(ParserContext *c, const unsigned char *text,
 static void ParserContext_foldTree(ParserContext *c, int shift, symbol_t label)
 {
     _log(c, OpNew, (void*)(c->pos + shift), NULL);
-    GCINC(c, c->left);
     _log(c, OpLink, (void*)label, c->left);
 }
 
@@ -492,12 +556,8 @@ static void ParserContext_endTree(ParserContext *c, int shift, symbol_t tag, con
            if (cur->op == OpLink) {
               c->fsub(c->left, n++, (symbol_t)cur->value, cur->tree, c->thunk);
            }
-           cur->tree = NULL;
         }
     }
-	//printf("NEWTREE");
-	//cnez_dump(c->left, stdout);
-	//printf("\n");
     ParserContext_backLog(c, i);
 }
 
@@ -534,10 +594,10 @@ static
 void _push(ParserContext *c, symbol_t table, const unsigned char * utf8, size_t length) 
 {
 	if (!(c->tableSize < c->tableMax)) {
-		SymbolTableEntry* newtable = (SymbolTableEntry*)calloc(sizeof(SymbolTableEntry), (c->tableMax + 256));
+		SymbolTableEntry* newtable = (SymbolTableEntry*)_calloc(sizeof(SymbolTableEntry), (c->tableMax + 256));
 		if(c->tables != NULL) {
 			memcpy(newtable, c->tables, sizeof(SymbolTableEntry) * (c->tableMax));
-			free(c->tables);
+			_free(c->tables);
 		}
 		c->tables = newtable;
 		c->tableMax += 256;
@@ -695,7 +755,7 @@ void ParserContext_initMemo(ParserContext *c, int w, int n)
 {
     int i;
     c->memoSize = w * n + 1;
-    c->memoArray = (MemoEntry *)calloc(sizeof(MemoEntry), c->memoSize);
+    c->memoArray = (MemoEntry *)_calloc(sizeof(MemoEntry), c->memoSize);
     for (i = 0; i < c->memoSize; i++) {
         c->memoArray[i].key = -1LL;
     }
@@ -844,23 +904,23 @@ static void ParserContext_free(ParserContext *c)
     		GCDEC(c, c->memoArray[i].memoTree);
     		c->memoArray[i].memoTree = NULL;
     	}
-        free(c->memoArray);
+        _free(c->memoArray);
         c->memoArray = NULL;
     }
     if(c->tables != NULL) {
-    	free(c->tables);
+    	_free(c->tables);
     	c->tables = NULL;
     }
     ParserContext_backLog(c, 0);
-    free(c->logs);
+    _free(c->logs);
     c->logs = NULL;
     for(i = 0; i < c->stack_size; i++) {
     	GCDEC(c, c->stacks[i].tree);
     	c->stacks[i].tree = NULL;
     }
-    free(c->stacks);
+    _free(c->stacks);
     c->stacks = NULL;
-    free(c);
+    _free(c);
 }
 
 //----------------------------------------------------------------------------
