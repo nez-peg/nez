@@ -63,6 +63,7 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 	protected boolean SupportedDoWhile = true;
 	protected boolean UsingBitmap = false;
 	protected boolean SupportedRange = false;
+	protected boolean SupportedRangeFind = false; // SEE4.2
 	protected boolean SupportedMatch2 = false;
 	protected boolean SupportedMatch3 = false;
 	protected boolean SupportedMatch4 = false;
@@ -120,7 +121,7 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 		this.generateHeader(g);
 		SymbolAnalysis constDecl = new SymbolAnalysis();
 		constDecl.decl(g.getStartProduction());
-		this.sortFuncList();
+		this.sortFuncList(_funcname(g.getStartProduction()));
 		this.generateSymbolTables();
 		this.generatePrototypes();
 
@@ -185,8 +186,26 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 		return nameMap.get(key);
 	}
 
-	final void DeclSet(boolean[] b) {
-		if (this.SupportedRange && isRange(b) != null) {
+	final String _range(boolean[] b) {
+		String key = StringUtils.stringfyBitmap(b) + "*";
+		return nameMap.get(key);
+	}
+
+	final void DeclSet(boolean[] b, boolean Iteration) {
+		if (Iteration && this.SupportedRangeFind) {
+			byte[] range = rangeSEE(b);
+			if (range != null) {
+				String key = StringUtils.stringfyBitmap(b) + "*";
+				String name = nameMap.get(key);
+				if (name == null) {
+					name = _range() + nameMap.size();
+					nameMap.put(key, name);
+					DeclConst(type("$range"), name, range.length, _initByteArray(range));
+				}
+				return;
+			}
+		}
+		if (this.SupportedRange && range(b) != null) {
 			return;
 		}
 		String key = StringUtils.stringfyBitmap(b);
@@ -244,7 +263,7 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 		}
 	}
 
-	private int[] isRange(boolean[] b) {
+	private int[] range(boolean[] b) {
 		int start = 0;
 		for (int i = 0; i < 256; i++) {
 			if (b[i]) {
@@ -271,6 +290,47 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 		return null;
 	}
 
+	private byte[] rangeSEE(boolean[] b) {
+		if (b[0]) {
+			return null;
+		}
+		ArrayList<Integer> l = new ArrayList<Integer>();
+		for (int i = 0; i < 256; i++) {
+			if (b[i] == false) {
+				int start = i;
+				int end = start;
+				for (int j = start; j < 256 && b[j] == false; j++) {
+					end = j;
+				}
+				l.add(start);
+				l.add(end);
+				i = end;
+			}
+		}
+		if (l.size() <= 16) {
+			byte[] res = new byte[l.size()];
+			for (int i = 0; i < l.size(); i++) {
+				res[i] = (byte) ((int) l.get(i));
+			}
+			// for (int i = 0; i < 255; i++) {
+			// if (b[i] != check(i, res)) {
+			// System.out.println("failded at " + i + " " + b[i]);
+			// }
+			// }
+			return res;
+		}
+		return null;
+	}
+
+	// private boolean check(int c, byte[] range) {
+	// for (int i = 0; i < range.length; i += 2) {
+	// if ((range[i] & 0xff) <= c && c <= (range[i + 1] & 0xff)) {
+	// return false;
+	// }
+	// }
+	// return true;
+	// }
+
 	private boolean isMatchText(byte[] t, int n) {
 		if (t.length == n) {
 			for (int i = 0; i < n; i++) {
@@ -291,14 +351,19 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 		DeclText(text);
 	}
 
-	final void DeclByteSet(String name, boolean b[]) {
-		Verbose(StringUtils.stringfyCharacterClass(b));
-		DeclConst(type(_set()), name, b.length, _initBooleanArray(b));
-	}
-
-	final void DeclIndexMap(String name, byte b[]) {
-		DeclConst(type(_index()), name, b.length, _initByteArray(b));
-	}
+	// final void DeclByteSet(String name, boolean b[]) {
+	// Verbose(StringUtils.stringfyCharacterClass(b));
+	// DeclConst(type(_set()), name, b.length, _initBooleanArray(b));
+	// }
+	//
+	// final void DeclByteRange(String name, boolean b[], byte[] a) {
+	// Verbose(StringUtils.stringfyCharacterClass(b));
+	// DeclConst(type(_range()), name, a.length, _initByteArray(a));
+	// }
+	//
+	// final void DeclIndexMap(String name, byte b[]) {
+	// DeclConst(type(_index()), name, b.length, _initByteArray(b));
+	// }
 
 	final String _tag(Symbol s) {
 		if (!this.UniqueNumberingSymbol && s == null) {
@@ -420,7 +485,7 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 			if (i > 0) {
 				sb.append(",");
 			}
-			sb.append(_int(b[i]));
+			sb.append(_int(b[i] & 0xff));
 		}
 		sb.append(_EndArray());
 		return sb.toString();
@@ -478,7 +543,6 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 		return exprMap.get(key);
 	}
 
-	String start = null;
 	HashMap<String, HashSet<String>> nodes = new HashMap<>();
 
 	private void addEdge(String sour, String dest) {
@@ -492,7 +556,7 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 		}
 	}
 
-	void sortFuncList() {
+	void sortFuncList(String start) {
 		class TopologicalSorter {
 			private final HashMap<String, HashSet<String>> nodes;
 			private final LinkedList<String> result;
@@ -536,6 +600,9 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 		}
 		TopologicalSorter sorter = new TopologicalSorter(nodes);
 		funcList = sorter.getResult();
+		if (!funcList.contains(start)) {
+			funcList.add(start);
+		}
 		nodes.clear();
 	}
 
@@ -643,7 +710,7 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 
 		@Override
 		public Object visitByteSet(Nez.ByteSet e, Object a) {
-			DeclSet(e.byteMap);
+			DeclSet(e.byteMap, false);
 			return null;
 		}
 
@@ -687,12 +754,20 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 
 		@Override
 		public Object visitZeroMore(Nez.ZeroMore e, Object a) {
+			if (strategy.Olex && e.get(0) instanceof Nez.ByteSet) {
+				DeclSet(((Nez.ByteSet) e.get(0)).byteMap, true);
+				return null;
+			}
 			checkNonLexicalInner(e.get(0));
 			return null;
 		}
 
 		@Override
 		public Object visitOneMore(Nez.OneMore e, Object a) {
+			if (strategy.Olex && e.get(0) instanceof Nez.ByteSet) {
+				DeclSet(((Nez.ByteSet) e.get(0)).byteMap, true);
+				return null;
+			}
 			checkNonLexicalInner(e.get(0));
 			return null;
 		}
@@ -1047,7 +1122,7 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 		private String MatchByteArray(boolean[] byteMap, boolean inc) {
 			String c = inc ? _Func("read") : _Func("prefetch");
 			if (SupportedRange) {
-				int[] range = isRange(byteMap);
+				int[] range = range(byteMap);
 				if (range != null) {
 					String s = "(" + _Binary(_Binary(_byte(range[0]), "<=", _Func("prefetch")), _And(), _Binary(c, "<", _byte(range[1]))) + ")";
 					// System.out.println(s);
@@ -1366,6 +1441,23 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 				}
 				if (inner instanceof Nez.ByteSet) {
 					Nez.ByteSet e = (Nez.ByteSet) inner;
+					if (SupportedRangeFind) {
+						String name = _range(e.byteMap);
+						if (name != null) {
+							byte[] r = rangeSEE(e.byteMap);
+							System.out.println("range: " + name + " " + e);
+							if (OneMore) {
+								If(_Not(_Func("checkOneMoreRange", name, _int(r.length))));
+								{
+									Fail();
+								}
+								EndIf();
+							} else {
+								Statement(_Func("skipRange", name, _int(r.length)));
+							}
+							return true;
+						}
+					}
 					if (OneMore) {
 						visit(inner, null);
 					}
@@ -2060,7 +2152,11 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 	}
 
 	protected String _set() {
-		return "_byteset";
+		return "_set";
+	}
+
+	protected String _range() {
+		return "_range";
 	}
 
 	protected String _text() {

@@ -18,6 +18,8 @@ public class CParserGenerator extends CommonParserGenerator {
 		SupportedMatch7 = true;
 		SupportedMatch8 = true;
 
+		// SupportedRangeFind = true;
+
 		this.addType("$parse", "int");
 		this.addType("$tag", "int");
 		this.addType("$label", "int");
@@ -30,6 +32,7 @@ public class CParserGenerator extends CommonParserGenerator {
 		} else {
 			this.addType("$set", "const unsigned char");
 		}
+		this.addType("$range", "const unsigned char __attribute__((aligned(16)))");
 		this.addType("$string", "const char *");
 
 		this.addType("memo", "int");
@@ -195,7 +198,14 @@ public class CParserGenerator extends CommonParserGenerator {
 		Line("#endif/*MAIN*/");
 		file.writeIndent("// End of File");
 		generateHeaderFile();
-		ConsoleUtils.println("For quick start, make %s CFLAGS=-O2", _basename());
+		ConsoleUtils.bold();
+		ConsoleUtils.println("Here are useful commands to start:");
+		ConsoleUtils.end();
+		ConsoleUtils.println(" Make a parser               make %s CFLAGS='-O3 -DMAIN'", _basename());
+		ConsoleUtils.println(" Make a parser without gc    make %s CFLAGS='-O3 -DMAIN -DCNEZ_NOGC'", _basename());
+		ConsoleUtils.println(" Run a parser                ./%s <file> or 'input-text'", _basename());
+		ConsoleUtils.println(" Test performance            BENCH=1 ./%s <file> or 'input-text'", _basename());
+		ConsoleUtils.println(" Test memory usage           MEM=1 ./%s <file> or 'input-text'", _basename());
 	}
 
 	private void generateHeaderFile() {

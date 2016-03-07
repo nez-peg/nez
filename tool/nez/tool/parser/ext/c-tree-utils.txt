@@ -6,9 +6,9 @@ void cnez_dump(void *v, FILE *fp)
 		fputs("null", fp);
 		return;
 	}
-	if(t->refc != 1) {
-		fprintf(fp, "@%ld", t->refc);
-	}
+//	if(t->refc != 1) {
+//		fprintf(fp, "@%ld", t->refc);
+//	}
 	fputs("[#", fp);
 	fputs(_tags[t->tag], fp);
 	if(t->size == 0) {
@@ -31,21 +31,6 @@ void cnez_dump(void *v, FILE *fp)
 	}
 	fputs("]", fp);
 }
-
-size_t cnez_count(void *v, size_t c)
-{
-	size_t i;
-	Tree *t = (Tree*)v;
-	if(t == NULL) {
-		return c+0;
-	}
-	c++;
-	for(i = 0; i < t->size; i++) {
-		c = cnez_count(t->childs[i], c);
-	}
-	return c;
-}
-
 
 #ifndef UNUSE_MAIN
 #include<sys/time.h> // for using gettimeofday
@@ -83,7 +68,7 @@ int cnez_main(int ac, const char **av, void* (*parse)(const char *input, size_t 
 {
 	size_t len;
 	if(ac == 1) {
-		fprintf(stdout, "Usage: %s file [or input-text]", av[0]);
+		fprintf(stdout, "Usage: %s file [or input-text]\n", av[0]);
 		return 1;
 	}
 	const char *input = get_input(av[1], &len);
@@ -102,11 +87,7 @@ int cnez_main(int ac, const char **av, void* (*parse)(const char *input, size_t 
 			}
 			t[i] = timediff(&s, &e);
 			tsum += t[i];
-			//cnez_dump_memory("BEFORE");
-			//cnez_dump(data, stdout);
-			//fprintf(stdout, "  C = %ld\n", cnez_count(data, 0));
-			cnez_freetree(data);
-			//cnez_dump_memory("AFTER");
+			cnez_free(data);
 		}
 		fprintf(stdout, "%s OK %.4f[ms] %.3f %.3f %.3f %.3f %.3f\n", av[1], tsum / 5, t[0], t[1], t[2], t[3], t[4]);
 		return 0;
@@ -114,7 +95,10 @@ int cnez_main(int ac, const char **av, void* (*parse)(const char *input, size_t 
 	void *data = parse(input, len);
 	cnez_dump(data, stdout);
 	fprintf(stdout, "\n");
-	cnez_freetree(data);
+	if(getenv("MEM") != NULL) {
+		cnez_dump_memory("Memory Usage", data);
+	}
+	cnez_free(data);
 	return 0;
 }
 #endif/*UNUSE_MAIN*/

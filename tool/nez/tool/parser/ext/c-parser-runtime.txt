@@ -40,9 +40,15 @@ typedef struct ParserContext {
 	void  (*fgc)(void *, int, void*);
 } ParserContext;
 
+#ifdef CNEZ_NOGC
+#define GCINC(c, v2)     
+#define GCDEC(c, v1)     
+#define GCSET(c, v1, v2) 
+#else
 #define GCINC(c, v2)     c->fgc(v2,  1, c->thunk)
 #define GCDEC(c, v1)     c->fgc(v1, -1, c->thunk)
 #define GCSET(c, v1, v2) c->fgc(v2, 1, c->thunk); c->fgc(v1, -1, c->thunk)
+#endif
 
 /* TreeLog */
 
@@ -110,7 +116,7 @@ void push(ParserContext *c, size_t value)
 {
 	Wstack *s = unusedStack(c);
 	s->value = value;
-	GCDEC(c, s->tree);  // FIXME
+	GCDEC(c, s->tree);
 	s->tree  = NULL;
 }
 
@@ -213,6 +219,17 @@ void GC(void *parent, int c, void *thunk)
 	if(t == NULL) {
 		return;
 	}
+#ifdef CNEZ_NOGC
+	if(t->size > 0) {
+		size_t i = 0;
+		for(i = 0; i < t->size; i++) {
+			GC(t->childs[i], -1, thunk);
+		}
+		tree_free(t->labels);
+		tree_free(t->childs);
+	}
+	tree_free(t);
+#else
 	if(c == 1) {
 		t->refc ++;
 		return;
@@ -230,6 +247,7 @@ void GC(void *parent, int c, void *thunk)
 		tree_free(t);
 		t_gccount++;
 	}
+#endif
 }
 
 static
@@ -238,17 +256,35 @@ void LINK(void *parent, size_t n, symbol_t label, void *child, void *thunk)
     Tree *t = (Tree*)parent;
     t->labels[n] = label;
     t->childs[n] = (struct Tree*)child;
+#ifndef CNEZ_NOGC
 	GC(child, 1, thunk);
+#endif
 }
 
-void cnez_freetree(void *t)
+void cnez_free(void *t)
 {
 	GC(t, -1, NULL);
 }
 
-static void cnez_dump_memory(const char *msg)
+static size_t cnez_count(void *v, size_t c)
 {
-	fprintf(stdout, "%s: runtime=%ld, tree=%ld, new=%ld, gc=%ld, alive=%ld\n", msg, cnez_used, t_used, t_newcount, t_gccount, (t_newcount - t_gccount));
+	size_t i;
+	Tree *t = (Tree*)v;
+	if(t == NULL) {
+		return c+0;
+	}
+	c++;
+	for(i = 0; i < t->size; i++) {
+		c = cnez_count(t->childs[i], c);
+	}
+	return c;
+}
+
+static void cnez_dump_memory(const char *msg, void *t)
+{
+	size_t alive = cnez_count(t, 0);
+	size_t used = (t_newcount - t_gccount);
+	fprintf(stdout, "%s: tree=%ld[bytes], new=%ld, gc=%ld, alive=%ld %s\n", msg, t_used, t_newcount, t_gccount, alive, alive == used ? "OK" : "LEAK");
 }
 
 static void ParserContext_initTreeFunc(ParserContext *c, 
@@ -423,6 +459,62 @@ static int ParserContext_match7(ParserContext *c, const unsigned char c1, const 
 static int ParserContext_match8(ParserContext *c, const unsigned char c1, const unsigned char c2, const unsigned char c3, const unsigned char c4, const unsigned char c5, const unsigned char c6, const unsigned char c7, const unsigned char c8) {
 	if (c->pos[0] == c1 && c->pos[1] == c2 && c->pos[2] == c3 && c->pos[3] == c4 && c->pos[4] == c5 && c->pos[5] == c6 && c->pos[6] == c7 && c->pos[7] == c8) {
 		c->pos+=8;
+		return 1;
+	}
+	return 0;
+}
+
+#ifdef CNEZ_SSE
+#ifdef _MSC_VER
+#include <intrin.h>
+#else
+#include <x86intrin.h>
+#endif
+#endif
+
+static const unsigned char *_findchar(
+	const unsigned char *p, size_t size,
+	const unsigned char *range, size_t range_size) {
+#ifdef CNEZ_SSE
+	const __m128i r = _mm_loadu_si128((const __m128i*)range);
+	__m128i v;
+	for (;;) {
+		v = _mm_loadu_si128((const __m128i*)p);
+		if (!_mm_cmpestra(r, range_size, v, size, 4)) {
+			break;
+		}
+		p += 16;
+		size -= 16;
+	}
+	if (_mm_cmpestrc(r, range_size, v, size, 4)) {
+		return p += _mm_cmpestri(r, range_size, v, size, 4);
+	}
+#else
+	size_t i,j;
+	for (i = 0; i < size; i++) {
+		const unsigned char c = p[i];
+		for (j = 0; j < range_size ; j+=2) {
+			if (range[j] <= c && c <= range[j+1]) {
+				return p + i;
+			}
+		}
+	}
+#endif
+	return p + size;
+}
+
+static void ParserContext_skipRange(ParserContext *c, const unsigned char *range, size_t range_size)
+{
+	size_t size = c->length - (c->pos - c->inputs);
+	c->pos = _findchar(c->pos, size, range, range_size);	
+}
+
+static int ParserContext_checkOneMoreRange(ParserContext *c, const unsigned char *range, size_t range_size)
+{
+	size_t size = c->length - (c->pos - c->inputs);
+	const unsigned char *p = _findchar(c->pos, size, range, range_size);
+	if(p > c->pos) {
+		c->pos = p;
 		return 1;
 	}
 	return 0;
