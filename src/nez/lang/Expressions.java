@@ -196,7 +196,7 @@ public abstract class Expressions {
 	 */
 
 	public static Expression newByteSet(boolean[] byteMap) {
-		int byteChar = uniqueByteChar(byteMap);
+		int byteChar = checkUniqueByteChar(byteMap);
 		if (byteChar != -1) {
 			return newByte(byteChar);
 		}
@@ -207,30 +207,43 @@ public abstract class Expressions {
 	 * Creates an byte-set expression, equals to [c] in Nez
 	 * 
 	 * @param s
-	 * @param byteMap
+	 * @param byteset
 	 * @return
 	 */
 
-	public static Expression newByteSet(SourceLocation s, boolean[] byteMap) {
-		int byteChar = uniqueByteChar(byteMap);
+	public static Expression newByteSet(SourceLocation s, boolean[] byteset) {
+		int byteChar = checkUniqueByteChar(byteset);
 		if (byteChar != -1) {
 			return newByte(s, byteChar);
 		}
-		Expression e = new Nez.ByteSet(byteMap);
+		if (checkAnyChar(byteset)) {
+			return newAny(s);
+		}
+		Expression e = new Nez.ByteSet(byteset);
 		e.setSourceLocation(s);
 		return e;
 	}
 
-	private static int uniqueByteChar(boolean[] byteMap) {
+	private static int checkUniqueByteChar(boolean[] byteset) {
 		int byteChar = -1;
-		for (int i = 0; i < byteMap.length; i++) {
-			if (byteMap[i]) {
-				if (byteChar != -1)
+		for (int i = 0; i < 256; i++) {
+			if (byteset[i]) {
+				if (byteChar != -1) {
 					return -1;
+				}
 				byteChar = i;
 			}
 		}
 		return byteChar;
+	}
+
+	private static boolean checkAnyChar(boolean[] byteset) {
+		for (int i = 0; i < 256; i++) {
+			if (!byteset[i]) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	/**
@@ -667,6 +680,10 @@ public abstract class Expressions {
 			}
 		}
 		return e;
+	}
+
+	public final static Expression newDispatch(Expression[] inners, byte[] indexMap) {
+		return new Nez.Dispatch(inners, indexMap);
 	}
 
 	// AST Construction
@@ -1112,7 +1129,7 @@ public abstract class Expressions {
 	}
 
 	public static final Expression newExpression(SourceLocation s, String text) {
-		byte[] utf8 = StringUtils.toUtf8(text);
+		byte[] utf8 = StringUtils.utf8(text);
 		if (utf8.length == 0) {
 			return newEmpty(s);
 		}
@@ -1160,15 +1177,15 @@ public abstract class Expressions {
 	}
 
 	private final static Expression newUnicodeRange(SourceLocation s, int c, int c2) {
-		byte[] b = StringUtils.toUtf8(String.valueOf((char) c));
-		byte[] b2 = StringUtils.toUtf8(String.valueOf((char) c2));
+		byte[] b = StringUtils.utf8(String.valueOf((char) c));
+		byte[] b2 = StringUtils.utf8(String.valueOf((char) c2));
 		if (equalsBase(b, b2)) {
 			return newUnicodeRange(s, b, b2);
 		}
 		UList<Expression> l = new UList<Expression>(new Expression[b.length]);
 		b2 = b;
 		for (int pc = c + 1; pc <= c2; pc++) {
-			byte[] b3 = StringUtils.toUtf8(String.valueOf((char) pc));
+			byte[] b3 = StringUtils.utf8(String.valueOf((char) pc));
 			if (equalsBase(b, b3)) {
 				b2 = b3;
 				continue;
@@ -1177,7 +1194,7 @@ public abstract class Expressions {
 			b = b3;
 			b2 = b3;
 		}
-		b2 = StringUtils.toUtf8(String.valueOf((char) c2));
+		b2 = StringUtils.utf8(String.valueOf((char) c2));
 		l.add(newUnicodeRange(s, b, b2));
 		return newChoice(l);
 	}
@@ -1347,47 +1364,4 @@ public abstract class Expressions {
 		l.add(new Nez.Label(label, false));
 		return newPair(l);
 	}
-
-	// public final static Expression tryConvertingMultiCharSequence(Expression
-	// e) {
-	// if (e instanceof Nez.Sequence || e instanceof Nez.Pair) {
-	// List<Expression> el = flatten(e);
-	// List<Expression> el2 = new UList<Expression>(new Expression[el.size()]);
-	// UList<Byte> bytes = new UList<Byte>(new Byte[el.size()]);
-	// int next = 0;
-	// while (next < el.size()) {
-	// next = appendExpressionOrMultiChar(el, next, el2, bytes);
-	// }
-	// e = Expressions.newSequence(el2);
-	// }
-	// return e;
-	// }
-	//
-	// private final static int appendExpressionOrMultiChar(List<Expression> el,
-	// int start, List<Expression> el2, UList<Byte> bytes) {
-	// int next = start + 1;
-	// Expression e = el.get(start);
-	// if (e instanceof Nez.Byte) {
-	// bytes.clear();
-	// for (int i = start; i < el.size(); i++) {
-	// Expression sub = el.get(i);
-	// if (sub instanceof Nez.Byte) {
-	// bytes.add(((byte) ((Nez.Byte) sub).byteChar));
-	// continue;
-	// }
-	// next = i;
-	// break;
-	// }
-	// if (bytes.size() > 1) {
-	// byte[] byteSeq = new byte[bytes.size()];
-	// for (int i = 0; i < bytes.size(); i++) {
-	// byteSeq[i] = bytes.get(i);
-	// }
-	// e = Expressions.newMultiByte(e.getSourceLocation(), byteSeq);
-	// }
-	// }
-	// el2.add(e);
-	// return next;
-	// }
-
 }

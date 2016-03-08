@@ -140,6 +140,26 @@ public class ByteConsumption extends Expression.Visitor {
 	}
 
 	@Override
+	public Object visitDispatch(Nez.Dispatch e, Object a) {
+		boolean unconsumed = false;
+		boolean undecided = false;
+		for (int i = 1; i < e.size(); i++) {
+			Result c = check(e.get(i), a);
+			if (c == Result.Consumed) {
+				continue;
+			}
+			unconsumed = true;
+			if (c == Result.Undecided) {
+				undecided = true;
+			}
+		}
+		if (!unconsumed) {
+			return Result.Consumed;
+		}
+		return undecided ? Result.Undecided : Result.Unconsumed;
+	}
+
+	@Override
 	public Object visitOption(Nez.Option e, Object a) {
 		return Result.Unconsumed;
 	}

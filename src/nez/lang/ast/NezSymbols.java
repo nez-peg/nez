@@ -10,6 +10,7 @@ public interface NezSymbols {
 	public final static Symbol _hash = Symbol.unique("hash"); // example
 	public final static Symbol _name2 = Symbol.unique("name2"); // example
 	public final static Symbol _text = Symbol.unique("text"); // example
+	public final static Symbol _case = Symbol.unique("case");
 
 	public final static Symbol _String = Symbol.unique("String");
 	public final static Symbol _Integer = Symbol.unique("Integer");

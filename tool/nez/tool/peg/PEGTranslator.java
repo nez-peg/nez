@@ -53,12 +53,12 @@ public class PEGTranslator extends GrammarTranslator {
 
 	@Override
 	public void visitByte(Nez.Byte p) {
-		W(StringUtils.stringfyCharacter(p.byteChar));
+		W(StringUtils.stringfyByte(p.byteChar));
 	}
 
 	@Override
 	public void visitByteSet(Nez.ByteSet p) {
-		W(StringUtils.stringfyCharacterClass(p.byteMap));
+		W(StringUtils.stringfyByteSet(p.byteMap));
 	}
 
 	@Override

@@ -747,6 +747,15 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 		}
 
 		@Override
+		public Object visitDispatch(Nez.Dispatch e, Object a) {
+			DeclIndex(e.indexMap);
+			for (Expression sub : e) {
+				checkInner(sub);
+			}
+			return null;
+		}
+
+		@Override
 		public Object visitOption(Nez.Option e, Object a) {
 			checkNonLexicalInner(e.get(0));
 			return null;
@@ -795,7 +804,7 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 				DeclTag(e.tag.getSymbol());
 			}
 			if (e.value != null) {
-				DeclText(StringUtils.toUtf8(e.value));
+				DeclText(StringUtils.utf8(e.value));
 			}
 			return null;
 		}
@@ -824,7 +833,7 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 
 		@Override
 		public Object visitReplace(Nez.Replace e, Object a) {
-			DeclText(StringUtils.toUtf8(e.value));
+			DeclText(StringUtils.utf8(e.value));
 			return null;
 		}
 
@@ -865,7 +874,7 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 		public Object visitSymbolExists(SymbolExists e, Object a) {
 			DeclTable(e.tableName);
 			if (e.symbol != null) {
-				DeclText(StringUtils.toUtf8(e.symbol));
+				DeclText(StringUtils.utf8(e.symbol));
 			}
 			return visitAll(e);
 		}
@@ -1241,6 +1250,30 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 				Fail();
 			}
 			EndIf();
+		}
+
+		@Override
+		public Object visitDispatch(Nez.Dispatch e, Object a) {
+			String temp = InitVal(_temp(), _True());
+			Switch(_GetArray(_index(e.indexMap), _Func("prefetch")));
+			Case("0");
+			Fail();
+			for (int i = 1; i < e.size(); i++) {
+				Expression sub = e.get(i);
+				Case(_int(i));
+				String f = _eval(sub);
+				Verbose(sub.toString());
+				VarAssign(temp, f);
+				Break();
+				EndCase();
+			}
+			EndSwitch();
+			If(_Not(temp));
+			{
+				Fail();
+			}
+			EndIf();
+			return null;
 		}
 
 		@Override

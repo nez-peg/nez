@@ -136,6 +136,11 @@ public enum ByteAcceptance {
 		}
 
 		@Override
+		public ByteAcceptance visitDispatch(Nez.Dispatch e, Object ch) {
+			return accept(e.get(e.indexMap[(int) ch]), ch);
+		}
+
+		@Override
 		public ByteAcceptance visitOption(Option e, Object ch) {
 			ByteAcceptance r = accept(e.get(0), ch);
 			return (r == Accept) ? r : Unconsumed;

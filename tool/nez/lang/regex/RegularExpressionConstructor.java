@@ -229,8 +229,8 @@ public class RegularExpressionConstructor extends GrammarVisitorMap<ExpressionTr
 		@Override
 		public Expression accept(Tree<?> e, Expression k) {
 			if (k == null) {
-				byte[] begin = StringUtils.toUtf8(e.get(0).toText());
-				byte[] end = StringUtils.toUtf8(e.get(1).toText());
+				byte[] begin = StringUtils.utf8(e.get(0).toText());
+				byte[] end = StringUtils.utf8(e.get(1).toText());
 				if (byteMap == null) {
 					byteMap = new boolean[257];
 				}
@@ -247,7 +247,7 @@ public class RegularExpressionConstructor extends GrammarVisitorMap<ExpressionTr
 		@Override
 		public Expression accept(Tree<?> e, Expression k) {
 			if (k == null) {
-				byte[] utf8 = StringUtils.toUtf8(e.toText());
+				byte[] utf8 = StringUtils.utf8(e.toText());
 				byteMap[utf8[0]] = true;
 				return Expressions.newByte(null, utf8[0]);
 			}
@@ -262,7 +262,7 @@ public class RegularExpressionConstructor extends GrammarVisitorMap<ExpressionTr
 		public Expression accept(Tree<?> e, Expression k) {
 			if (k == null) {
 				String text = e.toText();
-				byte[] utf8 = StringUtils.toUtf8(text);
+				byte[] utf8 = StringUtils.utf8(text);
 				if (utf8.length != 1) {
 					ConsoleUtils.exit(1, "Error: not Character Literal");
 				}

@@ -523,7 +523,6 @@ public class Nez {
 		public final Object visit(Expression.Visitor v, Object a) {
 			return v.visitChoice(this, a);
 		}
-
 	}
 
 	public static class ChoicePrediction {
@@ -531,6 +530,38 @@ public class Nez {
 		public boolean isTrieTree = false;
 		public boolean[] striped;
 		public float reduced;
+	}
+
+	public static class Dispatch extends List {
+		public final byte[] indexMap;
+
+		Dispatch(Expression[] inners, byte[] indexMap) {
+			super(inners);
+			this.indexMap = indexMap;
+		}
+
+		@Override
+		public final boolean equals(Object o) {
+			if (o instanceof Nez.Dispatch) {
+				Nez.Dispatch d = (Nez.Dispatch) o;
+				if (d.indexMap.length != this.indexMap.length) {
+					return false;
+				}
+				for (int i = 0; i < this.indexMap.length; i++) {
+					if (this.indexMap[i] != d.indexMap[i]) {
+						return false;
+					}
+				}
+				return this.equalsList((Nez.List) o);
+			}
+			return false;
+		}
+
+		@Override
+		public final Object visit(Expression.Visitor v, Object a) {
+			return v.visitDispatch(this, a);
+		}
+
 	}
 
 	/* AST */

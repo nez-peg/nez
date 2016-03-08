@@ -58,12 +58,12 @@ public class NezTranslator extends PEGTranslator {
 
 	@Override
 	public void visitByte(Nez.Byte e) {
-		W(StringUtils.stringfyCharacter(e.byteChar));
+		W(StringUtils.stringfyByte(e.byteChar));
 	}
 
 	@Override
 	public void visitByteSet(Nez.ByteSet e) {
-		W(StringUtils.stringfyCharacterClass(e.byteMap));
+		W(StringUtils.stringfyByteSet(e.byteMap));
 	}
 
 	@Override

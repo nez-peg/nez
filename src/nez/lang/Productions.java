@@ -271,6 +271,18 @@ public class Productions {
 		}
 
 		@Override
+		public Object visitDispatch(Nez.Dispatch e, Object a) {
+			boolean unconsumed = false;
+			for (int i = 1; i < e.size(); i++) {
+				boolean c = check(e.get(i), a);
+				if (c == true) {
+					unconsumed = true;
+				}
+			}
+			return unconsumed;
+		}
+
+		@Override
 		public Object visitOption(Nez.Option e, Object a) {
 			return true;
 		}

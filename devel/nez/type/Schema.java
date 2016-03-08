@@ -269,7 +269,7 @@ public class Schema {
 
 		public void format(StringBuilder sb) {
 			if (key != null) {
-				StringUtils.appendQuatedString(sb, '"', key, '"');
+				StringUtils.formatStringLiteral(sb, '"', key, '"');
 			}
 			if (label != null) {
 				sb.append("$");

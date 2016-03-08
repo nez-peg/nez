@@ -147,6 +147,18 @@ public enum Typestate {
 		}
 
 		@Override
+		public Object visitDispatch(Nez.Dispatch e, Object a) {
+			Object t = Typestate.Unit;
+			for (int i = 1; i < e.size(); i++) {
+				t = this.inferTypestate(e.get(i));
+				if (t == Typestate.Tree || t == Typestate.TreeMutation) {
+					return t;
+				}
+			}
+			return t;
+		}
+
+		@Override
 		public Object visitOption(Nez.Option e, Object a) {
 			Typestate ts = this.inferTypestate(e.get(0));
 			if (ts == Typestate.Tree) {

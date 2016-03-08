@@ -11,6 +11,7 @@ import nez.lang.Expression;
 import nez.lang.Expressions;
 import nez.lang.FunctionName;
 import nez.lang.Nez;
+import nez.lang.Nez.Dispatch;
 import nez.lang.Nez.Label;
 import nez.lang.Nez.Repeat;
 import nez.lang.Nez.Scan;
@@ -486,6 +487,12 @@ public class DebugVMCompiler extends Expression.Visitor {
 
 	@Override
 	public Object visitLabel(Label e, Object a) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Object visitDispatch(Dispatch e, Object a) {
 		// TODO Auto-generated method stub
 		return null;
 	}

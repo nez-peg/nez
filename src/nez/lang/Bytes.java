@@ -13,9 +13,11 @@ public class Bytes {
 		return b;
 	}
 
-	public final static boolean[] parseOctet(String octet) {
+	public final static boolean[] parseByteClass(String octet) {
 		boolean[] b = Bytes.newMap(true);
-		assert (octet.length() == 8);
+		while (octet.length() < 8) {
+			octet = "0" + octet;
+		}
 		for (int i = 0; i < 8; i++) {
 			int position = 0x80 >> i;
 			switch (octet.charAt(i)) {

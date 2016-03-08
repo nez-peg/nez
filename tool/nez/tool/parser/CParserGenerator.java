@@ -97,7 +97,7 @@ public class CParserGenerator extends CommonParserGenerator {
 		if (key == null) {
 			return _Null() + ", 0";
 		}
-		return nameMap.get(key) + ", " + _int(StringUtils.toUtf8(key).length);
+		return nameMap.get(key) + ", " + _int(StringUtils.utf8(key).length);
 	}
 
 	@Override

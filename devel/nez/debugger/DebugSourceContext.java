@@ -6,7 +6,6 @@ import java.io.IOException;
 import nez.ast.Source;
 import nez.parser.io.StringSource;
 import nez.util.ConsoleUtils;
-import nez.util.StringUtils;
 
 public abstract class DebugSourceContext extends Context {
 
@@ -52,35 +51,6 @@ public abstract class DebugSourceContext extends Context {
 	// }
 	// return fileName;
 	// }
-
-	public final int charAt(long pos) {
-		int c = byteAt(pos), c2, c3, c4;
-		int len = StringUtils.lengthOfUtf8(c);
-		switch (len) {
-		case 1:
-			return c;
-		case 2:
-			// 0b11111 = 31
-			// 0b111111 = 63
-			c2 = byteAt(pos + 1) & 63;
-			return ((c & 31) << 6) | c2;
-		case 3:
-			c2 = byteAt(pos + 1) & 63;
-			c3 = byteAt(pos + 2) & 63;
-			return ((c & 15) << 12) | c2 << 6 | c3;
-		case 4:
-			c2 = byteAt(pos + 1) & 63;
-			c3 = byteAt(pos + 2) & 63;
-			c4 = byteAt(pos + 3) & 63;
-			return ((c & 7) << 18) | c2 << 12 | c3 << 6 | c4;
-		}
-		return -1;
-	}
-
-	public final int charLength(long pos) {
-		int c = byteAt(pos);
-		return StringUtils.lengthOfUtf8(c);
-	}
 
 	private final long getLineStartPosition(long fromPostion) {
 		long startIndex = fromPostion;

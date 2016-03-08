@@ -1,6 +1,7 @@
 package nez.lang;
 
 import java.util.AbstractList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -9,6 +10,7 @@ import nez.ast.SourceLocation;
 import nez.ast.Symbol;
 import nez.lang.Nez.Byte;
 import nez.lang.Nez.Detree;
+import nez.lang.Nez.Dispatch;
 import nez.lang.Nez.EndTree;
 import nez.lang.Nez.FoldTree;
 import nez.lang.Nez.Function;
@@ -22,14 +24,6 @@ import nez.util.UList;
 public abstract class Expression extends AbstractList<Expression> implements SourceLocation {
 
 	public abstract Object visit(Expression.Visitor v, Object a);
-
-	// protected Expression() {
-	// this(null);
-	// }
-	//
-	// protected Expression(SourceLocation s) {
-	// this.s = s;
-	// }
 
 	private SourceLocation s = null;
 
@@ -196,6 +190,8 @@ public abstract class Expression extends AbstractList<Expression> implements Sou
 
 		public abstract Object visitChoice(Nez.Choice e, Object a);
 
+		public abstract Object visitDispatch(Nez.Dispatch e, Object a);
+
 		public abstract Object visitOption(Nez.Option e, Object a);
 
 		public abstract Object visitZeroMore(Nez.ZeroMore e, Object a);
@@ -250,7 +246,17 @@ public abstract class Expression extends AbstractList<Expression> implements Sou
 
 	private final static ExpressionFormatter defaultFormatter = new ExpressionFormatter();
 
-	private static class ExpressionFormatter extends Expression.Visitor {
+	public final static void format(Expression e, StringBuilder sb) {
+		defaultFormatter.format(e, sb);
+	}
+
+	public final static String Stringfy(Expression e) {
+		StringBuilder sb = new StringBuilder();
+		defaultFormatter.format(e, sb);
+		return sb.toString();
+	}
+
+	private final static class ExpressionFormatter extends Expression.Visitor {
 
 		public void format(Expression e, StringBuilder sb) {
 			e.visit(this, sb);
@@ -280,14 +286,14 @@ public abstract class Expression extends AbstractList<Expression> implements Sou
 		@Override
 		public Object visitByte(Nez.Byte e, Object a) {
 			StringBuilder sb = (StringBuilder) a;
-			sb.append(StringUtils.stringfyCharacter(e.byteChar));
+			StringUtils.formatByte(sb, e.byteChar);
 			return null;
 		}
 
 		@Override
 		public Object visitByteSet(Nez.ByteSet e, Object a) {
 			StringBuilder sb = (StringBuilder) a;
-			sb.append(StringUtils.stringfyCharacterClass(e.byteMap));
+			sb.append(StringUtils.stringfyByteSet(e.byteMap));
 			return null;
 		}
 
@@ -301,11 +307,7 @@ public abstract class Expression extends AbstractList<Expression> implements Sou
 		@Override
 		public Object visitMultiByte(Nez.MultiByte e, Object a) {
 			StringBuilder sb = (StringBuilder) a;
-			sb.append("'");
-			for (int i = 0; i < e.byteSeq.length; i++) {
-				StringUtils.appendByteChar(sb, e.byteSeq[i] & 0xff, "\'");
-			}
-			sb.append("'");
+			StringUtils.formatUTF8(sb, e.byteSeq);
 			return null;
 		}
 
@@ -551,6 +553,29 @@ public abstract class Expression extends AbstractList<Expression> implements Sou
 			return predicate ? name : "!" + name;
 		}
 
+		@Override
+		public Object visitDispatch(Dispatch e, Object a) {
+			StringBuilder sb = (StringBuilder) a;
+			sb.append("<dfa ");
+			boolean[] b = Bytes.newMap(false);
+			for (int i = 1; i < e.inners.length; i++) {
+				Arrays.fill(b, false);
+				if (i > 2) {
+					sb.append("|");
+				}
+				for (int j = 0; i < e.indexMap.length; j++) {
+					if (e.indexMap[j] == i) {
+						b[j] = true;
+					}
+				}
+				Expression c = Expressions.newByteSet(b);
+				c.visit(this, a);
+				sb.append(":");
+				e.inners[i].visit(this, a);
+			}
+			sb.append(">");
+			return null;
+		}
 	}
 
 	public static abstract class DuplicateVisitor extends Visitor {
@@ -670,6 +695,16 @@ public abstract class Expression extends AbstractList<Expression> implements Sou
 				Expressions.addChoice(l, visit(sub));
 			}
 			return new Nez.Choice(l.compactArray());
+		}
+
+		@Override
+		public Expression visitDispatch(Nez.Dispatch e, Object a) {
+			Expression[] inners = new Expression[e.size()];
+			inners[0] = e.get(0);
+			for (int i = 1; i < e.size(); i++) {
+				inners[i] = e.get(i);
+			}
+			return new Nez.Dispatch(inners, e.indexMap);
 		}
 
 		@Override
@@ -851,39 +886,19 @@ public abstract class Expression extends AbstractList<Expression> implements Sou
 
 		@Override
 		public Expression visitSequence(Nez.Sequence e, Object a) {
-			// boolean reduced = false;
 			for (int i = 0; i < e.size(); i++) {
 				Expression sub = visitInner(e.get(i), a);
 				e.set(i, sub);
-				// if (sub instanceof Nez.Empty || sub instanceof Nez.Fail ||
-				// sub instanceof Nez.Sequence || sub instanceof Nez.Pair) {
-				// reduced = true;
-				// }
 			}
-			// if (reduced == true) {
-			// List<Expression> l = Expressions.newList(e.size());
-			// for (Expression sub : e) {
-			// Expressions.addSequence(l, sub);
-			// }
-			// return Expressions.newSequence(l);
-			// }
 			return e;
 		}
 
 		@Override
 		public Expression visitChoice(Nez.Choice e, Object a) {
-			// boolean reduced = false;
 			for (int i = 0; i < e.size(); i++) {
 				Expression sub = visitInner(e.get(i), a);
 				e.set(i, sub);
 			}
-			// if (reduced == true) {
-			// UList<Expression> l = Expressions.newUList(e.size());
-			// for (Expression sub : e) {
-			// Expressions.addChoice(l, sub);
-			// }
-			// return Expressions.newChoice(l);
-			// }
 			return e;
 		}
 
@@ -1015,6 +1030,14 @@ public abstract class Expression extends AbstractList<Expression> implements Sou
 		public Object visitLabel(Label e, Object a) {
 			return e;
 		}
+
+		@Override
+		public Object visitDispatch(Dispatch e, Object a) {
+			for (int i = 1; i < e.inners.length; i++) {
+				e.inners[i] = this.visitInner(e.inners[i], a);
+			}
+			return e;
+		}
 	}
 
 	public static abstract class AnalyzeVisitor<T> extends Expression.Visitor implements PropertyAnalyzer<T> {
@@ -1112,6 +1135,26 @@ public abstract class Expression extends AbstractList<Expression> implements Sou
 		public Object visitChoice(Nez.Choice e, Object a) {
 			T result = defaultResult;
 			for (Expression sub : e) {
+				@SuppressWarnings("unchecked")
+				T ts = (T) sub.visit(this, null);
+				if (ts == undecided) {
+					result = ts;
+					continue;
+				}
+				if (ts != defaultResult) {
+					if (result != undecided) {
+						result = ts;
+					}
+				}
+			}
+			return result;
+		}
+
+		@Override
+		public Object visitDispatch(Nez.Dispatch e, Object a) {
+			T result = defaultResult;
+			for (int i = 1; i < e.size(); i++) {
+				Expression sub = e.get(i);
 				@SuppressWarnings("unchecked")
 				T ts = (T) sub.visit(this, null);
 				if (ts == undecided) {

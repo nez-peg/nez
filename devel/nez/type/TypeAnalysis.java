@@ -14,6 +14,7 @@ import nez.lang.Nez.Byte;
 import nez.lang.Nez.ByteSet;
 import nez.lang.Nez.Choice;
 import nez.lang.Nez.Detree;
+import nez.lang.Nez.Dispatch;
 import nez.lang.Nez.Empty;
 import nez.lang.Nez.EndTree;
 import nez.lang.Nez.Fail;
@@ -266,6 +267,38 @@ public class TypeAnalysis {
 			}
 			state.inOption = true;
 			for (Expression sub : e) {
+				typing(sub);
+			}
+			state.inOption = false;
+			return null;
+		}
+
+		@Override
+		public Object visitDispatch(Dispatch e, Object a) {
+			if (typeState.isUnit(e)) {
+				return null;
+			}
+			if (typeState.isTree(e)) {
+				UList<Type> unionList = new UList<>(new Type[e.size()]);
+				for (int i = 1; i < e.size(); i++) {
+					Expression sub = e.get(i);
+					Type t = this.leftType;
+					typing(sub);
+					if (t != this.leftType) {
+						unionList.add(this.leftType);
+						this.leftType = t;
+					}
+				}
+				if (unionList.size() == 1) {
+					this.leftType = unionList.get(0);
+				} else if (unionList.size() > 1) {
+					this.leftType = state.newUnionType(unionList.compactArray());
+				}
+				return null;
+			}
+			state.inOption = true;
+			for (int i = 1; i < e.size(); i++) {
+				Expression sub = e.get(i);
 				typing(sub);
 			}
 			state.inOption = false;

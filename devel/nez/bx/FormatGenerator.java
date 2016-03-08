@@ -5,6 +5,7 @@ import java.util.Arrays;
 import nez.ast.Symbol;
 import nez.lang.Expression;
 import nez.lang.Grammar;
+import nez.lang.Nez;
 import nez.lang.Nez.And;
 import nez.lang.Nez.Any;
 import nez.lang.Nez.BeginTree;
@@ -255,6 +256,28 @@ public class FormatGenerator {
 				elementsStack = newList;
 			}
 			for (int i = 0; i < e.size(); i++) {
+				elementsStack[++stackTop] = new Elements();
+				visit(e.get(i));
+				branch[i] = elementsStack[stackTop--];
+			}
+			Element choice = new ChoiceElement(branch);
+			if (inFirst) {
+				currentLeft = choice;
+			}
+			addElement(choice);
+			return null;
+		}
+
+		@Override
+		public Object visitDispatch(Nez.Dispatch e, Object a) {
+			// FIXME:
+			Elements[] branch = new Elements[e.size()];
+			if (stackTop + 1 == elementsStack.length) {
+				Elements[] newList = new Elements[elementsStack.length * 2];
+				System.arraycopy(elementsStack, 0, newList, 0, elementsStack.length);
+				elementsStack = newList;
+			}
+			for (int i = 1; i < e.size(); i++) {
 				elementsStack[++stackTop] = new Elements();
 				visit(e.get(i));
 				branch[i] = elementsStack[stackTop--];

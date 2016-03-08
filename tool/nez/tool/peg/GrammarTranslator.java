@@ -388,6 +388,11 @@ public abstract class GrammarTranslator extends Expression.Visitor implements So
 	}
 
 	@Override
+	public final Object visitDispatch(Nez.Dispatch p, Object a) {
+		return null;
+	}
+
+	@Override
 	public final Object visitNonTerminal(NonTerminal p, Object a) {
 		this.visitNonTerminal(p);
 		return null;

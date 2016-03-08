@@ -353,6 +353,30 @@ public class ParserMachineCompiler implements ParserCompiler {
 		}
 
 		@Override
+		public final MozInst visitDispatch(Nez.Dispatch p, Object next) {
+			Moz86.Dispatch dispatch = new Moz86.Dispatch(p, commonFailure);
+			MozInst[] compiled = new MozInst[p.size()];
+			compiled[0] = commonFailure;
+			for (int i = 1; i < p.size(); i++) {
+				Expression predicted = p.get(i);
+				MozInst inst;
+				if (predicted instanceof Nez.Choice) {
+					inst = visitUnoptimizedChoice((Nez.Choice) predicted, next);
+				} else {
+					inst = compile(predicted, next);
+				}
+				compiled[i] = inst;
+			}
+			for (int ch = 0; ch < p.indexMap.length; ch++) {
+				if (p.indexMap[ch] == 0) {
+					continue;
+				}
+				dispatch.setJumpTable(ch, compiled[p.indexMap[ch] - 1]);
+			}
+			return dispatch;
+		}
+
+		@Override
 		public MozInst visitBeginTree(Nez.BeginTree p, Object next) {
 			if (strategy.TreeConstruction) {
 				return new Moz86.TBegin(p, (MozInst) next);

@@ -367,7 +367,7 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements
 		}
 		if (this.subTree == null) {
 			sb.append(" ");
-			StringUtils.appendQuatedString(sb, '\'', this.toText(), '\'');
+			StringUtils.formatStringLiteral(sb, '\'', this.toText(), '\'');
 		} else {
 			for (int i = 0; i < this.size(); i++) {
 				sb.append(" ");
@@ -390,39 +390,5 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements
 	protected void appendExtraStringfied(StringBuilder sb) {
 
 	}
-	// protected void stringfy(String indent, Symbol label, StringBuilder sb) {
-	// if (indent.length() > 0) {
-	// sb.append("\n");
-	// }
-	// sb.append(indent);
-	// if (label != null) {
-	// sb.append("$");
-	// sb.append(label);
-	// sb.append(" = ");
-	// }
-	// sb.append("#");
-	// if (this.getTag() != null) {
-	// sb.append(this.getTag().getSymbol());
-	// }
-	// sb.append("[");
-	// if (this.subTree == null) {
-	// // sb.append(" ");
-	// StringUtils.appendQuatedString(sb, '\'', this.toText(), '\'');
-	// } else {
-	// String nindent = "   " + indent;
-	// for (int i = 0; i < this.size(); i++) {
-	// if (this.subTree[i] == null) {
-	// sb.append("\n");
-	// sb.append(nindent);
-	// sb.append("null");
-	// } else {
-	// this.subTree[i].stringfy(nindent, this.labels[i], sb);
-	// }
-	// }
-	// sb.append("\n");
-	// sb.append(indent);
-	// }
-	// sb.append("]");
-	// }
 
 }

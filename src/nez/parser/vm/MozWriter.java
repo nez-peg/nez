@@ -209,7 +209,7 @@ public class MozWriter extends InstructionVisitor {
 	}
 
 	private void encodeData(Symbol tag) {
-		write_utf8(StringUtils.toUtf8(tag.getSymbol()));
+		write_utf8(StringUtils.utf8(tag.getSymbol()));
 	}
 
 	//
@@ -282,7 +282,7 @@ public class MozWriter extends InstructionVisitor {
 	public void encodeNonTerminal(String key) {
 		StrEntry entry = NonTerminalPoolMap.get(key);
 		if (entry == null) {
-			entry = new StrEntry(NonTerminalPoolMap.size(), StringUtils.toUtf8(key));
+			entry = new StrEntry(NonTerminalPoolMap.size(), StringUtils.utf8(key));
 			NonTerminalPoolMap.put(key, entry);
 			NonTerminalPools.add(entry);
 		}

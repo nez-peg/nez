@@ -37,17 +37,17 @@ public class TreeUtils {
 
 	static void updateDigest(Tree<?> node, MessageDigest md) {
 		md.update((byte) '#');
-		md.update(StringUtils.toUtf8(node.getTag().getSymbol()));
+		md.update(StringUtils.utf8(node.getTag().getSymbol()));
 		for (int i = 0; i < node.size(); i++) {
 			Symbol label = node.getLabel(i);
 			if (label != null) {
 				md.update((byte) '$');
-				md.update(StringUtils.toUtf8(label.getSymbol()));
+				md.update(StringUtils.utf8(label.getSymbol()));
 			}
 			updateDigest(node.get(i), md);
 		}
 		if (node.size() == 0) {
-			md.update(StringUtils.toUtf8(node.toText()));
+			md.update(StringUtils.utf8(node.toText()));
 		}
 	}
 

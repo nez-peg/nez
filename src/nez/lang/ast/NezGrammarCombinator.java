@@ -75,7 +75,8 @@ public class NezGrammarCombinator extends Combinator {
 	}
 
 	public Expression pFile() {
-		return Sequence(New(P("_"), ZeroMore(Link(null, "Chunk")), Tag("Source")), P("EOT"));
+		return Sequence(New(P("_"), ZeroMore(Link(null, "Chunk")), Tag("Source")), //
+				P("EOT"));
 	}
 
 	public Expression pChunk() {
@@ -197,10 +198,10 @@ public class NezGrammarCombinator extends Combinator {
 	public Expression pTerm() {
 		Expression _Any = New(t("."), Tag("AnyChar"));
 		Expression _Byte = New(t("0x"), P("HEX"), P("HEX"), Tag("ByteChar"));
-		Expression _ByteClass = New(c("01x"), c("01x"), c("01x"), c("01x"), c("01x"), c("01x"), c("01x"), c("01x"), Tag("ByteClass"));
+		Expression _ByteClass = New(c("01x"), c("01x"), c("01x"), c("01x"), c("01x"), OneMore(c("01x")), Tag("ByteClass"));
 		Expression _Unicode = New(t("U+"), P("HEX"), P("HEX"), P("HEX"), P("HEX"), Tag("ByteChar"));
 		Expression _Inner = Sequence(t("("), P("_"), P("Expression"), P("_"), t(")"));
-		return Choice(P("Character"), P("Charset"), P("String"), _Any, _Byte, _ByteClass, _Unicode, P("Constructor"), P("LabelLink"), P("Replace"), P("Tagging"), _Inner, P("Func"), P("NonTerminal"));
+		return Choice(P("Character"), P("Charset"), P("String"), _Any, _ByteClass, _Byte, _Unicode, P("Constructor"), P("LabelLink"), P("Replace"), P("Tagging"), _Inner, P("Func"), P("NonTerminal"));
 	}
 
 	public Expression pCharacter() {
@@ -266,11 +267,15 @@ public class NezGrammarCombinator extends Combinator {
 		Expression _Local = Sequence(t("local"), P("S"), P("_"), Link("$name", "TableName"), P("S"), P("_"), Link("$expr", "Expression"), Tag("Local"));
 		Expression _Scanf = Sequence(t("scan"), P("S"), P("_"), Option(Link("$mask", "Mask"), P("S"), P("_")), Link("$expr", "Expression"), Tag("Scanf"));
 		Expression _Repeat = Sequence(t("repeat"), P("S"), P("_"), Link("$expr", "Expression"), Tag("Repeat"));
+		//
+		Expression _Dfa = Sequence(t("dfa"), P("S"), OneMore(Link(null, "Case")), Tag("Dispatch"));
+		Expression _X = Sequence(t("x"), P("S"), P("_"), Link("$name", "TableName"), P("S"), P("_"), Link("$expr", "Expression"), Tag("Extended"));
+		//
 		Expression _Def = Sequence(t("def"), P("S"), P("_"), Link("$name", "TableName"), P("S"), P("_"), Link("$expr", "Expression"), Tag("Def"));
 		// Expression _Uniq = ;
 		// Expression _Set = ;
 		Expression _Undefined = Sequence(OneMore(Not(">"), AnyChar()), Tag("Undefined"));
-		return Sequence(t("<"), New(Choice(_If, _On, _Symbol, _Def, _Exists, _Match, _Is, _Isa, _Block, _Local, _Scanf, _Repeat, _Undefined)), P("_"), t(">"));
+		return Sequence(t("<"), New(Choice(_If, _On, _Symbol, _Def, _Exists, _Match, _Is, _Isa, _Block, _Local, _Scanf, _Repeat, _Dfa, _X, _Undefined)), P("_"), t(">"));
 	}
 
 	public Expression pFlagName() {
@@ -287,6 +292,10 @@ public class NezGrammarCombinator extends Combinator {
 
 	public Expression pMask() {
 		return New(OneMore(c("01")), Tag("Name"));
+	}
+
+	public Expression pCase() {
+		return New(P("_"), Link("$case", "Expression"), P("_"), t(":"), P("_"), Link("$expr", "Expression"), P("_"), Option("|"), Tag("Case"));
 	}
 
 }

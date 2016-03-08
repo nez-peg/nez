@@ -6,11 +6,13 @@ import nez.lang.Bytes;
 import nez.lang.Expression;
 import nez.lang.Expressions;
 import nez.lang.Grammar;
+import nez.lang.Nez;
 import nez.lang.NonTerminal;
 import nez.lang.Production;
 import nez.parser.ParserStrategy;
 import nez.util.StringUtils;
 import nez.util.UList;
+import nez.util.Verbose;
 
 public class NezExpressionConstructor extends GrammarVisitorMap<ExpressionTransducer> implements ExpressionConstructor, NezSymbols {
 
@@ -90,17 +92,17 @@ public class NezExpressionConstructor extends GrammarVisitorMap<ExpressionTransd
 		public Expression accept(Tree<?> node, Expression e) {
 			String t = node.toText();
 			if (t.startsWith("U+")) {
-				int c = StringUtils.hex(t.charAt(2));
-				c = (c * 16) + StringUtils.hex(t.charAt(3));
-				c = (c * 16) + StringUtils.hex(t.charAt(4));
-				c = (c * 16) + StringUtils.hex(t.charAt(5));
+				int c = StringUtils.parseHexicalNumber(t.charAt(2));
+				c = (c * 16) + StringUtils.parseHexicalNumber(t.charAt(3));
+				c = (c * 16) + StringUtils.parseHexicalNumber(t.charAt(4));
+				c = (c * 16) + StringUtils.parseHexicalNumber(t.charAt(5));
 				if (c < 128) {
 					return Expressions.newByte(node, c);
 				}
 				String t2 = String.valueOf((char) c);
 				return Expressions.newExpression(node, t2);
 			}
-			int c = StringUtils.hex(t.charAt(t.length() - 2)) * 16 + StringUtils.hex(t.charAt(t.length() - 1));
+			int c = StringUtils.parseHexicalNumber(t.charAt(t.length() - 2)) * 16 + StringUtils.parseHexicalNumber(t.charAt(t.length() - 1));
 			return Expressions.newByte(node, c);
 		}
 	}
@@ -109,10 +111,11 @@ public class NezExpressionConstructor extends GrammarVisitorMap<ExpressionTransd
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
 			String t = node.toText();
-			if (!strategy.BinaryGrammar) {
+			boolean[] b = Bytes.parseByteClass(t);
+			if (!strategy.BinaryGrammar && b[0]) {
 				strategy.BinaryGrammar = true;
 			}
-			return Expressions.newByteSet(node, Bytes.parseOctet(t));
+			return Expressions.newByteSet(node, b);
 		}
 	}
 
@@ -339,6 +342,33 @@ public class NezExpressionConstructor extends GrammarVisitorMap<ExpressionTransd
 		@Override
 		public Expression accept(Tree<?> node, Expression e) {
 			return Expressions.newRepeat(node, newInstance(node.get(_expr)));
+		}
+	}
+
+	public class _Dispatch extends TreeVisitor {
+		@Override
+		public Expression accept(Tree<?> node, Expression e) {
+			Expression[] inners = new Expression[node.size() + 1];
+			byte[] indexMap = new byte[256];
+			inners[0] = Expressions.newFail();
+			int count = 1;
+			for (Tree<?> c : node) {
+				Expression cond = newInstance(c.get(_case));
+				if (cond instanceof Nez.Byte) {
+					indexMap[((Nez.Byte) cond).byteChar] = (byte) count;
+				} else if (cond instanceof Nez.ByteSet) {
+					boolean[] b = ((Nez.ByteSet) cond).byteMap;
+					for (int i = 0; i < 256; i++) {
+						if (b[i]) {
+							indexMap[i] = (byte) count;
+						}
+					}
+				} else {
+					Verbose.println("not character: " + cond);
+				}
+				inners[count++] = newInstance(c.get(_expr));
+			}
+			return Expressions.newDispatch(inners, indexMap);
 		}
 	}
 

@@ -147,10 +147,10 @@ public class Moz86 {
 				sb.append("L" + ((MozInst) value).id);
 				break;
 			case "utf8":
-				StringUtils.appendUtf8(sb, (byte[]) value);
+				StringUtils.formatUTF8(sb, (byte[]) value);
 				break;
 			case "byteSet":
-				StringUtils.appendBitSet(sb, (boolean[]) value);
+				StringUtils.formatHexicalByteSet(sb, (boolean[]) value);
 				break;
 			case "tag":
 				if (value != null) {
@@ -1249,13 +1249,13 @@ public class Moz86 {
 		public byte[] jumpIndex;
 		public MozInst[] jumpTable;
 
-		public Dispatch(byte opcode, Nez.Choice e, MozInst next) {
+		public Dispatch(byte opcode, Expression e, MozInst next) {
 			super(opcode, e, next);
 			jumpTable = new MozInst[257];
 			Arrays.fill(jumpTable, next);
 		}
 
-		public Dispatch(Nez.Choice e, MozInst next) {
+		public Dispatch(Expression e, MozInst next) {
 			this(MozSet.First, e, next);
 		}
 
@@ -1773,7 +1773,7 @@ public class Moz86 {
 
 		public SIsDef(SymbolExists e, MozInst next) {
 			super(MozSet.SIsDef, e, e.tableName, next);
-			utf8 = StringUtils.toUtf8(e.symbol);
+			utf8 = StringUtils.utf8(e.symbol);
 		}
 
 		@Override

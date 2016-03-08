@@ -317,12 +317,12 @@ class Ichar extends JumpInstruction {
 
 	@Override
 	public void stringfy(StringBuilder sb) {
-		sb.append("Ichar ").append(StringUtils.stringfyCharacter(this.byteChar)).append(" ").append(this.jumpBB.getName());
+		sb.append("Ichar ").append(StringUtils.stringfyByte(this.byteChar)).append(" ").append(this.jumpBB.getName());
 	}
 
 	@Override
 	public String toString() {
-		return "Ichar " + StringUtils.stringfyCharacter(this.byteChar) + " (" + this.jumpBB.codePoint + ")";
+		return "Ichar " + StringUtils.stringfyByte(this.byteChar) + " (" + this.jumpBB.codePoint + ")";
 	}
 
 	@Override
@@ -373,12 +373,12 @@ class Icharclass extends JumpInstruction {
 
 	@Override
 	public void stringfy(StringBuilder sb) {
-		sb.append("Icharclass ").append(StringUtils.stringfyCharacterClass(this.byteMap)).append(" ").append(this.jumpBB.getName());
+		sb.append("Icharclass ").append(StringUtils.stringfyByteSet(this.byteMap)).append(" ").append(this.jumpBB.getName());
 	}
 
 	@Override
 	public String toString() {
-		return "Icharclass " + StringUtils.stringfyCharacterClass(this.byteMap) + " (" + this.jumpBB.codePoint + ")";
+		return "Icharclass " + StringUtils.stringfyByteSet(this.byteMap) + " (" + this.jumpBB.codePoint + ")";
 	}
 
 	@Override

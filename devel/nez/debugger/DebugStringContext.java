@@ -21,7 +21,7 @@ public class DebugStringContext extends DebugSourceContext {
 	}
 
 	private final byte[] toZeroTerminalByteSequence(String s) {
-		byte[] b = StringUtils.toUtf8(s);
+		byte[] b = StringUtils.utf8(s);
 		byte[] b2 = new byte[b.length + 1];
 		System.arraycopy(b, 0, b2, 0, b.length);
 		return b2;

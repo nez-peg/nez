@@ -26,7 +26,7 @@ public abstract class StringUtils {
 		return new String(utf8);
 	}
 
-	public final static byte[] toUtf8(String text) {
+	public final static byte[] utf8(String text) {
 		try {
 			return text.getBytes(DefaultEncoding);
 		} catch (UnsupportedEncodingException e) {
@@ -35,33 +35,122 @@ public abstract class StringUtils {
 		return text.getBytes();
 	}
 
-	public final static void appendUtf8(StringBuilder sb, byte[] utf8) {
-		String s = newString(utf8);
-		if (Arrays.equals(utf8, toUtf8(s))) {
-			appendQuatedString(sb, '"', s, '"');
-		} else {
-			sb.append("0x");
-			for (byte c : utf8) {
-				sb.append(String.format("%02x", c & 0xff));
+	public final static byte[] utf8(String text, int padding) {
+		byte[] u = utf8(text);
+		if (padding > 0) {
+			byte[] n = new byte[u.length + padding];
+			System.arraycopy(u, 0, n, 0, u.length);
+			u = n;
+		}
+		return u;
+	}
+
+	// public final static int lengthOfUtf8(int ch) {
+	// return StringUtils.utf8LengthMatrix[ch];
+	// }
+	//
+	// public final static int lengthOfUtf8(byte ch) {
+	// return StringUtils.utf8LengthMatrix[ch & 0xff];
+	// }
+
+	/* format */
+
+	public final static void formatByte(StringBuilder sb, boolean quoted, int byteChar, String fmt, String escaped) {
+		switch (byteChar) {
+		case '\n':
+			sb.append(quoted ? "'\\n'" : "\\n");
+			return;
+		case '\t':
+			sb.append(quoted ? "'\\t'" : "\\t");
+			return;
+		case '\r':
+			sb.append(quoted ? "'\\r'" : "\\r");
+			return;
+		case '\\':
+			sb.append(quoted ? "'\\\\'" : "\\\\");
+			return;
+		}
+		if (Character.isISOControl(byteChar) || byteChar > 127) {
+			sb.append(String.format(fmt/* "0x%02x" */, byteChar));
+			return;
+		}
+		if (quoted) {
+			sb.append("'");
+		}
+		if (escaped.indexOf(byteChar) != -1) {
+			sb.append("\\");
+		}
+		sb.append((char) byteChar);
+		if (quoted) {
+			sb.append("'");
+		}
+	}
+
+	public final static void formatByte(StringBuilder sb, int byteChar) {
+		formatByte(sb, true, byteChar, "0x%02x", "");
+	}
+
+	public final static void formatByteSet(StringBuilder sb, boolean[] b) {
+		sb.append("[");
+		for (int s = 0; s < 256; s++) {
+			if (b[s]) {
+				int e = searchEndChar(b, s + 1);
+				if (s == e) {
+					formatByte(sb, false, s, "\\x%02x", "-]");
+				} else {
+					formatByte(sb, false, s, "\\x%02x", "-]");
+					sb.append("-");
+					formatByte(sb, false, e, "\\x%02x", "-]");
+					s = e;
+				}
+			}
+		}
+		sb.append("]");
+	}
+
+	private static int searchEndChar(boolean[] b, int s) {
+		for (; s < 256; s++) {
+			if (!b[s]) {
+				return s - 1;
+			}
+		}
+		return 255;
+	}
+
+	private final static char[] HexChar = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
+
+	public final static void formatHexicalByteSet(StringBuilder sb, boolean[] b) {
+		int end = 0;
+		for (int c = 0; c < b.length; c++) {
+			if (b[c]) {
+				end = c + 1;
+			}
+		}
+		for (int offset = 0; offset < end; offset += 4) {
+			if (offset + 3 < b.length) {
+				formatHedicalByteSet(sb, b, offset);
 			}
 		}
 	}
 
-	public final static int lengthOfUtf8(int ch) {
-		return StringUtils.utf8LengthMatrix[ch];
+	private static void formatHedicalByteSet(StringBuilder sb, boolean[] b, int offset) {
+		int n = 0;
+		if (b[offset + 0]) {
+			n |= (1 << 3);
+		}
+		if (b[offset + 1]) {
+			n |= (1 << 2);
+		}
+		if (b[offset + 2]) {
+			n |= (1 << 1);
+		}
+		if (b[offset + 3]) {
+			n |= 1;
+		}
+		sb.append(HexChar[n]);
 	}
 
-	public final static int lengthOfUtf8(byte ch) {
-		return StringUtils.utf8LengthMatrix[ch & 0xff];
-	}
-
-	public final static String quoteString(char openChar, String text, char closeChar) {
-		StringBuilder sb = new StringBuilder();
-		StringUtils.appendQuatedString(sb, openChar, text, closeChar);
-		return sb.toString();
-	}
-
-	public final static void appendQuatedString(StringBuilder sb, char openChar, String text, char closeChar) {
+	public final static void formatStringLiteral(StringBuilder sb, char openChar, String text, char closeChar) {
 		char slashChar = '\\';
 		sb.append(openChar);
 		int i = 0;
@@ -86,6 +175,25 @@ public abstract class StringUtils {
 		sb.append(closeChar);
 	}
 
+	public final static void formatUTF8(StringBuilder sb, byte[] utf8) {
+		String s = newString(utf8);
+		if (Arrays.equals(utf8, utf8(s))) {
+			formatStringLiteral(sb, '"', s, '"');
+		} else {
+			sb.append("'");
+			for (byte c : utf8) {
+				formatByte(sb, false, c & 0xff, "0x%02x", "-]'");
+			}
+			sb.append("'");
+		}
+	}
+
+	public final static String quoteString(char openChar, String text, char closeChar) {
+		StringBuilder sb = new StringBuilder();
+		StringUtils.formatStringLiteral(sb, openChar, text, closeChar);
+		return sb.toString();
+	}
+
 	public final static String unquoteString(String text) {
 		if (text.indexOf("\\") == -1) {
 			return text;
@@ -99,6 +207,12 @@ public abstract class StringUtils {
 			}
 			sb.append(ch);
 		}
+		return sb.toString();
+	}
+
+	public final static String stringfyByteSet(boolean[] b) {
+		StringBuilder sb = new StringBuilder();
+		formatByteSet(sb, b);
 		return sb.toString();
 	}
 
@@ -117,8 +231,8 @@ public abstract class StringUtils {
 	// Used in Factory.newCharClass
 	public final static int parseAscii(String t) {
 		if (t.startsWith("\\x")) {
-			int c = StringUtils.hex(t.charAt(2));
-			c = (c * 16) + StringUtils.hex(t.charAt(3));
+			int c = StringUtils.parseHexicalNumber(t.charAt(2));
+			c = (c * 16) + StringUtils.parseHexicalNumber(t.charAt(3));
 			return c;
 		}
 		if (t.startsWith("\\u")) {
@@ -148,17 +262,17 @@ public abstract class StringUtils {
 
 	public final static int parseUnicode(String t) {
 		if (t.startsWith("\\u")) {
-			int c = StringUtils.hex(t.charAt(2));
-			c = (c * 16) + StringUtils.hex(t.charAt(3));
-			c = (c * 16) + StringUtils.hex(t.charAt(4));
-			c = (c * 16) + StringUtils.hex(t.charAt(5));
+			int c = StringUtils.parseHexicalNumber(t.charAt(2));
+			c = (c * 16) + StringUtils.parseHexicalNumber(t.charAt(3));
+			c = (c * 16) + StringUtils.parseHexicalNumber(t.charAt(4));
+			c = (c * 16) + StringUtils.parseHexicalNumber(t.charAt(5));
 			return c;
 		}
 		return t.charAt(0);
 	}
 
 	// USED
-	public static int hex(int c) {
+	public static int parseHexicalNumber(int c) {
 		if ('0' <= c && c <= '9') {
 			return c - '0';
 		}
@@ -172,191 +286,58 @@ public abstract class StringUtils {
 	}
 
 	public static char parseHex4(char ch1, char ch2, char ch3, char ch4) {
-		int c = StringUtils.hex(ch1);
-		c = (c * 16) + StringUtils.hex(ch2);
-		c = (c * 16) + StringUtils.hex(ch3);
-		c = (c * 16) + StringUtils.hex(ch4);
+		int c = StringUtils.parseHexicalNumber(ch1);
+		c = (c * 16) + StringUtils.parseHexicalNumber(ch2);
+		c = (c * 16) + StringUtils.parseHexicalNumber(ch3);
+		c = (c * 16) + StringUtils.parseHexicalNumber(ch4);
 		return (char) c;
 	}
 
-	public static void appendByteChar(StringBuilder sb, int ch, String quote) {
-		switch (ch) {
-		case '\n':
-			sb.append("\\n");
-			return;
-		case '\t':
-			sb.append("\\t");
-			return;
-		case '\r':
-			sb.append("\\r");
-			return;
-		case '\\':
-			sb.append("\\\\");
-			return;
-		}
-		if (Character.isISOControl(ch) || ch > 127) {
-			sb.append(String.format("0x%02x", ch));
-			return;
-		}
-		if (quote.indexOf(ch) != -1) {
-			sb.append("\\");
-		}
-		sb.append((char) ch);
+	public final static String stringfyByte(int ch) {
+		StringBuilder sb = new StringBuilder();
+		formatByte(sb, ch);
+		return sb.toString();
 	}
 
-	public final static String stringfyCharacter(int ch) {
-		char c = (char) ch;
-		switch (c) {
-		case '\n':
-			return ("'\\n'");
-		case '\t':
-			return ("'\\t'");
-		case '\r':
-			return ("'\\r'");
-		case '\'':
-			return ("'\\''");
-		case '\\':
-			return ("'\\\\'");
-		}
-		if (Character.isISOControl(c) || c > 127) {
-			return (String.format("0x%02x", (int) c));
-		}
-		return ("'" + c + "'");
-	}
-
-	public final static String stringfyByte(char oc, int ch, char ec) {
-		char c = (char) ch;
-		switch (c) {
-		case '\n':
-			return ("'\\n'");
-		case '\t':
-			return ("'\\t'");
-		case '\r':
-			return ("'\\r'");
-		case '\'':
-			return ("'\\''");
-		case '\\':
-			return ("'\\\\'");
-		}
-		if (oc == ch) {
-			return "" + oc + "\\" + ch + ec;
-		}
-		if (Character.isISOControl(c) || c > 127) {
-			return (String.format("0x%02x", (int) c));
-		}
-		return ("" + oc + c + ec);
-	}
+	// public final static String stringfyByte(char oc, int ch, char ec) {
+	// char c = (char) ch;
+	// switch (c) {
+	// case '\n':
+	// return ("'\\n'");
+	// case '\t':
+	// return ("'\\t'");
+	// case '\r':
+	// return ("'\\r'");
+	// case '\'':
+	// return ("'\\''");
+	// case '\\':
+	// return ("'\\\\'");
+	// }
+	// if (oc == ch) {
+	// return "" + oc + "\\" + ch + ec;
+	// }
+	// if (Character.isISOControl(c) || c > 127) {
+	// return (String.format("0x%02x", (int) c));
+	// }
+	// return ("" + oc + c + ec);
+	// }
 
 	// The below are used in ByteMap
 
-	public final static String stringfyCharClass(int startChar, int endChar) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("[");
-		appendCharClass(sb, startChar);
-		sb.append("-");
-		appendCharClass(sb, endChar);
-		sb.append("]");
-		return sb.toString();
-	}
-
-	public final static String stringfyCharacterClass(boolean[] b) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("[");
-		for (int s = 0; s < 256; s++) {
-			if (b[s]) {
-				int e = searchEndChar(b, s + 1);
-				if (s == e) {
-					appendCharClass(sb, s);
-				} else {
-					appendCharClass(sb, s);
-					sb.append("-");
-					appendCharClass(sb, e);
-					s = e;
-				}
-			}
-		}
-		sb.append("]");
-		return sb.toString();
-	}
-
-	private final static int searchEndChar(boolean[] b, int s) {
-		for (; s < 256; s++) {
-			if (!b[s]) {
-				return s - 1;
-			}
-		}
-		return 255;
-	}
-
-	private static void appendCharClass(StringBuilder sb, int ch) {
-		char c = (char) ch;
-		switch (c) {
-		case '\n':
-			sb.append("\\n");
-			break;
-		case '\t':
-			sb.append("\\t");
-			break;
-		case '\r':
-			sb.append("\\r");
-			break;
-		case '\'':
-			sb.append("\\'");
-			break;
-		case ']':
-			sb.append("\\]");
-			break;
-		case '-':
-			sb.append("\\-");
-			break;
-		case '\\':
-			sb.append("\\\\");
-			break;
-		default:
-			if (Character.isISOControl(c) || c > 127) {
-				sb.append(String.format("\\x%02x", (int) c));
-			} else {
-				sb.append(c);
-			}
-		}
-	}
-
-	private final static char[] HexChar = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
-
-	public final static void appendBitSet(StringBuilder sb, boolean[] b) {
-		int end = 0;
-		for (int c = 0; c < b.length; c++) {
-			if (b[c]) {
-				end = c + 1;
-			}
-		}
-		for (int offset = 0; offset < end; offset += 4) {
-			if (offset + 3 < b.length) {
-				appendBitSet(sb, b, offset);
-			}
-		}
-	}
-
-	private static void appendBitSet(StringBuilder sb, boolean[] b, int offset) {
-		int n = 0;
-		if (b[offset + 0]) {
-			n |= (1 << 3);
-		}
-		if (b[offset + 1]) {
-			n |= (1 << 2);
-		}
-		if (b[offset + 2]) {
-			n |= (1 << 1);
-		}
-		if (b[offset + 3]) {
-			n |= 1;
-		}
-		sb.append(HexChar[n]);
-	}
+	// public final static String stringfyCharClass(int startChar, int endChar)
+	// {
+	// StringBuilder sb = new StringBuilder();
+	// sb.append("[");
+	// formatByte(sb, startChar, "-]");
+	// sb.append("-");
+	// formatByte(sb, endChar, "-]");
+	// sb.append("]");
+	// return sb.toString();
+	// }
 
 	public final static String stringfyBitmap(boolean[] b) {
 		StringBuilder sb = new StringBuilder();
-		appendBitSet(sb, b);
+		formatHexicalByteSet(sb, b);
 		return sb.toString();
 	}
 
@@ -382,12 +363,12 @@ public abstract class StringUtils {
 		return b;
 	}
 
-	public final static String formatChar(int c) {
-		if (Character.isISOControl(c) || c > 127) {
-			return "<" + c + ">";
-		}
-		return "<" + (char) c + "," + c + ">";
-	}
+	// public final static String formatChar(int c) {
+	// if (Character.isISOControl(c) || c > 127) {
+	// return "<" + c + ">";
+	// }
+	// return "<" + (char) c + "," + c + ">";
+	// }
 
 	public final static String formatParcentage(long a, long b) {
 		return String.format("%.3f", (double) a / b * 100.0);

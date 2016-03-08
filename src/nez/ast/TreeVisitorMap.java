@@ -59,9 +59,7 @@ public class TreeVisitorMap<V> {
 	}
 
 	protected final void undefined(Tree<?> node) {
-		if (OnWhenDebugging) {
-			System.out.println("undefined: " + node);
-		}
+		Verbose.println("undefined: " + node);
 		throw new UndefinedException(node, this.getClass().getName() + ": undefined " + node);
 	}
 
