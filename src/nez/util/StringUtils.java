@@ -299,42 +299,6 @@ public abstract class StringUtils {
 		return sb.toString();
 	}
 
-	// public final static String stringfyByte(char oc, int ch, char ec) {
-	// char c = (char) ch;
-	// switch (c) {
-	// case '\n':
-	// return ("'\\n'");
-	// case '\t':
-	// return ("'\\t'");
-	// case '\r':
-	// return ("'\\r'");
-	// case '\'':
-	// return ("'\\''");
-	// case '\\':
-	// return ("'\\\\'");
-	// }
-	// if (oc == ch) {
-	// return "" + oc + "\\" + ch + ec;
-	// }
-	// if (Character.isISOControl(c) || c > 127) {
-	// return (String.format("0x%02x", (int) c));
-	// }
-	// return ("" + oc + c + ec);
-	// }
-
-	// The below are used in ByteMap
-
-	// public final static String stringfyCharClass(int startChar, int endChar)
-	// {
-	// StringBuilder sb = new StringBuilder();
-	// sb.append("[");
-	// formatByte(sb, startChar, "-]");
-	// sb.append("-");
-	// formatByte(sb, endChar, "-]");
-	// sb.append("]");
-	// return sb.toString();
-	// }
-
 	public final static String stringfyBitmap(boolean[] b) {
 		StringBuilder sb = new StringBuilder();
 		formatHexicalByteSet(sb, b);
@@ -362,13 +326,6 @@ public abstract class StringUtils {
 		}
 		return b;
 	}
-
-	// public final static String formatChar(int c) {
-	// if (Character.isISOControl(c) || c > 127) {
-	// return "<" + c + ">";
-	// }
-	// return "<" + (char) c + "," + c + ">";
-	// }
 
 	public final static String formatParcentage(long a, long b) {
 		return String.format("%.3f", (double) a / b * 100.0);

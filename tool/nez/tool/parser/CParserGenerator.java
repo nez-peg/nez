@@ -2,13 +2,16 @@ package nez.tool.parser;
 
 import nez.lang.Grammar;
 import nez.util.ConsoleUtils;
-import nez.util.FileBuilder;
 import nez.util.StringUtils;
 
 public class CParserGenerator extends CommonParserGenerator {
 
+	public CParserGenerator() {
+		super(".c");
+	}
+
 	@Override
-	protected void initTypeMap() {
+	protected void initLanguageSpec() {
 		SupportedRange = true;
 		SupportedMatch2 = true;
 		SupportedMatch3 = true;
@@ -118,13 +121,8 @@ public class CParserGenerator extends CommonParserGenerator {
 	// Grammar Generator
 
 	@Override
-	protected String getFileExtension() {
-		return "c";
-	}
-
-	@Override
 	protected void generateHeader(Grammar g) {
-		ImportFile("/nez/tool/parser/ext/c-parser-runtime.txt");
+		importFileContent("c-parser-runtime.txt");
 	}
 
 	@Override
@@ -137,7 +135,7 @@ public class CParserGenerator extends CommonParserGenerator {
 
 	@Override
 	protected void generateFooter(Grammar g) {
-		ImportFile("/nez/tool/parser/ext/c-tree-utils.txt");
+		importFileContent("c-tree-utils.txt");
 		//
 		BeginDecl("void* " + _ns() + "parse(const char *text, size_t len, void *thunk, void* (*fnew)(symbol_t, const unsigned char *, size_t, size_t, void *), void  (*fset)(void *, size_t, symbol_t, void *, void *), void  (*fgc)(void *, int, void *))");
 		{
@@ -209,9 +207,7 @@ public class CParserGenerator extends CommonParserGenerator {
 	}
 
 	private void generateHeaderFile() {
-		String filename = FileBuilder.changeFileExtension(this.path, "h");
-		this.file = new FileBuilder(filename);
-		ConsoleUtils.println("generating " + filename + " ... ");
+		this.setFileBuilder(".h");
 		Statement("typedef unsigned long int symbol_t");
 		int c = 1;
 		for (String s : this.tagList) {

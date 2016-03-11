@@ -1,8 +1,5 @@
 package nez.tool.parser;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,28 +31,15 @@ import nez.lang.SymbolMutation.SymbolMutationAnalyzer;
 import nez.lang.Typestate;
 import nez.lang.Typestate.TypestateAnalyzer;
 import nez.parser.MemoPoint;
-import nez.parser.Parser;
 import nez.parser.ParserCode;
-import nez.parser.ParserStrategy;
-import nez.parser.io.CommonSource;
-import nez.util.ConsoleUtils;
-import nez.util.FileBuilder;
 import nez.util.StringUtils;
 import nez.util.UList;
 import nez.util.Verbose;
 
-public abstract class CommonParserGenerator implements SourceGenerator {
-	protected Parser parser;
-	protected ParserStrategy strategy;
-	protected ParserCode<?> code;
-	protected String path;
-	protected FileBuilder file;
-	protected String base = "nez";
-	//
-	protected ByteConsumption consumption = new ByteConsumption();
-	protected TypestateAnalyzer typeState = Typestate.newAnalyzer();
-	protected SymbolMutationAnalyzer symbolMutation = SymbolMutation.newAnalyzer();
-	protected SymbolDependencyAnalyzer symbolDeps = SymbolDependency.newAnalyzer();
+public abstract class CommonParserGenerator extends ParserGrammarWriter {
+	public CommonParserGenerator(String fileExt) {
+		super(fileExt);
+	}
 
 	protected boolean verboseMode = true;
 	protected boolean UniqueNumberingSymbol = true;
@@ -72,52 +56,20 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 	protected boolean SupportedMatch7 = false;
 	protected boolean SupportedMatch8 = false;
 
-	@Override
-	public final void init(Grammar g, Parser parser, String path) {
-		this.parser = parser;
-		this.strategy = parser.getParserStrategy();
-		this.code = parser.getParserCode();
-		if (path == null) {
-			this.file = new FileBuilder(null);
-		} else {
-			this.path = FileBuilder.extractFileName(path);
-			this.base = this.path.replace(".nez", "");
-			String filename = FileBuilder.changeFileExtension(this.path, this.getFileExtension());
-			this.file = new FileBuilder(filename);
-			ConsoleUtils.println("generating " + filename + " ... ");
-		}
-		this.initTypeMap();
-	}
-
-	@Override
-	public void doc(String command, String urn, String outputFormat) {
-		// file.writeIndent(LineComment + "Translated by nez " + command +
-		// " -g " + urn + " --format " + outputFormat);
-	}
-
-	protected final void ImportFile(String path) {
-		try {
-			InputStream s = CommonSource.class.getResourceAsStream(path);
-			BufferedReader reader = new BufferedReader(new InputStreamReader(s));
-			String line = null;
-			while ((line = reader.readLine()) != null) {
-				file.writeIndent(line);
-			}
-			reader.close();
-		} catch (Exception e) {
-			ConsoleUtils.exit(1, "cannot load " + path + "; " + e);
-		}
-	}
-
-	protected abstract String getFileExtension();
-
-	protected abstract void generateHeader(Grammar g);
-
-	protected abstract void generateFooter(Grammar g);
+	//
+	protected ParserCode<?> code;
+	//
+	protected ByteConsumption consumption = new ByteConsumption();
+	protected TypestateAnalyzer typeState = Typestate.newAnalyzer();
+	protected SymbolMutationAnalyzer symbolMutation = SymbolMutation.newAnalyzer();
+	protected SymbolDependencyAnalyzer symbolDeps = SymbolDependency.newAnalyzer();
 
 	@Override
 	public void generate() {
-		Grammar g = this.parser.getGrammar();
+		Grammar g = this.parser.getCompiledGrammar();
+		this.code = parser.getParserCode();
+		this.initLanguageSpec();
+
 		this.generateHeader(g);
 		SymbolAnalysis constDecl = new SymbolAnalysis();
 		constDecl.decl(g.getStartProduction());
@@ -125,25 +77,18 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 		this.generateSymbolTables();
 		this.generatePrototypes();
 
-		this.generate(g);
+		new ParserGeneratorVisitor().generate();
 		this.generateFooter(g);
 		file.writeNewLine();
 		file.flush();
 	}
 
+	protected abstract void generateHeader(Grammar g);
+
+	protected abstract void generateFooter(Grammar g);
+
 	protected void generatePrototypes() {
 
-	}
-
-	private void generate(Grammar g) {
-		ParserGeneratorVisitor gen = new ParserGeneratorVisitor();
-		gen.generate();
-	}
-
-	protected void Verbose(String stmt) {
-		if (verboseMode) {
-			file.writeIndent(_Comment() + " " + stmt);
-		}
 	}
 
 	protected String _funcname(Production p) {
@@ -158,7 +103,7 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 
 	protected HashMap<String, String> typeMap = new HashMap<>();
 
-	protected abstract void initTypeMap();
+	protected abstract void initLanguageSpec();
 
 	protected void addType(String name, String type) {
 		typeMap.put(name, type);
@@ -312,24 +257,10 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 			for (int i = 0; i < l.size(); i++) {
 				res[i] = (byte) ((int) l.get(i));
 			}
-			// for (int i = 0; i < 255; i++) {
-			// if (b[i] != check(i, res)) {
-			// System.out.println("failded at " + i + " " + b[i]);
-			// }
-			// }
 			return res;
 		}
 		return null;
 	}
-
-	// private boolean check(int c, byte[] range) {
-	// for (int i = 0; i < range.length; i += 2) {
-	// if ((range[i] & 0xff) <= c && c <= (range[i + 1] & 0xff)) {
-	// return false;
-	// }
-	// }
-	// return true;
-	// }
 
 	private boolean isMatchText(byte[] t, int n) {
 		if (t.length == n) {
@@ -350,20 +281,6 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 		}
 		DeclText(text);
 	}
-
-	// final void DeclByteSet(String name, boolean b[]) {
-	// Verbose(StringUtils.stringfyCharacterClass(b));
-	// DeclConst(type(_set()), name, b.length, _initBooleanArray(b));
-	// }
-	//
-	// final void DeclByteRange(String name, boolean b[], byte[] a) {
-	// Verbose(StringUtils.stringfyCharacterClass(b));
-	// DeclConst(type(_range()), name, a.length, _initByteArray(a));
-	// }
-	//
-	// final void DeclIndexMap(String name, byte b[]) {
-	// DeclConst(type(_index()), name, b.length, _initByteArray(b));
-	// }
 
 	final String _tag(Symbol s) {
 		if (!this.UniqueNumberingSymbol && s == null) {
@@ -431,11 +348,11 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 	}
 
 	protected String _basename() {
-		return base;
+		return fileBase;
 	}
 
 	protected String _ns() {
-		return base + "_";
+		return fileBase + "_";
 	}
 
 	protected String _quote(String s) {
@@ -710,7 +627,7 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 
 		@Override
 		public Object visitByteSet(Nez.ByteSet e, Object a) {
-			DeclSet(e.byteMap, false);
+			DeclSet(e.byteset, false);
 			return null;
 		}
 
@@ -721,7 +638,7 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 
 		@Override
 		public Object visitMultiByte(Nez.MultiByte e, Object a) {
-			DeclMatchText(e.byteSeq);
+			DeclMatchText(e.byteseq);
 			return null;
 		}
 
@@ -764,7 +681,7 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 		@Override
 		public Object visitZeroMore(Nez.ZeroMore e, Object a) {
 			if (strategy.Olex && e.get(0) instanceof Nez.ByteSet) {
-				DeclSet(((Nez.ByteSet) e.get(0)).byteMap, true);
+				DeclSet(((Nez.ByteSet) e.get(0)).byteset, true);
 				return null;
 			}
 			checkNonLexicalInner(e.get(0));
@@ -774,7 +691,7 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 		@Override
 		public Object visitOneMore(Nez.OneMore e, Object a) {
 			if (strategy.Olex && e.get(0) instanceof Nez.ByteSet) {
-				DeclSet(((Nez.ByteSet) e.get(0)).byteMap, true);
+				DeclSet(((Nez.ByteSet) e.get(0)).byteset, true);
 				return null;
 			}
 			checkNonLexicalInner(e.get(0));
@@ -914,7 +831,11 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 		}
 
 		private String _eval(Expression e) {
-			return _funccall(_funcname(e));
+			String f = _funcname(e);
+			if (f == null) {
+				return null;
+			}
+			return _funccall(f);
 		}
 
 		private String _eval(String uname) {
@@ -1109,12 +1030,12 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 
 		@Override
 		public Object visitByteSet(Nez.ByteSet e, Object a) {
-			If(_Not(MatchByteArray(e.byteMap, true)));
+			If(_Not(MatchByteArray(e.byteset, true)));
 			{
 				Fail();
 			}
 			EndIf();
-			checkBinaryEOF(e.byteMap[0]);
+			checkBinaryEOF(e.byteset[0]);
 			return null;
 		}
 
@@ -1166,7 +1087,7 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 
 		@Override
 		public Object visitMultiByte(Nez.MultiByte e, Object a) {
-			If(_Not(_Match(e.byteSeq)));
+			If(_Not(_Match(e.byteseq)));
 			{
 				Fail();
 			}
@@ -1320,33 +1241,21 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 
 		@Override
 		public Object visitOneMore(Nez.OneMore e, Object a) {
-			if (SupportedDoWhile) {
-				generateDoWhile(e, a);
+			// if (SupportedDoWhile) {
+			// generateDoWhile(e, a);
+			// } else {
+			String f = _eval(e.get(0));
+			if (f != null) {
+				If(_Not(f));
+				{
+					Fail();
+				}
+				EndIf();
 			} else {
 				visit(e.get(0), a);
-				generateWhile(e, a);
 			}
+			generateWhile(e, a);
 			return null;
-		}
-
-		private void generateDoWhile(Expression e, Object a) {
-			Expression sub = e.get(0);
-			if (!this.tryRepetitionOptimization(sub, true)) {
-				String f = _eval(sub);
-				Do();
-				{
-					String[] n = SaveState(sub);
-					Verbose(sub.toString());
-					If(_Not(f));
-					{
-						BackState(sub, n);
-						Break();
-					}
-					EndIf();
-					CheckInfiniteLoop(sub, n[0]);
-				}
-				DoWhile(_True());
-			}
 		}
 
 		private void CheckInfiniteLoop(Expression e, String var) {
@@ -1418,9 +1327,9 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 				}
 				if (inner instanceof Nez.ByteSet) {
 					Nez.ByteSet e = (Nez.ByteSet) inner;
-					If(MatchByteArray(e.byteMap, false));
+					If(MatchByteArray(e.byteset, false));
 					{
-						if (strategy.BinaryGrammar && e.byteMap[0]) {
+						if (strategy.BinaryGrammar && e.byteset[0]) {
 							If(_Not(_Func("eof")));
 							{
 								Statement(_Func("move", "1"));
@@ -1435,7 +1344,7 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 				}
 				if (inner instanceof Nez.MultiByte) {
 					Nez.MultiByte e = (Nez.MultiByte) inner;
-					Statement(_Match(e.byteSeq));
+					Statement(_Match(e.byteseq));
 					return true;
 				}
 				if (inner instanceof Nez.Any) {
@@ -1475,9 +1384,9 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 				if (inner instanceof Nez.ByteSet) {
 					Nez.ByteSet e = (Nez.ByteSet) inner;
 					if (SupportedRangeFind) {
-						String name = _range(e.byteMap);
+						String name = _range(e.byteset);
 						if (name != null) {
-							byte[] r = rangeSEE(e.byteMap);
+							byte[] r = rangeSEE(e.byteset);
 							System.out.println("range: " + name + " " + e);
 							if (OneMore) {
 								If(_Not(_Func("checkOneMoreRange", name, _int(r.length))));
@@ -1494,9 +1403,9 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 					if (OneMore) {
 						visit(inner, null);
 					}
-					While(MatchByteArray(e.byteMap, false));
+					While(MatchByteArray(e.byteset, false));
 					{
-						if (strategy.BinaryGrammar && e.byteMap[0]) {
+						if (strategy.BinaryGrammar && e.byteset[0]) {
 							If(_Func("eof"));
 							{
 								Break();
@@ -1513,7 +1422,7 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 					if (OneMore) {
 						visit(inner, null);
 					}
-					While(_Match(e.byteSeq));
+					While(_Match(e.byteseq));
 					{
 						EmptyStatement();
 					}
@@ -1550,17 +1459,17 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 				}
 				if (inner instanceof Nez.ByteSet) {
 					Nez.ByteSet e = (Nez.ByteSet) inner;
-					If(_Not(MatchByteArray(e.byteMap, false)));
+					If(_Not(MatchByteArray(e.byteset, false)));
 					{
 						Fail();
 					}
 					EndIf();
-					this.checkBinaryEOF(e.byteMap[0]);
+					this.checkBinaryEOF(e.byteset[0]);
 					return true;
 				}
 				if (inner instanceof Nez.MultiByte) {
 					Nez.MultiByte e = (Nez.MultiByte) inner;
-					If(_Not(_Match(e.byteSeq)));
+					If(_Not(_Match(e.byteseq)));
 					{
 						Fail();
 					}
@@ -1594,17 +1503,17 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 				}
 				if (inner instanceof Nez.ByteSet) {
 					Nez.ByteSet e = (Nez.ByteSet) inner;
-					If(MatchByteArray(e.byteMap, false));
+					If(MatchByteArray(e.byteset, false));
 					{
 						Fail();
 					}
 					EndIf();
-					this.checkBinaryEOF(!e.byteMap[0]);
+					this.checkBinaryEOF(!e.byteset[0]);
 					return true;
 				}
 				if (inner instanceof Nez.MultiByte) {
 					Nez.MultiByte e = (Nez.MultiByte) inner;
-					If(_Match(e.byteSeq));
+					If(_Match(e.byteseq));
 					{
 						Fail();
 					}
@@ -1801,7 +1710,8 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 
 	/* Syntax */
 
-	protected String _Comment() {
+	@Override
+	protected String _LineComment() {
 		return "//";
 	}
 
@@ -2002,26 +1912,18 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 		file.write("}");
 	}
 
-	protected void Line(String stmt) {
-		file.writeIndent(stmt);
-	}
-
 	protected void Statement(String stmt) {
 		file.writeIndent(stmt);
-		Semicolon();
+		_Semicolon();
 	}
 
 	protected void EmptyStatement() {
 		file.writeIndent();
-		Semicolon();
+		_Semicolon();
 	}
 
-	protected void Semicolon() {
+	protected void _Semicolon() {
 		file.write(";");
-	}
-
-	protected void LineComment(String stmt) {
-		file.writeIndent(_Comment() + " " + stmt);
 	}
 
 	protected void Return(String expr) {
@@ -2084,12 +1986,12 @@ public abstract class CommonParserGenerator implements SourceGenerator {
 		file.write("while (");
 		file.write(cond);
 		file.write(")");
-		Semicolon();
+		_Semicolon();
 	}
 
 	protected void Break() {
 		file.writeIndent("break");
-		Semicolon();
+		_Semicolon();
 	}
 
 	protected void Switch(String c) {

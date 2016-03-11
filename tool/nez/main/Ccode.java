@@ -6,22 +6,21 @@ import nez.lang.Grammar;
 import nez.parser.Parser;
 import nez.tool.parser.CParserGenerator;
 import nez.tool.parser.JavaParserGenerator;
+import nez.tool.parser.ParserGrammarWriter;
 import nez.tool.parser.PythonParserGenerator;
-import nez.tool.parser.SourceGenerator;
 
 public class Ccode extends Command {
 
 	@Override
 	public void exec() throws IOException {
-		SourceGenerator generator = newGenerator();
+		ParserGrammarWriter pw = newGenerator();
 		Grammar g = getSpecifiedGrammar();
 		Parser p = newParser();
-		generator.init(g, p, g.getURN());
-		generator.doc("code", g.getURN(), outputFormat);
-		generator.generate();
+		pw.init(p);
+		pw.generate();
 	}
 
-	protected SourceGenerator newGenerator() {
+	protected ParserGrammarWriter newGenerator() {
 		if (outputFormat == null) {
 			outputFormat = "c";
 		}
@@ -36,7 +35,7 @@ public class Ccode extends Command {
 			// case "coffee":
 			// return new CoffeeParserGenerator();
 		default:
-			return (SourceGenerator) this.newExtendedOutputHandler("", "c java python coffee");
+			return (ParserGrammarWriter) this.newExtendedOutputHandler("", "c java python");
 		}
 	}
 }

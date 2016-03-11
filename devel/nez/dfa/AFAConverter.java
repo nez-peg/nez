@@ -341,7 +341,7 @@ public class AFAConverter extends TreeVisitorMap<DefaultVisitor> {
 
 			for (int i = 0; i < 256; i++) {
 				// if (((nez.lang.expr.Cset) e).byteMap[i]) {
-				if (((nez.lang.Nez.ByteSet) e).byteMap[i]) {
+				if (((nez.lang.Nez.ByteSet) e).byteset[i]) {
 					transitions.add(new Transition(s, t, i, -1));
 				}
 			}

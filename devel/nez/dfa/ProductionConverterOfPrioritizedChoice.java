@@ -86,7 +86,7 @@ public class ProductionConverterOfPrioritizedChoice extends TreeVisitorMap<Defau
 			}
 			// return ExpressionCommons.newCset(e.getSourcePosition(), false,
 			// ((nez.lang.expr.Cset) e).byteMap);
-			return Expressions.newByteSet(e.getSourceLocation(), ((nez.lang.Nez.ByteSet) e).byteMap);
+			return Expressions.newByteSet(e.getSourceLocation(), ((nez.lang.Nez.ByteSet) e).byteset);
 		}
 	}
 

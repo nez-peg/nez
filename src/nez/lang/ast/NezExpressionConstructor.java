@@ -357,7 +357,7 @@ public class NezExpressionConstructor extends GrammarVisitorMap<ExpressionTransd
 				if (cond instanceof Nez.Byte) {
 					indexMap[((Nez.Byte) cond).byteChar] = (byte) count;
 				} else if (cond instanceof Nez.ByteSet) {
-					boolean[] b = ((Nez.ByteSet) cond).byteMap;
+					boolean[] b = ((Nez.ByteSet) cond).byteset;
 					for (int i = 0; i < 256; i++) {
 						if (b[i]) {
 							indexMap[i] = (byte) count;

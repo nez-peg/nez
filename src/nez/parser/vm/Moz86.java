@@ -897,7 +897,7 @@ public class Moz86 {
 
 		AbstSet(byte opcode, Nez.ByteSet e, MozInst next) {
 			super(opcode, e, next);
-			this.byteSet = e.byteMap;
+			this.byteSet = e.byteset;
 			// if (this.byteMap[0]) {
 			// this.byteMap[0] = false; // for safety
 			// }
@@ -1121,7 +1121,7 @@ public class Moz86 {
 
 	public final static class Str extends AbstStr {
 		public Str(Nez.MultiByte e, MozInst next) {
-			super(MozSet.Str, e, e.byteSeq, next);
+			super(MozSet.Str, e, e.byteseq, next);
 		}
 
 		public Str(byte[] byteSeq, MozInst next) {
@@ -1154,7 +1154,7 @@ public class Moz86 {
 
 	public final static class NStr extends AbstStr {
 		public NStr(Nez.MultiByte e, MozInst next) {
-			super(MozSet.NStr, e, e.byteSeq, next);
+			super(MozSet.NStr, e, e.byteseq, next);
 		}
 
 		public NStr(byte[] byteSeq, MozInst next) {
@@ -1186,7 +1186,7 @@ public class Moz86 {
 
 	public final static class OStr extends AbstStr {
 		public OStr(Nez.MultiByte e, MozInst next) {
-			super(MozSet.OStr, e, e.byteSeq, next);
+			super(MozSet.OStr, e, e.byteseq, next);
 		}
 
 		public OStr(byte[] byteSeq, MozInst next) {
@@ -1216,7 +1216,7 @@ public class Moz86 {
 
 	public final static class RStr extends AbstStr {
 		public RStr(Nez.MultiByte e, MozInst next) {
-			super(MozSet.RStr, e, e.byteSeq, next);
+			super(MozSet.RStr, e, e.byteseq, next);
 		}
 
 		public RStr(byte[] byteSeq, MozInst next) {

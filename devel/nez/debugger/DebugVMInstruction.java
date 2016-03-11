@@ -362,7 +362,7 @@ class Icharclass extends JumpInstruction {
 	public Icharclass(Nez.ByteSet e, BasicBlock jump) {
 		super(e, jump);
 		this.op = Opcode.Icharclass;
-		this.byteMap = e.byteMap;
+		this.byteMap = e.byteset;
 	}
 
 	public Icharclass(Expression e, BasicBlock jump, boolean[] byteMap) {

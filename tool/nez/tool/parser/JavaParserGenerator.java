@@ -4,8 +4,12 @@ import nez.lang.Grammar;
 
 public class JavaParserGenerator extends CommonParserGenerator {
 
+	public JavaParserGenerator() {
+		super(".java");
+	}
+
 	@Override
-	protected void initTypeMap() {
+	protected void initLanguageSpec() {
 		// this.UniqueNumberingSymbol = false;
 		this.addType("$parse", "boolean");
 		this.addType("$tag", "int");
@@ -28,14 +32,9 @@ public class JavaParserGenerator extends CommonParserGenerator {
 	}
 
 	@Override
-	protected String getFileExtension() {
-		return "java";
-	}
-
-	@Override
 	protected void generateHeader(Grammar g) {
 		BeginDecl("public class " + _basename());
-		ImportFile("/nez/tool/parser/ext/java-parser-runtime.txt");
+		importFileContent("java-parser-runtime.txt");
 	}
 
 	@Override

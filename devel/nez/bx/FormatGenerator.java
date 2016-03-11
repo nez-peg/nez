@@ -207,7 +207,7 @@ public class FormatGenerator {
 
 		@Override
 		public Object visitByteSet(ByteSet e, Object a) {
-			boolean[] byteSet = e.byteMap;
+			boolean[] byteSet = e.byteset;
 			for (int i = 0; i < byteSet.length; i++) {
 				if (byteSet[i]) {
 					addElement(new ByteElement(i));
@@ -225,7 +225,7 @@ public class FormatGenerator {
 
 		@Override
 		public Object visitMultiByte(MultiByte e, Object a) {
-			byte[] byteSeq = e.byteSeq;
+			byte[] byteSeq = e.byteseq;
 			for (int i = 0; i < byteSeq.length; i++) {
 				addElement(new ByteElement(byteSeq[i]));
 			}

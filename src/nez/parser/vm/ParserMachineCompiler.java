@@ -149,10 +149,10 @@ public class ParserMachineCompiler implements ParserCompiler {
 
 		@Override
 		public MozInst visitByteSet(Nez.ByteSet p, Object next) {
-			if (strategy.BinaryGrammar && p.byteMap[0]) {
-				return new Moz86.BinarySet(p.byteMap, (MozInst) next);
+			if (strategy.BinaryGrammar && p.byteset[0]) {
+				return new Moz86.BinarySet(p.byteset, (MozInst) next);
 			}
-			return new Moz86.Set(p.byteMap, (MozInst) next);
+			return new Moz86.Set(p.byteset, (MozInst) next);
 		}
 
 		@Override
@@ -207,13 +207,13 @@ public class ParserMachineCompiler implements ParserCompiler {
 					return new Moz86.OByte(((Nez.Byte) inner).byteChar, (MozInst) next);
 				}
 				if (inner instanceof Nez.ByteSet) {
-					if (strategy.BinaryGrammar && ((Nez.ByteSet) inner).byteMap[0]) {
-						return new Moz86.BinaryOSet(((Nez.ByteSet) inner).byteMap, (MozInst) next);
+					if (strategy.BinaryGrammar && ((Nez.ByteSet) inner).byteset[0]) {
+						return new Moz86.BinaryOSet(((Nez.ByteSet) inner).byteset, (MozInst) next);
 					}
-					return new Moz86.OSet(((Nez.ByteSet) inner).byteMap, (MozInst) next);
+					return new Moz86.OSet(((Nez.ByteSet) inner).byteset, (MozInst) next);
 				}
 				if (inner instanceof Nez.MultiByte) {
-					return new Moz86.OStr(((Nez.MultiByte) inner).byteSeq, (MozInst) next);
+					return new Moz86.OStr(((Nez.MultiByte) inner).byteseq, (MozInst) next);
 				}
 			}
 			MozInst pop = new Moz86.Succ(p, (MozInst) next);
@@ -240,13 +240,13 @@ public class ParserMachineCompiler implements ParserCompiler {
 					return new Moz86.RByte(((Nez.Byte) inner).byteChar, (MozInst) next);
 				}
 				if (inner instanceof Nez.ByteSet) {
-					if (strategy.BinaryGrammar && ((Nez.ByteSet) inner).byteMap[0]) {
-						return new Moz86.BinaryRSet(((Nez.ByteSet) inner).byteMap, (MozInst) next);
+					if (strategy.BinaryGrammar && ((Nez.ByteSet) inner).byteset[0]) {
+						return new Moz86.BinaryRSet(((Nez.ByteSet) inner).byteset, (MozInst) next);
 					}
-					return new Moz86.RSet(((Nez.ByteSet) inner).byteMap, (MozInst) next);
+					return new Moz86.RSet(((Nez.ByteSet) inner).byteset, (MozInst) next);
 				}
 				if (inner instanceof Nez.MultiByte) {
-					return new Moz86.RStr(((Nez.MultiByte) inner).byteSeq, (MozInst) next);
+					return new Moz86.RStr(((Nez.MultiByte) inner).byteseq, (MozInst) next);
 				}
 			}
 			MozInst skip = new Moz86.Step((Expression) p);
@@ -272,13 +272,13 @@ public class ParserMachineCompiler implements ParserCompiler {
 					return new Moz86.NByte(((Nez.Byte) inner).byteChar, (MozInst) next);
 				}
 				if (inner instanceof Nez.ByteSet) {
-					if (strategy.BinaryGrammar && !((Nez.ByteSet) inner).byteMap[0]) {
-						return new Moz86.BinaryNSet(((Nez.ByteSet) inner).byteMap, (MozInst) next);
+					if (strategy.BinaryGrammar && !((Nez.ByteSet) inner).byteset[0]) {
+						return new Moz86.BinaryNSet(((Nez.ByteSet) inner).byteset, (MozInst) next);
 					}
-					return new Moz86.NSet(((Nez.ByteSet) inner).byteMap, (MozInst) next);
+					return new Moz86.NSet(((Nez.ByteSet) inner).byteset, (MozInst) next);
 				}
 				if (inner instanceof Nez.MultiByte) {
-					return new Moz86.NStr(((Nez.MultiByte) inner).byteSeq, (MozInst) next);
+					return new Moz86.NStr(((Nez.MultiByte) inner).byteseq, (MozInst) next);
 				}
 				if (inner instanceof Nez.Any) {
 					return new Moz86.NAny(inner, false, (MozInst) next);

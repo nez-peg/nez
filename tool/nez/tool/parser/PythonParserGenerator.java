@@ -4,12 +4,31 @@ import nez.lang.Grammar;
 
 public class PythonParserGenerator extends CommonParserGenerator {
 
+	public PythonParserGenerator() {
+		super(".py");
+	}
+
 	public boolean Python3 = false;
+
+	@Override
+	protected void initLanguageSpec() {
+		// this.addType("parse", "boolean");
+		// this.addType("memo", "int");
+		// this.addType(_byteSet_(), "boolean[]");
+		// this.addType(_indexMap_(), "byte[]");
+		// this.addType(_byteSeq_(), "byte[]");
+		// this.addType(_unchoiced_(), "boolean");
+		// this.addType(_pos_(), "int");
+		// this.addType(_left_(), "Tree<?>");
+		// this.addType(_log_(), "Object");
+		// this.addType(_sym_(), "int");
+		// this.addType(_state_(), "ParserContext");
+	}
 
 	/* Syntax */
 
 	@Override
-	protected String _Comment() {
+	protected String _LineComment() {
 		return "##";
 	}
 
@@ -194,22 +213,17 @@ public class PythonParserGenerator extends CommonParserGenerator {
 	@Override
 	protected void Statement(String stmt) {
 		file.writeIndent(stmt);
-		Semicolon();
+		_Semicolon();
 	}
 
 	@Override
 	protected void EmptyStatement() {
 		file.writeIndent("pass");
-		Semicolon();
+		_Semicolon();
 	}
 
 	@Override
-	protected void Semicolon() {
-	}
-
-	@Override
-	protected void LineComment(String stmt) {
-		file.writeIndent(_Comment() + " " + stmt);
+	protected void _Semicolon() {
 	}
 
 	@Override
@@ -218,31 +232,11 @@ public class PythonParserGenerator extends CommonParserGenerator {
 	}
 
 	@Override
-	protected void Succ() {
-		Return(_True());
-	}
-
-	@Override
-	protected void Fail() {
-		Return(_False());
-	}
-
-	@Override
 	protected void If(String cond) {
 		file.writeIndent("if ");
 		file.write(cond);
 		file.write("");
 		Begin();
-	}
-
-	@Override
-	protected String _Binary(String a, String op, String b) {
-		return a + " " + op + " " + b;
-	}
-
-	@Override
-	protected void If(String a, String op, String b) {
-		If(a + " " + op + " " + b);
 	}
 
 	@Override
@@ -274,27 +268,7 @@ public class PythonParserGenerator extends CommonParserGenerator {
 	@Override
 	protected void Break() {
 		file.writeIndent("break");
-		Semicolon();
-	}
-
-	@Override
-	protected void Switch(String c) {
-		Line("switch (" + c + ")");
-		Begin();
-	}
-
-	@Override
-	protected void EndSwitch() {
-		End();
-	}
-
-	@Override
-	protected void Case(String n) {
-		Line("case " + n + ": ");
-	}
-
-	@Override
-	protected void EndCase() {
+		_Semicolon();
 	}
 
 	@Override
@@ -318,11 +292,6 @@ public class PythonParserGenerator extends CommonParserGenerator {
 	}
 
 	// Grammar Generator
-
-	@Override
-	protected String getFileExtension() {
-		return "py";
-	}
 
 	@Override
 	protected void generateHeader(Grammar g) {
@@ -359,21 +328,6 @@ public class PythonParserGenerator extends CommonParserGenerator {
 		}
 		EndIf();
 		file.writeIndent("## End of File");
-	}
-
-	@Override
-	protected void initTypeMap() {
-		// this.addType("parse", "boolean");
-		// this.addType("memo", "int");
-		// this.addType(_byteSet_(), "boolean[]");
-		// this.addType(_indexMap_(), "byte[]");
-		// this.addType(_byteSeq_(), "byte[]");
-		// this.addType(_unchoiced_(), "boolean");
-		// this.addType(_pos_(), "int");
-		// this.addType(_left_(), "Tree<?>");
-		// this.addType(_log_(), "Object");
-		// this.addType(_sym_(), "int");
-		// this.addType(_state_(), "ParserContext");
 	}
 
 }

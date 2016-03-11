@@ -166,18 +166,18 @@ public class Nez {
 		/**
 		 * a 256-length bitmap array, represeting a character acceptance
 		 */
-		public final boolean[] byteMap; // Immutable
+		public final boolean[] byteset; // Immutable
 
 		ByteSet(boolean[] b) {
-			this.byteMap = b;
+			this.byteset = b;
 		}
 
 		@Override
 		public final boolean equals(Object o) {
 			if (o instanceof ByteSet) {
 				ByteSet e = (ByteSet) o;
-				for (int i = 0; i < this.byteMap.length; i++) {
-					if (this.byteMap[i] != e.byteMap[i]) {
+				for (int i = 0; i < this.byteset.length; i++) {
+					if (this.byteset[i] != e.byteset[i]) {
 						return false;
 					}
 				}
@@ -201,19 +201,19 @@ public class Nez {
 	 */
 
 	public static class MultiByte extends Terminal implements SingleCharacter {
-		public final byte[] byteSeq;
+		public final byte[] byteseq;
 
 		MultiByte(byte[] byteSeq) {
-			this.byteSeq = byteSeq;
+			this.byteseq = byteSeq;
 		}
 
 		@Override
 		public final boolean equals(Object o) {
 			if (o instanceof Nez.MultiByte) {
 				Nez.MultiByte mb = (Nez.MultiByte) o;
-				if (mb.byteSeq.length == this.byteSeq.length) {
-					for (int i = 0; i < this.byteSeq.length; i++) {
-						if (byteSeq[i] != mb.byteSeq[i]) {
+				if (mb.byteseq.length == this.byteseq.length) {
+					for (int i = 0; i < this.byteseq.length; i++) {
+						if (byteseq[i] != mb.byteseq[i]) {
 							return false;
 						}
 					}

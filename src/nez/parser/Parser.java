@@ -14,12 +14,13 @@ import nez.util.ConsoleUtils;
 import nez.util.UList;
 
 public final class Parser {
-	private ParserStrategy strategy;
 	private Grammar grammar;
-	private ParserCode<?> pcode = null;
+	private ParserStrategy strategy;
+	private String start;
 
-	public Parser(Grammar grammar, ParserStrategy strategy) {
+	public Parser(Grammar grammar, String start, ParserStrategy strategy) {
 		this.grammar = grammar;
+		this.start = start;
 		this.strategy = strategy;
 	}
 
@@ -27,23 +28,29 @@ public final class Parser {
 		return grammar;
 	}
 
-	public final Grammar getCompiledGrammar() {
-		return this.getParserCode().getCompiledGrammar();
-	}
-
 	public final ParserStrategy getParserStrategy() {
 		return this.strategy;
 	}
 
-	public final ParserCode<?> compile() {
-		this.pcode = this.strategy.newParserCode(grammar);
-		return pcode;
+	private Grammar compiledGrammar = null;
+	private ParserCode<?> pcode = null;
+
+	public final Grammar getCompiledGrammar() {
+		if (compiledGrammar == null) {
+			compiledGrammar = new ParserOptimizer().optimize(grammar.getProduction(start), strategy, null);
+		}
+		return compiledGrammar;
 	}
 
 	public final ParserCode<?> getParserCode() {
 		if (this.pcode == null) {
-			pcode = this.strategy.newParserCode(grammar);
+			pcode = this.strategy.newParserCode(getCompiledGrammar());
 		}
+		return pcode;
+	}
+
+	public final ParserCode<?> compile() {
+		this.pcode = this.strategy.newParserCode(getCompiledGrammar());
 		return pcode;
 	}
 

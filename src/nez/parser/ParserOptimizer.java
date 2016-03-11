@@ -852,13 +852,13 @@ public class ParserOptimizer {
 			}
 			if (next instanceof Nez.ByteSet) {
 				Nez.ByteSet bm = (Nez.ByteSet) next;
-				bany = bm.byteMap.clone();
+				bany = bm.byteset.clone();
 			}
 
 			if (not instanceof Nez.ByteSet) {
 				Nez.ByteSet bm = (Nez.ByteSet) not;
 				for (int c = 0; c < bany.length - 1; c++) {
-					if (bm.byteMap[c] && bany[c] == true) {
+					if (bm.byteset[c] && bany[c] == true) {
 						bany[c] = false;
 					}
 				}

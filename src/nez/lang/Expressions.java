@@ -288,7 +288,7 @@ public abstract class Expressions {
 	}
 
 	public final boolean requireBinaryHandle(Nez.ByteSet e) {
-		return e.byteMap[0];
+		return e.byteset[0];
 	}
 
 	public final boolean requireBinaryHandle(Nez.Any e) {
@@ -1293,7 +1293,7 @@ public abstract class Expressions {
 				continue; // OK
 			}
 			if (e instanceof Nez.ByteSet) {
-				Bytes.appendBitMap(byteMap, ((Nez.ByteSet) e).byteMap);
+				Bytes.appendBitMap(byteMap, ((Nez.ByteSet) e).byteset);
 				continue; // OK
 			}
 			return false;

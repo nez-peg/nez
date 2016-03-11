@@ -92,8 +92,8 @@ public class DebugVMCompiler extends Expression.Visitor {
 				map[((Nez.Byte) e).byteChar] = true;
 			} else if (e instanceof Nez.ByteSet) {
 				Nez.ByteSet bmap = (Nez.ByteSet) e;
-				for (int j = 0; j < bmap.byteMap.length; j++) {
-					if (bmap.byteMap[j]) {
+				for (int j = 0; j < bmap.byteset.length; j++) {
+					if (bmap.byteset[j]) {
 						map[j] = true;
 					}
 				}
@@ -147,7 +147,7 @@ public class DebugVMCompiler extends Expression.Visitor {
 
 	@Override
 	public MozInst visitMultiByte(Nez.MultiByte p, Object next) {
-		this.builder.createIstr(p, this.builder.jumpFailureJump(), p.byteSeq);
+		this.builder.createIstr(p, this.builder.jumpFailureJump(), p.byteseq);
 		this.builder.setInsertPoint(new BasicBlock());
 		return null;
 	}

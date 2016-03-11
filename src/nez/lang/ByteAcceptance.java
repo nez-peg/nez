@@ -86,7 +86,7 @@ public enum ByteAcceptance {
 
 		@Override
 		public ByteAcceptance visitByteSet(ByteSet e, Object ch) {
-			return (e.byteMap[(int) ch]) ? Accept : Reject;
+			return (e.byteset[(int) ch]) ? Accept : Reject;
 		}
 
 		@Override
@@ -97,7 +97,7 @@ public enum ByteAcceptance {
 
 		@Override
 		public ByteAcceptance visitMultiByte(Nez.MultiByte e, Object ch) {
-			return ((e.byteSeq[0] & 0xff) == (int) ch) ? Accept : Reject;
+			return ((e.byteseq[0] & 0xff) == (int) ch) ? Accept : Reject;
 		}
 
 		@Override

@@ -120,18 +120,10 @@ public abstract class Expression extends AbstractList<Expression> implements Sou
 
 	/* static class */
 
-	public static interface Conditional {
-
-	}
-
-	public static interface Contextual {
-
-	}
-
 	@Override
 	public final String toString() {
 		StringBuilder sb = new StringBuilder();
-		defaultFormatter.format(this, sb);
+		defaultFormatter.format(sb, this);
 		return sb.toString();
 	}
 
@@ -247,19 +239,25 @@ public abstract class Expression extends AbstractList<Expression> implements Sou
 	private final static ExpressionFormatter defaultFormatter = new ExpressionFormatter();
 
 	public final static void format(Expression e, StringBuilder sb) {
-		defaultFormatter.format(e, sb);
+		defaultFormatter.format(sb, e);
 	}
 
 	public final static String Stringfy(Expression e) {
 		StringBuilder sb = new StringBuilder();
-		defaultFormatter.format(e, sb);
+		defaultFormatter.format(sb, e);
 		return sb.toString();
 	}
 
-	private final static class ExpressionFormatter extends Expression.Visitor {
+	public static class ExpressionFormatter extends Expression.Visitor {
 
-		public void format(Expression e, StringBuilder sb) {
+		public final void format(StringBuilder sb, Expression e) {
 			e.visit(this, sb);
+		}
+
+		protected void format(StringBuilder sb, String pre, Expression e, String post) {
+			sb.append(pre);
+			e.visit(this, sb);
+			sb.append(post);
 		}
 
 		@Override
@@ -293,7 +291,7 @@ public abstract class Expression extends AbstractList<Expression> implements Sou
 		@Override
 		public Object visitByteSet(Nez.ByteSet e, Object a) {
 			StringBuilder sb = (StringBuilder) a;
-			sb.append(StringUtils.stringfyByteSet(e.byteMap));
+			sb.append(StringUtils.stringfyByteSet(e.byteset));
 			return null;
 		}
 
@@ -307,29 +305,59 @@ public abstract class Expression extends AbstractList<Expression> implements Sou
 		@Override
 		public Object visitMultiByte(Nez.MultiByte e, Object a) {
 			StringBuilder sb = (StringBuilder) a;
-			StringUtils.formatUTF8(sb, e.byteSeq);
+			StringUtils.formatUTF8(sb, e.byteseq);
 			return null;
 		}
 
 		@Override
 		public Object visitPair(Nez.Pair e, Object a) {
 			StringBuilder sb = (StringBuilder) a;
-			this.formatSequence(e, sb, " ");
+			this.formatSequence(sb, e, " ");
 			return null;
 		}
 
 		@Override
 		public Object visitSequence(Nez.Sequence e, Object a) {
 			StringBuilder sb = (StringBuilder) a;
-			this.formatSequence(e, sb, " ");
+			this.formatSequence(sb, e, " ");
 			return null;
 		}
 
 		@Override
 		public Object visitChoice(Nez.Choice e, Object a) {
 			StringBuilder sb = (StringBuilder) a;
-			this.formatSequence(e, sb, " / ");
+			this.formatSequence(sb, e, " / ");
 			return null;
+		}
+
+		private void formatSequence(StringBuilder sb, Expression e, String delim) {
+			for (int i = 0; i < e.size(); i++) {
+				if (i > 0) {
+					sb.append(delim);
+				}
+				Expression inner = e.get(i);
+				if (inner instanceof Nez.Choice) {
+					format(sb, "(", inner, ")");
+				} else {
+					format(sb, inner);
+				}
+			}
+		}
+
+		private void formatUnary(StringBuilder sb, String prefix, Expression inner, String suffix) {
+			if (prefix != null) {
+				sb.append(prefix);
+			}
+			String pre = "(";
+			String post = ")";
+			if (inner instanceof NonTerminal || inner instanceof Nez.SingleCharacter) {
+				pre = "";
+				post = "";
+			}
+			format(sb, pre, inner, post);
+			if (suffix != null) {
+				sb.append(suffix);
+			}
 		}
 
 		@Override
@@ -427,6 +455,21 @@ public abstract class Expression extends AbstractList<Expression> implements Sou
 			return null;
 		}
 
+		/* function */
+		private void formatFunction(Function e, Object argument, StringBuilder sb) {
+			sb.append("<");
+			sb.append(e.op);
+			if (argument != null) {
+				sb.append(" ");
+				sb.append(argument);
+			}
+			if (e.hasInnerExpression()) {
+				sb.append(" ");
+				sb.append(e.get(0));
+			}
+			sb.append(">");
+		}
+
 		@Override
 		public Object visitBlockScope(Nez.BlockScope e, Object a) {
 			StringBuilder sb = (StringBuilder) a;
@@ -504,45 +547,6 @@ public abstract class Expression extends AbstractList<Expression> implements Sou
 		@Override
 		public Object visitLabel(Nez.Label e, Object a) {
 			return null;
-		}
-
-		private void formatSequence(Expression e, StringBuilder sb, String delim) {
-			for (int i = 0; i < e.size(); i++) {
-				if (i > 0) {
-					sb.append(delim);
-				}
-				format(e.get(i), sb);
-			}
-		}
-
-		private void formatUnary(StringBuilder sb, String prefix, Expression inner, String suffix) {
-			if (prefix != null) {
-				sb.append(prefix);
-			}
-			if (inner instanceof NonTerminal || inner instanceof Nez.Terminal) {
-				format(inner, sb);
-			} else {
-				sb.append("(");
-				format(inner, sb);
-				sb.append(")");
-			}
-			if (suffix != null) {
-				sb.append(suffix);
-			}
-		}
-
-		private void formatFunction(Function e, Object argument, StringBuilder sb) {
-			sb.append("<");
-			sb.append(e.op);
-			if (argument != null) {
-				sb.append(" ");
-				sb.append(argument);
-			}
-			if (e.hasInnerExpression()) {
-				sb.append(" ");
-				sb.append(e.get(0));
-			}
-			sb.append(">");
 		}
 
 		private String symbol(Symbol table, String name) {
@@ -638,7 +642,7 @@ public abstract class Expression extends AbstractList<Expression> implements Sou
 			if (!enableImmutableDuplication && e.getSourceLocation() == null) {
 				return e;
 			}
-			return new Nez.ByteSet(e.byteMap);
+			return new Nez.ByteSet(e.byteset);
 		}
 
 		@Override
@@ -654,7 +658,7 @@ public abstract class Expression extends AbstractList<Expression> implements Sou
 			if (!enableImmutableDuplication && e.getSourceLocation() == null) {
 				return e;
 			}
-			return new Nez.MultiByte(e.byteSeq);
+			return new Nez.MultiByte(e.byteseq);
 		}
 
 		@Override

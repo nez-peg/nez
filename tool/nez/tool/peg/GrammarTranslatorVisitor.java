@@ -9,45 +9,21 @@ import nez.lang.NonTerminal;
 import nez.lang.Production;
 import nez.parser.Parser;
 import nez.parser.ParserStrategy;
-import nez.tool.parser.SourceGenerator;
-import nez.util.ConsoleUtils;
 import nez.util.FileBuilder;
 import nez.util.StringUtils;
 import nez.util.Verbose;
 
-public abstract class GrammarTranslator extends Expression.Visitor implements SourceGenerator {
+public abstract class GrammarTranslatorVisitor extends Expression.Visitor {
 	protected Parser parser;
 	protected ParserStrategy strategy;
-
-	public GrammarTranslator() {
-		this.file = null;
-	}
-
-	protected String path;
 	protected FileBuilder file;
 
-	@Override
-	public final void init(Grammar g, Parser parser, String path) {
+	public GrammarTranslatorVisitor(FileBuilder file, Parser parser) {
+		this.file = null;
 		this.parser = parser;
 		this.strategy = parser.getParserStrategy();
-		if (path == null) {
-			this.file = new FileBuilder(null);
-		} else {
-			this.path = FileBuilder.extractFileName(path);
-			String filename = FileBuilder.changeFileExtension(path, this.getFileExtension());
-			this.file = new FileBuilder(filename);
-			ConsoleUtils.println("generating " + filename + " ... ");
-		}
 	}
 
-	@Override
-	public void doc(String command, String urn, String outputFormat) {
-		file.writeIndent(LineComment + "Translated by nez " + command + " -g " + urn + " --format " + outputFormat);
-	}
-
-	protected abstract String getFileExtension();
-
-	@Override
 	public void generate() {
 		generate(this.parser.getGrammar());
 	}
@@ -117,13 +93,13 @@ public abstract class GrammarTranslator extends Expression.Visitor implements So
 	protected String EndIndent = "}"; // End()
 
 	@Deprecated
-	protected GrammarTranslator inc() {
+	protected GrammarTranslatorVisitor inc() {
 		file.incIndent();
 		return this;
 	}
 
 	@Deprecated
-	protected GrammarTranslator dec() {
+	protected GrammarTranslatorVisitor dec() {
 		file.decIndent();
 		return this;
 	}
@@ -132,33 +108,33 @@ public abstract class GrammarTranslator extends Expression.Visitor implements So
 		file.writeIndent(LineComment + line);
 	}
 
-	protected GrammarTranslator L(String line) {
+	protected GrammarTranslatorVisitor L(String line) {
 		file.writeIndent(line);
 		return this;
 	}
 
-	protected GrammarTranslator L() {
+	protected GrammarTranslatorVisitor L() {
 		file.writeIndent();
 		return this;
 	}
 
-	protected GrammarTranslator W(String word) {
+	protected GrammarTranslatorVisitor W(String word) {
 		file.write(word);
 		return this;
 	}
 
-	protected GrammarTranslator W(Object word) {
+	protected GrammarTranslatorVisitor W(Object word) {
 		file.write(word.toString());
 		return this;
 	}
 
-	protected GrammarTranslator Begin(String t) {
+	protected GrammarTranslatorVisitor Begin(String t) {
 		W(t);
 		file.incIndent();
 		return this;
 	}
 
-	protected GrammarTranslator End(String t) {
+	protected GrammarTranslatorVisitor End(String t) {
 		file.decIndent();
 		if (t != null) {
 			L(t);
@@ -166,7 +142,7 @@ public abstract class GrammarTranslator extends Expression.Visitor implements So
 		return this;
 	}
 
-	protected GrammarTranslator C(String name, Expression e) {
+	protected GrammarTranslatorVisitor C(String name, Expression e) {
 		int c = 0;
 		W(name).W(OpenClosure);
 		for (Expression sub : e) {
@@ -180,7 +156,7 @@ public abstract class GrammarTranslator extends Expression.Visitor implements So
 		return this;
 	}
 
-	protected GrammarTranslator C(String name, String first, Expression e) {
+	protected GrammarTranslatorVisitor C(String name, String first, Expression e) {
 		W(name);
 		W(OpenClosure);
 		W(first);
@@ -192,14 +168,14 @@ public abstract class GrammarTranslator extends Expression.Visitor implements So
 		return this;
 	}
 
-	protected GrammarTranslator C(String name) {
+	protected GrammarTranslatorVisitor C(String name) {
 		W(name);
 		W(OpenClosure);
 		W(CloseClosure);
 		return this;
 	}
 
-	protected GrammarTranslator C(String name, String arg) {
+	protected GrammarTranslatorVisitor C(String name, String arg) {
 		if (arg.length() > 1 && arg.startsWith("\"") && arg.endsWith("\"")) {
 		} else {
 			arg = StringUtils.quoteString('"', arg, '"');
@@ -211,7 +187,7 @@ public abstract class GrammarTranslator extends Expression.Visitor implements So
 		return this;
 	}
 
-	protected GrammarTranslator C(String name, int arg) {
+	protected GrammarTranslatorVisitor C(String name, int arg) {
 		W(name);
 		W(OpenClosure);
 		W(String.valueOf(arg));
@@ -219,7 +195,7 @@ public abstract class GrammarTranslator extends Expression.Visitor implements So
 		return this;
 	}
 
-	protected GrammarTranslator C(String name, boolean[] arg) {
+	protected GrammarTranslatorVisitor C(String name, boolean[] arg) {
 		int cnt = 0;
 		W(name);
 		W(OpenClosure);

@@ -8,7 +8,6 @@ import nez.ast.Tree;
 import nez.lang.ast.NezExpressionConstructor;
 import nez.lang.ast.NezGrammarCombinator;
 import nez.parser.Parser;
-import nez.parser.ParserOptimizer;
 import nez.parser.ParserStrategy;
 import nez.util.ConsoleUtils;
 import nez.util.FileBuilder;
@@ -248,8 +247,7 @@ public class Grammar extends AbstractList<Production> {
 	 */
 
 	public final Parser newParser(ParserStrategy strategy) {
-		Grammar gg = new ParserOptimizer().optimize(this.getStartProduction(), strategy, null);
-		return new Parser(gg, strategy);
+		return new Parser(this, this.getStartProduction().getLocalName(), strategy);
 	}
 
 	public final Parser newParser(String name) {
@@ -260,8 +258,7 @@ public class Grammar extends AbstractList<Production> {
 		if (name != null) {
 			Production p = this.getProduction(name);
 			if (p != null) {
-				Grammar gg = new ParserOptimizer().optimize(p, strategy, null);
-				return new Parser(gg, strategy);
+				return new Parser(this, name, strategy);
 			}
 			Verbose.println("undefined production: " + name);
 		}
