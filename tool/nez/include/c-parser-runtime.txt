@@ -473,21 +473,21 @@ static int ParserContext_match8(ParserContext *c, const unsigned char c1, const 
 #endif
 
 static const unsigned char *_findchar(
-	const unsigned char *p, size_t size,
-	const unsigned char *range, size_t range_size) {
+	const unsigned char *p, long size,
+	const unsigned char *range, long range_size) {
 #ifdef CNEZ_SSE
 	const __m128i r = _mm_loadu_si128((const __m128i*)range);
 	__m128i v;
-	for (;;) {
+	while (size > 0) {
 		v = _mm_loadu_si128((const __m128i*)p);
 		if (!_mm_cmpestra(r, range_size, v, size, 4)) {
+			if (_mm_cmpestrc(r, range_size, v, size, 4)) {
+				return p + _mm_cmpestri(r, range_size, v, size, 4);
+			}
 			break;
 		}
 		p += 16;
 		size -= 16;
-	}
-	if (_mm_cmpestrc(r, range_size, v, size, 4)) {
-		return p += _mm_cmpestri(r, range_size, v, size, 4);
 	}
 #else
 	size_t i,j;

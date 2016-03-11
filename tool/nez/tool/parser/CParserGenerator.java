@@ -21,7 +21,7 @@ public class CParserGenerator extends CommonParserGenerator {
 		SupportedMatch7 = true;
 		SupportedMatch8 = true;
 
-		// SupportedRangeFind = true;
+		SupportedSSE = false;
 
 		this.addType("$parse", "int");
 		this.addType("$tag", "int");

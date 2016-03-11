@@ -47,7 +47,7 @@ public abstract class CommonParserGenerator extends ParserGrammarWriter {
 	protected boolean SupportedDoWhile = true;
 	protected boolean UsingBitmap = false;
 	protected boolean SupportedRange = false;
-	protected boolean SupportedRangeFind = false; // SEE4.2
+	protected boolean SupportedSSE = false; // SEE4.2
 	protected boolean SupportedMatch2 = false;
 	protected boolean SupportedMatch3 = false;
 	protected boolean SupportedMatch4 = false;
@@ -128,16 +128,18 @@ public abstract class CommonParserGenerator extends ParserGrammarWriter {
 
 	final String _set(boolean[] b) {
 		String key = StringUtils.stringfyBitmap(b);
-		return nameMap.get(key);
+		String v = nameMap.get(key);
+		return v;
 	}
 
 	final String _range(boolean[] b) {
 		String key = StringUtils.stringfyBitmap(b) + "*";
-		return nameMap.get(key);
+		String v = nameMap.get(key);
+		return v;
 	}
 
 	final void DeclSet(boolean[] b, boolean Iteration) {
-		if (Iteration && this.SupportedRangeFind) {
+		if (Iteration && this.SupportedSSE) {
 			byte[] range = rangeSEE(b);
 			if (range != null) {
 				String key = StringUtils.stringfyBitmap(b) + "*";
@@ -1114,7 +1116,7 @@ public abstract class CommonParserGenerator extends ParserGrammarWriter {
 		@Override
 		public Object visitChoice(Nez.Choice e, Object a) {
 			if (e.predicted != null && SupportedSwitchCase) {
-				generateSwitchPrediction(e, e.predicted);
+				generateSwitch(e, e.predicted);
 			} else {
 				BeginScope();
 				String temp = InitVal(_temp(), _True());
@@ -1146,7 +1148,7 @@ public abstract class CommonParserGenerator extends ParserGrammarWriter {
 			return null;
 		}
 
-		private void generateSwitchPrediction(Nez.Choice choice, ChoicePrediction p) {
+		private void generateSwitch(Nez.Choice choice, ChoicePrediction p) {
 			String temp = InitVal(_temp(), _True());
 			Switch(_GetArray(_index(p.indexMap), _Func("prefetch")));
 			Case("0");
@@ -1215,46 +1217,45 @@ public abstract class CommonParserGenerator extends ParserGrammarWriter {
 
 		@Override
 		public Object visitZeroMore(Nez.ZeroMore e, Object a) {
-			generateWhile(e, a);
+			if (!this.tryRepetitionOptimization(e.get(0), false)) {
+				generateWhile(e, a);
+			}
 			return null;
 		}
 
 		private void generateWhile(Expression e, Object a) {
 			Expression sub = e.get(0);
-			if (!this.tryRepetitionOptimization(sub, false)) {
-				String f = _eval(sub);
-				While(_True());
+			String f = _eval(sub);
+			While(_True());
+			{
+				String[] n = SaveState(sub);
+				Verbose(sub.toString());
+				If(_Not(f));
 				{
-					String[] n = SaveState(sub);
-					Verbose(sub.toString());
-					If(_Not(f));
-					{
-						BackState(sub, n);
-						Break();
-					}
-					EndIf();
-					CheckInfiniteLoop(sub, n[0]);
+					BackState(sub, n);
+					Break();
 				}
-				EndWhile();
+				EndIf();
+				CheckInfiniteLoop(sub, n[0]);
 			}
+			EndWhile();
 		}
 
 		@Override
 		public Object visitOneMore(Nez.OneMore e, Object a) {
-			// if (SupportedDoWhile) {
-			// generateDoWhile(e, a);
-			// } else {
-			String f = _eval(e.get(0));
-			if (f != null) {
-				If(_Not(f));
-				{
-					Fail();
+			if (!this.tryRepetitionOptimization(e.get(0), true)) {
+				String f = _eval(e.get(0));
+				if (f != null) {
+					If(_Not(f));
+					{
+						Fail();
+					}
+					EndIf();
+				} else {
+					visit(e.get(0), a);
 				}
-				EndIf();
-			} else {
-				visit(e.get(0), a);
+				generateWhile(e, a);
 			}
-			generateWhile(e, a);
 			return null;
 		}
 
@@ -1383,7 +1384,7 @@ public abstract class CommonParserGenerator extends ParserGrammarWriter {
 				}
 				if (inner instanceof Nez.ByteSet) {
 					Nez.ByteSet e = (Nez.ByteSet) inner;
-					if (SupportedRangeFind) {
+					if (SupportedSSE) {
 						String name = _range(e.byteset);
 						if (name != null) {
 							byte[] r = rangeSEE(e.byteset);
