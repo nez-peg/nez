@@ -47,7 +47,6 @@ public abstract class CommonParserGenerator extends ParserGrammarWriter {
 	protected boolean SupportedDoWhile = true;
 	protected boolean UsingBitmap = false;
 	protected boolean SupportedRange = false;
-	protected boolean SupportedSSE = false; // SEE4.2
 	protected boolean SupportedMatch2 = false;
 	protected boolean SupportedMatch3 = false;
 	protected boolean SupportedMatch4 = false;
@@ -139,7 +138,7 @@ public abstract class CommonParserGenerator extends ParserGrammarWriter {
 	}
 
 	final void DeclSet(boolean[] b, boolean Iteration) {
-		if (Iteration && this.SupportedSSE) {
+		if (Iteration && strategy.SSE) {
 			byte[] range = rangeSEE(b);
 			if (range != null) {
 				String key = StringUtils.stringfyBitmap(b) + "*";
@@ -659,8 +658,13 @@ public abstract class CommonParserGenerator extends ParserGrammarWriter {
 			if (e.predicted != null) {
 				DeclIndex(e.predicted.indexMap);
 			}
-			for (Expression sub : e) {
-				checkInner(sub);
+			if (e.size() == 1) {
+				// single selection
+				e.get(0).visit(this, null);
+			} else {
+				for (Expression sub : e) {
+					checkInner(sub);
+				}
 			}
 			return null;
 		}
@@ -1149,30 +1153,35 @@ public abstract class CommonParserGenerator extends ParserGrammarWriter {
 		}
 
 		private void generateSwitch(Nez.Choice choice, ChoicePrediction p) {
-			String temp = InitVal(_temp(), _True());
-			Switch(_GetArray(_index(p.indexMap), _Func("prefetch")));
-			Case("0");
-			Fail();
-			for (int i = 0; i < choice.size(); i++) {
-				Case(_int(i + 1));
-				Expression sub = choice.get(i);
-				String f = _eval(sub);
-				if (p.striped[i]) {
-					Verbose(". " + sub);
-					Statement(_Func("move", "1"));
-				} else {
-					Verbose(sub.toString());
-				}
-				VarAssign(temp, f);
-				Break();
-				EndCase();
-			}
-			EndSwitch();
-			If(_Not(temp));
-			{
+			if (choice.size() == 1) {
+				Verbose.println("single choice: " + choice);
+				choice.get(0).visit(this, null);
+			} else {
+				String temp = InitVal(_temp(), _True());
+				Switch(_GetArray(_index(p.indexMap), _Func("prefetch")));
+				Case("0");
 				Fail();
+				for (int i = 0; i < choice.size(); i++) {
+					Case(_int(i + 1));
+					Expression sub = choice.get(i);
+					String f = _eval(sub);
+					if (p.striped[i]) {
+						Verbose(". " + sub);
+						Statement(_Func("move", "1"));
+					} else {
+						Verbose(sub.toString());
+					}
+					VarAssign(temp, f);
+					Break();
+					EndCase();
+				}
+				EndSwitch();
+				If(_Not(temp));
+				{
+					Fail();
+				}
+				EndIf();
 			}
-			EndIf();
 		}
 
 		@Override
@@ -1384,11 +1393,11 @@ public abstract class CommonParserGenerator extends ParserGrammarWriter {
 				}
 				if (inner instanceof Nez.ByteSet) {
 					Nez.ByteSet e = (Nez.ByteSet) inner;
-					if (SupportedSSE) {
+					if (strategy.SSE) {
 						String name = _range(e.byteset);
 						if (name != null) {
 							byte[] r = rangeSEE(e.byteset);
-							System.out.println("range: " + name + " " + e);
+							Verbose.println("range: " + name + " " + e);
 							if (OneMore) {
 								If(_Not(_Func("checkOneMoreRange", name, _int(r.length))));
 								{

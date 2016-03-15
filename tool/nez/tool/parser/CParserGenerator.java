@@ -1,7 +1,6 @@
 package nez.tool.parser;
 
 import nez.lang.Grammar;
-import nez.util.ConsoleUtils;
 import nez.util.StringUtils;
 
 public class CParserGenerator extends CommonParserGenerator {
@@ -20,8 +19,6 @@ public class CParserGenerator extends CommonParserGenerator {
 		SupportedMatch6 = true;
 		SupportedMatch7 = true;
 		SupportedMatch8 = true;
-
-		SupportedSSE = false;
 
 		this.addType("$parse", "int");
 		this.addType("$tag", "int");
@@ -122,7 +119,7 @@ public class CParserGenerator extends CommonParserGenerator {
 
 	@Override
 	protected void generateHeader(Grammar g) {
-		importFileContent("c-parser-runtime.txt");
+		importFileContent("cnez-runtime.txt");
 	}
 
 	@Override
@@ -135,7 +132,7 @@ public class CParserGenerator extends CommonParserGenerator {
 
 	@Override
 	protected void generateFooter(Grammar g) {
-		importFileContent("c-tree-utils.txt");
+		importFileContent("cnez-utils.txt");
 		//
 		BeginDecl("void* " + _ns() + "parse(const char *text, size_t len, void *thunk, void* (*fnew)(symbol_t, const unsigned char *, size_t, size_t, void *), void  (*fset)(void *, size_t, symbol_t, void *, void *), void  (*fgc)(void *, int, void *))");
 		{
@@ -196,14 +193,7 @@ public class CParserGenerator extends CommonParserGenerator {
 		Line("#endif/*MAIN*/");
 		file.writeIndent("// End of File");
 		generateHeaderFile();
-		ConsoleUtils.bold();
-		ConsoleUtils.println("Here are useful commands to start:");
-		ConsoleUtils.end();
-		ConsoleUtils.println(" Make a parser               make %s CFLAGS='-O3 -DMAIN'", _basename());
-		ConsoleUtils.println(" Make a parser without gc    make %s CFLAGS='-O3 -DMAIN -DCNEZ_NOGC'", _basename());
-		ConsoleUtils.println(" Run a parser                ./%s <file> or 'input-text'", _basename());
-		ConsoleUtils.println(" Test performance            BENCH=1 ./%s <file> or 'input-text'", _basename());
-		ConsoleUtils.println(" Test memory usage           MEM=1 ./%s <file> or 'input-text'", _basename());
+		this.showManual("cnez-man.txt", new String[] { "$cmd$", _basename() });
 	}
 
 	private void generateHeaderFile() {

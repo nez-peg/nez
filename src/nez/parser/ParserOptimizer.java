@@ -646,11 +646,11 @@ public class ParserOptimizer {
 			long t2 = System.nanoTime();
 			Verbose.printElapsedTime("Lexical Optimization", t1, t2);
 
-			if (strategy.ChoicePrediction > 1) {
+			if (strategy.Prediction > 1) {
 				t1 = t2;
 				optimizeChoicePrediction();
 				t2 = System.nanoTime();
-				Verbose.printElapsedTime("Choice Prediction", t2, t2);
+				Verbose.printElapsedTime("Prediction", t2, t2);
 			}
 			NonterminalReference refc2 = Productions.countNonterminalReference(grammar);
 			UList<Production> prodList = new UList<Production>(new Production[grammar.size()]);
@@ -896,7 +896,7 @@ public class ParserOptimizer {
 			// Expressions.addChoice(l, this.visitInner(inner, a));
 			// }
 			p.inners = l.compactArray();
-			if (strategy.ChoicePrediction != 0) {
+			if (strategy.Prediction != 0) {
 				Expression optimized = Expressions.tryConvertingByteSet(p);
 				if (optimized != p) {
 					// this.verboseOptimized("choice-to-set", p, optimized);
@@ -993,6 +993,7 @@ public class ParserOptimizer {
 			}
 			choice.inners = newlist2;
 			p.indexMap = indexMap;
+
 		}
 
 		private Expression selectPredictedChoice(Nez.Choice choice, int ch, byte[] indexMap) {

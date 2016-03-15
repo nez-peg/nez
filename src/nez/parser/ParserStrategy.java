@@ -30,7 +30,7 @@ public class ParserStrategy {
 
 	public boolean Olex = true;
 	public boolean Ostring = true;
-	public int ChoicePrediction = 2;
+	public int Prediction = 2;
 	public boolean Odfa = false;
 
 	public boolean Oorder = true;
@@ -44,6 +44,10 @@ public class ParserStrategy {
 	public double TreeFactor = 3.00;
 	public double MemoLimit = 0.5;
 	public boolean StatefulPackratParsing = false;
+
+	/* Generator */
+	public boolean VerboseCode = true;
+	public boolean SSE = false;
 
 	/* Profiling */
 	public boolean Coverage = false;
@@ -158,7 +162,7 @@ public class ParserStrategy {
 	public final static ParserStrategy newSafeStrategy() {
 		ParserStrategy s = new ParserStrategy();
 		s.Moz = false;
-		s.ChoicePrediction = 1;
+		s.Prediction = 1;
 		// s.PackratParsing = false;
 		return s;
 	}

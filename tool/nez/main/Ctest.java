@@ -46,7 +46,7 @@ public class Ctest extends Command {
 		if (!(this instanceof Cexample)) {
 			strategy.Coverage = true;
 			strategy.Oinline = false;
-			strategy.ChoicePrediction = 1;
+			strategy.Prediction = 1;
 		}
 		HashMap<String, Parser> parserMap = new HashMap<>();
 		long t1 = System.nanoTime();

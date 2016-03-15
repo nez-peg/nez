@@ -1,0 +1,7 @@
+ Make a parser               make $cmd$ CFLAGS='-O3 -DMAIN'
+ Make a parser without gc    make $cmd$ CFLAGS='-O3 -DMAIN -DCNEZ_NOGC'
+ Make a parser with SSE4.2   make $cmd$ CFLAGS='-O3 -DMAIN -DCNEZ_SSE'
+ Run a parser                ./$cmd$ <file> or 'input-text'
+ Test performance            BENCH=1 ./$cmd$ <file> or 'input-text'
+ Test memory usage           MEM=1 ./$cmd$ <file> or 'input-text'
+ 

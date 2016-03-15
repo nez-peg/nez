@@ -127,14 +127,15 @@ public class ParserGrammarWriter {
 	}
 
 	public final void showManual(String path, String[] re) {
-
+		ConsoleUtils.bold();
+		ConsoleUtils.println("Here are some useful commands:");
+		ConsoleUtils.end();
+		showFileContent(path, re);
 	}
-
-	protected boolean VerboseCode = true;
 
 	//
 	protected final void Verbose(String stmt) {
-		if (VerboseCode) {
+		if (strategy.VerboseCode) {
 			LineComment(stmt);
 		}
 	}
