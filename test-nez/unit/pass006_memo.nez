@@ -1,0 +1,8 @@
+/* Grammar
+ * input: (((((((((((((((1)))))))))))))))
+ */
+File = { AddSub [ \t\n]* !. #File}
+AddSub = Value '+' AddSub
+       / Value '-' AddSub
+       / Value
+Value = '(' AddSub ')' / '1'
