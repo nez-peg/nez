@@ -34,7 +34,14 @@ public class JavaParserGenerator extends CommonParserGenerator {
 	@Override
 	protected void generateHeader(Grammar g) {
 		BeginDecl("public class " + _basename());
-		importFileContent("java-parser-runtime.txt");
+		{
+			BeginDecl("private static <T> boolean start(ParserContext<T> c)");
+			{
+				Return(_funccall(_funcname(g.getStartProduction())));
+			}
+			EndDecl();
+			importFileContent("java-parser-runtime.txt");
+		}
 	}
 
 	@Override
