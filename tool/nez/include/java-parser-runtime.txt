@@ -1,9 +1,9 @@
 
 /* Embedded ParserContext from nez.parser.ParserContext */
 
-public final static <T> T parse(String text, NewFunc<T> f, SetFunc<T> f2) {
+public final static <T> T parse(String text, NewFunc<T> f, SetFunc<T> f2, int w, int n) {
 	T left = null;
-	ParserContext<T> c = new ParserContext<T>(text, f, f2);
+	ParserContext<T> c = new ParserContext<T>(text, f, f2, w, n);
 	if (start(c)) {
 		left = c.left;
 		if (left == null) {
@@ -14,14 +14,14 @@ public final static <T> T parse(String text, NewFunc<T> f, SetFunc<T> f2) {
 	return null;
 }
 
-public final static SimpleTree parse(String text) {
+public final static SimpleTree parse(String text, int w, int n) {
 	SimpleTree f = new SimpleTree();
-	return parse(text, f, f);
+	return parse(text, f, f, w, n);
 }
 
-public final static int match(String text) {
+public final static int match(String text, int w, int n) {
 	NoneTree f = new NoneTree();
-	ParserContext<NoneTree> c = new ParserContext<NoneTree>(text, f, f);
+	ParserContext<NoneTree> c = new ParserContext<NoneTree>(text, f, f, w, n);
 	if (start(c)) {
 		return c.pos;
 	}
@@ -124,13 +124,14 @@ static final class ParserContext<T> {
 	NewFunc<T> f;
 	SetFunc<T> f2;
 	
-	public ParserContext(String s, NewFunc<T> f, SetFunc<T> f2) {
+	public ParserContext(String s, NewFunc<T> f, SetFunc<T> f2, int w, int n) {
 		inputs = toUTF8(s + "\0");
 		length = inputs.length - 1;
 		this.pos = 0;
 		this.left = null;
 		this.f = f;
 		this.f2 = f2;
+		initMemo(w, n);
 	}
 
 	private byte[] inputs;
