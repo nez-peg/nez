@@ -34,14 +34,28 @@ public class JavaParserGenerator extends CommonParserGenerator {
 	@Override
 	protected void generateHeader(Grammar g) {
 		BeginDecl("public class " + _basename());
-		importFileContent("java-parser-runtime.txt");
+		{
+			BeginDecl("private static <T> boolean start(ParserContext<T> c)");
+			{
+				Return(_funccall(_funcname(g.getStartProduction())));
+			}
+			EndDecl();
+			importFileContent("java-parser-runtime.txt");
+		}
 	}
 
 	@Override
 	protected void generateFooter(Grammar g) {
 		BeginDecl("public final static void main(String[] a)");
 		{
-			Statement("SimpleTree t = parse(a[0])");
+			if (code.getMemoPointSize() > 0) {
+				VarDecl("int", "w", _int(strategy.SlidingWindow));
+				VarDecl("int", "n", _int(code.getMemoPointSize()));
+				Statement("SimpleTree t = parse(a[0], w, n)");
+			} else {
+				Statement("SimpleTree t = parse(a[0], 0, 0)");
+			}
+
 			Statement("System.out.println(t)");
 		}
 		EndDecl();
