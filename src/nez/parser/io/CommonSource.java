@@ -50,8 +50,8 @@ public abstract class CommonSource implements Source {
 	@Override
 	public final int column(long pos) {
 		int count = 0;
-		for (long p = pos - 1; p >= 0; p--) {
-			if (this.byteAt(pos) == '\n') {
+		for (long p = pos-1; p >= 0; p--, ++count) {
+			if (this.byteAt(p) == '\n') {
 				break;
 			}
 		}
@@ -107,7 +107,8 @@ public abstract class CommonSource implements Source {
 	}
 
 	public final String formatPositionMessage(String messageType, long pos, String message) {
-		return "(" + FileBuilder.extractFileName(this.getResourceName()) + ":" + this.linenum(pos) + ") [" + messageType + "] " + message;
+		//return FileBuilder.extractFileName(getResourceName()) + ":" + linenum(pos) + ":" + column(pos) + " [" + messageType + "] " + message;
+		return getResourceName() + ":" + linenum(pos) + ":" + column(pos) + " [" + messageType + "] " + message;
 	}
 
 	@Override
