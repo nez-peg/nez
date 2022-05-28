@@ -369,8 +369,19 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements
 			sb.append(this.getTag().getSymbol());
 		}
 		if (this.subTree == null) {
-			sb.append(" ");
-			StringUtils.formatStringLiteral(sb, '\'', this.toText(), '\'');
+                        sb.append(" '");
+                        String txt = this.toText();
+			for(int i = 0, imax = txt.length(); i < imax; i++) {
+				char ch = txt.charAt(i);
+				switch(ch) {
+					case '\'':
+					case '\\':
+						if(imax == 1) sb.append('\\');
+					break;
+				}
+				sb.append(ch);
+			}
+			sb.append("'");
 		} else {
 			for (int i = 0; i < this.size(); i++) {
 				sb.append(" ");
