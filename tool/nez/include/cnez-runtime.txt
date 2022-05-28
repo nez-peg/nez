@@ -3,47 +3,58 @@
 #include<string.h>
 #include<assert.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct Tree;
 struct TreeLog;
 struct MemoEntry;
 
-typedef unsigned long int symbol_t;
+typedef size_t symbol_t;
 
 typedef struct ParserContext {
+    const char *input_fname;
     const unsigned char  *inputs;
-    size_t       length;
+    size_t length;
     const unsigned char  *pos;
+    const unsigned char  *last_pos;
     struct Tree *left;
+
     // AST
     struct TreeLog *logs;
-    size_t          log_size;
-    size_t          unused_log;
-	// stack
-    struct Wstack  *stacks;
-    size_t          stack_size;
-    size_t          unused_stack;
-    size_t          fail_stack;
+    size_t log_size;
+    size_t unused_log;
+    // stack
+    struct Wstack *stacks;
+    size_t stack_size;
+    size_t unused_stack;
+    size_t fail_stack;
+
     // SymbolTable
     struct SymbolTableEntry* tables;
-	size_t                   tableSize;
-	size_t                   tableMax;
-	size_t                   stateValue;
-	size_t                   stateCount;
-	unsigned long int        count;
+	size_t tableSize;
+	size_t tableMax;
+	size_t stateValue;
+	size_t stateCount;
+	size_t count;
+
     // Memo
     struct MemoEntry *memoArray;
     size_t memoSize;
+
     // APIs
     void *thunk;
-	void* (*fnew)(symbol_t, const unsigned char *, size_t, size_t, void *);
-	void  (*fsub)(void *, size_t, symbol_t, void *, void *);
-	void  (*fgc)(void *, int, void*);
+    void* (*fnew)(symbol_t, const unsigned char *, size_t, size_t, void *);
+    void (*perr)(const char *, const unsigned char *, void *);
+    void  (*fsub)(void *, size_t, symbol_t, void *, void *);
+    void  (*fgc)(void *, int, void*);
 } ParserContext;
 
 #ifdef CNEZ_NOGC
-#define GCINC(c, v2)     
-#define GCDEC(c, v1)     
-#define GCSET(c, v1, v2) 
+#define GCINC(c, v2)
+#define GCDEC(c, v1)
+#define GCSET(c, v1, v2)
 #else
 #define GCINC(c, v2)     c->fgc(v2,  1, c->thunk)
 #define GCDEC(c, v1)     c->fgc(v1, -1, c->thunk)
@@ -142,14 +153,14 @@ Wstack *popW(ParserContext *c)
 #define SuccFound   1
 #define FailFound   2
 
-typedef long long int  uniquekey_t;
+typedef size_t  uniquekey_t;
 
 typedef struct MemoEntry {
     uniquekey_t key;
     long consumed;
-	struct Tree *memoTree;
-	int result;
-	int stateValue;
+    struct Tree *memoTree;
+    int result;
+    int stateValue;
 } MemoEntry;
 
 
@@ -168,7 +179,7 @@ typedef struct Tree {
 static size_t t_used = 0;
 static size_t t_newcount = 0;
 static size_t t_gccount = 0;
- 
+
 static void *tree_malloc(size_t t)
 {
 	size_t *d = (size_t*)malloc(sizeof(size_t) + t);
@@ -195,7 +206,7 @@ static
 void *NEW(symbol_t tag, const unsigned char *text, size_t len, size_t n, void *thunk)
 {
     Tree *t = (Tree*)tree_malloc(sizeof(struct Tree));
-	t->refc = 0;
+    t->refc = 0;
     t->tag = tag;
     t->text = text;
     t->len = len;
@@ -257,8 +268,50 @@ void LINK(void *parent, size_t n, symbol_t label, void *child, void *thunk)
     t->labels[n] = label;
     t->childs[n] = (struct Tree*)child;
 #ifndef CNEZ_NOGC
-	GC(child, 1, thunk);
+    GC(child, 1, thunk);
 #endif
+}
+
+static void PERR(const char *message, const unsigned char *pos, void *thunk) {
+    ParserContext *ctx = (ParserContext*) thunk;
+
+    /* TODO: rework API and calculate row/col before calling error reporting function */
+    const unsigned char* p = ctx->inputs;
+    const unsigned char* line = pos-1;
+    int r = 1;
+    int c = 1;
+
+    while(p != line) {
+        if (*p == '\n') {
+            r++;
+            c = 1;
+        } else {
+            c++;
+        }
+        p++;
+    }
+
+    fprintf(stderr, "%s:%d:%d\n", ctx->input_fname ? ctx->input_fname : "ERROR at", r, c);
+
+    while(*--line != '\n' && line > ctx->inputs) {
+    }
+
+    if (*line == '\n') {
+        line++;
+    }
+
+    p = line;
+    fputs(" > ", stderr);
+    while(*p && (*p != '\n')) {
+        fputc(*p++, stderr);
+    }
+    fprintf(stderr, "\n");
+    p = line;
+    fputs(" > ", stderr);
+    while(p++ != (pos-1)) {
+        fputc('-', stderr);
+    }
+    fprintf(stderr, "^ - %s\n", message);
 }
 
 void cnez_free(void *t)
@@ -287,10 +340,11 @@ static void cnez_dump_memory(const char *msg, void *t)
 	fprintf(stdout, "%s: tree=%ld[bytes], new=%ld, gc=%ld, alive=%ld %s\n", msg, t_used, t_newcount, t_gccount, alive, alive == used ? "OK" : "LEAK");
 }
 
-static void ParserContext_initTreeFunc(ParserContext *c, 
+static void ParserContext_initTreeFunc(ParserContext *c,
 	void *thunk,
-	void* (*fnew)(symbol_t, const unsigned char *, size_t, size_t, void *), 
-	void  (*fset)(void *, size_t, symbol_t, void *, void *), 
+	void (*ferr)(const char *, const unsigned char *, void *),
+	void* (*fnew)(symbol_t, const unsigned char *, size_t, size_t, void *),
+	void  (*fset)(void *, size_t, symbol_t, void *, void *),
 	void  (*fgc)(void *, int, void*))
 {
 	if(fnew != NULL && fset != NULL && fgc != NULL) {
@@ -304,6 +358,8 @@ static void ParserContext_initTreeFunc(ParserContext *c,
     	c->fsub = LINK;
     	c->fgc  = GC;
     }
+
+    c->perr = ferr == NULL ? PERR : ferr;
     c->thunk = thunk == NULL ? c : thunk;
 }
 
@@ -323,11 +379,16 @@ void nogc(void *parent, int c, void *thunk)
 {
 }
 
+static void noperr(const char *message, const unsigned char *saved_pos, void *thunk)
+{
+}
+
 static void ParserContext_initNoTreeFunc(ParserContext *c)
 {
     c->fnew = nonew;
     c->fsub = nosub;
     c->fgc  = nogc;
+    c->perr = noperr;
     c->thunk = c;
 }
 
@@ -336,9 +397,10 @@ static void ParserContext_initNoTreeFunc(ParserContext *c)
 static ParserContext *ParserContext_new(const unsigned char *text, size_t len)
 {
     ParserContext *c = (ParserContext*) _malloc(sizeof(ParserContext));
+    c->input_fname = NULL;
     c->inputs = text;
     c->length = len;
-    c->pos = text;
+    c->pos = c->last_pos = text;
     c->left = NULL;
     // tree
     c->log_size = 64;
@@ -506,7 +568,7 @@ static const unsigned char *_findchar(
 static void ParserContext_skipRange(ParserContext *c, const unsigned char *range, size_t range_size)
 {
 	size_t size = c->length - (c->pos - c->inputs);
-	c->pos = _findchar(c->pos, size, range, range_size);	
+	c->pos = _findchar(c->pos, size, range, range_size);
 }
 
 static int ParserContext_checkOneMoreRange(ParserContext *c, const unsigned char *range, size_t range_size)
@@ -544,17 +606,17 @@ void _log(ParserContext *c, int op, void *value, struct Tree *tree)
 	c->unused_log++;
 }
 
-void cnez_dump(void *v, FILE *fp);
+void cnez_dump(Tree *t, FILE *fp, int depth, int ret);
 
 static
-void DEBUG_dumplog(ParserContext *c) 
+void DEBUG_dumplog(ParserContext *c)
 {
 	long i;
 	for(i = c->unused_log-1; i >= 0; i--) {
 		TreeLog *l = c->logs + i;
 		printf("[%d] %s %p ", (int)i, ops[l->op], l->value);
 		if(l->tree != NULL) {
-			cnez_dump(l->tree, stdout);
+			cnez_dump(l->tree, stdout, 0, 0);
 		}
 		printf("\n");
 	}
@@ -683,7 +745,7 @@ typedef struct SymbolTableEntry {
 
 
 static
-void _push(ParserContext *c, symbol_t table, const unsigned char * utf8, size_t length) 
+void _push(ParserContext *c, symbol_t table, const unsigned char * utf8, size_t length)
 {
 	if (!(c->tableSize < c->tableMax)) {
 		SymbolTableEntry* newtable = (SymbolTableEntry*)_calloc(sizeof(SymbolTableEntry), (c->tableMax + 256));
@@ -708,13 +770,13 @@ void _push(ParserContext *c, symbol_t table, const unsigned char * utf8, size_t 
 	}
 }
 
-static int ParserContext_saveSymbolPoint(ParserContext *c) 
+static int ParserContext_saveSymbolPoint(ParserContext *c)
 {
 	return c->tableSize;
 }
 
-static 
-void ParserContext_backSymbolPoint(ParserContext *c, int savePoint) 
+static
+void ParserContext_backSymbolPoint(ParserContext *c, int savePoint)
 {
 	if (c->tableSize != savePoint) {
 		c->tableSize = savePoint;
@@ -737,7 +799,7 @@ void ParserContext_addSymbolMask(ParserContext *c, symbol_t table) {
 	_push(c, table, NullSymbol, 4);
 }
 
-static int ParserContext_exists(ParserContext *c, symbol_t table) 
+static int ParserContext_exists(ParserContext *c, symbol_t table)
 {
 	long i;
 	for (i = c->tableSize - 1; i >= 0; i--) {
@@ -749,7 +811,7 @@ static int ParserContext_exists(ParserContext *c, symbol_t table)
 	return 0;
 }
 
-static int ParserContext_existsSymbol(ParserContext *c, symbol_t table, const unsigned char *symbol, size_t length) 
+static int ParserContext_existsSymbol(ParserContext *c, symbol_t table, const unsigned char *symbol, size_t length)
 {
 	long i;
 	for (i = c->tableSize - 1; i >= 0; i--) {
@@ -766,7 +828,7 @@ static int ParserContext_existsSymbol(ParserContext *c, symbol_t table, const un
 	return 0;
 }
 
-static int ParserContext_matchSymbol(ParserContext *c, symbol_t table) 
+static int ParserContext_matchSymbol(ParserContext *c, symbol_t table)
 {
 	long i;
 	for (i = c->tableSize - 1; i >= 0; i--) {
@@ -796,7 +858,7 @@ static int ParserContext_equals(ParserContext *c, symbol_t table, const unsigned
 	return 0;
 }
 
-static int ParserContext_contains(ParserContext *c, symbol_t table, const unsigned char *ppos) 
+static int ParserContext_contains(ParserContext *c, symbol_t table, const unsigned char *ppos)
 {
 	long i;
 	size_t length = c->pos - ppos;
@@ -817,7 +879,7 @@ static int ParserContext_contains(ParserContext *c, symbol_t table, const unsign
 
 // Counter -----------------------------------------------------------------
 
-static void ParserContext_scanCount(ParserContext *c, const unsigned char *ppos, long mask, int shift) 
+static void ParserContext_scanCount(ParserContext *c, const unsigned char *ppos, long mask, int shift)
 {
 	long i;
 	size_t length = c->pos - ppos;
@@ -835,7 +897,7 @@ static void ParserContext_scanCount(ParserContext *c, const unsigned char *ppos,
 	}
 }
 
-static int ParserContext_decCount(ParserContext *c) 
+static int ParserContext_decCount(ParserContext *c)
 {
 	return (c->count--) > 0;
 }
@@ -990,7 +1052,7 @@ void ParserContext_memoFail(ParserContext *c, int memoPoint)
 
 static void ParserContext_free(ParserContext *c)
 {
-	size_t i;
+    size_t i;
     if(c->memoArray != NULL) {
     	for(i = 0; i < c->memoSize; i++) {
     		GCDEC(c, c->memoArray[i].memoTree);

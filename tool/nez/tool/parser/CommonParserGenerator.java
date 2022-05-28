@@ -948,6 +948,11 @@ public abstract class CommonParserGenerator extends ParserGrammarWriter {
 		}
 
 		private void BackPos(String lname) {
+                        If(_Field(_state(), "last_pos"), _LT(), _Field(_state(), "pos"));
+                        {
+                            VarAssign(_Field(_state(), "last_pos"), _Field(_state(), "pos"));
+                        }
+                        EndIf();
 			VarAssign(_Field(_state(), "pos"), lname);
 		}
 
@@ -1747,6 +1752,10 @@ public abstract class CommonParserGenerator extends ParserGrammarWriter {
 
 	protected String _NotEq() {
 		return "!=";
+	}
+
+	protected String _LT() {
+		return "<";
 	}
 
 	protected String _True() {

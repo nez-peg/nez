@@ -1,7 +1,6 @@
-void cnez_dump(void *v, FILE *fp)
+void cnez_dump(Tree* t, FILE *fp, int depth, int ret)
 {
 	size_t i;
-	Tree *t = (Tree*)v;
 	if(t == NULL) {
 		fputs("null", fp);
 		return;
@@ -9,12 +8,25 @@ void cnez_dump(void *v, FILE *fp)
 //	if(t->refc != 1) {
 //		fprintf(fp, "@%ld", t->refc);
 //	}
-	fputs("[#", fp);
+	if(ret) {
+		fputs("\n", fp);
+		for(i = 0; i < depth; i++) {
+		  fputs(" ", fp);
+		}
+	}
+	fputs("(#", fp);
 	fputs(_tags[t->tag], fp);
 	if(t->size == 0) {
 		fputs(" '", fp);
 		for(i = 0; i < t->len; i++) {
-			fputc(t->text[i], fp);
+		    int ch = t->text[i];
+		    switch(ch) {
+			case '\'':
+			case '\\':
+				fputc('\\', fp);
+			break;
+		    }
+		    fputc(ch, fp);
 		}
 		fputs("'", fp);
 	}
@@ -26,10 +38,10 @@ void cnez_dump(void *v, FILE *fp)
 				fputs(_labels[t->labels[i]], fp);
 				fputs("=", fp);
 			}
-			cnez_dump(t->childs[i], fp);
+			cnez_dump(t->childs[i], fp, depth + 1, t->labels[i] == 0);
 		}
 	}
-	fputs("]", fp);
+	fputs(")", fp);
 }
 
 #ifndef UNUSE_MAIN
@@ -38,7 +50,7 @@ void cnez_dump(void *v, FILE *fp)
 static const char *get_input(const char *path, size_t *size)
 {
 	FILE *fp = fopen(path, "rb");
-    if(fp != NULL) {		
+        if(fp != NULL) {
 		size_t len;
 		fseek(fp, 0, SEEK_END);
 		len = (size_t) ftell(fp);
@@ -57,14 +69,15 @@ static const char *get_input(const char *path, size_t *size)
 	return path;
 }
 
+/* calculate time difference in us */
 static double timediff(struct timeval *s, struct timeval *e)
 {
-	double t1 = (e->tv_sec - s->tv_sec) * 1000.0;
-	double t2 = (e->tv_usec - s->tv_usec) / 1000.0;
-	return t1 + t2; /* ms */
+    double t1 = (e->tv_sec - s->tv_sec) * 1000000.0;
+    double t2 = (e->tv_usec - s->tv_usec);
+    return t1 + t2;
 }
 
-int cnez_main(int ac, const char **av, void* (*parse)(const char *input, size_t len))
+int cnez_main(int ac, const char **av, void* (*parse)(const char *fname, const char *input, size_t len))
 {
 	int j;
 	size_t len;
@@ -81,10 +94,10 @@ int cnez_main(int ac, const char **av, void* (*parse)(const char *input, size_t 
 			for(i = 0; i < 5; i++) {
 				struct timeval s, e;
 				gettimeofday(&s, NULL);
-				void *data = parse(input, len);
+				void *data = parse(av[j], input, len);
 				gettimeofday(&e, NULL);
 				if(data == NULL) {
-					fprintf(stdout, "%s FAIL %f[ms]\n", av[j], timediff(&s, &e));
+					fprintf(stdout, "%s FAIL %f[us]\n", av[j], timediff(&s, &e));
 					break;
 				}
 				t[i] = timediff(&s, &e);
@@ -92,18 +105,19 @@ int cnez_main(int ac, const char **av, void* (*parse)(const char *input, size_t 
 				cnez_free(data);
 			}
 			if(tsum != 0.0) {
-				fprintf(stdout, "%s OK %.4f[ms] %.3f %.3f %.3f %.3f %.3f\n", av[j], tsum / 5, t[0], t[1], t[2], t[3], t[4]);
+				fprintf(stdout, "%s OK %.4f[us] %.3f %.3f %.3f %.3f %.3f\n", av[j], tsum / 5, t[0], t[1], t[2], t[3], t[4]);
 			}
 		}
 		else {
-			void *data = parse(input, len);
-			cnez_dump(data, stdout);
+			void *data = parse(av[j], input, len);
+			cnez_dump(data, stdout, 0, 0);
 			fprintf(stdout, "\n");
 			if(getenv("MEM") != NULL) {
 				cnez_dump_memory("Memory Usage", data);
 			}
 			cnez_free(data);
 		}
+		if(input != av[j]) free((void*) input);
 	}
 	return 0;
 }
