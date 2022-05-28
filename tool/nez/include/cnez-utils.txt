@@ -23,7 +23,7 @@ void cnez_dump(Tree* t, FILE *fp, int depth, int ret)
 		    switch(ch) {
 			case '\'':
 			case '\\':
-				fputc('\\', fp);
+				if(t->len == 1) fputc('\\', fp);
 			break;
 		    }
 		    fputc(ch, fp);

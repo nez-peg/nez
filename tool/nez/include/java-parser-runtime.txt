@@ -91,6 +91,12 @@ public static class SimpleTree implements NewFunc<SimpleTree>, SetFunc<SimpleTre
 			sb.append(" '");
 			for(int i = 0; i < len; i++) {
 				char ch = (char)this.text[i + this.start];
+				switch(ch) {
+					case '\'':
+					case '\\':
+						if(len == 1) sb.append('\\');
+					break;
+				}
 				sb.append(ch);
 			}
 			sb.append("'");
