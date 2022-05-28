@@ -66,10 +66,10 @@ public class JavaParserGenerator extends CommonParserGenerator {
 				VarDecl("int", "w", _int(strategy.SlidingWindow));
 				VarDecl("int", "n", _int(code.getMemoPointSize()));
                                 generateFileReader(g);
-				Statement("SimpleTree t = parse(data, w, n)");
+				Statement("SimpleTree t = parse(a[0], data, w, n)");
 			} else {
                                 generateFileReader(g);
-				Statement("SimpleTree t = parse(data, 0, 0)");
+				Statement("SimpleTree t = parse(a[0], data, 0, 0)");
 			}
 
 			Statement("System.out.println(t)");

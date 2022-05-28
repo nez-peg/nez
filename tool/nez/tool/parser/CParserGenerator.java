@@ -155,14 +155,11 @@ public class CParserGenerator extends CommonParserGenerator {
 				}
 				EndIf();
 			}
-                        Else();
+			EndIf();
+			If("ferr && !ParserContext_eof(c)");
                         {
-                                If("ferr");
-                                {
-                                        Statement("ferr(\"syntax error\", c->last_pos, c)");
-                                }
-                                EndIf();
-                        }
+                                Statement("ferr(\"syntax error\", c->last_pos, c)");
+			}
 			EndIf();
 			Statement(_Func("free"));
 			Return("result");
