@@ -91,7 +91,7 @@ public abstract class DebugSourceContext extends Context {
 	}
 
 	public final String formatPositionMessage(String messageType, long pos, String message) {
-		return "(" + this.getResourceName() + ":" + this.linenum(pos) + ") [" + messageType + "] " + message;
+		return this.getResourceName() + ":" + linenum(pos) + ":" + column(pos) + " [" + messageType + "] " + message;
 	}
 
 	@Override
