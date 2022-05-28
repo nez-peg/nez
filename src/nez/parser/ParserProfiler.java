@@ -56,7 +56,7 @@ public class ParserProfiler {
 	}
 
 	public final void setCount(String key, long v) {
-		this.setDataPoint(key, new Long(v));
+		this.setDataPoint(key, v);
 	}
 
 	public final void setDouble(String key, double d) {
@@ -66,7 +66,7 @@ public class ParserProfiler {
 	public final void setRatio(String key, long v, long v2) {
 		double d = v;
 		double d2 = v2;
-		this.setDataPoint(key, new Double(d / d2));
+		this.setDataPoint(key, (double) v / (double) v2);
 	}
 
 	public final String formatCommaSeparateValue() {
