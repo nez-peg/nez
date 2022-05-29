@@ -19,7 +19,7 @@ public abstract class GrammarTranslatorVisitor extends Expression.Visitor {
 	protected FileBuilder file;
 
 	public GrammarTranslatorVisitor(FileBuilder file, Parser parser) {
-		this.file = null;
+		this.file = file;
 		this.parser = parser;
 		this.strategy = parser.getParserStrategy();
 	}

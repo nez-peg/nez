@@ -98,6 +98,10 @@ public abstract class CommonParserGenerator extends ParserGrammarWriter {
 		return "p" + uname.replace("!", "NOT").replace("~", "_").replace("&", "AND");
 	}
 
+        protected boolean isPython() {
+            return false;
+        }
+
 	/* Types */
 
 	protected HashMap<String, String> typeMap = new HashMap<>();
@@ -948,6 +952,11 @@ public abstract class CommonParserGenerator extends ParserGrammarWriter {
 		}
 
 		private void BackPos(String lname) {
+                        If(_Field(_state(), "last_pos"), _LT(), _Field(_state(), "pos"));
+                        {
+                            VarAssign(_Field(_state(), "last_pos"), _Field(_state(), "pos"));
+                        }
+                        EndIf();
 			VarAssign(_Field(_state(), "pos"), lname);
 		}
 
@@ -1156,6 +1165,8 @@ public abstract class CommonParserGenerator extends ParserGrammarWriter {
 			if (choice.size() == 1) {
 				Verbose.println("single choice: " + choice);
 				choice.get(0).visit(this, null);
+			} else if(isPython()) {
+                                generateSwitchPython(choice, p);
 			} else {
 				String temp = InitVal(_temp(), _True());
 				Switch(_GetArray(_index(p.indexMap), _Func("prefetch")));
@@ -1182,6 +1193,37 @@ public abstract class CommonParserGenerator extends ParserGrammarWriter {
 				}
 				EndIf();
 			}
+		}
+
+		protected void generateSwitchPython(Nez.Choice choice, ChoicePrediction p) {
+                        String temp = InitVal(_temp(), _True());
+                        String temp_sw_val = InitVal(_temp(), _GetArray(_index(p.indexMap), _Func("prefetch")));
+                        If(temp_sw_val + " == 0");
+                        {
+                            Fail();
+                        }
+                        End();
+                        for (int i = 0; i < choice.size(); i++) {
+                                Line("elif " + temp_sw_val + " == " + _int(i + 1));
+                                Begin();
+                                {
+                                    Expression sub = choice.get(i);
+                                    String f = _eval(sub);
+                                    if (p.striped[i]) {
+                                            Verbose(". " + sub);
+                                            Statement(_Func("move", "1"));
+                                    } else {
+                                            Verbose(sub.toString());
+                                    }
+                                    VarAssign(temp, f);
+                                }
+                                End();
+                        }
+                        If(_Not(temp));
+                        {
+                                Fail();
+                        }
+                        EndIf();
 		}
 
 		@Override
@@ -1747,6 +1789,10 @@ public abstract class CommonParserGenerator extends ParserGrammarWriter {
 
 	protected String _NotEq() {
 		return "!=";
+	}
+
+	protected String _LT() {
+		return "<";
 	}
 
 	protected String _True() {

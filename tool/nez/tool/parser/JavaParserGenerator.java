@@ -33,6 +33,13 @@ public class JavaParserGenerator extends CommonParserGenerator {
 
 	@Override
 	protected void generateHeader(Grammar g) {
+                Statement("import java.io.IOException");
+                Statement("import java.nio.file.Files");
+                Statement("import java.nio.file.Path");
+                Statement("import java.nio.file.Paths");
+                Statement("import java.util.stream.Collectors");
+                Statement("import java.util.stream.Stream");
+                Line("");
 		BeginDecl("public class " + _basename());
 		{
 			BeginDecl("private static <T> boolean start(ParserContext<T> c)");
@@ -44,16 +51,25 @@ public class JavaParserGenerator extends CommonParserGenerator {
 		}
 	}
 
+	private void generateFileReader(Grammar g) {
+                Statement("Path path = Paths.get(a[0])");
+                Statement("Stream<String> lines = Files.lines(path)");
+                Statement("String data = lines.collect(Collectors.joining(\"\\n\"))");
+                Statement("lines.close()");
+	}
+
 	@Override
 	protected void generateFooter(Grammar g) {
-		BeginDecl("public final static void main(String[] a)");
+		BeginDecl("public final static void main(String[] a) throws IOException");
 		{
 			if (code.getMemoPointSize() > 0) {
 				VarDecl("int", "w", _int(strategy.SlidingWindow));
 				VarDecl("int", "n", _int(code.getMemoPointSize()));
-				Statement("SimpleTree t = parse(a[0], w, n)");
+                                generateFileReader(g);
+				Statement("SimpleTree t = parse(a[0], data, w, n)");
 			} else {
-				Statement("SimpleTree t = parse(a[0], 0, 0)");
+                                generateFileReader(g);
+				Statement("SimpleTree t = parse(a[0], data, 0, 0)");
 			}
 
 			Statement("System.out.println(t)");

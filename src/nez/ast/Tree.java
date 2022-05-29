@@ -305,7 +305,7 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements
 			String s = this.toText();
 			int num = Integer.parseInt(s);
 			if (this.value == null) {
-				this.value = new Integer(num);
+				this.value = num;
 			}
 			return num;
 		} catch (NumberFormatException e) {
@@ -356,18 +356,32 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		this.appendStringfied(sb);
+		this.appendStringfied(sb, 0, false);
 		return sb.toString();
 	}
 
-	protected void appendStringfied(StringBuilder sb) {
-		sb.append("[#");
+	protected void appendStringfied(StringBuilder sb, int indent, boolean ret) {
+		if (ret) {
+			sb.append('\n').append(StringUtils.repeat(" ", indent));
+		}
+		sb.append("(#");
 		if (this.getTag() != null) {
 			sb.append(this.getTag().getSymbol());
 		}
 		if (this.subTree == null) {
-			sb.append(" ");
-			StringUtils.formatStringLiteral(sb, '\'', this.toText(), '\'');
+                        sb.append(" '");
+                        String txt = this.toText();
+			for(int i = 0, imax = txt.length(); i < imax; i++) {
+				char ch = txt.charAt(i);
+				switch(ch) {
+					case '\'':
+					case '\\':
+						if(imax == 1) sb.append('\\');
+					break;
+				}
+				sb.append(ch);
+			}
+			sb.append("'");
 		} else {
 			for (int i = 0; i < this.size(); i++) {
 				sb.append(" ");
@@ -379,12 +393,12 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements
 				if (this.subTree[i] == null) {
 					sb.append("null");
 				} else {
-					this.subTree[i].appendStringfied(sb);
+					this.subTree[i].appendStringfied(sb, indent + 1, this.labels[i] == null);
 				}
 			}
 		}
 		appendExtraStringfied(sb);
-		sb.append("]");
+		sb.append(")");
 	}
 
 	protected void appendExtraStringfied(StringBuilder sb) {

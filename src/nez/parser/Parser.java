@@ -98,7 +98,7 @@ public final class Parser {
 		// if (prof != null) {
 		// context.doneProfiling(prof);
 		// }
-		if (matched == null) {
+		if (matched == null || (this.disabledUncosumed && !ctx.eof())) {
 			perror(s, ctx.getMaximumPosition(), "syntax error");
 			return null;
 		}

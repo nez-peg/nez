@@ -1,7 +1,7 @@
 
 /* Embedded ParserContext from nez.parser.ParserContext */
 
-public final static <T> T parse(String text, NewFunc<T> f, SetFunc<T> f2, int w, int n) {
+public final static <T> T parse(String fname, String text, NewFunc<T> f, SetFunc<T> f2, int w, int n) {
 	T left = null;
 	ParserContext<T> c = new ParserContext<T>(text, f, f2, w, n);
 	if (start(c)) {
@@ -9,14 +9,15 @@ public final static <T> T parse(String text, NewFunc<T> f, SetFunc<T> f2, int w,
 		if (left == null) {
 			left = c.f.newTree(0, c.inputs, 0, c.pos, 0);
 		}
-		return left;
 	}
-	return null;
+        if(!c.eof())
+            perror(fname, "syntax error", c.last_pos, c);
+	return left;
 }
 
-public final static SimpleTree parse(String text, int w, int n) {
+public final static SimpleTree parse(String fname, String text, int w, int n) {
 	SimpleTree f = new SimpleTree();
-	return parse(text, f, f, w, n);
+	return parse(fname, text, f, f, w, n);
 }
 
 public final static int match(String text, int w, int n) {
@@ -26,6 +27,92 @@ public final static int match(String text, int w, int n) {
 		return c.pos;
 	}
 	return -1;
+}
+
+public static final int column(byte[] input, long pos) {
+    int count = 0;
+    for (int p = (int)pos-1; p >= 0; p--, ++count) {
+            if (input[p] == '\n') {
+                    break;
+            }
+    }
+    return count;
+}
+
+public static final long linenum(byte[] input, long pos) {
+    long count = 1;
+    int end = (int) pos;
+    if (end >= input.length) {
+            end = input.length;
+    }
+    for (int i = 0; i < end; i++) {
+            if (input[i] == '\n') {
+                    count++;
+            }
+    }
+    return count;
+}
+
+private static final String getTextAround(byte[] input, long pos, String delim) {
+    byte ch = 0;
+    if (pos < 0) {
+            pos = 0;
+    }
+    int startIndex = (int)pos;
+    while (startIndex > 0) {
+            ch = input[startIndex];
+            if (ch == '\n' && pos - startIndex > 0) {
+                    startIndex = startIndex + 1;
+                    break;
+            }
+            if (pos - startIndex > 60 && ch < 128) {
+                    break;
+            }
+            startIndex = startIndex - 1;
+    }
+    int endIndex = (int)pos + 1;
+    if (endIndex < input.length) {
+            while ((ch = input[endIndex]) != 0 /* this.EOF() */) {
+                    if (ch == '\n' || endIndex - startIndex > 78 && ch < 128) {
+                            break;
+                    }
+                    endIndex = endIndex + 1;
+            }
+    } else {
+            endIndex = input.length;
+    }
+    StringBuilder source = new StringBuilder();
+    StringBuilder marker = new StringBuilder();
+    for (int i = startIndex; i < endIndex; i++) {
+            ch = input[i];
+            if (ch == '\n') {
+                    source.append("\\n");
+                    if (i == pos) {
+                            marker.append("^^");
+                    } else {
+                            marker.append("\\n");
+                    }
+            } else if (ch == '\t') {
+                    source.append("    ");
+                    if (i == pos) {
+                            marker.append("^^^^");
+                    } else {
+                            marker.append("    ");
+                    }
+            } else {
+                    source.append((char) ch);
+                    if (i == pos) {
+                            marker.append("^");
+                    } else {
+                            marker.append(" ");
+                    }
+            }
+    }
+    return delim + source.toString() + delim + marker.toString();
+}
+
+private static <T> void perror(String fname, String msg, long pos, ParserContext<T> c) {
+    System.err.println(fname + ":" + linenum(c.inputs, pos) + ":" + column(c.inputs, pos) + " [" + msg + "]" + getTextAround(c.inputs, pos, "\n "));
 }
 
 public static interface NewFunc<T> {
@@ -74,17 +161,29 @@ public static class SimpleTree implements NewFunc<SimpleTree>, SetFunc<SimpleTre
 	@Override
    	public String toString() {
    		StringBuilder sb = new StringBuilder();
-   		this.appendStringfied(sb);
+   		this.appendStringfied(sb, 0, false);
    		return sb.toString();
    	}
 	
-	private void appendStringfied(StringBuilder sb) {
-		sb.append("[#");
+	private void appendStringfied(StringBuilder sb, int indent, boolean ret) {
+		if (ret) {
+			sb.append('\n');
+			for(int i=0; i < indent; ++i) {
+				sb.append(" ");
+			}
+		}
+		sb.append("(#");
 		sb.append(_tags[this.tag]);
 		if(this.childs.length == 0) {
 			sb.append(" '");
 			for(int i = 0; i < len; i++) {
 				char ch = (char)this.text[i + this.start];
+				switch(ch) {
+					case '\'':
+					case '\\':
+						if(len == 1) sb.append('\\');
+					break;
+				}
 				sb.append(ch);
 			}
 			sb.append("'");
@@ -99,10 +198,10 @@ public static class SimpleTree implements NewFunc<SimpleTree>, SetFunc<SimpleTre
 				else {
 					sb.append(" ");
 				}
-				childs[i].appendStringfied(sb);
+				childs[i].appendStringfied(sb, indent + 1, this.labels[i] == 0);
 			}
 		}
-		sb.append("]");
+		sb.append(")");
 	}
 }
 
@@ -120,6 +219,7 @@ public static class NoneTree implements NewFunc<NoneTree>, SetFunc<NoneTree> {
 
 static final class ParserContext<T> {
 	public int pos = 0;
+	public int last_pos = 0;
 	public T left;
 	NewFunc<T> f;
 	SetFunc<T> f2;
@@ -127,7 +227,7 @@ static final class ParserContext<T> {
 	public ParserContext(String s, NewFunc<T> f, SetFunc<T> f2, int w, int n) {
 		inputs = toUTF8(s + "\0");
 		length = inputs.length - 1;
-		this.pos = 0;
+		this.pos = this.last_pos = 0;
 		this.left = null;
 		this.f = f;
 		this.f2 = f2;

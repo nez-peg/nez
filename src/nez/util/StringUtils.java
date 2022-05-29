@@ -2,6 +2,7 @@ package nez.util;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
+import java.util.Collections;
 
 import nez.lang.Bytes;
 
@@ -159,6 +160,9 @@ public abstract class StringUtils {
 			if (ch == '\n') {
 				sb.append(slashChar);
 				sb.append("n");
+			} else if (ch == '\r') {
+				sb.append(slashChar);
+				sb.append("r");
 			} else if (ch == '\t') {
 				sb.append(slashChar);
 				sb.append("t");
@@ -336,6 +340,10 @@ public abstract class StringUtils {
 		double sec = micro / 1000000.0;
 		double thr = length / sec / (1024 * 1024);
 		return String.format("%.4f", thr);
+	}
+
+	public static String repeat(String s, int n) {
+                return String.join("", Collections.nCopies(n, s));
 	}
 
 }

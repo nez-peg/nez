@@ -3,6 +3,8 @@ package nez.tool.parser;
 import nez.lang.Grammar;
 import nez.util.StringUtils;
 
+import java.util.Locale;
+
 public class CParserGenerator extends CommonParserGenerator {
 
 	public CParserGenerator() {
@@ -119,6 +121,9 @@ public class CParserGenerator extends CommonParserGenerator {
 
 	@Override
 	protected void generateHeader(Grammar g) {
+		Line("/*");
+		Line("* " + _basename() + " grammar parser.");
+		Line("*/\n");
 		importFileContent("cnez-runtime.txt");
 	}
 
@@ -134,11 +139,12 @@ public class CParserGenerator extends CommonParserGenerator {
 	protected void generateFooter(Grammar g) {
 		importFileContent("cnez-utils.txt");
 		//
-		BeginDecl("void* " + _ns() + "parse(const char *text, size_t len, void *thunk, void* (*fnew)(symbol_t, const unsigned char *, size_t, size_t, void *), void  (*fset)(void *, size_t, symbol_t, void *, void *), void  (*fgc)(void *, int, void *))");
+		BeginDecl("void* " + _ns() + "parse(const char *fname, const char *text, size_t len, void *thunk, void (*ferr)(const char *, const unsigned char *, void *), void* (*fnew)(symbol_t, const unsigned char *, size_t, size_t, void *), void  (*fset)(void *, size_t, symbol_t, void *, void *), void  (*fgc)(void *, int, void *))");
 		{
 			VarDecl("void*", "result", _Null());
 			VarDecl(_state(), "ParserContext_new((const unsigned char*)text, len)");
-			Statement(_Func("initTreeFunc", "thunk", "fnew", "fset", "fgc"));
+			Statement("c->input_fname = fname");
+			Statement(_Func("initTreeFunc", "thunk", "ferr", "fnew", "fset", "fgc"));
 			this.InitMemoPoint();
 			If(_funccall(_funcname(g.getStartProduction())));
 			{
@@ -150,19 +156,25 @@ public class CParserGenerator extends CommonParserGenerator {
 				EndIf();
 			}
 			EndIf();
+			If("ferr && !ParserContext_eof(c)");
+                        {
+                                Statement("ferr(\"syntax error\", c->last_pos, c)");
+			}
+			EndIf();
 			Statement(_Func("free"));
 			Return("result");
 		}
 		EndDecl();
-		BeginDecl("static void* cnez_parse(const char *text, size_t len)");
+		BeginDecl("static void* cnez_parse(const char *fname, const char *text, size_t len)");
 		{
-			Return(_ns() + "parse(text, len, NULL, NULL, NULL, NULL)");
+			Return(_ns() + "parse(fname, text, len, NULL, PERR, NULL, NULL, NULL)");
 		}
 		EndDecl();
-		BeginDecl("long " + _ns() + "match(const char *text, size_t len)");
+		BeginDecl("long " + _ns() + "match(const char *fname, const char *text, size_t len)");
 		{
 			VarDecl("long", "result", "-1");
 			VarDecl(_state(), "ParserContext_new((const unsigned char*)text, len)");
+			Statement("c->input_fname = fname");
 			Statement(_Func("initNoTreeFunc"));
 			this.InitMemoPoint();
 			If(_funccall(_funcname(g.getStartProduction())));
@@ -191,13 +203,27 @@ public class CParserGenerator extends CommonParserGenerator {
 		}
 		EndDecl();
 		Line("#endif/*MAIN*/");
+		Line("\n");
+		Line("#ifdef __cplusplus");
+		Line("}");
+		Line("#endif");
+
 		file.writeIndent("// End of File");
 		generateHeaderFile();
 		this.showManual("cnez-man.txt", new String[] { "$cmd$", _basename() });
 	}
 
 	private void generateHeaderFile() {
+		String upcaseName = _basename().toUpperCase(Locale.ROOT) + "_H";
 		this.setFileBuilder(".h");
+		Line("/*");
+		Line("* Header file for " + _basename() + " grammar parser.");
+		Line("*/\n");
+		Line("#ifndef __" + upcaseName);
+		Line("#define __" + upcaseName + "\n");
+		Line("#ifdef __cplusplus");
+		Line("extern \"C\" {");
+		Line("#endif\n");
 		Statement("typedef unsigned long int symbol_t");
 		int c = 1;
 		for (String s : this.tagList) {
@@ -217,10 +243,16 @@ public class CParserGenerator extends CommonParserGenerator {
 			c++;
 		}
 		Line("#define MAXLABEL " + c);
-		Statement("void* " + _ns() + "parse(const char *text, size_t len, void *, void* (*fnew)(symbol_t, const char *, size_t, size_t, void *), void  (*fset)(void *, size_t, symbol_t, void *, void *), void  (*fgc)(void *, int, void *))");
-		Statement("long " + _ns() + "match(const char *text, size_t len)");
+		Statement("void* " + _ns() + "parse(const char *fname, const char *text, size_t len, void *, void (*ferr)(const char *, const unsigned char *, void *), void* (*fnew)(symbol_t, const char *, size_t, size_t, void *), void  (*fset)(void *, size_t, symbol_t, void *, void *), void  (*fgc)(void *, int, void *))");
+		Statement("long " + _ns() + "match(const char *fname, const char *text, size_t len)");
 		Statement("const char* " + _ns() + "tag(symbol_t n)");
 		Statement("const char* " + _ns() + "label(symbol_t n)");
+		Line("\n");
+		Line("#ifdef __cplusplus");
+		Line("}");
+		Line("#endif");
+		Line("\n");
+		Line("#endif /* __" + upcaseName + " */");
 		this.file.close();
 	}
 
