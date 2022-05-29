@@ -25,6 +25,11 @@ public class PythonParserGenerator extends CommonParserGenerator {
 		// this.addType(_state_(), "ParserContext");
 	}
 
+	@Override
+        protected boolean isPython() {
+                return true;
+        }
+
 	/* Syntax */
 
 	@Override
@@ -323,6 +328,7 @@ public class PythonParserGenerator extends CommonParserGenerator {
 	protected void generateFooter(Grammar g) {
 		If("__name__ == '__main__'");
 		{
+			Statement("import sys");
 			Statement("t = parse(sys.argv[1])");
 			Statement("print (t)");
 		}
